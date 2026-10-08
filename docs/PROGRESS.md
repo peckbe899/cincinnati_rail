@@ -179,6 +179,12 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - Line 6 takes 0.3 min longer and uses 16% more traction energy.
   - Your alt-history topography will replace this source when it is ready.
 
+- **OpenStreetMap data via Overture Maps** (`tools/overture_extract.py`): the OSM APIs are blocked from the sandbox, but Overture's GeoParquet on S3 is not.
+  - `data/reference/overture_rail_cincinnati.kml`: 1,694 rail lines, including historic names such as the CH&D, the Cincinnati Subway and the Cincinnati Terminal Subdivision.
+  - `data/reference/overture_water_cincinnati.kml`: river shorelines. They confirm the RER-3 covered way: 84% of the drawn RER-3 trunk is over the Ohio, from Sedamsville to Riverbend/Belterra.
+  - Tracing today's rail network gives plausible original approaches into CUT from Covington (C&O bridge, 4.3 km) and Erlanger (Cincinnati Southern Bridge, 7.5 km), but not from Newport, Sedamsville or Lunken. Draw those in Google Earth using the rail layer.
+- **Station throats** (APEx): +1.3% to +14.4% trip time.
+
 ## In progress
 
 - Nothing running.
