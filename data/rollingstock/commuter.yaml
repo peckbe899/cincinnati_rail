@@ -1,0 +1,32 @@
+# Commuter / RER rolling stock. SI unless suffixed. Sources in each entry's `sources`.
+# [P] published, [S] secondary, [E] estimate (see docs/RESEARCH.md for derivations).
+
+MBTA_HSP46_6BL:
+  name: MBTA HSP46 + 6 bilevel coaches (push-pull)
+  category: loco
+  length_m: 177          # 21 m loco + 6 x 26.0 m coaches [S]
+  cars: 6                # passenger cars (door count basis)
+  mass_empty_t: 490      # 130.4 t loco [S] + 6 x ~60 t bilevels [E]
+  pax: 1080              # 6 x ~180 capacity [S]
+  kg_per_pax: 80
+  rotating_mass_factor: 0.07   # coaches 1.06, loco 1.09 (Wende) weighted [S/E]
+  adhesive_mass_fraction: 0.27 # loco only
+  adhesion: 0.25         # implied by 289 kN on 130 t [E]
+  max_te_kn: 289         # 65,000 lbf starting [S]
+  power_kw: 2850         # ~3,200 kW at wheel minus ~300 kW HEP for 6 bilevels [S/E]
+  max_accel: 0.6         # rarely binding: loco-hauled is effort/power limited
+  service_brake: 0.6     # timetable braking for loco-hauled push-pull 0.5-0.7 [E]
+  max_service_brake: 0.9 # ~2 mph/s full service [E]
+  emergency_brake: 1.2
+  brake_delay_s: 2.5     # pneumatic brake-pipe propagation / cylinder fill [E]
+  jerk: 0.5
+  max_speed_mph: 80      # MBTA service limit [S]
+  davis: {A_n: 6000, B_n_per_ms: 80, C_n_per_ms2: 14}  # SC-44/HSP46 + 6 bilevels [E]
+  doors_per_side: 2
+  door_channels: 1       # traps/steps at low platforms; 1 stream per door
+  door_open_s: 4.0
+  door_close_s: 6.0
+  floor: high
+  sources: >-
+    HSP46 mass/TE/HEP: Wikipedia MPI HSP46, Railway Age; bilevel fleet: Wikipedia MBTA bilevel
+    cars; Davis: derived from modified Davis + Davis aero (research_commuter.md 2.2)

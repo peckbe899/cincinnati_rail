@@ -1,0 +1,298 @@
+"""Shared runner for the metro and commuter programs.
+
+A program supplies: its rolling-stock library, design defaults (curves, profile, speed
+policy), a driver model and a dwell function. This module builds the route, runs both
+directions, applies timetable padding and writes the reports.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Callable, Dict, List, Optional
+
+import numpy as np
+import yaml
+
+from .dynamics import Driver, RunResult, Simulator, Stop
+from .geo import INCH, KMH, MPH
+from .horizontal import CurveDesign
+from .line import Route, StationInfo, build_route, length_of, speed_of
+from .profile import ProfileDesign
+from .rollingstock import Train, load_library
+from .speed import SpeedPolicy
+
+
+@dataclass
+class ProgramSpec:
+    name: str  # "metro" | "commuter"
+    library: Path
+    defaults: dict  # nested defaults merged under each line config
+    make_driver: Callable[[dict, Train], Driver]
+    dwell_fn: Callable[[StationInfo, Train, dict, bool], float]  # (station, train, cfg, is_terminal)
+
+
+def deep_merge(base: dict, over: dict) -> dict:
+    out = dict(base)
+    for k, v in (over or {}).items():
+        if isinstance(v, dict) and isinstance(out.get(k), dict):
+            out[k] = deep_merge(out[k], v)
+        else:
+            out[k] = v
+    return out
+
+
+def curve_design_from(cfg: dict, train: Train) -> CurveDesign:
+    g = cfg["geometry"]
+    return CurveDesign(
+        line_speed=speed_of(g, "line_speed"),
+        max_cant=length_of(g, "max_cant"),
+        max_cant_deficiency=length_of(g, "design_cant_deficiency"),
+        min_spiral=float(g.get("min_spiral_m", 20.0)),
+        min_reverse_tangent=float(g.get("min_reverse_tangent_m", 30.0)),
+        min_radius=float(g.get("min_radius_m", 25.0)),
+        group_dev_tol=float(g.get("group_dev_tol_m", 10.0)),
+        corner_offset_tol=float(g.get("corner_offset_tol_m", 40.0)),
+        simplify_tol=float(g.get("simplify_tol_m", 1.5)),
+    )
+
+
+def speed_policy_from(cfg: dict, train: Train) -> SpeedPolicy:
+    sp = cfg["speed"]
+    # the railroad's permitted cant deficiency; stock qualified for more (tilting trains)
+    # only uses it where the line config allows it
+    eu = length_of(sp, "cant_deficiency")
+    if train.cant_deficiency is not None and sp.get("use_train_cant_deficiency", False):
+        eu = train.cant_deficiency
+    inc = speed_of(sp, "increment", 5 * MPH)
+    return SpeedPolicy(
+        line_speed=min(speed_of(cfg["geometry"], "line_speed"), train.max_speed),
+        cant_deficiency=eu,
+        increment=inc,
+        min_zone_length=float(sp.get("min_zone_m", 200.0)),
+        max_deficiency_rate=float(sp.get("max_deficiency_rate_mm_s", 55.0)) / 1000.0,
+    )
+
+
+def profile_design_from(cfg: dict) -> ProfileDesign:
+    p = cfg["profile"]
+    return ProfileDesign(
+        max_grade=float(p.get("max_grade", 0.03)),
+        platform_grade=float(p.get("platform_grade", 0.005)),
+        vertical_curve_length=float(p.get("vertical_curve_m", 120.0)),
+        below_ground_weight=float(p.get("below_ground_weight", 4.0)),
+        allow_tunnels=bool(p.get("allow_tunnels", False)),
+        viaduct_height=float(p.get("viaduct_height_m", 6.0)),
+    )
+
+
+# ----------------------------------------------------------------------------- running
+
+@dataclass
+class DirectionResult:
+    label: str
+    stations: List[StationInfo]  # in travel order (chainage in this direction)
+    stop_s: List[float]
+    dwell: List[float]
+    run: RunResult
+    reverse: bool = False
+    padded_arrivals: List[float] = field(default_factory=list)
+    padded_departures: List[float] = field(default_factory=list)
+
+
+def _stops_for(route: Route, train: Train, reverse: bool, dwell_of) -> tuple:
+    L = route.length
+    seq = [s for s in route.stations if s.stop]
+    if reverse:
+        seq = seq[::-1]
+    stop_s, dwell, names = [], [], []
+    for k, st in enumerate(seq):
+        c = (L - st.s) if reverse else st.s
+        # stop with the train centred on the platform, never past the end of track
+        front = min(c + train.length / 2, L - 3.0)
+        stop_s.append(front)
+        terminal = k == 0 or k == len(seq) - 1
+        dwell.append(0.0 if terminal else dwell_of(st))
+    return seq, stop_s, dwell
+
+
+def run_direction(route: Route, train: Train, driver: Driver, dwell_of, reverse: bool,
+                  ds: float = 2.0) -> DirectionResult:
+    td = route.track_data(ds)
+    if reverse:
+        td = td.reversed()
+    seq, stop_s, dwell = _stops_for(route, train, reverse, dwell_of)
+    sim = Simulator(train, td, driver)
+    res = sim.run([Stop(s, st.name, d) for s, st, d in zip(stop_s, seq, dwell)])
+    label = f"{seq[0].name} -> {seq[-1].name}"
+    return DirectionResult(label, seq, stop_s, dwell, res, reverse)
+
+
+def apply_padding(dr: DirectionResult, pad: dict):
+    """Timetable padding: percentage of running time on every leg, plus fixed seconds
+    before the final stop (terminal recovery margin, as US commuter timetables do)."""
+    pct = float(pad.get("percent", 0.0)) / 100.0
+    final = float(pad.get("final_leg_s", 0.0))
+    legs = dr.run.leg_times()
+    arr = [0.0]
+    dep = [dr.dwell[0]]
+    t = dep[0]
+    for k, leg in enumerate(legs):
+        leg_p = leg * (1 + pct) + (final if k == len(legs) - 1 else 0.0)
+        t += leg_p
+        arr.append(t)
+        t += dr.dwell[k + 1]
+        dep.append(t)
+    dr.padded_arrivals, dr.padded_departures = arr, dep
+
+
+def fmt_mmss(t: float) -> str:
+    t = max(t, 0.0)
+    return f"{int(t // 60)}:{int(round(t % 60)):02d}" if round(t % 60) < 60 else f"{int(t // 60) + 1}:00"
+
+
+def parse_ref(v) -> Optional[float]:
+    if v is None:
+        return None
+    if isinstance(v, (int, float)):
+        return float(v) * 60.0
+    m, s = str(v).split(":") if ":" in str(v) else (str(v), "0")
+    return float(m) * 60 + float(s)
+
+
+def station_table(dr: DirectionResult, ref: Optional[dict] = None) -> str:
+    lines = []
+    hdr = (f"{'Station':32} {'km':>7} {'run':>6} {'dwell':>6} {'arr':>7} {'dep':>7} "
+           f"{'sched':>7} {'ref':>7} {'diff':>6} {'vmax':>6}")
+    lines.append(hdr)
+    lines.append("-" * len(hdr))
+    run = dr.run
+    s0 = dr.stop_s[0]
+    for k, st in enumerate(dr.stations):
+        km = (dr.stop_s[k] - s0) / 1000
+        if k == 0:
+            leg, vmax = 0.0, 0.0
+        else:
+            leg = run.arrivals[k] - run.departures[k - 1]
+            m = (run.t >= run.departures[k - 1]) & (run.t <= run.arrivals[k])
+            vmax = float(run.v[m].max()) if m.any() else 0.0
+        arr = run.arrivals[k]
+        dep = run.departures[k]
+        sched = dr.padded_arrivals[k] if dr.padded_arrivals else arr
+        r = parse_ref((ref or {}).get(st.name))
+        diff = f"{(sched - r) / 60:+.1f}" if r is not None else ""
+        lines.append(f"{st.name[:32]:32} {km:7.2f} {fmt_mmss(leg):>6} {dr.dwell[k]:6.0f} "
+                     f"{fmt_mmss(arr):>7} {fmt_mmss(dep):>7} {fmt_mmss(sched):>7} "
+                     f"{fmt_mmss(r) if r is not None else '':>7} {diff:>6} "
+                     f"{vmax / MPH:5.0f}m")
+    return "\n".join(lines)
+
+
+def summary_dict(route: Route, train: Train, dr: DirectionResult) -> dict:
+    run = dr.run
+    total = run.arrivals[-1]
+    dist = dr.stop_s[-1] - dr.stop_s[0]
+    moving = sum(run.leg_times())
+    return {
+        "direction": dr.label,
+        "train": train.name,
+        "distance_km": round(dist / 1000, 3),
+        "stops": len(dr.stations),
+        "running_time_min": round(moving / 60, 2),
+        "dwell_total_min": round(sum(dr.dwell[1:-1]) / 60, 2),
+        "trip_time_min": round(total / 60, 2),
+        "scheduled_time_min": round(dr.padded_arrivals[-1] / 60, 2) if dr.padded_arrivals else None,
+        "average_speed_kmh": round(dist / max(total, 1) * 3.6, 1),
+        "max_speed_kmh": round(float(run.v.max()) * 3.6, 1),
+        "energy_traction_kwh": round(run.energy_traction_kwh, 1),
+        "energy_regen_kwh": round(run.energy_regen_kwh, 1),
+        "stations": [
+            {"name": st.name, "km": round((dr.stop_s[k] - dr.stop_s[0]) / 1000, 3),
+             "arrive_s": round(run.arrivals[k], 1), "depart_s": round(run.departures[k], 1),
+             "dwell_s": round(dr.dwell[k], 1),
+             "scheduled_arrive_s": round(dr.padded_arrivals[k], 1) if dr.padded_arrivals else None}
+            for k, st in enumerate(dr.stations)
+        ],
+    }
+
+
+def main(spec: ProgramSpec, argv=None):
+    ap = argparse.ArgumentParser(prog=f"railsim.{spec.name}",
+                                 description=f"{spec.name} running-time simulator")
+    ap.add_argument("config", help="line config YAML")
+    ap.add_argument("--train", help="rolling stock key (overrides config)")
+    ap.add_argument("--load", type=float, help="load factor 0..1 of the reference passenger load")
+    ap.add_argument("--direction", choices=["forward", "reverse", "both"], default="both")
+    ap.add_argument("--out", help="output directory (default: output/<config name>)")
+    ap.add_argument("--no-plots", action="store_true")
+    ap.add_argument("--list-trains", action="store_true")
+    args = ap.parse_args(argv)
+
+    lib = load_library(spec.library)
+    if args.list_trains:
+        for k, t in lib.items():
+            print(f"{k:28} {t.name:45} {t.length:6.0f} m  {t.max_speed / MPH:4.0f} mph")
+        return
+    cfg_path = Path(args.config).resolve()
+    user_cfg = yaml.safe_load(cfg_path.read_text())
+    cfg = deep_merge(spec.defaults, user_cfg)
+    base = _repo_root(cfg_path)
+    key = args.train or cfg["train"]
+    if key not in lib:
+        raise SystemExit(f"unknown train '{key}'. Use --list-trains.")
+    train = lib[key].with_load(args.load if args.load is not None else float(cfg.get("load_factor", 0.5)))
+
+    print(f"== {spec.name.upper()} | {cfg.get('name', cfg_path.stem)} | {train.name} "
+          f"(load {train.load_factor:.0%}, {train.mass / 1000:.0f} t)")
+    route = build_route(cfg, base, curve_design_from(cfg, train), speed_policy_from(cfg, train),
+                        profile_design_from(cfg))
+    for w in route.warnings:
+        print(f"  WARNING: {w}")
+    driver = spec.make_driver(cfg, train)
+
+    def dwell_of(st):
+        return spec.dwell_fn(st, train, cfg, False)
+
+    out_dir = Path(args.out) if args.out else base / "output" / cfg_path.stem
+    out_dir.mkdir(parents=True, exist_ok=True)
+    dirs = {"forward": [False], "reverse": [True], "both": [False, True]}[args.direction]
+    results = []
+    refs = cfg.get("reference", {}) or {}
+    for rev in dirs:
+        dr = run_direction(route, train, driver, dwell_of, rev)
+        apply_padding(dr, cfg.get("padding", {}) or {})
+        ref = refs.get("reverse" if rev else "forward")
+        print(f"\n-- {dr.label}")
+        print(station_table(dr, ref))
+        sd = summary_dict(route, train, dr)
+        print(f"   running {sd['running_time_min']:.1f} min + dwell {sd['dwell_total_min']:.1f} min "
+              f"= {sd['trip_time_min']:.1f} min; scheduled (padded) {sd['scheduled_time_min']:.1f} min; "
+              f"avg {sd['average_speed_kmh']:.1f} km/h; traction energy {sd['energy_traction_kwh']:.0f} kWh")
+        results.append((dr, sd))
+
+    from . import report
+    summary = {"program": spec.name, "line": cfg.get("name", cfg_path.stem), "train": key,
+               "warnings": route.warnings, "directions": [sd for _, sd in results],
+               "curves": [{"radius_m": round(c.radius, 1), "spiral_m": round(c.spiral, 1),
+                           "start_km": round(c.s_ts / 1000, 3), "end_km": round(c.s_st / 1000, 3)}
+                          for c in route.horizontal.curves],
+               "speed_zones": report.zone_list(route)}
+    (out_dir / "summary.json").write_text(json.dumps(summary, indent=2))
+    for dr, _ in results:
+        report.write_csv(out_dir, dr)
+    report.write_kml(out_dir / "alignment.kmz", route)
+    if not args.no_plots:
+        for dr, _ in results:
+            report.plot_run(out_dir, route, dr, train)
+    print(f"\nOutputs in {out_dir}")
+    return route, results
+
+
+def _repo_root(p: Path) -> Path:
+    for parent in [p.parent] + list(p.parents):
+        if (parent / "railsim").is_dir() and (parent / "data").is_dir():
+            return parent
+    return p.parent

@@ -1,0 +1,87 @@
+# Calibration case: MBTA Orange Line, Oak Grove - Forest Hills.
+# Station coordinates and reference times: MBTA GTFS Fall 2025 (via TransitMatters
+# regional-rail-schedule-generator, data/gtfs-present). Reference = weekday midday
+# cumulative minutes from the GTFS (minute-rounded).
+name: MBTA Orange Line
+kmz: data/kmz/MBTA_OL.kmz
+train: MBTA_OL_CRRC_6CAR
+load_factor: 0.5
+stations:
+  match_tol_m: 200
+  defaults: {class: standard, platform: high}
+  list:
+    - {name: Oak Grove, lat: 42.437735, lon: -71.070875}
+    - {name: Malden Center, lat: 42.426677, lon: -71.074381}
+    - {name: Wellington, lat: 42.401505, lon: -71.077252}
+    - {name: Assembly, lat: 42.392331, lon: -71.077262}
+    - {name: Sullivan Square, lat: 42.383975, lon: -71.076994}
+    - {name: Community College, lat: 42.373622, lon: -71.069533}
+    - {name: North Station, lat: 42.365280, lon: -71.060205}
+    - {name: Haymarket, lat: 42.363021, lon: -71.058290}
+    - {name: State, lat: 42.358978, lon: -71.057598}
+    - {name: Downtown Crossing, lat: 42.355518, lon: -71.060225}
+    - {name: Chinatown, lat: 42.352547, lon: -71.062752}
+    - {name: Tufts Medical Center, lat: 42.349662, lon: -71.063917}
+    - {name: Back Bay, lat: 42.347350, lon: -71.075727}
+    - {name: Massachusetts Avenue, lat: 42.340927, lon: -71.084188}
+    - {name: Ruggles, lat: 42.336490, lon: -71.089684}
+    - {name: Roxbury Crossing, lat: 42.330671, lon: -71.096121}
+    - {name: Jackson Square, lat: 42.323132, lon: -71.099592}
+    - {name: Stony Brook, lat: 42.317062, lon: -71.104248}
+    - {name: Green Street, lat: 42.309832, lon: -71.108059}
+    - {name: Forest Hills, lat: 42.300926, lon: -71.114129}
+  info:
+    Oak Grove: {class: terminal}
+    Malden Center: {class: busy}
+    North Station: {class: transfer}
+    Haymarket: {class: busy}
+    State: {class: transfer}
+    Downtown Crossing: {class: transfer}
+    Back Bay: {class: busy}
+    Ruggles: {class: busy}
+    Forest Hills: {class: terminal}
+service:
+  route: [Oak Grove, Forest Hills]
+reference:
+  forward:  # Oak Grove -> Forest Hills, weekday midday
+    Oak Grove: 0
+    Malden Center: 1
+    Wellington: 5
+    Assembly: 7
+    Sullivan Square: 9
+    Community College: 11
+    North Station: 13
+    Haymarket: 14
+    State: 16
+    Downtown Crossing: 17
+    Chinatown: 19
+    Tufts Medical Center: 20
+    Back Bay: 22
+    Massachusetts Avenue: 24
+    Ruggles: 26
+    Roxbury Crossing: 28
+    Jackson Square: 30
+    Stony Brook: 31
+    Green Street: 33
+    Forest Hills: 35
+  reverse:  # Forest Hills -> Oak Grove, weekday midday
+    Forest Hills: 0
+    Green Street: 1
+    Stony Brook: 3
+    Jackson Square: 5
+    Roxbury Crossing: 6
+    Ruggles: 8
+    Massachusetts Avenue: 10
+    Back Bay: 12
+    Tufts Medical Center: 14
+    Chinatown: 15
+    Downtown Crossing: 16
+    State: 18
+    Haymarket: 19
+    North Station: 21
+    Community College: 23
+    Sullivan Square: 25
+    Assembly: 27
+    Wellington: 29
+    Malden Center: 33
+    Oak Grove: 35

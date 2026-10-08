@@ -1,0 +1,73 @@
+# Calibration case: MBTA Needham Line, South Station - Needham Heights (diesel push-pull).
+# Coordinates, platform types and reference times: MBTA GTFS Fall 2025 and the
+# Spring/Summer 2026 public timetable. Reference = weekend (no single-track meets).
+name: MBTA Needham Line
+kmz: data/kmz/Needham_Line.kmz
+train: MBTA_HSP46_6BL
+load_factor: 0.3
+geometry:
+  line_speed_mph: 60
+  max_cant_in: 4.0  # MBTA commuter practice (Eu 1.5-2.75 in design, Ea <= 6 in)
+speed:
+  cant_deficiency_in: 3.0
+stations:
+  match_tol_m: 200
+  defaults: {class: standard, platform: low}
+  list:
+    - {name: South Station, lat: 42.351410, lon: -71.055417}
+    - {name: Back Bay, lat: 42.347283, lon: -71.075312}
+    - {name: Ruggles, lat: 42.336339, lon: -71.089517}
+    - {name: Forest Hills, lat: 42.301065, lon: -71.113491}
+    - {name: Roslindale Village, lat: 42.287442, lon: -71.130283}
+    - {name: Bellevue, lat: 42.286588, lon: -71.145557}
+    - {name: Highland, lat: 42.284969, lon: -71.153937}
+    - {name: West Roxbury, lat: 42.281358, lon: -71.160065}
+    - {name: Hersey, lat: 42.275648, lon: -71.215528}
+    - {name: Needham Junction, lat: 42.273187, lon: -71.235559}
+    - {name: Needham Center, lat: 42.280775, lon: -71.237686}
+    - {name: Needham Heights, lat: 42.293444, lon: -71.236027}
+  info:
+    South Station: {class: terminal, platform: high}
+    Back Bay: {class: busy, platform: high}
+    Ruggles: {class: standard, platform: high}
+    Forest Hills: {class: standard, platform: high}
+    Needham Heights: {class: terminal}
+service:
+  route: [South Station, Needham Heights]
+restrictions:
+  # South Station interlocking and the Forest Hills junction turnouts (diverging moves)
+  - {from_km: 0.0, to_km: 0.9, speed_mph: 30, reason: South Station interlocking}
+  - {at: [42.2985, -71.1170], length_m: 250, speed_mph: 30, reason: Forest Hills junction turnout}
+  # Needham Junction - Needham Heights: old Charles River RR, street grade crossings
+  - {from_station: Needham Junction, to_station: Needham Heights, speed_mph: 40, reason: grade crossings}
+terminal_approach: {speed_mph: 15, distance_m: 250, stations: [South Station]}
+driver:
+  speed_margin_mph: 2.0
+padding: {percent: 5.0, final_leg_s: 120}
+reference:
+  forward:  # South Station -> Needham Heights (weekend outbound)
+    South Station: 0
+    Back Bay: 5
+    Ruggles: 8
+    Forest Hills: 13
+    Roslindale Village: 16
+    Bellevue: 19
+    Highland: 21
+    West Roxbury: 23
+    Hersey: 28
+    Needham Junction: 31
+    Needham Center: 35
+    Needham Heights: 40
+  reverse:  # Needham Heights -> South Station (weekend inbound)
+    Needham Heights: 0
+    Needham Center: 4
+    Needham Junction: 8
+    Hersey: 11
+    West Roxbury: 16
+    Highland: 18
+    Bellevue: 20
+    Roslindale Village: 23
+    Forest Hills: 26
+    Ruggles: 31
+    Back Bay: 35
+    South Station: 40
