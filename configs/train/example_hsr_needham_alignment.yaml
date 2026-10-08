@@ -1,0 +1,14 @@
+# Demonstration of the HSR preset (preset: hsr) on an existing KMZ. Replace kmz/track/
+# stations with an APEx line. Shows ETCS L2 driving, speed-dependent HSR braking,
+# tabulated traction (Velaro D / ICE 3) and UIC 451-1 allowances.
+name: HSR preset demo (Needham alignment)
+preset: hsr
+kmz: data/kmz/Needham_Line.kmz
+train: VELARO_D_8
+stations:
+  list:
+    - {name: South Station, lat: 42.351410, lon: -71.055417}
+    - {name: Hersey, lat: 42.275648, lon: -71.215528}
+    - {name: Needham Heights, lat: 42.293444, lon: -71.236027}
+service:
+  route: [South Station, Needham Heights]

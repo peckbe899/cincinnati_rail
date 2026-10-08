@@ -30,10 +30,12 @@ stations:
     South Station: {class: terminal, platform: high}
     Back Bay: {class: busy, platform: high}
     Ruggles: {class: standard, platform: high}
-    Forest Hills: {class: standard, platform: high}
+    Forest Hills: {class: standard, platform: high, platform_length_m: 320}  # 1,050 ft
     Needham Heights: {class: terminal}
 service:
   route: [South Station, Needham Heights]
+signalling: {system: cab}   # cab signals / ACSES PTC on MBTA commuter rail
+turnback_min: 10
 restrictions:
   # South Station interlocking and the Forest Hills junction turnouts (diverging moves)
   - {from_km: 0.0, to_km: 0.9, speed_mph: 30, reason: South Station interlocking}

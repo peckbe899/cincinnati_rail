@@ -88,9 +88,28 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - Junction turns are allowed up to 90°.
   - Off-track terminals are snapped to the track with a warning.
 
+- **Simulator survey** (`docs/research/simulators.md`), now implemented:
+  - Signalling presets: lineside, cab, CBTC, ETCS L2 and LZB.
+  - Driver profiles with OSRD-style anticipation/postponement offsets, plus brake and power fractions.
+  - Curtius-Kniffler adhesion with wet and leaf states, affecting both traction and braking.
+  - Tabulated tractive-effort curves (the SUMO ICE 3 table for the Velaro D).
+  - Speed-dependent HSR braking.
+  - Diesel power ramp and auxiliary load.
+  - Supply-voltage power factor and neutral sections.
+  - Turnout-number speeds.
+  - Head stops at the far end of the platform.
+  - MARECO-like eco allowance with energy savings.
+  - Monte Carlo p50/p85/p95.
+  - Turnback cycle time and fleet size.
+- **Train program presets** (`preset: intercity|hsr`) and `python -m railsim.train`.
+  - New HSR stock: Velaro D, ETR 1000, AGV, Avelia Liberty.
+  - Demo: `configs/train/example_hsr_needham_alignment.yaml`.
+- **Unit-aware config merging**: a `_kmh` value replaces a `_mph` default.
+- **Calibration after these changes**: Orange Line +0.4%; Needham −5% padded. The cab preset follows OSRD and adds no offsets.
+
 ## In progress
 
-- Researching how other simulators work (OpenTrack, RailSys, Open Rails, TrainRuns.jl, RAILSIM/TPC, ETCS/CBTC braking models), covering metro through HSR. The useful findings will then be implemented.
+- Nothing running. Waiting on your answers to the open questions below.
 
 ## To do
 
@@ -99,7 +118,13 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - Line 2 "Winston Park" is 102 m from the track.
   - RER-1 "Miamitown" and RER-3 "Cold Springs" are not on their drawn track.
   - Some drawn corners fit tighter than 30 m (Lines 1, 8, 13); check them in `alignment.kmz`.
-- RER service patterns: the generated configs cover every feasible terminal pair. Confirm the real service list (which branch pairs run, and any express patterns).
+- RER service patterns: the generated configs cover every feasible terminal pair, now with CBTC per canon. Confirm the real service list (which branch pairs run, and any express patterns).
+- Cincinnati Metro signalling and operation: the default is ATO with a 1 mph margin and no signalling preset. Set `signalling.system` and `driver.mode` per era (for example, cab signals and manual driving for Types 1903–1948).
+- APEx HSR network: point an `preset: hsr` config at the APEx KMZ (`TC_Limited.kmz` was not provided).
+- Known simplifications:
+  - Stochastic perturbations are uniform or log-normal guesses.
+  - The supply factor is a per-zone constant (no load flow).
+  - ETCS is modelled as a lag on the braking onset, not the full Subset-026 EBD/EBI curve set.
 - Research how other simulators work (OpenTrack, RailSys, Open Rails, TrainRuns.jl, SYSTRA RAILSIM, Train Performance Calculators) and add the realism they model that we don't. Must cover metro through HSR.
 - HSR program defaults: high cant deficiency, tilt, the aerodynamic share of resistance, tunnel pressure effects.
 - Single-track meets and pathing time, for Needham weekday trips.

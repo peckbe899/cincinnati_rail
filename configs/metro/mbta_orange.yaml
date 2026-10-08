@@ -11,6 +11,8 @@ geometry:
 speed:
   cant_deficiency_in: 3.0
   code_steps_mph: [10, 18, 25, 40, 50, 55]   # fixed-block ATC cab-signal code speeds [hobbyist teardown]
+signalling: {system: cab}   # fixed-block ATC with cab-signal codes
+turnback_min: 4
 driver:
   mode: manual              # Orange Line is driven manually under cab-signal ATP
 restrictions:

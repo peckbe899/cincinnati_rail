@@ -26,6 +26,11 @@ YAML fields (SI unless suffixed; suffixed forms are converted on load):
     tunnel_factor            multiplier on the C term inside tunnels
     cant_deficiency_in / _mm permitted unbalanced superelevation for this stock
     min_curve_radius_m       route availability: tighter curves are not allowed for this stock
+    te_curve_kmh_kn          tabulated tractive effort [[km/h, kN], ...] (replaces max_te/power)
+    brake_curve_kmh_ms2      service braking rate by speed [[km/h, m/s^2], ...] (HSR brake fade)
+    power_ramp_s             diesel: idle -> full power time after starting (Open Rails ~15-20 s)
+    aux_kw                   auxiliary / HVAC / HEP load deducted from traction power
+    brake_adhesion           usable braking adhesion (dry, with wheel-slide protection)
     doors_per_side, door_channels (passenger streams per door), door_open_s, door_close_s
     floor                    level | high | low   (boarding type the stock is built for)
 """
@@ -37,6 +42,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Optional
 
+import numpy as np
 import yaml
 
 from .geo import INCH, KMH, MPH
@@ -80,6 +86,11 @@ class Train:
     source_notes: str = ""
     min_curve_radius: float = 0.0  # m; tighter curves are a route-availability ban (e.g. long cars)
     rail_condition: str = "dry"  # dry | wet | leaf: scales usable adhesion (set per run)
+    te_curve: Optional[tuple] = None  # (v m/s array, F N array) tabulated tractive effort
+    brake_curve: Optional[tuple] = None  # (v m/s array, b m/s^2 array) service braking by speed
+    power_ramp_s: float = 0.0  # diesel: time from idle to full power after starting
+    aux_kw: float = 0.0  # auxiliary/HVAC/HEP load taken from traction power (and energy)
+    brake_adhesion: float = 0.20  # usable wheel-rail adhesion when braking (all axles, WSP)
     load_factor: float = 1.0  # fraction of mass_load carried in this run
     extra: Dict = field(default_factory=dict)
 
@@ -102,14 +113,24 @@ class Train:
         shape = (0.161 + 7.5 / (vk + 44.0)) / (0.161 + 7.5 / 44.0)
         return self.adhesion * shape * self.RAIL_FACTOR.get(self.rail_condition, 1.0)
 
-    def tractive_effort(self, v: float) -> float:
-        """Maximum tractive effort at the wheel (N) at speed v (m/s)."""
+    def tractive_effort(self, v: float, power_factor: float = 1.0) -> float:
+        """Maximum tractive effort at the wheel (N) at speed v (m/s).
+
+        power_factor scales available power (supply voltage sag, diesel ramp-up).
+        A tabulated curve, if given, replaces the max-effort/power formula; adhesion and
+        the auxiliary-load deduction apply either way."""
         f_adh = self.adhesion_at(v) * self.adhesive_mass_fraction * self.mass * G
+        p = max(self.power * power_factor - self.aux_kw * 1000.0, 0.0)
+        if self.te_curve is not None:
+            f = float(np.interp(v, self.te_curve[0], self.te_curve[1]))
+            if v > 0 and (power_factor < 1.0 or self.aux_kw > 0):
+                f = min(f, p / v)
+            return min(f, f_adh)
         f = min(self.max_te, f_adh)
         if v > 0:
-            f = min(f, self.power / v)
+            f = min(f, p / v)
             if self.natural_speed and v > self.natural_speed:
-                f = min(f, self.power / self.natural_speed * (self.natural_speed / v) ** 2)
+                f = min(f, p / self.natural_speed * (self.natural_speed / v) ** 2)
         return f
 
     def resistance(self, v: float, tunnel: bool = False) -> float:
@@ -164,6 +185,17 @@ def train_from_dict(key: str, d: dict) -> Train:
     elif "cant_deficiency_mm" in d:
         eu = float(d["cant_deficiency_mm"]) / 1000.0
     nat = d.get("natural_speed_kmh")
+    te_curve = None
+    if d.get("te_curve_kmh_kn"):  # [[km/h, kN], ...]
+        pts = sorted(d["te_curve_kmh_kn"])
+        te_curve = (np.array([p[0] for p in pts]) * KMH, np.array([p[1] for p in pts]) * 1000.0)
+        max_te = float(te_curve[1].max())
+        if power <= 0:
+            power = float((te_curve[0] * te_curve[1]).max())
+    brake_curve = None
+    if d.get("brake_curve_kmh_ms2"):  # [[km/h, m/s^2], ...]
+        pts = sorted(d["brake_curve_kmh_ms2"])
+        brake_curve = (np.array([p[0] for p in pts]) * KMH, np.array([p[1] for p in pts]))
     return Train(
         name=str(d.get("name", key)),
         category=str(d.get("category", "emu")),
@@ -196,6 +228,11 @@ def train_from_dict(key: str, d: dict) -> Train:
         traction_efficiency=float(_get(d, "traction_efficiency", default=0.85)),
         source_notes=str(_get(d, "sources", default="")),
         min_curve_radius=float(_get(d, "min_curve_radius_m", default=0.0)),
+        te_curve=te_curve,
+        brake_curve=brake_curve,
+        power_ramp_s=float(_get(d, "power_ramp_s", default=0.0)),
+        aux_kw=float(_get(d, "aux_kw", default=0.0)),
+        brake_adhesion=float(_get(d, "brake_adhesion", default=0.20)),
         extra={k: v for k, v in d.items() if k.startswith("x_")},
     )
 

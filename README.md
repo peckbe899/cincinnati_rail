@@ -6,7 +6,7 @@ hand-drawn Google Earth KMZ alignments. Two programs share one core:
 | Program | For | Dwell model | Driving model |
 |---|---|---|---|
 | `python -m railsim.metro` | Metro lines (CMCC fleet, MBTA-style heavy rail) | Door cycle: unlock/open, passenger flow per door, chime and close, dispatch | ATO or manual under cab signals, close to the limit; manual creeps into platforms |
-| `python -m railsim.commuter` | Commuter / RER / regional (EMU, DMU, push-pull) | Platform type: level vs low platform with steps, crew-operated doors, conductor, brake release | Engineer: margin under the limit, planned braking with air-brake delay |
+| `python -m railsim.train` (alias `railsim.commuter`) | Commuter / RER / intercity / HSR (EMU, DMU, push-pull, high-speed) | Platform type: level vs low platform with steps, crew-operated doors, conductor, brake release | Engineer: margin under the limit, planned braking with air-brake delay. `preset: intercity` / `preset: hsr` switch cant rules, ETCS, allowances and dwell |
 
 ## Quick start
 
@@ -55,9 +55,21 @@ Outputs go to `output/<config>/`:
    - Acceleration and braking changes are jerk-limited.
    - Braking follows a planned braking curve with brake build-up delay. On steep downgrades it is limited by brake capability.
    - A restriction holds until the rear of the train clears it.
-6. **Timetable**.
+6. **Operations** (`operations.py`), drawn from how OSRD, Open Rails, OpenTrack and similar tools work (`docs/research/simulators.md`):
+   - `signalling.system`: `lineside` (OSRD offsets of 100 m anticipation and 50 m postponement), `cab` (code steps), `cbtc` (ATO margin and supervision lag), `etcs2` (indication/permitted lag) or `lzb` (supervision deceleration table).
+   - Driver profile: `power_fraction`, `brake_fraction`, `anticipation_m`, `postponement_m`, `brake_anticipation_s`, `coast_window_s`.
+   - `--rail dry|wet|leaf`: Curtius-Kniffler adhesion, which also limits braking.
+   - `supply.factor` and `supply.zones`: voltage sag reduces available power.
+   - `neutral_sections`: traction is cut over them.
+   - `restrictions` can be given as `turnout: 15` (AREMA number) or a DB turnout type.
+   - Rolling stock can supply a tabulated `te_curve_kmh_kn`, a speed-dependent `brake_curve_kmh_ms2` (HSR brake fade), `power_ramp_s` (diesel spool-up) and `aux_kw`.
+   - Platform stopping: by default the head stops at the far end of the platform (`stations.stop_position`).
+7. **Timetable**.
    - Padding: a percentage, a UIC-style minutes-per-100 km term, pathing time at single-track meets, and terminal recovery.
    - Results are compared with a reference schedule.
+   - `padding.distribution: eco` spends the padding MARECO-style instead of uniformly: a cruising cap plus coasting before braking, and the energy saved is reported.
+   - `--monte-carlo N` adds driver and dwell variability and reports p50, p85 and p95 trip times.
+   - `--headway H` (or `service.headway_min`) with `turnback_min` gives the round-trip cycle time and the number of trains needed.
 
 ## Rolling stock
 

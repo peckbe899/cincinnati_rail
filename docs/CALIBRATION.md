@@ -63,6 +63,20 @@ Sensitivity:
 
 **Reading:** the published weekend schedule is about 19% above the technical minimum. That is consistent with US commuter padding (6–10%) plus terminal recovery, and with branch speed limits we could not find published (MBTA/Keolis track charts are not public). Weekday trips take 45–48 min because of meets on the single-track Needham branch. Model those with `padding.pathing: {Hersey: 300}`.
 
+## After the simulator-survey features
+
+- Both lines now run with `signalling: {system: cab}`. Following OSRD, cab signalling adds no lineside anticipation offsets; its effect is the code-step speed rounding. Results are unchanged: Orange Line +0.4%, Needham −5% padded.
+- **Monte Carlo** (20 runs: 88–100% traction, 85–100% braking, +0–3 km/h margin, ±20% dwell):
+
+| Line | Deterministic | p50 | p85 |
+|---|---|---|---|
+| Orange Line | 35.1 min | 35.7 min | 38.0 min |
+| Needham | 33.5 min | 34.3 min | 36.0 min |
+
+  The published schedules sit between the deterministic and p85 values, as expected of timetables built from observed running.
+- **Eco allowance on Needham:** the 4.5 min of padding is spent cruising at ≤ 56 km/h and coasting before braking, instead of uniformly. Traction energy falls 558 → 286 kWh. That is an upper bound: it assumes a driver advisory system and a large padding share.
+- **Fleet check:** the Orange Line at a 6-min headway with 4-min turnbacks needs 14 trains, close to the MBTA's peak Orange Line operation.
+
 ## Re-running
 
 ```bash

@@ -138,6 +138,7 @@ def main():
                              "defaults": {"class": "standard", "platform": "high"}, "info": info},
                 "service": {"route": [{"name": a, "near": where[a]}, {"name": b, "near": where[b]}]},
                 "geometry": {"line_speed_mph": 90, "max_cant_in": 5.0},
+                "signalling": {"system": "cbtc"},  # canon: D/E/F sets are CBTC-native
                 "speed": {"cant_deficiency_in": 4.0},
                 "profile": {"max_grade": 0.02, "sources": ["csv", "kmz", "usgs"], "usgs": False},
                 "padding": {"percent": 5.0, "final_leg_s": 60},

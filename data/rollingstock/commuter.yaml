@@ -323,3 +323,130 @@ CALTRAIN_KISS_7:
   door_close_s: 5.0
   floor: low
   sources: railjournal / rollingstockworld Caltrain KISS
+
+# ---------------------------------------------------------------------------------------
+# Intercity / high-speed (use with `preset: intercity` or `preset: hsr`).
+# HSR service braking falls with speed (adhesion, disc thermal limits): ~0.35 m/s^2 above
+# 230 km/h, ~0.45 at 160-230, ~0.6 below (simulators.md rank 6). Rotating mass ~1.04.
+# ---------------------------------------------------------------------------------------
+
+VELARO_D_8:
+  name: Siemens Velaro D / ICE 3 type (8 cars)
+  category: hsr
+  length_m: 200
+  cars: 8
+  mass_empty_t: 440       # [S]
+  pax: 460
+  rotating_mass_factor: 0.04   # SUMO ICE3 x1.04 [SRC]
+  adhesive_mass_fraction: 0.5  # distributed traction, 50% motored [S]
+  adhesion: 0.28
+  te_curve_kmh_kn: [[0, 300], [100, 283], [200, 144], [300, 96], [320, 90]]   # SUMO MSCFModel_Rail ICE3 [SRC]
+  power_kw: 8000          # [S]
+  max_accel: 0.75
+  service_brake: 0.6
+  max_service_brake: 0.9
+  brake_curve_kmh_ms2: [[0, 0.6], [160, 0.6], [161, 0.45], [230, 0.45], [231, 0.35], [330, 0.35]]
+  brake_delay_s: 1.0
+  jerk: 0.5
+  max_speed_kmh: 320
+  davis: {A_n: 7400, B_n_per_ms: 100, C_n_per_ms2: 8.1}   # SUMO ICE3: 7.4 kN at 0, 71.8 kN at 300 km/h [SRC]
+  tunnel_factor: 1.8
+  regen_efficiency: 0.7
+  doors_per_side: 1
+  door_channels: 1
+  door_open_s: 4.0
+  door_close_s: 6.0
+  floor: high
+  aux_kw: 300
+  sources: SUMO MSCFModel_Rail ICE3 table (via docs/research/simulators.md); Siemens Velaro D
+
+ETR1000_8:
+  name: Hitachi/Bombardier ETR 1000 Frecciarossa type (8 cars)
+  category: hsr
+  length_m: 202
+  cars: 8
+  mass_empty_t: 500       # [S]
+  pax: 460
+  rotating_mass_factor: 0.04
+  adhesive_mass_fraction: 0.5
+  adhesion: 0.28
+  max_te_kn: 370          # [E]
+  power_kw: 9800          # [S]
+  max_accel: 0.75
+  service_brake: 0.6
+  max_service_brake: 0.9
+  brake_curve_kmh_ms2: [[0, 0.6], [160, 0.6], [161, 0.45], [230, 0.45], [231, 0.35], [360, 0.35]]
+  brake_delay_s: 1.0
+  jerk: 0.5
+  max_speed_kmh: 300      # 360 design, 300 in service [S]
+  davis: {A_n: 7800, B_n_per_ms: 105, C_n_per_ms2: 8.3}   # scaled from ICE3 [E]
+  tunnel_factor: 1.8
+  regen_efficiency: 0.7
+  doors_per_side: 1
+  door_channels: 1
+  door_open_s: 4.0
+  door_close_s: 6.0
+  floor: high
+  aux_kw: 350
+  sources: Wikipedia ETR 1000 (secondary); resistance scaled from ICE3
+
+AGV_11:
+  name: Alstom AGV type (11-car articulated)
+  category: hsr
+  length_m: 200
+  cars: 11
+  mass_empty_t: 410       # [S]
+  pax: 460
+  rotating_mass_factor: 0.04
+  adhesive_mass_fraction: 0.5
+  adhesion: 0.28
+  max_te_kn: 350          # [E]
+  power_kw: 9120          # [S]
+  max_accel: 0.75
+  service_brake: 0.6
+  max_service_brake: 0.9
+  brake_curve_kmh_ms2: [[0, 0.6], [160, 0.6], [161, 0.45], [230, 0.45], [231, 0.35], [360, 0.35]]
+  brake_delay_s: 1.0
+  jerk: 0.5
+  max_speed_kmh: 320
+  davis: {A_n: 6600, B_n_per_ms: 95, C_n_per_ms2: 7.6}    # articulated: fewer bogies [E]
+  tunnel_factor: 1.8
+  regen_efficiency: 0.7
+  doors_per_side: 1
+  door_channels: 1
+  door_open_s: 4.0
+  door_close_s: 6.0
+  floor: high
+  aux_kw: 300
+  sources: Alstom AGV (secondary); estimates marked
+
+AVELIA_LIBERTY_11:
+  name: Alstom Avelia Liberty (2 power cars + 9, tilting)
+  category: hsr
+  length_m: 223           # [E]
+  cars: 9
+  mass_empty_t: 600       # [E]
+  pax: 386                # [S]
+  rotating_mass_factor: 0.06
+  adhesive_mass_fraction: 0.27  # power cars only (plus one powered bogie) [E]
+  adhesion: 0.25
+  max_te_kn: 330          # [E]
+  power_kw: 9200          # 2 x ~4.6 MW [E]
+  max_accel: 0.6
+  service_brake: 0.6
+  max_service_brake: 0.9
+  brake_curve_kmh_ms2: [[0, 0.6], [160, 0.6], [161, 0.45], [230, 0.45], [231, 0.35], [300, 0.35]]
+  brake_delay_s: 1.5
+  jerk: 0.5
+  max_speed_mph: 160      # service (186 mph design) [S]
+  cant_deficiency_in: 7.0 # tilt; used where the line config sets use_train_cant_deficiency [E]
+  davis: {A_n: 9000, B_n_per_ms: 140, C_n_per_ms2: 10.0}  # [E]
+  tunnel_factor: 1.8
+  regen_efficiency: 0.6
+  doors_per_side: 1
+  door_channels: 1
+  door_open_s: 4.0
+  door_close_s: 6.0
+  floor: high
+  aux_kw: 400
+  sources: Amtrak/Alstom press (secondary); most values estimated

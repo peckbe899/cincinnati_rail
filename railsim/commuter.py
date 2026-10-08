@@ -1,4 +1,7 @@
-"""COMMUTER / RER program: regional and commuter rail, EMU, DMU and push-pull.
+"""TRAIN program (commuter / RER / intercity / HSR): everything that is not metro.
+
+Also runnable as `python -m railsim.train`. Set `preset: intercity` or `preset: hsr` in a
+line config for those service classes (cant rules, ETCS, allowances, dwell).
 
 Differences from the metro program:
   * dwell depends on platform type (level boarding vs steps at low platforms, where crews
@@ -65,6 +68,46 @@ DEFAULTS = {
 }
 
 
+# Service-class presets (config key `preset`). Values: EN 13803 / FRA Part 213 cant rules,
+# UIC 451-1 allowances, HSR braking and signalling practice (docs/research/*.md).
+PRESETS = {
+    "commuter": {},
+    "intercity": {  # US higher-speed intercity (110 mph class, qualified equipment, cab signals)
+        "geometry": {"line_speed_mph": 110, "max_cant_in": 6.0, "design_cant_deficiency_in": 4.0,
+                     "min_spiral_m": 60.0, "min_radius_m": 150.0, "corner_offset_tol_m": 80.0},
+        "speed": {"cant_deficiency_in": 5.0, "min_zone_m": 600.0},
+        "profile": {"max_grade": 0.02, "vertical_curve_m": 300.0},
+        "signalling": {"system": "cab"},
+        "driver": {"speed_margin_mph": 2.0},
+        "dwell": {"classes": {"minor": {"board": 15, "alight": 15},
+                              "standard": {"board": 40, "alight": 40},
+                              "busy": {"board": 100, "alight": 100},
+                              "hub": {"board": 200, "alight": 200},
+                              "terminal": {"board": 250, "alight": 250}},
+                  "min_dwell": 60},
+        "padding": {"percent": 7.0, "min_per_100km": 1.5, "final_leg_s": 120},
+        "turnback_min": 20,
+    },
+    "hsr": {  # 300 km/h ballasted/slab HSR, ETCS L2
+        "geometry": {"line_speed_kmh": 300, "max_cant_mm": 180, "design_cant_deficiency_mm": 80,
+                     "min_spiral_m": 150.0, "min_reverse_tangent_m": 100.0, "min_radius_m": 500.0,
+                     "group_dev_tol_m": 20.0, "corner_offset_tol_m": 150.0, "simplify_tol_m": 5.0},
+        "speed": {"cant_deficiency_mm": 100, "increment_kmh": 10, "min_zone_m": 1500.0},
+        "profile": {"max_grade": 0.035, "platform_grade": 0.0025, "vertical_curve_m": 800.0},
+        "signalling": {"system": "etcs2"},
+        "driver": {"speed_margin_kmh": 3.0},
+        "dwell": {"classes": {"minor": {"board": 30, "alight": 30},
+                              "standard": {"board": 80, "alight": 80},
+                              "busy": {"board": 150, "alight": 150},
+                              "hub": {"board": 250, "alight": 250},
+                              "terminal": {"board": 300, "alight": 300}},
+                  "min_dwell": 90},
+        "padding": {"percent": 7.0, "min_per_100km": 1.0, "final_leg_s": 120},
+        "turnback_min": 20,
+    },
+}
+
+
 def make_driver(cfg: dict, train) -> Driver:
     d = cfg.get("driver", {})
     return Driver(
@@ -104,7 +147,7 @@ def dwell_fn(station, train, cfg, is_terminal: bool) -> float:
 
 
 SPEC = ProgramSpec("commuter", ROOT / "data" / "rollingstock" / "commuter.yaml", DEFAULTS,
-                   make_driver, dwell_fn)
+                   make_driver, dwell_fn, PRESETS)
 
 
 def main(argv=None):

@@ -80,6 +80,9 @@ class Route:
     stations: List[StationInfo]
     warnings: List[str] = field(default_factory=list)
     drawn_route_xy: Optional[np.ndarray] = None
+    supply_zones: List[Tuple[float, float, float]] = field(default_factory=list)  # (s0, s1, factor)
+    supply_factor: float = 1.0
+    neutral_sections: List[Tuple[float, float]] = field(default_factory=list)  # (s0, s1)
 
     @property
     def length(self) -> float:
@@ -95,7 +98,13 @@ class Route:
         st = np.array(self.profile.structure)
         idx = np.clip(np.searchsorted(self.profile.s, s), 0, len(st) - 1)
         tunnel = st[idx] == "tunnel"
-        return TrackData(ds, s, lim, z, curv, tunnel)
+        pf = np.full(len(s), self.supply_factor)
+        for s0, s1, f in self.supply_zones:
+            pf[(s >= s0) & (s <= s1)] = f
+        nt = np.zeros(len(s), dtype=bool)
+        for s0, s1 in self.neutral_sections:
+            nt[(s >= s0) & (s <= s1)] = True
+        return TrackData(ds, s, lim, z, curv, tunnel, pf, nt)
 
     def latlon_at(self, s_query) -> Tuple[np.ndarray, np.ndarray]:
         h = self.horizontal
@@ -265,9 +274,16 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
 
     # ---- speed limits
     extra: List[Restriction] = []
+    from .operations import turnout_speed
     for r in cfg.get("restrictions", []) or []:
         s0, s1 = _zone_chainage(r, on_route, proj, h)
-        extra.append(Restriction(s0, s1, speed_of(r, "speed"), r.get("reason", "posted")))
+        if "turnout" in r:  # diverging move through a turnout of this number / type
+            v = turnout_speed(r["turnout"])
+            reason = r.get("reason", f"turnout {r['turnout']}")
+        else:
+            v = speed_of(r, "speed")
+            reason = r.get("reason", "posted")
+        extra.append(Restriction(s0, s1, v, reason))
     ta = cfg.get("terminal_approach")
     if ta and on_route:
         v = speed_of(ta, "speed")
@@ -280,7 +296,18 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
     for st in on_route:  # per-station platform speed (e.g. stations with crossings)
         pass
     sp = build_speed_profile(h, policy, extra)
-    return Route(cfg.get("name", kmz_path.stem), proj, h, prof, sp, on_route, warnings, drawn_xy)
+    route = Route(cfg.get("name", kmz_path.stem), proj, h, prof, sp, on_route, warnings, drawn_xy)
+    sup = cfg.get("supply", {}) or {}
+    route.supply_factor = float(sup.get("factor", 1.0))  # e.g. peak-hour voltage sag
+    for z in sup.get("zones", []) or []:
+        s0, s1 = _zone_chainage(z, on_route, proj, h)
+        route.supply_zones.append((s0, s1, float(z["factor"])))
+    for z in cfg.get("neutral_sections", []) or []:
+        z = dict(z)
+        z.setdefault("length_m", 400.0)  # gap + announcement/end-sign coasting region
+        s0, s1 = _zone_chainage(z, on_route, proj, h)
+        route.neutral_sections.append((s0, s1))
+    return route
 
 
 def _grid(L, step=10.0):

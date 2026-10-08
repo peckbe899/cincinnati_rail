@@ -17,7 +17,10 @@ from typing import Callable, Dict, List, Optional
 import numpy as np
 import yaml
 
+from dataclasses import replace
+
 from .dynamics import Driver, RunResult, Simulator, Stop
+from .operations import apply_driver_config, eco_driver, monte_carlo
 from .geo import INCH, KMH, MPH
 from .horizontal import CurveDesign
 from .line import Route, StationInfo, build_route, length_of, speed_of
@@ -33,10 +36,30 @@ class ProgramSpec:
     defaults: dict  # nested defaults merged under each line config
     make_driver: Callable[[dict, Train], Driver]
     dwell_fn: Callable[[StationInfo, Train, dict, bool], float]  # (station, train, cfg, is_terminal)
+    presets: Dict[str, dict] = field(default_factory=dict)  # named default overlays (config: preset)
+
+
+_UNIT_SUFFIXES = ("_mph", "_kmh", "_ms", "_in", "_mm", "_ft", "_m")
+
+
+def _unit_base(k: str):
+    for suf in _UNIT_SUFFIXES:
+        if k.endswith(suf):
+            return k[: -len(suf)]
+    return None
 
 
 def deep_merge(base: dict, over: dict) -> dict:
+    """Recursive merge. Unit-suffixed keys are one setting: an overlay giving
+    line_speed_kmh replaces a base line_speed_mph (and vice versa)."""
     out = dict(base)
+    for k in (over or {}):
+        b = _unit_base(k)
+        if b is not None:
+            for suf in _UNIT_SUFFIXES:
+                other = b + suf
+                if other != k and other in out and not isinstance(out[other], dict):
+                    del out[other]
     for k, v in (over or {}).items():
         if isinstance(v, dict) and isinstance(out.get(k), dict):
             out[k] = deep_merge(out[k], v)
@@ -106,28 +129,36 @@ class DirectionResult:
     padded_departures: List[float] = field(default_factory=list)
 
 
-def _stops_for(route: Route, train: Train, reverse: bool, dwell_of) -> tuple:
+def _stops_for(route: Route, train: Train, reverse: bool, dwell_of, stop_position: str = "far_end",
+               dwell_mult: float = 1.0) -> tuple:
     L = route.length
     seq = [s for s in route.stations if s.stop]
     if reverse:
         seq = seq[::-1]
-    stop_s, dwell, names = [], [], []
+    stop_s, dwell = [], []
     for k, st in enumerate(seq):
         c = (L - st.s) if reverse else st.s
-        # stop with the train centred on the platform, never past the end of track
-        front = min(c + train.length / 2, L - 3.0)
+        if stop_position == "far_end":
+            # head stops at the stop marker near the far end of the platform (5 m short),
+            # so a short train on a long platform runs further in than its centre point
+            half = max(st.platform_length, train.length) / 2
+            front = c + half - (5.0 if st.platform_length > train.length + 10 else 0.0)
+        else:
+            front = c + train.length / 2  # train centred on the platform placemark
+        front = min(front, L - 3.0)  # never past the end of track
         stop_s.append(front)
         terminal = k == 0 or k == len(seq) - 1
-        dwell.append(0.0 if terminal else dwell_of(st))
+        dwell.append(0.0 if terminal else dwell_of(st) * dwell_mult)
     return seq, stop_s, dwell
 
 
 def run_direction(route: Route, train: Train, driver: Driver, dwell_of, reverse: bool,
-                  ds: float = 2.0) -> DirectionResult:
+                  ds: float = 2.0, stop_position: str = "far_end",
+                  dwell_mult: float = 1.0) -> DirectionResult:
     td = route.track_data(ds)
     if reverse:
         td = td.reversed()
-    seq, stop_s, dwell = _stops_for(route, train, reverse, dwell_of)
+    seq, stop_s, dwell = _stops_for(route, train, reverse, dwell_of, stop_position, dwell_mult)
     sim = Simulator(train, td, driver)
     res = sim.run([Stop(s, st.name, d) for s, st, d in zip(stop_s, seq, dwell)])
     label = f"{seq[0].name} -> {seq[-1].name}"
@@ -238,6 +269,9 @@ def main(spec: ProgramSpec, argv=None):
                     help="rail condition (adhesion): dry (default), wet, leaf-fall")
     ap.add_argument("--out", help="output directory (default: output/<config name>)")
     ap.add_argument("--no-plots", action="store_true")
+    ap.add_argument("--monte-carlo", type=int, default=0, metavar="N",
+                    help="also run N randomised runs (driver/dwell variability): p50/p85 trip times")
+    ap.add_argument("--headway", type=float, help="service headway (min): report fleet needed")
     ap.add_argument("--list-trains", action="store_true")
     args = ap.parse_args(argv)
 
@@ -248,7 +282,10 @@ def main(spec: ProgramSpec, argv=None):
         return
     cfg_path = Path(args.config).resolve()
     user_cfg = yaml.safe_load(cfg_path.read_text())
-    cfg = deep_merge(spec.defaults, user_cfg)
+    preset = user_cfg.get("preset")
+    if preset and preset not in spec.presets:
+        raise SystemExit(f"unknown preset '{preset}' (available: {', '.join(spec.presets)})")
+    cfg = deep_merge(deep_merge(spec.defaults, spec.presets.get(preset, {})), user_cfg)
     base = _repo_root(cfg_path)
     key = args.train or cfg["train"]
     if key not in lib:
@@ -273,7 +310,8 @@ def main(spec: ProgramSpec, argv=None):
         route.warnings.append(f"station '{s.name}' is {s.offset:.0f} m from the track; check its placemark")
     for w in route.warnings:
         print(f"  WARNING: {w}")
-    driver = spec.make_driver(cfg, train)
+    driver = apply_driver_config(spec.make_driver(cfg, train), cfg)
+    stop_pos = (cfg.get("stations", {}) or {}).get("stop_position", "far_end")
 
     def dwell_of(st):
         return spec.dwell_fn(st, train, cfg, False)
@@ -283,9 +321,24 @@ def main(spec: ProgramSpec, argv=None):
     dirs = {"forward": [False], "reverse": [True], "both": [False, True]}[args.direction]
     results = []
     refs = cfg.get("reference", {}) or {}
+    pad = cfg.get("padding", {}) or {}
     for rev in dirs:
-        dr = run_direction(route, train, driver, dwell_of, rev)
-        apply_padding(dr, cfg.get("padding", {}) or {})
+        dr = run_direction(route, train, driver, dwell_of, rev, stop_position=stop_pos)
+        apply_padding(dr, pad)
+        technical_trip = dr.run.arrivals[-1] / 60.0
+        eco_info = None
+        if pad.get("distribution", "uniform") == "eco":
+            # spend the padding as cruising below the limit + coasting (MARECO-like)
+            target = sum(dr.run.leg_times()) + (dr.padded_arrivals[-1] - dr.run.arrivals[-1])
+            drv_eco, dr_eco = eco_driver(
+                lambda d: run_direction(route, train, d, dwell_of, rev, stop_position=stop_pos),
+                driver, target)
+            eco_info = {"cruise_cap_kmh": round(min(drv_eco.cruise_cap, 999) * 3.6, 1),
+                        "energy_uniform_kwh": round(dr.run.energy_traction_kwh, 1),
+                        "energy_eco_kwh": round(dr_eco.run.energy_traction_kwh, 1)}
+            dr_eco.padded_arrivals = list(dr_eco.run.arrivals)
+            dr_eco.padded_departures = list(dr_eco.run.departures)
+            dr = dr_eco
         ref = refs.get("reverse" if rev else "forward")
         print(f"\n-- {dr.label}")
         print(station_table(dr, ref))
@@ -293,7 +346,28 @@ def main(spec: ProgramSpec, argv=None):
         print(f"   running {sd['running_time_min']:.1f} min + dwell {sd['dwell_total_min']:.1f} min "
               f"= {sd['trip_time_min']:.1f} min; scheduled (padded) {sd['scheduled_time_min']:.1f} min; "
               f"avg {sd['average_speed_kmh']:.1f} km/h; traction energy {sd['energy_traction_kwh']:.0f} kWh")
+        if eco_info:
+            sd["eco"] = eco_info
+            saved = 1 - eco_info["energy_eco_kwh"] / max(eco_info["energy_uniform_kwh"], 1e-6)
+            print(f"   eco allowance: padding spent cruising <= {eco_info['cruise_cap_kmh']:.0f} km/h "
+                  f"and coasting; traction energy {eco_info['energy_uniform_kwh']:.0f} -> "
+                  f"{eco_info['energy_eco_kwh']:.0f} kWh ({saved:.0%} saved)")
+        if args.monte_carlo:
+            mc = monte_carlo(lambda d, m: run_direction(route, train, d, dwell_of, rev,
+                                                        stop_position=stop_pos, dwell_mult=m),
+                             driver, args.monte_carlo)
+            sd["monte_carlo_trip_min"] = {k: round(v, 2) for k, v in mc.items()}
+            print(f"   Monte Carlo ({mc['runs']} runs, technical driving): trip p50 {mc['p50']:.1f} min, "
+                  f"p85 {mc['p85']:.1f}, p95 {mc['p95']:.1f} (deterministic {technical_trip:.1f})")
         results.append((dr, sd))
+    turn = float(cfg.get("turnback_min", 0) or 0)
+    if len(results) == 2:
+        cycle = sum(r[1]["scheduled_time_min"] for r in results) + 2 * turn
+        msg = f"\n   round trip (scheduled + {turn:.0f} min turnback at each end): {cycle:.1f} min"
+        hw = args.headway or (cfg.get("service", {}) or {}).get("headway_min")
+        if hw:
+            msg += f"; at a {hw:g}-min headway this needs {math.ceil(cycle / float(hw))} trains"
+        print(msg)
 
     from . import report
     summary = {"program": spec.name, "line": cfg.get("name", cfg_path.stem), "train": key,

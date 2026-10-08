@@ -157,3 +157,33 @@ def test_adhesion_tapers_with_speed_and_rail_condition():
     assert tr.adhesion_at(100 / 3.6) < 0.3 * 0.7  # Curtius-Kniffler: ~0.64 of standstill at 100 km/h
     wet = tr.with_load(0.0, "wet")
     assert wet.tractive_effort(1.0) < tr.tractive_effort(1.0)
+
+
+def test_unit_aware_merge():
+    from railsim.app import deep_merge
+    m = deep_merge({"g": {"line_speed_mph": 79, "max_cant_in": 5}}, {"g": {"line_speed_kmh": 300}})
+    assert m["g"] == {"max_cant_in": 5, "line_speed_kmh": 300}
+
+
+def test_speed_dependent_braking_curve_lowers_high_speed_rate():
+    tr = ideal_train(brake_curve_kmh_ms2=[[0, 1.0], [100, 1.0], [101, 0.4], [360, 0.4]])
+    sim = Simulator(tr, flat_track(limit=90.0), Driver(speed_margin=0.0))
+    assert sim.b_plan(80.0, 0) == pytest.approx(0.4)
+    assert sim.b_plan(10.0, 0) == pytest.approx(1.0)
+
+
+def test_lineside_anticipation_reaches_limit_early():
+    tk = flat_track()
+    tk.limit[(tk.s >= 1000) & (tk.s <= 1100)] = 10.0
+    r = Simulator(ideal_train(), tk, Driver(speed_margin=0.0, anticipation_m=100.0)).run(
+        [Stop(0.0), Stop(2000.0)])
+    assert np.interp(905.0, r.s, r.v) <= 10.05
+
+
+def test_neutral_section_costs_time_when_accelerating():
+    tk = flat_track()
+    base = Simulator(ideal_train(power_kw=2000), tk, Driver(speed_margin=0.0)).run([Stop(0.0), Stop(2000.0)])
+    tk2 = flat_track()
+    tk2.no_traction[(tk2.s >= 50) & (tk2.s <= 250)] = True
+    cut = Simulator(ideal_train(power_kw=2000), tk2, Driver(speed_margin=0.0)).run([Stop(0.0), Stop(2000.0)])
+    assert cut.arrivals[1] > base.arrivals[1] + 3.0
