@@ -17,6 +17,22 @@ sketch_tolerance_m: 250
 # {station, speed_mph, distance_m}; none are known.
 shared_approaches: []
 
+# Station throats for stopping trains (non-stopping trains stay on the through tracks at
+# line speed), from real HSR stations (docs/research/hsr_throats.md):
+#  * Limited stations are the hubs: a 160 km/h approach zone (Tokyo-Ueno 110, Paris
+#    approaches) from 8 km, then 60 km/h through the throat crossovers from 1.5 km (Paris-
+#    Nord and Frankfurt Hbf 60 km/h; Brussels / Amsterdam ~40).
+#  * Express and Local stations: stopping trains leave the main line onto platform loops
+#    over 100 km/h turnouts (US #26.5, DB 1:18.5; Montabaur, Limburg Sued, Spanish lines)
+#    ~400 m before the platform, held until the tail clears on departure.
+#  * Route terminals: as hubs.
+station_throats:
+  by_class:
+    limited: [{speed_kmh: 160, distance_m: 8000}, {speed_kmh: 60, distance_m: 1500}]
+    express: {speed_kmh: 100, distance_m: 400}
+    local: {speed_kmh: 100, distance_m: 400}
+  terminal: [{speed_kmh: 160, distance_m: 8000}, {speed_kmh: 60, distance_m: 1500}]
+
 finished:
   # Great Lakes (Chicago - Boston); segments shared with Broadway / North Coast Flyer
   - "^(chicago 1|chicago 1 \\(englewood\\)|Chicago-Fort Wayne|Fort Wayne-Cecil|Cecil-Defiance|Defiance-Toledo|toledo east approach|Toledo-Danbury|Danbury-Bay View|Bay View-Sandusky|Sandusk-Vermilion|Vermilion-Elyria|Elyria-Berea|Berea-Cleveland|Cleveland-South Harbor|South Harbor-Ashtabula|Ashtabula-Erie|Erie-Buffalo|Buffalo-Rochester|Rochester-Syracuse|Syracuse-Utica|Utica-Albany|Albany-Springfield|Springfield-Boston|Boston 1)$"

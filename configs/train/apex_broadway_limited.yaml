@@ -61,6 +61,24 @@ stations:
     platform: high
     platform_length_m: 400
     psd: true
+  throat:
+    by_class:
+      limited:
+      - speed_kmh: 160
+        distance_m: 8000
+      - speed_kmh: 60
+        distance_m: 1500
+      express:
+        speed_kmh: 100
+        distance_m: 400
+      local:
+        speed_kmh: 100
+        distance_m: 400
+    terminal:
+    - speed_kmh: 160
+      distance_m: 8000
+    - speed_kmh: 60
+      distance_m: 1500
 service:
   route:
   - name: Broadway Limited west/south end

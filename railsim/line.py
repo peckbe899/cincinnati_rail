@@ -417,11 +417,12 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
         st = on_route[k]
         t = throat.get("terminal") if k in (stops_idx[0], stops_idx[-1]) else None
         t = t or (throat.get("by_class") or {}).get(st.cls)
-        if t:
+        # one {speed, distance} or tiers, e.g. a hub's approach zone then its throat
+        for tier in ([t] if isinstance(t, dict) else (t or [])):
             half = st.platform_length / 2
-            d = float(length_of(t, "distance", 500.0))
+            d = float(length_of(tier, "distance", 500.0))
             extra.append(Restriction(max(st.s - half - d, 0.0), min(st.s + half + d, L),
-                                     speed_of(t, "speed"), f"{st.name} station throat"))
+                                     speed_of(tier, "speed"), f"{st.name} station throat"))
     # trains passing a platform without stopping: optional limit where people stand at the
     # platform edge (slipstream, track intrusion); platform screen doors lift it
     v_pass = speed_of(st_cfg_all, "pass_speed")
