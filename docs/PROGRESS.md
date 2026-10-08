@@ -205,6 +205,12 @@ Living list of what is done and what is left. Newest changes at the top of each 
   Each source fills only the points the one above it lacks. Needs `pip install rasterio pyproj`.
 - **APEx through tracks:** non-stopping trains are limited to 125 mph past platforms (`through_track_speed_mph`), one full track from the doors.
 
+- **Cincinnati on real ground** (1 m LiDAR, terrain tiles in Northern Kentucky): all 15 metro lines and 51 RER configs run.
+  - Times match the terrain-tile runs to within 0.1%, because the profile design smooths the ground into buildable grades.
+  - Grades change metro times by under 1% (5%-geared CMCC stock, short interstations).
+  - Metro averages 25-42 km/h; current RER through-routes average 58-85 km/h.
+  - Waiting on the alt-history basin terrain (`dem` source).
+
 ## In progress
 
 - Nothing running.
