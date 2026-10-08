@@ -184,5 +184,9 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - Stochastic perturbations are uniform or log-normal guesses.
   - The supply factor is a per-zone constant (no load flow).
   - ETCS is modelled as a lag on the braking onset, not the full Subset-026 EBD/EBI curve set.
+- APEx curve audit with the canon model:
+  - 2,611 of 6,989 fitted curves are under the 2 km urban minimum; two-thirds of those are more than 8 km from a served stop. They follow the drawing (20 m fitting tolerance).
+  - Allowing the fit 100-300 m of freedom from the drawing cuts Great Lakes Limited by 1.3-2%.
+  - Decide whether the drawings are exact or sketches (`geometry.group_dev_tol_m`).
 - HSR tunnel pressure effects (the cross-section ratio of long tunnels) are not modelled beyond the tunnel factor on C.
 - Single-track meets and pathing time, for Needham weekday trips.
