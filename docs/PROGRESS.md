@@ -183,7 +183,19 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - `data/reference/overture_rail_cincinnati.kml`: 1,694 rail lines, including historic names such as the CH&D, the Cincinnati Subway and the Cincinnati Terminal Subdivision.
   - `data/reference/overture_water_cincinnati.kml`: river shorelines. They confirm the RER-3 covered way: 84% of the drawn RER-3 trunk is over the Ohio, from Sedamsville to Riverbend/Belterra.
   - Tracing today's rail network gives plausible original approaches into CUT from Covington (C&O bridge, 4.3 km) and Erlanger (Cincinnati Southern Bridge, 7.5 km), but not from Newport, Sedamsville or Lunken. Draw those in Google Earth using the rail layer.
-- **Station throats** (APEx): +1.3% to +14.4% trip time.
+- **Station throats** (APEx), set for platform screen doors and dedicated through tracks (Forest Hills and Norwood layouts):
+  - Limited hubs: 160 km/h from 4 km, then 100 km/h from 1 km.
+  - Express and local stations: 130 km/h (#32.75) local-track turnouts, 500 m each side.
+
+- **Drive `_Cincinnati Rail` upload checked:**
+  - Per-line ground profiles: USGS 1 m DEM, 2 m spacing.
+  - 2 m LiDAR tiles (UTM 16N).
+  - 1912 ground surface (I4 method, with a cover mask).
+  - Canon-interstate earthworks delta (map 3).
+  - USGS historical topo maps (1898-1955).
+  - OSM layers.
+
+  The Drive connector only suits small files and Drive downloads are blocked from the sandbox. Large rasters need to come through the git repo (e.g. `data/topo/`); GitHub is reachable.
 
 ## In progress
 
@@ -210,6 +222,5 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - The supply factor is a per-zone constant (no load flow).
   - ETCS is modelled as a lag on the braking onset, not the full Subset-026 EBD/EBI curve set.
 - APEx tight curves on finished alignments: review `docs/apex_curve_audit.kmz` (from `tools/apex_curve_audit.py`). Mark each one as new construction (2,000 m minimum applies) or upgraded legacy ROW (may be tighter).
-- APEx throats: the hub values come from legacy hubs (Paris-Nord, Frankfurt). Purpose-built APEx hubs might allow faster throats (e.g. 100 km/h crossovers). Confirm or set per station.
 - HSR tunnel pressure effects (the cross-section ratio of long tunnels) are not modelled beyond the tunnel factor on C.
 - Single-track meets and pathing time, for Needham weekday trips.
