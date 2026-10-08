@@ -141,7 +141,7 @@ Living list of what is done and what is left. Newest changes at the top of each 
 
 - **RER is driver-only in every era** (Paris RER practice): the driver releases the doors, passengers open them with a button, and the driver closes them and departs after a mirror or CCTV check. Set with `dwell.door_control: crew|button|auto`. US commuter crews (Needham) keep the conductor model.
 - **Metro platform screen doors by line.** Every line is GoA3 from 2020. Lines 1, 2, 2b, 3, 5, 7, 8 and 10 have PSDs at every station, adding 3 s per stop (`psd_lines` in the metro era file). Per-station overrides: `stations.info.<name>.psd`.
-- **Services before through-running** (`history` and `through_from` in `data/operations/cincinnati_rer.yaml`). Every line ran into Union Terminal and terminated there; trains could continue as a new service after stopping, but there were no through lines. Through-running dates: RER-1 1985 (crosstown tunnel), then RER-2 and the RER-4 connection.
+- **Services before through-running** (`history` and `through_from` in `data/operations/cincinnati_rer.yaml`). Every line ran into Union Terminal and terminated there; trains could continue as a new service after stopping, but there were no through lines. Through-running dates: RER-1 1985 (crosstown tunnel), RER-2 and RER-3 1988 (RER-3 upgraded for SACEM), RER-4 1990, RER-5 1996 (new deep-bore tunnel). Older-era services run without the trunk signalling zone.
   - 20 generated `cin_rer_*_pre_rer_*` configs, each with `years:` and a default `year:`.
     - RER-1 west into Union Terminal, on the yard approaches digitized from your screenshot (`tools/digitize_historic.py` → `data/kmz/cincinnati_historic.kml`).
     - RER-1 east into Times.
@@ -167,7 +167,7 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - RER-1 "Miamitown" and RER-3 "Cold Springs" are not on their drawn track.
   - Some drawn corners fit tighter than 30 m (Lines 1, 8, 13); check them in `alignment.kmz`.
 - RER history open points:
-  - Through-running years for RER-2, RER-3, RER-4 and RER-5. Assumed: RER-2 1990, the others 1995.
+  - RER-5's 1996 deep-bore tunnel: portals needed to model it as tunnel (`covered_ways: RER-5`). Before 1996, RER-5 uses today's trunk as a stand-in for its original route into Union Terminal.
   - RER-3 before through-running needs the original connection from the riverfront near Mill Creek up to Union Terminal (not drawn). Its four services are marked `pending`.
   - Original ROWs still to draw: C&O bridge and viaduct (RER-2 south), the Newport riverfront approach (RER-4 south). Today's drawn track stands in for now.
   - The Miamitown placemark is 864 m from the RER-1 track.

@@ -246,6 +246,8 @@ def historic_configs(pms, ops, rer_names, metro_names):
             "service": {"route": [a] + ([{"via": via}] if via else []) + [b]},
             # through the station throat into the city terminal
             "terminal_approach": {"speed_mph": 20, "distance_m": 500, "stations": [b["name"]]},
+            # the trunk signalling (SACEM, CBTC) came with through-running
+            "operating_zones": [],
             **RER_COMMON,
         }
         _covered(cfg, ops, f)
