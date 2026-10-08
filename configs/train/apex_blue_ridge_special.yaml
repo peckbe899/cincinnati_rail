@@ -60,6 +60,7 @@ stations:
   defaults:
     platform: high
     platform_length_m: 400
+    psd: true
 service:
   route:
   - name: Cincinnati Union Terminal
@@ -76,6 +77,10 @@ service:
     express:
     - limited
     - express
+    local:
+    - limited
+    - express
+    - local
 geometry:
   line_speed_mph: 250
   max_cant_mm: 180
@@ -93,3 +98,10 @@ dwell:
     express: 75
     limited: 180
     terminal: 180
+restrictions:
+- at:
+  - 39.110016
+  - -84.538486
+  length_m: 3000.0
+  speed_mph: 30
+  reason: shared approach Cincinnati Union Terminal

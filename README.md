@@ -70,6 +70,7 @@ Outputs go to `output/<config>/`:
    - `driver.block_length_m`: fixed-block transit ATC. Codes change only at block boundaries, so braking starts at the block where the lower code arrives.
    - `operating_zones`: a section with its own signalling and driver, e.g. CBTC + ATO on an RER trunk inside manually driven branches.
    - Stub terminals: a route entry `{name: X, reverse: true}` makes the train run to the buffer and reverse (minimum dwell `stations.reversal_min_s`). A route whose first and last entries are the same station runs as a loop.
+   - `stations.pass_speed_*`: limit for trains passing a platform without stopping, lifted at stations with platform screen doors (`psd`).
    - Station dwell: `dwell.door_control` (`crew`, or driver-only `button`/`auto`), and per-station platform screen doors (`dwell.psd_classes`, `dwell.psd_stations`, `stations.info.<name>.psd`).
    - `track.finished` + `geometry.sketch_tolerance_m`: segments not listed as finished are sketches, and their curves get the largest radius within the tolerance of the drawing.
    - `track.extra` (track from other folders or KMZ/KML files), `{via: [lat, lon]}` route waypoints, `profile.structures` (tunnel/viaduct by station range, coordinates or drawn segment name).

@@ -398,6 +398,7 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
             v = speed_of(r, "speed")
             reason = r.get("reason", "posted")
         extra.append(Restriction(s0, s1, v, reason))
+    st_cfg_all = cfg.get("stations", {}) or {}
     ta = cfg.get("terminal_approach")
     if ta and on_route:
         v = speed_of(ta, "speed")
@@ -407,8 +408,15 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
                 continue
             extra.append(Restriction(max(st.s - dist, 0), min(st.s + dist, L), v,
                                      f"terminal approach {st.name}"))
-    for st in on_route:  # per-station platform speed (e.g. stations with crossings)
-        pass
+    # trains passing a platform without stopping: optional limit where people stand at the
+    # platform edge (slipstream, track intrusion); platform screen doors lift it
+    v_pass = speed_of(st_cfg_all, "pass_speed")
+    if v_pass:
+        for st in on_route:
+            if not st.stop and not st.psd:
+                half = st.platform_length / 2
+                extra.append(Restriction(max(st.s - half, 0.0), min(st.s + half, L), v_pass,
+                                         f"passing {st.name} platform"))
     sp = build_speed_profile(h, policy, extra)
     route = Route(cfg.get("name", kmz_path.stem), proj, h, prof, sp, on_route, warnings, drawn_xy)
     route.drawn_ranges = list(getattr(net, "last_route_ranges", []))

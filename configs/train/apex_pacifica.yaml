@@ -60,6 +60,7 @@ stations:
   defaults:
     platform: high
     platform_length_m: 400
+    psd: true
 service:
   route:
   - name: Pacifica west/south end
@@ -75,6 +76,10 @@ service:
     express:
     - limited
     - express
+    local:
+    - limited
+    - express
+    - local
 geometry:
   line_speed_mph: 250
   max_cant_mm: 180

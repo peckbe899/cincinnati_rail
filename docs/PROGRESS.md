@@ -165,6 +165,11 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - Every other segment is a sketch: each curve gets the largest radius within 250 m of the drawing, as an engineer smoothing it would (`track.finished`, `geometry.sketch_tolerance_m`).
   - Curves in `summary.json` now record their drawn segment, sketch flag and location.
 
+- **APEx operating rules**:
+  - Station classes: Limited (every train stops), Express (some trains), Local (all-stops trains); `--stops limited|express|local`.
+  - Platform screen doors at every APEx station, so trains pass platforms at line speed. Where a station has no screen doors, `stations.pass_speed_*` sets a limit for passing trains. On North Coast Flyer, a 125 mph limit would cost 3.3 min.
+  - APEx has its own right of way, so cant is set for HSR alone. The unavoidable shared approaches are restricted in `shared_approaches` (data/operations/apex.yaml): Cincinnati Union Terminal at 30 mph for 1.5 km each side [assumed], about 1.8 min on North Coast Flyer.
+
 ## In progress
 
 - Nothing running.
@@ -190,5 +195,6 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - The supply factor is a per-zone constant (no load flow).
   - ETCS is modelled as a lag on the braking onset, not the full Subset-026 EBD/EBI curve set.
 - APEx tight curves on finished alignments: review `docs/apex_curve_audit.kmz` (from `tools/apex_curve_audit.py`). Mark each one as new construction (2,000 m minimum applies) or upgraded legacy ROW (may be tighter).
+- APEx shared approaches: confirm the 30 mph / 1.5 km assumption at Cincinnati Union Terminal, and list any other places APEx shares track (other city terminals?).
 - HSR tunnel pressure effects (the cross-section ratio of long tunnels) are not modelled beyond the tunnel factor on C.
 - Single-track meets and pathing time, for Needham weekday trips.

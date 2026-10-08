@@ -6,6 +6,17 @@
 # Read by tools/make_apex_configs.py.
 sketch_tolerance_m: 250
 
+# Station classes: Limited = every train stops; Express = some trains stop; Local = only the
+# all-stops trains stop. Every APEx station has platform screen doors (no platform-edge
+# limit for passing trains, no slipstream / track-intrusion concern).
+#
+# APEx runs on its own right of way (no mixed traffic, so cant and deficiency are set for
+# HSR alone). The few unavoidable shared approaches, with switches and other trains, are
+# speed-restricted around the station: [assumed] 30 mph through the interlocking
+# (AREMA #15-#20 turnouts, mixed-traffic signalling), `distance_m` each side.
+shared_approaches:
+  - {station: Cincinnati Union Terminal, speed_mph: 30, distance_m: 1500}
+
 finished:
   # Great Lakes (Chicago - Boston); segments shared with Broadway / North Coast Flyer
   - "^(chicago 1|chicago 1 \\(englewood\\)|Chicago-Fort Wayne|Fort Wayne-Cecil|Cecil-Defiance|Defiance-Toledo|toledo east approach|Toledo-Danbury|Danbury-Bay View|Bay View-Sandusky|Sandusk-Vermilion|Vermilion-Elyria|Elyria-Berea|Berea-Cleveland|Cleveland-South Harbor|South Harbor-Ashtabula|Ashtabula-Erie|Erie-Buffalo|Buffalo-Rochester|Rochester-Syracuse|Syracuse-Utica|Utica-Albany|Albany-Springfield|Springfield-Boston|Boston 1)$"
