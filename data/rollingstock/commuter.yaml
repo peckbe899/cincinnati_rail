@@ -450,3 +450,47 @@ AVELIA_LIBERTY_11:
   floor: high
   aux_kw: 400
   sources: Amtrak/Alstom press (secondary); most values estimated
+
+# ---------------------------------------------------------------------------------------
+# APEx national HSR (canon). The legacy "Gen 6" time-to-speed table (0-250 mph in 110 s)
+# would need ~50 MW at the wheel near top speed; this is a physically consistent 250 mph
+# train in the style of an articulated AGV / CR450-class unit. See docs/research/eras.md.
+# ---------------------------------------------------------------------------------------
+
+APEX_GEN6:
+  name: APEx Gen 6 (11-car articulated, 250 mph, tilt below 265 km/h)
+  category: hsr
+  length_m: 200           # canon: 11-car articulated, 200 m
+  cars: 11
+  mass_empty_t: 430       # [E] AGV 410 t + tilt equipment
+  pax: 600                # canon: 450 seated + 150 standing
+  rotating_mass_factor: 0.05
+  adhesive_mass_fraction: 0.85  # canon: all bogies powered (distributed traction)
+  adhesion: 0.28
+  max_te_kn: 420          # [E]
+  power_kw: 16000         # [E] ~ 82 kN resistance at 400 km/h needs ~9 MW to hold speed; 16 MW
+                          # (~33 kW/t) is above CR450 (~11 MW, ~24 kW/t) and below the V150 record set
+  max_accel: 0.9
+  service_brake: 0.8
+  max_service_brake: 1.0
+  emergency_brake: 1.3
+  # planning rates fade with speed (adhesion + disc thermal limits): 0.8 below 200 km/h,
+  # 0.6 above 300 km/h; ~9-10 km service stop from 400 km/h (CR450 EB < 6.5 km) [E]
+  brake_curve_kmh_ms2: [[0, 0.8], [200, 0.8], [300, 0.6], [410, 0.55]]
+  brake_delay_s: 1.0
+  jerk: 0.5
+  max_speed_mph: 250
+  tilt_cant_deficiency_mm: 150   # canon 7 deg tilt; total ~240 mm like Pendolino-class tilt
+  tilt_max_speed_kmh: 265        # canon: tilt disabled above 265 km/h
+  # CR450-class aero (-22% vs CR400; ICE 3 C = 0.52 N/(km/h)^2): A 4.5 kN, B 20 N/(km/h),
+  # C 0.43 N/(km/h)^2 -> ~82 kN at 400 km/h [E]
+  davis: {A_n: 4500, B_n_per_ms: 72, C_n_per_ms2: 5.6}
+  tunnel_factor: 1.8
+  regen_efficiency: 0.75
+  doors_per_side: 11
+  door_channels: 1
+  door_open_s: 4.0
+  door_close_s: 6.0
+  floor: high
+  aux_kw: 350
+  sources: canon (legacy AGV_USA / APEx Gen 6); physics-consistent estimates

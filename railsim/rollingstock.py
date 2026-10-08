@@ -31,6 +31,8 @@ YAML fields (SI unless suffixed; suffixed forms are converted on load):
     power_ramp_s             diesel: idle -> full power time after starting (Open Rails ~15-20 s)
     aux_kw                   auxiliary / HVAC / HEP load deducted from traction power
     brake_adhesion           usable braking adhesion (dry, with wheel-slide protection)
+    tilt_cant_deficiency_mm  extra cant deficiency with active tilt (tilting trains)
+    tilt_max_speed_kmh       tilt cut-off: no tilt benefit above this speed
     doors_per_side, door_channels (passenger streams per door), door_open_s, door_close_s
     floor                    level | high | low   (boarding type the stock is built for)
 """
@@ -91,6 +93,8 @@ class Train:
     power_ramp_s: float = 0.0  # diesel: time from idle to full power after starting
     aux_kw: float = 0.0  # auxiliary/HVAC/HEP load taken from traction power (and energy)
     brake_adhesion: float = 0.20  # usable wheel-rail adhesion when braking (all axles, WSP)
+    tilt_cant_deficiency: float = 0.0  # m extra Eu with active tilt
+    tilt_max_speed: float = 0.0  # m/s tilt cut-off
     load_factor: float = 1.0  # fraction of mass_load carried in this run
     extra: Dict = field(default_factory=dict)
 
@@ -233,6 +237,8 @@ def train_from_dict(key: str, d: dict) -> Train:
         power_ramp_s=float(_get(d, "power_ramp_s", default=0.0)),
         aux_kw=float(_get(d, "aux_kw", default=0.0)),
         brake_adhesion=float(_get(d, "brake_adhesion", default=0.20)),
+        tilt_cant_deficiency=float(_get(d, "tilt_cant_deficiency_mm", default=0.0)) / 1000.0,
+        tilt_max_speed=float(_get(d, "tilt_max_speed_kmh", default=0.0)) * KMH,
         extra={k: v for k, v in d.items() if k.startswith("x_")},
     )
 

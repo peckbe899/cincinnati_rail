@@ -54,7 +54,6 @@ DEFAULTS = {
     },
     "driver": {
         "mode": "ato",  # ato | manual
-        "speed_margin_mph": 1.0,
         "power_fraction": 1.0,
     },
     "dwell": {},
@@ -65,7 +64,10 @@ DEFAULTS = {
 def make_driver(cfg: dict, train) -> Driver:
     d = cfg.get("driver", {})
     manual = d.get("mode", "ato") == "manual"
-    margin = speed_of(d, "speed_margin", (2.0 if manual else 1.0) * MPH)
+    # operators run ~1 mph under the code; ATO ~2 mph under (signalling presets such as
+    # cbtc set their own margin unless the config gives one)
+    margin = (speed_of(d, "speed_margin", 1.0 * MPH) if manual
+              else speed_of(d, "ato_margin", 2.0 * MPH))
     brake = d.get("brake_rate")  # m/s^2; default: the train's service rate
     if brake is None and manual:
         brake = 0.85 * train.service_brake  # operators brake more gently than ATO
@@ -98,6 +100,10 @@ def dwell_fn(station, train, cfg, is_terminal: bool) -> float:
         model.door_close = train.door_close
     doors = max(train.doors_per_side * train.cars, 1)
     scale = float(dcfg.get("load_scale", 1.0))
+    # station volumes are per train for a reference-size train; demand per train scales
+    # with the train's capacity (a 260-seat interurban picks up fewer people per stop)
+    cap = train.mass_load / 75.0 if train.mass_load > 0 else 640.0
+    scale *= cap / float(dcfg.get("reference_capacity", 640))
     return model.dwell(station.cls, doors, train.door_channels, scale, station.dwell_override)
 
 

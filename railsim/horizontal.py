@@ -18,8 +18,8 @@ the drawn polygon around every bend), with an exact curvature diagram k(s).
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
-from typing import List, Optional
+from dataclasses import dataclass, field, replace
+from typing import List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -111,20 +111,25 @@ class HorizontalAlignment:
     def curvature(self, s_query) -> np.ndarray:
         """Signed curvature (1/m, + = left) at chainages."""
         s_query = np.atleast_1d(np.asarray(s_query, dtype=float))
-        k = np.zeros_like(s_query)
+        order = np.argsort(s_query, kind="stable")
+        sq_sorted = s_query[order]
+        k_sorted = np.zeros_like(sq_sorted)
         for c in self.curves:
-            kc = c.direction / c.radius
-            m = (s_query >= c.s_ts) & (s_query <= c.s_st)
-            if not m.any():
+            a = np.searchsorted(sq_sorted, c.s_ts, side="left")
+            b = np.searchsorted(sq_sorted, c.s_st, side="right")
+            if b <= a:
                 continue
-            sq = s_query[m]
-            val = np.full_like(sq, kc)
+            kc = c.direction / c.radius
+            sq = sq_sorted[a:b]
+            val = np.full(b - a, kc)
             if c.spiral > 0:
                 up = sq < c.s_sc
                 dn = sq > c.s_cs
                 val[up] = kc * (sq[up] - c.s_ts) / c.spiral
                 val[dn] = kc * (c.s_st - sq[dn]) / c.spiral
-            k[m] = val
+            k_sorted[a:b] = val
+        k = np.empty_like(k_sorted)
+        k[order] = k_sorted
         return k
 
     def radius(self, s_query) -> np.ndarray:
@@ -479,3 +484,32 @@ def _trace_curve(ts, u_in, dirn, R, Ls, delta, step):
         pts.append(pts[-1] + ds * np.array([math.cos(h_mid), math.sin(h_mid)]))
         h = h_end
     return pts, total
+
+
+def fit_horizontal_pieces(xy: np.ndarray, design: CurveDesign, breaks: Sequence[float] = (),
+                          step: float = 2.0) -> Tuple[HorizontalAlignment, List[float]]:
+    """Fit a route that reverses (stub terminals) as separate pieces joined end to end, so the
+    head-on fold is not mistaken for a hairpin curve. `breaks` are drawn chainages of the
+    reversals; returns the alignment and the fitted chainages of the reversals."""
+    if not breaks:
+        return fit_horizontal(xy, design, step), []
+    P = np.asarray(xy, dtype=float)[:, :2]
+    s = cumulative_length(P)
+    cuts = [0.0] + sorted(float(b) for b in breaks if 0.0 < b < s[-1]) + [float(s[-1])]
+    xs, ss, curves, rev = [], [], [], []
+    off, drawn = 0.0, 0.0
+    for a, b in zip(cuts[:-1], cuts[1:]):
+        inner = (s > a) & (s < b)
+        pa = [np.interp(a, s, P[:, 0]), np.interp(a, s, P[:, 1])]
+        pb = [np.interp(b, s, P[:, 0]), np.interp(b, s, P[:, 1])]
+        h = fit_horizontal(np.vstack([pa, P[inner], pb]), design, step)
+        k0 = 1 if xs else 0  # the joint point is shared
+        xs.append(h.xy[k0:])
+        ss.append(h.s[k0:] + off)
+        for c in h.curves:
+            curves.append(replace(c, s_ts=c.s_ts + off, s_sc=c.s_sc + off,
+                                  s_cs=c.s_cs + off, s_st=c.s_st + off))
+        off += h.length
+        drawn += h.drawn_length
+        rev.append(off)
+    return HorizontalAlignment(np.vstack(xs), np.concatenate(ss), curves, drawn), rev[:-1]

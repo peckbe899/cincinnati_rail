@@ -107,9 +107,41 @@ Living list of what is done and what is left. Newest changes at the top of each 
 - **Unit-aware config merging**: a `_kmh` value replaces a `_mph` default.
 - **Calibration after these changes**: Orange Line +0.4%; Needham −5% padded. The cab preset follows OSRD and adds no offsets.
 
+- **Operating zones** (`operating_zones` in a config): a section can use its own signalling and driver, matched by drawn segment name or by station range. Example: CBTC with ATO on an RER "Trunk".
+- **Operating eras** (`data/operations/*.yaml`, `--year`). The year picks the fleet, signalling, GoA and dwell settings:
+  - **Metro:**
+    - 1905: block signals with gate cars.
+    - 1916: pneumatic doors.
+    - 1986: fixed-block cab ATC with ATO (GoA2).
+    - 2006: CBTC (GoA2).
+    - 2020 onward: CBTC GoA3 (DTO).
+  - **RER:**
+    - Lineside, then cab signals.
+    - SACEM on the trunk from 1985.
+    - CBTC + ATO on the trunk from 2006.
+  - Values come from `docs/research/eras.md`, e.g. IRT 1904 express stops of about 30 s, WMATA auto-doors, DLR GoA3 door practice.
+- **Fixed-block code quantization** (`driver.block_length_m`): a lower code is only received at block boundaries, and a higher one returns one block after the restriction is cleared.
+  - Line 6: CBTC is 7% faster than fixed-block ATC, against 6% measured on the Jubilee line.
+  - Orange Line: +2.3% with 300 m blocks.
+- **ATO margins come from the signalling system** (CBTC 3 km/h, SACEM 2 km/h) unless `ato_margin_*` is set. Human drivers keep 1 mph (metro) or 2 mph (commuter).
+- **Stub terminals and loops:**
+  - A route entry `{name: X, reverse: true}` sends the train to the buffer stop, where the driver changes ends.
+    - Minimum dwell is `stations.reversal_min_s`, default 240 s.
+    - The front moves on by a train length when the train reverses.
+    - The alignment is fitted in pieces, so the fold is not read as a hairpin curve.
+  - Loop services start and finish at the same station.
+  - Track drawn twice is merged.
+- **APEx national HSR** (`tools/make_apex_configs.py`):
+  - All 22 routes generate.
+  - Stations get Limited/Express/Local classes from their folders; select a pattern with `--stops limited|express|all`.
+  - Reversals at St Louis (Transcontinental, City of New Orleans) and Chicago (Pioneer Ambassador).
+  - Lone Star runs as a loop.
+- **APEx Gen 6 train**: physics updated from CR450, Frecciarossa 1000 and E5 research. Resistance is about 82 kN at 400 km/h, braking 0.8 m/s² below 200 km/h and 0.55 m/s² at 400 km/h. Canon tilt is kept.
+- **Tests**: 25, now covering zones, eras, tilt, fixed blocks, reversals and duplicate track.
+
 ## In progress
 
-- Nothing running. Waiting on your answers to the open questions below.
+- Nothing running.
 
 ## To do
 
@@ -118,13 +150,15 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - Line 2 "Winston Park" is 102 m from the track.
   - RER-1 "Miamitown" and RER-3 "Cold Springs" are not on their drawn track.
   - Some drawn corners fit tighter than 30 m (Lines 1, 8, 13); check them in `alignment.kmz`.
-- RER service patterns: the generated configs cover every feasible terminal pair, now with CBTC per canon. Confirm the real service list (which branch pairs run, and any express patterns).
-- Cincinnati Metro signalling and operation: the default is ATO with a 1 mph margin and no signalling preset. Set `signalling.system` and `driver.mode` per era (for example, cab signals and manual driving for Types 1903–1948).
-- APEx HSR network: point an `preset: hsr` config at the APEx KMZ (`TC_Limited.kmz` was not provided).
+- RER service list by era: the configs cover every feasible branch-to-branch pair. Before 1985 they assume the same through-running; confirm which pairs ran in each period.
+- Metro GoA3 exceptions: from 2020 every line is GoA3 with no platform screen doors. Name any line that stays GoA2 or has PSDs (`dwell.psd_overhead`).
+- APEx data gaps:
+  - Synthetic end terminals on 8 routes, where no station placemark is near the end of the track.
+  - San Antonio and Houston have no stations on Lone Star.
+  - Placemarks off the track: Arlington TX 397 m, Cincinnati-Walton 292 m.
 - Known simplifications:
   - Stochastic perturbations are uniform or log-normal guesses.
   - The supply factor is a per-zone constant (no load flow).
   - ETCS is modelled as a lag on the braking onset, not the full Subset-026 EBD/EBI curve set.
-- Research how other simulators work (OpenTrack, RailSys, Open Rails, TrainRuns.jl, SYSTRA RAILSIM, Train Performance Calculators) and add the realism they model that we don't. Must cover metro through HSR.
-- HSR program defaults: high cant deficiency, tilt, the aerodynamic share of resistance, tunnel pressure effects.
+- HSR tunnel pressure effects (the cross-section ratio of long tunnels) are not modelled beyond the tunnel factor on C.
 - Single-track meets and pathing time, for Needham weekday trips.

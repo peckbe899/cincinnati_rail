@@ -187,3 +187,75 @@ def test_neutral_section_costs_time_when_accelerating():
     tk2.no_traction[(tk2.s >= 50) & (tk2.s <= 250)] = True
     cut = Simulator(ideal_train(power_kw=2000), tk2, Driver(speed_margin=0.0)).run([Stop(0.0), Stop(2000.0)])
     assert cut.arrivals[1] > base.arrivals[1] + 3.0
+
+
+# ----------------------------------------------------------------------------- operations
+
+def test_fixed_block_codes_brake_earlier_than_continuous():
+    tk = flat_track(L=4000.0)
+    tk.limit[(tk.s >= 2000) & (tk.s <= 2300)] = 8.0
+    cont = Simulator(ideal_train(), tk, Driver(speed_margin=0.0)).run([Stop(0.0), Stop(3800.0)])
+    tk2 = flat_track(L=4000.0)
+    tk2.limit[(tk2.s >= 2000) & (tk2.s <= 2300)] = 8.0
+    blk = Simulator(ideal_train(), tk2, Driver(speed_margin=0.0, block_length=300.0)).run(
+        [Stop(0.0), Stop(3800.0)])
+    assert blk.arrivals[1] > cont.arrivals[1] + 1.0
+
+
+def test_operating_zone_driver_applies_only_in_its_zone():
+    tk = flat_track()
+    tk.zone = np.where(tk.s > 1000, 1, 0)
+    slow = Driver(speed_margin=5.0)
+    sim = Simulator(ideal_train(), tk, Driver(speed_margin=0.0), zone_drivers=[slow])
+    assert sim.target[500] == pytest.approx(20.0)
+    assert sim.target[1500] == pytest.approx(15.0)
+
+
+def test_tilt_raises_curve_speed_only_below_cutoff():
+    base = SpeedPolicy(line_speed=100.0, cant_deficiency=0.09)
+    tilt = SpeedPolicy(line_speed=100.0, cant_deficiency=0.09, tilt_cant_deficiency=0.15,
+                       tilt_max_speed=265 / 3.6)
+    v_tight = curve_speed(1500.0, 0.15, 300.0, base)
+    assert curve_speed(1500.0, 0.15, 300.0, tilt) > v_tight + 5.0
+    # on a curve fast enough that tilt would exceed the cut-off, tilt gives no gain above it
+    assert curve_speed(8000.0, 0.15, 300.0, tilt) <= max(curve_speed(8000.0, 0.15, 300.0, base),
+                                                         265 / 3.6) + 1e-6
+
+
+def test_era_lookup_picks_fleet_and_overlay():
+    from pathlib import Path
+    from railsim.operations import load_era
+    path = Path(__file__).resolve().parent.parent / "data/operations/cincinnati_metro.yaml"
+    era, train, year = load_era(path, 1995)
+    assert era["goa"] == 2 and train == "CMCC_TYPE1985_10CAR"
+    era, train, _ = load_era(path, 2026)
+    assert era["goa"] == 3 and era["overlay"]["signalling"]["system"] == "cbtc"
+
+
+def test_stub_terminal_reversal_routing():
+    # line drawn into a stub station and back out the same way (like St Louis Union Station)
+    a = np.array([[0, 0], [1000, 0], [2000, 0]])
+    b = np.array([[2000, 0], [1000, 5], [0, 400]])
+    net = Network.build([a, b], snap_tol=1.0)
+    s0 = net.locate(0, 0)[:2]
+    s1 = net.locate(0, 400)[:2]
+    with pytest.raises(ValueError):
+        net.route([s0, s1], max_turn_deg=90)
+    tip = net.stub_tip(1990, 0, 100)
+    assert tip is not None
+    xy, ch = net.route([s0, tip[:2], s1], max_turn_deg=90, reverse_at=[1])
+    assert ch[1] == pytest.approx(2000, rel=0.01) and ch[-1] > 3900
+
+
+def test_duplicate_drawn_track_is_merged():
+    a = np.array([[0, 0], [1000, 0]])
+    net = Network.build([a, a.copy(), np.array([[1000, 0], [2000, 0]])])
+    assert len(net.edges) == 2
+
+
+def test_reversal_jump_moves_front():
+    tk = flat_track(L=3000.0)
+    r = Simulator(ideal_train(), tk, Driver(speed_margin=0.0)).run(
+        [Stop(0.0), Stop(1000.0, dwell=60.0, jump=106.0), Stop(2500.0)])
+    assert r.departures[1] - r.arrivals[1] == pytest.approx(60.0, abs=0.5)
+    assert np.max(r.s) == pytest.approx(2500.0, abs=0.5)

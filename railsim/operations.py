@@ -38,6 +38,9 @@ SIGNALLING = {
     # the cab, so no lineside anticipation (OSRD applies offsets only on lineside lines);
     # the effect is the code-step speed rounding (speed.code_steps_mph)
     "cab": {},
+    # SACEM (Paris RER A 1989): continuous speed supervision + driver assistance on cab
+    # signalling; drivers run close to the supervised curve
+    "sacem": {"speed_margin_kmh": 2.0, "brake_anticipation_s": 2.0},
     # CBTC with ATO: runs 3 km/h below the ATP profile, ~1.5 s supervision/build-up lag
     "cbtc": {"speed_margin_kmh": 3.0, "brake_anticipation_s": 1.5},
     # ETCS Level 2: braking starts at the indication/permitted curve, ~4 s driver
@@ -83,14 +86,40 @@ def apply_driver_config(driver: Driver, cfg: dict) -> Driver:
         kw["postponement_m"] = float(d["postponement_m"])
     if "brake_anticipation_s" in d:
         kw["brake_anticipation_s"] = float(d["brake_anticipation_s"])
+    if "block_length_m" in d:
+        kw["block_length"] = float(d["block_length_m"])
     if "coast_window_s" in d:
         kw["coast_window_s"] = float(d["coast_window_s"])
     if "brake_curve_kmh_ms2" in d:
         kw["brake_curve"] = [(float(a) * KMH, float(b)) for a, b in d["brake_curve_kmh_ms2"]]
-    user_margin = any(k.startswith("speed_margin") for k in (cfg.get("driver", {}) or {}))
+    dcfg = cfg.get("driver", {}) or {}
+    # an ATO margin is the signalling system's unless `ato_margin_*` is given explicitly
+    # (a program's default `speed_margin_*` is for human drivers)
+    key = "ato_margin" if dcfg.get("mode") == "ato" else "speed_margin"
+    user_margin = any(k.startswith(key) for k in dcfg)
     if not user_margin and "speed_margin_kmh" in preset:
         kw["speed_margin"] = float(preset["speed_margin_kmh"]) * KMH
     return replace(driver, **kw)
+
+
+# ---------------------------------------------------------------------------------------
+# Operating eras
+# ---------------------------------------------------------------------------------------
+
+def load_era(path, year):
+    """Return (era dict, default train key or None, resolved year) from an era file."""
+    import yaml
+    from pathlib import Path
+    data = yaml.safe_load(Path(path).read_text())
+    year = int(year or data.get("default_year", 2026))
+    era = next((e for e in data.get("eras", []) if e["years"][0] <= year <= e["years"][1]), None)
+    if era is None:
+        raise ValueError(f"{data.get('system', path)} has no operating era covering {year}")
+    train = None
+    for f in sorted(data.get("fleet", []), key=lambda f: f["from"]):
+        if f["from"] <= year:
+            train = f["train"]
+    return era, train, year
 
 
 # ---------------------------------------------------------------------------------------

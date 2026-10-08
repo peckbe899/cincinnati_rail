@@ -87,7 +87,7 @@ def main():
         cfg = {
             "name": f"Cincinnati Metro {f}",
             "kmz": KMZ,
-            "train": METRO_TRAIN,
+            "operations": "data/operations/cincinnati_metro.yaml",  # year -> fleet, signalling, GoA
             "track": {"folder": folder},
             "stations": {"folder": f"{folder}/{f} Stations", "info": info},
             "geometry": {"line_speed_mph": 55},
@@ -132,13 +132,12 @@ def main():
             cfg = {
                 "name": f"Cincinnati {f} {a} - {b}",
                 "kmz": KMZ,
-                "train": RER_TRAIN,
+                "operations": "data/operations/cincinnati_rer.yaml",  # year -> fleet, signalling
                 "track": {"folder": folder},
                 "stations": {"folder": f"{folder}/{f} Stations", "match_tol_m": 200,
                              "defaults": {"class": "standard", "platform": "high"}, "info": info},
                 "service": {"route": [{"name": a, "near": where[a]}, {"name": b, "near": where[b]}]},
                 "geometry": {"line_speed_mph": 90, "max_cant_in": 5.0},
-                "signalling": {"system": "cbtc"},  # canon: D/E/F sets are CBTC-native
                 "speed": {"cant_deficiency_in": 4.0},
                 "profile": {"max_grade": 0.02, "sources": ["csv", "kmz", "usgs"], "usgs": False},
                 "padding": {"percent": 5.0, "final_leg_s": 60},

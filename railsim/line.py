@@ -12,7 +12,8 @@ Shared by both programs. Steps:
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+import re
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
@@ -21,7 +22,7 @@ import numpy as np
 from . import elevation as elev
 from .dynamics import TrackData
 from .geo import FT, INCH, KMH, MPH, LocalProjection, project_point_to_polyline
-from .horizontal import CurveDesign, HorizontalAlignment, fit_horizontal
+from .horizontal import CurveDesign, HorizontalAlignment, fit_horizontal, fit_horizontal_pieces
 from .kml import Placemark, read_kmz, select
 from .network import Network
 from .profile import Profile, ProfileDesign, design_profile, flat_profile
@@ -68,6 +69,7 @@ class StationInfo:
     dwell_override: Optional[float] = None
     early_departure: bool = False  # 'L' stop: may leave early (commuter timetables)
     stop: bool = True
+    reverse: bool = False  # stub terminal mid-route: the train reverses here
 
 
 @dataclass
@@ -83,6 +85,7 @@ class Route:
     supply_zones: List[Tuple[float, float, float]] = field(default_factory=list)  # (s0, s1, factor)
     supply_factor: float = 1.0
     neutral_sections: List[Tuple[float, float]] = field(default_factory=list)  # (s0, s1)
+    zone_ranges: List[Tuple[float, float, int]] = field(default_factory=list)  # (s0, s1, zone)
 
     @property
     def length(self) -> float:
@@ -104,7 +107,10 @@ class Route:
         nt = np.zeros(len(s), dtype=bool)
         for s0, s1 in self.neutral_sections:
             nt[(s >= s0) & (s <= s1)] = True
-        return TrackData(ds, s, lim, z, curv, tunnel, pf, nt)
+        zone = np.zeros(len(s), dtype=int)
+        for s0, s1, k in self.zone_ranges:
+            zone[(s >= s0) & (s <= s1)] = k
+        return TrackData(ds, s, lim, z, curv, tunnel, pf, nt, zone)
 
     def latlon_at(self, s_query) -> Tuple[np.ndarray, np.ndarray]:
         h = self.horizontal
@@ -119,10 +125,27 @@ def _stations_from_config(cfg: dict, placemarks: List[Placemark]) -> List[Statio
     st_cfg = cfg.get("stations", {}) or {}
     out: List[StationInfo] = []
     folder = st_cfg.get("folder")
+    folder_classes = st_cfg.get("class_from_folder")  # e.g. {Limited: limited, Express: express}
+    rank = {c: i for i, c in enumerate(st_cfg.get("class_rank", []) or [])}
     if folder:
         for p in select(placemarks, folder):
             for (lat, lon, _z) in p.points:
-                out.append(StationInfo(p.name, lat, lon))
+                st = StationInfo(p.name, lat, lon)
+                if folder_classes:
+                    for fname in reversed(p.folder_path):
+                        if fname in folder_classes:
+                            st.cls = folder_classes[fname]
+                            break
+                    else:
+                        st.cls = st_cfg.get("unclassified", "standard")
+                    # same station drawn in several route folders: keep its highest class
+                    dup = next((o for o in out if o.name == st.name
+                                and abs(o.lat - lat) + abs(o.lon - lon) < 0.003), None)
+                    if dup is not None:
+                        if rank.get(st.cls, 99) < rank.get(dup.cls, 99):
+                            dup.cls = st.cls
+                        continue
+                out.append(st)
     for item in st_cfg.get("list", []) or []:
         out.append(StationInfo(item["name"], float(item["lat"]), float(item["lon"])))
     info = st_cfg.get("info", {}) or {}
@@ -130,12 +153,18 @@ def _stations_from_config(cfg: dict, placemarks: List[Placemark]) -> List[Statio
     for s in out:
         d = dict(defaults)
         d.update(info.get(s.name, {}) or {})
-        s.cls = d.get("class", s.cls)
+        if "class" in (info.get(s.name, {}) or {}) or not folder_classes:
+            s.cls = d.get("class", s.cls)
         s.platform = d.get("platform", s.platform)
         s.platform_length = float(length_of(d, "platform_length", s.platform_length))
         s.dwell_override = d.get("dwell_s")
         s.early_departure = bool(d.get("early_departure", False))
     return out
+
+
+def _edge_point(net: Network, eid: int, ch: float):
+    e = net.edges[eid]
+    return np.array([np.interp(ch, e.s, e.xy[:, 0]), np.interp(ch, e.s, e.xy[:, 1])])
 
 
 def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPolicy,
@@ -168,6 +197,11 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
         # entries are "Name" or {name: Name, near: [lat, lon]} to pick between same-named stations
         name = entry["name"] if isinstance(entry, dict) else entry
         cands = [s for s in stations if s.name == name]
+        if not cands and isinstance(entry, dict) and "lat" in entry:
+            # synthetic terminal (end of drawn track with no station placemark)
+            st = StationInfo(name, float(entry["lat"]), float(entry["lon"]), cls="terminal")
+            stations.append(st)
+            cands = [st]
         if not cands:
             raise ValueError(f"station '{name}' in service.route not found")
         if isinstance(entry, dict) and entry.get("near"):
@@ -191,26 +225,44 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
             warnings.append(f"station '{name}' is {best[2]:.0f} m from the track; routed to the "
                             f"nearest track point (fix the placemark)")
             snapped.add(name)
+        if isinstance(entry, dict) and entry.get("reverse"):
+            # stub terminal: the train runs to the buffer stop, the driver changes ends
+            x, y = _edge_point(net, best[0], best[1])
+            tip = net.stub_tip(float(x), float(y), float(entry.get("stub_radius_m", 500.0)))
+            if tip is None:
+                raise ValueError(f"station '{name}' is marked reverse but has no stub end "
+                                 f"within {entry.get('stub_radius_m', 500.0)} m")
+            reversing.add(name)
+            return tip[:2]
         return best[:2]
 
+    reversing: set = set()
+    reversals: List[float] = []
     if route_names:
         stops = [locate_name(n) for n in route_names]
-        drawn_xy, _ = net.route(stops, max_turn)
+        rev_idx = [k for k, n in enumerate(route_names) if isinstance(n, dict) and n.get("reverse")]
+        drawn_xy, stop_ch = net.route(stops, max_turn, reverse_at=rev_idx)
+        reversals = [stop_ch[k] for k in rev_idx if 0 < k < len(stops) - 1]
     else:
         if not net.is_simple_path():
             warnings.append("track network branches; routing between the farthest dead ends. "
                             "Set service.route to choose a branch.")
         drawn_xy = net.longest_route_between_leaves(max_turn)
 
-    h = fit_horizontal(drawn_xy, design)
+    h, rev_s = fit_horizontal_pieces(drawn_xy, design, reversals)
     log(f"  Alignment: drawn {h.drawn_length / 1000:.2f} km -> fitted {h.length / 1000:.2f} km, "
-        f"{len(h.curves)} curves")
+        f"{len(h.curves)} curves" + (f", {len(rev_s)} reversal(s)" if rev_s else ""))
+    rev_names = [n["name"] for n in (route_names or []) if isinstance(n, dict) and n.get("reverse")]
 
     # stations on the route, ordered by chainage
     on_route: List[StationInfo] = []
     for st in stations:
         x, y = proj.to_xy(st.lat, st.lon)
         ch, off, _ = project_point_to_polyline(float(x), float(y), h.xy, h.s)
+        if st.name in reversing and st.name in rev_names:
+            # a folded route passes near a stub station twice: it is served at the buffer
+            ch = rev_s[rev_names.index(st.name)] if rev_names.index(st.name) < len(rev_s) else ch
+            st.reverse = True
         if off <= tol or (st.name in snapped and off <= 2000.0):
             st.s, st.offset = ch, off
             on_route.append(st)
@@ -222,10 +274,26 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
             continue
         dedup.append(st)
     on_route = dedup
+    if route_names and len(route_names) > 2:
+        n0 = route_names[0]["name"] if isinstance(route_names[0], dict) else route_names[0]
+        n1 = route_names[-1]["name"] if isinstance(route_names[-1], dict) else route_names[-1]
+        if n0 == n1:
+            # loop service: the origin is served at both ends of the unrolled route
+            ends = [st for st in on_route if st.name == n0]
+            if ends:
+                first = replace(ends[0], s=0.0)
+                last = replace(ends[0], s=h.length)
+                on_route = [first] + [st for st in on_route if st.name != n0] + [last]
     stops_cfg = svc.get("stops", "all")
     skip = set(svc.get("skip", []) or [])
-    for st in on_route:
-        st.stop = (stops_cfg == "all" or st.name in stops_cfg) and st.name not in skip
+    patterns = svc.get("patterns", {}) or {}  # e.g. {limited: [limited], express: [limited, express]}
+    for k, st in enumerate(on_route):
+        if isinstance(stops_cfg, str) and stops_cfg in patterns:
+            # stopping pattern by station class; the two ends are always served
+            st.stop = st.cls in patterns[stops_cfg] or k in (0, len(on_route) - 1)
+        else:
+            st.stop = stops_cfg == "all" or st.name in stops_cfg
+        st.stop = (st.stop and st.name not in skip) or st.reverse  # a reversal is always a stop
     if on_route:
         on_route[0].cls = on_route[0].cls if on_route[0].cls != "standard" else "terminal"
         on_route[-1].cls = on_route[-1].cls if on_route[-1].cls != "standard" else "terminal"
@@ -302,6 +370,22 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
     for z in sup.get("zones", []) or []:
         s0, s1 = _zone_chainage(z, on_route, proj, h)
         route.supply_zones.append((s0, s1, float(z["factor"])))
+    # operating zones (e.g. CBTC/ATO trunk): by drawn segment name or between stations
+    pieces = getattr(net, "last_route_pieces", [])
+    for k, oz in enumerate(cfg.get("operating_zones", []) or [], start=1):
+        if oz.get("match"):
+            rx = re.compile(oz["match"], re.I)
+            for name, pa, pb in pieces:
+                if not rx.search(name or ""):
+                    continue
+                ca = project_point_to_polyline(float(pa[0]), float(pa[1]), h.xy, h.s)[0]
+                cb = project_point_to_polyline(float(pb[0]), float(pb[1]), h.xy, h.s)[0]
+                route.zone_ranges.append((min(ca, cb), max(ca, cb), k))
+        else:
+            s0, s1 = _zone_chainage(oz, on_route, proj, h)
+            route.zone_ranges.append((s0, s1, k))
+        if not any(z[2] == k for z in route.zone_ranges):
+            warnings.append(f"operating zone {oz.get('name', k)} matched nothing on this route")
     for z in cfg.get("neutral_sections", []) or []:
         z = dict(z)
         z.setdefault("length_m", 400.0)  # gap + announcement/end-sign coasting region

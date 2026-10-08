@@ -11,19 +11,21 @@ The KMZs carry no altitudes and the sandbox could not reach USGS, so both profil
   - Full-service braking 3.0 mphps; 1.1 m/s² planning rate.
 - **Line speeds:** 55 mph Oak Grove–Assembly (since Aug 2025); 40 mph line maximum elsewhere.
 - **Signals:** cab-signal code speeds 10/18/25/40/50/55 mph.
-- **Driving:** manual (the Orange Line has no ATO), 2 mph under the code, a 4 mph creep over the last 15 m into each platform.
+- **Driving:** manual (the Orange Line has no ATO), 1 mph under the code, a 4 mph creep over the last 15 m into each platform.
+- **Fixed blocks:** civil speed codes change only at ~300 m track-circuit boundaries, so braking for a restriction starts at the block where the lower code arrives, and the higher code returns one block after the rear clears.
 - **Dwell:** Puong (MIT) MBTA dwell model, D = 12.22 + 2.27·B + 1.82·A per door, with midday volumes by station class.
 
 | | Model | GTFS weekday midday |
 |---|---|---|
-| Oak Grove → Forest Hills | 35.1 min | 35 min |
-| Forest Hills → Oak Grove | 35.1 min | 35 min |
+| Oak Grove → Forest Hills | 35.8 min | 35 min |
+| Forest Hills → Oak Grove | 35.7 min | 35 min |
 
 Sensitivity (`tools/sensitivity.py metro configs/metro/mbta_orange.yaml ...`):
 
 | Variant | Trip (min) | vs schedule |
 |---|---|---|
-| Baseline (manual, no padding) | 35.1 | +0.4% |
+| Baseline (manual, 300 m code blocks, no padding) | 35.8 | +2.3% |
+| Continuous codes (no block quantization) | 35.1 | +0.4% |
 | ATO-style driving instead of manual | 32.7 | −6.6% |
 | 90% load instead of 50% | 35.2 | +0.7% |
 | No cab-signal code rounding (plain 5 mph steps) | 34.8 | −0.6% |
@@ -51,6 +53,8 @@ How driving is modelled matters more than load. That fits the cab-signal / manua
 | South Station → Needham Heights | 33.5 min | 38.0 min | 40 min |
 | Needham Heights → South Station | 33.4 min | 38.0 min | 40 min |
 
+Current figures (after dwell capacity scaling): 34.1 min technical, 38.7 min padded, −3.3%. US commuter cab signals do not code civil speed limits (engineers obey timetable speed signs), so no block quantization applies here.
+
 Sensitivity:
 
 | Variant | Scheduled (min) | vs 40 |
@@ -76,6 +80,11 @@ Sensitivity:
   The published schedules sit between the deterministic and p85 values, as expected of timetables built from observed running.
 - **Eco allowance on Needham:** the 4.5 min of padding is spent cruising at ≤ 56 km/h and coasting before braking, instead of uniformly. Traction energy falls 558 → 286 kWh. That is an upper bound: it assumes a driver advisory system and a large padding share.
 - **Fleet check:** the Orange Line at a 6-min headway with 4-min turnbacks needs 14 trains, close to the MBTA's peak Orange Line operation.
+
+## After the era work
+
+- Block quantization of cab codes (`driver.block_length_m`, metro ATC only) puts the Orange Line at +2.3%, inside the 1-minute rounding of GTFS times.
+- On Cincinnati Line 6, CBTC (2010) runs 7% faster than fixed-block ATC (1995) on running time. The Jubilee line measured 6% when it moved to CBTC.
 
 ## Re-running
 

@@ -30,6 +30,8 @@ class SpeedPolicy:
     min_zone_length: float = 200.0  # m; shorter faster zones are merged into slower neighbours
     zone_buffer: float = 0.0  # m added before/after each curve restriction
     steps: tuple = ()  # allowed signal code speeds (m/s); if set, limits round DOWN to these
+    tilt_cant_deficiency: float = 0.0  # m, extra Eu available with active tilt (0 = no tilt)
+    tilt_max_speed: float = 0.0  # m/s, tilt is inhibited above this speed
 
 
 @dataclass
@@ -64,7 +66,17 @@ def curve_speed(R: float, cant: float, spiral: float, pol: SpeedPolicy,
     in short or missing spirals, by the rate of change of cant deficiency."""
     if deflection > 0:
         R = max(R, pol.min_effective_arc / deflection)
-    v = math.sqrt(G_ACC * R * (cant + pol.cant_deficiency) / pol.rail_centres)
+    if pol.tilt_cant_deficiency > 0 and pol.tilt_max_speed > 0:
+        # tilting trains: more cant deficiency, but only up to the tilt cut-off speed
+        v_plain = _curve_speed_plain(R, cant, spiral, pol, pol.cant_deficiency)
+        v_tilt = min(_curve_speed_plain(R, cant, spiral, pol, pol.cant_deficiency
+                                        + pol.tilt_cant_deficiency), pol.tilt_max_speed)
+        return min(max(v_plain, v_tilt), pol.line_speed)
+    return min(_curve_speed_plain(R, cant, spiral, pol, pol.cant_deficiency), pol.line_speed)
+
+
+def _curve_speed_plain(R: float, cant: float, spiral: float, pol: SpeedPolicy, eu: float) -> float:
+    v = math.sqrt(G_ACC * R * (cant + eu) / pol.rail_centres)
     Ls = max(spiral, pol.min_effective_spiral)
     # dEu/dt = v * Eu(v) / Ls  with Eu(v) = G v^2/(gR) - cant  -> solve for v by bisection
     def rate(vv):
@@ -80,7 +92,7 @@ def curve_speed(R: float, cant: float, spiral: float, pol: SpeedPolicy,
             else:
                 lo = mid
         v = lo
-    return min(v, pol.line_speed)
+    return v
 
 
 def quantize(v: float, inc: float, steps: tuple = ()) -> float:
@@ -100,8 +112,9 @@ def build_from_zones(length: float, zones: Sequence[Restriction], grid: float = 
     s[-1] = length
     lim = np.full(len(s), default)
     for z in zones:
-        m = (s >= z.s0 - 1e-9) & (s <= z.s1 + 1e-9)
-        lim[m] = np.minimum(lim[m], z.speed)
+        a = np.searchsorted(s, z.s0 - 1e-9, side="left")
+        b = np.searchsorted(s, z.s1 + 1e-9, side="right")
+        lim[a:b] = np.minimum(lim[a:b], z.speed)
     return SpeedProfile(s, lim, list(zones))
 
 
@@ -125,25 +138,25 @@ def build_speed_profile(h: HorizontalAlignment, pol: SpeedPolicy,
     return prof
 
 
+def _runs(lim):
+    """(start, end) index pairs of equal-value runs."""
+    cut = np.flatnonzero(np.diff(lim)) + 1
+    starts = np.concatenate([[0], cut])
+    ends = np.concatenate([cut - 1, [len(lim) - 1]])
+    return list(zip(starts.tolist(), ends.tolist()))
+
+
 def _merge_short_zones(s, lim, min_len):
     """Lower any run of points that is faster than both neighbours and shorter than min_len
     to the faster of its neighbours, repeating until stable (posted-zone consolidation)."""
     lim = lim.copy()
     for _ in range(50):
-        runs = []
-        i = 0
-        n = len(lim)
-        while i < n:
-            j = i
-            while j + 1 < n and lim[j + 1] == lim[i]:
-                j += 1
-            runs.append((i, j))
-            i = j + 1
+        runs = _runs(lim)
         changed = False
         for k in range(1, len(runs) - 1):
             a, b = runs[k]
             v = lim[a]
-            vl = lim[runs[k - 1][0]]
+            vl = lim[runs[k - 1][1]]
             vr = lim[runs[k + 1][0]]
             if v > vl and v > vr and (s[b] - s[a]) < min_len:
                 lim[a:b + 1] = max(vl, vr)
@@ -155,13 +168,4 @@ def _merge_short_zones(s, lim, min_len):
 
 def zones_from_profile(sp: SpeedProfile) -> List[Restriction]:
     """Collapse the gridded limit back into posted zones (for reports / KML)."""
-    out = []
-    i = 0
-    n = len(sp.limit)
-    while i < n:
-        j = i
-        while j + 1 < n and sp.limit[j + 1] == sp.limit[i]:
-            j += 1
-        out.append(Restriction(float(sp.s[i]), float(sp.s[j]), float(sp.limit[i])))
-        i = j + 1
-    return out
+    return [Restriction(float(sp.s[a]), float(sp.s[b]), float(sp.limit[a])) for a, b in _runs(sp.limit)]

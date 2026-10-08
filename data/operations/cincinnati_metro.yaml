@@ -1,0 +1,86 @@
+# Cincinnati Metro operating eras. `year:` in a line config (or --year) picks the era;
+# the era's overlay sits between the program defaults and the line config, so a line
+# config can still override anything (e.g. a line that is not GoA3 in 2026).
+#
+# Real-world basis (docs/research/eras.md, metro.md, simulators.md):
+#   * 1904-1960s US heavy rail: automatic block signals with trip stops (IRT 1904),
+#     manual driving, motorman + conductor/guards; gate cars until pneumatic doors.
+#   * 1980s-2000s: fixed-block cab signalling with ATO (BART/WMATA/MBTA practice),
+#     code speeds; operator closes doors and starts the train (GoA2).
+#   * CBTC (IEEE 1474): ATO ~3 km/h under ATP, ~1.5 s supervision lag, continuous
+#     braking curve (Jubilee line: -6% end to end vs fixed block).
+#   * GoA3 (DTO, IEC 62290): automatic door release/close and departure under ATS
+#     control, attendant on board; no driver reaction times.
+# Canon: CMCC Types 1903 (1905), 1925, 1948, 1985 (Bombardier/Alstom technology), 2005;
+# "2026 should be GoA3 for most lines".
+
+system: Cincinnati Metro
+default_year: 2026
+
+fleet:   # default train by year (latest type in service); --train overrides
+  - {from: 1905, train: CMCC_TYPE1903_10CAR}
+  - {from: 1926, train: CMCC_TYPE1925_10CAR}
+  - {from: 1949, train: CMCC_TYPE1948_10CAR}
+  - {from: 1986, train: CMCC_TYPE1985_10CAR}
+  - {from: 2006, train: CMCC_TYPE2005_10CAR}
+
+eras:
+  - name: "Opening era: automatic block signals + trip stops, gate cars with guards (GoA1)"
+    years: [1905, 1915]
+    goa: 1
+    overlay:
+      signalling: {system: lineside}
+      driver: {mode: manual}
+      dwell:
+        # IRT 1904 press: express "moving again about thirty seconds after stopping";
+        # one guard per pair of cars opens the gates by hand (ERA Bulletin 2009-08)
+        door_release: 3.0     # guards step down and open the end gates
+        door_open: 4.0        # hand-worked gates
+        door_close: 6.0       # gates closed, each guard signals the next
+        dispatch: 6.0         # bell signal relayed car to car to the motorman
+        reopen_penalty: 10.0
+
+  - name: "Block signals + trip stops, pneumatic doors under conductor control (GoA1)"
+    years: [1916, 1985]
+    goa: 1
+    overlay:
+      signalling: {system: lineside}
+      driver: {mode: manual}
+      dwell:
+        door_release: 3.0     # conductor confirms the berth, then opens (GoA1: 5-8 s to open)
+        dispatch: 4.5         # conductor closes, checks, signals; motorman reacts
+
+  - name: "Fixed-block cab signalling with ATO, operator closes doors (GoA2)"
+    years: [1986, 2005]
+    goa: 2
+    overlay:
+      signalling: {system: cab}
+      speed: {code_steps_mph: [10, 18, 25, 40, 50, 55, 60]}
+      # transit ATC codes civil speeds into ~300 m track circuits: braking starts at the
+      # block where the lower code is received, and the higher code returns one block on
+      driver: {mode: ato, block_length_m: 300}
+      dwell:
+        door_release: 2.5     # operator checks the platform side, presses open (WMATA: up to 15 s manual)
+        dispatch: 4.0         # operator closes doors, checks CCTV/mirrors, presses start
+
+  - name: "CBTC with ATO, one-person operation (GoA2)"
+    years: [2006, 2019]
+    goa: 2
+    overlay:
+      signalling: {system: cbtc}
+      driver: {mode: ato}
+      dwell:
+        door_release: 1.5     # automatic opening on proven stop (WMATA auto doors: open in 3-5 s)
+        dispatch: 3.5         # operator still closes the doors and presses start
+
+  - name: "CBTC driverless with on-board attendant (GoA3 / DTO)"
+    years: [2020, 2100]
+    goa: 3
+    overlay:
+      signalling: {system: cbtc}
+      driver: {mode: ato}
+      dwell:
+        door_release: 1.0     # automatic on proven stop
+        dispatch: 2.0         # attendant closes; ATS departs once doors are proven locked (DLR ~2-3 s)
+        ats_round: 0.0        # set e.g. 5 if the ATS programs dwells in whole 5 s steps
+        psd_overhead: 0.0     # GoA3 normally has no PSDs; set ~3 s for a line that has them

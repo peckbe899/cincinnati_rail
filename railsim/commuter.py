@@ -58,7 +58,6 @@ DEFAULTS = {
         "sources": ["csv", "kmz", "usgs"],
     },
     "driver": {
-        "speed_margin_mph": 2.0,
         "power_fraction": 1.0,
         "stop_approach_mph": 0.0,
         "stop_approach_m": 0.0,
@@ -110,12 +109,14 @@ PRESETS = {
 
 def make_driver(cfg: dict, train) -> Driver:
     d = cfg.get("driver", {})
+    ato = d.get("mode", "manual") == "ato"  # e.g. on a CBTC trunk (RER NExTEO, Elizabeth line core)
     return Driver(
         brake_rate=d.get("brake_rate"),  # m/s^2; default: the train's service (timetable) rate
-        speed_margin=speed_of(d, "speed_margin", 2.0 * MPH),
+        speed_margin=(speed_of(d, "speed_margin", 2.0 * MPH) if not ato
+                      else speed_of(d, "ato_margin", 1.0 * MPH)),
         power_fraction=float(d.get("power_fraction", 1.0)),
         dt=float(d.get("dt", 0.2)),
-        stop_approach_speed=speed_of(d, "stop_approach", 0.0),
+        stop_approach_speed=0.0 if ato else speed_of(d, "stop_approach", 0.0),
         stop_approach_dist=float(d.get("stop_approach_m", 0.0)),
     )
 
@@ -134,6 +135,9 @@ def _model(cfg: dict) -> CommuterDwell:
 def dwell_fn(station, train, cfg, is_terminal: bool) -> float:
     model = _model(cfg)
     dcfg = cfg.get("dwell", {}) or {}
+    by_class = dcfg.get("by_class_s") or {}
+    if station.dwell_override is None and station.cls in by_class:
+        return float(by_class[station.cls])  # operator-set dwell by station class
     if "door_open" not in dcfg:
         model.door_open = train.door_open
     if "door_close" not in dcfg:
@@ -142,6 +146,10 @@ def dwell_fn(station, train, cfg, is_terminal: bool) -> float:
         model.brake_release = 2.0  # electro-pneumatic / blended brakes release quickly
     doors = max(train.doors_per_side * train.cars, 1)
     scale = float(dcfg.get("load_scale", 1.0))
+    # station volumes are per train for a reference-size train; demand per train scales
+    # with the train's capacity (a 260-seat interurban picks up fewer people per stop)
+    cap = train.mass_load / 75.0 if train.mass_load > 0 else 1000.0
+    scale *= cap / float(dcfg.get("reference_capacity", 1000))
     return model.dwell(station.cls, station.platform, doors, train.door_channels, scale,
                        station.dwell_override)
 

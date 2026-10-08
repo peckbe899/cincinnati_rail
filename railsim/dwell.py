@@ -18,6 +18,7 @@ All volumes are per train per stop and are set by station class in the program c
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Dict, Optional
 
@@ -30,9 +31,12 @@ class StationClassLoad:
 
 @dataclass
 class MetroDwell:
+    door_release: float = 0.0  # s, wheel-stop -> doors released (GoA: who releases them)
     door_open: float = 3.0  # s, unlock + open
     door_close: float = 5.0  # s, warning chime + close + lock
     dispatch: float = 2.5  # s, doors locked -> train moving (ATO start / operator reaction)
+    psd_overhead: float = 0.0  # s, platform screen doors: second door set + gap check
+    ats_round: float = 0.0  # s, GoA3/4: ATS sets dwell, rounded up to this step
     t_board: float = 1.8  # s per boarding passenger per door channel
     t_alight: float = 1.4  # s per alighting passenger per door channel
     door_peaking: float = 1.6  # busiest door load / average door load
@@ -57,7 +61,11 @@ class MetroDwell:
         per_door = self.door_peaking / doors
         flow = per_door * (board * self.t_board + alight * self.t_alight) / max(door_channels, 1)
         reopen = self.reopen_prob_per_100 * (board + alight) / 100.0 * self.reopen_penalty
-        return max(self.door_open + flow + self.door_close + reopen + self.dispatch, self.min_dwell)
+        d = max(self.door_release + self.door_open + flow + self.door_close + reopen
+                + self.dispatch + self.psd_overhead, self.min_dwell)
+        if self.ats_round > 0:  # automatic dwell: programmed in whole steps
+            d = math.ceil(d / self.ats_round - 1e-9) * self.ats_round
+        return d
 
 
 @dataclass

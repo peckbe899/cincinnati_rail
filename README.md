@@ -17,7 +17,10 @@ python -m railsim.commuter configs/commuter/mbta_needham.yaml   # calibration ca
 python -m railsim.metro configs/metro/cin_line_6.yaml --train CMCC_TYPE1948_10CAR
 python -m railsim.batch configs/commuter --pattern "cin_rer_1*"  # whole folders
 python -m railsim.metro configs/metro/cin_line_1.yaml --list-trains
+python -m railsim.metro configs/metro/cin_line_6.yaml --year 1950  # operating era (fleet, signals, GoA)
+python -m railsim.train configs/train/apex_transcontinental_limited.yaml --stops limited
 python tools/make_cincinnati_configs.py                          # regenerate Cincinnati configs
+python tools/make_apex_configs.py                                # regenerate APEx HSR configs
 python tools/sensitivity.py commuter configs/commuter/mbta_needham.yaml "padding.percent=10"
 ```
 
@@ -64,7 +67,11 @@ Outputs go to `output/<config>/`:
    - `restrictions` can be given as `turnout: 15` (AREMA number) or a DB turnout type.
    - Rolling stock can supply a tabulated `te_curve_kmh_kn`, a speed-dependent `brake_curve_kmh_ms2` (HSR brake fade), `power_ramp_s` (diesel spool-up) and `aux_kw`.
    - Platform stopping: by default the head stops at the far end of the platform (`stations.stop_position`).
-7. **Timetable**.
+   - `driver.block_length_m`: fixed-block transit ATC. Codes change only at block boundaries, so braking starts at the block where the lower code arrives.
+   - `operating_zones`: a section with its own signalling and driver, e.g. CBTC + ATO on an RER trunk inside manually driven branches.
+   - Stub terminals: a route entry `{name: X, reverse: true}` makes the train run to the buffer and reverse (minimum dwell `stations.reversal_min_s`). A route whose first and last entries are the same station runs as a loop.
+7. **Operating eras** (`operations: data/operations/cincinnati_metro.yaml`, `--year`). The year picks the default train, signalling, Grade of Automation and door practice. Cincinnati Metro runs from gate cars (1905) through fixed-block ATO (1986) and CBTC (2006) to GoA3 (2020 onward). Sources are in `docs/research/eras.md`.
+8. **Timetable**.
    - Padding: a percentage, a UIC-style minutes-per-100 km term, pathing time at single-track meets, and terminal recovery.
    - Results are compared with a reference schedule.
    - `padding.distribution: eco` spends the padding MARECO-style instead of uniformly: a cruising cap plus coasting before braking, and the energy saved is reported.
@@ -83,13 +90,16 @@ Outputs go to `output/<config>/`:
   - Brightliner, Silverliner and Swiftliner.
   - A to F sets, each modelled on its real inspiration (Sydney V set, MI 84, Coradia Duplex, DB 423, KISS, FLIRT).
   - Reference consists: MBTA HSP46 + bilevels, SC-44 + bilevels, Caltrain KISS.
+- **HSR**:
+  - Velaro D, ETR 1000, AGV and Avelia Liberty.
+  - APEx Gen 6: 11-car tilting set, 250 mph, physics from CR450-class research.
 
 ## Calibration
 
 | Case | Model | Published | Notes |
 |---|---|---|---|
-| MBTA Orange Line, Oak Grove to Forest Hills | 35.1 min (running + dwell) | 35 min (GTFS Fall 2025, weekday midday) | No tuning: researched car spec, line speeds, cab-signal codes, MIT dwell model |
-| MBTA Needham Line, weekend | 33.5 min technical; 38.0 min with 10% + 2 min padding | 40 min | Branch speed limits are unpublished; 50 mph instead of 60 gives 39.1 min |
+| MBTA Orange Line, Oak Grove to Forest Hills | 35.8 min (running + dwell) | 35 min (GTFS Fall 2025, weekday midday) | No tuning: researched car spec, line speeds, cab-signal codes on 300 m blocks, MIT dwell model (+2.3%) |
+| MBTA Needham Line, weekend | 34.1 min technical; 38.7 min with 10% + 2 min padding | 40 min | −3.3%. Branch speed limits are unpublished |
 
 See `docs/CALIBRATION.md` for details, `docs/RESEARCH.md` for sources, and `docs/PROGRESS.md` for done and to-do items.
 

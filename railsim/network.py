@@ -119,7 +119,10 @@ class Network:
             xy = dedupe_polyline(xy, 0.5)
             if len(xy) < 2 or (u == v and cumulative_length(xy)[-1] < 2 * snap_tol):
                 continue
-            e = Edge(len(net.edges), xy, cumulative_length(xy), u, v, nm)
+            sx = cumulative_length(xy)
+            if any(_same_track(f, u, v, xy, sx, snap_tol) for f in net.edges):
+                continue  # the same track drawn twice (copied placemarks)
+            e = Edge(len(net.edges), xy, sx, u, v, nm)
             net.edges.append(e)
             net.adj[u].append(e.id)
             net.adj[v].append(e.id)
@@ -163,9 +166,10 @@ class Network:
 
     # ------------------------------------------------------------------ routing
     def _leg(self, start: Tuple[int, float], forward: bool, goal: Tuple[int, float],
-             max_turn: float) -> Dict[bool, Tuple[float, list]]:
+             max_turn: float, free_turn: bool = False) -> Dict[bool, Tuple[float, list]]:
         """Turn-constrained shortest path from a point on an edge, leaving in a given direction
-        (forward = increasing chainage), to a point on another edge.
+        (forward = increasing chainage), to a point on another edge. `free_turn` lifts the
+        turn limit at the first node (the train reverses there, at a stub terminal).
         Returns {arrival_forward: (cost, [(edge, ch_from, ch_to), ...])}."""
         se, sc = start
         ge, gc = goal
@@ -189,13 +193,14 @@ class Network:
             e = self.edges[eid]
             node = e.v if fwd else e.u
             h_in = e.end_heading(at_start=not fwd, travelling_from_start=fwd)
+            free = free_turn and len(path) == 1
             for nid in self.adj[node]:
                 f = self.edges[nid]
                 for f_fwd in ((True,) if f.u == node else ()) + ((False,) if f.v == node else ()):
-                    if nid == eid and f_fwd != fwd:
+                    if nid == eid and f_fwd != fwd and not free:
                         continue  # no reversing back down the same edge
                     h_out = f.end_heading(at_start=f_fwd, travelling_from_start=f_fwd)
-                    if abs(float(wrap_angle(h_out - h_in))) > max_turn:
+                    if not free and abs(float(wrap_angle(h_out - h_in))) > max_turn:
                         continue
                     if nid == ge:
                         piece = (nid, 0.0 if f_fwd else f.length, gc)
@@ -208,10 +213,37 @@ class Network:
                         heapq.heappush(pq, (c2, nid, f_fwd, path + (piece,)))
         return results
 
-    def route(self, stops: Sequence[Tuple[int, float]], max_turn_deg: float = 90.0):
+    def stub_tip(self, x: float, y: float, radius: float = 500.0,
+                 min_turn_deg: float = 150.0) -> Optional[Tuple[int, float, float]]:
+        """The buffer-stop end of a stub terminal near (x, y): a dead-end node, or a node
+        where two drawn lines meet head-on (track drawn into the station and back out).
+        Returns (edge_id, chainage, distance) for a stop at that node, or None."""
+        best = None
+        for n, (nx, ny) in enumerate(self.nodes):
+            d = math.hypot(nx - x, ny - y)
+            if d > radius or (best is not None and d >= best[2]):
+                continue
+            eids = self.adj.get(n, [])
+            if len(eids) == 2:
+                (a, b) = (self.edges[eids[0]], self.edges[eids[1]])
+                h_in = a.end_heading(at_start=a.u == n, travelling_from_start=a.v == n)
+                h_out = b.end_heading(at_start=b.u == n, travelling_from_start=b.u == n)
+                if abs(float(wrap_angle(h_out - h_in))) < math.radians(min_turn_deg):
+                    continue
+            elif len(eids) != 1:
+                continue
+            e = self.edges[eids[0]]
+            best = (e.id, 0.0 if e.u == n else e.length, d)
+        return best
+
+    def route(self, stops: Sequence[Tuple[int, float]], max_turn_deg: float = 90.0,
+              reverse_at: Sequence[int] = ()):
         """Route through stops (each (edge_id, chainage)) in order, keeping a consistent
-        direction of travel (no reversals). Returns (xy polyline, stop chainages along route)."""
+        direction of travel: no reversals, except at the stop indices in `reverse_at`
+        (stub terminals, where the driver changes ends). Returns (xy polyline, stop
+        chainages along route); `self.last_reversals` holds the reversal chainages."""
         max_turn = math.radians(max_turn_deg)
+        reverse_at = set(reverse_at)
         if len(stops) < 2:
             raise ValueError("need at least two stops to route")
         # DP over direction of travel at each stop
@@ -219,10 +251,14 @@ class Network:
         dp = {True: (0.0, []), False: (0.0, [])}
         for k in range(len(stops) - 1):
             new = {True: INF, False: INF}
+            free = k in reverse_at and k > 0
+            if free:  # the train may leave in either direction after reversing
+                best_in = min(dp.values(), key=lambda t: t[0])
+                dp = {True: best_in, False: best_in}
             for d_dep, (c0, legs) in dp.items():
                 if c0 == math.inf:
                     continue
-                res = self._leg(stops[k], d_dep, stops[k + 1], max_turn)
+                res = self._leg(stops[k], d_dep, stops[k + 1], max_turn, free_turn=free)
                 for d_arr, (c, pieces) in res.items():
                     if c0 + c < new[d_arr][0]:
                         new[d_arr] = (c0 + c, legs + [pieces])
@@ -233,9 +269,13 @@ class Network:
         xy_parts = []
         stop_ch = [0.0]
         total = 0.0
+        # record which drawn segment each piece of the route came from (operating zones)
+        self.last_route_pieces = []
         for pieces in legs:
             for eid, a, b in pieces:
                 part = _slice(self.edges[eid], a, b)
+                if len(part) >= 2 and abs(b - a) > 1.0:
+                    self.last_route_pieces.append((self.edges[eid].name, part[0].copy(), part[-1].copy()))
                 if len(part) >= 2:
                     if xy_parts and np.hypot(*(xy_parts[-1][-1] - part[0])) < 1e-6:
                         part = part[1:]
@@ -247,6 +287,7 @@ class Network:
         # rescale stop chainages to the deduped polyline length (tiny differences)
         L = cumulative_length(xy)[-1]
         scale = L / total if total > 0 else 1.0
+        self.last_reversals = [stop_ch[k] * scale for k in sorted(reverse_at) if 0 < k < len(stops) - 1]
         return xy, [c * scale for c in stop_ch]
 
     def longest_route_between_leaves(self, max_turn_deg: float = 90.0):
@@ -263,15 +304,25 @@ class Network:
                 except ValueError:
                     continue
                 if best is None or ch[-1] > best[1][-1]:
-                    best = (xy, ch)
+                    best = (xy, ch, list(self.last_route_pieces))
         if best is None:
             raise ValueError("network has no routable pair of dead ends")
+        self.last_route_pieces = best[2]
         return best[0]
 
     def _node_stop(self, n: int) -> Tuple[int, float]:
         eid = self.adj[n][0]
         e = self.edges[eid]
         return (eid, 0.0 if e.u == n else e.length)
+
+
+def _same_track(f: Edge, u: int, v: int, xy: np.ndarray, s: np.ndarray, tol: float) -> bool:
+    """True if a new piece between nodes u, v duplicates edge f (same ends, length within
+    2 %, midpoint within tol)."""
+    if {f.u, f.v} != {u, v} or abs(f.length - s[-1]) > 0.02 * max(s[-1], 1.0):
+        return False
+    mid = np.array([np.interp(s[-1] / 2, s, xy[:, 0]), np.interp(s[-1] / 2, s, xy[:, 1])])
+    return project_point_to_polyline(mid[0], mid[1], f.xy, f.s)[1] <= tol
 
 
 def _cut_polyline(xy: np.ndarray, cuts: List[float], min_gap: float) -> List[np.ndarray]:

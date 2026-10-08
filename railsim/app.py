@@ -20,7 +20,7 @@ import yaml
 from dataclasses import replace
 
 from .dynamics import Driver, RunResult, Simulator, Stop
-from .operations import apply_driver_config, eco_driver, monte_carlo
+from .operations import apply_driver_config, eco_driver, load_era, monte_carlo
 from .geo import INCH, KMH, MPH
 from .horizontal import CurveDesign
 from .line import Route, StationInfo, build_route, length_of, speed_of
@@ -93,7 +93,10 @@ def speed_policy_from(cfg: dict, train: Train) -> SpeedPolicy:
     inc = speed_of(sp, "increment", 5 * MPH)
     steps = tuple(float(x) * MPH for x in sp.get("code_steps_mph", []) or [])
     steps += tuple(float(x) * KMH for x in sp.get("code_steps_kmh", []) or [])
+    tilt = sp.get("allow_tilt", True)
     return SpeedPolicy(
+        tilt_cant_deficiency=train.tilt_cant_deficiency if tilt else 0.0,
+        tilt_max_speed=train.tilt_max_speed if tilt else 0.0,
         steps=tuple(sorted(steps)),
         line_speed=min(speed_of(cfg["geometry"], "line_speed"), train.max_speed),
         cant_deficiency=eu,
@@ -130,14 +133,23 @@ class DirectionResult:
 
 
 def _stops_for(route: Route, train: Train, reverse: bool, dwell_of, stop_position: str = "far_end",
-               dwell_mult: float = 1.0) -> tuple:
+               dwell_mult: float = 1.0, reversal_min_s: float = 240.0) -> tuple:
     L = route.length
     seq = [s for s in route.stations if s.stop]
     if reverse:
         seq = seq[::-1]
-    stop_s, dwell = [], []
+    stop_s, dwell, jumps = [], [], []
     for k, st in enumerate(seq):
         c = (L - st.s) if reverse else st.s
+        terminal = k == 0 or k == len(seq) - 1
+        if st.reverse and not terminal:
+            # stub terminal: the head stops 3 m short of the buffer; after the driver changes
+            # ends the old rear leads, so the front moves a train length on the unfolded route
+            stop_s.append(c - 3.0)
+            jumps.append(train.length + 6.0)
+            dwell.append(max(dwell_of(st) * dwell_mult, reversal_min_s))
+            continue
+        jumps.append(0.0)
         if stop_position == "far_end":
             # head stops at the stop marker near the far end of the platform (5 m short),
             # so a short train on a long platform runs further in than its centre point
@@ -147,20 +159,21 @@ def _stops_for(route: Route, train: Train, reverse: bool, dwell_of, stop_positio
             front = c + train.length / 2  # train centred on the platform placemark
         front = min(front, L - 3.0)  # never past the end of track
         stop_s.append(front)
-        terminal = k == 0 or k == len(seq) - 1
         dwell.append(0.0 if terminal else dwell_of(st) * dwell_mult)
-    return seq, stop_s, dwell
+    return seq, stop_s, dwell, jumps
 
 
 def run_direction(route: Route, train: Train, driver: Driver, dwell_of, reverse: bool,
                   ds: float = 2.0, stop_position: str = "far_end",
-                  dwell_mult: float = 1.0) -> DirectionResult:
+                  dwell_mult: float = 1.0, zone_drivers=None,
+                  reversal_min_s: float = 240.0) -> DirectionResult:
     td = route.track_data(ds)
     if reverse:
         td = td.reversed()
-    seq, stop_s, dwell = _stops_for(route, train, reverse, dwell_of, stop_position, dwell_mult)
-    sim = Simulator(train, td, driver)
-    res = sim.run([Stop(s, st.name, d) for s, st, d in zip(stop_s, seq, dwell)])
+    seq, stop_s, dwell, jumps = _stops_for(route, train, reverse, dwell_of, stop_position,
+                                           dwell_mult, reversal_min_s)
+    sim = Simulator(train, td, driver, zone_drivers)
+    res = sim.run([Stop(s, st.name, d, j) for s, st, d, j in zip(stop_s, seq, dwell, jumps)])
     label = f"{seq[0].name} -> {seq[-1].name}"
     return DirectionResult(label, seq, stop_s, dwell, res, reverse)
 
@@ -272,6 +285,9 @@ def main(spec: ProgramSpec, argv=None):
     ap.add_argument("--monte-carlo", type=int, default=0, metavar="N",
                     help="also run N randomised runs (driver/dwell variability): p50/p85 trip times")
     ap.add_argument("--headway", type=float, help="service headway (min): report fleet needed")
+    ap.add_argument("--year", type=int, help="operating year (with an `operations:` era file)")
+    ap.add_argument("--stops", help="stopping pattern: all, a pattern name (e.g. limited, express) "
+                                    "from service.patterns")
     ap.add_argument("--list-trains", action="store_true")
     args = ap.parse_args(argv)
 
@@ -287,14 +303,27 @@ def main(spec: ProgramSpec, argv=None):
         raise SystemExit(f"unknown preset '{preset}' (available: {', '.join(spec.presets)})")
     cfg = deep_merge(deep_merge(spec.defaults, spec.presets.get(preset, {})), user_cfg)
     base = _repo_root(cfg_path)
-    key = args.train or cfg["train"]
+    era_note = ""
+    era_train = None
+    if cfg.get("operations"):
+        era, era_train, year = load_era(base / cfg["operations"], args.year or cfg.get("year"))
+        # defaults < preset < era < line config
+        cfg = deep_merge(deep_merge(deep_merge(spec.defaults, spec.presets.get(preset, {})),
+                                    era.get("overlay", {})), user_cfg)
+        era_note = f" | {year}: {era['name']}"
+    if args.stops:
+        cfg.setdefault("service", {})["stops"] = args.stops
+    key = args.train or cfg.get("train") or era_train
+    if not key:
+        raise SystemExit("no train: set `train:` in the config or use --train")
     if key not in lib:
         raise SystemExit(f"unknown train '{key}'. Use --list-trains.")
     train = lib[key].with_load(args.load if args.load is not None else float(cfg.get("load_factor", 0.5)),
                                args.rail or cfg.get("rail_condition", "dry"))
 
     print(f"== {spec.name.upper()} | {cfg.get('name', cfg_path.stem)} | {train.name} "
-          f"(load {train.load_factor:.0%}, {train.mass / 1000:.0f} t, {train.rail_condition} rail)")
+          f"(load {train.load_factor:.0%}, {train.mass / 1000:.0f} t, {train.rail_condition} rail)"
+          f"{era_note}")
     route = build_route(cfg, base, curve_design_from(cfg, train), speed_policy_from(cfg, train),
                         profile_design_from(cfg))
     if train.min_curve_radius > 0:
@@ -311,7 +340,14 @@ def main(spec: ProgramSpec, argv=None):
     for w in route.warnings:
         print(f"  WARNING: {w}")
     driver = apply_driver_config(spec.make_driver(cfg, train), cfg)
+    zone_drivers = []
+    for oz in cfg.get("operating_zones", []) or []:
+        zcfg = deep_merge(cfg, {"signalling": oz.get("signalling", cfg.get("signalling", {})),
+                                "driver": oz.get("driver", {})})
+        zone_drivers.append(apply_driver_config(spec.make_driver(zcfg, train), zcfg))
     stop_pos = (cfg.get("stations", {}) or {}).get("stop_position", "far_end")
+    # driver changes ends at a stub terminal: walk the train, set up the cab, brake test
+    rev_min = float((cfg.get("stations", {}) or {}).get("reversal_min_s", 240.0))
 
     def dwell_of(st):
         return spec.dwell_fn(st, train, cfg, False)
@@ -323,7 +359,8 @@ def main(spec: ProgramSpec, argv=None):
     refs = cfg.get("reference", {}) or {}
     pad = cfg.get("padding", {}) or {}
     for rev in dirs:
-        dr = run_direction(route, train, driver, dwell_of, rev, stop_position=stop_pos)
+        dr = run_direction(route, train, driver, dwell_of, rev, stop_position=stop_pos,
+                           zone_drivers=zone_drivers, reversal_min_s=rev_min)
         apply_padding(dr, pad)
         technical_trip = dr.run.arrivals[-1] / 60.0
         eco_info = None
@@ -331,7 +368,8 @@ def main(spec: ProgramSpec, argv=None):
             # spend the padding as cruising below the limit + coasting (MARECO-like)
             target = sum(dr.run.leg_times()) + (dr.padded_arrivals[-1] - dr.run.arrivals[-1])
             drv_eco, dr_eco = eco_driver(
-                lambda d: run_direction(route, train, d, dwell_of, rev, stop_position=stop_pos),
+                lambda d: run_direction(route, train, d, dwell_of, rev, stop_position=stop_pos,
+                                        zone_drivers=zone_drivers, reversal_min_s=rev_min),
                 driver, target)
             eco_info = {"cruise_cap_kmh": round(min(drv_eco.cruise_cap, 999) * 3.6, 1),
                         "energy_uniform_kwh": round(dr.run.energy_traction_kwh, 1),
@@ -354,7 +392,9 @@ def main(spec: ProgramSpec, argv=None):
                   f"{eco_info['energy_eco_kwh']:.0f} kWh ({saved:.0%} saved)")
         if args.monte_carlo:
             mc = monte_carlo(lambda d, m: run_direction(route, train, d, dwell_of, rev,
-                                                        stop_position=stop_pos, dwell_mult=m),
+                                                        stop_position=stop_pos, dwell_mult=m,
+                                                        zone_drivers=zone_drivers,
+                                                        reversal_min_s=rev_min),
                              driver, args.monte_carlo)
             sd["monte_carlo_trip_min"] = {k: round(v, 2) for k, v in mc.items()}
             print(f"   Monte Carlo ({mc['runs']} runs, technical driving): trip p50 {mc['p50']:.1f} min, "

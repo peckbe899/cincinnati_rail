@@ -1,0 +1,56 @@
+# Cincinnati RER (TRI) operating eras. Paris-RER-style through-running: branches on
+# each side connect through a central trunk (KMZ segments named "...Trunk..."), so
+# services are branch-to-branch pairs. Signalling differs between trunk and branches
+# (cf. Paris RER A: SACEM on the core; RER B/D/E and Elizabeth line: CBTC/ATO core,
+# conventional signalling on the branches).
+# Canon fleet: Brightliner 1934-51, Silverliner 1951-69, Swiftliner 1969-80s, A 1979-96,
+# B 1985-2006 (SACEM, 90 s headways), C 1996-2018, D 2006-25 (CBTC), E 2018-, F 2025-.
+# Single-deck trunk stream B > D > F is the default; pass --train for the bilevel stream.
+
+system: Cincinnati RER
+default_year: 2026
+
+fleet:
+  - {from: 1934, train: RER_BRIGHTLINER}
+  - {from: 1951, train: RER_SILVERLINER}
+  - {from: 1969, train: RER_SWIFTLINER}
+  - {from: 1985, train: RER_B_SET}
+  - {from: 2006, train: RER_D_SET}
+  - {from: 2025, train: RER_F_SET}
+
+eras:
+  - name: "Interurban era: automatic block signals, conductor and trainmen, low platforms"
+    years: [1934, 1950]
+    overlay:
+      signalling: {system: lineside}
+      stations: {defaults: {platform: low}}   # retractable steps (Brightliner)
+      dwell: {conductor: 10.0, brake_release: 3.0}
+
+  - name: "Cab signals (pulse-code), conductor door control"
+    years: [1951, 1968]
+    overlay:
+      signalling: {system: cab}
+      stations: {defaults: {platform: low}}   # traps + heated steps (Silverliner)
+      dwell: {conductor: 8.0, brake_release: 2.5}
+
+  - name: "S-Bahn era: cab signals, high-level platforms, one conductor"
+    years: [1969, 1984]
+    overlay:
+      signalling: {system: cab}
+      dwell: {conductor: 5.0, brake_release: 2.0}
+
+  - name: "Basin trunk opens: SACEM-type supervision on the trunk, cab signals on branches"
+    years: [1985, 2005]
+    overlay:
+      signalling: {system: cab}
+      operating_zones:
+        - {name: trunk, match: "Trunk", signalling: {system: sacem}, driver: {mode: manual}}
+      dwell: {conductor: 4.0, brake_release: 1.5}
+
+  - name: "CBTC with ATO on the trunk (GoA2), cab signals / PTC on branches"
+    years: [2006, 2100]
+    overlay:
+      signalling: {system: cab}
+      operating_zones:
+        - {name: trunk, match: "Trunk", signalling: {system: cbtc}, driver: {mode: ato}}
+      dwell: {conductor: 3.0, brake_release: 1.5}   # driver-only with CCTV

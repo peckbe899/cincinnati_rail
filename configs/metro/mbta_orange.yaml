@@ -15,6 +15,7 @@ signalling: {system: cab}   # fixed-block ATC with cab-signal codes
 turnback_min: 4
 driver:
   mode: manual              # Orange Line is driven manually under cab-signal ATP
+  block_length_m: 300       # civil codes change only at track-circuit boundaries [E]
 restrictions:
   - {from_station: Assembly, to_station: Forest Hills, speed_mph: 40, reason: line maximum south of Assembly}
 profile:
