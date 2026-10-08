@@ -161,7 +161,7 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - Tests reproduce the canon radius/speed table.
 
 - **APEx finished vs sketched alignments** (`data/operations/apex.yaml`):
-  - 133 of 305 drawn segments are marked finished, from your list of 19 corridors; they follow the drawing.
+  - 132 of 305 drawn segments are marked finished, from your list of 19 corridors; they follow the drawing.
   - Every other segment is a sketch: each curve gets the largest radius within 250 m of the drawing, as an engineer smoothing it would (`track.finished`, `geometry.sketch_tolerance_m`).
   - Curves in `summary.json` now record their drawn segment, sketch flag and location.
 
