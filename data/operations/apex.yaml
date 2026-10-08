@@ -11,11 +11,11 @@ sketch_tolerance_m: 250
 # limit for passing trains, no slipstream / track-intrusion concern).
 #
 # APEx runs on its own right of way (no mixed traffic, so cant and deficiency are set for
-# HSR alone). The few unavoidable shared approaches, with switches and other trains, are
-# speed-restricted around the station: [assumed] 30 mph through the interlocking
-# (AREMA #15-#20 turnouts, mixed-traffic signalling), `distance_m` each side.
-shared_approaches:
-  - {station: Cincinnati Union Terminal, speed_mph: 30, distance_m: 1500}
+# HSR alone). Cincinnati Union Terminal is split by level: HSR on the main level,
+# intercity/regional trains in an underground platform box, so there is very little
+# crossover there. Any truly shared approach (switches, other trains) can be listed as
+# {station, speed_mph, distance_m}; none are known.
+shared_approaches: []
 
 finished:
   # Great Lakes (Chicago - Boston); segments shared with Broadway / North Coast Flyer

@@ -408,6 +408,20 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
                 continue
             extra.append(Restriction(max(st.s - dist, 0), min(st.s + dist, L), v,
                                      f"terminal approach {st.name}"))
+    # station throats for trains that stop: entry/exit turnouts onto the platform tracks
+    # (stations.throat: {by_class: {cls: {speed_*, distance_m}}, terminal: {...}}); trains
+    # that do not stop stay on the through tracks
+    throat = st_cfg_all.get("throat") or {}
+    stops_idx = [k for k, st in enumerate(on_route) if st.stop]
+    for k in stops_idx:
+        st = on_route[k]
+        t = throat.get("terminal") if k in (stops_idx[0], stops_idx[-1]) else None
+        t = t or (throat.get("by_class") or {}).get(st.cls)
+        if t:
+            half = st.platform_length / 2
+            d = float(length_of(t, "distance", 500.0))
+            extra.append(Restriction(max(st.s - half - d, 0.0), min(st.s + half + d, L),
+                                     speed_of(t, "speed"), f"{st.name} station throat"))
     # trains passing a platform without stopping: optional limit where people stand at the
     # platform edge (slipstream, track intrusion); platform screen doors lift it
     v_pass = speed_of(st_cfg_all, "pass_speed")
