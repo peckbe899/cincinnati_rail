@@ -234,6 +234,8 @@ def main(spec: ProgramSpec, argv=None):
     ap.add_argument("--train", help="rolling stock key (overrides config)")
     ap.add_argument("--load", type=float, help="load factor 0..1 of the reference passenger load")
     ap.add_argument("--direction", choices=["forward", "reverse", "both"], default="both")
+    ap.add_argument("--rail", choices=["dry", "wet", "leaf"],
+                    help="rail condition (adhesion): dry (default), wet, leaf-fall")
     ap.add_argument("--out", help="output directory (default: output/<config name>)")
     ap.add_argument("--no-plots", action="store_true")
     ap.add_argument("--list-trains", action="store_true")
@@ -251,10 +253,11 @@ def main(spec: ProgramSpec, argv=None):
     key = args.train or cfg["train"]
     if key not in lib:
         raise SystemExit(f"unknown train '{key}'. Use --list-trains.")
-    train = lib[key].with_load(args.load if args.load is not None else float(cfg.get("load_factor", 0.5)))
+    train = lib[key].with_load(args.load if args.load is not None else float(cfg.get("load_factor", 0.5)),
+                               args.rail or cfg.get("rail_condition", "dry"))
 
     print(f"== {spec.name.upper()} | {cfg.get('name', cfg_path.stem)} | {train.name} "
-          f"(load {train.load_factor:.0%}, {train.mass / 1000:.0f} t)")
+          f"(load {train.load_factor:.0%}, {train.mass / 1000:.0f} t, {train.rail_condition} rail)")
     route = build_route(cfg, base, curve_design_from(cfg, train), speed_policy_from(cfg, train),
                         profile_design_from(cfg))
     if train.min_curve_radius > 0:

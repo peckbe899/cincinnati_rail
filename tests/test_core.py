@@ -149,3 +149,11 @@ def test_projection_roundtrip():
     x, y = p.to_xy(39.2, -84.4)
     lat, lon = p.to_latlon(x, y)
     assert lat == pytest.approx(39.2, abs=1e-9) and lon == pytest.approx(-84.4, abs=1e-9)
+
+
+def test_adhesion_tapers_with_speed_and_rail_condition():
+    tr = ideal_train(adhesion=0.3, adhesive_mass_fraction=0.5, max_te_kn=1e6, power_kw=1e9)
+    assert tr.adhesion_at(0.0) == pytest.approx(0.3)
+    assert tr.adhesion_at(100 / 3.6) < 0.3 * 0.7  # Curtius-Kniffler: ~0.64 of standstill at 100 km/h
+    wet = tr.with_load(0.0, "wet")
+    assert wet.tractive_effort(1.0) < tr.tractive_effort(1.0)

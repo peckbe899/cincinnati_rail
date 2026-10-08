@@ -79,6 +79,7 @@ class Train:
     traction_efficiency: float = 0.85
     source_notes: str = ""
     min_curve_radius: float = 0.0  # m; tighter curves are a route-availability ban (e.g. long cars)
+    rail_condition: str = "dry"  # dry | wet | leaf: scales usable adhesion (set per run)
     load_factor: float = 1.0  # fraction of mass_load carried in this run
     extra: Dict = field(default_factory=dict)
 
@@ -92,9 +93,18 @@ class Train:
         # rotating inertia is a property of the empty vehicle's wheelsets/motors
         return self.mass + self.rotating_mass_factor * self.mass_empty
 
+    RAIL_FACTOR = {"dry": 1.0, "wet": 0.65, "leaf": 0.35}
+
+    def adhesion_at(self, v: float) -> float:
+        """Usable adhesion at speed v: the stock's starting value tapered with speed by the
+        Curtius-Kniffler shape mu ~ 0.161 + 7.5/(V_kmh + 44), scaled for rail condition."""
+        vk = v * 3.6
+        shape = (0.161 + 7.5 / (vk + 44.0)) / (0.161 + 7.5 / 44.0)
+        return self.adhesion * shape * self.RAIL_FACTOR.get(self.rail_condition, 1.0)
+
     def tractive_effort(self, v: float) -> float:
         """Maximum tractive effort at the wheel (N) at speed v (m/s)."""
-        f_adh = self.adhesion * self.adhesive_mass_fraction * self.mass * G
+        f_adh = self.adhesion_at(v) * self.adhesive_mass_fraction * self.mass * G
         f = min(self.max_te, f_adh)
         if v > 0:
             f = min(f, self.power / v)
@@ -104,11 +114,15 @@ class Train:
 
     def resistance(self, v: float, tunnel: bool = False) -> float:
         c = self.davis_C * (self.tunnel_factor if tunnel else 1.0)
-        return self.davis_A + self.davis_B * v + c * v * v
+        a = self.davis_A
+        if v < 1.0:
+            # roller-bearing breakaway: ~2.5 N/kN at standstill fading out by ~1 m/s (Hay)
+            a = max(a, (1.0 - v) * 2.5e-3 * self.mass * G + v * a)
+        return a + self.davis_B * v + c * v * v
 
-    def with_load(self, load_factor: float) -> "Train":
+    def with_load(self, load_factor: float, rail_condition: str = "dry") -> "Train":
         from dataclasses import replace
-        return replace(self, load_factor=load_factor)
+        return replace(self, load_factor=load_factor, rail_condition=rail_condition)
 
 
 def _get(d, *keys, default=None):
