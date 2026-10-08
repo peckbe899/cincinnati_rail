@@ -197,6 +197,14 @@ Living list of what is done and what is left. Newest changes at the top of each 
 
   The Drive connector only suits small files and Drive downloads are blocked from the sandbox. Large rasters need to come through the git repo (e.g. `data/topo/`); GitHub is reachable.
 
+- **Elevation sources, finest first:**
+  1. `dem`: your alternate-history terrain raster (`profile.dem`, `dem_scale: 0.1` for decimetres), read only at line points.
+  2. `lidar`: USGS 1 m LiDAR. It reads only the cloud-optimised GeoTIFF blocks under the line points from S3 and caches them, with no whole-tile downloads. Ohio and Indiana are covered; Northern Kentucky has no 1 m project, so terrain tiles fill it.
+  3. `terrain`: AWS Terrain Tiles.
+
+  Each source fills only the points the one above it lacks. Needs `pip install rasterio pyproj`.
+- **APEx through tracks:** non-stopping trains are limited to 125 mph past platforms (`through_track_speed_mph`), one full track from the doors.
+
 ## In progress
 
 - Nothing running.

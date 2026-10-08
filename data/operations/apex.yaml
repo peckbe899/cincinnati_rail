@@ -29,6 +29,10 @@ shared_approaches: []
 #  * Express and Local stations: stopping trains leave the through tracks onto the local
 #    (platform) track over #32.75 turnouts at 130 km/h (80 mph), ~500 m before the platform,
 #    held until the tail clears on departure.
+# Non-stopping trains run the through (passing) tracks, one full track away from the
+# platform doors: 125 mph past the platform (the train is held until its tail clears).
+through_track_speed_mph: 125
+
 station_throats:
   by_class:
     limited: [{speed_kmh: 160, distance_m: 4000}, {speed_kmh: 100, distance_m: 1000}]

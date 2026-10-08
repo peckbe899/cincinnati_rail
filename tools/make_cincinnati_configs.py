@@ -64,10 +64,15 @@ def end_stations(net, proj, st, tol=1500.0):
     return list(dict.fromkeys(out))
 
 
+# USGS 1 m LiDAR projects covering the region, newest first (no 1 m coverage yet for
+# Northern Kentucky: terrain tiles fill it). Point reads only, cached in data/elevation_cache.
+LIDAR_PROJECTS = ["OH_Statewide_Phase3_2021_B21", "OH_Statewide_Phase1_2019_B19",
+                  "IN_Indiana_Statewide_LiDAR_2017_B17", "KY_Statewide_2021_A21"]
+
 RER_COMMON = {
     "geometry": {"line_speed_mph": 90, "max_cant_in": 5.0},
     "speed": {"cant_deficiency_in": 4.0},
-    "profile": {"max_grade": 0.02, "sources": ["csv", "kmz", "usgs", "terrain"], "usgs": False},
+    "profile": {"max_grade": 0.02, "sources": ["csv", "kmz", "dem", "lidar", "terrain"], "lidar_projects": LIDAR_PROJECTS, "usgs": False},
     "padding": {"percent": 5.0, "final_leg_s": 60},
 }
 
@@ -109,7 +114,7 @@ def main():
             "stations": {"folder": f"{folder}/{f} Stations", "info": info,
                          "defaults": {"psd": f in psd_lines}},
             "geometry": {"line_speed_mph": 55},
-            "profile": {"max_grade": 0.05, "sources": ["csv", "kmz", "usgs", "terrain"], "usgs": False},
+            "profile": {"max_grade": 0.05, "sources": ["csv", "kmz", "dem", "lidar", "terrain"], "lidar_projects": LIDAR_PROJECTS, "usgs": False},
         }
         if len(ends) >= 2:
             cfg["service"] = {"route": [ends[0], ends[-1]]}

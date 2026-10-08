@@ -344,6 +344,19 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
     sources = pcfg.get("sources", ["csv", "kmz", "usgs"])
     L = h.length
     ground = None
+    tz = int(pcfg.get("terrain_zoom", 13))
+    tcache = base_dir / pcfg.get("terrain_cache", "data/elevation_cache/terrarium")
+
+    def _terrain(ss):
+        return elev.from_terrain_tiles(proj, h.xy, h.s, ss, tcache, zoom=tz, progress=log)
+
+    def _lidar_or_terrain(ss):
+        if not pcfg.get("lidar_projects"):
+            return _terrain(ss)
+        return elev.from_lidar(proj, h.xy, h.s, ss, pcfg["lidar_projects"],
+                               base_dir / pcfg.get("lidar_cache", "data/elevation_cache"),
+                               progress=log, fallback=_terrain)
+
     for src in sources:
         try:
             if src == "csv" and pcfg.get("csv"):
@@ -352,6 +365,14 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
                 zlines = [ln for p in track_pms if p.has_z for ln in p.lines]
                 if zlines:
                     ground = _ground_fn(elev.from_kmz_lines(zlines, proj, h.xy, h.s, _grid(L)), L)
+            elif src == "dem" and pcfg.get("dem") and (base_dir / pcfg["dem"]).exists():
+                # alternate-history terrain raster; LiDAR / terrain tiles outside it
+                ground = _ground_fn(elev.from_dem(
+                    proj, h.xy, h.s, _grid(L), base_dir / pcfg["dem"],
+                    scale=float(pcfg.get("dem_scale", 1.0)), progress=log,
+                    fallback=lambda ss: _lidar_or_terrain(ss)), L)
+            elif src == "lidar" and pcfg.get("lidar_projects"):
+                ground = _ground_fn(_lidar_or_terrain(_grid(L)), L)
             elif src == "terrain":
                 cache = base_dir / pcfg.get("terrain_cache", "data/elevation_cache/terrarium")
                 ground = _ground_fn(elev.from_terrain_tiles(
@@ -430,6 +451,15 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
                                      speed_of(tier, "speed"), f"{st.name} station throat"))
     # trains passing a platform without stopping: optional limit where people stand at the
     # platform edge (slipstream, track intrusion); platform screen doors lift it
+    # stations with dedicated through tracks (one full track from the platform doors):
+    # limit for non-stopping trains on those tracks (stations.through_track_speed_*)
+    v_thru = speed_of(st_cfg_all, "through_track_speed")
+    if v_thru:
+        for st in on_route:
+            if not st.stop:
+                half = st.platform_length / 2
+                extra.append(Restriction(max(st.s - half, 0.0), min(st.s + half, L), v_thru,
+                                         f"through tracks at {st.name}"))
     v_pass = speed_of(st_cfg_all, "pass_speed")
     if v_pass:
         for st in on_route:

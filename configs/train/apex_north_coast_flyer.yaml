@@ -8,43 +8,7 @@ track:
   folder: APEx Routes/Tier 2/North Coast Flyer
   snap_tol_m: 60.0
   max_turn_deg: 90.0
-  finished:
-  - ^(chicago 1|chicago 1 \(englewood\)|Chicago-Fort Wayne|Fort Wayne-Cecil|Cecil-Defiance|Defiance-Toledo|toledo
-    east approach|Toledo-Danbury|Danbury-Bay View|Bay View-Sandusky|Sandusk-Vermilion|Vermilion-Elyria|Elyria-Berea|Berea-Cleveland|Cleveland-South
-    Harbor|South Harbor-Ashtabula|Ashtabula-Erie|Erie-Buffalo|Buffalo-Rochester|Rochester-Syracuse|Syracuse-Utica|Utica-Albany|Albany-Springfield|Springfield-Boston|Boston
-    1)$
-  - ^(Louisville 1|Louisville-Cincinnati \d|Cincinnati-Louisville)$
-  - ^(Cincinnati-Norwood|Norwood-Wilmington Bypass|Wilmington-Columbus)$
-  - ^(Cincinnati-Camp Washington|Camp Washington-St Bernard|St Bernard-Norwood|Norwood-Kings
-    Island|Mason-South Lebanon|South Lebanon-Reesville|Reesville-Jasper Mills|Jasper
-    Mills-Bloomingburg|Bloomingburg-Columbus)$
-  - ^(Columbus-Gregory|Gregory-Shiloh|Shiloh-Berea)$
-  - ^(Columbus-Newark|Newark-Coshocton|Coshocton-Newcomerstown|Newcomerstown-Uhrichsville|Uhrichsville-Jewett|Jewett-Deandale|Deandale-Pittsburgh)$
-  - ^(South Harbor-Kinsman|Kinsman-Hudson|Hudson-Brady Lake|Brady Lake-Augerburg|Augerburg-Newton
-    Falls|Newton Falls-Salt Springs|Salt Springs-Youngstown|Youngstown-Pittsburgh)$
-  - ^NYC-Boston$
-  - ^(Baltimore-Washington|Washington-Baltimore)$
-  - match: ^(Philadelphia-Baltimore|Baltimore-Philadelphia)$
-    bbox:
-    - 37.0
-    - -80.0
-    - 41.0
-    - -75.75
-  - ^(Cincinnati-Batavia \d|Cincinnati-Charleston \d|Charleston-Richmond \d|Richmond-Norfolk
-    1|Richmond-Newport News|Newport News-Norfolk)$
-  - ^(Chicago-Indianapolis|Indianapolis-Cincinnati 1|Greensburg-CUT TRIMET)$
-  - ^(San Francisco-San Jose|San Jose-Madera \d|Madera-Bakersfield|Bakersfield-Palmdale|Palmdale-Burbank|Burbank-Los
-    Angeles|LAUS 1)$
-  - ^(Eugene-Medford|Medford-Redding|Redding-Sacramento|Sacramento 1|Sacramento-Oakland|Oakland-San
-    Francisco|San Francisco-Oakland|Oakland-Sacramento)$
-  - ^(Tucson-Phoenix|Phoenix-Ontario|Ontario-LA|LA-Ontario)$
-  - ^(Dallas 1|Dallas-Ft Worth 2|Ft Worth-Abilene|Abilene-Odessa|Odessa-El Paso|El
-    Paso-Tucson)$
-  - ^(Atlanta-Box Ankle|Stockbridge-Macon|Macon-Jacksonville)$
-  - ^(Cincinnati-Lexington \d|Lexington-McKinney|McKinney-Stearns|Stearns-Knoxville|Knoxville-Pigeon
-    Forge|Pigeon Forge-Cherokee Tunnel|Cherokee-Andrews.*|Andrews-Blue Ridge|Blue
-    Ridge-Jasper|Jasper-Marietta|Marietta-Atlanta)$
-  - ^(Milwaukee-Chicago \d|Milwaukee-Racine|Racine-Chicago)$
+  finished: []
 stations:
   folder: APEx Routes
   match_tol_m: 500
@@ -65,20 +29,21 @@ stations:
     by_class:
       limited:
       - speed_kmh: 160
-        distance_m: 8000
-      - speed_kmh: 60
-        distance_m: 1500
+        distance_m: 4000
+      - speed_kmh: 100
+        distance_m: 1000
       express:
-        speed_kmh: 100
-        distance_m: 400
+        speed_kmh: 130
+        distance_m: 500
       local:
-        speed_kmh: 100
-        distance_m: 400
+        speed_kmh: 130
+        distance_m: 500
     terminal:
     - speed_kmh: 160
-      distance_m: 8000
-    - speed_kmh: 60
-      distance_m: 1500
+      distance_m: 4000
+    - speed_kmh: 100
+      distance_m: 1000
+  through_track_speed_mph: 125
 service:
   route:
   - name: Cincinnati Union Terminal
