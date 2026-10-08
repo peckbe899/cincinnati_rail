@@ -17,6 +17,18 @@
 system: Cincinnati Metro
 default_year: 2026
 
+# Lines with platform screen doors at every station (from the GoA3 conversion), with the
+# reason; read by tools/make_cincinnati_configs.py (stations.defaults.psd per line)
+psd_lines:
+  Line 1: Fountain Square
+  Line 2: Fountain Square
+  Line 2b: Devou; short line
+  Line 3: Paycor
+  Line 5: Crosley and Union Terminal
+  Line 7: Crosley, Union Terminal, Fountain Square
+  Line 8: Union Terminal
+  Line 10: Union Terminal
+
 fleet:   # default train by year (latest type in service); --train overrides
   - {from: 1905, train: CMCC_TYPE1903_10CAR}
   - {from: 1926, train: CMCC_TYPE1925_10CAR}
@@ -83,9 +95,6 @@ eras:
         door_release: 1.0     # automatic on proven stop
         dispatch: 2.0         # attendant closes; ATS departs once doors are proven locked (DLR ~2-3 s)
         ats_round: 0.0        # set e.g. 5 if the ATS programs dwells in whole 5 s steps
-        # platform screen doors at many stations: second door set opens/closes with the
-        # train's and is proven closed before departure (+2-4 s, GoA4 practice). Assumed at
-        # transfer and busy stations; list others with dwell.psd_stations or set
-        # stations.info.<name>.psd: true/false in a line config
+        # platform screen doors (see psd_lines): the second door set opens/closes with the
+        # train's and is proven closed before departure (+2-4 s, GoA4 practice)
         psd_overhead: 3.0
-        psd_classes: [transfer, busy]

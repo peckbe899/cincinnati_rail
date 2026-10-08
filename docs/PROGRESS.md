@@ -140,21 +140,20 @@ Living list of what is done and what is left. Newest changes at the top of each 
 - **Tests**: 25, now covering zones, eras, tilt, fixed blocks, reversals and duplicate track.
 
 - **RER is driver-only in every era** (Paris RER practice): the driver releases the doors, passengers open them with a button, and the driver closes them and departs after a mirror or CCTV check. Set with `dwell.door_control: crew|button|auto`. US commuter crews (Needham) keep the conductor model.
-- **Metro platform screen doors per station.** Every line is GoA3 from 2020. The doors add 3 s per stop where fitted, assumed at transfer and busy stations. Set the list with `dwell.psd_stations` or `stations.info.<name>.psd`.
-- **Pre-RER services** (1934-1984, `history` in `data/operations/cincinnati_rer.yaml`):
-  - 16 generated `cin_rer_*_pre_rer_*` configs, each with `years:` and a default `year:`.
+- **Metro platform screen doors by line.** Every line is GoA3 from 2020. Lines 1, 2, 2b, 3, 5, 7, 8 and 10 have PSDs at every station, adding 3 s per stop (`psd_lines` in the metro era file). Per-station overrides: `stations.info.<name>.psd`.
+- **Services before through-running** (`history` and `through_from` in `data/operations/cincinnati_rer.yaml`). Every line ran into Union Terminal and terminated there; trains could continue as a new service after stopping, but there were no through lines. Through-running dates: RER-1 1985 (crosstown tunnel), then RER-2 and the RER-4 connection.
+  - 20 generated `cin_rer_*_pre_rer_*` configs, each with `years:` and a default `year:`.
     - RER-1 west into Union Terminal, on the yard approaches digitized from your screenshot (`tools/digitize_historic.py` → `data/kmz/cincinnati_historic.kml`).
     - RER-1 east into Times.
-    - RER-2 and RER-4 into Union Terminal.
-    - RER-5 to CVG over the Crescent Springs line from 1947.
-  - RER-3 and RER-5 through services run in every era.
-  - Opened with the RER: Northgate and the RER-2/RER-3 CVG branches.
+    - RER-2, RER-4 and RER-5 into Union Terminal.
+    - RER-5 from CVG over the Crescent Springs line from 1947.
+  - Northgate and the RER-2/RER-3 CVG branches open with their line's through-running.
   - Configs refuse a `--year` outside their `years`.
 - **Route tools**:
   - `track.extra` adds track from other folders or files.
   - `{via: [lat, lon]}` adds a non-stop routing waypoint.
   - `profile.structures` can match drawn segment names, e.g. tunnels.
-- **RER-3 covered way**: `covered_ways` in the RER era file turns a range into a tunnel in every RER-3 config. The portals are still to be set.
+- **RER-3 covered way** from Sedamsville to Riverbend/Belterra, modelled as tunnel in every RER-3 config (`covered_ways` in the RER era file).
 
 ## In progress
 
@@ -168,12 +167,10 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - RER-1 "Miamitown" and RER-3 "Cold Springs" are not on their drawn track.
   - Some drawn corners fit tighter than 30 m (Lines 1, 8, 13); check them in `alignment.kmz`.
 - RER history open points:
-  - The RER opening year is assumed to be 1985.
-  - Original ROWs still to draw: C&O bridge and viaduct (RER-2 south), the Newport riverfront approach (RER-4 south), and RER-2 north, RER-4 west and RER-5 into Union Terminal. Today's drawn track stands in for now.
-  - RER-5 is assumed to have run through Union Terminal, not terminated there.
+  - Through-running years for RER-2, RER-3, RER-4 and RER-5. Assumed: RER-2 1990, the others 1995.
+  - RER-3 before through-running needs the original connection from the riverfront near Mill Creek up to Union Terminal (not drawn). Its four services are marked `pending`.
+  - Original ROWs still to draw: C&O bridge and viaduct (RER-2 south), the Newport riverfront approach (RER-4 south). Today's drawn track stands in for now.
   - The Miamitown placemark is 864 m from the RER-1 track.
-- RER-3 covered-way portals: which stations or coordinates mark the ends of the embankment?
-- Metro PSD stations: assumed at transfer and busy stations. Give the real list if it differs.
 - APEx data gaps:
   - Synthetic end terminals on 8 routes, where no station placemark is near the end of the track.
   - San Antonio and Houston have no stations on Lone Star.

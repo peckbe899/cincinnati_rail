@@ -58,28 +58,34 @@ eras:
       dwell: {door_control: button, dispatch: 3.0, brake_release: 1.5}   # CCTV door check
 
 # ---------------------------------------------------------------------------------------
-# Service history (read by tools/make_cincinnati_configs.py). Before the RER opened, the
-# branches ran into Union Terminal (CUT) on the original railroad rights of way (e.g.
-# Covington Union -> C&O bridge -> C&O viaduct -> CUT); RER-1's eastern branches ended at
-# Times, a stub terminal like Boston North Station. RER-3 (C) and RER-5 (E) already ran
-# branch to branch through the city. Northgate and the RER-2 / RER-3 CVG branches opened
-# with the RER; before that CVG was served by RER-5 over the Crescent Springs-CVG line.
-# RER-3 (C) runs underground in an embanked covered way along the Ohio (like RATP RER C
-# along the Seine): on the map it looks like it is in the river; the portals are where the
-# embankment ends. Each entry becomes a `profile.structures` tunnel in the generated configs
-# (tunnel drag, profile free of the river surface). Portals not yet known:
-#   RER-3: [{from: [lat, lon], to: [lat, lon]}]   or   [{from_station: A, to_station: B}]
-covered_ways:
-  RER-3: []
+# Service history (read by tools/make_cincinnati_configs.py). Before through-running, every
+# line ran into Union Terminal (CUT) on the original railroad rights of way and terminated
+# there (e.g. Covington Union -> C&O bridge -> C&O viaduct -> CUT); a Dayton-CUT train might
+# go on as a CUT-Verona train after its stop, but there was no Dayton-Verona line. RER-1's
+# eastern branches ended at Times, a stub terminal like Boston North Station.
+# Through-running starts line by line: the crosstown tunnel opens for RER A (RER-1) in 1985,
+# followed by RER B (RER-2) and the RER D (RER-4) connection.
+through_from:
+  RER-1: 1985
+  RER-2: 1990   # [assumed] "followed by RER B"
+  RER-4: 1995   # [assumed] RER D connection
+  RER-3: 1995   # [assumed]
+  RER-5: 1995   # [assumed]
 
-rer_opening: 1985   # [assumed] the basin trunk opens with the B set (SACEM, 90 s headways)
+# RER-3 (C) runs underground in an embanked covered way along the Ohio from Sedamsville to
+# Riverbend/Belterra (like RATP RER C along the Seine): on the map it looks like it is in
+# the river; the portals are where the embankment ends. Each entry becomes a
+# `profile.structures` tunnel in the generated configs (tunnel drag, profile free of the
+# river surface).
+covered_ways:
+  RER-3: [{from_station: Sedamsville, to_station: Riverbend/Belterra}]
+
 history:
-  rer_era_only:     # terminals that only exist from rer_opening
+  rer_era_only:     # terminals that open with the line's through-running
     RER-1: [Northgate]
     RER-2: [CVG Terminal 1]
     RER-3: [CVG Terminal 1]
-  through_lines: [RER-3, RER-5]   # current branch-to-branch services also ran before the RER
-  services:         # pre-RER services; `via` names a line in data/kmz/cincinnati_historic.kml
+  services:         # pre-through services; `via` names a line in data/kmz/cincinnati_historic.kml
     - {line: RER-1, from: Miami University / OXFORD, to: Union Terminal, via: Historic Oxford approach}
     - {line: RER-1, from: Miamitown, to: Union Terminal, via: Historic Miamitown approach}
     - {line: RER-1, from: Lebanon Station, to: Times}
@@ -94,9 +100,19 @@ history:
     - {line: RER-4, from: Grants Lick, to: Union Terminal, approx: "via Newport Central; original riverfront ROW not drawn yet, today's trunk used"}
     - {line: RER-4, from: Brookville, to: Union Terminal}
     - {line: RER-4, from: Greensburg, to: Union Terminal}
+    - {line: RER-5, from: Waynesville, to: Union Terminal}
+    - {line: RER-5, from: Wilmington, to: Union Terminal}
+    - {line: RER-5, from: Beaverlick, to: Union Terminal}
+    - {line: RER-5, from: Napoleon, to: Union Terminal}
+    - {line: RER-5, from: Williamstown, to: Union Terminal}
     # the original CVG line (Crescent Springs - CVG, drawn in the RER-2 folder); the
     # airport opened in 1947
-    - {line: RER-5, from: Waynesville, to: CVG Terminal 1, years: [1947, 1984],
+    - {line: RER-5, from: CVG Terminal 1, to: Union Terminal, years: [1947, null],
        extra: {folder: "Cincinnati RER/RER-2", name_regex: "^Erlanger-Beaverlick$"}}
-    - {line: RER-5, from: Wilmington, to: CVG Terminal 1, years: [1947, 1984],
-       extra: {folder: "Cincinnati RER/RER-2", name_regex: "^Erlanger-Beaverlick$"}}
+    # RER-3 needs the original connection from the riverfront line near Mill Creek up to
+    # Union Terminal (not drawn yet); draw it in data/kmz/cincinnati_historic.kml under
+    # "Cincinnati Historic/RER-3" and drop `pending`
+    - {line: RER-3, from: Osgood, to: Union Terminal, pending: "Mill Creek - Union Terminal connection not drawn"}
+    - {line: RER-3, from: Versailles, to: Union Terminal, pending: "Mill Creek - Union Terminal connection not drawn"}
+    - {line: RER-3, from: Georgetown, to: Union Terminal, pending: "Mill Creek - Union Terminal connection not drawn"}
+    - {line: RER-3, from: Mt Orab, to: Union Terminal, pending: "Mill Creek - Union Terminal connection not drawn"}
