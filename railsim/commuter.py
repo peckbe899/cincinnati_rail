@@ -55,7 +55,7 @@ DEFAULTS = {
         "below_ground_weight": 4.0,
         "allow_tunnels": False,
         "viaduct_height_m": 6.0,
-        "sources": ["csv", "kmz", "usgs"],
+        "sources": ["csv", "kmz", "usgs", "terrain"],
     },
     "driver": {
         "power_fraction": 1.0,

@@ -33,6 +33,7 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - The legacy CSV.
   - Altitudes stored in the KMZ.
   - USGS 3DEP bare-earth data via EPQS, with a disk cache. This needs internet; it is blocked in the build sandbox but works on a normal machine.
+  - AWS Terrain Tiles (USGS 3DEP resampled), which work from the sandbox.
 - **Posted speed limits** (`speed.py`):
   - Curve speeds use cant plus cant deficiency, with G = 1500 mm.
   - Short spirals are limited by the rate of change of cant deficiency.
@@ -172,6 +173,11 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - Station throats, for stopping trains only (`stations.throat`, `docs/research/hsr_throats.md`):
     - Limited hubs and route terminals: 160 km/h from 8 km out, then 60 km/h from 1.5 km.
     - Express and local stations: 100 km/h turnouts onto platform loops, 400 m each side.
+
+- **Real ground elevation**: a `terrain` source reads AWS Terrain Tiles (USGS 3DEP; S3 is reachable from the sandbox, unlike the USGS point service). Every config now has real grades instead of a flat profile.
+  - Orange Line and Needham are unchanged (flat Boston lowlands).
+  - Line 6 takes 0.3 min longer and uses 16% more traction energy.
+  - Your alt-history topography will replace this source when it is ready.
 
 ## In progress
 

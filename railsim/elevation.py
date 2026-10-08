@@ -7,7 +7,10 @@ Priority (first available wins, configurable):
   3. 'usgs'  - USGS 3DEP bare-earth DEM via the Elevation Point Query Service (EPQS);
                one consistent datum (NAVD88) and no trees/buildings, unlike SRTM/Copernicus
                surface models. Results are cached on disk, so each point is fetched once.
-  4. flat    - zero everywhere (a warning is printed)
+  4. 'terrain' - AWS Terrain Tiles (Terrarium PNG, served from S3): in the US these are
+               resampled USGS 3DEP DEMs (bare earth), so the same ground as 'usgs' at
+               ~15 m (zoom 13) without the per-point service. Tiles are cached on disk.
+  5. flat    - zero everywhere (a warning is printed)
 
 Everything returned is ground elevation in metres at the requested chainages; the track
 profile itself is designed from it in profile.py.
@@ -161,3 +164,75 @@ def from_usgs(proj, align_xy, align_s, s_query, cache_path, spacing=25.0,
         return None
     zz = np.array([float(v) for v in z[ok]])
     return np.interp(s_query, s_samp[ok], zz)
+
+
+TERRAIN_URL = "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/{z}/{x}/{y}.png"
+
+
+def _fetch_tile(z: int, x: int, y: int, cache_dir: Path, timeout=30.0) -> Optional[np.ndarray]:
+    """Terrarium tile as a 256x256 elevation array (m), from the disk cache or S3."""
+    from PIL import Image
+    import io
+    path = cache_dir / str(z) / str(x) / f"{y}.png"
+    if not path.exists():
+        req = urllib.request.Request(TERRAIN_URL.format(z=z, x=x, y=y),
+                                     headers={"User-Agent": "railsim/10"})
+        data = None
+        for _ in range(3):
+            try:
+                with urllib.request.urlopen(req, timeout=timeout) as r:
+                    data = r.read()
+                break
+            except OSError:
+                continue
+        if data is None:
+            return None
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+    rgb = np.asarray(Image.open(path).convert("RGB"), dtype=float)
+    return rgb[..., 0] * 256.0 + rgb[..., 1] + rgb[..., 2] / 256.0 - 32768.0
+
+
+def from_terrain_tiles(proj, align_xy, align_s, s_query, cache_dir, zoom: int = 13,
+                       spacing: float = 10.0, workers: int = 16,
+                       progress=print) -> Optional[np.ndarray]:
+    """Ground elevation along the alignment from Terrarium tiles, bilinear-sampled every
+    `spacing` m (Web Mercator tile maths)."""
+    cache_dir = Path(cache_dir)
+    s_samp = np.arange(0.0, align_s[-1] + spacing, spacing)
+    s_samp[-1] = min(s_samp[-1], align_s[-1])
+    x = np.interp(s_samp, align_s, align_xy[:, 0])
+    y = np.interp(s_samp, align_s, align_xy[:, 1])
+    lat, lon = proj.to_latlon(x, y)
+    n = 2 ** zoom
+    px = (np.asarray(lon) + 180.0) / 360.0 * n * 256.0
+    lr = np.radians(np.asarray(lat))
+    py = (1.0 - np.arcsinh(np.tan(lr)) / math.pi) / 2.0 * n * 256.0
+    # pixel centres: sample between the four surrounding pixels
+    fx, fy = px - 0.5, py - 0.5
+    x0, y0 = np.floor(fx).astype(int), np.floor(fy).astype(int)
+    need = set()
+    for dx in (0, 1):
+        for dy in (0, 1):
+            for tx, ty in zip((x0 + dx) // 256, (y0 + dy) // 256):
+                need.add((int(tx) % n, int(ty)))
+    tiles = {}
+    todo = [t for t in need if not (cache_dir / str(zoom) / str(t[0]) / f"{t[1]}.png").exists()]
+    if todo:
+        progress(f"  Terrain tiles: fetching {len(todo)} of {len(need)} (zoom {zoom}, cache {cache_dir})")
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        for t, arr in zip(need, ex.map(lambda t: _fetch_tile(zoom, t[0], t[1], cache_dir), need)):
+            tiles[t] = arr
+    if any(v is None for v in tiles.values()):
+        return None
+
+    def pix(xx, yy):
+        out = np.empty(len(xx))
+        for i, (a, b) in enumerate(zip(xx, yy)):
+            out[i] = tiles[(int(a // 256) % n, int(b // 256))][b % 256, a % 256]
+        return out
+
+    wx, wy = fx - x0, fy - y0
+    z = ((1 - wx) * (1 - wy) * pix(x0, y0) + wx * (1 - wy) * pix(x0 + 1, y0)
+         + (1 - wx) * wy * pix(x0, y0 + 1) + wx * wy * pix(x0 + 1, y0 + 1))
+    return np.interp(s_query, s_samp, z)

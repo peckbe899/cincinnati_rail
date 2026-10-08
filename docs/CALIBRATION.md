@@ -2,7 +2,7 @@
 
 Both cases use the hand-drawn KMZs supplied with the project. Station coordinates come from MBTA GTFS (Fall 2025). Physical inputs come from the research notes. Nothing was fitted to the schedule except the padding policy, and the padding is chosen from published practice, not tuned.
 
-The KMZs carry no altitudes and the sandbox could not reach USGS, so both profiles are **flat**. Real grades (Charles River tunnel ramps and the Tufts downgrade on the Orange Line; rock cuts on Needham) would add a little time.
+The KMZs carry no altitudes. Profiles first ran flat; they now use USGS 3DEP ground from AWS Terrain Tiles, and both results are unchanged to 0.1 min. The Orange Line tunnel ramps are not in the ground model; they are approximated by the tunnel structure range.
 
 ## MBTA Orange Line (metro program)
 

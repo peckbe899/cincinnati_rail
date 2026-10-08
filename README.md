@@ -43,7 +43,7 @@ Outputs go to `output/<config>/`:
    - A single corner gets the largest radius that stays within `corner_offset_tol_m` of the drawing.
    - Track length is the true curve length.
 3. **Vertical profile** (`profile.py`).
-   - Ground elevation comes from the legacy CSV, from KMZ altitudes, or from USGS 3DEP bare earth (`profile.usgs: true`; needs internet, cached).
+   - Ground elevation comes from the legacy CSV, from KMZ altitudes, from USGS 3DEP bare earth via the point service (`profile.usgs: true`), or from AWS Terrain Tiles (`terrain`, USGS 3DEP resampled to ~15 m at zoom 13, the default fallback). Downloads are cached in `data/elevation_cache/`.
    - A designed track profile is fitted to it: grades are bounded, platforms are near level, grade changes are smoothed, and going below ground costs more than going above it.
    - Each point is classified as at-grade, fill, viaduct, cut or tunnel.
 4. **Posted speeds** (`speed.py`).

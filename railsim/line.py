@@ -352,6 +352,11 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
                 zlines = [ln for p in track_pms if p.has_z for ln in p.lines]
                 if zlines:
                     ground = _ground_fn(elev.from_kmz_lines(zlines, proj, h.xy, h.s, _grid(L)), L)
+            elif src == "terrain":
+                cache = base_dir / pcfg.get("terrain_cache", "data/elevation_cache/terrarium")
+                ground = _ground_fn(elev.from_terrain_tiles(
+                    proj, h.xy, h.s, _grid(L), cache, zoom=int(pcfg.get("terrain_zoom", 13)),
+                    progress=log), L)
             elif src == "usgs" and pcfg.get("usgs", False):
                 cache = base_dir / pcfg.get("usgs_cache", "data/elevation_cache/epqs.json")
                 ground = _ground_fn(elev.from_usgs(proj, h.xy, h.s, _grid(L), cache,
@@ -376,7 +381,7 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
         structures += [(s0, s1, z.get("type", "viaduct")) for s0, s1 in spans]
     if ground is None:
         warnings.append("no elevation data: profile is FLAT. Provide profile.csv, a KMZ with "
-                        "altitudes, or set profile.usgs: true (needs internet).")
+                        "altitudes, or add 'terrain' / 'usgs' to profile.sources (needs internet).")
         prof = flat_profile(L, pdesign.grid)
         for s0, s1, kind in structures:
             m = (prof.s >= s0) & (prof.s <= s1)

@@ -67,7 +67,7 @@ def end_stations(net, proj, st, tol=1500.0):
 RER_COMMON = {
     "geometry": {"line_speed_mph": 90, "max_cant_in": 5.0},
     "speed": {"cant_deficiency_in": 4.0},
-    "profile": {"max_grade": 0.02, "sources": ["csv", "kmz", "usgs"], "usgs": False},
+    "profile": {"max_grade": 0.02, "sources": ["csv", "kmz", "usgs", "terrain"], "usgs": False},
     "padding": {"percent": 5.0, "final_leg_s": 60},
 }
 
@@ -109,7 +109,7 @@ def main():
             "stations": {"folder": f"{folder}/{f} Stations", "info": info,
                          "defaults": {"psd": f in psd_lines}},
             "geometry": {"line_speed_mph": 55},
-            "profile": {"max_grade": 0.05, "sources": ["csv", "kmz", "usgs"], "usgs": False},
+            "profile": {"max_grade": 0.05, "sources": ["csv", "kmz", "usgs", "terrain"], "usgs": False},
         }
         if len(ends) >= 2:
             cfg["service"] = {"route": [ends[0], ends[-1]]}

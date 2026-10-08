@@ -283,6 +283,8 @@ def main():
                          "sketch_tolerance_m": STATUS.get("sketch_tolerance_m", 250)},
             # canon curve model (C = 30.56 V^2/R, D <= 180 mm): Eu 130 mm up to 186 mph,
             # 100 mm above (EN 13803 high-speed band); Gen 6T adds tilt below 186 mph
+            # ground from AWS Terrain Tiles (USGS 3DEP) at zoom 12 (~30 m): long routes
+            "profile": {"terrain_zoom": 12},
             "speed": {"cant_deficiency_mm": 100,
                       "cant_deficiency_bands": [{"up_to_mph": 186, "mm": 130}, {"mm": 100}]},
             # canon APEx Gen 6 dwells (PSDs + passenger information): by station class
