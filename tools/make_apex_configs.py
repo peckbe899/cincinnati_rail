@@ -55,7 +55,7 @@ def _stub_stations(net, stations, proj):
         if net.locate(float(x), float(y), 300.0) is None:
             continue
         tip = net.stub_tip(float(x), float(y), 500.0)
-        if tip is not None and net.degree(_tip_node(net, tip)) == 2:
+        if tip is not None:
             seen.add(p.name)
             out.append((p, tip[:2]))
     return out
@@ -76,6 +76,8 @@ def _route_with_reversals(net, stations, proj, turn):
         for b in leaves[i + 1:]:
             for k in range(1, min(3, len(stubs)) + 1):
                 for seq in permutations(stubs, k):
+                    if any(_tip_node(net, tp) in (a, b) for _, tp in seq):
+                        continue  # a route end, not a reversal part-way along
                     stops = [net._node_stop(a)] + [tp for _, tp in seq] + [net._node_stop(b)]
                     try:
                         xy, ch = net.route(stops, turn, reverse_at=range(1, k + 1))
@@ -86,6 +88,10 @@ def _route_with_reversals(net, stations, proj, turn):
                 if best:
                     break  # fewest reversals that work
     return (best[1], best[2]) if best else None
+
+
+def _length(xy):
+    return float(np.sum(np.hypot(*np.diff(np.asarray(xy), axis=0).T)))
 
 
 def _is_loop(net):
@@ -207,17 +213,18 @@ def main():
                     break
                 except ValueError:
                     continue
-            if xy is None:
-                # stub terminals part-way along (Chicago, St Louis, Cincinnati are drawn
-                # as in-and-out tracks): allow the train to reverse at them
-                for t in (90.0, 135.0):
-                    found = _route_with_reversals(net, stations, proj, t)
-                    if found:
-                        xy, via = found
-                        turn = t
-                        notes.append("reverses at stub terminal(s): "
-                                     + ", ".join(p.name for p in via))
-                        break
+            # stub terminals part-way along (Chicago, St Louis, Cincinnati are drawn as
+            # in-and-out tracks): allow the train to reverse at them when that covers
+            # clearly more of the drawn line (a dead-end stub can otherwise end the route)
+            base_len = _length(xy) if xy is not None else 0.0
+            for t in (90.0, 135.0):
+                found = _route_with_reversals(net, stations, proj, t)
+                if found and _length(found[0]) > 1.15 * base_len:
+                    xy, via = found
+                    turn = t
+                    notes.append("reverses at stub terminal(s): "
+                                 + ", ".join(p.name for p in via))
+                    break
             if xy is None and _is_loop(net):
                 # closed loop (e.g. a Texas Triangle service): start and finish at the
                 # highest-class station, running once round via the station farthest from it
