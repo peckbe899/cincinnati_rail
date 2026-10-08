@@ -332,3 +332,29 @@ For a clothoid of length Ls into a circle of radius R (spiral angle θs = Ls/(2R
   - Grades ≤ 2% (1% with freight); stations ≤ 0.5% / level
   - Vertical curves per AREMA: L(ft) = 2.15·V²·A%/(100·0.60), ≥ 100 ft; with freight, a = 0.10
 - Curve resistance: 0.8 lb/ton/deg (≈ 700/R N/kN) or Röckl
+
+## APEx curve model (canon, Sept 2026)
+
+Settled in the "Tilting train speeds on curves" discussion and implemented in `speed.py`:
+
+- **Equation:** C = 30.56 V²/R (C in mm, V in mph, R in m). This is the same as V = √(g·R·(Ea+Eu)/G) with G = 1500 mm.
+- **Applied cant:** D ≤ 180 mm, the FRA Class 3-5 ceiling and LGV practice. Restricting curves get the full 180 mm. On larger radii the cant is sized for line speed.
+- **Cant deficiency, banded by speed** (`speed.cant_deficiency_bands`): 130 mm up to 186 mph (300 km/h), 100 mm above (EN 13803 high-speed band). A more conservative option keeps 80 mm above 250 mph.
+- **Tilt (Gen 6T only):** 8° tilt bolster with ~66% compensation of 1500·tan 8°, adding ~140 mm, for 270 mm in total (the Pendolino practical ceiling). Tilt locks above 186 mph (canon, 6 May 2026), so tilt only helps below about 2,350 m radius. Canon minimum radius for tilting sections: 2,500 m.
+- **Resulting speeds:**
+
+| Radius | Untilted | Tilting |
+|---|---|---|
+| 1,000 m | 101 mph | 121 mph |
+| 2,500 m | 159 mph | 186 mph (lock) |
+| 6,000 m | 234 mph | n/a |
+| 7,000 m | 253 mph | n/a |
+| 8,000 m | 271 mph | n/a |
+| 10,000 m | 303 mph | n/a |
+
+- **Radius needed:** 6,821 m for 250 mph cruise and 8,557 m for 280 mph recovery. The canon recovery rule (straight track or ≥ 10 km radius) has margin over that.
+- **Checked by tests:** `tests/test_core.py::test_apex_canon_curve_speeds`.
+- **Not modelled:**
+  - The crosswind cascade, which lowers tilt-active and cruise speeds in wind.
+  - The 280 mph recovery running.
+  - Small-angle active suspension (1.5-2°), which was proposed but not adopted.

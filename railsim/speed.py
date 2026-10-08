@@ -32,6 +32,16 @@ class SpeedPolicy:
     steps: tuple = ()  # allowed signal code speeds (m/s); if set, limits round DOWN to these
     tilt_cant_deficiency: float = 0.0  # m, extra Eu available with active tilt (0 = no tilt)
     tilt_max_speed: float = 0.0  # m/s, tilt is inhibited above this speed
+    # Eu tightening with speed (EN 13803 / TSI style): ((v_upper m/s, Eu m), ...) ascending;
+    # the last band may use v_upper = inf. Empty: `cant_deficiency` at every speed.
+    deficiency_bands: tuple = ()
+
+    def eu_at(self, v: float) -> float:
+        """Permitted cant deficiency at speed v."""
+        for v_up, eu in self.deficiency_bands:
+            if v <= v_up + 1e-9:
+                return eu
+        return self.cant_deficiency
 
 
 @dataclass
@@ -66,13 +76,14 @@ def curve_speed(R: float, cant: float, spiral: float, pol: SpeedPolicy,
     in short or missing spirals, by the rate of change of cant deficiency."""
     if deflection > 0:
         R = max(R, pol.min_effective_arc / deflection)
+    # each (Eu, speed cap) pair is valid on its own: a speed-banded allowance holds up to
+    # its band's top speed, and tilt adds its extra Eu only up to the tilt cut-off speed
+    options = [(eu, v_up) for v_up, eu in pol.deficiency_bands] or [(pol.cant_deficiency, math.inf)]
     if pol.tilt_cant_deficiency > 0 and pol.tilt_max_speed > 0:
-        # tilting trains: more cant deficiency, but only up to the tilt cut-off speed
-        v_plain = _curve_speed_plain(R, cant, spiral, pol, pol.cant_deficiency)
-        v_tilt = min(_curve_speed_plain(R, cant, spiral, pol, pol.cant_deficiency
-                                        + pol.tilt_cant_deficiency), pol.tilt_max_speed)
-        return min(max(v_plain, v_tilt), pol.line_speed)
-    return min(_curve_speed_plain(R, cant, spiral, pol, pol.cant_deficiency), pol.line_speed)
+        options.append((pol.eu_at(pol.tilt_max_speed) + pol.tilt_cant_deficiency,
+                        pol.tilt_max_speed))
+    v = max(min(_curve_speed_plain(R, cant, spiral, pol, eu), cap) for eu, cap in options)
+    return min(v, pol.line_speed)
 
 
 def _curve_speed_plain(R: float, cant: float, spiral: float, pol: SpeedPolicy, eu: float) -> float:

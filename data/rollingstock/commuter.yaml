@@ -457,12 +457,12 @@ AVELIA_LIBERTY_11:
 # train in the style of an articulated AGV / CR450-class unit. See docs/research/eras.md.
 # ---------------------------------------------------------------------------------------
 
-APEX_GEN6:
-  name: APEx Gen 6 (11-car articulated, 250 mph, tilt below 265 km/h)
+APEX_GEN6: &apex_gen6
+  name: APEx Gen 6 (11-car articulated, 250 mph, no tilt)
   category: hsr
   length_m: 200           # canon: 11-car articulated, 200 m
   cars: 11
-  mass_empty_t: 430       # [E] AGV 410 t + tilt equipment
+  mass_empty_t: 420       # [E] AGV-class 11-car set
   pax: 600                # canon: 450 seated + 150 standing
   rotating_mass_factor: 0.05
   adhesive_mass_fraction: 0.85  # canon: all bogies powered (distributed traction)
@@ -480,8 +480,6 @@ APEX_GEN6:
   brake_delay_s: 1.0
   jerk: 0.5
   max_speed_mph: 250
-  tilt_cant_deficiency_mm: 150   # canon 7 deg tilt; total ~240 mm like Pendolino-class tilt
-  tilt_max_speed_kmh: 265        # canon: tilt disabled above 265 km/h
   # CR450-class aero (-22% vs CR400; ICE 3 C = 0.52 N/(km/h)^2): A 4.5 kN, B 20 N/(km/h),
   # C 0.43 N/(km/h)^2 -> ~82 kN at 400 km/h [E]
   davis: {A_n: 4500, B_n_per_ms: 72, C_n_per_ms2: 5.6}
@@ -494,3 +492,15 @@ APEX_GEN6:
   floor: high
   aux_kw: 350
   sources: canon (legacy AGV_USA / APEx Gen 6); physics-consistent estimates
+
+# T-variant for the tilt routes (canon: Cardinal Phase 2, Broadway portions, Floridian,
+# Transcontinental Appalachian, Crescent, River Cities). 8 deg tilt bolster (FRA floor roll
+# limit 8.6 deg) compensating ~66% of 1500 tan 8 deg = 139 mm, so with the 130 mm base
+# allowance the train runs ~270 mm of cant deficiency (Pendolino practical ceiling); tilt
+# locks above 186 mph / 300 km/h (canon, 6 May 2026; Avelia Liberty tilt limit).
+APEX_GEN6T:
+  <<: *apex_gen6
+  name: APEx Gen 6T (11-car articulated, 250 mph, 8 deg tilt to 186 mph)
+  mass_empty_t: 435       # [E] + tilt bolsters and actuators
+  tilt_cant_deficiency_mm: 140
+  tilt_max_speed_kmh: 299.3   # 186 mph

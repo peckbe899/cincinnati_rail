@@ -94,7 +94,12 @@ def speed_policy_from(cfg: dict, train: Train) -> SpeedPolicy:
     steps = tuple(float(x) * MPH for x in sp.get("code_steps_mph", []) or [])
     steps += tuple(float(x) * KMH for x in sp.get("code_steps_kmh", []) or [])
     tilt = sp.get("allow_tilt", True)
+    # e.g. [{up_to_kmh: 300, mm: 130}, {mm: 100}]: Eu tightens with speed
+    bands = []
+    for band in sp.get("cant_deficiency_bands", []) or []:
+        bands.append((speed_of(band, "up_to", math.inf), float(band["mm"]) / 1000.0))
     return SpeedPolicy(
+        deficiency_bands=tuple(sorted(bands)),
         tilt_cant_deficiency=train.tilt_cant_deficiency if tilt else 0.0,
         tilt_max_speed=train.tilt_max_speed if tilt else 0.0,
         steps=tuple(sorted(steps)),

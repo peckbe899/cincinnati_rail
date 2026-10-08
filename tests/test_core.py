@@ -281,3 +281,19 @@ def test_platform_screen_doors_only_where_fitted():
     minor.psd = True  # per-station override
     assert has_psd(minor, dcfg)
     assert d.dwell("minor", 20, 2, psd=True) == pytest.approx(d.dwell("minor", 20, 2, psd=False) + 3.0)
+
+
+@pytest.mark.parametrize("R, tilt, mph", [
+    (6000, False, 234), (7000, False, 253), (8000, False, 271), (10000, False, 303),
+    (2500, False, 159), (1000, False, 101), (1000, True, 121), (2000, True, 172),
+    (2500, True, 186),  # 192 mph theoretical, tilt locked above 186 mph
+])
+def test_apex_canon_curve_speeds(R, tilt, mph):
+    """APEx corrected curve model: C = 30.56 V^2/R, D = 180 mm, Eu 130 mm up to 186 mph and
+    100 mm above, 8 deg tilt adding ~140 mm below 186 mph."""
+    pol = SpeedPolicy(line_speed=320 * MPH, cant_deficiency=0.100,
+                      deficiency_bands=((186 * MPH, 0.130), (math.inf, 0.100)),
+                      tilt_cant_deficiency=0.140 if tilt else 0.0,
+                      tilt_max_speed=186 * MPH if tilt else 0.0)
+    v = curve_speed(R, 0.180, 1000.0, pol) / MPH
+    assert v == pytest.approx(mph, abs=1.5)

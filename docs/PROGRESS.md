@@ -155,6 +155,11 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - `profile.structures` can match drawn segment names, e.g. tunnels.
 - **RER-3 covered way** from Sedamsville to Riverbend/Belterra, modelled as tunnel in every RER-3 config (`covered_ways` in the RER era file).
 
+- **APEx curve model corrected to canon** (`docs/research/geometry.md`):
+  - Cant deficiency is banded: 130 mm up to 186 mph, 100 mm above.
+  - Gen 6 no longer tilts. Only Gen 6T (8° tilt, 270 mm total, locked above 186 mph) tilts, on the canon tilt routes: Cardinal, Broadway Limited, Floridian, Transcontinental.
+  - Tests reproduce the canon radius/speed table.
+
 ## In progress
 
 - Nothing running.

@@ -49,7 +49,11 @@ geometry:
   max_cant_mm: 180
   design_cant_deficiency_mm: 90
 speed:
-  cant_deficiency_mm: 90
+  cant_deficiency_mm: 100
+  cant_deficiency_bands:
+  - up_to_mph: 186
+    mm: 130
+  - mm: 100
 dwell:
   by_class_s:
     local: 45
