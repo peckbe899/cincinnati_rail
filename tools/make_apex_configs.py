@@ -29,6 +29,7 @@ from railsim.network import Network  # noqa: E402
 
 KMZ = "data/kmz/APEx_Routes.kmz"
 SNAP = 450.0
+STATUS = yaml.safe_load((ROOT / "data/operations/apex.yaml").read_text())
 # canon T-series routes (8 deg tilt sets): Cardinal Phase 2, Broadway portions, Floridian,
 # Transcontinental Appalachian, Crescent, River Cities
 TILT_ROUTES = {"cardinal", "broadway_limited", "floridian", "transcontinental_limited",
@@ -258,7 +259,9 @@ def main():
             "preset": "hsr",
             "kmz": KMZ,
             "train": "APEX_GEN6T" if slug(name) in TILT_ROUTES else "APEX_GEN6",
-            "track": {"folder": folder, "snap_tol_m": snap, "max_turn_deg": turn},
+            # finished segments follow the drawing; the rest are sketches (data/operations/apex.yaml)
+            "track": {"folder": folder, "snap_tol_m": snap, "max_turn_deg": turn,
+                      "finished": STATUS.get("finished", [])},
             "stations": {
                 "folder": "APEx Routes",
                 "match_tol_m": 500,
@@ -273,7 +276,8 @@ def main():
                 "patterns": {"limited": ["limited"], "express": ["limited", "express"]},
             },
             "geometry": {"line_speed_mph": 250, "max_cant_mm": 180,
-                         "design_cant_deficiency_mm": 90},
+                         "design_cant_deficiency_mm": 90,
+                         "sketch_tolerance_m": STATUS.get("sketch_tolerance_m", 250)},
             # canon curve model (C = 30.56 V^2/R, D <= 180 mm): Eu 130 mm up to 186 mph,
             # 100 mm above (EN 13803 high-speed band); Gen 6T adds tilt below 186 mph
             "speed": {"cant_deficiency_mm": 100,

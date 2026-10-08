@@ -160,6 +160,11 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - Gen 6 no longer tilts. Only Gen 6T (8° tilt, 270 mm total, locked above 186 mph) tilts, on the canon tilt routes: Cardinal, Broadway Limited, Floridian, Transcontinental.
   - Tests reproduce the canon radius/speed table.
 
+- **APEx finished vs sketched alignments** (`data/operations/apex.yaml`):
+  - 133 of 305 drawn segments are marked finished, from your list of 19 corridors; they follow the drawing.
+  - Every other segment is a sketch: each curve gets the largest radius within 250 m of the drawing, as an engineer smoothing it would (`track.finished`, `geometry.sketch_tolerance_m`).
+  - Curves in `summary.json` now record their drawn segment, sketch flag and location.
+
 ## In progress
 
 - Nothing running.
@@ -184,9 +189,6 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - Stochastic perturbations are uniform or log-normal guesses.
   - The supply factor is a per-zone constant (no load flow).
   - ETCS is modelled as a lag on the braking onset, not the full Subset-026 EBD/EBI curve set.
-- APEx curve audit with the canon model:
-  - 2,611 of 6,989 fitted curves are under the 2 km urban minimum; two-thirds of those are more than 8 km from a served stop. They follow the drawing (20 m fitting tolerance).
-  - Allowing the fit 100-300 m of freedom from the drawing cuts Great Lakes Limited by 1.3-2%.
-  - Decide whether the drawings are exact or sketches (`geometry.group_dev_tol_m`).
+- APEx tight curves on finished alignments: review `docs/apex_curve_audit.kmz` (from `tools/apex_curve_audit.py`). Mark each one as new construction (2,000 m minimum applies) or upgraded legacy ROW (may be tighter).
 - HSR tunnel pressure effects (the cross-section ratio of long tunnels) are not modelled beyond the tunnel factor on C.
 - Single-track meets and pathing time, for Needham weekday trips.

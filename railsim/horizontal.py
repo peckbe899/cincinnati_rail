@@ -49,6 +49,9 @@ class CurveDesign:
     corner_offset_tol: float = 40.0  # m, max offset of a fitted curve from a single drawn corner
     max_group_deflection_deg: float = 150.0
     simplify_tol: float = 3.0  # m, Douglas-Peucker tolerance: hand-drawing jitter (~2-5 m) is removed
+    # sketched (not yet finished) stretches: an engineer may move the line up to this far
+    # from the drawing, so each curve gets the largest radius within it (0 = follow drawing)
+    sketch_tol: float = 0.0
 
     def reverse_tangent(self) -> float:
         """Tangent between reverse curves: max(30 m, 2 s at line speed) (Amtrak 3V ft rule)."""
@@ -140,11 +143,12 @@ class HorizontalAlignment:
 
 # ----------------------------------------------------------------------------- fitting
 
-def simplify(P: np.ndarray, tol: float) -> np.ndarray:
-    """Douglas-Peucker simplification (iterative)."""
+def simplify(P: np.ndarray, tol, return_mask: bool = False):
+    """Douglas-Peucker simplification (iterative). `tol` may be a per-vertex array."""
     n = len(P)
-    if n < 3 or tol <= 0:
-        return P
+    tolv = np.broadcast_to(np.asarray(tol, dtype=float), (n,))
+    if n < 3 or float(np.max(tolv)) <= 0:
+        return (P, np.ones(n, dtype=bool)) if return_mask else P
     keep = np.zeros(n, dtype=bool)
     keep[0] = keep[-1] = True
     stack = [(0, n - 1)]
@@ -160,13 +164,13 @@ def simplify(P: np.ndarray, tol: float) -> np.ndarray:
             d = np.hypot(seg[:, 0] - a[0], seg[:, 1] - a[1])
         else:
             d = np.abs(ab[0] * (seg[:, 1] - a[1]) - ab[1] * (seg[:, 0] - a[0])) / L
-        k = int(np.argmax(d))
-        if d[k] > tol:
+        k = int(np.argmax(d - tolv[i + 1:j]))
+        if d[k] > tolv[i + 1 + k]:
             m = i + 1 + k
             keep[m] = True
             stack.append((i, m))
             stack.append((m, j))
-    return P[keep]
+    return (P[keep], keep) if return_mask else P[keep]
 
 
 def _unit(v):
@@ -251,17 +255,21 @@ def _deviation(P, g: _Group, R: float, design: CurveDesign) -> float:
     return float(d.max())
 
 
-def _radius_cap(P, g: _Group, design: CurveDesign) -> Optional[float]:
+def _radius_cap(P, g: _Group, design: CurveDesign, sketch: bool = False) -> Optional[float]:
     """Upper bound on the radius from what was drawn.
 
     * single drawn corner: the largest radius whose midpoint stays within corner_offset_tol
       of the corner (the drawing says nothing more precise);
     * several vertices drawn along a curve: the best-fit radius to those vertices, provided
-      the fit is within group_dev_tol (otherwise None: they are not one curve).
+      the fit is within group_dev_tol (otherwise None: they are not one curve);
+    * sketched stretch: the largest radius staying within sketch_tol of the drawing.
     """
     radii = np.geomspace(design.min_radius, design.straight_radius * 2, 160)
     dev = np.array([_deviation(P, g, R, design) for R in radii])
-    if g.a != g.b:
+    corner_tol = design.corner_offset_tol
+    if sketch:
+        corner_tol = max(design.sketch_tol, corner_tol)
+    elif g.a != g.b:
         i = int(np.argmin(dev))
         if dev[i] > design.group_dev_tol:
             return None
@@ -274,7 +282,7 @@ def _radius_cap(P, g: _Group, design: CurveDesign) -> Optional[float]:
             else:
                 lo = m1
         return float(math.sqrt(lo * hi))
-    ok = dev <= design.corner_offset_tol
+    ok = dev <= corner_tol
     if not ok.any():
         return float(design.min_radius)
     i = int(np.nonzero(ok)[0].max())
@@ -283,17 +291,27 @@ def _radius_cap(P, g: _Group, design: CurveDesign) -> Optional[float]:
     lo, hi = radii[i], radii[i + 1]
     for _ in range(30):
         mid = math.sqrt(lo * hi)
-        if _deviation(P, g, mid, design) <= design.corner_offset_tol:
+        if _deviation(P, g, mid, design) <= corner_tol:
             lo = mid
         else:
             hi = mid
     return float(lo)
 
 
-def fit_horizontal(xy: np.ndarray, design: CurveDesign, step: float = 2.0) -> HorizontalAlignment:
+def fit_horizontal(xy: np.ndarray, design: CurveDesign, step: float = 2.0,
+                   sketch_ranges: Sequence[Tuple[float, float]] = ()) -> HorizontalAlignment:
+    """`sketch_ranges`: drawn-chainage intervals that are sketches, not finished alignments
+    (fitted with `design.sketch_tol`)."""
     P0 = dedupe_polyline(np.asarray(xy, dtype=float)[:, :2], 1.0)
-    drawn_len = float(cumulative_length(P0)[-1])
-    P = simplify(P0, design.simplify_tol)
+    s0 = cumulative_length(P0)
+    drawn_len = float(s0[-1])
+    flags0 = np.zeros(len(P0), dtype=bool)
+    if design.sketch_tol > 0:
+        for a, b in sketch_ranges:
+            flags0 |= (s0 >= a - 1e-6) & (s0 <= b + 1e-6)
+    tolv = np.where(flags0, max(design.simplify_tol, 0.3 * design.sketch_tol), design.simplify_tol)
+    P, keep = simplify(P0, tolv, return_mask=True)
+    flags = flags0[keep]
     n = len(P)
     if n < 3:
         s = cumulative_length(P)
@@ -322,10 +340,13 @@ def fit_horizontal(xy: np.ndarray, design: CurveDesign, step: float = 2.0) -> Ho
                 groups.append(h)
     caps = {}
 
+    def is_sketch(g: _Group) -> bool:
+        return bool(flags[g.a:g.b + 1].any())  # a curve drawn at a sketched vertex
+
     def cap(g: _Group) -> float:
         key = (g.a, g.b)
         if key not in caps:
-            c = _radius_cap(P, g, design)
+            c = _radius_cap(P, g, design, is_sketch(g))
             caps[key] = c if c is not None else -1.0
         return caps[key]
 
@@ -355,7 +376,8 @@ def fit_horizontal(xy: np.ndarray, design: CurveDesign, step: float = 2.0) -> Ho
             if m is None or cap(m) <= 0:
                 continue
             dev = fit_dev(m)
-            if dev > design.group_dev_tol:
+            if dev > (max(design.sketch_tol, design.group_dev_tol) if is_sketch(m)
+                      else design.group_dev_tol):
                 continue
             if best is None or dev < best[0]:
                 best = (dev, j, m)
@@ -487,12 +509,13 @@ def _trace_curve(ts, u_in, dirn, R, Ls, delta, step):
 
 
 def fit_horizontal_pieces(xy: np.ndarray, design: CurveDesign, breaks: Sequence[float] = (),
-                          step: float = 2.0) -> Tuple[HorizontalAlignment, List[float]]:
+                          step: float = 2.0, sketch_ranges: Sequence[Tuple[float, float]] = ()
+                          ) -> Tuple[HorizontalAlignment, List[float]]:
     """Fit a route that reverses (stub terminals) as separate pieces joined end to end, so the
     head-on fold is not mistaken for a hairpin curve. `breaks` are drawn chainages of the
     reversals; returns the alignment and the fitted chainages of the reversals."""
     if not breaks:
-        return fit_horizontal(xy, design, step), []
+        return fit_horizontal(xy, design, step, sketch_ranges), []
     P = np.asarray(xy, dtype=float)[:, :2]
     s = cumulative_length(P)
     cuts = [0.0] + sorted(float(b) for b in breaks if 0.0 < b < s[-1]) + [float(s[-1])]
@@ -502,7 +525,8 @@ def fit_horizontal_pieces(xy: np.ndarray, design: CurveDesign, breaks: Sequence[
         inner = (s > a) & (s < b)
         pa = [np.interp(a, s, P[:, 0]), np.interp(a, s, P[:, 1])]
         pb = [np.interp(b, s, P[:, 0]), np.interp(b, s, P[:, 1])]
-        h = fit_horizontal(np.vstack([pa, P[inner], pb]), design, step)
+        h = fit_horizontal(np.vstack([pa, P[inner], pb]), design, step,
+                           [(x0 - a, x1 - a) for x0, x1 in sketch_ranges if x1 > a and x0 < b])
         k0 = 1 if xs else 0  # the joint point is shared
         xs.append(h.xy[k0:])
         ss.append(h.s[k0:] + off)

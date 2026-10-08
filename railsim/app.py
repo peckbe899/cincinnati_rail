@@ -80,6 +80,7 @@ def curve_design_from(cfg: dict, train: Train) -> CurveDesign:
         group_dev_tol=float(g.get("group_dev_tol_m", 10.0)),
         corner_offset_tol=float(g.get("corner_offset_tol_m", 40.0)),
         simplify_tol=float(g.get("simplify_tol_m", 3.0)),
+        sketch_tol=float(g.get("sketch_tolerance_m", 0.0)),
     )
 
 
@@ -421,9 +422,7 @@ def main(spec: ProgramSpec, argv=None):
     from . import report
     summary = {"program": spec.name, "line": cfg.get("name", cfg_path.stem), "train": key,
                "warnings": route.warnings, "directions": [sd for _, sd in results],
-               "curves": [{"radius_m": round(c.radius, 1), "spiral_m": round(c.spiral, 1),
-                           "start_km": round(c.s_ts / 1000, 3), "end_km": round(c.s_st / 1000, 3)}
-                          for c in route.horizontal.curves],
+               "curves": [_curve_entry(route, c) for c in route.horizontal.curves],
                "speed_zones": report.zone_list(route)}
     (out_dir / "summary.json").write_text(json.dumps(summary, indent=2))
     for dr, _ in results:
@@ -434,6 +433,13 @@ def main(spec: ProgramSpec, argv=None):
             report.plot_run(out_dir, route, dr, train)
     print(f"\nOutputs in {out_dir}")
     return route, results
+
+
+def _curve_entry(route, c) -> dict:
+    seg, sketch, lat, lon = route.drawn_segment((c.s_ts + c.s_st) / 2)
+    return {"radius_m": round(c.radius, 1), "spiral_m": round(c.spiral, 1),
+            "start_km": round(c.s_ts / 1000, 3), "end_km": round(c.s_st / 1000, 3),
+            "segment": seg, "sketch": sketch, "lat": round(lat, 5), "lon": round(lon, 5)}
 
 
 def _repo_root(p: Path) -> Path:

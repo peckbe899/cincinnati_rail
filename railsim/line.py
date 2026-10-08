@@ -21,7 +21,7 @@ import numpy as np
 
 from . import elevation as elev
 from .dynamics import TrackData
-from .geo import FT, INCH, KMH, MPH, LocalProjection, project_point_to_polyline
+from .geo import FT, INCH, KMH, MPH, LocalProjection, cumulative_length, project_point_to_polyline
 from .horizontal import CurveDesign, HorizontalAlignment, fit_horizontal, fit_horizontal_pieces
 from .kml import Placemark, read_kmz, select
 from .network import Network
@@ -87,6 +87,21 @@ class Route:
     supply_factor: float = 1.0
     neutral_sections: List[Tuple[float, float]] = field(default_factory=list)  # (s0, s1)
     zone_ranges: List[Tuple[float, float, int]] = field(default_factory=list)  # (s0, s1, zone)
+    drawn_ranges: list = field(default_factory=list)  # (segment name, s0, s1) on the drawn route
+    sketch_ranges: list = field(default_factory=list)  # drawn-chainage sketched stretches
+
+    def drawn_segment(self, s: float) -> Tuple[str, bool, float, float]:
+        """(drawn segment name, is sketch, lat, lon) at fitted chainage s."""
+        h = self.horizontal
+        x, y = np.interp(s, h.s, h.xy[:, 0]), np.interp(s, h.s, h.xy[:, 1])
+        lat, lon = self.proj.to_latlon(x, y)
+        name, sk = "", False
+        if self.drawn_route_xy is not None and self.drawn_ranges:
+            d = project_point_to_polyline(float(x), float(y), self.drawn_route_xy,
+                                          cumulative_length(self.drawn_route_xy))[0]
+            name = next((n for n, a, b in self.drawn_ranges if a <= d <= b), "")
+            sk = any(a <= d <= b for a, b in self.sketch_ranges)
+        return name, sk, float(lat), float(lon)
 
     @property
     def length(self) -> float:
@@ -267,7 +282,12 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
                             "Set service.route to choose a branch.")
         drawn_xy = net.longest_route_between_leaves(max_turn)
 
-    h, rev_s = fit_horizontal_pieces(drawn_xy, design, reversals)
+    sketch = _sketch_ranges(tcfg.get("finished"), getattr(net, "last_route_ranges", []),
+                            drawn_xy, proj) if design.sketch_tol > 0 else []
+    if sketch:
+        log(f"  Sketched stretches: {sum(b - a for a, b in sketch) / 1000:.0f} km fitted within "
+            f"{design.sketch_tol:.0f} m of the drawing")
+    h, rev_s = fit_horizontal_pieces(drawn_xy, design, reversals, sketch_ranges=sketch)
     log(f"  Alignment: drawn {h.drawn_length / 1000:.2f} km -> fitted {h.length / 1000:.2f} km, "
         f"{len(h.curves)} curves" + (f", {len(rev_s)} reversal(s)" if rev_s else ""))
     rev_names = [n["name"] for n in (route_names or []) if isinstance(n, dict) and n.get("reverse")]
@@ -391,6 +411,8 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
         pass
     sp = build_speed_profile(h, policy, extra)
     route = Route(cfg.get("name", kmz_path.stem), proj, h, prof, sp, on_route, warnings, drawn_xy)
+    route.drawn_ranges = list(getattr(net, "last_route_ranges", []))
+    route.sketch_ranges = list(sketch)
     sup = cfg.get("supply", {}) or {}
     route.supply_factor = float(sup.get("factor", 1.0))  # e.g. peak-hour voltage sag
     for z in sup.get("zones", []) or []:
@@ -425,6 +447,40 @@ def _ground_fn(values, L, step=10.0):
     g = _grid(L, step)
     vals = np.asarray(values, dtype=float)
     return lambda s: np.interp(s, g, vals)
+
+
+def _sketch_ranges(finished, ranges, xy, proj) -> List[Tuple[float, float]]:
+    """Drawn-chainage intervals of the route that are sketches: every drawn segment except
+    those listed as finished (`track.finished`: regex strings, or {match, bbox: [lat_min,
+    lon_min, lat_max, lon_max]} for the finished part of a segment)."""
+    rules = []
+    for f in finished or []:
+        f = {"match": f} if isinstance(f, str) else f
+        rules.append((re.compile(f["match"], re.I), f.get("bbox")))
+    s = cumulative_length(xy)
+    lat, lon = proj.to_latlon(xy[:, 0], xy[:, 1])
+    starts = np.array([a for _, a, _ in ranges]) if ranges else np.zeros(0)
+    sk = np.ones(len(xy), dtype=bool)
+    for i in range(len(xy)):
+        k = int(np.searchsorted(starts, s[i], side="right")) - 1
+        if k < 0:
+            continue
+        name = ranges[k][0] or ""
+        for rx, bb in rules:
+            if rx.search(name) and (bb is None or (bb[0] <= lat[i] <= bb[2] and bb[1] <= lon[i] <= bb[3])):
+                sk[i] = False
+                break
+    out, i = [], 0
+    while i < len(xy):
+        if sk[i]:
+            j = i
+            while j + 1 < len(xy) and sk[j + 1]:
+                j += 1
+            out.append((float(s[i]), float(s[j])))
+            i = j + 1
+        else:
+            i += 1
+    return out
 
 
 def _match_ranges(pattern: str, pieces, h) -> List[Tuple[float, float]]:

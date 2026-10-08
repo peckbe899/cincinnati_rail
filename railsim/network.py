@@ -271,11 +271,13 @@ class Network:
         total = 0.0
         # record which drawn segment each piece of the route came from (operating zones)
         self.last_route_pieces = []
+        ranges = []  # (segment name, chainage from, chainage to) along the route
         for pieces in legs:
             for eid, a, b in pieces:
                 part = _slice(self.edges[eid], a, b)
                 if len(part) >= 2 and abs(b - a) > 1.0:
                     self.last_route_pieces.append((self.edges[eid].name, part[0].copy(), part[-1].copy()))
+                    ranges.append((self.edges[eid].name, total, total + abs(b - a)))
                 if len(part) >= 2:
                     if xy_parts and np.hypot(*(xy_parts[-1][-1] - part[0])) < 1e-6:
                         part = part[1:]
@@ -288,6 +290,7 @@ class Network:
         L = cumulative_length(xy)[-1]
         scale = L / total if total > 0 else 1.0
         self.last_reversals = [stop_ch[k] * scale for k in sorted(reverse_at) if 0 < k < len(stops) - 1]
+        self.last_route_ranges = [(n, a * scale, b * scale) for n, a, b in ranges]
         return xy, [c * scale for c in stop_ch]
 
     def longest_route_between_leaves(self, max_turn_deg: float = 90.0):
@@ -304,10 +307,10 @@ class Network:
                 except ValueError:
                     continue
                 if best is None or ch[-1] > best[1][-1]:
-                    best = (xy, ch, list(self.last_route_pieces))
+                    best = (xy, ch, list(self.last_route_pieces), list(self.last_route_ranges))
         if best is None:
             raise ValueError("network has no routable pair of dead ends")
-        self.last_route_pieces = best[2]
+        self.last_route_pieces, self.last_route_ranges = best[2], best[3]
         return best[0]
 
     def _node_stop(self, n: int) -> Tuple[int, float]:

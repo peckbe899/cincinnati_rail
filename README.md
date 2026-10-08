@@ -71,6 +71,7 @@ Outputs go to `output/<config>/`:
    - `operating_zones`: a section with its own signalling and driver, e.g. CBTC + ATO on an RER trunk inside manually driven branches.
    - Stub terminals: a route entry `{name: X, reverse: true}` makes the train run to the buffer and reverse (minimum dwell `stations.reversal_min_s`). A route whose first and last entries are the same station runs as a loop.
    - Station dwell: `dwell.door_control` (`crew`, or driver-only `button`/`auto`), and per-station platform screen doors (`dwell.psd_classes`, `dwell.psd_stations`, `stations.info.<name>.psd`).
+   - `track.finished` + `geometry.sketch_tolerance_m`: segments not listed as finished are sketches, and their curves get the largest radius within the tolerance of the drawing.
    - `track.extra` (track from other folders or KMZ/KML files), `{via: [lat, lon]}` route waypoints, `profile.structures` (tunnel/viaduct by station range, coordinates or drawn segment name).
 7. **Operating eras** (`operations: data/operations/cincinnati_metro.yaml`, `--year`). The year picks the default train, signalling, Grade of Automation and door practice. Cincinnati Metro runs from gate cars (1905) through fixed-block ATO (1986) and CBTC (2006) to GoA3 (2020 onward). Sources are in `docs/research/eras.md`. RER configs carry `years:`; the pre-RER services (`cin_rer_*_pre_rer_*`, branches into Union Terminal or Times) come from the `history` block of `data/operations/cincinnati_rer.yaml`.
 8. **Timetable**.
