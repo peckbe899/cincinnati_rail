@@ -48,7 +48,7 @@ class CurveDesign:
     group_dev_tol: float = 10.0  # m, max offset of a fitted curve from vertices drawn along it
     corner_offset_tol: float = 40.0  # m, max offset of a fitted curve from a single drawn corner
     max_group_deflection_deg: float = 150.0
-    simplify_tol: float = 1.5  # m, Douglas-Peucker tolerance that removes drawing jitter
+    simplify_tol: float = 3.0  # m, Douglas-Peucker tolerance: hand-drawing jitter (~2-5 m) is removed
 
     def reverse_tangent(self) -> float:
         """Tangent between reverse curves: max(30 m, 2 s at line speed) (Amtrak 3V ft rule)."""
@@ -332,7 +332,12 @@ def fit_horizontal(xy: np.ndarray, design: CurveDesign, step: float = 2.0) -> Ho
         r = _radius_for_tangent(max(T, 0.01), g.delta, design)
         return min(r, c) if c > 0 else min(r, design.min_radius)
 
-    # --- greedy merging of adjacent same-direction vertices that read as one drawn curve
+    # --- merge runs of same-direction vertices that one circle fits within tolerance:
+    # a curve drawn as a chain of short chords is ONE curve. Best-fitting merges first.
+    def fit_dev(g: _Group) -> float:
+        c = cap(g)
+        return _deviation(P, g, c, design) if c > 0 else math.inf
+
     merged = True
     while merged and len(groups) > 1:
         merged = False
@@ -344,15 +349,11 @@ def fit_horizontal(xy: np.ndarray, design: CurveDesign, step: float = 2.0) -> Ho
             m = _group_geometry(P, g1.a, g2.b, max_defl)
             if m is None or cap(m) <= 0:
                 continue
-            prev = groups[j - 1] if j > 0 else None
-            nxt = groups[j + 2] if j + 2 < len(groups) else None
-            r_old = min(est_radius(g1, prev, g2), est_radius(g2, g1, nxt))
-            r_new = est_radius(m, prev, nxt)
-            if r_new <= r_old * 1.001:
+            dev = fit_dev(m)
+            if dev > design.group_dev_tol:
                 continue
-            gain = r_new / r_old
-            if best is None or gain > best[0]:
-                best = (gain, j, m)
+            if best is None or dev < best[0]:
+                best = (dev, j, m)
         if best is not None:
             _, j, m = best
             groups[j:j + 2] = [m]

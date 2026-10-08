@@ -150,13 +150,20 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
     stations = _stations_from_config(cfg, placemarks)
     svc = cfg.get("service", {}) or {}
     route_names = svc.get("route")
-    max_turn = float(tcfg.get("max_turn_deg", 50.0))
+    max_turn = float(tcfg.get("max_turn_deg", 90.0))  # reversals through a wye need >120 deg
     tol = float((cfg.get("stations", {}) or {}).get("match_tol_m", 150.0))
 
-    def locate_name(name):
+    snapped = set()
+
+    def locate_name(entry):
+        # entries are "Name" or {name: Name, near: [lat, lon]} to pick between same-named stations
+        name = entry["name"] if isinstance(entry, dict) else entry
         cands = [s for s in stations if s.name == name]
         if not cands:
             raise ValueError(f"station '{name}' in service.route not found")
+        if isinstance(entry, dict) and entry.get("near"):
+            la, lo = entry["near"]
+            cands = [min(cands, key=lambda c: (c.lat - la) ** 2 + (c.lon - lo) ** 2)]
         best = None
         for c in cands:
             x, y = proj.to_xy(c.lat, c.lon)
@@ -164,7 +171,17 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
             if loc and (best is None or loc[2] < best[2]):
                 best = loc
         if best is None:
-            raise ValueError(f"station '{name}' is more than {tol} m from the track")
+            # placemark drawn away from the track: snap to the nearest track point, but say so
+            for c in cands:
+                x, y = proj.to_xy(c.lat, c.lon)
+                loc = net.locate(float(x), float(y), 2000.0)
+                if loc and (best is None or loc[2] < best[2]):
+                    best = loc
+            if best is None:
+                raise ValueError(f"station '{name}' is more than 2 km from the track")
+            warnings.append(f"station '{name}' is {best[2]:.0f} m from the track; routed to the "
+                            f"nearest track point (fix the placemark)")
+            snapped.add(name)
         return best[:2]
 
     if route_names:
@@ -185,7 +202,7 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
     for st in stations:
         x, y = proj.to_xy(st.lat, st.lon)
         ch, off, _ = project_point_to_polyline(float(x), float(y), h.xy, h.s)
-        if off <= tol:
+        if off <= tol or (st.name in snapped and off <= 2000.0):
             st.s, st.offset = ch, off
             on_route.append(st)
     on_route.sort(key=lambda s: s.s)
@@ -196,12 +213,6 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
             continue
         dedup.append(st)
     on_route = dedup
-    if route_names:
-        lo = min(s.s for s in on_route if s.name == route_names[0])
-        hi = max(s.s for s in on_route if s.name == route_names[-1])
-        if lo > hi:
-            lo, hi = hi, lo
-        on_route = [s for s in on_route if lo - 1 <= s.s <= hi + 1]
     stops_cfg = svc.get("stops", "all")
     skip = set(svc.get("skip", []) or [])
     for st in on_route:
@@ -210,8 +221,8 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
         on_route[0].cls = on_route[0].cls if on_route[0].cls != "standard" else "terminal"
         on_route[-1].cls = on_route[-1].cls if on_route[-1].cls != "standard" else "terminal"
 
-    # trim the alignment beyond the end stations (+ overrun for the train to stop past centre)
-    # is not done: the full drawn route is kept so tail tracks remain available.
+    # a routed service starts and ends at its terminal stations, so every station within
+    # tolerance of the routed track is on the service
 
     # ---- vertical profile
     pcfg = cfg.get("profile", {}) or {}

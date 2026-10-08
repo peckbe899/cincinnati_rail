@@ -6,6 +6,35 @@ name: MBTA Orange Line
 kmz: data/kmz/MBTA_OL.kmz
 train: MBTA_OL_CRRC_6CAR
 load_factor: 0.5
+geometry:
+  line_speed_mph: 55        # 55 mph Oak Grove - Assembly since Aug 2025; 40 mph elsewhere (below)
+speed:
+  cant_deficiency_in: 3.0
+  code_steps_mph: [10, 18, 25, 40, 50, 55]   # fixed-block ATC cab-signal code speeds [hobbyist teardown]
+driver:
+  mode: manual              # Orange Line is driven manually under cab-signal ATP
+restrictions:
+  - {from_station: Assembly, to_station: Forest Hills, speed_mph: 40, reason: line maximum south of Assembly}
+profile:
+  structures:               # aerodynamic tunnel factor applies here (approximate portals)
+    - {from_station: Community College, to_station: Massachusetts Avenue, inset_m: 300, type: tunnel}
+dwell:
+  # Puong (2000) MIT model for MBTA Red Line: D = 12.22 + 2.27 B_d + 1.82 A_d (per door)
+  door_open: 2.5
+  door_close: 4.5
+  dispatch: 5.2           # remainder of Puong's 12.22 s intercept
+  t_board: 2.27
+  t_alight: 1.82
+  door_peaking: 1.5
+  reopen_prob_per_100: 0.0
+  min_dwell: 18
+  classes:                # boardings / alightings per train, weekday midday [E]
+    minor: {board: 25, alight: 25}
+    standard: {board: 45, alight: 45}
+    busy: {board: 80, alight: 80}
+    transfer: {board: 120, alight: 120}
+    terminal: {board: 100, alight: 100}
+padding: {percent: 0.0, final_leg_s: 0}  # MBTA subway GTFS is built from observed running times
 stations:
   match_tol_m: 200
   defaults: {class: standard, platform: high}

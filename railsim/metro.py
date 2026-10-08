@@ -69,8 +69,12 @@ def make_driver(cfg: dict, train) -> Driver:
     brake = d.get("brake_rate")  # m/s^2; default: the train's service rate
     if brake is None and manual:
         brake = 0.85 * train.service_brake  # operators brake more gently than ATO
+    # manual operators creep the last metres into the platform (stopping-mark accuracy)
+    creep = speed_of(d, "stop_approach", (4.0 if manual else 0.0) * MPH)
+    creep_dist = float(d.get("stop_approach_m", 15.0 if manual else 0.0))
     return Driver(brake_rate=brake, speed_margin=margin,
-                  power_fraction=float(d.get("power_fraction", 1.0)), dt=float(d.get("dt", 0.2)))
+                  power_fraction=float(d.get("power_fraction", 1.0)), dt=float(d.get("dt", 0.2)),
+                  stop_approach_speed=creep, stop_approach_dist=creep_dist)
 
 
 def _metro_dwell_model(cfg: dict) -> MetroDwell:

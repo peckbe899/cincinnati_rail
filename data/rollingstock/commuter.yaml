@@ -30,3 +30,296 @@ MBTA_HSP46_6BL:
   sources: >-
     HSP46 mass/TE/HEP: Wikipedia MPI HSP46, Railway Age; bilevel fleet: Wikipedia MBTA bilevel
     cars; Davis: derived from modified Davis + Davis aero (research_commuter.md 2.2)
+
+# ---------------------------------------------------------------------------------------
+# Cincinnati RER (TRI) canon fleet. Designed by CMCC; each takes specs from its real
+# inspiration (research_rer_fleet.md -> docs/RESEARCH.md). Formations are the assumed
+# standard service consists; edit `cars`/`length_m`/masses for other formations.
+# Davis coefficients scale the 4-car EMU reference (A 2,500 N, B 40, C 6.0 at 200 t / 105 m):
+# A ~ 12.5 N/t, B ~ 0.2 N/(m/s) per t, C ~ 2.5 + 0.035 N/(m/s)^2 per m (x1.15 bilevel).
+# ---------------------------------------------------------------------------------------
+
+RER_BRIGHTLINER:
+  name: TRI Brightliner (1934-51, Zephyr-type articulated stainless EMU, 1500 V DC)
+  category: emu
+  length_m: 82            # 4-section articulated set (Zephyr 3-section = 60.1 m [P])
+  cars: 4
+  mass_empty_t: 128       # Zephyr 94.4 t for 3 sections [P] scaled to 4 [E]
+  pax: 260
+  rotating_mass_factor: 0.08
+  adhesive_mass_fraction: 0.4   # powered end trucks only [E]
+  adhesion: 0.22                # 1930s control, no slip control [E]
+  power_kw: 900                 # 1930s 1500 V DC traction for a 4-section set [E]
+  max_accel: 0.6
+  service_brake: 0.8
+  max_service_brake: 1.0
+  brake_delay_s: 1.5
+  jerk: 0.6
+  max_speed_mph: 90
+  davis: {A_n: 1700, B_n_per_ms: 26, C_n_per_ms2: 4.5}   # streamlined front [E]
+  doors_per_side: 1
+  door_channels: 1
+  door_open_s: 3.0
+  door_close_s: 5.0
+  floor: low              # retractable steps (canon)
+  sources: Pioneer Zephyr mass/length (Wikipedia); electric traction values are canon estimates
+
+RER_SILVERLINER:
+  name: TRI Silverliner (1951-69, Budd/Z 5100, all cars powered, 6 cars)
+  category: emu
+  length_m: 155.5         # 6 x 25.9 m [P]
+  cars: 6
+  mass_empty_t: 276       # 6 x 46.0 t (Silverliner II) [P]
+  pax: 1060               # 127 seats + ~50 standees per car [E]
+  rotating_mass_factor: 0.08
+  adhesive_mass_fraction: 1.0
+  adhesion: 0.22
+  power_kw: 2460          # 6 x 410 kW [P]
+  max_accel: 0.76         # Silverliner family [P]
+  service_brake: 0.9
+  max_service_brake: 1.1
+  brake_delay_s: 1.2
+  jerk: 0.6
+  max_speed_mph: 85       # Silverliner II 137 km/h service [P]
+  davis: {A_n: 3450, B_n_per_ms: 55, C_n_per_ms2: 8.0}
+  doors_per_side: 2       # end doors with traps [P], plus canon sliding doors
+  door_channels: 1
+  door_open_s: 3.0
+  door_close_s: 5.0
+  floor: high             # sliding doors + heated steps (serves both)
+  sources: Budd Silverliner II (Wikipedia, Flickr widecab); SNCF Z 5100 (fr.wikipedia)
+
+RER_SWIFTLINER:
+  name: TRI Swiftliner (1969-80s, DB 420 type, 2 x 3-car all-motored)
+  category: emu
+  length_m: 134.8         # 2 x 67.4 m [P]
+  cars: 6
+  mass_empty_t: 250       # 2 x ~129 t, aluminum-bodied variant [P/E]
+  pax: 900                # 2 x (194 seats + 254 standing) [P]
+  rotating_mass_factor: 0.09
+  adhesive_mass_fraction: 1.0
+  adhesion: 0.25
+  power_kw: 4800          # 2 x 2,400 kW [P]
+  max_accel: 1.0          # 0-60 km/h [P]
+  service_brake: 0.9      # [P]
+  max_service_brake: 1.1
+  brake_delay_s: 0.8
+  jerk: 0.75
+  max_speed_mph: 75       # 120 km/h [P]
+  davis: {A_n: 3100, B_n_per_ms: 50, C_n_per_ms2: 7.2}
+  doors_per_side: 4       # 4 double doors per side per car, 1,300 mm [P]
+  door_channels: 2
+  door_open_s: 2.5
+  door_close_s: 5.0
+  floor: high
+  sources: de.wikipedia DB-Baureihe 420; IGS S-Bahn Muenchen; db-loks.de
+
+RER_A_SET:
+  name: TRI A set (1979-96, Sydney V set type bilevel, 2 x 4-car)
+  category: emu
+  length_m: 191.8         # 8 x 23.97 m [P]
+  cars: 8
+  mass_empty_t: 400       # 2 x (2 x 60 + 2 x 40) t [P]
+  pax: 1030
+  rotating_mass_factor: 0.08
+  adhesive_mass_fraction: 0.6
+  adhesion: 0.22
+  power_kw: 2400          # 2 x ~1,200 kW [P]
+  max_accel: 0.55         # [E]
+  service_brake: 0.8
+  max_service_brake: 1.0
+  brake_delay_s: 1.2
+  jerk: 0.6
+  max_speed_mph: 75       # 115 km/h service [P]
+  davis: {A_n: 5000, B_n_per_ms: 80, C_n_per_ms2: 10.6}
+  doors_per_side: 2       # end vestibules, internal stairs [E]
+  door_channels: 1
+  door_open_s: 3.0
+  door_close_s: 6.0
+  floor: high
+  sources: Transport NSW V set fleet page; Mitsubishi Electric Australia; Wikipedia NSW V set
+
+RER_B_SET:
+  name: TRI B set (1985-2006, RATP MI 84 type, 2 x 4-car, 25 kV)
+  category: emu
+  length_m: 208.3         # 2 x 104.16 m [P]
+  cars: 8
+  mass_empty_t: 416       # 2 x 208 t [P]
+  pax: 1700               # loaded ~283 t per unit [P?] => ~75 t of passengers per unit
+  rotating_mass_factor: 0.08
+  adhesive_mass_fraction: 0.5
+  adhesion: 0.25
+  power_kw: 5640          # 2 x 2,820 kW (25 kV) [P]
+  max_accel: 1.0          # 0-40 km/h [P]
+  service_brake: 1.1      # [P]
+  max_service_brake: 1.2
+  emergency_brake: 1.2    # [P]
+  brake_delay_s: 0.8
+  jerk: 0.8
+  max_speed_mph: 75       # 120 km/h [P]
+  davis: {A_n: 5200, B_n_per_ms: 83, C_n_per_ms2: 9.8}
+  doors_per_side: 4       # 4 wide double doors per side per car [P]
+  door_channels: 2
+  door_open_s: 2.5
+  door_close_s: 5.0
+  floor: high
+  sources: trains-europe.fr Z8400; fbrisou RAIL21 Z8100 sheet; en.wikipedia MI 84
+
+RER_C_SET:
+  name: TRI C set (1996-2018, Coradia Duplex type bilevel, 2 x 4-car)
+  category: emu
+  length_m: 215.0         # 2 x 107.5 m [P]
+  cars: 8
+  mass_empty_t: 510       # 2 x 255 t [P]
+  pax: 1200               # 2 x (450 seats + ~150 standing) [E]
+  rotating_mass_factor: 0.08
+  adhesive_mass_fraction: 0.5
+  adhesion: 0.28
+  power_kw: 6400          # 2 x 3,200 kW [P]
+  max_accel: 0.95         # [P]
+  service_brake: 0.95
+  max_service_brake: 1.1
+  emergency_brake: 1.15   # [P]
+  brake_delay_s: 0.7
+  jerk: 0.75
+  max_speed_mph: 100      # 160 km/h [P]
+  davis: {A_n: 6400, B_n_per_ms: 100, C_n_per_ms2: 11.5}
+  doors_per_side: 2       # 1,300 mm [P]
+  door_channels: 2
+  door_open_s: 3.0
+  door_close_s: 5.5
+  floor: high
+  sources: techno-science Z 26500; trains-europe Z 24500; en.wikipedia SNCF Class Z 26500
+
+RER_D_SET:
+  name: TRI D set (2006-25, DB 423 type single-deck, 2 x 4-car, separate gangwayed cars)
+  category: emu
+  length_m: 134.8         # 2 x 67.4 m [P]
+  cars: 8
+  mass_empty_t: 232       # 2 x 105 t [P] + ~10% for non-articulated separate cars [E]
+  pax: 1090               # 2 x 544 [P]
+  rotating_mass_factor: 0.09
+  adhesive_mass_fraction: 0.8
+  adhesion: 0.30
+  power_kw: 4700          # 2 x 2,350 kW [P]
+  max_accel: 1.0          # [P]
+  service_brake: 0.9      # [P]
+  max_service_brake: 1.1
+  brake_delay_s: 0.6
+  jerk: 0.8
+  max_speed_mph: 87       # 140 km/h [P]
+  davis: {A_n: 2900, B_n_per_ms: 46, C_n_per_ms2: 7.2}
+  doors_per_side: 3       # 3 double plug doors per side per car, 1,300 mm [P]
+  door_channels: 2
+  door_open_s: 2.5
+  door_close_s: 5.0
+  floor: high
+  sources: de.wikipedia DB-Baureihe 423; bahn-galerie; Schaeffler data sheet
+
+RER_E_SET:
+  name: TRI E set (2018-, Stadler KISS type bilevel, 6-car, lighter and geared faster)
+  category: emu
+  length_m: 150.0         # RABe 511 6-car [P]
+  cars: 6
+  mass_empty_t: 280       # RABe 511 297 t [P], canon 'built lighter' [E]
+  pax: 1370               # [P] RABe 511 capacity
+  rotating_mass_factor: 0.08
+  adhesive_mass_fraction: 0.35   # motored end cars [P]
+  adhesion: 0.30
+  max_te_kn: 400          # [P] RABe 511
+  power_kw: 6000          # short-time max [P]
+  max_accel: 1.1          # [P]
+  service_brake: 1.0
+  max_service_brake: 1.2
+  brake_delay_s: 0.6
+  jerk: 0.8
+  max_speed_mph: 110      # 177 km/h, canon 'geared faster' [E]
+  davis: {A_n: 3500, B_n_per_ms: 56, C_n_per_ms2: 9.0}
+  doors_per_side: 2       # [E]
+  door_channels: 2
+  door_open_s: 3.0
+  door_close_s: 5.0
+  floor: high
+  sources: de.wikipedia SBB RABe 511; Caltrain KISS (railjournal, rollingstockworld)
+
+RER_F_SET:
+  name: TRI F set (2025-, Stadler FLIRT type single-deck, 2 x 4-car)
+  category: emu
+  length_m: 148.2         # 2 x 74.1 m [P]
+  cars: 8
+  mass_empty_t: 242       # 2 x 121 t [P]
+  pax: 800
+  rotating_mass_factor: 0.08
+  adhesive_mass_fraction: 0.4    # 2 of 5 bogies motored per unit [P]
+  adhesion: 0.30
+  max_te_kn: 400          # 2 x 200 kN [P]
+  power_kw: 5200          # 2 x 2,600 kW max at wheel [P]
+  max_accel: 1.2          # [P]
+  service_brake: 1.0
+  max_service_brake: 1.2
+  brake_delay_s: 0.6
+  jerk: 0.8
+  max_speed_mph: 100      # 160 km/h [P]
+  davis: {A_n: 3000, B_n_per_ms: 48, C_n_per_ms2: 7.7}
+  doors_per_side: 2       # 1,320 mm [P width; count E]
+  door_channels: 2
+  door_open_s: 3.0
+  door_close_s: 5.0
+  floor: high
+  sources: SBB FLIRT datasheet; juergs.ch RABe 523; Stadler FLIRT 160 sheet
+
+# ---------------------------------------------------------------------------------------
+# Real reference consists
+# ---------------------------------------------------------------------------------------
+
+SC44_6BILEVEL:
+  name: Siemens Charger SC-44 + 6 bilevel coaches
+  category: loco
+  length_m: 178
+  cars: 6
+  mass_empty_t: 485       # 121.1 t loco [P] + 6 x ~60 t [S]
+  pax: 1000
+  rotating_mass_factor: 0.07
+  adhesive_mass_fraction: 0.25
+  adhesion: 0.25
+  max_te_kn: 290          # [P]
+  power_kw: 2500          # 0.86 x (3,281 - aux - HEP) [E]
+  max_accel: 0.6
+  service_brake: 0.6
+  max_service_brake: 0.9
+  brake_delay_s: 2.5
+  jerk: 0.5
+  max_speed_mph: 110
+  davis: {A_n: 6000, B_n_per_ms: 80, C_n_per_ms2: 14}
+  doors_per_side: 2
+  door_channels: 1
+  door_open_s: 4.0
+  door_close_s: 6.0
+  floor: high
+  sources: Siemens IDOT/MARC Charger data sheets
+
+CALTRAIN_KISS_7:
+  name: Caltrain Stadler KISS 7-car
+  category: emu
+  length_m: 183
+  cars: 7
+  mass_empty_t: 429       # [P, basis unclear]
+  pax: 1300
+  rotating_mass_factor: 0.08
+  adhesive_mass_fraction: 0.35
+  adhesion: 0.28
+  max_te_kn: 540          # [P]
+  power_kw: 6000          # [P]
+  max_accel: 1.0
+  service_brake: 1.0
+  max_service_brake: 1.2
+  brake_delay_s: 0.6
+  jerk: 0.8
+  max_speed_mph: 79       # corridor limit
+  davis: {A_n: 5400, B_n_per_ms: 86, C_n_per_ms2: 11.0}
+  doors_per_side: 2
+  door_channels: 1        # steps from 8-inch platforms
+  door_open_s: 3.0
+  door_close_s: 5.0
+  floor: low
+  sources: railjournal / rollingstockworld Caltrain KISS

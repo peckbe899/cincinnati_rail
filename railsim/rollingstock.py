@@ -25,6 +25,7 @@ YAML fields (SI unless suffixed; suffixed forms are converted on load):
     davis: {A_kn, B_kn_per_kmh, C_kn_per_kmh2}  or {A_n, B_n_per_ms, C_n_per_ms2}
     tunnel_factor            multiplier on the C term inside tunnels
     cant_deficiency_in / _mm permitted unbalanced superelevation for this stock
+    min_curve_radius_m       route availability: tighter curves are not allowed for this stock
     doors_per_side, door_channels (passenger streams per door), door_open_s, door_close_s
     floor                    level | high | low   (boarding type the stock is built for)
 """
@@ -77,6 +78,7 @@ class Train:
     regen_efficiency: float = 0.0
     traction_efficiency: float = 0.85
     source_notes: str = ""
+    min_curve_radius: float = 0.0  # m; tighter curves are a route-availability ban (e.g. long cars)
     load_factor: float = 1.0  # fraction of mass_load carried in this run
     extra: Dict = field(default_factory=dict)
 
@@ -179,6 +181,7 @@ def train_from_dict(key: str, d: dict) -> Train:
         regen_efficiency=float(_get(d, "regen_efficiency", default=0.0)),
         traction_efficiency=float(_get(d, "traction_efficiency", default=0.85)),
         source_notes=str(_get(d, "sources", default="")),
+        min_curve_radius=float(_get(d, "min_curve_radius_m", default=0.0)),
         extra={k: v for k, v in d.items() if k.startswith("x_")},
     )
 

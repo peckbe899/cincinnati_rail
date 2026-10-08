@@ -208,7 +208,7 @@ class Network:
                         heapq.heappush(pq, (c2, nid, f_fwd, path + (piece,)))
         return results
 
-    def route(self, stops: Sequence[Tuple[int, float]], max_turn_deg: float = 50.0):
+    def route(self, stops: Sequence[Tuple[int, float]], max_turn_deg: float = 90.0):
         """Route through stops (each (edge_id, chainage)) in order, keeping a consistent
         direction of travel (no reversals). Returns (xy polyline, stop chainages along route)."""
         max_turn = math.radians(max_turn_deg)
@@ -249,7 +249,7 @@ class Network:
         scale = L / total if total > 0 else 1.0
         return xy, [c * scale for c in stop_ch]
 
-    def longest_route_between_leaves(self, max_turn_deg: float = 50.0):
+    def longest_route_between_leaves(self, max_turn_deg: float = 90.0):
         """For a line with no service definition: the longest turn-feasible route
         between any two dead-end nodes."""
         leaves = [n for n in self.adj if self.degree(n) == 1]

@@ -29,6 +29,7 @@ class SpeedPolicy:
     increment: float = 5 * 0.44704  # posting step (5 mph)
     min_zone_length: float = 200.0  # m; shorter faster zones are merged into slower neighbours
     zone_buffer: float = 0.0  # m added before/after each curve restriction
+    steps: tuple = ()  # allowed signal code speeds (m/s); if set, limits round DOWN to these
 
 
 @dataclass
@@ -82,7 +83,12 @@ def curve_speed(R: float, cant: float, spiral: float, pol: SpeedPolicy,
     return min(v, pol.line_speed)
 
 
-def quantize(v: float, inc: float) -> float:
+def quantize(v: float, inc: float, steps: tuple = ()) -> float:
+    """Round a speed down to the posting increment, or to the highest cab-signal code
+    speed not above it (fixed-block ATC can only command its code speeds)."""
+    if steps:
+        ok = [x for x in steps if x <= v + 1e-9]
+        return max(ok) if ok else min(steps)
     if inc <= 0:
         return v
     return max(inc, math.floor(v / inc + 1e-9) * inc)
@@ -105,15 +111,16 @@ def build_speed_profile(h: HorizontalAlignment, pol: SpeedPolicy,
     zones: List[Restriction] = []
     for c in h.curves:
         v = curve_speed(c.radius, c.cant, c.spiral, pol, c.deflection)
-        v = quantize(v, pol.increment)
+        v = quantize(v, pol.increment, pol.steps)
         if v < pol.line_speed - 1e-6:
             zones.append(Restriction(max(c.s_ts - pol.zone_buffer, 0.0),
                                      min(c.s_st + pol.zone_buffer, L), v,
                                      f"curve R={c.radius:.0f} m"))
     for z in extra:
-        zones.append(Restriction(max(0.0, z.s0), min(L, z.s1), quantize(z.speed, pol.increment)
-                                 if pol.increment else z.speed, z.reason))
-    prof = build_from_zones(L, zones, grid, default=quantize(pol.line_speed, pol.increment))
+        zones.append(Restriction(max(0.0, z.s0), min(L, z.s1),
+                                 quantize(z.speed, pol.increment, pol.steps), z.reason))
+    prof = build_from_zones(L, zones, grid,
+                            default=quantize(pol.line_speed, pol.increment, pol.steps))
     prof.limit = _merge_short_zones(prof.s, prof.limit, pol.min_zone_length)
     return prof
 

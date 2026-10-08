@@ -43,7 +43,7 @@ restrictions:
 terminal_approach: {speed_mph: 15, distance_m: 250, stations: [South Station]}
 driver:
   speed_margin_mph: 2.0
-padding: {percent: 5.0, final_leg_s: 120}
+padding: {percent: 10.0, final_leg_s: 120}  # US commuter practice ~10% (SEPTA, Metro-North) + terminal recovery
 reference:
   forward:  # South Station -> Needham Heights (weekend outbound)
     South Station: 0

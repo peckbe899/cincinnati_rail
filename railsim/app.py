@@ -56,7 +56,7 @@ def curve_design_from(cfg: dict, train: Train) -> CurveDesign:
         min_radius=float(g.get("min_radius_m", 25.0)),
         group_dev_tol=float(g.get("group_dev_tol_m", 10.0)),
         corner_offset_tol=float(g.get("corner_offset_tol_m", 40.0)),
-        simplify_tol=float(g.get("simplify_tol_m", 1.5)),
+        simplify_tol=float(g.get("simplify_tol_m", 3.0)),
     )
 
 
@@ -68,7 +68,10 @@ def speed_policy_from(cfg: dict, train: Train) -> SpeedPolicy:
     if train.cant_deficiency is not None and sp.get("use_train_cant_deficiency", False):
         eu = train.cant_deficiency
     inc = speed_of(sp, "increment", 5 * MPH)
+    steps = tuple(float(x) * MPH for x in sp.get("code_steps_mph", []) or [])
+    steps += tuple(float(x) * KMH for x in sp.get("code_steps_kmh", []) or [])
     return SpeedPolicy(
+        steps=tuple(sorted(steps)),
         line_speed=min(speed_of(cfg["geometry"], "line_speed"), train.max_speed),
         cant_deficiency=eu,
         increment=inc,
@@ -136,12 +139,17 @@ def apply_padding(dr: DirectionResult, pad: dict):
     before the final stop (terminal recovery margin, as US commuter timetables do)."""
     pct = float(pad.get("percent", 0.0)) / 100.0
     final = float(pad.get("final_leg_s", 0.0))
+    per_100km = float(pad.get("min_per_100km", 0.0)) * 60.0  # UIC 451-1 distance term
+    pathing = pad.get("pathing", {}) or {}  # {station: s} scheduled waits (single-track meets)
     legs = dr.run.leg_times()
     arr = [0.0]
     dep = [dr.dwell[0]]
     t = dep[0]
     for k, leg in enumerate(legs):
-        leg_p = leg * (1 + pct) + (final if k == len(legs) - 1 else 0.0)
+        dist = dr.stop_s[k + 1] - dr.stop_s[k]
+        leg_p = (leg * (1 + pct) + per_100km * dist / 100000.0
+                 + float(pathing.get(dr.stations[k + 1].name, 0.0))
+                 + (final if k == len(legs) - 1 else 0.0))
         t += leg_p
         arr.append(t)
         t += dr.dwell[k + 1]
@@ -249,6 +257,17 @@ def main(spec: ProgramSpec, argv=None):
           f"(load {train.load_factor:.0%}, {train.mass / 1000:.0f} t)")
     route = build_route(cfg, base, curve_design_from(cfg, train), speed_policy_from(cfg, train),
                         profile_design_from(cfg))
+    if train.min_curve_radius > 0:
+        tight = [c for c in route.horizontal.curves if c.radius < train.min_curve_radius]
+        if tight:
+            route.warnings.append(
+                f"{train.name} is not cleared for this route: {len(tight)} curve(s) tighter than "
+                f"{train.min_curve_radius:.0f} m (tightest {min(c.radius for c in tight):.0f} m at km "
+                f"{min(tight, key=lambda c: c.radius).s_ts / 1000:.2f})")
+    far = [s for s in route.stations if 100 < s.offset and "routed to the nearest" not in
+           " ".join(w for w in route.warnings if s.name in w)]
+    for s in far:
+        route.warnings.append(f"station '{s.name}' is {s.offset:.0f} m from the track; check its placemark")
     for w in route.warnings:
         print(f"  WARNING: {w}")
     driver = spec.make_driver(cfg, train)

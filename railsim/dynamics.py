@@ -150,30 +150,31 @@ class Simulator:
         return (tr.resistance(v, bool(self.tunnel[i])) + weight * self.grade[i]
                 + weight * self.curve_r[i] / 1000.0)
 
-    def _braking_curve(self, i0: int, i_stop: int, s_stop: float) -> np.ndarray:
+    def _leg_target(self, i0: int, i_stop: int, s_stop: float) -> np.ndarray:
+        """Target speeds for one leg: posted limits (train-length aware) minus the driver's
+        margin, capped at the creep speed over the final approach to the stop."""
+        tgt = self.target[i0:i_stop + 1].copy()
+        if self.driver.stop_approach_speed > 0 and self.driver.stop_approach_dist > 0:
+            ss = self.track.s[i0:i_stop + 1]
+            m = (s_stop - ss) <= self.driver.stop_approach_dist
+            tgt[m] = np.minimum(tgt[m], self.driver.stop_approach_speed)
+        return tgt
+
+    def _braking_curve(self, i0: int, i_stop: int, s_stop: float, tgt: np.ndarray) -> np.ndarray:
         """Max speed at each grid point i0..i_stop allowing a stop at s_stop and compliance with
         every downstream target, braking at the planned rate (limited by capability on downgrades)."""
         tr = self.train
         ds = self.track.ds
         b_plan = self.driver.brake_rate or tr.service_brake
         B = np.empty(i_stop - i0 + 1)
-        B[-1] = 0.0
         d_last = max(s_stop - self.track.s[i_stop], 0.0)
-        # the final partial cell up to the exact stopping position
         b = min(b_plan, tr.max_service_brake + G * self.grade[i_stop])
-        B[-1] = min(self.target[i_stop], math.sqrt(2 * max(b, 0.05) * d_last))
+        B[-1] = min(tgt[-1], math.sqrt(2 * max(b, 0.05) * d_last))
         for k in range(len(B) - 2, -1, -1):
             i = i0 + k
             b = min(b_plan, tr.max_service_brake + G * self.grade[i])
             b = max(b, 0.05)
-            B[k] = min(self.target[i], math.sqrt(B[k + 1] ** 2 + 2 * b * ds))
-        if self.driver.stop_approach_speed > 0 and self.driver.stop_approach_dist > 0:
-            ss = self.track.s[i0:i_stop + 1]
-            m = (s_stop - ss) <= self.driver.stop_approach_dist
-            cap = np.maximum(self.driver.stop_approach_speed,
-                             np.sqrt(2 * b_plan * np.maximum(s_stop - ss, 0.0)))
-            B[m] = np.minimum(B[m], np.minimum(cap[m], np.maximum(self.driver.stop_approach_speed,
-                                                                 B[m])))
+            B[k] = min(tgt[k], math.sqrt(B[k + 1] ** 2 + 2 * b * ds))
         return B
 
     # ------------------------------------------------------------------ main loop
@@ -205,7 +206,8 @@ class Simulator:
             s_stop = stops[k + 1].s
             i0 = self._idx(s)
             i_stop = self._idx(s_stop)
-            B = self._braking_curve(i0, i_stop, s_stop)
+            leg_tgt = self._leg_target(i0, i_stop, s_stop)
+            B = self._braking_curve(i0, i_stop, s_stop, leg_tgt)
             B2 = B * B
             s_grid0 = self.track.s[i0]
 
@@ -231,7 +233,7 @@ class Simulator:
                 a_coast = -f_ext / m_eff
                 f_trac_max = tr.tractive_effort(v) * dr.power_fraction
                 a_trac = (f_trac_max - f_ext) / m_eff
-                tgt = self.target[i]
+                tgt = leg_tgt[min(max(i - i0, 0), len(leg_tgt) - 1)]
 
                 # --- will a brake application started now (delay + jerk ramp) stay under B?
                 a1 = min(a, a_coast) if td > 0 else a
