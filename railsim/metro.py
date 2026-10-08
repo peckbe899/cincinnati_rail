@@ -104,7 +104,21 @@ def dwell_fn(station, train, cfg, is_terminal: bool) -> float:
     # with the train's capacity (a 260-seat interurban picks up fewer people per stop)
     cap = train.mass_load / 75.0 if train.mass_load > 0 else 640.0
     scale *= cap / float(dcfg.get("reference_capacity", 640))
-    return model.dwell(station.cls, doors, train.door_channels, scale, station.dwell_override)
+    return model.dwell(station.cls, doors, train.door_channels, scale, station.dwell_override,
+                       psd=has_psd(station, dcfg))
+
+
+def has_psd(station, dcfg: dict) -> bool:
+    """Platform screen doors at this station: per-station `stations.info.<name>.psd`, else
+    `dwell.psd_stations` (names) or `dwell.psd_classes` (station classes); with neither
+    list, every station has them whenever `psd_overhead` is set."""
+    if station.psd is not None:
+        return station.psd
+    names = dcfg.get("psd_stations")
+    classes = dcfg.get("psd_classes")
+    if names is None and classes is None:
+        return True
+    return station.name in (names or []) or station.cls in (classes or [])
 
 
 SPEC = ProgramSpec("metro", ROOT / "data" / "rollingstock" / "metro.yaml", DEFAULTS, make_driver,

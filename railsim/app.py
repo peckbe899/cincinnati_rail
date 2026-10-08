@@ -311,6 +311,10 @@ def main(spec: ProgramSpec, argv=None):
         cfg = deep_merge(deep_merge(deep_merge(spec.defaults, spec.presets.get(preset, {})),
                                     era.get("overlay", {})), user_cfg)
         era_note = f" | {year}: {era['name']}"
+        valid = cfg.get("years")
+        if valid and not (valid[0] <= year <= valid[1]):
+            raise SystemExit(f"{cfg.get('name', cfg_path.stem)} only ran in {valid[0]}-{valid[1]}; "
+                             f"pick --year in that range")
     if args.stops:
         cfg.setdefault("service", {})["stops"] = args.stops
     key = args.train or cfg.get("train") or era_train

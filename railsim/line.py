@@ -70,6 +70,7 @@ class StationInfo:
     early_departure: bool = False  # 'L' stop: may leave early (commuter timetables)
     stop: bool = True
     reverse: bool = False  # stub terminal mid-route: the train reverses here
+    psd: Optional[bool] = None  # platform screen doors (None: decided by dwell.psd_classes)
 
 
 @dataclass
@@ -159,6 +160,8 @@ def _stations_from_config(cfg: dict, placemarks: List[Placemark]) -> List[Statio
         s.platform_length = float(length_of(d, "platform_length", s.platform_length))
         s.dwell_override = d.get("dwell_s")
         s.early_departure = bool(d.get("early_departure", False))
+        if "psd" in d:
+            s.psd = bool(d["psd"])
     return out
 
 
@@ -175,6 +178,11 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
     track_pms = select(placemarks, tcfg.get("folder"), tcfg.get("name_regex"))
     excl = tcfg.get("exclude", []) or []
     track_pms = [p for p in track_pms if p.lines and p.name not in excl]
+    # more track from other folders or files (e.g. historic rights of way, a shared spur)
+    for src in tcfg.get("extra", []) or []:
+        pm = read_kmz((base_dir / src["kmz"]).resolve()) if src.get("kmz") else placemarks
+        track_pms += [p for p in select(pm, src.get("folder"), src.get("name_regex"))
+                      if p.lines and p.name not in (src.get("exclude") or [])]
     if not track_pms:
         raise ValueError("no track LineStrings found (check track.folder in the config)")
     lines = [(p.name, ln) for p in track_pms for ln in p.lines]
@@ -239,10 +247,20 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
     reversing: set = set()
     reversals: List[float] = []
     if route_names:
-        stops = [locate_name(n) for n in route_names]
+        def locate_via(entry):
+            # non-stop waypoint {via: [lat, lon]} that picks between alternative paths
+            x, y = proj.to_xy(float(entry["via"][0]), float(entry["via"][1]))
+            loc = net.locate(float(x), float(y), 300.0)
+            if loc is None:
+                raise ValueError(f"service.route waypoint {entry['via']} is not on the track")
+            return loc[:2]
+
+        stops = [locate_via(n) if isinstance(n, dict) and "via" in n else locate_name(n)
+                 for n in route_names]
         rev_idx = [k for k, n in enumerate(route_names) if isinstance(n, dict) and n.get("reverse")]
         drawn_xy, stop_ch = net.route(stops, max_turn, reverse_at=rev_idx)
         reversals = [stop_ch[k] for k in rev_idx if 0 < k < len(stops) - 1]
+        route_names = [n for n in route_names if not (isinstance(n, dict) and "via" in n)]
     else:
         if not net.is_simple_path():
             warnings.append("track network branches; routing between the farthest dead ends. "
@@ -325,9 +343,17 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
             log(f"  Elevation: using '{src}'")
             break
     structures = []
+    pieces = getattr(net, "last_route_pieces", [])
     for z in pcfg.get("structures", []) or []:
-        s0, s1 = _zone_chainage(z, on_route, proj, h)
-        structures.append((s0, s1, z.get("type", "viaduct")))
+        # e.g. {type: tunnel, from_station: A, to_station: B} for a covered way, or
+        # {type: tunnel, match: "Covered"} for drawn segments whose name matches
+        if z.get("match"):
+            spans = _match_ranges(z["match"], pieces, h)
+            if not spans:
+                warnings.append(f"profile structure '{z['match']}' matched no drawn segment")
+        else:
+            spans = [_zone_chainage(z, on_route, proj, h)]
+        structures += [(s0, s1, z.get("type", "viaduct")) for s0, s1 in spans]
     if ground is None:
         warnings.append("no elevation data: profile is FLAT. Provide profile.csv, a KMZ with "
                         "altitudes, or set profile.usgs: true (needs internet).")
@@ -371,16 +397,9 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
         s0, s1 = _zone_chainage(z, on_route, proj, h)
         route.supply_zones.append((s0, s1, float(z["factor"])))
     # operating zones (e.g. CBTC/ATO trunk): by drawn segment name or between stations
-    pieces = getattr(net, "last_route_pieces", [])
     for k, oz in enumerate(cfg.get("operating_zones", []) or [], start=1):
         if oz.get("match"):
-            rx = re.compile(oz["match"], re.I)
-            for name, pa, pb in pieces:
-                if not rx.search(name or ""):
-                    continue
-                ca = project_point_to_polyline(float(pa[0]), float(pa[1]), h.xy, h.s)[0]
-                cb = project_point_to_polyline(float(pb[0]), float(pb[1]), h.xy, h.s)[0]
-                route.zone_ranges.append((min(ca, cb), max(ca, cb), k))
+            route.zone_ranges += [(s0, s1, k) for s0, s1 in _match_ranges(oz["match"], pieces, h)]
         else:
             s0, s1 = _zone_chainage(oz, on_route, proj, h)
             route.zone_ranges.append((s0, s1, k))
@@ -406,6 +425,18 @@ def _ground_fn(values, L, step=10.0):
     g = _grid(L, step)
     vals = np.asarray(values, dtype=float)
     return lambda s: np.interp(s, g, vals)
+
+
+def _match_ranges(pattern: str, pieces, h) -> List[Tuple[float, float]]:
+    """Chainage ranges of the route pieces drawn as segments whose name matches."""
+    rx = re.compile(pattern, re.I)
+    out = []
+    for name, pa, pb in pieces:
+        if rx.search(name or ""):
+            ca = project_point_to_polyline(float(pa[0]), float(pa[1]), h.xy, h.s)[0]
+            cb = project_point_to_polyline(float(pb[0]), float(pb[1]), h.xy, h.s)[0]
+            out.append((min(ca, cb), max(ca, cb)))
+    return out
 
 
 def _zone_chainage(z: dict, stations: Sequence[StationInfo], proj, h) -> Tuple[float, float]:

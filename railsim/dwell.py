@@ -8,9 +8,16 @@ Metro (door-cycle model, after TCQSM 3rd ed. ch. 6 / TCRP Report 165):
 
 Commuter / RER (platform-type model):
     dwell = brake_settle + door_open + passenger_flow(platform type, open doors)
-            + conductor (all-aboard / door control) + door_close + brake_release
-    Low-level platforms mean steps: slower boarding and, on traditional stock, only some
-    doors opened by the crew. High-level (level) boarding behaves like a metro door.
+            + conductor or driver dispatch + door_close + brake_release
+    door_control picks who works the doors:
+      crew    US commuter practice: conductor/trainmen open selected doors, call
+              all-aboard and signal the engineer (`conductor` s)
+      button  driver-only (Paris RER, S-Bahn): the driver releases, passengers open with
+              a push button (`button_delay` s), the driver closes and departs after a
+              mirror/CCTV check (`dispatch` s); every door is usable
+      auto    as button, but the doors open by themselves on release
+    Low-level platforms mean steps: slower boarding and, with crew doors, only some
+    doors opened. High-level (level) boarding behaves like a metro door.
     'L' (early-departure) stops and flag stops are handled in the timetable layer.
 
 All volumes are per train per stop and are set by station class in the program configs.
@@ -52,7 +59,9 @@ class MetroDwell:
     })
 
     def dwell(self, station_class: str, doors_total: int, door_channels: int,
-              load_scale: float = 1.0, override: Optional[float] = None) -> float:
+              load_scale: float = 1.0, override: Optional[float] = None,
+              psd: bool = True) -> float:
+        """`psd`: this platform has screen doors, so `psd_overhead` applies."""
         if override is not None:
             return float(override)
         c = self.classes.get(station_class, self.classes["standard"])
@@ -62,7 +71,7 @@ class MetroDwell:
         flow = per_door * (board * self.t_board + alight * self.t_alight) / max(door_channels, 1)
         reopen = self.reopen_prob_per_100 * (board + alight) / 100.0 * self.reopen_penalty
         d = max(self.door_release + self.door_open + flow + self.door_close + reopen
-                + self.dispatch + self.psd_overhead, self.min_dwell)
+                + self.dispatch + (self.psd_overhead if psd else 0.0), self.min_dwell)
         if self.ats_round > 0:  # automatic dwell: programmed in whole steps
             d = math.ceil(d / self.ats_round - 1e-9) * self.ats_round
         return d
@@ -73,7 +82,10 @@ class CommuterDwell:
     brake_settle: float = 1.0  # s, stopped -> doors released
     door_open: float = 3.5
     door_close: float = 6.0  # incl. warning
-    conductor: float = 8.0  # s, all-aboard / door control / signal to engineer
+    door_control: str = "crew"  # crew | button | auto
+    conductor: float = 8.0  # s, all-aboard / door control / signal to engineer (crew)
+    dispatch: float = 4.0  # s, driver-only: close command -> check -> power (button/auto)
+    button_delay: float = 1.0  # s, passenger reaches and presses the door button
     brake_release: float = 4.0  # s, air-brake release before motion (EMUs ~1-2 s)
     t_board_level: float = 2.0  # s/pax/door channel, level boarding
     t_alight_level: float = 1.5
@@ -100,10 +112,16 @@ class CommuterDwell:
         tb = self.t_board_level if level else self.t_board_steps
         ta = self.t_alight_level if level else self.t_alight_steps
         doors = max(doors_total, 1)
+        crew = self.door_control == "crew"
         if not level:
-            doors = max(int(round(doors * self.open_door_fraction_low)), 1)
+            if crew:  # trainmen open only some doors
+                doors = max(int(round(doors * self.open_door_fraction_low)), 1)
             door_channels = 1  # one stream down the steps
         flow = self.door_peaking / doors * (board * tb + alight * ta) / max(door_channels, 1)
-        total = (self.brake_settle + self.door_open + flow + self.conductor + self.door_close
+        if crew:
+            staff = self.conductor
+        else:
+            staff = self.dispatch + (self.button_delay if self.door_control == "button" else 0.0)
+        total = (self.brake_settle + self.door_open + flow + staff + self.door_close
                  + self.brake_release)
         return max(total, self.min_dwell)

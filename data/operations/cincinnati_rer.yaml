@@ -6,6 +6,8 @@
 # Canon fleet: Brightliner 1934-51, Silverliner 1951-69, Swiftliner 1969-80s, A 1979-96,
 # B 1985-2006 (SACEM, 90 s headways), C 1996-2018, D 2006-25 (CBTC), E 2018-, F 2025-.
 # Single-deck trunk stream B > D > F is the default; pass --train for the bilevel stream.
+# No conductors in any era: driver-only operation with passenger push-button doors, as on
+# the Paris RER (driver releases, passengers open, driver closes and departs).
 
 system: Cincinnati RER
 default_year: 2026
@@ -19,25 +21,25 @@ fleet:
   - {from: 2025, train: RER_F_SET}
 
 eras:
-  - name: "Interurban era: automatic block signals, conductor and trainmen, low platforms"
+  - name: "Interurban era: automatic block signals, driver-only, low platforms"
     years: [1934, 1950]
     overlay:
       signalling: {system: lineside}
-      stations: {defaults: {platform: low}}   # retractable steps (Brightliner)
-      dwell: {conductor: 10.0, brake_release: 3.0}
+      stations: {defaults: {platform: low}}   # steps at every door (Brightliner)
+      dwell: {door_control: button, dispatch: 5.0, brake_release: 3.0}   # mirrors only
 
-  - name: "Cab signals (pulse-code), conductor door control"
+  - name: "Cab signals (pulse-code), driver-only, low platforms"
     years: [1951, 1968]
     overlay:
       signalling: {system: cab}
-      stations: {defaults: {platform: low}}   # traps + heated steps (Silverliner)
-      dwell: {conductor: 8.0, brake_release: 2.5}
+      stations: {defaults: {platform: low}}   # heated steps at every door (Silverliner)
+      dwell: {door_control: button, dispatch: 4.5, brake_release: 2.5}
 
-  - name: "S-Bahn era: cab signals, high-level platforms, one conductor"
+  - name: "S-Bahn era: cab signals, high-level platforms, driver-only"
     years: [1969, 1984]
     overlay:
       signalling: {system: cab}
-      dwell: {conductor: 5.0, brake_release: 2.0}
+      dwell: {door_control: button, dispatch: 4.0, brake_release: 2.0}
 
   - name: "Basin trunk opens: SACEM-type supervision on the trunk, cab signals on branches"
     years: [1985, 2005]
@@ -45,7 +47,7 @@ eras:
       signalling: {system: cab}
       operating_zones:
         - {name: trunk, match: "Trunk", signalling: {system: sacem}, driver: {mode: manual}}
-      dwell: {conductor: 4.0, brake_release: 1.5}
+      dwell: {door_control: button, dispatch: 3.5, brake_release: 1.5}
 
   - name: "CBTC with ATO on the trunk (GoA2), cab signals / PTC on branches"
     years: [2006, 2100]
@@ -53,4 +55,48 @@ eras:
       signalling: {system: cab}
       operating_zones:
         - {name: trunk, match: "Trunk", signalling: {system: cbtc}, driver: {mode: ato}}
-      dwell: {conductor: 3.0, brake_release: 1.5}   # driver-only with CCTV
+      dwell: {door_control: button, dispatch: 3.0, brake_release: 1.5}   # CCTV door check
+
+# ---------------------------------------------------------------------------------------
+# Service history (read by tools/make_cincinnati_configs.py). Before the RER opened, the
+# branches ran into Union Terminal (CUT) on the original railroad rights of way (e.g.
+# Covington Union -> C&O bridge -> C&O viaduct -> CUT); RER-1's eastern branches ended at
+# Times, a stub terminal like Boston North Station. RER-3 (C) and RER-5 (E) already ran
+# branch to branch through the city. Northgate and the RER-2 / RER-3 CVG branches opened
+# with the RER; before that CVG was served by RER-5 over the Crescent Springs-CVG line.
+# RER-3 (C) runs underground in an embanked covered way along the Ohio (like RATP RER C
+# along the Seine): on the map it looks like it is in the river; the portals are where the
+# embankment ends. Each entry becomes a `profile.structures` tunnel in the generated configs
+# (tunnel drag, profile free of the river surface). Portals not yet known:
+#   RER-3: [{from: [lat, lon], to: [lat, lon]}]   or   [{from_station: A, to_station: B}]
+covered_ways:
+  RER-3: []
+
+rer_opening: 1985   # [assumed] the basin trunk opens with the B set (SACEM, 90 s headways)
+history:
+  rer_era_only:     # terminals that only exist from rer_opening
+    RER-1: [Northgate]
+    RER-2: [CVG Terminal 1]
+    RER-3: [CVG Terminal 1]
+  through_lines: [RER-3, RER-5]   # current branch-to-branch services also ran before the RER
+  services:         # pre-RER services; `via` names a line in data/kmz/cincinnati_historic.kml
+    - {line: RER-1, from: Miami University / OXFORD, to: Union Terminal, via: Historic Oxford approach}
+    - {line: RER-1, from: Miamitown, to: Union Terminal, via: Historic Miamitown approach}
+    - {line: RER-1, from: Lebanon Station, to: Times}
+    - {line: RER-1, from: Fayetteville, to: Times}
+    - {line: RER-2, from: Camden, to: Union Terminal}
+    - {line: RER-2, from: Dayton Airport, to: Union Terminal}
+    - {line: RER-2, from: Kettering, to: Union Terminal}
+    - {line: RER-2, from: Falmouth, to: Union Terminal, approx: "via Covington Union; C&O bridge and viaduct not drawn yet, today's crossing used"}
+    - {line: RER-2, from: Verona, to: Union Terminal, approx: "via Covington Union; C&O bridge and viaduct not drawn yet, today's crossing used"}
+    - {line: RER-4, from: Carthage, to: Union Terminal, approx: "via Newport Central; original riverfront ROW not drawn yet, today's trunk used"}
+    - {line: RER-4, from: Dover, to: Union Terminal, approx: "via Newport Central; original riverfront ROW not drawn yet, today's trunk used"}
+    - {line: RER-4, from: Grants Lick, to: Union Terminal, approx: "via Newport Central; original riverfront ROW not drawn yet, today's trunk used"}
+    - {line: RER-4, from: Brookville, to: Union Terminal}
+    - {line: RER-4, from: Greensburg, to: Union Terminal}
+    # the original CVG line (Crescent Springs - CVG, drawn in the RER-2 folder); the
+    # airport opened in 1947
+    - {line: RER-5, from: Waynesville, to: CVG Terminal 1, years: [1947, 1984],
+       extra: {folder: "Cincinnati RER/RER-2", name_regex: "^Erlanger-Beaverlick$"}}
+    - {line: RER-5, from: Wilmington, to: CVG Terminal 1, years: [1947, 1984],
+       extra: {folder: "Cincinnati RER/RER-2", name_regex: "^Erlanger-Beaverlick$"}}

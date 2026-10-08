@@ -259,3 +259,25 @@ def test_reversal_jump_moves_front():
         [Stop(0.0), Stop(1000.0, dwell=60.0, jump=106.0), Stop(2500.0)])
     assert r.departures[1] - r.arrivals[1] == pytest.approx(60.0, abs=0.5)
     assert np.max(r.s) == pytest.approx(2500.0, abs=0.5)
+
+
+def test_driver_only_button_doors_beat_crew_doors_at_low_platforms():
+    from railsim.dwell import CommuterDwell
+    crew = CommuterDwell(door_control="crew", conductor=8.0)
+    button = CommuterDwell(door_control="button", dispatch=4.0)
+    # crew opens only some doors at low platforms; driver-only stock opens them all
+    assert button.dwell("busy", "low", 12, 1) < crew.dwell("busy", "low", 12, 1) - 20.0
+    assert button.dwell("minor", "high", 12, 2) <= crew.dwell("minor", "high", 12, 2)
+
+
+def test_platform_screen_doors_only_where_fitted():
+    from railsim.dwell import MetroDwell
+    from railsim.line import StationInfo
+    from railsim.metro import has_psd
+    d = MetroDwell(psd_overhead=3.0, min_dwell=0.0)
+    dcfg = {"psd_classes": ["transfer"]}
+    hub, minor = StationInfo("Hub", 0, 0, cls="transfer"), StationInfo("Halt", 0, 0, cls="minor")
+    assert has_psd(hub, dcfg) and not has_psd(minor, dcfg)
+    minor.psd = True  # per-station override
+    assert has_psd(minor, dcfg)
+    assert d.dwell("minor", 20, 2, psd=True) == pytest.approx(d.dwell("minor", 20, 2, psd=False) + 3.0)
