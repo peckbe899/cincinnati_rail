@@ -43,7 +43,8 @@ What real long-section design checks that the editor did not, and what the page 
 
   | System / era | Platform limit | Basis |
   |---|---|---|
-  | Metro, all eras (1903-1959) | 7.5 per mille | New York, *The Design of Subways* (1918): stations and approaches at most 0.75% so trains do not creep with brakes off; vertical curves kept off stations [S]. No later US limit found, so it carries through the IND era [E] |
+  | Metro Lines 1-7 (1903-1913) | 7.5 per mille | Ben's ruling; New York, *The Design of Subways* (1918): stations and approaches at most 0.75% so trains do not creep with brakes off; vertical curves kept off stations [S] |
+  | Metro Lines 8-14 (1933-1959) | 4 per mille | Ben's ruling; close to London's historic 1 in 260 (3.8 per mille) |
   | RER (1985-1996) | 2.5 per mille | Modern main-line station limit: German EBO / European TSI 2.5 per mille for new station tracks [S]; UK about 1 in 400 for new platforms (historic 1 in 260, later 1 in 500) [S, forum-quoted] |
   | Reference | | London exceptions: Oval northbound 1 in 76 (13 per mille, 1920s extension), West Finchley 1 in 81 [forum]; BOStrab 1969 (trams) 2.5% at terminal stops [S]; Paris: no published figure found |
 - Starting values still: `drainMin` 3 per mille, `curveK` 800.
