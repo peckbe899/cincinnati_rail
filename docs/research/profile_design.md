@@ -22,7 +22,7 @@ What real long-section design checks that the editor did not, and what the page 
 
 ## Rulings (Ben) and what the page and simulator now do
 
-- **Vertical curves are built into the rail** (page and `railsim/metro_profile.py`, so run times use them): radius 1,500 m Metro, 3,000 m RER. Curves stay off platforms: the platform level runs on past each platform end for half the curve (the transition), then the curve, then the straight grade. Where the straight grade is too short the curves are shortened and flagged. The station solver allows for the transitions (each platform counts as its length plus one curve at the steepest grade), and river-tube bottoms are held half a curve beyond each bank.
+- **Vertical curves are built into the rail** (page and `railsim/metro_profile.py`, so run times use them): radius 1,500 m Metro, 3,000 m RER. Curves stay off platforms: the platform level runs on past each platform end for half the curve (the transition), then the curve, then the straight grade. Every curve is at least 30.5 m long (AREMA and Amtrak 100 ft minimum; UK practice 25 m), so small bends are rounded visibly and in the rail too. Where the straight grade is too short the curves are shortened and flagged. The station solver allows for the transitions (each platform counts as its length plus one curve at the steepest grade), and river-tube bottoms are held half a curve beyond each bank.
 - **Bored tunnels need the cover of their era's practice**, else the stretch is cut and cover:
   - Lines 1-7 (1903-1913): about 2 m, the shallow shield and gallery work of the day (canon basin method).
   - Lines 8-12 (1933-1941) and 13-14 (1949-1959): about one tube diameter, 6 m (Chicago State Street 1938-43 and Dearborn 1951: 25 ft shields, tube floors 43-50 ft below the street).
@@ -79,3 +79,7 @@ Sources added for the era cover: Chicago State Street subway (ASCE 1943 abstract
 - https://www.railforums.co.uk/threads/maximum-slope-allowed-in-new-stations.230452/
 - https://www.kontextwochenzeitung.de/politik/100/der-schiefbahnhof-1-398.html
 - http://www.meyer-strassenbahn.de/bostrab/bostrab1969.html
+- https://www.lagrandealliance.quebec/wp-content/uploads/2023/05/LGA-APPENDICES-Railway-design-criteria.pdf
+- https://railtec.illinois.edu/wp/wp-content/uploads/AREMA-Chapter-5-2007.pdf
+- https://www.amtrak.com/content/dam/projects/dotcom/english/public/documents/corporate/engineering-practices/engineering-specs/amtrak-track-design-specification-63.pdf
+- https://www.thepwi.org/wp-content/uploads/2021/02/Journal-202004-Vol138-Pt2-BACK-TO-BASICS-Vertical-alignment-design.pdf

@@ -256,6 +256,8 @@ Living list of what is done and what is left. Newest changes at the top of each 
 
 - **Sloped platforms** (Rail Profiles and simulator): per-station platform grade about the centre level, limited by era (Lines 1-7 7.5 per mille, New York 1918 practice; Lines 8-14 4 per mille; RER 2.5 per mille, main-line station limit), carried on through the transitions; 'Ease the bends' per station and 'Ease all platforms' slope each platform toward the grades either side. Saved as `sg` in the profile docs.
 
+- **Minimum vertical curve length 30.5 m** (AREMA / Amtrak 100 ft): small bends (e.g. Line 1 Winton Place - Kenard at -3.4 per mille) now get a proper curve instead of a 5-8 m one; page and simulator.
+
 ## In progress
 
 - Nothing running.

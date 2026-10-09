@@ -215,7 +215,7 @@ const TYPE_KEYS = Object.keys(TYPES);
 // thresholds are editable starting values, not canon. deepBelow (60 ft) follows the station
 // list calling Price Hill's 60 ft station a deep bore; shallowMax (40 ft) flags canon-shallow
 // stretches that run well past the doctrine's 20-30 ft.
-const METRO_DEFAULTS = { maxGrade: 50, platform: 152.4, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, envelope: 5.5, boreCrown: 5.2, deckDepth: 1.5, invertDepth: 1.0, boreGap: 2.0, poolFt: 455.0, vcRadius: 1500, minCover: 2, drainMin: 3, curveK: 800, stationMaxGrade: 7.5 };
+const METRO_DEFAULTS = { maxGrade: 50, platform: 152.4, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, envelope: 5.5, boreCrown: 5.2, deckDepth: 1.5, invertDepth: 1.0, boreGap: 2.0, poolFt: 455.0, vcRadius: 1500, vcMinLen: 30.5, minCover: 2, drainMin: 3, curveK: 800, stationMaxGrade: 7.5 };
 // Design rules: vertical curves of 1,500 m (Metro) and 3,000 m (RER) at every grade change, kept
 // off platforms by a level transition (canon); bored tunnels need the cover of their era's
 // practice, else they are cut and cover (canon, see ERA); tunnels drain at 3 per mille or
@@ -224,7 +224,7 @@ const METRO_DEFAULTS = { maxGrade: 50, platform: 152.4, defDepth: 7.62, elevAbov
 // RER: 35 per mille, 200 m platforms (8-car TRI) and 12 m station rail depth are canon; the
 // envelope (25 kV overhead), thresholds, tube cover and surface bend-point spacing are starting
 // values. Surface stations sit at grade on the old railroad and the rail follows the ground.
-const RER_DEFAULTS = { maxGrade: 35, platform: 200, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 6.6, boreCrown: 7.5, deckDepth: 2.0, invertDepth: 1.0, boreGap: 2.0, poolFt: 455.0, surfStep: 250, tubeCover: 3, vcRadius: 3000, minCover: 8.5, drainMin: 3, curveK: 800, stationMaxGrade: 2.5 };
+const RER_DEFAULTS = { maxGrade: 35, platform: 200, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 6.6, boreCrown: 7.5, deckDepth: 2.0, invertDepth: 1.0, boreGap: 2.0, poolFt: 455.0, surfStep: 250, tubeCover: 3, vcRadius: 3000, vcMinLen: 30.5, minCover: 8.5, drainMin: 3, curveK: 800, stationMaxGrade: 2.5 };
 let DEFAULTS = METRO_DEFAULTS;
 // Canon structure for the founding sections (Lines 1-6 as first opened).
 // m: 'shallow' = basin method (shallow shield running tunnels, cut-and-cover station boxes);
@@ -270,6 +270,7 @@ const SETTING_ROWS_BASE = [
   ['boreGap', 'Ground between a bored tube and another structure', 'len', 0.5],
   ['poolFt', 'Ohio normal pool (Markland)', 'ft', 0.1],
   ['vcRadius', 'Vertical curve radius', 'len', 100],
+  ['vcMinLen', 'Min vertical curve length', 'len', 0.5],
   ['minCover', 'Cover over bored tunnels (RER; Metro by era)', 'len', 0.5],
   ['drainMin', 'Min tunnel grade for drainage', '‰', 0.5],
   ['stationMaxGrade', 'Max platform grade (RER; Metro by era)', '‰', 0.5],
@@ -330,7 +331,7 @@ function surfaceAt(c) { return riverAt(c) ? pool() : groundAt(c); }
 function stKey(i) { const s = S.stations[i]; const dup = S.stations.filter((x) => x.name === s.name).length > 1; return dup ? `${s.name}#${i}` : s.name; }
 
 function vertices(al = S.align, stations = S.stations, L = S.L, platform = settings.platform, rv = settings.vcRadius) {
-  const half = platform / 2; const v = []; v.rv = rv || 0;
+  const half = platform / 2; const v = []; v.rv = rv || 0; v.lmin = rv ? settings.vcMinLen : 0;
   const placed = [];
   stations.forEach((s, i) => {
     // platform grade (per mille, rising with chainage) about the level at the platform centre
@@ -355,8 +356,11 @@ let VERTS = [];
 // platform end by half the curve length (the transition), then the curve, then the grade. Where
 // the straight grade is too short the curves are shortened, and the shortfall is flagged.
 function design(verts) {
-  const rv = verts.rv || 0;
-  if (verts._d && verts._d.rv === rv) return verts._d;
+  const rv = verts.rv || 0, lmin = verts.lmin || 0;
+  // curve length for a change of grade dg: radius x dg, but never shorter than the minimum
+  // (AREMA / Amtrak 100 ft), so small bends are rounded too
+  const curveLen = (dg) => (Math.abs(dg) > 1e-5 ? Math.max(rv * Math.abs(dg), lmin) : 0);
+  if (verts._d && verts._d.rv === rv && verts._d.lmin === lmin) return verts._d;
   const n = verts.length, ext = new Array(n).fill(0);
   const outward = (k) => {  // neighbour index beyond a platform end, or -1
     const v = verts[k];
@@ -375,7 +379,7 @@ function design(verts) {
         const oc = verts[o].c - dir * (facing ? ext[o] : 0);
         const run = Math.abs(oc - piv); if (run < 1e-6) continue;
         const gq = (zOn(o, oc) - zOn(k, piv)) / (oc - piv);
-        nx[k] = rv * Math.abs(gq - (verts[k].gp || 0)) / 2;
+        nx[k] = curveLen(gq - (verts[k].gp || 0)) / 2;
       }
       // the two transitions on one stretch take at most half of it
       for (let k = 0; k + 1 < n; k++) {
@@ -395,14 +399,14 @@ function design(verts) {
   const L = dv.map(() => 0), need = dv.map(() => 0);
   if (rv > 0) for (let k = 1; k + 1 < dv.length; k++) {
     const v = dv[k]; if (v.kind === 'ps' || v.kind === 'pe' || v.kind === 'end') continue;
-    need[k] = L[k] = rv * Math.abs(g[k] - g[k - 1]);
+    need[k] = L[k] = curveLen(g[k] - g[k - 1]);
   }
   for (let k = 0; k + 1 < dv.length; k++) {
     const len = dv[k + 1].c - dv[k].c, h = L[k] / 2 + L[k + 1] / 2;
     if (h > len && h > 0) { const f = len / h; L[k] = Math.min(L[k], L[k] * f); L[k + 1] = Math.min(L[k + 1], L[k + 1] * f); }
   }
   const short = []; dv.forEach((v, k) => { if (need[k] - L[k] > 0.5) short.push({ c: v.c, need: need[k], got: L[k], dg: (g[k] - g[k - 1]) * 1000 }); });
-  verts._d = { rv, dv, g, L, short }; return verts._d;
+  verts._d = { rv, lmin, dv, g, L, short }; return verts._d;
 }
 function railAt(c, verts = VERTS) {
   const { dv, g, L } = design(verts);
@@ -542,7 +546,7 @@ function typeAt(c, z = railAt(c)) { return overrideAt(c) || autoType(c, z); }
 // held fixed, solved in both directions so steep descents go deeper instead of popping out.
 function defaultAlign(modes, extra = []) {
   // each platform counts with its transitions (half a curve at the steepest grade each end)
-  const g = settings.maxGrade / 1000, P = settings.platform + settings.vcRadius * g, n = S.stations.length;
+  const g = settings.maxGrade / 1000, P = settings.platform + Math.max(settings.vcRadius * g, settings.vcMinLen), n = S.stations.length;
   const ub = [], lb = [];
   const md = isRer() ? S.stations.map((_, i) => (modes && modes[i]) || defaultMode(i)) : null;
   S.stations.forEach((s, i) => {
@@ -595,7 +599,7 @@ function defaultAlign(modes, extra = []) {
 // on the ground smoothed over two steps, then held to the grade limit both ways.
 function surfacePvis(st, md) {
   const step = settings.surfStep, g = settings.maxGrade / 1000, out = [];
-  const half = settings.platform / 2 + settings.vcRadius * g / 2;  // clear of the platform transitions
+  const half = settings.platform / 2 + Math.max(settings.vcRadius * g, settings.vcMinLen) / 2;  // clear of the platform transitions
   const smooth = (c) => { let a = 0, k = 0; for (let d = -step; d <= step; d += step / 4) { const v = surfaceAt(clamp(c + d, 0, S.L)); if (isFinite(v)) { a += v; k++; } } return k ? a / k : NaN; };
   const runs = [];
   const n = S.stations.length;

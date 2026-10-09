@@ -39,7 +39,7 @@ TUNNEL_STRUCTURES = {"tunnel", "cut-and-cover", "shield", "deep-tube"}
 
 DEFAULTS = dict(maxGrade=50.0, platform=152.4, defDepth=7.62, elevAbove=3.0, coverBelow=3.0,
                 deepBelow=18.29, shallowMax=12.19, envelope=5.5, boreCrown=5.2, clearMin=8.0, poolFt=455.0,
-                vcRadius=1500.0, minCover=2.0)
+                vcRadius=1500.0, vcMinLen=30.5, minCover=2.0)
 # Structure sizes and cover by the practice of each line's era (Ben's ruling), heights from the
 # top of rail to the top of the roof or tube lining; shallower than bore + cover is cut and cover.
 #   Boxes and station boxes: one 5.0 m standard for every Metro line (1913 Dual Contracts
@@ -54,7 +54,7 @@ ERA = {**{f"Line_{k}": {"cover": 2.0, "box": 5.0, "bore": 4.3} for k in ("1", "2
 # bend points are starting values
 RER_DEFAULTS = dict(maxGrade=35.0, platform=200.0, defDepth=12.0, elevAbove=3.0, coverBelow=3.0,
                     deepBelow=25.0, shallowMax=18.0, envelope=6.6, boreCrown=7.5, clearMin=9.0, poolFt=455.0,
-                    surfStep=250.0, tubeCover=3.0, vcRadius=3000.0, minCover=8.5)
+                    surfStep=250.0, tubeCover=3.0, vcRadius=3000.0, vcMinLen=30.5, minCover=8.5)
 RER_CANON_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "rer" / "canon.json"
 SETTINGS_KEYS = {"surfaceBendPointSpacing_m": "surfStep", "tubeCover_m": "tubeCover",
                  "verticalCurveRadius_m": "vcRadius", "minBoredCover_m": "minCover",
@@ -266,7 +266,7 @@ class MetroProfile:
         sit at ground."""
         # each platform counts with its transitions (half a curve at the steepest grade each end)
         g = self.settings["maxGrade"] / 1000.0
-        P = self.settings["platform"] + self.settings["vcRadius"] * g
+        P = self.settings["platform"] + max(self.settings["vcRadius"] * g, self.settings.get("vcMinLen", 0.0))
         n = len(self.stations)
         md = ([modes[i] if modes and modes[i] else self.default_mode(i) for i in range(n)]
               if self.is_rer else None)
@@ -345,7 +345,7 @@ class MetroProfile:
         surfStep on the ground smoothed over two steps, held to the grade limit both ways."""
         step = self.settings["surfStep"]
         g, L, S = self.settings["maxGrade"] / 1000.0, self.length, self.stations
-        half = self.settings["platform"] / 2 + self.settings["vcRadius"] * g / 2  # clear of the transitions
+        half = self.settings["platform"] / 2 + max(self.settings["vcRadius"] * g, self.settings.get("vcMinLen", 0.0)) / 2  # clear of the transitions
         n = len(S)
 
         def smooth(c):
@@ -445,7 +445,12 @@ class MetroProfile:
         change of grade, kept off the platforms by a level transition of half the curve beyond
         each platform end; curves shortened where the straight grade is too short."""
         rv = float(self.settings.get("vcRadius", 0.0) or 0.0)
-        key = (tuple(self.st), tuple(self.sg), tuple(self.pvi), rv, self.settings["platform"])
+        lmin = float(self.settings.get("vcMinLen", 0.0) or 0.0) if rv else 0.0
+
+        def curve_len(dg):  # radius x change of grade, never shorter than the minimum (AREMA 100 ft)
+            return max(rv * abs(dg), lmin) if abs(dg) > 1e-5 else 0.0
+
+        key = (tuple(self.st), tuple(self.sg), tuple(self.pvi), rv, lmin, self.settings["platform"])
         if getattr(self, "_design_key", None) == key:
             return self._design
         verts = self._verts()
@@ -479,7 +484,7 @@ class MetroProfile:
                     if run < 1e-6:
                         continue
                     gq = (z_on(o, oc) - z_on(k, piv)) / (oc - piv)
-                    nx[k] = rv * abs(gq - verts[k].get("gp", 0.0)) / 2
+                    nx[k] = curve_len(gq - verts[k].get("gp", 0.0)) / 2
                 for k in range(n - 1):
                     ln = verts[k + 1]["c"] - verts[k]["c"]
                     a = nx[k] if outward(k) == k + 1 else 0.0
@@ -507,7 +512,7 @@ class MetroProfile:
             for k in range(1, len(dv) - 1):
                 if dv[k]["kind"] in ("ps", "pe", "end"):
                     continue
-                need[k] = L[k] = rv * abs(g[k] - g[k - 1])
+                need[k] = L[k] = curve_len(g[k] - g[k - 1])
         for k in range(len(dv) - 1):
             ln = dv[k + 1]["c"] - dv[k]["c"]
             h = L[k] / 2 + L[k + 1] / 2
