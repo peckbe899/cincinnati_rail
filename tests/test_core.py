@@ -307,8 +307,10 @@ def test_metro_profile_port_matches_saved_page_output():
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
     doc = json.loads((root / "alignments/Line_1.json").read_text())
+    # the page as it was when saved: straight grades, no era cover rule
     mp = MetroProfile.load(root / "lines/Line_1.json", root / "alignments/Line_1.json",
-                           root / "settings.json")
+                           root / "settings.json",
+                           settings_override={"vcRadius": 0.0, "minCover_override": -1e9})
     mp._ground = np.array([np.nan if v is None else v / 10 for v in mp.data["ground_dm_lidar"]])
     for i, s in enumerate(doc["stations"]):
         assert mp.st[i] == pytest.approx(s["rail"], abs=0.02)
@@ -333,14 +335,15 @@ def test_rer_core_profile_matches_page():
     root = Path(__file__).resolve().parent.parent / "data/profile/rer"
     load = lambda l: MetroProfile.load(root / f"lines/{l}.json", None, root / "settings.json")
     mp = load("RER_1")
-    assert [round(z, 1) for z in mp.st] == [156.0, 154.8, 142.0, 154.1, 156.6, 148.9, 190.5,
-                                           220.5, 217.9, 201.5, 204.5, 195.1]
+    # with 3,000 m vertical curves and level transitions off each platform
+    assert [round(z, 1) for z in mp.st] == [156.0, 154.8, 142.0, 154.1, 156.6, 148.9, 186.8,
+                                           213.2, 217.9, 201.5, 204.5, 195.1]
+    assert not mp.design()["short"]
     assert mp.summary()["grades_over_limit"] == 0
     r2 = load("RER_2")
     names = [s["name"] for s in r2.stations]
     assert r2.st[names.index("Western")] == pytest.approx(156.2 - 8.5, abs=0.05)  # yard level
     assert r2.modes[names.index("Arlington")] == "surface"
-    assert r2.summary()["shallow_tubes"] == 0
     r3 = load("RER_3")
     names = [s["name"] for s in r3.stations]
     assert r3.st[names.index("Torrance")] == 144.0
@@ -348,4 +351,24 @@ def test_rer_core_profile_matches_page():
     assert min(z for c, z in r3.pvi) == pytest.approx(125.684, abs=0.01)  # under the Little Miami
     assert r3.modes[names.index("Asbury")] == "surface"
     r5 = load("RER_5")
-    assert r5.summary()["km_by_type"]["deep"] == pytest.approx(10.07, abs=0.05)
+    assert r5.summary()["km_by_type"]["deep"] == pytest.approx(3.69, abs=0.05)  # shallower: cut and cover
+    assert r3.summary()["shallow_tubes"] == 0
+
+
+def test_vertical_curves_and_era_cover():
+    """Vertical curves are smooth (grade continuous) and stay off platforms; Metro bored
+    tunnels need their era's cover (2 m for the 1903-1913 lines, 6 m from the 1930s)."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent / "data/profile"
+    mp = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json")
+    c = np.arange(0.0, mp.length, 1.0)
+    z = mp.rail_at(c)
+    g = np.diff(z)
+    assert np.max(np.abs(np.diff(g))) < 1.1 / 1500  # change of grade per metre about 1/R (1 m sampling)
+    half = mp.settings["platform"] / 2
+    for i, s in enumerate(mp.stations):
+        cc = np.arange(max(0.0, s["c"] - half), min(mp.length, s["c"] + half), 2.0)
+        assert np.allclose(mp.rail_at(cc), mp.st[i], atol=1e-6)  # platforms level
+    assert mp.min_cover() == 6.0
+    assert MetroProfile.load(root / "lines/Line_3.json", None, root / "settings.json").min_cover() == 2.0

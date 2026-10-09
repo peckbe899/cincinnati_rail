@@ -216,15 +216,15 @@ const TYPE_KEYS = Object.keys(TYPES);
 // list calling Price Hill's 60 ft station a deep bore; shallowMax (40 ft) flags canon-shallow
 // stretches that run well past the doctrine's 20-30 ft.
 const METRO_DEFAULTS = { maxGrade: 50, platform: 152.4, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, envelope: 5.5, clearMin: 8, poolFt: 455.0, vcRadius: 1500, minCover: 2, drainMin: 3, curveK: 800 };
-// Design checks (starting values, not canon): vertical curves of at least vcRadius at every
-// grade change (metros use 1,500-3,000 m, main lines 3,000-4,000 m); bored tunnels need cover
-// over the crown (about one diameter is the modern rule of thumb; the basin method ran shallower);
-// tunnels drain at 3 per mille or more, low points need sumps; on curves the grade is checked
-// with k / R per mille added for curve resistance (SNCF 800 / R).
+// Design rules: vertical curves of 1,500 m (Metro) and 3,000 m (RER) at every grade change, kept
+// off platforms by a level transition (canon); bored tunnels need the cover of their era's
+// practice, else they are cut and cover (canon, see ERA_COVER); tunnels drain at 3 per mille or
+// more and low points need sumps; on curves the grade is checked with k / R per mille added for
+// curve resistance (SNCF 800 / R). Drainage and curve allowance are starting values.
 // RER: 35 per mille, 200 m platforms (8-car TRI) and 12 m station rail depth are canon; the
 // envelope (25 kV overhead), thresholds, tube cover and surface bend-point spacing are starting
 // values. Surface stations sit at grade on the old railroad and the rail follows the ground.
-const RER_DEFAULTS = { maxGrade: 35, platform: 200, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 7, clearMin: 9, poolFt: 455.0, surfStep: 250, tubeCover: 3, vcRadius: 3000, minCover: 4, drainMin: 3, curveK: 800 };
+const RER_DEFAULTS = { maxGrade: 35, platform: 200, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 7, clearMin: 9, poolFt: 455.0, surfStep: 250, tubeCover: 3, vcRadius: 3000, minCover: 8.5, drainMin: 3, curveK: 800 };
 let DEFAULTS = METRO_DEFAULTS;
 // Canon structure for the founding sections (Lines 1-6 as first opened).
 // m: 'shallow' = basin method (shallow shield running tunnels, cut-and-cover station boxes);
@@ -266,8 +266,8 @@ const SETTING_ROWS_BASE = [
   ['envelope', 'Structure height drawn above rail', 'len', 0.1],
   ['clearMin', 'Min rail-to-rail clearance at crossings', 'len', 0.5],
   ['poolFt', 'Ohio normal pool (Markland)', 'ft', 0.1],
-  ['vcRadius', 'Min vertical curve radius', 'len', 100],
-  ['minCover', 'Min cover over bored tunnels', 'len', 0.5],
+  ['vcRadius', 'Vertical curve radius', 'len', 100],
+  ['minCover', 'Cover over bored tunnels (RER; Metro by era)', 'len', 0.5],
   ['drainMin', 'Min tunnel grade for drainage', '‰', 0.5],
   ['curveK', 'Curve compensation, k in k / R per mille', 'k', 50],
 ];
@@ -325,8 +325,8 @@ function surfaceAt(c) { return riverAt(c) ? pool() : groundAt(c); }
 
 function stKey(i) { const s = S.stations[i]; const dup = S.stations.filter((x) => x.name === s.name).length > 1; return dup ? `${s.name}#${i}` : s.name; }
 
-function vertices(al = S.align, stations = S.stations, L = S.L, platform = settings.platform) {
-  const half = platform / 2; const v = [];
+function vertices(al = S.align, stations = S.stations, L = S.L, platform = settings.platform, rv = settings.vcRadius) {
+  const half = platform / 2; const v = []; v.rv = rv || 0;
   stations.forEach((s, i) => {
     const z = al.st[i];
     v.push({ c: clamp(s.c - half, 0, L), z, kind: 'ps', i });
@@ -334,23 +334,90 @@ function vertices(al = S.align, stations = S.stations, L = S.L, platform = setti
   });
   al.pvi.forEach((p, j) => v.push({ c: p.c, z: p.z, kind: 'pvi', j }));
   v.sort((a, b) => a.c - b.c || (a.kind === 'pe' ? -1 : 1));
-  if (!v.length) return [{ c: 0, z: 0, kind: 'end' }, { c: L, z: 0, kind: 'end' }];
+  if (!v.length) { const e = [{ c: 0, z: 0, kind: 'end' }, { c: L, z: 0, kind: 'end' }]; e.rv = 0; return e; }
   if (v[0].c > 0) v.unshift({ c: 0, z: v[0].z, kind: 'end' });
   if (v[v.length - 1].c < L) v.push({ c: L, z: v[v.length - 1].z, kind: 'end' });
   return v;
 }
 let VERTS = [];
+// The built rail: vertical curves of radius rv at every change of grade (parabolic, half each
+// side of the bend). Curves never run onto a platform: the platform level runs on past each
+// platform end by half the curve length (the transition), then the curve, then the grade. Where
+// the straight grade is too short the curves are shortened, and the shortfall is flagged.
+function design(verts) {
+  const rv = verts.rv || 0;
+  if (verts._d && verts._d.rv === rv) return verts._d;
+  const n = verts.length, ext = new Array(n).fill(0);
+  const outward = (k) => {  // neighbour index beyond a platform end, or -1
+    const v = verts[k];
+    if (v.kind === 'pe' && k + 1 < n && !(verts[k + 1].kind === 'ps' && verts[k + 1].i === v.i) && verts[k + 1].c - v.c > 1e-6) return k + 1;
+    if (v.kind === 'ps' && k - 1 >= 0 && !(verts[k - 1].kind === 'pe' && verts[k - 1].i === v.i) && v.c - verts[k - 1].c > 1e-6) return k - 1;
+    return -1;
+  };
+  if (rv > 0) {
+    for (let it = 0; it < 5; it++) {
+      const nx = new Array(n).fill(0);
+      for (let k = 0; k < n; k++) {
+        const o = outward(k); if (o < 0) continue; const dir = o > k ? 1 : -1;
+        const piv = verts[k].c + dir * ext[k];
+        const oc = verts[o].c - dir * ((outward(o) === k) ? ext[o] : 0);
+        const run = Math.abs(oc - piv); if (run < 1e-6) continue;
+        nx[k] = rv * Math.abs((verts[o].z - verts[k].z) / run) / 2;
+      }
+      // the two transitions on one stretch take at most half of it
+      for (let k = 0; k + 1 < n; k++) {
+        const len = verts[k + 1].c - verts[k].c; const a = outward(k) === k + 1 ? nx[k] : 0, b = outward(k + 1) === k ? nx[k + 1] : 0;
+        if (a + b > 0.5 * len && a + b > 0) { const f = 0.5 * len / (a + b); if (a) nx[k] *= f; if (b) nx[k + 1] *= f; }
+      }
+      for (let k = 0; k < n; k++) ext[k] = nx[k];
+    }
+  }
+  const dv = [];
+  verts.forEach((v, k) => {
+    if (v.kind === 'ps' && ext[k] > 1e-6) { dv.push({ c: v.c - ext[k], z: v.z, kind: 'x', i: v.i }); dv.push(v); }
+    else if (v.kind === 'pe' && ext[k] > 1e-6) { dv.push(v); dv.push({ c: v.c + ext[k], z: v.z, kind: 'x', i: v.i }); }
+    else dv.push(v);
+  });
+  const g = []; for (let k = 0; k + 1 < dv.length; k++) { const d = dv[k + 1].c - dv[k].c; g.push(d > 1e-9 ? (dv[k + 1].z - dv[k].z) / d : 0); }
+  const L = dv.map(() => 0), need = dv.map(() => 0);
+  if (rv > 0) for (let k = 1; k + 1 < dv.length; k++) {
+    const v = dv[k]; if (v.kind === 'ps' || v.kind === 'pe' || v.kind === 'end') continue;
+    need[k] = L[k] = rv * Math.abs(g[k] - g[k - 1]);
+  }
+  for (let k = 0; k + 1 < dv.length; k++) {
+    const len = dv[k + 1].c - dv[k].c, h = L[k] / 2 + L[k + 1] / 2;
+    if (h > len && h > 0) { const f = len / h; L[k] = Math.min(L[k], L[k] * f); L[k + 1] = Math.min(L[k + 1], L[k + 1] * f); }
+  }
+  const short = []; dv.forEach((v, k) => { if (need[k] - L[k] > 0.5) short.push({ c: v.c, need: need[k], got: L[k], dg: (g[k] - g[k - 1]) * 1000 }); });
+  verts._d = { rv, dv, g, L, short }; return verts._d;
+}
 function railAt(c, verts = VERTS) {
-  let lo = 0, hi = verts.length - 1;
-  if (c <= verts[0].c) return verts[0].z; if (c >= verts[hi].c) return verts[hi].z;
-  while (hi - lo > 1) { const m = (lo + hi) >> 1; if (verts[m].c <= c) lo = m; else hi = m; }
-  const a = verts[lo], b = verts[hi]; const d = b.c - a.c;
+  const { dv, g, L } = design(verts);
+  let lo = 0, hi = dv.length - 1;
+  if (c <= dv[0].c) return dv[0].z; if (c >= dv[hi].c) return dv[hi].z;
+  while (hi - lo > 1) { const m = (lo + hi) >> 1; if (dv[m].c <= c) lo = m; else hi = m; }
+  for (const k of [lo, hi]) {
+    const Lk = L[k]; if (Lk > 1e-6 && Math.abs(c - dv[k].c) < Lk / 2) {
+      const g1 = g[k - 1], g2 = g[k], x = c - (dv[k].c - Lk / 2);
+      return dv[k].z - g1 * Lk / 2 + g1 * x + (g2 - g1) * x * x / (2 * Lk);
+    }
+  }
+  const a = dv[lo], b = dv[hi]; const d = b.c - a.c;
   return d <= 1e-9 ? b.z : a.z + (b.z - a.z) * (c - a.c) / d;
 }
 function gradeAt(c, verts = VERTS) {
-  for (let k = 0; k < verts.length - 1; k++) { const a = verts[k], b = verts[k + 1]; if (c >= a.c && c <= b.c && b.c - a.c > 1e-6) return (b.z - a.z) / (b.c - a.c) * 1000; }
-  return 0;
+  const { dv, g, L } = design(verts);
+  let lo = 0, hi = dv.length - 1;
+  if (c <= dv[0].c || c >= dv[hi].c) return 0;
+  while (hi - lo > 1) { const m = (lo + hi) >> 1; if (dv[m].c <= c) lo = m; else hi = m; }
+  for (const k of [lo, hi]) {
+    const Lk = L[k]; if (Lk > 1e-6 && Math.abs(c - dv[k].c) < Lk / 2) { const g1 = g[k - 1], g2 = g[k], x = c - (dv[k].c - Lk / 2); return (g1 + (g2 - g1) * x / Lk) * 1000; }
+  }
+  return g[lo] * 1000;
 }
+// the straight grades between bends (for limits, labels and the overview)
+const chords = (verts = VERTS) => design(verts).dv;
+window.railProfile = { railAt: (c) => railAt(c), line: () => S.data && S.data.id };
 function overrideAt(c) { const o = S.align.ovr; for (let k = o.length - 1; k >= 0; k--) if (c >= o[k][0] && c <= o[k][1]) return o[k][2]; return null; }
 // ---------- canon ----------
 function buildCanon() {
@@ -414,6 +481,17 @@ function defaultMode(i) { const f = S.canonModes[i]; if (f) return f.mode; retur
 function modeOf(i) { return (S.align && S.align.mode && S.align.mode[i]) || defaultMode(i); }
 function canonAt(c) { const a = S.canonSecs; for (let k = a.length - 1; k >= 0; k--) if (c >= a[k].lo && c <= a[k].hi) return a[k]; return null; }
 function inStation(c) { const half = settings.platform / 2; return S.stations.some((s) => Math.abs(c - s.c) <= half); }
+// cover a bored tunnel needs, by the practice of the line's era (Ben's ruling): the 1903-1913
+// basin method ran shield and gallery work a few metres under the street (about 2 m); from the
+// 1930s shield tubes had about one diameter of cover (Chicago State St 1938-43, Dearborn 1951:
+// 25 ft shields, floors 43-50 ft down), about 6 m for the Metro tube; RER per settings (1D)
+const ERA_COVER = {
+  Line_1: [2, '1903-1913'], Line_2: [2, '1903-1913'], Line_2b: [2, '1903-1913 (with Line 2)'], Line_3: [2, '1903-1913'], Line_4: [2, '1903-1913'],
+  Line_5: [2, '1903-1913'], Line_6: [2, '1903-1913'], Line_7: [2, '1913'],
+  Line_8: [6, '1933-1941'], Line_9: [6, '1933-1941'], Line_10: [6, '1933-1941'], Line_11: [6, '1933-1941'], Line_12: [6, '1933-1941'],
+  Line_13: [6, '1949-1959'], Line_14: [6, '1949-1959'],
+};
+function minCoverFor(id = S.data && S.data.id) { return (!isRer() && ERA_COVER[id]) ? ERA_COVER[id][0] : settings.minCover; }
 function autoType(c, z) {
   const sec0 = canonAt(c);
   if (sec0 && sec0.m === 'covered') { const s0 = surfaceAt(c); return isFinite(s0) && z - s0 >= settings.elevAbove ? 'elevated' : 'cutcover'; }
@@ -426,6 +504,8 @@ function autoType(c, z) {
   const sec = canonAt(c);
   const m = sec ? sec.m : (d >= settings.deepBelow ? 'deep' : 'shallow');
   if (m === 'canal') return 'cutcover';
+  // too shallow to bore by the era's practice: built cut and cover
+  if (d < settings.envelope + minCoverFor()) return 'cutcover';
   if (m === 'deep') return 'deep';
   return inStation(c) ? 'cutcover' : 'shield';
 }
@@ -434,7 +514,8 @@ function typeAt(c, z = railAt(c)) { return overrideAt(c) || autoType(c, z); }
 // Each station as shallow as the grade limit allows: at most defDepth under ground, canon levels
 // held fixed, solved in both directions so steep descents go deeper instead of popping out.
 function defaultAlign(modes, extra = []) {
-  const g = settings.maxGrade / 1000, P = settings.platform, n = S.stations.length;
+  // each platform counts with its transitions (half a curve at the steepest grade each end)
+  const g = settings.maxGrade / 1000, P = settings.platform + settings.vcRadius * g, n = S.stations.length;
   const ub = [], lb = [];
   const md = isRer() ? S.stations.map((_, i) => (modes && modes[i]) || defaultMode(i)) : null;
   S.stations.forEach((s, i) => {
@@ -456,7 +537,8 @@ function defaultAlign(modes, extra = []) {
   } else {
     // the same solver over stations plus the river banks of each tube (level platforms only at stations)
     const nodes = S.stations.map((s, i) => ({ c: s.c, st: true, i, ub: ub[i], lb: lb[i] }))
-      .concat(tubes.flatMap((t) => [{ c: t.c0, st: false, ub: t.ub, lb: -Infinity }, { c: t.c1, st: false, ub: t.ub, lb: -Infinity }]))
+      // tube bottom held half a curve beyond each bank, so the bends sit outside the river
+      .concat(tubes.flatMap((t) => { const e = settings.vcRadius * g / 2; return [{ c: Math.max(0, t.c0 - e), st: false, ub: t.ub, lb: -Infinity }, { c: Math.min(S.L, t.c1 + e), st: false, ub: t.ub, lb: -Infinity }]; }))
       .concat(extra.map((x) => ({ c: x.c, st: false, ub: x.ub ?? Infinity, lb: x.lb ?? -Infinity })))
       .sort((a, b) => a.c - b.c);
     const cnt = []; let k = 0; nodes.forEach((nd) => { cnt.push(k); if (nd.st) k++; });
@@ -479,7 +561,8 @@ function defaultAlign(modes, extra = []) {
 // Between two at-grade stations the rail follows the old railroad: bend points every surfStep
 // on the ground smoothed over two steps, then held to the grade limit both ways.
 function surfacePvis(st, md) {
-  const half = settings.platform / 2, step = settings.surfStep, g = settings.maxGrade / 1000, out = [];
+  const step = settings.surfStep, g = settings.maxGrade / 1000, out = [];
+  const half = settings.platform / 2 + settings.vcRadius * g / 2;  // clear of the platform transitions
   const smooth = (c) => { let a = 0, k = 0; for (let d = -step; d <= step; d += step / 4) { const v = surfaceAt(clamp(c + d, 0, S.L)); if (isFinite(v)) { a += v; k++; } } return k ? a / k : NaN; };
   const runs = [];
   const n = S.stations.length;
@@ -529,8 +612,9 @@ function computeSummary() {
     const d = surfaceAt(st.c) - S.align.st[i]; if (isFinite(d) && d > settings.shallowMax) deepShallow.push({ name: st.name, c: st.c, d });
   });
   let maxG = 0, maxGc = 0; const over = [];
-  for (let k = 0; k < VERTS.length - 1; k++) {
-    const a = VERTS[k], b = VERTS[k + 1]; if (b.c - a.c < 1e-6) continue;
+  const CV = chords();
+  for (let k = 0; k < CV.length - 1; k++) {
+    const a = CV[k], b = CV[k + 1]; if (b.c - a.c < 1e-6) continue;
     const g = (b.z - a.z) / (b.c - a.c) * 1000;
     if (Math.abs(g) > Math.abs(maxG)) { maxG = g; maxGc = (a.c + b.c) / 2; }
     if (Math.abs(g) > settings.maxGrade + 0.05) over.push({ c0: a.c, c1: b.c, g });
@@ -571,24 +655,16 @@ const radiusAt = (c) => { const R = radii(S.data); return R[clamp(Math.round(c /
 const TUNNEL = new Set(['cutcover', 'shield', 'deep']);
 function designChecks() {
   const issues = []; const half = settings.platform / 2;
-  const seg = []; for (let k = 0; k < VERTS.length - 1; k++) { const a = VERTS[k], b = VERTS[k + 1]; if (b.c - a.c > 1e-6) seg.push({ a, b, g: (b.z - a.z) / (b.c - a.c) * 1000, plat: a.kind === 'ps' && b.kind === 'pe' && a.i === b.i }); }
-  // vertical curves: each grade change needs a curve of length Rv x change; at a platform end the
-  // whole curve lies outside the platform, elsewhere half on each side
-  const need = new Map();
-  for (let k = 1; k < seg.length; k++) {
-    const v = seg[k].a, dg = Math.abs(seg[k].g - seg[k - 1].g); if (dg < 1 || v.kind === 'end') continue;
-    need.set(seg[k].a, settings.vcRadius * dg / 1000);
-  }
-  const side = (v, after) => { const L = need.get(v) || 0; if (!L) return 0; if (v.kind === 'pe') return after ? L : 0; if (v.kind === 'ps') return after ? 0 : L; return L / 2; };
-  seg.forEach((sg) => {
-    if (sg.plat) return; const req = side(sg.a, true) + side(sg.b, false), len = sg.b.c - sg.a.c;
-    if (req > len + 0.5) issues.push({ kind: 'Vertical curve', c: (sg.a.c + sg.b.c) / 2, text: `Vertical curves need ${req.toFixed(0)} m between ${fmtCh(sg.a.c)} and ${fmtCh(sg.b.c)}; the ${fmtG(sg.g)} grade there is ${len.toFixed(0)} m long` });
-  });
+  const CV = chords();
+  const seg = []; for (let k = 0; k < CV.length - 1; k++) { const a = CV[k], b = CV[k + 1]; if (b.c - a.c > 1e-6) seg.push({ a, b, g: (b.z - a.z) / (b.c - a.c) * 1000, plat: (a.kind === 'ps' && b.kind === 'pe' && a.i === b.i) || ((a.kind === 'x' || b.kind === 'x') && Math.abs(b.z - a.z) < 1e-9) }); }
+  // vertical curves the straight grades are too short for (shortened curves)
+  design(VERTS).short.forEach((x) => issues.push({ kind: 'Vertical curve', c: x.c, text: `Bend of ${fmtG(x.dg)} at ${fmtCh(x.c)} needs a ${x.need.toFixed(0)} m curve; only ${x.got.toFixed(0)} m fits (radius ${settings.vcRadius} m)` }));
   // drainage: tunnel grades flatter than drainMin outside platforms; low points need sumps
   let sumps = 0, lastSign = 0, lastC = 0;
   seg.forEach((sg) => {
     const mid = (sg.a.c + sg.b.c) / 2, t = typeAt(mid), len = sg.b.c - sg.a.c;
-    if (!sg.plat && TUNNEL.has(t) && Math.abs(sg.g) < settings.drainMin && len > 60)
+    const cw = canonAt(mid); // the RER-3 covered way drains beneath into the sewers
+    if (!sg.plat && TUNNEL.has(t) && !(cw && cw.m === 'covered') && Math.abs(sg.g) < settings.drainMin && len > 60)
       issues.push({ kind: 'Drainage', c: mid, text: `${fmtG(sg.g)} in tunnel for ${len.toFixed(0)} m from ${fmtCh(sg.a.c)}: drains poorly below ${settings.drainMin}‰` });
     const sign = Math.abs(sg.g) < 0.5 ? 0 : Math.sign(sg.g);
     if (sign) { if (lastSign < 0 && sign > 0 && TUNNEL.has(typeAt((lastC + sg.a.c) / 2))) sumps++; lastSign = sign; lastC = sg.a.c; }
@@ -605,12 +681,12 @@ function designChecks() {
     }
     if (!riverAt(c)) {
       const gr = groundAt(c); if (!isFinite(gr)) continue; const cv = gr - (z + settings.envelope);
-      if ((t === 'shield' || t === 'deep') && cv < settings.minCover) hit(cover, c, cv);
+      if ((t === 'shield' || t === 'deep') && cv < minCoverFor()) hit(cover, c, cv);
       if (t === 'cutcover' && cv < 0) hit(roof, c, cv);
     }
   }
   comp.list.forEach((r) => issues.push({ kind: comp.kind, c: (r.c0 + r.c1) / 2, text: `Grade plus curve allowance reaches ${(-r.worst).toFixed(1)}‰ from ${fmtCh(r.c0)} to ${fmtCh(r.c1)} (limit ${settings.maxGrade}‰, tightest radius ${Math.round(r.R)} m)` }));
-  cover.list.forEach((r) => issues.push({ kind: 'Cover', c: (r.c0 + r.c1) / 2, text: `Bored tunnel cover down to ${fmtZ(r.worst, 1)} ${uLbl()} from ${fmtCh(r.c0)} to ${fmtCh(r.c1)} (min ${fmtZ(settings.minCover, 1)})` }));
+  cover.list.forEach((r) => issues.push({ kind: 'Cover', c: (r.c0 + r.c1) / 2, text: `Painted bored tunnel with cover down to ${fmtZ(r.worst, 1)} ${uLbl()} from ${fmtCh(r.c0)} to ${fmtCh(r.c1)} (era practice ${fmtZ(minCoverFor(), 1)})` }));
   roof.list.forEach((r) => issues.push({ kind: 'Cover', c: (r.c0 + r.c1) / 2, text: `Cut-and-cover roof ${fmtZ(-r.worst, 1)} ${uLbl()} above ground from ${fmtCh(r.c0)} to ${fmtCh(r.c1)}` }));
   return { checks: issues, sumps };
 }
@@ -632,7 +708,7 @@ function otherRail(cr) {
   const doc = S.saved[cr.wid] || S.defaultDocs[cr.wid] || S.metroRails[cr.wid]; if (!doc || !Array.isArray(doc.stations)) return null;
   const stations = doc.stations.map((s) => ({ c: +s.c })); const al = { st: doc.stations.map((s) => +s.rail), pvi: (doc.pvi || []).map(([c, z]) => ({ c: +c, z: +z })) };
   const plat = +doc.platform_m || (cr.wid.startsWith('RER_') ? SYS.rer.settings.platform : SYS.metro.settings.platform);
-  const verts = vertices(al, stations, +doc.length_m || 1e9, plat);
+  const verts = vertices(al, stations, +doc.length_m || 1e9, plat, (cr.wid.startsWith('RER_') ? SYS.rer : SYS.metro).settings.vcRadius);
   return railAt(cr.oc, verts);
 }
 function crossingClearances() {
@@ -791,8 +867,9 @@ function draw(ctx, W, H, view, opt = {}) {
 
   // grade labels
   ctx.font = `500 11px ${colors.num}`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-  for (let k = 0; k < VERTS.length - 1; k++) {
-    const a = VERTS[k], b = VERTS[k + 1]; if (b.c - a.c < 1e-6 || a.kind === 'ps' && b.kind === 'pe' && a.i === b.i) continue;
+  const CV = chords();
+  for (let k = 0; k < CV.length - 1; k++) {
+    const a = CV[k], b = CV[k + 1]; if (b.c - a.c < 1e-6 || a.kind === 'ps' && b.kind === 'pe' && a.i === b.i || Math.abs(b.z - a.z) < 1e-9 && (a.kind === 'x' || b.kind === 'x')) continue;
     const xa = X(a.c), xb = X(b.c); if (xb < P.x || xa > P.x + P.w || xb - xa < (narrow ? 56 : 66)) continue;
     const gr = (b.z - a.z) / (b.c - a.c) * 1000; const bad = Math.abs(gr) > settings.maxGrade + 0.05;
     const xm = (Math.max(xa, P.x) + Math.min(xb, P.x + P.w)) / 2; const ym = Y(railAt(C(xm))) - 8;
@@ -976,6 +1053,9 @@ function updatePanels() {
   const nm = (i) => S.stations[i] ? S.stations[i].name : '';
   const cnl = S.canonSecs.map((x) => `<li><b>${METHOD_LABEL[x.m]}</b>, ${esc(x.a)}${x.aIn === false ? ' (excl.)' : ''} to ${esc(x.b)}${x.bIn === false ? ' (excl.)' : ''}: ${esc(x.src)}</li>`)
     .concat(Object.entries(S.canonFixed).map(([i, f]) => `<li><b>${esc(nm(+i))}</b> rail ${f.abs != null ? `at ${fmtZ(f.abs, 1)} ${uLbl()}` : `${f.off >= 0 ? '+' : '−'}${fmtZ(Math.abs(f.off), 0)} ${uLbl()}`}: ${esc(f.src)}</li>`));
+  cnl.push(isRer() ? `<li><b>Bored tunnels</b> need ${fmtZ(settings.minCover, 1)} ${uLbl()} of cover (about one diameter, 1985-1996 practice); shallower is cut and cover.</li>`
+    : `<li><b>Bored tunnels</b> need ${fmtZ(minCoverFor(), 1)} ${uLbl()} of cover, the practice of ${ERA_COVER[S.data.id] ? ERA_COVER[S.data.id][1] : 'the line\'s era'}; shallower is cut and cover.</li>`);
+  cnl.push(`<li><b>Vertical curves</b> radius ${fmtZ(settings.vcRadius, 0)} ${uLbl()}, kept off the platforms by a level transition at each end.</li>`);
   if (isRer()) {
     Object.entries(S.canonModes).forEach(([i, f]) => cnl.push(`<li><b>${esc(nm(+i))}</b> ${f.mode === 'surface' ? 'at grade' : 'underground'}: ${esc(f.src)}</li>`));
     (S.canonDeck || []).forEach((dk) => cnl.push(`<li><b>Deck</b> ${esc(dk.a)} to ${esc(dk.b)}: ${esc(dk.src)}. Ground shown at yard level.</li>`));
@@ -1340,9 +1420,9 @@ $('#solveCross').addEventListener('click', () => {
   if (!xs.length) { flash('No crossings with a known rail'); return; }
   // feasible = every held crossing and canon level is met and no grade is over the limit
   const ok = (al, cons) => {
-    const v = vertices(al);
+    const v0 = vertices(al), v = chords(v0);
     for (let k = 0; k < v.length - 1; k++) { const d = v[k + 1].c - v[k].c; if (d > 1e-6 && Math.abs(v[k + 1].z - v[k].z) / d * 1000 > settings.maxGrade + 0.05) return false; }
-    return cons.every((x) => { const z = railAt(x.c, v); return (x.ub == null || z <= x.ub + 0.05) && (x.lb == null || z >= x.lb - 0.05); });
+    return cons.every((x) => { const z = railAt(x.c, v0); return (x.ub == null || z <= x.ub + 0.05) && (x.lb == null || z >= x.lb - 0.05); });
   };
   // river tubes the plain solution already meets must stay met
   const tubeC = riverTubes(modes).flatMap((t) => [{ c: t.c0, ub: t.ub }, { c: t.c1, ub: t.ub }]).filter((t) => railAt(t.c, vb) <= t.ub + 0.05);

@@ -20,7 +20,23 @@ What real long-section design checks that the editor did not, and what the page 
 - Flags are listed along the line with their kind, click to jump; red markers sit along the bottom of the profile.
 - **Solve levels with crossings**: re-solves the line so each crossing keeps the minimum clearance, under the other line where the plain solution is lower and over it where higher, adding crossings one at a time and keeping only those that fit within the grade limit, the canon levels and the river tubes.
 
-Starting values (not canon): Metro `vcRadius` 1,500 m, `minCover` 2 m; RER 3,000 m and 4 m; `drainMin` 3 per mille; `curveK` 800.
+## Rulings (Ben) and what the page and simulator now do
+
+- **Vertical curves are built into the rail** (page and `railsim/metro_profile.py`, so run times use them): radius 1,500 m Metro, 3,000 m RER. Curves stay off platforms: the platform level runs on past each platform end for half the curve (the transition), then the curve, then the straight grade. Where the straight grade is too short the curves are shortened and flagged. The station solver allows for the transitions (each platform counts as its length plus one curve at the steepest grade), and river-tube bottoms are held half a curve beyond each bank.
+- **Bored tunnels need the cover of their era's practice**, else the stretch is cut and cover:
+  - Lines 1-7 (1903-1913): about 2 m, the shallow shield and gallery work of the day (canon basin method).
+  - Lines 8-12 (1933-1941) and 13-14 (1949-1959): about one tube diameter, 6 m (Chicago State Street 1938-43 and Dearborn 1951: 25 ft shields, tube floors 43-50 ft below the street).
+  - RER (1985-1996): one diameter, 8.5 m.
+- **RER-3 covered way** may stay flat: it drains beneath into the sewers (no drainage flags there).
+- Stations may slope slightly (MTA practice); not modelled, since 3 per mille over a platform gains under half a metre.
+- Starting values still: `drainMin` 3 per mille, `curveK` 800.
+
+Sources added for the era cover: Chicago State Street subway (ASCE 1943 abstract; chicago-l.org), Dearborn subway (Encyclopedia of Chicago), Paris Metro construction (RATP).
+- https://ascelibrary.com/doi/10.1061/TACEAT.0005664
+- https://www.chicago-l.org/operations/lines/state_subway.html
+- https://www.chicago-l.org/tour/handout03.pdf
+- https://encyclopedia.chicagohistory.org/pages/1275.html
+- https://www.ratp.fr/decouvrir/le-metro-parisien-a-120-ans
 
 ## Sources
 

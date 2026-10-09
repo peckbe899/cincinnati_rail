@@ -38,15 +38,23 @@ STRUCTURE = {"elevated": "viaduct", "atgrade": "at-grade", "cutcover": "cut-and-
 TUNNEL_STRUCTURES = {"tunnel", "cut-and-cover", "shield", "deep-tube"}
 
 DEFAULTS = dict(maxGrade=50.0, platform=152.4, defDepth=7.62, elevAbove=3.0, coverBelow=3.0,
-                deepBelow=18.29, shallowMax=12.19, envelope=5.5, clearMin=8.0, poolFt=455.0)
+                deepBelow=18.29, shallowMax=12.19, envelope=5.5, clearMin=8.0, poolFt=455.0,
+                vcRadius=1500.0, minCover=2.0)
+# Cover a bored tunnel needs, by the practice of the line's era (Ben's ruling); shallower is
+# cut and cover. 1903-1913 basin method: shield and gallery work a few metres under the
+# street (about 2 m). From the 1930s shield tubes had about one diameter of cover (Chicago
+# State St 1938-43 and Dearborn 1951: 25 ft shields, floors 43-50 ft down): about 6 m.
+ERA_COVER = {**{f"Line_{k}": 2.0 for k in ("1", "2", "2b", "3", "4", "5", "6", "7")},
+             **{f"Line_{k}": 6.0 for k in ("8", "9", "10", "11", "12", "13", "14")}}
 # RER: 35 per mille, 200 m platforms (8-car TRI) and 12 m station rail depth are canon; the
 # 25 m deep-bore threshold, 7 m envelope (25 kV overhead), 3 m tube cover and 250 m surface
 # bend points are starting values
 RER_DEFAULTS = dict(maxGrade=35.0, platform=200.0, defDepth=12.0, elevAbove=3.0, coverBelow=3.0,
                     deepBelow=25.0, shallowMax=18.0, envelope=7.0, clearMin=9.0, poolFt=455.0,
-                    surfStep=250.0, tubeCover=3.0)
+                    surfStep=250.0, tubeCover=3.0, vcRadius=3000.0, minCover=8.5)
 RER_CANON_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "rer" / "canon.json"
-SETTINGS_KEYS = {"surfaceBendPointSpacing_m": "surfStep", "tubeCover_m": "tubeCover", "maxGrade_permille": "maxGrade", "platform_m": "platform",
+SETTINGS_KEYS = {"surfaceBendPointSpacing_m": "surfStep", "tubeCover_m": "tubeCover",
+                 "verticalCurveRadius_m": "vcRadius", "minBoredCover_m": "minCover", "maxGrade_permille": "maxGrade", "platform_m": "platform",
                  "defaultStationRailDepth_m": "defDepth", "elevatedWhenRailAboveGround_m": "elevAbove",
                  "coveredWhenRailBelowGround_m": "coverBelow",
                  "deepTubeOutsideCanonWhenDeeperThan_m": "deepBelow",
@@ -103,10 +111,10 @@ class MetroProfile:
     # ------------------------------------------------------------- loading
     @classmethod
     def load(cls, line_json, alignment_json=None, settings_json=None,
-             canon_json=None) -> "MetroProfile":
+             canon_json=None, settings_override: Optional[dict] = None) -> "MetroProfile":
         data = json.loads(Path(line_json).read_text())
         rer = "RER" in data.get("system", "")
-        p = cls(data, load_settings(settings_json, rer=rer))
+        p = cls(data, {**load_settings(settings_json, rer=rer), **(settings_override or {})})
         if rer:
             cj = Path(canon_json) if canon_json else RER_CANON_JSON
             p.rer_canon = json.loads(cj.read_text()) if cj.exists() else {}
@@ -251,7 +259,9 @@ class MetroProfile:
         """Each station as shallow as the grade limit allows (<= defDepth under ground),
         canon levels held, solved both ways so steep descents go deeper. RER surface stations
         sit at ground."""
-        g, P = self.settings["maxGrade"] / 1000.0, self.settings["platform"]
+        # each platform counts with its transitions (half a curve at the steepest grade each end)
+        g = self.settings["maxGrade"] / 1000.0
+        P = self.settings["platform"] + self.settings["vcRadius"] * g
         n = len(self.stations)
         md = ([modes[i] if modes and modes[i] else self.default_mode(i) for i in range(n)]
               if self.is_rer else None)
@@ -286,9 +296,10 @@ class MetroProfile:
         else:
             # the same solver over stations plus the river banks of each tube
             nodes = [{"c": s["c"], "st": True, "i": i, "ub": ub[i], "lb": lb[i]} for i, s in enumerate(self.stations)]
+            e = self.settings["vcRadius"] * g / 2  # tube bottom half a curve beyond each bank
             for t in tubes:
-                nodes += [{"c": t["c0"], "st": False, "ub": t["ub"], "lb": -math.inf},
-                          {"c": t["c1"], "st": False, "ub": t["ub"], "lb": -math.inf}]
+                nodes += [{"c": max(0.0, t["c0"] - e), "st": False, "ub": t["ub"], "lb": -math.inf},
+                          {"c": min(self.length, t["c1"] + e), "st": False, "ub": t["ub"], "lb": -math.inf}]
             nodes.sort(key=lambda nd: nd["c"])  # stable, as Array.sort
             cnt, k = [], 0
             for nd in nodes:
@@ -322,8 +333,9 @@ class MetroProfile:
     def surface_pvis(self, st: List[float], md: List[str]) -> List[tuple]:
         """Between two at-grade stations the rail follows the old railroad: bend points every
         surfStep on the ground smoothed over two steps, held to the grade limit both ways."""
-        half, step = self.settings["platform"] / 2, self.settings["surfStep"]
+        step = self.settings["surfStep"]
         g, L, S = self.settings["maxGrade"] / 1000.0, self.length, self.stations
+        half = self.settings["platform"] / 2 + self.settings["vcRadius"] * g / 2  # clear of the transitions
         n = len(S)
 
         def smooth(c):
@@ -390,26 +402,123 @@ class MetroProfile:
                     self.ovr.append((float(o[0]), float(o[1]), t))
 
     # ------------------------------------------------------------- rail profile
-    def vertices(self):
+    def _verts(self) -> List[dict]:
         half, L = self.settings["platform"] / 2, self.length
         v = []
         for i, s in enumerate(self.stations):
             z = self.st[i]
-            v.append((min(max(s["c"] - half, 0.0), L), z, 1))  # platform start
-            v.append((min(max(s["c"] + half, 0.0), L), z, 0))  # platform end sorts first on ties
-        v += [(c, z, 2) for c, z in self.pvi]
-        v.sort(key=lambda t: (t[0], t[2]))
+            v.append({"c": min(max(s["c"] - half, 0.0), L), "z": z, "kind": "ps", "i": i, "o": 1})
+            v.append({"c": min(max(s["c"] + half, 0.0), L), "z": z, "kind": "pe", "i": i, "o": 0})
+        v += [{"c": c, "z": z, "kind": "pvi", "o": 2} for c, z in self.pvi]
+        v.sort(key=lambda t: (t["c"], t["o"]))  # platform end first on ties
         if not v:
-            return np.array([0.0, L]), np.array([0.0, 0.0])
-        if v[0][0] > 0:
-            v.insert(0, (0.0, v[0][1], 0))
-        if v[-1][0] < L:
-            v.append((L, v[-1][1], 0))
-        return np.array([t[0] for t in v]), np.array([t[1] for t in v])
+            return [{"c": 0.0, "z": 0.0, "kind": "end"}, {"c": L, "z": 0.0, "kind": "end"}]
+        if v[0]["c"] > 0:
+            v.insert(0, {"c": 0.0, "z": v[0]["z"], "kind": "end"})
+        if v[-1]["c"] < L:
+            v.append({"c": L, "z": v[-1]["z"], "kind": "end"})
+        return v
+
+    def design(self) -> dict:
+        """The built rail, as the page draws it: vertical curves of radius vcRadius at every
+        change of grade, kept off the platforms by a level transition of half the curve beyond
+        each platform end; curves shortened where the straight grade is too short."""
+        rv = float(self.settings.get("vcRadius", 0.0) or 0.0)
+        key = (tuple(self.st), tuple(self.pvi), rv, self.settings["platform"])
+        if getattr(self, "_design_key", None) == key:
+            return self._design
+        verts = self._verts()
+        n = len(verts)
+        ext = [0.0] * n
+
+        def outward(k):
+            v = verts[k]
+            if (v["kind"] == "pe" and k + 1 < n and not (verts[k + 1]["kind"] == "ps" and verts[k + 1].get("i") == v["i"])
+                    and verts[k + 1]["c"] - v["c"] > 1e-6):
+                return k + 1
+            if (v["kind"] == "ps" and k - 1 >= 0 and not (verts[k - 1]["kind"] == "pe" and verts[k - 1].get("i") == v["i"])
+                    and v["c"] - verts[k - 1]["c"] > 1e-6):
+                return k - 1
+            return -1
+
+        if rv > 0:
+            for _ in range(5):
+                nx = [0.0] * n
+                for k in range(n):
+                    o = outward(k)
+                    if o < 0:
+                        continue
+                    d = 1 if o > k else -1
+                    piv = verts[k]["c"] + d * ext[k]
+                    oc = verts[o]["c"] - d * (ext[o] if outward(o) == k else 0.0)
+                    run = abs(oc - piv)
+                    if run < 1e-6:
+                        continue
+                    nx[k] = rv * abs((verts[o]["z"] - verts[k]["z"]) / run) / 2
+                for k in range(n - 1):
+                    ln = verts[k + 1]["c"] - verts[k]["c"]
+                    a = nx[k] if outward(k) == k + 1 else 0.0
+                    b = nx[k + 1] if outward(k + 1) == k else 0.0
+                    if a + b > 0.5 * ln and a + b > 0:
+                        f = 0.5 * ln / (a + b)
+                        if a:
+                            nx[k] *= f
+                        if b:
+                            nx[k + 1] *= f
+                ext = nx
+        dv = []
+        for k, v in enumerate(verts):
+            if v["kind"] == "ps" and ext[k] > 1e-6:
+                dv += [{"c": v["c"] - ext[k], "z": v["z"], "kind": "x", "i": v["i"]}, v]
+            elif v["kind"] == "pe" and ext[k] > 1e-6:
+                dv += [v, {"c": v["c"] + ext[k], "z": v["z"], "kind": "x", "i": v["i"]}]
+            else:
+                dv.append(v)
+        g = [((dv[k + 1]["z"] - dv[k]["z"]) / (dv[k + 1]["c"] - dv[k]["c"]) if dv[k + 1]["c"] - dv[k]["c"] > 1e-9 else 0.0)
+             for k in range(len(dv) - 1)]
+        L = [0.0] * len(dv)
+        need = [0.0] * len(dv)
+        if rv > 0:
+            for k in range(1, len(dv) - 1):
+                if dv[k]["kind"] in ("ps", "pe", "end"):
+                    continue
+                need[k] = L[k] = rv * abs(g[k] - g[k - 1])
+        for k in range(len(dv) - 1):
+            ln = dv[k + 1]["c"] - dv[k]["c"]
+            h = L[k] / 2 + L[k + 1] / 2
+            if h > ln and h > 0:
+                f = ln / h
+                L[k] = min(L[k], L[k] * f)
+                L[k + 1] = min(L[k + 1], L[k + 1] * f)
+        short = [{"c": dv[k]["c"], "need": need[k], "got": L[k]} for k in range(len(dv)) if need[k] - L[k] > 0.5]
+        self._design = {"dv": dv, "g": g, "L": L, "short": short,
+                        "vc": np.array([v["c"] for v in dv]), "vz": np.array([v["z"] for v in dv])}
+        self._design_key = key
+        return self._design
+
+    def vertices(self):
+        """The straight grades between bends (chainage, rail level)."""
+        d = self.design()
+        return d["vc"], d["vz"]
 
     def rail_at(self, c):
-        vc, vz = self.vertices()
-        return np.interp(c, vc, vz)
+        d = self.design()
+        cc = np.asarray(c, dtype=float)
+        z = np.interp(cc, d["vc"], d["vz"])
+        for k, Lk in enumerate(d["L"]):
+            if Lk <= 1e-6:
+                continue
+            ck = d["dv"][k]["c"]
+            m = np.abs(cc - ck) < Lk / 2
+            if np.any(m):
+                g1, g2 = d["g"][k - 1], d["g"][k]
+                x = cc[m] - (ck - Lk / 2) if cc.ndim else cc - (ck - Lk / 2)
+                zc = d["dv"][k]["z"] - g1 * Lk / 2 + g1 * x + (g2 - g1) * x * x / (2 * Lk)
+                if cc.ndim:
+                    z[m] = zc
+                else:
+                    z = zc
+        return z
 
     def override_at(self, c: float) -> Optional[str]:
         for a, b, t in reversed(self.ovr):
@@ -440,9 +549,17 @@ class MetroProfile:
         m = sec["m"] if sec else ("deep" if d >= self.settings["deepBelow"] else "shallow")
         if m == "canal":
             return "cutcover"
+        if d < self.settings["envelope"] + self.min_cover():  # too shallow to bore in its era
+            return "cutcover"
         if m == "deep":
             return "deep"
         return "cutcover" if self.in_station(c) else "shield"
+
+    def min_cover(self) -> float:
+        """Cover a bored tunnel needs: the line's era practice (Metro) or the setting (RER)."""
+        if not self.is_rer and self.id in ERA_COVER and "minCover_override" not in self.settings:
+            return ERA_COVER[self.id]
+        return float(self.settings.get("minCover_override", self.settings["minCover"]))
 
     def type_at(self, c: float, z: Optional[float] = None) -> str:
         if z is None:

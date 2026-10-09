@@ -247,6 +247,8 @@ Living list of what is done and what is left. Newest changes at the top of each 
 
 - **Rail Profiles design checks** (`docs/research/profile_design.md`): vertical-curve fit, tunnel drainage and sumps, cover over bored tunnels, curve-compensated grade; flags listed along the line, click to jump, markers on the profile. **Solve levels with crossings** re-solves a line so its crossings keep the minimum clearance within the grade limit, canon levels and river tubes (clears 4-12 crossings per RER line; the rest conflict with canon levels or at-grade stations).
 
+- **Vertical curves and era cover** (Ben's rulings, page and simulator): 1,500 m (Metro) and 3,000 m (RER) vertical curves at every grade change with level transitions off the platforms; bored tunnels need their era's cover (2 m for Lines 1-7, 6 m from Line 8 on, 8.5 m RER), else cut and cover; the RER-3 covered way may be flat. With the transitions the saved Metro profiles show steeper short grades (Line 1 up to -90 per mille, Line 2 -85, Line 4 -80, Line 5 100) where the stations were spaced for straight 50 per mille grades: flagged in the page for redesign. RER: the climb from the Ohio tube to Fort Wright (RER-2) no longer fits at 35 per mille.
+
 ## In progress
 
 - Nothing running.
