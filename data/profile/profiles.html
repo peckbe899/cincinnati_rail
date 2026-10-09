@@ -1,0 +1,1264 @@
+<title>Cincinnati Rail Profiles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a drafting-room profile sheet. Toolbar on top, the long profile fills the width,
+   an overview strip under it, and a side panel for the selected item, line summary, plan and stations. */
+:root {
+  --bg: #e9eeec;
+  --paper: #f7f9f8;
+  --panel: #ffffff;
+  --ink: #16252a;
+  --muted: #5a6b70;
+  --rule: #c7d2cf;
+  --grid: rgba(22, 37, 42, 0.07);
+  --grid-major: rgba(22, 37, 42, 0.15);
+  --accent: #0d7f74;
+  --accent-ink: #ffffff;
+  --warn: #cf2e2e;
+  --earth: #8d7a55;
+  --earth-fill: rgba(141, 122, 85, 0.20);
+  --water: #3f8fcb;
+  --water-fill: rgba(63, 143, 203, 0.18);
+  --elev: #c47d12;
+  --grade: #6a8f22;
+  --cc: #8650b0;
+  --shield: #4f8fd0;
+  --deep: #22467a;
+  --font-ui: "Barlow Semi Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1719; --paper: #142023; --panel: #182629; --ink: #dce6e4; --muted: #8ea1a3; --rule: #2a3b3f;
+    --grid: rgba(220, 230, 228, 0.06); --grid-major: rgba(220, 230, 228, 0.13);
+    --accent: #2fb8a8; --accent-ink: #062320; --warn: #ff6b5e;
+    --earth: #b39c72; --earth-fill: rgba(179, 156, 114, 0.16); --water: #5aa9e0; --water-fill: rgba(90, 169, 224, 0.16);
+    --elev: #e3a33c; --grade: #9cc24a; --cc: #b088d6; --shield: #5f97d0; --deep: #a9c8ee;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1719; --paper: #142023; --panel: #182629; --ink: #dce6e4; --muted: #8ea1a3; --rule: #2a3b3f;
+  --grid: rgba(220, 230, 228, 0.06); --grid-major: rgba(220, 230, 228, 0.13);
+  --accent: #2fb8a8; --accent-ink: #062320; --warn: #ff6b5e;
+  --earth: #b39c72; --earth-fill: rgba(179, 156, 114, 0.16); --water: #5aa9e0; --water-fill: rgba(90, 169, 224, 0.16);
+  --elev: #e3a33c; --grade: #9cc24a; --cc: #b088d6; --shield: #5f97d0; --deep: #a9c8ee;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 15px; display: flex; flex-direction: column; }
+button, select, input { font: inherit; color: inherit; }
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 16px; border-bottom: 1px solid var(--rule); background: var(--panel); }
+.brand { display: flex; flex-direction: column; line-height: 1.05; margin-right: 4px; }
+.brand b { font-weight: 700; font-size: 17px; letter-spacing: 0.01em; }
+.brand span { font-size: 12px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+.group { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.group + .group { padding-left: 12px; border-left: 1px solid var(--rule); }
+select, .btn, input[type="number"] { background: var(--paper); border: 1px solid var(--rule); border-radius: var(--r); padding: 5px 9px; min-height: 32px; }
+select { padding-right: 6px; font-weight: 600; }
+.btn { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.btn:hover { border-color: var(--muted); }
+.btn[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.status { margin-left: auto; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.status[data-s="saved"] .dot { background: var(--grade); }
+.status[data-s="saving"] .dot { background: var(--elev); }
+.status[data-s="error"] .dot, .status[data-s="readonly"] .dot { background: var(--warn); }
+main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 330px; }
+.sheet { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--paper); border-right: 1px solid var(--rule); }
+.canvas-wrap { position: relative; flex: 1; min-height: 300px; }
+#cv { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+#ov { display: block; width: 100%; height: 58px; border-top: 1px solid var(--rule); touch-action: none; cursor: pointer; }
+.readout { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--rule); border-radius: var(--r); padding: 6px 9px; font-family: var(--font-num); font-size: 12px; line-height: 1.5; box-shadow: 0 4px 14px rgba(0,0,0,0.12); white-space: nowrap; }
+.readout .t { font-family: var(--font-ui); font-weight: 600; font-size: 13px; }
+.side { overflow-y: auto; background: var(--panel); display: flex; flex-direction: column; }
+.card { padding: 14px 16px; border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; gap: 8px; }
+.card h2 { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.sel-title { font-size: 19px; font-weight: 700; line-height: 1.15; text-wrap: balance; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14px; align-items: center; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; font-family: var(--font-num); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+.kv input { width: 100%; text-align: right; font-family: var(--font-num); font-size: 13px; padding: 4px 6px; min-height: 28px; }
+.hint { color: var(--muted); font-size: 14px; line-height: 1.45; margin: 0; }
+.hint kbd { font-family: var(--font-num); font-size: 11px; border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; background: var(--paper); }
+.types { display: grid; grid-template-columns: 1fr auto auto; gap: 3px 10px; font-size: 14px; align-items: center; }
+.types .n { font-family: var(--font-num); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+.flags { margin: 0; padding-left: 18px; font-size: 14px; color: var(--warn); display: flex; flex-direction: column; gap: 2px; }
+.flags:empty { display: none; }
+.canon { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.4; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+.canon b { color: var(--ink); font-weight: 600; }
+#plan { width: 100%; height: 210px; display: block; border-radius: var(--r); background: var(--paper); border: 1px solid var(--rule); }
+.st-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.st-table th { text-align: left; font-weight: 600; color: var(--muted); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 4px; border-bottom: 1px solid var(--rule); position: sticky; top: 0; background: var(--panel); }
+.st-table td { padding: 4px; border-bottom: 1px solid var(--grid-major); font-variant-numeric: tabular-nums; }
+.st-table td.num { font-family: var(--font-num); font-size: 12px; text-align: right; }
+.st-table tr { cursor: pointer; }
+.st-table tr:hover td, .st-table tr.on td { background: var(--grid); }
+.st-table .chip { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; vertical-align: 1px; }
+.pop { position: absolute; right: 16px; top: 56px; z-index: 5; background: var(--panel); border: 1px solid var(--rule); border-radius: var(--r); padding: 14px 16px; width: min(340px, calc(100vw - 32px)); box-shadow: 0 10px 30px rgba(0,0,0,0.18); display: flex; flex-direction: column; gap: 10px; }
+.pop h3 { margin: 0; font-size: 15px; }
+.pop .kv { font-size: 14px; }
+.pop .kv input { width: 92px; justify-self: end; }
+.pop p { margin: 0; font-size: 13px; color: var(--muted); }
+.banner { padding: 8px 16px; background: var(--paper); border-bottom: 1px solid var(--rule); font-size: 14px; color: var(--muted); }
+@media (max-width: 860px) {
+  main { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; overflow-y: auto; }
+  .sheet { border-right: 0; }
+  .canvas-wrap { flex: none; height: 58vh; min-height: 320px; }
+  .side { overflow: visible; }
+  .status { margin-left: 0; width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="bar" id="bar">
+  <div class="brand"><b id="brandName">Cincinnati Metro Profiles</b><span>Long-section editor</span></div>
+  <div class="group">
+    <label for="lineSel" class="sr" hidden>Line</label>
+    <select id="lineSel" aria-label="Line"></select>
+  </div>
+  <div class="group" role="group" aria-label="Tool">
+    <button class="btn" id="toolMove" aria-pressed="true" title="Drag stations and bend points (M)">Move</button>
+    <button class="btn" id="toolPaint" aria-pressed="false" title="Paint structure type along the line (P)">Paint</button>
+  </div>
+  <div class="group" id="brushes" role="group" aria-label="Structure brush"></div>
+  <div class="group">
+    <button class="btn" id="undo" title="Undo (Ctrl+Z)" disabled>Undo</button>
+    <button class="btn" id="redo" title="Redo (Ctrl+Shift+Z)" disabled>Redo</button>
+  </div>
+  <div class="group">
+    <button class="btn" id="zoomOut" title="Zoom out (-)" aria-label="Zoom out">&minus;</button>
+    <button class="btn" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button>
+    <button class="btn" id="fit" title="Show the whole line (F)">Whole line</button>
+  </div>
+  <div class="group" role="group" aria-label="Units">
+    <button class="btn" id="uM" aria-pressed="true">m</button>
+    <button class="btn" id="uFt" aria-pressed="false">ft</button>
+  </div>
+  <div class="group">
+    <button class="btn" id="exportPng" hidden>Export PNG</button>
+    <button class="btn" id="exportJson" hidden>Export JSON</button>
+    <button class="btn" id="settingsBtn" aria-expanded="false">Settings</button>
+  </div>
+  <div class="status" id="status" data-s="idle"><span class="dot"></span><span id="statusText">Loading…</span></div>
+</header>
+<div class="banner" id="banner" hidden></div>
+
+<div class="pop" id="pop" hidden>
+  <h3>Design settings</h3>
+  <dl class="kv" id="setKv"></dl>
+  <p id="setNote">The founding sections of Lines 1 to 6 take their structure from canon (tracker 2D and your rulings). Elsewhere the deep-tube threshold decides. Painted stretches override both. Settings apply to every line.</p>
+  <div class="group" style="gap:8px">
+    <button class="btn" id="setDefaults">Restore defaults</button>
+    <button class="btn" id="resetLine">Reset this line</button>
+  </div>
+</div>
+
+<main>
+  <section class="sheet" aria-label="Profile">
+    <div class="canvas-wrap" id="wrap">
+      <canvas id="cv" tabindex="0" aria-label="Long-section profile. Drag station bars and bend points; double-click the track to add a bend point."></canvas>
+      <div class="readout" id="readout" hidden></div>
+    </div>
+    <canvas id="ov" aria-label="Whole-line overview; drag to move the view"></canvas>
+  </section>
+  <aside class="side">
+    <div class="card" id="selCard"></div>
+    <div class="card">
+      <h2>Line summary</h2>
+      <dl class="kv" id="sumKv"></dl>
+      <div class="types" id="types"></div>
+      <ul class="flags" id="flags"></ul>
+    </div>
+    <div class="card">
+      <h2>Canon structure</h2>
+      <ul class="canon" id="canon"></ul>
+    </div>
+    <div class="card">
+      <h2>Plan</h2>
+      <canvas id="plan" aria-label="Plan view of the line"></canvas>
+    </div>
+    <div class="card">
+      <h2>Stations</h2>
+      <table class="st-table"><thead><tr><th>Station</th><th style="text-align:right">km</th><th style="text-align:right" id="thRail">Rail</th><th style="text-align:right">Depth</th></tr></thead><tbody id="stBody"></tbody></table>
+    </div>
+  </aside>
+</main>
+
+<script>
+(() => {
+'use strict';
+const $ = (s) => document.querySelector(s);
+const FT = 0.3048;
+const TYPES = {
+  elevated: { label: 'Elevated', css: '--elev' },
+  atgrade: { label: 'At grade', css: '--grade' },
+  cutcover: { label: 'Cut & cover', css: '--cc' },
+  shield: { label: 'Shallow shield', css: '--shield' },
+  deep: { label: 'Deep tube', css: '--deep' },
+};
+const TYPE_KEYS = Object.keys(TYPES);
+// Design defaults. Platform 500 ft and the 50 per-mille ruling come from the project; the
+// thresholds are editable starting values, not canon. deepBelow (60 ft) follows the station
+// list calling Price Hill's 60 ft station a deep bore; shallowMax (40 ft) flags canon-shallow
+// stretches that run well past the doctrine's 20-30 ft.
+const METRO_DEFAULTS = { maxGrade: 50, platform: 152.4, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, envelope: 5.5, clearMin: 8, poolFt: 455.0 };
+// RER starting values, not canon. 225 m platforms take the longest set (RER C, 215 m) as on the
+// Paris RER; 35 per mille for heavy EMUs in tunnel; deeper boxes and a taller envelope for 25 kV
+// overhead; surface stations sit at grade on the old railroad and the rail follows the ground
+// through bend points every surfStep metres.
+const RER_DEFAULTS = { maxGrade: 35, platform: 225, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 7, clearMin: 9, poolFt: 455.0, surfStep: 250 };
+let DEFAULTS = METRO_DEFAULTS;
+// Canon structure for the founding sections (Lines 1-6 as first opened).
+// m: 'shallow' = basin method (shallow shield running tunnels, cut-and-cover station boxes);
+//    'deep' = deep tube (Greathead shield, elevator stations); 'canal' = cut-and-cover in the canal bed.
+// Later entries win where sections overlap. aIn/bIn false leaves that end station out of the section.
+// fixed: station rail level relative to ground (m, + above).
+const CANON = {
+  Line_1: { sections: [
+    { a: 'University', b: 'Pennsylvania Station', m: 'shallow', src: 'Founding section, basin method (tracker 2D)' },
+    { a: 'Central Ave', aIn: false, b: 'University', m: 'deep', src: 'Deep bore up Ravine St (your ruling, May 24)' }] },
+  Line_2: { sections: [
+    { a: 'Zoo', b: 'Roebling', m: 'shallow', src: 'Founding section, basin method (tracker 2D)' },
+    { a: 'McMicken', aIn: false, b: 'VA Medical Center', bIn: false, m: 'deep', src: 'Deep tube up Mt Auburn, elevator stations at Inwood, Jefferson, Daniels (your ruling, Oct 6)' }] },
+  Line_3: { sections: [
+    { a: 'St Bernard', b: 'Baltimore', m: 'shallow', src: 'Founding section, basin method (tracker 2D)' },
+    { a: 'St Bernard', b: 'Genesee', m: 'canal', src: 'Canal bed (tracker 2D); north end read from the station list' }] },
+  Line_4: { sections: [
+    { a: 'Price Hill', b: 'Beecher', m: 'shallow', src: 'Founding section, basin method (tracker 2D)' },
+    { a: 'Price Hill', b: 'State', bIn: false, m: 'deep', src: 'Price Hill bore, straight (your ruling, May 24; tracker 2C)' }],
+    fixed: {
+      'Price Hill': { off: -18.29, src: '60 ft deep bore (station list)' },
+      'State': { off: 7.62, src: '25 ft elevated station (station list)' },
+      'Garrard': { off: 7.62, src: 'On the 8th St viaduct; inferred from "underground near MacLean" (May 24)' } } },
+  Line_5: { sections: [{ a: 'Northside', b: 'Pennsylvania', m: 'shallow', src: 'Founding section, basin method (tracker 2D)' }] },
+  Line_6: { sections: [{ a: 'UC Medical/Corryville', b: 'Public Landing', m: 'shallow', src: 'Founding section, basin method (tracker 2D)' }] },
+};
+// RER: stations on a drawn "Trunk" default to underground and every other station to at grade
+// on the old railroad (switch either way per station). Canon sections and station modes below.
+const RER_CANON = {
+  RER_3: { sections: [
+    { a: 'Sedamsville', aIn: false, b: 'Riverbend/Belterra', bIn: false, m: 'covered', src: 'Embanked covered way along the Ohio, underground from Sedamsville to where the embankment ends at Riverbend/Belterra (your ruling)' }],
+    modes: { 'Asbury': { mode: 'surface', src: 'Past Riverbend/Belterra the line is back on the ground (your ruling)' } } },
+  RER_5: { sections: [
+    { a: 'Norwood Central', aIn: false, b: 'Ludlow', bIn: false, m: 'deep', src: '1996 deep-bore tunnel (your ruling); portals not set yet, so the end stations stay outside it' }] },
+};
+const METHOD_LABEL = { shallow: 'Basin method', deep: 'Deep tube', canal: 'Canal-bed cut & cover', covered: 'Covered way (cut & cover)' };
+const SETTING_ROWS_BASE = [
+  ['maxGrade', 'Max grade', '‰', 1],
+  ['platform', 'Platform length', 'len', 0.1],
+  ['defDepth', 'Default rail depth at stations', 'len', 0.1],
+  ['elevAbove', 'Elevated when rail is above ground by', 'len', 0.1],
+  ['coverBelow', 'Covered when rail is below ground by', 'len', 0.1],
+  ['deepBelow', 'Deep tube (outside canon) when rail is below ground by', 'len', 0.5],
+  ['shallowMax', 'Flag canon-shallow stretches deeper than', 'len', 0.5],
+  ['envelope', 'Structure height drawn above rail', 'len', 0.1],
+  ['clearMin', 'Min rail-to-rail clearance at crossings', 'len', 0.5],
+  ['poolFt', 'Ohio normal pool (Markland)', 'ft', 0.1],
+];
+const SETTING_ROWS_RER = SETTING_ROWS_BASE.map((r) => r[0] === 'defDepth' ? ['defDepth', 'Default rail depth at underground stations', 'len', 0.1] : r)
+  .concat([['surfStep', 'Surface bend points every', 'len', 10]]);
+let SETTING_ROWS = SETTING_ROWS_BASE;
+let settings = { ...DEFAULTS };
+const SYS = { metro: { settings: { ...METRO_DEFAULTS }, doc: 'config/settings', key: 'profile:settings' }, rer: { settings: { ...RER_DEFAULTS }, doc: 'config/settings_rer', key: 'profile:settings_rer' } };
+let sys = 'metro';
+const isRer = () => sys === 'rer';
+
+const S = {
+  index: [], net: null, cache: {}, data: null, L: 0, step: 2, ground: null,
+  stations: [], rivers: [], crossings: [], align: null, canonSecs: [], canonFixed: {},
+  view: { c0: 0, c1: 1 }, units: 'm', tool: 'move', brush: 'auto',
+  sel: null, hoverC: null, hoverXY: null, drag: null, yFrozen: null,
+  saved: {}, dirty: false, saving: false, hist: [], fut: [], canonModes: {}, rerData: {}, defaultDocs: {}, metroRails: {},
+  db: null, user: null, canWrite: null, downloads: null, store: 'none',
+};
+let colors = {};
+
+// ---------- utilities ----------
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const pool = () => settings.poolFt * FT;
+const toU = (m) => (S.units === 'ft' ? m / FT : m);
+const fromU = (u) => (S.units === 'ft' ? u * FT : u);
+const uLbl = () => (S.units === 'ft' ? 'ft' : 'm');
+const fmtZ = (m, d = 1) => (m == null || !isFinite(m) ? '–' : toU(m).toFixed(d));
+const fmtCh = (c) => { const k = Math.floor(c / 1000 + 1e-9); return `${k}+${String(Math.round(c - k * 1000)).padStart(3, '0')}`; };
+const fmtG = (g) => `${g >= 0 ? '+' : '−'}${Math.abs(g).toFixed(1)}‰`;
+const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+function niceStep(range, target) {
+  const raw = range / Math.max(1, target); const p = Math.pow(10, Math.floor(Math.log10(raw)));
+  const m = raw / p; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p;
+}
+function readColors() {
+  const cs = getComputedStyle(document.documentElement);
+  const g = (n) => cs.getPropertyValue(n).trim();
+  colors = { paper: g('--paper'), ink: g('--ink'), muted: g('--muted'), rule: g('--rule'), grid: g('--grid'), gridMajor: g('--grid-major'),
+    accent: g('--accent'), warn: g('--warn'), earth: g('--earth'), earthFill: g('--earth-fill'), water: g('--water'), waterFill: g('--water-fill'),
+    panel: g('--panel'), elevated: g('--elev'), atgrade: g('--grade'), cutcover: g('--cc'), shield: g('--shield'), deep: g('--deep'),
+    num: g('--font-num'), ui: g('--font-ui') };
+}
+
+// ---------- ground and alignment model ----------
+function groundAt(c) {
+  const g = S.ground; if (!g) return NaN;
+  const f = clamp(c / S.step, 0, g.length - 1); const i = Math.floor(f); const t = f - i;
+  const a = g[i], b = g[Math.min(i + 1, g.length - 1)];
+  if (isNaN(a)) return b; if (isNaN(b)) return a;
+  return a + (b - a) * t;
+}
+function riverAt(c) { for (const r of S.rivers) if (c >= r.c0 && c <= r.c1) return r; return null; }
+function surfaceAt(c) { return riverAt(c) ? pool() : groundAt(c); }
+
+function stKey(i) { const s = S.stations[i]; const dup = S.stations.filter((x) => x.name === s.name).length > 1; return dup ? `${s.name}#${i}` : s.name; }
+
+function vertices(al = S.align, stations = S.stations, L = S.L, platform = settings.platform) {
+  const half = platform / 2; const v = [];
+  stations.forEach((s, i) => {
+    const z = al.st[i];
+    v.push({ c: clamp(s.c - half, 0, L), z, kind: 'ps', i });
+    v.push({ c: clamp(s.c + half, 0, L), z, kind: 'pe', i });
+  });
+  al.pvi.forEach((p, j) => v.push({ c: p.c, z: p.z, kind: 'pvi', j }));
+  v.sort((a, b) => a.c - b.c || (a.kind === 'pe' ? -1 : 1));
+  if (!v.length) return [{ c: 0, z: 0, kind: 'end' }, { c: L, z: 0, kind: 'end' }];
+  if (v[0].c > 0) v.unshift({ c: 0, z: v[0].z, kind: 'end' });
+  if (v[v.length - 1].c < L) v.push({ c: L, z: v[v.length - 1].z, kind: 'end' });
+  return v;
+}
+let VERTS = [];
+function railAt(c, verts = VERTS) {
+  let lo = 0, hi = verts.length - 1;
+  if (c <= verts[0].c) return verts[0].z; if (c >= verts[hi].c) return verts[hi].z;
+  while (hi - lo > 1) { const m = (lo + hi) >> 1; if (verts[m].c <= c) lo = m; else hi = m; }
+  const a = verts[lo], b = verts[hi]; const d = b.c - a.c;
+  return d <= 1e-9 ? b.z : a.z + (b.z - a.z) * (c - a.c) / d;
+}
+function gradeAt(c, verts = VERTS) {
+  for (let k = 0; k < verts.length - 1; k++) { const a = verts[k], b = verts[k + 1]; if (c >= a.c && c <= b.c && b.c - a.c > 1e-6) return (b.z - a.z) / (b.c - a.c) * 1000; }
+  return 0;
+}
+function overrideAt(c) { const o = S.align.ovr; for (let k = o.length - 1; k >= 0; k--) if (c >= o[k][0] && c <= o[k][1]) return o[k][2]; return null; }
+// ---------- canon ----------
+function buildCanon() {
+  const id = S.data && S.data.id; const cn = (isRer() ? RER_CANON[id] : CANON[id]) || {}; const half = settings.platform / 2;
+  const idx = (name) => S.stations.findIndex((s) => s.name === name);
+  S.canonSecs = (cn.sections || []).map((sec) => {
+    const ia = idx(sec.a), ib = idx(sec.b); if (ia < 0 || ib < 0) return null;
+    const A = S.stations[ia], B = S.stations[ib]; const dir = Math.sign(B.c - A.c) || 1;
+    const ca = A.c + (sec.aIn === false ? dir * half : -dir * half);
+    const cb = B.c + (sec.bIn === false ? -dir * half : dir * half);
+    return { ...sec, lo: Math.min(ca, cb), hi: Math.max(ca, cb) };
+  }).filter(Boolean);
+  S.canonFixed = {};
+  Object.entries(cn.fixed || {}).forEach(([name, f]) => { const i = idx(name); if (i >= 0) S.canonFixed[i] = f; });
+  S.canonModes = {};
+  Object.entries(cn.modes || {}).forEach(([name, f]) => { const i = idx(name); if (i >= 0) S.canonModes[i] = f; });
+}
+// RER station mode: 'under' (new trunk, below ground) or 'surface' (at grade on the old railroad)
+function defaultMode(i) { const f = S.canonModes[i]; if (f) return f.mode; return S.stations[i].trunk ? 'under' : 'surface'; }
+function modeOf(i) { return (S.align && S.align.mode && S.align.mode[i]) || defaultMode(i); }
+function canonAt(c) { const a = S.canonSecs; for (let k = a.length - 1; k >= 0; k--) if (c >= a[k].lo && c <= a[k].hi) return a[k]; return null; }
+function inStation(c) { const half = settings.platform / 2; return S.stations.some((s) => Math.abs(c - s.c) <= half); }
+function autoType(c, z) {
+  const sec0 = canonAt(c);
+  if (sec0 && sec0.m === 'covered') { const s0 = surfaceAt(c); return isFinite(s0) && z - s0 >= settings.elevAbove ? 'elevated' : 'cutcover'; }
+  const r = riverAt(c);
+  if (r) return z >= pool() + 1 ? 'elevated' : 'deep';
+  const g = groundAt(c); if (!isFinite(g)) return 'atgrade';
+  if (z - g >= settings.elevAbove) return 'elevated';
+  const d = g - z;
+  if (d < settings.coverBelow) return 'atgrade';
+  const sec = canonAt(c);
+  const m = sec ? sec.m : (d >= settings.deepBelow ? 'deep' : 'shallow');
+  if (m === 'canal') return 'cutcover';
+  if (m === 'deep') return 'deep';
+  return inStation(c) ? 'cutcover' : 'shield';
+}
+function typeAt(c, z = railAt(c)) { return overrideAt(c) || autoType(c, z); }
+
+// Each station as shallow as the grade limit allows: at most defDepth under ground, canon levels
+// held fixed, solved in both directions so steep descents go deeper instead of popping out.
+function defaultAlign(modes) {
+  const g = settings.maxGrade / 1000, P = settings.platform, n = S.stations.length;
+  const ub = [], lb = [];
+  const md = isRer() ? S.stations.map((_, i) => (modes && modes[i]) || defaultMode(i)) : null;
+  S.stations.forEach((s, i) => {
+    const gr = groundAt(s.c), f = S.canonFixed[i];
+    if (f && isFinite(gr)) { ub[i] = lb[i] = gr + f.off; }
+    else if (md && md[i] === 'surface' && isFinite(gr)) { ub[i] = lb[i] = gr; }
+    else { ub[i] = isFinite(gr) ? gr - settings.defDepth : Infinity; lb[i] = -Infinity; }
+  });
+  const run = (i, j) => Math.max(0, Math.abs(S.stations[j].c - S.stations[i].c) - P * Math.abs(j - i));
+  const z = ub.map((_, i) => { let r = Infinity; for (let j = 0; j < n; j++) r = Math.min(r, ub[j] + g * run(i, j)); return r; });
+  for (let i = 0; i < n; i++) {
+    let lo = -Infinity; for (let j = 0; j < n; j++) if (isFinite(lb[j])) lo = Math.max(lo, lb[j] - g * run(i, j));
+    z[i] = Math.max(z[i], lo); if (!isFinite(z[i])) z[i] = 0;
+  }
+  const st = z.map((v) => Math.round(v * 100) / 100);
+  const al = { st, pvi: md ? surfacePvis(st, md) : [], ovr: [] };
+  if (md) al.mode = md.slice();
+  return al;
+}
+// Between two at-grade stations the rail follows the old railroad: bend points every surfStep
+// on the ground smoothed over two steps, then held to the grade limit both ways.
+function surfacePvis(st, md) {
+  const half = settings.platform / 2, step = settings.surfStep, g = settings.maxGrade / 1000, out = [];
+  const smooth = (c) => { let a = 0, k = 0; for (let d = -step; d <= step; d += step / 4) { const v = surfaceAt(clamp(c + d, 0, S.L)); if (isFinite(v)) { a += v; k++; } } return k ? a / k : NaN; };
+  const runs = [];
+  const n = S.stations.length;
+  // stretch before the first station and after the last count as surface when that station is
+  if (n && md[0] === 'surface') runs.push([0, S.stations[0].c - half - 2, null, st[0]]);
+  for (let i = 0; i + 1 < n; i++) if (md[i] === 'surface' && md[i + 1] === 'surface') runs.push([S.stations[i].c + half + 2, S.stations[i + 1].c - half - 2, st[i], st[i + 1]]);
+  if (n && md[n - 1] === 'surface') runs.push([S.stations[n - 1].c + half + 2, S.L, st[n - 1], null]);
+  for (const [a, b, za, zb] of runs) {
+    if (b - a < step * 1.5) continue;
+    const k = Math.floor((b - a) / step); const pts = [];
+    for (let j = 1; j < k; j++) { const c = a + (b - a) * j / k; const z = smooth(c); if (isFinite(z)) pts.push({ c: Math.round(c), z }); }
+    if (!pts.length) continue;
+    const chain = [{ c: a, z: za ?? pts[0].z, fixed: za != null }, ...pts, { c: b, z: zb ?? pts[pts.length - 1].z, fixed: zb != null }];
+    for (let it = 0; it < 4; it++) {
+      for (let j = 1; j < chain.length; j++) if (!chain[j].fixed) { const d = g * (chain[j].c - chain[j - 1].c); chain[j].z = clamp(chain[j].z, chain[j - 1].z - d, chain[j - 1].z + d); }
+      for (let j = chain.length - 2; j >= 0; j--) if (!chain[j].fixed) { const d = g * (chain[j + 1].c - chain[j].c); chain[j].z = clamp(chain[j].z, chain[j + 1].z - d, chain[j + 1].z + d); }
+    }
+    pts.forEach((p) => out.push({ c: p.c, z: Math.round(p.z * 100) / 100 }));
+  }
+  return out.sort((x, y) => x.c - y.c);
+}
+function alignFromDoc(doc) {
+  let modes = null;
+  if (doc && doc.mode && isRer()) modes = S.stations.map((_, i) => (doc.mode[stKey(i)] === 'surface' || doc.mode[stKey(i)] === 'under') ? doc.mode[stKey(i)] : defaultMode(i));
+  const al = defaultAlign(modes);
+  if (!doc) return al;
+  const byKey = doc.st || {};
+  S.stations.forEach((s, i) => { const k = stKey(i); if (typeof byKey[k] === 'number') al.st[i] = byKey[k]; });
+  if (Array.isArray(doc.pvi)) al.pvi = doc.pvi.filter((p) => Array.isArray(p) && p.length >= 2).map(([c, z]) => ({ c: +c, z: +z }));
+  al.ovr = (doc.ovr || []).filter((o) => Array.isArray(o) && o.length >= 3).map(([a, b, t]) => [+a, +b, t === 'bored' ? 'shield' : t]).filter((o) => TYPES[o[2]]);
+  return al;
+}
+
+// ---------- summary ----------
+function computeSummary() {
+  const L = S.L, dc = 10; const len = Object.fromEntries(TYPE_KEYS.map((t) => [t, 0]));
+  let deepest = { d: -Infinity, c: 0 }, highest = { h: -Infinity, c: 0 };
+  for (let c = 0; c < L; c += dc) {
+    const cm = Math.min(L, c + dc / 2); const z = railAt(cm); const t = typeAt(cm, z);
+    len[t] += Math.min(dc, L - c);
+    const s = surfaceAt(cm); if (isFinite(s)) { const d = s - z; if (d > deepest.d) deepest = { d, c: cm }; if (-d > highest.h) highest = { h: -d, c: cm }; }
+  }
+  // stations the canon puts in a shallow (basin or canal) section but that sit deeper than shallowMax
+  const deepShallow = [];
+  S.stations.forEach((st, i) => {
+    const sec = canonAt(st.c); if (!sec || sec.m === 'deep' || overrideAt(st.c)) return;
+    const d = surfaceAt(st.c) - S.align.st[i]; if (isFinite(d) && d > settings.shallowMax) deepShallow.push({ name: st.name, c: st.c, d });
+  });
+  let maxG = 0, maxGc = 0; const over = [];
+  for (let k = 0; k < VERTS.length - 1; k++) {
+    const a = VERTS[k], b = VERTS[k + 1]; if (b.c - a.c < 1e-6) continue;
+    const g = (b.z - a.z) / (b.c - a.c) * 1000;
+    if (Math.abs(g) > Math.abs(maxG)) { maxG = g; maxGc = (a.c + b.c) / 2; }
+    if (Math.abs(g) > settings.maxGrade + 0.05) over.push({ c0: a.c, c1: b.c, g });
+  }
+  const clashes = crossingClearances().filter((x) => x.clear != null && x.clear < settings.clearMin);
+  return { len, deepest, highest, maxG, maxGc, over, clashes, deepShallow };
+}
+
+// ---------- other lines at crossings ----------
+// the other line's rail: its saved profile here, else its default (RER) or the Metro rail table
+function otherRail(cr) {
+  if (!cr.wid || cr.oc == null) return null;
+  const doc = S.saved[cr.wid] || S.defaultDocs[cr.wid] || S.metroRails[cr.wid]; if (!doc || !Array.isArray(doc.stations)) return null;
+  const stations = doc.stations.map((s) => ({ c: +s.c })); const al = { st: doc.stations.map((s) => +s.rail), pvi: (doc.pvi || []).map(([c, z]) => ({ c: +c, z: +z })) };
+  const plat = +doc.platform_m || (cr.wid.startsWith('RER_') ? SYS.rer.settings.platform : SYS.metro.settings.platform);
+  const verts = vertices(al, stations, +doc.length_m || 1e9, plat);
+  return railAt(cr.oc, verts);
+}
+function crossingClearances() {
+  return S.crossings.filter((x) => x.wid && x.oc != null).map((x) => {
+    const zo = otherRail(x); const z = railAt(x.c);
+    return { ...x, zo, z, clear: zo == null ? null : Math.abs(z - zo) };
+  });
+}
+
+// ---------- drawing ----------
+const cv = $('#cv'), ov = $('#ov'), plan = $('#plan');
+let LAYOUT = null;
+function sizeCanvas(c) {
+  const r = c.getBoundingClientRect(); const dpr = window.devicePixelRatio || 1;
+  const w = Math.max(1, Math.round(r.width * dpr)), h = Math.max(1, Math.round(r.height * dpr));
+  if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+  const ctx = c.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, W: r.width, H: r.height };
+}
+function yRangeFor(view, plotW) {
+  let lo = Infinity, hi = -Infinity;
+  const i0 = Math.max(0, Math.floor(view.c0 / S.step)), i1 = Math.min(S.ground.length - 1, Math.ceil(view.c1 / S.step));
+  const stride = Math.max(1, Math.floor((i1 - i0) / 3000));
+  for (let i = i0; i <= i1; i += stride) { const c = i * S.step; if (riverAt(c)) continue; const g = S.ground[i]; if (!isNaN(g)) { if (g < lo) lo = g; if (g > hi) hi = g; } }
+  for (const v of VERTS) if (v.c >= view.c0 && v.c <= view.c1) { lo = Math.min(lo, v.z); hi = Math.max(hi, v.z + settings.envelope); }
+  [view.c0, view.c1].forEach((c) => { const z = railAt(c); lo = Math.min(lo, z); hi = Math.max(hi, z); });
+  if (S.rivers.some((r) => r.c1 >= view.c0 && r.c0 <= view.c1)) { lo = Math.min(lo, pool() - 12); hi = Math.max(hi, pool() + 4); }
+  for (const x of crossingClearances()) if (x.zo != null && x.c >= view.c0 && x.c <= view.c1) { lo = Math.min(lo, x.zo); hi = Math.max(hi, x.zo + settings.envelope); }
+  if (!isFinite(lo)) { lo = 0; hi = 10; }
+  const pad = Math.max(3, (hi - lo) * 0.08);
+  return { ymin: lo - pad, ymax: hi + pad };
+}
+
+function draw(ctx, W, H, view, opt = {}) {
+  const narrow = W < 560;
+  const M = { l: narrow ? 46 : 60, r: 14, t: opt.title ? 118 : (narrow ? 64 : 84), b: 56 };
+  const P = { x: M.l, y: M.t, w: Math.max(10, W - M.l - M.r), h: Math.max(10, H - M.t - M.b) };
+  let yr = opt.yr || yRangeFor(view, P.w);
+  if (!opt.yr && S.yFrozen && S.drag) {
+    yr = { ymin: Math.min(S.yFrozen.ymin, yr.ymin), ymax: Math.max(S.yFrozen.ymax, yr.ymax) };
+    S.yFrozen = yr;
+  }
+  const X = (c) => P.x + (c - view.c0) / (view.c1 - view.c0) * P.w;
+  const C = (x) => view.c0 + (x - P.x) / P.w * (view.c1 - view.c0);
+  const Y = (z) => P.y + (yr.ymax - z) / (yr.ymax - yr.ymin) * P.h;
+  const Z = (y) => yr.ymax - (y - P.y) / P.h * (yr.ymax - yr.ymin);
+  const L = { P, X, C, Y, Z, yr, view, W, H };
+  const ink = colors.ink, muted = colors.muted;
+
+  ctx.fillStyle = colors.paper; ctx.fillRect(0, 0, W, H);
+
+  // grid and axes
+  const zStepU = niceStep(toU(yr.ymax - yr.ymin), narrow ? 5 : 8);
+  ctx.font = `11px ${colors.num}`; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  for (let zu = Math.ceil(toU(yr.ymin) / zStepU) * zStepU; zu <= toU(yr.ymax); zu += zStepU) {
+    const y = Y(fromU(zu)); ctx.strokeStyle = colors.grid; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(P.x, Math.round(y) + 0.5); ctx.lineTo(P.x + P.w, Math.round(y) + 0.5); ctx.stroke();
+    ctx.fillStyle = muted; ctx.fillText(zu.toFixed(zStepU < 1 ? 1 : 0), P.x - 6, y);
+  }
+  ctx.save(); ctx.translate(12, P.y + P.h / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'center'; ctx.font = `11px ${colors.ui}`;
+  ctx.fillStyle = muted; ctx.fillText(`Elevation, ${uLbl()} NAVD 88`, 0, 0); ctx.restore();
+  const span = view.c1 - view.c0; const cStep = niceStep(span, narrow ? 4 : 10);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.font = `11px ${colors.num}`;
+  const axisY = P.y + P.h + 26;
+  for (let c = Math.ceil(view.c0 / cStep) * cStep; c <= view.c1 + 1e-6; c += cStep) {
+    const x = X(c); ctx.strokeStyle = colors.grid; ctx.beginPath(); ctx.moveTo(Math.round(x) + 0.5, P.y); ctx.lineTo(Math.round(x) + 0.5, P.y + P.h); ctx.stroke();
+    ctx.fillStyle = muted; ctx.fillText(fmtCh(c), x, axisY + 4);
+  }
+
+  ctx.save(); ctx.beginPath(); ctx.rect(P.x, P.y, P.w, P.h); ctx.clip();
+
+  // water
+  for (const r of S.rivers) {
+    if (r.c1 < view.c0 || r.c0 > view.c1) continue;
+    const x0 = X(r.c0), x1 = X(r.c1), yp = Y(pool());
+    const grd = ctx.createLinearGradient(0, yp, 0, P.y + P.h); grd.addColorStop(0, colors.waterFill); grd.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grd; ctx.fillRect(x0, yp, x1 - x0, P.y + P.h - yp);
+    ctx.strokeStyle = colors.water; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x0, yp); ctx.lineTo(x1, yp); ctx.stroke();
+    if (x1 - x0 > 30) {
+      ctx.fillStyle = colors.water; ctx.beginPath(); const xm = (x0 + x1) / 2; ctx.moveTo(xm - 5, yp - 9); ctx.lineTo(xm + 5, yp - 9); ctx.lineTo(xm, yp - 2); ctx.fill();
+      ctx.font = `600 11px ${colors.ui}`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.fillText(r.name, xm, yp - 12);
+      if (x1 - x0 > 120) { ctx.font = `11px ${colors.ui}`; ctx.textBaseline = 'top'; ctx.fillText(`normal pool ${settings.poolFt.toFixed(0)} ft · bed not yet surveyed`, xm, yp + 6); }
+    }
+  }
+
+  // ground: per-pixel-column max (top) with fill, skipping river spans
+  const g = S.ground, n = g.length;
+  const cols = Math.ceil(P.w);
+  const top = new Float32Array(cols + 1).fill(NaN);
+  for (let k = 0; k <= cols; k++) {
+    const ca = C(P.x + k - 0.5), cb = C(P.x + k + 0.5);
+    let ia = Math.max(0, Math.floor(ca / S.step)), ib = Math.min(n - 1, Math.ceil(cb / S.step));
+    if (ib < ia) { const c = C(P.x + k); top[k] = riverAt(c) ? NaN : groundAt(c); continue; }
+    let mx = -Infinity; for (let i = ia; i <= ib; i++) { if (riverAt(i * S.step)) continue; const v = g[i]; if (!isNaN(v) && v > mx) mx = v; }
+    top[k] = mx === -Infinity ? NaN : mx;
+  }
+  ctx.fillStyle = colors.earthFill; ctx.strokeStyle = colors.earth; ctx.lineWidth = 1.4;
+  let run = [];
+  const flush = () => {
+    if (run.length < 2) { run = []; return; }
+    ctx.beginPath(); ctx.moveTo(run[0][0], P.y + P.h); run.forEach(([x, y]) => ctx.lineTo(x, y)); ctx.lineTo(run[run.length - 1][0], P.y + P.h); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); run.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.stroke(); run = [];
+  };
+  for (let k = 0; k <= cols; k++) { if (isNaN(top[k])) flush(); else run.push([P.x + k, Y(top[k])]); }
+  flush();
+
+  // crossings
+  const cl = crossingClearances();
+  for (const x of S.crossings) {
+    if (x.c < view.c0 || x.c > view.c1) continue;
+    const px = X(x.c); ctx.strokeStyle = x.kind === 'rer' ? colors.gridMajor : colors.gridMajor; ctx.setLineDash([3, 4]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(px, P.y); ctx.lineTo(px, P.y + P.h); ctx.stroke(); ctx.setLineDash([]);
+  }
+  for (const x of cl) {
+    if (x.zo == null || x.c < view.c0 || x.c > view.c1) continue;
+    const px = X(x.c), y0 = Y(x.zo + settings.envelope), y1 = Y(x.zo); const bad = x.clear < settings.clearMin;
+    ctx.fillStyle = bad ? colors.warn : colors.muted; ctx.globalAlpha = 0.85; ctx.fillRect(px - 4, y0, 8, Math.max(2, y1 - y0)); ctx.globalAlpha = 1;
+    ctx.font = `600 11px ${colors.ui}`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillStyle = bad ? colors.warn : muted;
+    ctx.fillText(`${x.with} · ${toU(x.clear).toFixed(1)} ${uLbl()} apart`, px + 7, (y0 + y1) / 2);
+  }
+
+  // track: per-pixel sampling grouped by type
+  const step = 1;
+  const pts = [];
+  for (let k = 0; k <= cols; k += step) { const c = clamp(C(P.x + k), 0, S.L); const z = railAt(c); pts.push({ x: P.x + k, c, z, t: typeAt(c, z) }); }
+  // overgrade halo
+  for (const o of (opt.summary || S.summary || { over: [] }).over) {
+    if (o.c1 < view.c0 || o.c0 > view.c1) continue;
+    ctx.strokeStyle = colors.warn; ctx.globalAlpha = 0.28; ctx.lineWidth = 10; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(X(o.c0), Y(railAt(o.c0))); ctx.lineTo(X(o.c1), Y(railAt(o.c1))); ctx.stroke(); ctx.globalAlpha = 1; ctx.lineCap = 'butt';
+  }
+  // envelope + piers
+  for (let k = 0; k < pts.length - 1; k++) {
+    const a = pts[k], b = pts[k + 1];
+    if (a.t === 'shield' || a.t === 'deep' || a.t === 'cutcover') {
+      ctx.fillStyle = colors[a.t]; ctx.globalAlpha = 0.16;
+      ctx.beginPath(); ctx.moveTo(a.x, Y(a.z)); ctx.lineTo(b.x, Y(b.z)); ctx.lineTo(b.x, Y(b.z + settings.envelope)); ctx.lineTo(a.x, Y(a.z + settings.envelope)); ctx.fill(); ctx.globalAlpha = 1;
+    }
+  }
+  ctx.lineWidth = 1; ctx.strokeStyle = colors.elevated;
+  const pierEvery = 18;
+  for (let k = 0; k < pts.length; k += pierEvery) {
+    const p = pts[k]; if (p.t !== 'elevated') continue; const s = surfaceAt(p.c); if (!isFinite(s) || s >= p.z) continue;
+    ctx.globalAlpha = 0.6; ctx.beginPath(); ctx.moveTo(p.x + 0.5, Y(p.z)); ctx.lineTo(p.x + 0.5, Y(s)); ctx.stroke(); ctx.globalAlpha = 1;
+  }
+  ctx.lineWidth = 3; ctx.lineJoin = 'round';
+  let k0 = 0;
+  for (let k = 1; k <= pts.length; k++) {
+    if (k === pts.length || pts[k].t !== pts[k0].t) {
+      ctx.strokeStyle = colors[pts[k0].t]; ctx.beginPath();
+      for (let j = k0; j < Math.min(k + 1, pts.length); j++) { const p = pts[j]; j === k0 ? ctx.moveTo(p.x, Y(p.z)) : ctx.lineTo(p.x, Y(p.z)); }
+      ctx.stroke(); k0 = k;
+    }
+  }
+
+  // grade labels
+  ctx.font = `500 11px ${colors.num}`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+  for (let k = 0; k < VERTS.length - 1; k++) {
+    const a = VERTS[k], b = VERTS[k + 1]; if (b.c - a.c < 1e-6 || a.kind === 'ps' && b.kind === 'pe' && a.i === b.i) continue;
+    const xa = X(a.c), xb = X(b.c); if (xb < P.x || xa > P.x + P.w || xb - xa < (narrow ? 56 : 66)) continue;
+    const gr = (b.z - a.z) / (b.c - a.c) * 1000; const bad = Math.abs(gr) > settings.maxGrade + 0.05;
+    const xm = (Math.max(xa, P.x) + Math.min(xb, P.x + P.w)) / 2; const ym = Y(railAt(C(xm))) - 8;
+    const txt = fmtG(gr); const w = ctx.measureText(txt).width + 8;
+    ctx.fillStyle = colors.paper; ctx.globalAlpha = 0.85; ctx.fillRect(xm - w / 2, ym - 14, w, 14); ctx.globalAlpha = 1;
+    ctx.fillStyle = bad ? colors.warn : muted; ctx.fillText(txt, xm, ym);
+  }
+
+  // stations
+  const half = settings.platform / 2;
+  S.stations.forEach((s, i) => {
+    if (s.c + half < view.c0 || s.c - half > view.c1) return;
+    const z = S.align.st[i], y = Y(z), xa = X(s.c - half), xb = X(s.c + half);
+    const on = S.sel && S.sel.kind === 'st' && S.sel.i === i;
+    ctx.fillStyle = on ? colors.accent : ink;
+    ctx.fillRect(xa, y - 3, Math.max(3, xb - xa), 6);
+    ctx.fillRect(xa, y - 7, 1.5, 10); ctx.fillRect(Math.max(xa + 1.5, xb - 1.5), y - 7, 1.5, 10);
+  });
+
+  // pvi handles
+  S.align.pvi.forEach((p, j) => {
+    if (p.c < view.c0 || p.c > view.c1) return;
+    const on = S.sel && S.sel.kind === 'pvi' && S.sel.j === j;
+    ctx.beginPath(); ctx.arc(X(p.c), Y(p.z), on ? 6 : 5, 0, Math.PI * 2);
+    ctx.fillStyle = on ? colors.accent : colors.paper; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = colors.accent; ctx.stroke();
+  });
+
+  // paint preview
+  if (S.drag && S.drag.kind === 'paint') {
+    const a = Math.min(S.drag.c0, S.drag.c1), b = Math.max(S.drag.c0, S.drag.c1);
+    ctx.fillStyle = S.brush === 'auto' ? colors.gridMajor : colors[S.brush]; ctx.globalAlpha = 0.18; ctx.fillRect(X(a), P.y, X(b) - X(a), P.h); ctx.globalAlpha = 1;
+  }
+
+  // hover hairline
+  if (!opt.title && S.hoverC != null && S.hoverC >= view.c0 && S.hoverC <= view.c1) {
+    const hx = X(S.hoverC); ctx.strokeStyle = colors.muted; ctx.globalAlpha = 0.6; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(Math.round(hx) + 0.5, P.y); ctx.lineTo(Math.round(hx) + 0.5, P.y + P.h); ctx.stroke(); ctx.globalAlpha = 1;
+  }
+  ctx.restore();
+
+  // frame
+  ctx.strokeStyle = colors.rule; ctx.lineWidth = 1; ctx.strokeRect(P.x + 0.5, P.y + 0.5, P.w - 1, P.h - 1);
+
+  // structure band
+  const bandY = P.y + P.h + 6, bandH = 16;
+  let b0 = 0;
+  for (let k = 1; k <= pts.length; k++) {
+    if (k === pts.length || pts[k].t !== pts[b0].t) {
+      const xa = pts[b0].x, xb = k < pts.length ? pts[k].x : P.x + P.w; const t = pts[b0].t;
+      ctx.fillStyle = colors[t]; ctx.fillRect(xa, bandY, xb - xa, bandH);
+      if (xb - xa > 70) { ctx.fillStyle = '#fff'; ctx.font = `600 11px ${colors.ui}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(TYPES[t].label.toUpperCase(), (xa + xb) / 2, bandY + bandH / 2 + 0.5); }
+      b0 = k;
+    }
+  }
+  // overrides marked under band
+  for (const o of S.align.ovr) { const xa = X(o[0]), xb = X(o[1]); if (xb < P.x || xa > P.x + P.w) continue; ctx.fillStyle = ink; ctx.fillRect(Math.max(xa, P.x), bandY + bandH + 1, Math.min(xb, P.x + P.w) - Math.max(xa, P.x), 2); }
+
+  // station labels in the top margin
+  ctx.save(); ctx.beginPath(); ctx.rect(P.x - 8, 0, P.w + 16, P.y + P.h); ctx.clip();
+  let lastX = -Infinity; const labelGap = narrow ? 15 : 18;
+  ctx.font = `600 ${narrow ? 11 : 12}px ${colors.ui}`; ctx.textBaseline = 'middle';
+  S.stations.forEach((s, i) => {
+    if (s.c < view.c0 - 200 || s.c > view.c1 + 200) return;
+    const x = X(s.c); const y = Y(S.align.st[i]);
+    const on = S.sel && S.sel.kind === 'st' && S.sel.i === i;
+    ctx.strokeStyle = on ? colors.accent : colors.gridMajor; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+    ctx.beginPath(); ctx.moveTo(x + 0.5, P.y - 4); ctx.lineTo(x + 0.5, y - 8); ctx.stroke(); ctx.setLineDash([]);
+    if (x - lastX < labelGap && !on) return; lastX = x;
+    ctx.save(); ctx.translate(x, P.y - 6); ctx.rotate(-Math.PI / 4); ctx.textAlign = 'left';
+    ctx.fillStyle = on ? colors.accent : ink; ctx.fillText(s.name, 2, 0); ctx.restore();
+  });
+  ctx.restore();
+
+  // crossing ticks along the top edge of the plot
+  ctx.font = `500 10px ${colors.num}`; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  let lastTag = -Infinity;
+  for (const x of S.crossings) {
+    if (x.c < view.c0 || x.c > view.c1) continue;
+    const px = X(x.c); const lbl = x.with.replace('Line ', 'L').replace('RER-', 'R');
+    ctx.fillStyle = x.kind.startsWith('rer') ? colors.muted : colors.ink;
+    ctx.beginPath(); ctx.moveTo(px - 4, P.y + 1); ctx.lineTo(px + 4, P.y + 1); ctx.lineTo(px, P.y + 6); ctx.fill();
+    const w = ctx.measureText(lbl).width;
+    if (px - w / 2 > lastTag + 4) { ctx.fillText(lbl, px, P.y + 7); lastTag = px + w / 2; }
+  }
+
+  // V.E. and title block
+  const ve = (P.h / (yr.ymax - yr.ymin)) / (P.w / span);
+  ctx.font = `500 11px ${colors.num}`; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+  const veTxt = `V.E. ×${ve >= 10 ? ve.toFixed(0) : ve.toFixed(1)}`; const veW = ctx.measureText(veTxt).width + 10;
+  ctx.fillStyle = colors.paper; ctx.globalAlpha = 0.85; ctx.fillRect(P.x + P.w - veW - 2, P.y + P.h - 20, veW, 16); ctx.globalAlpha = 1;
+  ctx.fillStyle = muted; ctx.fillText(veTxt, P.x + P.w - 7, P.y + P.h - 6);
+  if (opt.title) {
+    ctx.textAlign = 'left'; ctx.fillStyle = ink; ctx.font = `700 22px ${colors.ui}`; ctx.fillText(opt.title, 16, 14);
+    ctx.font = `13px ${colors.ui}`; ctx.fillStyle = muted; ctx.fillText(opt.subtitle || '', 16, 42);
+  }
+  return L;
+}
+
+function render() {
+  if (!S.data) return;
+  readColors();
+  const { ctx, W, H } = sizeCanvas(cv);
+  LAYOUT = draw(ctx, W, H, S.view, {});
+  drawOverview(); drawPlan();
+}
+let rafId = 0;
+function schedule() { if (!rafId) rafId = requestAnimationFrame(() => { rafId = 0; render(); }); }
+
+function drawOverview() {
+  const { ctx, W, H } = sizeCanvas(ov); ctx.fillStyle = colors.paper; ctx.fillRect(0, 0, W, H);
+  const padX = LAYOUT ? LAYOUT.P.x : 50, w = W - padX - 14; const X = (c) => padX + c / S.L * w;
+  let lo = Infinity, hi = -Infinity;
+  for (let i = 0; i < S.ground.length; i += 5) { const v = S.ground[i]; if (!isNaN(v)) { lo = Math.min(lo, v); hi = Math.max(hi, v); } }
+  VERTS.forEach((v) => { lo = Math.min(lo, v.z); hi = Math.max(hi, v.z); });
+  const Y = (z) => 6 + (hi - z) / (hi - lo || 1) * (H - 12);
+  ctx.fillStyle = colors.earthFill; ctx.beginPath(); ctx.moveTo(X(0), H);
+  const stride = Math.max(1, Math.floor(S.ground.length / w));
+  for (let i = 0; i < S.ground.length; i += stride) { const v = S.ground[i]; if (!isNaN(v)) ctx.lineTo(X(i * S.step), Y(v)); }
+  ctx.lineTo(X(S.L), H); ctx.closePath(); ctx.fill();
+  for (const r of S.rivers) { ctx.fillStyle = colors.waterFill; ctx.fillRect(X(r.c0), 0, Math.max(2, X(r.c1) - X(r.c0)), H); }
+  ctx.strokeStyle = colors.ink; ctx.lineWidth = 1.5; ctx.beginPath(); VERTS.forEach((v, k) => (k ? ctx.lineTo(X(v.c), Y(v.z)) : ctx.moveTo(X(v.c), Y(v.z)))); ctx.stroke();
+  ctx.fillStyle = colors.ink; S.stations.forEach((s) => ctx.fillRect(X(s.c) - 0.5, H - 6, 1, 6));
+  const xa = X(S.view.c0), xb = X(S.view.c1);
+  ctx.fillStyle = colors.accent; ctx.globalAlpha = 0.14; ctx.fillRect(xa, 0, Math.max(3, xb - xa), H); ctx.globalAlpha = 1;
+  ctx.strokeStyle = colors.accent; ctx.lineWidth = 1.5; ctx.strokeRect(xa + 0.5, 0.75, Math.max(3, xb - xa) - 1, H - 1.5);
+  ov._map = { padX, w };
+}
+
+function drawPlan() {
+  const { ctx, W, H } = sizeCanvas(plan); ctx.fillStyle = colors.paper; ctx.fillRect(0, 0, W, H);
+  if (!S.net) return;
+  const path = S.data.path; let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  const k = Math.cos(39.1 * Math.PI / 180);
+  path.forEach(([, lon, lat]) => { x0 = Math.min(x0, lon * k); x1 = Math.max(x1, lon * k); y0 = Math.min(y0, lat); y1 = Math.max(y1, lat); });
+  const mx = (x1 - x0) * 0.12 + 0.004, my = (y1 - y0) * 0.12 + 0.004; x0 -= mx; x1 += mx; y0 -= my; y1 += my;
+  const s = Math.min(W / (x1 - x0), H / (y1 - y0)); const ox = (W - (x1 - x0) * s) / 2, oy = (H - (y1 - y0) * s) / 2;
+  const P = (lon, lat) => [ox + (lon * k - x0) * s, H - oy - (lat - y0) * s];
+  ctx.fillStyle = colors.waterFill; ctx.strokeStyle = colors.water; ctx.lineWidth = 0.8;
+  Object.values(S.net.rivers).forEach((rings) => rings.forEach((ring) => { ctx.beginPath(); ring.forEach(([lo, la], i) => { const [x, y] = P(lo, la); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.closePath(); ctx.fill(); }));
+  ctx.strokeStyle = colors.gridMajor; ctx.lineWidth = 1.2;
+  Object.entries(S.net.metro).forEach(([id, pts]) => { if (id === S.data.id) return; ctx.beginPath(); pts.forEach(([lo, la], i) => { const [x, y] = P(lo, la); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); });
+  ctx.setLineDash([5, 3]); ctx.strokeStyle = colors.muted; ctx.lineWidth = 1.4;
+  Object.entries(S.net.rer || {}).forEach(([id, pts]) => { if (id === S.data.id) return; ctx.beginPath(); pts.forEach(([lo, la], i) => { const [x, y] = P(lo, la); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); });
+  ctx.setLineDash([]);
+  ctx.strokeStyle = colors.ink; ctx.lineWidth = 2.2; ctx.beginPath(); path.forEach(([, lo, la], i) => { const [x, y] = P(lo, la); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke();
+  // view segment
+  const at = (c) => { let i = 1; while (i < path.length - 1 && path[i][0] < c) i++; const a = path[i - 1], b = path[i]; const t = b[0] - a[0] > 0 ? (c - a[0]) / (b[0] - a[0]) : 0; return [a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; };
+  ctx.strokeStyle = colors.accent; ctx.lineWidth = 4; ctx.beginPath();
+  const n = 40; for (let i = 0; i <= n; i++) { const c = S.view.c0 + (S.view.c1 - S.view.c0) * i / n; const [lo, la] = at(clamp(c, 0, S.L)); const [x, y] = P(lo, la); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke();
+  ctx.fillStyle = colors.ink; S.stations.forEach((st) => { const [x, y] = P(st.lon, st.lat); ctx.fillRect(x - 1.5, y - 1.5, 3, 3); });
+  if (S.hoverC != null) { const [lo, la] = at(S.hoverC); const [x, y] = P(lo, la); ctx.beginPath(); ctx.arc(x, y, 4.5, 0, Math.PI * 2); ctx.fillStyle = colors.accent; ctx.fill(); ctx.strokeStyle = colors.paper; ctx.lineWidth = 1.5; ctx.stroke(); }
+  ctx.font = `600 11px ${colors.ui}`; ctx.fillStyle = colors.muted; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  const a = S.stations[0], b = S.stations[S.stations.length - 1];
+  if (a) { const [x, y] = P(a.lon, a.lat); ctx.fillText(a.name, Math.min(x + 5, W - 80), Math.min(y + 3, H - 14)); }
+  if (b) { const [x, y] = P(b.lon, b.lat); ctx.fillText(b.name, Math.min(x + 5, W - 80), Math.min(y + 3, H - 14)); }
+}
+
+// ---------- panels ----------
+function typeChip(t) { return `<span class="chip" style="background:var(${TYPES[t].css})"></span>`; }
+function updatePanels() {
+  S.summary = computeSummary(); const sm = S.summary;
+  // summary
+  $('#sumKv').innerHTML = `
+    <dt>Length</dt><dd>${(S.L / 1000).toFixed(2)} km</dd>
+    <dt>Stations</dt><dd>${S.stations.length}${isRer() ? `, ${S.stations.filter((_, i) => modeOf(i) === 'under').length} underground` : ''}</dd>
+    ${isRer() ? `<dt>Through-running</dt><dd>from ${S.data.opened || '–'}</dd><dt>Route km</dt><dd>${(S.data.route_chainage_m[0] / 1000).toFixed(1)} to ${(S.data.route_chainage_m[1] / 1000).toFixed(1)}</dd>` : ''}
+    <dt>Steepest grade</dt><dd style="color:${Math.abs(sm.maxG) > settings.maxGrade + 0.05 ? 'var(--warn)' : 'inherit'}">${fmtG(sm.maxG)} at ${fmtCh(sm.maxGc)}</dd>
+    <dt>Deepest rail</dt><dd>${fmtZ(sm.deepest.d)} ${uLbl()} below, ${fmtCh(sm.deepest.c)}</dd>
+    <dt>Highest rail</dt><dd>${sm.highest.h > 0 ? `${fmtZ(sm.highest.h)} ${uLbl()} above, ${fmtCh(sm.highest.c)}` : 'none above ground'}</dd>`;
+  $('#types').innerHTML = TYPE_KEYS.map((t) => `<span>${typeChip(t)}${TYPES[t].label}</span><span class="n">${(sm.len[t] / 1000).toFixed(2)} km</span><span class="n">${(100 * sm.len[t] / S.L).toFixed(0)}%</span>`).join('');
+  const fl = [];
+  sm.over.forEach((o) => fl.push(`<li>${fmtG(o.g)} from ${fmtCh(o.c0)} to ${fmtCh(o.c1)} exceeds ${settings.maxGrade}‰</li>`));
+  sm.clashes.forEach((x) => fl.push(`<li>Only ${toU(x.clear).toFixed(1)} ${uLbl()} from ${esc(x.with)} at ${fmtCh(x.c)}</li>`));
+  sm.deepShallow.forEach((f) => fl.push(`<li>${esc(f.name)} is ${fmtZ(f.d, 0)} ${uLbl()} down in a shallow-canon section</li>`));
+  $('#flags').innerHTML = fl.slice(0, 12).join('') + (fl.length > 12 ? `<li>and ${fl.length - 12} more</li>` : '');
+  const nm = (i) => S.stations[i] ? S.stations[i].name : '';
+  const cnl = S.canonSecs.map((x) => `<li><b>${METHOD_LABEL[x.m]}</b>, ${esc(x.a)}${x.aIn === false ? ' (excl.)' : ''} to ${esc(x.b)}${x.bIn === false ? ' (excl.)' : ''}: ${esc(x.src)}</li>`)
+    .concat(Object.entries(S.canonFixed).map(([i, f]) => `<li><b>${esc(nm(+i))}</b> rail ${f.off >= 0 ? '+' : '−'}${fmtZ(Math.abs(f.off), 0)} ${uLbl()}: ${esc(f.src)}</li>`));
+  if (isRer()) {
+    Object.entries(S.canonModes).forEach(([i, f]) => cnl.push(`<li><b>${esc(nm(+i))}</b> ${f.mode === 'surface' ? 'at grade' : 'underground'}: ${esc(f.src)}</li>`));
+    cnl.push(`<li><b>Trunk</b> ${S.data.trunks.map((t) => `${esc(t.name)} (${fmtCh(t.c0)} to ${fmtCh(t.c1)})`).join(', ')}: stations here start underground. Assumed from the drawn trunks, not canon.</li>`);
+    cnl.push(`<li><b>Core</b> of ${esc(S.data.service)}, two stations past each end of the trunk.</li>`);
+  }
+  $('#canon').innerHTML = cnl.length ? cnl.join('') : '<li>No canon structure set for this line; the deep-tube threshold decides.</li>';
+  // stations table
+  $('#thRail').textContent = `Rail ${uLbl()}`;
+  $('#stBody').innerHTML = S.stations.map((s, i) => {
+    const z = S.align.st[i]; const sf = surfaceAt(s.c); const d = sf - z; const t = typeAt(s.c, z);
+    const on = S.sel && S.sel.kind === 'st' && S.sel.i === i;
+    return `<tr data-i="${i}" class="${on ? 'on' : ''}"><td>${typeChip(t)}${esc(s.name)}</td><td class="num">${(s.c / 1000).toFixed(2)}</td><td class="num">${fmtZ(z)}</td><td class="num">${d >= 0 ? fmtZ(d) : '+' + fmtZ(-d)}</td></tr>`;
+  }).join('');
+  updateSelCard();
+}
+function updateSelCard() {
+  const el = $('#selCard'); const sel = S.sel; const ro = S.canWrite === false;
+  if (!sel) {
+    el.innerHTML = `<h2>Editing</h2><p class="hint">Drag a station bar up or down to set its rail level. Double-click the track to add a bend point, then drag it. Choose <b>Paint</b> and a structure to mark a stretch by hand; <b>Auto</b> clears it.</p>
+      <p class="hint"><kbd>scroll</kbd> zoom · <kbd>drag</kbd> pan · <kbd>↑</kbd><kbd>↓</kbd> nudge 0.1 (<kbd>Shift</kbd> 1) · <kbd>Del</kbd> remove bend · <kbd>Ctrl Z</kbd> undo</p>`;
+    return;
+  }
+  if (sel.kind === 'st') {
+    const s = S.stations[sel.i], z = S.align.st[sel.i], g = groundAt(s.c), sf = surfaceAt(s.c), d = sf - z;
+    const half = settings.platform / 2; const gin = gradeAt(s.c - half - 1), gout = gradeAt(s.c + half + 1);
+    el.innerHTML = `<h2>Station</h2><div class="sel-title">${esc(s.name)}</div>
+      <dl class="kv">
+        <dt>Chainage</dt><dd>${fmtCh(s.c)}</dd>
+        <dt>Ground at centre</dt><dd>${fmtZ(g, 2)} ${uLbl()}</dd>
+        <dt><label for="inRail">Rail level (${uLbl()})</label></dt><dd><input id="inRail" type="number" step="0.1" value="${toU(z).toFixed(2)}" ${ro ? 'disabled' : ''}></dd>
+        <dt><label for="inDepth">Rail below ground (${uLbl()})</label></dt><dd><input id="inDepth" type="number" step="0.1" value="${toU(d).toFixed(2)}" ${ro ? 'disabled' : ''}></dd>
+        <dt>Structure</dt><dd>${TYPES[typeAt(s.c, z)].label}</dd>
+        <dt>Grade in / out</dt><dd>${fmtG(gin)} / ${fmtG(gout)}</dd>
+        <dt>Platform</dt><dd>${fmtCh(s.c - half)} to ${fmtCh(s.c + half)}</dd>
+      </dl>${isRer() ? `<div class="group" role="group" aria-label="Station setting">
+        <button class="btn" id="modeSurf" aria-pressed="${modeOf(sel.i) === 'surface'}" ${ro ? 'disabled' : ''}>At grade, old railroad</button>
+        <button class="btn" id="modeUnder" aria-pressed="${modeOf(sel.i) === 'under'}" ${ro ? 'disabled' : ''}>Underground</button></div>
+        <p class="hint">${s.trunk ? 'On the drawn trunk.' : 'Off the drawn trunk.'} Switching re-solves this line's station levels and surface bend points; painted stretches stay. Undo restores.</p>` : ''}${(() => { const sec = canonAt(s.c), f = S.canonFixed[sel.i], cm = S.canonModes[sel.i]; const bits = [];
+        if (sec) bits.push(`${METHOD_LABEL[sec.m]}: ${esc(sec.src)}`);
+        if (f) bits.push(`Canon level ${f.off >= 0 ? '+' : '−'}${fmtZ(Math.abs(f.off), 1)} ${uLbl()}: ${esc(f.src)}`);
+        if (cm) bits.push(`${cm.mode === 'surface' ? 'At grade' : 'Underground'}: ${esc(cm.src)}`);
+        return bits.length ? `<p class="hint">${bits.join('<br>')}</p>` : ''; })()}`;
+    const setMode = (m) => { if (modeOf(sel.i) === m) return; pushHist(); const modes = S.stations.map((_, j) => (j === sel.i ? m : modeOf(j))); const fresh = defaultAlign(modes); S.align = { ...fresh, ovr: S.align.ovr }; changed(); };
+    $('#modeSurf')?.addEventListener('click', () => setMode('surface'));
+    $('#modeUnder')?.addEventListener('click', () => setMode('under'));
+    const apply = (zNew) => { if (!isFinite(zNew)) return; pushHist(); S.align.st[sel.i] = Math.round(zNew * 100) / 100; changed(); };
+    const r = $('#inRail'), dp = $('#inDepth');
+    if (r) r.addEventListener('change', () => apply(fromU(parseFloat(r.value))));
+    if (dp) dp.addEventListener('change', () => apply(sf - fromU(parseFloat(dp.value))));
+  } else {
+    const p = S.align.pvi[sel.j]; if (!p) { S.sel = null; return updateSelCard(); }
+    const g = surfaceAt(p.c), d = g - p.z;
+    el.innerHTML = `<h2>Bend point</h2><div class="sel-title">${fmtCh(p.c)}</div>
+      <dl class="kv">
+        <dt><label for="inC">Chainage (m)</label></dt><dd><input id="inC" type="number" step="1" value="${p.c.toFixed(0)}" ${ro ? 'disabled' : ''}></dd>
+        <dt><label for="inZ">Rail level (${uLbl()})</label></dt><dd><input id="inZ" type="number" step="0.1" value="${toU(p.z).toFixed(2)}" ${ro ? 'disabled' : ''}></dd>
+        <dt><label for="inD">Rail below ground (${uLbl()})</label></dt><dd><input id="inD" type="number" step="0.1" value="${toU(d).toFixed(2)}" ${ro ? 'disabled' : ''}></dd>
+        <dt>Structure</dt><dd>${TYPES[typeAt(p.c, p.z)].label}</dd>
+        <dt>Grade in / out</dt><dd>${fmtG(gradeAt(p.c - 0.5))} / ${fmtG(gradeAt(p.c + 0.5))}</dd>
+      </dl>
+      <div class="group"><button class="btn" id="delPvi" ${ro ? 'disabled' : ''}>Remove bend point</button></div>`;
+    const setP = (c, z) => { pushHist(); p.c = clampPviC(c, sel.j); p.z = Math.round(z * 100) / 100; changed(); };
+    $('#inC')?.addEventListener('change', (e) => setP(parseFloat(e.target.value), p.z));
+    $('#inZ')?.addEventListener('change', (e) => setP(p.c, fromU(parseFloat(e.target.value))));
+    $('#inD')?.addEventListener('change', (e) => setP(p.c, surfaceAt(p.c) - fromU(parseFloat(e.target.value))));
+    $('#delPvi')?.addEventListener('click', removeSelectedPvi);
+  }
+}
+
+// ---------- editing ----------
+function snapshot() { return JSON.stringify(S.align); }
+function pushHist() { S.hist.push(snapshot()); if (S.hist.length > 200) S.hist.shift(); S.fut = []; syncUndo(); }
+function syncUndo() { $('#undo').disabled = !S.hist.length || S.canWrite === false; $('#redo').disabled = !S.fut.length || S.canWrite === false; }
+function undo() { if (!S.hist.length) return; S.fut.push(snapshot()); S.align = JSON.parse(S.hist.pop()); S.sel = null; changed(); syncUndo(); }
+function redo() { if (!S.fut.length) return; S.hist.push(snapshot()); S.align = JSON.parse(S.fut.pop()); S.sel = null; changed(); syncUndo(); }
+function changed(save = true) { if (S.data) buildCanon(); VERTS = vertices(); updatePanels(); schedule(); if (save) markDirty(); }
+function inPlatform(c) { const half = settings.platform / 2; return S.stations.some((s) => c > s.c - half - 2 && c < s.c + half + 2); }
+function clampPviC(c, j) {
+  c = clamp(c, 1, S.L - 1);
+  if (inPlatform(c)) { const half = settings.platform / 2; const s = S.stations.find((s) => c > s.c - half - 2 && c < s.c + half + 2); c = c < s.c ? s.c - half - 3 : s.c + half + 3; }
+  return c;
+}
+function addPviAt(c) {
+  if (S.canWrite === false) return;
+  if (inPlatform(c)) { flash('Bend points go between platforms'); return; }
+  pushHist(); S.align.pvi.push({ c: Math.round(c), z: Math.round(railAt(c) * 100) / 100 });
+  S.align.pvi.sort((a, b) => a.c - b.c); S.sel = { kind: 'pvi', j: S.align.pvi.findIndex((p) => p.c === Math.round(c)) }; changed();
+}
+function removeSelectedPvi() { if (!S.sel || S.sel.kind !== 'pvi') return; pushHist(); S.align.pvi.splice(S.sel.j, 1); S.sel = null; changed(); }
+function paintRange(a, b, brush) {
+  if (b - a < 1) return; pushHist();
+  const out = [];
+  for (const o of S.align.ovr) {           // cut the new range out of existing overrides
+    if (o[1] <= a || o[0] >= b) { out.push(o); continue; }
+    if (o[0] < a) out.push([o[0], a, o[2]]);
+    if (o[1] > b) out.push([b, o[1], o[2]]);
+  }
+  if (brush !== 'auto') out.push([Math.round(a), Math.round(b), brush]);
+  out.sort((x, y) => x[0] - y[0]);
+  const merged = [];
+  for (const o of out) { const m = merged[merged.length - 1]; if (m && m[2] === o[2] && o[0] - m[1] < 1) m[1] = Math.max(m[1], o[1]); else merged.push([...o]); }
+  S.align.ovr = merged; changed();
+}
+
+// ---------- persistence ----------
+let saveTimer = 0;
+function setStatus(s, text) { $('#status').dataset.s = s; $('#statusText').textContent = text; }
+function markDirty() { if (S.canWrite === false) return; S.dirty = true; setStatus('saving', 'Unsaved changes'); clearTimeout(saveTimer); saveTimer = setTimeout(save, 1200); }
+function serialize() {
+  const st = {}; S.stations.forEach((_, i) => (st[stKey(i)] = S.align.st[i]));
+  const sm = S.summary || computeSummary();
+  return {
+    v: 1, system: S.data.system, line: S.data.line, length_m: S.L, platform_m: settings.platform,
+    st, pvi: S.align.pvi.map((p) => [Math.round(p.c * 10) / 10, p.z]), ovr: S.align.ovr,
+    ...(isRer() ? { mode: Object.fromEntries(S.stations.map((_, i) => [stKey(i), modeOf(i)])), route_chainage_m: S.data.route_chainage_m } : {}),
+    stations: S.stations.map((s, i) => { const z = S.align.st[i]; const sf = surfaceAt(s.c); return { name: s.name, c: s.c, rail: z, ground: Math.round(groundAt(s.c) * 100) / 100, depth: Math.round((sf - z) * 100) / 100, type: typeAt(s.c, z) }; }),
+    summary: { km_by_type: Object.fromEntries(TYPE_KEYS.map((t) => [t, Math.round(sm.len[t]) / 1000])), max_grade_permille: Math.round(sm.maxG * 10) / 10, grades_over_limit: sm.over.length },
+    updated: new Date().toISOString(),
+  };
+}
+async function save() {
+  if (!S.dirty || !S.data) return;
+  if (S.saving) { clearTimeout(saveTimer); saveTimer = setTimeout(save, 600); return; }
+  S.saving = true; const body = serialize(); const id = S.data.id; S.dirty = false;
+  try {
+    if (S.db) { setStatus('saving', 'Saving…'); await S.db.doc(`alignments/${id}`).set(body); S.saved[id] = body; setStatus('saved', 'Saved'); }
+    else { try { localStorage.setItem(`profile:${id}`, JSON.stringify(body)); setStatus('saved', 'Saved in this browser'); } catch { setStatus('error', 'Not saved'); } }
+  } catch (e) {
+    S.dirty = true;
+    if (e && e.code === 'invalid_argument' && S.canWrite == null) { S.canWrite = false; setStatus('readonly', 'View only'); syncUndo(); }
+    else { setStatus('error', 'Save failed, retrying'); clearTimeout(saveTimer); saveTimer = setTimeout(save, 5000); }
+  } finally { S.saving = false; }
+}
+async function flush() { if (S.dirty) { clearTimeout(saveTimer); await save(); } }
+function localDoc(id) { try { const t = localStorage.getItem(`profile:${id}`); return t ? JSON.parse(t) : null; } catch { return null; } }
+
+async function connect() {
+  const C = window.claude; if (!C || typeof C.use !== 'function') { S.store = 'local'; setStatus('saved', 'Saving in this browser'); showBanner('Shared saving is unavailable in this view, so edits are kept in this browser only.'); return; }
+  const [db, user, dl] = await Promise.all([C.use('db'), C.use('user'), C.use('downloads')]);
+  S.downloads = dl; $('#exportPng').hidden = !dl; $('#exportJson').hidden = !dl;
+  S.user = user;
+  if (user && typeof user.can === 'function') { try { S.canWrite = await user.can('data.write'); } catch { S.canWrite = null; } }
+  if (!db) { S.store = 'local'; setStatus('saved', 'Saving in this browser'); showBanner('Shared saving is unavailable in this view, so edits are kept in this browser only.'); return; }
+  S.db = db; S.store = 'db';
+  if (S.canWrite === false) { setStatus('readonly', 'View only'); syncUndo(); } else setStatus('saved', 'Saved');
+  db.collection('alignments').onSnapshot((snap) => {
+    snap.docs.forEach((d) => { S.saved[d.id] = d.data(); });
+    refreshDefaultDocs();
+    if (S.data && !S.dirty && !S.drag && !S.saving && S.saved[S.data.id] && !snap.metadata.hasPendingWrites) {
+      const incoming = alignFromDoc(S.saved[S.data.id]);
+      if (JSON.stringify(incoming) !== JSON.stringify(S.align)) { S.align = incoming; }
+    }
+    if (S.data) changed(false);
+  }, () => setStatus('error', 'Live sync stopped; reload to reconnect'));
+  ['metro', 'rer'].forEach((k) => db.doc(SYS[k].doc).onSnapshot((d) => {
+    if (!d.exists) return;
+    SYS[k].settings = { ...(k === 'rer' ? RER_DEFAULTS : METRO_DEFAULTS), ...d.data() };
+    if (k === 'rer') refreshDefaultDocs();
+    if (sys === k) { settings = SYS[k].settings; buildSettings(); if (S.data) changed(false); }
+  }, () => {}));
+}
+async function saveSettings() {
+  SYS[sys].settings = settings;
+  if (isRer()) refreshDefaultDocs();
+  if (S.db && S.canWrite !== false) { try { await S.db.doc(SYS[sys].doc).set({ ...settings }); } catch { flash('Settings not saved'); } }
+  else { try { localStorage.setItem(SYS[sys].key, JSON.stringify(settings)); } catch {} }
+}
+function showBanner(t) { const b = $('#banner'); b.textContent = t; b.hidden = false; }
+let flashT = 0; function flash(t) { const prev = $('#statusText').textContent; $('#statusText').textContent = t; clearTimeout(flashT); flashT = setTimeout(() => { $('#statusText').textContent = prev; }, 1800); }
+
+// ---------- loading ----------
+async function loadJSON(url) { const r = await fetch(url); if (!r.ok) throw new Error(`${url}: ${r.status}`); return r.json(); }
+function setSystem(k) {
+  if (sys === k && settings === SYS[k].settings) return;
+  sys = k; settings = SYS[k].settings; DEFAULTS = k === 'rer' ? RER_DEFAULTS : METRO_DEFAULTS;
+  SETTING_ROWS = k === 'rer' ? SETTING_ROWS_RER : SETTING_ROWS_BASE;
+  $('#brandName').textContent = k === 'rer' ? 'Cincinnati RER Profiles' : 'Cincinnati Metro Profiles';
+  $('#setNote').textContent = k === 'rer'
+    ? 'RER settings are starting values, not canon. Trunk stations start underground and the others at grade on the old railroad; switch a station in its card. Canon sections (the RER-3 covered way, the RER-5 deep bore) set structure there; painted stretches override everything. Settings apply to every RER line.'
+    : 'The founding sections of Lines 1 to 6 take their structure from canon (tracker 2D and your rulings). Elsewhere the deep-tube threshold decides. Painted stretches override both. Settings apply to every Metro line.';
+  buildSettings();
+}
+const lineUrl = (id) => (id.startsWith('RER_') ? `rer/lines/${id}.json` : `lines/${id}.json`);
+async function selectLine(id) {
+  await flush();
+  if (!S.cache[id]) S.cache[id] = await loadJSON(lineUrl(id));
+  const d = S.cache[id];
+  setSystem(id.startsWith('RER_') ? 'rer' : 'metro');
+  if (!isRer()) linkRerCrossings(d);
+  S.data = d; S.L = d.length_m; S.step = d.step_m;
+  S.ground = groundOf(d);
+  S.stations = d.stations; S.rivers = d.rivers; S.crossings = d.crossings || [];
+  buildCanon();
+  const doc = S.saved[id] || (S.store !== 'db' ? localDoc(id) : null);
+  S.align = alignFromDoc(doc);
+  S.hist = []; S.fut = []; S.sel = null; S.dirty = false; syncUndo();
+  S.view = { c0: 0, c1: S.L };
+  $('#lineSel').value = id;
+  try { localStorage.setItem('profile:last', id); } catch {}
+  if (location.hash.slice(1) !== id) { try { history.replaceState(null, '', `#${id}`); } catch {} }
+  changed(false);
+}
+
+function groundOf(d) { if (!d._g) d._g = Float32Array.from(d.ground_dm, (v) => (v == null ? NaN : v / 10)); return d._g; }
+// run fn with another line loaded in place of the current one (for its default rail)
+function withLine(d, k, fn) {
+  const keys = ['data', 'L', 'step', 'ground', 'stations', 'rivers', 'crossings', 'canonSecs', 'canonFixed', 'canonModes', 'align'];
+  const keep = {}; keys.forEach((x) => (keep[x] = S[x])); const ks = sys, kset = settings;
+  sys = k; settings = SYS[k].settings;
+  try {
+    S.data = d; S.L = d.length_m; S.step = d.step_m; S.ground = groundOf(d); S.stations = d.stations; S.rivers = d.rivers; S.crossings = d.crossings || [];
+    buildCanon(); return fn();
+  } finally { keys.forEach((x) => (S[x] = keep[x])); sys = ks; settings = kset; }
+}
+function refreshDefaultDocs() {
+  Object.values(S.rerData).forEach((d) => {
+    S.defaultDocs[d.id] = withLine(d, 'rer', () => {
+      const al = alignFromDoc(S.saved[d.id] || null);
+      return { length_m: d.length_m, platform_m: settings.platform, stations: d.stations.map((st, i) => ({ c: st.c, rail: al.st[i] })), pvi: al.pvi.map((p) => [p.c, p.z]) };
+    });
+  });
+}
+// Metro line files name the RER lines they cross; take the exact points from the RER files
+function linkRerCrossings(d) {
+  if (d._linked || !Object.keys(S.rerData).length) return; d._linked = true;
+  d.crossings = d.crossings || [];
+  Object.values(S.rerData).forEach((r) => (r.crossings || []).filter((x) => x.wid === d.id).forEach((x) => {
+    const m = d.crossings.find((y) => y.kind === 'rer' && !y.wid && y.with === r.line && Math.abs(y.c - x.oc) < 120);
+    if (m) { m.wid = r.id; m.oc = x.c; } else d.crossings.push({ c: x.oc, wid: r.id, oc: x.c, kind: 'rer', with: r.line });
+  }));
+  d.crossings.sort((a, b) => a.c - b.c);
+}
+
+// ---------- interaction ----------
+function evPos(e, el) { const r = el.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+function hitTest(x, y) {
+  if (!LAYOUT) return null; const { X, Y } = LAYOUT; const half = settings.platform / 2;
+  for (let j = S.align.pvi.length - 1; j >= 0; j--) { const p = S.align.pvi[j]; if (Math.hypot(X(p.c) - x, Y(p.z) - y) <= 9) return { kind: 'pvi', j }; }
+  for (let i = 0; i < S.stations.length; i++) { const s = S.stations[i]; const xa = X(s.c - half), xb = X(s.c + half); if (x >= Math.min(xa, X(s.c) - 6) - 3 && x <= Math.max(xb, X(s.c) + 6) + 3 && Math.abs(Y(S.align.st[i]) - y) <= 9) return { kind: 'st', i }; }
+  return null;
+}
+function inPlot(x, y) { const P = LAYOUT.P; return x >= P.x && x <= P.x + P.w && y >= P.y - 4 && y <= P.y + P.h + 26; }
+function zoomAt(cx, factor) {
+  const span = clamp((S.view.c1 - S.view.c0) * factor, 120, S.L); let c0 = cx - (cx - S.view.c0) * span / (S.view.c1 - S.view.c0);
+  c0 = clamp(c0, 0, S.L - span); S.view = { c0, c1: c0 + span }; schedule();
+}
+function centerOn(c, span) { span = clamp(span || S.view.c1 - S.view.c0, 120, S.L); const c0 = clamp(c - span / 2, 0, S.L - span); S.view = { c0, c1: c0 + span }; schedule(); }
+
+const pointers = new Map(); let pinch = null;
+cv.addEventListener('pointerdown', (e) => {
+  if (!LAYOUT) return; cv.focus({ preventScroll: true }); const { x, y } = evPos(e, cv); pointers.set(e.pointerId, { x, y });
+  if (pointers.size === 2) { const [a, b] = [...pointers.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), view: { ...S.view }, cx: LAYOUT.C((a.x + b.x) / 2) }; S.drag = null; return; }
+  cv.setPointerCapture(e.pointerId);
+  const hit = S.canWrite === false ? null : hitTest(x, y);
+  if (S.tool === 'move' && hit) {
+    pushHist(); S.sel = hit; S.yFrozen = LAYOUT.yr;
+    S.drag = hit.kind === 'st' ? { kind: 'st', i: hit.i, y0: y, z0: S.align.st[hit.i] } : { kind: 'pvi', j: hit.j, x0: x, y0: y, c0: S.align.pvi[hit.j].c, z0: S.align.pvi[hit.j].z };
+    updatePanels(); schedule(); return;
+  }
+  if (S.tool === 'paint' && inPlot(x, y) && S.canWrite !== false) { const c = clamp(LAYOUT.C(x), 0, S.L); S.drag = { kind: 'paint', c0: c, c1: c }; return; }
+  S.drag = { kind: 'pan', x0: x, view: { ...S.view }, moved: false };
+});
+cv.addEventListener('pointermove', (e) => {
+  if (!LAYOUT) return; const { x, y } = evPos(e, cv);
+  if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { x, y });
+  if (pinch && pointers.size === 2) {
+    const [a, b] = [...pointers.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y); const f = pinch.d / Math.max(10, d);
+    const span = clamp((pinch.view.c1 - pinch.view.c0) * f, 120, S.L); const c0 = clamp(pinch.cx - span / 2, 0, S.L - span); S.view = { c0, c1: c0 + span }; schedule(); return;
+  }
+  const dr = S.drag;
+  if (dr) {
+    if (dr.kind === 'st') { const dz = LAYOUT.Z(y) - LAYOUT.Z(dr.y0); let z = dr.z0 + dz; z = e.shiftKey ? Math.round(z) : Math.round(z * 10) / 10; S.align.st[dr.i] = z; VERTS = vertices(); updateReadout(x, y); schedule(); }
+    else if (dr.kind === 'pvi') {
+      const p = S.align.pvi[dr.j]; let c = dr.c0 + (LAYOUT.C(x) - LAYOUT.C(dr.x0)); let z = dr.z0 + (LAYOUT.Z(y) - LAYOUT.Z(dr.y0));
+      p.c = clampPviC(Math.round(c), dr.j); p.z = e.shiftKey ? Math.round(z) : Math.round(z * 10) / 10;
+      S.align.pvi.sort((a, b) => a.c - b.c); dr.j = S.align.pvi.indexOf(p); S.sel = { kind: 'pvi', j: dr.j }; VERTS = vertices(); updateReadout(x, y); schedule();
+    } else if (dr.kind === 'paint') { dr.c1 = clamp(LAYOUT.C(x), 0, S.L); schedule(); }
+    else if (dr.kind === 'pan') {
+      const dx = x - dr.x0; if (Math.abs(dx) > 3) dr.moved = true;
+      const span = dr.view.c1 - dr.view.c0; const c0 = clamp(dr.view.c0 - dx / LAYOUT.P.w * span, 0, S.L - span); S.view = { c0, c1: c0 + span }; schedule();
+    }
+    return;
+  }
+  const hit = S.canWrite === false ? null : hitTest(x, y);
+  cv.style.cursor = hit ? (hit.kind === 'st' ? 'ns-resize' : 'move') : (S.tool === 'paint' ? 'cell' : 'crosshair');
+  updateReadout(x, y);
+});
+function endPointer(e) {
+  pointers.delete(e.pointerId); if (pinch && pointers.size < 2) { pinch = null; return; }
+  const dr = S.drag; S.drag = null; S.yFrozen = null;
+  if (!dr) return;
+  if (dr.kind === 'st' || dr.kind === 'pvi') {
+    const before = S.hist[S.hist.length - 1];
+    if (before === snapshot()) { S.hist.pop(); syncUndo(); updatePanels(); schedule(); return; }
+    changed();
+  } else if (dr.kind === 'paint') { paintRange(Math.min(dr.c0, dr.c1), Math.max(dr.c0, dr.c1), S.brush); }
+  else if (dr.kind === 'pan' && !dr.moved) { S.sel = null; updatePanels(); schedule(); }
+}
+cv.addEventListener('pointerup', endPointer); cv.addEventListener('pointercancel', endPointer);
+cv.addEventListener('pointerleave', () => { if (!S.drag) { S.hoverC = null; $('#readout').hidden = true; schedule(); } });
+cv.addEventListener('dblclick', (e) => { if (!LAYOUT || S.tool !== 'move') return; const { x, y } = evPos(e, cv); if (!inPlot(x, y) || hitTest(x, y)) return; addPviAt(clamp(LAYOUT.C(x), 1, S.L - 1)); });
+cv.addEventListener('wheel', (e) => {
+  if (!LAYOUT) return; e.preventDefault(); const { x } = evPos(e, cv);
+  if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) { const span = S.view.c1 - S.view.c0; const d = (e.shiftKey ? e.deltaY : e.deltaX) / LAYOUT.P.w * span; const c0 = clamp(S.view.c0 + d, 0, S.L - span); S.view = { c0, c1: c0 + span }; schedule(); return; }
+  zoomAt(clamp(LAYOUT.C(x), 0, S.L), Math.exp(e.deltaY * 0.0015));
+}, { passive: false });
+
+function updateReadout(x, y) {
+  const P = LAYOUT.P; const ro = $('#readout');
+  if (x < P.x || x > P.x + P.w || y < 0 || y > P.y + P.h + 30) { S.hoverC = null; ro.hidden = true; schedule(); return; }
+  const c = clamp(LAYOUT.C(x), 0, S.L); S.hoverC = c;
+  const z = railAt(c), g = groundAt(c), r = riverAt(c), sf = surfaceAt(c), d = sf - z, t = typeAt(c, z);
+  ro.innerHTML = `<div class="t">${fmtCh(c)}${r ? ' · ' + esc(r.name) : ''}</div>
+    ${r ? `Water ${fmtZ(sf, 2)} ${uLbl()}` : `Ground ${fmtZ(g, 2)} ${uLbl()}`}<br>Rail&nbsp;&nbsp; ${fmtZ(z, 2)} ${uLbl()}<br>
+    ${d >= 0 ? `Below&nbsp; ${fmtZ(d, 2)} ${uLbl()}` : `Above&nbsp; ${fmtZ(-d, 2)} ${uLbl()}`}<br>Grade&nbsp; ${fmtG(gradeAt(c))}<br>
+    <span style="color:var(${TYPES[t].css});font-family:var(--font-ui);font-weight:600">${TYPES[t].label}${overrideAt(c) ? ' (painted)' : ''}</span>`;
+  ro.hidden = false;
+  const wr = $('#wrap').getBoundingClientRect(); const rw = ro.offsetWidth, rh = ro.offsetHeight;
+  let lx = x + 14, ly = y + 14; if (lx + rw > wr.width - 6) lx = x - rw - 14; if (ly + rh > wr.height - 6) ly = y - rh - 14;
+  ro.style.left = `${Math.max(4, lx)}px`; ro.style.top = `${Math.max(4, ly)}px`;
+  schedule();
+}
+
+// overview navigation
+let ovDrag = null;
+ov.addEventListener('pointerdown', (e) => { const { x } = evPos(e, ov); const m = ov._map; if (!m) return; ov.setPointerCapture(e.pointerId); const c = clamp((x - m.padX) / m.w * S.L, 0, S.L); centerOn(c); ovDrag = true; });
+ov.addEventListener('pointermove', (e) => { if (!ovDrag) return; const { x } = evPos(e, ov); const m = ov._map; centerOn(clamp((x - m.padX) / m.w * S.L, 0, S.L)); });
+ov.addEventListener('pointerup', () => { ovDrag = null; });
+
+// keyboard
+cv.addEventListener('keydown', (e) => {
+  const mod = e.ctrlKey || e.metaKey;
+  if (mod && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+  if (mod && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
+  if (e.key === '+' || e.key === '=') { zoomAt((S.view.c0 + S.view.c1) / 2, 0.7); return; }
+  if (e.key === '-' || e.key === '_') { zoomAt((S.view.c0 + S.view.c1) / 2, 1 / 0.7); return; }
+  if (e.key === 'f' || e.key === 'F') { S.view = { c0: 0, c1: S.L }; schedule(); return; }
+  if (e.key === 'm' || e.key === 'M') { setTool('move'); return; }
+  if (e.key === 'p' || e.key === 'P') { setTool('paint'); return; }
+  if (e.key === 'Escape') { S.sel = null; updatePanels(); schedule(); return; }
+  if (!S.sel || S.canWrite === false) return;
+  if ((e.key === 'Delete' || e.key === 'Backspace') && S.sel.kind === 'pvi') { e.preventDefault(); removeSelectedPvi(); return; }
+  const dz = e.key === 'ArrowUp' ? 1 : e.key === 'ArrowDown' ? -1 : 0; const dc = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+  if (!dz && !dc) return; e.preventDefault(); const amt = e.shiftKey ? 1 : 0.1;
+  pushHist();
+  if (S.sel.kind === 'st' && dz) S.align.st[S.sel.i] = Math.round((S.align.st[S.sel.i] + dz * fromU(amt)) * 100) / 100;
+  if (S.sel.kind === 'pvi') { const p = S.align.pvi[S.sel.j]; if (dz) p.z = Math.round((p.z + dz * fromU(amt)) * 100) / 100; if (dc) p.c = clampPviC(p.c + dc * (e.shiftKey ? 10 : 2), S.sel.j); }
+  changed();
+});
+
+// stations table
+$('#stBody').addEventListener('click', (e) => { const tr = e.target.closest('tr'); if (!tr) return; const i = +tr.dataset.i; S.sel = { kind: 'st', i }; centerOn(S.stations[i].c, Math.min(S.view.c1 - S.view.c0, 2500)); updatePanels(); });
+
+// ---------- toolbar ----------
+function setTool(t) { S.tool = t; $('#toolMove').setAttribute('aria-pressed', t === 'move'); $('#toolPaint').setAttribute('aria-pressed', t === 'paint'); $('#brushes').style.opacity = t === 'paint' ? 1 : 0.55; }
+function buildBrushes() {
+  const b = $('#brushes');
+  b.innerHTML = [['auto', 'Auto']].concat(TYPE_KEYS.map((t) => [t, TYPES[t].label])).map(([k, l]) => `<button class="btn" data-b="${k}" aria-pressed="${S.brush === k}">${k === 'auto' ? '' : `<span class="swatch" style="background:var(${TYPES[k].css})"></span>`}${l}</button>`).join('');
+  b.querySelectorAll('button').forEach((btn) => btn.addEventListener('click', () => { S.brush = btn.dataset.b; setTool('paint'); b.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x === btn)); }));
+}
+function setUnits(u) { S.units = u; $('#uM').setAttribute('aria-pressed', u === 'm'); $('#uFt').setAttribute('aria-pressed', u === 'ft'); buildSettings(); updatePanels(); schedule(); try { localStorage.setItem('profile:units', u); } catch {} }
+function buildSettings() {
+  $('#setKv').innerHTML = SETTING_ROWS.map(([k, label, unit, step]) => {
+    const isLen = unit === 'len'; const val = isLen ? toU(settings[k]) : settings[k]; const u = isLen ? uLbl() : unit;
+    return `<dt><label for="set_${k}">${label} (${u})</label></dt><dd><input id="set_${k}" type="number" step="${step}" value="${(+val).toFixed(isLen || unit === 'ft' ? 1 : 0)}" ${S.canWrite === false ? 'disabled' : ''}></dd>`;
+  }).join('');
+  SETTING_ROWS.forEach(([k, , unit]) => {
+    $(`#set_${k}`).addEventListener('change', (e) => {
+      const v = parseFloat(e.target.value); if (!isFinite(v) || v <= 0) return;
+      settings[k] = unit === 'len' ? fromU(v) : v; saveSettings(); changed();
+    });
+  });
+}
+$('#toolMove').addEventListener('click', () => setTool('move'));
+$('#toolPaint').addEventListener('click', () => setTool('paint'));
+$('#undo').addEventListener('click', undo); $('#redo').addEventListener('click', redo);
+$('#zoomIn').addEventListener('click', () => zoomAt((S.view.c0 + S.view.c1) / 2, 0.6));
+$('#zoomOut').addEventListener('click', () => zoomAt((S.view.c0 + S.view.c1) / 2, 1 / 0.6));
+$('#fit').addEventListener('click', () => { S.view = { c0: 0, c1: S.L }; schedule(); });
+$('#uM').addEventListener('click', () => setUnits('m')); $('#uFt').addEventListener('click', () => setUnits('ft'));
+$('#lineSel').addEventListener('change', (e) => selectLine(e.target.value).catch((err) => showBanner(`Couldn't load that line: ${err.message}`)));
+$('#settingsBtn').addEventListener('click', () => { const p = $('#pop'); p.hidden = !p.hidden; $('#settingsBtn').setAttribute('aria-expanded', !p.hidden); });
+document.addEventListener('pointerdown', (e) => { const p = $('#pop'); if (!p.hidden && !p.contains(e.target) && e.target !== $('#settingsBtn')) { p.hidden = true; $('#settingsBtn').setAttribute('aria-expanded', 'false'); } });
+$('#setDefaults').addEventListener('click', () => { settings = { ...DEFAULTS }; buildSettings(); saveSettings(); changed(); });
+let resetArm = 0;
+$('#resetLine').addEventListener('click', (e) => {
+  if (S.canWrite === false) return;
+  const btn = e.currentTarget;
+  if (!resetArm) { btn.textContent = 'Click again to reset'; resetArm = setTimeout(() => { resetArm = 0; btn.textContent = 'Reset this line'; }, 3000); return; }
+  clearTimeout(resetArm); resetArm = 0; btn.textContent = 'Reset this line';
+  pushHist(); S.align = defaultAlign(); S.sel = null; changed();
+});
+
+async function exportPng() {
+  if (!S.downloads) return;
+  const W = clamp(Math.round(S.L / 6), 2400, 7000), H = 1000;
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const ctx = c.getContext('2d');
+  const prevSel = S.sel, prevHover = S.hoverC; S.sel = null; S.hoverC = null;
+  draw(ctx, W, H, { c0: 0, c1: S.L }, { title: `${S.data.system} · ${S.data.line}`, subtitle: `Long section, ${S.stations[0].name} to ${S.stations[S.stations.length - 1].name} · ${(S.L / 1000).toFixed(2)} km · map 3 ground (alternate 2026) · ${new Date().toISOString().slice(0, 10)}` });
+  S.sel = prevSel; S.hoverC = prevHover;
+  const blob = await new Promise((res) => c.toBlob(res, 'image/png'));
+  try { await S.downloads.save({ filename: `${S.data.id}_profile.png`, data: blob }); flash('PNG saved'); } catch (err) { if (err && err.code !== 'declined') flash('PNG not saved'); }
+}
+async function exportJson() {
+  if (!S.downloads) return;
+  const body = serialize(); const samples = [];
+  for (let c = 0; c <= S.L; c += 10) { const z = railAt(c); samples.push([c, Math.round(groundAt(c) * 100) / 100, Math.round(z * 100) / 100, typeAt(c, z)]); }
+  body.samples_every_10m = { fields: ['chain_m', 'ground_m', 'rail_m', 'structure'], rows: samples };
+  try { await S.downloads.save({ filename: `${S.data.id}_alignment.json`, data: JSON.stringify(body, null, 1) }); flash('JSON saved'); } catch (err) { if (err && err.code !== 'declined') flash('JSON not saved'); }
+}
+$('#exportPng').addEventListener('click', exportPng); $('#exportJson').addEventListener('click', exportJson);
+
+// theme changes
+const mq = window.matchMedia('(prefers-color-scheme: dark)'); mq.addEventListener?.('change', schedule);
+new MutationObserver(schedule).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+new ResizeObserver(schedule).observe($('#wrap'));
+window.addEventListener('resize', schedule);
+window.addEventListener('beforeunload', () => { if (S.dirty) save(); });
+
+// ---------- boot ----------
+(async () => {
+  setTool('move'); buildBrushes();
+  try { const u = localStorage.getItem('profile:units'); if (u === 'ft') setUnits('ft'); } catch {}
+  ['metro', 'rer'].forEach((k) => { try { const v = localStorage.getItem(SYS[k].key); if (v) SYS[k].settings = { ...(k === 'rer' ? RER_DEFAULTS : METRO_DEFAULTS), ...JSON.parse(v) }; } catch {} });
+  settings = SYS.metro.settings;
+  buildSettings();
+  const conn = connect();
+  try {
+    let mIdx, rIdx;
+    [mIdx, rIdx, S.net, S.metroRails] = await Promise.all([loadJSON('lines/index.json'), loadJSON('rer/lines/index.json').catch(() => []),
+      loadJSON('rer/network.json').catch(() => loadJSON('network.json').catch(() => null)), loadJSON('rer/metro_rails.json').catch(() => ({}))]);
+    S.index = mIdx.concat(rIdx);
+    const rer = await Promise.all(rIdx.map((l) => loadJSON(lineUrl(l.id)).catch(() => null)));
+    rer.filter(Boolean).forEach((d) => { S.rerData[d.id] = d; S.cache[d.id] = d; });
+    refreshDefaultDocs();
+    const opt = (l) => `<option value="${l.id}">${esc(l.line)} · ${(l.length_m / 1000).toFixed(1)} km</option>`;
+    $('#lineSel').innerHTML = `<optgroup label="Metro">${mIdx.map(opt).join('')}</optgroup>` + (rIdx.length ? `<optgroup label="RER (core)">${rIdx.map(opt).join('')}</optgroup>` : '');
+    let want = location.hash.slice(1); if (!S.index.some((l) => l.id === want)) { try { want = localStorage.getItem('profile:last'); } catch { want = null; } }
+    if (!S.index.some((l) => l.id === want)) want = 'Line_6';
+    await selectLine(want);
+    if ($('#statusText').textContent === 'Loading…') setStatus('idle', 'Connecting…');
+  } catch (err) { showBanner(`The line data didn't load (${err.message}). Reload the page to try again.`); setStatus('error', 'No data'); }
+  await conn;
+  if (S.data) { const doc = S.saved[S.data.id]; if (doc) { S.align = alignFromDoc(doc); changed(false); } }
+})();
+})();
+</script>
+
