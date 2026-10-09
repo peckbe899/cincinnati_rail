@@ -331,10 +331,14 @@ function stKey(i) { const s = S.stations[i]; const dup = S.stations.filter((x) =
 
 function vertices(al = S.align, stations = S.stations, L = S.L, platform = settings.platform, rv = settings.vcRadius) {
   const half = platform / 2; const v = []; v.rv = rv || 0;
+  const placed = [];
   stations.forEach((s, i) => {
     // platform grade (per mille, rising with chainage) about the level at the platform centre
     const z = al.st[i], gp = ((al.sg && al.sg[i]) || 0) / 1000;
     const ca = clamp(s.c - half, 0, L), cb = clamp(s.c + half, 0, L);
+    // the same platform listed twice (overlapping): one platform, the first entry's level
+    if (placed.some(([a, b]) => ca < b - 1e-6 && cb > a + 1e-6)) return;
+    placed.push([ca, cb]);
     v.push({ c: ca, z: z + gp * (ca - s.c), kind: 'ps', i, gp });
     v.push({ c: cb, z: z + gp * (cb - s.c), kind: 'pe', i, gp });
   });
@@ -561,7 +565,13 @@ function defaultAlign(modes, extra = []) {
     // the same solver over stations plus the river banks of each tube (level platforms only at stations)
     const nodes = S.stations.map((s, i) => ({ c: s.c, st: true, i, ub: ub[i], lb: lb[i] }))
       // tube bottom held half a curve beyond each bank, so the bends sit outside the river
-      .concat(tubes.flatMap((t) => { const e = settings.vcRadius * g / 2; return [{ c: Math.max(0, t.c0 - e), st: false, ub: t.ub, lb: -Infinity }, { c: Math.min(S.L, t.c1 + e), st: false, ub: t.ub, lb: -Infinity }]; }))
+      .concat(tubes.flatMap((t) => {
+        // half a curve beyond each bank, but never closer than a transition to a platform
+        const e = settings.vcRadius * g / 2, half = settings.platform / 2;
+        const before = S.stations.filter((st) => st.c + half <= t.c0).map((st) => st.c + half + e);
+        const after = S.stations.filter((st) => st.c - half >= t.c1).map((st) => st.c - half - e);
+        const a = Math.min(t.c0, Math.max(0, t.c0 - e, ...before)), b = Math.max(t.c1, Math.min(S.L, t.c1 + e, ...after));
+        return [{ c: a, st: false, ub: t.ub, lb: -Infinity }, { c: b, st: false, ub: t.ub, lb: -Infinity }]; }))
       .concat(extra.map((x) => ({ c: x.c, st: false, ub: x.ub ?? Infinity, lb: x.lb ?? -Infinity })))
       .sort((a, b) => a.c - b.c);
     const cnt = []; let k = 0; nodes.forEach((nd) => { cnt.push(k); if (nd.st) k++; });

@@ -301,10 +301,15 @@ class MetroProfile:
         else:
             # the same solver over stations plus the river banks of each tube
             nodes = [{"c": s["c"], "st": True, "i": i, "ub": ub[i], "lb": lb[i]} for i, s in enumerate(self.stations)]
-            e = self.settings["vcRadius"] * g / 2  # tube bottom half a curve beyond each bank
+            # tube bottom half a curve beyond each bank, never closer than a transition to a platform
+            e, half = self.settings["vcRadius"] * g / 2, self.settings["platform"] / 2
             for t in tubes:
-                nodes += [{"c": max(0.0, t["c0"] - e), "st": False, "ub": t["ub"], "lb": -math.inf},
-                          {"c": min(self.length, t["c1"] + e), "st": False, "ub": t["ub"], "lb": -math.inf}]
+                before = [st["c"] + half + e for st in self.stations if st["c"] + half <= t["c0"]]
+                after = [st["c"] - half - e for st in self.stations if st["c"] - half >= t["c1"]]
+                a = min(t["c0"], max([0.0, t["c0"] - e] + before))
+                b = max(t["c1"], min([self.length, t["c1"] + e] + after))
+                nodes += [{"c": a, "st": False, "ub": t["ub"], "lb": -math.inf},
+                          {"c": b, "st": False, "ub": t["ub"], "lb": -math.inf}]
             nodes.sort(key=lambda nd: nd["c"])  # stable, as Array.sort
             cnt, k = [], 0
             for nd in nodes:
@@ -414,10 +419,15 @@ class MetroProfile:
     def _verts(self) -> List[dict]:
         half, L = self.settings["platform"] / 2, self.length
         v = []
+        placed = []
         for i, s in enumerate(self.stations):
             z = self.st[i]
             gp = (self.sg[i] if i < len(self.sg) else 0.0) / 1000.0
             ca, cb = min(max(s["c"] - half, 0.0), L), min(max(s["c"] + half, 0.0), L)
+            # the same platform listed twice (overlapping): one platform, the first entry's level
+            if any(ca < b - 1e-6 and cb > a + 1e-6 for a, b in placed):
+                continue
+            placed.append((ca, cb))
             v.append({"c": ca, "z": z + gp * (ca - s["c"]), "kind": "ps", "i": i, "o": 1, "gp": gp})
             v.append({"c": cb, "z": z + gp * (cb - s["c"]), "kind": "pe", "i": i, "o": 0, "gp": gp})
         v += [{"c": c, "z": z, "kind": "pvi", "o": 2} for c, z in self.pvi]
