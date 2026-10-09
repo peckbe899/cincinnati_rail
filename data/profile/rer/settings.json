@@ -1,7 +1,7 @@
 {
  "units": "metres unless noted; per-mille for grades",
  "maxGrade_permille": 35,
- "platform_m": 225,
+ "platform_m": 200,
  "defaultStationRailDepth_m": 12,
  "elevatedWhenRailAboveGround_m": 3,
  "coveredWhenRailBelowGround_m": 3,
@@ -11,5 +11,6 @@
  "minRailToRailClearanceAtCrossings_m": 9,
  "ohioNormalPool_ft": 455.0,
  "surfaceBendPointSpacing_m": 250,
- "note": "RER defaults of the Rail Profiles page (config/settings_rer). Starting values, not canon: 225 m platforms take the longest RER set (215 m) as on the Paris RER; 35 per mille for heavy EMUs in tunnel; 12 m station rail depth and a 7 m envelope for 25 kV overhead."
+ "note": "RER defaults of the Rail Profiles page (config/settings_rer). Canon: 35 per mille, 200 m platforms (8-car TRI), 12 m station rail depth. Starting values: 25 m deep-bore threshold, 7 m envelope for 25 kV overhead, 3 m cover over river tubes, surface bend points every 250 m.",
+ "tubeCover_m": 3
 }

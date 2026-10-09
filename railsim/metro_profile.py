@@ -39,12 +39,14 @@ TUNNEL_STRUCTURES = {"tunnel", "cut-and-cover", "shield", "deep-tube"}
 
 DEFAULTS = dict(maxGrade=50.0, platform=152.4, defDepth=7.62, elevAbove=3.0, coverBelow=3.0,
                 deepBelow=18.29, shallowMax=12.19, envelope=5.5, clearMin=8.0, poolFt=455.0)
-# RER starting values (not canon): 225 m platforms, 35 per mille, 12 m station rail depth,
-# 25 m deep-bore threshold, 7 m envelope for 25 kV overhead, surface bend points every 250 m
-RER_DEFAULTS = dict(maxGrade=35.0, platform=225.0, defDepth=12.0, elevAbove=3.0, coverBelow=3.0,
+# RER: 35 per mille, 200 m platforms (8-car TRI) and 12 m station rail depth are canon; the
+# 25 m deep-bore threshold, 7 m envelope (25 kV overhead), 3 m tube cover and 250 m surface
+# bend points are starting values
+RER_DEFAULTS = dict(maxGrade=35.0, platform=200.0, defDepth=12.0, elevAbove=3.0, coverBelow=3.0,
                     deepBelow=25.0, shallowMax=18.0, envelope=7.0, clearMin=9.0, poolFt=455.0,
-                    surfStep=250.0)
-SETTINGS_KEYS = {"surfaceBendPointSpacing_m": "surfStep", "maxGrade_permille": "maxGrade", "platform_m": "platform",
+                    surfStep=250.0, tubeCover=3.0)
+RER_CANON_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "rer" / "canon.json"
+SETTINGS_KEYS = {"surfaceBendPointSpacing_m": "surfStep", "tubeCover_m": "tubeCover", "maxGrade_permille": "maxGrade", "platform_m": "platform",
                  "defaultStationRailDepth_m": "defDepth", "elevatedWhenRailAboveGround_m": "elevAbove",
                  "coveredWhenRailBelowGround_m": "coverBelow",
                  "deepTubeOutsideCanonWhenDeeperThan_m": "deepBelow",
@@ -73,14 +75,6 @@ CANON = {
     "Line_5": {"sections": [{"a": "Northside", "b": "Pennsylvania", "m": "shallow"}]},
     "Line_6": {"sections": [{"a": "UC Medical/Corryville", "b": "Public Landing", "m": "shallow"}]},
 }
-# RER canon: the RER-3 covered way (cut and cover under the embankment, end stations at grade)
-# and the RER-5 1996 deep bore; Asbury back on the ground past the embankment.
-RER_CANON = {
-    "RER_3": {"sections": [{"a": "Sedamsville", "aIn": False, "b": "Riverbend/Belterra", "bIn": False,
-                            "m": "covered"}],
-              "modes": {"Asbury": "surface"}},
-    "RER_5": {"sections": [{"a": "Norwood Central", "aIn": False, "b": "Ludlow", "bIn": False, "m": "deep"}]},
-}
 
 
 def load_settings(path: Optional[str | Path], rer: bool = False) -> dict:
@@ -100,17 +94,25 @@ class MetroProfile:
     pvi: List[tuple] = field(default_factory=list)  # (chainage, rail level)
     ovr: List[tuple] = field(default_factory=list)  # (from, to, type)
     canon_secs: List[dict] = field(default_factory=list)
-    canon_fixed: Dict[int, float] = field(default_factory=dict)
+    canon_fixed: Dict[int, dict] = field(default_factory=dict)  # {abs | off, ref}
     canon_modes: Dict[int, str] = field(default_factory=dict)
+    canon_deck: List[dict] = field(default_factory=list)
+    rer_canon: dict = field(default_factory=dict)
     modes: List[str] = field(default_factory=list)  # RER station modes ('under' / 'surface')
 
     # ------------------------------------------------------------- loading
     @classmethod
-    def load(cls, line_json, alignment_json=None, settings_json=None) -> "MetroProfile":
+    def load(cls, line_json, alignment_json=None, settings_json=None,
+             canon_json=None) -> "MetroProfile":
         data = json.loads(Path(line_json).read_text())
-        p = cls(data, load_settings(settings_json, rer="RER" in data.get("system", "")))
+        rer = "RER" in data.get("system", "")
+        p = cls(data, load_settings(settings_json, rer=rer))
+        if rer:
+            cj = Path(canon_json) if canon_json else RER_CANON_JSON
+            p.rer_canon = json.loads(cj.read_text()) if cj.exists() else {}
         p._ground = np.array([np.nan if v is None else v / 10.0 for v in p.data["ground_dm"]])
         p._build_canon()
+        p._apply_deck()
         doc = None
         if alignment_json and Path(alignment_json).exists():
             doc = json.loads(Path(alignment_json).read_text())
@@ -165,7 +167,7 @@ class MetroProfile:
 
     # ------------------------------------------------------------- canon
     def _build_canon(self):
-        cn = (RER_CANON if self.is_rer else CANON).get(self.id, {})
+        cn = ((self.rer_canon.get("lines") or {}) if self.is_rer else CANON).get(self.id, {})
         half = self.settings["platform"] / 2
 
         def idx(name):
@@ -181,8 +183,57 @@ class MetroProfile:
             ca = A["c"] + (d * half if sec.get("aIn") is False else -d * half)
             cb = B["c"] + (-d * half if sec.get("bIn") is False else d * half)
             self.canon_secs.append({**sec, "lo": min(ca, cb), "hi": max(ca, cb)})
-        self.canon_fixed = {idx(n): off for n, off in cn.get("fixed", {}).items() if idx(n) >= 0}
-        self.canon_modes = {idx(n): m for n, m in cn.get("modes", {}).items() if idx(n) >= 0}
+        self.canon_fixed = {idx(n): (f if isinstance(f, dict) else {"off": f})
+                            for n, f in cn.get("fixed", {}).items() if idx(n) >= 0}
+        self.canon_modes = {idx(n): (m["mode"] if isinstance(m, dict) else m)
+                            for n, m in cn.get("modes", {}).items() if idx(n) >= 0}
+        self.canon_deck = []
+        for dk in cn.get("deck", []) or []:
+            ia, ib = idx(dk["a"]), idx(dk["b"])
+            if ia >= 0 and ib >= 0:
+                A, B = self.stations[ia]["c"], self.stations[ib]["c"]
+                self.canon_deck.append({**dk, "lo": min(A, B) - half, "hi": max(A, B) + half})
+
+    def _apply_deck(self):
+        """Under a deck the raster holds the deck top; the rail runs at yard level."""
+        step = float(self.data.get("step_m", 2.0))
+        for dk in self.canon_deck:
+            i0 = max(0, math.ceil(dk["lo"] / step))
+            i1 = min(len(self._ground) - 1, math.floor(dk["hi"] / step))
+            self._ground[i0:i1 + 1] -= dk["drop"]
+
+    def ref_at(self, i: int) -> float:
+        """Level a station's depth is measured from (canon reference, e.g. track level)."""
+        f = self.canon_fixed.get(i)
+        return f["ref"] if f and f.get("ref") is not None else self.surface_at(self.stations[i]["c"])
+
+    def river_tubes(self, md: Optional[List[str]]) -> List[dict]:
+        """River crossings in tube: between two underground stations, or inside a canon deep
+        bore (or a covered way where the canon crosses the river in tunnel). Rail at most
+        pool - bed - cover - envelope."""
+        if not md:
+            return []
+        rivers = self.rer_canon.get("rivers") or {}
+        out = []
+        for r in self.data.get("rivers", []) or []:
+            info = rivers.get(r["name"], {})
+            sec = self.canon_at((r["c0"] + r["c1"]) / 2)
+            if sec and sec["m"] == "covered" and not info.get("in_covered_way"):
+                continue
+            ip, inx = -1, -1
+            for i, st in enumerate(self.stations):
+                if st["c"] < r["c0"]:
+                    ip = i
+                if st["c"] > r["c1"] and inx < 0:
+                    inx = i
+            bore = bool(sec) and (sec["m"] == "deep" or (sec["m"] == "covered" and info.get("in_covered_way")))
+            under = ip >= 0 and inx >= 0 and md[ip] != "surface" and md[inx] != "surface"
+            if not (bore or under):
+                continue
+            bed = info.get("bed_below_pool_m", 12.0)
+            out.append({"name": r["name"], "c0": r["c0"], "c1": r["c1"],
+                        "ub": self.pool() - bed - self.settings["tubeCover"] - self.settings["envelope"]})
+        return out
 
     def default_mode(self, i: int) -> str:
         if i in self.canon_modes:
@@ -207,9 +258,11 @@ class MetroProfile:
         ub, lb = [], []
         for i, s in enumerate(self.stations):
             gr = float(self.ground_at(s["c"]))
-            if i in self.canon_fixed and math.isfinite(gr):
-                ub.append(gr + self.canon_fixed[i])
-                lb.append(gr + self.canon_fixed[i])
+            f = self.canon_fixed.get(i)
+            if f and (math.isfinite(gr) or f.get("abs") is not None):
+                z0 = f["abs"] if f.get("abs") is not None else gr + f["off"]
+                ub.append(z0)
+                lb.append(z0)
             elif md and md[i] == "surface" and math.isfinite(gr):
                 ub.append(gr)
                 lb.append(gr)
@@ -217,18 +270,53 @@ class MetroProfile:
                 ub.append(gr - self.settings["defDepth"] if math.isfinite(gr) else math.inf)
                 lb.append(-math.inf)
 
-        def run(i, j):
-            return max(0.0, abs(self.stations[j]["c"] - self.stations[i]["c"]) - P * abs(j - i))
+        tubes = self.river_tubes(md)
+        tube_pvi = []
+        if not tubes:
+            def run(i, j):
+                return max(0.0, abs(self.stations[j]["c"] - self.stations[i]["c"]) - P * abs(j - i))
 
-        z = [min(ub[j] + g * run(i, j) for j in range(n)) for i in range(n)]
-        for i in range(n):
-            lo = max((lb[j] - g * run(i, j) for j in range(n) if math.isfinite(lb[j])), default=-math.inf)
-            z[i] = max(z[i], lo)
-            if not math.isfinite(z[i]):
-                z[i] = 0.0
-        st = [_js_round(v * 100) / 100 for v in z]
+            z = [min(ub[j] + g * run(i, j) for j in range(n)) for i in range(n)]
+            for i in range(n):
+                lo = max((lb[j] - g * run(i, j) for j in range(n) if math.isfinite(lb[j])), default=-math.inf)
+                z[i] = max(z[i], lo)
+                if not math.isfinite(z[i]):
+                    z[i] = 0.0
+            st = [_js_round(v * 100) / 100 for v in z]
+        else:
+            # the same solver over stations plus the river banks of each tube
+            nodes = [{"c": s["c"], "st": True, "i": i, "ub": ub[i], "lb": lb[i]} for i, s in enumerate(self.stations)]
+            for t in tubes:
+                nodes += [{"c": t["c0"], "st": False, "ub": t["ub"], "lb": -math.inf},
+                          {"c": t["c1"], "st": False, "ub": t["ub"], "lb": -math.inf}]
+            nodes.sort(key=lambda nd: nd["c"])  # stable, as Array.sort
+            cnt, k = [], 0
+            for nd in nodes:
+                cnt.append(k)
+                k += nd["st"]
+
+            def run(a, b):
+                x, y = (a, b) if a < b else (b, a)
+                between = cnt[y] - cnt[x] - (1 if nodes[x]["st"] else 0)
+                return max(0.0, nodes[y]["c"] - nodes[x]["c"] - P * between
+                           - (P / 2 if nodes[x]["st"] else 0) - (P / 2 if nodes[y]["st"] else 0))
+
+            N = len(nodes)
+            z = [min(nodes[b]["ub"] + g * run(a, b) for b in range(N)) for a in range(N)]
+            for a in range(N):
+                lo = max((nodes[b]["lb"] - g * run(a, b) for b in range(N) if math.isfinite(nodes[b]["lb"])),
+                         default=-math.inf)
+                z[a] = max(z[a], lo)
+                if not math.isfinite(z[a]):
+                    z[a] = 0.0
+            st = [0.0] * n
+            for nd, za in zip(nodes, z):
+                if nd["st"]:
+                    st[nd["i"]] = _js_round(za * 100) / 100
+                else:
+                    tube_pvi.append((float(_js_round(nd["c"])), _js_round(za * 1000) / 1000))
         self.modes = md or []
-        self.pvi = self.surface_pvis(st, md) if md else []
+        self.pvi = sorted(self.surface_pvis(st, md) + tube_pvi) if md else []
         return st
 
     def surface_pvis(self, st: List[float], md: List[str]) -> List[tuple]:
@@ -374,7 +462,12 @@ class MetroProfile:
         g = np.zeros_like(dcs)
         g[ok] = np.diff(vz)[ok] / dcs[ok] * 1000.0
         over = int(np.sum(np.abs(g) > self.settings["maxGrade"] + 0.05))
-        return {"km_by_type": {k: round(v, 3) for k, v in km.items()},
+        shallow = 0
+        for t in self.river_tubes(self.modes or None):
+            zz = self.rail_at(np.arange(t["c0"], t["c1"] + 1e-9, 5.0))
+            shallow += int(zz.max() > t["ub"] + 0.05)
+        return {"shallow_tubes": shallow,
+                "km_by_type": {k: round(v, 3) for k, v in km.items()},
                 "max_grade_permille": round(float(g[np.argmax(np.abs(g))]) if len(g) else 0.0, 1),
                 "grades_over_limit": over}
 

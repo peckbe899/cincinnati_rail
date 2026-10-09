@@ -210,11 +210,10 @@ const TYPE_KEYS = Object.keys(TYPES);
 // list calling Price Hill's 60 ft station a deep bore; shallowMax (40 ft) flags canon-shallow
 // stretches that run well past the doctrine's 20-30 ft.
 const METRO_DEFAULTS = { maxGrade: 50, platform: 152.4, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, envelope: 5.5, clearMin: 8, poolFt: 455.0 };
-// RER starting values, not canon. 225 m platforms take the longest set (RER C, 215 m) as on the
-// Paris RER; 35 per mille for heavy EMUs in tunnel; deeper boxes and a taller envelope for 25 kV
-// overhead; surface stations sit at grade on the old railroad and the rail follows the ground
-// through bend points every surfStep metres.
-const RER_DEFAULTS = { maxGrade: 35, platform: 225, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 7, clearMin: 9, poolFt: 455.0, surfStep: 250 };
+// RER: 35 per mille, 200 m platforms (8-car TRI) and 12 m station rail depth are canon; the
+// envelope (25 kV overhead), thresholds, tube cover and surface bend-point spacing are starting
+// values. Surface stations sit at grade on the old railroad and the rail follows the ground.
+const RER_DEFAULTS = { maxGrade: 35, platform: 200, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 7, clearMin: 9, poolFt: 455.0, surfStep: 250, tubeCover: 3 };
 let DEFAULTS = METRO_DEFAULTS;
 // Canon structure for the founding sections (Lines 1-6 as first opened).
 // m: 'shallow' = basin method (shallow shield running tunnels, cut-and-cover station boxes);
@@ -241,15 +240,9 @@ const CANON = {
   Line_5: { sections: [{ a: 'Northside', b: 'Pennsylvania', m: 'shallow', src: 'Founding section, basin method (tracker 2D)' }] },
   Line_6: { sections: [{ a: 'UC Medical/Corryville', b: 'Public Landing', m: 'shallow', src: 'Founding section, basin method (tracker 2D)' }] },
 };
-// RER: stations on a drawn "Trunk" default to underground and every other station to at grade
-// on the old railroad (switch either way per station). Canon sections and station modes below.
-const RER_CANON = {
-  RER_3: { sections: [
-    { a: 'Sedamsville', aIn: false, b: 'Riverbend/Belterra', bIn: false, m: 'covered', src: 'Embanked covered way along the Ohio, underground from Sedamsville to where the embankment ends at Riverbend/Belterra (your ruling)' }],
-    modes: { 'Asbury': { mode: 'surface', src: 'Past Riverbend/Belterra the line is back on the ground (your ruling)' } } },
-  RER_5: { sections: [
-    { a: 'Norwood Central', aIn: false, b: 'Ludlow', bIn: false, m: 'deep', src: '1996 deep-bore tunnel (your ruling); portals not set yet, so the end stations stay outside it' }] },
-};
+// RER canon (station modes, fixed levels, covered way, deep bore, deck, river tubes) comes from
+// rer/canon.json; stations on a drawn "Trunk" default to underground, the rest to at grade.
+let RER_CANON = {}; let RIVERS = {};
 const METHOD_LABEL = { shallow: 'Basin method', deep: 'Deep tube', canal: 'Canal-bed cut & cover', covered: 'Covered way (cut & cover)' };
 const SETTING_ROWS_BASE = [
   ['maxGrade', 'Max grade', '‰', 1],
@@ -264,7 +257,7 @@ const SETTING_ROWS_BASE = [
   ['poolFt', 'Ohio normal pool (Markland)', 'ft', 0.1],
 ];
 const SETTING_ROWS_RER = SETTING_ROWS_BASE.map((r) => r[0] === 'defDepth' ? ['defDepth', 'Default rail depth at underground stations', 'len', 0.1] : r)
-  .concat([['surfStep', 'Surface bend points every', 'len', 10]]);
+  .concat([['surfStep', 'Surface bend points every', 'len', 10], ['tubeCover', 'Cover over river tubes', 'len', 0.5]]);
 let SETTING_ROWS = SETTING_ROWS_BASE;
 let settings = { ...DEFAULTS };
 const SYS = { metro: { settings: { ...METRO_DEFAULTS }, doc: 'config/settings', key: 'profile:settings' }, rer: { settings: { ...RER_DEFAULTS }, doc: 'config/settings_rer', key: 'profile:settings_rer' } };
@@ -359,6 +352,47 @@ function buildCanon() {
   Object.entries(cn.fixed || {}).forEach(([name, f]) => { const i = idx(name); if (i >= 0) S.canonFixed[i] = f; });
   S.canonModes = {};
   Object.entries(cn.modes || {}).forEach(([name, f]) => { const i = idx(name); if (i >= 0) S.canonModes[i] = f; });
+  S.canonDeck = (cn.deck || []).map((dk) => {
+    const ia = idx(dk.a), ib = idx(dk.b); if (ia < 0 || ib < 0) return null;
+    const A = S.stations[ia], B = S.stations[ib];
+    return { ...dk, lo: Math.min(A.c, B.c) - half, hi: Math.max(A.c, B.c) + half };
+  }).filter(Boolean);
+}
+const fixedLevel = (f, gr) => (f.abs != null ? f.abs : gr + f.off);
+// level a station's depth is measured from: its canon reference (e.g. track level at Union
+// Terminal) or the surface
+function refAt(i) { const f = S.canonFixed[i]; return f && f.ref != null ? f.ref : surfaceAt(S.stations[i].c); }
+// ground under a deck (RER canon): the raster holds the deck top; the rail runs at yard level
+function groundFor(d) {
+  const base = groundOf(d);
+  const cn = (d.id && d.id.startsWith('RER_') && RER_CANON[d.id]) || {};
+  if (!(cn.deck || []).length) return base;
+  const half = SYS.rer.settings.platform / 2, key = `deck:${half}`;
+  if (d._deckKey === key) return d._deck;
+  const g = Float32Array.from(base);
+  cn.deck.forEach((dk) => {
+    const A = d.stations.find((s) => s.name === dk.a), B = d.stations.find((s) => s.name === dk.b); if (!A || !B) return;
+    const lo = Math.min(A.c, B.c) - half, hi = Math.max(A.c, B.c) + half;
+    for (let i = Math.max(0, Math.ceil(lo / d.step_m)); i <= Math.min(g.length - 1, Math.floor(hi / d.step_m)); i++) g[i] -= dk.drop;
+  });
+  d._deck = g; d._deckKey = key; return g;
+}
+// river tubes (RER): under a river between two underground stations, or inside a canon deep
+// bore (or a covered way where the canon says the river is crossed in tunnel), the tube roof
+// stays the set cover below the river bed
+function riverTubes(md) {
+  if (!md) return [];
+  const out = [];
+  S.rivers.forEach((r) => {
+    const info = RIVERS[r.name] || {}; const sec = canonAt((r.c0 + r.c1) / 2);
+    if (sec && sec.m === 'covered' && !info.in_covered_way) return;
+    let ip = -1, inx = -1; S.stations.forEach((st, i) => { if (st.c < r.c0) ip = i; if (st.c > r.c1 && inx < 0) inx = i; });
+    const bore = sec && (sec.m === 'deep' || (sec.m === 'covered' && info.in_covered_way));
+    const under = ip >= 0 && inx >= 0 && md[ip] !== 'surface' && md[inx] !== 'surface';
+    if (!bore && !under) return;
+    out.push({ name: r.name, c0: r.c0, c1: r.c1, ub: pool() - (info.bed_below_pool_m ?? 12) - settings.tubeCover - settings.envelope });
+  });
+  return out;
 }
 // RER station mode: 'under' (new trunk, below ground) or 'surface' (at grade on the old railroad)
 function defaultMode(i) { const f = S.canonModes[i]; if (f) return f.mode; return S.stations[i].trunk ? 'under' : 'surface'; }
@@ -390,18 +424,38 @@ function defaultAlign(modes) {
   const md = isRer() ? S.stations.map((_, i) => (modes && modes[i]) || defaultMode(i)) : null;
   S.stations.forEach((s, i) => {
     const gr = groundAt(s.c), f = S.canonFixed[i];
-    if (f && isFinite(gr)) { ub[i] = lb[i] = gr + f.off; }
+    if (f && (isFinite(gr) || f.abs != null)) { ub[i] = lb[i] = fixedLevel(f, gr); }
     else if (md && md[i] === 'surface' && isFinite(gr)) { ub[i] = lb[i] = gr; }
     else { ub[i] = isFinite(gr) ? gr - settings.defDepth : Infinity; lb[i] = -Infinity; }
   });
-  const run = (i, j) => Math.max(0, Math.abs(S.stations[j].c - S.stations[i].c) - P * Math.abs(j - i));
-  const z = ub.map((_, i) => { let r = Infinity; for (let j = 0; j < n; j++) r = Math.min(r, ub[j] + g * run(i, j)); return r; });
-  for (let i = 0; i < n; i++) {
-    let lo = -Infinity; for (let j = 0; j < n; j++) if (isFinite(lb[j])) lo = Math.max(lo, lb[j] - g * run(i, j));
-    z[i] = Math.max(z[i], lo); if (!isFinite(z[i])) z[i] = 0;
+  const tubes = riverTubes(md);
+  let st, tubePvi = [];
+  if (!tubes.length) {
+    const run = (i, j) => Math.max(0, Math.abs(S.stations[j].c - S.stations[i].c) - P * Math.abs(j - i));
+    const z = ub.map((_, i) => { let r = Infinity; for (let j = 0; j < n; j++) r = Math.min(r, ub[j] + g * run(i, j)); return r; });
+    for (let i = 0; i < n; i++) {
+      let lo = -Infinity; for (let j = 0; j < n; j++) if (isFinite(lb[j])) lo = Math.max(lo, lb[j] - g * run(i, j));
+      z[i] = Math.max(z[i], lo); if (!isFinite(z[i])) z[i] = 0;
+    }
+    st = z.map((v) => Math.round(v * 100) / 100);
+  } else {
+    // the same solver over stations plus the river banks of each tube (level platforms only at stations)
+    const nodes = S.stations.map((s, i) => ({ c: s.c, st: true, i, ub: ub[i], lb: lb[i] }))
+      .concat(tubes.flatMap((t) => [{ c: t.c0, st: false, ub: t.ub, lb: -Infinity }, { c: t.c1, st: false, ub: t.ub, lb: -Infinity }]))
+      .sort((a, b) => a.c - b.c);
+    const cnt = []; let k = 0; nodes.forEach((nd) => { cnt.push(k); if (nd.st) k++; });
+    const run = (a, b) => { const [x, y] = a < b ? [a, b] : [b, a]; const between = cnt[y] - cnt[x] - (nodes[x].st ? 1 : 0);
+      return Math.max(0, nodes[y].c - nodes[x].c - P * between - (nodes[x].st ? P / 2 : 0) - (nodes[y].st ? P / 2 : 0)); };
+    const N = nodes.length;
+    const z = nodes.map((_, a) => { let r = Infinity; for (let b = 0; b < N; b++) r = Math.min(r, nodes[b].ub + g * run(a, b)); return r; });
+    for (let a = 0; a < N; a++) {
+      let lo = -Infinity; for (let b = 0; b < N; b++) if (isFinite(nodes[b].lb)) lo = Math.max(lo, nodes[b].lb - g * run(a, b));
+      z[a] = Math.max(z[a], lo); if (!isFinite(z[a])) z[a] = 0;
+    }
+    st = new Array(n);
+    nodes.forEach((nd, a) => { if (nd.st) st[nd.i] = Math.round(z[a] * 100) / 100; else tubePvi.push({ c: Math.round(nd.c), z: Math.round(z[a] * 1000) / 1000 }); });
   }
-  const st = z.map((v) => Math.round(v * 100) / 100);
-  const al = { st, pvi: md ? surfacePvis(st, md) : [], ovr: [] };
+  const al = { st, pvi: md ? surfacePvis(st, md).concat(tubePvi).sort((a, b) => a.c - b.c) : [], ovr: [] };
   if (md) al.mode = md.slice();
   return al;
 }
@@ -465,7 +519,12 @@ function computeSummary() {
     if (Math.abs(g) > settings.maxGrade + 0.05) over.push({ c0: a.c, c1: b.c, g });
   }
   const clashes = crossingClearances().filter((x) => x.clear != null && x.clear < settings.clearMin);
-  return { len, deepest, highest, maxG, maxGc, over, clashes, deepShallow };
+  const shallowTubes = [];
+  if (isRer()) riverTubes(S.stations.map((_, i) => modeOf(i))).forEach((t) => {
+    let hi = -Infinity, hc = t.c0; for (let c = t.c0; c <= t.c1; c += 5) { const z = railAt(c); if (z > hi) { hi = z; hc = c; } }
+    if (hi > t.ub + 0.05) shallowTubes.push({ name: t.name, c: hc, over: hi - t.ub });
+  });
+  return { len, deepest, highest, maxG, maxGc, over, clashes, deepShallow, shallowTubes };
 }
 
 // ---------- other lines at crossings ----------
@@ -809,13 +868,16 @@ function updatePanels() {
   const fl = [];
   sm.over.forEach((o) => fl.push(`<li>${fmtG(o.g)} from ${fmtCh(o.c0)} to ${fmtCh(o.c1)} exceeds ${settings.maxGrade}‰</li>`));
   sm.clashes.forEach((x) => fl.push(`<li>Only ${toU(x.clear).toFixed(1)} ${uLbl()} from ${esc(x.with)} at ${fmtCh(x.c)}</li>`));
+  (sm.shallowTubes || []).forEach((t) => fl.push(`<li>Tube under the ${esc(t.name)} is ${fmtZ(t.over, 1)} ${uLbl()} too shallow at ${fmtCh(t.c)}</li>`));
   sm.deepShallow.forEach((f) => fl.push(`<li>${esc(f.name)} is ${fmtZ(f.d, 0)} ${uLbl()} down in a shallow-canon section</li>`));
   $('#flags').innerHTML = fl.slice(0, 12).join('') + (fl.length > 12 ? `<li>and ${fl.length - 12} more</li>` : '');
   const nm = (i) => S.stations[i] ? S.stations[i].name : '';
   const cnl = S.canonSecs.map((x) => `<li><b>${METHOD_LABEL[x.m]}</b>, ${esc(x.a)}${x.aIn === false ? ' (excl.)' : ''} to ${esc(x.b)}${x.bIn === false ? ' (excl.)' : ''}: ${esc(x.src)}</li>`)
-    .concat(Object.entries(S.canonFixed).map(([i, f]) => `<li><b>${esc(nm(+i))}</b> rail ${f.off >= 0 ? '+' : '−'}${fmtZ(Math.abs(f.off), 0)} ${uLbl()}: ${esc(f.src)}</li>`));
+    .concat(Object.entries(S.canonFixed).map(([i, f]) => `<li><b>${esc(nm(+i))}</b> rail ${f.abs != null ? `at ${fmtZ(f.abs, 1)} ${uLbl()}` : `${f.off >= 0 ? '+' : '−'}${fmtZ(Math.abs(f.off), 0)} ${uLbl()}`}: ${esc(f.src)}</li>`));
   if (isRer()) {
     Object.entries(S.canonModes).forEach(([i, f]) => cnl.push(`<li><b>${esc(nm(+i))}</b> ${f.mode === 'surface' ? 'at grade' : 'underground'}: ${esc(f.src)}</li>`));
+    (S.canonDeck || []).forEach((dk) => cnl.push(`<li><b>Deck</b> ${esc(dk.a)} to ${esc(dk.b)}: ${esc(dk.src)}. Ground shown at yard level.</li>`));
+    riverTubes(S.stations.map((_, i) => modeOf(i))).forEach((t) => cnl.push(`<li><b>Tube</b> under the ${esc(t.name)} (${fmtCh(t.c0)} to ${fmtCh(t.c1)}): rail at most ${fmtZ(t.ub, 1)} ${uLbl()}. ${esc((RIVERS[t.name] || {}).src || '')}</li>`));
     cnl.push(`<li><b>Trunk</b> ${S.data.trunks.map((t) => `${esc(t.name)} (${fmtCh(t.c0)} to ${fmtCh(t.c1)})`).join(', ')}: stations here start underground. Assumed from the drawn trunks, not canon.</li>`);
     cnl.push(`<li><b>Core</b> of ${esc(S.data.service)}, two stations past each end of the trunk.</li>`);
   }
@@ -823,7 +885,7 @@ function updatePanels() {
   // stations table
   $('#thRail').textContent = `Rail ${uLbl()}`;
   $('#stBody').innerHTML = S.stations.map((s, i) => {
-    const z = S.align.st[i]; const sf = surfaceAt(s.c); const d = sf - z; const t = typeAt(s.c, z);
+    const z = S.align.st[i]; const sf = refAt(i); const d = sf - z; const t = typeAt(s.c, z);
     const on = S.sel && S.sel.kind === 'st' && S.sel.i === i;
     return `<tr data-i="${i}" class="${on ? 'on' : ''}"><td>${typeChip(t)}${esc(s.name)}</td><td class="num">${(s.c / 1000).toFixed(2)}</td><td class="num">${fmtZ(z)}</td><td class="num">${d >= 0 ? fmtZ(d) : '+' + fmtZ(-d)}</td></tr>`;
   }).join('');
@@ -837,7 +899,7 @@ function updateSelCard() {
     return;
   }
   if (sel.kind === 'st') {
-    const s = S.stations[sel.i], z = S.align.st[sel.i], g = groundAt(s.c), sf = surfaceAt(s.c), d = sf - z;
+    const s = S.stations[sel.i], z = S.align.st[sel.i], g = groundAt(s.c), sf = refAt(sel.i), d = sf - z;
     const half = settings.platform / 2; const gin = gradeAt(s.c - half - 1), gout = gradeAt(s.c + half + 1);
     el.innerHTML = `<h2>Station</h2><div class="sel-title">${esc(s.name)}</div>
       <dl class="kv">
@@ -853,7 +915,7 @@ function updateSelCard() {
         <button class="btn" id="modeUnder" aria-pressed="${modeOf(sel.i) === 'under'}" ${ro ? 'disabled' : ''}>Underground</button></div>
         <p class="hint">${s.trunk ? 'On the drawn trunk.' : 'Off the drawn trunk.'} Switching re-solves this line's station levels and surface bend points; painted stretches stay. Undo restores.</p>` : ''}${(() => { const sec = canonAt(s.c), f = S.canonFixed[sel.i], cm = S.canonModes[sel.i]; const bits = [];
         if (sec) bits.push(`${METHOD_LABEL[sec.m]}: ${esc(sec.src)}`);
-        if (f) bits.push(`Canon level ${f.off >= 0 ? '+' : '−'}${fmtZ(Math.abs(f.off), 1)} ${uLbl()}: ${esc(f.src)}`);
+        if (f) bits.push(`Canon level ${f.abs != null ? `${fmtZ(f.abs, 1)} ${uLbl()}` : `${f.off >= 0 ? '+' : '−'}${fmtZ(Math.abs(f.off), 1)} ${uLbl()}`}: ${esc(f.src)}`);
         if (cm) bits.push(`${cm.mode === 'surface' ? 'At grade' : 'Underground'}: ${esc(cm.src)}`);
         return bits.length ? `<p class="hint">${bits.join('<br>')}</p>` : ''; })()}`;
     const setMode = (m) => { if (modeOf(sel.i) === m) return; pushHist(); const modes = S.stations.map((_, j) => (j === sel.i ? m : modeOf(j))); const fresh = defaultAlign(modes); S.align = { ...fresh, ovr: S.align.ovr }; changed(); };
@@ -1004,7 +1066,7 @@ async function selectLine(id) {
   setSystem(id.startsWith('RER_') ? 'rer' : 'metro');
   if (!isRer()) linkRerCrossings(d);
   S.data = d; S.L = d.length_m; S.step = d.step_m;
-  S.ground = groundOf(d);
+  S.ground = groundFor(d);
   S.stations = d.stations; S.rivers = d.rivers; S.crossings = d.crossings || [];
   buildCanon();
   const doc = S.saved[id] || (S.store !== 'db' ? localDoc(id) : null);
@@ -1020,11 +1082,11 @@ async function selectLine(id) {
 function groundOf(d) { if (!d._g) d._g = Float32Array.from(d.ground_dm, (v) => (v == null ? NaN : v / 10)); return d._g; }
 // run fn with another line loaded in place of the current one (for its default rail)
 function withLine(d, k, fn) {
-  const keys = ['data', 'L', 'step', 'ground', 'stations', 'rivers', 'crossings', 'canonSecs', 'canonFixed', 'canonModes', 'align'];
+  const keys = ['data', 'L', 'step', 'ground', 'stations', 'rivers', 'crossings', 'canonSecs', 'canonFixed', 'canonModes', 'canonDeck', 'align'];
   const keep = {}; keys.forEach((x) => (keep[x] = S[x])); const ks = sys, kset = settings;
   sys = k; settings = SYS[k].settings;
   try {
-    S.data = d; S.L = d.length_m; S.step = d.step_m; S.ground = groundOf(d); S.stations = d.stations; S.rivers = d.rivers; S.crossings = d.crossings || [];
+    S.data = d; S.L = d.length_m; S.step = d.step_m; S.ground = groundFor(d); S.stations = d.stations; S.rivers = d.rivers; S.crossings = d.crossings || [];
     buildCanon(); return fn();
   } finally { keys.forEach((x) => (S[x] = keep[x])); sys = ks; settings = kset; }
 }
@@ -1246,6 +1308,7 @@ window.addEventListener('beforeunload', () => { if (S.dirty) save(); });
     [mIdx, rIdx, S.net, S.metroRails] = await Promise.all([loadJSON('lines/index.json'), loadJSON('rer/lines/index.json').catch(() => []),
       loadJSON('rer/network.json').catch(() => loadJSON('network.json').catch(() => null)), loadJSON('rer/metro_rails.json').catch(() => ({}))]);
     S.index = mIdx.concat(rIdx);
+    try { const cj = await loadJSON('rer/canon.json'); RER_CANON = cj.lines || {}; RIVERS = cj.rivers || {}; } catch {}
     const rer = await Promise.all(rIdx.map((l) => loadJSON(lineUrl(l.id)).catch(() => null)));
     rer.filter(Boolean).forEach((d) => { S.rerData[d.id] = d; S.cache[d.id] = d; });
     refreshDefaultDocs();

@@ -1,8 +1,9 @@
 """Build RER line data for the RER Profiles page, in the Metro Profiles format.
 
 One long section per RER line: the core of a representative through service, from two
-stations outside the first drawn "Trunk" segment to two stations past the last one, inside
-the map 3 ground raster. Writes data/profile/rer/lines/RER_*.json (2 m chainage, map 3
+stations outside the first underground station or drawn "Trunk" segment to two stations
+past the last one (canon station modes in data/profile/rer/canon.json), inside the map 3
+ground raster. Writes data/profile/rer/lines/RER_*.json (2 m chainage, map 3
 ground in decimetres, stations, rivers, crossings with Metro and other RER lines, trunk
 spans), lines/index.json and metro_rails.json (every Metro line's rail, saved profile or
 the solver default, for the clearance check at crossings).
@@ -45,6 +46,7 @@ SERVICES = {
     "RER-4": "cin_rer_4_dover__greensburg",
     "RER-5": "cin_rer_5_waynesville__williamstown",
 }
+CANON = json.loads((OUT / "canon.json").read_text())
 # when each drawn trunk opened for through-running (data/operations/cincinnati_rer.yaml)
 OPENED = {"RER-1": 1985, "RER-2": 1988, "RER-3": 1988, "RER-4": 1990, "RER-5": 1996}
 
@@ -95,6 +97,35 @@ def rivers_along(lonlat, ch, net):
             else:
                 k += 1
     return sorted(out, key=lambda r: r["c0"])
+
+
+def centerline_rivers(lonlat, ch, proj):
+    """Rivers too narrow for the shoreline outlines (canon `centerline`, e.g. the Little
+    Miami): a span of `width_m` around each crossing of the Overture centreline."""
+    from shapely.geometry import LineString
+    from railsim.kml import read_kml_bytes
+    want = {k: v for k, v in CANON["rivers"].items() if v.get("centerline")}
+    if not want:
+        return []
+    water = read_kml_bytes((ROOT / "data/reference/overture_water_cincinnati.kml").read_bytes())
+    pxy = np.column_stack(proj.to_xy(np.array([la for _, la in lonlat]), np.array([lo for lo, _ in lonlat])))
+    me = LineString(pxy)
+    out = []
+    for w in water:
+        nm = w.name.split(" [")[0]
+        if nm not in want:
+            continue
+        for ln in w.lines:
+            oxy = np.column_stack(proj.to_xy(np.array([c[0] for c in ln]), np.array([c[1] for c in ln])))
+            inter = me.intersection(LineString(oxy))
+            pts = [inter] if inter.geom_type == "Point" else list(getattr(inter, "geoms", []))
+            for p in pts:
+                if p.geom_type != "Point":
+                    continue
+                c = project_point_to_polyline(p.x, p.y, pxy, ch)[0]
+                hw = want[nm].get("width_m", 60.0) / 2
+                out.append({"name": nm, "c0": round(float(c - hw), 1), "c1": round(float(c + hw), 1)})
+    return out
 
 
 def crossings(path_xy, ch, others, proj):
@@ -149,9 +180,12 @@ def main():
             print(f"  no trunk on {cfg_name}; skipped")
             continue
         sts = [s for s in r.stations]
-        t0, t1 = min(a for a, _, _ in spans), max(b for _, b, _ in spans)
-        before = [k for k, s in enumerate(sts) if s.s < t0]
-        after = [k for k, s in enumerate(sts) if s.s > t1]
+        modes = CANON["lines"].get(line.replace("-", "_"), {}).get("modes", {})
+        under = [s.s for s in sts if (modes.get(s.name) or {}).get("mode") == "under"]
+        t0 = min([a for a, _, _ in spans] + under)
+        t1 = max([b for _, b, _ in spans] + under)
+        before = [k for k, s in enumerate(sts) if s.s < t0 - 1]
+        after = [k for k, s in enumerate(sts) if s.s > t1 + 1]
         k0 = before[-APPROACH_STATIONS] if len(before) >= APPROACH_STATIONS else 0
         k1 = after[APPROACH_STATIONS - 1] if len(after) >= APPROACH_STATIONS else len(sts) - 1
         # clip to the raster: drop end stations whose surroundings are off the map 3 ground
@@ -210,7 +244,8 @@ def main():
             "opened": OPENED.get(line), "length_m": round(L, 1), "step_m": STEP,
             "ground_dm": [None if not np.isfinite(g) else int(round(g * 10)) for g in ground],
             "stations": stations, "trunks": trunks,
-            "rivers": rivers_along(list(zip(lon, lat)), pch, net),
+            "rivers": sorted(rivers_along(list(zip(lon, lat)), pch, net)
+                             + centerline_rivers(list(zip(lon, lat)), pch, r.proj), key=lambda x: x["c0"]),
             "path": path, "crossings": cr,
             "route_chainage_m": [round(s0, 1), round(s1, 1)],
             "ground_note": "map 3 (alternate 2026) ground from map3_profile_dem_dm.vrt; "

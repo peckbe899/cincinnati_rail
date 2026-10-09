@@ -325,18 +325,27 @@ def test_metro_default_solver_respects_grade_limit():
 
 
 def test_rer_core_profile_matches_page():
-    """RER cores: surface stations at ground, trunk stations underground, the RER-3 covered
-    way cut and cover, the RER-5 deep bore; values as the Rail Profiles page shows them."""
+    """RER cores with the canon rulings: Union Terminal on level -2 (142.0 m), the RER-3
+    covered way at 144 m dipping under the Little Miami, Mill Creek trunk at grade under the
+    deck, the Ohio tubes, the RER-5 deep bore; values as the Rail Profiles page shows them."""
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile/rer"
-    mp = MetroProfile.load(root / "lines/RER_1.json", None, root / "settings.json")
-    assert [round(z, 1) for z in mp.st] == [156.0, 154.8, 140.8, 154.1, 156.6, 148.9, 189.6,
-                                           218.8, 217.9, 201.5, 204.5, 195.1]
+    load = lambda l: MetroProfile.load(root / f"lines/{l}.json", None, root / "settings.json")
+    mp = load("RER_1")
+    assert [round(z, 1) for z in mp.st] == [156.0, 154.8, 142.0, 154.1, 156.6, 148.9, 190.5,
+                                           220.5, 217.9, 201.5, 204.5, 195.1]
     assert mp.summary()["grades_over_limit"] == 0
-    r3 = MetroProfile.load(root / "lines/RER_3.json", None, root / "settings.json")
-    i = next(k for k, s in enumerate(r3.stations) if s["name"] == "Torrance")
-    assert r3.type_at(r3.stations[i]["c"]) == "cutcover"
-    assert r3.modes[[s["name"] for s in r3.stations].index("Asbury")] == "surface"
-    r5 = MetroProfile.load(root / "lines/RER_5.json", None, root / "settings.json")
-    assert r5.summary()["km_by_type"]["deep"] == pytest.approx(10.7, abs=0.05)
+    r2 = load("RER_2")
+    names = [s["name"] for s in r2.stations]
+    assert r2.st[names.index("Western")] == pytest.approx(156.2 - 8.5, abs=0.05)  # yard level
+    assert r2.modes[names.index("Arlington")] == "surface"
+    assert r2.summary()["shallow_tubes"] == 0
+    r3 = load("RER_3")
+    names = [s["name"] for s in r3.stations]
+    assert r3.st[names.index("Torrance")] == 144.0
+    assert r3.type_at(r3.stations[names.index("Torrance")]["c"]) == "cutcover"
+    assert min(z for c, z in r3.pvi) == pytest.approx(125.684, abs=0.01)  # under the Little Miami
+    assert r3.modes[names.index("Asbury")] == "surface"
+    r5 = load("RER_5")
+    assert r5.summary()["km_by_type"]["deep"] == pytest.approx(10.07, abs=0.05)
