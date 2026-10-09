@@ -102,6 +102,8 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
 .st-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .st-table th { text-align: left; font-weight: 600; color: var(--muted); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 4px; border-bottom: 1px solid var(--rule); position: sticky; top: 0; background: var(--panel); }
 .st-table td { padding: 4px; border-bottom: 1px solid var(--grid-major); font-variant-numeric: tabular-nums; }
+.st-gone h3 { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 12px 0 4px; }
+.gone-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 3px 4px; font-size: 13px; color: var(--muted); }
 .st-table td.num { font-family: var(--font-num); font-size: 12px; text-align: right; }
 .st-table tr { cursor: pointer; }
 .st-table tr:hover td, .st-table tr.on td { background: var(--grid); }
@@ -194,6 +196,7 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
     <div class="card">
       <h2>Stations</h2>
       <table class="st-table"><thead><tr><th>Station</th><th style="text-align:right">km</th><th style="text-align:right" id="thRail">Rail</th><th style="text-align:right">Depth</th></tr></thead><tbody id="stBody"></tbody></table>
+      <div id="stGone" class="st-gone" hidden></div>
     </div>
   </aside>
 </main>
@@ -328,7 +331,16 @@ function groundAt(c) {
 function riverAt(c) { for (const r of S.rivers) if (c >= r.c0 && c <= r.c1) return r; return null; }
 function surfaceAt(c) { return riverAt(c) ? pool() : groundAt(c); }
 
-function stKey(i) { const s = S.stations[i]; const dup = S.stations.filter((x) => x.name === s.name).length > 1; return dup ? `${s.name}#${i}` : s.name; }
+// Stations: each keeps its drawn point (c0, its index idx in the line file); the platform box can
+// slide so the point sits anywhere on it (offset so, metres, platform centre = c0 + so), and a
+// station can be removed. S.stations is the working list: removed ones left out, offsets applied.
+function baseStations(d) { d.stations.forEach((st, i) => { if (st.idx == null) { st.idx = i; st.c0 = st.c; } }); return d.stations; }
+function keyOf(st) { const dup = S.data.stations.filter((x) => x.name === st.name).length > 1; return dup ? `${st.name}#${st.idx}` : st.name; }
+function stKey(i) { return keyOf(S.stations[i]); }
+function deriveStations(del = [], so = []) {
+  const kept = baseStations(S.data).filter((st) => !del.includes(keyOf(st)));
+  return kept.map((st, i) => ({ ...st, c: st.c0 + (so[i] || 0) }));
+}
 
 function vertices(al = S.align, stations = S.stations, L = S.L, platform = settings.platform, rv = settings.vcRadius) {
   const half = platform / 2; const v = []; v.rv = rv || 0; v.lmin = rv ? settings.vcMinLen : 0;
@@ -622,15 +634,21 @@ function surfacePvis(st, md) {
   return out.sort((x, y) => x.c - y.c);
 }
 function alignFromDoc(doc) {
+  const del = doc && Array.isArray(doc.del) ? doc.del.filter((k) => typeof k === 'string') : [];
+  S.stations = deriveStations(del, []); buildCanon();
   let modes = null;
   if (doc && doc.mode && isRer()) modes = S.stations.map((_, i) => (doc.mode[stKey(i)] === 'surface' || doc.mode[stKey(i)] === 'under') ? doc.mode[stKey(i)] : defaultMode(i));
   const al = defaultAlign(modes);
+  al.del = del; al.so = S.stations.map(() => 0);
   if (!doc) return al;
+  const half = settings.platform / 2, soKey = doc.so || {};
+  al.so = S.stations.map((_, i) => clamp(+soKey[stKey(i)] || 0, -half, half));
   const byKey = doc.st || {};
   S.stations.forEach((s, i) => { const k = stKey(i); if (typeof byKey[k] === 'number') al.st[i] = byKey[k]; });
   const sgKey = doc.sg || {}; al.sg = S.stations.map((_, i) => (typeof sgKey[stKey(i)] === 'number' ? sgKey[stKey(i)] : 0));
   if (Array.isArray(doc.pvi)) al.pvi = doc.pvi.filter((p) => Array.isArray(p) && p.length >= 2).map(([c, z]) => ({ c: +c, z: +z }));
   al.ovr = (doc.ovr || []).filter((o) => Array.isArray(o) && o.length >= 3).map(([a, b, t]) => [+a, +b, t === 'bored' ? 'shield' : t]).filter((o) => TYPES[o[2]]);
+  S.stations = deriveStations(del, al.so); buildCanon();
   return al;
 }
 
@@ -699,6 +717,7 @@ function designChecks() {
   design(VERTS).short.forEach((x) => issues.push({ kind: 'Vertical curve', c: x.c, text: `Bend of ${fmtG(x.dg)} at ${fmtCh(x.c)} needs a ${x.need.toFixed(0)} m curve; only ${x.got.toFixed(0)} m fits (radius ${settings.vcRadius} m)` }));
   // platform grades over the station limit (trains must stand safely)
   S.stations.forEach((st, i) => { const gq = (S.align.sg && S.align.sg[i]) || 0; if (Math.abs(gq) > sgMaxFor() + 0.05) issues.push({ kind: 'Platform grade', c: st.c, text: `${esc(st.name)} platform at ${fmtG(gq)} is over the ${sgMaxFor()}‰ station limit` }); });
+  for (let i = 1; i < S.stations.length; i++) { const A = S.stations[i - 1], B = S.stations[i]; if (Math.abs(B.c - A.c) < settings.platform - 0.5 && A.c0 !== B.c0) issues.push({ kind: 'Platform overlap', c: (A.c + B.c) / 2, text: `${esc(A.name)} and ${esc(B.name)} platforms overlap (centres ${Math.abs(B.c - A.c).toFixed(0)} m apart); slide one or remove a station` }); }
   // drainage: tunnel grades flatter than drainMin outside platforms; low points need sumps
   let sumps = 0, lastSign = 0, lastC = 0;
   seg.forEach((sg) => {
@@ -966,6 +985,10 @@ function draw(ctx, W, H, view, opt = {}) {
     ctx.fillStyle = on ? colors.accent : ink; ctx.strokeStyle = ctx.fillStyle;
     ctx.lineWidth = 6; ctx.lineCap = 'butt'; ctx.beginPath(); ctx.moveTo(xa, ya); ctx.lineTo(Math.max(xa + 3, xb), yb); ctx.stroke();
     ctx.fillRect(xa, ya - 7, 1.5, 10); ctx.fillRect(Math.max(xa + 1.5, xb - 1.5), yb - 7, 1.5, 10);
+    // the drawn point the platform hangs on
+    const xp = X(s.c0 ?? s.c), yp = Y(z + gp * ((s.c0 ?? s.c) - s.c));
+    ctx.fillStyle = colors.paper; ctx.beginPath(); ctx.moveTo(xp, yp - 3); ctx.lineTo(xp + 4, yp + 3); ctx.lineTo(xp - 4, yp + 3); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = on ? colors.accent : ink; ctx.lineWidth = 1.2; ctx.stroke();
   });
 
   // pvi handles
@@ -1017,7 +1040,7 @@ function draw(ctx, W, H, view, opt = {}) {
   ctx.font = `600 ${narrow ? 11 : 12}px ${colors.ui}`; ctx.textBaseline = 'middle';
   S.stations.forEach((s, i) => {
     if (s.c < view.c0 - 200 || s.c > view.c1 + 200) return;
-    const x = X(s.c); const y = Y(S.align.st[i]);
+    const x = X(s.c0 ?? s.c); const y = Y(S.align.st[i]);
     const on = S.sel && S.sel.kind === 'st' && S.sel.i === i;
     ctx.strokeStyle = on ? colors.accent : colors.gridMajor; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
     ctx.beginPath(); ctx.moveTo(x + 0.5, P.y - 4); ctx.lineTo(x + 0.5, y - 8); ctx.stroke(); ctx.setLineDash([]);
@@ -1150,6 +1173,9 @@ function updatePanels() {
     const on = S.sel && S.sel.kind === 'st' && S.sel.i === i;
     return `<tr data-i="${i}" class="${on ? 'on' : ''}"><td>${typeChip(t)}${esc(s.name)}</td><td class="num">${(s.c / 1000).toFixed(2)}</td><td class="num">${fmtZ(z)}</td><td class="num">${d >= 0 ? fmtZ(d) : '+' + fmtZ(-d)}</td></tr>`;
   }).join('');
+  const gone = (S.align.del || []);
+  $('#stGone').hidden = !gone.length;
+  $('#stGone').innerHTML = gone.length ? `<h3>Removed</h3>${gone.map((k) => `<div class="gone-row"><span>${esc(k.replace(/#\d+$/, ''))}</span><button class="btn" data-k="${esc(k)}" ${S.canWrite === false ? 'disabled' : ''}>Restore</button></div>`).join('')}` : '';
   updateSelCard();
 }
 function updateSelCard() {
@@ -1164,16 +1190,19 @@ function updateSelCard() {
     const half = settings.platform / 2; const gin = gradeAt(s.c - half - 1), gout = gradeAt(s.c + half + 1);
     el.innerHTML = `<h2>Station</h2><div class="sel-title">${esc(s.name)}</div>
       <dl class="kv">
-        <dt>Chainage</dt><dd>${fmtCh(s.c)}</dd>
+        <dt>Chainage</dt><dd>${fmtCh(s.c)}${Math.abs(s.c - s.c0) > 0.01 ? ` (point ${fmtCh(s.c0)})` : ''}</dd>
         <dt>Ground at centre</dt><dd>${fmtZ(g, 2)} ${uLbl()}</dd>
         <dt><label for="inRail">Rail level (${uLbl()})</label></dt><dd><input id="inRail" type="number" step="0.1" value="${toU(z).toFixed(2)}" ${ro ? 'disabled' : ''}></dd>
         <dt><label for="inDepth">Rail below ground (${uLbl()})</label></dt><dd><input id="inDepth" type="number" step="0.1" value="${toU(d).toFixed(2)}" ${ro ? 'disabled' : ''}></dd>
         <dt>Structure</dt><dd>${TYPES[typeAt(s.c, z)].label}</dd>
         <dt>Grade in / out</dt><dd>${fmtG(gin)} / ${fmtG(gout)}</dd>
         <dt>Platform</dt><dd>${fmtCh(s.c - half)} to ${fmtCh(s.c + half)}</dd>
+        <dt><label for="inPos">Point from platform start (m)</label></dt><dd><input id="inPos" type="number" step="0.5" min="0" max="${(2 * half).toFixed(1)}" value="${(half - ((S.align.so && S.align.so[sel.i]) || 0)).toFixed(1)}" ${ro ? 'disabled' : ''}></dd>
         <dt><label for="inSg">Platform grade (‰)</label></dt><dd><input id="inSg" type="number" step="0.5" value="${(((S.align.sg && S.align.sg[sel.i]) || 0)).toFixed(1)}" ${ro ? 'disabled' : ''}></dd>
       </dl>
-      <div class="group"><button class="btn" id="easeSt" ${ro ? 'disabled' : ''} title="Slope this platform toward the grades on either side, up to the station limit">Ease the bends</button></div>${isRer() ? `<div class="group" role="group" aria-label="Station setting">
+      <div class="group" role="group" aria-label="Platform position"><button class="btn" id="posA" ${ro ? 'disabled' : ''} title="The drawn point at the platform start (low chainage end)">Point at start</button><button class="btn" id="posC" ${ro ? 'disabled' : ''}>Centred</button><button class="btn" id="posB" ${ro ? 'disabled' : ''} title="The drawn point at the platform end (high chainage end)">Point at end</button></div>
+      <p class="hint">The drawn point (tick on the bar) stays put; the platform slides along it. <kbd>Alt</kbd> + drag the bar to slide it.</p>
+      <div class="group"><button class="btn" id="easeSt" ${ro ? 'disabled' : ''} title="Slope this platform toward the grades on either side, up to the station limit">Ease the bends</button><button class="btn" id="delSt" ${ro ? 'disabled' : ''} title="Leave this station out of the profile and the run times; restore it from the Stations list">Remove station</button></div>${isRer() ? `<div class="group" role="group" aria-label="Station setting">
         <button class="btn" id="modeSurf" aria-pressed="${modeOf(sel.i) === 'surface'}" ${ro ? 'disabled' : ''}>At grade, old railroad</button>
         <button class="btn" id="modeUnder" aria-pressed="${modeOf(sel.i) === 'under'}" ${ro ? 'disabled' : ''}>Underground</button></div>
         <p class="hint">${s.trunk ? 'On the drawn trunk.' : 'Off the drawn trunk.'} Switching re-solves this line's station levels and surface bend points; painted stretches stay. Undo restores.</p>` : ''}${(() => { const sec = canonAt(s.c), f = S.canonFixed[sel.i], cm = S.canonModes[sel.i]; const bits = [];
@@ -1181,13 +1210,23 @@ function updateSelCard() {
         if (f) bits.push(`Canon level ${f.abs != null ? `${fmtZ(f.abs, 1)} ${uLbl()}` : `${f.off >= 0 ? '+' : '−'}${fmtZ(Math.abs(f.off), 1)} ${uLbl()}`}: ${esc(f.src)}`);
         if (cm) bits.push(`${cm.mode === 'surface' ? 'At grade' : 'Underground'}: ${esc(cm.src)}`);
         return bits.length ? `<p class="hint">${bits.join('<br>')}</p>` : ''; })()}`;
-    const setMode = (m) => { if (modeOf(sel.i) === m) return; pushHist(); const modes = S.stations.map((_, j) => (j === sel.i ? m : modeOf(j))); const fresh = defaultAlign(modes); S.align = { ...fresh, ovr: S.align.ovr }; changed(); };
+    const setMode = (m) => { if (modeOf(sel.i) === m) return; pushHist(); const modes = S.stations.map((_, j) => (j === sel.i ? m : modeOf(j))); const fresh = defaultAlign(modes); S.align = { ...fresh, ovr: S.align.ovr, del: S.align.del, so: S.align.so }; changed(); };
     $('#modeSurf')?.addEventListener('click', () => setMode('surface'));
     $('#modeUnder')?.addEventListener('click', () => setMode('under'));
     const apply = (zNew) => { if (!isFinite(zNew)) return; pushHist(); S.align.st[sel.i] = Math.round(zNew * 100) / 100; changed(); };
     const sgIn = $('#inSg');
     if (sgIn) sgIn.addEventListener('change', () => { const v = parseFloat(sgIn.value); if (!isFinite(v)) return; pushHist(); setSg(sel.i, v); changed(); });
     $('#easeSt')?.addEventListener('click', () => { pushHist(); easePlatform(sel.i); changed(); });
+    const setPos = (pos) => { if (!isFinite(pos)) return; pushHist(); setSo(sel.i, half - clamp(pos, 0, 2 * half)); changed(); };
+    $('#inPos')?.addEventListener('change', (e) => setPos(parseFloat(e.target.value)));
+    $('#posA')?.addEventListener('click', () => setPos(0));
+    $('#posC')?.addEventListener('click', () => setPos(half));
+    $('#posB')?.addEventListener('click', () => setPos(2 * half));
+    const delBtn = $('#delSt');
+    delBtn?.addEventListener('click', () => {
+      if (!delBtn.dataset.armed) { delBtn.dataset.armed = '1'; delBtn.textContent = 'Click again to remove'; setTimeout(() => { if (delBtn.isConnected) { delete delBtn.dataset.armed; delBtn.textContent = 'Remove station'; } }, 4000); return; }
+      removeStation(sel.i);
+    });
     const r = $('#inRail'), dp = $('#inDepth');
     if (r) r.addEventListener('change', () => apply(fromU(parseFloat(r.value))));
     if (dp) dp.addEventListener('change', () => apply(sf - fromU(parseFloat(dp.value))));
@@ -1217,7 +1256,7 @@ function pushHist() { S.hist.push(snapshot()); if (S.hist.length > 200) S.hist.s
 function syncUndo() { $('#undo').disabled = !S.hist.length || S.canWrite === false; $('#redo').disabled = !S.fut.length || S.canWrite === false; $('#solveCross').disabled = S.canWrite === false; $('#easeAll').disabled = S.canWrite === false; }
 function undo() { if (!S.hist.length) return; S.fut.push(snapshot()); S.align = JSON.parse(S.hist.pop()); S.sel = null; changed(); syncUndo(); }
 function redo() { if (!S.fut.length) return; S.hist.push(snapshot()); S.align = JSON.parse(S.fut.pop()); S.sel = null; changed(); syncUndo(); }
-function changed(save = true) { if (S.data) buildCanon(); VERTS = vertices(); updatePanels(); schedule(); if (save) markDirty(); }
+function changed(save = true) { if (S.data) { S.stations = deriveStations(S.align.del || [], S.align.so || []); buildCanon(); } VERTS = vertices(); updatePanels(); schedule(); if (save) markDirty(); }
 function inPlatform(c) { const half = settings.platform / 2; return S.stations.some((s) => c > s.c - half - 2 && c < s.c + half + 2); }
 function clampPviC(c, j) {
   c = clamp(c, 1, S.L - 1);
@@ -1257,8 +1296,10 @@ function serialize() {
     v: 1, system: S.data.system, line: S.data.line, length_m: S.L, platform_m: settings.platform,
     st, pvi: S.align.pvi.map((p) => [Math.round(p.c * 10) / 10, p.z]), ovr: S.align.ovr,
     sg: Object.fromEntries(S.stations.map((_, i) => [stKey(i), (S.align.sg && S.align.sg[i]) || 0]).filter(([, g]) => g)),
+    so: Object.fromEntries(S.stations.map((_, i) => [stKey(i), (S.align.so && S.align.so[i]) || 0]).filter(([, o]) => o)),
+    del: (S.align.del || []).slice(),
     ...(isRer() ? { mode: Object.fromEntries(S.stations.map((_, i) => [stKey(i), modeOf(i)])), route_chainage_m: S.data.route_chainage_m } : {}),
-    stations: S.stations.map((s, i) => { const z = S.align.st[i]; const sf = surfaceAt(s.c); return { name: s.name, c: s.c, rail: z, ground: Math.round(groundAt(s.c) * 100) / 100, depth: Math.round((sf - z) * 100) / 100, type: typeAt(s.c, z) }; }),
+    stations: S.stations.map((s, i) => { const z = S.align.st[i]; const sf = surfaceAt(s.c); return { name: s.name, c: s.c, point_c: s.c0, rail: z, ground: Math.round(groundAt(s.c) * 100) / 100, depth: Math.round((sf - z) * 100) / 100, type: typeAt(s.c, z) }; }),
     summary: { km_by_type: Object.fromEntries(TYPE_KEYS.map((t) => [t, Math.round(sm.len[t]) / 1000])), max_grade_permille: Math.round(sm.maxG * 10) / 10, grades_over_limit: sm.over.length },
     updated: new Date().toISOString(),
   };
@@ -1334,7 +1375,7 @@ async function selectLine(id) {
   if (!isRer()) linkRerCrossings(d);
   S.data = d; S.L = d.length_m; S.step = d.step_m;
   S.ground = groundFor(d);
-  S.stations = d.stations; S.rivers = d.rivers; S.crossings = d.crossings || [];
+  S.stations = baseStations(d); S.rivers = d.rivers; S.crossings = d.crossings || [];
   buildCanon();
   const doc = S.saved[id] || (S.store !== 'db' ? localDoc(id) : null);
   S.align = alignFromDoc(doc);
@@ -1353,15 +1394,16 @@ function withLine(d, k, fn) {
   const keep = {}; keys.forEach((x) => (keep[x] = S[x])); const ks = sys, kset = settings;
   sys = k; settings = SYS[k].settings;
   try {
-    S.data = d; S.L = d.length_m; S.step = d.step_m; S.ground = groundFor(d); S.stations = d.stations; S.rivers = d.rivers; S.crossings = d.crossings || [];
+    S.data = d; S.L = d.length_m; S.step = d.step_m; S.ground = groundFor(d); S.stations = baseStations(d); S.rivers = d.rivers; S.crossings = d.crossings || [];
     buildCanon(); return fn();
   } finally { keys.forEach((x) => (S[x] = keep[x])); sys = ks; settings = kset; }
 }
 function refreshDefaultDocs() {
   Object.values(S.rerData).forEach((d) => {
     S.defaultDocs[d.id] = withLine(d, 'rer', () => {
-      const al = alignFromDoc(S.saved[d.id] || null);
-      return { length_m: d.length_m, platform_m: settings.platform, stations: d.stations.map((st, i) => ({ c: st.c, rail: al.st[i] })), pvi: al.pvi.map((p) => [p.c, p.z]) };
+      const al = alignFromDoc(S.saved[d.id] || null); const sts = deriveStations(al.del, al.so);
+      return { length_m: d.length_m, platform_m: settings.platform, stations: sts.map((st, i) => ({ name: st.name, c: st.c, rail: al.st[i] })),
+        sg: Object.fromEntries(sts.map((st, i) => [st.name, al.sg[i] || 0])), pvi: al.pvi.map((p) => [p.c, p.z]) };
     });
   });
 }
@@ -1399,7 +1441,7 @@ cv.addEventListener('pointerdown', (e) => {
   const hit = S.canWrite === false ? null : hitTest(x, y);
   if (S.tool === 'move' && hit) {
     pushHist(); S.sel = hit; S.yFrozen = LAYOUT.yr;
-    S.drag = hit.kind === 'st' ? { kind: 'st', i: hit.i, y0: y, z0: S.align.st[hit.i] } : { kind: 'pvi', j: hit.j, x0: x, y0: y, c0: S.align.pvi[hit.j].c, z0: S.align.pvi[hit.j].z };
+    S.drag = hit.kind === 'st' && e.altKey ? { kind: 'stx', i: hit.i, x0: x, so0: (S.align.so && S.align.so[hit.i]) || 0 } : hit.kind === 'st' ? { kind: 'st', i: hit.i, y0: y, z0: S.align.st[hit.i] } : { kind: 'pvi', j: hit.j, x0: x, y0: y, c0: S.align.pvi[hit.j].c, z0: S.align.pvi[hit.j].z };
     updatePanels(); schedule(); return;
   }
   if (S.tool === 'paint' && inPlot(x, y) && S.canWrite !== false) { const c = clamp(LAYOUT.C(x), 0, S.L); S.drag = { kind: 'paint', c0: c, c1: c }; return; }
@@ -1415,6 +1457,7 @@ cv.addEventListener('pointermove', (e) => {
   const dr = S.drag;
   if (dr) {
     if (dr.kind === 'st') { const dz = LAYOUT.Z(y) - LAYOUT.Z(dr.y0); let z = dr.z0 + dz; z = e.shiftKey ? Math.round(z) : Math.round(z * 10) / 10; S.align.st[dr.i] = z; VERTS = vertices(); updateReadout(x, y); schedule(); }
+    else if (dr.kind === 'stx') { setSo(dr.i, dr.so0 + LAYOUT.C(x) - LAYOUT.C(dr.x0)); S.stations = deriveStations(S.align.del || [], S.align.so); VERTS = vertices(); updateReadout(x, y); schedule(); }
     else if (dr.kind === 'pvi') {
       const p = S.align.pvi[dr.j]; let c = dr.c0 + (LAYOUT.C(x) - LAYOUT.C(dr.x0)); let z = dr.z0 + (LAYOUT.Z(y) - LAYOUT.Z(dr.y0));
       p.c = clampPviC(Math.round(c), dr.j); p.z = e.shiftKey ? Math.round(z) : Math.round(z * 10) / 10;
@@ -1427,14 +1470,14 @@ cv.addEventListener('pointermove', (e) => {
     return;
   }
   const hit = S.canWrite === false ? null : hitTest(x, y);
-  cv.style.cursor = hit ? (hit.kind === 'st' ? 'ns-resize' : 'move') : (S.tool === 'paint' ? 'cell' : 'crosshair');
+  cv.style.cursor = hit ? (hit.kind === 'st' ? (e.altKey ? 'ew-resize' : 'ns-resize') : 'move') : (S.tool === 'paint' ? 'cell' : 'crosshair');
   updateReadout(x, y);
 });
 function endPointer(e) {
   pointers.delete(e.pointerId); if (pinch && pointers.size < 2) { pinch = null; return; }
   const dr = S.drag; S.drag = null; S.yFrozen = null;
   if (!dr) return;
-  if (dr.kind === 'st' || dr.kind === 'pvi') {
+  if (dr.kind === 'st' || dr.kind === 'stx' || dr.kind === 'pvi') {
     const before = S.hist[S.hist.length - 1];
     if (before === snapshot()) { S.hist.pop(); syncUndo(); updatePanels(); schedule(); return; }
     changed();
@@ -1494,6 +1537,29 @@ cv.addEventListener('keydown', (e) => {
 });
 
 // platform grades: tilt about the platform centre, up to the station limit
+// platform offset: centre = drawn point + so, so the point stays on the platform
+function setSo(i, v) { const half = settings.platform / 2; if (!S.align.so) S.align.so = S.stations.map(() => 0); v = clamp(v, -half, half); S.align.so[i] = Math.abs(v) >= half - 0.25 ? Math.sign(v) * half : Math.round(v * 2) / 2; }
+function removeStation(i) {
+  pushHist(); const k = stKey(i); const al = S.align;
+  ['st', 'sg', 'so'].forEach((f) => { if (Array.isArray(al[f])) al[f].splice(i, 1); });
+  if (Array.isArray(al.mode)) al.mode.splice(i, 1);
+  al.del = [...(al.del || []), k]; S.sel = null; changed();
+}
+// put a removed station back where it was drawn, at the default level (underground stations
+// defDepth below ground, at-grade RER stations on the ground), level platform, centred
+function restoreStation(k) {
+  pushHist(); const al = S.align; const del = (al.del || []).filter((x) => x !== k);
+  const old = S.stations.map((_, i) => stKey(i)); const fresh = deriveStations(del, []);
+  const pick = (f, dflt) => fresh.map((s, i) => { const j = old.indexOf(keyOf(s)); return j >= 0 && Array.isArray(al[f]) ? al[f][j] : dflt(s, i); });
+  S.stations = fresh; buildCanon();
+  const mode = Array.isArray(al.mode) ? pick('mode', (s, i) => defaultMode(i)) : null;
+  const md = (i) => (mode ? mode[i] : modeOf(i));
+  const ni = fresh.findIndex((s) => keyOf(s) === k);
+  const f = S.canonFixed[ni]; const gr = surfaceAt(fresh[ni].c);
+  const z0 = f ? fixedLevel(f, gr) : isRer() && md(ni) === 'surface' ? gr : gr - settings.defDepth;
+  al.st = pick('st', () => Math.round(z0 * 100) / 100); al.sg = pick('sg', () => 0); al.so = pick('so', () => 0);
+  if (mode) al.mode = mode; al.del = del; S.sel = { kind: 'st', i: ni }; changed();
+}
 function setSg(i, v) { if (!S.align.sg) S.align.sg = S.stations.map(() => 0); S.align.sg[i] = Math.round(v * 10) / 10; }
 // slope a platform toward the straight grades on either side (their mean, within the limit), so
 // both bends at its ends get smaller; repeated because the ends move with the slope
@@ -1541,12 +1607,13 @@ $('#solveCross').addEventListener('click', () => {
       const trial = cons.concat([side]); if (ok(defaultAlign(modes, trial), trial.concat(tubeC))) { cons = trial; held++; break; }
     }
   });
-  pushHist(); const fresh = defaultAlign(modes, cons); S.align = { ...fresh, ovr: S.align.ovr }; S.sel = null; changed();
+  pushHist(); const fresh = defaultAlign(modes, cons); S.align = { ...fresh, ovr: S.align.ovr, del: S.align.del, so: S.align.so }; S.sel = null; changed();
   flash(`Cleared ${held} of ${xs.length} crossings within ${settings.maxGrade}‰`);
 });
 
 
 // stations table
+$('#stGone').addEventListener('click', (e) => { const b = e.target.closest('button[data-k]'); if (b && S.canWrite !== false) restoreStation(b.dataset.k); });
 $('#stBody').addEventListener('click', (e) => { const tr = e.target.closest('tr'); if (!tr) return; const i = +tr.dataset.i; S.sel = { kind: 'st', i }; centerOn(S.stations[i].c, Math.min(S.view.c1 - S.view.c0, 2500)); updatePanels(); });
 
 // ---------- toolbar ----------
@@ -1586,7 +1653,7 @@ $('#resetLine').addEventListener('click', (e) => {
   const btn = e.currentTarget;
   if (!resetArm) { btn.textContent = 'Click again to reset'; resetArm = setTimeout(() => { resetArm = 0; btn.textContent = 'Reset this line'; }, 3000); return; }
   clearTimeout(resetArm); resetArm = 0; btn.textContent = 'Reset this line';
-  pushHist(); S.align = defaultAlign(); S.sel = null; changed();
+  pushHist(); S.stations = deriveStations([], []); buildCanon(); S.align = { ...defaultAlign(), del: [], so: S.stations.map(() => 0) }; S.sel = null; changed();
 });
 
 async function exportPng() {

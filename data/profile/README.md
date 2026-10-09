@@ -31,4 +31,5 @@ The same editor for the Metro and the RER, published as a claude.ai artifact (sa
 - RER settings (`rer/settings.json`): canon 35 per mille, 200 m platforms, 12 m station depth; starting values for the 25 m deep-bore threshold, 7 m envelope, 9 m crossing clearance, 3 m tube cover and the river bed depths in `canon.json`.
 - Crossings: Metro and RER rail clearances both ways (`rer/metro_rails.json` holds every Metro line's rail for the RER side).
 - Profiles now also save `sg`: each station's platform grade in per mille (rising with chainage) about its centre rail level.
+- `so`: platform offset in metres (platform centre = drawn point + so, within half a platform, so the point stays on the platform); `del`: keys of removed stations (left out of the solve, the checks and the run times; the service's terminals stay). Each `stations` entry carries `point_c`, the drawn point.
 - Saved RER profiles go to `rer/alignments/RER_*.json` (exported from the page's database); the RER through-service configs pick them up automatically.

@@ -124,6 +124,11 @@ class MetroProfile:
             cj = Path(canon_json) if canon_json else RER_CANON_JSON
             p.rer_canon = json.loads(cj.read_text()) if cj.exists() else {}
         p._ground = np.array([np.nan if v is None else v / 10.0 for v in p.data["ground_dm"]])
+        # every drawn station keeps its point (c0) and its index in the line file (idx);
+        # data["stations"] becomes the working list (removed ones out, platforms slid)
+        p.all_stations = [dict(st, idx=i, c0=st["c"]) for i, st in enumerate(p.data["stations"])]
+        p.data["stations"] = list(p.all_stations)
+        p.removed, p.so = [], []
         p._build_canon()
         p._apply_deck()
         doc = None
@@ -151,10 +156,13 @@ class MetroProfile:
     def pool(self) -> float:
         return self.settings["poolFt"] * FT
 
+    def key_of(self, st: dict) -> str:
+        name = st["name"]
+        dup = sum(1 for s in self.all_stations if s["name"] == name) > 1
+        return f"{name}#{st['idx']}" if dup else name
+
     def st_key(self, i: int) -> str:
-        name = self.stations[i]["name"]
-        dup = sum(1 for s in self.stations if s["name"] == name) > 1
-        return f"{name}#{i}" if dup else name
+        return self.key_of(self.stations[i])
 
     # ------------------------------------------------------------- ground
     def ground_at(self, c):
@@ -389,6 +397,11 @@ class MetroProfile:
         return sorted(out)
 
     def _align_from_doc(self, doc: Optional[dict]):
+        # stations removed on the page are left out before solving (as on the page)
+        self.removed = [k for k in ((doc or {}).get("del") or []) if isinstance(k, str)]
+        if self.removed:
+            self.data["stations"] = [s for s in self.all_stations if self.key_of(s) not in self.removed]
+            self._build_canon()
         modes = None
         if doc and doc.get("mode") and self.is_rer:
             dm = doc["mode"]
@@ -396,9 +409,16 @@ class MetroProfile:
                      else self.default_mode(i) for i in range(len(self.stations))]
         self.st = self.default_align(modes)
         self.sg = [0.0] * len(self.stations)
+        self.so = [0.0] * len(self.stations)
         self.ovr = []
         if not doc:
             return
+        # platform slid along its drawn point: centre = point + so, the point stays on it
+        half = self.settings["platform"] / 2
+        sod = doc.get("so") or {}
+        self.so = [min(half, max(-half, float(sod.get(self.st_key(i)) or 0.0)))
+                   if isinstance(sod.get(self.st_key(i)), (int, float)) else 0.0
+                   for i in range(len(self.stations))]
         sgd = doc.get("sg") or {}
         self.sg = [float(sgd[self.st_key(i)]) if isinstance(sgd.get(self.st_key(i)), (int, float)) else 0.0
                    for i in range(len(self.stations))]
@@ -414,6 +434,9 @@ class MetroProfile:
                 t = "shield" if o[2] == "bored" else o[2]
                 if t in TYPES:
                     self.ovr.append((float(o[0]), float(o[1]), t))
+        if any(self.so):
+            self.data["stations"] = [dict(s, c=s["c0"] + o) for s, o in zip(self.stations, self.so)]
+            self._build_canon()
 
     # ------------------------------------------------------------- rail profile
     def _verts(self) -> List[dict]:
@@ -450,7 +473,8 @@ class MetroProfile:
         def curve_len(dg):  # radius x change of grade, never shorter than the minimum (AREMA 100 ft)
             return max(rv * abs(dg), lmin) if abs(dg) > 1e-5 else 0.0
 
-        key = (tuple(self.st), tuple(self.sg), tuple(self.pvi), rv, lmin, self.settings["platform"])
+        key = (tuple(self.st), tuple(self.sg), tuple(self.pvi), rv, lmin, self.settings["platform"],
+               tuple(s["c"] for s in self.stations))
         if getattr(self, "_design_key", None) == key:
             return self._design
         verts = self._verts()

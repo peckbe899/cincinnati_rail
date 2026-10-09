@@ -395,3 +395,27 @@ def test_sloped_platform_eases_the_bends():
     need1 = sum(mp.settings["vcRadius"] * abs(d1["g"][k] - d1["g"][k - 1]) for k in range(1, len(d1["dv"]) - 1)
                 if d1["dv"][k]["kind"] == "x" and d1["dv"][k]["i"] == i)
     assert need1 < need0 or need0 == 0
+
+
+def test_platform_offset_and_removed_station(tmp_path):
+    """The page can slide a platform along its drawn point (centre = point + offset, the point
+    stays on the platform) and remove a station; the port solves without it and keeps keys."""
+    import json
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent / "data/profile"
+    base = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json")
+    names = [s["name"] for s in base.stations]
+    gone, slid = names[2], names[4]
+    half = base.settings["platform"] / 2
+    doc = {"del": [gone], "so": {slid: 50.0, names[5]: 9999.0}, "st": {}}
+    (tmp_path / "a.json").write_text(json.dumps(doc))
+    mp = MetroProfile.load(root / "lines/Line_9.json", tmp_path / "a.json", root / "settings.json")
+    assert [s["name"] for s in mp.stations] == [n for n in names if n != gone]
+    k = [s["name"] for s in mp.stations].index(slid)
+    assert mp.stations[k]["c"] == pytest.approx(base.stations[4]["c"] + 50.0)
+    assert mp.stations[k]["c0"] == base.stations[4]["c"]
+    assert mp.so[k + 1] == half  # clamped: the point is at the platform's end
+    cc = np.arange(mp.stations[k]["c"] - half + 1, mp.stations[k]["c"] + half - 1, 2.0)
+    assert np.allclose(mp.rail_at(cc), mp.st[k], atol=1e-6)  # the slid platform is level
+    assert len(mp.st) == len(names) - 1

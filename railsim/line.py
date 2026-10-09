@@ -450,11 +450,17 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
                 warnings.append(f"{mp.id}: {sm['grades_over_limit']} grade(s) over "
                                 f"{mp.settings['maxGrade']:.0f} per mille in the RER profile")
 
+    # stations removed on the profile page leave the service (not its terminals); a platform
+    # slid along its drawn point moves the stop. Zones still find stations by the full list.
+    zone_st = list(on_route)
+    if mp is not None and (mp.removed or any(mp.so)):
+        on_route = _apply_profile_stations(mp, on_route, proj, h, log)
+
     # ---- speed limits
     extra: List[Restriction] = []
     from .operations import turnout_speed
     for r in cfg.get("restrictions", []) or []:
-        s0, s1 = _zone_chainage(r, on_route, proj, h)
+        s0, s1 = _zone_chainage(r, zone_st, proj, h)
         if "turnout" in r:  # diverging move through a turnout of this number / type
             v = turnout_speed(r["turnout"])
             reason = r.get("reason", f"turnout {r['turnout']}")
@@ -512,23 +518,65 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
     sup = cfg.get("supply", {}) or {}
     route.supply_factor = float(sup.get("factor", 1.0))  # e.g. peak-hour voltage sag
     for z in sup.get("zones", []) or []:
-        s0, s1 = _zone_chainage(z, on_route, proj, h)
+        s0, s1 = _zone_chainage(z, zone_st, proj, h)
         route.supply_zones.append((s0, s1, float(z["factor"])))
     # operating zones (e.g. CBTC/ATO trunk): by drawn segment name or between stations
     for k, oz in enumerate(cfg.get("operating_zones", []) or [], start=1):
         if oz.get("match"):
             route.zone_ranges += [(s0, s1, k) for s0, s1 in _match_ranges(oz["match"], pieces, h)]
         else:
-            s0, s1 = _zone_chainage(oz, on_route, proj, h)
+            s0, s1 = _zone_chainage(oz, zone_st, proj, h)
             route.zone_ranges.append((s0, s1, k))
         if not any(z[2] == k for z in route.zone_ranges):
             warnings.append(f"operating zone {oz.get('name', k)} matched nothing on this route")
     for z in cfg.get("neutral_sections", []) or []:
         z = dict(z)
         z.setdefault("length_m", 400.0)  # gap + announcement/end-sign coasting region
-        s0, s1 = _zone_chainage(z, on_route, proj, h)
+        s0, s1 = _zone_chainage(z, zone_st, proj, h)
         route.neutral_sections.append((s0, s1))
     return route
+
+
+def _apply_profile_stations(mp, on_route, proj, h, log):
+    """Stations removed on the Rail Profiles page leave the service (its two terminals stay);
+    a platform slid along its drawn point moves the stop by the same distance along the route.
+    Each profile station is matched to the route station of the same name nearest its point."""
+    path = mp.data["path"]
+    pc = np.array([p[0] for p in path], float)
+    pxy = np.array([proj.to_xy(p[2], p[1]) for p in path], float)
+
+    def route_s(c):
+        x, y = np.interp(c, pc, pxy[:, 0]), np.interp(c, pc, pxy[:, 1])
+        ch, off, _ = project_point_to_polyline(float(x), float(y), h.xy, h.s)
+        return ch, off
+
+    def match(rec):
+        s0, off = route_s(rec["c0"])
+        if off > 100.0:
+            return None
+        near = [k for k, st in enumerate(on_route) if st.name == rec["name"] and abs(st.s - s0) < 300.0]
+        return min(near, key=lambda k: abs(on_route[k].s - s0)) if near else None
+
+    out = list(on_route)
+    drop = set()
+    for rec in mp.all_stations:
+        if mp.key_of(rec) in mp.removed:
+            k = match(rec)
+            if k is not None and 0 < k < len(on_route) - 1:
+                drop.add(k)
+    moved = 0
+    for rec, o in zip(mp.stations, mp.so):
+        k = match(rec) if o else None
+        if k is None or on_route[k].reverse:
+            continue
+        a, _ = route_s(rec["c0"])
+        b, _ = route_s(rec["c0"] + o)
+        out[k] = replace(on_route[k], s=min(max(on_route[k].s + b - a, 0.0), h.length))
+        moved += 1
+    out = sorted((st for k, st in enumerate(out) if k not in drop), key=lambda st: st.s)
+    if drop or moved:
+        log(f"  Stations from {mp.id}: {len(drop)} removed, {moved} platform(s) slid")
+    return out
 
 
 def _grid(L, step=10.0):
