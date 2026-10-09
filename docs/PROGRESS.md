@@ -245,6 +245,8 @@ Living list of what is done and what is left. Newest changes at the top of each 
 - **Results with the rulings** (55 RER configs, 15 Metro lines, all run): through services within 0.5% of the previous run. Pre-RER: RER-2 Falmouth and Verona 7.5-9% faster over the C&O (shorter); RER-4 Dover now means Dover KY via the C&O (86.6 km, 77 min; the old config had picked Dover IN); RER-5 Waynesville and Wilmington +0.2 to +0.8% via Norwood-Ivorydale; new RER-3 services into UT 57-82 min. Metro unchanged within 0.05%.
 - **Line 5**: Eggleston lowered to 149.48 m so Times to Eggleston is exactly 50 per mille (the gap is 55.6 m); Eggleston to Pennsylvania -21.7 per mille. Saved in the repo and the page.
 
+- **Rail Profiles design checks** (`docs/research/profile_design.md`): vertical-curve fit, tunnel drainage and sumps, cover over bored tunnels, curve-compensated grade; flags listed along the line, click to jump, markers on the profile. **Solve levels with crossings** re-solves a line so its crossings keep the minimum clearance within the grade limit, canon levels and river tubes (clears 4-12 crossings per RER line; the rest conflict with canon levels or at-grade stations).
+
 ## In progress
 
 - Nothing running.

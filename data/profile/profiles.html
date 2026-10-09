@@ -92,6 +92,10 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
 .types .n { font-family: var(--font-num); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
 .flags { margin: 0; padding-left: 18px; font-size: 14px; color: var(--warn); display: flex; flex-direction: column; gap: 2px; }
 .flags:empty { display: none; }
+.flags { max-height: 260px; overflow-y: auto; list-style: none; padding-left: 0; }
+.flag { all: unset; cursor: pointer; display: block; line-height: 1.35; color: var(--warn); }
+.flag:hover, .flag:focus-visible { text-decoration: underline; outline: none; }
+.fk { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
 .canon { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.4; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
 .canon b { color: var(--ink); font-weight: 600; }
 #plan { width: 100%; height: 210px; display: block; border-radius: var(--r); background: var(--paper); border: 1px solid var(--rule); }
@@ -175,7 +179,9 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
       <h2>Line summary</h2>
       <dl class="kv" id="sumKv"></dl>
       <div class="types" id="types"></div>
+      <p class="hint" id="issueCounts"></p>
       <ul class="flags" id="flags"></ul>
+      <div class="group"><button class="btn" id="solveCross" title="Re-solve this line's station levels so every crossing keeps the minimum clearance">Solve levels with crossings</button></div>
     </div>
     <div class="card">
       <h2>Canon structure</h2>
@@ -209,11 +215,16 @@ const TYPE_KEYS = Object.keys(TYPES);
 // thresholds are editable starting values, not canon. deepBelow (60 ft) follows the station
 // list calling Price Hill's 60 ft station a deep bore; shallowMax (40 ft) flags canon-shallow
 // stretches that run well past the doctrine's 20-30 ft.
-const METRO_DEFAULTS = { maxGrade: 50, platform: 152.4, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, envelope: 5.5, clearMin: 8, poolFt: 455.0 };
+const METRO_DEFAULTS = { maxGrade: 50, platform: 152.4, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, envelope: 5.5, clearMin: 8, poolFt: 455.0, vcRadius: 1500, minCover: 2, drainMin: 3, curveK: 800 };
+// Design checks (starting values, not canon): vertical curves of at least vcRadius at every
+// grade change (metros use 1,500-3,000 m, main lines 3,000-4,000 m); bored tunnels need cover
+// over the crown (about one diameter is the modern rule of thumb; the basin method ran shallower);
+// tunnels drain at 3 per mille or more, low points need sumps; on curves the grade is checked
+// with k / R per mille added for curve resistance (SNCF 800 / R).
 // RER: 35 per mille, 200 m platforms (8-car TRI) and 12 m station rail depth are canon; the
 // envelope (25 kV overhead), thresholds, tube cover and surface bend-point spacing are starting
 // values. Surface stations sit at grade on the old railroad and the rail follows the ground.
-const RER_DEFAULTS = { maxGrade: 35, platform: 200, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 7, clearMin: 9, poolFt: 455.0, surfStep: 250, tubeCover: 3 };
+const RER_DEFAULTS = { maxGrade: 35, platform: 200, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 7, clearMin: 9, poolFt: 455.0, surfStep: 250, tubeCover: 3, vcRadius: 3000, minCover: 4, drainMin: 3, curveK: 800 };
 let DEFAULTS = METRO_DEFAULTS;
 // Canon structure for the founding sections (Lines 1-6 as first opened).
 // m: 'shallow' = basin method (shallow shield running tunnels, cut-and-cover station boxes);
@@ -255,6 +266,10 @@ const SETTING_ROWS_BASE = [
   ['envelope', 'Structure height drawn above rail', 'len', 0.1],
   ['clearMin', 'Min rail-to-rail clearance at crossings', 'len', 0.5],
   ['poolFt', 'Ohio normal pool (Markland)', 'ft', 0.1],
+  ['vcRadius', 'Min vertical curve radius', 'len', 100],
+  ['minCover', 'Min cover over bored tunnels', 'len', 0.5],
+  ['drainMin', 'Min tunnel grade for drainage', '‰', 0.5],
+  ['curveK', 'Curve compensation, k in k / R per mille', 'k', 50],
 ];
 const SETTING_ROWS_RER = SETTING_ROWS_BASE.map((r) => r[0] === 'defDepth' ? ['defDepth', 'Default rail depth at underground stations', 'len', 0.1] : r)
   .concat([['surfStep', 'Surface bend points every', 'len', 10], ['tubeCover', 'Cover over river tubes', 'len', 0.5]]);
@@ -418,7 +433,7 @@ function typeAt(c, z = railAt(c)) { return overrideAt(c) || autoType(c, z); }
 
 // Each station as shallow as the grade limit allows: at most defDepth under ground, canon levels
 // held fixed, solved in both directions so steep descents go deeper instead of popping out.
-function defaultAlign(modes) {
+function defaultAlign(modes, extra = []) {
   const g = settings.maxGrade / 1000, P = settings.platform, n = S.stations.length;
   const ub = [], lb = [];
   const md = isRer() ? S.stations.map((_, i) => (modes && modes[i]) || defaultMode(i)) : null;
@@ -430,7 +445,7 @@ function defaultAlign(modes) {
   });
   const tubes = riverTubes(md);
   let st, tubePvi = [];
-  if (!tubes.length) {
+  if (!tubes.length && !extra.length) {
     const run = (i, j) => Math.max(0, Math.abs(S.stations[j].c - S.stations[i].c) - P * Math.abs(j - i));
     const z = ub.map((_, i) => { let r = Infinity; for (let j = 0; j < n; j++) r = Math.min(r, ub[j] + g * run(i, j)); return r; });
     for (let i = 0; i < n; i++) {
@@ -442,6 +457,7 @@ function defaultAlign(modes) {
     // the same solver over stations plus the river banks of each tube (level platforms only at stations)
     const nodes = S.stations.map((s, i) => ({ c: s.c, st: true, i, ub: ub[i], lb: lb[i] }))
       .concat(tubes.flatMap((t) => [{ c: t.c0, st: false, ub: t.ub, lb: -Infinity }, { c: t.c1, st: false, ub: t.ub, lb: -Infinity }]))
+      .concat(extra.map((x) => ({ c: x.c, st: false, ub: x.ub ?? Infinity, lb: x.lb ?? -Infinity })))
       .sort((a, b) => a.c - b.c);
     const cnt = []; let k = 0; nodes.forEach((nd) => { cnt.push(k); if (nd.st) k++; });
     const run = (a, b) => { const [x, y] = a < b ? [a, b] : [b, a]; const between = cnt[y] - cnt[x] - (nodes[x].st ? 1 : 0);
@@ -453,9 +469,10 @@ function defaultAlign(modes) {
       z[a] = Math.max(z[a], lo); if (!isFinite(z[a])) z[a] = 0;
     }
     st = new Array(n);
-    nodes.forEach((nd, a) => { if (nd.st) st[nd.i] = Math.round(z[a] * 100) / 100; else tubePvi.push({ c: Math.round(nd.c), z: Math.round(z[a] * 1000) / 1000 }); });
+    // bend points at the extra nodes, except inside platforms (those constrain the station level)
+    nodes.forEach((nd, a) => { if (nd.st) st[nd.i] = Math.round(z[a] * 100) / 100; else if (!inPlatform(nd.c)) tubePvi.push({ c: Math.round(nd.c), z: Math.round(z[a] * 1000) / 1000 }); });
   }
-  const al = { st, pvi: md ? surfacePvis(st, md).concat(tubePvi).sort((a, b) => a.c - b.c) : [], ovr: [] };
+  const al = { st, pvi: (md ? surfacePvis(st, md) : []).concat(tubePvi).sort((a, b) => a.c - b.c), ovr: [] };
   if (md) al.mode = md.slice();
   return al;
 }
@@ -524,7 +541,88 @@ function computeSummary() {
     let hi = -Infinity, hc = t.c0; for (let c = t.c0; c <= t.c1; c += 5) { const z = railAt(c); if (z > hi) { hi = z; hc = c; } }
     if (hi > t.ub + 0.05) shallowTubes.push({ name: t.name, c: hc, over: hi - t.ub });
   });
-  return { len, deepest, highest, maxG, maxGc, over, clashes, deepShallow, shallowTubes };
+  const out = { len, deepest, highest, maxG, maxGc, over, clashes, deepShallow, shallowTubes };
+  Object.assign(out, designChecks());
+  return out;
+}
+
+// ---------- design checks ----------
+// plan curvature from the drawn path: radius every 10 m from a circle through points 40 m apart
+function radii(d) {
+  if (d._R) return d._R;
+  const path = d.path, L = d.length_m, n = Math.floor(L / 10) + 1;
+  const lat0 = path[0][2] * Math.PI / 180, kx = 111320 * Math.cos(lat0), ky = 110540;
+  const xs = new Float64Array(n), ys = new Float64Array(n); let j = 1;
+  for (let i = 0; i < n; i++) {
+    const c = i * 10; while (j < path.length - 1 && path[j][0] < c) j++;
+    const a = path[j - 1], b = path[j]; const t = b[0] - a[0] > 0 ? clamp((c - a[0]) / (b[0] - a[0]), 0, 1) : 0;
+    xs[i] = (a[1] + (b[1] - a[1]) * t) * kx; ys[i] = (a[2] + (b[2] - a[2]) * t) * ky;
+  }
+  const R = new Float32Array(n).fill(Infinity), h = 4;
+  for (let i = h; i < n - h; i++) {
+    const ax = xs[i - h], ay = ys[i - h], bx = xs[i], by = ys[i], cx = xs[i + h], cy = ys[i + h];
+    const ab = Math.hypot(bx - ax, by - ay), bc = Math.hypot(cx - bx, cy - by), ca = Math.hypot(ax - cx, ay - cy);
+    const area2 = Math.abs((bx - ax) * (cy - ay) - (by - ay) * (cx - ax));
+    if (area2 > 1e-6) R[i] = (ab * bc * ca) / (2 * area2);
+  }
+  d._R = R; return R;
+}
+const radiusAt = (c) => { const R = radii(S.data); return R[clamp(Math.round(c / 10), 0, R.length - 1)]; };
+const TUNNEL = new Set(['cutcover', 'shield', 'deep']);
+function designChecks() {
+  const issues = []; const half = settings.platform / 2;
+  const seg = []; for (let k = 0; k < VERTS.length - 1; k++) { const a = VERTS[k], b = VERTS[k + 1]; if (b.c - a.c > 1e-6) seg.push({ a, b, g: (b.z - a.z) / (b.c - a.c) * 1000, plat: a.kind === 'ps' && b.kind === 'pe' && a.i === b.i }); }
+  // vertical curves: each grade change needs a curve of length Rv x change; at a platform end the
+  // whole curve lies outside the platform, elsewhere half on each side
+  const need = new Map();
+  for (let k = 1; k < seg.length; k++) {
+    const v = seg[k].a, dg = Math.abs(seg[k].g - seg[k - 1].g); if (dg < 1 || v.kind === 'end') continue;
+    need.set(seg[k].a, settings.vcRadius * dg / 1000);
+  }
+  const side = (v, after) => { const L = need.get(v) || 0; if (!L) return 0; if (v.kind === 'pe') return after ? L : 0; if (v.kind === 'ps') return after ? 0 : L; return L / 2; };
+  seg.forEach((sg) => {
+    if (sg.plat) return; const req = side(sg.a, true) + side(sg.b, false), len = sg.b.c - sg.a.c;
+    if (req > len + 0.5) issues.push({ kind: 'Vertical curve', c: (sg.a.c + sg.b.c) / 2, text: `Vertical curves need ${req.toFixed(0)} m between ${fmtCh(sg.a.c)} and ${fmtCh(sg.b.c)}; the ${fmtG(sg.g)} grade there is ${len.toFixed(0)} m long` });
+  });
+  // drainage: tunnel grades flatter than drainMin outside platforms; low points need sumps
+  let sumps = 0, lastSign = 0, lastC = 0;
+  seg.forEach((sg) => {
+    const mid = (sg.a.c + sg.b.c) / 2, t = typeAt(mid), len = sg.b.c - sg.a.c;
+    if (!sg.plat && TUNNEL.has(t) && Math.abs(sg.g) < settings.drainMin && len > 60)
+      issues.push({ kind: 'Drainage', c: mid, text: `${fmtG(sg.g)} in tunnel for ${len.toFixed(0)} m from ${fmtCh(sg.a.c)}: drains poorly below ${settings.drainMin}‰` });
+    const sign = Math.abs(sg.g) < 0.5 ? 0 : Math.sign(sg.g);
+    if (sign) { if (lastSign < 0 && sign > 0 && TUNNEL.has(typeAt((lastC + sg.a.c) / 2))) sumps++; lastSign = sign; lastC = sg.a.c; }
+  });
+  // curve compensation and cover, sampled every 10 m
+  const ranges = (kind) => ({ kind, on: null, list: [] });
+  const comp = ranges('Curve grade'), cover = ranges('Cover'), roof = ranges('Cover');
+  const hit = (r, c, val) => { if (r.on && c - r.on.c1 <= 20) { r.on.c1 = c; if (val < r.on.v) r.on.v = val; if (val < r.on.worst) r.on.worst = val; } else { r.on = { c0: c, c1: c, v: val, worst: val }; r.list.push(r.on); } };
+  for (let c = 5; c < S.L; c += 10) {
+    const z = railAt(c), t = typeAt(c, z);
+    if (settings.curveK > 0 && !inStation(c)) {
+      const R = radiusAt(c), add = settings.curveK / R, g = Math.abs(gradeAt(c));
+      if (add > 0.5 && g + add > settings.maxGrade + 0.05) { hit(comp, c, -(g + add)); comp.on.R = Math.min(comp.on.R ?? Infinity, R); }
+    }
+    if (!riverAt(c)) {
+      const gr = groundAt(c); if (!isFinite(gr)) continue; const cv = gr - (z + settings.envelope);
+      if ((t === 'shield' || t === 'deep') && cv < settings.minCover) hit(cover, c, cv);
+      if (t === 'cutcover' && cv < 0) hit(roof, c, cv);
+    }
+  }
+  comp.list.forEach((r) => issues.push({ kind: comp.kind, c: (r.c0 + r.c1) / 2, text: `Grade plus curve allowance reaches ${(-r.worst).toFixed(1)}‰ from ${fmtCh(r.c0)} to ${fmtCh(r.c1)} (limit ${settings.maxGrade}‰, tightest radius ${Math.round(r.R)} m)` }));
+  cover.list.forEach((r) => issues.push({ kind: 'Cover', c: (r.c0 + r.c1) / 2, text: `Bored tunnel cover down to ${fmtZ(r.worst, 1)} ${uLbl()} from ${fmtCh(r.c0)} to ${fmtCh(r.c1)} (min ${fmtZ(settings.minCover, 1)})` }));
+  roof.list.forEach((r) => issues.push({ kind: 'Cover', c: (r.c0 + r.c1) / 2, text: `Cut-and-cover roof ${fmtZ(-r.worst, 1)} ${uLbl()} above ground from ${fmtCh(r.c0)} to ${fmtCh(r.c1)}` }));
+  return { checks: issues, sumps };
+}
+// every flag with a chainage, sorted along the line, for the list and the markers on the profile
+function allIssues(sm) {
+  const out = [];
+  sm.over.forEach((o) => out.push({ kind: 'Grade', c: (o.c0 + o.c1) / 2, text: `${fmtG(o.g)} from ${fmtCh(o.c0)} to ${fmtCh(o.c1)} exceeds ${settings.maxGrade}‰` }));
+  sm.clashes.forEach((x) => out.push({ kind: 'Clearance', c: x.c, text: `Only ${toU(x.clear).toFixed(1)} ${uLbl()} from ${esc(x.with)} at ${fmtCh(x.c)}` }));
+  (sm.shallowTubes || []).forEach((t) => out.push({ kind: 'River', c: t.c, text: `Tube under the ${esc(t.name)} is ${fmtZ(t.over, 1)} ${uLbl()} too shallow at ${fmtCh(t.c)}` }));
+  sm.deepShallow.forEach((f) => out.push({ kind: 'Canon', c: f.c, text: `${esc(f.name)} is ${fmtZ(f.d, 0)} ${uLbl()} down in a shallow-canon section` }));
+  (sm.checks || []).forEach((x) => out.push(x));
+  return out.sort((a, b) => a.c - b.c);
 }
 
 // ---------- other lines at crossings ----------
@@ -738,6 +836,11 @@ function draw(ctx, W, H, view, opt = {}) {
   // frame
   ctx.strokeStyle = colors.rule; ctx.lineWidth = 1; ctx.strokeRect(P.x + 0.5, P.y + 0.5, P.w - 1, P.h - 1);
 
+  // design flags along the bottom of the plot
+  if (!opt.title && S.issues) {
+    ctx.fillStyle = colors.warn;
+    for (const x of S.issues) { if (x.c < view.c0 || x.c > view.c1) continue; const px = X(x.c); ctx.beginPath(); ctx.moveTo(px, P.y + P.h - 9); ctx.lineTo(px - 4, P.y + P.h - 1); ctx.lineTo(px + 4, P.y + P.h - 1); ctx.closePath(); ctx.fill(); }
+  }
   // structure band
   const bandY = P.y + P.h + 6, bandH = 16;
   let b0 = 0;
@@ -863,14 +966,13 @@ function updatePanels() {
     ${isRer() ? `<dt>Through-running</dt><dd>from ${S.data.opened || '–'}</dd><dt>Route km</dt><dd>${(S.data.route_chainage_m[0] / 1000).toFixed(1)} to ${(S.data.route_chainage_m[1] / 1000).toFixed(1)}</dd>` : ''}
     <dt>Steepest grade</dt><dd style="color:${Math.abs(sm.maxG) > settings.maxGrade + 0.05 ? 'var(--warn)' : 'inherit'}">${fmtG(sm.maxG)} at ${fmtCh(sm.maxGc)}</dd>
     <dt>Deepest rail</dt><dd>${fmtZ(sm.deepest.d)} ${uLbl()} below, ${fmtCh(sm.deepest.c)}</dd>
-    <dt>Highest rail</dt><dd>${sm.highest.h > 0 ? `${fmtZ(sm.highest.h)} ${uLbl()} above, ${fmtCh(sm.highest.c)}` : 'none above ground'}</dd>`;
+    <dt>Highest rail</dt><dd>${sm.highest.h > 0 ? `${fmtZ(sm.highest.h)} ${uLbl()} above, ${fmtCh(sm.highest.c)}` : 'none above ground'}</dd>
+    <dt>Tunnel low points (sumps)</dt><dd>${sm.sumps}</dd>`;
   $('#types').innerHTML = TYPE_KEYS.map((t) => `<span>${typeChip(t)}${TYPES[t].label}</span><span class="n">${(sm.len[t] / 1000).toFixed(2)} km</span><span class="n">${(100 * sm.len[t] / S.L).toFixed(0)}%</span>`).join('');
-  const fl = [];
-  sm.over.forEach((o) => fl.push(`<li>${fmtG(o.g)} from ${fmtCh(o.c0)} to ${fmtCh(o.c1)} exceeds ${settings.maxGrade}‰</li>`));
-  sm.clashes.forEach((x) => fl.push(`<li>Only ${toU(x.clear).toFixed(1)} ${uLbl()} from ${esc(x.with)} at ${fmtCh(x.c)}</li>`));
-  (sm.shallowTubes || []).forEach((t) => fl.push(`<li>Tube under the ${esc(t.name)} is ${fmtZ(t.over, 1)} ${uLbl()} too shallow at ${fmtCh(t.c)}</li>`));
-  sm.deepShallow.forEach((f) => fl.push(`<li>${esc(f.name)} is ${fmtZ(f.d, 0)} ${uLbl()} down in a shallow-canon section</li>`));
-  $('#flags').innerHTML = fl.slice(0, 12).join('') + (fl.length > 12 ? `<li>and ${fl.length - 12} more</li>` : '');
+  S.issues = allIssues(sm);
+  const counts = {}; S.issues.forEach((x) => { counts[x.kind] = (counts[x.kind] || 0) + 1; });
+  $('#issueCounts').textContent = S.issues.length ? Object.entries(counts).map(([k, n]) => `${n} ${k.toLowerCase()}`).join(' · ') : 'No design flags';
+  $('#flags').innerHTML = S.issues.slice(0, 60).map((x, j) => `<li><button class="flag" data-j="${j}"><span class="fk">${esc(x.kind)}</span> ${x.text}</button></li>`).join('') + (S.issues.length > 60 ? `<li>and ${S.issues.length - 60} more</li>` : '');
   const nm = (i) => S.stations[i] ? S.stations[i].name : '';
   const cnl = S.canonSecs.map((x) => `<li><b>${METHOD_LABEL[x.m]}</b>, ${esc(x.a)}${x.aIn === false ? ' (excl.)' : ''} to ${esc(x.b)}${x.bIn === false ? ' (excl.)' : ''}: ${esc(x.src)}</li>`)
     .concat(Object.entries(S.canonFixed).map(([i, f]) => `<li><b>${esc(nm(+i))}</b> rail ${f.abs != null ? `at ${fmtZ(f.abs, 1)} ${uLbl()}` : `${f.off >= 0 ? '+' : '−'}${fmtZ(Math.abs(f.off), 0)} ${uLbl()}`}: ${esc(f.src)}</li>`));
@@ -948,7 +1050,7 @@ function updateSelCard() {
 // ---------- editing ----------
 function snapshot() { return JSON.stringify(S.align); }
 function pushHist() { S.hist.push(snapshot()); if (S.hist.length > 200) S.hist.shift(); S.fut = []; syncUndo(); }
-function syncUndo() { $('#undo').disabled = !S.hist.length || S.canWrite === false; $('#redo').disabled = !S.fut.length || S.canWrite === false; }
+function syncUndo() { $('#undo').disabled = !S.hist.length || S.canWrite === false; $('#redo').disabled = !S.fut.length || S.canWrite === false; $('#solveCross').disabled = S.canWrite === false; }
 function undo() { if (!S.hist.length) return; S.fut.push(snapshot()); S.align = JSON.parse(S.hist.pop()); S.sel = null; changed(); syncUndo(); }
 function redo() { if (!S.fut.length) return; S.hist.push(snapshot()); S.align = JSON.parse(S.fut.pop()); S.sel = null; changed(); syncUndo(); }
 function changed(save = true) { if (S.data) buildCanon(); VERTS = vertices(); updatePanels(); schedule(); if (save) markDirty(); }
@@ -1225,6 +1327,36 @@ cv.addEventListener('keydown', (e) => {
   if (S.sel.kind === 'pvi') { const p = S.align.pvi[S.sel.j]; if (dz) p.z = Math.round((p.z + dz * fromU(amt)) * 100) / 100; if (dc) p.c = clampPviC(p.c + dc * (e.shiftKey ? 10 : 2), S.sel.j); }
   changed();
 });
+
+// design flags: jump to the spot
+$('#flags').addEventListener('click', (e) => { const b = e.target.closest('.flag'); if (!b) return; const x = S.issues[+b.dataset.j]; if (x) { S.hoverC = x.c; centerOn(x.c, Math.min(S.view.c1 - S.view.c0, 1500)); } });
+// re-solve with every crossing held at the minimum clearance: under the other line where this
+// one is lower, over it where higher (each judged from the plain solution)
+$('#solveCross').addEventListener('click', () => {
+  if (S.canWrite === false || !S.data) return;
+  const modes = isRer() ? S.stations.map((_, i) => modeOf(i)) : null;
+  const base = defaultAlign(modes); const vb = vertices(base);
+  const xs = crossingClearances().filter((x) => x.zo != null);
+  if (!xs.length) { flash('No crossings with a known rail'); return; }
+  // feasible = every held crossing and canon level is met and no grade is over the limit
+  const ok = (al, cons) => {
+    const v = vertices(al);
+    for (let k = 0; k < v.length - 1; k++) { const d = v[k + 1].c - v[k].c; if (d > 1e-6 && Math.abs(v[k + 1].z - v[k].z) / d * 1000 > settings.maxGrade + 0.05) return false; }
+    return cons.every((x) => { const z = railAt(x.c, v); return (x.ub == null || z <= x.ub + 0.05) && (x.lb == null || z >= x.lb - 0.05); });
+  };
+  // river tubes the plain solution already meets must stay met
+  const tubeC = riverTubes(modes).flatMap((t) => [{ c: t.c0, ub: t.ub }, { c: t.c1, ub: t.ub }]).filter((t) => railAt(t.c, vb) <= t.ub + 0.05);
+  let cons = []; let held = 0;
+  xs.forEach((x) => {
+    const z0 = railAt(x.c, vb), under = { c: x.c, ub: x.zo - settings.clearMin }, over = { c: x.c, lb: x.zo + settings.clearMin };
+    for (const side of (z0 <= x.zo ? [under, over] : [over, under])) {
+      const trial = cons.concat([side]); if (ok(defaultAlign(modes, trial), trial.concat(tubeC))) { cons = trial; held++; break; }
+    }
+  });
+  pushHist(); const fresh = defaultAlign(modes, cons); S.align = { ...fresh, ovr: S.align.ovr }; S.sel = null; changed();
+  flash(`Cleared ${held} of ${xs.length} crossings within ${settings.maxGrade}‰`);
+});
+
 
 // stations table
 $('#stBody').addEventListener('click', (e) => { const tr = e.target.closest('tr'); if (!tr) return; const i = +tr.dataset.i; S.sel = { kind: 'st', i }; centerOn(S.stations[i].c, Math.min(S.view.c1 - S.view.c0, 2500)); updatePanels(); });
