@@ -252,7 +252,7 @@ Living list of what is done and what is left. Newest changes at the top of each 
 
 - **Structure sizes by era** (rail to roof/lining): Metro boxes one 5.0 m standard on every line (mezzanines and connectors to be designed on top); bored tubes by era, 4.3 m for Lines 1-7 and 5.2 m for Lines 8-14; RER box 6.6 m, tube 7.5 m (RATP RER style, 25 kV over bilevel). Used for drawing, cover, the cut-and-cover rule and river tubes. Replaces the flat 5.5 m / 7 m envelope.
 
-- **Grade separation at crossings** (Rail Profiles): the required rail-to-rail separation now depends on which line is on top and each line's structure (box, bored tube, viaduct, at grade): lower line's box/tube height or open-air clear height under a bridge (4.2 m Metro, 5.8 m RER) + upper line's deck/floor/track bed + 2 m of ground around bored tubes; at-grade crossings flagged (e.g. RER-2 and Line 7 at 9+716). Replaces the flat 8 m / 9 m minimum.
+- **Grade separation at crossings** (Rail Profiles): the required rail-to-rail separation now depends on which line is on top and each line's structure (box, bored tube, viaduct, at grade): lower line's box/tube height or open-air clear height under a bridge (4.2 m Metro, 5.8 m RER) + upper line's deck/floor/track bed + 2 m of ground around bored tubes; at-grade crossings flagged (RER-2 and Line 7 at 9+716: Ben to fix in the drawing). Replaces the flat 8 m / 9 m minimum. Allowances accepted.
 
 ## In progress
 
