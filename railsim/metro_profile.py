@@ -31,9 +31,9 @@ from typing import Dict, List, Optional
 import numpy as np
 
 FT = 0.3048
-TYPES = ("elevated", "atgrade", "cutcover", "shield", "deep")
+TYPES = ("elevated", "atgrade", "trough", "cutcover", "shield", "deep")
 # railsim structure names for each analyzer type (all three tunnel kinds use tunnel drag)
-STRUCTURE = {"elevated": "viaduct", "atgrade": "at-grade", "cutcover": "cut-and-cover",
+STRUCTURE = {"elevated": "viaduct", "atgrade": "at-grade", "trough": "cut", "cutcover": "cut-and-cover",
              "shield": "shield", "deep": "deep-tube"}
 TUNNEL_STRUCTURES = {"tunnel", "cut-and-cover", "shield", "deep-tube"}
 
@@ -52,7 +52,9 @@ METRO_ST = {"box": {"k": "box", "below": 1.0, "top": 4.6},
             "bore": {"k": "bore", "below": 3.2, "top": 5.8, "od": 9.0}}
 WATER_TABLE, TUBE_COVER_HIGH, BOX_COVER = 140.0, 2.0, 0.6
 # rivers: rail at most bed (ground raster) - margin at every chainage of a river range, in tunnel
-RIVER_MARGIN = {"metro": 7.5, "rer": 8.0}
+# (Metro twin tube: 1.0 scour + 2.38 half-diameter cover + 4.08 rail to top; RER sunk box section
+# in a dredged trench, Transbay model: 1.0 scour + 1.5 backfill + 6.6 rail to top)
+RIVER_MARGIN = {"metro": 7.5, "rer": 9.1}
 ERA = {**{f"Line_{k}": {"shield": "tube"} for k in ("1", "2", "2b", "3", "4", "5", "6", "7")},
        **{f"Line_{k}": {"shield": "bore"} for k in ("8", "9", "10", "11", "12", "13", "14")}}
 # RER: 35 per mille, 200 m platforms (8-car TRI) and 12 m station rail depth are canon; the
@@ -62,6 +64,14 @@ RER_DEFAULTS = dict(maxGrade=35.0, platform=200.0, defDepth=12.0, elevAbove=3.0,
                     deepBelow=25.0, shallowMax=18.0, envelope=6.6, boreCrown=7.5, invertDepth=1.0, poolFt=455.0,
                     surfStep=250.0, tubeCover=3.0, vcRadius=3000.0, vcMinLen=30.5, minCover=8.5)
 RER_CANON_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "rer" / "canon.json"
+
+
+def _rer_canon_rivers() -> dict:
+    """River entries of the canon (bed depths where there is no survey), for Metro lines too."""
+    try:
+        return json.loads(RER_CANON_JSON.read_text()).get("rivers") or {}
+    except (OSError, ValueError):
+        return {}
 SETTINGS_KEYS = {"surfaceBendPointSpacing_m": "surfStep", "tubeCover_m": "tubeCover",
                  "verticalCurveRadius_m": "vcRadius", "minBoredCover_m": "minCover",
                  "boredTubeCrownAboveRail_m": "boreCrown", "maxGrade_permille": "maxGrade", "platform_m": "platform",
@@ -234,32 +244,50 @@ class MetroProfile:
         f = self.canon_fixed.get(i)
         return f["ref"] if f and f.get("ref") is not None else self.surface_at(self.stations[i]["c"])
 
+    def _rivers_info(self) -> dict:
+        return (self.rer_canon.get("rivers") if self.rer_canon else None) or _rer_canon_rivers()
+
+    def bed_at(self, c: float) -> float:
+        """River bed: the canon riverbed in the ground raster, else pool minus the canon bed depth
+        where there is no survey (Little Miami)."""
+        r = self.river_at(c)
+        if r:
+            b = self._rivers_info().get(r["name"], {}).get("bed_below_pool_m")
+            if b is not None:
+                return self.pool() - float(b)
+        return float(self.ground_at(c))
+
     def river_tubes(self, md: Optional[List[str]]) -> List[dict]:
-        """River crossings in tube: between two underground stations, or inside a canon deep
-        bore (or a covered way where the canon crosses the river in tunnel). Rail at most
-        pool - bed - cover - bored crown."""
-        if not md:
-            return []
-        rivers = self.rer_canon.get("rivers") or {}
+        """River crossings in tunnel the solver holds: every river on a Metro line (twin tubes);
+        on the RER between two underground stations, inside a canon deep bore, or in the covered
+        way where the canon crosses the river in tunnel (sunk box sections). Rail at most the
+        lowest bed - margin over the river range."""
+        rivers = self._rivers_info()
+        margin = RIVER_MARGIN["rer" if self.is_rer else "metro"]
+        step = float(self.data.get("step_m", 2.0))
         out = []
         for r in self.data.get("rivers", []) or []:
-            info = rivers.get(r["name"], {})
-            sec = self.canon_at((r["c0"] + r["c1"]) / 2)
-            if sec and sec["m"] == "covered" and not info.get("in_covered_way"):
-                continue
-            ip, inx = -1, -1
-            for i, st in enumerate(self.stations):
-                if st["c"] < r["c0"]:
-                    ip = i
-                if st["c"] > r["c1"] and inx < 0:
-                    inx = i
-            bore = bool(sec) and (sec["m"] == "deep" or (sec["m"] == "covered" and info.get("in_covered_way")))
-            under = ip >= 0 and inx >= 0 and md[ip] != "surface" and md[inx] != "surface"
-            if not (bore or under):
-                continue
-            bed = info.get("bed_below_pool_m", 12.0)
-            out.append({"name": r["name"], "c0": r["c0"], "c1": r["c1"],
-                        "ub": self.pool() - bed - self.settings["tubeCover"] - self.bore_crown()})
+            if self.is_rer:
+                if not md:
+                    continue
+                info = rivers.get(r["name"], {})
+                sec = self.canon_at((r["c0"] + r["c1"]) / 2)
+                if sec and sec["m"] == "covered" and not info.get("in_covered_way"):
+                    continue
+                ip, inx = -1, -1
+                for i, st in enumerate(self.stations):
+                    if st["c"] < r["c0"]:
+                        ip = i
+                    if st["c"] > r["c1"] and inx < 0:
+                        inx = i
+                bore = bool(sec) and (sec["m"] == "deep" or (sec["m"] == "covered" and info.get("in_covered_way")))
+                under = ip >= 0 and inx >= 0 and md[ip] != "surface" and md[inx] != "surface"
+                if not (bore or under):
+                    continue
+            beds = [self.bed_at(c) for c in np.arange(r["c0"], r["c1"] + 1e-9, step)]
+            beds = [b for b in beds if math.isfinite(b)]
+            if beds:
+                out.append({"name": r["name"], "c0": r["c0"], "c1": r["c1"], "ub": min(beds) - margin})
         return out
 
     def default_mode(self, i: int) -> str:
@@ -349,9 +377,9 @@ class MetroProfile:
                 if nd["st"]:
                     st[nd["i"]] = _js_round(za * 100) / 100
                 else:
-                    tube_pvi.append((float(_js_round(nd["c"])), _js_round(za * 1000) / 1000))
+                    tube_pvi.append((_js_round(nd["c"] * 10) / 10, _js_round(za * 1000) / 1000))
         self.modes = md or []
-        self.pvi = sorted(self.surface_pvis(st, md) + tube_pvi) if md else []
+        self.pvi = sorted((self.surface_pvis(st, md) if md else []) + tube_pvi)
         return st
 
     def surface_pvis(self, st: List[float], md: List[str]) -> List[tuple]:
@@ -605,6 +633,8 @@ class MetroProfile:
         d = g - z
         if d < self.settings["coverBelow"]:
             return "atgrade"
+        if not self.is_rer and d < self.settings.get("trough_override", METRO_ST["box"]["top"]):  # Metro portal ramps: open trough
+            return "trough"
         sec = self.canon_at(c)
         m = sec["m"] if sec else ("deep" if d >= self.settings["deepBelow"] else "shallow")
         if m == "canal":
@@ -627,9 +657,9 @@ class MetroProfile:
     def struct_for(self, t: str, c: float) -> dict:
         """The tunnel structure at chainage c for a tunnel type (below / top from the rail)."""
         st = self.settings
-        if self.is_rer:
-            return ({"k": "box", "below": st["invertDepth"], "top": st["envelope"]} if t == "cutcover"
-                    else {"k": "bore", "below": st["invertDepth"], "top": st["boreCrown"]})
+        if self.is_rer:  # river crossings: sunk box sections in a dredged trench
+            return ({"k": "box", "below": st["invertDepth"], "top": st["envelope"]}
+                    if t == "cutcover" or self.river_at(c) else {"k": "bore", "below": st["invertDepth"], "top": st["boreCrown"]})
         if self.river_at(c) or t == "deep":
             return METRO_ST["tube"]
         if t == "cutcover":
@@ -664,7 +694,8 @@ class MetroProfile:
         for r in self.data.get("rivers", []) or []:
             run = None
             for i in range(math.ceil(r["c0"] / step), int(math.floor(r["c1"] / step)) + 1):
-                c, bed = i * step, float(self._ground[i]) if i < len(self._ground) else math.nan
+                c = i * step
+                bed = self.bed_at(c)
                 z = float(self.rail_at(c))
                 t = self.type_at(c, z)
                 over = z - (bed - margin) if math.isfinite(bed) and t in ("cutcover", "shield", "deep") else -math.inf

@@ -306,11 +306,12 @@ def test_metro_profile_port_matches_saved_page_output():
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
-    doc = json.loads((root / "alignments/Line_1.json").read_text())
+    fixture = Path(__file__).resolve().parent / "data/Line_1_saved_2026-10-06.json"
+    doc = json.loads(fixture.read_text())
     # the page as it was when saved: straight grades, no era cover rule
-    mp = MetroProfile.load(root / "lines/Line_1.json", root / "alignments/Line_1.json",
+    mp = MetroProfile.load(root / "lines/Line_1.json", fixture,
                            root / "settings.json",
-                           settings_override={"vcRadius": 0.0, "minCover_override": -1e9})
+                           settings_override={"vcRadius": 0.0, "minCover_override": -1e9, "trough_override": -1e9})
     mp._ground = np.array([np.nan if v is None else v / 10 for v in mp.data["ground_dm_lidar"]])
     for i, s in enumerate(doc["stations"]):
         assert mp.st[i] == pytest.approx(s["rail"], abs=0.02)
@@ -348,7 +349,7 @@ def test_rer_core_profile_matches_page():
     names = [s["name"] for s in r3.stations]
     assert r3.st[names.index("Torrance")] == 144.0
     assert r3.type_at(r3.stations[names.index("Torrance")]["c"]) == "cutcover"
-    assert min(z for c, z in r3.pvi) == pytest.approx(125.184, abs=0.01)  # under the Little Miami (7.5 m bored crown)
+    assert min(z for c, z in r3.pvi) == pytest.approx(126.584, abs=0.01)  # Little Miami: pool - 3 m bed - 9.1 m
     assert r3.modes[names.index("Asbury")] == "surface"
     r5 = load("RER_5")
     assert r5.summary()["km_by_type"]["deep"] == pytest.approx(3.55, abs=0.05)  # shallower than bore + cover: cut and cover

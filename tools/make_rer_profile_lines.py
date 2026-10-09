@@ -203,7 +203,7 @@ def main():
         cs = np.arange(n) * STEP
         h = r.horizontal
         sq = s0 + cs
-        ground = elev.from_dem(r.proj, h.xy, h.s, sq, DEM, scale=0.1, spacing=STEP,
+        ground = elev.from_dem(r.proj, h.xy, h.s, sq, DEM, scale=0.1, spacing=STEP, water=False,
                                progress=lambda *a: None)
         if ground is None:
             print(f"  {line}: no map 3 ground; skipped")

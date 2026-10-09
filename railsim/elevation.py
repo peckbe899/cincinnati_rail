@@ -378,10 +378,13 @@ def from_lidar(proj, align_xy, align_s, s_query, projects: Sequence[str], cache_
 
 def from_dem(proj, align_xy, align_s, s_query, path, scale: float = 1.0,
              spacing: float = 5.0, progress=print,
-             fallback: Optional[Callable] = None) -> Optional[np.ndarray]:
+             fallback: Optional[Callable] = None, water: bool = True) -> Optional[np.ndarray]:
     """Ground elevation from a local DEM raster (e.g. an alternate-history terrain in
     decimetres: scale 0.1), read only at the line's sample points. Points outside the raster
-    or on nodata are filled from `fallback(s)` (e.g. LiDAR, then terrain tiles)."""
+    or on nodata are filled from `fallback(s)` (e.g. LiDAR, then terrain tiles).
+    water: where a `<dem stem>_water.tif` overlay sits beside the DEM (the water surface over
+    a surveyed riverbed), use the water surface, so ground-following bridges stay above the
+    river; False keeps the bed (profile design under rivers)."""
     try:
         import rasterio
         from pyproj import Transformer
@@ -405,6 +408,17 @@ def from_dem(proj, align_xy, align_s, s_query, path, scale: float = 1.0,
             val = float(v[0])
             if nod is None or val != nod:
                 z[i] = val * scale
+    wpath = Path(path).with_name(Path(path).stem + "_water.tif")
+    if water and wpath.exists():
+        with rasterio.open(wpath) as ws:
+            trw = Transformer.from_crs(4326, ws.crs, always_xy=True)
+            Xw, Yw = trw.transform(np.asarray(lon), np.asarray(lat))
+            b = ws.bounds
+            idx = np.nonzero((Xw >= b.left) & (Xw <= b.right) & (Yw >= b.bottom) & (Yw <= b.top))[0]
+            for i, v in zip(idx, ws.sample(list(zip(Xw[idx], Yw[idx])))):
+                val = float(v[0])
+                if val != ws.nodata and np.isfinite(z[i]):
+                    z[i] = max(z[i], val * scale)
     ok = np.isfinite(z)
     progress(f"  DEM {Path(path).name}: covers {ok.mean():.0%} of the line")
     if not ok.all() and fallback is not None:

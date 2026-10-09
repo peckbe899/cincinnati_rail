@@ -1,76 +1,253 @@
 {
- "note": "RER canon for the Rail Profiles page, tools/make_rer_profile_lines.py and railsim/metro_profile.py (Ben's rulings). RER-n is TRI by KMZ colour: 1 A, 2 B, 3 C, 4 D, 5 E. modes: station 'under' or 'surface' (at grade); fixed: station rail level, 'abs' metres NAVD88 or 'off' metres from ground; sections: canon structure between two stations (m: covered = covered way, cut and cover; deep = deep bore); deck: rail at yard level under a deck, ground = DEM top minus 'drop'. rivers: tube design under each river (water at the Ohio normal pool; bed and cover are starting values, not canon).",
+ "note": "RER canon for the Rail Profiles page, tools/make_rer_profile_lines.py and railsim/metro_profile.py (Ben's rulings). RER-n is TRI by KMZ colour: 1 A, 2 B, 3 C, 4 D, 5 E. modes: station 'under' or 'surface' (at grade); fixed: station rail level, 'abs' metres NAVD88 or 'off' metres from ground; sections: canon structure between two stations (m: covered = covered way, cut and cover; deep = deep bore); deck: rail at yard level under a deck, ground = DEM top minus 'drop'. rivers: bed 'dem' = the canon riverbed in the ground raster, else pool minus bed_below_pool_m (no survey); in tunnel the rail stays bed - 9.1 m (RER, sunk box sections) / bed - 7.5 m (Metro twin tubes).",
  "union_terminal_track_level_m": 154.0,
  "rivers": {
-  "Ohio River": {"bed_below_pool_m": 12.0, "src": "Ohio tube: bed taken 12 m below the normal pool (starting value, not canon)"},
-  "Little Miami River": {"bed_below_pool_m": 3.0, "width_m": 60.0, "centerline": true, "in_covered_way": true, "src": "Crossed in tunnel inside the RER-3 covered way; bed taken 3 m below the pool (starting value, not canon)"}
+  "Ohio River": {
+   "bed": "dem",
+   "src": "Canon riverbed in the map 3 ground (handoff 2026-10-09); RER crosses as sunk box sections in a dredged trench (Transbay model)"
+  },
+  "Licking River": {
+   "bed": "dem",
+   "src": "Canon riverbed in the map 3 ground (handoff 2026-10-09)"
+  },
+  "Little Miami River": {
+   "bed_below_pool_m": 3.0,
+   "width_m": 60.0,
+   "centerline": true,
+   "in_covered_way": true,
+   "src": "No survey: bed taken 3 m below the pool; crossed inside the RER-3 covered way"
+  }
  },
  "lines": {
   "RER_1": {
    "modes": {
-    "Union Terminal": {"mode": "under", "src": "All eight crosstown stations underground from 1985"},
-    "City Hall": {"mode": "under", "src": "All eight crosstown stations underground from 1985"},
-    "Fountain Square": {"mode": "under", "src": "All eight crosstown stations underground from 1985"},
-    "Times": {"mode": "under", "src": "All eight crosstown stations underground from 1985"},
-    "Eden Park": {"mode": "under", "src": "All eight crosstown stations underground from 1985"},
-    "Walnut Hills": {"mode": "under", "src": "All eight crosstown stations underground from 1985"},
-    "MLK": {"mode": "under", "src": "All eight crosstown stations underground from 1985"},
-    "Xavier": {"mode": "under", "src": "All eight crosstown stations underground from 1985"}
+    "Union Terminal": {
+     "mode": "under",
+     "src": "All eight crosstown stations underground from 1985"
+    },
+    "City Hall": {
+     "mode": "under",
+     "src": "All eight crosstown stations underground from 1985"
+    },
+    "Fountain Square": {
+     "mode": "under",
+     "src": "All eight crosstown stations underground from 1985"
+    },
+    "Times": {
+     "mode": "under",
+     "src": "All eight crosstown stations underground from 1985"
+    },
+    "Eden Park": {
+     "mode": "under",
+     "src": "All eight crosstown stations underground from 1985"
+    },
+    "Walnut Hills": {
+     "mode": "under",
+     "src": "All eight crosstown stations underground from 1985"
+    },
+    "MLK": {
+     "mode": "under",
+     "src": "All eight crosstown stations underground from 1985"
+    },
+    "Xavier": {
+     "mode": "under",
+     "src": "All eight crosstown stations underground from 1985"
+    }
    },
-   "fixed": {"Union Terminal": {"abs": 142.0, "ref": 154.0, "src": "Level -2 North beside the ORBIT platforms, under the -1 concourse: 12 m below the 154.0 m track level"}}
+   "fixed": {
+    "Union Terminal": {
+     "abs": 142.0,
+     "ref": 154.0,
+     "src": "Level -2 North beside the ORBIT platforms, under the -1 concourse: 12 m below the 154.0 m track level"
+    }
+   }
   },
   "RER_2": {
    "modes": {
-    "Mitchell Ave / WINTON PLACE": {"mode": "surface", "src": "Mill Creek trunk at grade on the shared 6-track corridor, open from Arlington north"},
-    "Northside / Spring Grove": {"mode": "surface", "src": "Mill Creek trunk at grade on the shared 6-track corridor, open from Arlington north"},
-    "Arlington": {"mode": "surface", "src": "Mill Creek trunk at grade on the shared 6-track corridor, open from Arlington north"},
-    "Camp Washington": {"mode": "surface", "src": "At yard level under the boulevard deck"},
-    "Straight": {"mode": "surface", "src": "At yard level under the boulevard deck"},
-    "Western": {"mode": "surface", "src": "At yard level under the boulevard deck"},
-    "Union Terminal": {"mode": "under", "src": "Underground from Union Terminal into the Washington Park tunnel"},
-    "Roebling": {"mode": "under", "src": "Ohio tube to Rivercenter; depth set by the solver (may sit below RER-3)"},
-    "Rivercenter": {"mode": "under", "src": "Ohio tube from Roebling"}
-   },
-   "fixed": {"Union Terminal": {"abs": 142.0, "ref": 154.0, "src": "Level -2 North, 12 m below the 154.0 m track level"}},
-   "deck": [{"a": "Camp Washington", "b": "Western", "drop": 8.5, "src": "Boulevard deck: the DEM is the deck top; the rail is at yard level, about 8.5 m lower"}]
-  },
-  "RER_3": {
-   "sections": [{"a": "Sedamsville", "aIn": false, "b": "Riverbend/Belterra", "bIn": false, "m": "covered", "src": "Embanked covered way along the Ohio, continuous from Sedamsville to Belterra; Lunken underground; the Little Miami crossed in tunnel"}],
-   "modes": {
-    "Sedamsville": {"mode": "surface", "src": "At grade, at the west end of the covered way"},
-    "Riverbend/Belterra": {"mode": "surface", "src": "At grade, at the east end of the covered way"},
-    "Asbury": {"mode": "surface", "src": "Back on the ground past the embankment"}
+    "Mitchell Ave / WINTON PLACE": {
+     "mode": "surface",
+     "src": "Mill Creek trunk at grade on the shared 6-track corridor, open from Arlington north"
+    },
+    "Northside / Spring Grove": {
+     "mode": "surface",
+     "src": "Mill Creek trunk at grade on the shared 6-track corridor, open from Arlington north"
+    },
+    "Arlington": {
+     "mode": "surface",
+     "src": "Mill Creek trunk at grade on the shared 6-track corridor, open from Arlington north"
+    },
+    "Camp Washington": {
+     "mode": "surface",
+     "src": "At yard level under the boulevard deck"
+    },
+    "Straight": {
+     "mode": "surface",
+     "src": "At yard level under the boulevard deck"
+    },
+    "Western": {
+     "mode": "surface",
+     "src": "At yard level under the boulevard deck"
+    },
+    "Union Terminal": {
+     "mode": "under",
+     "src": "Underground from Union Terminal into the Washington Park tunnel"
+    },
+    "Roebling": {
+     "mode": "under",
+     "src": "Ohio tube to Rivercenter; depth set by the solver (may sit below RER-3)"
+    },
+    "Rivercenter": {
+     "mode": "under",
+     "src": "Ohio tube from Roebling"
+    }
    },
    "fixed": {
-    "Mill Creek": {"abs": 144.0, "src": "Covered way rail at 144 m"},
-    "Longworth": {"abs": 144.0, "src": "Covered way rail at 144 m"},
-    "Roebling": {"abs": 144.0, "src": "Covered way rail at 144 m"},
-    "Pennsylvania": {"abs": 144.0, "src": "Covered way rail at 144 m"},
-    "Baines": {"abs": 144.0, "src": "Covered way rail at 144 m"},
-    "Torrance": {"abs": 144.0, "src": "Covered way rail at 144 m"},
-    "Columbia-Tusculum": {"abs": 144.0, "src": "Covered way rail at 144 m"},
-    "Lunken": {"abs": 144.0, "src": "Covered way rail at 144 m; Lunken underground"},
-    "California": {"abs": 144.0, "src": "Covered way rail at 144 m"}
+    "Union Terminal": {
+     "abs": 142.0,
+     "ref": 154.0,
+     "src": "Level -2 North, 12 m below the 154.0 m track level"
+    }
+   },
+   "deck": [
+    {
+     "a": "Camp Washington",
+     "b": "Western",
+     "drop": 8.5,
+     "src": "Boulevard deck: the DEM is the deck top; the rail is at yard level, about 8.5 m lower"
+    }
+   ]
+  },
+  "RER_3": {
+   "sections": [
+    {
+     "a": "Sedamsville",
+     "aIn": false,
+     "b": "Riverbend/Belterra",
+     "bIn": false,
+     "m": "covered",
+     "src": "Embanked covered way along the Ohio, continuous from Sedamsville to Belterra; Lunken underground; the Little Miami crossed in tunnel"
+    }
+   ],
+   "modes": {
+    "Sedamsville": {
+     "mode": "surface",
+     "src": "At grade, at the west end of the covered way"
+    },
+    "Riverbend/Belterra": {
+     "mode": "surface",
+     "src": "At grade, at the east end of the covered way"
+    },
+    "Asbury": {
+     "mode": "surface",
+     "src": "Back on the ground past the embankment"
+    }
+   },
+   "fixed": {
+    "Mill Creek": {
+     "abs": 144.0,
+     "src": "Covered way rail at 144 m"
+    },
+    "Longworth": {
+     "abs": 144.0,
+     "src": "Covered way rail at 144 m"
+    },
+    "Roebling": {
+     "abs": 144.0,
+     "src": "Covered way rail at 144 m"
+    },
+    "Pennsylvania": {
+     "abs": 144.0,
+     "src": "Covered way rail at 144 m"
+    },
+    "Baines": {
+     "abs": 144.0,
+     "src": "Covered way rail at 144 m"
+    },
+    "Torrance": {
+     "abs": 144.0,
+     "src": "Covered way rail at 144 m"
+    },
+    "Columbia-Tusculum": {
+     "abs": 144.0,
+     "src": "Covered way rail at 144 m"
+    },
+    "Lunken": {
+     "abs": 144.0,
+     "src": "Covered way rail at 144 m; Lunken underground"
+    },
+    "California": {
+     "abs": 144.0,
+     "src": "Covered way rail at 144 m"
+    }
    }
   },
   "RER_4": {
    "modes": {
-    "Pennsylvania": {"mode": "under", "src": "Ohio tube toward Newport"},
-    "Mansion Hill": {"mode": "under", "src": "Ohio tube toward Newport"},
-    "Camp Washington": {"mode": "surface", "src": "At yard level under the boulevard deck"},
-    "Straight": {"mode": "surface", "src": "At yard level under the boulevard deck"},
-    "Western": {"mode": "surface", "src": "At yard level under the boulevard deck"}
+    "Pennsylvania": {
+     "mode": "under",
+     "src": "Ohio tube toward Newport"
+    },
+    "Mansion Hill": {
+     "mode": "under",
+     "src": "Ohio tube toward Newport"
+    },
+    "Camp Washington": {
+     "mode": "surface",
+     "src": "At yard level under the boulevard deck"
+    },
+    "Straight": {
+     "mode": "surface",
+     "src": "At yard level under the boulevard deck"
+    },
+    "Western": {
+     "mode": "surface",
+     "src": "At yard level under the boulevard deck"
+    }
    },
-   "fixed": {"Union Terminal": {"abs": 142.0, "ref": 154.0, "src": "Level -2 North, 12 m below the 154.0 m track level"}},
-   "deck": [{"a": "Camp Washington", "b": "Western", "drop": 8.5, "src": "Boulevard deck: the DEM is the deck top; the rail is at yard level, about 8.5 m lower"}]
+   "fixed": {
+    "Union Terminal": {
+     "abs": 142.0,
+     "ref": 154.0,
+     "src": "Level -2 North, 12 m below the 154.0 m track level"
+    }
+   },
+   "deck": [
+    {
+     "a": "Camp Washington",
+     "b": "Western",
+     "drop": 8.5,
+     "src": "Boulevard deck: the DEM is the deck top; the rail is at yard level, about 8.5 m lower"
+    }
+   ]
   },
   "RER_5": {
-   "sections": [{"a": "Norwood Central", "aIn": false, "b": "Ludlow", "bIn": false, "m": "deep", "src": "1996 deep bore, portals west of Norwood Central and north of Ludlow; continuous under the Ohio"}],
+   "sections": [
+    {
+     "a": "Norwood Central",
+     "aIn": false,
+     "b": "Ludlow",
+     "bIn": false,
+     "m": "deep",
+     "src": "1996 deep bore, portals west of Norwood Central and north of Ludlow; continuous under the Ohio"
+    }
+   ],
    "modes": {
-    "Norwood Central": {"mode": "surface", "src": "At grade, east of the deep-bore portal"},
-    "Ludlow": {"mode": "surface", "src": "At grade, south of the deep-bore portal"}
+    "Norwood Central": {
+     "mode": "surface",
+     "src": "At grade, east of the deep-bore portal"
+    },
+    "Ludlow": {
+     "mode": "surface",
+     "src": "At grade, south of the deep-bore portal"
+    }
    },
-   "fixed": {"Union Terminal": {"abs": 142.0, "ref": 154.0, "src": "Level -2 North, 12 m below the 154.0 m track level"}}
+   "fixed": {
+    "Union Terminal": {
+     "abs": 142.0,
+     "ref": 154.0,
+     "src": "Level -2 North, 12 m below the 154.0 m track level"
+    }
+   }
   }
  }
 }

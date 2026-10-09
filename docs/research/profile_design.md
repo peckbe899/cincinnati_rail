@@ -50,6 +50,12 @@ What real long-section design checks that the editor did not, and what the page 
   - Cover over the top: tube or bore with its top above 140.0 m (basin water table, about river level) 2.0 m, at or below 140.0 m one outside diameter (4.76 m tube, 9.0 m bore); box roof 0.6 m. A tube or bore with less cover is typed cut and cover.
   - Rivers: at every chainage inside a river range, in tunnel, rail at most bed - 7.5 m on the Metro (1.0 scour + 2.38 half-diameter cover + 4.08 rail to top) and bed - 8.0 m on the RER (1.0 scour + 1.5 backfill + 5.5 rail to top), bed = the ground raster there.
   - Flags by line: `docs/research/metro_rules_flags.md`.
+- **Rulings of 2026-10-09** (Ben):
+  - Portal ramps (Metro): rail less than 4.6 m below ground is an open trough (new type, no cover rule); 4.6 to 5.2 m is a box whose roof forms the street surface (thin-cover WARNING, not an error); from 5.2 m the 0.6 m roof cover rule.
+  - A line in the open under another structure needs its clear height from rail to the structure's underside: Metro 4.2 m (ballasted track is lifted in maintenance and the car bounces more than on tunnel slab track), RER 5.8 m.
+  - River bed: the map 3 ground now holds the canon riverbed in the Ohio and Licking (handoff tiles of 2026-10-09); canon.json's 12 m Ohio bed depth is dropped. The Little Miami has no survey: pool - 3 m.
+  - RER river crossings are sunk box sections in a dredged trench (Transbay model), drawn as RER boxes: rail <= bed - 9.1 m (1.0 scour + 1.5 backfill + 6.6 rail to top), replacing bed - 8.0 m.
+  - Solvers: the Metro solver holds rail <= bed - 7.5 m under rivers for default-solved lines; saved profiles are only flagged. The RER solver holds rail <= bed - 9.1 m (was pool - 22.5 m). Both hold the lowest bed in the river range.
 - **RER-3 covered way** may stay flat: it drains beneath into the sewers (no drainage flags there).
 - **Sloped platforms** (Ben: MTA-style slight grades in stations, to ease the bends on either side; limit by era): each station has a platform grade about its centre level (`sg`, per mille). The transitions carry the platform grade on, so a station on a climb needs smaller bends at both ends. 'Ease the bends' (per station) and 'Ease all platforms' set each platform to the mean of the grades either side, within the limit. Saved with the profile and used by the simulator. Limits by era:
 
