@@ -230,6 +230,20 @@ Living list of what is done and what is left. Newest changes at the top of each 
 - **RER run times use the designed cores**: through-service configs carry `profile.analyzer` (the RER core); the core's rail, ground and structure replace the ground-fitted profile there, and the difference tapers out over 400 m past the core (`overlay_profile`).
   - All 51 RER configs run. Through services vs the ground-fitted map 3 run: +0.0 to +0.3% (mean +0.04%); pre-RER services unchanged.
 
+- **RER canon rulings applied** (`data/profile/rer/canon.json`, one file read by the page, the line generator and the Python port):
+  - 35 per mille, 200 m platforms (8-car TRI; the RER C set shortened from 215 to 200 m), 12 m station rail depth.
+  - RER-1: all eight crosstown stations underground from 1985. Before 1985 the eastern trains ran the CL&N up the Deer Creek valley into Times, on the surface at up to 3.5% (pre-RER configs: `max_grade 0.035`, tunnels allowed where the design cuts deep).
+  - Union Terminal: RER platforms on level -2 North at 142.0 m rail, 12 m below the 154.0 m track level (read from the map 3 ground west of the building); depth shown from track level.
+  - Mill Creek trunk at grade on the shared 6-track corridor, open from Arlington north; Camp Washington, Straight and Western at yard level under the boulevard deck (ground = DEM - 8.5 m); underground from Union Terminal into the Washington Park tunnel.
+  - Ohio tubes for RER-2 (Roebling - Rivercenter) and RER-4 (toward Newport), and the RER-5 deep bore under the Ohio. Tube rule: roof at least the cover below the river bed (starting values: Ohio bed 12 m below pool, 3 m cover).
+  - RER-3 covered way at 144 m from Sedamsville to Belterra (both at grade), Lunken underground, dipping to 125.7 m under the Little Miami.
+  - RER-5 bore portals west of Norwood Central and north of Ludlow, both stations at grade.
+- **Pre-RER routes into Union Terminal's top platforms** (`tools/make_historic_links.py` -> `data/kmz/cincinnati_historic.kml`):
+  - RER-2 Falmouth and Verona, RER-4 Dover: the C&O through Covington (and Newport for RER-4) over the C&O bridge along today's CSX; the C&O viaduct is an approximate curve.
+  - RER-3: a wye off the riverfront line at the Mill Creek mouth into the top platforms (approximate), open along the embankment.
+  - RER-5 Waynesville and Wilmington: Norwood Central west to Ivorydale on today's track, then the Mill Creek valley.
+- **Line 5**: Eggleston lowered to 149.48 m so Times to Eggleston is exactly 50 per mille (the gap is 55.6 m); Eggleston to Pennsylvania -21.7 per mille. Saved in the repo and the page.
+
 ## In progress
 
 - Nothing running.
