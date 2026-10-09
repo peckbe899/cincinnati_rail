@@ -181,7 +181,7 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
       <div class="types" id="types"></div>
       <p class="hint" id="issueCounts"></p>
       <ul class="flags" id="flags"></ul>
-      <div class="group"><button class="btn" id="solveCross" title="Re-solve this line's station levels so every crossing keeps the minimum clearance">Solve levels with crossings</button></div>
+ <div class="group"><button class="btn" id="easeAll" title="Slope every platform toward the grades on either side, up to the station limit">Ease all platforms</button><button class="btn" id="solveCross" title="Re-solve this line's station levels so every crossing keeps the minimum clearance">Solve levels with crossings</button></div>
     </div>
     <div class="card">
       <h2>Canon structure</h2>
@@ -215,7 +215,7 @@ const TYPE_KEYS = Object.keys(TYPES);
 // thresholds are editable starting values, not canon. deepBelow (60 ft) follows the station
 // list calling Price Hill's 60 ft station a deep bore; shallowMax (40 ft) flags canon-shallow
 // stretches that run well past the doctrine's 20-30 ft.
-const METRO_DEFAULTS = { maxGrade: 50, platform: 152.4, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, envelope: 5.5, boreCrown: 5.2, deckDepth: 1.5, invertDepth: 1.0, boreGap: 2.0, poolFt: 455.0, vcRadius: 1500, minCover: 2, drainMin: 3, curveK: 800 };
+const METRO_DEFAULTS = { maxGrade: 50, platform: 152.4, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, envelope: 5.5, boreCrown: 5.2, deckDepth: 1.5, invertDepth: 1.0, boreGap: 2.0, poolFt: 455.0, vcRadius: 1500, minCover: 2, drainMin: 3, curveK: 800, stationMaxGrade: 3 };
 // Design rules: vertical curves of 1,500 m (Metro) and 3,000 m (RER) at every grade change, kept
 // off platforms by a level transition (canon); bored tunnels need the cover of their era's
 // practice, else they are cut and cover (canon, see ERA); tunnels drain at 3 per mille or
@@ -224,7 +224,7 @@ const METRO_DEFAULTS = { maxGrade: 50, platform: 152.4, defDepth: 7.62, elevAbov
 // RER: 35 per mille, 200 m platforms (8-car TRI) and 12 m station rail depth are canon; the
 // envelope (25 kV overhead), thresholds, tube cover and surface bend-point spacing are starting
 // values. Surface stations sit at grade on the old railroad and the rail follows the ground.
-const RER_DEFAULTS = { maxGrade: 35, platform: 200, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 6.6, boreCrown: 7.5, deckDepth: 2.0, invertDepth: 1.0, boreGap: 2.0, poolFt: 455.0, surfStep: 250, tubeCover: 3, vcRadius: 3000, minCover: 8.5, drainMin: 3, curveK: 800 };
+const RER_DEFAULTS = { maxGrade: 35, platform: 200, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 6.6, boreCrown: 7.5, deckDepth: 2.0, invertDepth: 1.0, boreGap: 2.0, poolFt: 455.0, surfStep: 250, tubeCover: 3, vcRadius: 3000, minCover: 8.5, drainMin: 3, curveK: 800, stationMaxGrade: 3 };
 let DEFAULTS = METRO_DEFAULTS;
 // Canon structure for the founding sections (Lines 1-6 as first opened).
 // m: 'shallow' = basin method (shallow shield running tunnels, cut-and-cover station boxes);
@@ -272,6 +272,7 @@ const SETTING_ROWS_BASE = [
   ['vcRadius', 'Vertical curve radius', 'len', 100],
   ['minCover', 'Cover over bored tunnels (RER; Metro by era)', 'len', 0.5],
   ['drainMin', 'Min tunnel grade for drainage', '‰', 0.5],
+  ['stationMaxGrade', 'Max platform grade', '‰', 0.5],
   ['curveK', 'Curve compensation, k in k / R per mille', 'k', 50],
 ];
 const SETTING_ROWS_RER = SETTING_ROWS_BASE.map((r) => r[0] === 'defDepth' ? ['defDepth', 'Default rail depth at underground stations', 'len', 0.1] : r)
@@ -331,9 +332,11 @@ function stKey(i) { const s = S.stations[i]; const dup = S.stations.filter((x) =
 function vertices(al = S.align, stations = S.stations, L = S.L, platform = settings.platform, rv = settings.vcRadius) {
   const half = platform / 2; const v = []; v.rv = rv || 0;
   stations.forEach((s, i) => {
-    const z = al.st[i];
-    v.push({ c: clamp(s.c - half, 0, L), z, kind: 'ps', i });
-    v.push({ c: clamp(s.c + half, 0, L), z, kind: 'pe', i });
+    // platform grade (per mille, rising with chainage) about the level at the platform centre
+    const z = al.st[i], gp = ((al.sg && al.sg[i]) || 0) / 1000;
+    const ca = clamp(s.c - half, 0, L), cb = clamp(s.c + half, 0, L);
+    v.push({ c: ca, z: z + gp * (ca - s.c), kind: 'ps', i, gp });
+    v.push({ c: cb, z: z + gp * (cb - s.c), kind: 'pe', i, gp });
   });
   al.pvi.forEach((p, j) => v.push({ c: p.c, z: p.z, kind: 'pvi', j }));
   v.sort((a, b) => a.c - b.c || (a.kind === 'pe' ? -1 : 1));
@@ -357,15 +360,18 @@ function design(verts) {
     if (v.kind === 'ps' && k - 1 >= 0 && !(verts[k - 1].kind === 'pe' && verts[k - 1].i === v.i) && v.c - verts[k - 1].c > 1e-6) return k - 1;
     return -1;
   };
+  // level along a platform end's own grade (the transition carries the platform grade on)
+  const zOn = (k, c) => verts[k].z + (verts[k].gp || 0) * (c - verts[k].c);
   if (rv > 0) {
     for (let it = 0; it < 5; it++) {
       const nx = new Array(n).fill(0);
       for (let k = 0; k < n; k++) {
         const o = outward(k); if (o < 0) continue; const dir = o > k ? 1 : -1;
-        const piv = verts[k].c + dir * ext[k];
-        const oc = verts[o].c - dir * ((outward(o) === k) ? ext[o] : 0);
+        const piv = verts[k].c + dir * ext[k], facing = outward(o) === k;
+        const oc = verts[o].c - dir * (facing ? ext[o] : 0);
         const run = Math.abs(oc - piv); if (run < 1e-6) continue;
-        nx[k] = rv * Math.abs((verts[o].z - verts[k].z) / run) / 2;
+        const gq = (zOn(o, oc) - zOn(k, piv)) / (oc - piv);
+        nx[k] = rv * Math.abs(gq - (verts[k].gp || 0)) / 2;
       }
       // the two transitions on one stretch take at most half of it
       for (let k = 0; k + 1 < n; k++) {
@@ -377,8 +383,8 @@ function design(verts) {
   }
   const dv = [];
   verts.forEach((v, k) => {
-    if (v.kind === 'ps' && ext[k] > 1e-6) { dv.push({ c: v.c - ext[k], z: v.z, kind: 'x', i: v.i }); dv.push(v); }
-    else if (v.kind === 'pe' && ext[k] > 1e-6) { dv.push(v); dv.push({ c: v.c + ext[k], z: v.z, kind: 'x', i: v.i }); }
+    if (v.kind === 'ps' && ext[k] > 1e-6) { dv.push({ c: v.c - ext[k], z: zOn(k, v.c - ext[k]), kind: 'x', i: v.i }); dv.push(v); }
+    else if (v.kind === 'pe' && ext[k] > 1e-6) { dv.push(v); dv.push({ c: v.c + ext[k], z: zOn(k, v.c + ext[k]), kind: 'x', i: v.i }); }
     else dv.push(v);
   });
   const g = []; for (let k = 0; k + 1 < dv.length; k++) { const d = dv[k + 1].c - dv[k].c; g.push(d > 1e-9 ? (dv[k + 1].z - dv[k].z) / d : 0); }
@@ -566,7 +572,7 @@ function defaultAlign(modes, extra = []) {
     // bend points at the extra nodes, except inside platforms (those constrain the station level)
     nodes.forEach((nd, a) => { if (nd.st) st[nd.i] = Math.round(z[a] * 100) / 100; else if (!inPlatform(nd.c)) tubePvi.push({ c: Math.round(nd.c), z: Math.round(z[a] * 1000) / 1000 }); });
   }
-  const al = { st, pvi: (md ? surfacePvis(st, md) : []).concat(tubePvi).sort((a, b) => a.c - b.c), ovr: [] };
+  const al = { st, sg: st.map(() => 0), pvi: (md ? surfacePvis(st, md) : []).concat(tubePvi).sort((a, b) => a.c - b.c), ovr: [] };
   if (md) al.mode = md.slice();
   return al;
 }
@@ -603,6 +609,7 @@ function alignFromDoc(doc) {
   if (!doc) return al;
   const byKey = doc.st || {};
   S.stations.forEach((s, i) => { const k = stKey(i); if (typeof byKey[k] === 'number') al.st[i] = byKey[k]; });
+  const sgKey = doc.sg || {}; al.sg = S.stations.map((_, i) => (typeof sgKey[stKey(i)] === 'number' ? sgKey[stKey(i)] : 0));
   if (Array.isArray(doc.pvi)) al.pvi = doc.pvi.filter((p) => Array.isArray(p) && p.length >= 2).map(([c, z]) => ({ c: +c, z: +z }));
   al.ovr = (doc.ovr || []).filter((o) => Array.isArray(o) && o.length >= 3).map(([a, b, t]) => [+a, +b, t === 'bored' ? 'shield' : t]).filter((o) => TYPES[o[2]]);
   return al;
@@ -671,6 +678,8 @@ function designChecks() {
   const seg = []; for (let k = 0; k < CV.length - 1; k++) { const a = CV[k], b = CV[k + 1]; if (b.c - a.c > 1e-6) seg.push({ a, b, g: (b.z - a.z) / (b.c - a.c) * 1000, plat: (a.kind === 'ps' && b.kind === 'pe' && a.i === b.i) || ((a.kind === 'x' || b.kind === 'x') && Math.abs(b.z - a.z) < 1e-9) }); }
   // vertical curves the straight grades are too short for (shortened curves)
   design(VERTS).short.forEach((x) => issues.push({ kind: 'Vertical curve', c: x.c, text: `Bend of ${fmtG(x.dg)} at ${fmtCh(x.c)} needs a ${x.need.toFixed(0)} m curve; only ${x.got.toFixed(0)} m fits (radius ${settings.vcRadius} m)` }));
+  // platform grades over the station limit (trains must stand safely)
+  S.stations.forEach((st, i) => { const gq = (S.align.sg && S.align.sg[i]) || 0; if (Math.abs(gq) > settings.stationMaxGrade + 0.05) issues.push({ kind: 'Platform grade', c: st.c, text: `${esc(st.name)} platform at ${fmtG(gq)} is over the ${settings.stationMaxGrade}‰ station limit` }); });
   // drainage: tunnel grades flatter than drainMin outside platforms; low points need sumps
   let sumps = 0, lastSign = 0, lastC = 0;
   seg.forEach((sg) => {
@@ -721,6 +730,7 @@ function otherRail(cr) {
   if (!cr.wid || cr.oc == null) return null;
   const doc = S.saved[cr.wid] || S.defaultDocs[cr.wid] || S.metroRails[cr.wid]; if (!doc || !Array.isArray(doc.stations)) return null;
   const stations = doc.stations.map((s) => ({ c: +s.c })); const al = { st: doc.stations.map((s) => +s.rail), pvi: (doc.pvi || []).map(([c, z]) => ({ c: +c, z: +z })) };
+  const osg = doc.sg || {}; al.sg = doc.stations.map((s, i) => +(osg[s.name] ?? osg[`${s.name}#${i}`] ?? 0));
   const plat = +doc.platform_m || (cr.wid.startsWith('RER_') ? SYS.rer.settings.platform : SYS.metro.settings.platform);
   const verts = vertices(al, stations, +doc.length_m || 1e9, plat, (cr.wid.startsWith('RER_') ? SYS.rer : SYS.metro).settings.vcRadius);
   return railAt(cr.oc, verts);
@@ -918,7 +928,7 @@ function draw(ctx, W, H, view, opt = {}) {
   ctx.font = `500 11px ${colors.num}`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
   const CV = chords();
   for (let k = 0; k < CV.length - 1; k++) {
-    const a = CV[k], b = CV[k + 1]; if (b.c - a.c < 1e-6 || a.kind === 'ps' && b.kind === 'pe' && a.i === b.i || Math.abs(b.z - a.z) < 1e-9 && (a.kind === 'x' || b.kind === 'x')) continue;
+    const a = CV[k], b = CV[k + 1]; if (b.c - a.c < 1e-6 || Math.abs(b.z - a.z) < 1e-9 && ((a.kind === 'ps' && b.kind === 'pe' && a.i === b.i) || a.kind === 'x' || b.kind === 'x')) continue;
     const xa = X(a.c), xb = X(b.c); if (xb < P.x || xa > P.x + P.w || xb - xa < (narrow ? 56 : 66)) continue;
     const gr = (b.z - a.z) / (b.c - a.c) * 1000; const bad = Math.abs(gr) > settings.maxGrade + 0.05;
     const xm = (Math.max(xa, P.x) + Math.min(xb, P.x + P.w)) / 2; const ym = Y(railAt(C(xm))) - 8;
@@ -931,11 +941,12 @@ function draw(ctx, W, H, view, opt = {}) {
   const half = settings.platform / 2;
   S.stations.forEach((s, i) => {
     if (s.c + half < view.c0 || s.c - half > view.c1) return;
-    const z = S.align.st[i], y = Y(z), xa = X(s.c - half), xb = X(s.c + half);
+    const z = S.align.st[i], gp = ((S.align.sg && S.align.sg[i]) || 0) / 1000, xa = X(s.c - half), xb = X(s.c + half);
+    const ya = Y(z - gp * half), yb = Y(z + gp * half);
     const on = S.sel && S.sel.kind === 'st' && S.sel.i === i;
-    ctx.fillStyle = on ? colors.accent : ink;
-    ctx.fillRect(xa, y - 3, Math.max(3, xb - xa), 6);
-    ctx.fillRect(xa, y - 7, 1.5, 10); ctx.fillRect(Math.max(xa + 1.5, xb - 1.5), y - 7, 1.5, 10);
+    ctx.fillStyle = on ? colors.accent : ink; ctx.strokeStyle = ctx.fillStyle;
+    ctx.lineWidth = 6; ctx.lineCap = 'butt'; ctx.beginPath(); ctx.moveTo(xa, ya); ctx.lineTo(Math.max(xa + 3, xb), yb); ctx.stroke();
+    ctx.fillRect(xa, ya - 7, 1.5, 10); ctx.fillRect(Math.max(xa + 1.5, xb - 1.5), yb - 7, 1.5, 10);
   });
 
   // pvi handles
@@ -1141,7 +1152,9 @@ function updateSelCard() {
         <dt>Structure</dt><dd>${TYPES[typeAt(s.c, z)].label}</dd>
         <dt>Grade in / out</dt><dd>${fmtG(gin)} / ${fmtG(gout)}</dd>
         <dt>Platform</dt><dd>${fmtCh(s.c - half)} to ${fmtCh(s.c + half)}</dd>
-      </dl>${isRer() ? `<div class="group" role="group" aria-label="Station setting">
+        <dt><label for="inSg">Platform grade (‰)</label></dt><dd><input id="inSg" type="number" step="0.5" value="${(((S.align.sg && S.align.sg[sel.i]) || 0)).toFixed(1)}" ${ro ? 'disabled' : ''}></dd>
+      </dl>
+      <div class="group"><button class="btn" id="easeSt" ${ro ? 'disabled' : ''} title="Slope this platform toward the grades on either side, up to the station limit">Ease the bends</button></div>${isRer() ? `<div class="group" role="group" aria-label="Station setting">
         <button class="btn" id="modeSurf" aria-pressed="${modeOf(sel.i) === 'surface'}" ${ro ? 'disabled' : ''}>At grade, old railroad</button>
         <button class="btn" id="modeUnder" aria-pressed="${modeOf(sel.i) === 'under'}" ${ro ? 'disabled' : ''}>Underground</button></div>
         <p class="hint">${s.trunk ? 'On the drawn trunk.' : 'Off the drawn trunk.'} Switching re-solves this line's station levels and surface bend points; painted stretches stay. Undo restores.</p>` : ''}${(() => { const sec = canonAt(s.c), f = S.canonFixed[sel.i], cm = S.canonModes[sel.i]; const bits = [];
@@ -1153,6 +1166,9 @@ function updateSelCard() {
     $('#modeSurf')?.addEventListener('click', () => setMode('surface'));
     $('#modeUnder')?.addEventListener('click', () => setMode('under'));
     const apply = (zNew) => { if (!isFinite(zNew)) return; pushHist(); S.align.st[sel.i] = Math.round(zNew * 100) / 100; changed(); };
+    const sgIn = $('#inSg');
+    if (sgIn) sgIn.addEventListener('change', () => { const v = parseFloat(sgIn.value); if (!isFinite(v)) return; pushHist(); setSg(sel.i, v); changed(); });
+    $('#easeSt')?.addEventListener('click', () => { pushHist(); easePlatform(sel.i); changed(); });
     const r = $('#inRail'), dp = $('#inDepth');
     if (r) r.addEventListener('change', () => apply(fromU(parseFloat(r.value))));
     if (dp) dp.addEventListener('change', () => apply(sf - fromU(parseFloat(dp.value))));
@@ -1179,7 +1195,7 @@ function updateSelCard() {
 // ---------- editing ----------
 function snapshot() { return JSON.stringify(S.align); }
 function pushHist() { S.hist.push(snapshot()); if (S.hist.length > 200) S.hist.shift(); S.fut = []; syncUndo(); }
-function syncUndo() { $('#undo').disabled = !S.hist.length || S.canWrite === false; $('#redo').disabled = !S.fut.length || S.canWrite === false; $('#solveCross').disabled = S.canWrite === false; }
+function syncUndo() { $('#undo').disabled = !S.hist.length || S.canWrite === false; $('#redo').disabled = !S.fut.length || S.canWrite === false; $('#solveCross').disabled = S.canWrite === false; $('#easeAll').disabled = S.canWrite === false; }
 function undo() { if (!S.hist.length) return; S.fut.push(snapshot()); S.align = JSON.parse(S.hist.pop()); S.sel = null; changed(); syncUndo(); }
 function redo() { if (!S.fut.length) return; S.hist.push(snapshot()); S.align = JSON.parse(S.fut.pop()); S.sel = null; changed(); syncUndo(); }
 function changed(save = true) { if (S.data) buildCanon(); VERTS = vertices(); updatePanels(); schedule(); if (save) markDirty(); }
@@ -1221,6 +1237,7 @@ function serialize() {
   return {
     v: 1, system: S.data.system, line: S.data.line, length_m: S.L, platform_m: settings.platform,
     st, pvi: S.align.pvi.map((p) => [Math.round(p.c * 10) / 10, p.z]), ovr: S.align.ovr,
+    sg: Object.fromEntries(S.stations.map((_, i) => [stKey(i), (S.align.sg && S.align.sg[i]) || 0]).filter(([, g]) => g)),
     ...(isRer() ? { mode: Object.fromEntries(S.stations.map((_, i) => [stKey(i), modeOf(i)])), route_chainage_m: S.data.route_chainage_m } : {}),
     stations: S.stations.map((s, i) => { const z = S.align.st[i]; const sf = surfaceAt(s.c); return { name: s.name, c: s.c, rail: z, ground: Math.round(groundAt(s.c) * 100) / 100, depth: Math.round((sf - z) * 100) / 100, type: typeAt(s.c, z) }; }),
     summary: { km_by_type: Object.fromEntries(TYPE_KEYS.map((t) => [t, Math.round(sm.len[t]) / 1000])), max_grade_permille: Math.round(sm.maxG * 10) / 10, grades_over_limit: sm.over.length },
@@ -1455,6 +1472,26 @@ cv.addEventListener('keydown', (e) => {
   if (S.sel.kind === 'st' && dz) S.align.st[S.sel.i] = Math.round((S.align.st[S.sel.i] + dz * fromU(amt)) * 100) / 100;
   if (S.sel.kind === 'pvi') { const p = S.align.pvi[S.sel.j]; if (dz) p.z = Math.round((p.z + dz * fromU(amt)) * 100) / 100; if (dc) p.c = clampPviC(p.c + dc * (e.shiftKey ? 10 : 2), S.sel.j); }
   changed();
+});
+
+// platform grades: tilt about the platform centre, up to the station limit
+function setSg(i, v) { if (!S.align.sg) S.align.sg = S.stations.map(() => 0); S.align.sg[i] = Math.round(v * 10) / 10; }
+// slope a platform toward the straight grades on either side (their mean, within the limit), so
+// both bends at its ends get smaller; repeated because the ends move with the slope
+function easePlatform(i) {
+  for (let it = 0; it < 3; it++) {
+    const v = vertices(); const a = v.findIndex((x) => x.kind === 'ps' && x.i === i), b = v.findIndex((x) => x.kind === 'pe' && x.i === i);
+    if (a < 0 || b < 0) return;
+    const gin = a > 0 && v[a].c - v[a - 1].c > 1 ? (v[a].z - v[a - 1].z) / (v[a].c - v[a - 1].c) * 1000 : null;
+    const gout = b + 1 < v.length && v[b + 1].c - v[b].c > 1 ? (v[b + 1].z - v[b].z) / (v[b + 1].c - v[b].c) * 1000 : null;
+    const gs = [gin, gout].filter((x) => x != null); if (!gs.length) return;
+    setSg(i, clamp(gs.reduce((p, q) => p + q, 0) / gs.length, -settings.stationMaxGrade, settings.stationMaxGrade));
+    VERTS = vertices();
+  }
+}
+$('#easeAll').addEventListener('click', () => {
+  if (S.canWrite === false || !S.data) return;
+  pushHist(); S.stations.forEach((_, i) => easePlatform(i)); changed(); flash('Platforms sloped toward their grades');
 });
 
 // design flags: jump to the spot

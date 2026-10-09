@@ -372,3 +372,26 @@ def test_vertical_curves_and_era_cover():
         assert np.allclose(mp.rail_at(cc), mp.st[i], atol=1e-6)  # platforms level
     assert mp.min_cover() == 6.0
     assert MetroProfile.load(root / "lines/Line_3.json", None, root / "settings.json").min_cover() == 2.0
+
+
+def test_sloped_platform_eases_the_bends():
+    """A platform grade tilts the platform about its centre level and the transitions carry the
+    platform grade on, so a station on a climb needs shorter curves at both ends."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent / "data/profile"
+    mp = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json")
+    # a station on a continuous climb or descent (not a crest or sag)
+    i = next(k for k in range(1, len(mp.st) - 1) if (mp.st[k] - mp.st[k - 1]) * (mp.st[k + 1] - mp.st[k]) > 0)
+    s, half = mp.stations[i], mp.settings["platform"] / 2
+    d0 = mp.design()
+    need0 = sum(mp.settings["vcRadius"] * abs(d0["g"][k] - d0["g"][k - 1]) for k in range(1, len(d0["dv"]) - 1)
+                if d0["dv"][k]["kind"] == "x" and d0["dv"][k]["i"] == i)
+    gin = (mp.st[i] - mp.st[i - 1]) / (s["c"] - mp.stations[i - 1]["c"])
+    mp.sg[i] = 3.0 if gin > 0 else -3.0
+    assert mp.rail_at(s["c"]) == pytest.approx(mp.st[i], abs=1e-9)  # centre level unchanged
+    assert mp.rail_at(s["c"] + half - 1) - mp.rail_at(s["c"] - half + 1) == pytest.approx(mp.sg[i] / 1000 * (2 * half - 2), abs=1e-6)
+    d1 = mp.design()
+    need1 = sum(mp.settings["vcRadius"] * abs(d1["g"][k] - d1["g"][k - 1]) for k in range(1, len(d1["dv"]) - 1)
+                if d1["dv"][k]["kind"] == "x" and d1["dv"][k]["i"] == i)
+    assert need1 < need0 or need0 == 0

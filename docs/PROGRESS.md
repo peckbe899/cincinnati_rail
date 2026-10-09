@@ -254,6 +254,8 @@ Living list of what is done and what is left. Newest changes at the top of each 
 
 - **Grade separation at crossings** (Rail Profiles): the required rail-to-rail separation now depends on which line is on top and each line's structure (box, bored tube, viaduct, at grade): lower line's box/tube height or open-air clear height under a bridge (4.2 m Metro, 5.8 m RER) + upper line's deck/floor/track bed + 2 m of ground around bored tubes; at-grade crossings flagged (RER-2 and Line 7 at 9+716: Ben to fix in the drawing). Replaces the flat 8 m / 9 m minimum. Allowances accepted.
 
+- **Sloped platforms** (Rail Profiles and simulator): per-station platform grade about the centre level, up to 3 per mille (setting), carried on through the transitions; 'Ease the bends' per station and 'Ease all platforms' slope each platform toward the grades either side. Saved as `sg` in the profile docs.
+
 ## In progress
 
 - Nothing running.

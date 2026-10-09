@@ -102,7 +102,8 @@ def load_settings(path: Optional[str | Path], rer: bool = False) -> dict:
 class MetroProfile:
     data: dict
     settings: dict
-    st: List[float] = field(default_factory=list)  # station rail levels
+    st: List[float] = field(default_factory=list)  # station rail levels (platform centre)
+    sg: List[float] = field(default_factory=list)  # platform grades, per mille rising with chainage
     pvi: List[tuple] = field(default_factory=list)  # (chainage, rail level)
     ovr: List[tuple] = field(default_factory=list)  # (from, to, type)
     canon_secs: List[dict] = field(default_factory=list)
@@ -389,9 +390,13 @@ class MetroProfile:
             modes = [dm.get(self.st_key(i)) if dm.get(self.st_key(i)) in ("surface", "under")
                      else self.default_mode(i) for i in range(len(self.stations))]
         self.st = self.default_align(modes)
+        self.sg = [0.0] * len(self.stations)
         self.ovr = []
         if not doc:
             return
+        sgd = doc.get("sg") or {}
+        self.sg = [float(sgd[self.st_key(i)]) if isinstance(sgd.get(self.st_key(i)), (int, float)) else 0.0
+                   for i in range(len(self.stations))]
         by_key = doc.get("st") or {}
         for i in range(len(self.stations)):
             k = self.st_key(i)
@@ -411,8 +416,10 @@ class MetroProfile:
         v = []
         for i, s in enumerate(self.stations):
             z = self.st[i]
-            v.append({"c": min(max(s["c"] - half, 0.0), L), "z": z, "kind": "ps", "i": i, "o": 1})
-            v.append({"c": min(max(s["c"] + half, 0.0), L), "z": z, "kind": "pe", "i": i, "o": 0})
+            gp = (self.sg[i] if i < len(self.sg) else 0.0) / 1000.0
+            ca, cb = min(max(s["c"] - half, 0.0), L), min(max(s["c"] + half, 0.0), L)
+            v.append({"c": ca, "z": z + gp * (ca - s["c"]), "kind": "ps", "i": i, "o": 1, "gp": gp})
+            v.append({"c": cb, "z": z + gp * (cb - s["c"]), "kind": "pe", "i": i, "o": 0, "gp": gp})
         v += [{"c": c, "z": z, "kind": "pvi", "o": 2} for c, z in self.pvi]
         v.sort(key=lambda t: (t["c"], t["o"]))  # platform end first on ties
         if not v:
@@ -428,7 +435,7 @@ class MetroProfile:
         change of grade, kept off the platforms by a level transition of half the curve beyond
         each platform end; curves shortened where the straight grade is too short."""
         rv = float(self.settings.get("vcRadius", 0.0) or 0.0)
-        key = (tuple(self.st), tuple(self.pvi), rv, self.settings["platform"])
+        key = (tuple(self.st), tuple(self.sg), tuple(self.pvi), rv, self.settings["platform"])
         if getattr(self, "_design_key", None) == key:
             return self._design
         verts = self._verts()
@@ -445,6 +452,9 @@ class MetroProfile:
                 return k - 1
             return -1
 
+        def z_on(k, c):  # along a platform end's own grade (the transition carries it on)
+            return verts[k]["z"] + verts[k].get("gp", 0.0) * (c - verts[k]["c"])
+
         if rv > 0:
             for _ in range(5):
                 nx = [0.0] * n
@@ -458,7 +468,8 @@ class MetroProfile:
                     run = abs(oc - piv)
                     if run < 1e-6:
                         continue
-                    nx[k] = rv * abs((verts[o]["z"] - verts[k]["z"]) / run) / 2
+                    gq = (z_on(o, oc) - z_on(k, piv)) / (oc - piv)
+                    nx[k] = rv * abs(gq - verts[k].get("gp", 0.0)) / 2
                 for k in range(n - 1):
                     ln = verts[k + 1]["c"] - verts[k]["c"]
                     a = nx[k] if outward(k) == k + 1 else 0.0
@@ -473,9 +484,9 @@ class MetroProfile:
         dv = []
         for k, v in enumerate(verts):
             if v["kind"] == "ps" and ext[k] > 1e-6:
-                dv += [{"c": v["c"] - ext[k], "z": v["z"], "kind": "x", "i": v["i"]}, v]
+                dv += [{"c": v["c"] - ext[k], "z": z_on(k, v["c"] - ext[k]), "kind": "x", "i": v["i"]}, v]
             elif v["kind"] == "pe" and ext[k] > 1e-6:
-                dv += [v, {"c": v["c"] + ext[k], "z": v["z"], "kind": "x", "i": v["i"]}]
+                dv += [v, {"c": v["c"] + ext[k], "z": z_on(k, v["c"] + ext[k]), "kind": "x", "i": v["i"]}]
             else:
                 dv.append(v)
         g = [((dv[k + 1]["z"] - dv[k]["z"]) / (dv[k + 1]["c"] - dv[k]["c"]) if dv[k + 1]["c"] - dv[k]["c"] > 1e-9 else 0.0)

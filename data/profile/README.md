@@ -30,4 +30,5 @@ The same editor for the Metro and the RER, published as a claude.ai artifact (sa
 - Canon (`rer/canon.json`, Ben's rulings): station modes, fixed rail levels (Union Terminal level -2 at 142.0 m; RER-3 covered way at 144 m), the RER-3 covered way and RER-5 deep bore, the boulevard deck over the Mill Creek trunk (rail at DEM - 8.5 m), and river tubes (roof the set cover below the river bed; the Little Miami crossed inside the covered way).
 - RER settings (`rer/settings.json`): canon 35 per mille, 200 m platforms, 12 m station depth; starting values for the 25 m deep-bore threshold, 7 m envelope, 9 m crossing clearance, 3 m tube cover and the river bed depths in `canon.json`.
 - Crossings: Metro and RER rail clearances both ways (`rer/metro_rails.json` holds every Metro line's rail for the RER side).
+- Profiles now also save `sg`: each station's platform grade in per mille (rising with chainage) about its centre rail level.
 - Saved RER profiles go to `rer/alignments/RER_*.json` (exported from the page's database); the RER through-service configs pick them up automatically.
