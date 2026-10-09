@@ -242,6 +242,7 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - RER-2 Falmouth and Verona, RER-4 Dover: the C&O through Covington (and Newport for RER-4) over the C&O bridge along today's CSX; the C&O viaduct is an approximate curve.
   - RER-3: a wye off the riverfront line at the Mill Creek mouth into the top platforms (approximate), open along the embankment.
   - RER-5 Waynesville and Wilmington: Norwood Central west to Ivorydale on today's track, then the Mill Creek valley.
+- **Results with the rulings** (55 RER configs, 15 Metro lines, all run): through services within 0.5% of the previous run. Pre-RER: RER-2 Falmouth and Verona 7.5-9% faster over the C&O (shorter); RER-4 Dover now means Dover KY via the C&O (86.6 km, 77 min; the old config had picked Dover IN); RER-5 Waynesville and Wilmington +0.2 to +0.8% via Norwood-Ivorydale; new RER-3 services into UT 57-82 min. Metro unchanged within 0.05%.
 - **Line 5**: Eggleston lowered to 149.48 m so Times to Eggleston is exactly 50 per mille (the gap is 55.6 m); Eggleston to Pennsylvania -21.7 per mille. Saved in the repo and the page.
 
 ## In progress
