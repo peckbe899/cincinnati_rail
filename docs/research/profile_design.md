@@ -31,12 +31,12 @@ What real long-section design checks that the editor did not, and what the page 
 
   | Lines | Era | Box and station box | Bored tube crown | Basis |
   |---|---|---|---|---|
-  | 1-6, 2b | 1903-1913 | 4.5 m | 4.3 m | IRT 1904 minimum section 12 ft 3 in clear above rail [S], 2 ft 6 in roof [S]; shield tubes about 15.5 ft inside [E] |
+  | 1-6, 2b | 1903-1913 | 5.0 m | 4.3 m | IRT 1904 minimum section 12 ft 3 in clear above rail [S], 2 ft 6 in roof [S]; shield tubes about 15.5 ft inside [E] |
   | 7 | 1913 | 5.0 m | 4.3 m | Lexington Ave (Dual Contracts) 13 ft 10 in clear [S] + roof |
-  | 8-14 | 1933-1959 | 5.4 m | 5.2 m | Chicago State St / Dearborn tubes 15 ft clear [S]; Boston 1897 boxes 14 ft clear [S] + about 0.8 m roof [E] |
+  | 8-14 | 1933-1959 | 5.0 m | 5.2 m | Chicago State St / Dearborn tubes 15 ft clear [S]; Boston 1897 boxes 14 ft clear [S] + about 0.8 m roof [E] |
   | RER | 1985-1996 | 6.6 m | 7.5 m | RATP RER style with 25 kV overhead over bilevel stock: about 5.8 m clear + roof [E]; Paris RER bores 6.3 m single-track, 8.7 m double-track [S] |
 
-  Station boxes are single-level like the running box (no mezzanine level modelled). The old flat 5.5 m (Metro) and 7 m (RER) were too tall for the early lines.
+  Metro boxes are one 5.0 m standard on every line (Ben: mezzanines and connectors are designed on top of them later); the era sizes in the basis column are the reference. Station boxes are single-level like the running box. The old flat 5.5 m (Metro) and 7 m (RER) were too tall for the early lines.
 - **RER-3 covered way** may stay flat: it drains beneath into the sewers (no drainage flags there).
 - Stations may slope slightly (MTA practice); not modelled, since 3 per mille over a platform gains under half a metre.
 - Starting values still: `drainMin` 3 per mille, `curveK` 800.

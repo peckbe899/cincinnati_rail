@@ -250,7 +250,7 @@ Living list of what is done and what is left. Newest changes at the top of each 
 - **Vertical curves and era cover** (Ben's rulings, page and simulator): 1,500 m (Metro) and 3,000 m (RER) vertical curves at every grade change with level transitions off the platforms; bored tunnels need their era's cover (2 m for Lines 1-7, 6 m from Line 8 on, 8.5 m RER), else cut and cover; the RER-3 covered way may be flat. With the transitions the saved Metro profiles show steeper short grades (Line 1 up to -90 per mille, Line 2 -85, Line 4 -80, Line 5 100) where the stations were spaced for straight 50 per mille grades: flagged in the page for redesign. RER: the climb from the Ohio tube to Fort Wright (RER-2) no longer fits at 35 per mille.
   - Run times with the curves: Metro -0.25 to +0.08% (mean 0.0%), RER within 0.04%; all 15 Metro lines and 55 RER configs run.
 
-- **Structure sizes by era** (rail to roof/lining): Lines 1-6 box 4.5 m, tube 4.3 m (IRT 1904 section); Line 7 box 5.0 m (1913 Dual Contracts); Lines 8-14 box 5.4 m, tube 5.2 m (1930s-50s, Chicago tubes); RER box 6.6 m, tube 7.5 m (RATP RER style, 25 kV over bilevel). Used for drawing, cover, the cut-and-cover rule and river tubes. Replaces the flat 5.5 m / 7 m envelope.
+- **Structure sizes by era** (rail to roof/lining): Metro boxes one 5.0 m standard on every line (mezzanines and connectors to be designed on top); bored tubes by era, 4.3 m for Lines 1-7 and 5.2 m for Lines 8-14; RER box 6.6 m, tube 7.5 m (RATP RER style, 25 kV over bilevel). Used for drawing, cover, the cut-and-cover rule and river tubes. Replaces the flat 5.5 m / 7 m envelope.
 
 ## In progress
 

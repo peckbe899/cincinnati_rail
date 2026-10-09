@@ -484,18 +484,18 @@ function canonAt(c) { const a = S.canonSecs; for (let k = a.length - 1; k >= 0; 
 function inStation(c) { const half = settings.platform / 2; return S.stations.some((s) => Math.abs(c - s.c) <= half); }
 // Structure sizes and cover by the practice of each line's era (Ben's ruling; heights are from
 // the top of rail to the top of the roof or tube lining):
-//  1903-1913 (Lines 1-6): IRT 1904 minimum section 12 ft 3 in clear above rail + 2 ft 6 in
-//    roof = 4.5 m box; shield tubes of the day (about 15.5 ft inside) crown 4.3 m; basin-method
-//    cover about 2 m.
-//  1913 (Line 7): Dual Contracts section (Lexington Ave) 13 ft 10 in clear + roof = 5.0 m.
-//  1933-1959 (Lines 8-14): 15 ft clear (Chicago State St / Dearborn tubes, IND-era boxes)
-//    + about 0.8 m roof = 5.4 m box, tube crown 5.2 m; cover about one tube diameter, 6 m.
+//  Boxes and station boxes: one standard for every Metro line (Ben: mezzanines and connectors
+//    are designed on top of them later), 5.0 m: the 1913 Dual Contracts section, 13 ft 10 in
+//    clear above rail + roof (between the IRT 1904 4.5 m and the 1930s 5.4 m).
+//  Bored tubes and cover by era: 1903-1913 (Lines 1-7) shield tubes of the day crown 4.3 m,
+//    basin-method cover about 2 m; 1933-1959 (Lines 8-14) 15 ft clear tubes (Chicago State St /
+//    Dearborn) crown 5.2 m, cover about one tube diameter, 6 m.
 // RER: per settings (RATP RER style, 25 kV overhead over bilevel stock).
 const ERA = {};
-['1', '2', '2b', '3', '4', '5', '6'].forEach((k) => (ERA[`Line_${k}`] = { cover: 2, box: 4.5, bore: 4.3, era: k === '2b' ? '1903-1913 (with Line 2)' : '1903-1913' }));
+['1', '2', '2b', '3', '4', '5', '6'].forEach((k) => (ERA[`Line_${k}`] = { cover: 2, box: 5.0, bore: 4.3, era: k === '2b' ? '1903-1913 (with Line 2)' : '1903-1913' }));
 ERA.Line_7 = { cover: 2, box: 5.0, bore: 4.3, era: '1913' };
-['8', '9', '10', '11', '12'].forEach((k) => (ERA[`Line_${k}`] = { cover: 6, box: 5.4, bore: 5.2, era: '1933-1941' }));
-['13', '14'].forEach((k) => (ERA[`Line_${k}`] = { cover: 6, box: 5.4, bore: 5.2, era: '1949-1959' }));
+['8', '9', '10', '11', '12'].forEach((k) => (ERA[`Line_${k}`] = { cover: 6, box: 5.0, bore: 5.2, era: '1933-1941' }));
+['13', '14'].forEach((k) => (ERA[`Line_${k}`] = { cover: 6, box: 5.0, bore: 5.2, era: '1949-1959' }));
 const eraOf = (id = S.data && S.data.id) => (!isRer() && ERA[id]) || null;
 function minCoverFor(id) { const e = eraOf(id); return e ? e.cover : settings.minCover; }
 // cut-and-cover box (and station box) height, and bored tube crown, above the rail

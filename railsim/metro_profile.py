@@ -42,14 +42,13 @@ DEFAULTS = dict(maxGrade=50.0, platform=152.4, defDepth=7.62, elevAbove=3.0, cov
                 vcRadius=1500.0, minCover=2.0)
 # Structure sizes and cover by the practice of each line's era (Ben's ruling), heights from the
 # top of rail to the top of the roof or tube lining; shallower than bore + cover is cut and cover.
-#   1903-1913 (Lines 1-6): IRT 1904 minimum section 12 ft 3 in clear + 2 ft 6 in roof = 4.5 m
-#     box; shield tubes of the day crown 4.3 m; basin-method cover about 2 m.
-#   1913 (Line 7): Dual Contracts section 13 ft 10 in clear + roof = 5.0 m box.
-#   1933-1959 (Lines 8-14): 15 ft clear (Chicago State St / Dearborn tubes) + about 0.8 m roof
-#     = 5.4 m box, tube crown 5.2 m; cover about one tube diameter, 6 m.
-ERA = {**{f"Line_{k}": {"cover": 2.0, "box": 4.5, "bore": 4.3} for k in ("1", "2", "2b", "3", "4", "5", "6")},
+#   Boxes and station boxes: one 5.0 m standard for every Metro line (1913 Dual Contracts
+#     section, 13 ft 10 in clear + roof); mezzanines and connectors are designed on top later.
+#   Bored tubes and cover by era: Lines 1-7 (1903-1913) crown 4.3 m, cover about 2 m;
+#     Lines 8-14 (1933-1959) crown 5.2 m (15 ft clear tubes), cover about one diameter, 6 m.
+ERA = {**{f"Line_{k}": {"cover": 2.0, "box": 5.0, "bore": 4.3} for k in ("1", "2", "2b", "3", "4", "5", "6")},
        "Line_7": {"cover": 2.0, "box": 5.0, "bore": 4.3},
-       **{f"Line_{k}": {"cover": 6.0, "box": 5.4, "bore": 5.2} for k in ("8", "9", "10", "11", "12", "13", "14")}}
+       **{f"Line_{k}": {"cover": 6.0, "box": 5.0, "bore": 5.2} for k in ("8", "9", "10", "11", "12", "13", "14")}}
 # RER: 35 per mille, 200 m platforms (8-car TRI) and 12 m station rail depth are canon; the
 # 25 m deep-bore threshold, 6.6 m box / 7.5 m bored crown (RATP RER style), 3 m tube cover and 250 m surface
 # bend points are starting values
