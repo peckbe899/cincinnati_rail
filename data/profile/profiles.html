@@ -144,6 +144,11 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
     <button class="btn" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button>
     <button class="btn" id="fit" title="Show the whole line (F)">Whole line</button>
   </div>
+  <div class="group" role="group" aria-label="Show">
+    <button class="btn" id="shRail" aria-pressed="false" title="The rail line only">Rail</button>
+    <button class="btn" id="shBoth" aria-pressed="true" title="The rail with the tunnel top and bottom">Rail + box</button>
+    <button class="btn" id="shBox" aria-pressed="false" title="The tunnel top and bottom only (the rail stays where it is not in tunnel)">Box</button>
+  </div>
   <div class="group" role="group" aria-label="Units">
     <button class="btn" id="uM" aria-pressed="true">m</button>
     <button class="btn" id="uFt" aria-pressed="false">ft</button>
@@ -290,7 +295,7 @@ const isRer = () => sys === 'rer';
 const S = {
   index: [], net: null, cache: {}, data: null, L: 0, step: 2, ground: null,
   stations: [], rivers: [], crossings: [], align: null, canonSecs: [], canonFixed: {},
-  view: { c0: 0, c1: 1 }, units: 'm', tool: 'move', brush: 'auto',
+  view: { c0: 0, c1: 1 }, units: 'm', tool: 'move', brush: 'auto', show: 'both',
   sel: null, hoverC: null, hoverXY: null, drag: null, yFrozen: null,
   saved: {}, dirty: false, saving: false, hist: [], fut: [], canonModes: {}, rerData: {}, defaultDocs: {}, metroRails: {},
   db: null, user: null, canWrite: null, downloads: null, store: 'none',
@@ -944,13 +949,13 @@ function draw(ctx, W, H, view, opt = {}) {
   for (let k0 = 0; k0 < pts.length - 1;) {
     let k1 = k0; while (k1 + 1 < pts.length && pts[k1 + 1].t === pts[k0].t) k1++;
     const t = pts[k0].t;
-    if (isTun(t)) {
+    if (isTun(t) && S.show !== 'rail') {
       const run = pts.slice(k0, Math.min(k1 + 2, pts.length)); const eh = heightFor(t), inv = settings.invertDepth;
-      ctx.fillStyle = colors[t]; ctx.globalAlpha = 0.14; ctx.beginPath();
+      ctx.fillStyle = colors[t]; ctx.globalAlpha = S.show === 'box' ? 0.24 : 0.14; ctx.beginPath();
       run.forEach((p, j) => (j ? ctx.lineTo(p.x, Y(p.z + eh)) : ctx.moveTo(p.x, Y(p.z + eh))));
       for (let j = run.length - 1; j >= 0; j--) ctx.lineTo(run[j].x, Y(run[j].z - inv));
       ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = colors[t]; ctx.globalAlpha = 0.8; ctx.lineWidth = 1.25;
+      ctx.strokeStyle = colors[t]; ctx.globalAlpha = 0.8; ctx.lineWidth = S.show === 'box' ? 1.75 : 1.25;
       for (const off of [eh, -inv]) { ctx.beginPath(); run.forEach((p, j) => (j ? ctx.lineTo(p.x, Y(p.z + off)) : ctx.moveTo(p.x, Y(p.z + off)))); ctx.stroke(); }
       // closed ends where the tunnel meets another structure (portals, ramps)
       for (const p of [k0 > 0 ? run[0] : null, k1 + 1 < pts.length ? run[run.length - 1] : null]) { if (!p) continue; ctx.beginPath(); ctx.moveTo(p.x, Y(p.z + eh)); ctx.lineTo(p.x, Y(p.z - inv)); ctx.stroke(); }
@@ -969,6 +974,7 @@ function draw(ctx, W, H, view, opt = {}) {
   let k0 = 0;
   for (let k = 1; k <= pts.length; k++) {
     if (k === pts.length || pts[k].t !== pts[k0].t) {
+      if (S.show === 'box' && isTun(pts[k0].t)) { k0 = k; continue; }
       ctx.strokeStyle = colors[pts[k0].t]; ctx.beginPath();
       for (let j = k0; j < Math.min(k + 1, pts.length); j++) { const p = pts[j]; j === k0 ? ctx.moveTo(p.x, Y(p.z)) : ctx.lineTo(p.x, Y(p.z)); }
       ctx.stroke(); k0 = k;
@@ -1636,6 +1642,10 @@ function buildBrushes() {
   b.innerHTML = [['auto', 'Auto']].concat(TYPE_KEYS.map((t) => [t, TYPES[t].label])).map(([k, l]) => `<button class="btn" data-b="${k}" aria-pressed="${S.brush === k}">${k === 'auto' ? '' : `<span class="swatch" style="background:var(${TYPES[k].css})"></span>`}${l}</button>`).join('');
   b.querySelectorAll('button').forEach((btn) => btn.addEventListener('click', () => { S.brush = btn.dataset.b; setTool('paint'); b.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x === btn)); }));
 }
+function setShow(v) { S.show = v; [['shRail', 'rail'], ['shBoth', 'both'], ['shBox', 'box']].forEach(([id, k]) => $('#' + id).setAttribute('aria-pressed', v === k)); schedule(); try { localStorage.setItem('profile:show', v); } catch {} }
+$('#shRail').addEventListener('click', () => setShow('rail'));
+$('#shBoth').addEventListener('click', () => setShow('both'));
+$('#shBox').addEventListener('click', () => setShow('box'));
 function setUnits(u) { S.units = u; $('#uM').setAttribute('aria-pressed', u === 'm'); $('#uFt').setAttribute('aria-pressed', u === 'ft'); buildSettings(); updatePanels(); schedule(); try { localStorage.setItem('profile:units', u); } catch {} }
 function buildSettings() {
   $('#setKv').innerHTML = SETTING_ROWS.map(([k, label, unit, step]) => {
@@ -1699,6 +1709,7 @@ window.addEventListener('beforeunload', () => { if (S.dirty) save(); });
 (async () => {
   setTool('move'); buildBrushes();
   try { const u = localStorage.getItem('profile:units'); if (u === 'ft') setUnits('ft'); } catch {}
+  try { const v = localStorage.getItem('profile:show'); if (v === 'rail' || v === 'box') setShow(v); } catch {}
   ['metro', 'rer'].forEach((k) => { try { const v = localStorage.getItem(SYS[k].key); if (v) SYS[k].settings = { ...(k === 'rer' ? RER_DEFAULTS : METRO_DEFAULTS), ...JSON.parse(v) }; } catch {} });
   settings = SYS.metro.settings;
   buildSettings();
