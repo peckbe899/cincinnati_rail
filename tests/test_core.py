@@ -430,3 +430,25 @@ def test_platform_offset_and_removed_station(tmp_path):
     cc = np.arange(mp.stations[k]["c"] - half + 1, mp.stations[k]["c"] + half - 1, 2.0)
     assert np.allclose(mp.rail_at(cc), mp.st[k], atol=1e-6)  # the slid platform is level
     assert len(mp.st) == len(names) - 1
+
+
+def test_platform_curvature_fit():
+    """Platform curvature: the circle fit recovers a drawn arc's radius from straight segments,
+    a straight span is infinite, and the flags follow 600 m / 3,000 m with the 15.56 m car."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile, fit_radius
+    t = np.linspace(0, 152.4 / 500.0, 77)
+    arc = np.column_stack([500 * np.cos(t), 500 * np.sin(t)])
+    assert fit_radius(arc) == pytest.approx(500.0, rel=1e-6)
+    assert fit_radius(np.column_stack([np.arange(0, 152.4, 2.0), np.zeros(77)])) == float("inf")
+    root = Path(__file__).resolve().parent.parent / "data/profile"
+    mp = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json")
+    pc = mp.platform_curves()
+    assert len(pc) == len(mp.stations)
+    for p in pc:
+        if p["level"] == "error":
+            assert p["R"] < 600 and p["outside"] > 0.05
+        elif p["level"] == "warning":
+            assert 600 <= p["R"] < 3000 and 0.01 < p["outside"] <= 0.0505
+        else:
+            assert p["R"] >= 3000 and p["outside"] <= 0.0101

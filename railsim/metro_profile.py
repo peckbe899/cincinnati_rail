@@ -55,6 +55,28 @@ WATER_TABLE, TUBE_COVER_HIGH, BOX_COVER = 140.0, 2.0, 0.6
 # (Metro twin tube: 1.0 scour + 2.38 half-diameter cover + 4.08 rail to top; RER sunk box section
 # in a dredged trench, Transbay model: 1.0 scour + 1.5 backfill + 6.6 rail to top)
 RIVER_MARGIN = {"metro": 7.5, "rer": 9.1}
+# Platform curvature (Ben): extra platform gap for the 15.56 m car on a curve of radius R, outside
+# face 15.56^2 / 8R, inside face (end doors about 5.4 m from the car centre) 5.4^2 / 2R; R under
+# 600 m (outside gap over 5 cm) is an error unless a named gap-filler exception, under 3,000 m a
+# warning
+CAR_LEN, END_DOOR, PLAT_R_ERR, PLAT_R_WARN = 15.56, 5.4, 600.0, 3000.0
+
+
+def fit_radius(pts: np.ndarray) -> float:
+    """Least-squares (algebraic) circle radius through points; infinite when straight within 1 mm."""
+    if len(pts) < 3:
+        return math.inf
+    P = pts - pts.mean(axis=0)
+    a, b = P[0], P[-1]
+    L = float(np.hypot(*(b - a))) or 1.0
+    dev = np.abs((b[0] - a[0]) * (a[1] - P[:, 1]) - (a[0] - P[:, 0]) * (b[1] - a[1])) / L
+    if dev.max() < 0.001:
+        return math.inf
+    z = (P ** 2).sum(axis=1)
+    A = np.column_stack([P[:, 0], P[:, 1], np.ones(len(P))])
+    (D, E, F), *_ = np.linalg.lstsq(A, -z, rcond=None)
+    r2 = (D * D + E * E) / 4 - F
+    return math.sqrt(r2) if r2 > 0 else math.inf
 ERA = {**{f"Line_{k}": {"shield": "tube"} for k in ("1", "2", "2b", "3", "4", "5", "6", "7")},
        **{f"Line_{k}": {"shield": "bore"} for k in ("8", "9", "10", "11", "12", "13", "14")}}
 # RER: 35 per mille, 200 m platforms (8-car TRI) and 12 m station rail depth are canon; the
@@ -444,6 +466,7 @@ class MetroProfile:
         self.st = self.default_align(modes)
         self.sg = [0.0] * len(self.stations)
         self.so = [0.0] * len(self.stations)
+        self.gapfill = [k for k in ((doc or {}).get("gapfill") or []) if isinstance(k, str)]
         self.ovr = []
         if not doc:
             return
@@ -685,6 +708,29 @@ class MetroProfile:
     def bore_crown(self) -> float:
         """RER bored tube crown above rail; Metro: the line's shield structure."""
         return float(self.settings["boreCrown"]) if self.is_rer else self.struct_for("shield", -1e9)["top"]
+
+    def _path_xy(self, c: np.ndarray) -> np.ndarray:
+        path = np.array(self.data["path"], float)
+        lat0 = math.radians(path[0][2])
+        kx, ky = 111320 * math.cos(lat0), 110540
+        return np.column_stack([np.interp(c, path[:, 0], path[:, 1]) * kx, np.interp(c, path[:, 0], path[:, 2]) * ky])
+
+    def platform_curves(self) -> List[dict]:
+        """Per station: radius fitted over the platform span (drawn path every 2 m, platform where
+        it has been slid), extra gap on each face, and 'error' / 'warning' / None."""
+        half, out = self.settings["platform"] / 2, []
+        for i, s in enumerate(self.stations):
+            a, b = max(0.0, s["c"] - half), min(self.length, s["c"] + half)
+            c = np.arange(a, b + 1e-9, 2.0)
+            if b - a > 1e-6 and (b - a) % 2 > 1e-6:
+                c = np.append(c, b)
+            R = fit_radius(self._path_xy(c))
+            fin = math.isfinite(R)
+            level = "error" if R < PLAT_R_ERR else "warning" if R < PLAT_R_WARN else None
+            gap = self.st_key(i) in (self.gapfill or [])
+            out.append({"name": s["name"], "c": s["c"], "R": R, "outside": CAR_LEN ** 2 / (8 * R) if fin else 0.0,
+                        "inside": END_DOOR ** 2 / (2 * R) if fin else 0.0, "level": level, "gapfill": gap})
+        return out
 
     def river_breaks(self) -> List[dict]:
         """Stretches in tunnel under a river where the rail is above bed - margin (bed = ground raster)."""

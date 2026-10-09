@@ -462,7 +462,7 @@ function gradeAt(c, verts = VERTS) {
 }
 // the straight grades between bends (for limits, labels and the overview)
 const chords = (verts = VERTS) => design(verts).dv;
-window.railProfile = { railAt: (c) => railAt(c), typeAt: (c) => typeAt(c), line: () => S.data && S.data.id, issues: () => S.issues || [], view: (c0, c1) => { S.view = { c0, c1 }; schedule(); }, align: () => JSON.parse(JSON.stringify(S.align)), saved: () => !!(S.data && S.saved[S.data.id]) };
+window.railProfile = { railAt: (c) => railAt(c), typeAt: (c) => typeAt(c), line: () => S.data && S.data.id, issues: () => S.issues || [], view: (c0, c1) => { S.view = { c0, c1 }; schedule(); }, align: () => JSON.parse(JSON.stringify(S.align)), platforms: () => (isRer() ? [] : S.stations.map((s, i) => ({ name: s.name, c: s.c, ...platformCurve(i), R: isFinite(platformCurve(i).R) ? platformCurve(i).R : null }))), saved: () => !!(S.data && S.saved[S.data.id]) };
 function overrideAt(c) { const o = S.align.ovr; for (let k = o.length - 1; k >= 0; k--) if (c >= o[k][0] && c <= o[k][1]) return o[k][2]; return null; }
 // ---------- canon ----------
 function buildCanon() {
@@ -701,6 +701,7 @@ function alignFromDoc(doc) {
   al.so = S.stations.map((_, i) => clamp(+soKey[stKey(i)] || 0, -half, half));
   const byKey = doc.st || {};
   S.stations.forEach((s, i) => { const k = stKey(i); if (typeof byKey[k] === 'number') al.st[i] = byKey[k]; });
+  al.gapfill = Array.isArray(doc.gapfill) ? doc.gapfill.filter((k) => typeof k === 'string') : [];
   const sgKey = doc.sg || {}; al.sg = S.stations.map((_, i) => (typeof sgKey[stKey(i)] === 'number' ? sgKey[stKey(i)] : 0));
   if (Array.isArray(doc.pvi)) al.pvi = doc.pvi.filter((p) => Array.isArray(p) && p.length >= 2).map(([c, z]) => ({ c: +c, z: +z }));
   al.ovr = (doc.ovr || []).filter((o) => Array.isArray(o) && o.length >= 3).map(([a, b, t]) => [+a, +b, t === 'bored' ? 'shield' : t]).filter((o) => TYPES[o[2]]);
@@ -770,6 +771,48 @@ function radii(d) {
   d._R = R; return R;
 }
 const radiusAt = (c) => { const R = radii(S.data); return R[clamp(Math.round(c / 10), 0, R.length - 1)]; };
+// Platform curvature (Ben): over the platform span (centre +/- half a platform, wherever the
+// platform has been slid) the drawn path is resampled every 2 m and a circle fitted by least
+// squares (the KMZ lines are straight segments with corners, so the fit, not corner angles,
+// gives the radius); a straight span is an infinite radius. Extra platform gap for the 15.56 m
+// car: outside face (car middle bulges out) 15.56^2 / 8R, inside face (end doors about 5.4 m from
+// the car centre) 5.4^2 / 2R; a curved two-track station has one face of each, the outside governs.
+const CAR_LEN = 15.56, END_DOOR = 5.4, PLAT_R_ERR = 600, PLAT_R_WARN = 3000;
+function pathXY(d, c) {
+  const path = d.path, lat0 = path[0][2] * Math.PI / 180, kx = 111320 * Math.cos(lat0), ky = 110540;
+  let j = 1; while (j < path.length - 1 && path[j][0] < c) j++;
+  const a = path[j - 1], b = path[j]; const t = b[0] - a[0] > 0 ? clamp((c - a[0]) / (b[0] - a[0]), 0, 1) : 0;
+  return [(a[1] + (b[1] - a[1]) * t) * kx, (a[2] + (b[2] - a[2]) * t) * ky];
+}
+function fitRadius(pts) {
+  const n = pts.length; if (n < 3) return Infinity;
+  let mx = 0, my = 0; pts.forEach(([x, y]) => { mx += x / n; my += y / n; });
+  const P = pts.map(([x, y]) => [x - mx, y - my]);
+  // straight within 1 mm of the chord: infinite radius
+  const [x0, y0] = P[0], [x1, y1] = P[n - 1], L = Math.hypot(x1 - x0, y1 - y0) || 1;
+  if (Math.max(...P.map(([x, y]) => Math.abs((x1 - x0) * (y0 - y) - (x0 - x) * (y1 - y0)) / L)) < 0.001) return Infinity;
+  // algebraic (Kasa) fit: x^2 + y^2 + D x + E y + F = 0, normal equations
+  let Sxx = 0, Sxy = 0, Syy = 0, Sx = 0, Sy = 0, Sxz = 0, Syz = 0, Sz = 0;
+  P.forEach(([x, y]) => { const z = x * x + y * y; Sxx += x * x; Sxy += x * y; Syy += y * y; Sx += x; Sy += y; Sxz += x * z; Syz += y * z; Sz += z; });
+  const A = [[Sxx, Sxy, Sx], [Sxy, Syy, Sy], [Sx, Sy, n]], B = [-Sxz, -Syz, -Sz];
+  const det = (M) => M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1]) - M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0]) + M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0]);
+  const dA = det(A); if (Math.abs(dA) < 1e-12) return Infinity;
+  const col = (k) => A.map((r, i) => r.map((v, j) => (j === k ? B[i] : v)));
+  const D = det(col(0)) / dA, E = det(col(1)) / dA, F = det(col(2)) / dA;
+  const r2 = (D * D + E * E) / 4 - F; return r2 > 0 ? Math.sqrt(r2) : Infinity;
+}
+function platformCurve(i) {
+  const s = S.stations[i], half = settings.platform / 2, pts = [];
+  const a = clamp(s.c - half, 0, S.L), b = clamp(s.c + half, 0, S.L);
+  for (let c = a; c <= b + 1e-9; c += 2) pts.push(pathXY(S.data, c));
+  if (b - a > 1e-6 && (b - a) % 2 > 1e-6) pts.push(pathXY(S.data, b));
+  const R = fitRadius(pts);
+  const out = isFinite(R) ? CAR_LEN * CAR_LEN / (8 * R) : 0, inn = isFinite(R) ? END_DOOR * END_DOOR / (2 * R) : 0;
+  const level = R < PLAT_R_ERR ? 'error' : R < PLAT_R_WARN ? 'warning' : null;
+  return { R, out, inn, level, gapfill: (S.align.gapfill || []).includes(stKey(i)) };
+}
+const fmtR = (R) => (isFinite(R) ? `${Math.round(R)} m` : 'straight');
+const fmtGap = (g) => `${(g * 100).toFixed(1)} cm`;
 const TUNNEL = new Set(['cutcover', 'shield', 'deep']);
 function designChecks() {
   const issues = []; const half = settings.platform / 2;
@@ -779,6 +822,13 @@ function designChecks() {
   design(VERTS).short.forEach((x) => issues.push({ kind: 'Vertical curve', c: x.c, text: `Bend of ${fmtG(x.dg)} at ${fmtCh(x.c)} needs a ${x.need.toFixed(0)} m curve; only ${x.got.toFixed(0)} m fits (radius ${settings.vcRadius} m)` }));
   // platform grades over the station limit (trains must stand safely)
   S.stations.forEach((st, i) => { const gq = (S.align.sg && S.align.sg[i]) || 0; if (Math.abs(gq) > sgMaxFor() + 0.05) issues.push({ kind: 'Platform grade', c: st.c, text: `${esc(st.name)} platform at ${fmtG(gq)} is over the ${sgMaxFor()}‰ station limit` }); });
+  // platform curvature (Metro): R < 600 m is an error unless named as a gap-filler exception
+  if (!isRer()) S.stations.forEach((st, i) => {
+    const pc = platformCurve(i); if (!pc.level) return;
+    const what = `${esc(st.name)} platform on a ${fmtR(pc.R)} curve: extra gap ${fmtGap(pc.out)} outside face, ${fmtGap(pc.inn)} inside face`;
+    if (pc.level === 'error' && !pc.gapfill) issues.push({ kind: 'Platform curve', c: st.c, text: `${what} (under ${PLAT_R_ERR} m: needs gap fillers as a named exception, or slide or move the platform)` });
+    else issues.push({ kind: 'Platform curve', warn: true, c: st.c, text: pc.level === 'error' ? `${what}: named exception with gap fillers` : what });
+  });
   for (let i = 1; i < S.stations.length; i++) { const A = S.stations[i - 1], B = S.stations[i]; if (Math.abs(B.c - A.c) < settings.platform - 0.5 && A.c0 !== B.c0) issues.push({ kind: 'Platform overlap', c: (A.c + B.c) / 2, text: `${esc(A.name)} and ${esc(B.name)} platforms overlap (centres ${Math.abs(B.c - A.c).toFixed(0)} m apart); slide one or remove a station` }); }
   // drainage: tunnel grades flatter than drainMin outside platforms; low points need sumps
   let sumps = 0, lastSign = 0, lastC = 0;
@@ -1278,11 +1328,14 @@ function updateSelCard() {
         <dt>Grade in / out</dt><dd>${fmtG(gin)} / ${fmtG(gout)}</dd>
         <dt>Platform</dt><dd>${fmtCh(s.c - half)} to ${fmtCh(s.c + half)}</dd>
         <dt><label for="inPos">Point from platform start (m)</label></dt><dd><input id="inPos" type="number" step="0.5" min="0" max="${(2 * half).toFixed(1)}" value="${(half - ((S.align.so && S.align.so[sel.i]) || 0)).toFixed(1)}" ${ro ? 'disabled' : ''}></dd>
+${isRer() ? '' : (() => { const pc = platformCurve(sel.i); return `<dt>Platform curve</dt><dd>${fmtR(pc.R)}${pc.level ? ` · <span style="color:var(${pc.level === 'error' && !pc.gapfill ? '--warn' : '--muted'})">${pc.level === 'error' ? (pc.gapfill ? 'exception, gap fillers' : 'ERROR') : 'WARNING'}</span>` : ''}</dd>
+        <dt>Extra gap out / in</dt><dd>${fmtGap(pc.out)} / ${fmtGap(pc.inn)}</dd>`; })()}
         <dt><label for="inSg">Platform grade (‰)</label></dt><dd><input id="inSg" type="number" step="0.5" value="${(((S.align.sg && S.align.sg[sel.i]) || 0)).toFixed(1)}" ${ro ? 'disabled' : ''}></dd>
       </dl>
       <div class="group" role="group" aria-label="Platform position"><button class="btn" id="posA" ${ro ? 'disabled' : ''} title="The drawn point at the platform start (low chainage end)">Point at start</button><button class="btn" id="posC" ${ro ? 'disabled' : ''}>Centred</button><button class="btn" id="posB" ${ro ? 'disabled' : ''} title="The drawn point at the platform end (high chainage end)">Point at end</button></div>
       <p class="hint">The drawn point (tick on the bar) stays put; the platform slides along it. <kbd>Alt</kbd> + drag the bar to slide it.</p>
-      <div class="group"><button class="btn" id="easeSt" ${ro ? 'disabled' : ''} title="Slope this platform toward the grades on either side, up to the station limit">Ease the bends</button><button class="btn" id="delSt" ${ro ? 'disabled' : ''} title="Leave this station out of the profile and the run times; restore it from the Stations list">Remove station</button></div>${isRer() ? `<div class="group" role="group" aria-label="Station setting">
+      <div class="group"><button class="btn" id="easeSt" ${ro ? 'disabled' : ''} title="Slope this platform toward the grades on either side, up to the station limit">Ease the bends</button><button class="btn" id="delSt" ${ro ? 'disabled' : ''} title="Leave this station out of the profile and the run times; restore it from the Stations list">Remove station</button></div>${!isRer() && platformCurve(sel.i).level === 'error' ? `
+      <div class="group"><button class="btn" id="gapFill" aria-pressed="${platformCurve(sel.i).gapfill}" ${ro ? 'disabled' : ''} title="Allow this curved platform as a named exception with gap fillers">Gap fillers (named exception)</button></div>` : ''}${isRer() ? `<div class="group" role="group" aria-label="Station setting">
         <button class="btn" id="modeSurf" aria-pressed="${modeOf(sel.i) === 'surface'}" ${ro ? 'disabled' : ''}>At grade, old railroad</button>
         <button class="btn" id="modeUnder" aria-pressed="${modeOf(sel.i) === 'under'}" ${ro ? 'disabled' : ''}>Underground</button></div>
         <p class="hint">${s.trunk ? 'On the drawn trunk.' : 'Off the drawn trunk.'} Switching re-solves this line's station levels and surface bend points; painted stretches stay. Undo restores.</p>` : ''}${(() => { const sec = canonAt(s.c), f = S.canonFixed[sel.i], cm = S.canonModes[sel.i]; const bits = [];
@@ -1290,7 +1343,7 @@ function updateSelCard() {
         if (f) bits.push(`Canon level ${f.abs != null ? `${fmtZ(f.abs, 1)} ${uLbl()}` : `${f.off >= 0 ? '+' : '−'}${fmtZ(Math.abs(f.off), 1)} ${uLbl()}`}: ${esc(f.src)}`);
         if (cm) bits.push(`${cm.mode === 'surface' ? 'At grade' : 'Underground'}: ${esc(cm.src)}`);
         return bits.length ? `<p class="hint">${bits.join('<br>')}</p>` : ''; })()}`;
-    const setMode = (m) => { if (modeOf(sel.i) === m) return; pushHist(); const modes = S.stations.map((_, j) => (j === sel.i ? m : modeOf(j))); const fresh = defaultAlign(modes); S.align = { ...fresh, ovr: S.align.ovr, del: S.align.del, so: S.align.so }; changed(); };
+    const setMode = (m) => { if (modeOf(sel.i) === m) return; pushHist(); const modes = S.stations.map((_, j) => (j === sel.i ? m : modeOf(j))); const fresh = defaultAlign(modes); S.align = { ...fresh, ovr: S.align.ovr, del: S.align.del, so: S.align.so, gapfill: S.align.gapfill }; changed(); };
     $('#modeSurf')?.addEventListener('click', () => setMode('surface'));
     $('#modeUnder')?.addEventListener('click', () => setMode('under'));
     const apply = (zNew) => { if (!isFinite(zNew)) return; pushHist(); S.align.st[sel.i] = Math.round(zNew * 100) / 100; changed(); };
@@ -1302,6 +1355,7 @@ function updateSelCard() {
     $('#posA')?.addEventListener('click', () => setPos(0));
     $('#posC')?.addEventListener('click', () => setPos(half));
     $('#posB')?.addEventListener('click', () => setPos(2 * half));
+    $('#gapFill')?.addEventListener('click', () => { pushHist(); const k = stKey(sel.i), g = S.align.gapfill || []; S.align.gapfill = g.includes(k) ? g.filter((x) => x !== k) : [...g, k]; changed(); });
     const delBtn = $('#delSt');
     delBtn?.addEventListener('click', () => {
       if (!delBtn.dataset.armed) { delBtn.dataset.armed = '1'; delBtn.textContent = 'Click again to remove'; setTimeout(() => { if (delBtn.isConnected) { delete delBtn.dataset.armed; delBtn.textContent = 'Remove station'; } }, 4000); return; }
@@ -1378,6 +1432,7 @@ function serialize() {
     v: 1, system: S.data.system, line: S.data.line, length_m: S.L, platform_m: settings.platform,
     st, pvi: S.align.pvi.map((p) => [Math.round(p.c * 10) / 10, p.z]), ovr: S.align.ovr,
     sg: Object.fromEntries(S.stations.map((_, i) => [stKey(i), (S.align.sg && S.align.sg[i]) || 0]).filter(([, g]) => g)),
+    gapfill: (S.align.gapfill || []).slice(),
     so: Object.fromEntries(S.stations.map((_, i) => [stKey(i), (S.align.so && S.align.so[i]) || 0]).filter(([, o]) => o)),
     del: (S.align.del || []).slice(),
     ...(isRer() ? { mode: Object.fromEntries(S.stations.map((_, i) => [stKey(i), modeOf(i)])), route_chainage_m: S.data.route_chainage_m } : {}),
@@ -1689,7 +1744,7 @@ $('#solveCross').addEventListener('click', () => {
       const trial = cons.concat([side]); if (ok(defaultAlign(modes, trial), trial.concat(tubeC))) { cons = trial; held++; break; }
     }
   });
-  pushHist(); const fresh = defaultAlign(modes, cons); S.align = { ...fresh, ovr: S.align.ovr, del: S.align.del, so: S.align.so }; S.sel = null; changed();
+  pushHist(); const fresh = defaultAlign(modes, cons); S.align = { ...fresh, ovr: S.align.ovr, del: S.align.del, so: S.align.so, gapfill: S.align.gapfill }; S.sel = null; changed();
   flash(`Cleared ${held} of ${xs.length} crossings within ${settings.maxGrade}‰`);
 });
 
@@ -1739,7 +1794,7 @@ $('#resetLine').addEventListener('click', (e) => {
   const btn = e.currentTarget;
   if (!resetArm) { btn.textContent = 'Click again to reset'; resetArm = setTimeout(() => { resetArm = 0; btn.textContent = 'Reset this line'; }, 3000); return; }
   clearTimeout(resetArm); resetArm = 0; btn.textContent = 'Reset this line';
-  pushHist(); S.stations = deriveStations([], []); buildCanon(); S.align = { ...defaultAlign(), del: [], so: S.stations.map(() => 0) }; S.sel = null; changed();
+  pushHist(); S.stations = deriveStations([], []); buildCanon(); S.align = { ...defaultAlign(), del: [], so: S.stations.map(() => 0), gapfill: [] }; S.sel = null; changed();
 });
 
 async function exportPng() {
