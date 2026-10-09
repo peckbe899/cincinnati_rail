@@ -84,6 +84,9 @@ profile:
   - IN_Indiana_Statewide_LiDAR_2017_B17
   - KY_Statewide_2021_A21
   usgs: false
+  analyzer:
+    line: data/profile/rer/lines/RER_1.json
+    settings: data/profile/rer/settings.json
 padding:
   percent: 5.0
   final_leg_s: 60

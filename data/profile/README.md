@@ -20,3 +20,14 @@ What this folder holds, for the travel-time repo.
 ## Prompt for the Claude Code session
 
 > Add the Cincinnati Metro profile analyzer to this repo so travel times use real vertical profiles. Everything is in this folder (see README.md). Port the analyzer's logic from profile_analyzer.html, load the per-line ground and Ben's saved alignments, use settings.json, and set profile.dem to map3_profile_dem_dm.vrt with dem_scale 0.1. Grades and station rail levels should feed the run-time calculation.
+
+## Rail Profiles page (`profiles.html`)
+
+The same editor for the Metro and the RER, published as a claude.ai artifact (saved profiles live in its shared database: `alignments/<id>`, settings in `config/settings` and `config/settings_rer`). Metro behaves exactly as `profile_analyzer.html`. RER additions:
+
+- `rer/lines/RER_*.json`: the trunk core of each RER line, two stations past each end of the drawn "Trunk" segments, cut from a representative through service (`service`) and sampled on the map 3 ground at 2 m. `route_chainage_m` is the core's place on that service; `trunks` lists the drawn trunk spans; each station has `trunk: true|false`. Built by `tools/make_rer_profile_lines.py`.
+- Station mode: trunk stations start underground (12 m rail depth), the others at grade on the old railroad, with bend points every 250 m following the smoothed ground. Switch a station in its card; that re-solves the line.
+- Canon: RER-3 covered way from Sedamsville to Riverbend/Belterra (cut and cover, end stations at grade, Asbury back on the ground); RER-5 deep bore between Norwood Central and Ludlow (portals not set, so the end stations stay outside it).
+- RER settings (`rer/settings.json`) are starting values, not canon: 225 m platforms, 35 per mille, 12 m station depth, 25 m deep-bore threshold, 7 m envelope, 9 m crossing clearance.
+- Crossings: Metro and RER rail clearances both ways (`rer/metro_rails.json` holds every Metro line's rail for the RER side).
+- Saved RER profiles go to `rer/alignments/RER_*.json` (exported from the page's database); the RER through-service configs pick them up automatically.

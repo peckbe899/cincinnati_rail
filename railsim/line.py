@@ -342,8 +342,16 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
 
     # ---- vertical profile
     pcfg = cfg.get("profile", {}) or {}
-    # a designed Metro profile replaces the ground-following design: no elevation sampling
-    sources = [] if pcfg.get("analyzer") else pcfg.get("sources", ["csv", "kmz", "usgs"])
+    # a designed Metro profile replaces the ground-following design: no elevation sampling.
+    # A designed RER core is laid over the ground-following design of the whole route.
+    acfg = pcfg.get("analyzer")
+    mp = None
+    if acfg:
+        from .metro_profile import MetroProfile
+        mp = MetroProfile.load(base_dir / acfg["line"],
+                               base_dir / acfg["alignment"] if acfg.get("alignment") else None,
+                               base_dir / acfg["settings"] if acfg.get("settings") else None)
+    sources = [] if mp is not None and not mp.is_rer else pcfg.get("sources", ["csv", "kmz", "usgs"])
     L = h.length
     ground = None
     tz = int(pcfg.get("terrain_zoom", 13))
@@ -402,14 +410,10 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
         else:
             spans = [_zone_chainage(z, on_route, proj, h)]
         structures += [(s0, s1, z.get("type", "viaduct")) for s0, s1 in spans]
-    acfg = pcfg.get("analyzer")
-    if acfg:
+    if mp is not None and not mp.is_rer:
         # the designed Metro profile (station rail levels, grades, structures) from the
         # Metro Profiles page data; replaces the ground-following profile design
-        from .metro_profile import MetroProfile, route_profile
-        mp = MetroProfile.load(base_dir / acfg["line"],
-                               base_dir / acfg["alignment"] if acfg.get("alignment") else None,
-                               base_dir / acfg["settings"] if acfg.get("settings") else None)
+        from .metro_profile import route_profile
         prof = route_profile(mp, proj, h)
         sm = mp.summary()
         log(f"  Profile: Metro Profiles {mp.id} ({'saved alignment' if acfg.get('alignment') else 'solver default'}), "
@@ -431,6 +435,20 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
     else:
         prof = design_profile(L, ground, pdesign, stations=[s.s for s in on_route],
                               structures=structures)
+        if mp is not None:
+            # the designed RER core (trunk tunnels, station rail levels) from the Rail
+            # Profiles page data, over the ground-following design of the rest of the route
+            from .metro_profile import overlay_profile
+            prof, share = overlay_profile(prof, mp, proj, h)
+            sm = mp.summary()
+            log(f"  Profile: Rail Profiles {mp.id} core ({'saved alignment' if acfg.get('alignment') else 'solver default'}) "
+                f"on {share:.0%} of the route, max grade {sm['max_grade_permille']:+.1f} per mille; "
+                f"km by type {sm['km_by_type']}")
+            if share == 0:
+                warnings.append(f"{mp.id}: the route does not run through the designed core")
+            if sm["grades_over_limit"]:
+                warnings.append(f"{mp.id}: {sm['grades_over_limit']} grade(s) over "
+                                f"{mp.settings['maxGrade']:.0f} per mille in the RER profile")
 
     # ---- speed limits
     extra: List[Restriction] = []

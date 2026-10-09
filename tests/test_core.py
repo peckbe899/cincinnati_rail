@@ -322,3 +322,21 @@ def test_metro_default_solver_respects_grade_limit():
     root = Path(__file__).resolve().parent.parent / "data/profile"
     mp = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json")  # no saved profile
     assert mp.summary()["grades_over_limit"] == 0
+
+
+def test_rer_core_profile_matches_page():
+    """RER cores: surface stations at ground, trunk stations underground, the RER-3 covered
+    way cut and cover, the RER-5 deep bore; values as the Rail Profiles page shows them."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent / "data/profile/rer"
+    mp = MetroProfile.load(root / "lines/RER_1.json", None, root / "settings.json")
+    assert [round(z, 1) for z in mp.st] == [156.0, 154.8, 140.8, 154.1, 156.6, 148.9, 189.6,
+                                           218.8, 217.9, 201.5, 204.5, 195.1]
+    assert mp.summary()["grades_over_limit"] == 0
+    r3 = MetroProfile.load(root / "lines/RER_3.json", None, root / "settings.json")
+    i = next(k for k, s in enumerate(r3.stations) if s["name"] == "Torrance")
+    assert r3.type_at(r3.stations[i]["c"]) == "cutcover"
+    assert r3.modes[[s["name"] for s in r3.stations].index("Asbury")] == "surface"
+    r5 = MetroProfile.load(root / "lines/RER_5.json", None, root / "settings.json")
+    assert r5.summary()["km_by_type"]["deep"] == pytest.approx(10.7, abs=0.05)

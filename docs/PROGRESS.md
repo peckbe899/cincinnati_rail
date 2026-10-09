@@ -223,6 +223,12 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - RER configs read map 3 ground from `data/profile/dem/map3_profile_dem_dm.vrt` inside its extent, with LiDAR and terrain tiles outside.
   - RER on map 3 ground vs LiDAR: all 51 configs run, scheduled times within -0.17 to +0.12% (mean 0.0%).
 
+- **Rail Profiles page** (`data/profile/profiles.html`, published as a claude.ai artifact): the Metro Profiles editor for both systems.
+  - Metro lines as before, with the four saved profiles loaded.
+  - RER: the trunk core of each line (`data/profile/rer/`, built by `tools/make_rer_profile_lines.py` from the simulator's routes). Trunk stations start underground, others at grade on the old railroad with ground-following bend points; per-station switch. Canon RER-3 covered way and RER-5 deep bore. RER settings are starting values (225 m platforms, 35 per mille, 12 m stations).
+  - Rail clearances between Metro and RER at every crossing.
+- **RER run times use the designed cores**: through-service configs carry `profile.analyzer` (the RER core); the core's rail, ground and structure replace the ground-fitted profile there, and the difference tapers out over 400 m past the core (`overlay_profile`).
+
 ## In progress
 
 - Nothing running.
