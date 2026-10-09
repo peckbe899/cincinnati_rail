@@ -38,22 +38,28 @@ STRUCTURE = {"elevated": "viaduct", "atgrade": "at-grade", "cutcover": "cut-and-
 TUNNEL_STRUCTURES = {"tunnel", "cut-and-cover", "shield", "deep-tube"}
 
 DEFAULTS = dict(maxGrade=50.0, platform=152.4, defDepth=7.62, elevAbove=3.0, coverBelow=3.0,
-                deepBelow=18.29, shallowMax=12.19, envelope=5.5, boreCrown=5.2, clearMin=8.0, poolFt=455.0,
+                deepBelow=18.29, shallowMax=12.19, poolFt=455.0,
                 vcRadius=1500.0, vcMinLen=30.5, minCover=2.0)
-# Structure sizes and cover by the practice of each line's era (Ben's ruling), heights from the
-# top of rail to the top of the roof or tube lining; shallower than bore + cover is cut and cover.
-#   Boxes and station boxes: one 5.0 m standard for every Metro line (1913 Dual Contracts
-#     section, 13 ft 10 in clear + roof); mezzanines and connectors are designed on top later.
-#   Bored tubes and cover by era: Lines 1-7 (1903-1913) crown 4.3 m, cover about 2 m;
-#     Lines 8-14 (1933-1959) crown 5.2 m (15 ft clear tubes), cover about one diameter, 6 m.
-ERA = {**{f"Line_{k}": {"cover": 2.0, "box": 5.0, "bore": 4.3} for k in ("1", "2", "2b", "3", "4", "5", "6")},
-       "Line_7": {"cover": 2.0, "box": 5.0, "bore": 4.3},
-       **{f"Line_{k}": {"cover": 6.0, "box": 5.0, "bore": 5.2} for k in ("8", "9", "10", "11", "12", "13", "14")}}
+# Metro structures (Ben's rules), from the top of rail: below = rail to underside, top = rail to
+# top, od = outside diameter. Cut-and-cover box (and station box) 1.0 below / 4.6 to top; twin
+# tube (4.4 m inside, 4.76 m outside, rail 0.5 m above invert) 0.68 / 4.08 for deep tube on every
+# line, shield on Lines 1-7 and every river crossing; double-track bore (9.0 m outside) 3.2 / 5.8
+# for shield on Lines 8-14. Cover over the top: tube or bore with its top above 140.0 m (basin
+# water table) 2.0 m, at or below it one outside diameter; box roof 0.6 m. Shallower than that
+# is built cut and cover.
+METRO_ST = {"box": {"k": "box", "below": 1.0, "top": 4.6},
+            "tube": {"k": "tube", "below": 0.68, "top": 4.08, "od": 4.76},
+            "bore": {"k": "bore", "below": 3.2, "top": 5.8, "od": 9.0}}
+WATER_TABLE, TUBE_COVER_HIGH, BOX_COVER = 140.0, 2.0, 0.6
+# rivers: rail at most bed (ground raster) - margin at every chainage of a river range, in tunnel
+RIVER_MARGIN = {"metro": 7.5, "rer": 8.0}
+ERA = {**{f"Line_{k}": {"shield": "tube"} for k in ("1", "2", "2b", "3", "4", "5", "6", "7")},
+       **{f"Line_{k}": {"shield": "bore"} for k in ("8", "9", "10", "11", "12", "13", "14")}}
 # RER: 35 per mille, 200 m platforms (8-car TRI) and 12 m station rail depth are canon; the
 # 25 m deep-bore threshold, 6.6 m box / 7.5 m bored crown (RATP RER style), 3 m tube cover and 250 m surface
 # bend points are starting values
 RER_DEFAULTS = dict(maxGrade=35.0, platform=200.0, defDepth=12.0, elevAbove=3.0, coverBelow=3.0,
-                    deepBelow=25.0, shallowMax=18.0, envelope=6.6, boreCrown=7.5, clearMin=9.0, poolFt=455.0,
+                    deepBelow=25.0, shallowMax=18.0, envelope=6.6, boreCrown=7.5, invertDepth=1.0, poolFt=455.0,
                     surfStep=250.0, tubeCover=3.0, vcRadius=3000.0, vcMinLen=30.5, minCover=8.5)
 RER_CANON_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "rer" / "canon.json"
 SETTINGS_KEYS = {"surfaceBendPointSpacing_m": "surfStep", "tubeCover_m": "tubeCover",
@@ -603,8 +609,14 @@ class MetroProfile:
         m = sec["m"] if sec else ("deep" if d >= self.settings["deepBelow"] else "shallow")
         if m == "canal":
             return "cutcover"
-        if d < self.bore_crown() + self.min_cover():  # too shallow to bore in its era
-            return "cutcover"
+        # too shallow to bore: built cut and cover
+        if self.is_rer:
+            if d < self.bore_crown() + self.min_cover():
+                return "cutcover"
+        else:
+            sc = self.struct_for("deep" if m == "deep" else "shield", c)
+            if d - sc["top"] < self.req_cover(sc, z + sc["top"]):
+                return "cutcover"
         if m == "deep":
             return "deep"
         return "cutcover" if self.in_station(c) else "shield"
@@ -612,22 +624,58 @@ class MetroProfile:
     def _era(self) -> Optional[dict]:
         return None if self.is_rer else ERA.get(self.id)
 
-    def min_cover(self) -> float:
-        """Cover a bored tunnel needs: the line's era practice (Metro) or the setting (RER)."""
+    def struct_for(self, t: str, c: float) -> dict:
+        """The tunnel structure at chainage c for a tunnel type (below / top from the rail)."""
+        st = self.settings
+        if self.is_rer:
+            return ({"k": "box", "below": st["invertDepth"], "top": st["envelope"]} if t == "cutcover"
+                    else {"k": "bore", "below": st["invertDepth"], "top": st["boreCrown"]})
+        if self.river_at(c) or t == "deep":
+            return METRO_ST["tube"]
+        if t == "cutcover":
+            return METRO_ST["box"]
+        return METRO_ST[(self._era() or {}).get("shield", "tube")]
+
+    def req_cover(self, sc: dict, top_z: float) -> float:
+        """Cover a structure needs over its top (top_z = its top level)."""
         if "minCover_override" in self.settings:
             return float(self.settings["minCover_override"])
-        e = self._era()
-        return e["cover"] if e else float(self.settings["minCover"])
+        if self.is_rer:
+            return 0.0 if sc["k"] == "box" else float(self.settings["minCover"])
+        if sc["k"] == "box":
+            return BOX_COVER
+        return TUBE_COVER_HIGH if top_z > WATER_TABLE else sc["od"]
 
-    def box_height(self) -> float:
-        """Cut-and-cover (and station) box height above rail."""
-        e = self._era()
-        return e["box"] if e else float(self.settings["envelope"])
+    def min_cover(self) -> float:
+        """Cover over RER bored tunnels (setting)."""
+        if "minCover_override" in self.settings:
+            return float(self.settings["minCover_override"])
+        return float(self.settings["minCover"])
 
     def bore_crown(self) -> float:
-        """Bored tube crown above rail."""
-        e = self._era()
-        return e["bore"] if e else float(self.settings["boreCrown"])
+        """RER bored tube crown above rail; Metro: the line's shield structure."""
+        return float(self.settings["boreCrown"]) if self.is_rer else self.struct_for("shield", -1e9)["top"]
+
+    def river_breaks(self) -> List[dict]:
+        """Stretches in tunnel under a river where the rail is above bed - margin (bed = ground raster)."""
+        margin = RIVER_MARGIN["rer" if self.is_rer else "metro"]
+        step = float(self.data.get("step_m", 2.0))
+        out = []
+        for r in self.data.get("rivers", []) or []:
+            run = None
+            for i in range(math.ceil(r["c0"] / step), int(math.floor(r["c1"] / step)) + 1):
+                c, bed = i * step, float(self._ground[i]) if i < len(self._ground) else math.nan
+                z = float(self.rail_at(c))
+                t = self.type_at(c, z)
+                over = z - (bed - margin) if math.isfinite(bed) and t in ("cutcover", "shield", "deep") else -math.inf
+                if over > 0.005:
+                    if run is None:
+                        run = {"name": r["name"], "c0": c, "c1": c, "over": over}
+                        out.append(run)
+                    run["c1"], run["over"] = c, max(run["over"], over)
+                else:
+                    run = None
+        return out
 
     def type_at(self, c: float, z: Optional[float] = None) -> str:
         if z is None:
@@ -651,7 +699,7 @@ class MetroProfile:
         for t in self.river_tubes(self.modes or None):
             zz = self.rail_at(np.arange(t["c0"], t["c1"] + 1e-9, 5.0))
             shallow += int(zz.max() > t["ub"] + 0.05)
-        return {"shallow_tubes": shallow,
+        return {"shallow_tubes": shallow, "river_breaks": len(self.river_breaks()),
                 "km_by_type": {k: round(v, 3) for k, v in km.items()},
                 "max_grade_permille": round(float(g[np.argmax(np.abs(g))]) if len(g) else 0.0, 1),
                 "grades_over_limit": over}

@@ -355,9 +355,9 @@ def test_rer_core_profile_matches_page():
     assert r3.summary()["shallow_tubes"] == 0
 
 
-def test_vertical_curves_and_era_cover():
-    """Vertical curves are smooth (grade continuous) and stay off platforms; Metro bored
-    tunnels need their era's cover (2 m for the 1903-1913 lines, 6 m from the 1930s)."""
+def test_vertical_curves_and_structure_rules():
+    """Vertical curves are smooth (grade continuous) and stay off platforms; Metro structures
+    and their cover follow Ben's rules."""
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
@@ -370,8 +370,18 @@ def test_vertical_curves_and_era_cover():
     for i, s in enumerate(mp.stations):
         cc = np.arange(max(0.0, s["c"] - half), min(mp.length, s["c"] + half), 2.0)
         assert np.allclose(mp.rail_at(cc), mp.st[i], atol=1e-6)  # platforms level
-    assert mp.min_cover() == 6.0
-    assert MetroProfile.load(root / "lines/Line_3.json", None, root / "settings.json").min_cover() == 2.0
+    # Ben's structure rules: Lines 8-14 shield is a double-track bore, Lines 1-7 a twin tube;
+    # deep tube and river crossings are twin tubes; cover 2.0 m above the 140 m water table,
+    # one outside diameter at or below it, 0.6 m over box roofs
+    l3 = MetroProfile.load(root / "lines/Line_3.json", None, root / "settings.json")
+    assert mp.struct_for("shield", 1000.0)["k"] == "bore" and l3.struct_for("shield", 1000.0)["k"] == "tube"
+    assert mp.struct_for("deep", 1000.0)["top"] == 4.08 and mp.struct_for("cutcover", 1000.0)["top"] == 4.6
+    bore = mp.struct_for("shield", 1000.0)
+    assert mp.req_cover(bore, 150.0) == 2.0 and mp.req_cover(bore, 140.0) == 9.0
+    assert mp.req_cover(mp.struct_for("cutcover", 1000.0), 150.0) == 0.6
+    l1 = MetroProfile.load(root / "lines/Line_1.json", None, root / "settings.json")
+    r = l1.data["rivers"][0]
+    assert l1.struct_for("cutcover", (r["c0"] + r["c1"]) / 2)["k"] == "tube"
 
 
 def test_sloped_platform_eases_the_bends():

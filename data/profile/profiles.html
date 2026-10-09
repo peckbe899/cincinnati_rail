@@ -223,7 +223,7 @@ const TYPE_KEYS = Object.keys(TYPES);
 // thresholds are editable starting values, not canon. deepBelow (60 ft) follows the station
 // list calling Price Hill's 60 ft station a deep bore; shallowMax (40 ft) flags canon-shallow
 // stretches that run well past the doctrine's 20-30 ft.
-const METRO_DEFAULTS = { maxGrade: 50, platform: 152.4, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, envelope: 5.5, boreCrown: 5.2, deckDepth: 1.5, invertDepth: 1.0, boreGap: 2.0, poolFt: 455.0, vcRadius: 1500, vcMinLen: 30.5, minCover: 2, drainMin: 3, curveK: 800, stationMaxGrade: 7.5 };
+const METRO_DEFAULTS = { maxGrade: 50, platform: 152.4, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, deckDepth: 1.5, poolFt: 455.0, vcRadius: 1500, vcMinLen: 30.5, drainMin: 3, curveK: 800, stationMaxGrade: 7.5 };
 // Design rules: vertical curves of 1,500 m (Metro) and 3,000 m (RER) at every grade change, kept
 // off platforms by a level transition (canon); bored tunnels need the cover of their era's
 // practice, else they are cut and cover (canon, see ERA); tunnels drain at 3 per mille or
@@ -232,7 +232,7 @@ const METRO_DEFAULTS = { maxGrade: 50, platform: 152.4, defDepth: 7.62, elevAbov
 // RER: 35 per mille, 200 m platforms (8-car TRI) and 12 m station rail depth are canon; the
 // envelope (25 kV overhead), thresholds, tube cover and surface bend-point spacing are starting
 // values. Surface stations sit at grade on the old railroad and the rail follows the ground.
-const RER_DEFAULTS = { maxGrade: 35, platform: 200, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 6.6, boreCrown: 7.5, deckDepth: 2.0, invertDepth: 1.0, boreGap: 2.0, poolFt: 455.0, surfStep: 250, tubeCover: 3, vcRadius: 3000, vcMinLen: 30.5, minCover: 8.5, drainMin: 3, curveK: 800, stationMaxGrade: 2.5 };
+const RER_DEFAULTS = { maxGrade: 35, platform: 200, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 6.6, boreCrown: 7.5, deckDepth: 2.0, invertDepth: 1.0, poolFt: 455.0, surfStep: 250, tubeCover: 3, vcRadius: 3000, vcMinLen: 30.5, minCover: 8.5, drainMin: 3, curveK: 800, stationMaxGrade: 2.5 };
 let DEFAULTS = METRO_DEFAULTS;
 // Canon structure for the founding sections (Lines 1-6 as first opened).
 // m: 'shallow' = basin method (shallow shield running tunnels, cut-and-cover station boxes);
@@ -271,22 +271,24 @@ const SETTING_ROWS_BASE = [
   ['coverBelow', 'Covered when rail is below ground by', 'len', 0.1],
   ['deepBelow', 'Deep tube (outside canon) when rail is below ground by', 'len', 0.5],
   ['shallowMax', 'Flag canon-shallow stretches deeper than', 'len', 0.5],
-  ['envelope', 'Box and station box height above rail (RER; Metro by era)', 'len', 0.1],
-  ['boreCrown', 'Bored tube crown above rail (RER; Metro by era)', 'len', 0.1],
+  ['envelope', 'Box and station box height above rail', 'len', 0.1],
+  ['boreCrown', 'Bored tube crown above rail', 'len', 0.1],
   ['deckDepth', 'Viaduct deck below rail (over a crossing)', 'len', 0.1],
   ['invertDepth', 'Box or tube floor below rail', 'len', 0.1],
-  ['boreGap', 'Ground between a bored tube and another structure', 'len', 0.5],
   ['poolFt', 'Ohio normal pool (Markland)', 'ft', 0.1],
   ['vcRadius', 'Vertical curve radius', 'len', 100],
   ['vcMinLen', 'Min vertical curve length', 'len', 0.5],
-  ['minCover', 'Cover over bored tunnels (RER; Metro by era)', 'len', 0.5],
+  ['minCover', 'Cover over bored tunnels', 'len', 0.5],
   ['drainMin', 'Min tunnel grade for drainage', '‰', 0.5],
   ['stationMaxGrade', 'Max platform grade (RER; Metro by era)', '‰', 0.5],
   ['curveK', 'Curve compensation, k in k / R per mille', 'k', 50],
 ];
+// Metro structure heights, cover and crossing rules are fixed by Ben's rules (see the canon notes)
+const METRO_FIXED = new Set(['envelope', 'boreCrown', 'invertDepth', 'minCover']);
 const SETTING_ROWS_RER = SETTING_ROWS_BASE.map((r) => r[0] === 'defDepth' ? ['defDepth', 'Default rail depth at underground stations', 'len', 0.1] : r)
   .concat([['surfStep', 'Surface bend points every', 'len', 10], ['tubeCover', 'Cover over river tubes', 'len', 0.5]]);
-let SETTING_ROWS = SETTING_ROWS_BASE;
+const SETTING_ROWS_METRO = SETTING_ROWS_BASE.filter((r) => !METRO_FIXED.has(r[0]));
+let SETTING_ROWS = SETTING_ROWS_METRO;
 let settings = { ...DEFAULTS };
 const SYS = { metro: { settings: { ...METRO_DEFAULTS }, doc: 'config/settings', key: 'profile:settings' }, rer: { settings: { ...RER_DEFAULTS }, doc: 'config/settings_rer', key: 'profile:settings_rer' } };
 let sys = 'metro';
@@ -451,7 +453,7 @@ function gradeAt(c, verts = VERTS) {
 }
 // the straight grades between bends (for limits, labels and the overview)
 const chords = (verts = VERTS) => design(verts).dv;
-window.railProfile = { railAt: (c) => railAt(c), line: () => S.data && S.data.id };
+window.railProfile = { railAt: (c) => railAt(c), typeAt: (c) => typeAt(c), line: () => S.data && S.data.id, issues: () => S.issues || [], saved: () => !!(S.data && S.saved[S.data.id]) };
 function overrideAt(c) { const o = S.align.ovr; for (let k = o.length - 1; k >= 0; k--) if (c >= o[k][0] && c <= o[k][1]) return o[k][2]; return null; }
 // ---------- canon ----------
 function buildCanon() {
@@ -506,7 +508,7 @@ function riverTubes(md) {
     const bore = sec && (sec.m === 'deep' || (sec.m === 'covered' && info.in_covered_way));
     const under = ip >= 0 && inx >= 0 && md[ip] !== 'surface' && md[inx] !== 'surface';
     if (!bore && !under) return;
-    out.push({ name: r.name, c0: r.c0, c1: r.c1, ub: pool() - (info.bed_below_pool_m ?? 12) - settings.tubeCover - boreH() });
+    out.push({ name: r.name, c0: r.c0, c1: r.c1, ub: pool() - (info.bed_below_pool_m ?? 12) - settings.tubeCover - settings.boreCrown });
   });
   return out;
 }
@@ -515,31 +517,59 @@ function defaultMode(i) { const f = S.canonModes[i]; if (f) return f.mode; retur
 function modeOf(i) { return (S.align && S.align.mode && S.align.mode[i]) || defaultMode(i); }
 function canonAt(c) { const a = S.canonSecs; for (let k = a.length - 1; k >= 0; k--) if (c >= a[k].lo && c <= a[k].hi) return a[k]; return null; }
 function inStation(c) { const half = settings.platform / 2; return S.stations.some((s) => Math.abs(c - s.c) <= half); }
-// Structure sizes and cover by the practice of each line's era (Ben's ruling; heights are from
-// the top of rail to the top of the roof or tube lining):
-//  Boxes and station boxes: one standard for every Metro line (Ben: mezzanines and connectors
-//    are designed on top of them later), 5.0 m: the 1913 Dual Contracts section, 13 ft 10 in
-//    clear above rail + roof (between the IRT 1904 4.5 m and the 1930s 5.4 m).
-//  Bored tubes and cover by era: 1903-1913 (Lines 1-7) shield tubes of the day crown 4.3 m,
-//    basin-method cover about 2 m; 1933-1959 (Lines 8-14) 15 ft clear tubes (Chicago State St /
-//    Dearborn) crown 5.2 m, cover about one tube diameter, 6 m.
-// RER: per settings (RATP RER style, 25 kV overhead over bilevel stock).
+// Metro structures (Ben's rules), from the top of rail: below = rail to underside, top = rail
+// to top, od = outside diameter.
+//  Cut-and-cover box (and station box): 1.0 below, 4.6 to top.
+//  Twin tube (4.4 m inside, 4.76 m outside, rail 0.5 m above invert): 0.68 below, 4.08 to top;
+//    deep tube on every line, shield on Lines 1-7, and every river crossing.
+//  Double-track bore (9.0 m outside): 3.2 below, 5.8 to top; shield on Lines 8-14.
+// Cover over the top: tube or bore with its top above 140.0 m (basin water table, about river
+// level) 2.0 m, at or below it one outside diameter; box roof 0.6 m. Shallower than that is
+// built cut and cover. RER: box and bored tube heights and cover per settings.
+const METRO_ST = {
+  box: { k: 'box', below: 1.0, top: 4.6, label: 'box' },
+  tube: { k: 'tube', below: 0.68, top: 4.08, od: 4.76, label: 'twin tube' },
+  bore: { k: 'bore', below: 3.2, top: 5.8, od: 9.0, label: 'double-track bore' },
+};
+const WATER_TABLE = 140.0, TUBE_COVER_HIGH = 2.0, BOX_COVER = 0.6, SEP_GAP = 0.5, BED_DEPTH = 0.8;
+// rivers (Ben's rules): rail at most bed - margin at every chainage in a river range (bed = the
+// ground raster there). Metro 1.0 scour + 2.38 half-diameter cover + 4.08 rail to top; RER 1.0
+// scour + 1.5 backfill + 5.5 rail to top
+const RIVER_MARGIN = { metro: 7.5, rer: 8.0 };
 const ERA = {};
-['1', '2', '2b', '3', '4', '5', '6'].forEach((k) => (ERA[`Line_${k}`] = { cover: 2, box: 5.0, bore: 4.3, sgMax: 7.5, era: k === '2b' ? '1903-1913 (with Line 2)' : '1903-1913' }));
-ERA.Line_7 = { cover: 2, box: 5.0, bore: 4.3, sgMax: 7.5, era: '1913' };
-['8', '9', '10', '11', '12'].forEach((k) => (ERA[`Line_${k}`] = { cover: 6, box: 5.0, bore: 5.2, sgMax: 4, era: '1933-1941' }));
-['13', '14'].forEach((k) => (ERA[`Line_${k}`] = { cover: 6, box: 5.0, bore: 5.2, sgMax: 4, era: '1949-1959' }));
+['1', '2', '2b', '3', '4', '5', '6'].forEach((k) => (ERA[`Line_${k}`] = { shield: 'tube', sgMax: 7.5, era: k === '2b' ? '1903-1913 (with Line 2)' : '1903-1913' }));
+ERA.Line_7 = { shield: 'tube', sgMax: 7.5, era: '1913' };
+['8', '9', '10', '11', '12'].forEach((k) => (ERA[`Line_${k}`] = { shield: 'bore', sgMax: 4, era: '1933-1941' }));
+['13', '14'].forEach((k) => (ERA[`Line_${k}`] = { shield: 'bore', sgMax: 4, era: '1949-1959' }));
 const eraOf = (id = S.data && S.data.id) => (!isRer() && ERA[id]) || null;
-function minCoverFor(id) { const e = eraOf(id); return e ? e.cover : settings.minCover; }
-// cut-and-cover box (and station box) height, and bored tube crown, above the rail
-function boxH() { const e = eraOf(); return e ? e.box : settings.envelope; }
-function boreH() { const e = eraOf(); return e ? e.bore : settings.boreCrown; }
+const isRerId = (id) => id.startsWith('RER_');
+const setOf = (id) => (isRerId(id) ? SYS.rer.settings : SYS.metro.settings);
+// rail to top where a line runs in the open (clear height under a bridge, taken as its box)
+const openTop = (id) => (isRerId(id) ? SYS.rer.settings.envelope : METRO_ST.box.top);
+// the structure a line has at chainage c (of the line on the page) for an analyzer type
+function structFor(t, c, id = S.data.id) {
+  const st = setOf(id);
+  if (t === 'elevated') return { k: 'elevated', below: st.deckDepth, top: openTop(id), label: 'viaduct' };
+  if (t === 'atgrade') return { k: 'atgrade', below: BED_DEPTH, top: openTop(id), label: 'at grade' };
+  if (isRerId(id)) return t === 'cutcover' ? { k: 'box', below: st.invertDepth, top: st.envelope, label: 'box' } : { k: 'bore', below: st.invertDepth, top: st.boreCrown, label: 'bored tube' };
+  if (riverAt(c)) return METRO_ST.tube;
+  if (t === 'cutcover') return METRO_ST.box;
+  if (t === 'deep') return METRO_ST.tube;
+  return METRO_ST[(ERA[id] || {}).shield || 'tube'];
+}
+// cover a structure needs over its top (topZ = its top level)
+function reqCover(sc, topZ, id = S.data.id) {
+  if (isRerId(id)) return sc.k === 'box' ? 0 : setOf(id).minCover;
+  if (sc.k === 'box') return BOX_COVER;
+  return topZ > WATER_TABLE ? TUBE_COVER_HIGH : sc.od;
+}
+const maxTop = () => (isRer() ? Math.max(settings.envelope, settings.boreCrown) : METRO_ST.bore.top);
+const maxBelow = () => (isRer() ? settings.invertDepth : METRO_ST.bore.below);
 // platform grade limit (Ben's ruling): Lines 1-7 7.5 per mille (New York 1918 design practice:
 // stations and approaches at most 0.75%, so a standing train will not creep with brakes off);
 // Lines 8-14 4 per mille (near London's historic 1 in 260); RER per settings (2.5 per
 // mille, the modern main-line station limit: EBO / TSI, UK 1 in 400)
 function sgMaxFor() { const e = eraOf(); return e ? e.sgMax : settings.stationMaxGrade; }
-const heightFor = (t) => (t === 'shield' || t === 'deep' ? boreH() : boxH());
 function autoType(c, z) {
   const sec0 = canonAt(c);
   if (sec0 && sec0.m === 'covered') { const s0 = surfaceAt(c); return isFinite(s0) && z - s0 >= settings.elevAbove ? 'elevated' : 'cutcover'; }
@@ -552,8 +582,9 @@ function autoType(c, z) {
   const sec = canonAt(c);
   const m = sec ? sec.m : (d >= settings.deepBelow ? 'deep' : 'shallow');
   if (m === 'canal') return 'cutcover';
-  // too shallow to bore by the era's practice: built cut and cover
-  if (d < boreH() + minCoverFor()) return 'cutcover';
+  // too shallow to bore: built cut and cover
+  if (isRer()) { if (d < settings.boreCrown + settings.minCover) return 'cutcover'; }
+  else { const sc = structFor(m === 'deep' ? 'deep' : 'shield', c); if (d - sc.top < reqCover(sc, z + sc.top)) return 'cutcover'; }
   if (m === 'deep') return 'deep';
   return inStation(c) ? 'cutcover' : 'shield';
 }
@@ -681,10 +712,16 @@ function computeSummary() {
     if (Math.abs(g) > settings.maxGrade + 0.05) over.push({ c0: a.c, c1: b.c, g });
   }
   const clashes = crossingClearances().filter((x) => x.clear != null && !x.ok);
-  const shallowTubes = [];
-  if (isRer()) riverTubes(S.stations.map((_, i) => modeOf(i))).forEach((t) => {
-    let hi = -Infinity, hc = t.c0; for (let c = t.c0; c <= t.c1; c += 5) { const z = railAt(c); if (z > hi) { hi = z; hc = c; } }
-    if (hi > t.ub + 0.05) shallowTubes.push({ name: t.name, c: hc, over: hi - t.ub });
+  // river rule: in tunnel under a river the rail stays the margin below the bed (raster) at every chainage
+  const shallowTubes = []; const margin = RIVER_MARGIN[isRer() ? 'rer' : 'metro'];
+  S.rivers.forEach((r) => {
+    let run = null;
+    for (let i = Math.ceil(r.c0 / S.step); i * S.step <= r.c1; i++) {
+      const c = i * S.step, bed = S.ground[i], z = railAt(c), t = typeAt(c, z);
+      const over = TUNNEL.has(t) && isFinite(bed) ? z - (bed - margin) : -Infinity;
+      if (over > 0.005) { if (!run) { run = { name: r.name, c0: c, c1: c, c, over }; shallowTubes.push(run); } run.c1 = c; if (over > run.over) { run.over = over; run.c = c; } }
+      else run = null;
+    }
   });
   const out = { len, deepest, highest, maxG, maxGc, over, clashes, deepShallow, shallowTubes };
   Object.assign(out, designChecks());
@@ -744,14 +781,13 @@ function designChecks() {
       if (add > 0.5 && g + add > settings.maxGrade + 0.05) { hit(comp, c, -(g + add)); comp.on.R = Math.min(comp.on.R ?? Infinity, R); }
     }
     if (!riverAt(c)) {
-      const gr = groundAt(c); if (!isFinite(gr)) continue; const cv = gr - (z + heightFor(t));
-      if ((t === 'shield' || t === 'deep') && cv < minCoverFor()) hit(cover, c, cv);
-      if (t === 'cutcover' && cv < 0) hit(roof, c, cv);
+      const gr = groundAt(c); if (!isFinite(gr) || !TUNNEL.has(t)) continue; const sc = structFor(t, c), top = z + sc.top, cv = gr - top, need = reqCover(sc, top);
+      if (cv < need - 0.005) { const r = sc.k === 'box' ? roof : cover; hit(r, c, cv - need); r.on.k = sc.label; r.on.need = Math.max(r.on.need ?? 0, need); r.on.cv = Math.min(r.on.cv ?? Infinity, cv); }
     }
   }
   comp.list.forEach((r) => issues.push({ kind: comp.kind, c: (r.c0 + r.c1) / 2, text: `Grade plus curve allowance reaches ${(-r.worst).toFixed(1)}‰ from ${fmtCh(r.c0)} to ${fmtCh(r.c1)} (limit ${settings.maxGrade}‰, tightest radius ${Math.round(r.R)} m)` }));
-  cover.list.forEach((r) => issues.push({ kind: 'Cover', c: (r.c0 + r.c1) / 2, text: `Painted bored tunnel with cover down to ${fmtZ(r.worst, 1)} ${uLbl()} from ${fmtCh(r.c0)} to ${fmtCh(r.c1)} (era practice ${fmtZ(minCoverFor(), 1)})` }));
-  roof.list.forEach((r) => issues.push({ kind: 'Cover', c: (r.c0 + r.c1) / 2, text: `Cut-and-cover roof ${fmtZ(-r.worst, 1)} ${uLbl()} above ground from ${fmtCh(r.c0)} to ${fmtCh(r.c1)}` }));
+  cover.list.forEach((r) => issues.push({ kind: 'Cover', c: (r.c0 + r.c1) / 2, text: `${r.k[0].toUpperCase() + r.k.slice(1)} cover down to ${fmtZ(r.cv, 1)} ${uLbl()} from ${fmtCh(r.c0)} to ${fmtCh(r.c1)}, needs ${fmtZ(r.need, 2)} ${uLbl()}` }));
+  roof.list.forEach((r) => issues.push({ kind: 'Cover', c: (r.c0 + r.c1) / 2, text: r.cv < 0 ? `Box roof ${fmtZ(-r.cv, 1)} ${uLbl()} above ground from ${fmtCh(r.c0)} to ${fmtCh(r.c1)}` : `Box roof cover down to ${fmtZ(r.cv, 2)} ${uLbl()} from ${fmtCh(r.c0)} to ${fmtCh(r.c1)}, needs ${fmtZ(r.need, 1)} ${uLbl()}` }));
   return { checks: issues, sumps };
 }
 // every flag with a chainage, sorted along the line, for the list and the markers on the profile
@@ -760,8 +796,8 @@ function allIssues(sm) {
   sm.over.forEach((o) => out.push({ kind: 'Grade', c: (o.c0 + o.c1) / 2, text: `${fmtG(o.g)} from ${fmtCh(o.c0)} to ${fmtCh(o.c1)} exceeds ${settings.maxGrade}‰` }));
   sm.clashes.forEach((x) => out.push({ kind: 'Clearance', c: x.c, text: x.level
     ? `Crosses ${esc(x.with)} at grade at ${fmtCh(x.c)}: needs a grade separation`
-    : `${toU(x.clear).toFixed(1)} ${uLbl()} ${x.meUp ? 'over' : 'under'} ${esc(x.with)} at ${fmtCh(x.c)}; needs ${toU(x.need).toFixed(1)} ${uLbl()} (${KIND_LABEL[x.meUp ? x.t : x.to]} over ${KIND_LABEL[x.meUp ? x.to : x.t]})` }));
-  (sm.shallowTubes || []).forEach((t) => out.push({ kind: 'River', c: t.c, text: `Tube under the ${esc(t.name)} is ${fmtZ(t.over, 1)} ${uLbl()} too shallow at ${fmtCh(t.c)}` }));
+    : `${toU(x.clear).toFixed(2)} ${uLbl()} ${x.meUp ? 'over' : 'under'} ${esc(x.with)} at ${fmtCh(x.c)}; needs ${toU(x.need).toFixed(2)} ${uLbl()} (${(x.meUp ? x.t : x.to).label} over ${(x.meUp ? x.to : x.t).label})` }));
+  (sm.shallowTubes || []).forEach((t) => out.push({ kind: 'River', c: t.c, text: `Under the ${esc(t.name)} from ${fmtCh(t.c0)} to ${fmtCh(t.c1)} the rail is up to ${fmtZ(t.over, 2)} ${uLbl()} above bed − ${RIVER_MARGIN[isRer() ? 'rer' : 'metro']} m (worst at ${fmtCh(t.c)})` }));
   sm.deepShallow.forEach((f) => out.push({ kind: 'Canon', c: f.c, text: `${esc(f.name)} is ${fmtZ(f.d, 0)} ${uLbl()} down in a shallow-canon section` }));
   (sm.checks || []).forEach((x) => out.push(x));
   return out.sort((a, b) => a.c - b.c);
@@ -778,42 +814,30 @@ function otherRail(cr) {
   const verts = vertices(al, stations, +doc.length_m || 1e9, plat, (cr.wid.startsWith('RER_') ? SYS.rer : SYS.metro).settings.vcRadius);
   return railAt(cr.oc, verts);
 }
-// Grade separation at a crossing (above or below ground): the upper line's rail must sit above
-// the lower line's rail by the lower line's height (its box or tube, or, in the open, the clear
-// height its trains and wires need under a bridge) plus the upper line's structure below its
-// rail (viaduct deck, box or tube floor, or track bed at grade) plus ground between them where a
-// bored tube is involved. Two lines at grade cannot cross: a grade separation is needed.
-const ROOF = 0.8;  // roof slab of a box: the clear height under a bridge is the box less its roof
-function specOf(id) {
-  const rer = id.startsWith('RER_'), st = rer ? SYS.rer.settings : SYS.metro.settings, e = rer ? null : ERA[id];
-  const box = e ? e.box : st.envelope, bore = e ? e.bore : st.boreCrown;
-  return { rer, box, bore, clear: box - ROOF, deck: st.deckDepth, invert: st.invertDepth, bedDepth: 0.8, cover: e ? e.cover : st.minCover, boreGap: st.boreGap, elevAbove: st.elevAbove, coverBelow: st.coverBelow };
+// Grade separation at a crossing (above or below ground, Ben's rule): the upper line's rail sits
+// above the lower line's rail by at least the upper line's structure below its rail (box or tube
+// floor, bore invert, viaduct deck, or track bed at grade) + 0.5 m + the lower line's rail to top
+// (its box, tube or bore, or in the open its box height as the clear height under a bridge).
+// Two lines at grade cannot cross: a grade separation is needed.
+// a line's structure at a crossing from its rail and the ground there (same plan point, c on this line)
+function kindAt(id, z, gr, c) {
+  const st = setOf(id);
+  if (riverAt(c)) return structFor(z >= pool() + 1 ? 'elevated' : 'deep', c, id);
+  if (!isFinite(gr)) return structFor('atgrade', c, id);
+  if (z - gr >= st.elevAbove) return structFor('elevated', c, id);
+  const d = gr - z; if (d < st.coverBelow) return structFor('atgrade', c, id);
+  const sc = structFor(d >= st.deepBelow ? 'deep' : 'shield', c, id);
+  return d - sc.top < reqCover(sc, z + sc.top, id) ? structFor('cutcover', c, id) : sc;
 }
-// structure type of a line at a crossing from its rail and the ground there (same plan point)
-function kindAt(sp, z, gr) {
-  if (!isFinite(gr)) return 'atgrade';
-  if (z - gr >= sp.elevAbove) return 'elevated';
-  const d = gr - z; if (d < sp.coverBelow) return 'atgrade';
-  return d >= sp.bore + sp.cover ? 'bored' : 'box';
-}
-const KIND_LABEL = { elevated: 'viaduct', atgrade: 'at grade', box: 'box', bored: 'bored tube' };
-function needSep(lo, loKind, up, upKind) {
-  const h = loKind === 'box' ? lo.box : loKind === 'bored' ? lo.bore : lo.clear;
-  const d = upKind === 'elevated' ? up.deck : upKind === 'atgrade' ? up.bedDepth : up.invert;
-  const under = loKind === 'box' || loKind === 'bored', upUnder = upKind === 'box' || upKind === 'bored';
-  const gap = under && upUnder && (loKind === 'bored' || upKind === 'bored') ? Math.max(lo.boreGap, up.boreGap) : 0;
-  return h + d + gap;
-}
+const needSep = (lo, up) => up.below + SEP_GAP + lo.top;
 function crossingClearances() {
-  const me = specOf(S.data.id);
   return S.crossings.filter((x) => x.wid && x.oc != null).map((x) => {
     const zo = otherRail(x); const z = railAt(x.c);
     if (zo == null) return { ...x, zo, z, clear: null };
-    const gr = surfaceAt(x.c), ot = specOf(x.wid);
-    const t = TUNNEL.has(typeAt(x.c, z)) ? (typeAt(x.c, z) === 'cutcover' ? 'box' : 'bored') : kindAt(me, z, gr);
-    const to = kindAt(ot, zo, gr);
-    const meUp = z >= zo, need = meUp ? needSep(ot, to, me, t) : needSep(me, t, ot, to);
-    const level = (t === 'atgrade' && to === 'atgrade');
+    const gr = surfaceAt(x.c);
+    const t = structFor(typeAt(x.c, z), x.c), to = kindAt(x.wid, zo, gr, x.c);
+    const meUp = z >= zo, need = meUp ? needSep(to, t) : needSep(t, to);
+    const level = (t.k === 'atgrade' && to.k === 'atgrade');
     return { ...x, zo, z, clear: Math.abs(z - zo), need, meUp, t, to, level, ok: !level && Math.abs(z - zo) >= need - 0.05 };
   });
 }
@@ -833,10 +857,10 @@ function yRangeFor(view, plotW) {
   const i0 = Math.max(0, Math.floor(view.c0 / S.step)), i1 = Math.min(S.ground.length - 1, Math.ceil(view.c1 / S.step));
   const stride = Math.max(1, Math.floor((i1 - i0) / 3000));
   for (let i = i0; i <= i1; i += stride) { const c = i * S.step; if (riverAt(c)) continue; const g = S.ground[i]; if (!isNaN(g)) { if (g < lo) lo = g; if (g > hi) hi = g; } }
-  for (const v of VERTS) if (v.c >= view.c0 && v.c <= view.c1) { lo = Math.min(lo, v.z - settings.invertDepth); hi = Math.max(hi, v.z + Math.max(boxH(), boreH())); }
+  for (const v of VERTS) if (v.c >= view.c0 && v.c <= view.c1) { lo = Math.min(lo, v.z - maxBelow()); hi = Math.max(hi, v.z + maxTop()); }
   [view.c0, view.c1].forEach((c) => { const z = railAt(c); lo = Math.min(lo, z); hi = Math.max(hi, z); });
   if (S.rivers.some((r) => r.c1 >= view.c0 && r.c0 <= view.c1)) { lo = Math.min(lo, pool() - 12); hi = Math.max(hi, pool() + 4); }
-  for (const x of crossingClearances()) if (x.zo != null && x.c >= view.c0 && x.c <= view.c1) { lo = Math.min(lo, x.zo); hi = Math.max(hi, x.zo + boxH()); }
+  for (const x of crossingClearances()) if (x.zo != null && x.c >= view.c0 && x.c <= view.c1) { lo = Math.min(lo, x.zo - x.to.below); hi = Math.max(hi, x.zo + x.to.top); }
   if (!isFinite(lo)) { lo = 0; hi = 10; }
   const pad = Math.max(3, (hi - lo) * 0.08);
   return { ymin: lo - pad, ymax: hi + pad };
@@ -925,12 +949,11 @@ function draw(ctx, W, H, view, opt = {}) {
   }
   for (const x of cl) {
     if (x.zo == null || x.c < view.c0 || x.c > view.c1) continue;
-    const sp = specOf(x.wid), top = x.to === 'box' ? sp.box : x.to === 'bored' ? sp.bore : x.to === 'elevated' ? 0.3 : 0.3;
-    const bot = x.to === 'elevated' ? sp.deck : x.to === 'atgrade' ? sp.bedDepth : sp.invert;
+    const open = x.to.k === 'elevated' || x.to.k === 'atgrade', top = open ? 0.3 : x.to.top, bot = x.to.below;
     const px = X(x.c), y0 = Y(x.zo + top), y1 = Y(x.zo - bot); const bad = !x.ok;
     ctx.fillStyle = bad ? colors.warn : colors.muted; ctx.globalAlpha = 0.85; ctx.fillRect(px - 4, y0, 8, Math.max(2, y1 - y0)); ctx.globalAlpha = 1;
     ctx.font = `600 11px ${colors.ui}`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillStyle = bad ? colors.warn : muted;
-    ctx.fillText(`${x.with} ${KIND_LABEL[x.to]} · ${toU(x.clear).toFixed(1)} ${uLbl()} apart, needs ${toU(x.need ?? 0).toFixed(1)}`, px + 7, (y0 + y1) / 2);
+    ctx.fillText(`${x.with} ${x.to.label} · ${toU(x.clear).toFixed(1)} ${uLbl()} apart, needs ${toU(x.need ?? 0).toFixed(1)}`, px + 7, (y0 + y1) / 2);
   }
 
   // track: per-pixel sampling grouped by type
@@ -946,11 +969,13 @@ function draw(ctx, W, H, view, opt = {}) {
   // tunnel outline: roof or crown (rail + box or tube height) and floor or invert (rail -
   // invertDepth), filled between, outlined top and bottom, per run of one structure type
   const isTun = (t) => t === 'shield' || t === 'deep' || t === 'cutcover';
+  pts.forEach((p) => { if (isTun(p.t)) p.sc = structFor(p.t, p.c); });
+  const same = (a, b) => a.t === b.t && (!a.sc || a.sc.k === b.sc.k);
   for (let k0 = 0; k0 < pts.length - 1;) {
-    let k1 = k0; while (k1 + 1 < pts.length && pts[k1 + 1].t === pts[k0].t) k1++;
+    let k1 = k0; while (k1 + 1 < pts.length && same(pts[k1 + 1], pts[k0])) k1++;
     const t = pts[k0].t;
     if (isTun(t) && S.show !== 'rail') {
-      const run = pts.slice(k0, Math.min(k1 + 2, pts.length)); const eh = heightFor(t), inv = settings.invertDepth;
+      const run = pts.slice(k0, Math.min(k1 + 2, pts.length)); const eh = pts[k0].sc.top, inv = pts[k0].sc.below;
       ctx.fillStyle = colors[t]; ctx.globalAlpha = S.show === 'box' ? 0.24 : 0.14; ctx.beginPath();
       run.forEach((p, j) => (j ? ctx.lineTo(p.x, Y(p.z + eh)) : ctx.moveTo(p.x, Y(p.z + eh))));
       for (let j = run.length - 1; j >= 0; j--) ctx.lineTo(run[j].x, Y(run[j].z - inv));
@@ -1175,7 +1200,7 @@ function updatePanels() {
   const cnl = S.canonSecs.map((x) => `<li><b>${METHOD_LABEL[x.m]}</b>, ${esc(x.a)}${x.aIn === false ? ' (excl.)' : ''} to ${esc(x.b)}${x.bIn === false ? ' (excl.)' : ''}: ${esc(x.src)}</li>`)
     .concat(Object.entries(S.canonFixed).map(([i, f]) => `<li><b>${esc(nm(+i))}</b> rail ${f.abs != null ? `at ${fmtZ(f.abs, 1)} ${uLbl()}` : `${f.off >= 0 ? '+' : '−'}${fmtZ(Math.abs(f.off), 0)} ${uLbl()}`}: ${esc(f.src)}</li>`));
   const er = eraOf();
-  cnl.push(`<li><b>Structures</b> (${er ? `practice of ${er.era}` : 'RATP RER style, 1985-1996'}): boxes and station boxes ${fmtZ(boxH(), 1)} ${uLbl()} and bored tubes ${fmtZ(boreH(), 1)} ${uLbl()} above the rail; bored tunnels need ${fmtZ(minCoverFor(), 1)} ${uLbl()} of cover, shallower is cut and cover; platforms may slope up to ${sgMaxFor()}‰${er ? (er.sgMax > 5 ? ' (New York 1918 practice)' : ' (1930s-50s, near London 1 in 260)') : ' (main-line station limit)'}.</li>`);
+  cnl.push(`<li><b>Structures</b> ${er ? `(${er.era}): cut-and-cover and station boxes ${fmtZ(1.0, 2)} below to ${fmtZ(4.6, 2)} ${uLbl()} above the rail (roof cover ${fmtZ(BOX_COVER, 1)}); twin tubes ${fmtZ(0.68, 2)} below to ${fmtZ(4.08, 2)} above for deep tube${er.shield === 'tube' ? ', shield' : ''} and river crossings${er.shield === 'bore' ? `; double-track bore ${fmtZ(3.2, 1)} below to ${fmtZ(5.8, 1)} above for shield` : ''}; tubes and bores need ${fmtZ(TUBE_COVER_HIGH, 1)} ${uLbl()} of cover with their top above ${fmtZ(WATER_TABLE, 1)} ${uLbl()}, one outside diameter at or below it; shallower is cut and cover; under rivers the rail stays ${RIVER_MARGIN.metro} m below the bed` : `(RATP RER style, 1985-1996): boxes and station boxes ${fmtZ(settings.envelope, 1)} ${uLbl()} and bored tubes ${fmtZ(settings.boreCrown, 1)} ${uLbl()} above the rail; bored tunnels need ${fmtZ(settings.minCover, 1)} ${uLbl()} of cover, shallower is cut and cover; under rivers the rail stays ${RIVER_MARGIN.rer} m below the bed`}; crossings keep the upper floor + ${SEP_GAP} m above the lower top; platforms may slope up to ${sgMaxFor()}‰${er ? (er.sgMax > 5 ? ' (New York 1918 practice)' : ' (1930s-50s, near London 1 in 260)') : ' (main-line station limit)'}.</li>`);
   cnl.push(`<li><b>Vertical curves</b> radius ${fmtZ(settings.vcRadius, 0)} ${uLbl()}, kept off the platforms by a level transition at each end.</li>`);
   if (isRer()) {
     Object.entries(S.canonModes).forEach(([i, f]) => cnl.push(`<li><b>${esc(nm(+i))}</b> ${f.mode === 'surface' ? 'at grade' : 'underground'}: ${esc(f.src)}</li>`));
@@ -1378,7 +1403,7 @@ async function loadJSON(url) { const r = await fetch(url); if (!r.ok) throw new 
 function setSystem(k) {
   if (sys === k && settings === SYS[k].settings) return;
   sys = k; settings = SYS[k].settings; DEFAULTS = k === 'rer' ? RER_DEFAULTS : METRO_DEFAULTS;
-  SETTING_ROWS = k === 'rer' ? SETTING_ROWS_RER : SETTING_ROWS_BASE;
+  SETTING_ROWS = k === 'rer' ? SETTING_ROWS_RER : SETTING_ROWS_METRO;
   $('#brandName').textContent = k === 'rer' ? 'Cincinnati RER Profiles' : 'Cincinnati Metro Profiles';
   $('#setNote').textContent = k === 'rer'
     ? 'RER settings are starting values, not canon. Trunk stations start underground and the others at grade on the old railroad; switch a station in its card. Canon sections (the RER-3 covered way, the RER-5 deep bore) set structure there; painted stretches override everything. Settings apply to every RER line.'
@@ -1519,7 +1544,7 @@ function updateReadout(x, y) {
   const z = railAt(c), g = groundAt(c), r = riverAt(c), sf = surfaceAt(c), d = sf - z, t = typeAt(c, z);
   ro.innerHTML = `<div class="t">${fmtCh(c)}${r ? ' · ' + esc(r.name) : ''}</div>
     ${r ? `Water ${fmtZ(sf, 2)} ${uLbl()}` : `Ground ${fmtZ(g, 2)} ${uLbl()}`}<br>Rail&nbsp;&nbsp; ${fmtZ(z, 2)} ${uLbl()}<br>
-    ${d >= 0 ? `Below&nbsp; ${fmtZ(d, 2)} ${uLbl()}` : `Above&nbsp; ${fmtZ(-d, 2)} ${uLbl()}`}<br>${t === 'shield' || t === 'deep' || t === 'cutcover' ? `Top&nbsp;&nbsp;&nbsp; ${fmtZ(z + heightFor(t), 2)} ${uLbl()} · cover ${fmtZ(sf - z - heightFor(t), 1)}<br>Bottom ${fmtZ(z - settings.invertDepth, 2)} ${uLbl()}<br>` : ''}Grade&nbsp; ${fmtG(gradeAt(c))}<br>
+    ${d >= 0 ? `Below&nbsp; ${fmtZ(d, 2)} ${uLbl()}` : `Above&nbsp; ${fmtZ(-d, 2)} ${uLbl()}`}<br>${TUNNEL.has(t) ? (() => { const sc = structFor(t, c); return `Top&nbsp;&nbsp;&nbsp; ${fmtZ(z + sc.top, 2)} ${uLbl()} · cover ${fmtZ(sf - z - sc.top, 1)}<br>Bottom ${fmtZ(z - sc.below, 2)} ${uLbl()} · ${sc.label}<br>`; })() : ''}Grade&nbsp; ${fmtG(gradeAt(c))}<br>
     <span style="color:var(${TYPES[t].css});font-family:var(--font-ui);font-weight:600">${TYPES[t].label}${overrideAt(c) ? ' (painted)' : ''}</span>`;
   ro.hidden = false;
   const wr = $('#wrap').getBoundingClientRect(); const rw = ro.offsetWidth, rh = ro.offsetHeight;
@@ -1618,10 +1643,10 @@ $('#solveCross').addEventListener('click', () => {
   const tubeC = riverTubes(modes).flatMap((t) => [{ c: t.c0, ub: t.ub }, { c: t.c1, ub: t.ub }]).filter((t) => railAt(t.c, vb) <= t.ub + 0.05);
   let cons = []; let held = 0;
   xs.forEach((x) => {
-    const z0 = railAt(x.c, vb), me = specOf(S.data.id), ot = specOf(x.wid), gr = surfaceAt(x.c);
-    const myKind = kindAt(me, z0, gr) === 'atgrade' ? 'box' : kindAt(me, z0, gr);  // going under: at least a box
-    const under = { c: x.c, ub: x.zo - needSep(me, myKind, ot, x.to) };
-    const over = { c: x.c, lb: x.zo + needSep(ot, x.to, me, z0 > gr ? 'elevated' : kindAt(me, z0, gr)) };
+    const z0 = railAt(x.c, vb), id = S.data.id, gr = surfaceAt(x.c), k0 = kindAt(id, z0, gr, x.c);
+    const mine = k0.k === 'atgrade' || k0.k === 'elevated' ? structFor('cutcover', x.c) : k0;  // going under: at least a box
+    const under = { c: x.c, ub: x.zo - needSep(mine, x.to) };
+    const over = { c: x.c, lb: x.zo + needSep(x.to, z0 > gr ? structFor('elevated', x.c) : k0) };
     for (const side of (z0 <= x.zo ? [under, over] : [over, under])) {
       const trial = cons.concat([side]); if (ok(defaultAlign(modes, trial), trial.concat(tubeC))) { cons = trial; held++; break; }
     }

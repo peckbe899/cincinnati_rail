@@ -7,8 +7,7 @@
  "coveredWhenRailBelowGround_m": 3,
  "deepTubeOutsideCanonWhenDeeperThan_m": 18.29,
  "flagCanonShallowDeeperThan_m": 12.19,
- "structureHeightAboveRail_m": 5.5,
- "minRailToRailClearanceAtCrossings_m": 8,
  "ohioNormalPool_ft": 455.0,
- "note": "Defaults from the Cincinnati Metro Profiles page (no saved override in its database). 500 ft platforms and the 50 per-mille ceiling are canon; the depth thresholds are editable starting values, not canon. Canon structure sections for the founding Lines 1-6 are the CANON table in profile_analyzer.html."
+ "note": "Defaults from the Cincinnati Metro Profiles page (no saved override in its database). 500 ft platforms and the 50 per-mille ceiling are canon; the depth thresholds are editable starting values, not canon. Canon structure sections for the founding Lines 1-6 are the CANON table in profile_analyzer.html.",
+ "structures_note": "Metro structure heights, cover, crossing separation and river depth are fixed rules (railsim/metro_profile.py METRO_ST, profiles.html): box 1.0 below / 4.6 above rail, twin tube 0.68 / 4.08 (4.76 m OD), double-track bore 3.2 / 5.8 (9.0 m OD); crossings upper below-rail + 0.5 + lower rail-to-top; cover 2.0 m over tubes and bores with top above 140.0 m, one OD at or below, 0.6 m over box roofs; under rivers rail <= bed - 7.5 m."
 }

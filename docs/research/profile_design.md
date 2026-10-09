@@ -38,6 +38,18 @@ What real long-section design checks that the editor did not, and what the page 
 
   Metro boxes are one 5.0 m standard on every line (Ben: mezzanines and connectors are designed on top of them later); the era sizes in the basis column are the reference. Station boxes are single-level like the running box. The old flat 5.5 m (Metro) and 7 m (RER) were too tall for the early lines.
 - **Grade separation at crossings** (above or below ground) replaces the flat 8 m / 9 m rail-to-rail minimum. The upper rail must clear: the lower line's height (its box, its bored tube, or in the open the clear height its trains and wires need under a bridge: the box less a 0.8 m roof, 4.2 m Metro, 5.8 m RER under 25 kV) + the upper line's structure below its rail (viaduct deck 1.5 m Metro / 2.0 m RER, box or tube floor 1.0 m, track bed at grade 0.8 m) + 2 m of ground where a bored tube meets another structure underground. Two lines at grade crossing each other are flagged as needing a grade separation. Each line's type at the crossing comes from its own rail and the ground there. Deck, floor, bed, gap and clear-height values accepted by Ben. The RER-2 / Line 7 level crossing on the Mill Creek trunk (RER-2 9+716) is Ben's to fix in the drawing. The crossing solver uses the same requirement.
+- **Metro structure rules** (Ben, replacing the era boxes and tubes above, the 5.5 m envelope and the 8 m crossing minimum; heights from top of rail):
+
+  | Structure | Below rail | Rail to top | Outside | Used for |
+  |---|---|---|---|---|
+  | Cut-and-cover box (and station box) | 1.0 m | 4.6 m | | type cut & cover |
+  | Twin tube (4.4 m inside, rail 0.5 m above invert) | 0.68 m | 4.08 m | 4.76 m | deep tube on every line; shield on Lines 1-7; every river crossing |
+  | Double-track bore | 3.2 m | 5.8 m | 9.0 m | shield on Lines 8-14 |
+
+  - Crossings: rail-to-rail separation at least the upper line's below-rail + 0.5 m + the lower line's rail-to-top. Applied to every crossing on both systems, RER with its own settings (box 6.6 m, bore 7.5 m, floor 1.0 m). A viaduct counts its deck (1.5 m Metro, 2.0 m RER) and a line at grade its track bed (0.8 m) as below-rail. A line in the open counts its box height as its rail-to-top (the clear height under a bridge). Two lines at grade are flagged as needing a grade separation.
+  - Cover over the top: tube or bore with its top above 140.0 m (basin water table, about river level) 2.0 m, at or below 140.0 m one outside diameter (4.76 m tube, 9.0 m bore); box roof 0.6 m. A tube or bore with less cover is typed cut and cover.
+  - Rivers: at every chainage inside a river range, in tunnel, rail at most bed - 7.5 m on the Metro (1.0 scour + 2.38 half-diameter cover + 4.08 rail to top) and bed - 8.0 m on the RER (1.0 scour + 1.5 backfill + 5.5 rail to top), bed = the ground raster there.
+  - Flags by line: `docs/research/metro_rules_flags.md`.
 - **RER-3 covered way** may stay flat: it drains beneath into the sewers (no drainage flags there).
 - **Sloped platforms** (Ben: MTA-style slight grades in stations, to ease the bends on either side; limit by era): each station has a platform grade about its centre level (`sg`, per mille). The transitions carry the platform grade on, so a station on a climb needs smaller bends at both ends. 'Ease the bends' (per station) and 'Ease all platforms' set each platform to the mean of the grades either side, within the limit. Saved with the profile and used by the simulator. Limits by era:
 
