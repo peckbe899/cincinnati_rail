@@ -39,7 +39,13 @@ What real long-section design checks that the editor did not, and what the page 
   Metro boxes are one 5.0 m standard on every line (Ben: mezzanines and connectors are designed on top of them later); the era sizes in the basis column are the reference. Station boxes are single-level like the running box. The old flat 5.5 m (Metro) and 7 m (RER) were too tall for the early lines.
 - **Grade separation at crossings** (above or below ground) replaces the flat 8 m / 9 m rail-to-rail minimum. The upper rail must clear: the lower line's height (its box, its bored tube, or in the open the clear height its trains and wires need under a bridge: the box less a 0.8 m roof, 4.2 m Metro, 5.8 m RER under 25 kV) + the upper line's structure below its rail (viaduct deck 1.5 m Metro / 2.0 m RER, box or tube floor 1.0 m, track bed at grade 0.8 m) + 2 m of ground where a bored tube meets another structure underground. Two lines at grade crossing each other are flagged as needing a grade separation. Each line's type at the crossing comes from its own rail and the ground there. Deck, floor, bed, gap and clear-height values accepted by Ben. The RER-2 / Line 7 level crossing on the Mill Creek trunk (RER-2 9+716) is Ben's to fix in the drawing. The crossing solver uses the same requirement.
 - **RER-3 covered way** may stay flat: it drains beneath into the sewers (no drainage flags there).
-- **Sloped platforms** (Ben: MTA-style slight grades in stations, to ease the bends on either side): each station has a platform grade about its centre level (`sg`, per mille), capped by `stationMaxGrade`, 3 per mille, the usual limit for stopped trains (0.3% max, 0.2% desirable [S] Taylor & Francis tunnels chapter). The transitions carry the platform grade on, so a station on a climb needs smaller bends at both ends. 'Ease the bends' (per station) and 'Ease all platforms' set each platform to the mean of the grades either side, within the cap. Saved with the profile and used by the simulator.
+- **Sloped platforms** (Ben: MTA-style slight grades in stations, to ease the bends on either side; limit by era): each station has a platform grade about its centre level (`sg`, per mille). The transitions carry the platform grade on, so a station on a climb needs smaller bends at both ends. 'Ease the bends' (per station) and 'Ease all platforms' set each platform to the mean of the grades either side, within the limit. Saved with the profile and used by the simulator. Limits by era:
+
+  | System / era | Platform limit | Basis |
+  |---|---|---|
+  | Metro, all eras (1903-1959) | 7.5 per mille | New York, *The Design of Subways* (1918): stations and approaches at most 0.75% so trains do not creep with brakes off; vertical curves kept off stations [S]. No later US limit found, so it carries through the IND era [E] |
+  | RER (1985-1996) | 2.5 per mille | Modern main-line station limit: German EBO / European TSI 2.5 per mille for new station tracks [S]; UK about 1 in 400 for new platforms (historic 1 in 260, later 1 in 500) [S, forum-quoted] |
+  | Reference | | London exceptions: Oval northbound 1 in 76 (13 per mille, 1920s extension), West Finchley 1 in 81 [forum]; BOStrab 1969 (trams) 2.5% at terminal stops [S]; Paris: no published figure found |
 - Starting values still: `drainMin` 3 per mille, `curveK` 800.
 
 Sources added for the era cover: Chicago State Street subway (ASCE 1943 abstract; chicago-l.org), Dearborn subway (Encyclopedia of Chicago), Paris Metro construction (RATP).
@@ -67,3 +73,8 @@ Sources added for the era cover: Chicago State Street subway (ASCE 1943 abstract
 - https://www.nycsubway.org/wiki/Chapter_20:_Rapid_Transit_in_Other_Cities:_London,_Berlin,_Budapest,_Paris,_Glasgow,_Boston,_Chicago,_Philadelphia
 - https://en.wikipedia.org/wiki/Cobble_Hill_Tunnel
 - https://mirror2.polsri.ac.id/wiki/wp/r/RER.htm
+- https://www.nycsubway.org/wiki/The_Design_of_Subways_(1918)
+- https://www.railforums.co.uk/threads/steepest-track-gradient-in-stations.183578/
+- https://www.railforums.co.uk/threads/maximum-slope-allowed-in-new-stations.230452/
+- https://www.kontextwochenzeitung.de/politik/100/der-schiefbahnhof-1-398.html
+- http://www.meyer-strassenbahn.de/bostrab/bostrab1969.html

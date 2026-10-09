@@ -215,7 +215,7 @@ const TYPE_KEYS = Object.keys(TYPES);
 // thresholds are editable starting values, not canon. deepBelow (60 ft) follows the station
 // list calling Price Hill's 60 ft station a deep bore; shallowMax (40 ft) flags canon-shallow
 // stretches that run well past the doctrine's 20-30 ft.
-const METRO_DEFAULTS = { maxGrade: 50, platform: 152.4, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, envelope: 5.5, boreCrown: 5.2, deckDepth: 1.5, invertDepth: 1.0, boreGap: 2.0, poolFt: 455.0, vcRadius: 1500, minCover: 2, drainMin: 3, curveK: 800, stationMaxGrade: 3 };
+const METRO_DEFAULTS = { maxGrade: 50, platform: 152.4, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, envelope: 5.5, boreCrown: 5.2, deckDepth: 1.5, invertDepth: 1.0, boreGap: 2.0, poolFt: 455.0, vcRadius: 1500, minCover: 2, drainMin: 3, curveK: 800, stationMaxGrade: 7.5 };
 // Design rules: vertical curves of 1,500 m (Metro) and 3,000 m (RER) at every grade change, kept
 // off platforms by a level transition (canon); bored tunnels need the cover of their era's
 // practice, else they are cut and cover (canon, see ERA); tunnels drain at 3 per mille or
@@ -224,7 +224,7 @@ const METRO_DEFAULTS = { maxGrade: 50, platform: 152.4, defDepth: 7.62, elevAbov
 // RER: 35 per mille, 200 m platforms (8-car TRI) and 12 m station rail depth are canon; the
 // envelope (25 kV overhead), thresholds, tube cover and surface bend-point spacing are starting
 // values. Surface stations sit at grade on the old railroad and the rail follows the ground.
-const RER_DEFAULTS = { maxGrade: 35, platform: 200, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 6.6, boreCrown: 7.5, deckDepth: 2.0, invertDepth: 1.0, boreGap: 2.0, poolFt: 455.0, surfStep: 250, tubeCover: 3, vcRadius: 3000, minCover: 8.5, drainMin: 3, curveK: 800, stationMaxGrade: 3 };
+const RER_DEFAULTS = { maxGrade: 35, platform: 200, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 6.6, boreCrown: 7.5, deckDepth: 2.0, invertDepth: 1.0, boreGap: 2.0, poolFt: 455.0, surfStep: 250, tubeCover: 3, vcRadius: 3000, minCover: 8.5, drainMin: 3, curveK: 800, stationMaxGrade: 2.5 };
 let DEFAULTS = METRO_DEFAULTS;
 // Canon structure for the founding sections (Lines 1-6 as first opened).
 // m: 'shallow' = basin method (shallow shield running tunnels, cut-and-cover station boxes);
@@ -272,7 +272,7 @@ const SETTING_ROWS_BASE = [
   ['vcRadius', 'Vertical curve radius', 'len', 100],
   ['minCover', 'Cover over bored tunnels (RER; Metro by era)', 'len', 0.5],
   ['drainMin', 'Min tunnel grade for drainage', '‰', 0.5],
-  ['stationMaxGrade', 'Max platform grade', '‰', 0.5],
+  ['stationMaxGrade', 'Max platform grade (RER; Metro by era)', '‰', 0.5],
   ['curveK', 'Curve compensation, k in k / R per mille', 'k', 50],
 ];
 const SETTING_ROWS_RER = SETTING_ROWS_BASE.map((r) => r[0] === 'defDepth' ? ['defDepth', 'Default rail depth at underground stations', 'len', 0.1] : r)
@@ -500,15 +500,19 @@ function inStation(c) { const half = settings.platform / 2; return S.stations.so
 //    Dearborn) crown 5.2 m, cover about one tube diameter, 6 m.
 // RER: per settings (RATP RER style, 25 kV overhead over bilevel stock).
 const ERA = {};
-['1', '2', '2b', '3', '4', '5', '6'].forEach((k) => (ERA[`Line_${k}`] = { cover: 2, box: 5.0, bore: 4.3, era: k === '2b' ? '1903-1913 (with Line 2)' : '1903-1913' }));
-ERA.Line_7 = { cover: 2, box: 5.0, bore: 4.3, era: '1913' };
-['8', '9', '10', '11', '12'].forEach((k) => (ERA[`Line_${k}`] = { cover: 6, box: 5.0, bore: 5.2, era: '1933-1941' }));
-['13', '14'].forEach((k) => (ERA[`Line_${k}`] = { cover: 6, box: 5.0, bore: 5.2, era: '1949-1959' }));
+['1', '2', '2b', '3', '4', '5', '6'].forEach((k) => (ERA[`Line_${k}`] = { cover: 2, box: 5.0, bore: 4.3, sgMax: 7.5, era: k === '2b' ? '1903-1913 (with Line 2)' : '1903-1913' }));
+ERA.Line_7 = { cover: 2, box: 5.0, bore: 4.3, sgMax: 7.5, era: '1913' };
+['8', '9', '10', '11', '12'].forEach((k) => (ERA[`Line_${k}`] = { cover: 6, box: 5.0, bore: 5.2, sgMax: 7.5, era: '1933-1941' }));
+['13', '14'].forEach((k) => (ERA[`Line_${k}`] = { cover: 6, box: 5.0, bore: 5.2, sgMax: 7.5, era: '1949-1959' }));
 const eraOf = (id = S.data && S.data.id) => (!isRer() && ERA[id]) || null;
 function minCoverFor(id) { const e = eraOf(id); return e ? e.cover : settings.minCover; }
 // cut-and-cover box (and station box) height, and bored tube crown, above the rail
 function boxH() { const e = eraOf(); return e ? e.box : settings.envelope; }
 function boreH() { const e = eraOf(); return e ? e.bore : settings.boreCrown; }
+// platform grade limit: Metro by era (New York 1918 design practice: stations and approaches at
+// most 0.75%, so a standing train will not creep with brakes off); RER per settings (2.5 per
+// mille, the modern main-line station limit: EBO / TSI, UK 1 in 400)
+function sgMaxFor() { const e = eraOf(); return e ? e.sgMax : settings.stationMaxGrade; }
 const heightFor = (t) => (t === 'shield' || t === 'deep' ? boreH() : boxH());
 function autoType(c, z) {
   const sec0 = canonAt(c);
@@ -679,7 +683,7 @@ function designChecks() {
   // vertical curves the straight grades are too short for (shortened curves)
   design(VERTS).short.forEach((x) => issues.push({ kind: 'Vertical curve', c: x.c, text: `Bend of ${fmtG(x.dg)} at ${fmtCh(x.c)} needs a ${x.need.toFixed(0)} m curve; only ${x.got.toFixed(0)} m fits (radius ${settings.vcRadius} m)` }));
   // platform grades over the station limit (trains must stand safely)
-  S.stations.forEach((st, i) => { const gq = (S.align.sg && S.align.sg[i]) || 0; if (Math.abs(gq) > settings.stationMaxGrade + 0.05) issues.push({ kind: 'Platform grade', c: st.c, text: `${esc(st.name)} platform at ${fmtG(gq)} is over the ${settings.stationMaxGrade}‰ station limit` }); });
+  S.stations.forEach((st, i) => { const gq = (S.align.sg && S.align.sg[i]) || 0; if (Math.abs(gq) > sgMaxFor() + 0.05) issues.push({ kind: 'Platform grade', c: st.c, text: `${esc(st.name)} platform at ${fmtG(gq)} is over the ${sgMaxFor()}‰ station limit` }); });
   // drainage: tunnel grades flatter than drainMin outside platforms; low points need sumps
   let sumps = 0, lastSign = 0, lastC = 0;
   seg.forEach((sg) => {
@@ -1114,7 +1118,7 @@ function updatePanels() {
   const cnl = S.canonSecs.map((x) => `<li><b>${METHOD_LABEL[x.m]}</b>, ${esc(x.a)}${x.aIn === false ? ' (excl.)' : ''} to ${esc(x.b)}${x.bIn === false ? ' (excl.)' : ''}: ${esc(x.src)}</li>`)
     .concat(Object.entries(S.canonFixed).map(([i, f]) => `<li><b>${esc(nm(+i))}</b> rail ${f.abs != null ? `at ${fmtZ(f.abs, 1)} ${uLbl()}` : `${f.off >= 0 ? '+' : '−'}${fmtZ(Math.abs(f.off), 0)} ${uLbl()}`}: ${esc(f.src)}</li>`));
   const er = eraOf();
-  cnl.push(`<li><b>Structures</b> (${er ? `practice of ${er.era}` : 'RATP RER style, 1985-1996'}): boxes and station boxes ${fmtZ(boxH(), 1)} ${uLbl()} and bored tubes ${fmtZ(boreH(), 1)} ${uLbl()} above the rail; bored tunnels need ${fmtZ(minCoverFor(), 1)} ${uLbl()} of cover, shallower is cut and cover.</li>`);
+  cnl.push(`<li><b>Structures</b> (${er ? `practice of ${er.era}` : 'RATP RER style, 1985-1996'}): boxes and station boxes ${fmtZ(boxH(), 1)} ${uLbl()} and bored tubes ${fmtZ(boreH(), 1)} ${uLbl()} above the rail; bored tunnels need ${fmtZ(minCoverFor(), 1)} ${uLbl()} of cover, shallower is cut and cover; platforms may slope up to ${sgMaxFor()}‰${er ? ' (New York 1918 practice)' : ' (main-line station limit)'}.</li>`);
   cnl.push(`<li><b>Vertical curves</b> radius ${fmtZ(settings.vcRadius, 0)} ${uLbl()}, kept off the platforms by a level transition at each end.</li>`);
   if (isRer()) {
     Object.entries(S.canonModes).forEach(([i, f]) => cnl.push(`<li><b>${esc(nm(+i))}</b> ${f.mode === 'surface' ? 'at grade' : 'underground'}: ${esc(f.src)}</li>`));
@@ -1485,7 +1489,7 @@ function easePlatform(i) {
     const gin = a > 0 && v[a].c - v[a - 1].c > 1 ? (v[a].z - v[a - 1].z) / (v[a].c - v[a - 1].c) * 1000 : null;
     const gout = b + 1 < v.length && v[b + 1].c - v[b].c > 1 ? (v[b + 1].z - v[b].z) / (v[b + 1].c - v[b].c) * 1000 : null;
     const gs = [gin, gout].filter((x) => x != null); if (!gs.length) return;
-    setSg(i, clamp(gs.reduce((p, q) => p + q, 0) / gs.length, -settings.stationMaxGrade, settings.stationMaxGrade));
+    setSg(i, clamp(gs.reduce((p, q) => p + q, 0) / gs.length, -sgMaxFor(), sgMaxFor()));
     VERTS = vertices();
   }
 }
