@@ -27,6 +27,16 @@ What real long-section design checks that the editor did not, and what the page 
   - Lines 1-7 (1903-1913): about 2 m, the shallow shield and gallery work of the day (canon basin method).
   - Lines 8-12 (1933-1941) and 13-14 (1949-1959): about one tube diameter, 6 m (Chicago State Street 1938-43 and Dearborn 1951: 25 ft shields, tube floors 43-50 ft below the street).
   - RER (1985-1996): one diameter, 8.5 m.
+- **Structure sizes by era** (Ben: standard metro boxes of the era; RATP RER or LIRR for the RER), from top of rail to top of roof or lining:
+
+  | Lines | Era | Box and station box | Bored tube crown | Basis |
+  |---|---|---|---|---|
+  | 1-6, 2b | 1903-1913 | 4.5 m | 4.3 m | IRT 1904 minimum section 12 ft 3 in clear above rail [S], 2 ft 6 in roof [S]; shield tubes about 15.5 ft inside [E] |
+  | 7 | 1913 | 5.0 m | 4.3 m | Lexington Ave (Dual Contracts) 13 ft 10 in clear [S] + roof |
+  | 8-14 | 1933-1959 | 5.4 m | 5.2 m | Chicago State St / Dearborn tubes 15 ft clear [S]; Boston 1897 boxes 14 ft clear [S] + about 0.8 m roof [E] |
+  | RER | 1985-1996 | 6.6 m | 7.5 m | RATP RER style with 25 kV overhead over bilevel stock: about 5.8 m clear + roof [E]; Paris RER bores 6.3 m single-track, 8.7 m double-track [S] |
+
+  Station boxes are single-level like the running box (no mezzanine level modelled). The old flat 5.5 m (Metro) and 7 m (RER) were too tall for the early lines.
 - **RER-3 covered way** may stay flat: it drains beneath into the sewers (no drainage flags there).
 - Stations may slope slightly (MTA practice); not modelled, since 3 per mille over a platform gains under half a metre.
 - Starting values still: `drainMin` 3 per mille, `curveK` 800.
@@ -50,3 +60,9 @@ Sources added for the era cover: Chicago State Street subway (ASCE 1943 abstract
 - https://sathee.iitk.ac.in/sathee-railway-exams/student-corner/railway-gk/track-engineering/curves-gradients
 - https://en.wikipedia.org/wiki/Minimum_railway_curve_radius
 - https://libraryarchives.metro.net:443/DPGTL/scrtd/1986-civil-speed-limits-on-horizontal-and-vertical-curves.pdf
+- https://www.nycsubway.org/wiki/Chapter_04._Design_of_Structure_and_Track
+- https://www.nycsubway.org/wiki/Chapter_14:_Engineering_Features_of_the_New_York_Subway
+- https://www.nycsubway.org/wiki/The_New_York_Subway:_Chapter_02,_Types_and_Methods_of_Construction
+- https://www.nycsubway.org/wiki/Chapter_20:_Rapid_Transit_in_Other_Cities:_London,_Berlin,_Budapest,_Paris,_Glasgow,_Boston,_Chicago,_Philadelphia
+- https://en.wikipedia.org/wiki/Cobble_Hill_Tunnel
+- https://mirror2.polsri.ac.id/wiki/wp/r/RER.htm

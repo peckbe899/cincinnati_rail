@@ -348,10 +348,10 @@ def test_rer_core_profile_matches_page():
     names = [s["name"] for s in r3.stations]
     assert r3.st[names.index("Torrance")] == 144.0
     assert r3.type_at(r3.stations[names.index("Torrance")]["c"]) == "cutcover"
-    assert min(z for c, z in r3.pvi) == pytest.approx(125.684, abs=0.01)  # under the Little Miami
+    assert min(z for c, z in r3.pvi) == pytest.approx(125.184, abs=0.01)  # under the Little Miami (7.5 m bored crown)
     assert r3.modes[names.index("Asbury")] == "surface"
     r5 = load("RER_5")
-    assert r5.summary()["km_by_type"]["deep"] == pytest.approx(3.69, abs=0.05)  # shallower: cut and cover
+    assert r5.summary()["km_by_type"]["deep"] == pytest.approx(3.55, abs=0.05)  # shallower than bore + cover: cut and cover
     assert r3.summary()["shallow_tubes"] == 0
 
 

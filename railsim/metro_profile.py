@@ -38,23 +38,28 @@ STRUCTURE = {"elevated": "viaduct", "atgrade": "at-grade", "cutcover": "cut-and-
 TUNNEL_STRUCTURES = {"tunnel", "cut-and-cover", "shield", "deep-tube"}
 
 DEFAULTS = dict(maxGrade=50.0, platform=152.4, defDepth=7.62, elevAbove=3.0, coverBelow=3.0,
-                deepBelow=18.29, shallowMax=12.19, envelope=5.5, clearMin=8.0, poolFt=455.0,
+                deepBelow=18.29, shallowMax=12.19, envelope=5.5, boreCrown=5.2, clearMin=8.0, poolFt=455.0,
                 vcRadius=1500.0, minCover=2.0)
-# Cover a bored tunnel needs, by the practice of the line's era (Ben's ruling); shallower is
-# cut and cover. 1903-1913 basin method: shield and gallery work a few metres under the
-# street (about 2 m). From the 1930s shield tubes had about one diameter of cover (Chicago
-# State St 1938-43 and Dearborn 1951: 25 ft shields, floors 43-50 ft down): about 6 m.
-ERA_COVER = {**{f"Line_{k}": 2.0 for k in ("1", "2", "2b", "3", "4", "5", "6", "7")},
-             **{f"Line_{k}": 6.0 for k in ("8", "9", "10", "11", "12", "13", "14")}}
+# Structure sizes and cover by the practice of each line's era (Ben's ruling), heights from the
+# top of rail to the top of the roof or tube lining; shallower than bore + cover is cut and cover.
+#   1903-1913 (Lines 1-6): IRT 1904 minimum section 12 ft 3 in clear + 2 ft 6 in roof = 4.5 m
+#     box; shield tubes of the day crown 4.3 m; basin-method cover about 2 m.
+#   1913 (Line 7): Dual Contracts section 13 ft 10 in clear + roof = 5.0 m box.
+#   1933-1959 (Lines 8-14): 15 ft clear (Chicago State St / Dearborn tubes) + about 0.8 m roof
+#     = 5.4 m box, tube crown 5.2 m; cover about one tube diameter, 6 m.
+ERA = {**{f"Line_{k}": {"cover": 2.0, "box": 4.5, "bore": 4.3} for k in ("1", "2", "2b", "3", "4", "5", "6")},
+       "Line_7": {"cover": 2.0, "box": 5.0, "bore": 4.3},
+       **{f"Line_{k}": {"cover": 6.0, "box": 5.4, "bore": 5.2} for k in ("8", "9", "10", "11", "12", "13", "14")}}
 # RER: 35 per mille, 200 m platforms (8-car TRI) and 12 m station rail depth are canon; the
-# 25 m deep-bore threshold, 7 m envelope (25 kV overhead), 3 m tube cover and 250 m surface
+# 25 m deep-bore threshold, 6.6 m box / 7.5 m bored crown (RATP RER style), 3 m tube cover and 250 m surface
 # bend points are starting values
 RER_DEFAULTS = dict(maxGrade=35.0, platform=200.0, defDepth=12.0, elevAbove=3.0, coverBelow=3.0,
-                    deepBelow=25.0, shallowMax=18.0, envelope=7.0, clearMin=9.0, poolFt=455.0,
+                    deepBelow=25.0, shallowMax=18.0, envelope=6.6, boreCrown=7.5, clearMin=9.0, poolFt=455.0,
                     surfStep=250.0, tubeCover=3.0, vcRadius=3000.0, minCover=8.5)
 RER_CANON_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "rer" / "canon.json"
 SETTINGS_KEYS = {"surfaceBendPointSpacing_m": "surfStep", "tubeCover_m": "tubeCover",
-                 "verticalCurveRadius_m": "vcRadius", "minBoredCover_m": "minCover", "maxGrade_permille": "maxGrade", "platform_m": "platform",
+                 "verticalCurveRadius_m": "vcRadius", "minBoredCover_m": "minCover",
+                 "boredTubeCrownAboveRail_m": "boreCrown", "maxGrade_permille": "maxGrade", "platform_m": "platform",
                  "defaultStationRailDepth_m": "defDepth", "elevatedWhenRailAboveGround_m": "elevAbove",
                  "coveredWhenRailBelowGround_m": "coverBelow",
                  "deepTubeOutsideCanonWhenDeeperThan_m": "deepBelow",
@@ -218,7 +223,7 @@ class MetroProfile:
     def river_tubes(self, md: Optional[List[str]]) -> List[dict]:
         """River crossings in tube: between two underground stations, or inside a canon deep
         bore (or a covered way where the canon crosses the river in tunnel). Rail at most
-        pool - bed - cover - envelope."""
+        pool - bed - cover - bored crown."""
         if not md:
             return []
         rivers = self.rer_canon.get("rivers") or {}
@@ -240,7 +245,7 @@ class MetroProfile:
                 continue
             bed = info.get("bed_below_pool_m", 12.0)
             out.append({"name": r["name"], "c0": r["c0"], "c1": r["c1"],
-                        "ub": self.pool() - bed - self.settings["tubeCover"] - self.settings["envelope"]})
+                        "ub": self.pool() - bed - self.settings["tubeCover"] - self.bore_crown()})
         return out
 
     def default_mode(self, i: int) -> str:
@@ -549,17 +554,31 @@ class MetroProfile:
         m = sec["m"] if sec else ("deep" if d >= self.settings["deepBelow"] else "shallow")
         if m == "canal":
             return "cutcover"
-        if d < self.settings["envelope"] + self.min_cover():  # too shallow to bore in its era
+        if d < self.bore_crown() + self.min_cover():  # too shallow to bore in its era
             return "cutcover"
         if m == "deep":
             return "deep"
         return "cutcover" if self.in_station(c) else "shield"
 
+    def _era(self) -> Optional[dict]:
+        return None if self.is_rer else ERA.get(self.id)
+
     def min_cover(self) -> float:
         """Cover a bored tunnel needs: the line's era practice (Metro) or the setting (RER)."""
-        if not self.is_rer and self.id in ERA_COVER and "minCover_override" not in self.settings:
-            return ERA_COVER[self.id]
-        return float(self.settings.get("minCover_override", self.settings["minCover"]))
+        if "minCover_override" in self.settings:
+            return float(self.settings["minCover_override"])
+        e = self._era()
+        return e["cover"] if e else float(self.settings["minCover"])
+
+    def box_height(self) -> float:
+        """Cut-and-cover (and station) box height above rail."""
+        e = self._era()
+        return e["box"] if e else float(self.settings["envelope"])
+
+    def bore_crown(self) -> float:
+        """Bored tube crown above rail."""
+        e = self._era()
+        return e["bore"] if e else float(self.settings["boreCrown"])
 
     def type_at(self, c: float, z: Optional[float] = None) -> str:
         if z is None:
