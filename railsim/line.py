@@ -116,7 +116,8 @@ class Route:
         curv = np.abs(self.horizontal.curvature(s))
         st = np.array(self.profile.structure)
         idx = np.clip(np.searchsorted(self.profile.s, s), 0, len(st) - 1)
-        tunnel = st[idx] == "tunnel"
+        from .metro_profile import TUNNEL_STRUCTURES
+        tunnel = np.isin(st[idx], list(TUNNEL_STRUCTURES))
         pf = np.full(len(s), self.supply_factor)
         for s0, s1, f in self.supply_zones:
             pf[(s >= s0) & (s <= s1)] = f
@@ -341,7 +342,8 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
 
     # ---- vertical profile
     pcfg = cfg.get("profile", {}) or {}
-    sources = pcfg.get("sources", ["csv", "kmz", "usgs"])
+    # a designed Metro profile replaces the ground-following design: no elevation sampling
+    sources = [] if pcfg.get("analyzer") else pcfg.get("sources", ["csv", "kmz", "usgs"])
     L = h.length
     ground = None
     tz = int(pcfg.get("terrain_zoom", 13))
@@ -400,7 +402,25 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
         else:
             spans = [_zone_chainage(z, on_route, proj, h)]
         structures += [(s0, s1, z.get("type", "viaduct")) for s0, s1 in spans]
-    if ground is None:
+    acfg = pcfg.get("analyzer")
+    if acfg:
+        # the designed Metro profile (station rail levels, grades, structures) from the
+        # Metro Profiles page data; replaces the ground-following profile design
+        from .metro_profile import MetroProfile, route_profile
+        mp = MetroProfile.load(base_dir / acfg["line"],
+                               base_dir / acfg["alignment"] if acfg.get("alignment") else None,
+                               base_dir / acfg["settings"] if acfg.get("settings") else None)
+        prof = route_profile(mp, proj, h)
+        sm = mp.summary()
+        log(f"  Profile: Metro Profiles {mp.id} ({'saved alignment' if acfg.get('alignment') else 'solver default'}), "
+            f"max grade {sm['max_grade_permille']:+.1f} per mille; km by type {sm['km_by_type']}")
+        if sm["grades_over_limit"]:
+            warnings.append(f"{mp.id}: {sm['grades_over_limit']} grade(s) over "
+                            f"{mp.settings['maxGrade']:.0f} per mille in the Metro profile")
+        ground = "analyzer"
+    if ground == "analyzer":
+        pass
+    elif ground is None:
         warnings.append("no elevation data: profile is FLAT. Provide profile.csv, a KMZ with "
                         "altitudes, or add 'terrain' / 'usgs' to profile.sources (needs internet).")
         prof = flat_profile(L, pdesign.grid)

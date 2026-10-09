@@ -211,6 +211,17 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - Metro averages 25-42 km/h; current RER through-routes average 58-85 km/h.
   - Waiting on the alt-history basin terrain (`dem` source).
 
+- **Metro Profiles analyzer ported** (`railsim/metro_profile.py`, data in `data/profile/`):
+  - Metro run times now use the designed rail profile:
+    - Station levels: level 500 ft platforms at the saved rail levels, or the solver's default (each station as shallow as 50 per mille allows, canon levels held).
+    - Grades: your bend points.
+    - Structure types: elevated, at grade, cut and cover, shallow shield or deep tube, with the canon sections for Lines 1-6. All three tunnel types use tunnel air resistance.
+  - The port reproduces the page exactly on the ground it was saved with (Lines 1, 2, 4, 5: every station level, type and km by type).
+  - Saved alignments: Lines 1, 2, 4, 5; the other lines use the solver default.
+  - Run times: +0.0 to +0.2% vs the ground-fitted profile.
+  - The saved Line 5 profile has one stretch at 73 per mille (over the 50 limit).
+  - RER configs read map 3 ground from `data/profile/dem/map3_profile_dem_dm.vrt` inside its extent, with LiDAR and terrain tiles outside.
+
 ## In progress
 
 - Nothing running.

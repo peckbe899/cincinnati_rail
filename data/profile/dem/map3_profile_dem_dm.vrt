@@ -1,0 +1,35 @@
+<VRTDataset rasterXSize="20000" rasterYSize="17500">
+  <SRS dataAxisToSRSAxisMapping="1,2">EPSG:26916</SRS>
+  <GeoTransform>695000.0, 2.0, 0.0, 4350000.0, 0.0, -2.0</GeoTransform>
+  <VRTRasterBand dataType="Int16" band="1">
+    <NoDataValue>-32768</NoDataValue>
+    <SimpleSource>
+      <SourceFilename relativeToVRT="1">map3_profile_dem_dm_r0c0.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="10000" RasterYSize="8750" DataType="Int16" BlockXSize="512" BlockYSize="512" />
+      <SrcRect xOff="0" yOff="0" xSize="10000" ySize="8750" />
+      <DstRect xOff="0" yOff="0" xSize="10000" ySize="8750" />
+    </SimpleSource>
+    <SimpleSource>
+      <SourceFilename relativeToVRT="1">map3_profile_dem_dm_r0c1.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="10000" RasterYSize="8750" DataType="Int16" BlockXSize="512" BlockYSize="512" />
+      <SrcRect xOff="0" yOff="0" xSize="10000" ySize="8750" />
+      <DstRect xOff="10000" yOff="0" xSize="10000" ySize="8750" />
+    </SimpleSource>
+    <SimpleSource>
+      <SourceFilename relativeToVRT="1">map3_profile_dem_dm_r1c0.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="10000" RasterYSize="8750" DataType="Int16" BlockXSize="512" BlockYSize="512" />
+      <SrcRect xOff="0" yOff="0" xSize="10000" ySize="8750" />
+      <DstRect xOff="0" yOff="8750" xSize="10000" ySize="8750" />
+    </SimpleSource>
+    <SimpleSource>
+      <SourceFilename relativeToVRT="1">map3_profile_dem_dm_r1c1.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="10000" RasterYSize="8750" DataType="Int16" BlockXSize="512" BlockYSize="512" />
+      <SrcRect xOff="0" yOff="0" xSize="10000" ySize="8750" />
+      <DstRect xOff="10000" yOff="8750" xSize="10000" ySize="8750" />
+    </SimpleSource>
+  </VRTRasterBand>
+</VRTDataset>

@@ -49,6 +49,8 @@ geometry:
   line_speed_mph: 55
 profile:
   max_grade: 0.05
+  dem: data/profile/dem/map3_profile_dem_dm.vrt
+  dem_scale: 0.1
   sources:
   - csv
   - kmz
@@ -60,7 +62,9 @@ profile:
   - OH_Statewide_Phase1_2019_B19
   - IN_Indiana_Statewide_LiDAR_2017_B17
   - KY_Statewide_2021_A21
-  usgs: false
+  analyzer:
+    line: data/profile/lines/Line_7.json
+    settings: data/profile/settings.json
 service:
   route:
   - Visitation

@@ -69,7 +69,8 @@ def write_kml(path: Path, route):
     kw.close_folder()
     kw.open_folder("Structures")
     colors = {"viaduct": "ffff0000", "fill": "ff00a5ff", "cut": "ff2a2aa5", "deep-cut": "ff00008b",
-              "tunnel": "ff000000", "at-grade": "ff808080"}
+              "tunnel": "ff000000", "at-grade": "ff808080", "cut-and-cover": "ff404040",
+              "shield": "ff602060", "deep-tube": "ff200040"}
     for s0, s1, kind in route.profile.segments():
         if kind == "at-grade":
             continue

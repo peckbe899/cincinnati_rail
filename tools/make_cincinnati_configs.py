@@ -69,10 +69,29 @@ def end_stations(net, proj, st, tol=1500.0):
 LIDAR_PROJECTS = ["OH_Statewide_Phase3_2021_B21", "OH_Statewide_Phase1_2019_B19",
                   "IN_Indiana_Statewide_LiDAR_2017_B17", "KY_Statewide_2021_A21"]
 
+MAP3_DEM = "data/profile/dem/map3_profile_dem_dm.vrt"  # decimetres, EPSG:26916, 2 m
+
+
+def metro_profile(folder: str) -> dict:
+    """Metro lines use the designed profile from the Metro Profiles page data
+    (data/profile): station rail levels, grades and structure types."""
+    lid = folder.replace(" ", "_")
+    prof = {"max_grade": 0.05, "dem": MAP3_DEM, "dem_scale": 0.1,
+            "sources": ["csv", "kmz", "dem", "lidar", "terrain"], "lidar_projects": LIDAR_PROJECTS}
+    if (ROOT / f"data/profile/lines/{lid}.json").exists():
+        prof["analyzer"] = {"line": f"data/profile/lines/{lid}.json",
+                            "settings": "data/profile/settings.json"}
+        if (ROOT / f"data/profile/alignments/{lid}.json").exists():
+            prof["analyzer"]["alignment"] = f"data/profile/alignments/{lid}.json"
+    return prof
+
+
 RER_COMMON = {
     "geometry": {"line_speed_mph": 90, "max_cant_in": 5.0},
     "speed": {"cant_deficiency_in": 4.0},
-    "profile": {"max_grade": 0.02, "sources": ["csv", "kmz", "dem", "lidar", "terrain"], "lidar_projects": LIDAR_PROJECTS, "usgs": False},
+    # map 3 (alternate 2026) ground inside its extent, LiDAR / terrain tiles outside
+    "profile": {"max_grade": 0.02, "sources": ["csv", "kmz", "dem", "lidar", "terrain"],
+                "dem": MAP3_DEM, "dem_scale": 0.1, "lidar_projects": LIDAR_PROJECTS, "usgs": False},
     "padding": {"percent": 5.0, "final_leg_s": 60},
 }
 
@@ -114,7 +133,7 @@ def main():
             "stations": {"folder": f"{folder}/{f} Stations", "info": info,
                          "defaults": {"psd": f in psd_lines}},
             "geometry": {"line_speed_mph": 55},
-            "profile": {"max_grade": 0.05, "sources": ["csv", "kmz", "dem", "lidar", "terrain"], "lidar_projects": LIDAR_PROJECTS, "usgs": False},
+            "profile": metro_profile(f),
         }
         if len(ends) >= 2:
             cfg["service"] = {"route": [ends[0], ends[-1]]}

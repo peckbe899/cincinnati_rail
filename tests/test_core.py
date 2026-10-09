@@ -297,3 +297,28 @@ def test_apex_canon_curve_speeds(R, tilt, mph):
                       tilt_max_speed=186 * MPH if tilt else 0.0)
     v = curve_speed(R, 0.180, 1000.0, pol) / MPH
     assert v == pytest.approx(mph, abs=1.5)
+
+
+def test_metro_profile_port_matches_saved_page_output():
+    """The Python port reproduces the Metro Profiles page: station rail levels and types
+    saved with Line 1 (computed on the LiDAR ground the page used when it was saved)."""
+    import json
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent / "data/profile"
+    doc = json.loads((root / "alignments/Line_1.json").read_text())
+    mp = MetroProfile.load(root / "lines/Line_1.json", root / "alignments/Line_1.json",
+                           root / "settings.json")
+    mp._ground = np.array([np.nan if v is None else v / 10 for v in mp.data["ground_dm_lidar"]])
+    for i, s in enumerate(doc["stations"]):
+        assert mp.st[i] == pytest.approx(s["rail"], abs=0.02)
+        assert mp.type_at(s["c"]) == s["type"]
+    assert mp.summary()["km_by_type"]["shield"] == pytest.approx(dict(doc["summary"])["km_by_type"]["shield"], abs=0.02)
+
+
+def test_metro_default_solver_respects_grade_limit():
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent / "data/profile"
+    mp = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json")  # no saved profile
+    assert mp.summary()["grades_over_limit"] == 0
