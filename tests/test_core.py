@@ -452,3 +452,16 @@ def test_platform_curvature_fit():
             assert 600 <= p["R"] < 3000 and 0.01 < p["outside"] <= 0.0505
         else:
             assert p["R"] >= 3000 and p["outside"] <= 0.0101
+
+
+def test_drawing_corner_flags():
+    """Drawing checks: Line 1's 6th St platform sits on an S-curve (an error whatever the fitted
+    radius); the piece joins with gaps show up as join kinks or doubling back."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent / "data/profile"
+    mp = MetroProfile.load(root / "lines/Line_1.json", None, root / "settings.json")
+    sixth = next(p for p in mp.platform_curves() if p["name"].strip() == "6th")
+    assert sixth["scurve"] == "error"
+    kinds = {f["kind"] for f in mp.drawing_flags()}
+    assert "doubles back" in kinds and all(f["level"] in ("error", "warning") for f in mp.drawing_flags())

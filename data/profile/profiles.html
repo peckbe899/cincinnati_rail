@@ -462,7 +462,7 @@ function gradeAt(c, verts = VERTS) {
 }
 // the straight grades between bends (for limits, labels and the overview)
 const chords = (verts = VERTS) => design(verts).dv;
-window.railProfile = { railAt: (c) => railAt(c), typeAt: (c) => typeAt(c), line: () => S.data && S.data.id, issues: () => S.issues || [], view: (c0, c1) => { S.view = { c0, c1 }; schedule(); }, align: () => JSON.parse(JSON.stringify(S.align)), platforms: () => (isRer() ? [] : S.stations.map((s, i) => ({ name: s.name, c: s.c, ...platformCurve(i), R: isFinite(platformCurve(i).R) ? platformCurve(i).R : null }))), saved: () => !!(S.data && S.saved[S.data.id]) };
+window.railProfile = { railAt: (c) => railAt(c), typeAt: (c) => typeAt(c), line: () => S.data && S.data.id, issues: () => S.issues || [], view: (c0, c1) => { S.view = { c0, c1 }; schedule(); }, align: () => JSON.parse(JSON.stringify(S.align)), platforms: () => (isRer() ? [] : S.stations.map((s, i) => ({ name: s.name, c: s.c, ...platformCurve(i), R: isFinite(platformCurve(i).R) ? platformCurve(i).R : null }))), drawing: () => (isRer() ? [] : drawingFlags(S.data)), saved: () => !!(S.data && S.saved[S.data.id]) };
 function overrideAt(c) { const o = S.align.ovr; for (let k = o.length - 1; k >= 0; k--) if (c >= o[k][0] && c <= o[k][1]) return o[k][2]; return null; }
 // ---------- canon ----------
 function buildCanon() {
@@ -809,7 +809,45 @@ function platformCurve(i) {
   const R = fitRadius(pts);
   const out = isFinite(R) ? CAR_LEN * CAR_LEN / (8 * R) : 0, inn = isFinite(R) ? END_DOOR * END_DOOR / (2 * R) : 0;
   const level = R < PLAT_R_ERR ? 'error' : R < PLAT_R_WARN ? 'warning' : null;
-  return { R, out, inn, level, gapfill: (S.align.gapfill || []).includes(stKey(i)) };
+  return { R, out, inn, level, gapfill: (S.align.gapfill || []).includes(stKey(i)), turns: platformTurns(i) };
+}
+// Drawing checks (Ben, Metro): the KMZ is straight segments with corners; a finished curve is
+// drawn as a run of vertices each turning a little. Flagged on the drawn path:
+//  - single-angle corner: a bend drawn as one vertex turning 5 deg or more (unfinished, WARNING)
+//  - join kink: a turn of 10 deg or more beside a segment under 10 m, where drawn pieces do not
+//    meet (ERROR); doubling back: a turn over 90 deg (ERROR)
+//  - S-curve platform: turns both ways inside the platform span, 5 deg or more each way ERROR
+//    (no station works on an S-curve), smaller wiggles WARNING
+const DRAW = { single: 5, nb: 2, kink: 10, kinkSeg: 10, back: 90, sErr: 5, sWarn: 2 };
+function pathTurns(d) {
+  if (d._turns) return d._turns;
+  const path = d.path, lat0 = path[0][2] * Math.PI / 180, kx = 111320 * Math.cos(lat0), ky = 110540;
+  const xy = path.map((q) => [q[1] * kx, q[2] * ky]); const n = xy.length; const dfl = new Array(n).fill(0), seg = [];
+  for (let i = 0; i + 1 < n; i++) seg.push(Math.hypot(xy[i + 1][0] - xy[i][0], xy[i + 1][1] - xy[i][1]));
+  for (let i = 1; i + 1 < n; i++) {
+    const ax = xy[i][0] - xy[i - 1][0], ay = xy[i][1] - xy[i - 1][1], bx = xy[i + 1][0] - xy[i][0], by = xy[i + 1][1] - xy[i][1];
+    dfl[i] = Math.atan2(ax * by - ay * bx, ax * bx + ay * by) * 180 / Math.PI;
+  }
+  d._turns = { dfl, seg }; return d._turns;
+}
+const pieceAt = (d, c) => ((d.pieces || []).find((q) => c >= q.c0 - 5 && c <= q.c1 + 5) || {}).name || '';
+function drawingFlags(d) {
+  const { dfl, seg } = pathTurns(d), path = d.path, out = [];
+  for (let i = 1; i + 1 < path.length; i++) {
+    const a = Math.abs(dfl[i]), c = path[i][0], where = `${fmtCh(c)} (${path[i][2].toFixed(5)}, ${path[i][1].toFixed(5)}${pieceAt(d, c) ? `, ${esc(pieceAt(d, c))}` : ''})`;
+    if (a > DRAW.back) out.push({ kind: 'Drawing', c, text: `Path doubles back (${a.toFixed(0)}°) at ${where}: drawn pieces overlap or do not meet` });
+    else if (a >= DRAW.kink && Math.min(seg[i - 1], seg[i]) < DRAW.kinkSeg) out.push({ kind: 'Drawing', c, text: `Kink of ${a.toFixed(0)}° beside a ${Math.min(seg[i - 1], seg[i]).toFixed(1)} m segment at ${where}: drawn pieces do not meet cleanly` });
+    else if (a >= DRAW.single && [i - 1, i + 1].every((j) => j <= 0 || j >= path.length - 1 || !(Math.abs(dfl[j]) >= DRAW.nb && Math.sign(dfl[j]) === Math.sign(dfl[i]))))
+      out.push({ kind: 'Drawing', warn: true, c, text: `Single-angle corner of ${a.toFixed(0)}° at ${where}: not yet drawn as a curve` });
+  }
+  return out;
+}
+// turns inside a platform span, both ways
+function platformTurns(i) {
+  const s = S.stations[i], half = settings.platform / 2, { dfl } = pathTurns(S.data), path = S.data.path; let pos = 0, neg = 0, single = 0;
+  for (let k = 1; k + 1 < path.length; k++) if (path[k][0] > s.c - half && path[k][0] < s.c + half) { if (dfl[k] > 0) pos += dfl[k]; else neg += dfl[k]; }
+  const lo = Math.min(pos, -neg);
+  return { pos, neg, s: lo >= DRAW.sErr ? 'error' : lo >= DRAW.sWarn ? 'warning' : null };
 }
 const fmtR = (R) => (isFinite(R) ? `${Math.round(R)} m` : 'straight');
 const fmtGap = (g) => `${(g * 100).toFixed(1)} cm`;
@@ -824,11 +862,15 @@ function designChecks() {
   S.stations.forEach((st, i) => { const gq = (S.align.sg && S.align.sg[i]) || 0; if (Math.abs(gq) > sgMaxFor() + 0.05) issues.push({ kind: 'Platform grade', c: st.c, text: `${esc(st.name)} platform at ${fmtG(gq)} is over the ${sgMaxFor()}‰ station limit` }); });
   // platform curvature (Metro): R < 600 m is an error unless named as a gap-filler exception
   if (!isRer()) S.stations.forEach((st, i) => {
-    const pc = platformCurve(i); if (!pc.level) return;
+    const pc = platformCurve(i), tn = pc.turns;
+    // an S-curve platform cannot work, whatever the fitted radius (gap fillers do not fix it)
+    if (tn.s) issues.push({ kind: 'Platform curve', warn: tn.s === 'warning', c: st.c, text: `${esc(st.name)} platform is on an S-curve (turns ${tn.pos.toFixed(0)}° one way and ${(-tn.neg).toFixed(0)}° the other inside the span)${tn.s === 'error' ? ': unfinished, a station needs a straight or a single curve' : ': small wiggle in the drawing'}` });
+    if (!pc.level) return;
     const what = `${esc(st.name)} platform on a ${fmtR(pc.R)} curve: extra gap ${fmtGap(pc.out)} outside face, ${fmtGap(pc.inn)} inside face`;
     if (pc.level === 'error' && !pc.gapfill) issues.push({ kind: 'Platform curve', c: st.c, text: `${what} (under ${PLAT_R_ERR} m: needs gap fillers as a named exception, or slide or move the platform)` });
     else issues.push({ kind: 'Platform curve', warn: true, c: st.c, text: pc.level === 'error' ? `${what}: named exception with gap fillers` : what });
   });
+  if (!isRer() && S.data.path) drawingFlags(S.data).forEach((x) => issues.push(x));
   for (let i = 1; i < S.stations.length; i++) { const A = S.stations[i - 1], B = S.stations[i]; if (Math.abs(B.c - A.c) < settings.platform - 0.5 && A.c0 !== B.c0) issues.push({ kind: 'Platform overlap', c: (A.c + B.c) / 2, text: `${esc(A.name)} and ${esc(B.name)} platforms overlap (centres ${Math.abs(B.c - A.c).toFixed(0)} m apart); slide one or remove a station` }); }
   // drainage: tunnel grades flatter than drainMin outside platforms; low points need sumps
   let sumps = 0, lastSign = 0, lastC = 0;
@@ -1329,7 +1371,8 @@ function updateSelCard() {
         <dt>Platform</dt><dd>${fmtCh(s.c - half)} to ${fmtCh(s.c + half)}</dd>
         <dt><label for="inPos">Point from platform start (m)</label></dt><dd><input id="inPos" type="number" step="0.5" min="0" max="${(2 * half).toFixed(1)}" value="${(half - ((S.align.so && S.align.so[sel.i]) || 0)).toFixed(1)}" ${ro ? 'disabled' : ''}></dd>
 ${isRer() ? '' : (() => { const pc = platformCurve(sel.i); return `<dt>Platform curve</dt><dd>${fmtR(pc.R)}${pc.level ? ` · <span style="color:var(${pc.level === 'error' && !pc.gapfill ? '--warn' : '--muted'})">${pc.level === 'error' ? (pc.gapfill ? 'exception, gap fillers' : 'ERROR') : 'WARNING'}</span>` : ''}</dd>
-        <dt>Extra gap out / in</dt><dd>${fmtGap(pc.out)} / ${fmtGap(pc.inn)}</dd>`; })()}
+        <dt>Extra gap out / in</dt><dd>${fmtGap(pc.out)} / ${fmtGap(pc.inn)}</dd>${pc.turns.s ? `
+        <dt>Drawing</dt><dd><span style="color:var(${pc.turns.s === 'error' ? '--warn' : '--muted'})">S-curve (${pc.turns.pos.toFixed(0)}° / ${(-pc.turns.neg).toFixed(0)}°)</span></dd>` : ''}`; })()}
         <dt><label for="inSg">Platform grade (‰)</label></dt><dd><input id="inSg" type="number" step="0.5" value="${(((S.align.sg && S.align.sg[sel.i]) || 0)).toFixed(1)}" ${ro ? 'disabled' : ''}></dd>
       </dl>
       <div class="group" role="group" aria-label="Platform position"><button class="btn" id="posA" ${ro ? 'disabled' : ''} title="The drawn point at the platform start (low chainage end)">Point at start</button><button class="btn" id="posC" ${ro ? 'disabled' : ''}>Centred</button><button class="btn" id="posB" ${ro ? 'disabled' : ''} title="The drawn point at the platform end (high chainage end)">Point at end</button></div>

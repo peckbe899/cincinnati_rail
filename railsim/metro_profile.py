@@ -60,6 +60,11 @@ RIVER_MARGIN = {"metro": 7.5, "rer": 9.1}
 # 600 m (outside gap over 5 cm) is an error unless a named gap-filler exception, under 3,000 m a
 # warning
 CAR_LEN, END_DOOR, PLAT_R_ERR, PLAT_R_WARN = 15.56, 5.4, 600.0, 3000.0
+# Drawing checks (Ben): a finished curve is drawn as a run of vertices each turning a little.
+# single-angle corner: one vertex turning >= 5 deg with no same-way turn >= 2 deg beside it
+# (WARNING); join kink: >= 10 deg beside a segment < 10 m (ERROR); doubling back: > 90 deg (ERROR);
+# S-curve platform: turns both ways inside the span, >= 5 deg each way ERROR, >= 2 deg WARNING
+DRAW = {"single": 5.0, "nb": 2.0, "kink": 10.0, "kinkSeg": 10.0, "back": 90.0, "sErr": 5.0, "sWarn": 2.0}
 
 
 def fit_radius(pts: np.ndarray) -> float:
@@ -715,6 +720,37 @@ class MetroProfile:
         kx, ky = 111320 * math.cos(lat0), 110540
         return np.column_stack([np.interp(c, path[:, 0], path[:, 1]) * kx, np.interp(c, path[:, 0], path[:, 2]) * ky])
 
+    def _turns(self):
+        if getattr(self, "_turns_cache", None) is not None:
+            return self._turns_cache
+        path = np.array(self.data["path"], float)
+        lat0 = math.radians(path[0][2])
+        xy = np.column_stack([path[:, 1] * 111320 * math.cos(lat0), path[:, 2] * 110540])
+        seg = np.hypot(*np.diff(xy, axis=0).T)
+        dfl = np.zeros(len(path))
+        for i in range(1, len(path) - 1):
+            a, b = xy[i] - xy[i - 1], xy[i + 1] - xy[i]
+            dfl[i] = math.degrees(math.atan2(a[0] * b[1] - a[1] * b[0], a @ b))
+        self._turns_cache = (path, dfl, seg)
+        return self._turns_cache
+
+    def drawing_flags(self) -> List[dict]:
+        """Corners on the drawn path that are not finished or not correct (see DRAW)."""
+        path, dfl, seg = self._turns()
+        out = []
+        for i in range(1, len(path) - 1):
+            a, c = abs(dfl[i]), float(path[i][0])
+            piece = next((q["name"] for q in self.data.get("pieces", []) if q["c0"] - 5 <= c <= q["c1"] + 5), "")
+            base = {"c": c, "lat": float(path[i][2]), "lon": float(path[i][1]), "piece": piece, "turn": float(a)}
+            if a > DRAW["back"]:
+                out.append({**base, "kind": "doubles back", "level": "error"})
+            elif a >= DRAW["kink"] and min(seg[i - 1], seg[i]) < DRAW["kinkSeg"]:
+                out.append({**base, "kind": "join kink", "level": "error", "short_seg": float(min(seg[i - 1], seg[i]))})
+            elif a >= DRAW["single"] and all(not (0 < j < len(path) - 1 and abs(dfl[j]) >= DRAW["nb"]
+                                                  and np.sign(dfl[j]) == np.sign(dfl[i])) for j in (i - 1, i + 1)):
+                out.append({**base, "kind": "single-angle corner", "level": "warning"})
+        return out
+
     def platform_curves(self) -> List[dict]:
         """Per station: radius fitted over the platform span (drawn path every 2 m, platform where
         it has been slid), extra gap on each face, and 'error' / 'warning' / None."""
@@ -728,8 +764,15 @@ class MetroProfile:
             fin = math.isfinite(R)
             level = "error" if R < PLAT_R_ERR else "warning" if R < PLAT_R_WARN else None
             gap = self.st_key(i) in (self.gapfill or [])
+            path, dfl, _ = self._turns()
+            m = (path[:, 0] > s["c"] - half) & (path[:, 0] < s["c"] + half)
+            m[0] = m[-1] = False
+            pos, neg = float(dfl[m][dfl[m] > 0].sum()), float(dfl[m][dfl[m] < 0].sum())
+            lo = min(pos, -neg)
+            scurve = "error" if lo >= DRAW["sErr"] else "warning" if lo >= DRAW["sWarn"] else None
             out.append({"name": s["name"], "c": s["c"], "R": R, "outside": CAR_LEN ** 2 / (8 * R) if fin else 0.0,
-                        "inside": END_DOOR ** 2 / (2 * R) if fin else 0.0, "level": level, "gapfill": gap})
+                        "inside": END_DOOR ** 2 / (2 * R) if fin else 0.0, "level": level, "gapfill": gap,
+                        "scurve": scurve, "turn_pos": pos, "turn_neg": neg})
         return out
 
     def river_breaks(self) -> List[dict]:
