@@ -156,8 +156,10 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
     <button class="btn" id="uFt" aria-pressed="false">ft</button>
   </div>
   <div class="group">
-    <button class="btn" id="exportPng" hidden>Export PNG</button>
-    <button class="btn" id="exportJson" hidden>Export JSON</button>
+    <button class="btn" id="exportPng">Export PNG</button>
+    <button class="btn" id="exportJson">Export JSON</button>
+    <button class="btn" id="exportGeo" title="The designed rail (3D, rail level) by structure, and the stations, as GeoJSON">Export GeoJSON</button>
+    <button class="btn" id="exportKmz" title="The designed rail (3D, rail level) by structure, and the stations, for Google Earth">Export KMZ</button>
     <button class="btn" id="settingsBtn" aria-expanded="false">Settings</button>
   </div>
   <div class="status" id="status" data-s="idle"><span class="dot"></span><span id="statusText">Loading…</span></div>
@@ -470,7 +472,7 @@ function gradeAt(c, verts = VERTS) {
 }
 // the straight grades between bends (for limits, labels and the overview)
 const chords = (verts = VERTS) => design(verts).dv;
-window.railProfile = { railAt: (c) => railAt(c), typeAt: (c) => typeAt(c), line: () => S.data && S.data.id, issues: () => S.issues || [], view: (c0, c1) => { S.view = { c0, c1 }; schedule(); }, align: () => JSON.parse(JSON.stringify(S.align)), platforms: () => (isRer() ? [] : S.stations.map((s, i) => ({ name: s.name, c: s.c, ...platformCurve(i), R: isFinite(platformCurve(i).R) ? platformCurve(i).R : null }))), drawing: () => (isRer() ? [] : drawingFlags(S.data)), saved: () => !!(S.data && S.saved[S.data.id]) };
+window.railProfile = { railAt: (c) => railAt(c), typeAt: (c) => typeAt(c), line: () => S.data && S.data.id, issues: () => S.issues || [], view: (c0, c1) => { S.view = { c0, c1 }; schedule(); }, align: () => JSON.parse(JSON.stringify(S.align)), exportGeo: () => { const m = exportModel(); return { runs: m.runs.length, pts: m.runs.reduce((a, r) => a + r.pts.length, 0), stations: m.stations.length }; }, kml: () => buildKml(), platforms: () => (isRer() ? [] : S.stations.map((s, i) => ({ name: s.name, c: s.c, ...platformCurve(i), R: isFinite(platformCurve(i).R) ? platformCurve(i).R : null }))), drawing: () => (isRer() ? [] : drawingFlags(S.data)), saved: () => !!(S.data && S.saved[S.data.id]) };
 function overrideAt(c) { const o = S.align.ovr; for (let k = o.length - 1; k >= 0; k--) if (c >= o[k][0] && c <= o[k][1]) return o[k][2]; return null; }
 // ---------- canon ----------
 function buildCanon() {
@@ -1526,7 +1528,7 @@ function localDoc(id) { try { const t = localStorage.getItem(`profile:${id}`); r
 async function connect() {
   const C = window.claude; if (!C || typeof C.use !== 'function') { S.store = 'local'; setStatus('saved', 'Saving in this browser'); showBanner('Shared saving is unavailable in this view, so edits are kept in this browser only.'); return; }
   const [db, user, dl] = await Promise.all([C.use('db'), C.use('user'), C.use('downloads')]);
-  S.downloads = dl; $('#exportPng').hidden = !dl; $('#exportJson').hidden = !dl;
+  S.downloads = dl;
   S.user = user;
   if (user && typeof user.can === 'function') { try { S.canWrite = await user.can('data.write'); } catch { S.canWrite = null; } }
   if (!db) { S.store = 'local'; setStatus('saved', 'Saving in this browser'); showBanner('Shared saving is unavailable in this view, so edits are kept in this browser only.'); return; }
@@ -1866,24 +1868,108 @@ $('#resetLine').addEventListener('click', (e) => {
   pushHist(); S.stations = deriveStations([], []); buildCanon(); S.align = { ...defaultAlign(), del: [], so: S.stations.map(() => 0), gapfill: [] }; S.sel = null; changed();
 });
 
+// save a file: the page's downloads capability where it has one, else a plain browser download
+async function saveFile(filename, data, mime) {
+  try {
+    if (S.downloads) await S.downloads.save({ filename, data: typeof data === 'string' ? data : data });
+    else {
+      const blob = data instanceof Blob ? data : new Blob([data], { type: mime });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    }
+    flash(`${filename} saved`); return true;
+  } catch (err) { if (!err || err.code !== 'declined') flash(`${filename} not saved`); return false; }
+}
 async function exportPng() {
-  if (!S.downloads) return;
   const W = clamp(Math.round(S.L / 6), 2400, 7000), H = 1000;
   const c = document.createElement('canvas'); c.width = W; c.height = H; const ctx = c.getContext('2d');
   const prevSel = S.sel, prevHover = S.hoverC; S.sel = null; S.hoverC = null;
   draw(ctx, W, H, { c0: 0, c1: S.L }, { title: `${S.data.system} · ${S.data.line}`, subtitle: `Long section, ${S.stations[0].name} to ${S.stations[S.stations.length - 1].name} · ${(S.L / 1000).toFixed(2)} km · map 3 ground (alternate 2026) · ${new Date().toISOString().slice(0, 10)}` });
   S.sel = prevSel; S.hoverC = prevHover;
   const blob = await new Promise((res) => c.toBlob(res, 'image/png'));
-  try { await S.downloads.save({ filename: `${S.data.id}_profile.png`, data: blob }); flash('PNG saved'); } catch (err) { if (err && err.code !== 'declined') flash('PNG not saved'); }
+  await saveFile(`${S.data.id}_profile.png`, blob, 'image/png');
 }
 async function exportJson() {
-  if (!S.downloads) return;
   const body = serialize(); const samples = [];
   for (let c = 0; c <= S.L; c += 10) { const z = railAt(c); samples.push([c, Math.round(groundAt(c) * 100) / 100, Math.round(z * 100) / 100, typeAt(c, z)]); }
   body.samples_every_10m = { fields: ['chain_m', 'ground_m', 'rail_m', 'structure'], rows: samples };
-  try { await S.downloads.save({ filename: `${S.data.id}_alignment.json`, data: JSON.stringify(body, null, 1) }); flash('JSON saved'); } catch (err) { if (err && err.code !== 'declined') flash('JSON not saved'); }
+  await saveFile(`${S.data.id}_alignment.json`, JSON.stringify(body, null, 1), 'application/json');
 }
+// ---------- GeoJSON / KMZ export ----------
+// the line's plan position at chainage c (path: [chainage, lon, lat])
+function lonLatAt(c) {
+  const path = S.data.path; let j = 1; while (j < path.length - 1 && path[j][0] < c) j++;
+  const a = path[j - 1], b = path[j]; const t = b[0] - a[0] > 0 ? clamp((c - a[0]) / (b[0] - a[0]), 0, 1) : 0;
+  return [a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+}
+const r2 = (v) => Math.round(v * 100) / 100, r7 = (v) => Math.round(v * 1e7) / 1e7;
+// the designed rail every 5 m, split into runs of one structure type, and the stations
+function exportModel() {
+  const step = 5, runs = []; let cur = null;
+  for (let c = 0; ; c = Math.min(c + step, S.L)) {
+    const z = railAt(c), t = typeAt(c, z), [lon, lat] = lonLatAt(c);
+    if (!cur || cur.t !== t) { const pt = cur ? cur.pts[cur.pts.length - 1] : null; cur = { t, c0: c, pts: pt ? [pt] : [] }; runs.push(cur); }
+    cur.pts.push([r7(lon), r7(lat), r2(z)]); cur.c1 = c;
+    if (c >= S.L) break;
+  }
+  const half = settings.platform / 2;
+  const stations = S.stations.map((s, i) => {
+    const z = S.align.st[i], [lon, lat] = lonLatAt(s.c), sf = surfaceAt(s.c);
+    return { name: s.name, lon: r7(lon), lat: r7(lat), rail: r2(z), c: r2(s.c), point_c: r2(s.c0 ?? s.c), ground: r2(groundAt(s.c)), depth: r2(sf - z),
+      structure: TYPES[typeAt(s.c, z)].label, platform_m: r2(settings.platform), platform_from: r2(s.c - half), platform_to: r2(s.c + half),
+      platform_grade_permille: (S.align.sg && S.align.sg[i]) || 0 };
+  });
+  return { runs, stations };
+}
+function exportStamp() { return { line: S.data.line, id: S.data.id, system: S.data.system, length_m: r2(S.L), vertical_datum: 'NAVD88 (m)', source: 'Cincinnati Rail Profiles', exported: new Date().toISOString() }; }
+async function exportGeoJson() {
+  const { runs, stations } = exportModel(), meta = exportStamp();
+  const fc = { type: 'FeatureCollection', name: `${S.data.id}_profile`, properties: meta,
+    features: runs.filter((r) => r.pts.length > 1).map((r) => ({ type: 'Feature',
+      properties: { kind: 'rail', line: S.data.line, structure: TYPES[r.t].label, type: r.t, from_m: r2(r.c0), to_m: r2(r.c1), length_m: r2(r.c1 - r.c0),
+        rail_min_m: Math.min(...r.pts.map((q) => q[2])), rail_max_m: Math.max(...r.pts.map((q) => q[2])) },
+      geometry: { type: 'LineString', coordinates: r.pts } }))
+      .concat(stations.map((st) => ({ type: 'Feature', properties: { kind: 'station', line: S.data.line, ...st },
+        geometry: { type: 'Point', coordinates: [st.lon, st.lat, st.rail] } }))) };
+  await saveFile(`${S.data.id}_profile.geojson`, JSON.stringify(fc), 'application/geo+json');
+}
+// KML colour aabbggrr from a CSS colour
+function kmlColor(css, alpha = 'ff') {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(css).trim()); if (!m) return alpha + 'ffffff';
+  const h = m[1]; return alpha + h.slice(4, 6) + h.slice(2, 4) + h.slice(0, 2);
+}
+const xmlEsc = (t) => String(t).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[ch]));
+function buildKml() {
+  const { runs, stations } = exportModel(), meta = exportStamp();
+  const styles = TYPE_KEYS.map((t) => `<Style id="${t}"><LineStyle><color>${kmlColor(colors[t])}</color><width>4</width></LineStyle></Style>`).join('')
+    + '<Style id="st"><IconStyle><scale>0.9</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/rail.png</href></Icon></IconStyle></Style>';
+  const rail = runs.filter((r) => r.pts.length > 1).map((r) => `<Placemark><name>${xmlEsc(TYPES[r.t].label)} ${fmtCh(r.c0)} to ${fmtCh(r.c1)}</name><styleUrl>#${r.t}</styleUrl>`
+    + `<ExtendedData><Data name="structure"><value>${xmlEsc(TYPES[r.t].label)}</value></Data><Data name="from_m"><value>${r2(r.c0)}</value></Data><Data name="to_m"><value>${r2(r.c1)}</value></Data></ExtendedData>`
+    + `<LineString><altitudeMode>absolute</altitudeMode><coordinates>${r.pts.map((q) => q.join(',')).join(' ')}</coordinates></LineString></Placemark>`).join('');
+  const sts = stations.map((st) => `<Placemark><name>${xmlEsc(st.name)}</name><styleUrl>#st</styleUrl><ExtendedData>`
+    + Object.entries(st).filter(([k]) => !['name', 'lon', 'lat'].includes(k)).map(([k, v]) => `<Data name="${k}"><value>${xmlEsc(v)}</value></Data>`).join('')
+    + `</ExtendedData><Point><altitudeMode>absolute</altitudeMode><coordinates>${st.lon},${st.lat},${st.rail}</coordinates></Point></Placemark>`).join('');
+  return `<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${xmlEsc(`${meta.system} ${meta.line} profile`)}</name>`
+    + `<description>${xmlEsc(`Designed rail at rail level (absolute altitude, ${meta.vertical_datum}), by structure; stations at the platform centre. Exported ${meta.exported}.`)}</description>`
+    + `${styles}<Folder><name>Rail</name>${rail}</Folder><Folder><name>Stations</name>${sts}</Folder></Document></kml>`;
+}
+// a stored (uncompressed) zip with one doc.kml: a KMZ
+const CRC_TABLE = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(b) { let c = 0xffffffff; for (let i = 0; i < b.length; i++) c = CRC_TABLE[(c ^ b[i]) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; }
+function zipOne(name, bytes) {
+  const nm = new TextEncoder().encode(name), crc = crc32(bytes), n = bytes.length;
+  const local = new DataView(new ArrayBuffer(30)); [[0, 0x04034b50, 4], [4, 20, 2], [6, 0, 2], [8, 0, 2], [10, 0, 2], [12, 0x21, 2], [14, crc, 4], [18, n, 4], [22, n, 4], [26, nm.length, 2], [28, 0, 2]]
+    .forEach(([o, v, w]) => (w === 4 ? local.setUint32(o, v, true) : local.setUint16(o, v, true)));
+  const cen = new DataView(new ArrayBuffer(46)); [[0, 0x02014b50, 4], [4, 20, 2], [6, 20, 2], [8, 0, 2], [10, 0, 2], [12, 0, 2], [14, 0x21, 2], [16, crc, 4], [20, n, 4], [24, n, 4], [28, nm.length, 2], [30, 0, 2], [32, 0, 2], [34, 0, 2], [36, 0, 2], [38, 0, 4], [42, 0, 4]]
+    .forEach(([o, v, w]) => (w === 4 ? cen.setUint32(o, v, true) : cen.setUint16(o, v, true)));
+  const end = new DataView(new ArrayBuffer(22)); const cenOff = 30 + nm.length + n;
+  [[0, 0x06054b50, 4], [4, 0, 2], [6, 0, 2], [8, 1, 2], [10, 1, 2], [12, 46 + nm.length, 4], [16, cenOff, 4], [20, 0, 2]]
+    .forEach(([o, v, w]) => (w === 4 ? end.setUint32(o, v, true) : end.setUint16(o, v, true)));
+  return new Blob([local, nm, bytes, cen, nm, end], { type: 'application/vnd.google-earth.kmz' });
+}
+async function exportKmz() { await saveFile(`${S.data.id}_profile.kmz`, zipOne('doc.kml', new TextEncoder().encode(buildKml())), 'application/vnd.google-earth.kmz'); }
 $('#exportPng').addEventListener('click', exportPng); $('#exportJson').addEventListener('click', exportJson);
+$('#exportGeo').addEventListener('click', exportGeoJson); $('#exportKmz').addEventListener('click', exportKmz);
 
 // theme changes
 const mq = window.matchMedia('(prefers-color-scheme: dark)'); mq.addEventListener?.('change', schedule);
