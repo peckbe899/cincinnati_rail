@@ -159,7 +159,7 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
     <button class="btn" id="exportPng">Export PNG</button>
     <button class="btn" id="exportJson">Export JSON</button>
     <button class="btn" id="exportGeo" title="The designed rail (3D, rail level) by structure, and the stations, as GeoJSON">Export GeoJSON</button>
-    <button class="btn" id="exportKmz" title="The designed rail (3D, rail level) by structure, and the stations, for Google Earth">Export KMZ</button>
+    <button class="btn" id="exportKmz" title="The designed rail (3D, rail level) by structure, and the stations, for Google Earth (saved inside a .zip here: unzip, then open the .kmz)">Export KMZ</button>
     <button class="btn" id="settingsBtn" aria-expanded="false">Settings</button>
   </div>
   <div class="status" id="status" data-s="idle"><span class="dot"></span><span id="statusText">Loading…</span></div>
@@ -1878,7 +1878,11 @@ async function saveFile(filename, data, mime) {
       document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
     }
     flash(`${filename} saved`); return true;
-  } catch (err) { if (!err || err.code !== 'declined') flash(`${filename} not saved`); return false; }
+  } catch (err) {
+    const why = { rejected_extension: 'file type not allowed here', extension_not_enabled: 'file type not enabled here', rate_limited: 'another save is open; try again', too_large: 'too large' }[err && err.code];
+    if (!err || err.code !== 'declined') flash(`${filename} not saved${why ? ` (${why})` : err && err.code ? ` (${err.code})` : ''}`);
+    return false;
+  }
 }
 async function exportPng() {
   const W = clamp(Math.round(S.L / 6), 2400, 7000), H = 1000;
@@ -1931,7 +1935,8 @@ async function exportGeoJson() {
       geometry: { type: 'LineString', coordinates: r.pts } }))
       .concat(stations.map((st) => ({ type: 'Feature', properties: { kind: 'station', line: S.data.line, ...st },
         geometry: { type: 'Point', coordinates: [st.lon, st.lat, st.rail] } }))) };
-  await saveFile(`${S.data.id}_profile.geojson`, JSON.stringify(fc), 'application/geo+json');
+  // the page's downloads allow .json but not .geojson: .geo.json opens as GeoJSON (QGIS, geojson.io)
+  await saveFile(`${S.data.id}_profile.${S.downloads ? 'geo.json' : 'geojson'}`, JSON.stringify(fc), 'application/geo+json');
 }
 // KML colour aabbggrr from a CSS colour
 function kmlColor(css, alpha = 'ff') {
@@ -1956,7 +1961,8 @@ function buildKml() {
 // a stored (uncompressed) zip with one doc.kml: a KMZ
 const CRC_TABLE = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
 function crc32(b) { let c = 0xffffffff; for (let i = 0; i < b.length; i++) c = CRC_TABLE[(c ^ b[i]) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; }
-function zipOne(name, bytes) {
+function zipOne(name, bytes) { return new Blob([zipBytes(name, bytes)], { type: 'application/zip' }); }
+function zipBytes(name, bytes) {
   const nm = new TextEncoder().encode(name), crc = crc32(bytes), n = bytes.length;
   const local = new DataView(new ArrayBuffer(30)); [[0, 0x04034b50, 4], [4, 20, 2], [6, 0, 2], [8, 0, 2], [10, 0, 2], [12, 0x21, 2], [14, crc, 4], [18, n, 4], [22, n, 4], [26, nm.length, 2], [28, 0, 2]]
     .forEach(([o, v, w]) => (w === 4 ? local.setUint32(o, v, true) : local.setUint16(o, v, true)));
@@ -1965,9 +1971,16 @@ function zipOne(name, bytes) {
   const end = new DataView(new ArrayBuffer(22)); const cenOff = 30 + nm.length + n;
   [[0, 0x06054b50, 4], [4, 0, 2], [6, 0, 2], [8, 1, 2], [10, 1, 2], [12, 46 + nm.length, 4], [16, cenOff, 4], [20, 0, 2]]
     .forEach(([o, v, w]) => (w === 4 ? end.setUint32(o, v, true) : end.setUint16(o, v, true)));
-  return new Blob([local, nm, bytes, cen, nm, end], { type: 'application/vnd.google-earth.kmz' });
+  const parts = [local, nm, bytes, cen, nm, end].map((x) => new Uint8Array(x.buffer || x));
+  const out = new Uint8Array(parts.reduce((a, x) => a + x.length, 0)); let o = 0; parts.forEach((x) => { out.set(x, o); o += x.length; });
+  return out;
 }
-async function exportKmz() { await saveFile(`${S.data.id}_profile.kmz`, zipOne('doc.kml', new TextEncoder().encode(buildKml())), 'application/vnd.google-earth.kmz'); }
+async function exportKmz() {
+  const kmz = zipBytes('doc.kml', new TextEncoder().encode(buildKml())), name = `${S.data.id}_profile.kmz`;
+  // the page's downloads allow .zip but not .kmz: the .kmz goes inside a .zip (unzip, then open it)
+  if (S.downloads) await saveFile(`${S.data.id}_profile_kmz.zip`, zipOne(name, kmz), 'application/zip');
+  else await saveFile(name, new Blob([kmz], { type: 'application/vnd.google-earth.kmz' }), 'application/vnd.google-earth.kmz');
+}
 $('#exportPng').addEventListener('click', exportPng); $('#exportJson').addEventListener('click', exportJson);
 $('#exportGeo').addEventListener('click', exportGeoJson); $('#exportKmz').addEventListener('click', exportKmz);
 
