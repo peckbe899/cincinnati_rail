@@ -275,3 +275,79 @@ CMCC_TYPE2005_LONG_8CAR:
   floor: level
   min_curve_radius_m: 65
   sources: canon; R160/R211 (research_metro.md 1d, 6c)
+
+# CVG Express (Ben, Oct 16): Union Terminal - CVG, 25 kV 60 Hz overhead, 124 mph, GoA3, platform
+# doors, 670 ft platforms. By 2026 the sets are on DB Class 420 shells: 3 x 3-car units (202.2 m),
+# 4 wide doors per car side. The DB 420 itself is 67.4 m, 2,400 kW, about 129 t empty, 120 km/h
+# (Wikipedia; loco-info.com). Uprated for 124 mph and 25 kV (transformer, stronger bogies and
+# brakes): about 145 t and 3,500 kW per unit (about 25 kW/t), all axles motored as on the 420;
+# capacity 400 per unit with luggage space (the 420 carries about 448). Estimates, not canon.
+# Tilting variant (_T): +150 mm cant deficiency up to 124 mph, about 5% heavier.
+CVG_EXPRESS_420X3:
+  name: CVG Express 420-shell set (3 x 3-car, 25 kV 60 Hz, 124 mph, GoA3)
+  category: emu
+  cars: 9
+  length_m: 202.2
+  mass_empty_t: 435
+  mass_load_t: 90
+  power_kw: 10500
+  max_te_kn: 480
+  max_accel: 1.0
+  max_speed_mph: 124
+  adhesion: 0.3
+  adhesive_mass_fraction: 1.0
+  rotating_mass_factor: 0.08
+  service_brake: 0.9
+  max_service_brake: 1.1
+  emergency_brake: 1.3
+  brake_delay_s: 0.8
+  jerk: 0.6
+  davis:
+    A_n: 6000
+    B_n_per_ms: 75
+    C_n_per_ms2: 9.0
+  tunnel_factor: 1.8
+  regen_efficiency: 0.7
+  aux_kw: 300
+  doors_per_side: 4
+  door_channels: 2
+  door_open_s: 3.0
+  door_close_s: 4.5
+  floor: level
+  pax: 1200
+  sources: DB Class 420 (en.wikipedia.org/wiki/DB_Class_420; loco-info.com id 10768) uprated per Ben's 2026 spec; estimates
+CVG_EXPRESS_420X3_T:
+  name: CVG Express 420-shell set, tilting (3 x 3-car, 25 kV 60 Hz, 124 mph, GoA3)
+  category: emu
+  cars: 9
+  length_m: 202.2
+  mass_empty_t: 457
+  mass_load_t: 90
+  power_kw: 10500
+  max_te_kn: 480
+  max_accel: 1.0
+  max_speed_mph: 124
+  adhesion: 0.3
+  adhesive_mass_fraction: 1.0
+  rotating_mass_factor: 0.08
+  service_brake: 0.9
+  max_service_brake: 1.1
+  emergency_brake: 1.3
+  brake_delay_s: 0.8
+  jerk: 0.6
+  davis:
+    A_n: 6200
+    B_n_per_ms: 75
+    C_n_per_ms2: 9.0
+  tunnel_factor: 1.8
+  regen_efficiency: 0.7
+  aux_kw: 330
+  tilt_cant_deficiency_mm: 150
+  tilt_max_speed_kmh: 200
+  doors_per_side: 4
+  door_channels: 2
+  door_open_s: 3.0
+  door_close_s: 4.5
+  floor: level
+  pax: 1200
+  sources: as CVG_EXPRESS_420X3 with active tilt (DB 610 shells tilt 8 deg); estimates

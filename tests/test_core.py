@@ -468,13 +468,13 @@ def test_drawing_corner_flags():
 
 
 def test_cvg_express_profile_canon():
-    """CVG Express (Ben, Oct 16): 200 m platforms of its own, Union Terminal at track level
+    """CVG Express (Ben, Oct 16): 670 ft platforms of its own, Union Terminal at track level
     (154.0 m), the Ohio on a bridge held at the navigation clearance level (no river tube)."""
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
     mp = MetroProfile.load(root / "lines/CVG_Express.json", None, root / "settings.json")
-    assert mp.settings["platform"] == 200.0
+    assert mp.settings["platform"] == pytest.approx(670 * 0.3048)
     assert mp.st[[s["name"] for s in mp.stations].index("Union Terminal")] == 154.0
     assert not mp.river_tubes(None)
     b = mp.river_bridges()[0]

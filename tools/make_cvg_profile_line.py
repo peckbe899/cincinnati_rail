@@ -11,8 +11,9 @@ and runs 125 m past the start of piece 3; the path turns onto piece 3 where it s
 line) and leaves that stub out (an overshoot in the drawing, Ben Oct 16).
 
 Ben's answers (Oct 16): opened 1969; Union Terminal platforms at track level; the Ohio on a bridge
-roughly parallel to the CSX (C&O) bridge; no intermediate stations; piece 5 'Today' only; 200 m
-platforms (the line file's own `settings`), for stock on DB Class 610 / 420 shells, 124 mph.
+roughly parallel to the CSX (C&O) bridge; no intermediate stations; piece 5 'Today' only; platforms
+exactly 670 ft (the line file's own `settings`) for the 2026 stock: 3 x 3-car DB Class 420-shell
+sets (202.2 m), 25 kV 60 Hz, 124 mph, GoA3, platform doors.
 
     python tools/make_cvg_profile_line.py [Today|Original]
 """
@@ -40,7 +41,7 @@ DEM = PROFILE / "dem" / "map3_profile_dem_dm.vrt"
 STEP = 2.0
 LID = "CVG_Express"
 TERMINALS = ["Terminal 3", "Terminal 2", "Terminal 4", "Terminal 1B", "Terminal 1A"]
-PLATFORM = 200.0  # m (Ben, Oct 16)
+PLATFORM = 670 * 0.3048  # m: exactly 670 ft (Ben, Oct 16: platform doors fitted with the 420-shell sets)
 
 
 def main(variant: str = "Today"):
@@ -82,7 +83,7 @@ def main(variant: str = "Today"):
     lat, lon = proj.to_latlon(pxy[:, 0], pxy[:, 1])
 
     # stations: Union Terminal at the drawn start, the terminals where they project
-    # Union Terminal: the drawn start is the north end of its 200 m platform
+    # Union Terminal: the drawn start is the north end of its platform
     c_ut = PLATFORM / 2
     la_ut, lo_ut = float(np.interp(c_ut, ch, lat)), float(np.interp(c_ut, ch, lon))
     stations = [{"name": "Union Terminal", "c": c_ut, "lon": round(lo_ut, 7), "lat": round(la_ut, 7),

@@ -1,0 +1,23 @@
+# CVG Express (Union Terminal - CVG), opened 1969 (Ben). 2026 operation (Ben, Oct 16): 12 trains
+# an hour, GoA3 (automatic driving, attendant on board), platform doors at every station (fitted
+# when the 420-shell sets came in), 25 kV 60 Hz overhead, 124 mph; 5 min at Union Terminal on its
+# two platforms. Earlier eras (the 610-shell sets) are not defined yet.
+system: CVG Express
+default_year: 2026
+
+fleet:
+  - {from: 2026, train: CVG_EXPRESS_420X3}   # --train CVG_EXPRESS_420X3_T for the tilting variant
+
+eras:
+  - name: "GoA3 (DTO) with platform doors, 124 mph"
+    years: [2026, 2100]
+    goa: 3
+    overlay:
+      signalling: {system: cbtc}
+      driver: {mode: ato}
+      dwell:
+        door_release: 1.0     # automatic on proven stop
+        dispatch: 2.0         # attendant closes; ATS departs once doors are proven locked
+        psd_overhead: 3.0     # platform doors open/close with the train's and are proven closed
+        t_board: 2.6          # s per passenger per door channel: airport luggage (metro 1.8)
+        t_alight: 2.2         # (metro 1.4)
