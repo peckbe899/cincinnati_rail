@@ -410,10 +410,17 @@ def main(spec: ProgramSpec, argv=None):
             print(f"   Monte Carlo ({mc['runs']} runs, technical driving): trip p50 {mc['p50']:.1f} min, "
                   f"p85 {mc['p85']:.1f}, p95 {mc['p95']:.1f} (deterministic {technical_trip:.1f})")
         results.append((dr, sd))
-    turn = float(cfg.get("turnback_min", 0) or 0)
+    # turnback: minutes at each end, or per terminal {station name: min} (e.g. a stub with two
+    # platforms at one end and a tail track at the other)
+    tb = cfg.get("turnback_min", 0) or 0
+    ends = [route.stations[0].name, route.stations[-1].name] if route.stations else ["", ""]
+    turns = ([float(tb.get(n, tb.get("default", 0)) or 0) for n in ends] if isinstance(tb, dict)
+             else [float(tb)] * 2)
     if len(results) == 2:
-        cycle = sum(r[1]["scheduled_time_min"] for r in results) + 2 * turn
-        msg = f"\n   round trip (scheduled + {turn:.0f} min turnback at each end): {cycle:.1f} min"
+        cycle = sum(r[1]["scheduled_time_min"] for r in results) + sum(turns)
+        what = (f"{turns[0]:g} min turnback at each end" if turns[0] == turns[1]
+                else f"turnback {turns[0]:g} min at {ends[0]}, {turns[1]:g} min at {ends[1]}")
+        msg = f"\n   round trip (scheduled + {what}): {cycle:.1f} min"
         hw = args.headway or (cfg.get("service", {}) or {}).get("headway_min")
         if hw:
             msg += f"; at a {hw:g}-min headway this needs {math.ceil(cycle / float(hw))} trains"

@@ -12,6 +12,7 @@ stations:
     class: busy
     psd: true
     platform_length_m: 204.216   # exactly 670 ft
+    dwell_s: 35                  # Ben: 35 s at the CVG terminal stops (luggage)
   info:
     Terminal 1A:
       class: terminal
@@ -25,7 +26,12 @@ service:
   - Terminal 1B
   - Terminal 1A
   headway_min: 5      # 12 trains an hour
-turnback_min: 5       # 5 min at Union Terminal (2 platforms); the same is assumed at Terminal 1A
+turnback_min:
+  Union Terminal: 5   # Ben: 5 min on its two platforms
+  # Ben: shorter, through the yard lead past the platform. Estimate: alight 35 s, out about 250 m
+  # until the 202 m train clears the crossover (~40 s), automatic change of ends (~60 s), back
+  # (~40 s), board 35 s
+  Terminal 1A: 3.5
 geometry:
   line_speed_mph: 124
   max_cant_in: 6.0                 # 150 mm

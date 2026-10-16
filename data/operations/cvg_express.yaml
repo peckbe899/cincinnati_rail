@@ -6,7 +6,7 @@ system: CVG Express
 default_year: 2026
 
 fleet:
-  - {from: 2026, train: CVG_EXPRESS_420X3}   # --train CVG_EXPRESS_420X3_T for the tilting variant
+  - {from: 2026, train: CVG_EXPRESS_420X3}   # no tilt (Ben)
 
 eras:
   - name: "GoA3 (DTO) with platform doors, 124 mph"
@@ -20,4 +20,4 @@ eras:
         dispatch: 2.0         # attendant closes; ATS departs once doors are proven locked
         psd_overhead: 3.0     # platform doors open/close with the train's and are proven closed
         t_board: 2.6          # s per passenger per door channel: airport luggage (metro 1.8)
-        t_alight: 2.2         # (metro 1.4)
+        t_alight: 2.2         # (metro 1.4); the CVG stops are set to 35 s in the line config
