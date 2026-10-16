@@ -83,7 +83,8 @@ def fit_radius(pts: np.ndarray) -> float:
     r2 = (D * D + E * E) / 4 - F
     return math.sqrt(r2) if r2 > 0 else math.inf
 ERA = {**{f"Line_{k}": {"shield": "tube"} for k in ("1", "2", "2b", "3", "4", "5", "6", "7")},
-       **{f"Line_{k}": {"shield": "bore"} for k in ("8", "9", "10", "11", "12", "13", "14")}}
+       **{f"Line_{k}": {"shield": "bore"} for k in ("8", "9", "10", "11", "12", "13", "14")},
+       "CVG_Express": {"shield": "bore"}}  # opening year not yet set: as Lines 8-14 for now
 # RER: 35 per mille, 200 m platforms (8-car TRI) and 12 m station rail depth are canon; the
 # 25 m deep-bore threshold, 6.6 m box / 7.5 m bored crown (RATP RER style), 3 m tube cover and 250 m surface
 # bend points are starting values

@@ -158,7 +158,8 @@ def metro_rails():
     """Every Metro line's rail as the page saves it (saved profile, else the solver default)."""
     out = {}
     settings = PROFILE / "settings.json"
-    for f in sorted((PROFILE / "lines").glob("Line_*.json")):
+    ids = [e["id"] for e in json.loads((PROFILE / "lines" / "index.json").read_text())]
+    for f in [PROFILE / "lines" / f"{i}.json" for i in ids]:
         al = PROFILE / "alignments" / f.name
         mp = MetroProfile.load(f, al if al.exists() else None, settings)
         out[mp.id] = {"line": mp.data["line"], "length_m": mp.length, "saved": al.exists(),
