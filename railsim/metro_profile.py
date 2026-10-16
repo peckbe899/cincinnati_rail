@@ -38,7 +38,7 @@ STRUCTURE = {"elevated": "viaduct", "atgrade": "at-grade", "trough": "cut", "cut
 TUNNEL_STRUCTURES = {"tunnel", "cut-and-cover", "shield", "deep-tube"}
 
 DEFAULTS = dict(maxGrade=50.0, platform=152.4, defDepth=7.62, elevAbove=3.0, coverBelow=3.0,
-                deepBelow=18.29, shallowMax=12.19, poolFt=455.0,
+                deepBelow=18.29, shallowMax=12.19, poolFt=455.0, deckDepth=1.5,
                 vcRadius=1500.0, vcMinLen=30.5, minCover=2.0)
 # Metro structures (Ben's rules), from the top of rail: below = rail to underside, top = rail to
 # top, od = outside diameter. Cut-and-cover box (and station box) 1.0 below / 4.6 to top; twin
@@ -129,6 +129,10 @@ CANON = {
         {"a": "Price Hill", "b": "State", "bIn": False, "m": "deep"}],
         "fixed": {"Price Hill": -18.29, "State": 7.62, "Garrard": 7.62}},
     "Line_5": {"sections": [{"a": "Northside", "b": "Pennsylvania", "m": "shallow"}]},
+    # CVG Express (1969, Ben Oct 16): Union Terminal at track level; the Ohio on a bridge (navigation
+    # clearance 77.3 ft above normal pool as the Brent Spence, starting value)
+    "CVG_Express": {"fixed": {"Union Terminal": {"abs": 154.0, "ref": 154.0}},
+                    "bridges": {"Ohio River": {"clear": 23.56}}},
     "Line_6": {"sections": [{"a": "UC Medical/Corryville", "b": "Public Landing", "m": "shallow"}]},
 }
 
@@ -163,7 +167,8 @@ class MetroProfile:
              canon_json=None, settings_override: Optional[dict] = None) -> "MetroProfile":
         data = json.loads(Path(line_json).read_text())
         rer = "RER" in data.get("system", "")
-        p = cls(data, {**load_settings(settings_json, rer=rer), **(settings_override or {})})
+        # per-line settings in the line file (e.g. the CVG Express's 200 m platforms)
+        p = cls(data, {**load_settings(settings_json, rer=rer), **(data.get("settings") or {}), **(settings_override or {})})
         if rer:
             cj = Path(canon_json) if canon_json else RER_CANON_JSON
             p.rer_canon = json.loads(cj.read_text()) if cj.exists() else {}
@@ -285,6 +290,18 @@ class MetroProfile:
                 return self.pool() - float(b)
         return float(self.ground_at(c))
 
+    def _bridge(self, r: dict) -> Optional[dict]:
+        return None if self.is_rer else (CANON.get(self.id, {}).get("bridges") or {}).get(r["name"])
+
+    def river_bridges(self) -> List[dict]:
+        """River crossings on a bridge: rail at least pool + navigation clearance + deck."""
+        out = []
+        for r in self.data.get("rivers", []) or []:
+            if self._bridge(r):
+                lb = self.pool() + self._bridge(r)["clear"] + self.settings.get("deckDepth", 1.5)
+                out.append({"name": r["name"], "c0": r["c0"], "c1": r["c1"], "lb": lb, "ub": lb})  # at the clearance level
+        return out
+
     def river_tubes(self, md: Optional[List[str]]) -> List[dict]:
         """River crossings in tunnel the solver holds: every river on a Metro line (twin tubes);
         on the RER between two underground stations, inside a canon deep bore, or in the covered
@@ -295,6 +312,8 @@ class MetroProfile:
         step = float(self.data.get("step_m", 2.0))
         out = []
         for r in self.data.get("rivers", []) or []:
+            if self._bridge(r):
+                continue
             if self.is_rer:
                 if not md:
                     continue
@@ -355,7 +374,7 @@ class MetroProfile:
                 ub.append(gr - self.settings["defDepth"] if math.isfinite(gr) else math.inf)
                 lb.append(-math.inf)
 
-        tubes = self.river_tubes(md)
+        tubes = self.river_tubes(md) + self.river_bridges()
         tube_pvi = []
         if not tubes:
             def run(i, j):
@@ -378,8 +397,8 @@ class MetroProfile:
                 after = [st["c"] - half - e for st in self.stations if st["c"] - half >= t["c1"]]
                 a = min(t["c0"], max([0.0, t["c0"] - e] + before))
                 b = max(t["c1"], min([self.length, t["c1"] + e] + after))
-                nodes += [{"c": a, "st": False, "ub": t["ub"], "lb": -math.inf},
-                          {"c": b, "st": False, "ub": t["ub"], "lb": -math.inf}]
+                nodes += [{"c": x, "st": False, "ub": t.get("ub", math.inf), "lb": t.get("lb", -math.inf)}
+                          for x in (a, b)]
             nodes.sort(key=lambda nd: nd["c"])  # stable, as Array.sort
             cnt, k = [], 0
             for nd in nodes:
@@ -781,7 +800,13 @@ class MetroProfile:
         margin = RIVER_MARGIN["rer" if self.is_rer else "metro"]
         step = float(self.data.get("step_m", 2.0))
         out = []
+        for b in self.river_bridges():  # bridges: rail at least the navigation clearance level
+            zz = self.rail_at(np.arange(b["c0"], b["c1"] + 1e-9, step))
+            if len(zz) and zz.min() < b["lb"] - 0.05:
+                out.append({"name": b["name"], "c0": b["c0"], "c1": b["c1"], "over": float(b["lb"] - zz.min()), "bridge": True})
         for r in self.data.get("rivers", []) or []:
+            if self._bridge(r):
+                continue
             run = None
             for i in range(math.ceil(r["c0"] / step), int(math.floor(r["c1"] / step)) + 1):
                 c = i * step

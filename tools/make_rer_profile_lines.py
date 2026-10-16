@@ -162,7 +162,7 @@ def metro_rails():
     for f in [PROFILE / "lines" / f"{i}.json" for i in ids]:
         al = PROFILE / "alignments" / f.name
         mp = MetroProfile.load(f, al if al.exists() else None, settings)
-        out[mp.id] = {"line": mp.data["line"], "length_m": mp.length, "saved": al.exists(),
+        out[mp.id] = {"line": mp.data["line"], "length_m": mp.length, "saved": al.exists(), "platform_m": mp.settings["platform"],
                       "stations": [{"name": s["name"], "c": s["c"], "rail": round(float(z), 2)}
                                    for s, z in zip(mp.stations, mp.st)],
                       "pvi": [[round(float(c), 1), round(float(z), 2)] for c, z in mp.pvi]}

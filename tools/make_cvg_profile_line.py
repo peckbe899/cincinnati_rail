@@ -8,7 +8,11 @@ The route: Union Terminal (the drawn start, 90 m from Line 7's Union Terminal; n
 there) south over the Ohio to CVG, then Terminals 3, 2, 4, 1B and 1A on piece 5 ('Today', or
 'Original', which serves 1B and 1A only), and on to the yard lead. Piece 2 is drawn south to north
 and runs 125 m past the start of piece 3; the path turns onto piece 3 where it starts (on piece 2's
-line) and leaves that stub out.
+line) and leaves that stub out (an overshoot in the drawing, Ben Oct 16).
+
+Ben's answers (Oct 16): opened 1969; Union Terminal platforms at track level; the Ohio on a bridge
+roughly parallel to the CSX (C&O) bridge; no intermediate stations; piece 5 'Today' only; 200 m
+platforms (the line file's own `settings`), for stock on DB Class 610 / 420 shells, 124 mph.
 
     python tools/make_cvg_profile_line.py [Today|Original]
 """
@@ -36,6 +40,7 @@ DEM = PROFILE / "dem" / "map3_profile_dem_dm.vrt"
 STEP = 2.0
 LID = "CVG_Express"
 TERMINALS = ["Terminal 3", "Terminal 2", "Terminal 4", "Terminal 1B", "Terminal 1A"]
+PLATFORM = 200.0  # m (Ben, Oct 16)
 
 
 def main(variant: str = "Today"):
@@ -77,8 +82,11 @@ def main(variant: str = "Today"):
     lat, lon = proj.to_latlon(pxy[:, 0], pxy[:, 1])
 
     # stations: Union Terminal at the drawn start, the terminals where they project
-    stations = [{"name": "Union Terminal", "c": 0.0, "lon": round(float(lon[0]), 7), "lat": round(float(lat[0]), 7),
-                 "offset": 0.0, "src": "drawn start of the line (no station placemark; 90 m from Line 7's Union Terminal)"}]
+    # Union Terminal: the drawn start is the north end of its 200 m platform
+    c_ut = PLATFORM / 2
+    la_ut, lo_ut = float(np.interp(c_ut, ch, lat)), float(np.interp(c_ut, ch, lon))
+    stations = [{"name": "Union Terminal", "c": c_ut, "lon": round(lo_ut, 7), "lat": round(la_ut, 7),
+                 "offset": 0.0, "src": "platform from the drawn start of the line (no station placemark; 90 m from Line 7's Union Terminal)"}]
     for t in TERMINALS:
         la, lo = pms[t].points[0][:2]
         x, y = proj.to_xy(la, lo)
@@ -112,7 +120,8 @@ def main(variant: str = "Today"):
         others.append((e["id"], md["line"], "metro", np.column_stack(proj.to_xy(mp[:, 2], mp[:, 1])), mp[:, 0]))
     cr = crossings(pxy, ch, others, proj)
 
-    doc = {"id": LID, "line": "CVG Express", "system": "Cincinnati Metro", "variant": variant,
+    doc = {"id": LID, "line": "CVG Express", "system": "Cincinnati Metro", "variant": variant, "opened": 1969,
+           "settings": {"platform": PLATFORM},
            "length_m": round(L, 1), "step_m": STEP,
            "ground_dm": [None if not np.isfinite(g) else int(round(g * 10)) for g in ground],
            "stations": stations, "rivers": rivers, "pieces": pieces,

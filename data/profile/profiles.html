@@ -260,6 +260,11 @@ const CANON = {
       'State': { off: 7.62, src: '25 ft elevated station (station list)' },
       'Garrard': { off: 7.62, src: 'On the 8th St viaduct; inferred from "underground near MacLean" (May 24)' } } },
   Line_5: { sections: [{ a: 'Northside', b: 'Pennsylvania', m: 'shallow', src: 'Founding section, basin method (tracker 2D)' }] },
+  // CVG Express (1969; Ben, Oct 16): Union Terminal platforms at track level; the Ohio crossed on a
+  // bridge roughly parallel to the CSX (C&O) bridge
+  CVG_Express: {
+    fixed: { 'Union Terminal': { abs: 154.0, ref: 154.0, src: 'Union Terminal track level (Ben, Oct 16)' } },
+    bridges: { 'Ohio River': { clear: 23.56, src: 'Bridge roughly parallel to the CSX (C&O) bridge (Ben, Oct 16); navigation clearance 77.3 ft above normal pool as the Brent Spence (USCG), starting value' } } },
   Line_6: { sections: [{ a: 'UC Medical/Corryville', b: 'Public Landing', m: 'shallow', src: 'Founding section, basin method (tracker 2D)' }] },
 };
 // RER canon (station modes, fixed levels, covered way, deep bore, deck, river tubes) comes from
@@ -293,6 +298,9 @@ const SETTING_ROWS_RER = SETTING_ROWS_BASE.map((r) => r[0] === 'defDepth' ? ['de
 const SETTING_ROWS_METRO = SETTING_ROWS_BASE.filter((r) => !METRO_FIXED.has(r[0]));
 let SETTING_ROWS = SETTING_ROWS_METRO;
 let settings = { ...DEFAULTS };
+// per-line settings (line file `settings`, e.g. the CVG Express's 200 m platforms) over the system's
+const lineOverlay = () => (S && S.data && S.data.settings) || {};
+const withOverlay = (base) => ({ ...base, ...lineOverlay() });
 const SYS = { metro: { settings: { ...METRO_DEFAULTS }, doc: 'config/settings', key: 'profile:settings' }, rer: { settings: { ...RER_DEFAULTS }, doc: 'config/settings_rer', key: 'profile:settings_rer' } };
 let sys = 'metro';
 const isRer = () => sys === 'rer';
@@ -504,6 +512,13 @@ function groundFor(d) {
   });
   d._deck = g; d._deckKey = key; return g;
 }
+// river crossings on a bridge (line canon `bridges`): the rail stays at least the navigation
+// clearance above the normal pool plus the deck under the rail, over the whole river range
+function bridgeOf(r) { const cn = (!isRer() && S.data && CANON[S.data.id]) || {}; return (cn.bridges || {})[r.name] || null; }
+function riverBridges() {
+  // the solver puts the bridge at its clearance level (ub = lb), no higher than it needs to be
+  return S.rivers.filter((r) => bridgeOf(r)).map((r) => { const lb = pool() + bridgeOf(r).clear + settings.deckDepth; return { name: r.name, c0: r.c0, c1: r.c1, lb, ub: lb, src: bridgeOf(r).src }; });
+}
 // river crossings in tunnel the solver holds (Ben): every river on a Metro line (twin tubes);
 // on the RER under a river between two underground stations, inside a canon deep bore, or in the
 // covered way where the canon crosses the river in tunnel (sunk box sections). The rail stays
@@ -511,6 +526,7 @@ function groundFor(d) {
 function riverTubes(md) {
   const out = [], margin = RIVER_MARGIN[isRer() ? 'rer' : 'metro'];
   S.rivers.forEach((r) => {
+    if (bridgeOf(r)) return;
     if (isRer()) {
       if (!md) return;
       const info = RIVERS[r.name] || {}; const sec = canonAt((r.c0 + r.c1) / 2);
@@ -552,8 +568,8 @@ const RIVER_MARGIN = { metro: 7.5, rer: 9.1 };
 const ERA = {};
 ['1', '2', '2b', '3', '4', '5', '6'].forEach((k) => (ERA[`Line_${k}`] = { shield: 'tube', sgMax: 7.5, era: k === '2b' ? '1903-1913 (with Line 2)' : '1903-1913' }));
 ERA.Line_7 = { shield: 'tube', sgMax: 7.5, era: '1913' };
-// CVG Express (airport express, Union Terminal to CVG): opening year not yet set; for now as Lines 8-14
-ERA.CVG_Express = { shield: 'bore', sgMax: 4, era: 'opening year not yet set (as Lines 8-14 for now)' };
+// CVG Express (airport express, Union Terminal to CVG): opened 1969 (Ben), after Lines 8-14: bore and 4 per mille
+ERA.CVG_Express = { shield: 'bore', sgMax: 4, era: '1969' };
 ['8', '9', '10', '11', '12'].forEach((k) => (ERA[`Line_${k}`] = { shield: 'bore', sgMax: 4, era: '1933-1941' }));
 ['13', '14'].forEach((k) => (ERA[`Line_${k}`] = { shield: 'bore', sgMax: 4, era: '1949-1959' }));
 const eraOf = (id = S.data && S.data.id) => (!isRer() && ERA[id]) || null;
@@ -625,7 +641,7 @@ function defaultAlign(modes, extra = []) {
     else if (md && md[i] === 'surface' && isFinite(gr)) { ub[i] = lb[i] = gr; }
     else { ub[i] = isFinite(gr) ? gr - settings.defDepth : Infinity; lb[i] = -Infinity; }
   });
-  const tubes = riverTubes(md);
+  const tubes = riverTubes(md).concat(riverBridges());
   let st, tubePvi = [];
   if (!tubes.length && !extra.length) {
     const run = (i, j) => Math.max(0, Math.abs(S.stations[j].c - S.stations[i].c) - P * Math.abs(j - i));
@@ -645,7 +661,7 @@ function defaultAlign(modes, extra = []) {
         const before = S.stations.filter((st) => st.c + half <= t.c0).map((st) => st.c + half + e);
         const after = S.stations.filter((st) => st.c - half >= t.c1).map((st) => st.c - half - e);
         const a = Math.min(t.c0, Math.max(0, t.c0 - e, ...before)), b = Math.max(t.c1, Math.min(S.L, t.c1 + e, ...after));
-        return [{ c: a, st: false, ub: t.ub, lb: -Infinity }, { c: b, st: false, ub: t.ub, lb: -Infinity }]; }))
+        return [{ c: a, st: false, ub: t.ub ?? Infinity, lb: t.lb ?? -Infinity }, { c: b, st: false, ub: t.ub ?? Infinity, lb: t.lb ?? -Infinity }]; }))
       .concat(extra.map((x) => ({ c: x.c, st: false, ub: x.ub ?? Infinity, lb: x.lb ?? -Infinity })))
       .sort((a, b) => a.c - b.c);
     const cnt = []; let k = 0; nodes.forEach((nd) => { cnt.push(k); if (nd.st) k++; });
@@ -745,6 +761,10 @@ function computeSummary() {
       if (over > 0.005) { if (!run) { run = { name: r.name, c0: c, c1: c, c, over }; shallowTubes.push(run); } run.c1 = c; if (over > run.over) { run.over = over; run.c = c; } }
       else run = null;
     }
+  });
+  riverBridges().forEach((b) => {
+    let lo = Infinity, lc = b.c0; for (let c = b.c0; c <= b.c1; c += S.step) { const z = railAt(c); if (z < lo) { lo = z; lc = c; } }
+    if (lo < b.lb - 0.05) shallowTubes.push({ name: b.name, c: lc, c0: b.c0, c1: b.c1, over: b.lb - lo, bridge: true });
   });
   const out = { len, deepest, highest, maxG, maxGc, over, clashes, deepShallow, shallowTubes };
   Object.assign(out, designChecks());
@@ -915,7 +935,7 @@ function allIssues(sm) {
   sm.clashes.forEach((x) => out.push({ kind: 'Clearance', c: x.c, text: x.level
     ? `Crosses ${esc(x.with)} at grade at ${fmtCh(x.c)}: needs a grade separation`
     : `${toU(x.clear).toFixed(2)} ${uLbl()} ${x.meUp ? 'over' : 'under'} ${esc(x.with)} at ${fmtCh(x.c)}; needs ${toU(x.need).toFixed(2)} ${uLbl()} (${(x.meUp ? x.t : x.to).label} over ${(x.meUp ? x.to : x.t).label})` }));
-  (sm.shallowTubes || []).forEach((t) => out.push({ kind: 'River', c: t.c, text: `Under the ${esc(t.name)} from ${fmtCh(t.c0)} to ${fmtCh(t.c1)} the rail is up to ${fmtZ(t.over, 2)} ${uLbl()} above bed − ${RIVER_MARGIN[isRer() ? 'rer' : 'metro']} m (worst at ${fmtCh(t.c)})` }));
+  (sm.shallowTubes || []).forEach((t) => out.push(t.bridge ? { kind: 'River', c: t.c, text: `Bridge over the ${esc(t.name)}: rail up to ${fmtZ(t.over, 2)} ${uLbl()} below the navigation clearance level (worst at ${fmtCh(t.c)})` } : { kind: 'River', c: t.c, text: `Under the ${esc(t.name)} from ${fmtCh(t.c0)} to ${fmtCh(t.c1)} the rail is up to ${fmtZ(t.over, 2)} ${uLbl()} above bed − ${RIVER_MARGIN[isRer() ? 'rer' : 'metro']} m (worst at ${fmtCh(t.c)})` }));
   sm.deepShallow.forEach((f) => out.push({ kind: 'Canon', c: f.c, text: `${esc(f.name)} is ${fmtZ(f.d, 0)} ${uLbl()} down in a shallow-canon section` }));
   (sm.checks || []).forEach((x) => out.push(x));
   return out.sort((a, b) => a.c - b.c);
@@ -1331,6 +1351,7 @@ function updatePanels() {
   const er = eraOf();
   cnl.push(`<li><b>Structures</b> ${er ? `(${er.era}): rail less than ${fmtZ(METRO_ST.box.top, 1)} ${uLbl()} down is an open trough; cut-and-cover and station boxes ${fmtZ(1.0, 2)} below to ${fmtZ(4.6, 2)} ${uLbl()} above the rail (roof cover ${fmtZ(BOX_COVER, 1)}, thinner is the street itself, a warning); twin tubes ${fmtZ(0.68, 2)} below to ${fmtZ(4.08, 2)} above for deep tube${er.shield === 'tube' ? ', shield' : ''} and river crossings${er.shield === 'bore' ? `; double-track bore ${fmtZ(3.2, 1)} below to ${fmtZ(5.8, 1)} above for shield` : ''}; tubes and bores need ${fmtZ(TUBE_COVER_HIGH, 1)} ${uLbl()} of cover with their top above ${fmtZ(WATER_TABLE, 1)} ${uLbl()}, one outside diameter at or below it; shallower is cut and cover; under rivers the rail stays ${RIVER_MARGIN.metro} m below the bed` : `(RATP RER style, 1985-1996): boxes and station boxes ${fmtZ(settings.envelope, 1)} ${uLbl()} and bored tubes ${fmtZ(settings.boreCrown, 1)} ${uLbl()} above the rail; bored tunnels need ${fmtZ(settings.minCover, 1)} ${uLbl()} of cover, shallower is cut and cover; river crossings are sunk box sections in a dredged trench (Transbay model), rail ${RIVER_MARGIN.rer} m below the bed`}; crossings keep the upper floor + ${SEP_GAP} m above the lower top, or above the clear height (${OPEN_CLEAR.metro} m Metro, ${OPEN_CLEAR.rer} m RER) of a line in the open; platforms may slope up to ${sgMaxFor()}‰${er ? (er.sgMax > 5 ? ' (New York 1918 practice)' : ' (1930s-50s, near London 1 in 260)') : ' (main-line station limit)'}.</li>`);
   cnl.push(`<li><b>Vertical curves</b> radius ${fmtZ(settings.vcRadius, 0)} ${uLbl()}, kept off the platforms by a level transition at each end.</li>`);
+  if (!isRer()) riverBridges().forEach((b) => cnl.push(`<li><b>Bridge</b> over the ${esc(b.name)} (${fmtCh(b.c0)} to ${fmtCh(b.c1)}): rail at least ${fmtZ(b.lb, 1)} ${uLbl()}. ${esc(b.src)}</li>`));
   if (!isRer()) riverTubes(null).forEach((t) => cnl.push(`<li><b>Twin tubes</b> under the ${esc(t.name)} (${fmtCh(t.c0)} to ${fmtCh(t.c1)}): rail at most ${fmtZ(t.ub, 1)} ${uLbl()} (lowest bed − ${RIVER_MARGIN.metro} m); the solver holds it, saved profiles are only flagged.</li>`));
   if (isRer()) {
     Object.entries(S.canonModes).forEach(([i, f]) => cnl.push(`<li><b>${esc(nm(+i))}</b> ${f.mode === 'surface' ? 'at grade' : 'underground'}: ${esc(f.src)}</li>`));
@@ -1524,11 +1545,11 @@ async function connect() {
     if (!d.exists) return;
     SYS[k].settings = { ...(k === 'rer' ? RER_DEFAULTS : METRO_DEFAULTS), ...d.data() };
     if (k === 'rer') refreshDefaultDocs();
-    if (sys === k) { settings = SYS[k].settings; buildSettings(); if (S.data) changed(false); }
+    if (sys === k) { settings = withOverlay(SYS[k].settings); buildSettings(); if (S.data) changed(false); }
   }, () => {}));
 }
 async function saveSettings() {
-  SYS[sys].settings = settings;
+  SYS[sys].settings = { ...settings, ...Object.fromEntries(Object.keys(lineOverlay()).map((k) => [k, SYS[sys].settings[k]])) };
   if (isRer()) refreshDefaultDocs();
   if (S.db && S.canWrite !== false) { try { await S.db.doc(SYS[sys].doc).set({ ...settings }); } catch { flash('Settings not saved'); } }
   else { try { localStorage.setItem(SYS[sys].key, JSON.stringify(settings)); } catch {} }
@@ -1556,6 +1577,7 @@ async function selectLine(id) {
   setSystem(id.startsWith('RER_') ? 'rer' : 'metro');
   if (!isRer()) linkRerCrossings(d);
   S.data = d; S.L = d.length_m; S.step = d.step_m;
+  settings = withOverlay(SYS[sys].settings); buildSettings();
   S.ground = groundFor(d);
   S.stations = baseStations(d); S.rivers = d.rivers; S.crossings = d.crossings || [];
   buildCanon();
@@ -1778,7 +1800,8 @@ $('#solveCross').addEventListener('click', () => {
     return cons.every((x) => { const z = railAt(x.c, v0); return (x.ub == null || z <= x.ub + 0.05) && (x.lb == null || z >= x.lb - 0.05); });
   };
   // river tubes the plain solution already meets must stay met
-  const tubeC = riverTubes(modes).flatMap((t) => [{ c: t.c0, ub: t.ub }, { c: t.c1, ub: t.ub }]).filter((t) => railAt(t.c, vb) <= t.ub + 0.05);
+  const tubeC = riverTubes(modes).flatMap((t) => [{ c: t.c0, ub: t.ub }, { c: t.c1, ub: t.ub }]).filter((t) => railAt(t.c, vb) <= t.ub + 0.05)
+    .concat(riverBridges().flatMap((t) => [{ c: t.c0, lb: t.lb }, { c: t.c1, lb: t.lb }]).filter((t) => railAt(t.c, vb) >= t.lb - 0.05));
   let cons = []; let held = 0;
   xs.forEach((x) => {
     const z0 = railAt(x.c, vb), id = S.data.id, gr = surfaceAt(x.c), k0 = kindAt(id, z0, gr, x.c);
@@ -1813,7 +1836,8 @@ function setUnits(u) { S.units = u; $('#uM').setAttribute('aria-pressed', u === 
 function buildSettings() {
   $('#setKv').innerHTML = SETTING_ROWS.map(([k, label, unit, step]) => {
     const isLen = unit === 'len'; const val = isLen ? toU(settings[k]) : settings[k]; const u = isLen ? uLbl() : unit;
-    return `<dt><label for="set_${k}">${label} (${u})</label></dt><dd><input id="set_${k}" type="number" step="${step}" value="${(+val).toFixed(isLen || unit === 'ft' ? 1 : 0)}" ${S.canWrite === false ? 'disabled' : ''}></dd>`;
+    const own = k in lineOverlay();
+    return `<dt><label for="set_${k}">${label} (${u})${own ? ' · this line' : ''}</label></dt><dd><input id="set_${k}" type="number" step="${step}" value="${(+val).toFixed(isLen || unit === 'ft' ? 1 : 0)}" ${S.canWrite === false || own ? 'disabled' : ''}></dd>`;
   }).join('');
   SETTING_ROWS.forEach(([k, , unit]) => {
     $(`#set_${k}`).addEventListener('change', (e) => {
@@ -1832,7 +1856,7 @@ $('#uM').addEventListener('click', () => setUnits('m')); $('#uFt').addEventListe
 $('#lineSel').addEventListener('change', (e) => selectLine(e.target.value).catch((err) => showBanner(`Couldn't load that line: ${err.message}`)));
 $('#settingsBtn').addEventListener('click', () => { const p = $('#pop'); p.hidden = !p.hidden; $('#settingsBtn').setAttribute('aria-expanded', !p.hidden); });
 document.addEventListener('pointerdown', (e) => { const p = $('#pop'); if (!p.hidden && !p.contains(e.target) && e.target !== $('#settingsBtn')) { p.hidden = true; $('#settingsBtn').setAttribute('aria-expanded', 'false'); } });
-$('#setDefaults').addEventListener('click', () => { settings = { ...DEFAULTS }; buildSettings(); saveSettings(); changed(); });
+$('#setDefaults').addEventListener('click', () => { settings = withOverlay({ ...DEFAULTS }); buildSettings(); saveSettings(); changed(); });
 let resetArm = 0;
 $('#resetLine').addEventListener('click', (e) => {
   if (S.canWrite === false) return;
