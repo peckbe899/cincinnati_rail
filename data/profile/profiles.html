@@ -69,6 +69,8 @@ select { padding-right: 6px; font-weight: 600; }
 .swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
 .status { margin-left: auto; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
 .status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.save-btn { margin-left: 4px; min-width: 64px; }
+.save-btn.dirty { background: var(--accent); color: #fff; border-color: var(--accent); }
 .status[data-s="saved"] .dot { background: var(--grade); }
 .status[data-s="saving"] .dot { background: var(--elev); }
 .status[data-s="error"] .dot, .status[data-s="readonly"] .dot { background: var(--warn); }
@@ -159,10 +161,11 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
     <button class="btn" id="exportPng">Export PNG</button>
     <button class="btn" id="exportJson">Export JSON</button>
     <button class="btn" id="exportGeo" title="The designed rail (3D, rail level) by structure, and the stations, as GeoJSON">Export GeoJSON</button>
-    <button class="btn" id="exportKmz" title="The designed rail (3D, rail level) and the stations, for Google Earth. The published page cannot save .kmz files, so it saves .kmz.zip: remove the .zip from the name and open it">Export KMZ</button>
+    <button class="btn" id="exportKmz" title="The designed rail (3D, rail level) and the stations, for Google Earth. The published page cannot save .kmz files, so the .kmz comes inside a .zip: open or unzip it and the .kmz is inside">Export KMZ</button>
     <button class="btn" id="settingsBtn" aria-expanded="false">Settings</button>
   </div>
-  <div class="status" id="status" data-s="idle"><span class="dot"></span><span id="statusText">Loading…</span></div>
+  <div class="status" id="status" data-s="idle"><span class="dot"></span><span id="statusText">Loading…</span>
+    <button class="btn save-btn" id="saveBtn" disabled title="Edits save automatically about a second after you stop; this saves now (Ctrl/Cmd+S) and shows when the last save landed">Save</button></div>
 </header>
 <div class="banner" id="banner" hidden></div>
 
@@ -1491,8 +1494,24 @@ function paintRange(a, b, brush) {
 
 // ---------- persistence ----------
 let saveTimer = 0;
-function setStatus(s, text) { $('#status').dataset.s = s; $('#statusText').textContent = text; }
+const hhmm = (d) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+function setStatus(s, text) {
+  if (s === 'saved' && S.lastSaved && /^Saved/.test(text)) text = `${text} ${hhmm(S.lastSaved)}`;
+  $('#status').dataset.s = s; $('#statusText').textContent = text; syncSaveBtn();
+}
+// the Save button: shows whether the profile on screen is saved, and saves it now on click
+function syncSaveBtn() {
+  const b = $('#saveBtn'); if (!b) return;
+  const st = $('#status').dataset.s;
+  b.classList.toggle('dirty', !!S.dirty || st === 'error');
+  if (S.canWrite === false) { b.disabled = true; b.textContent = 'View only'; return; }
+  if (S.saving) { b.disabled = true; b.textContent = 'Saving…'; return; }
+  if (st === 'error') { b.disabled = false; b.textContent = 'Retry save'; return; }
+  if (S.dirty) { b.disabled = false; b.textContent = 'Save'; return; }
+  b.disabled = true; b.textContent = S.lastSaved ? `Saved ✓` : 'Saved';
+}
 function markDirty() { if (S.canWrite === false) return; S.dirty = true; setStatus('saving', 'Unsaved changes'); clearTimeout(saveTimer); saveTimer = setTimeout(save, 1200); }
+async function saveNow() { if (!S.data || S.canWrite === false) return; if (!S.dirty && $('#status').dataset.s !== 'error') { flash('Already saved'); return; } S.dirty = true; clearTimeout(saveTimer); await save(); }
 function serialize() {
   const st = {}; S.stations.forEach((_, i) => (st[stKey(i)] = S.align.st[i]));
   const sm = S.summary || computeSummary();
@@ -1514,13 +1533,13 @@ async function save() {
   if (S.saving) { clearTimeout(saveTimer); saveTimer = setTimeout(save, 600); return; }
   S.saving = true; const body = serialize(); const id = S.data.id; S.dirty = false;
   try {
-    if (S.db) { setStatus('saving', 'Saving…'); await S.db.doc(`alignments/${id}`).set(body); S.saved[id] = body; setStatus('saved', 'Saved'); }
-    else { try { localStorage.setItem(`profile:${id}`, JSON.stringify(body)); setStatus('saved', 'Saved in this browser'); } catch { setStatus('error', 'Not saved'); } }
+    if (S.db) { setStatus('saving', 'Saving…'); syncSaveBtn(); await S.db.doc(`alignments/${id}`).set(body); S.saved[id] = body; S.lastSaved = new Date(); if (S.dirty) setStatus('saving', 'Unsaved changes'); else setStatus('saved', 'Saved'); }
+    else { try { localStorage.setItem(`profile:${id}`, JSON.stringify(body)); S.lastSaved = new Date(); setStatus('saved', 'Saved in this browser'); } catch { setStatus('error', 'Not saved'); } }
   } catch (e) {
     S.dirty = true;
     if (e && e.code === 'invalid_argument' && S.canWrite == null) { S.canWrite = false; setStatus('readonly', 'View only'); syncUndo(); }
     else { setStatus('error', 'Save failed, retrying'); clearTimeout(saveTimer); saveTimer = setTimeout(save, 5000); }
-  } finally { S.saving = false; }
+  } finally { S.saving = false; syncSaveBtn(); }
 }
 async function flush() { if (S.dirty) { clearTimeout(saveTimer); await save(); } }
 function localDoc(id) { try { const t = localStorage.getItem(`profile:${id}`); return t ? JSON.parse(t) : null; } catch { return null; } }
@@ -1982,12 +2001,14 @@ function zipBytes(name, bytes) {
   return out;
 }
 async function exportKmz() {
-  // a KMZ is a zip whose first .kml is the document; naming it after the line means a browser
-  // that unzips downloads leaves a .kml Google Earth opens too
-  const kmz = zipBytes(`${S.data.id}_profile.kml`, new TextEncoder().encode(buildKml()));
-  // the page's downloads allow .zip but not .kmz: the KMZ itself saves as .kmz.zip (drop the .zip to open)
-  await saveFile(`${S.data.id}_profile.kmz${S.downloads ? '.zip' : ''}`, new Blob([kmz], { type: 'application/vnd.google-earth.kmz' }), 'application/vnd.google-earth.kmz');
+  const name = `${S.data.id}_profile.kmz`, kmz = zipBytes('doc.kml', new TextEncoder().encode(buildKml()));
+  // the published page cannot save .kmz files (its downloads allow .zip but not .kmz), so there
+  // the .kmz goes inside a .zip: open or unzip it and the .kmz is inside; elsewhere a plain .kmz
+  if (S.downloads) await saveFile(`${S.data.id}_profile_kmz.zip`, zipOne(name, kmz), 'application/zip');
+  else await saveFile(name, new Blob([kmz], { type: 'application/vnd.google-earth.kmz' }), 'application/vnd.google-earth.kmz');
 }
+$('#saveBtn').addEventListener('click', saveNow);
+document.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); saveNow(); } });
 $('#exportPng').addEventListener('click', exportPng); $('#exportJson').addEventListener('click', exportJson);
 $('#exportGeo').addEventListener('click', exportGeoJson); $('#exportKmz').addEventListener('click', exportKmz);
 
