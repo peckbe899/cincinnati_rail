@@ -159,7 +159,7 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
     <button class="btn" id="exportPng">Export PNG</button>
     <button class="btn" id="exportJson">Export JSON</button>
     <button class="btn" id="exportGeo" title="The designed rail (3D, rail level) by structure, and the stations, as GeoJSON">Export GeoJSON</button>
-    <button class="btn" id="exportKmz" title="The designed rail (3D, rail level) by structure, and the stations, for Google Earth (saved as .kmz.zip here: remove the .zip from the name and open it)">Export KMZ</button>
+    <button class="btn" id="exportKmz" title="The designed rail (3D, rail level) and the stations, for Google Earth. The published page cannot save .kmz files, so it saves .kmz.zip: remove the .zip from the name and open it">Export KMZ</button>
     <button class="btn" id="settingsBtn" aria-expanded="false">Settings</button>
   </div>
   <div class="status" id="status" data-s="idle"><span class="dot"></span><span id="statusText">Loading…</span></div>
@@ -1907,28 +1907,15 @@ function lonLatAt(c) {
   return [a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 }
 const r2 = (v) => Math.round(v * 100) / 100, r7 = (v) => Math.round(v * 1e7) / 1e7;
-// Export styling (Ben, Oct 17), after his Loveland-Batavia 3D KMZ: one colour per line (the line's
-// colour in its source KMZ), absolute altitude, extruded to the ground, a vertex about every 10 m,
-// normal/highlight styles. Structure by line: at grade and open trough normal (width 4), elevated
-// wider (8), underground dashed or dotted (KML has no dash style, so the line is cut into pieces):
-// cut and cover long dashes, shallow shield short dashes, deep tube dots.
-const EXPORT_STYLE = {
-  atgrade: { width: 4 }, trough: { width: 4 }, elevated: { width: 8 },
-  cutcover: { width: 4, dash: [30, 15] }, shield: { width: 4, dash: [15, 15] }, deep: { width: 4, dash: [4, 10] },
-};
-const EXPORT_STEP = 10;
+// Export (Ben, Oct 17), after his Loveland-Batavia 3D KMZ: one uniform line in the line's colour
+// from its source KMZ (purple if it has none), width 4, absolute altitude (rail level), extruded to
+// the ground, a vertex about every 10 m, normal/highlight styles; stations at the platform centre.
+const EXPORT_STEP = 10, EXPORT_WIDTH = 4, EXPORT_DEFAULT_COLOR = 'ff800080';
 function exportPt(c) { const [lon, lat] = lonLatAt(c); return [r7(lon), r7(lat), r2(railAt(c))]; }
 function exportPts(a, b) { const out = []; for (let c = a; c < b; c += EXPORT_STEP) out.push(exportPt(c)); out.push(exportPt(b)); return out; }
-// pieces [c0, c1] of a run: the whole run, or its dashes
-function exportPieces(r) {
-  const st = EXPORT_STYLE[r.t] || {}; if (!st.dash) return [[r.c0, r.c1]];
-  const [on, off] = st.dash, out = [];
-  for (let c = r.c0; c < r.c1; c += on + off) out.push([c, Math.min(c + on, r.c1)]);
-  return out.filter(([a, b]) => b - a > 0.5);
-}
-function lineColorKml() { return /^[0-9a-f]{8}$/i.test(S.data.color || '') ? S.data.color.toLowerCase() : null; }
+function lineColorKml() { return /^[0-9a-f]{8}$/i.test(S.data.color || '') ? S.data.color.toLowerCase() : EXPORT_DEFAULT_COLOR; }
 const kmlToHex = (k) => `#${k.slice(6, 8)}${k.slice(4, 6)}${k.slice(2, 4)}`;
-// runs of one structure type (found every 5 m), and the stations
+// the whole line, its runs of one structure type (found every 5 m, for the GeoJSON), and the stations
 function exportModel() {
   const step = 5, runs = []; let cur = null;
   for (let c = 0; ; c = Math.min(c + step, S.L)) {
@@ -1936,7 +1923,7 @@ function exportModel() {
     if (!cur || cur.t !== t) { if (cur) cur.c1 = c; cur = { t, c0: c, c1: c }; runs.push(cur); }
     cur.c1 = c; if (c >= S.L) break;
   }
-  runs.forEach((r) => { r.pts = exportPts(r.c0, r.c1); });
+  const kept = runs.filter((r) => r.c1 - r.c0 > 0.5); kept.forEach((r) => { r.pts = exportPts(r.c0, r.c1); });
   const half = settings.platform / 2;
   const stations = S.stations.map((s, i) => {
     const z = S.align.st[i], [lon, lat] = lonLatAt(s.c), sf = surfaceAt(s.c);
@@ -1944,52 +1931,38 @@ function exportModel() {
       structure: TYPES[typeAt(s.c, z)].label, platform_m: r2(settings.platform), platform_from: r2(s.c - half), platform_to: r2(s.c + half),
       platform_grade_permille: (S.align.sg && S.align.sg[i]) || 0 };
   });
-  return { runs: runs.filter((r) => r.c1 - r.c0 > 0.5), stations };
+  return { line: exportPts(0, S.L), runs: kept, stations };
 }
 function exportStamp() { return { line: S.data.line, id: S.data.id, system: S.data.system, length_m: r2(S.L), vertical_datum: 'NAVD88 (m)', source: 'Cincinnati Rail Profiles', exported: new Date().toISOString() }; }
 async function exportGeoJson() {
-  const { runs, stations } = exportModel(), meta = exportStamp(), kc = lineColorKml();
-  // GeoJSON lines stay whole; the styling is in simplestyle-spec properties (stroke, stroke-width)
-  // plus `pattern` / `dash_m` for GIS styling of the underground stretches
-  const fc = { type: 'FeatureCollection', name: `${S.data.id}_profile`, properties: { ...meta, color: kc ? kmlToHex(kc) : null },
-    features: runs.map((r) => { const st = EXPORT_STYLE[r.t] || { width: 4 }; return { type: 'Feature',
+  const { runs, stations } = exportModel(), meta = exportStamp(), hex = kmlToHex(lineColorKml());
+  // the rail by structure (type in the properties), all in the line's colour
+  const fc = { type: 'FeatureCollection', name: `${S.data.id}_profile`, properties: { ...meta, color: hex },
+    features: runs.map((r) => ({ type: 'Feature',
       properties: { kind: 'rail', line: S.data.line, structure: TYPES[r.t].label, type: r.t, from_m: r2(r.c0), to_m: r2(r.c1), length_m: r2(r.c1 - r.c0),
         rail_min_m: Math.min(...r.pts.map((q) => q[2])), rail_max_m: Math.max(...r.pts.map((q) => q[2])),
-        stroke: kc ? kmlToHex(kc) : colors[r.t], 'stroke-width': st.width, 'stroke-opacity': 1,
-        pattern: st.dash ? (st.dash[0] <= 5 ? 'dotted' : 'dashed') : 'solid', dash_m: st.dash || null },
-      geometry: { type: 'LineString', coordinates: r.pts } }; })
+        stroke: hex, 'stroke-width': EXPORT_WIDTH, 'stroke-opacity': 1 },
+      geometry: { type: 'LineString', coordinates: r.pts } }))
       .concat(stations.map((st) => ({ type: 'Feature', properties: { kind: 'station', line: S.data.line, ...st },
         geometry: { type: 'Point', coordinates: [st.lon, st.lat, st.rail] } }))) };
   // the page's downloads allow .json but not .geojson: .geo.json opens as GeoJSON (QGIS, geojson.io)
   await saveFile(`${S.data.id}_profile.${S.downloads ? 'geo.json' : 'geojson'}`, JSON.stringify(fc), 'application/geo+json');
 }
-// KML colour aabbggrr from a CSS colour
-function kmlColor(css, alpha = 'ff') {
-  const m = /^#?([0-9a-f]{6})$/i.exec(String(css).trim()); if (!m) return alpha + 'ffffff';
-  const h = m[1]; return alpha + h.slice(4, 6) + h.slice(2, 4) + h.slice(0, 2);
-}
 const xmlEsc = (t) => String(t).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[ch]));
-const kmlLine = (pts) => `<LineString><extrude>1</extrude><altitudeMode>absolute</altitudeMode><coordinates>${pts.map((q) => q.join(',')).join(' ')}</coordinates></LineString>`;
 function buildKml() {
-  const { runs, stations } = exportModel(), meta = exportStamp(), kc = lineColorKml();
-  // per structure: a StyleMap (normal / highlight, highlight 2 wider) in the line's colour
-  const styles = TYPE_KEYS.map((t) => { const w = (EXPORT_STYLE[t] || { width: 4 }).width, c = kc || kmlColor(colors[t]);
-    return `<StyleMap id="${t}"><Pair><key>normal</key><styleUrl>#${t}_n</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#${t}_h</styleUrl></Pair></StyleMap>`
-      + `<Style id="${t}_n"><LineStyle><color>${c}</color><width>${w}</width></LineStyle></Style>`
-      + `<Style id="${t}_h"><LineStyle><color>${c}</color><width>${w + 2}</width></LineStyle></Style>`; }).join('')
-    + `<Style id="st"><IconStyle><scale>0.9</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/rail.png</href></Icon></IconStyle><LineStyle><color>${kc || 'ff808080'}</color><width>1</width></LineStyle></Style>`;
-  const rail = runs.map((r) => {
-    const pieces = exportPieces(r), geom = pieces.length === 1 && pieces[0][0] === r.c0 && pieces[0][1] === r.c1 ? kmlLine(r.pts)
-      : `<MultiGeometry>${pieces.map(([a, b]) => kmlLine(exportPts(a, b))).join('')}</MultiGeometry>`;
-    return `<Placemark><name>${xmlEsc(TYPES[r.t].label)} ${fmtCh(r.c0)} to ${fmtCh(r.c1)}</name><styleUrl>#${r.t}</styleUrl>`
-      + `<ExtendedData><Data name="structure"><value>${xmlEsc(TYPES[r.t].label)}</value></Data><Data name="from_m"><value>${r2(r.c0)}</value></Data><Data name="to_m"><value>${r2(r.c1)}</value></Data></ExtendedData>${geom}</Placemark>`;
-  }).join('');
+  const { line, stations } = exportModel(), meta = exportStamp(), c = lineColorKml(), nm = `${meta.line} 3D`;
+  const style = `<StyleMap id="rail"><Pair><key>normal</key><styleUrl>#rail_n</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#rail_h</styleUrl></Pair></StyleMap>`
+    + `<Style id="rail_n"><LineStyle><color>${c}</color><width>${EXPORT_WIDTH}</width></LineStyle></Style>`
+    + `<Style id="rail_h"><LineStyle><color>${c}</color><width>${EXPORT_WIDTH}</width></LineStyle></Style>`
+    + `<Style id="st"><IconStyle><scale>0.9</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/rail.png</href></Icon></IconStyle><LineStyle><color>${c}</color><width>1</width></LineStyle></Style>`;
+  const rail = `<Placemark><name>${xmlEsc(nm)}</name><styleUrl>#rail</styleUrl><LineString><extrude>1</extrude><altitudeMode>absolute</altitudeMode>`
+    + `<coordinates>${line.map((q) => q.join(',')).join(' ')}</coordinates></LineString></Placemark>`;
   const sts = stations.map((st) => `<Placemark><name>${xmlEsc(st.name)}</name><styleUrl>#st</styleUrl><ExtendedData>`
     + Object.entries(st).filter(([k]) => !['name', 'lon', 'lat'].includes(k)).map(([k, v]) => `<Data name="${k}"><value>${xmlEsc(v)}</value></Data>`).join('')
     + `</ExtendedData><Point><extrude>1</extrude><altitudeMode>absolute</altitudeMode><coordinates>${st.lon},${st.lat},${st.rail}</coordinates></Point></Placemark>`).join('');
-  return `<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2"><Document><name>${xmlEsc(`${meta.line} 3D`)}</name>`
-    + `<description>${xmlEsc(`${meta.system} ${meta.line}: designed rail at rail level (absolute altitude, ${meta.vertical_datum}), extruded to the ground. Solid at grade and in open trough, wide on viaduct, dashed in cut and cover and shallow shield, dotted in deep tube. Stations at the platform centre. Exported ${meta.exported}.`)}</description>`
-    + `${styles}<Folder><name>Rail</name>${rail}</Folder><Folder><name>Stations</name>${sts}</Folder></Document></kml>`;
+  return `<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2"><Document><name>${xmlEsc(nm)}</name>`
+    + `<description>${xmlEsc(`${meta.system} ${meta.line}: designed rail at rail level (absolute altitude, ${meta.vertical_datum}), extruded to the ground; stations at the platform centre. Exported ${meta.exported}.`)}</description>`
+    + `${style}${rail}<Folder><name>Stations</name>${sts}</Folder></Document></kml>`;
 }
 // a stored (uncompressed) zip with one doc.kml: a KMZ
 const CRC_TABLE = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
