@@ -159,7 +159,7 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
     <button class="btn" id="exportPng">Export PNG</button>
     <button class="btn" id="exportJson">Export JSON</button>
     <button class="btn" id="exportGeo" title="The designed rail (3D, rail level) by structure, and the stations, as GeoJSON">Export GeoJSON</button>
-    <button class="btn" id="exportKmz" title="The designed rail (3D, rail level) by structure, and the stations, for Google Earth (saved inside a .zip here: unzip, then open the .kmz)">Export KMZ</button>
+    <button class="btn" id="exportKmz" title="The designed rail (3D, rail level) by structure, and the stations, for Google Earth (saved as .kmz.zip here: remove the .zip from the name and open it)">Export KMZ</button>
     <button class="btn" id="settingsBtn" aria-expanded="false">Settings</button>
   </div>
   <div class="status" id="status" data-s="idle"><span class="dot"></span><span id="statusText">Loading…</span></div>
@@ -2009,10 +2009,11 @@ function zipBytes(name, bytes) {
   return out;
 }
 async function exportKmz() {
-  const kmz = zipBytes('doc.kml', new TextEncoder().encode(buildKml())), name = `${S.data.id}_profile.kmz`;
-  // the page's downloads allow .zip but not .kmz: the .kmz goes inside a .zip (unzip, then open it)
-  if (S.downloads) await saveFile(`${S.data.id}_profile_kmz.zip`, zipOne(name, kmz), 'application/zip');
-  else await saveFile(name, new Blob([kmz], { type: 'application/vnd.google-earth.kmz' }), 'application/vnd.google-earth.kmz');
+  // a KMZ is a zip whose first .kml is the document; naming it after the line means a browser
+  // that unzips downloads leaves a .kml Google Earth opens too
+  const kmz = zipBytes(`${S.data.id}_profile.kml`, new TextEncoder().encode(buildKml()));
+  // the page's downloads allow .zip but not .kmz: the KMZ itself saves as .kmz.zip (drop the .zip to open)
+  await saveFile(`${S.data.id}_profile.kmz${S.downloads ? '.zip' : ''}`, new Blob([kmz], { type: 'application/vnd.google-earth.kmz' }), 'application/vnd.google-earth.kmz');
 }
 $('#exportPng').addEventListener('click', exportPng); $('#exportJson').addEventListener('click', exportJson);
 $('#exportGeo').addEventListener('click', exportGeoJson); $('#exportKmz').addEventListener('click', exportKmz);
