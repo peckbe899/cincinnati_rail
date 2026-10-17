@@ -115,6 +115,39 @@ def read_kmz(path: str | Path) -> List[Placemark]:
         return read_kml_bytes(z.read(main))
 
 
+def line_styles(path: str | Path) -> dict:
+    """{style id: (colour aabbggrr, width)} for the LineStyles in a KML/KMZ, StyleMaps resolved
+    to their `normal` style (ids as used in a Placemark's styleUrl, without '#')."""
+    path = Path(path)
+    if path.suffix.lower() == ".kml":
+        data = path.read_bytes()
+    else:
+        with zipfile.ZipFile(path) as z:
+            names = [n for n in z.namelist() if n.lower().endswith(".kml")]
+            data = z.read("doc.kml" if "doc.kml" in names else names[0])
+    root = ET.fromstring(data)
+    styles, maps = {}, {}
+    for e in root.iter():
+        t = _local(e.tag)
+        if t == "Style" and e.get("id"):
+            ls = _child(e, "LineStyle")
+            if ls is not None:
+                col, w = _child(ls, "color"), _child(ls, "width")
+                styles[e.get("id")] = ((col.text or "").strip().lower() if col is not None else "ffffffff",
+                                       float(w.text) if w is not None and w.text else 1.0)
+        elif t == "StyleMap" and e.get("id"):
+            for pair in e:
+                if _local(pair.tag) == "Pair" and (_child(pair, "key").text or "").strip() == "normal":
+                    u = _child(pair, "styleUrl")
+                    if u is not None and u.text:
+                        maps[e.get("id")] = u.text.strip().lstrip("#")
+    out = dict(styles)
+    for k, v in maps.items():
+        if v in styles:
+            out[k] = styles[v]
+    return out
+
+
 def select(placemarks: Iterable[Placemark], folder: Optional[str] = None,
            name_regex: Optional[str] = None) -> List[Placemark]:
     """Filter placemarks whose folder path starts with `folder` (slash separated, case-insensitive,

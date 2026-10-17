@@ -269,3 +269,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+    sys.path.insert(0, str(ROOT / "tools"))
+    import add_line_colors  # noqa: E402  (each line's KMZ colour, for the page's 3D export)
+    add_line_colors.main()

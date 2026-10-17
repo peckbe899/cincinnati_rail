@@ -157,3 +157,5 @@ def main(variant: str = "Today"):
 
 if __name__ == "__main__":
     main(sys.argv[1] if len(sys.argv) > 1 else "Today")
+    import add_line_colors  # noqa: E402  (each line's KMZ colour, for the page's 3D export)
+    add_line_colors.main()
