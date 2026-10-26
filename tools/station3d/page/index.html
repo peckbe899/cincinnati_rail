@@ -98,7 +98,8 @@ ul.list li button.del { padding: 5px 8px; color: var(--ink2); }
       <label class="ctl" for="structOp">Structures <span class="num" id="structOpV"></span><input type="range" id="structOp" min="0.1" max="1" step="0.05" value="0.45"></label>
       <label class="ctl" for="cutZ">Cut away above <span class="num" id="cutZV"></span><input type="range" id="cutZ" min="120" max="190" step="0.5" value="190"></label>
       <label class="chk" for="cutNear"><input type="checkbox" id="cutNear"> Cut away the near half</label>
-      <label class="ctl" for="exag">Height scale <span class="num" id="exagV"></span><input type="range" id="exag" min="1" max="3" step="0.1" value="1"></label>
+      <label class="ctl" for="exag">Spread the levels <span class="num" id="exagV"></span><input type="range" id="exag" min="1" max="6" step="0.25" value="1"></label>
+      <p class="note">Stretches the depth between levels; structures and platforms keep their true size.</p>
       <label class="chk" for="labels"><input type="checkbox" id="labels" checked> Labels</label>
       <label class="chk" for="others"><input type="checkbox" id="others" checked> Lines without a station here</label>
     </section>
@@ -171,9 +172,10 @@ function resize() { const r = stage.getBoundingClientRect(); renderer.setSize(r.
 new ResizeObserver(resize).observe(stage); resize();
 
 // ---------- state ----------
-const S = { snap: null, zref: 160, objs: [], lineMeshes: new Map(), levels: [], level: 'all', mats: { ground: [], struct: [] },
+const S = { snap: null, zref: 160, k: 1, objs: [], lineMeshes: new Map(), levels: [], level: 'all', mats: { ground: [], struct: [] },
   db: null, user: null, me: null, canWrite: null, downloads: null, views: [] };
-const X = (x) => x, Y = (z) => z - S.zref, Z = (y) => -y;   // east, up, south in three's axes
+// east, up, south in three's axes; elevations are spread by the level spread k (structure sizes are added unscaled)
+const X = (x) => x, Y = (z) => (z - S.zref) * S.k, Z = (y) => -y;
 
 // KML colour aabbggrr -> 0xrrggbb
 function kmlColor(c) { if (!c || c.length !== 8) return 0x777777; return parseInt(c.slice(6, 8) + c.slice(4, 6) + c.slice(2, 4), 16); }
@@ -195,7 +197,7 @@ function sweep(pts, profile, mat) {
     const nx = -ty, ny = tx;
     for (let j = 0; j < m; j++) {
       const [u, v] = profile[j], k = (i * m + j) * 3;
-      pos[k] = X(pts[i].x + nx * u); pos[k + 1] = Y(pts[i].z + v); pos[k + 2] = Z(pts[i].y + ny * u);
+      pos[k] = X(pts[i].x + nx * u); pos[k + 1] = Y(pts[i].z) + v; pos[k + 2] = Z(pts[i].y + ny * u);
     }
   }
   for (let i = 0; i < n - 1; i++) for (let j = 0; j < m; j++) {
@@ -271,7 +273,7 @@ function build(snap) {
     if (!bm[col]) { bm[col] = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: gop, side: THREE.DoubleSide, depthWrite: false, clippingPlanes: clips }); S.mats.ground.push(bm[col]); }
     const shape = new THREE.Shape(b.c.map(([x, y]) => new THREE.Vector2(x, y)));
     const geo = new THREE.ShapeGeometry(shape); const p = geo.attributes.position;
-    for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i); p.setXYZ(i, X(x), Y(groundAt(x, y) + 0.05), Z(y)); }
+    for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i); p.setXYZ(i, X(x), Y(groundAt(x, y)) + 0.05, Z(y)); }
     geo.computeVertexNormals(); const ms = new THREE.Mesh(geo, bm[col]); ms.renderOrder = 3; ms.userData.kind = 'ground'; world.add(ms);
   }
   const sm = new THREE.MeshBasicMaterial({ color: 0xf1eee4, transparent: true, opacity: Math.min(1, gop * 1.6), side: THREE.DoubleSide, depthWrite: false, clippingPlanes: clips });
@@ -372,11 +374,15 @@ function applyShow() {
   S.mats.struct.forEach((m) => { m.opacity = s; m.transparent = s < 1; m.depthWrite = s >= 0.95; m.needsUpdate = true; });
   $('groundOpV').textContent = Math.round(g * 100) + '%'; $('structOpV').textContent = Math.round(s * 100) + '%';
   const cz = +$('cutZ').value, off = cz >= +$('cutZ').max;
-  cutTop.constant = off ? 1e6 : (cz - S.zref) * +$('exag').value; $('cutZV').textContent = off ? 'off' : cz.toFixed(1) + ' m';
+  cutTop.constant = off ? 1e6 : Y(cz); $('cutZV').textContent = off ? 'off' : cz.toFixed(1) + ' m';
 }
 function applyExag() {
-  const k = +$('exag').value; world.scale.y = k; $('exagV').textContent = k === 1 ? 'true' : '×' + k.toFixed(1);
-  labelsG.children.forEach((o) => { const b = o.userData.base; o.position.set(X(b[0]), Y(b[1]) * k, Z(b[2])); });
+  const k = +$('exag').value, old = S.k; $('exagV').textContent = k === 1 ? 'true' : '×' + k.toFixed(2).replace(/\.?0+$/, '');
+  if (k !== old) {   // rebuild at the new spread; keep the camera on the same part of the model
+    S.k = k; if (S.snap) build(S.snap);
+    camera.position.y *= k / old; controls.target.y *= k / old; controls.update();
+  }
+  labelsG.children.forEach((o) => { const b = o.userData.base; o.position.set(X(b[0]), Y(b[1]), Z(b[2])); });
   applyShow();
 }
 ['groundOp', 'structOp', 'cutZ', 'labels', 'others'].forEach((id) => $(id).addEventListener('input', applyShow));
@@ -392,7 +398,7 @@ function lookFrom(face, el, dist, target) {
 }
 function presetTarget() {
   const lv = S.levels.find((v) => v.id === S.level) || null, zs = (lv ? [lv] : S.levels.filter((v) => v.here)).map((v) => v.rail);
-  const z = zs.length ? (Math.max(...zs) + Math.min(...zs)) / 2 : S.zref; return new THREE.Vector3(0, (z - S.zref) * +$('exag').value, 0);
+  const z = zs.length ? (Math.max(...zs) + Math.min(...zs)) / 2 : S.zref; return new THREE.Vector3(0, Y(z), 0);
 }
 $('presets').innerHTML = PRESETS.map((p) => `<button type="button" data-p="${p.id}">${p.name}</button>`).join('');
 $('presets').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; const p = PRESETS.find((q) => q.id === b.dataset.p); lookFrom(p.face, p.el, p.id === 'plan' ? 900 : 620, presetTarget()); saveCamSoon(); });
@@ -448,7 +454,6 @@ $('png').addEventListener('click', () => { renderer.render(scene, camera); rende
 $('gltf').addEventListener('click', () => {
   const ex = new THREE.GLTFExporter(), root = new THREE.Group();
   world.children.filter((o) => o.visible).forEach((o) => root.add(o.clone()));
-  root.scale.copy(world.scale);
   ex.parse(root, (res) => offer(`${AREA}_3d_${stamp()}.glb`, new Blob([res], { type: 'model/gltf-binary' })), (err) => { $('exportNote').textContent = 'The model could not be exported: ' + err; }, { binary: true });
 });
 
