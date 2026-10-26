@@ -421,6 +421,7 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
         if sm["grades_over_limit"]:
             warnings.append(f"{mp.id}: {sm['grades_over_limit']} grade(s) over "
                             f"{mp.settings['maxGrade']:.0f} per mille in the Metro profile")
+        warnings += _context_warnings(mp)
         ground = "analyzer"
     if ground == "analyzer":
         pass
@@ -449,6 +450,7 @@ def build_route(cfg: dict, base_dir: Path, design: CurveDesign, policy: SpeedPol
             if sm["grades_over_limit"]:
                 warnings.append(f"{mp.id}: {sm['grades_over_limit']} grade(s) over "
                                 f"{mp.settings['maxGrade']:.0f} per mille in the RER profile")
+            warnings += _context_warnings(mp)
 
     # stations removed on the profile page leave the service (not its terminals); a platform
     # slid along its drawn point moves the stop. Zones still find stations by the full list.
@@ -662,3 +664,17 @@ def _zone_chainage(z: dict, stations: Sequence[StationInfo], proj, h) -> Tuple[f
             pts.append(project_point_to_polyline(float(x), float(y), h.xy, h.s)[0])
         return min(pts), max(pts)
     raise ValueError(f"cannot place zone {z}")
+
+
+def _context_warnings(mp) -> List[str]:
+    """Clashes with the CUT and Norwood Central structures of other systems (profile context)."""
+    out = []
+    for x in mp.context_clearances():
+        if x["ok"]:
+            continue
+        if x["level"]:
+            out.append(f"{mp.id}: crosses {x['with']} at grade at {x['c']:.0f} m: needs a grade separation")
+        else:
+            out.append(f"{mp.id}: {x['clear']:.2f} m {'over' if x['me_up'] else 'under'} {x['with']} at "
+                       f"{x['c']:.0f} m; needs {x['need']:.2f} m")
+    return out
