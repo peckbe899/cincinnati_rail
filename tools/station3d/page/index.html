@@ -1,0 +1,508 @@
+<title>Station 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a drafting-room model table. The 3D view fills the sheet; a side panel holds views, display and data,
+   in the family of the Rail Profiles and Mill Creek Deck pages (condensed sans, mono for numbers). */
+:root {
+  --paper: #eef0ec; --sheet: #f8f9f6; --ink: #1d2422; --ink2: #56605c; --rule: #c9cfca;
+  --accent: #1f6f78; --accent-ink: #ffffff; --warn: #a3471f; --view: #dfe3de;
+  --f-ui: "Barlow Semi Condensed", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
+  --f-num: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 6px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #151a19; --sheet: #1c2221; --ink: #e3e8e5; --ink2: #9aa5a0; --rule: #34403d;
+  --accent: #5fb3bb; --accent-ink: #0c1413; --warn: #e08a62; --view: #101514; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --paper: #151a19; --sheet: #1c2221; --ink: #e3e8e5; --ink2: #9aa5a0; --rule: #34403d;
+  --accent: #5fb3bb; --accent-ink: #0c1413; --warn: #e08a62; --view: #101514; color-scheme: dark }
+html, body { height: 100%; }
+[hidden] { display: none !important; }
+body { background: var(--paper); color: var(--ink); font-family: var(--f-ui); font-size: 15px; overflow: hidden; }
+#app { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) 300px; }
+#stage { position: relative; min-width: 0; background: var(--view); }
+#stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+#hud { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); top: 12px; display: flex; gap: 8px; align-items: baseline;
+  flex-wrap: wrap; pointer-events: none; }
+#hud h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.01em; }
+#hud .sub { font-family: var(--f-num); font-size: 12px; color: var(--ink2); }
+#compass { position: absolute; right: 12px; bottom: 12px; width: 56px; height: 56px; pointer-events: none; }
+#hint { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); bottom: 12px; font-size: 13px; color: var(--ink2); pointer-events: none; }
+#empty { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; }
+#empty div { max-width: 420px; background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--r); padding: 18px 20px; }
+#empty h2 { margin: 0 0 6px; font-size: 18px; }
+#empty p { margin: 0; color: var(--ink2); line-height: 1.45; }
+aside { background: var(--sheet); border-left: 1px solid var(--rule); overflow-y: auto; min-width: 0;
+  padding-block: 12px 24px; padding-left: 16px; padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 18px; }
+section h3 { margin: 0 0 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink2); }
+.row { display: flex; flex-wrap: wrap; gap: 6px; }
+button, select, input[type="text"] { font: inherit; font-size: 14px; color: var(--ink); background: var(--paper); border: 1px solid var(--rule);
+  border-radius: var(--r); padding: 5px 9px; }
+button { cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+select, input[type="text"] { width: 100%; }
+label.ctl { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; font-size: 14px; margin-bottom: 8px; align-items: center; }
+label.ctl input[type="range"] { grid-column: 1 / -1; width: 100%; accent-color: var(--accent); }
+label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px; margin-bottom: 6px; }
+.num { font-family: var(--f-num); font-size: 12px; color: var(--ink2); font-variant-numeric: tabular-nums; }
+ul.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+ul.list li { display: flex; gap: 6px; align-items: center; min-width: 0; }
+ul.list li button.go { flex: 1; text-align: left; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+ul.list li button.del { padding: 5px 8px; color: var(--ink2); }
+.note { font-size: 13px; color: var(--ink2); line-height: 1.4; margin: 6px 0 0; }
+.issues li { font-size: 13px; line-height: 1.35; color: var(--ink); padding-left: 10px; border-left: 3px solid var(--warn); }
+.legend { display: grid; grid-template-columns: 14px 1fr auto; gap: 4px 8px; align-items: center; font-size: 13px; }
+.legend i { width: 14px; height: 14px; border-radius: 3px; display: block; }
+#panelBtn { display: none; }
+@media (max-width: 760px) {
+  #app { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; }
+  aside { border-left: 0; border-top: 1px solid var(--rule); max-height: 46vh; }
+  aside.closed > section { display: none; }
+  #panelBtn { display: inline-block; align-self: flex-start; }
+  #hint { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+<div id="app">
+  <div id="stage">
+    <div id="hud"><h1 id="areaName">Station 3D</h1><span class="sub" id="syncedAt">loading…</span></div>
+    <svg id="compass" viewBox="-30 -30 60 60" aria-label="North arrow"><circle r="27" fill="var(--sheet)" stroke="var(--rule)"/><g id="needle"><path d="M0,-22 L6,4 L0,0 L-6,4 Z" fill="var(--accent)"/><text y="17" text-anchor="middle" font-size="11" font-family="var(--f-num)" fill="var(--ink)">N</text></g></svg>
+    <div id="hint">Drag to orbit · right-drag or two fingers to pan · scroll to zoom · double-click sets the centre</div>
+    <div id="empty" hidden><div><h2 id="emptyTitle">No snapshot yet</h2><p id="emptyText">This page draws the lines, platforms and streets that Claude copies in from the Rail Profiles editor and the Mill Creek Deck. Ask Claude to run the Station 3D sync for Fountain Square.</p></div></div>
+  </div>
+  <aside id="panel">
+    <button id="panelBtn" type="button" aria-expanded="true">Hide panel</button>
+    <section>
+      <h3>Views</h3>
+      <div class="row" id="presets"></div>
+      <p class="note">Bearings are the direction you face, true north, with the angle above the horizontal.</p>
+    </section>
+    <section id="savedSec">
+      <h3>Saved views</h3>
+      <ul class="list" id="savedList"></ul>
+      <div class="row" style="margin-top:8px">
+        <input type="text" id="viewName" placeholder="Name this view" maxlength="60" aria-label="Name for the current view">
+        <button type="button" id="saveView">Save view</button>
+      </div>
+      <p class="note" id="savedNote"></p>
+    </section>
+    <section>
+      <h3>Show</h3>
+      <label class="ctl" for="level">Levels<select id="level"><option value="all">All levels</option></select></label>
+      <label class="ctl" for="groundOp">Ground and streets <span class="num" id="groundOpV"></span><input type="range" id="groundOp" min="0" max="1" step="0.05" value="0.25"></label>
+      <label class="ctl" for="structOp">Structures <span class="num" id="structOpV"></span><input type="range" id="structOp" min="0.1" max="1" step="0.05" value="0.45"></label>
+      <label class="ctl" for="cutZ">Cut away above <span class="num" id="cutZV"></span><input type="range" id="cutZ" min="120" max="190" step="0.5" value="190"></label>
+      <label class="chk" for="cutNear"><input type="checkbox" id="cutNear"> Cut away the near half</label>
+      <label class="ctl" for="exag">Height scale <span class="num" id="exagV"></span><input type="range" id="exag" min="1" max="3" step="0.1" value="1"></label>
+      <label class="chk" for="labels"><input type="checkbox" id="labels" checked> Labels</label>
+      <label class="chk" for="others"><input type="checkbox" id="others" checked> Lines without a station here</label>
+    </section>
+    <section>
+      <h3>Lines</h3>
+      <div class="legend" id="legend"></div>
+    </section>
+    <section id="exportSec">
+      <h3>Export</h3>
+      <div class="row"><button type="button" id="png">PNG image</button><button type="button" id="gltf">glTF model</button></div>
+      <p class="note" id="exportNote"></p>
+    </section>
+    <section>
+      <h3>Data</h3>
+      <p class="note" id="dataNote"></p>
+      <ul class="list issues" id="issues"></ul>
+      <p class="note" id="assumed"></p>
+    </section>
+  </aside>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/exporters/GLTFExporter.js"></script>
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const AREA = 'fountain_square';
+const PRESETS = [   // facing (true bearing the camera looks along) and angle above the horizontal
+  { id: 'plan', name: 'Plan', face: 0, el: 89.5 },
+  { id: 'republic', name: 'Republic iso', face: 19, el: 26 },   // fs_3d.py default: frame 30 at 26
+  { id: 'se139', name: 'SE 139° at 12°', face: 139, el: 12 },
+  { id: 'sw229', name: 'SW 229° at 32°', face: 229, el: 32 },
+  { id: 'ssw204', name: 'SSW 204° at 28°', face: 204, el: 28 },
+  { id: 'below', name: 'From below', face: 19, el: -22 },
+];
+const PLAT = { metro: 0xa3a69f, rer: 0xe08aab };   // Metro grey, TRI pink, at the top level; a step darker each level down
+
+// ---------- renderer ----------
+const stage = $('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+renderer.localClippingEnabled = true;
+stage.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, 1, 0.5, 8000);
+camera.position.set(-500, 400, 500);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.12;
+controls.minPolarAngle = 0; controls.maxPolarAngle = Math.PI;   // from above, the side and underneath
+controls.screenSpacePanning = true; controls.maxDistance = 4000; controls.minDistance = 5;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x6b6f6a, 0.75));
+const sun = new THREE.DirectionalLight(0xffffff, 0.55); sun.position.set(-300, 600, 200); scene.add(sun);
+const sun2 = new THREE.DirectionalLight(0xffffff, 0.25); sun2.position.set(300, -400, -200); scene.add(sun2);
+
+const world = new THREE.Group(); scene.add(world);      // scaled by the height scale
+const labelsG = new THREE.Group(); scene.add(labelsG);   // kept unscaled so labels keep their shape
+const cutTop = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e6);
+const cutNear = new THREE.Plane(new THREE.Vector3(0, 0, 1), 1e6);
+const clips = [cutTop, cutNear];
+
+function cssColor(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function applyTheme() { scene.background = new THREE.Color(cssColor('--view') || '#dfe3de'); }
+applyTheme();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+function resize() { const r = stage.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / Math.max(1, r.height); camera.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(stage); resize();
+
+// ---------- state ----------
+const S = { snap: null, zref: 160, objs: [], lineMeshes: new Map(), levels: [], level: 'all', mats: { ground: [], struct: [] },
+  db: null, user: null, me: null, canWrite: null, downloads: null, views: [] };
+const X = (x) => x, Y = (z) => z - S.zref, Z = (y) => -y;   // east, up, south in three's axes
+
+// KML colour aabbggrr -> 0xrrggbb
+function kmlColor(c) { if (!c || c.length !== 8) return 0x777777; return parseInt(c.slice(6, 8) + c.slice(4, 6) + c.slice(2, 4), 16); }
+function shade(hex, f) { const c = new THREE.Color(hex); c.multiplyScalar(f); return c; }
+
+function structMat(color, op) {
+  const m = new THREE.MeshStandardMaterial({ color, transparent: op < 1, opacity: op, roughness: 0.7, metalness: 0, side: THREE.DoubleSide,
+    flatShading: true, clippingPlanes: clips, depthWrite: op >= 0.95 });
+  S.mats.struct.push(m); return m;
+}
+
+// sweep a closed 2D profile ([u left, v up] about the rail) along points [{x, y, z}] in plan with rail level z
+function sweep(pts, profile, mat) {
+  const n = pts.length, m = profile.length; if (n < 2) return null;
+  const pos = new Float32Array(n * m * 3), idx = [];
+  for (let i = 0; i < n; i++) {
+    const a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)];
+    let tx = b.x - a.x, ty = b.y - a.y; const L = Math.hypot(tx, ty) || 1; tx /= L; ty /= L;
+    const nx = -ty, ny = tx;
+    for (let j = 0; j < m; j++) {
+      const [u, v] = profile[j], k = (i * m + j) * 3;
+      pos[k] = X(pts[i].x + nx * u); pos[k + 1] = Y(pts[i].z + v); pos[k + 2] = Z(pts[i].y + ny * u);
+    }
+  }
+  for (let i = 0; i < n - 1; i++) for (let j = 0; j < m; j++) {
+    const a = i * m + j, b = i * m + (j + 1) % m, c = a + m, d = b + m; idx.push(a, c, b, b, c, d);
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
+  return new THREE.Mesh(g, mat);
+}
+const rect = (u0, u1, v0, v1) => [[u0, v0], [u1, v0], [u1, v1], [u0, v1]];
+const circle = (cu, cv, r, k = 20) => Array.from({ length: k }, (_, i) => [cu + r * Math.cos(2 * Math.PI * i / k), cv + r * Math.sin(2 * Math.PI * i / k)]);
+function profilesFor(st) {
+  if (st.k === 'box' || st.k === 'open') return [rect(-st.width / 2, st.width / 2, -st.below, Math.max(st.top, 0.05))];
+  const r = st.od / 2, cv = st.top - r;
+  return st.spacing ? [circle(-st.spacing / 2, cv, r), circle(st.spacing / 2, cv, r)] : [circle(0, cv, r)];
+}
+
+// chainage and signed offset (+ left) of plan point q on a line's points
+function project(pts, q) {
+  let best = { d: 1e18, c: 0, off: 0 };
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i], b = pts[i + 1], dx = b.x - a.x, dy = b.y - a.y, L2 = dx * dx + dy * dy; if (L2 < 1e-9) continue;
+    const s = Math.min(1, Math.max(0, ((q[0] - a.x) * dx + (q[1] - a.y) * dy) / L2));
+    const px = a.x + s * dx, py = a.y + s * dy, d = Math.hypot(q[0] - px, q[1] - py);
+    if (d < best.d) best = { d, c: a.c + s * (b.c - a.c), off: (dx * (q[1] - a.y) - dy * (q[0] - a.x)) / Math.sqrt(L2) };
+  }
+  return best;
+}
+
+// ---------- labels ----------
+function label(text, pos, opts = {}) {
+  const pad = 6, fs = 26, cv = document.createElement('canvas'), cx = cv.getContext('2d');
+  cx.font = `600 ${fs}px "Barlow Semi Condensed", "Arial Narrow", sans-serif`;
+  const w = Math.ceil(cx.measureText(text).width) + pad * 2, h = fs + pad * 2; cv.width = w; cv.height = h;
+  cx.font = `600 ${fs}px "Barlow Semi Condensed", "Arial Narrow", sans-serif`;
+  cx.fillStyle = opts.bg || 'rgba(255,255,255,0.88)'; cx.beginPath(); cx.roundRect ? cx.roundRect(0, 0, w, h, 6) : cx.rect(0, 0, w, h); cx.fill();
+  if (opts.bar) { cx.fillStyle = opts.bar; cx.fillRect(0, 0, 6, h); }
+  cx.fillStyle = opts.fg || '#1d2422'; cx.textBaseline = 'middle'; cx.fillText(text, pad + (opts.bar ? 4 : 0), h / 2 + 1);
+  const tex = new THREE.CanvasTexture(cv); tex.anisotropy = 4;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, depthWrite: false, sizeAttenuation: false }));
+  const k = 0.00042; sp.scale.set(w * k, h * k, 1); sp.center.set(0, 0); sp.renderOrder = 10;
+  sp.userData = { base: pos.slice(), level: opts.level ?? null, other: !!opts.other };
+  labelsG.add(sp); return sp;
+}
+
+// ---------- build the scene from a snapshot ----------
+function clear() {
+  for (const g of [world, labelsG]) while (g.children.length) { const o = g.children.pop(); o.traverse((x) => { if (x.geometry) x.geometry.dispose(); if (x.material) { if (x.material.map) x.material.map.dispose(); x.material.dispose(); } }); }
+  S.mats = { ground: [], struct: [] }; S.lineMeshes = new Map();
+}
+
+function build(snap) {
+  clear(); S.snap = snap;
+  const [gx, gy, gz] = snap.ground.plane; S.zref = gz;
+  const groundAt = (x, y) => gz + gx * x + gy * y;
+  const R = snap.radius, E = R + 40;
+
+  // ground: the fitted plane, see-through
+  const gop = +$('groundOp').value;
+  const gm = new THREE.MeshStandardMaterial({ color: 0xc9c2a8, transparent: true, opacity: gop, side: THREE.DoubleSide, depthWrite: false, roughness: 1, clippingPlanes: clips });
+  S.mats.ground.push(gm);
+  const gg = new THREE.BufferGeometry(), corners = [[-E, -E], [E, -E], [E, E], [-E, E]];
+  gg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(corners.flatMap(([x, y]) => [X(x), Y(groundAt(x, y)), Z(y)])), 3));
+  gg.setIndex([0, 1, 2, 0, 2, 3]); gg.computeVertexNormals();
+  const ground = new THREE.Mesh(gg, gm); ground.renderOrder = 2; ground.userData.kind = 'ground'; world.add(ground);
+
+  // blocks (flat, coloured by type) and streets (ribbons at their width), just above the ground
+  const BT = { building: 0xa99d84, tower: 0x8a7a63, landmark: 0xc9a227, civic: 0x89466f, worship: 0xa0607e, school: 0x5f8fb4, hospital: 0x8a645a,
+    industrial: 0x8c8c84, square: 0xd9d2b8, park: 0x8db07a, planting: 0x9cbf86 };
+  const bm = {};
+  for (const b of snap.deck.blocks) {
+    if (b.c.length < 3) continue;
+    const col = BT[b.type] || 0xa99d84;
+    if (!bm[col]) { bm[col] = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: gop, side: THREE.DoubleSide, depthWrite: false, clippingPlanes: clips }); S.mats.ground.push(bm[col]); }
+    const shape = new THREE.Shape(b.c.map(([x, y]) => new THREE.Vector2(x, y)));
+    const geo = new THREE.ShapeGeometry(shape); const p = geo.attributes.position;
+    for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i); p.setXYZ(i, X(x), Y(groundAt(x, y) + 0.05), Z(y)); }
+    geo.computeVertexNormals(); const ms = new THREE.Mesh(geo, bm[col]); ms.renderOrder = 3; ms.userData.kind = 'ground'; world.add(ms);
+  }
+  const sm = new THREE.MeshBasicMaterial({ color: 0xf1eee4, transparent: true, opacity: Math.min(1, gop * 1.6), side: THREE.DoubleSide, depthWrite: false, clippingPlanes: clips });
+  sm.userData.boost = 1.8; S.mats.ground.push(sm);
+  for (const s of snap.deck.streets) {
+    const w = s.w || 10, pts = s.c.map(([x, y]) => ({ x, y, z: groundAt(x, y) + 0.1 }));
+    const ms = sweep(pts, [[-w / 2, 0], [w / 2, 0]], sm); if (ms) { ms.renderOrder = 4; ms.userData.kind = 'ground'; world.add(ms); }
+  }
+
+  // levels: lines grouped by their rail level nearest the station (within 2 m)
+  const lines = snap.lines.map((l) => {
+    const pts = l.pts.map(([c, x, y, z, g]) => ({ c, x, y, z, g }));
+    let near = pts[0]; for (const p of pts) if (Math.hypot(p.x, p.y) < Math.hypot(near.x, near.y)) near = p;
+    const here = l.stations.find((s) => s.name === snap.name);
+    return { ...l, P: pts, rail: here && here.rail != null ? here.rail : near.z, here: !!here, near };
+  });
+  const sorted = lines.slice().sort((a, b) => b.rail - a.rail); S.levels = [];
+  for (const l of sorted) { let lv = S.levels.find((v) => Math.abs(v.rail - l.rail) < 2 && v.here === l.here); if (!lv) { lv = { rail: l.rail, here: l.here, lines: [] }; S.levels.push(lv); } lv.lines.push(l); }
+  S.levels.forEach((v, i) => { v.id = 'L' + i; for (const l of v.lines) l.level = v.id; });
+  const stationLevels = S.levels.filter((v) => v.here);
+
+  // structures: every line at its real size, run by run of one structure type
+  const sop = +$('structOp').value;
+  for (const l of lines) {
+    const col = kmlColor(l.color), mat = structMat(col, sop), grp = new THREE.Group(); grp.userData = { level: l.level, other: !l.here, kind: 'line' };
+    for (const r of l.runs) {
+      const seg = l.P.filter((p) => p.c >= r.c0 - 2.01 && p.c <= r.c1 + 0.01);
+      for (const prof of profilesFor(r.st)) { const ms = sweep(seg, prof, mat); if (ms) grp.add(ms); }
+    }
+    // rail line along the track centre, solid, so it reads through the shell
+    const rl = new THREE.Line(new THREE.BufferGeometry().setFromPoints(l.P.map((p) => new THREE.Vector3(X(p.x), Y(p.z), Z(p.y)))),
+      new THREE.LineBasicMaterial({ color: col, clippingPlanes: clips })); grp.add(rl);
+    world.add(grp); S.lineMeshes.set(l.id, grp);
+    if (!l.here) { const p = l.near; label(l.name, [p.x, p.z + 3, p.y], { bar: '#' + col.toString(16).padStart(6, '0'), level: l.level, other: true }); }
+  }
+
+  // platforms: the Deck's plan, at the Profiles rail level plus the platform height; a step darker each level down.
+  // Station boxes widen the line's structure to take in its platforms over the platform length.
+  const byLine = new Map(lines.map((l) => [l.id, l]));
+  const rank = (lid) => { const l = byLine.get(lid); const i = stationLevels.findIndex((v) => v.id === l.level); return Math.max(0, i); };
+  const boxes = new Map();
+  for (const pl of snap.deck.platforms) {
+    const lv = pl.levels[0]; if (!lv) continue;
+    const l = byLine.get(lv.line); if (!l) continue;
+    const base = PLAT[pl.sys === 'metro' ? 'metro' : 'rer'], col = shade(base, Math.pow(0.84, rank(lv.line)));
+    const ring = pl.c.slice(0, pl.c.length > 3 && pl.c[0][0] === pl.c[pl.c.length - 1][0] && pl.c[0][1] === pl.c[pl.c.length - 1][1] ? -1 : undefined);
+    const shape = new THREE.Shape(ring.map(([x, y]) => new THREE.Vector2(x, y)));
+    const hgt = lv.top - lv.rail;   // the platform body, rail level to platform top
+    const geo = new THREE.ExtrudeGeometry(shape, { depth: hgt, bevelEnabled: false }); geo.rotateX(-Math.PI / 2); geo.translate(0, Y(lv.top) - hgt, 0);
+    const ms = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: col, roughness: 0.8, clippingPlanes: clips }));
+    ms.userData = { level: l.level, kind: 'platform', other: !l.here }; world.add(ms);
+    // gather the platform's extent along and across its line for the station box
+    const key = l.id + '|' + pl.station; const pr = ring.map((q) => project(l.P, q));
+    const bx = boxes.get(key) || { l, c0: 1e18, c1: -1e18, u0: 0, u1: 0, name: pl.station, sys: pl.sys, top: lv.top };
+    for (const p of pr) { bx.c0 = Math.min(bx.c0, p.c); bx.c1 = Math.max(bx.c1, p.c); bx.u0 = Math.min(bx.u0, p.off); bx.u1 = Math.max(bx.u1, p.off); }
+    boxes.set(key, bx);
+  }
+  for (const bx of boxes.values()) {
+    const l = bx.l, run = l.runs.find((r) => r.c0 <= (bx.c0 + bx.c1) / 2 && r.c1 >= (bx.c0 + bx.c1) / 2) || l.runs[0], st = run.st;
+    const half = st.k === 'box' || st.k === 'open' ? st.width / 2 : (st.spacing || 0) / 2 + st.od / 2;
+    const u0 = Math.min(bx.u0 - 2, -half), u1 = Math.max(bx.u1 + 2, half), top = st.k === 'box' || st.k === 'open' ? st.top : st.top;
+    const seg = l.P.filter((p) => p.c >= bx.c0 - 1 && p.c <= bx.c1 + 1);
+    const grp = S.lineMeshes.get(l.id), ms = sweep(seg, rect(u0, u1, -st.below, top), grp.children[0] ? grp.children[0].material : structMat(kmlColor(l.color), sop));
+    if (ms) grp.add(ms);
+    const mid = seg[Math.floor(seg.length / 2)] || l.near;
+    if (bx.name === snap.name) label(`${l.name} · rail ${l.stations.find((s) => s.name === snap.name)?.rail ?? mid.z.toFixed(2)} m`, [mid.x, bx.top + 1.5, mid.y], { bar: '#' + kmlColor(l.color).toString(16).padStart(6, '0'), level: l.level });
+  }
+  // the station's street-level marker
+  const st0 = snap.deck.stations.find((s) => s.name === snap.name);
+  if (st0) label(snap.name, [st0.x, groundAt(st0.x, st0.y) + 6, st0.y], { bg: 'rgba(31,111,120,0.94)', fg: '#ffffff' }).material.map.needsUpdate = true;
+
+  // the level menu, the legend and the data panel
+  const sel = $('level'); sel.innerHTML = '<option value="all">All levels</option>' + stationLevels.map((v) =>
+    `<option value="${v.id}">${v.rail.toFixed(1)} m: ${v.lines.map((l) => l.name.replace(/ \(TRI (\w)\)/, ' / TRI $1')).join(', ')}</option>`).join('');
+  sel.value = stationLevels.some((v) => v.id === S.level) ? S.level : 'all'; S.level = sel.value;
+  $('legend').innerHTML = sorted.map((l) => `<i style="background:#${kmlColor(l.color).toString(16).padStart(6, '0')}"></i><span>${esc(l.name)}${l.saved ? '' : ' <span class="num">(unsaved)</span>'}</span><span class="num">${l.rail.toFixed(2)} m</span>`).join('');
+  $('areaName').textContent = snap.name;
+  $('syncedAt').textContent = 'synced ' + fmtTime(snap.synced_at);
+  $('dataNote').textContent = `Lines and levels from the Rail Profiles editor, plan and platforms from the Mill Creek Deck, copied ${fmtTime(snap.synced_at)}. Metro platforms ${ft(snap.platform_m.metro)}, TRI ${ft(snap.platform_m.rer)}. Ground ${snap.ground.plane[2].toFixed(1)} m at the centre, a plane fitted to the Profiles ground (±${snap.ground.fit_rms} m).`;
+  $('issues').innerHTML = snap.issues.map((t) => `<li>${esc(t)}</li>`).join('');
+  $('assumed').textContent = 'Assumed until set: ' + snap.assumed.join('; ') + '.';
+  const zs = lines.flatMap((l) => l.P.map((p) => p.z)); $('cutZ').min = Math.floor(Math.min(...zs) - 10); $('cutZ').max = Math.ceil(gz + 15);
+  if (+$('cutZ').value > +$('cutZ').max || !S.built) $('cutZ').value = $('cutZ').max;
+  S.built = true; $('empty').hidden = true;
+  applyShow(); applyExag();
+}
+const esc = (s) => String(s).replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+const ft = (m) => `${Math.round(m / 0.3048)} ft (${m.toFixed(2)} m)`;
+function fmtTime(t) { try { return new Date(t).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }); } catch { return t; } }
+
+// ---------- display controls ----------
+function applyShow() {
+  const lv = S.level, others = $('others').checked;
+  world.children.forEach((o) => { const u = o.userData; if (u.kind === 'ground') return; o.visible = (lv === 'all' || u.level === lv) && (others || !u.other || lv !== 'all' && u.level === lv); });
+  labelsG.children.forEach((o) => { const u = o.userData; o.visible = $('labels').checked && (u.level == null || lv === 'all' || u.level === lv) && (others || !u.other); });
+  const g = +$('groundOp').value, s = +$('structOp').value;
+  S.mats.ground.forEach((m) => { m.opacity = Math.min(1, g * (m.userData.boost || 1)); m.visible = g > 0.01; });
+  S.mats.struct.forEach((m) => { m.opacity = s; m.transparent = s < 1; m.depthWrite = s >= 0.95; m.needsUpdate = true; });
+  $('groundOpV').textContent = Math.round(g * 100) + '%'; $('structOpV').textContent = Math.round(s * 100) + '%';
+  const cz = +$('cutZ').value, off = cz >= +$('cutZ').max;
+  cutTop.constant = off ? 1e6 : (cz - S.zref) * +$('exag').value; $('cutZV').textContent = off ? 'off' : cz.toFixed(1) + ' m';
+}
+function applyExag() {
+  const k = +$('exag').value; world.scale.y = k; $('exagV').textContent = k === 1 ? 'true' : '×' + k.toFixed(1);
+  labelsG.children.forEach((o) => { const b = o.userData.base; o.position.set(X(b[0]), Y(b[1]) * k, Z(b[2])); });
+  applyShow();
+}
+['groundOp', 'structOp', 'cutZ', 'labels', 'others'].forEach((id) => $(id).addEventListener('input', applyShow));
+$('level').addEventListener('change', (e) => { S.level = e.target.value; applyShow(); });
+$('exag').addEventListener('input', applyExag);
+$('panelBtn').addEventListener('click', () => { const p = $('panel'); const c = p.classList.toggle('closed'); $('panelBtn').textContent = c ? 'Show panel' : 'Hide panel'; $('panelBtn').setAttribute('aria-expanded', String(!c)); requestAnimationFrame(resize); });
+
+// ---------- camera: presets, double-click centre, remembered per viewer ----------
+function lookFrom(face, el, dist, target) {
+  const b = face * Math.PI / 180, e = el * Math.PI / 180, t = target || controls.target.clone();
+  const look = new THREE.Vector3(Math.cos(e) * Math.sin(b), -Math.sin(e), -Math.cos(e) * Math.cos(b));
+  camera.up.set(0, 1, 0); controls.target.copy(t); camera.position.copy(t).addScaledVector(look, -dist); controls.update();
+}
+function presetTarget() {
+  const lv = S.levels.find((v) => v.id === S.level) || null, zs = (lv ? [lv] : S.levels.filter((v) => v.here)).map((v) => v.rail);
+  const z = zs.length ? (Math.max(...zs) + Math.min(...zs)) / 2 : S.zref; return new THREE.Vector3(0, (z - S.zref) * +$('exag').value, 0);
+}
+$('presets').innerHTML = PRESETS.map((p) => `<button type="button" data-p="${p.id}">${p.name}</button>`).join('');
+$('presets').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; const p = PRESETS.find((q) => q.id === b.dataset.p); lookFrom(p.face, p.el, p.id === 'plan' ? 900 : 620, presetTarget()); saveCamSoon(); });
+
+const ray = new THREE.Raycaster();
+renderer.domElement.addEventListener('dblclick', (e) => {
+  const r = renderer.domElement.getBoundingClientRect();
+  ray.setFromCamera(new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1), camera);
+  const hits = ray.intersectObjects(world.children, true).filter((h) => h.object.visible && isVisibleChain(h.object) && !isClipped(h.point) && (h.object.material.opacity > 0.05 || !h.object.material.transparent));
+  if (hits.length) { const d = hits[0].point.clone().sub(controls.target); controls.target.add(d); camera.position.add(d); controls.update(); saveCamSoon(); }
+});
+const isVisibleChain = (o) => { for (let x = o; x; x = x.parent) if (!x.visible) return false; return true; };
+const isClipped = (p) => clips.some((pl) => pl.distanceToPoint(p) < 0);
+
+const camState = () => ({ pos: camera.position.toArray().map((v) => +v.toFixed(2)), target: controls.target.toArray().map((v) => +v.toFixed(2)), exag: +$('exag').value });
+function setCam(c) { if (!c || !c.pos) return; if (c.exag) { $('exag').value = c.exag; applyExag(); } camera.position.fromArray(c.pos); controls.target.fromArray(c.target); controls.update(); }
+let camT = 0;
+function saveCamSoon() {
+  clearTimeout(camT); camT = setTimeout(async () => {
+    const c = camState(); try { localStorage.setItem('station3d:cam:' + AREA, JSON.stringify(c)); } catch {}
+    if (S.db && S.me) { try { await S.db.collection('data/users/' + S.me).doc('camera_' + AREA).set(c); } catch {} }
+  }, 800);
+}
+controls.addEventListener('end', saveCamSoon);
+renderer.domElement.addEventListener('wheel', saveCamSoon, { passive: true });
+
+// ---------- saved views, shared in the page's database ----------
+function renderViews() {
+  const list = S.views.filter((v) => v.area === AREA);
+  $('savedList').innerHTML = list.length ? list.map((v) => `<li><button type="button" class="go" data-id="${esc(v.id)}" title="${esc(v.name)}">${esc(v.name)}</button>${(v.by && v.by === S.me) || S.canEdit ? `<button type="button" class="del" data-del="${esc(v.id)}" aria-label="Delete ${esc(v.name)}">✕</button>` : ''}</li>`).join('')
+    : '<li class="note">No saved views yet. Turn the model to a view you want to keep, name it and save it.</li>';
+}
+$('savedList').addEventListener('click', async (e) => {
+  const go = e.target.closest('[data-id]'), del = e.target.closest('[data-del]');
+  if (go) { const v = S.views.find((x) => x.id === go.dataset.id); if (v) { setCam(v); saveCamSoon(); } }
+  if (del && S.db) { try { await S.db.doc('views/' + del.dataset.del).delete(); } catch (err) { $('savedNote').textContent = 'That view could not be deleted (' + (err.code || 'error') + ').'; } }
+});
+$('saveView').addEventListener('click', async () => {
+  const name = $('viewName').value.trim(); if (!name) { $('viewName').focus(); $('savedNote').textContent = 'Give the view a name first.'; return; }
+  if (!S.db) { $('savedNote').textContent = 'Saving views needs the shared database, which this view of the page does not have.'; return; }
+  try { await S.db.collection('views').add({ ...camState(), name, area: AREA, by: S.me || null, at: new Date().toISOString() }); $('viewName').value = ''; $('savedNote').textContent = 'Saved for everyone who opens this page.'; }
+  catch (err) { $('savedNote').textContent = err.code === 'not_granted' ? 'You can view this page but not save to it.' : 'The view was not saved (' + (err.code || 'error') + ').'; }
+});
+
+// ---------- export ----------
+async function offer(filename, data) {
+  if (!S.downloads) { $('exportNote').textContent = 'Downloads are off in this view of the page.'; return; }
+  try { await S.downloads.save({ filename, data }); $('exportNote').textContent = 'Sent ' + filename + '.'; }
+  catch (e) { $('exportNote').textContent = e && e.code === 'declined' ? 'Download declined.' : 'The download failed (' + ((e && e.code) || 'error') + ').'; }
+}
+const stamp = () => new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+$('png').addEventListener('click', () => { renderer.render(scene, camera); renderer.domElement.toBlob((b) => b && offer(`${AREA}_3d_${stamp()}.png`, b), 'image/png'); });
+$('gltf').addEventListener('click', () => {
+  const ex = new THREE.GLTFExporter(), root = new THREE.Group();
+  world.children.filter((o) => o.visible).forEach((o) => root.add(o.clone()));
+  root.scale.copy(world.scale);
+  ex.parse(root, (res) => offer(`${AREA}_3d_${stamp()}.glb`, new Blob([res], { type: 'model/gltf-binary' })), (err) => { $('exportNote').textContent = 'The model could not be exported: ' + err; }, { binary: true });
+});
+
+// ---------- loop ----------
+const needle = $('needle'), dir = new THREE.Vector3();
+function tick() {
+  controls.update();
+  camera.getWorldDirection(dir);
+  if ($('cutNear').checked) {   // cut away whatever lies between the camera and the orbit centre
+    const h = new THREE.Vector3(dir.x, 0, dir.z); if (h.lengthSq() < 1e-6) h.set(0, 0, -1); h.normalize();
+    cutNear.normal.copy(h); cutNear.constant = -h.dot(controls.target);
+  } else cutNear.constant = 1e6;
+  const az = Math.atan2(dir.x, -dir.z); needle.setAttribute('transform', `rotate(${(-az * 180 / Math.PI).toFixed(1)})`);
+  renderer.render(scene, camera); requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+// ---------- data: the snapshot the sync writes to snapshots/<area> and its parts ----------
+async function loadParts(meta) {
+  const parts = await Promise.all((meta.parts || []).map((p) => S.db.doc(`snapshots/${AREA}/parts/${p}`).get()));
+  const snap = JSON.parse(meta.json || '{}');
+  for (const d of parts) if (d.exists) Object.assign(snap, JSON.parse(d.data().json));
+  return snap;
+}
+function showEmpty(title, text) { $('emptyTitle').textContent = title; if (text) $('emptyText').textContent = text; $('empty').hidden = false; $('syncedAt').textContent = 'no snapshot'; }
+async function fallback() {   // a local snapshot.json next to the page (testing), else the empty state
+  try { const r = await fetch('snapshot.json'); if (r.ok) { build(await r.json()); restoreCam(); return; } } catch {}
+  showEmpty('No snapshot yet');
+}
+function restoreCam(c) {
+  if (!c) { try { c = JSON.parse(localStorage.getItem('station3d:cam:' + AREA) || 'null'); } catch { c = null; } }
+  if (c) setCam(c); else { const p = PRESETS[3]; lookFrom(p.face, p.el, 620, presetTarget()); }
+}
+async function connect() {
+  const C = window.claude;
+  if (!C || typeof C.use !== 'function') return fallback();
+  const [db, user, dl] = await Promise.all([C.use('db'), C.use('user'), C.use('downloads')]);
+  S.downloads = dl; if (!dl) $('exportNote').textContent = 'Downloads are off in this view of the page.';
+  if (!db) return fallback();
+  S.db = db;
+  if (user) { try { S.me = await user.id(); } catch {} try { S.canEdit = await user.canEdit(); } catch {} }
+  let first = true, cam = null;
+  if (S.me) { try { const d = await db.collection('data/users/' + S.me).doc('camera_' + AREA).get(); if (d.exists) cam = d.data(); } catch {} }
+  db.doc('snapshots/' + AREA).onSnapshot(async (d) => {
+    if (!d.exists) { if (first) showEmpty('No snapshot yet'); first = false; return; }
+    try {
+      const snap = await loadParts(d.data()); const keep = S.built ? camState() : null;
+      build(snap); if (first) restoreCam(cam); else if (keep) setCam(keep); first = false;
+    } catch (e) { console.error(e); showEmpty('The snapshot could not be read', 'Ask Claude to run the Station 3D sync again. (' + (e.message || e) + ')'); }
+  }, () => { $('syncedAt').textContent = 'live updates stopped; reload to reconnect'; });
+  db.collection('views').onSnapshot((q) => { S.views = q.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => String(a.name).localeCompare(String(b.name))); renderViews(); }, () => {});
+  renderViews();
+}
+renderViews();
+connect();
+})();
+</script>
