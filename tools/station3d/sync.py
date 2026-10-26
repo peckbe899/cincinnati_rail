@@ -1,12 +1,13 @@
-"""Station 3D sync: one snapshot of a station area from the Rail Profiles editor and the Mill Creek Deck.
+"""Station 3D sync: one snapshot of the region from the Rail Profiles editor and the Mill Creek Deck.
 
 The editors' published files and saved records are fetched first by a Claude session (Artifact read, ArtifactData
-with out_dir) into CACHE (see README.md). This script picks the lines within RADIUS of the station, runs both
-editors headless (harness.js) so the levels, structure types and platforms come from the editors' own code, and
-writes snapshot.json: every coordinate in metres, x east and y north (true) from the station origin, z the
-elevation in metres (NAVD88, as the editors). The snapshot is then written to the 3D page's database.
+with out_dir) into CACHE (see README.md). This script runs both editors headless (harness.js) so the levels,
+structure types, tracks and platforms come from the editors' own code, and writes snapshot.json and the page's
+database documents (cache/db_out/). Coordinates are metres, x east and y north (true) from the origin (the Fountain
+Square model's reference point); z is the elevation in metres (NAVD88, as the editors). Point lists are stored as
+integer deltas (see enc) to keep the documents small.
 
-Usage: python3 sync.py [--cache DIR] [--out snapshot.json] [--area fountain_square] [--dry-run]
+Usage: python3 sync.py [--cache DIR] [--out snapshot.json]
 """
 import argparse
 import json
@@ -20,12 +21,15 @@ import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-AREAS = {
-    # origin: the Fountain Square model's reference point (stations/fountain_square/README.md); frame_turn: that
-    # model's frame is turned 11 degrees with the street grid (frame north = true bearing 349)
-    'fountain_square': dict(name='Fountain Square', lon=-84.5125, lat=39.1018, radius=400.0, frame_turn=-11.0,
-                            stations=['Fountain Square']),
-}
+# The region the Mill Creek Deck draws its lines over (its Region button: "RER and APEx are drawn out to Erlanger, CVG,
+# Eastgate and Aviation", E 699,000-736,900, N 4,320,800-4,347,000, UTM 16N). Origin: the Fountain Square model's
+# reference point (stations/fountain_square/README.md), whose frame is turned 11 degrees with the street grid.
+AREA = dict(id='region', name='Cincinnati region', lon=-84.5125, lat=39.1018, frame_turn=-11.0,
+            box_utm=(699000.0, 4320800.0, 736900.0, 4347000.0), default_station='Fountain Square')
+STEP = 5.0             # Profiles sampling along each line, m
+TRACK_STEP = 10.0      # Deck tracks resampled to this spacing, m
+MATCH_M = 30.0         # a Deck track point takes a Profiles line's level within this distance
+GRID = 200.0           # ground grid spacing, m
 
 # Platform lengths (Ben, 2026-10-26): Metro 400 ft, TRI 670 ft. The Profiles editor's RER default is 200 m.
 PLATFORM_M = {'metro': 121.92, 'rer': 204.216}
@@ -50,9 +54,10 @@ ERA_SHIELD = {**{f'Line_{k}': 'tube' for k in ['1', '2', '2b', '3', '4', '5', '6
 BOX_MARGIN = {'metro': 2.3, 'rer': 3.25}   # box wall outside the outer track centre (8.5 m at 3.9 m centres; 11 m at 4.5 m)
 ASSUMED = ['box walls 2.3 m (Metro) and 3.25 m (TRI) outside the outer track centre: 8.5 m and 11 m wide boxes between stations',
            'TRI bored tubes 8.5 m outside diameter, one per track', 'platform tops 1.0 m above the rail',
-           'ground: a plane fitted to the Profiles ground within the area']
+           'ground: a 200 m grid averaged from the Profiles ground along every line, filled out to 1.6 km from the lines']
 # RER line to TRI letter (rer/canon.json: RER-n is TRI by KMZ colour, 1 A ... 5 E)
 RER_LETTER = {'RER_1': 'A', 'RER_2': 'B', 'RER_3': 'C', 'RER_4': 'D', 'RER_5': 'E'}
+LETTER_RER = {v: k for k, v in RER_LETTER.items()}
 
 
 def structure(line_id, t):
@@ -98,7 +103,29 @@ def utm_to_ll(E, N):
     return np.degrees(_LON0 + np.arctan(np.sinh(ep) / np.cos(xp))), np.degrees(lat)
 
 
-# ---- geometry helpers ----
+
+# ---- encoding ----
+def enc(vals, scale):
+    """integers at 1/scale, the first absolute and the rest as differences (the page's dec() undoes it)"""
+    out, prev = [], 0
+    for v in vals:
+        q = int(round(float(v) * scale))
+        out.append(q - prev)
+        prev = q
+    return out
+
+
+def rle(vals):
+    """run-length list [[count, value], ...]"""
+    out = []
+    for v in vals:
+        if out and out[-1][1] == v:
+            out[-1][0] += 1
+        else:
+            out.append([1, v])
+    return out
+
+
 def r1(v):
     return round(float(v), 1)
 
@@ -107,27 +134,58 @@ def r2(v):
     return round(float(v), 2)
 
 
-def interp_path(path_c, xy, c):
-    """plan point at chainage c on a path given as chainages and points"""
-    return np.array([np.interp(c, path_c, xy[:, 0]), np.interp(c, path_c, xy[:, 1])])
+# ---- nearest points on lines, by a spatial hash ----
+class Near:
+    """points (x, y) with a payload; nearest within a radius"""
+
+    def __init__(self, cell=50.0):
+        self.cell, self.h = cell, {}
+
+    def add(self, x, y, item):
+        self.h.setdefault((int(x // self.cell), int(y // self.cell)), []).append((x, y, item))
+
+    def near(self, x, y, r):
+        cx, cy, k = int(x // self.cell), int(y // self.cell), int(math.ceil(r / self.cell))
+        best, bd = None, r
+        for i in range(cx - k, cx + k + 1):
+            for j in range(cy - k, cy + k + 1):
+                for px, py, it in self.h.get((i, j), ()):
+                    d = math.hypot(px - x, py - y)
+                    if d <= bd:
+                        best, bd = it, d
+        return best, bd
 
 
-def project(path_c, xy, q):
-    """chainage and signed offset (+ left) of point q on a polyline"""
-    best = (1e18, 0.0, 0.0)
-    for i in range(len(xy) - 1):
-        a, b = xy[i], xy[i + 1]
-        d = b - a
-        L2 = float(d @ d)
+def on_line(P, i, q):
+    """chainage, signed offset (+ left) and distance of q on the segments either side of sample i of P [[c, x, y]]"""
+    best = None
+    for k in (i - 1, i):
+        if k < 0 or k + 1 >= len(P):
+            continue
+        (c0, ax, ay), (c1, bx, by) = P[k], P[k + 1]
+        dx, dy = bx - ax, by - ay
+        L2 = dx * dx + dy * dy
         if L2 < 1e-9:
             continue
-        s = min(1.0, max(0.0, float((q - a) @ d) / L2))
-        p = a + s * d
-        dist = float(np.hypot(*(q - p)))
-        if dist < best[0]:
-            off = float(d[0] * (q - a)[1] - d[1] * (q - a)[0]) / math.sqrt(L2)
-            best = (dist, path_c[i] + s * (path_c[i + 1] - path_c[i]), off)
+        s = min(1.0, max(0.0, ((q[0] - ax) * dx + (q[1] - ay) * dy) / L2))
+        px, py = ax + s * dx, ay + s * dy
+        d = math.hypot(q[0] - px, q[1] - py)
+        if best is None or d < best[2]:
+            best = (c0 + s * (c1 - c0), (dx * (q[1] - ay) - dy * (q[0] - ax)) / math.sqrt(L2), d)
     return best
+
+
+def resample(c, step):
+    """a polyline resampled to about `step` spacing (its corners kept)"""
+    c = [tuple(map(float, q)) for q in c]
+    out = [c[0]]
+    for a, b in zip(c, c[1:]):
+        L = math.hypot(b[0] - a[0], b[1] - a[1])
+        n = max(1, int(L // step))
+        for k in range(1, n + 1):
+            f = k / n
+            out.append((a[0] + f * (b[0] - a[0]), a[1] + f * (b[1] - a[1])))
+    return out
 
 
 def load_lines(cache):
@@ -136,322 +194,415 @@ def load_lines(cache):
         base = os.path.dirname(os.path.join(cache, idx))
         for l in json.load(open(os.path.join(cache, idx))):
             d = json.load(open(os.path.join(base, l['id'] + '.json')))
-            d['sys'] = sysk
+            d['sys'] = 'cvx' if l['id'] == 'CVG_Express' else sysk
             out[l['id']] = d
     return out
 
 
-def ranges_near(d, E0, N0, radius):
-    """chainage ranges of a line inside the square of half-side radius around the origin (with a 50 m margin)"""
-    p = np.array(d['path'], float)
-    E, N = ll_to_utm(p[:, 1], p[:, 2])
-    c = p[:, 0]
-    cc = np.arange(0, d['length_m'], 2.0)
-    x, y = np.interp(cc, c, E) - E0, np.interp(cc, c, N) - N0
-    m = (np.abs(x) <= radius + 50) & (np.abs(y) <= radius + 50)
-    if not m.any():
-        return []
-    runs, start = [], None
-    for i, v in enumerate(m):
-        if v and start is None:
-            start = i
-        if not v and start is not None:
-            runs.append((cc[start], cc[i - 1])); start = None
-    if start is not None:
-        runs.append((cc[start], cc[-1]))
-    return runs
+def deck_ids(sys_, label, by_id):
+    """the Profiles lines a Deck line label stands for: 'Metro Line 7' / 'Line 7'; 'RER A/D', 'B C E', 'A'; CVG Express"""
+    label = label or ''
+    if sys_ == 'cvx' or label.startswith('CVG'):
+        ids = ['CVG_Express']
+    elif sys_ == 'metro':
+        ids = ['Line_' + label.split('Line ')[-1].strip()] if 'Line ' in label else []
+    else:
+        letters = label.replace('RER', '').replace('/', ' ').split()
+        ids = [LETTER_RER[x] for x in letters if x in LETTER_RER]
+    return [i for i in ids if i in by_id]
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--cache', default=os.path.join(HERE, 'cache'))
     ap.add_argument('--out', default=os.path.join(HERE, 'cache', 'snapshot.json'))
-    ap.add_argument('--area', default='fountain_square')
-    ap.add_argument('--dry-run', action='store_true', help='print levels at the station, write nothing to the page')
+    ap.add_argument('--skip-harness', action='store_true', help='reuse cache/harness_out.json')
     a = ap.parse_args()
-    area = AREAS[a.area]
-    E0, N0 = (float(v) for v in ll_to_utm(area['lon'], area['lat']))
-    R = area['radius']
+    E0, N0 = (float(v) for v in ll_to_utm(AREA['lon'], AREA['lat']))
+    bx0, by0, bx1, by1 = AREA['box_utm']
+    BOX = (bx0 - E0, by0 - N0, bx1 - E0, by1 - N0)
+    inbox = lambda x, y: BOX[0] <= x <= BOX[2] and BOX[1] <= y <= BOX[3]
 
     lines = load_lines(a.cache)
-    job = {'lines': [], 'deck': True}
-    for lid, d in lines.items():
-        rs = ranges_near(d, E0, N0, R)
-        if rs:
-            job['lines'].append({'id': lid, 'c0': float(min(r[0] for r in rs)), 'c1': float(max(r[1] for r in rs))})
     jf, rf = os.path.join(a.cache, 'job.json'), os.path.join(a.cache, 'harness_out.json')
-    json.dump(job, open(jf, 'w'))
-    print('lines near', area['name'] + ':', ', '.join(j['id'] for j in job['lines']), file=sys.stderr)
-    subprocess.run(['node', os.path.join(HERE, 'harness.js'), a.cache, jf, rf], check=True)
+    if not a.skip_harness:
+        job = {'lines': [{'id': lid, 'c0': 0.0, 'c1': float(d['length_m']), 'step': STEP} for lid, d in lines.items()], 'deck': True}
+        json.dump(job, open(jf, 'w'))
+        subprocess.run(['node', os.path.join(HERE, 'harness.js'), a.cache, jf, rf], check=True)
     H = json.load(open(rf))
-
     issues = []
-    snap_lines, ground_pts = [], []
-    for j in job['lines']:
-        lid, d, h = j['id'], lines[j['id']], H['profiles'][j['id']]
+
+    # ---- Profiles lines: every sample inside the region, in pieces where a line leaves and re-enters it ----
+    L = {}
+    ground_pts = []
+    for lid, d in lines.items():
+        h = H['profiles'][lid]
         p = np.array(d['path'], float)
         E, N = ll_to_utm(p[:, 1], p[:, 2])
         xy = np.c_[E - E0, N - N0]
         g = np.array([np.nan if v is None else v / 10 for v in d['ground_dm']])
-        pts, runs, cur = [], [], None
+        gc = np.arange(len(g)) * d['step_m']
+        S = []
         for c, z, t in h['samples']:
-            q = interp_path(p[:, 0], xy, c)
-            if abs(q[0]) > R + 50 or abs(q[1]) > R + 50:
-                continue
-            gz = float(np.interp(c, np.arange(len(g)) * d['step_m'], g))
-            pts.append([r1(c), r2(q[0]), r2(q[1]), r2(z), r2(gz)])
-            if not math.isnan(gz) and abs(q[0]) <= R and abs(q[1]) <= R:
-                ground_pts.append((q[0], q[1], gz))
-            if cur is None or cur['t'] != t:
-                cur = {'t': t, 'c0': r1(c), 'c1': r1(c), 'st': structure(lid, t)}
-                runs.append(cur)
-            cur['c1'] = r1(c)
-        # stations on this stretch: platform centre (drawn point + offset), rail level from the saved levels
+            x, y = float(np.interp(c, p[:, 0], xy[:, 0])), float(np.interp(c, p[:, 0], xy[:, 1]))
+            S.append((c, x, y, z, t, float(np.interp(c, gc, g))))
+        for k in range(0, len(gc), 5):   # ground every 5 steps for the grid
+            if not math.isnan(g[k]):
+                ground_pts.append((float(np.interp(gc[k], p[:, 0], xy[:, 0])), float(np.interp(gc[k], p[:, 0], xy[:, 1])), g[k]))
+        pieces, cur = [], None
+        for s_ in S:
+            if inbox(s_[1], s_[2]):
+                if cur is None:
+                    cur = []
+                    pieces.append(cur)
+                cur.append(s_)
+            else:
+                cur = None
         al = h['align']
-        L_pl = PLATFORM_M[d['sys']]
-        # as the editor's deriveStations: drop deleted stations (keyed name, or name#index when a name repeats),
-        # then move each platform centre by its offset
         names = [s['name'] for s in d['stations']]
         key = lambda i, s: f"{s['name']}#{i}" if names.count(s['name']) > 1 else s['name']
-        kept = [s for i, s in enumerate(d['stations']) if key(i, s) not in set(al.get('del') or [])]
+        dels = set(al.get('del') or [])
+        kept = [s for i, s in enumerate(d['stations']) if key(i, s) not in dels]
         sts = []
+        cs_all = np.array([s_[0] for s_ in S])
         for i, s in enumerate(kept):
             so = al['so'][i] if i < len(al.get('so') or []) else 0
             cmid = s['c'] + (so or 0)
-            if not (j['c0'] - L_pl <= cmid <= j['c1'] + L_pl):
+            x, y = float(np.interp(cmid, p[:, 0], xy[:, 0])), float(np.interp(cmid, p[:, 0], xy[:, 1]))
+            if not inbox(x, y):
                 continue
             rail = al['st'][i] if i < len(al.get('st', [])) else None
-            q = interp_path(p[:, 0], xy, cmid)
-            sts.append({'name': s['name'], 'c': r1(cmid), 'x': r2(q[0]), 'y': r2(q[1]),
-                        'rail': r2(rail) if rail is not None else None, 'platform_m': L_pl,
-                        'from_c': r1(cmid - L_pl / 2), 'to_c': r1(cmid + L_pl / 2)})
-        if not h['saved']:
-            issues.append(f"{d['line']}: no saved alignment in the Profiles editor; drawn from its built-in defaults (unsaved)")
-        name = d['line'] if d['sys'] == 'metro' else f"{d['line']} (TRI {RER_LETTER.get(lid, '?')})"
-        snap_lines.append({'id': lid, 'name': name, 'sys': d['sys'], 'color': d.get('color'), 'saved': h['saved'],
-                           'pts': pts, 'runs': runs, 'stations': sts})
+            gz = float(np.interp(cmid, gc, g))
+            j = int(np.argmin(np.abs(cs_all - cmid)))
+            Lp = PLATFORM_M['rer' if d['sys'] == 'rer' else 'metro']
+            sts.append({'name': s['name'], 'line': lid, 'c': r1(cmid), 'x': r2(x), 'y': r2(y),
+                        'rail': r2(rail) if rail is not None else None, 'ground': r2(gz) if not math.isnan(gz) else None,
+                        'depth': r2(gz - rail) if rail is not None and not math.isnan(gz) else None,
+                        'type': S[j][4], 'offset': r1(so or 0), 'platform_m': Lp,
+                        'from_c': r1(cmid - Lp / 2), 'to_c': r1(cmid + Lp / 2), 'saved': h['saved']})
+        if not h['saved'] and pieces:
+            issues.append(f"{d['line']}: no saved alignment in the Profiles editor; drawn from its built-in defaults")
+        name = d['line'] if d['sys'] != 'rer' else f"{d['line']} (TRI {RER_LETTER.get(lid, '?')})"
+        L[lid] = {'id': lid, 'name': name, 'sys': d['sys'], 'color': d.get('color'), 'saved': h['saved'],
+                  'S': pieces, 'stations': sts, 'deleted': sorted(dels)}
 
-    # ground: a plane fitted to the Profiles ground inside the area
-    G = np.array(ground_pts)
-    A = np.c_[G[:, 0], G[:, 1], np.ones(len(G))]
-    gx, gy, gz = np.linalg.lstsq(A, G[:, 2], rcond=None)[0]
-    resid = G[:, 2] - A @ np.array([gx, gy, gz])
+    near_line = {lid: Near() for lid in L}
+    for lid, l in L.items():
+        for pi, piece in enumerate(l['S']):
+            for i, s_ in enumerate(piece):
+                near_line[lid].add(s_[1], s_[2], (pi, i))
 
-    # Deck: streets, blocks, transit plan lines, stations and platforms inside the area
+    def locate(lid, q):
+        hit, d = near_line[lid].near(q[0], q[1], MATCH_M + 5)
+        if hit is None:
+            return None
+        pi, i = hit
+        P = [(s_[0], s_[1], s_[2]) for s_ in L[lid]['S'][pi][max(0, i - 1):i + 2]]
+        res = on_line(P, min(i, 1), q)
+        if res is None or res[2] > MATCH_M:
+            return None
+        return pi, res[0], res[1], res[2]
+
+    # ---- Deck tracks (platform_track's extract.js): levelled where they follow a Profiles line ----
+    dd = H['deck_design']
+    tracks, unlevelled = [], []
+    unlev_m = {}
+    for t in dd['tracks']:
+        cand = deck_ids(t['sys'], t['line'], L)
+        pts = [(x - E0, y - N0) for x, y in resample(t['c'], TRACK_STEP)]
+        pts = [q for q in pts if inbox(*q)]
+        if len(pts) < 2:
+            continue
+        best, bn = None, 0
+        for lid in cand:   # the line most of the track follows; ties to a saved line (A/D: RER-1)
+            n = sum(1 for q in pts[::3] if locate(lid, q))
+            if n > bn or (n == bn and n and L[lid]['saved'] and not L[best]['saved']):
+                best, bn = lid, n
+        loc = [locate(best, q) if best else None for q in pts]
+        run, runs = None, []
+        for q, lc in zip(pts, loc):
+            kind = 'lev' if lc else 'unlev'
+            if run is None or run[0] != kind or (lc and run[2] != lc[0]):
+                run = [kind, [], lc[0] if lc else None]
+                runs.append(run)
+            run[1].append((q, lc))
+        for kind, seg, pi in runs:
+            if len(seg) < 2:
+                continue
+            if kind == 'lev':
+                seg.sort(key=lambda v: v[1][1])
+                tracks.append({'line': best, 'deck_line': t['line'], 'side': t.get('side'), 'from': t['from'],
+                               'c': enc([v[1][1] for v in seg], 10), 'off': enc([v[1][2] for v in seg], 100),
+                               'x': enc([v[0][0] for v in seg], 10), 'y': enc([v[0][1] for v in seg], 10)})
+            else:
+                unlevelled.append({'deck_line': t['line'], 'sys': t['sys'], 'from': t['from'],
+                                   'x': enc([v[0][0] for v in seg], 10), 'y': enc([v[0][1] for v in seg], 10)})
+                unlev_m[t['line']] = unlev_m.get(t['line'], 0) + TRACK_STEP * (len(seg) - 1)
+    for k, v in sorted(unlev_m.items(), key=lambda kv: -kv[1]):
+        if v > 200:
+            issues.append(f"Deck {k}: {v / 1000:.1f} km of track with no Profiles line within {MATCH_M:.0f} m, drawn in plan on the ground")
+
+    # where a line has no track of its own but runs on another line's (D on the A/D pair): shared, rail only
+    own_near, other_near = {lid: Near() for lid in L}, Near()
+    def dec(v, s):
+        out, acc = [], 0
+        for d_ in v:
+            acc += d_
+            out.append(acc / s)
+        return out
+    for t in tracks:
+        for x, y in zip(dec(t['x'], 10), dec(t['y'], 10)):
+            own_near[t['line']].add(x, y, 1)
+            other_near.add(x, y, t['line'])
+    for lid, l in L.items():
+        l['shared'] = []
+        for piece in l['S']:
+            sh = []
+            for s_ in piece:
+                own, _ = own_near[lid].near(s_[1], s_[2], 10)
+                oth, _ = (None, 0) if own else other_near.near(s_[1], s_[2], 10)
+                sh.append(1 if (not own and oth and oth != lid and L[oth]['sys'] == l['sys']) else 0)
+            l['shared'].append(sh)
+
+    # ---- the Deck's plan: streets, blocks, platform rings (its GeoJSON export) ----
     def to_local(coords):
         c = np.asarray(coords, float)
         E, N = ll_to_utm(c[..., 0], c[..., 1])
         return np.stack([E - E0, N - N0], -1)
 
-    def inside(xy, m=0):
-        return bool(((np.abs(xy[..., 0]) <= R + m) & (np.abs(xy[..., 1]) <= R + m)).any())
-
-    deck = {'streets': [], 'blocks': [], 'lines': [], 'stations': [], 'platforms': []}
+    streets, blocks, plats = [], [], []
     for f in H['deck']['features']:
         p, g = f['properties'], f.get('geometry')
-        L = p.get('layer')
-        if not g or L not in ('street', 'block', 'metro_line', 'rer_line', 'metro_station', 'rer_station',
-                              'metro_platform', 'rer_platform'):
+        lay = p.get('layer')
+        if not g:
             continue
-        if L == 'street':
+        if lay == 'street' and g['type'] == 'LineString':
             xy = to_local(g['coordinates'])
-            if inside(xy, 30):
-                deck['streets'].append({'id': p['id'], 'name': p.get('name', ''), 'w': p.get('width_m'),
-                                        'kind': p.get('kind'), 'c': [[r1(a), r1(b)] for a, b in xy]})
-        elif L == 'block':
-            rings = g['coordinates'] if g['type'] == 'Polygon' else [r for poly in g['coordinates'] for r in poly[:1]]
+            if any(inbox(*q) for q in xy):
+                streets.append({'w': p.get('width_m') or 10, 'kind': p.get('kind'), 'name': p.get('name', ''),
+                                'x': enc(xy[:, 0], 10), 'y': enc(xy[:, 1], 10)})
+        elif lay == 'block':
+            rings = g['coordinates'] if g['type'] == 'Polygon' else [poly[0] for poly in g['coordinates']]
             xy = to_local(rings[0])
-            if inside(xy):
-                deck['blocks'].append({'id': p['id'], 'type': p.get('type'), 'name': p.get('name', ''),
-                                       'c': [[r1(a), r1(b)] for a, b in xy]})
-        elif L.endswith('_line'):
-            xy = to_local(g['coordinates'])
-            if inside(xy):
-                deck['lines'].append({'id': p['id'], 'name': p['name'], 'sys': L.split('_')[0],
-                                      'c': [[r1(a), r1(b)] for a, b in xy]})
-        elif L.endswith('_station'):
-            xy = to_local(g['coordinates'])
-            if inside(xy) and not p.get('deleted'):
-                deck['stations'].append({'id': p['id'], 'name': p['name'], 'sys': L.split('_')[0], 'lines': p.get('lines'),
-                                         'x': r2(xy[0]), 'y': r2(xy[1])})
-        elif L.endswith('_platform'):
-            xy = to_local(g['coordinates'][0])
-            if inside(xy):
-                deck['platforms'].append({'station': p['station'], 'line': p['line'], 'sys': L.split('_')[0],
-                                          'type': p.get('type'), 'n': p.get('n'), 'c': [[r2(a), r2(b)] for a, b in xy]})
-
-    # platforms: Deck plan; level from the matching Profiles line at the platform's centre
-    def match(pl):
-        name = pl['line']
-        if pl['sys'] == 'metro':
-            ids = ['Line_' + name.split('Line ')[-1].strip()]
-        else:
-            letters = name.split('RER ')[-1].replace('/', '')
-            ids = [k for k, v in RER_LETTER.items() if v in letters]
-        return [l for l in snap_lines if l['id'] in ids]
-
-    for pl in deck['platforms']:
-        ring = np.array(pl['c'])
-        ctr = ring[:-1].mean(0) if len(ring) > 1 and np.allclose(ring[0], ring[-1]) else ring.mean(0)
-        pl['levels'] = []
-        for l in match(pl):
-            P = np.array([q[1:3] for q in l['pts']])
-            cs = np.array([q[0] for q in l['pts']])
-            if len(P) < 2:
+            if len(xy) >= 3 and any(inbox(*q) for q in xy):
+                blocks.append({'type': p.get('type'), 'x': enc(xy[:, 0], 10), 'y': enc(xy[:, 1], 10)})
+        elif lay in ('metro_platform', 'rer_platform', 'cvx_platform'):
+            ring = to_local(g['coordinates'][0])
+            if np.allclose(ring[0], ring[-1]):
+                ring = ring[:-1]
+            if not any(inbox(*q) for q in ring):
                 continue
-            dist, c, off = project(cs, P, ctr)
-            if dist > 40:
-                issues.append(f"{pl['line']} platform at {pl['station']} is {dist:.0f} m from {l['name']}'s Profiles path")
-                continue
-            rail = float(np.interp(c, cs, [q[3] for q in l['pts']]))
-            pl['levels'].append({'line': l['id'], 'c': r1(c), 'rail': r2(rail), 'off': r1(off), 'dist': r1(dist),
-                                 'top': r2(rail + PLATFORM_ABOVE_RAIL[pl['sys']])})
-        if not pl['levels']:
-            issues.append(f"{pl['line']} platform at {pl['station']}: no Profiles line found for its level")
-        # platform length as drawn in the Deck against the rule
-        e = ring[:-1] if np.allclose(ring[0], ring[-1]) else ring
-        dists = [np.hypot(*(e[i] - e[j])) for i in range(len(e)) for j in range(i + 1, len(e))]
-        span = max(dists) if dists else 0
-        pl['length_drawn'] = r1(span)
+            sys_ = lay.split('_')[0]
+            ids = deck_ids(sys_, p.get('line'), L)
+            ctr = ring.mean(0)
+            levels = []
+            for lid in ids:
+                lc = locate(lid, ctr)
+                if lc is None:
+                    continue
+                pi, c, off, dist = lc
+                piece = L[lid]['S'][pi]
+                rail = float(np.interp(c, [s_[0] for s_ in piece], [s_[3] for s_ in piece]))
+                levels.append({'line': lid, 'c': r1(c), 'rail': r2(rail), 'off': r1(off), 'saved': L[lid]['saved']})
+            # a platform on a shared pair (RER A/D, B C E ...) serves every line on it, at the saved line's level
+            lev = next((v for v in levels if v['saved']), levels[0] if levels else None)
+            plats.append({'station': p.get('station'), 'deck_line': p.get('line'), 'sys': sys_, 'type': p.get('type'), 'n': p.get('n'),
+                          'lines': ids, 'levels': levels, 'line': lev['line'] if lev else None,
+                          'rail': lev['rail'] if lev else None,
+                          'top': r2(lev['rail'] + PLATFORM_ABOVE_RAIL['rer' if sys_ == 'rer' else 'metro']) if lev else None,
+                          'x': enc(ring[:, 0], 100), 'y': enc(ring[:, 1], 100)})
+    # the Union Terminal TRI box (Deck: three fixed islands, Chatelet-Les Halles): north island A and B westbound,
+    # centre D, south B and A eastbound, by their order north to south (its axis runs about east-west, heading -3.75)
+    ut = [pl for pl in plats if (pl['deck_line'] or '') == 'Union Terminal box' and pl['station'] == 'Union Terminal']
+    if len(ut) == 3:
+        ctr = lambda pl: (np.mean(dec(pl['x'], 100)), np.mean(dec(pl['y'], 100)))
+        for pl, ids, name in zip(sorted(ut, key=lambda q: -ctr(q)[1]), (['RER_1', 'RER_2'], ['RER_4'], ['RER_2', 'RER_1']),
+                                 ('north island, A and B westbound', 'centre island, D', 'south island, B and A eastbound')):
+            cx, cy = ctr(pl)
+            levels = []
+            for lid in ids:
+                prof = [s for s in L[lid]['stations'] if s['name'] == 'Union Terminal' and s['rail'] is not None]
+                if prof:
+                    levels.append({'line': lid, 'c': prof[0]['c'], 'rail': prof[0]['rail'], 'off': None, 'saved': L[lid]['saved']})
+            levels.sort(key=lambda v: v['line'])   # the saved line first in letter order (A before B), as elsewhere
+            lev = next((v for v in levels if v['saved']), levels[0] if levels else None)
+            pl.update(lines=ids, levels=levels, line=lev['line'] if lev else None, rail=lev['rail'] if lev else None,
+                      top=r2(lev['rail'] + PLATFORM_ABOVE_RAIL['rer']) if lev else None, type='island', box_island=name)
+            if len({v['rail'] for v in levels}) > 1:
+                issues.append(f"Union Terminal box, {name}: cross-platform lines at different Profiles levels ("
+                              + ', '.join(f"{L[v['line']]['name']} {v['rail']} m" for v in levels) + f"); drawn at {L[lev['line']]['name']}'s")
+    nolev = [pl for pl in plats if pl['rail'] is None]
+    if nolev:
+        issues.append(f"{len(nolev)} Deck platforms have no Profiles line within {MATCH_M:.0f} m (drawn at ground level): "
+                      + ', '.join(sorted({f"{pl['station']} ({pl['deck_line']})" for pl in nolev})[:12]) + (' ...' if len(nolev) > 12 else ''))
 
-    # tracks: the Deck's drawn track pairs (platform_track's extract.js), each point given its Profiles line's rail level
-    # by chainage; c and off (+ left) are measured along that line, so the page can size boxes from the track spacing
-    dd = H.get('deck_design') or {}
-    by_id = {l['id']: l for l in snap_lines}
-    for l in snap_lines:
-        l['tracks'] = []
-    for t in dd.get('tracks', []):
-        label = t['line'] or ''
-        if t['sys'] == 'metro':
-            ids = ['Line_' + label.split('Line ')[-1].strip()]
-        else:
-            letters = label.split('RER ')[-1].replace('/', '')
-            ids = [k for k, v in RER_LETTER.items() if v in letters]
-        cand = [by_id[i] for i in ids if i in by_id]
-        xy = np.array(t['c'], float) - [E0, N0]
-        keep = (np.abs(xy[:, 0]) <= R + 50) & (np.abs(xy[:, 1]) <= R + 50)
-        if keep.sum() < 2 or not cand:
+    # ---- stations: the Deck's station and stops merged with the Profiles stations on the same lines ----
+    norm = lambda s: ''.join(ch for ch in (s or '').lower() if ch.isalnum())
+    prof_sts = [s for l in L.values() for s in l['stations']]
+    used = set()
+    stations = []
+    for st in dd['stations']:
+        x, y = st['E'] - E0, st['N'] - N0
+        if not inbox(x, y):
             continue
-        xy = xy[keep]
-        best = None
-        for l in cand:   # the line the track follows: nearest median distance (A/D: the saved RER-1 before RER-4)
-            P = np.array([q[1:3] for q in l['pts']]); cs = np.array([q[0] for q in l['pts']])
-            pr = [project(cs, P, q) for q in xy]
-            med = float(np.median([p[0] for p in pr]))
-            if med < 30 and (best is None or med < best[0] - 0.5 or (abs(med - best[0]) <= 0.5 and l['saved'] and not best[1]['saved'])):
-                best = (med, l, pr)
-        if not best:
-            issues.append(f"Deck track {label} ({t.get('side', t['from'])}) is more than 30 m from its Profiles line")
-            continue
-        _, l, pr = best
-        cs = np.array([q[0] for q in l['pts']]); zs = np.array([q[3] for q in l['pts']])
-        pts = [[r1(p[1]), r2(p[2]), r2(q[0]), r2(q[1]), r2(np.interp(p[1], cs, zs))] for p, q in zip(pr, xy)]
-        pts.sort(key=lambda v: v[0])
-        l['tracks'].append({'side': t.get('side'), 'from': t['from'], 'deck_line': label, 'pts': pts})
-
-    # a line with no tracks of its own here that runs on another line's tracks (D on the A/D pair): mark those points
-    # shared, so the page draws its rail but not a second structure
-    for l in snap_lines:
-        if l['tracks']:
-            continue
-        others = [np.array([q[2:4] for q in t['pts']]) for o in snap_lines if o is not l and o['sys'] == l['sys'] for t in o['tracks']]
-        sh = []
-        for q in l['pts']:
-            p = np.array(q[1:3])
-            sh.append(int(any(float(np.min(np.hypot(*(T - p).T))) < 10 for T in others)) if others else 0)
-        if any(sh):
-            l['shared'] = sh
-
-    # the Deck's spacing against the Profiles structure, away from platforms: twin tubes need about 8 m between tracks
-    for l in snap_lines:
-        if l['sys'] != 'metro' or len(l['tracks']) != 2:
-            continue
-        a_, b_ = ([q[0] for q in t['pts']] for t in l['tracks'])
-        ao, bo = ([q[1] for q in t['pts']] for t in l['tracks'])
-        plat = [(s['from_c'] - 40, s['to_c'] + 40) for s in l['stations']]
-        bad = {'tube': 0.0, 'box': 0.0}
-        for i, q in enumerate(l['pts'][:-1]):
-            c = q[0]
-            if c < max(a_[0], b_[0]) or c > min(a_[-1], b_[-1]) or any(p0 <= c <= p1 for p0, p1 in plat):
-                continue
-            gap = abs(np.interp(c, a_, ao) - np.interp(c, b_, bo))
-            k = next(r['st']['k'] for r in l['runs'] if r['c0'] <= c <= r['c1'] + 2)
-            step = l['pts'][i + 1][0] - c
-            if k == 'tube' and gap < 6.0:
-                bad['tube'] += step
-            elif k == 'box' and gap > 6.0:
-                bad['box'] += step
-        if bad['tube'] > 20:
-            issues.append(f"{l['name']}: {bad['tube']:.0f} m is bored in the Profiles editor but drawn at box spacing (3.9 m) in the Deck")
-        if bad['box'] > 20:
-            issues.append(f"{l['name']}: {bad['box']:.0f} m is cut and cover in the Profiles editor but drawn as twin tubes (8.0 m) in the Deck")
-
-    # TRI bored stretches: the Deck spaces TRI tracks 4.5 m apart everywhere, closer than two tubes can sit
-    for l in snap_lines:
-        if l['sys'] != 'rer' or len(l['tracks']) < 2:
-            continue
-        od = RER_ST['bore']['od']
-        t0, t1 = l['tracks'][0]['pts'], l['tracks'][1]['pts']
-        tight = 0.0
-        for i, q in enumerate(l['pts'][:-1]):
-            k = next((r['st']['k'] for r in l['runs'] if r['c0'] <= q[0] <= r['c1'] + 2), None)
-            if k != 'tube' or not (max(t0[0][0], t1[0][0]) <= q[0] <= min(t0[-1][0], t1[-1][0])):
-                continue
-            gap = abs(np.interp(q[0], [p[0] for p in t0], [p[1] for p in t0]) - np.interp(q[0], [p[0] for p in t1], [p[1] for p in t1]))
-            if gap < od + 1.0:
-                tight += l['pts'][i + 1][0] - q[0]
-        if tight > 20:
-            issues.append(f"{l['name']}: {tight:.0f} m bored with the Deck's tracks under {od + 1:.1f} m apart, so the {od} m tubes overlap (TRI spacing ignores construction)")
-
-    # the Deck's stops at the station: type, platform bands and track offsets as the page draws them
-    stops = []
-    for st in dd.get('stations', []):
-        if st['name'] not in area['stations'] or st.get('deleted'):
-            continue
+        stops = []
+        line_ids = set()
         for o in st['stops']:
-            stops.append({'sys': st['sys'], 'line': o.get('line'), 'type': o.get('type'), 'bands': o.get('bands'),
-                          'track_offsets': o.get('track_offsets'), 'tracks_from': o.get('tracks_from'),
-                          'bored_at_centre': o.get('bored_at_centre'), 'L': o.get('L')})
+            ids = deck_ids(st['sys'], o.get('line'), L)
+            if not o.get('line') and st['name'] == 'Union Terminal' and st['sys'] == 'rer':
+                ids = ['RER_1', 'RER_2', 'RER_4']   # the TRI box: A, B and D (its islands above)
+            line_ids.update(ids)
+            stops.append({'deck_line': o.get('line'), 'lines': ids, 'type': o.get('type'), 'type_generated': o.get('type_generated'),
+                          'ben': o.get('edit'), 'L': o.get('L'), 'slid': r1((o.get('o') or 0) - (o.get('o_generated') or 0)),
+                          'bands': o.get('bands'), 'track_offsets': o.get('track_offsets'), 'tracks_from': o.get('tracks_from'),
+                          'bored_at_centre': o.get('bored_at_centre')})
+        prof = []
+        for k, s in enumerate(prof_sts):
+            if k in used or s['line'] not in line_ids:
+                continue
+            dist = math.hypot(s['x'] - x, s['y'] - y)
+            if (norm(s['name']) == norm(st['name']) and dist < 400) or dist < 150:
+                prof.append(dict(s, dist=r1(dist)))
+                used.add(k)
+        stations.append({'id': st['key'], 'name': st['name'], 'sys': st['sys'], 'x': r1(x), 'y': r1(y),
+                         'deleted': st['deleted'], 'edited': st['edited'], 'stops': stops, 'profiles': prof})
+    for k, s in enumerate(prof_sts):   # Profiles stations the Deck has no station for
+        if k not in used:
+            stations.append({'id': f"profiles:{s['line']}:{s['name']}", 'name': s['name'], 'sys': L[s['line']]['sys'],
+                             'x': s['x'], 'y': s['y'], 'deleted': False, 'edited': False, 'stops': [], 'profiles': [dict(s, dist=None)],
+                             'note': 'in the Rail Profiles editor only'})
+    only_prof = [s for s in stations if s.get('note')]
+    if only_prof:
+        issues.append(f"{len(only_prof)} Profiles stations have no Deck station within reach: "
+                      + ', '.join(sorted({f"{s['name']} ({s['profiles'][0]['line']})" for s in only_prof})[:12]) + (' ...' if len(only_prof) > 12 else ''))
 
-    snap = {
-        'area': a.area, 'name': area['name'], 'synced_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
-        'origin': {'lon': area['lon'], 'lat': area['lat'], 'E': r2(E0), 'N': r2(N0), 'crs': 'EPSG:32616'},
-        'frame_turn_deg': area['frame_turn'], 'radius': R,
-        'ground': {'plane': [round(gx, 6), round(gy, 6), r2(gz)], 'fit_rms': r2(np.sqrt((resid ** 2).mean())),
-                   'n': int(len(G))},
-        'platform_m': PLATFORM_M, 'platform_above_rail': PLATFORM_ABOVE_RAIL,
-        'struct': {'metro': METRO_ST, 'rer': RER_ST, 'open': OPEN_ST}, 'assumed': ASSUMED,
-        'sources': {'profiles': H.get('profiles_version'), 'deck': H.get('deck_version'),
-                    'profiles_saved': {l['id']: l['saved'] for l in snap_lines}},
-        'box_margin': BOX_MARGIN, 'deck_rules': dd.get('constants'), 'stops': stops,
-        'lines': snap_lines, 'deck': deck, 'issues': issues,
+    # ---- ground: a coarse grid from the Profiles ground along every line ----
+    gx0, gy0 = BOX[0], BOX[1]
+    nx, ny = int(math.ceil((BOX[2] - BOX[0]) / GRID)) + 1, int(math.ceil((BOX[3] - BOX[1]) / GRID)) + 1
+    acc, cnt = np.zeros((ny, nx)), np.zeros((ny, nx))
+    for x, y, z in ground_pts:
+        i, j = int(round((y - gy0) / GRID)), int(round((x - gx0) / GRID))
+        if 0 <= i < ny and 0 <= j < nx:
+            acc[i, j] += z
+            cnt[i, j] += 1
+    G = np.where(cnt > 0, acc / np.maximum(cnt, 1), np.nan)
+    for _ in range(8):   # fill out from the lines, a cell at a time
+        known = ~np.isnan(G)
+        pad = np.pad(np.where(known, G, 0), 1)
+        pk = np.pad(known.astype(float), 1)
+        s_ = sum(pad[1 + di:1 + di + ny, 1 + dj:1 + dj + nx] for di in (-1, 0, 1) for dj in (-1, 0, 1))
+        n_ = sum(pk[1 + di:1 + di + ny, 1 + dj:1 + dj + nx] for di in (-1, 0, 1) for dj in (-1, 0, 1))
+        G = np.where(known, G, np.where(n_ > 0, s_ / np.maximum(n_, 1), np.nan))
+    ground = {'x0': r1(gx0), 'y0': r1(gy0), 'step': GRID, 'nx': nx, 'ny': ny,
+              'z': [None if math.isnan(v) else int(round(v * 10)) for v in G.ravel()]}
+
+    # ---- checks: the Deck's spacing against the Profiles structure ----
+    for lid, l in L.items():
+        own = [t for t in tracks if t['line'] == lid]
+        if not own:
+            continue
+        bad = {'tube': 0.0, 'box': 0.0, 'rer': 0.0}
+        cs_off = [(dec(t['c'], 10), dec(t['off'], 100)) for t in own]
+        plat = [(s['from_c'] - 40, s['to_c'] + 40) for s in l['stations']]
+        for piece in l['S']:
+            for s_, s2 in zip(piece, piece[1:]):
+                c = s_[0]
+                if any(p0 <= c <= p1 for p0, p1 in plat):
+                    continue
+                offs = [float(np.interp(c, cc, oo)) for cc, oo in cs_off if cc[0] <= c <= cc[-1]]
+                if len(offs) != 2:
+                    continue
+                gap = abs(offs[0] - offs[1])
+                k = structure(lid, s_[4])['k']
+                if l['sys'] == 'metro' and k == 'tube' and gap < 6.0:
+                    bad['tube'] += s2[0] - c
+                elif l['sys'] == 'metro' and k == 'box' and gap > 6.0:
+                    bad['box'] += s2[0] - c
+                elif l['sys'] == 'rer' and k == 'tube' and gap < RER_ST['bore']['od'] + 1:
+                    bad['rer'] += s2[0] - c
+        if bad['tube'] > 50:
+            issues.append(f"{l['name']}: {bad['tube'] / 1000:.2f} km bored in the Profiles editor but at box spacing (3.9 m) in the Deck")
+        if bad['box'] > 50:
+            issues.append(f"{l['name']}: {bad['box'] / 1000:.2f} km cut and cover in the Profiles editor but twin tubes (8.0 m) in the Deck")
+        if bad['rer'] > 50:
+            issues.append(f"{l['name']}: {bad['rer'] / 1000:.2f} km bored with the Deck's tracks closer than two {RER_ST['bore']['od']} m tubes allow (TRI spacing ignores construction)")
+
+    # ---- the snapshot ----
+    snap_lines = []
+    for lid, l in L.items():
+        if not l['S']:
+            continue
+        pieces = []
+        for piece, sh in zip(l['S'], l['shared']):
+            pieces.append({'c0': r1(piece[0][0]), 'step': STEP, 'n': len(piece),
+                           'x': enc([s_[1] for s_ in piece], 10), 'y': enc([s_[2] for s_ in piece], 10),
+                           'z': enc([s_[3] for s_ in piece], 100), 't': rle([s_[4] for s_ in piece]), 'sh': rle(sh)})
+        snap_lines.append({'id': lid, 'name': l['name'], 'sys': l['sys'], 'color': l['color'], 'saved': l['saved'],
+                           'pieces': pieces, 'stations': l['stations']})
+    struct = {lid: {t: structure(lid, t) for t in ('cutcover', 'shield', 'deep', 'elevated', 'atgrade', 'trough')} for lid in L}
+    meta = {
+        'area': AREA['id'], 'name': AREA['name'], 'default_station': AREA['default_station'],
+        'synced_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+        'origin': {'lon': AREA['lon'], 'lat': AREA['lat'], 'E': r2(E0), 'N': r2(N0), 'crs': 'EPSG:32616'},
+        'frame_turn_deg': AREA['frame_turn'], 'box': [r1(v) for v in BOX],
+        'platform_m': PLATFORM_M, 'platform_above_rail': PLATFORM_ABOVE_RAIL, 'struct': struct, 'box_margin': BOX_MARGIN,
+        'assumed': ASSUMED, 'deck_rules': dd.get('constants'), 'issues': issues,
+        'rules': ['Levels: the Rail Profiles editor; plan, tracks and platforms: the Mill Creek Deck',
+                  'A platform on a shared pair (RER A/D, B C E ...) serves every line on it, at the level of the saved Profiles line (Ben, 2026-10-26: A and D share the Fountain Square platforms)',
+                  'Platforms: Metro 400 ft, TRI 670 ft (Ben, 2026-10-26)'],
+        'sources': {'profiles_saved': {lid: l['saved'] for lid, l in L.items()}},
+        'counts': {'lines': len(snap_lines), 'tracks': len(tracks), 'unlevelled': len(unlevelled), 'stations': len(stations),
+                   'platforms': len(plats), 'streets': len(streets), 'blocks': len(blocks)},
     }
-    meta = os.path.join(a.cache, 'versions.json')
-    if os.path.exists(meta):
-        snap['sources'].update(json.load(open(meta)))
+    vf = os.path.join(a.cache, 'versions.json')
+    if os.path.exists(vf):
+        meta['sources'].update(json.load(open(vf)))
+    snap = dict(meta, lines=snap_lines, tracks=tracks, unlevelled=unlevelled, stations=stations, platforms=plats,
+                streets=streets, blocks=blocks, ground=ground)
     json.dump(snap, open(a.out, 'w'), separators=(',', ':'))
 
-    # the 3D page's database documents: snapshots/<area> (everything but the bulk, as JSON text) and its parts
-    # snapshots/<area>/parts/{lines,deck}, each kept well under the document size limit
+    # ---- database documents: parts of at most ~200 KB of JSON text (the limit is 256 KiB a document), the meta document last ----
     ddir = os.path.join(os.path.dirname(a.out), 'db_out')
     os.makedirs(ddir, exist_ok=True)
-    parts = {'lines': {'lines': snap['lines']}, 'deck': {'deck': snap['deck']}}
-    head = {k: v for k, v in snap.items() if k not in ('lines', 'deck')}
-    for k, v in parts.items():
-        json.dump({'json': json.dumps(v, separators=(',', ':')), 'synced_at': snap['synced_at']}, open(os.path.join(ddir, k + '.json'), 'w'))
-    json.dump({'json': json.dumps(head, separators=(',', ':')), 'parts': list(parts), 'synced_at': snap['synced_at']},
+    for f in os.listdir(ddir):
+        os.remove(os.path.join(ddir, f))
+    parts = []
+    for key in ('lines', 'tracks', 'unlevelled', 'stations', 'platforms', 'streets', 'blocks'):
+        items, chunk, size, n = snap[key], [], 0, 0
+        def flush():
+            nonlocal chunk, size, n
+            if not chunk:
+                return
+            name = f'{key}-{n}'
+            json.dump({'json': json.dumps({'key': key, 'items': chunk}, separators=(',', ':')), 'synced_at': meta['synced_at']},
+                      open(os.path.join(ddir, name + '.json'), 'w'))
+            parts.append(name)
+            chunk, size, n = [], 0, n + 1
+        for it in items:
+            s_ = len(json.dumps(it, separators=(',', ':')))
+            if size + s_ > 200_000:   # a database document holds at most 256 KiB (JSON text escaped inside it)
+                flush()
+            chunk.append(it)
+            size += s_
+        flush()
+    json.dump({'json': json.dumps({'key': 'ground', 'value': ground}, separators=(',', ':')), 'synced_at': meta['synced_at']},
+              open(os.path.join(ddir, 'ground-0.json'), 'w'))
+    parts.append('ground-0')
+    json.dump({'json': json.dumps(meta, separators=(',', ':')), 'parts': parts, 'synced_at': meta['synced_at']},
               open(os.path.join(ddir, 'meta.json'), 'w'))
 
-    # report: rail levels at the area's stations
-    for l in snap_lines:
-        for s in l['stations']:
-            if s['name'] in area['stations']:
-                print(f"{l['name']:<22} {s['name']}: rail {s['rail']} m", file=sys.stderr)
-    print(f"ground plane z = {gz:.2f} + {gx * 1000:.1f}/km x + {gy * 1000:.1f}/km y (rms {np.sqrt((resid ** 2).mean()):.2f} m)",
-          file=sys.stderr)
-    print('tracks: ' + ', '.join(f"{l['id']} {len(l['tracks'])}" for l in snap_lines), file=sys.stderr)
-    print(f"{len(snap_lines)} lines, {len(deck['platforms'])} platforms, {len(deck['streets'])} streets, "
-          f"{len(deck['blocks'])} blocks; {len(issues)} issues -> {a.out} ({os.path.getsize(a.out) // 1024} KB)", file=sys.stderr)
+    # ---- report ----
+    fs = [s for s in stations if s['name'] == AREA['default_station']]
+    for s in fs:
+        for p in s['profiles']:
+            print(f"{s['name']:<16} {L[p['line']]['name']:<22} rail {p['rail']} m  ground {p['ground']}  {p['type']}", file=sys.stderr)
+    for pl in plats:
+        if pl['station'] == AREA['default_station']:
+            print(f"  platform {pl['deck_line']:<14} {pl['type']:<7} lines {','.join(pl['lines'])}  rail {pl['rail']}", file=sys.stderr)
+    print(json.dumps(meta['counts']), file=sys.stderr)
+    sizes = {f: os.path.getsize(os.path.join(ddir, f)) for f in os.listdir(ddir)}
+    print(f"{len(parts)} parts, largest {max(sizes.values()) // 1024} KB, total {sum(sizes.values()) // 1024} KB", file=sys.stderr)
+    print(f"{len(issues)} issues", file=sys.stderr)
     for i in issues:
         print('  issue:', i, file=sys.stderr)
 

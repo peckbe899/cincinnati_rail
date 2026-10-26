@@ -64,7 +64,7 @@ async function open(browser, root, docs, url, html = (h) => h) {
     await page.waitForTimeout(1000);   // the saved alignment arrives just after the line loads
     result.profiles[j.id] = await page.evaluate((j) => {
       const P = window.railProfile, samples = [];
-      for (let c = j.c0; c <= j.c1 + 1e-9; c += 2) samples.push([+c.toFixed(1), +P.railAt(c).toFixed(3), P.typeAt(c)]);
+      const step = j.step || 2; for (let c = j.c0; c <= j.c1 + 1e-9; c += step) samples.push([+c.toFixed(1), +P.railAt(c).toFixed(3), P.typeAt(c)]);
       return { saved: P.saved(), align: P.align(), platforms: P.platforms(), samples };
     }, j);
     await ctx.close();
@@ -87,9 +87,7 @@ async function open(browser, root, docs, url, html = (h) => h) {
     result.deck = JSON.parse(await page.evaluate(() => window.__dl[0].data));
     // platform and track design (stops, bands, track pairs) through platform_track's extract.js, run as is
     const ex = await page.evaluate(`(${fs.readFileSync(DECK_EXTRACT, 'utf8').trim()})()`);
-    result.deck_design = { constants: ex.constants, meta: ex.meta,
-      stations: ex.stations.filter((s) => s.areas.includes(job.area_key || 'fountain_square')),
-      lines: ex.lines, tracks: ex.key_tracks[job.area_key || 'fountain_square'] };
+    result.deck_design = { constants: ex.constants, meta: ex.meta, stations: ex.stations, lines: ex.lines, tracks: ex.all_tracks };
     await ctx.close();
   }
   await browser.close();

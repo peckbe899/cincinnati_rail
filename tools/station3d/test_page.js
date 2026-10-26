@@ -22,16 +22,20 @@ const three = path.join(__dirname, 'cache/t0.147.0/package');
     const page = await ctx.newPage();
     const errs = []; page.on('pageerror', (e) => errs.push(e.message)); page.on('console', (m) => m.type() === 'error' && errs.push(m.text()));
     await page.goto('http://page.local/index.html');
-    await page.waitForFunction(() => !document.getElementById('syncedAt').textContent.includes('loading'), null, { timeout: 30000 });
-    const presets = scheme === 'light' ? ['plan', 'republic', 'se139', 'sw229', 'ssw204', 'below'] : ['sw229'];
+    await page.waitForFunction(() => !document.getElementById('syncedAt').textContent.includes('loading'), null, { timeout: 120000 }); await page.waitForTimeout(3000);
+    const presets = scheme === 'light' ? ['region', 'plan', 'republic', 'sw229', 'below'] : ['sw229'];
     for (const p of presets) {
-      await page.click(`[data-p="${p}"]`); await page.waitForTimeout(900);
-      await page.screenshot({ path: path.join(outDir, `${scheme}_${p}.png`) });
+      await page.$eval(`[data-p="${p}"]`, (b) => b.click()); await page.waitForTimeout(4000);
+      await page.screenshot({ path: path.join(outDir, `${scheme}_${p}.png`), timeout: 120000 });
     }
     if (scheme === 'light') {
-      await page.selectOption('#level', { index: 1 }); await page.check('#cutNear'); await page.waitForTimeout(600);
+      await page.$eval('#level', (s) => { s.selectedIndex = 1; s.dispatchEvent(new Event('change')); }); await page.$eval('#cutNear', (c) => { c.checked = true; }); await page.waitForTimeout(4000);
       await page.screenshot({ path: path.join(outDir, 'light_level1_cut.png') });
-      await page.setViewportSize({ width: 400, height: 800 }); await page.waitForTimeout(600);
+      await page.$eval('#level', (s) => { s.selectedIndex = 0; s.dispatchEvent(new Event('change')); }); await page.$eval('#cutNear', (c) => { c.checked = false; });
+      await page.$eval('#stSearch', (i) => { i.value = 'union terminal'; i.dispatchEvent(new Event('input')); });
+      await page.$eval('#stList [data-st]', (b) => b.click()); await page.waitForTimeout(4000);
+      await page.screenshot({ path: path.join(outDir, 'light_union_terminal.png') });
+      await page.setViewportSize({ width: 400, height: 800 }); await page.waitForTimeout(3000);
       await page.screenshot({ path: path.join(outDir, 'phone.png') });
     }
     console.log(scheme, 'errors:', errs.length ? errs : 'none');

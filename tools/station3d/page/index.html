@@ -44,7 +44,7 @@ button { cursor: pointer; }
 button:hover { border-color: var(--accent); }
 button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-select, input[type="text"] { width: 100%; }
+select, input[type="text"] { width: 100%; box-sizing: border-box; }
 label.ctl { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; font-size: 14px; margin-bottom: 8px; align-items: center; }
 label.ctl input[type="range"] { grid-column: 1 / -1; width: 100%; accent-color: var(--accent); }
 label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px; margin-bottom: 6px; }
@@ -57,6 +57,17 @@ ul.list li button.del { padding: 5px 8px; color: var(--ink2); }
 .issues li { font-size: 13px; line-height: 1.35; color: var(--ink); padding-left: 10px; border-left: 3px solid var(--warn); }
 .legend { display: grid; grid-template-columns: 14px 1fr auto; gap: 4px 8px; align-items: center; font-size: 13px; }
 .legend i { width: 14px; height: 14px; border-radius: 3px; display: block; }
+#stList { max-height: 190px; overflow-y: auto; }
+#stList button.go { font-size: 14px; }
+#stList button.on { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+#stList button.on .num { color: inherit; }
+.stinfo { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.stline { border-left: 4px solid var(--rule); padding-left: 8px; font-size: 13px; line-height: 1.4; min-width: 0; }
+.stline b { font-size: 14px; font-weight: 600; }
+.stline dl { display: grid; grid-template-columns: auto 1fr; gap: 0 8px; margin: 2px 0 0; }
+.stline dt { color: var(--ink2); }
+.stline dd { margin: 0; font-family: var(--f-num); font-size: 12px; font-variant-numeric: tabular-nums; min-width: 0; overflow-wrap: anywhere; }
+.src { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink2); margin-top: 4px; }
 #panelBtn { display: none; }
 @media (max-width: 760px) {
   #app { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; }
@@ -73,10 +84,16 @@ ul.list li button.del { padding: 5px 8px; color: var(--ink2); }
     <div id="hud"><h1 id="areaName">Station 3D</h1><span class="sub" id="syncedAt">loading…</span></div>
     <svg id="compass" viewBox="-30 -30 60 60" aria-label="North arrow"><circle r="27" fill="var(--sheet)" stroke="var(--rule)"/><g id="needle"><path d="M0,-22 L6,4 L0,0 L-6,4 Z" fill="var(--accent)"/><text y="17" text-anchor="middle" font-size="11" font-family="var(--f-num)" fill="var(--ink)">N</text></g></svg>
     <div id="hint">Drag to orbit · right-drag or two fingers to pan · scroll to zoom · double-click sets the centre</div>
-    <div id="empty" hidden><div><h2 id="emptyTitle">No snapshot yet</h2><p id="emptyText">This page draws the lines, platforms and streets that Claude copies in from the Rail Profiles editor and the Mill Creek Deck. Ask Claude to run the Station 3D sync for Fountain Square.</p></div></div>
+    <div id="empty" hidden><div><h2 id="emptyTitle">No snapshot yet</h2><p id="emptyText">This page draws the lines, platforms and streets that Claude copies in from the Rail Profiles editor and the Mill Creek Deck. Ask Claude to run the Station 3D sync.</p></div></div>
   </div>
   <aside id="panel">
     <button id="panelBtn" type="button" aria-expanded="true">Hide panel</button>
+    <section>
+      <h3>Station</h3>
+      <input type="text" id="stSearch" placeholder="Find a station" aria-label="Find a station" autocomplete="off">
+      <ul class="list" id="stList" style="margin-top:6px"></ul>
+      <div class="stinfo" id="stInfo"></div>
+    </section>
     <section>
       <h3>Views</h3>
       <div class="row" id="presets"></div>
@@ -101,7 +118,8 @@ ul.list li button.del { padding: 5px 8px; color: var(--ink2); }
       <label class="ctl" for="exag">Spread the levels <span class="num" id="exagV"></span><input type="range" id="exag" min="1" max="6" step="0.25" value="1"></label>
       <p class="note">Stretches the depth between levels; structures and platforms keep their true size.</p>
       <label class="chk" for="labels"><input type="checkbox" id="labels" checked> Labels</label>
-      <label class="chk" for="others"><input type="checkbox" id="others" checked> Lines without a station here</label>
+      <label class="chk" for="others"><input type="checkbox" id="others" checked> Lines not at this station</label>
+      <label class="chk" for="unlev"><input type="checkbox" id="unlev" checked> Deck tracks with no level (on the ground)</label>
     </section>
     <section>
       <h3>Lines</h3>
@@ -128,36 +146,39 @@ ul.list li button.del { padding: 5px 8px; color: var(--ink2); }
 (() => {
 'use strict';
 const $ = (id) => document.getElementById(id);
-const AREA = 'fountain_square';
-const PRESETS = [   // facing (true bearing the camera looks along) and angle above the horizontal
+const AREA = 'region';
+const PRESETS = [   // facing (true bearing the camera looks along) and angle above the horizontal, around the chosen station
   { id: 'plan', name: 'Plan', face: 0, el: 89.5 },
   { id: 'republic', name: 'Republic iso', face: 19, el: 26 },   // fs_3d.py default: frame 30 at 26
   { id: 'se139', name: 'SE 139° at 12°', face: 139, el: 12 },
   { id: 'sw229', name: 'SW 229° at 32°', face: 229, el: 32 },
   { id: 'ssw204', name: 'SSW 204° at 28°', face: 204, el: 28 },
   { id: 'below', name: 'From below', face: 19, el: -22 },
+  { id: 'region', name: 'Whole region', face: 0, el: 89.5 },
 ];
-const PLAT = { metro: 0xa3a69f, rer: 0xe08aab };   // Metro grey, TRI pink, at the top level; a step darker each level down
+const PLAT = { metro: 0xa3a69f, rer: 0xe08aab, cvx: 0xa3a69f };   // Metro grey, TRI pink; a step darker each level down
+const TYPE_NAME = { cutcover: 'cut and cover', shield: 'shallow shield', deep: 'deep tube', elevated: 'elevated', atgrade: 'at grade', trough: 'open trough' };
 
 // ---------- renderer ----------
 const stage = $('stage');
-const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, logarithmicDepthBuffer: true });
 renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
 renderer.localClippingEnabled = true;
 stage.prepend(renderer.domElement);
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(35, 1, 0.5, 8000);
+const camera = new THREE.PerspectiveCamera(35, 1, 0.5, 120000);
 camera.position.set(-500, 400, 500);
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true; controls.dampingFactor = 0.12;
 controls.minPolarAngle = 0; controls.maxPolarAngle = Math.PI;   // from above, the side and underneath
-controls.screenSpacePanning = true; controls.maxDistance = 4000; controls.minDistance = 5;
+controls.screenSpacePanning = true; controls.maxDistance = 60000; controls.minDistance = 5;
 scene.add(new THREE.HemisphereLight(0xffffff, 0x6b6f6a, 0.75));
 const sun = new THREE.DirectionalLight(0xffffff, 0.55); sun.position.set(-300, 600, 200); scene.add(sun);
 const sun2 = new THREE.DirectionalLight(0xffffff, 0.25); sun2.position.set(300, -400, -200); scene.add(sun2);
 
-const world = new THREE.Group(); scene.add(world);      // scaled by the height scale
-const labelsG = new THREE.Group(); scene.add(labelsG);   // kept unscaled so labels keep their shape
+const world = new THREE.Group(); scene.add(world);
+const labelsG = new THREE.Group(); scene.add(labelsG);   // station names, shown nearest first
+const selG = new THREE.Group(); scene.add(selG);         // line labels at the chosen station
 const cutTop = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e6);
 const cutNear = new THREE.Plane(new THREE.Vector3(0, 0, 1), 1e6);
 const clips = [cutTop, cutNear];
@@ -167,19 +188,38 @@ function applyTheme() { scene.background = new THREE.Color(cssColor('--view') ||
 applyTheme();
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-
 function resize() { const r = stage.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / Math.max(1, r.height); camera.updateProjectionMatrix(); }
 new ResizeObserver(resize).observe(stage); resize();
 
-// ---------- state ----------
-const S = { snap: null, zref: 160, k: 1, objs: [], lineMeshes: new Map(), levels: [], level: 'all', mats: { ground: [], struct: [] },
-  db: null, user: null, me: null, canWrite: null, downloads: null, views: [] };
-// east, up, south in three's axes; elevations are spread by the level spread k (structure sizes are added unscaled)
-const X = (x) => x, Y = (z) => (z - S.zref) * S.k, Z = (y) => -y;
+// ---------- state and the model's axes ----------
+const S = { snap: null, zref: 160, k: 1, lines: [], byId: new Map(), groups: new Map(), levels: [], level: 'all', mats: { ground: [], struct: [] },
+  stations: [], st: null, db: null, me: null, canEdit: false, downloads: null, views: [], built: false };
+// the ground grid (Profiles ground along every line, averaged on a coarse grid)
+let G = null;
+function groundAt(x, y) {
+  if (!G) return S.zref;
+  const fx = (x - G.x0) / G.step, fy = (y - G.y0) / G.step, i = Math.floor(fy), j = Math.floor(fx), u = fx - j, v = fy - i;
+  let s = 0, w = 0;
+  for (const [di, dj, ww] of [[0, 0, (1 - u) * (1 - v)], [0, 1, u * (1 - v)], [1, 0, (1 - u) * v], [1, 1, u * v]]) {
+    const ii = i + di, jj = j + dj; if (ii < 0 || jj < 0 || ii >= G.ny || jj >= G.nx) continue;
+    const z = G.z[ii * G.nx + jj]; if (z == null) continue; s += z * ww; w += ww;
+  }
+  return w > 0.05 ? s / w / 10 : S.zref;
+}
+// east, up, south in three's axes; depth below the local ground is spread by k (the ground itself stays true)
+const X = (x) => x, Z = (y) => -y;
+const Yp = (x, y, z) => { if (S.k === 1) return z - S.zref; const g = groundAt(x, y); return (g - S.zref) + (z - g) * S.k; };
 
-// KML colour aabbggrr -> 0xrrggbb
+const dec = (v, s) => { const out = new Array(v.length); let a = 0; for (let i = 0; i < v.length; i++) { a += v[i]; out[i] = a / s; } return out; };
+const unrle = (r) => { const out = []; for (const [n, v] of r) for (let i = 0; i < n; i++) out.push(v); return out; };
 function kmlColor(c) { if (!c || c.length !== 8) return 0x777777; return parseInt(c.slice(6, 8) + c.slice(4, 6) + c.slice(2, 4), 16); }
-function shade(hex, f) { const c = new THREE.Color(hex); c.multiplyScalar(f); return c; }
+const hex = (n) => '#' + n.toString(16).padStart(6, '0');
+function shade(h, f) { const c = new THREE.Color(h); c.multiplyScalar(f); return c; }
+const esc = (s) => String(s ?? '').replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+const ft = (m) => `${Math.round(m / 0.3048)} ft (${m.toFixed(2)} m)`;
+const fx = (v, d = 2) => (v == null || Number.isNaN(v) ? '–' : (+v).toFixed(d));
+function fmtTime(t) { try { return new Date(t).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }); } catch { return t; } }
+const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
 function structMat(color, op) {
   const m = new THREE.MeshStandardMaterial({ color, transparent: op < 1, opacity: op, roughness: 0.7, metalness: 0, side: THREE.DoubleSide,
@@ -187,255 +227,361 @@ function structMat(color, op) {
   S.mats.struct.push(m); return m;
 }
 
-// sweep a closed 2D profile ([u left, v up] about the rail) along points [{x, y, z}] in plan with rail level z;
-// profile may be a function of the point index (same vertex count), for boxes that follow the track spacing
-function sweep(pts, profile, mat) {
+// ---------- geometry ----------
+// sweep a closed 2D profile ([u left, v up] about the rail) along points [{x, y, z}]; returns {pos, idx} for merging.
+// profile may be a function of the point index (same vertex count), for boxes that follow the track spacing.
+function sweepData(pts, profile, closed = true) {
   const prof = typeof profile === 'function' ? profile : () => profile;
   const n = pts.length, m = prof(0).length; if (n < 2) return null;
   const pos = new Float32Array(n * m * 3), idx = [];
   for (let i = 0; i < n; i++) {
     const a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)];
     let tx = b.x - a.x, ty = b.y - a.y; const L = Math.hypot(tx, ty) || 1; tx /= L; ty /= L;
-    const nx = -ty, ny = tx;
-    for (let j = 0; j < m; j++) {
-      const [u, v] = prof(i)[j], k = (i * m + j) * 3;
-      pos[k] = X(pts[i].x + nx * u); pos[k + 1] = Y(pts[i].z) + v; pos[k + 2] = Z(pts[i].y + ny * u);
-    }
+    const nx = -ty, ny = tx, base = Yp(pts[i].x, pts[i].y, pts[i].z), pr = prof(i);
+    for (let j = 0; j < m; j++) { const [u, v] = pr[j], k = (i * m + j) * 3; pos[k] = X(pts[i].x + nx * u); pos[k + 1] = base + v; pos[k + 2] = Z(pts[i].y + ny * u); }
   }
-  for (let i = 0; i < n - 1; i++) for (let j = 0; j < m; j++) {
-    const a = i * m + j, b = i * m + (j + 1) % m, c = a + m, d = b + m; idx.push(a, c, b, b, c, d);
-  }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
+  const jm = closed ? m : m - 1;
+  for (let i = 0; i < n - 1; i++) for (let j = 0; j < jm; j++) { const a = i * m + j, b = i * m + (j + 1) % m, c = a + m, d = b + m; idx.push(a, c, b, b, c, d); }
+  return { pos, idx };
+}
+function merged(parts, mat) {   // many {pos, idx} into one mesh
+  parts = parts.filter(Boolean); if (!parts.length) return null;
+  let nv = 0, ni = 0; for (const p of parts) { nv += p.pos.length / 3; ni += p.idx.length; }
+  const pos = new Float32Array(nv * 3), idx = new Uint32Array(ni); let ov = 0, oi = 0;
+  for (const p of parts) { pos.set(p.pos, ov * 3); for (let i = 0; i < p.idx.length; i++) idx[oi + i] = p.idx[i] + ov; ov += p.pos.length / 3; oi += p.idx.length; }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setIndex(new THREE.BufferAttribute(idx, 1)); g.computeVertexNormals();
   return new THREE.Mesh(g, mat);
 }
+function polylines(list, mat) {   // many point lists [[x, y, z]...] into one LineSegments
+  const v = []; for (const pts of list) for (let i = 0; i < pts.length - 1; i++) v.push(...pts[i], ...pts[i + 1]);
+  if (!v.length) return null;
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+  const o = new THREE.LineSegments(g, mat); if (mat.isLineDashedMaterial) o.computeLineDistances(); return o;
+}
 const rect = (u0, u1, v0, v1) => [[u0, v0], [u1, v0], [u1, v1], [u0, v1]];
-const circle = (cu, cv, r, k = 20) => Array.from({ length: k }, (_, i) => [cu + r * Math.cos(2 * Math.PI * i / k), cv + r * Math.sin(2 * Math.PI * i / k)]);
+const circle = (cu, cv, r, k = 10) => Array.from({ length: k }, (_, i) => [cu + r * Math.cos(2 * Math.PI * i / k), cv + r * Math.sin(2 * Math.PI * i / k)]);
 function profilesFor(st) {
   if (st.k === 'box' || st.k === 'open') return [rect(-st.width / 2, st.width / 2, -st.below, Math.max(st.top, 0.05))];
   const r = st.od / 2, cv = st.top - r;
   return st.spacing ? [circle(-st.spacing / 2, cv, r), circle(st.spacing / 2, cv, r)] : [circle(0, cv, r)];
 }
-
-// chainage and signed offset (+ left) of plan point q on a line's points
-function project(pts, q) {
-  let best = { d: 1e18, c: 0, off: 0 };
-  for (let i = 0; i < pts.length - 1; i++) {
-    const a = pts[i], b = pts[i + 1], dx = b.x - a.x, dy = b.y - a.y, L2 = dx * dx + dy * dy; if (L2 < 1e-9) continue;
-    const s = Math.min(1, Math.max(0, ((q[0] - a.x) * dx + (q[1] - a.y) * dy) / L2));
-    const px = a.x + s * dx, py = a.y + s * dy, d = Math.hypot(q[0] - px, q[1] - py);
-    if (d < best.d) best = { d, c: a.c + s * (b.c - a.c), off: (dx * (q[1] - a.y) - dy * (q[0] - a.x)) / Math.sqrt(L2) };
-  }
-  return best;
+function flatShape(ring, mat, zAt, lift) {   // a plan polygon laid on the ground
+  const shape = new THREE.Shape(ring.map(([x, y]) => new THREE.Vector2(x, y)));
+  const geo = new THREE.ShapeGeometry(shape), p = geo.attributes.position, pos = new Float32Array(p.count * 3);
+  for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i); pos[i * 3] = X(x); pos[i * 3 + 1] = Yp(x, y, zAt(x, y)) + lift; pos[i * 3 + 2] = Z(y); }
+  const idx = geo.index ? Array.from(geo.index.array) : Array.from({ length: p.count }, (_, i) => i); geo.dispose();
+  return { pos, idx };
 }
 
 // ---------- labels ----------
-function label(text, pos, opts = {}) {
-  const pad = 6, fs = 26, cv = document.createElement('canvas'), cx = cv.getContext('2d');
-  cx.font = `600 ${fs}px "Barlow Semi Condensed", "Arial Narrow", sans-serif`;
-  const w = Math.ceil(cx.measureText(text).width) + pad * 2, h = fs + pad * 2; cv.width = w; cv.height = h;
-  cx.font = `600 ${fs}px "Barlow Semi Condensed", "Arial Narrow", sans-serif`;
+function label(text, opts = {}) {
+  const pad = 6, fs = 26, cv = document.createElement('canvas'), cx = cv.getContext('2d'), font = `600 ${fs}px "Barlow Semi Condensed", "Arial Narrow", sans-serif`;
+  cx.font = font; const w = Math.ceil(cx.measureText(text).width) + pad * 2 + (opts.bar ? 4 : 0), h = fs + pad * 2; cv.width = w; cv.height = h; cx.font = font;
   cx.fillStyle = opts.bg || 'rgba(255,255,255,0.88)'; cx.beginPath(); cx.roundRect ? cx.roundRect(0, 0, w, h, 6) : cx.rect(0, 0, w, h); cx.fill();
   if (opts.bar) { cx.fillStyle = opts.bar; cx.fillRect(0, 0, 6, h); }
   cx.fillStyle = opts.fg || '#1d2422'; cx.textBaseline = 'middle'; cx.fillText(text, pad + (opts.bar ? 4 : 0), h / 2 + 1);
   const tex = new THREE.CanvasTexture(cv); tex.anisotropy = 4;
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, depthWrite: false, sizeAttenuation: false }));
-  const k = 0.00042; sp.scale.set(w * k, h * k, 1); sp.center.set(0, 0); sp.renderOrder = 10;
-  sp.userData = { base: pos.slice(), level: opts.level ?? null, other: !!opts.other };
-  labelsG.add(sp); return sp;
+  const k = 0.00042; sp.scale.set(w * k, h * k, 1); sp.center.set(0, 0); sp.renderOrder = 10; sp.userData = { ...opts.data };
+  return sp;
+}
+function place(sp, x, y, z) { sp.userData.at = [x, y, z]; sp.position.set(X(x), Yp(x, y, z), Z(y)); }
+
+// ---------- the snapshot, decoded ----------
+function prepare(snap) {
+  G = snap.ground; S.zref = groundAt(0, 0);
+  const lines = snap.lines.map((l) => {
+    const P = [];   // pieces of [{c, x, y, z, t, sh}]
+    for (const pc of l.pieces) {
+      const xs = dec(pc.x, 10), ys = dec(pc.y, 10), zs = dec(pc.z, 100), ts = unrle(pc.t), sh = unrle(pc.sh);
+      P.push(xs.map((x, i) => ({ c: pc.c0 + i * pc.step, x, y: ys[i], z: zs[i], t: ts[i], sh: sh[i] })));
+    }
+    return { ...l, P, T: [], col: kmlColor(l.color) };
+  });
+  const byId = new Map(lines.map((l) => [l.id, l]));
+  const zAt = (l, c) => { for (const p of l.P) { if (c < p[0].c - 1 || c > p[p.length - 1].c + 1) continue; const f = (c - p[0].c) / (p[1] ? p[1].c - p[0].c : 1), i = Math.max(0, Math.min(p.length - 2, Math.floor(f))), a = p[i], b = p[i + 1] || a, u = Math.max(0, Math.min(1, f - i)); return a.z + u * (b.z - a.z); } return null; };
+  for (const t of snap.tracks) {
+    const l = byId.get(t.line); if (!l) continue;
+    const cs = dec(t.c, 10), offs = dec(t.off, 100), xs = dec(t.x, 10), ys = dec(t.y, 10);
+    const pts = cs.map((c, i) => ({ c, off: offs[i], x: xs[i], y: ys[i], z: zAt(l, c) })).filter((p) => p.z != null);
+    if (pts.length > 1) l.T.push(pts);
+  }
+  // lighter geometry between stations: every other point, except within 300 m of a platform and where the type changes
+  const plats0 = snap.platforms.map((p) => [dec(p.x, 100)[0], dec(p.y, 100)[0]]), cell = 300, hash = new Set();
+  for (const [x, y] of plats0) for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) hash.add(`${Math.floor(x / cell) + i},${Math.floor(y / cell) + j}`);
+  const nearPlat = (p) => hash.has(`${Math.floor(p.x / cell)},${Math.floor(p.y / cell)}`);
+  const thin = (arr, keyOf) => arr.filter((p, i) => i % 2 === 0 || i === arr.length - 1 || nearPlat(p) || (keyOf && (keyOf(arr[i - 1]) !== keyOf(p) || (arr[i + 1] && keyOf(arr[i + 1]) !== keyOf(p)))));
+  for (const l of lines) { l.P = l.P.map((pc) => thin(pc, (q) => q && q.t + q.sh)); l.T = l.T.map((t) => thin(t)); }
+  for (const l of lines) l.offsAt = (c) => { const o = []; for (const t of l.T) { if (c < t[0].c - 1 || c > t[t.length - 1].c + 1) continue; let lo = 0, hi = t.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (t[m].c <= c) lo = m; else hi = m; } const a = t[lo], b = t[hi], f = b.c > a.c ? Math.min(1, Math.max(0, (c - a.c) / (b.c - a.c))) : 0; o.push(a.off + f * (b.off - a.off)); } return o; };
+  const plats = snap.platforms.map((p) => { const xs = dec(p.x, 100), ys = dec(p.y, 100); return { ...p, ring: xs.map((x, i) => [x, ys[i]]) }; });
+  // stations: Deck and Profiles records, grouped by name within 600 m into what the panel calls a station
+  const groups = [];
+  for (const r of snap.stations) {
+    if (r.deleted) continue;
+    let g = groups.find((q) => norm(q.name) === norm(r.name) && Math.hypot(q.x - r.x, q.y - r.y) < 600);
+    if (!g) { g = { id: r.id, name: r.name, x: r.x, y: r.y, recs: [] }; groups.push(g); }
+    g.recs.push(r); g.x = g.recs.reduce((a, q) => a + q.x, 0) / g.recs.length; g.y = g.recs.reduce((a, q) => a + q.y, 0) / g.recs.length;
+  }
+  for (const g of groups) {
+    g.plats = plats.filter((p) => norm(p.station) === norm(g.name) && Math.hypot(p.ring[0][0] - g.x, p.ring[0][1] - g.y) < 800);
+    g.lines = [...new Set([...g.recs.flatMap((r) => r.profiles.map((p) => p.line)), ...g.recs.flatMap((r) => r.stops.flatMap((s) => s.lines)), ...g.plats.flatMap((p) => p.lines)])].filter((id) => byId.has(id));
+  }
+  groups.sort((a, b) => a.name.localeCompare(b.name));
+  return { lines, byId, plats, groups };
 }
 
-// ---------- build the scene from a snapshot ----------
+// ---------- build ----------
 function clear() {
-  for (const g of [world, labelsG]) while (g.children.length) { const o = g.children.pop(); o.traverse((x) => { if (x.geometry) x.geometry.dispose(); if (x.material) { if (x.material.map) x.material.map.dispose(); x.material.dispose(); } }); }
-  S.mats = { ground: [], struct: [] }; S.lineMeshes = new Map();
+  for (const g of [world, labelsG, selG]) while (g.children.length) { const o = g.children.pop(); o.traverse((x) => { if (x.geometry) x.geometry.dispose(); if (x.material) { if (x.material.map) x.material.map.dispose(); x.material.dispose(); } }); }
+  S.mats = { ground: [], struct: [] }; S.groups = new Map();
 }
-
 function build(snap) {
   clear(); S.snap = snap;
-  const [gx, gy, gz] = snap.ground.plane; S.zref = gz;
-  const groundAt = (x, y) => gz + gx * x + gy * y;
-  const R = snap.radius, E = R + 40;
+  const D = S.D || (S.D = prepare(snap)); S.lines = D.lines; S.byId = D.byId; S.stations = D.groups;
+  const gop = +$('groundOp').value, sop = +$('structOp').value, margin = snap.box_margin || { metro: 2.3, rer: 3.25 };
 
-  // ground: the fitted plane, see-through
-  const gop = +$('groundOp').value;
-  const gm = new THREE.MeshStandardMaterial({ color: 0xc9c2a8, transparent: true, opacity: gop, side: THREE.DoubleSide, depthWrite: false, roughness: 1, clippingPlanes: clips });
-  S.mats.ground.push(gm);
-  const gg = new THREE.BufferGeometry(), corners = [[-E, -E], [E, -E], [E, E], [-E, E]];
-  gg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(corners.flatMap(([x, y]) => [X(x), Y(groundAt(x, y)), Z(y)])), 3));
-  gg.setIndex([0, 1, 2, 0, 2, 3]); gg.computeVertexNormals();
-  const ground = new THREE.Mesh(gg, gm); ground.renderOrder = 2; ground.userData.kind = 'ground'; world.add(ground);
-
-  // blocks (flat, coloured by type) and streets (ribbons at their width), just above the ground
+  // ground: the grid, see-through
+  if (G) {
+    const gm = new THREE.MeshStandardMaterial({ color: 0xc9c2a8, transparent: true, opacity: gop, side: THREE.DoubleSide, depthWrite: false, roughness: 1, clippingPlanes: clips });
+    S.mats.ground.push(gm);
+    const pos = new Float32Array(G.nx * G.ny * 3), idx = [];
+    for (let i = 0; i < G.ny; i++) for (let j = 0; j < G.nx; j++) { const x = G.x0 + j * G.step, y = G.y0 + i * G.step, k = (i * G.nx + j) * 3; pos[k] = X(x); pos[k + 1] = Yp(x, y, groundAt(x, y)); pos[k + 2] = Z(y); }
+    for (let i = 0; i < G.ny - 1; i++) for (let j = 0; j < G.nx - 1; j++) {
+      const a = i * G.nx + j, b = a + 1, c = a + G.nx, d = c + 1;
+      if ([a, b, c, d].some((q) => G.z[q] == null)) continue; idx.push(a, b, c, b, d, c);
+    }
+    const ms = merged([{ pos, idx }], gm); if (ms) { ms.renderOrder = 2; ms.userData.kind = 'ground'; world.add(ms); }
+  }
+  // blocks and streets (the Deck's basin plan), just above the ground, merged by colour
   const BT = { building: 0xa99d84, tower: 0x8a7a63, landmark: 0xc9a227, civic: 0x89466f, worship: 0xa0607e, school: 0x5f8fb4, hospital: 0x8a645a,
     industrial: 0x8c8c84, square: 0xd9d2b8, park: 0x8db07a, planting: 0x9cbf86 };
-  const bm = {};
-  for (const b of snap.deck.blocks) {
-    if (b.c.length < 3) continue;
-    const col = BT[b.type] || 0xa99d84;
-    if (!bm[col]) { bm[col] = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: gop, side: THREE.DoubleSide, depthWrite: false, clippingPlanes: clips }); S.mats.ground.push(bm[col]); }
-    const shape = new THREE.Shape(b.c.map(([x, y]) => new THREE.Vector2(x, y)));
-    const geo = new THREE.ShapeGeometry(shape); const p = geo.attributes.position;
-    for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i); p.setXYZ(i, X(x), Y(groundAt(x, y)) + 0.05, Z(y)); }
-    geo.computeVertexNormals(); const ms = new THREE.Mesh(geo, bm[col]); ms.renderOrder = 3; ms.userData.kind = 'ground'; world.add(ms);
-  }
-  const sm = new THREE.MeshBasicMaterial({ color: 0xf1eee4, transparent: true, opacity: Math.min(1, gop * 1.6), side: THREE.DoubleSide, depthWrite: false, clippingPlanes: clips });
-  sm.userData.boost = 1.8; S.mats.ground.push(sm);
-  for (const s of snap.deck.streets) {
-    const w = s.w || 10, pts = s.c.map(([x, y]) => ({ x, y, z: groundAt(x, y) + 0.1 }));
-    const ms = sweep(pts, [[-w / 2, 0], [w / 2, 0]], sm); if (ms) { ms.renderOrder = 4; ms.userData.kind = 'ground'; world.add(ms); }
-  }
+  const byCol = new Map();
+  for (const b of snap.blocks) { const xs = dec(b.x, 10), ys = dec(b.y, 10); if (xs.length < 3) continue; const col = BT[b.type] || 0xa99d84; if (!byCol.has(col)) byCol.set(col, []); byCol.get(col).push(flatShape(xs.map((x, i) => [x, ys[i]]), null, groundAt, 0.1)); }
+  for (const [col, parts] of byCol) { const m = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: gop, side: THREE.DoubleSide, depthWrite: false, clippingPlanes: clips }); S.mats.ground.push(m); const ms = merged(parts, m); if (ms) { ms.renderOrder = 3; ms.userData.kind = 'ground'; world.add(ms); } }
+  const sm = new THREE.MeshBasicMaterial({ color: 0xf1eee4, transparent: true, opacity: Math.min(1, gop * 1.8), side: THREE.DoubleSide, depthWrite: false, clippingPlanes: clips }); sm.userData.boost = 1.8; S.mats.ground.push(sm);
+  const sp = snap.streets.map((s) => { const xs = dec(s.x, 10), ys = dec(s.y, 10), w = s.w || 10; return sweepData(xs.map((x, i) => ({ x, y: ys[i], z: groundAt(x, ys[i]) + 0.2 })), [[-w / 2, 0], [w / 2, 0]], false); });
+  { const ms = merged(sp, sm); if (ms) { ms.renderOrder = 4; ms.userData.kind = 'ground'; world.add(ms); } }
+  // Deck tracks with no Profiles level: dashed, on the ground
+  { const um = new THREE.LineDashedMaterial({ color: 0x6f6a5e, dashSize: 12, gapSize: 8, transparent: true, opacity: 0.8, clippingPlanes: clips });
+    const list = snap.unlevelled.map((t) => { const xs = dec(t.x, 10), ys = dec(t.y, 10); return xs.map((x, i) => [X(x), Yp(x, ys[i], groundAt(x, ys[i])) + 0.6, Z(ys[i])]); });
+    const o = polylines(list, um); if (o) { o.userData.kind = 'unlev'; world.add(o); } }
 
-  // levels: lines grouped by their rail level nearest the station (within 2 m)
-  const lines = snap.lines.map((l) => {
-    const pts = l.pts.map(([c, x, y, z, g]) => ({ c, x, y, z, g }));
-    let near = pts[0]; for (const p of pts) if (Math.hypot(p.x, p.y) < Math.hypot(near.x, near.y)) near = p;
-    const here = l.stations.find((s) => s.name === snap.name);
-    return { ...l, P: pts, rail: here && here.rail != null ? here.rail : near.z, here: !!here, near };
-  });
-  const sorted = lines.slice().sort((a, b) => b.rail - a.rail); S.levels = [];
-  for (const l of sorted) { let lv = S.levels.find((v) => Math.abs(v.rail - l.rail) < 2 && v.here === l.here); if (!lv) { lv = { rail: l.rail, here: l.here, lines: [] }; S.levels.push(lv); } lv.lines.push(l); }
-  S.levels.forEach((v, i) => { v.id = 'L' + i; for (const l of v.lines) l.level = v.id; });
-  const stationLevels = S.levels.filter((v) => v.here);
-
-  // structures: every line at its real size, run by run of one structure type (Rail Profiles), placed on the tracks the
-  // Mill Creek Deck draws: a tube on each track where bored, one box over the pair sized by its spacing elsewhere.
-  // A line that runs on another line's tracks here (shared) gets its rail only.
-  const sop = +$('structOp').value, margin = snap.box_margin || { metro: 2.3, rer: 3.25 };
-  for (const l of lines) {
-    const col = kmlColor(l.color), mat = structMat(col, sop), grp = new THREE.Group(); grp.userData = { level: l.level, other: !l.here, kind: 'line' };
-    l.T = (l.tracks || []).map((t) => t.pts.map(([c, off, x, y, z]) => ({ c, off, x, y, z })));
-    l.offsAt = (c) => { const o = []; for (const t of l.T) { if (c < t[0].c - 1 || c > t[t.length - 1].c + 1) continue; let i = 1; while (i < t.length - 1 && t[i].c < c) i++; const a = t[i - 1], b = t[i], f = b.c > a.c ? Math.min(1, Math.max(0, (c - a.c) / (b.c - a.c))) : 0; o.push(a.off + f * (b.off - a.off)); } return o; };
-    const sh = l.shared || [];
-    for (const r of l.runs) {
-      const st = r.st, inRun = (p) => p.c >= r.c0 - 2.01 && p.c <= r.c1 + 0.01;
-      // pieces of the run not shared with another line's tracks
-      const pieces = []; let cur = null;
-      l.P.forEach((p, i) => { if (inRun(p) && !sh[i]) { if (!cur) { cur = []; pieces.push(cur); } cur.push(p); } else cur = null; });
-      for (const seg of pieces) {
-        if (l.T.length && st.k === 'tube') {   // one tube along each track
-          const r0 = st.od / 2, cv = st.top - r0;
-          for (const t of l.T) { const ts = t.filter((p) => p.c >= seg[0].c - 1 && p.c <= seg[seg.length - 1].c + 1); const ms = sweep(ts, circle(0, cv, r0), mat); if (ms) grp.add(ms); }
-        } else if (l.T.length && (st.k === 'box' || st.k === 'open')) {   // one box over the pair, as wide as the tracks need
-          const m = st.k === 'open' ? 2.0 : margin[l.sys] || 2.3;
-          const prof = (i) => { const o = l.offsAt(seg[i].c); return o.length ? rect(Math.min(...o) - m, Math.max(...o) + m, -st.below, Math.max(st.top, 0.05)) : rect(-st.width / 2, st.width / 2, -st.below, Math.max(st.top, 0.05)); };
-          const ms = sweep(seg, prof, mat); if (ms) grp.add(ms);
-        } else for (const prof of profilesFor(st)) { const ms = sweep(seg, prof, mat); if (ms) grp.add(ms); }
+  // structures: each line run by run of its Profiles type, on the Deck's tracks: a tube on each track where bored,
+  // one box over the pair, as wide as the tracks need, elsewhere. Stretches on another line's tracks (shared) get rails only.
+  for (const l of S.lines) {
+    const mat = structMat(l.col, sop), grp = new THREE.Group(); grp.userData = { kind: 'line', line: l.id };
+    const parts = [], stt = snap.struct[l.id], m = margin[l.sys === 'rer' ? 'rer' : 'metro'] || 2.3;
+    for (const piece of l.P) {
+      let i = 0;
+      while (i < piece.length) {   // runs of one type, not shared
+        const t = piece[i].t, sh = piece[i].sh; let j = i; while (j + 1 < piece.length && piece[j + 1].t === t && piece[j + 1].sh === sh) j++;
+        const seg = piece.slice(Math.max(0, i - 1), j + 1), st = stt[t];
+        if (!sh && seg.length > 1) {
+          if (l.T.length && st.k === 'tube') { const r0 = st.od / 2, cv = st.top - r0; for (const tr of l.T) { const ts = tr.filter((p) => p.c >= seg[0].c - 5 && p.c <= seg[seg.length - 1].c + 5); if (ts.length > 1) parts.push(sweepData(ts, circle(0, cv, r0))); } }
+          else if (l.T.length && (st.k === 'box' || st.k === 'open')) { const mm = st.k === 'open' ? 2.0 : m, top = Math.max(st.top, 0.05); parts.push(sweepData(seg, (q) => { const o = l.offsAt(seg[q].c); return o.length ? rect(Math.min(...o) - mm, Math.max(...o) + mm, -st.below, top) : rect(-st.width / 2, st.width / 2, -st.below, top); })); }
+          else for (const pr of profilesFor(st)) parts.push(sweepData(seg, pr));
+        }
+        i = j + 1;
       }
     }
-    // the rails: each Deck track at its rail level (else the line's centre), solid, so they read through the shell
-    const railMat = new THREE.LineBasicMaterial({ color: col, clippingPlanes: clips });
-    for (const t of (l.T.length ? l.T : [l.P])) grp.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(t.map((p) => new THREE.Vector3(X(p.x), Y(p.z), Z(p.y)))), railMat));
-    world.add(grp); S.lineMeshes.set(l.id, grp);
-    if (!l.here) { const p = l.near; label(l.name, [p.x, p.z + 3, p.y], { bar: '#' + col.toString(16).padStart(6, '0'), level: l.level, other: true }); }
+    // station boxes: the platforms and the tracks beside them, 0.5 m walls (tube stations: the cavern)
+    const boxes = new Map();
+    for (const p of D.plats) {
+      if (p.line !== l.id || p.rail == null) continue;
+      const key = p.station; const bx = boxes.get(key) || { c0: 1e18, c1: -1e18, u0: 1e9, u1: -1e9 };
+      for (const q of p.ring) { const pr = projectOn(l, q); if (!pr) continue; bx.c0 = Math.min(bx.c0, pr.c); bx.c1 = Math.max(bx.c1, pr.c); bx.u0 = Math.min(bx.u0, pr.off); bx.u1 = Math.max(bx.u1, pr.off); }
+      boxes.set(key, bx);
+    }
+    for (const bx of boxes.values()) {
+      if (bx.c1 < bx.c0) continue;
+      const mid = (bx.c0 + bx.c1) / 2, piece = l.P.find((pc) => pc[0].c <= mid && pc[pc.length - 1].c >= mid); if (!piece) continue;
+      const seg = piece.filter((q) => q.c >= bx.c0 - 1 && q.c <= bx.c1 + 1), st = stt[(seg[Math.floor(seg.length / 2)] || piece[0]).t]; if (seg.length < 2) continue;
+      const offs = l.offsAt(mid), edge = st.k === 'tube' ? st.od / 2 : 2.0, half = st.k === 'box' || st.k === 'open' ? st.width / 2 : (st.spacing || 0) / 2 + (st.od || 0) / 2;
+      const u0 = Math.min(bx.u0 - 0.5, offs.length ? Math.min(...offs) - edge : -half), u1 = Math.max(bx.u1 + 0.5, offs.length ? Math.max(...offs) + edge : half);
+      parts.push(sweepData(seg, rect(u0, u1, -st.below, Math.max(st.top, 0.05))));
+    }
+    const ms = merged(parts, mat); if (ms) grp.add(ms);
+    // rails: each Deck track at its rail level, else the line's centre
+    const rm = new THREE.LineBasicMaterial({ color: l.col, clippingPlanes: clips });
+    const rl = polylines((l.T.length ? l.T : l.P).map((t) => t.map((p) => [X(p.x), Yp(p.x, p.y, p.z), Z(p.y)])), rm); if (rl) grp.add(rl);
+    world.add(grp); S.groups.set(l.id, grp);
   }
+  // platforms: the Deck's plan at the Profiles rail level plus the platform height; a step darker every 8 m below the ground.
+  // A platform on a shared pair (A/D) is drawn once, at its saved line's level, and serves every line on it.
+  const pm = new Map();
+  for (const p of D.plats) {
+    const cx = p.ring.reduce((a, q) => a + q[0], 0) / p.ring.length, cy = p.ring.reduce((a, q) => a + q[1], 0) / p.ring.length;
+    const top = p.top ?? groundAt(cx, cy), rail = p.rail ?? top - 1, depth = Math.max(0, groundAt(cx, cy) - top), step = Math.min(4, Math.floor(depth / 8));
+    const key = (p.line || 'none') + '|' + p.sys + '|' + step;
+    if (!pm.has(key)) pm.set(key, { line: p.line, col: shade(PLAT[p.sys] || PLAT.metro, Math.pow(0.84, step)), parts: [] });
+    const shape = new THREE.Shape(p.ring.map(([x, y]) => new THREE.Vector2(x, y))), hgt = Math.max(0.3, top - rail);
+    const geo = new THREE.ExtrudeGeometry(shape, { depth: hgt, bevelEnabled: false }); geo.rotateX(-Math.PI / 2); geo.translate(0, Yp(cx, cy, top) - hgt, 0);
+    const g2 = geo.toNonIndexed(); geo.dispose(); const arr = g2.attributes.position.array.slice(); g2.dispose();
+    pm.get(key).parts.push({ pos: arr, idx: Array.from({ length: arr.length / 3 }, (_, i) => i) });
+  }
+  for (const v of pm.values()) {
+    const ms = merged(v.parts, new THREE.MeshStandardMaterial({ color: v.col, roughness: 0.8, clippingPlanes: clips })); if (!ms) continue;
+    ms.userData.kind = 'platform'; (v.line && S.groups.get(v.line) ? S.groups.get(v.line) : world).add(ms);
+  }
+  // station names, shown nearest first (see tick)
+  for (const g of S.stations) { const sp = label(g.name, { data: { st: g.id } }); place(sp, g.x, g.y, groundAt(g.x, g.y) + 6); labelsG.add(sp); }
 
-  // platforms: the Deck's plan, at the Profiles rail level plus the platform height; a step darker each level down.
-  // Station boxes widen the line's structure to take in its platforms over the platform length.
-  const byLine = new Map(lines.map((l) => [l.id, l]));
-  const rank = (lid) => { const l = byLine.get(lid); const i = stationLevels.findIndex((v) => v.id === l.level); return Math.max(0, i); };
-  const boxes = new Map();
-  for (const pl of snap.deck.platforms) {
-    const lv = pl.levels[0]; if (!lv) continue;
-    const l = byLine.get(lv.line); if (!l) continue;
-    const base = PLAT[pl.sys === 'metro' ? 'metro' : 'rer'], col = shade(base, Math.pow(0.84, rank(lv.line)));
-    const ring = pl.c.slice(0, pl.c.length > 3 && pl.c[0][0] === pl.c[pl.c.length - 1][0] && pl.c[0][1] === pl.c[pl.c.length - 1][1] ? -1 : undefined);
-    const shape = new THREE.Shape(ring.map(([x, y]) => new THREE.Vector2(x, y)));
-    const hgt = lv.top - lv.rail;   // the platform body, rail level to platform top
-    const geo = new THREE.ExtrudeGeometry(shape, { depth: hgt, bevelEnabled: false }); geo.rotateX(-Math.PI / 2); geo.translate(0, Y(lv.top) - hgt, 0);
-    const ms = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: col, roughness: 0.8, clippingPlanes: clips }));
-    ms.userData = { level: l.level, kind: 'platform', other: !l.here }; world.add(ms);
-    // gather the platform's extent along and across its line for the station box
-    const key = l.id + '|' + pl.station; const pr = ring.map((q) => project(l.P, q));
-    const bx = boxes.get(key) || { l, c0: 1e18, c1: -1e18, u0: 0, u1: 0, name: pl.station, sys: pl.sys, top: lv.top };
-    for (const p of pr) { bx.c0 = Math.min(bx.c0, p.c); bx.c1 = Math.max(bx.c1, p.c); bx.u0 = Math.min(bx.u0, p.off); bx.u1 = Math.max(bx.u1, p.off); }
-    boxes.set(key, bx);
-  }
-  for (const bx of boxes.values()) {
-    const l = bx.l, run = l.runs.find((r) => r.c0 <= (bx.c0 + bx.c1) / 2 && r.c1 >= (bx.c0 + bx.c1) / 2) || l.runs[0], st = run.st;
-    // the station box takes in the platforms and the tracks beside them, with 0.5 m walls (tube stations: the cavern)
-    const offs = l.offsAt((bx.c0 + bx.c1) / 2), edge = st.k === 'tube' ? st.od / 2 : 2.0;
-    const half = st.k === 'box' || st.k === 'open' ? st.width / 2 : (st.spacing || 0) / 2 + st.od / 2;
-    const u0 = Math.min(bx.u0 - 0.5, offs.length ? Math.min(...offs) - edge : -half), u1 = Math.max(bx.u1 + 0.5, offs.length ? Math.max(...offs) + edge : half), top = st.top;
-    const seg = l.P.filter((p) => p.c >= bx.c0 - 1 && p.c <= bx.c1 + 1);
-    const grp = S.lineMeshes.get(l.id), ms = sweep(seg, rect(u0, u1, -st.below, top), grp.children[0] ? grp.children[0].material : structMat(kmlColor(l.color), sop));
-    if (ms) grp.add(ms);
-    const mid = seg[Math.floor(seg.length / 2)] || l.near;
-    if (bx.name === snap.name) label(`${l.name} · rail ${l.stations.find((s) => s.name === snap.name)?.rail ?? mid.z.toFixed(2)} m`, [mid.x, bx.top + 1.5, mid.y], { bar: '#' + kmlColor(l.color).toString(16).padStart(6, '0'), level: l.level });
-  }
-  // the station's street-level marker
-  const st0 = snap.deck.stations.find((s) => s.name === snap.name);
-  if (st0) label(snap.name, [st0.x, groundAt(st0.x, st0.y) + 6, st0.y], { bg: 'rgba(31,111,120,0.94)', fg: '#ffffff' }).material.map.needsUpdate = true;
-
-  // the level menu, the legend and the data panel
-  const sel = $('level'); sel.innerHTML = '<option value="all">All levels</option>' + stationLevels.map((v) =>
-    `<option value="${v.id}">${v.rail.toFixed(1)} m: ${v.lines.map((l) => l.name.replace(/ \(TRI (\w)\)/, ' / TRI $1')).join(', ')}</option>`).join('');
-  sel.value = stationLevels.some((v) => v.id === S.level) ? S.level : 'all'; S.level = sel.value;
-  $('legend').innerHTML = sorted.map((l) => `<i style="background:#${kmlColor(l.color).toString(16).padStart(6, '0')}"></i><span>${esc(l.name)}${l.saved ? '' : ' <span class="num">(unsaved)</span>'}</span><span class="num">${l.rail.toFixed(2)} m</span>`).join('');
-  $('areaName').textContent = snap.name;
+  // panel: lines, data, issues
+  $('legend').innerHTML = S.lines.slice().sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })).map((l) => `<i style="background:${hex(l.col)}"></i><span>${esc(l.name)}${l.saved ? '' : ' <span class="num">(defaults)</span>'}</span><span class="num">${l.T.length ? l.T.length + ' tracks' : 'centre line'}</span>`).join('');
+  $('areaName').textContent = S.st ? S.st.name : snap.name;
   $('syncedAt').textContent = 'synced ' + fmtTime(snap.synced_at);
-  $('dataNote').textContent = `Lines and levels from the Rail Profiles editor, plan and platforms from the Mill Creek Deck, copied ${fmtTime(snap.synced_at)}. Metro platforms ${ft(snap.platform_m.metro)}, TRI ${ft(snap.platform_m.rer)}. Ground ${snap.ground.plane[2].toFixed(1)} m at the centre, a plane fitted to the Profiles ground (±${snap.ground.fit_rms} m).`;
+  $('dataNote').textContent = `Levels and stations from the Rail Profiles editor; plan, tracks, platforms and stations from the Mill Creek Deck; copied ${fmtTime(snap.synced_at)}. ${snap.counts.lines} lines, ${snap.counts.tracks} levelled tracks, ${snap.counts.stations} station records, ${snap.counts.platforms} platforms. Metro platforms ${ft(snap.platform_m.metro)}, TRI ${ft(snap.platform_m.rer)}.`;
   $('issues').innerHTML = snap.issues.map((t) => `<li>${esc(t)}</li>`).join('');
-  $('assumed').textContent = 'Assumed until set: ' + snap.assumed.join('; ') + '.';
-  const zs = lines.flatMap((l) => l.P.map((p) => p.z)); $('cutZ').min = Math.floor(Math.min(...zs) - 10); $('cutZ').max = Math.ceil(gz + 15);
-  if (+$('cutZ').value > +$('cutZ').max || !S.built) $('cutZ').value = $('cutZ').max;
+  $('assumed').textContent = 'Rules: ' + (snap.rules || []).join('; ') + '. Assumed until set: ' + snap.assumed.join('; ') + '.';
+  const zs = S.lines.flatMap((l) => l.P.flatMap((p) => p.map((q) => q.z))); let zmin = Infinity; for (const z of zs) if (z < zmin) zmin = z;
+  let gmax = -Infinity; for (const z of (G ? G.z : [])) if (z != null && z / 10 > gmax) gmax = z / 10;
+  $('cutZ').min = Math.floor(zmin - 10); $('cutZ').max = Math.ceil((isFinite(gmax) ? gmax : S.zref) + 10);
+  if (!S.built || +$('cutZ').value > +$('cutZ').max) $('cutZ').value = $('cutZ').max;
   S.built = true; $('empty').hidden = true;
-  applyShow(); applyExag();
+  if (S.st) showStation(S.st, false); else applyShow();
 }
-const esc = (s) => String(s).replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
-const ft = (m) => `${Math.round(m / 0.3048)} ft (${m.toFixed(2)} m)`;
-function fmtTime(t) { try { return new Date(t).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }); } catch { return t; } }
+function projectOn(l, q) {   // chainage and offset (+ left) of plan point q on a line's pieces
+  let best = null;
+  for (const pc of l.P) for (let i = 0; i < pc.length - 1; i += 1) {
+    const a = pc[i], b = pc[i + 1]; if (Math.abs(a.x - q[0]) > 400 || Math.abs(a.y - q[1]) > 400) continue;
+    const dx = b.x - a.x, dy = b.y - a.y, L2 = dx * dx + dy * dy; if (L2 < 1e-9) continue;
+    const s = Math.min(1, Math.max(0, ((q[0] - a.x) * dx + (q[1] - a.y) * dy) / L2)), px = a.x + s * dx, py = a.y + s * dy, d = Math.hypot(q[0] - px, q[1] - py);
+    if (!best || d < best.d) best = { d, c: a.c + s * (b.c - a.c), off: (dx * (q[1] - a.y) - dy * (q[0] - a.x)) / Math.sqrt(L2) };
+  }
+  return best && best.d < 60 ? best : null;
+}
+
+// ---------- the chosen station: levels, info from both editors, line labels ----------
+function stationLevels(g) {
+  // each line at the station: its platform level (shared platforms at their saved line's level), else its Profiles rail
+  const rows = g.lines.map((id) => {
+    const l = S.byId.get(id), pl = g.plats.find((p) => p.lines.includes(id) && p.rail != null), pr = g.recs.flatMap((r) => r.profiles).find((p) => p.line === id);
+    return { l, rail: pl ? pl.rail : pr ? pr.rail : null, shared: pl && pl.line !== id ? S.byId.get(pl.line) : null };
+  }).filter((r) => r.rail != null).sort((a, b) => b.rail - a.rail);
+  const lv = []; for (const r of rows) { let v = lv.find((q) => Math.abs(q.rail - r.rail) < 2); if (!v) { v = { rail: r.rail, lines: [], rails: {} }; lv.push(v); } v.lines.push(r.l); v.rails[r.l.id] = r.rail; }
+  lv.forEach((v, i) => (v.id = 'L' + i)); return lv;
+}
+function stationInfo(g) {
+  const recs = g.recs, out = [];
+  for (const id of g.lines) {
+    const l = S.byId.get(id), pr = recs.flatMap((r) => r.profiles).find((p) => p.line === id);
+    const stops = recs.flatMap((r) => r.stops).filter((s) => s.lines.includes(id)), pl = g.plats.filter((p) => p.lines.includes(id));
+    const dl = [];
+    if (pr) dl.push(['Rail', `${fx(pr.rail)} m`], ['Ground', `${fx(pr.ground)} m`], ['Depth', `${fx(pr.depth)} m`], ['Structure', TYPE_NAME[pr.type] || pr.type], ['Profile', pr.saved ? 'saved' : 'editor defaults'], ['Platform offset', `${fx(pr.offset, 1)} m`]);
+    else dl.push(['Rail', 'not in the Rail Profiles editor']);
+    for (const s of stops) {
+      const w = (s.bands || []).map((b) => fx(Math.abs(b[1] - b[0]), 1)).join(' + ');
+      dl.push(['Platform', `${s.type}${s.ben ? ' (Ben’s setting)' : s.type !== s.type_generated ? '' : ' (generated)'}, ${w} m wide, ${fx(s.L, 1)} m`],
+        ['Tracks', `${(s.track_offsets || []).map((o) => (o > 0 ? '+' : '') + fx(o)).join(' / ')} m from the line (${s.tracks_from || '–'})`]);
+      if (s.slid) dl.push(['Slid', `${fx(s.slid, 1)} m from its generated place`]);
+      if (s.lines.length > 1) { const lv = pl.find((p) => p.lines.length > 1); dl.push(['Shared', `${s.lines.length > 2 ? 'the box serves' : 'one platform for'} ${shortNames(s.lines)}${lv && lv.line ? ', at ' + S.byId.get(lv.line).name + '’s level ' + fx(lv.rail) + ' m' : ''}`]); }
+    }
+    if (!stops.length) dl.push(['Platform', 'no Deck stop']);
+    out.push(`<div class="stline" style="border-left-color:${hex(l.col)}"><b>${esc(l.name)}</b><dl>${dl.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('')}</dl></div>`);
+  }
+  const notes = recs.filter((r) => r.note).map((r) => r.note), edited = recs.some((r) => r.edited);
+  return `<div class="src">Rail Profiles + Mill Creek Deck${edited ? ' · edited in the Deck' : ''}${notes.length ? ' · ' + esc(notes[0]) : ''}</div>` + out.join('');
+}
+// 'Line 1', 'TRI A + D' (a shared platform), 'CVG Express'
+function shortNames(ids) {
+  const tri = ids.map((x) => S.byId.get(x)).filter((l) => l && l.sys === 'rer').map((l) => (l.name.match(/TRI (\w)/) || [])[1]).filter(Boolean);
+  const other = ids.map((x) => S.byId.get(x)).filter((l) => l && l.sys !== 'rer').map((l) => l.name);
+  return [...other, ...(tri.length ? ['TRI ' + tri.join(' + ')] : [])].join(' + ');
+}
+function showStation(g, fly = true) {
+  S.st = g; $('areaName').textContent = g.name;
+  S.zref = groundAt(g.x, g.y);
+  S.levels = stationLevels(g);
+  const sel = $('level'); sel.innerHTML = '<option value="all">All levels</option>' + S.levels.map((v) => `<option value="${v.id}">${v.rail.toFixed(1)} m: ${esc(shortNames(v.lines.map((l) => l.id)))}</option>`).join('');
+  if (!S.levels.some((v) => v.id === S.level)) S.level = 'all'; sel.value = S.level;
+  $('stInfo').innerHTML = stationInfo(g);
+  renderStList();
+  // line labels at the station's platforms
+  while (selG.children.length) { const o = selG.children.pop(); o.material.map.dispose(); o.material.dispose(); }
+  for (const v of S.levels) for (const l of v.lines) {
+    const p = g.plats.find((q) => q.lines.includes(l.id) && q.rail != null); if (p && p.line !== l.id) continue;   // shared: labelled once
+    const at = p ? [p.ring.reduce((a, q) => a + q[0], 0) / p.ring.length, p.ring.reduce((a, q) => a + q[1], 0) / p.ring.length, p.top + 1.5] : [g.x, g.y, v.rail + 2];
+    const names = p ? shortNames(p.lines) : shortNames([l.id]);
+    const sp = label(`${names} · rail ${fx(p ? p.rail : v.rails[l.id])} m`, { bar: hex(l.col), data: { level: v.id, line: l.id } }); place(sp, ...at); selG.add(sp);
+  }
+  if (fly) { const d = camera.position.distanceTo(controls.target), dirv = camera.position.clone().sub(controls.target); const t = stationTarget(); controls.target.copy(t); camera.position.copy(t).add(dirv.setLength(Math.min(Math.max(d, 300), 1500))); controls.update(); }
+  applyShow(); saveCamSoon();
+}
+function stationTarget() {
+  const g = S.st; if (!g) return new THREE.Vector3();
+  const lv = S.levels.find((v) => v.id === S.level), zs = (lv ? [lv] : S.levels).map((v) => v.rail);
+  const z = zs.length ? (Math.max(...zs) + Math.min(...zs)) / 2 : groundAt(g.x, g.y);
+  return new THREE.Vector3(X(g.x), Yp(g.x, g.y, z), Z(g.y));
+}
+function renderStList() {
+  const q = norm($('stSearch').value), list = q ? S.stations.filter((g) => norm(g.name).includes(q)) : S.stations;
+  $('stList').innerHTML = list.slice(0, 40).map((g) => `<li><button type="button" class="go${S.st === g ? ' on' : ''}" data-st="${esc(g.id)}">${esc(g.name)} <span class="num">${g.lines.map((id) => esc(S.byId.get(id).name.replace(/^Line /, '').replace(/^RER-\d \(TRI (\w)\)$/, '$1').replace('CVG Express', 'CVX'))).join(' ')}</span></button></li>`).join('')
+    + (list.length > 40 ? `<li class="note">${list.length - 40} more: type to narrow the list.</li>` : list.length ? '' : '<li class="note">No station by that name.</li>');
+}
+$('stSearch').addEventListener('input', renderStList);
+$('stList').addEventListener('click', (e) => { const b = e.target.closest('[data-st]'); if (!b) return; const g = S.stations.find((x) => x.id === b.dataset.st); if (g) { S.level = 'all'; showStation(g); } });
 
 // ---------- display controls ----------
 function applyShow() {
-  const lv = S.level, others = $('others').checked;
-  world.children.forEach((o) => { const u = o.userData; if (u.kind === 'ground') return; o.visible = (lv === 'all' || u.level === lv) && (others || !u.other || lv !== 'all' && u.level === lv); });
-  labelsG.children.forEach((o) => { const u = o.userData; o.visible = $('labels').checked && (u.level == null || lv === 'all' || u.level === lv) && (others || !u.other); });
+  const lv = S.level, others = $('others').checked, at = new Set(S.st ? S.st.lines : []);
+  const inLevel = (id) => lv === 'all' || (S.levels.find((v) => v.id === lv) || { lines: [] }).lines.some((l) => l.id === id);
+  world.children.forEach((o) => { const u = o.userData;
+    if (u.kind === 'line') o.visible = inLevel(u.line) && (others || at.has(u.line) || !S.st);
+    else if (u.kind === 'unlev') o.visible = $('unlev').checked && lv === 'all';
+    else if (u.kind === 'platform') o.visible = lv === 'all'; });
+  selG.children.forEach((o) => { o.visible = $('labels').checked && (lv === 'all' || o.userData.level === lv); });
   const g = +$('groundOp').value, s = +$('structOp').value;
   S.mats.ground.forEach((m) => { m.opacity = Math.min(1, g * (m.userData.boost || 1)); m.visible = g > 0.01; });
   S.mats.struct.forEach((m) => { m.opacity = s; m.transparent = s < 1; m.depthWrite = s >= 0.95; m.needsUpdate = true; });
   $('groundOpV').textContent = Math.round(g * 100) + '%'; $('structOpV').textContent = Math.round(s * 100) + '%';
-  const cz = +$('cutZ').value, off = cz >= +$('cutZ').max;
-  cutTop.constant = off ? 1e6 : Y(cz); $('cutZV').textContent = off ? 'off' : cz.toFixed(1) + ' m';
+  const cz = +$('cutZ').value, off = cz >= +$('cutZ').max, c = S.st || { x: 0, y: 0 };
+  cutTop.constant = off ? 1e6 : Yp(c.x, c.y, cz); $('cutZV').textContent = off ? 'off' : cz.toFixed(1) + ' m';
+  S.labelsDirty = true;
 }
+let exagT = 0;
 function applyExag() {
-  const k = +$('exag').value, old = S.k; $('exagV').textContent = k === 1 ? 'true' : '×' + k.toFixed(2).replace(/\.?0+$/, '');
-  if (k !== old) {   // rebuild at the new spread; keep the camera on the same part of the model
+  const k = +$('exag').value; $('exagV').textContent = k === 1 ? 'true' : '×' + k.toFixed(2).replace(/\.?0+$/, '');
+  if (k === S.k) return;
+  clearTimeout(exagT); exagT = setTimeout(() => {   // rebuild at the new spread; keep the camera on the same part of the model
+    const t0 = controls.target.clone(), c = S.st || { x: 0, y: 0 }, g = groundAt(c.x, c.y) - S.zref, f = (y) => g + (y - g) * (k / S.k);
     S.k = k; if (S.snap) build(S.snap);
-    camera.position.y *= k / old; controls.target.y *= k / old; controls.update();
-  }
-  labelsG.children.forEach((o) => { const b = o.userData.base; o.position.set(X(b[0]), Y(b[1]), Z(b[2])); });
-  applyShow();
+    const dy = f(t0.y) - t0.y; controls.target.y += dy; camera.position.y += dy; controls.update();
+  }, 200);
 }
-['groundOp', 'structOp', 'cutZ', 'labels', 'others'].forEach((id) => $(id).addEventListener('input', applyShow));
+['groundOp', 'structOp', 'cutZ', 'labels', 'others', 'unlev'].forEach((id) => $(id).addEventListener('input', applyShow));
 $('level').addEventListener('change', (e) => { S.level = e.target.value; applyShow(); });
 $('exag').addEventListener('input', applyExag);
 $('panelBtn').addEventListener('click', () => { const p = $('panel'); const c = p.classList.toggle('closed'); $('panelBtn').textContent = c ? 'Show panel' : 'Hide panel'; $('panelBtn').setAttribute('aria-expanded', String(!c)); requestAnimationFrame(resize); });
 
-// ---------- camera: presets, double-click centre, remembered per viewer ----------
+// ---------- camera ----------
 function lookFrom(face, el, dist, target) {
   const b = face * Math.PI / 180, e = el * Math.PI / 180, t = target || controls.target.clone();
   const look = new THREE.Vector3(Math.cos(e) * Math.sin(b), -Math.sin(e), -Math.cos(e) * Math.cos(b));
   camera.up.set(0, 1, 0); controls.target.copy(t); camera.position.copy(t).addScaledVector(look, -dist); controls.update();
 }
-function presetTarget() {
-  const lv = S.levels.find((v) => v.id === S.level) || null, zs = (lv ? [lv] : S.levels.filter((v) => v.here)).map((v) => v.rail);
-  const z = zs.length ? (Math.max(...zs) + Math.min(...zs)) / 2 : S.zref; return new THREE.Vector3(0, Y(z), 0);
-}
 $('presets').innerHTML = PRESETS.map((p) => `<button type="button" data-p="${p.id}">${p.name}</button>`).join('');
-$('presets').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; const p = PRESETS.find((q) => q.id === b.dataset.p); lookFrom(p.face, p.el, p.id === 'plan' ? 900 : 620, presetTarget()); saveCamSoon(); });
-
+$('presets').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return; const p = PRESETS.find((q) => q.id === b.dataset.p);
+  if (p.id === 'region' && S.snap) { const [x0, y0, x1, y1] = S.snap.box; lookFrom(0, 89.5, Math.max(x1 - x0, y1 - y0) * 1.35, new THREE.Vector3(X((x0 + x1) / 2), 0, Z((y0 + y1) / 2))); }
+  else lookFrom(p.face, p.el, p.id === 'plan' ? 900 : 620, stationTarget());
+  saveCamSoon();
+});
 const ray = new THREE.Raycaster();
 renderer.domElement.addEventListener('dblclick', (e) => {
   const r = renderer.domElement.getBoundingClientRect();
   ray.setFromCamera(new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1), camera);
-  const hits = ray.intersectObjects(world.children, true).filter((h) => h.object.visible && isVisibleChain(h.object) && !isClipped(h.point) && (h.object.material.opacity > 0.05 || !h.object.material.transparent));
+  const hits = ray.intersectObjects(world.children, true).filter((h) => h.object.isMesh && isVisibleChain(h.object) && !isClipped(h.point) && (h.object.material.opacity > 0.05 || !h.object.material.transparent));
   if (hits.length) { const d = hits[0].point.clone().sub(controls.target); controls.target.add(d); camera.position.add(d); controls.update(); saveCamSoon(); }
 });
 const isVisibleChain = (o) => { for (let x = o; x; x = x.parent) if (!x.visible) return false; return true; };
 const isClipped = (p) => clips.some((pl) => pl.distanceToPoint(p) < 0);
-
-const camState = () => ({ pos: camera.position.toArray().map((v) => +v.toFixed(2)), target: controls.target.toArray().map((v) => +v.toFixed(2)), exag: +$('exag').value });
-function setCam(c) { if (!c || !c.pos) return; if (c.exag) { $('exag').value = c.exag; applyExag(); } camera.position.fromArray(c.pos); controls.target.fromArray(c.target); controls.update(); }
+const camState = () => ({ pos: camera.position.toArray().map((v) => +v.toFixed(2)), target: controls.target.toArray().map((v) => +v.toFixed(2)), exag: +$('exag').value, station: S.st ? S.st.id : null });
+function setCam(c) {
+  if (!c || !c.pos) return;
+  const g = c.station && S.stations.find((x) => x.id === c.station); if (g && g !== S.st) showStation(g, false);
+  if (c.exag && c.exag !== S.k) { $('exag').value = c.exag; S.k = c.exag; $('exagV').textContent = c.exag === 1 ? 'true' : '×' + c.exag; if (S.snap) build(S.snap); }
+  camera.position.fromArray(c.pos); controls.target.fromArray(c.target); controls.update();
+}
 let camT = 0;
 function saveCamSoon() {
   clearTimeout(camT); camT = setTimeout(async () => {
@@ -471,42 +617,58 @@ async function offer(filename, data) {
   catch (e) { $('exportNote').textContent = e && e.code === 'declined' ? 'Download declined.' : 'The download failed (' + ((e && e.code) || 'error') + ').'; }
 }
 const stamp = () => new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
-$('png').addEventListener('click', () => { renderer.render(scene, camera); renderer.domElement.toBlob((b) => b && offer(`${AREA}_3d_${stamp()}.png`, b), 'image/png'); });
+const fileBase = () => (S.st ? norm(S.st.name) : AREA);
+$('png').addEventListener('click', () => { renderer.render(scene, camera); renderer.domElement.toBlob((b) => b && offer(`${fileBase()}_3d_${stamp()}.png`, b), 'image/png'); });
 $('gltf').addEventListener('click', () => {
   const ex = new THREE.GLTFExporter(), root = new THREE.Group();
-  world.children.filter((o) => o.visible).forEach((o) => root.add(o.clone()));
-  ex.parse(root, (res) => offer(`${AREA}_3d_${stamp()}.glb`, new Blob([res], { type: 'model/gltf-binary' })), (err) => { $('exportNote').textContent = 'The model could not be exported: ' + err; }, { binary: true });
+  world.children.filter((o) => o.visible && o.userData.kind !== 'ground' && o.userData.kind !== 'unlev').forEach((o) => root.add(o.clone()));
+  ex.parse(root, (res) => offer(`${fileBase()}_3d_${stamp()}.glb`, new Blob([res], { type: 'model/gltf-binary' })), (err) => { $('exportNote').textContent = 'The model could not be exported: ' + err; }, { binary: true });
 });
 
-// ---------- loop ----------
-const needle = $('needle'), dir = new THREE.Vector3();
+// ---------- loop: cutaway, compass, station names nearest the view ----------
+const needle = $('needle'), dir = new THREE.Vector3(), tmp = new THREE.Vector3();
+let frame = 0, lastT = new THREE.Vector3(1e9, 0, 0), lastD = 0;
 function tick() {
   controls.update();
   camera.getWorldDirection(dir);
-  if ($('cutNear').checked) {   // cut away whatever lies between the camera and the orbit centre
+  if ($('cutNear').checked) {
     const h = new THREE.Vector3(dir.x, 0, dir.z); if (h.lengthSq() < 1e-6) h.set(0, 0, -1); h.normalize();
     cutNear.normal.copy(h); cutNear.constant = -h.dot(controls.target);
   } else cutNear.constant = 1e6;
-  const az = Math.atan2(dir.x, -dir.z); needle.setAttribute('transform', `rotate(${(-az * 180 / Math.PI).toFixed(1)})`);
+  needle.setAttribute('transform', `rotate(${(-Math.atan2(dir.x, -dir.z) * 180 / Math.PI).toFixed(1)})`);
+  const d = camera.position.distanceTo(controls.target);
+  if (++frame % 10 === 0 && (S.labelsDirty || controls.target.distanceTo(lastT) > d * 0.05 || Math.abs(d - lastD) > d * 0.05)) {
+    S.labelsDirty = false; lastT.copy(controls.target); lastD = d;
+    const show = $('labels').checked && d < 6000, reach = Math.max(500, d * 1.6), list = [];
+    selG.visible = d < 9000;
+    for (const sp of labelsG.children) { tmp.copy(sp.position); const dd = tmp.distanceTo(controls.target); sp.visible = false; if (show && dd < reach) list.push([dd, sp]); }
+    list.sort((a, b) => a[0] - b[0]); for (const [, sp] of list.slice(0, 45)) sp.visible = !S.st || sp.userData.st !== S.st.id || selG.children.length === 0;
+  }
   renderer.render(scene, camera); requestAnimationFrame(tick);
 }
 requestAnimationFrame(tick);
+window.__station3d = { renderer, S, scene };   // for the local render checks (test_page.js)
 
-// ---------- data: the snapshot the sync writes to snapshots/<area> and its parts ----------
+// ---------- data: snapshots/region and its parts ----------
 async function loadParts(meta) {
-  const parts = await Promise.all((meta.parts || []).map((p) => S.db.doc(`snapshots/${AREA}/parts/${p}`).get()));
   const snap = JSON.parse(meta.json || '{}');
-  for (const d of parts) if (d.exists) Object.assign(snap, JSON.parse(d.data().json));
+  const docs = await Promise.all((meta.parts || []).map((p) => S.db.doc(`snapshots/${AREA}/parts/${p}`).get()));
+  for (const d of docs) { if (!d.exists) continue; const v = JSON.parse(d.data().json); if (v.key === 'ground') snap.ground = v.value; else snap[v.key] = (snap[v.key] || []).concat(v.items); }
+  for (const k of ['lines', 'tracks', 'unlevelled', 'stations', 'platforms', 'streets', 'blocks']) snap[k] = snap[k] || [];
   return snap;
 }
 function showEmpty(title, text) { $('emptyTitle').textContent = title; if (text) $('emptyText').textContent = text; $('empty').hidden = false; $('syncedAt').textContent = 'no snapshot'; }
-async function fallback() {   // a local snapshot.json next to the page (testing), else the empty state
-  try { const r = await fetch('snapshot.json'); if (r.ok) { build(await r.json()); restoreCam(); return; } } catch {}
-  showEmpty('No snapshot yet');
+function start(snap, cam) {
+  S.D = null; S.snap = snap; S.D = prepare(snap); S.stations = S.D.groups; S.byId = S.D.byId;
+  const keep = S.built ? camState() : null;
+  const g = S.stations.find((x) => cam && x.id === cam.station) || S.stations.find((x) => x.name === snap.default_station) || S.stations[0];
+  S.st = g; build(snap);
+  if (keep) setCam(keep); else if (cam) setCam(cam); else { const p = PRESETS[3]; lookFrom(p.face, p.el, 620, stationTarget()); }
+  renderStList();
 }
-function restoreCam(c) {
-  if (!c) { try { c = JSON.parse(localStorage.getItem('station3d:cam:' + AREA) || 'null'); } catch { c = null; } }
-  if (c) setCam(c); else { const p = PRESETS[3]; lookFrom(p.face, p.el, 620, presetTarget()); }
+async function fallback() {   // a local snapshot.json next to the page (testing), else the empty state
+  try { const r = await fetch('snapshot.json'); if (r.ok) { let cam = null; try { cam = JSON.parse(localStorage.getItem('station3d:cam:' + AREA) || 'null'); } catch {} start(await r.json(), cam); return; } } catch (e) { console.error(e); }
+  showEmpty('No snapshot yet');
 }
 async function connect() {
   const C = window.claude;
@@ -516,14 +678,14 @@ async function connect() {
   if (!db) return fallback();
   S.db = db;
   if (user) { try { S.me = await user.id(); } catch {} try { S.canEdit = await user.canEdit(); } catch {} }
-  let first = true, cam = null;
+  let cam = null;
   if (S.me) { try { const d = await db.collection('data/users/' + S.me).doc('camera_' + AREA).get(); if (d.exists) cam = d.data(); } catch {} }
+  if (!cam) { try { cam = JSON.parse(localStorage.getItem('station3d:cam:' + AREA) || 'null'); } catch {} }
+  $('syncedAt').textContent = 'loading the region…';
   db.doc('snapshots/' + AREA).onSnapshot(async (d) => {
-    if (!d.exists) { if (first) showEmpty('No snapshot yet'); first = false; return; }
-    try {
-      const snap = await loadParts(d.data()); const keep = S.built ? camState() : null;
-      build(snap); if (first) restoreCam(cam); else if (keep) setCam(keep); first = false;
-    } catch (e) { console.error(e); showEmpty('The snapshot could not be read', 'Ask Claude to run the Station 3D sync again. (' + (e.message || e) + ')'); }
+    if (!d.exists) { if (!S.built) showEmpty('No snapshot yet'); return; }
+    try { start(await loadParts(d.data()), S.built ? null : cam); }
+    catch (e) { console.error(e); showEmpty('The snapshot could not be read', 'Ask Claude to run the Station 3D sync again. (' + (e.message || e) + ')'); }
   }, () => { $('syncedAt').textContent = 'live updates stopped; reload to reconnect'; });
   db.collection('views').onSnapshot((q) => { S.views = q.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => String(a.name).localeCompare(String(b.name))); renderViews(); }, () => {});
   renderViews();
