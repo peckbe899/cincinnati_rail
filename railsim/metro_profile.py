@@ -5,14 +5,22 @@ times use the designed rail profile.
 Model (as in the page):
   * ground: the per-line long section (data/profile/lines/Line_*.json), map 3 (alternate
     2026) ground at 2 m chainage, in decimetres NAVD88; rivers at the Ohio normal pool;
-  * rail: each station's 500 ft platform is level at its rail level; straight grades join
-    platform ends and any bend points (PVIs);
+  * rail: each station's 400 ft platform (670 ft on the RER) is level at its rail level;
+    straight grades join platform ends and any bend points (PVIs);
   * station rail levels: the saved profile (data/profile/alignments/Line_*.json) where there
     is one, else the solver: each station as shallow as the grade limit allows (at most
     `defDepth` below ground), canon levels held, solved in both directions;
   * structure: painted overrides, else by rail vs ground: elevated, at grade, cut and cover
     (shallow station boxes, canal bed), shallow shield (running tunnels) or deep tube, with
     the canon sections for the founding Lines 1-6.
+  * ground, in three layers as on the page: the surveyed raster; the Mill Creek Deck's street
+    re-grades and open cuts at CUT and Norwood Central on top (data/profile/context/lines.json,
+    the ground the solver uses); and over painted cut and cover the ground filled to the box
+    roof plus cover, sloping back past the ends (the ground structure and cover are judged on).
+  * context (data/profile/context/lines.json): the other systems' structures at CUT and Norwood
+    Central (the lower level and its pairs, the intercity and C&O pairs, the APEx arch viaducts,
+    the Norwood surface tracks and trench) as chainage blocks with their rail level, checked
+    for clearance with the crossing rule (context_clearances()).
 
 RER lines (data/profile/rer/lines/RER_*.json, the trunk core of each line) add a station
 mode: 'under' (default on the drawn trunk) or 'surface' (at grade on the old railroad, rail
@@ -37,9 +45,10 @@ STRUCTURE = {"elevated": "viaduct", "atgrade": "at-grade", "trough": "cut", "cut
              "shield": "shield", "deep": "deep-tube"}
 TUNNEL_STRUCTURES = {"tunnel", "cut-and-cover", "shield", "deep-tube"}
 
-DEFAULTS = dict(maxGrade=50.0, platform=152.4, defDepth=7.62, elevAbove=3.0, coverBelow=3.0,
+# Platforms 400 ft (Ben, 23 October 2026: 6 cars of about 67 ft or 8 of about 50 ft; was 500 ft)
+DEFAULTS = dict(maxGrade=50.0, platform=121.92, defDepth=7.62, elevAbove=3.0, coverBelow=3.0,
                 deepBelow=18.29, shallowMax=12.19, poolFt=455.0, deckDepth=1.5,
-                vcRadius=1500.0, vcMinLen=30.5, minCover=2.0)
+                vcRadius=1500.0, vcMinLen=30.5, minCover=2.0, fillTaper=50.0)
 # Metro structures (Ben's rules), from the top of rail: below = rail to underside, top = rail to
 # top, od = outside diameter. Cut-and-cover box (and station box) 1.0 below / 4.6 to top; twin
 # tube (4.4 m inside, 4.76 m outside, rail 0.5 m above invert) 0.68 / 4.08 for deep tube on every
@@ -85,13 +94,19 @@ def fit_radius(pts: np.ndarray) -> float:
 ERA = {**{f"Line_{k}": {"shield": "tube"} for k in ("1", "2", "2b", "3", "4", "5", "6", "7")},
        **{f"Line_{k}": {"shield": "bore"} for k in ("8", "9", "10", "11", "12", "13", "14")},
        "CVG_Express": {"shield": "bore"}}  # opening year not yet set: as Lines 8-14 for now
-# RER: 35 per mille, 200 m platforms (8-car TRI) and 12 m station rail depth are canon; the
+# RER: 35 per mille, 670 ft (204.2 m) platforms (Ben, 5 October 2026) and 12 m station rail depth are canon; the
 # 25 m deep-bore threshold, 6.6 m box / 7.5 m bored crown (RATP RER style), 3 m tube cover and 250 m surface
 # bend points are starting values
-RER_DEFAULTS = dict(maxGrade=35.0, platform=200.0, defDepth=12.0, elevAbove=3.0, coverBelow=3.0,
+RER_DEFAULTS = dict(maxGrade=35.0, platform=204.2, defDepth=12.0, elevAbove=3.0, coverBelow=3.0,
                     deepBelow=25.0, shallowMax=18.0, envelope=6.6, boreCrown=7.5, invertDepth=1.0, poolFt=455.0,
-                    surfStep=250.0, tubeCover=3.0, vcRadius=3000.0, vcMinLen=30.5, minCover=8.5)
+                    surfStep=250.0, tubeCover=3.0, vcRadius=3000.0, vcMinLen=30.5, minCover=8.5, deckDepth=2.0,
+                    fillTaper=50.0)
 RER_CANON_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "rer" / "canon.json"
+CONTEXT_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "context" / "lines.json"
+# a line in the open under another structure needs this clear height from rail to its underside
+# (Ben): Metro 4.2 m, RER 5.8 m (25 kV); track bed 0.8 m below the rail; crossing gap 0.5 m
+OPEN_CLEAR = {"metro": 4.2, "rer": 5.8}
+BED_DEPTH, SEP_GAP = 0.8, 0.5
 
 
 def _rer_canon_rivers() -> dict:
@@ -129,9 +144,10 @@ CANON = {
         {"a": "Price Hill", "b": "State", "bIn": False, "m": "deep"}],
         "fixed": {"Price Hill": -18.29, "State": 7.62, "Garrard": 7.62}},
     "Line_5": {"sections": [{"a": "Northside", "b": "Pennsylvania", "m": "shallow"}]},
-    # CVG Express (1969, Ben Oct 16): Union Terminal at track level; the Ohio on a bridge (navigation
-    # clearance 77.3 ft above normal pool as the Brent Spence, starting value)
-    "CVG_Express": {"fixed": {"Union Terminal": {"abs": 154.0, "ref": 154.0}},
+    # CVG Express (1969, Ben Oct 16): Union Terminal at platform M on the CUT platform deck (arch
+    # viaduct), level with the APEx field, 160.3 m (Deck; log 10l.19, 10l.24; Ben, 26 October); the
+    # Ohio on a bridge (navigation clearance 77.3 ft above normal pool as the Brent Spence, starting value)
+    "CVG_Express": {"fixed": {"Union Terminal": {"abs": 160.3}},
                     "bridges": {"Ohio River": {"clear": 23.56}}},
     "Line_6": {"sections": [{"a": "UC Medical/Corryville", "b": "Public Landing", "m": "shallow"}]},
 }
@@ -164,7 +180,7 @@ class MetroProfile:
     # ------------------------------------------------------------- loading
     @classmethod
     def load(cls, line_json, alignment_json=None, settings_json=None,
-             canon_json=None, settings_override: Optional[dict] = None) -> "MetroProfile":
+             canon_json=None, settings_override: Optional[dict] = None, context_json=None) -> "MetroProfile":
         data = json.loads(Path(line_json).read_text())
         rer = "RER" in data.get("system", "")
         # per-line settings in the line file (e.g. the CVG Express's 200 m platforms)
@@ -173,6 +189,11 @@ class MetroProfile:
             cj = Path(canon_json) if canon_json else RER_CANON_JSON
             p.rer_canon = json.loads(cj.read_text()) if cj.exists() else {}
         p._ground = np.array([np.nan if v is None else v / 10.0 for v in p.data["ground_dm"]])
+        cx = Path(context_json) if context_json else CONTEXT_JSON
+        try:
+            p.ctx = (json.loads(cx.read_text()).get("lines") or {}).get(p.data["id"], {}) if cx.exists() else {}
+        except ValueError:
+            p.ctx = {}
         # every drawn station keeps its point (c0) and its index in the line file (idx);
         # data["stations"] becomes the working list (removed ones out, platforms slid)
         p.all_stations = [dict(st, idx=i, c0=st["c"]) for i, st in enumerate(p.data["stations"])]
@@ -180,10 +201,14 @@ class MetroProfile:
         p.removed, p.so = [], []
         p._build_canon()
         p._apply_deck()
+        p._ground_dem = p._ground.copy()   # surveyed (with any canon deck)
+        p._apply_regrade()                 # + the Deck's street re-grades and cuts: the solver's ground
+        p._ground0 = p._ground.copy()
         doc = None
         if alignment_json and Path(alignment_json).exists():
             doc = json.loads(Path(alignment_json).read_text())
         p._align_from_doc(doc)
+        p.refresh_fill()
         return p
 
     @property
@@ -215,7 +240,18 @@ class MetroProfile:
 
     # ------------------------------------------------------------- ground
     def ground_at(self, c):
-        g = self._ground
+        """Finished ground: surveyed + Deck re-grades + fill over painted cut and cover."""
+        return self._sample(self._ground, c)
+
+    def ground0_at(self, c):
+        """The ground the level solver uses: surveyed + Deck re-grades (no painted fill)."""
+        return self._sample(getattr(self, "_ground0", self._ground), c)
+
+    def ground_dem_at(self, c):
+        """The surveyed ground (the raster, with any canon deck)."""
+        return self._sample(getattr(self, "_ground_dem", self._ground), c)
+
+    def _sample(self, g, c):
         step = float(self.data.get("step_m", 2.0))
         f = np.clip(np.asarray(c, dtype=float) / step, 0, len(g) - 1)
         i = np.floor(f).astype(int)
@@ -234,6 +270,56 @@ class MetroProfile:
 
     def surface_at(self, c: float) -> float:
         return self.pool() if self.river_at(c) else float(self.ground_at(c))
+
+    def surface0_at(self, c: float) -> float:
+        return self.pool() if self.river_at(c) else float(self.ground0_at(c))
+
+    def _apply_regrade(self):
+        """The Deck's street re-grades (added) and open cuts (ground held at the trough floor),
+        from the context file's ground runs (indices into the 2 m ground array)."""
+        g = self._ground
+        for r in self.ctx.get("add") or []:
+            for k, v in enumerate(r["v"]):
+                i = r["i0"] + k
+                if i < len(g) and np.isfinite(g[i]):
+                    g[i] += v
+        for r in self.ctx.get("cap") or []:
+            for k, v in enumerate(r["v"]):
+                i = r["i0"] + k
+                if i < len(g) and np.isfinite(g[i]) and v < g[i]:
+                    g[i] = v
+
+    def refresh_fill(self):
+        """Painted cut and cover (Ben, 26 October): the box keeps its level and the ground is
+        regraded over it, at least the box roof plus its cover (Metro 4.6 + 0.6 m above the rail;
+        RER the box height), sloping back to the solver's ground at fillTaper per mille past the
+        ends. Fill only. Call again after changing st, pvi or ovr."""
+        g0 = getattr(self, "_ground0", self._ground)
+        cc = [(a, b) for a, b, t in self.ovr if t == "cutcover"]
+        if not cc:
+            self._ground = g0.copy()
+            return
+        step = float(self.data.get("step_m", 2.0))
+        n = len(g0)
+        t = np.full(n, -np.inf)
+        for a, b in cc:
+            i0, i1 = max(0, math.ceil(a / step)), min(n - 1, math.floor(b / step))
+            for i in range(i0, i1 + 1):
+                c = i * step
+                if self.river_at(c):
+                    continue
+                sc = self.struct_for("cutcover", c)
+                t[i] = max(t[i], float(self.rail_at(c)) + sc["top"] + self.req_cover(sc, 0.0))
+        drop = float(self.settings.get("fillTaper", 50.0)) / 1000.0 * step
+        for i in range(1, n):
+            t[i] = max(t[i], t[i - 1] - drop)
+        for i in range(n - 2, -1, -1):
+            t[i] = max(t[i], t[i + 1] - drop)
+        river = np.array([bool(self.river_at(i * step)) for i in range(n)]) if self.data.get("rivers") else np.zeros(n, bool)
+        g = g0.copy()
+        m = np.isfinite(g0) & (t > g0 + 0.005) & ~river
+        g[m] = t[m]
+        self._ground = g
 
     # ------------------------------------------------------------- canon
     def _build_canon(self):
@@ -361,7 +447,7 @@ class MetroProfile:
               if self.is_rer else None)
         ub, lb = [], []
         for i, s in enumerate(self.stations):
-            gr = float(self.ground_at(s["c"]))
+            gr = float(self.ground0_at(s["c"]))
             f = self.canon_fixed.get(i)
             if f and (math.isfinite(gr) or f.get("abs") is not None):
                 z0 = f["abs"] if f.get("abs") is not None else gr + f["off"]
@@ -438,7 +524,7 @@ class MetroProfile:
         n = len(S)
 
         def smooth(c):
-            vals = [self.surface_at(min(max(c + d, 0.0), L)) for d in np.arange(-step, step + 1e-9, step / 4)]
+            vals = [self.surface0_at(min(max(c + d, 0.0), L)) for d in np.arange(-step, step + 1e-9, step / 4)]
             vals = [v for v in vals if math.isfinite(v)]
             return sum(vals) / len(vals) if vals else math.nan
 
@@ -828,6 +914,49 @@ class MetroProfile:
             z = float(self.rail_at(c))
         return self.override_at(c) or self.auto_type(c, z)
 
+    # ------------------------------------------------------------- context
+    def context_blocks(self) -> List[dict]:
+        """Other systems' structures on this line (context file): name n, short label l, kind k
+        (box | trough | atgrade | viaduct | fill), chainage c0..c1, their rail p [[c, z], ...],
+        heights below b / top t from their rail (t is the clear height above an open structure),
+        open o, their platforms pl [[c0, c1, z], ...], source s."""
+        return list(self.ctx.get("blocks") or [])
+
+    def open_struct(self, t: str) -> dict:
+        """This line's structure when it is in the open (rail to underside, clear height above)."""
+        top = OPEN_CLEAR["rer" if self.is_rer else "metro"]
+        if t == "elevated":
+            return {"k": "elevated", "below": float(self.settings.get("deckDepth", 1.5)), "top": top}
+        return {"k": t, "below": BED_DEPTH, "top": top}
+
+    def context_clearances(self) -> List[dict]:
+        """Each context block against this line at its worst point, with the crossing rule: the
+        upper structure's floor + 0.5 m + the lower one's top (a track in the open counts its clear
+        height). Under a viaduct only a line in the open is checked: the arches go to the street
+        and no footing depth is set (Ben, 26 October). Both in the open within 1 m: crosses at
+        grade."""
+        out = []
+        open_t = ("atgrade", "trough", "elevated")
+        for b in self.context_blocks():
+            viad = b["k"] in ("viaduct", "fill")
+            w = None
+            for c, zo in b["p"]:
+                z = float(self.rail_at(c))
+                mt = self.type_at(c, z)
+                t = self.open_struct(mt) if mt in open_t else self.struct_for(mt, c)
+                up = z >= zo
+                if viad and not up and mt not in open_t:
+                    continue
+                need = (t["below"] + SEP_GAP + b["t"]) if up else (b["b"] + SEP_GAP + t["top"])
+                level = mt in open_t and b["k"] in ("atgrade", "trough") and abs(z - zo) < 1.0
+                short = need - abs(z - zo)
+                if w is None or (level and not w["level"]) or (level == w["level"] and short > w["short"]):
+                    w = {"c": c, "zo": zo, "z": z, "clear": abs(z - zo), "need": need, "me_up": up,
+                         "type": mt, "level": level, "short": short}
+            if w:
+                out.append({**w, "with": b["l"], "kind": b["k"], "ok": not w["level"] and w["short"] <= 0.05, "block": b})
+        return out
+
     # ------------------------------------------------------------- checks
     def summary(self, dc: float = 10.0) -> dict:
         L = self.length
@@ -845,7 +974,9 @@ class MetroProfile:
         for t in self.river_tubes(self.modes or None):
             zz = self.rail_at(np.arange(t["c0"], t["c1"] + 1e-9, 5.0))
             shallow += int(zz.max() > t["ub"] + 0.05)
+        clashes = [x for x in self.context_clearances() if not x["ok"]]
         return {"shallow_tubes": shallow, "river_breaks": len(self.river_breaks()),
+                "context_clashes": len(clashes),
                 "km_by_type": {k: round(v, 3) for k, v in km.items()},
                 "max_grade_permille": round(float(g[np.argmax(np.abs(g))]) if len(g) else 0.0, 1),
                 "grades_over_limit": over}

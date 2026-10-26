@@ -308,10 +308,11 @@ def test_metro_profile_port_matches_saved_page_output():
     root = Path(__file__).resolve().parent.parent / "data/profile"
     fixture = Path(__file__).resolve().parent / "data/Line_1_saved_2026-10-06.json"
     doc = json.loads(fixture.read_text())
-    # the page as it was when saved: straight grades, no era cover rule
+    # the page as it was when saved: straight grades, no era cover rule, 500 ft platforms
     mp = MetroProfile.load(root / "lines/Line_1.json", fixture,
                            root / "settings.json",
-                           settings_override={"vcRadius": 0.0, "minCover_override": -1e9, "trough_override": -1e9})
+                           settings_override={"vcRadius": 0.0, "minCover_override": -1e9, "trough_override": -1e9,
+                                              "platform": 152.4})
     mp._ground = np.array([np.nan if v is None else v / 10 for v in mp.data["ground_dm_lidar"]])
     for i, s in enumerate(doc["stations"]):
         assert mp.st[i] == pytest.approx(s["rail"], abs=0.02)
@@ -328,23 +329,27 @@ def test_metro_default_solver_respects_grade_limit():
 
 
 def test_rer_core_profile_matches_page():
-    """RER cores with the canon rulings: Union Terminal on level -2 (142.0 m), the RER-3
-    covered way at 144 m dipping under the Little Miami, Mill Creek trunk at grade under the
-    deck, the Ohio tubes, the RER-5 deep bore; values as the Rail Profiles page shows them."""
+    """RER cores with the canon rulings: the Union Terminal TRI box one level for A, B and D
+    (135.7 m; Ben, 26 October), B/D on the north viaduct into the Straight box, the RER-3 covered
+    way at 144 m dipping under the Little Miami, the Ohio tubes, the RER-5 deep bore; values as
+    the Rail Profiles page shows them."""
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile/rer"
     load = lambda l: MetroProfile.load(root / f"lines/{l}.json", None, root / "settings.json")
     mp = load("RER_1")
     # with 3,000 m vertical curves and level transitions off each platform
-    assert [round(z, 1) for z in mp.st] == [156.0, 154.8, 142.0, 154.1, 156.6, 148.9, 186.8,
-                                           213.2, 217.9, 201.5, 204.5, 195.1]
+    assert [round(z, 1) for z in mp.st] == [156.0, 154.8, 135.7, 154.1, 156.6, 148.9, 186.7,
+                                           212.9, 217.9, 201.5, 204.5, 195.1]
     assert not mp.design()["short"]
     assert mp.summary()["grades_over_limit"] == 0
     r2 = load("RER_2")
     names = [s["name"] for s in r2.stations]
-    assert r2.st[names.index("Western")] == pytest.approx(156.2 - 8.5, abs=0.05)  # yard level
-    assert r2.modes[names.index("Arlington")] == "surface"
+    # on the north viaduct (North Viaduct Plan), down into the Straight box, bored to Western
+    assert [r2.st[names.index(n)] for n in ("Northside / Spring Grove", "Arlington", "Camp Washington", "Straight", "Union Terminal")] == \
+        [162.5, 165.9, 165.2, 151.64, 135.7]
+    assert r2.type_at(r2.stations[names.index("Arlington")]["c"]) == "elevated"
+    assert r2.modes[names.index("Western")] == "under" and r2.modes[names.index("Mitchell Ave / WINTON PLACE")] == "surface"
     r3 = load("RER_3")
     names = [s["name"] for s in r3.stations]
     assert r3.st[names.index("Torrance")] == 144.0
@@ -352,7 +357,7 @@ def test_rer_core_profile_matches_page():
     assert min(z for c, z in r3.pvi) == pytest.approx(126.584, abs=0.01)  # Little Miami: pool - 3 m bed - 9.1 m
     assert r3.modes[names.index("Asbury")] == "surface"
     r5 = load("RER_5")
-    assert r5.summary()["km_by_type"]["deep"] == pytest.approx(3.55, abs=0.05)  # shallower than bore + cover: cut and cover
+    assert r5.summary()["km_by_type"]["deep"] == pytest.approx(3.72, abs=0.05)  # shallower than bore + cover: cut and cover (670 ft platforms, Norwood cut)
     assert r3.summary()["shallow_tubes"] == 0
 
 
@@ -460,7 +465,7 @@ def test_drawing_corner_flags():
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
-    mp = MetroProfile.load(root / "lines/Line_1.json", None, root / "settings.json")
+    mp = MetroProfile.load(root / "lines/Line_1.json", None, root / "settings.json", settings_override={"platform": 152.4})
     sixth = next(p for p in mp.platform_curves() if p["name"].strip() == "6th")
     assert sixth["scurve"] == "error"
     kinds = {f["kind"] for f in mp.drawing_flags()}
@@ -468,17 +473,51 @@ def test_drawing_corner_flags():
 
 
 def test_cvg_express_profile_canon():
-    """CVG Express (Ben, Oct 16): 670 ft platforms of its own, Union Terminal at track level
-    (154.0 m), the Ohio on a bridge held at the navigation clearance level (no river tube)."""
+    """CVG Express (Ben, Oct 16): 670 ft platforms of its own, Union Terminal at platform M on the
+    CUT platform deck (160.3 m; Ben, 26 October), the Ohio on a bridge held at the navigation
+    clearance level (no river tube)."""
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
     mp = MetroProfile.load(root / "lines/CVG_Express.json", None, root / "settings.json")
     assert mp.settings["platform"] == pytest.approx(670 * 0.3048)
-    assert mp.st[[s["name"] for s in mp.stations].index("Union Terminal")] == 154.0
+    assert mp.st[[s["name"] for s in mp.stations].index("Union Terminal")] == 160.3
     assert not mp.river_tubes(None)
     b = mp.river_bridges()[0]
     z = mp.rail_at(np.arange(b["c0"], b["c1"], 2.0))
     assert z.min() >= b["lb"] - 0.05 and mp.type_at((b["c0"] + b["c1"]) / 2) == "elevated"
     assert not mp.river_breaks()
-    assert MetroProfile.load(root / "lines/Line_1.json", None, root / "settings.json").settings["platform"] == 152.4
+    assert MetroProfile.load(root / "lines/Line_1.json", None, root / "settings.json").settings["platform"] == 121.92
+
+
+def test_cut_norwood_context():
+    """CUT and Norwood Central context (Ben, 26 October): the Deck's structures as blocks with the
+    crossing rule, the Deck's street re-grades and open cuts in the ground, and painted cut and
+    cover filled over; as the Rail Profiles page shows them."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent / "data/profile"
+    # Line 8 as saved passes 0.25 m under the CUT lower level (rail 144.0 m), needing 7.3 m
+    l8 = MetroProfile.load(root / "lines/Line_8.json", root / "alignments/Line_8.json", root / "settings.json")
+    assert any(b["l"] == "CUT lower level" for b in l8.context_blocks())
+    x = next(x for x in l8.context_clearances() if x["with"] == "CUT lower level")
+    assert not x["ok"] and x["clear"] == pytest.approx(0.25, abs=0.02) and x["need"] == pytest.approx(7.3, abs=0.01)
+    # Line 4 along W 8th: the street raised up to 5 m over the intercity pair (re-grades do not add up)
+    l4 = MetroProfile.load(root / "lines/Line_4.json", root / "alignments/Line_4.json", root / "settings.json")
+    c = np.arange(11800.0, 12200.0, 2.0)
+    dz = np.array([float(l4.ground_at(ci) - l4.ground_dem_at(ci)) for ci in c])
+    assert dz.max() == pytest.approx(5.0, abs=0.01)
+    # Norwood Central: the surface tracks in their cut, level at 178.0 m; Line 14 passes under them
+    l14 = MetroProfile.load(root / "lines/Line_14.json", None, root / "settings.json")
+    nw = next(b for b in l14.context_blocks() if b["l"] == "Norwood Central tracks")
+    assert all(z == 178.0 for _, z in nw["p"])
+    cm = (nw["c0"] + nw["c1"]) / 2
+    assert float(l14.ground_at(cm)) == pytest.approx(178.0 - 0.8, abs=0.01)  # the cut floor
+    assert all(x["ok"] for x in l14.context_clearances())
+    # painted cut and cover: the box keeps its level and the ground is filled to roof + cover
+    l9 = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json")
+    s0 = l9.stations[3]["c"]
+    l9.ovr = [(s0 - 60.0, s0 + 60.0, "cutcover")]
+    l9.refresh_fill()
+    for ci in np.arange(s0 - 50.0, s0 + 50.0, 10.0):
+        assert float(l9.ground_at(ci)) >= float(l9.rail_at(ci)) + 4.6 + 0.6 - 0.01

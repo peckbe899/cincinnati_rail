@@ -1,5 +1,5 @@
 {
- "note": "RER canon for the Rail Profiles page, tools/make_rer_profile_lines.py and railsim/metro_profile.py (Ben's rulings). RER-n is TRI by KMZ colour: 1 A, 2 B, 3 C, 4 D, 5 E. modes: station 'under' or 'surface' (at grade); fixed: station rail level, 'abs' metres NAVD88 or 'off' metres from ground; sections: canon structure between two stations (m: covered = covered way, cut and cover; deep = deep bore); deck: rail at yard level under a deck, ground = DEM top minus 'drop'. rivers: bed 'dem' = the canon riverbed in the ground raster, else pool minus bed_below_pool_m (no survey); in tunnel the rail stays bed - 9.1 m (RER, sunk box sections) / bed - 7.5 m (Metro twin tubes).",
+ "note": "RER canon for the Rail Profiles page, tools/make_rer_profile_lines.py and railsim/metro_profile.py (Ben's rulings). RER-n is TRI by KMZ colour: 1 A, 2 B, 3 C, 4 D, 5 E. modes: station 'under' or 'surface' (at grade); fixed: station rail level, 'abs' metres NAVD88 or 'off' metres from ground; sections: canon structure between two stations (m: covered = covered way, cut and cover; deep = deep bore); deck: rail at yard level under a deck, ground = DEM top minus 'drop'. rivers: bed 'dem' = the canon riverbed in the ground raster, else pool minus bed_below_pool_m (no survey); in tunnel the rail stays bed - 9.1 m (RER, sunk box sections) / bed - 7.5 m (Metro twin tubes). 2026-10-26 (Ben): the Union Terminal box is one level for A, B and D (135.7 m); B and D run on the north viaduct (Northside 162.5, Arlington 165.9, Camp Washington 165.2 m) into the Straight box (151.64 m) and the bores to Western; the yard-level deck under the boulevard is gone.",
  "union_terminal_track_level_m": 154.0,
  "rivers": {
   "Ohio River": {
@@ -56,9 +56,8 @@
    },
    "fixed": {
     "Union Terminal": {
-     "abs": 142.0,
-     "ref": 154.0,
-     "src": "Level -2 North beside the ORBIT platforms, under the -1 concourse: 12 m below the 154.0 m track level"
+     "abs": 135.7,
+     "src": "Union Terminal TRI box: one level for A, B and D, since A and B change cross-platform (Ben, 26 October); 135.7 m"
     }
    }
   },
@@ -66,27 +65,7 @@
    "modes": {
     "Mitchell Ave / WINTON PLACE": {
      "mode": "surface",
-     "src": "Mill Creek trunk at grade on the shared 6-track corridor, open from Arlington north"
-    },
-    "Northside / Spring Grove": {
-     "mode": "surface",
-     "src": "Mill Creek trunk at grade on the shared 6-track corridor, open from Arlington north"
-    },
-    "Arlington": {
-     "mode": "surface",
-     "src": "Mill Creek trunk at grade on the shared 6-track corridor, open from Arlington north"
-    },
-    "Camp Washington": {
-     "mode": "surface",
-     "src": "At yard level under the boulevard deck"
-    },
-    "Straight": {
-     "mode": "surface",
-     "src": "At yard level under the boulevard deck"
-    },
-    "Western": {
-     "mode": "surface",
-     "src": "At yard level under the boulevard deck"
+     "src": "At grade north of the north viaduct and its fill (North Viaduct Plan)"
     },
     "Union Terminal": {
      "mode": "under",
@@ -103,19 +82,26 @@
    },
    "fixed": {
     "Union Terminal": {
-     "abs": 142.0,
-     "ref": 154.0,
-     "src": "Level -2 North, 12 m below the 154.0 m track level"
+     "abs": 135.7,
+     "src": "Union Terminal TRI box: one level for A, B and D, since A and B change cross-platform (Ben, 26 October); 135.7 m"
+    },
+    "Northside / Spring Grove": {
+     "abs": 162.5,
+     "src": "North viaduct, which ends at this platform end; rails 162.5 m over Ludlow Avenue (North Viaduct Plan; Deck)"
+    },
+    "Arlington": {
+     "abs": 165.9,
+     "src": "B's island on the north viaduct, 165.9 m (North Viaduct Plan; Deck)"
+    },
+    "Camp Washington": {
+     "abs": 165.2,
+     "src": "On the north viaduct, 165.2 m (North Viaduct Plan; Deck)"
+    },
+    "Straight": {
+     "abs": 151.64,
+     "src": "In the box under the viaduct's west side, 151.64 m; open ramp at 3.3% up to Camp Washington (North Viaduct Plan)"
     }
-   },
-   "deck": [
-    {
-     "a": "Camp Washington",
-     "b": "Western",
-     "drop": 8.5,
-     "src": "Boulevard deck: the DEM is the deck top; the rail is at yard level, about 8.5 m lower"
-    }
-   ]
+   }
   },
   "RER_3": {
    "sections": [
@@ -190,35 +176,22 @@
     "Mansion Hill": {
      "mode": "under",
      "src": "Ohio tube toward Newport"
-    },
-    "Camp Washington": {
-     "mode": "surface",
-     "src": "At yard level under the boulevard deck"
-    },
-    "Straight": {
-     "mode": "surface",
-     "src": "At yard level under the boulevard deck"
-    },
-    "Western": {
-     "mode": "surface",
-     "src": "At yard level under the boulevard deck"
     }
    },
    "fixed": {
     "Union Terminal": {
-     "abs": 142.0,
-     "ref": 154.0,
-     "src": "Level -2 North, 12 m below the 154.0 m track level"
+     "abs": 135.7,
+     "src": "Union Terminal TRI box: one level for A, B and D, since A and B change cross-platform (Ben, 26 October); 135.7 m"
+    },
+    "Camp Washington": {
+     "abs": 165.2,
+     "src": "On the north viaduct, 165.2 m (North Viaduct Plan; Deck)"
+    },
+    "Straight": {
+     "abs": 151.64,
+     "src": "In the box under the viaduct's west side, 151.64 m; open ramp at 3.3% up to Camp Washington (North Viaduct Plan)"
     }
-   },
-   "deck": [
-    {
-     "a": "Camp Washington",
-     "b": "Western",
-     "drop": 8.5,
-     "src": "Boulevard deck: the DEM is the deck top; the rail is at yard level, about 8.5 m lower"
-    }
-   ]
+   }
   },
   "RER_5": {
    "sections": [
