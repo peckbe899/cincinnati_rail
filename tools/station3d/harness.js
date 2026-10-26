@@ -25,12 +25,22 @@ function stubScript(docs) {
   })();`;
 }
 
-async function open(browser, root, docs, url) {
+// The Deck's internal functions, exposed at boot as design/platform_track/extract/deck_headless.py does, so its
+// extract.js can read the platform and track design (trackPair, stopBands ...) through the page's own code
+const DECK_EXPOSE = 'window.__D = { currentFeatures, transitFeatures, trackPair, stopRings, stopBands, stopType, stopOff, stopLive, '
+  + 'stopFrame, stopEdit, stDeleted, liveLines, baseH, hAt, H0, EDGE, PW, TAPER, H_TUBE, H_BOX, SLIDE_M, geomOf, '
+  + 'frameAt, projectOn, featLabel, utmToLL, CVX, chainOf, resampleLine, lineCoords };';
+const JSTS_CDN = 'https://cdn.jsdelivr.net/npm/jsts@2.12.1/dist/jsts.min.js';
+const DECK_EXTRACT = path.join(__dirname, '../../design/platform_track/extract/extract.js');
+
+async function open(browser, root, docs, url, html = (h) => h) {
   const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 } });
   await ctx.addInitScript(stubScript(docs));
   await ctx.route('http://editor.local/**', (route) => {
     const p = path.join(root, decodeURIComponent(new URL(route.request().url()).pathname.slice(1) || 'index.html'));
+    if (p.endsWith('jsts.min.js')) return route.fulfill({ status: 200, body: fs.readFileSync(path.join(cache, 'jsts/package/dist/jsts.min.js')), contentType: 'application/javascript' });
     if (!fs.existsSync(p)) return route.fulfill({ status: 404, body: '' });
+    if (p.endsWith('index.html')) return route.fulfill({ status: 200, body: html(fs.readFileSync(p, 'utf8')), contentType: 'text/html' });
     const type = p.endsWith('.html') ? 'text/html' : p.endsWith('.json') ? 'application/json' : 'application/octet-stream';
     route.fulfill({ status: 200, body: fs.readFileSync(p), contentType: type });
   });
@@ -63,12 +73,23 @@ async function open(browser, root, docs, url) {
   // Mill Creek Deck: its own GeoJSON export (the Export button), captured from the downloads stand-in
   if (job.deck) {
     const ddocs = {}; for (const [id, d] of Object.entries(readDocs(path.join(cache, 'db/deck_db/deck')))) ddocs['deck/' + id] = d;
-    const { ctx, page } = await open(browser, path.join(cache, 'deck'), ddocs, 'http://editor.local/index.html?debug');
-    await page.waitForFunction(() => window.__S && window.__S.sf && window.__S.edits && window.__S.ver > 0, null, { timeout: 120000 });
+    const hook = (h) => {
+      h = h.replace(`<script src="${JSTS_CDN}" async></script>`, '<script src="jsts.min.js"></script>');
+      const n = h.replace(/indexLayers\(\); if \(\/\[\?&\]debug/, (m) => 'indexLayers(); ' + DECK_EXPOSE + m.slice('indexLayers();'.length));
+      if (n === h) throw new Error('Deck boot hook not found: the page changed');
+      return n;
+    };
+    const { ctx, page } = await open(browser, path.join(cache, 'deck'), ddocs, 'http://editor.local/index.html?debug', hook);
+    await page.waitForFunction(() => window.__D && window.__S && window.__S.sf && window.__S.edits && window.__S.ver > 0, null, { timeout: 120000 });
     await page.waitForTimeout(1500);
     await page.evaluate(() => document.getElementById('xGeo').click());
     await page.waitForFunction(() => window.__dl.length > 0, null, { timeout: 120000 });
     result.deck = JSON.parse(await page.evaluate(() => window.__dl[0].data));
+    // platform and track design (stops, bands, track pairs) through platform_track's extract.js, run as is
+    const ex = await page.evaluate(`(${fs.readFileSync(DECK_EXTRACT, 'utf8').trim()})()`);
+    result.deck_design = { constants: ex.constants, meta: ex.meta,
+      stations: ex.stations.filter((s) => s.areas.includes(job.area_key || 'fountain_square')),
+      lines: ex.lines, tracks: ex.key_tracks[job.area_key || 'fountain_square'] };
     await ctx.close();
   }
   await browser.close();

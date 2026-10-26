@@ -187,16 +187,18 @@ function structMat(color, op) {
   S.mats.struct.push(m); return m;
 }
 
-// sweep a closed 2D profile ([u left, v up] about the rail) along points [{x, y, z}] in plan with rail level z
+// sweep a closed 2D profile ([u left, v up] about the rail) along points [{x, y, z}] in plan with rail level z;
+// profile may be a function of the point index (same vertex count), for boxes that follow the track spacing
 function sweep(pts, profile, mat) {
-  const n = pts.length, m = profile.length; if (n < 2) return null;
+  const prof = typeof profile === 'function' ? profile : () => profile;
+  const n = pts.length, m = prof(0).length; if (n < 2) return null;
   const pos = new Float32Array(n * m * 3), idx = [];
   for (let i = 0; i < n; i++) {
     const a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)];
     let tx = b.x - a.x, ty = b.y - a.y; const L = Math.hypot(tx, ty) || 1; tx /= L; ty /= L;
     const nx = -ty, ny = tx;
     for (let j = 0; j < m; j++) {
-      const [u, v] = profile[j], k = (i * m + j) * 3;
+      const [u, v] = prof(i)[j], k = (i * m + j) * 3;
       pos[k] = X(pts[i].x + nx * u); pos[k + 1] = Y(pts[i].z) + v; pos[k + 2] = Z(pts[i].y + ny * u);
     }
   }
@@ -295,17 +297,34 @@ function build(snap) {
   S.levels.forEach((v, i) => { v.id = 'L' + i; for (const l of v.lines) l.level = v.id; });
   const stationLevels = S.levels.filter((v) => v.here);
 
-  // structures: every line at its real size, run by run of one structure type
-  const sop = +$('structOp').value;
+  // structures: every line at its real size, run by run of one structure type (Rail Profiles), placed on the tracks the
+  // Mill Creek Deck draws: a tube on each track where bored, one box over the pair sized by its spacing elsewhere.
+  // A line that runs on another line's tracks here (shared) gets its rail only.
+  const sop = +$('structOp').value, margin = snap.box_margin || { metro: 2.3, rer: 3.25 };
   for (const l of lines) {
     const col = kmlColor(l.color), mat = structMat(col, sop), grp = new THREE.Group(); grp.userData = { level: l.level, other: !l.here, kind: 'line' };
+    l.T = (l.tracks || []).map((t) => t.pts.map(([c, off, x, y, z]) => ({ c, off, x, y, z })));
+    l.offsAt = (c) => { const o = []; for (const t of l.T) { if (c < t[0].c - 1 || c > t[t.length - 1].c + 1) continue; let i = 1; while (i < t.length - 1 && t[i].c < c) i++; const a = t[i - 1], b = t[i], f = b.c > a.c ? Math.min(1, Math.max(0, (c - a.c) / (b.c - a.c))) : 0; o.push(a.off + f * (b.off - a.off)); } return o; };
+    const sh = l.shared || [];
     for (const r of l.runs) {
-      const seg = l.P.filter((p) => p.c >= r.c0 - 2.01 && p.c <= r.c1 + 0.01);
-      for (const prof of profilesFor(r.st)) { const ms = sweep(seg, prof, mat); if (ms) grp.add(ms); }
+      const st = r.st, inRun = (p) => p.c >= r.c0 - 2.01 && p.c <= r.c1 + 0.01;
+      // pieces of the run not shared with another line's tracks
+      const pieces = []; let cur = null;
+      l.P.forEach((p, i) => { if (inRun(p) && !sh[i]) { if (!cur) { cur = []; pieces.push(cur); } cur.push(p); } else cur = null; });
+      for (const seg of pieces) {
+        if (l.T.length && st.k === 'tube') {   // one tube along each track
+          const r0 = st.od / 2, cv = st.top - r0;
+          for (const t of l.T) { const ts = t.filter((p) => p.c >= seg[0].c - 1 && p.c <= seg[seg.length - 1].c + 1); const ms = sweep(ts, circle(0, cv, r0), mat); if (ms) grp.add(ms); }
+        } else if (l.T.length && (st.k === 'box' || st.k === 'open')) {   // one box over the pair, as wide as the tracks need
+          const m = st.k === 'open' ? 2.0 : margin[l.sys] || 2.3;
+          const prof = (i) => { const o = l.offsAt(seg[i].c); return o.length ? rect(Math.min(...o) - m, Math.max(...o) + m, -st.below, Math.max(st.top, 0.05)) : rect(-st.width / 2, st.width / 2, -st.below, Math.max(st.top, 0.05)); };
+          const ms = sweep(seg, prof, mat); if (ms) grp.add(ms);
+        } else for (const prof of profilesFor(st)) { const ms = sweep(seg, prof, mat); if (ms) grp.add(ms); }
+      }
     }
-    // rail line along the track centre, solid, so it reads through the shell
-    const rl = new THREE.Line(new THREE.BufferGeometry().setFromPoints(l.P.map((p) => new THREE.Vector3(X(p.x), Y(p.z), Z(p.y)))),
-      new THREE.LineBasicMaterial({ color: col, clippingPlanes: clips })); grp.add(rl);
+    // the rails: each Deck track at its rail level (else the line's centre), solid, so they read through the shell
+    const railMat = new THREE.LineBasicMaterial({ color: col, clippingPlanes: clips });
+    for (const t of (l.T.length ? l.T : [l.P])) grp.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(t.map((p) => new THREE.Vector3(X(p.x), Y(p.z), Z(p.y)))), railMat));
     world.add(grp); S.lineMeshes.set(l.id, grp);
     if (!l.here) { const p = l.near; label(l.name, [p.x, p.z + 3, p.y], { bar: '#' + col.toString(16).padStart(6, '0'), level: l.level, other: true }); }
   }
@@ -333,8 +352,10 @@ function build(snap) {
   }
   for (const bx of boxes.values()) {
     const l = bx.l, run = l.runs.find((r) => r.c0 <= (bx.c0 + bx.c1) / 2 && r.c1 >= (bx.c0 + bx.c1) / 2) || l.runs[0], st = run.st;
+    // the station box takes in the platforms and the tracks beside them, with 0.5 m walls (tube stations: the cavern)
+    const offs = l.offsAt((bx.c0 + bx.c1) / 2), edge = st.k === 'tube' ? st.od / 2 : 2.0;
     const half = st.k === 'box' || st.k === 'open' ? st.width / 2 : (st.spacing || 0) / 2 + st.od / 2;
-    const u0 = Math.min(bx.u0 - 2, -half), u1 = Math.max(bx.u1 + 2, half), top = st.k === 'box' || st.k === 'open' ? st.top : st.top;
+    const u0 = Math.min(bx.u0 - 0.5, offs.length ? Math.min(...offs) - edge : -half), u1 = Math.max(bx.u1 + 0.5, offs.length ? Math.max(...offs) + edge : half), top = st.top;
     const seg = l.P.filter((p) => p.c >= bx.c0 - 1 && p.c <= bx.c1 + 1);
     const grp = S.lineMeshes.get(l.id), ms = sweep(seg, rect(u0, u1, -st.below, top), grp.children[0] ? grp.children[0].material : structMat(kmlColor(l.color), sop));
     if (ms) grp.add(ms);

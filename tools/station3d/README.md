@@ -13,10 +13,13 @@ A page can read only its own database, so the Rail Profiles editor and the Mill 
 
 - `harness.js`: runs both editors headless (Playwright) from their published files, with a stand-in for `claude.use('db')` that serves the saved records.
   - Profiles: loads each line by its hash (`#Line_1`), then samples `railProfile.railAt(c)` and `typeAt(c)` every 2 m, and reads `align()` and `platforms()`.
-  - Deck: opened with `?debug`; its own GeoJSON export is captured from the downloads stand-in.
+  - Deck: opened with `?debug`, with jsts 2.12.1 served locally (`npm pack jsts@2.12.1` unpacked into `cache/jsts/`) and the same `window.__D` hook as `design/platform_track/extract/deck_headless.py`. Its own GeoJSON export is captured from the downloads stand-in (streets, blocks, platform rings), and `design/platform_track/extract/extract.js` runs as is for the track pairs and the stops (type, bands, track offsets).
 - `sync.py`: picks the lines within 400 m, runs the harness and writes `cache/snapshot.json` plus the database documents in `cache/db_out/`.
   - Coordinates are metres from the station origin: x east, y north (true), z elevation (as the editors).
   - Lines carry their plan, rail level, ground and structure type; platforms carry the Deck's plan and the Profiles rail level at their centre.
+  - Each Deck track is matched to its Profiles line (within 30 m) and gets that line's rail level by chainage, with its offset from the line. The page puts a tube on each track where the Profiles type is bored, and one box over the pair, as wide as the tracks need, elsewhere.
+  - A line with no tracks of its own here (TRI D on the A/D pair) is marked shared there and drawn as rail only.
+  - Issues: Deck spacing against the Profiles structure (Metro), and TRI tubes that can't fit the Deck's 4.5 m spacing.
 - `test_page.js`: renders the page locally from `cache/snapshot.json` (the page falls back to it when there is no database) and screenshots each preset.
 - `cache/`: downloads and outputs, not committed.
 
@@ -35,5 +38,5 @@ Scheduled runs have not been tried.
 - Platform lengths (Ben, 2026-10-26): Metro 400 ft (121.92 m), TRI 670 ft (204.216 m). The Deck already draws these; the Profiles editor's RER default of 200 m is not used.
 - Levels are always the Profiles editor's current values. Clashes in unfinished alignments are drawn as they are.
 - A line with no saved alignment (Line 7, RER-4 today) is drawn from the editor's built-in defaults and listed as an issue.
-- Structure heights from the Profiles editor; widths, tube spacing and platform height are assumptions, listed on the page under Data.
+- Structure heights from the Profiles editor; track positions and spacing from the Deck. Box walls (2.3 m Metro, 3.25 m TRI outside the outer track), the TRI tube diameter (8.5 m) and the platform height are assumptions, listed on the page under Data: neither editor sets them.
 - The ground is a plane fitted to the Profiles ground samples inside the area (about 2 m rms at Fountain Square).

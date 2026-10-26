@@ -31,22 +31,25 @@ AREAS = {
 PLATFORM_M = {'metro': 121.92, 'rer': 204.216}
 PLATFORM_ABOVE_RAIL = {'metro': 1.0, 'rer': 1.0}   # platform top above the rail: assumption, not in the editors
 
-# Structure sizes measured from the rail (Rail Profiles editor: METRO_ST, RER_DEFAULTS). Widths and tube spacing are
-# not in the editors: assumptions, marked in the snapshot.
+# Structure sizes measured from the rail (Rail Profiles editor: METRO_ST, RER_DEFAULTS). Track positions come from the
+# Mill Creek Deck (its trackPair: Metro bored tubes 8.0 m apart, box 3.9 m, islands spread; TRI 4.5 m). Neither editor
+# sets a box's width or a TRI tube's diameter: those are assumptions, marked in the snapshot. Tube spacing below is only
+# used where a line has no Deck tracks.
 METRO_ST = {
     'box': dict(k='box', below=1.0, top=4.6, cover=0.6, width=8.5),
-    'tube': dict(k='tube', below=0.68, top=4.08, od=4.76, spacing=7.0),
+    'tube': dict(k='tube', below=0.68, top=4.08, od=4.76, spacing=8.0),
     'bore': dict(k='bore', below=3.2, top=5.8, od=9.0),
 }
 RER_ST = {
     'box': dict(k='box', below=1.0, top=6.6, width=11.0),
-    'bore': dict(k='tube', below=1.0, top=7.5, od=8.5, spacing=11.0),
+    'bore': dict(k='tube', below=1.0, top=7.5, od=8.5, spacing=4.5),
 }
 OPEN_ST = dict(k='open', below=0.8, top=0.0, width=9.0)
 ERA_SHIELD = {**{f'Line_{k}': 'tube' for k in ['1', '2', '2b', '3', '4', '5', '6', '7']},
               **{f'Line_{k}': 'bore' for k in ['8', '9', '10', '11', '12', '13', '14']}, 'CVG_Express': 'bore'}
-ASSUMED = ['Metro box width 8.5 m', 'Metro twin tubes 7.0 m apart', 'RER box width 11.0 m',
-           'RER bored tubes: twin, 8.5 m outside diameter, 11.0 m apart', 'platform tops 1.0 m above the rail',
+BOX_MARGIN = {'metro': 2.3, 'rer': 3.25}   # box wall outside the outer track centre (8.5 m at 3.9 m centres; 11 m at 4.5 m)
+ASSUMED = ['box walls 2.3 m (Metro) and 3.25 m (TRI) outside the outer track centre: 8.5 m and 11 m wide boxes between stations',
+           'TRI bored tubes 8.5 m outside diameter, one per track', 'platform tops 1.0 m above the rail',
            'ground: a plane fitted to the Profiles ground within the area']
 # RER line to TRI letter (rer/canon.json: RER-n is TRI by KMZ colour, 1 A ... 5 E)
 RER_LETTER = {'RER_1': 'A', 'RER_2': 'B', 'RER_3': 'C', 'RER_4': 'D', 'RER_5': 'E'}
@@ -311,6 +314,105 @@ def main():
         span = max(dists) if dists else 0
         pl['length_drawn'] = r1(span)
 
+    # tracks: the Deck's drawn track pairs (platform_track's extract.js), each point given its Profiles line's rail level
+    # by chainage; c and off (+ left) are measured along that line, so the page can size boxes from the track spacing
+    dd = H.get('deck_design') or {}
+    by_id = {l['id']: l for l in snap_lines}
+    for l in snap_lines:
+        l['tracks'] = []
+    for t in dd.get('tracks', []):
+        label = t['line'] or ''
+        if t['sys'] == 'metro':
+            ids = ['Line_' + label.split('Line ')[-1].strip()]
+        else:
+            letters = label.split('RER ')[-1].replace('/', '')
+            ids = [k for k, v in RER_LETTER.items() if v in letters]
+        cand = [by_id[i] for i in ids if i in by_id]
+        xy = np.array(t['c'], float) - [E0, N0]
+        keep = (np.abs(xy[:, 0]) <= R + 50) & (np.abs(xy[:, 1]) <= R + 50)
+        if keep.sum() < 2 or not cand:
+            continue
+        xy = xy[keep]
+        best = None
+        for l in cand:   # the line the track follows: nearest median distance (A/D: the saved RER-1 before RER-4)
+            P = np.array([q[1:3] for q in l['pts']]); cs = np.array([q[0] for q in l['pts']])
+            pr = [project(cs, P, q) for q in xy]
+            med = float(np.median([p[0] for p in pr]))
+            if med < 30 and (best is None or med < best[0] - 0.5 or (abs(med - best[0]) <= 0.5 and l['saved'] and not best[1]['saved'])):
+                best = (med, l, pr)
+        if not best:
+            issues.append(f"Deck track {label} ({t.get('side', t['from'])}) is more than 30 m from its Profiles line")
+            continue
+        _, l, pr = best
+        cs = np.array([q[0] for q in l['pts']]); zs = np.array([q[3] for q in l['pts']])
+        pts = [[r1(p[1]), r2(p[2]), r2(q[0]), r2(q[1]), r2(np.interp(p[1], cs, zs))] for p, q in zip(pr, xy)]
+        pts.sort(key=lambda v: v[0])
+        l['tracks'].append({'side': t.get('side'), 'from': t['from'], 'deck_line': label, 'pts': pts})
+
+    # a line with no tracks of its own here that runs on another line's tracks (D on the A/D pair): mark those points
+    # shared, so the page draws its rail but not a second structure
+    for l in snap_lines:
+        if l['tracks']:
+            continue
+        others = [np.array([q[2:4] for q in t['pts']]) for o in snap_lines if o is not l and o['sys'] == l['sys'] for t in o['tracks']]
+        sh = []
+        for q in l['pts']:
+            p = np.array(q[1:3])
+            sh.append(int(any(float(np.min(np.hypot(*(T - p).T))) < 10 for T in others)) if others else 0)
+        if any(sh):
+            l['shared'] = sh
+
+    # the Deck's spacing against the Profiles structure, away from platforms: twin tubes need about 8 m between tracks
+    for l in snap_lines:
+        if l['sys'] != 'metro' or len(l['tracks']) != 2:
+            continue
+        a_, b_ = ([q[0] for q in t['pts']] for t in l['tracks'])
+        ao, bo = ([q[1] for q in t['pts']] for t in l['tracks'])
+        plat = [(s['from_c'] - 40, s['to_c'] + 40) for s in l['stations']]
+        bad = {'tube': 0.0, 'box': 0.0}
+        for i, q in enumerate(l['pts'][:-1]):
+            c = q[0]
+            if c < max(a_[0], b_[0]) or c > min(a_[-1], b_[-1]) or any(p0 <= c <= p1 for p0, p1 in plat):
+                continue
+            gap = abs(np.interp(c, a_, ao) - np.interp(c, b_, bo))
+            k = next(r['st']['k'] for r in l['runs'] if r['c0'] <= c <= r['c1'] + 2)
+            step = l['pts'][i + 1][0] - c
+            if k == 'tube' and gap < 6.0:
+                bad['tube'] += step
+            elif k == 'box' and gap > 6.0:
+                bad['box'] += step
+        if bad['tube'] > 20:
+            issues.append(f"{l['name']}: {bad['tube']:.0f} m is bored in the Profiles editor but drawn at box spacing (3.9 m) in the Deck")
+        if bad['box'] > 20:
+            issues.append(f"{l['name']}: {bad['box']:.0f} m is cut and cover in the Profiles editor but drawn as twin tubes (8.0 m) in the Deck")
+
+    # TRI bored stretches: the Deck spaces TRI tracks 4.5 m apart everywhere, closer than two tubes can sit
+    for l in snap_lines:
+        if l['sys'] != 'rer' or len(l['tracks']) < 2:
+            continue
+        od = RER_ST['bore']['od']
+        t0, t1 = l['tracks'][0]['pts'], l['tracks'][1]['pts']
+        tight = 0.0
+        for i, q in enumerate(l['pts'][:-1]):
+            k = next((r['st']['k'] for r in l['runs'] if r['c0'] <= q[0] <= r['c1'] + 2), None)
+            if k != 'tube' or not (max(t0[0][0], t1[0][0]) <= q[0] <= min(t0[-1][0], t1[-1][0])):
+                continue
+            gap = abs(np.interp(q[0], [p[0] for p in t0], [p[1] for p in t0]) - np.interp(q[0], [p[0] for p in t1], [p[1] for p in t1]))
+            if gap < od + 1.0:
+                tight += l['pts'][i + 1][0] - q[0]
+        if tight > 20:
+            issues.append(f"{l['name']}: {tight:.0f} m bored with the Deck's tracks under {od + 1:.1f} m apart, so the {od} m tubes overlap (TRI spacing ignores construction)")
+
+    # the Deck's stops at the station: type, platform bands and track offsets as the page draws them
+    stops = []
+    for st in dd.get('stations', []):
+        if st['name'] not in area['stations'] or st.get('deleted'):
+            continue
+        for o in st['stops']:
+            stops.append({'sys': st['sys'], 'line': o.get('line'), 'type': o.get('type'), 'bands': o.get('bands'),
+                          'track_offsets': o.get('track_offsets'), 'tracks_from': o.get('tracks_from'),
+                          'bored_at_centre': o.get('bored_at_centre'), 'L': o.get('L')})
+
     snap = {
         'area': a.area, 'name': area['name'], 'synced_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
         'origin': {'lon': area['lon'], 'lat': area['lat'], 'E': r2(E0), 'N': r2(N0), 'crs': 'EPSG:32616'},
@@ -321,6 +423,7 @@ def main():
         'struct': {'metro': METRO_ST, 'rer': RER_ST, 'open': OPEN_ST}, 'assumed': ASSUMED,
         'sources': {'profiles': H.get('profiles_version'), 'deck': H.get('deck_version'),
                     'profiles_saved': {l['id']: l['saved'] for l in snap_lines}},
+        'box_margin': BOX_MARGIN, 'deck_rules': dd.get('constants'), 'stops': stops,
         'lines': snap_lines, 'deck': deck, 'issues': issues,
     }
     meta = os.path.join(a.cache, 'versions.json')
@@ -346,6 +449,7 @@ def main():
                 print(f"{l['name']:<22} {s['name']}: rail {s['rail']} m", file=sys.stderr)
     print(f"ground plane z = {gz:.2f} + {gx * 1000:.1f}/km x + {gy * 1000:.1f}/km y (rms {np.sqrt((resid ** 2).mean()):.2f} m)",
           file=sys.stderr)
+    print('tracks: ' + ', '.join(f"{l['id']} {len(l['tracks'])}" for l in snap_lines), file=sys.stderr)
     print(f"{len(snap_lines)} lines, {len(deck['platforms'])} platforms, {len(deck['streets'])} streets, "
           f"{len(deck['blocks'])} blocks; {len(issues)} issues -> {a.out} ({os.path.getsize(a.out) // 1024} KB)", file=sys.stderr)
     for i in issues:
