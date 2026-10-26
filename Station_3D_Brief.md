@@ -66,6 +66,14 @@ The sync method:
 3. Read the geometry from the editor's own functions (`railProfile.railAt`, `typeAt`, `exportGeo`; the Deck's computed lines and platforms), so the 3D view matches what the editors show.
 4. Write one snapshot per station area into the 3D page's database, with its time.
 
+Steps 1 to 3 now work for both editors (2026-10-26). The scripts are in `design/platform_track/extract/`: `deck_headless.py`, `profiles_headless.py` and `combine3d.py`. Section 10 of `claude/Platform_Track_Design_Brief.md` explains them.
+
+- **What they give:** every Deck track with its plan and rail level, and each level's source.
+- **Where the levels come from:**
+  - Metro and the TRI core take the Profiles page's levels.
+  - APEx, the lower level and the north trunk take the Deck's level marks. The Deck publishes no level per point, so those tracks are interpolated between the marks.
+- **Conflicts:** where the two editors disagree, both levels are listed.
+
 ## Phases
 
 1. **Sync** for Fountain Square, about 400 m around it: lines (plan, rail level, structure type), platforms (extent, island or side, level), ground and streets.
