@@ -17,7 +17,7 @@ npm install && npx playwright install chromium
 python hub/hub.py                       # opens http://localhost:8765
 ```
 
-The views: `/deck/`, `/profiles/` (a line by hash, `/profiles/#Line_8`), `/3d/`. A bar at the bottom of each moves between them and shows when the pipeline is updating; a page whose data files changed (the Profiles after a Deck tie) offers a reload.
+The views: `/deck/`, `/profiles/` (a line by hash, `/profiles/#Line_8`), `/3d/`. A bar at the bottom of each has a Home button (the hub page), moves between the views and shows when the pipeline is updating; a page whose data files changed (the Profiles after a Deck tie) offers a reload.
 
 Options: `--port`, `--no-auto` (run the pipeline only from the hub page), `--no-browser`, `--db PATH`.
 

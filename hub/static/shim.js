@@ -57,7 +57,11 @@
   // ---- the hub bar ----
   const SITE = location.pathname.split('/')[1] || '';
   let filesChanged = false, offline = false;
-  const VIEWS = [['deck', 'Deck'], ['profiles', 'Profiles'], ['3d', '3D'], ['', 'Hub']];
+  const VIEWS = [['deck', 'Deck'], ['profiles', 'Profiles'], ['3d', '3D']];
+  const HOME = '<a href="/" title="Home: the hub page" style="display:inline-flex;align-items:center;gap:5px;background:#fff;color:#14181c;'
+    + 'text-decoration:none;font-weight:700;padding:3px 10px 3px 8px;border-radius:999px;margin-right:4px">'
+    + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+    + '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>Home</a>';
   function drawBar() {
     if (!document.body) return;
     if (!bar.el) {
@@ -68,7 +72,7 @@
     }
     const running = Object.entries(bar.runs).filter(([, s]) => s === 'running').map(([j]) => j);
     const failed = Object.entries(bar.runs).filter(([, s]) => s === 'failed').map(([j]) => j);
-    bar.el.innerHTML = VIEWS.map(([k, n]) => `<a href="/${k}${k ? '/' : ''}" style="color:${k === SITE ? '#fff' : '#9cf'};text-decoration:none;font-weight:${k === SITE ? 700 : 400}">${n}</a>`).join('<span style="opacity:.4">·</span>')
+    bar.el.innerHTML = (SITE ? HOME : "") + VIEWS.map(([k, n]) => `<a href="/${k}${k ? '/' : ''}" style="color:${k === SITE ? '#fff' : '#9cf'};text-decoration:none;font-weight:${k === SITE ? 700 : 400}">${n}</a>`).join('<span style="opacity:.4">·</span>')
       + (offline ? ' <span style="color:#f99">hub offline</span>' : '')
       + (running.length ? ` <span style="color:#fd6">updating: ${running.join(', ')}</span>` : '')
       + (failed.length ? ` <a href="/#runs" style="color:#f99">failed: ${failed.join(', ')}</a>` : '')
