@@ -57,6 +57,8 @@ async function open(browser, root, docs, url, html = (h) => h) {
   // Rail Profiles: one load per line (its line is picked from the hash); rail level and type every 2 m
   const pdocs = {}; for (const [id, d] of Object.entries(readDocs(path.join(cache, 'db/profiles_db/alignments')))) pdocs['alignments/' + id] = d;
   for (const [id, d] of Object.entries(readDocs(path.join(cache, 'db/profiles_db/config')))) pdocs['config/' + id] = d;
+  // repo profiles for lines the editor has not saved (job.extra_docs, from sync.py)
+  for (const [k, d] of Object.entries(job.extra_docs || {})) if (!(k in pdocs)) pdocs[k] = d;
   // job: [{ id, c0, c1 }], the chainage ranges to sample (from sync.py)
   for (const j of job.lines) {
     const { ctx, page } = await open(browser, path.join(cache, 'profiles'), pdocs, `http://editor.local/index.html#${j.id}`);

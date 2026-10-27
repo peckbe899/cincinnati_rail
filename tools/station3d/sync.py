@@ -212,6 +212,21 @@ def deck_ids(sys_, label, by_id):
     return [i for i in ids if i in by_id]
 
 
+# Repo profiles the editor has not saved, served to it as if saved (and listed as issues): RER-4 north of Camp
+# Washington is tied to the Deck's APEx level (Ben, 2026-10-27; tools/make_rer4_upper.py).
+REPO_PROFILES = {'RER_4': 'data/profile/rer/alignments/RER_4.json'}
+
+
+def repo_docs(cache):
+    out = {}
+    saved = os.path.join(cache, 'db/profiles_db/alignments')
+    for lid, rel in REPO_PROFILES.items():
+        f = os.path.join(HERE, '..', '..', rel)
+        if os.path.exists(f) and not os.path.exists(os.path.join(saved, lid + '.json')):
+            out['alignments/' + lid] = json.load(open(f))
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--cache', default=os.path.join(HERE, 'cache'))
@@ -226,7 +241,8 @@ def main():
     lines = load_lines(a.cache)
     jf, rf = os.path.join(a.cache, 'job.json'), os.path.join(a.cache, 'harness_out.json')
     if not a.skip_harness:
-        job = {'lines': [{'id': lid, 'c0': 0.0, 'c1': float(d['length_m']), 'step': STEP} for lid, d in lines.items()], 'deck': True}
+        job = {'lines': [{'id': lid, 'c0': 0.0, 'c1': float(d['length_m']), 'step': STEP} for lid, d in lines.items()], 'deck': True,
+               'extra_docs': repo_docs(a.cache)}
         json.dump(job, open(jf, 'w'))
         subprocess.run(['node', os.path.join(HERE, 'harness.js'), a.cache, jf, rf], check=True)
     H = json.load(open(rf))
@@ -280,7 +296,10 @@ def main():
                         'depth': r2(gz - rail) if rail is not None and not math.isnan(gz) else None,
                         'type': S[j][4], 'offset': r1(so or 0), 'platform_m': Lp,
                         'from_c': r1(cmid - Lp / 2), 'to_c': r1(cmid + Lp / 2), 'saved': h['saved']})
-        if not h['saved'] and pieces:
+        if lid in REPO_PROFILES and h['saved'] and not os.path.exists(os.path.join(a.cache, 'db/profiles_db/alignments', lid + '.json')):
+            issues.append(f"{d['line']}: levels from the repo profile ({REPO_PROFILES[lid]}): north of Camp Washington tied to the Deck's APEx level, "
+                          "7.9 m over the rails under it (Ben, 2026-10-27); not saved in the Rail Profiles editor")
+        elif not h['saved'] and pieces:
             issues.append(f"{d['line']}: no saved alignment in the Profiles editor; drawn from its built-in defaults")
         name = d['line'] if d['sys'] != 'rer' else f"{d['line']} (TRI {RER_LETTER.get(lid, '?')})"
         L[lid] = {'id': lid, 'name': name, 'sys': d['sys'], 'color': d.get('color'), 'saved': h['saved'],
@@ -496,6 +515,14 @@ def main():
     ground = {'x0': r1(gx0), 'y0': r1(gy0), 'step': GRID, 'nx': nx, 'ny': ny,
               'z': [None if math.isnan(v) else int(round(v * 10)) for v in G.ravel()]}
 
+    # ---- the other systems at CUT and Norwood Central: structures, tracks, platforms, piers, finished ground ----
+    import context3d
+    ut_isl = [([list(q) for q in zip(dec(pl['x'], 100), dec(pl['y'], 100))], pl['rail']) for pl in ut] if len(ut) == 3 and all(pl['rail'] is not None for pl in ut) else None
+    ctx = context3d.build(E0, N0, ut_isl)
+    unlevelled += ctx['unlevelled']
+    gtiles = context3d.tiles(ctx, E0, N0, gx0, gy0)
+    context = ctx['items']
+
     # ---- checks: the Deck's spacing against the Profiles structure ----
     for lid, l in L.items():
         own = [t for t in tracks if t['line'] == lid]
@@ -550,6 +577,14 @@ def main():
         'rules': ['Levels: the Rail Profiles editor; plan, tracks and platforms: the Mill Creek Deck',
                   'A platform on a shared pair (RER A/D, B C E ...) serves every line on it, at the level of the saved Profiles line (Ben, 2026-10-26: A and D share the Fountain Square platforms)',
                   'Platforms: Metro 400 ft, TRI 670 ft (Ben, 2026-10-26)'],
+        'ctx': {'tile': context3d.TILE, 'counts': dict(ctx['counts'], tiles=len(gtiles)), 'sources': ctx['sources'],
+                    'rules': ['CUT and Norwood Central structures from the Mill Creek Deck, drawn as in the Rail Profiles context (the same definitions)',
+                              'Union Terminal TRI box: one level for RER-1, 2 and 4, the Profiles level (Ben, 2026-10-26)',
+                              'Structure types at CUT (Ben, 2026-10-26): the fan from W 9th to W Liberty is an embankment with a bridge over each street; the wide south approach to the Cardinal crossing and the north trunk are arch viaducts, an arch over each street (piers on the street edges), solid between; the rest are normal viaducts on piers; the intercity and C&O descents are embankments with blind arches',
+                              'No footing check under the structures (Ben, 2026-10-26); drawing values: piers every 25 m, 2 m thick, on normal viaducts; blind arches every 10 m',
+                              'The Deck\'s street re-grades are finished ground (Ben, 2026-10-26); finished ground at 10 m round the structures',
+                              'Lower-pair levels from the Deck\'s dive figures until the Deck publishes a level per point (Ben, 2026-10-26)',
+                              'Norwood ORR, Transvalley and APEx tracks are fixed context; levels approximate, from the ground (Ben, 2026-10-26)']},
         'sources': {'profiles_saved': {lid: l['saved'] for lid, l in L.items()}},
         'counts': {'lines': len(snap_lines), 'tracks': len(tracks), 'unlevelled': len(unlevelled), 'stations': len(stations),
                    'platforms': len(plats), 'streets': len(streets), 'blocks': len(blocks)},
@@ -558,7 +593,7 @@ def main():
     if os.path.exists(vf):
         meta['sources'].update(json.load(open(vf)))
     snap = dict(meta, lines=snap_lines, tracks=tracks, unlevelled=unlevelled, stations=stations, platforms=plats,
-                streets=streets, blocks=blocks, ground=ground)
+                streets=streets, blocks=blocks, ground=ground, context=context, gtiles=gtiles)
     json.dump(snap, open(a.out, 'w'), separators=(',', ':'))
 
     # ---- database documents: parts of at most ~200 KB of JSON text (the limit is 256 KiB a document), the meta document last ----
@@ -567,7 +602,7 @@ def main():
     for f in os.listdir(ddir):
         os.remove(os.path.join(ddir, f))
     parts = []
-    for key in ('lines', 'tracks', 'unlevelled', 'stations', 'platforms', 'streets', 'blocks'):
+    for key in ('lines', 'tracks', 'unlevelled', 'stations', 'platforms', 'streets', 'blocks', 'context', 'gtiles'):
         items, chunk, size, n = snap[key], [], 0, 0
         def flush():
             nonlocal chunk, size, n
@@ -599,7 +634,7 @@ def main():
     for pl in plats:
         if pl['station'] == AREA['default_station']:
             print(f"  platform {pl['deck_line']:<14} {pl['type']:<7} lines {','.join(pl['lines'])}  rail {pl['rail']}", file=sys.stderr)
-    print(json.dumps(meta['counts']), file=sys.stderr)
+    print(json.dumps(meta['counts']), json.dumps(meta['ctx']['counts']), file=sys.stderr)
     sizes = {f: os.path.getsize(os.path.join(ddir, f)) for f in os.listdir(ddir)}
     print(f"{len(parts)} parts, largest {max(sizes.values()) // 1024} KB, total {sum(sizes.values()) // 1024} KB", file=sys.stderr)
     print(f"{len(issues)} issues", file=sys.stderr)

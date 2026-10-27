@@ -919,7 +919,9 @@ class MetroProfile:
         """Other systems' structures on this line (context file): name n, short label l, kind k
         (box | trough | atgrade | viaduct | fill), chainage c0..c1, their rail p [[c, z], ...],
         heights below b / top t from their rail (t is the clear height above an open structure),
-        open o, their platforms pl [[c0, c1, z], ...], source s."""
+        open o, their platforms pl [[c0, c1, z], ...], source s; structure type st (embankment, arch,
+        viaduct, or the kind) and, on an embankment or arch viaduct, the street openings gaps
+        [[c0, c1, street], ...] along this line."""
         return list(self.ctx.get("blocks") or [])
 
     def open_struct(self, t: str) -> dict:
@@ -933,12 +935,17 @@ class MetroProfile:
         """Each context block against this line at its worst point, with the crossing rule: the
         upper structure's floor + 0.5 m + the lower one's top (a track in the open counts its clear
         height). Under a viaduct only a line in the open is checked: the arches go to the street
-        and no footing depth is set (Ben, 26 October). Both in the open within 1 m: crosses at
-        grade."""
+        and no footing depth is set (Ben, 26 October). Under an embankment or an arch viaduct
+        (block st) a line in the open may pass only inside a street opening (block gaps); anywhere
+        else it is blocked. Both in the open within 1 m: crosses at grade."""
         out = []
         open_t = ("atgrade", "trough", "elevated")
         for b in self.context_blocks():
             viad = b["k"] in ("viaduct", "fill")
+            # an embankment or an arch viaduct is open only at its street bridges or arches (Ben, 26 October):
+            # a line in the open passing under it anywhere else runs into it
+            gapped = b.get("st") in ("embankment", "arch")
+            gaps = b.get("gaps") or []
             w = None
             for c, zo in b["p"]:
                 z = float(self.rail_at(c))
@@ -947,14 +954,19 @@ class MetroProfile:
                 up = z >= zo
                 if viad and not up and mt not in open_t:
                     continue
+                if gapped and not up and not any(g[0] - 0.5 <= c <= g[1] + 0.5 for g in gaps):
+                    w = {"c": c, "zo": zo, "z": z, "clear": abs(z - zo), "need": None, "me_up": False, "type": mt,
+                         "level": False, "short": float("inf"), "blocked": True}
+                    break
                 need = (t["below"] + SEP_GAP + b["t"]) if up else (b["b"] + SEP_GAP + t["top"])
                 level = mt in open_t and b["k"] in ("atgrade", "trough") and abs(z - zo) < 1.0
                 short = need - abs(z - zo)
                 if w is None or (level and not w["level"]) or (level == w["level"] and short > w["short"]):
                     w = {"c": c, "zo": zo, "z": z, "clear": abs(z - zo), "need": need, "me_up": up,
-                         "type": mt, "level": level, "short": short}
+                         "type": mt, "level": level, "short": short, "blocked": False}
             if w:
-                out.append({**w, "with": b["l"], "kind": b["k"], "ok": not w["level"] and w["short"] <= 0.05, "block": b})
+                out.append({**w, "with": b["l"], "kind": b["k"], "st": b.get("st", b["k"]),
+                            "ok": not w["blocked"] and not w["level"] and w["short"] <= 0.05, "block": b})
         return out
 
     # ------------------------------------------------------------- checks

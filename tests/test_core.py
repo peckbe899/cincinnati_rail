@@ -521,3 +521,24 @@ def test_cut_norwood_context():
     l9.refresh_fill()
     for ci in np.arange(s0 - 50.0, s0 + 50.0, 10.0):
         assert float(l9.ground_at(ci)) >= float(l9.rail_at(ci)) + 4.6 + 0.6 - 0.01
+
+
+def test_context_street_openings():
+    """Structure types at CUT (Ben, 26 October): under an embankment or an arch viaduct a line in the
+    open may cross only at a street bridge or arch (the block's gaps); under a normal viaduct anywhere."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent / "data/profile"
+    mp = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json")
+    cs = np.arange(0.0, mp.length, 10.0)
+    c = next(ci for ci in cs if mp.type_at(ci) == "atgrade" and all(mp.type_at(ci + d) == "atgrade" for d in (-20, 20)))
+    z = float(mp.rail_at(c))
+    blk = lambda st, gaps: {"n": "test", "l": "test", "k": "fill" if st == "embankment" else "viaduct", "st": st, "c0": c - 10, "c1": c + 10,
+                            "p": [[c - 10, z + 9.0], [c, z + 9.0], [c + 10, z + 9.0]], "b": 1.6, "t": 5.8, "o": True, "pl": [], "s": "", "gaps": gaps}
+    check = lambda b: (setattr(mp, "ctx", {"blocks": [b]}), mp.context_clearances()[0])[1]
+    x = check(blk("embankment", []))          # no street opening: blocked
+    assert x["blocked"] and not x["ok"]
+    x = check(blk("arch", [[c - 12, c + 12, "a street"]]))   # under an arch over a street: 9.0 m clear, needs 1.6 + 0.5 + 4.2
+    assert not x["blocked"] and x["ok"] and x["need"] == pytest.approx(6.3, abs=0.01)
+    x = check(blk("viaduct", []))             # a normal viaduct: open between its piers
+    assert not x["blocked"] and x["ok"]

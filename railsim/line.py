@@ -672,7 +672,11 @@ def _context_warnings(mp) -> List[str]:
     for x in mp.context_clearances():
         if x["ok"]:
             continue
-        if x["level"]:
+        if x.get("blocked"):
+            what = "embankment" if x.get("st") == "embankment" else "arch viaduct"
+            out.append(f"{mp.id}: runs in the open into {x['with']} at {x['c']:.0f} m, outside a street "
+                       f"{'bridge' if what == 'embankment' else 'arch'}: the {what} is open only over the streets")
+        elif x["level"]:
             out.append(f"{mp.id}: crosses {x['with']} at grade at {x['c']:.0f} m: needs a grade separation")
         else:
             out.append(f"{mp.id}: {x['clear']:.2f} m {'over' if x['me_up'] else 'under'} {x['with']} at "
