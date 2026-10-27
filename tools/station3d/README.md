@@ -67,7 +67,7 @@ Ben asked for the CUT underground box, the viaducts and the CUT and Norwood plat
   - `span`: over each street opening, a flat bridge (embankment) or an arch springing at the street edges (arch viaduct), drawn along the street.
   - `blind`: blind-arch outlines every 10 m on the faces of the descent embankments.
   - `pier`: piers every 25 m on normal viaducts only, from the finished ground to the underside (no footing check); the upper deck's piers stand on the lower deck.
-  - `rail`: the APEx, lower-level, ORR, Transvalley and Norwood tracks at the level of the structure they run in. A track outside every structure is added to `unlevelled`.
+  - `rail`: the APEx, lower-level, ORR, Transvalley and Norwood tracks at the level of the structure they run in. Past the structures (Ben, 2026-10-27: off the bridges into Ludlow and to the region's edge) each track runs from the structure end at no more than its system's grade (APEx 2.5%, lower level 1.5%, Transvalley 3%) to the ground smoothed over 150 m; the Deck's tunnel tracks 15 m under it; over water at least 20 m above the Ohio pool. Drawing values; `est` marks those points. Nothing is left dashed.
   - `plat`: the APEx (160.3 m), lower (144.0 m) and Norwood (178.0 m) platforms, tops 1.0 m above the rail.
 - `gtiles`: finished ground at 10 m in 400 m tiles (aligned to the 200 m grid) round every structure and re-grade: the map 3 ground, plus the Deck's street re-grades (W 8th and Horne humps, Findlay +2.0 m, Bank -2.0 m), capped at the floors of the open cuts. The page uses them for the ground, the streets and the blocks.
 - `ctx` in the meta: the tile size, counts, sources and rules.

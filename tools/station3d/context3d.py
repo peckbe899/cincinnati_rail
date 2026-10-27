@@ -50,6 +50,15 @@ BRIDGES = {   # Deck structures.json bridges and their rail level (Deck notes an
     'C&O bridge (1929)': (160.4, 'lower', 'Deck: the C&O pair at 160.4 m on the TRIMET approach'),
     'Ludlow underbridge': (162.5, 'apex', 'Deck: rail 162.5 m over Ludlow Avenue'),
 }
+# Past the Deck's structures the other systems' tracks have no level in the Deck (Ben, 2026-10-27: draw them, into
+# Ludlow and to the region's edge): from each structure end the rail runs at no more than its system's grade to the
+# ground, smoothed over EXT_SMOOTH_M; the Deck's tunnel tracks stay TUNNEL_RAIL_M under it; over water (ground under
+# the Ohio pool) the rail holds at least WATER_RAIL_M above the pool. Drawing values, listed as assumptions.
+EXT_GRADE = {'apex': 0.025, 'orr': 0.015, 'ic': 0.015, 'bay': 0.015, 'tv': 0.03}
+EXT_SMOOTH_M = 150.0
+TUNNEL_RAIL_M = 15.0
+POOL = 455.0 * 0.3048
+WATER_RAIL_M = 20.0
 SYS_COL = {'apex': '1baf7a', 'orr': 'eda100', 'tv': 'e87ba4', 'bay': 'eda100', 'ic': 'eda100'}
 
 
@@ -83,6 +92,36 @@ def polys(g):
     if isinstance(g, MultiPolygon):
         return list(g.geoms)
     return [q for q in getattr(g, 'geoms', []) if isinstance(q, Polygon)]
+
+
+def extend_levels(nm, sysk, pts, zs, ds):
+    """levels for a track's points the Deck's structures do not cover (see EXT_GRADE)"""
+    import make_profile_context as mpc
+    xy = np.array([(q.x, q.y) for q in pts])
+    ds_ = mpc._ds   # the map 3 raster: only points inside it (two cells in from its edge) are sampled
+    x0, y1 = 695000.0, 4350000.0
+    inside = (xy[:, 0] > x0 + 6) & (xy[:, 0] < x0 + 2 * ds_.width - 6) & (xy[:, 1] < y1 - 6) & (xy[:, 1] > y1 - 2 * ds_.height + 6)
+    g = np.full(len(xy), np.nan)
+    if inside.any():
+        g[inside] = mpc.sample(xy[inside])
+    ok = np.isfinite(g)
+    if not ok.any():
+        return zs
+    g = np.interp(np.arange(len(g)), np.nonzero(ok)[0], g[ok])
+    w = max(1, int(round(EXT_SMOOTH_M / ds)))
+    gs = np.convolve(np.pad(g, w, mode='edge'), np.ones(2 * w + 1) / (2 * w + 1), 'valid')
+    target = gs - TUNNEL_RAIL_M if 'tunnel' in nm.lower() else np.where(g < POOL + 1.0, np.maximum(gs, POOL + WATER_RAIL_M), gs)
+    known = np.array([z is not None for z in zs])
+    z = np.array([zz if zz is not None else t for zz, t in zip(zs, target)], float)
+    d = EXT_GRADE.get(sysk, 0.02) * ds
+    for _ in range(3):   # held to the grade from every known level, both ways
+        for i in range(1, len(z)):
+            if not known[i]:
+                z[i] = min(max(z[i], z[i - 1] - d), z[i - 1] + d)
+        for i in range(len(z) - 2, -1, -1):
+            if not known[i]:
+                z[i] = min(max(z[i], z[i + 1] - d), z[i + 1] + d)
+    return [float(v) for v in z]
 
 
 def build(E0, N0, ut_islands=None):
@@ -210,7 +249,7 @@ def build(E0, N0, ut_islands=None):
         tracks.append(('Norwood ' + p.get('name', ''), p.get('sys', 'apex'), ('nw',), g['coordinates']))
     prep = [(st, shapely.prepared.prep(st['geom'].buffer(2.0))) for st in S]
     unlev = []
-    nlev = 0
+    nlev = nest = 0
     for nm, sysk, fams, coords in tracks:
         L = LineString([tuple(q[:2]) for q in coords])
         if L.length < 2:
@@ -232,20 +271,24 @@ def build(E0, N0, ut_islands=None):
                 if z is not None:
                     break
             zs.append(z)
+        ext = [z is None for z in zs]
+        if any(ext):
+            zs = extend_levels(nm, sysk, pts, zs, L.length / (n - 1))
+            nest += 1
         run, runs = None, []
-        for q, z in zip(pts, zs):
+        for q, z, e in zip(pts, zs, ext):
             k = z is not None
             if run is None or run[0] != k:
                 run = [k, []]
                 runs.append(run)
-            run[1].append((q.x, q.y, z))
+            run[1].append((q.x, q.y, z, e))
         for k, seg in runs:
             if len(seg) < 2:
                 continue
-            a = np.array([(x, y) for x, y, _ in seg])
+            a = np.array([(x, y) for x, y, _, _ in seg])
             if k:
                 items.append({'type': 'rail', 'n': nm, 'sys': sysk, 'col': SYS_COL.get(sysk, '1baf7a'), 'x': enc(a[:, 0] - E0, 10), 'y': enc(a[:, 1] - N0, 10),
-                              'z': enc([z for _, _, z in seg], 100)})
+                              'z': enc([round(float(z), 2) for _, _, z, _ in seg], 100), 'est': enc([int(e) for _, _, _, e in seg], 1)})
                 nlev += 1
             else:
                 unlev.append({'deck_line': nm, 'sys': sysk, 'from': 'Deck tracks.json', 'x': enc(a[:, 0] - E0, 10), 'y': enc(a[:, 1] - N0, 10)})
@@ -313,7 +356,7 @@ def build(E0, N0, ut_islands=None):
 
     # ---- finished-ground tiles round every structure and re-grade, aligned to the snapshot's 200 m grid ----
     return dict(items=items, unlevelled=unlev, finished=finished, region=unary_union([st['geom'] for st in S] + [rg['band'] for rg in REG]),
-                counts={'structures': sum(1 for i in items if i['type'] == 'struct'), 'rails': nlev, 'unlevelled': len(unlev),
+                counts={'structures': sum(1 for i in items if i['type'] == 'struct'), 'rails': nlev, 'extended': nest, 'unlevelled': len(unlev),
                         'platforms': sum(1 for i in items if i['type'] == 'plat'), 'piers': npier, 'spans': nspan, 'blind_arches': nblind},
                 sources=['Mill Creek Deck tracks.json, structures.json, deck.json, norwood.json (data/deck)', 'Rail Profiles context definitions (tools/make_profile_context.py)',
                          'map 3 ground (data/profile/dem)'])
