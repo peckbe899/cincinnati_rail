@@ -5,6 +5,10 @@ description = "Physics-based metro and commuter/RER running-time simulators for 
 requires-python = ">=3.10"
 dependencies = ["numpy>=1.24", "scipy>=1.10", "matplotlib>=3.7", "pyyaml>=6"]
 
+[project.optional-dependencies]
+# the local hub (hub/hub.py) and the tools it runs: Deck tie, Profiles context, Station 3D sync
+hub = ["shapely>=2", "pyproj>=3.5", "rasterio>=1.3"]
+
 [project.scripts]
 railsim-metro = "railsim.metro:main"
 railsim-commuter = "railsim.commuter:main"

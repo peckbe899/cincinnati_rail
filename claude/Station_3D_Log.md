@@ -104,3 +104,11 @@ Published: page version 6 and the snapshot (35 parts), read back at view level.
 - Line 14's default profile clashes with the Norwood tracks after its platform moved to the Deck's (reported, not fixed: Line 14 has no saved profile).
 - North arch viaduct context trimmed to the APEx tracks: RER A's false clash under it is gone.
 - Rail Profiles page version 39; snapshot published (38 parts, gtiles-2 removed).
+
+## 2026-10-27: the local hub
+
+- Ben: connect the three so a change in one updates the others, with parameters from one central database; local only, just him.
+- `hub/hub.py`: one SQLite database for the Deck, Profiles and 3D pages, served locally with a stand-in for the artifact runtime (pages unchanged; their database calls go to the hub, live over server-sent events). A Deck save runs the Deck tie and then the 3D rebuild; a Profiles save runs the 3D rebuild. Hub page: runs, shared parameters per view, roadmap, export to `hub/seed` for git.
+- Fixed in the headless runner (`tools/station3d/harness.js`): it could export the Deck before the saved edits had loaded (seen as routes 200 m off). It now waits for the edits themselves.
+- Found by the parameter registry: 64 of the Deck's RER island platforms are drawn about 202 m long, 44 at 204 m; the Profiles and 3D use 204.2 m.
+- The artifacts are no longer updated: the hub is where the design lives.

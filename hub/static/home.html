@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cincinnati Rail hub</title>
+<script src="/hub/shim.js"></script>
+<style>
+:root { --bg:#f6f5f1; --panel:#fff; --ink:#1c2126; --muted:#69737c; --line:#e1ded6; --accent:#2f6fb3; --ok:#2e7d4f; --warn:#b26a00; --bad:#b3261e; }
+@media (prefers-color-scheme: dark) { :root { --bg:#14181c; --panel:#1d2329; --ink:#e7ecf0; --muted:#97a2ab; --line:#2c343b; --accent:#7fb2ea; --ok:#6cc58f; --warn:#e6a54a; --bad:#f08a80; } }
+* { box-sizing:border-box }
+body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif; }
+main { max-width:1100px; margin:0 auto; padding:24px 16px 80px; }
+h1 { font-size:22px; margin:0 0 4px } h2 { font-size:16px; margin:28px 0 10px } .muted { color:var(--muted) }
+.views { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:16px }
+.card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px }
+.card a.big { font-size:16px; font-weight:600; color:var(--accent); text-decoration:none }
+table { width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden }
+th, td { text-align:left; padding:7px 10px; border-bottom:1px solid var(--line); vertical-align:top } th { font-weight:600; color:var(--muted); font-size:12px }
+td.num { font-variant-numeric:tabular-nums } .ok { color:var(--ok) } .bad { color:var(--bad) } .warn { color:var(--warn) }
+button { font:inherit; border:1px solid var(--line); background:var(--panel); color:var(--ink); border-radius:6px; padding:4px 10px; cursor:pointer }
+button.primary { background:var(--accent); color:#fff; border-color:var(--accent) }
+pre { white-space:pre-wrap; font:12px/1.35 ui-monospace,Menlo,monospace; background:var(--bg); padding:8px; border-radius:6px; max-height:260px; overflow:auto; margin:6px 0 0 }
+details summary { cursor:pointer }
+.phase { margin-bottom:14px } .phase h3 { font-size:14px; margin:0 0 6px }
+.item { display:grid; grid-template-columns:90px 1fr auto; gap:8px; align-items:start; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:8px 10px; margin-bottom:6px }
+.item select, .item input, .item textarea, .add input, .add select { font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:5px; padding:3px 6px; width:100% }
+.item textarea { min-height:38px; resize:vertical }
+.add { display:grid; grid-template-columns:140px 1fr auto; gap:8px; margin-top:8px }
+.scroll { overflow-x:auto }
+</style></head><body><main>
+<h1>Cincinnati Rail hub</h1>
+<div class="muted">One local database for the Mill Creek Deck, the Rail Profiles and Station 3D. Change a view and the others follow: the Deck's routes and platforms drive the Profiles, both drive the 3D map.</div>
+<div class="views">
+  <div class="card"><a class="big" href="/deck/">Mill Creek Deck</a><div class="muted">Plan: rights of way, tracks, platforms, streets</div><div id="v-deck" class="muted"></div></div>
+  <div class="card"><a class="big" href="/profiles/">Rail Profiles</a><div class="muted">Levels: every Metro line and RER route</div><div id="v-prof" class="muted"></div></div>
+  <div class="card"><a class="big" href="/3d/">Station 3D</a><div class="muted">The two combined, around Fountain Square</div><div id="v-3d" class="muted"></div></div>
+</div>
+
+<h2 id="runs">Pipeline</h2>
+<div class="muted" style="margin-bottom:8px">Runs on its own after a change (a few seconds' pause, then the Deck tie, then the 3D snapshot, about 2 minutes). <button id="runTie">Run the Deck tie</button> <button id="run3d">Rebuild 3D</button></div>
+<div class="scroll"><table><thead><tr><th>Job</th><th>State</th><th>Started</th><th>Took</th><th>Why</th></tr></thead><tbody id="runsT"></tbody></table></div>
+
+<h2>Shared parameters</h2>
+<div class="muted" style="margin-bottom:8px" id="regNote"></div>
+<div class="scroll"><table><thead><tr><th>Parameter</th><th>Unit</th><th>Profiles</th><th>Deck</th><th>Station 3D</th><th></th></tr></thead><tbody id="regT"></tbody></table></div>
+<div id="tie" style="margin-top:8px"></div>
+
+<h2>Roadmap</h2>
+<div id="road"></div>
+<div class="add"><input id="newPhase" placeholder="Phase" list="phases"><input id="newTitle" placeholder="Add an item"><button class="primary" id="addItem">Add</button></div>
+<datalist id="phases"></datalist>
+
+<h2>Records</h2>
+<div class="muted">The database is <code>hub/hub.db</code>. <button id="export">Export to hub/seed</button> writes every record (but the 3D snapshot) as JSON for git. <span id="expNote"></span></div>
+</main>
+<script>
+(async () => {
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const ago = (t) => { if (!t) return ''; const s = Date.now() / 1000 - t; return s < 90 ? Math.round(s) + ' s ago' : s < 5400 ? Math.round(s / 60) + ' min ago' : new Date(t * 1000).toLocaleString(); };
+const db = await window.claude.use('db');
+
+// views
+db.doc('deck/layout').onSnapshot(async () => { const r = await fetch('/api/doc?p=deck%2Flayout').then((x) => x.json()); $('v-deck').textContent = r ? `Layout version ${r.version}, saved ${ago(r.updated)}` : 'No layout yet'; });
+db.collection('alignments').onSnapshot((q) => { $('v-prof').textContent = `${q.size} saved profiles`; });
+db.doc('snapshots/region').onSnapshot((d) => { const m = d.exists ? JSON.parse(d.data().json) : null; $('v-3d').textContent = m ? `Snapshot ${new Date(m.synced_at).toLocaleString()}, ${m.issues.length} issues` : 'No snapshot yet'; });
+
+// runs
+async function drawRuns() {
+  const { runs, current, pending } = await fetch('/api/runs').then((r) => r.json());
+  $('runsT').innerHTML = (pending.length ? `<tr><td colspan="5" class="warn">Waiting to run: ${pending.join(', ')}</td></tr>` : '') + runs.map((r) => `<tr>
+    <td>${esc(r.job === '3d' ? '3D snapshot' : 'Deck tie')}</td><td class="${r.state === 'ok' ? 'ok' : r.state === 'failed' ? 'bad' : 'warn'}">${esc(r.state)}</td>
+    <td>${ago(r.started)}</td><td class="num">${r.finished ? Math.round(r.finished - r.started) + ' s' : ''}</td>
+    <td>${esc(r.reason)}<details><summary class="muted">log</summary><pre>${esc(r.log)}</pre></details></td></tr>`).join('') || '<tr><td colspan="5" class="muted">No runs yet</td></tr>';
+}
+drawRuns(); new EventSource('/api/events').onmessage = (m) => { const e = JSON.parse(m.data); if (e.t === 'run') drawRuns(); };
+setInterval(drawRuns, 15000);
+$('runTie').onclick = () => fetch('/api/run?job=deck_tie', { method: 'POST' }).then(drawRuns);
+$('run3d').onclick = () => fetch('/api/run?job=3d', { method: 'POST' }).then(drawRuns);
+
+// parameters
+db.doc('params/registry').onSnapshot((d) => {
+  if (!d.exists) { $('regT').innerHTML = '<tr><td colspan="6" class="muted">Filled by the first 3D rebuild</td></tr>'; return; }
+  const g = d.data(); const f = (v) => (v == null ? '<span class="muted">n/a</span>' : esc(typeof v === 'number' ? +v.toFixed(2) : v));
+  $('regNote').textContent = g.note + (g.synced_at ? ` As of ${new Date(g.synced_at).toLocaleString()}.` : '');
+  $('regT').innerHTML = g.rows.map((r) => `<tr><td>${esc(r.name)}${r.note ? `<div class="muted" style="font-size:12px">${esc(r.note)}</div>` : ''}</td><td class="muted">${esc(r.unit)}</td><td class="num">${f(r.values.profiles)}</td><td class="num">${f(r.values.deck)}</td><td class="num">${f(r.values.station3d)}</td>
+    <td>${r.agree === true ? '<span class="ok">agree</span>' : r.agree === false ? '<span class="bad">differ</span>' : ''}</td></tr>`).join('');
+  $('tie').innerHTML = g.tie_issues.length ? `<div class="bad">Off the Deck:</div><ul>${g.tie_issues.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>` : '<span class="ok">Every route and platform is on the Deck.</span>';
+});
+
+// roadmap
+const ORDER = { doing: 0, todo: 1, done: 2 };
+let items = [];
+db.collection('roadmap').onSnapshot((q) => { items = q.docs.map((d) => ({ id: d.id, ...d.data() })); drawRoad(); });
+function drawRoad() {
+  const phases = [...new Set(items.map((i) => i.phase || 'Unsorted'))].sort();
+  $('phases').innerHTML = phases.map((p) => `<option value="${esc(p)}">`).join('');
+  $('road').innerHTML = phases.map((p) => `<div class="phase"><h3>${esc(p)}</h3>${items.filter((i) => (i.phase || 'Unsorted') === p)
+    .sort((a, b) => ORDER[a.status] - ORDER[b.status] || (a.order || 0) - (b.order || 0) || a.title.localeCompare(b.title)).map((i) => `<div class="item" data-id="${esc(i.id)}">
+      <select data-k="status">${['todo', 'doing', 'done'].map((s) => `<option ${s === i.status ? 'selected' : ''}>${s}</option>`).join('')}</select>
+      <div><input data-k="title" value="${esc(i.title)}"><textarea data-k="detail" placeholder="Detail">${esc(i.detail || '')}</textarea></div>
+      <div><input data-k="phase" value="${esc(i.phase || '')}" list="phases" style="width:120px"><br><button data-del>Remove</button></div></div>`).join('')}</div>`).join('');
+}
+$('road').addEventListener('change', (e) => { const el = e.target.closest('[data-k]'); if (!el) return; const id = el.closest('.item').dataset.id; db.collection('roadmap').doc(id).update({ [el.dataset.k]: el.value }); });
+$('road').addEventListener('click', (e) => { if (!e.target.matches('[data-del]')) return; const id = e.target.closest('.item').dataset.id; if (confirm('Remove this item?')) db.collection('roadmap').doc(id).delete(); });
+$('addItem').onclick = () => { const t = $('newTitle').value.trim(); if (!t) return; const id = 'i' + Date.now().toString(36); db.collection('roadmap').doc(id).set({ title: t, phase: $('newPhase').value.trim() || 'Unsorted', status: 'todo', detail: '', order: Date.now() }); $('newTitle').value = ''; };
+$('export').onclick = async () => { const r = await fetch('/api/export', { method: 'POST' }).then((x) => x.json()); $('expNote').textContent = `${r.records} records written.`; };
+})();
+</script>
+</body></html>

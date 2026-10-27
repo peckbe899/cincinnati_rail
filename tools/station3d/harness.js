@@ -86,7 +86,11 @@ async function open(browser, root, docs, url, html = (h) => h) {
       return n;
     };
     const { ctx, page } = await open(browser, path.join(cache, 'deck'), ddocs, 'http://editor.local/index.html?debug', hook);
-    await page.waitForFunction(() => window.__D && window.__S && window.__S.sf && window.__S.edits && window.__S.ver > 0, null, { timeout: 120000 });
+    // wait for the saved edits themselves (the page boots with empty edits; the layout arrives just after)
+    const lay = ddocs['deck/layout'] || {};
+    const want = ['transit', 'stations', 'streets', 'blocks'].map((k) => Object.keys(lay[k] || {}).length);
+    await page.waitForFunction((want) => window.__D && window.__S && window.__S.sf && window.__S.edits && window.__S.ver > 0
+      && ['transit', 'stations', 'streets', 'blocks'].every((k, i) => Object.keys(window.__S.edits[k] || {}).length === want[i]), want, { timeout: 120000 });
     await page.waitForTimeout(1500);
     await page.evaluate(() => document.getElementById('xGeo').click());
     await page.waitForFunction(() => window.__dl.length > 0, null, { timeout: 120000 });
