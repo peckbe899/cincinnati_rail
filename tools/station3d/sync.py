@@ -502,6 +502,8 @@ def main():
     for t in tracks:
         by_line.setdefault(t['line'], []).append(t)
     for lid, ts in by_line.items():
+        if lines[lid].get('segs'):   # tied to the Deck's pieces (tools/rer_deck_routes.py): the path is the Deck's own line
+            continue
         tdat = [(np.array(dec_(t['c'], 10)), np.array(dec_(t['x'], 10)), np.array(dec_(t['y'], 10))) for t in ts]
         moved = []
         for pi, piece in enumerate(L[lid]['S']):
