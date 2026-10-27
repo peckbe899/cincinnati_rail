@@ -90,8 +90,10 @@ def build(E0, N0, ut_islands=None):
     import make_profile_context as mpc
     B = mpc.build()
     S, REG, T, NW, stru, streets = B['S'], B['REG'], B['T'], B['NW'], B['stru'], B['streets']
+    INDY = B['indy']
+    lower_deck = shapely.prepared.prep(next(st for st in S if st['short'] == 'North arch viaduct')['geom'])
     for st in S:
-        st['fam'] = 'apex' if st['name'].startswith(APEX_FAM) else 'nw' if st['name'].startswith('Norwood') else 'lower'
+        st.setdefault('fam', 'apex' if st['name'].startswith(APEX_FAM) else 'nw' if st['name'].startswith('Norwood') else 'lower')
     for nm, (z, fam, src) in BRIDGES.items():
         if nm in stru:
             S.append(dict(name=nm, short=nm, kind='bridge', st='bridge', gaps=[], geom=stru[nm], z=(lambda zz: lambda x, y: zz)(z), below=1.6, top=5.8,
@@ -216,8 +218,12 @@ def build(E0, N0, ut_islands=None):
         n = max(2, int(math.ceil(L.length / TRACK_STEP)) + 1)
         pts = [L.interpolate(L.length * k / (n - 1)) for k in range(n)]
         zs = []
+        upper = nm.startswith(('APEx north approach 1 of 6', 'APEx north approach 2 of 6'))   # the Indianapolis pair
         for q in pts:
             z = None
+            if upper and INDY['ref'].project(q) >= INDY['d0'] - 1:
+                zs.append(INDY['z'](q.x, q.y))       # on its climb, the upper deck and the hillside tunnel (Ben, 27 October)
+                continue
             for fam in fams:
                 for st, pp in prep:
                     if st['fam'] == fam and pp.contains(q):
@@ -290,8 +296,13 @@ def build(E0, N0, ut_islands=None):
                     continue
                 seg = parts[0]
                 zt = st['z'](c.x, c.y) - st['below']
+                base = None
+                if st.get('upper') and lower_deck.contains(c):     # upper-deck columns stand on the lower deck
+                    base = B['apex_z'](c.x, c.y) - 0.8
                 (x0, y0), (x1, y1) = seg.coords[0], seg.coords[-1]
                 gz = finished(np.array([[x0, y0], [c.x, c.y], [x1, y1]]))
+                if base is not None:
+                    gz = np.array([base, base, base])
                 if np.isnan(gz).all() or zt - np.nanmax(gz) < 1.0:
                     continue
                 hx, hy = tx / Ln * PIER / 2, ty / Ln * PIER / 2

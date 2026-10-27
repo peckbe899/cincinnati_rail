@@ -179,7 +179,70 @@ def build():
     street_reg('Findlay', across(2.0), 'Deck: Findlay raised 2.0 m over the lower pairs (ramps 60 m, drawing value)')
     street_reg('Bank', across(-2.0), 'Deck: Bank lowered 2.0 m under the lower pairs (ramps 60 m, drawing value)', pick=lambda l: l.bounds[2] > 712700)
     structure_types(S, streets, icl, icz, col, coz)
-    return dict(S=S, REG=REG, T=T, NW=NW, DK=DK, stru=stru, apex_z=apex_z, nw_z=nw_z, frame_s=frame_s, streets=streets)
+    indy = upper_deck(S, T, apex_z)
+    return dict(S=S, REG=REG, T=T, NW=NW, DK=DK, stru=stru, apex_z=apex_z, nw_z=nw_z, frame_s=frame_s, streets=streets, indy=indy)
+
+
+# ---- the Indianapolis and D upper deck and the Floridian hillside tunnel (Ben, 27 October) ----
+# The lower deck of the north arch viaduct (the ORR and Transvalley pairs, R5, B, APEx Dayton and Norwood) passes over
+# the roads (bus-height arches; the Deck's APEx marks). The Indianapolis APEx pair and RER D run on an upper deck at the
+# minimum height over the lower deck: the crossing rule, 7.9 m over its highest rail (upper deck 1.6 m + 0.5 m + 5.8 m
+# clear). They climb to it at 2.5% from the Deck's s 3,644 (about 250 m short of the deck tip), hold that height west to
+# the hillside (where the ground rises to it), and from there climb at a constant grade in a tunnel to the ground at
+# 39 deg 9' 25.61" N, 84 deg 34' 0.60" W, about 186 m (Ben). The Deck put the upper deck at 6.6 m over the viaduct.
+UPPER_CLEAR = 7.9
+UPPER_GRADE = 0.025
+UPPER_FROM_Y = 4335281.0          # Deck s 3,644 on the trunk: 251 m short of the deck tip (166.6 m at N 4,335,532)
+FLORIDIAN_PORTAL = (-84.0 - 34 / 60 - 0.60 / 3600, 39.0 + 9 / 60 + 25.61 / 3600, 186.0)
+
+
+def upper_deck(S, T, apex_z):
+    indy = [LineString(f['geometry']['coordinates']) for f in T['features']
+            if (f['properties'].get('name') or '') in ('APEx north approach 1 of 6', 'APEx north approach 2 of 6')]
+    ref = indy[0]
+    if ref.coords[0][1] > ref.coords[-1][1]:
+        ref = LineString(ref.coords[::-1])
+    dd = np.arange(0.0, ref.length, 5.0)
+    xy = np.array([ref.interpolate(d).coords[0] for d in dd])
+    lower = np.array([apex_z(x, y) for x, y in xy])
+    d0 = float(dd[np.argmin(np.abs(xy[:, 1] - UPPER_FROM_Y))])
+    H = round(float(lower[dd >= d0].max()) + UPPER_CLEAR, 2)          # the minimum over the lower deck's highest rail
+    d1 = d0 + (H - float(np.interp(d0, dd, lower))) / UPPER_GRADE     # on the upper deck
+    gr = sample(xy)
+    d_h = float(next(d for d, g in zip(dd, gr) if d > d1 and g >= H))   # the hillside: the ground up to the deck
+    px, py = TO_UTM.transform(FLORIDIAN_PORTAL[0], FLORIDIAN_PORTAL[1])
+    d_p = ref.length + Point(ref.coords[-1]).distance(Point(px, py))  # the portal, just past the Deck's line end
+    z_p = FLORIDIAN_PORTAL[2]
+    def z_of_d(d):
+        if d <= d0:
+            return float(np.interp(d, dd, lower))
+        if d <= d1:
+            return float(np.interp(d0, dd, lower)) + UPPER_GRADE * (d - d0)
+        if d <= d_h:
+            return H
+        return H + (z_p - H) * min(1.0, (d - d_h) / (d_p - d_h))
+    def z(x, y):
+        return z_of_d(ref.project(Point(x, y)) if Point(x, y).distance(ref) < 200 else 0.0)
+    # structures: the upper deck (on columns standing on the lower deck, or on the ground west of the trunk) and the tunnel
+    from shapely.ops import substring
+    wide = unary_union([l.buffer(5.5, cap_style=2) for l in indy])
+    deck = wide.intersection(substring(ref, d0, d_h).buffer(30, cap_style=2))
+    tun = wide.intersection(substring(ref, d_h, ref.length).buffer(30, cap_style=2)).union(
+        LineString([ref.coords[-1], (px, py)]).buffer(5.5 + 4.5, cap_style=2))
+    VIA, BOX = (1.6, 5.8), (1.0, 6.6)
+    S.append(dict(name='Indianapolis APEx and RER D: upper deck over the north arch viaduct', short='Indianapolis and D upper deck',
+                  kind='viaduct', st='viaduct', upper=True, geom=deck, z=z, below=VIA[0], top=VIA[1], open=True, plats=[], gaps=[], cut=False,
+                  src=f'Ben, 27 October: the upper deck at the minimum height over the lower deck, {UPPER_CLEAR} m over its highest rail '
+                      f'({H:.1f} m; the Deck had 6.6 m), climbing at {UPPER_GRADE * 100:.1f}% from the Deck s 3,644, held west to the hillside',
+                  excl={'RER_4'}, fam='apex'))
+    S.append(dict(name='Indianapolis APEx and RER D: hillside tunnel to the Floridian portal', short='Floridian hillside tunnel',
+                  kind='box', st='box', geom=tun, z=z, below=BOX[0], top=BOX[1], open=False, plats=[], gaps=[], cut=False,
+                  src=f'Ben, 27 October: from the hillside ({H:.1f} m) at a constant grade, {(z_p - H) / (d_p - d_h) * 100:.2f}%, to the ground at '
+                      f'the portal, about {z_p:.0f} m (39 9 25.61 N, 84 34 0.60 W)', excl={'RER_4'}, fam='apex'))
+    # the lower deck stops at the hillside
+    nv = next(st for st in S if st['short'] == 'North arch viaduct')
+    nv['geom'] = nv['geom'].difference(substring(ref, d_h, ref.length + 50).buffer(60, cap_style=2))
+    return dict(ref=ref, d0=d0, d1=d1, d_h=d_h, d_p=d_p, H=H, z_p=z_p, z_of_d=z_of_d, z=z, portal=(px, py))
 
 
 # ---- structure types at CUT (Ben, 26 October) ----
