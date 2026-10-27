@@ -33,6 +33,7 @@ SNAP_SMOOTH_M = 40.0   # the centre's shift is averaged over this distance eithe
 SNAP_TAPER_M = 150.0   # past its Deck tracks a line's centre returns to the Profiles path over this distance
 TRACK_MATCH_M = 120.0  # a Deck track takes its own line's level within this distance (the Deck and the Profiles paths differ)
 INTERLINE_M = 60.0     # an interlined line (D on the A/D pair) is drawn by the pair within this distance of it
+SHARED_MIN_M = 100.0   # a line runs on another line's track (draws nothing of its own) only along at least this much
 STRIPE_M = 30.0        # interlined pairs: stripe length in each line's colour, m
 GRID = 200.0           # ground grid spacing, m
 
@@ -56,8 +57,15 @@ RER_ST = {
 OPEN_ST = dict(k='open', below=0.8, top=0.0, width=9.0)
 ERA_SHIELD = {**{f'Line_{k}': 'tube' for k in ['1', '2', '2b', '3', '4', '5', '6', '7']},
               **{f'Line_{k}': 'bore' for k in ['8', '9', '10', '11', '12', '13', '14']}, 'CVG_Express': 'bore'}
+# Rails centred on each line (Ben, 2026-10-27: "the rail should be always centered for all lines; no off-to-one-side
+# tracks"; "unbroken between tube and cut-and-cover"): each line's two tracks at +/- half the spacing its Profiles
+# structure needs, from the Deck's rules (trackPair: H0 and the island platform width plus its edge), tapering over the
+# Deck's TAPER between spacings. TRI bored: two 8.5 m tubes 1 m apart (the Deck's 4.5 m TRI spacing ignores construction).
+RAIL_TAPER_M = 40.0
+TRI_TUBE_GAP = 1.0
 BOX_MARGIN = {'metro': 2.3, 'rer': 3.25}   # box wall outside the outer track centre (8.5 m at 3.9 m centres; 11 m at 4.5 m)
-ASSUMED = ['box walls 2.3 m (Metro) and 3.25 m (TRI) outside the outer track centre: 8.5 m and 11 m wide boxes between stations',
+ASSUMED = ['rails centred on each line at the spacing its Profiles structure needs (Deck rules; TRI bored tubes 9.5 m apart), tapering over 40 m',
+           'box walls 2.3 m (Metro) and 3.25 m (TRI) outside the outer track centre: 8.5 m and 11 m wide boxes between stations',
            'TRI bored tubes 8.5 m outside diameter, one per track', 'platform tops 1.0 m above the rail',
            'ground: a 200 m grid averaged from the Profiles ground along every line, filled out to 1.6 km from the lines']
 # RER line to TRI letter (rer/canon.json: RER-n is TRI by KMZ colour, 1 A ... 5 E)
@@ -608,6 +616,18 @@ def main():
                 w, _ = (None, 0) if own is not None else il_near.near(s_[1], s_[2], INTERLINE_M)
                 sh.append(1 if (own is None and ((oth and oth != lid and L[oth]['sys'] == l['sys']) or (w and lid in w))) else 0)
                 il.append(own or 0)
+            # a line is on another's track only along a real stretch: a pass close by (a crossing, a near miss) is not
+            k = 0
+            while k < len(sh):
+                if not sh[k]:
+                    k += 1
+                    continue
+                j = k
+                while j + 1 < len(sh) and sh[j + 1]:
+                    j += 1
+                if (j - k + 1) * STEP < SHARED_MIN_M:
+                    sh[k:j + 1] = [0] * (j - k + 1)
+                k = j + 1
             l['shared'].append(sh)
             l['il'].append(il)
 
@@ -781,6 +801,119 @@ def main():
             issues.append(f"{l['name']}: {bad['box'] / 1000:.2f} km cut and cover in the Profiles editor but twin tubes (8.0 m) in the Deck")
         if bad['rer'] > 50:
             issues.append(f"{l['name']}: {bad['rer'] / 1000:.2f} km bored with the Deck's tracks closer than two {RER_ST['bore']['od']} m tubes allow (TRI spacing ignores construction)")
+
+    # ---- rails centred on each line, platforms on them ----
+    rules = dd.get('constants') or {}
+    PW = rules.get('PW') or {'metro': {'island': 8, 'side': 4}, 'rer': {'island': 11, 'side': 6}}
+    EDGE = rules.get('EDGE') or {'metro': 1.45, 'rer': 1.75}
+    taper = float(rules.get('TAPER') or RAIL_TAPER_M)
+
+    def half_base(lid, sys_, t):
+        k = structure(lid, t)
+        if sys_ == 'rer':
+            return max(float(rules.get('H0_rer', 2.25)), (RER_ST['bore']['od'] + TRI_TUBE_GAP) / 2) if k['k'] == 'tube' else float(rules.get('H0_rer', 2.25))
+        if k['k'] == 'tube':   # Metro twin tubes
+            return float(rules.get('H0_metro_twin', METRO_ST['tube']['spacing'] / 2))
+        return float(rules.get('H0_metro_bore', 1.95))   # box, the single large bore, open, viaduct
+
+    plat_type = {}
+    for pl in plats:
+        for v in pl['levels']:
+            plat_type.setdefault((v['line'], norm(pl['station'])), pl.get('type'))
+    geo = {}   # line -> [(cs, x, y, nx, ny, h)] per piece
+    for lid, l in L.items():
+        sk = 'rer' if l['sys'] == 'rer' else 'metro'
+        h_isl = PW[sk]['island'] / 2 + EDGE[sk]
+        geo[lid] = []
+        for piece in l['S']:
+            cs = np.array([s_[0] for s_ in piece])
+            px, py = np.array([s_[1] for s_ in piece]), np.array([s_[2] for s_ in piece])
+            n = len(cs)
+            base = np.array([half_base(lid, l['sys'], s_[4]) for s_ in piece])
+            w = max(1, int(round(taper / STEP / 2)))
+            ker = np.ones(2 * w + 1) / (2 * w + 1)
+            h = np.convolve(np.pad(base, w, mode='edge'), ker, 'valid') if n > 1 else base
+            for st in l['stations']:
+                if plat_type.get((lid, norm(st['name']))) != 'island':
+                    continue
+                dist = np.maximum(0, np.maximum(st['from_c'] - cs, cs - st['to_c']))
+                env = h_isl - dist * (h_isl - base) / taper
+                h = np.maximum(h, np.where(dist <= taper, env, 0))
+            k2 = np.clip(np.arange(n) + 2, 0, n - 1)
+            k0 = np.clip(np.arange(n) - 2, 0, n - 1)
+            tx, ty = px[k2] - px[k0], py[k2] - py[k0]
+            tl = np.hypot(tx, ty)
+            tl[tl == 0] = 1
+            geo[lid].append((cs, px, py, -ty / tl, tx / tl, h))
+
+    def h_at(lid, c):
+        for cs, px, py, nx, ny, h in geo.get(lid, []):
+            if cs[0] - 1 <= c <= cs[-1] + 1:
+                k = int(np.clip(np.searchsorted(cs, c), 0, len(cs) - 1))
+                return float(h[k]), (float(np.interp(c, cs, px)), float(np.interp(c, cs, py)), float(np.interp(c, cs, nx)), float(np.interp(c, cs, ny)))
+        return None, None
+
+    deck_tracks, tracks = tracks, []
+    for lid, l in L.items():
+        for (cs, px, py, nx, ny, h), sh, il in zip(geo[lid], l['shared'], l['il']):
+            k = 0
+            while k < len(cs):   # runs of the line's own track (not shared), one interlining
+                if sh[k]:
+                    k += 1
+                    continue
+                j = k
+                while j + 1 < len(cs) and not sh[j + 1] and il[j + 1] == il[k]:
+                    j += 1
+                idx = list(range(max(0, k - 1) if k and not sh[k - 1] else k, j + 1, 2))   # every 10 m, joined to the run before
+                if idx[-1] != j:
+                    idx.append(j)
+                if len(idx) > 1:
+                    for side in (1, -1):
+                        off = side * h[idx]
+                        rec = {'line': lid, 'side': 'left' if side > 0 else 'right', 'from': 'centred',
+                               'c': enc(cs[idx], 10), 'off': enc(off, 100),
+                               'x': enc(px[idx] + nx[idx] * off, 10), 'y': enc(py[idx] + ny[idx] * off, 10)}
+                        if il[k]:
+                            rec['il'] = il[k]
+                            rec['with'] = combos[il[k] - 1][1:]
+                        tracks.append(rec)
+                k = j + 1
+    # the Deck's platforms on the centred tracks: at their place along the line, the Profiles platform length, an island
+    # between the tracks, a side platform outside its track (the Union Terminal box keeps the Deck's three islands)
+    for pl in plats:
+        if pl.get('box_island') or not pl['line'] or pl['line'] not in geo:
+            continue
+        lid = pl['line']
+        lev = next(v for v in pl['levels'] if v['line'] == lid)
+        sk = 'rer' if L[lid]['sys'] == 'rer' else 'metro'
+        prof = [s for s in L[lid]['stations'] if norm(s['name']) == norm(pl['station']) and abs(s['c'] - lev['c']) < 200]
+        cm = prof[0]['c'] if prof else lev['c']
+        Lp = PLATFORM_M[sk]
+        cc = np.linspace(cm - Lp / 2, cm + Lp / 2, int(Lp // 5) + 2)
+        side = 1 if (lev.get('off') or 0) >= 0 else -1
+        a_, b_ = [], []
+        for c in cc:
+            h, g = h_at(lid, c)
+            if h is None:
+                continue
+            x0, y0, nx_, ny_ = g
+            if pl.get('type') == 'island':
+                u0, u1 = -(h - EDGE[sk]), h - EDGE[sk]
+            else:
+                u0, u1 = sorted((side * (h + EDGE[sk]), side * (h + EDGE[sk] + PW[sk]['side'])))
+            a_.append((x0 + nx_ * u0, y0 + ny_ * u0))
+            b_.append((x0 + nx_ * u1, y0 + ny_ * u1))
+        if len(a_) > 1:
+            ring = np.array(a_ + b_[::-1])
+            pl['x'], pl['y'] = enc(ring[:, 0], 100), enc(ring[:, 1], 100)
+    for st in stations:   # the panel's track positions
+        for o in st['stops']:
+            lid = next((i for i in o['lines'] if i in geo), None)
+            prof = [s for s in L[lid]['stations'] if norm(s['name']) == norm(st['name'])] if lid else []
+            if prof:
+                h, _ = h_at(lid, prof[0]['c'])
+                if h is not None:
+                    o['track_offsets'], o['tracks_from'] = [r2(h), r2(-h)], 'centred on the line'
 
     # ---- the snapshot ----
     snap_lines = []

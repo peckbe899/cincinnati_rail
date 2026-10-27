@@ -112,3 +112,10 @@ Published: page version 6 and the snapshot (35 parts), read back at view level.
 - Fixed in the headless runner (`tools/station3d/harness.js`): it could export the Deck before the saved edits had loaded (seen as routes 200 m off). It now waits for the edits themselves.
 - Found by the parameter registry: 64 of the Deck's RER island platforms are drawn about 202 m long, 44 at 204 m; the Profiles and 3D use 204.2 m.
 - The artifacts are no longer updated: the hub is where the design lives.
+
+## 2026-10-27: rails centred and unbroken
+
+- Ben: rails unbroken between tube and cut and cover; Rivercenter West looked wrong; rails always centred on every line, no tracks off to one side.
+- Cause: the 3D drew each line's rails where the Deck draws its tracks. The Deck switches spacing in steps (tube 8.0 m, box 3.9 m) in separate pieces and leans some pairs to one side (Line 2 at Rivercenter West +0.7 / -10.2 m; at Fountain Square +2.6 / -8.4 m), and the boxes were sized from those tracks.
+- Now: the sync draws each line's two tracks itself, centred, at the spacing its Profiles structure needs (Deck rules), widened at island platforms, tapering over 40 m; platforms redrawn on them. No breaks in any line's rails; short close passes (under 100 m) no longer count as running on another line's track.
+- Decision: TRI bored stretches at 9.5 m (two 8.5 m tubes, 1 m apart); the Deck's 4.5 m cannot hold two tubes.
