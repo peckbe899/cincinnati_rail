@@ -21,15 +21,19 @@ A page can read only its own database, so the Rail Profiles editor and the Mill 
   - Region: the Deck's rendered-line limits (its Region button), E 699,000-736,900, N 4,320,800-4,347,000 (UTM 16N). Coordinates are metres from the Fountain Square model's reference point: x east, y north (true), z elevation (as the editors). Point lists are integer deltas.
   - Lines: every Profiles line inside the region, rail level and structure type every 5 m.
   - Tracks: each Deck track is matched to its Profiles line (within 30 m) and gets that line's rail level by chainage, with its offset from the line. Deck track with no Profiles line nearby is kept as `unlevelled` and drawn dashed on the ground.
-  - A stretch where a line runs on another line's tracks (TRI D on the A/D pair) is marked shared and drawn as rail only.
+  - Interlined pairs (Ben, 2026-10-27): a Deck pair carrying several lines ('RER A/D', 'B D', 'B C E') is levelled from the line most of it follows and lists the others (`with`, those within 60 m of it). The page draws it once, rails and structure striped every 30 m in each line's colour (`interline`, `stripe_m` and each line sample's `il`); the other lines draw nothing within 60 m of it. Where their Profiles levels differ by more than 1 m it is an issue (D's editor defaults against A and B).
+  - Elsewhere a stretch where a line runs on another line's tracks is marked shared and drawn as rail only.
   - Platforms: the Deck's rings at the Profiles rail level. A platform on a shared pair (RER A/D, B C E ...) serves every line on it, at the level of the saved Profiles line, first in letter order. The Union Terminal TRI box's three islands are tied to A and B (north), D (centre) and B and A (south).
   - Stations: each Deck station with its stops, merged with the Profiles stations on the same lines (same name within 400 m, or any within 150 m); Profiles stations with no Deck station are kept and noted.
   - Ground: a 200 m grid averaged from the Profiles ground along every line, filled out to 1.6 km from the lines.
   - Issues: unsaved alignments, Deck track and platforms with no Profiles line, Deck spacing against the Profiles structure, TRI tubes that can't fit the Deck's 4.5 m spacing, Union Terminal cross-platform levels.
   - `--skip-harness` reuses `cache/harness_out.json`.
+  - Repo data the editor does not have yet (both listed as issues):
+    - `REPO_PROFILES`: RER-4's profile (`data/profile/rer/alignments/RER_4.json`, the upper deck), served to the editor as if saved while it has no saved RER-4.
+    - `REPATH`: RER-2 and RER-4 re-pathed onto the Deck's B/D route (`data/profile/rer/repath_bd_trunk.json`). While the published editor still has the old paths, the sync serves the repo's line files to the harness in their place (`overlay`) and moves the saved profiles made on the old paths with the chainage map (`override_docs`). It stops once the editor is republished with the new paths.
 - `context3d.py`: the other systems at Union Terminal (CUT) and Norwood Central, called by `sync.py`. See "CUT and Norwood Central structures" below.
 - `test_page.js`: renders the page locally from `cache/snapshot.json` (the page falls back to it when there is no database) and screenshots the region, the presets, Union Terminal, dark theme and phone width.
-- `test_context.js`: close views of the CUT and Norwood Central structures (`node test_context.js OUTDIR [snapshot.json] [view,view]`).
+- `test_context.js`: close views of the CUT and Norwood Central structures (the fan at Gest, the W 8th arch, the Cardinal crossing among them) (`node test_context.js OUTDIR [snapshot.json] [view,view]`).
 - `cache/`: downloads and outputs, not committed.
 
 ## Running a sync (a Claude session)
@@ -56,10 +60,11 @@ Ben asked for the CUT underground box, the viaducts and the CUT and Norwood plat
 - `context`, items of four types:
   - `struct`: a plan outline (with holes) and, at each outline point, the rail level (`z`) and the finished ground (`g`); `k` is the kind, `b` and `t` the depth below and height above the rail. The page draws:
     - box (the lower level box, the lower-pair tunnel, the south throats, the intercity and C&O tunnels, the Union Terminal TRI box): closed, invert to roof;
-    - viaduct and bridge (the CUT platform deck, the approach viaduct, the north arch viaduct, the intercity and C&O viaducts, the TRIMET C&O viaduct, the river bridges, the Ludlow underbridge): the deck, arch underside to rail;
-    - trough and cut (the lower-pair open cut from Bank to Findlay, the intercity and C&O troughs, the Norwood Central cut and trench): floor and retaining walls up to the ground;
-    - fill (the north trunk fill): the embankment to the track bed.
-  - `pier`: a viaduct pier every 20 m along the longest track on it, from the finished ground to the arch underside (arches to the street, no footing check).
+    - structure types at CUT (Ben, 2026-10-26; `st`, as the Profiles context): embankment (`fill`: the fan from W 9th to W Liberty, the north trunk fill, the intercity and C&O descents), solid to the track bed and cut open at each street; arch viaduct (`arch`: the south approach to the Cardinal crossing, the north arch viaduct), solid between the streets; normal viaduct (`viaduct`: the rest, and the Indianapolis and D upper deck): the deck, underside to rail; bridge (river bridges, the Ludlow underbridge);
+    - trough and cut (the lower-pair open cut from Bank to Findlay, the intercity and C&O troughs, the Norwood Central cut and trench): floor and retaining walls up to the ground.
+  - `span`: over each street opening, a flat bridge (embankment) or an arch springing at the street edges (arch viaduct), drawn along the street.
+  - `blind`: blind-arch outlines every 10 m on the faces of the descent embankments.
+  - `pier`: piers every 25 m on normal viaducts only, from the finished ground to the underside (no footing check); the upper deck's piers stand on the lower deck.
   - `rail`: the APEx, lower-level, ORR, Transvalley and Norwood tracks at the level of the structure they run in. A track outside every structure is added to `unlevelled`.
   - `plat`: the APEx (160.3 m), lower (144.0 m) and Norwood (178.0 m) platforms, tops 1.0 m above the rail.
 - `gtiles`: finished ground at 10 m in 400 m tiles (aligned to the 200 m grid) round every structure and re-grade: the map 3 ground, plus the Deck's street re-grades (W 8th and Horne humps, Findlay +2.0 m, Bank -2.0 m), capped at the floors of the open cuts. The page uses them for the ground, the streets and the blocks.
@@ -72,10 +77,12 @@ Rulings (Ben, 2026-10-26):
 1. One Union Terminal TRI box level for RER-1, 2 and 4, the Profiles level (135.7 m).
 2. RER-2 and RER-4 on the north viaduct (their Profiles levels).
 3. The Norwood ORR, Transvalley and APEx tracks are fixed context; the Metro and TRI levels are set in the Rail Profiles editor.
-4. Arches drawn to the street, no footing check, for now.
+4. No footing check, for now.
 5. The Deck's street re-grades are finished ground.
 6. Lower-pair levels from the Deck's dive figures until the Deck publishes a level per point.
 
-Drawing values: pier spacing 20 m and thickness 2 m; TRI box walls 5.0 m outside the islands.
+Drawing values: pier spacing 25 m and thickness 2 m; blind arches every 10 m; TRI box walls 5.0 m outside the islands.
+
+Later rulings (Ben, 2026-10-27): the structure types above; the Indianapolis APEx pair and RER D on an upper deck at the minimum height over the lower deck (174.5 m, 7.9 m over its highest rail), held to the hillside, then the Floridian hillside tunnel at a constant grade to the portal (about 186 m); RER D tied to it (`data/profile/rer/alignments/RER_4.json`); B and D from the trunk to Union Terminal on the Deck's route; interlined pairs drawn once, striped. See `data/profile/README.md`.
 
 The Deck snapshot in `data/deck` is version 1793028977-4bc6 (layout 2461). When the Deck changes, refresh `data/deck` from its published files before syncing.

@@ -1,0 +1,31 @@
+{
+ "note": "RER-2 and RER-4 re-pathed onto the Mill Creek Deck B/D route (tools/repath_rer_bd_trunk.py, 2026-10-27). A chainage c on the old path maps to c (c <= ca), ca + (c - ca) * dn / (cb - ca) (ca < c < cb), c + delta (c >= cb).",
+ "RER_2": {
+  "ca": 7039.9,
+  "cb": 11569.5,
+  "dn": 4716.8,
+  "delta": 187.2,
+  "L0": 22446.6
+ },
+ "RER_4": {
+  "ca": 6966.3,
+  "cb": 12841.7,
+  "dn": 6061.4,
+  "delta": 185.9,
+  "L0": 23866.0
+ },
+ "files": [
+  "lines/Line_10.json",
+  "lines/Line_12.json",
+  "lines/Line_5.json",
+  "lines/Line_7.json",
+  "lines/Line_9.json",
+  "rer/lines/RER_1.json",
+  "rer/lines/RER_2.json",
+  "rer/lines/RER_3.json",
+  "rer/lines/RER_4.json",
+  "rer/lines/RER_5.json",
+  "rer/lines/index.json",
+  "rer/network.json"
+ ]
+}

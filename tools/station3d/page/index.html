@@ -303,8 +303,8 @@ function prepare(snap) {
   const lines = snap.lines.map((l) => {
     const P = [];   // pieces of [{c, x, y, z, t, sh}]
     for (const pc of l.pieces) {
-      const xs = dec(pc.x, 10), ys = dec(pc.y, 10), zs = dec(pc.z, 100), ts = unrle(pc.t), sh = unrle(pc.sh);
-      P.push(xs.map((x, i) => ({ c: pc.c0 + i * pc.step, x, y: ys[i], z: zs[i], t: ts[i], sh: sh[i] })));
+      const xs = dec(pc.x, 10), ys = dec(pc.y, 10), zs = dec(pc.z, 100), ts = unrle(pc.t), sh = unrle(pc.sh), il = pc.il ? unrle(pc.il) : [];
+      P.push(xs.map((x, i) => ({ c: pc.c0 + i * pc.step, x, y: ys[i], z: zs[i], t: ts[i], sh: sh[i], il: il[i] || 0 })));
     }
     return { ...l, P, T: [], col: kmlColor(l.color) };
   });
@@ -314,14 +314,14 @@ function prepare(snap) {
     const l = byId.get(t.line); if (!l) continue;
     const cs = dec(t.c, 10), offs = dec(t.off, 100), xs = dec(t.x, 10), ys = dec(t.y, 10);
     const pts = cs.map((c, i) => ({ c, off: offs[i], x: xs[i], y: ys[i], z: zAt(l, c) })).filter((p) => p.z != null);
-    if (pts.length > 1) l.T.push(pts);
+    if (pts.length > 1) { pts.il = t.il || 0; l.T.push(pts); }
   }
   // lighter geometry between stations: every other point, except within 300 m of a platform and where the type changes
   const plats0 = snap.platforms.map((p) => [dec(p.x, 100)[0], dec(p.y, 100)[0]]), cell = 300, hash = new Set();
   for (const [x, y] of plats0) for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) hash.add(`${Math.floor(x / cell) + i},${Math.floor(y / cell) + j}`);
   const nearPlat = (p) => hash.has(`${Math.floor(p.x / cell)},${Math.floor(p.y / cell)}`);
   const thin = (arr, keyOf) => arr.filter((p, i) => i % 2 === 0 || i === arr.length - 1 || nearPlat(p) || (keyOf && (keyOf(arr[i - 1]) !== keyOf(p) || (arr[i + 1] && keyOf(arr[i + 1]) !== keyOf(p)))));
-  for (const l of lines) { l.P = l.P.map((pc) => thin(pc, (q) => q && q.t + q.sh)); l.T = l.T.map((t) => thin(t)); }
+  for (const l of lines) { l.P = l.P.map((pc) => thin(pc, (q) => q && q.t + q.sh + '/' + q.il)); l.T = l.T.map((t) => Object.assign(thin(t), { il: t.il })); }
   for (const l of lines) l.offsAt = (c) => { const o = []; for (const t of l.T) { if (c < t[0].c - 1 || c > t[t.length - 1].c + 1) continue; let lo = 0, hi = t.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (t[m].c <= c) lo = m; else hi = m; } const a = t[lo], b = t[hi], f = b.c > a.c ? Math.min(1, Math.max(0, (c - a.c) / (b.c - a.c))) : 0; o.push(a.off + f * (b.off - a.off)); } return o; };
   const plats = snap.platforms.map((p) => { const xs = dec(p.x, 100), ys = dec(p.y, 100); return { ...p, ring: xs.map((x, i) => [x, ys[i]]) }; });
   // stations: Deck and Profiles records, grouped by name within 600 m into what the panel calls a station
@@ -396,18 +396,36 @@ function build(snap) {
 
   // structures: each line run by run of its Profiles type, on the Deck's tracks: a tube on each track where bored,
   // one box over the pair, as wide as the tracks need, elsewhere. Stretches on another line's tracks (shared) get rails only.
+  // An interlined pair (A/D, B/D ...) is drawn once, by the line most of it follows, striped every stripe_m in each line's
+  // colour; the other lines draw nothing along it.
+  const stripeM = snap.stripe_m || 30, combo = (il) => (il && snap.interline && snap.interline[il - 1]) || null;
+  const stripes = (arr, il) => {   // [[line id, points]]: arr cut every stripe_m of chainage, each piece to a line in turn
+    const k = combo(il); if (!k) return null;
+    const out = []; let cur = null;
+    for (let i = 0; i < arr.length; i++) {
+      const n = Math.floor(arr[i].c / stripeM), id = k[((n % k.length) + k.length) % k.length];
+      if (!cur || cur[0] !== id) { cur = [id, cur ? [cur[1][cur[1].length - 1]] : []]; out.push(cur); }
+      cur[1].push(arr[i]);
+    }
+    return out.filter((r) => r[1].length > 1);
+  };
   for (const l of S.lines) {
     const mat = structMat(l.col, sop), grp = new THREE.Group(); grp.userData = { kind: 'line', line: l.id };
     const parts = [], stt = snap.struct[l.id], m = margin[l.sys === 'rer' ? 'rer' : 'metro'] || 2.3;
+    const partsBy = new Map([[l.id, parts]]), partsOf = (id) => { if (!partsBy.has(id)) partsBy.set(id, []); return partsBy.get(id); };
+    const build = (seg, st, out) => {
+      if (l.T.length && st.k === 'tube') { const r0 = st.od / 2, cv = st.top - r0; for (const tr of l.T) { const ts = tr.filter((p) => p.c >= seg[0].c - 5 && p.c <= seg[seg.length - 1].c + 5); if (ts.length > 1) out.push(sweepData(ts, circle(0, cv, r0))); } }
+      else if (l.T.length && (st.k === 'box' || st.k === 'open')) { const mm = st.k === 'open' ? 2.0 : m, top = Math.max(st.top, 0.05); out.push(sweepData(seg, (q) => { const o = l.offsAt(seg[q].c); return o.length ? rect(Math.min(...o) - mm, Math.max(...o) + mm, -st.below, top) : rect(-st.width / 2, st.width / 2, -st.below, top); })); }
+      else for (const pr of profilesFor(st)) out.push(sweepData(seg, pr));
+    };
     for (const piece of l.P) {
       let i = 0;
-      while (i < piece.length) {   // runs of one type, not shared
-        const t = piece[i].t, sh = piece[i].sh; let j = i; while (j + 1 < piece.length && piece[j + 1].t === t && piece[j + 1].sh === sh) j++;
+      while (i < piece.length) {   // runs of one type, not shared, one interlining
+        const t = piece[i].t, sh = piece[i].sh, il = piece[i].il; let j = i; while (j + 1 < piece.length && piece[j + 1].t === t && piece[j + 1].sh === sh && piece[j + 1].il === il) j++;
         const seg = piece.slice(Math.max(0, i - 1), j + 1), st = stt[t];
         if (!sh && seg.length > 1) {
-          if (l.T.length && st.k === 'tube') { const r0 = st.od / 2, cv = st.top - r0; for (const tr of l.T) { const ts = tr.filter((p) => p.c >= seg[0].c - 5 && p.c <= seg[seg.length - 1].c + 5); if (ts.length > 1) parts.push(sweepData(ts, circle(0, cv, r0))); } }
-          else if (l.T.length && (st.k === 'box' || st.k === 'open')) { const mm = st.k === 'open' ? 2.0 : m, top = Math.max(st.top, 0.05); parts.push(sweepData(seg, (q) => { const o = l.offsAt(seg[q].c); return o.length ? rect(Math.min(...o) - mm, Math.max(...o) + mm, -st.below, top) : rect(-st.width / 2, st.width / 2, -st.below, top); })); }
-          else for (const pr of profilesFor(st)) parts.push(sweepData(seg, pr));
+          const sp = stripes(seg, il);
+          if (sp) for (const [id, pts] of sp) build(pts, st, partsOf(id)); else build(seg, st, parts);
         }
         i = j + 1;
       }
@@ -428,10 +446,13 @@ function build(snap) {
       const u0 = Math.min(bx.u0 - 0.5, offs.length ? Math.min(...offs) - edge : -half), u1 = Math.max(bx.u1 + 0.5, offs.length ? Math.max(...offs) + edge : half);
       parts.push(sweepData(seg, rect(u0, u1, -st.below, Math.max(st.top, 0.05))));
     }
-    const ms = merged(parts, mat); if (ms) grp.add(ms);
-    // rails: each Deck track at its rail level, else the line's centre
-    const rm = new THREE.LineBasicMaterial({ color: l.col, clippingPlanes: clips });
-    const rl = polylines((l.T.length ? l.T : l.P).map((t) => t.map((p) => [X(p.x), Yp(p.x, p.y, p.z), Z(p.y)])), rm); if (rl) grp.add(rl);
+    for (const [id, ps] of partsBy) { const ms = merged(ps, id === l.id ? mat : structMat((S.byId.get(id) || l).col, sop)); if (ms) grp.add(ms); }
+    // rails: each Deck track at its rail level (interlined pairs striped), else the line's centre where not shared
+    const railsBy = new Map([[l.id, []]]), railsOf = (id) => { if (!railsBy.has(id)) railsBy.set(id, []); return railsBy.get(id); };
+    const v3 = (t) => t.map((p) => [X(p.x), Yp(p.x, p.y, p.z), Z(p.y)]);
+    if (l.T.length) for (const t of l.T) { const sp = stripes(t, t.il); if (sp) for (const [id, pts] of sp) railsOf(id).push(v3(pts)); else railsOf(l.id).push(v3(t)); }
+    else for (const pc of l.P) { let run = []; for (const q of pc) { if (q.sh) { if (run.length > 1) railsOf(l.id).push(v3(run)); run = []; } else run.push(q); } if (run.length > 1) railsOf(l.id).push(v3(run)); }
+    for (const [id, ls] of railsBy) { const rl = polylines(ls, new THREE.LineBasicMaterial({ color: id === l.id ? l.col : (S.byId.get(id) || l).col, clippingPlanes: clips })); if (rl) grp.add(rl); }
     world.add(grp); S.groups.set(l.id, grp);
   }
   // platforms: the Deck's plan at the Profiles rail level plus the platform height; a step darker every 8 m below the ground.
@@ -457,6 +478,7 @@ function build(snap) {
 
   // panel: lines, data, issues
   $('legend').innerHTML = S.lines.slice().sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })).map((l) => `<i style="background:${hex(l.col)}"></i><span>${esc(l.name)}${l.saved ? '' : ' <span class="num">(defaults)</span>'}</span><span class="num">${l.T.length ? l.T.length + ' tracks' : 'centre line'}</span>`).join('');
+  if (snap.interline && snap.interline.length) $('legend').innerHTML += snap.interline.map((k) => `<i style="background:repeating-linear-gradient(135deg,${k.map((id, n) => { const c = hex((S.byId.get(id) || {}).col || 0x888888); return `${c} ${n * 4}px,${c} ${(n + 1) * 4}px`; }).join(',')})"></i><span>${esc(shortNames(k))} interlined</span><span class="num">one pair, striped</span>`).join('');
   $('areaName').textContent = S.st ? S.st.name : snap.name;
   $('syncedAt').textContent = 'synced ' + fmtTime(snap.synced_at);
   $('dataNote').textContent = `Levels and stations from the Rail Profiles editor; plan, tracks, platforms and stations from the Mill Creek Deck; copied ${fmtTime(snap.synced_at)}. ${snap.counts.lines} lines, ${snap.counts.tracks} levelled tracks, ${snap.counts.stations} station records, ${snap.counts.platforms} platforms. Metro platforms ${ft(snap.platform_m.metro)}, TRI ${ft(snap.platform_m.rer)}.`;

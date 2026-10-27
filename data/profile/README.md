@@ -52,6 +52,20 @@ Ben's rulings, applied to the page (version 33) and to `railsim/metro_profile.py
 - Line 3: its Norwood end follows the Deck route to Ben's terminus (`tools/repath_line3_norwood.py`; chainages past the rejoin -140.9 m). Crossings and rails tables updated.
 - Saved profiles exported from the page database (2026-10-26): `alignments/` Line 1, 2, 3, 4, 5, 6, 8, CVG Express; `rer/alignments/` RER-1, RER-2. The Line 3, 6 and 8 and RER-1 and RER-2 configs now name them.
 
+## Structure types, the upper deck and the B/D re-path (2026-10-27)
+
+Ben's rulings, in `tools/make_profile_context.py` (`structure_types()`, `upper_deck()`), `railsim/metro_profile.py` and the RER data:
+
+- Structure types at CUT (`st` on each block, `k` kept as `viaduct` / `fill` / `box` for the page):
+  - the fan from W 9th to W Liberty (the CUT platform deck, the approach north of W 9th and the north viaduct south of W Liberty): an embankment with a bridge over each of its 11 streets;
+  - arch viaducts only on the wide multi-track stretches, each arch spanning a street: the south approach from W 9th to the Cardinal crossing (Budd, W 7th, W 8th) and the north arch viaduct; the north trunk fill is an embankment;
+  - the rest are normal viaducts on piers: the south approach past the Cardinal crossing, the intercity, C&O and TRIMET viaducts. The intercity and C&O descents, where the rail is under 6.5 m above the ground, are embankments with blind arches.
+  - Street openings: `gaps` on each block, `[c0, c1, street]` on the line's chainage.
+- Clearance (`context_clearances()`): under an embankment or an arch viaduct a line in the open can pass only through a street opening; outside one it is a clash (`blocked`), whatever the heights. Tests: `tests/test_core.py::test_context_street_openings`.
+- Upper deck: the Indianapolis APEx pair and RER D run on an upper deck over the north arch viaduct at the minimum height over the lower deck (the crossing rule, 7.9 m over its highest rail: 174.5 m), climbing at 2.5% from the Deck's s 3,644, held to the hillside, then in the Floridian hillside tunnel at a constant grade to the portal at 39.157114 N, 84.566833 W, about 186 m. Blocks `Indianapolis and D upper deck` and `Floridian hillside tunnel`; the north arch viaduct ends at the hillside.
+- `rer/alignments/RER_4.json`: RER-4's profile north of Camp Washington on that upper deck and tunnel (`tools/make_rer4_upper.py`; not saved in the page). The RER-4 configs name it.
+- RER-2 and RER-4 from the trunk to Union Terminal follow the Mill Creek Deck's B/D route (`tools/repath_rer_bd_trunk.py`, from `data/deck/context.json`): the old KMZ line ran up to 237 m west of it. RER-2 c 7,040-11,570 became 4,717 m (+187.2 m past it), RER-4 c 6,966-12,842 became 6,061 m (+185.9 m). Arlington, Camp Washington, Straight, Western and (RER-4) Union Terminal at the Deck's station points; ground re-sampled; crossings recomputed (A now crosses B/D twice at the box); the saved RER-2 profile shifted. `rer/repath_bd_trunk.json` holds the chainage map. The configs still follow the KMZ track, so the designed core now covers about 2% less of each RER-2 / RER-4 route (the re-pathed stretch is more than 30 m from the KMZ line). Rerunning `tools/make_rer_profile_lines.py` would undo the re-path.
+
 ## Update prompt (2026-10-26)
 
 > Pull the profiles-cut-norwood-context branch. data/profile was brought to the Rail Profiles page's state (README "CUT and Norwood Central context"): new context/lines.json, canon and settings changes, Line 3's Norwood end re-pathed, saved profiles re-exported. metro_profile.py now reads the context (Deck re-grades in the ground, painted cut-and-cover fill, context_clearances()). Run the tests and the Metro and RER configs, and report the run-time changes and the context clashes.

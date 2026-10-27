@@ -29,6 +29,8 @@ AREA = dict(id='region', name='Cincinnati region', lon=-84.5125, lat=39.1018, fr
 STEP = 5.0             # Profiles sampling along each line, m
 TRACK_STEP = 10.0      # Deck tracks resampled to this spacing, m
 MATCH_M = 30.0         # a Deck track point takes a Profiles line's level within this distance
+INTERLINE_M = 60.0     # an interlined line (D on the A/D pair) is drawn by the pair within this distance of it
+STRIPE_M = 30.0        # interlined pairs: stripe length in each line's colour, m
 GRID = 200.0           # ground grid spacing, m
 
 # Platform lengths (Ben, 2026-10-26): Metro 400 ft, TRI 670 ft. The Profiles editor's RER default is 200 m.
@@ -188,12 +190,12 @@ def resample(c, step):
     return out
 
 
-def load_lines(cache):
+def load_lines(cache, overlay=None):
     out = {}
-    for sysk, idx in (('metro', 'profiles/lines/index.json'), ('rer', 'profiles/rer/lines/index.json')):
-        base = os.path.dirname(os.path.join(cache, idx))
-        for l in json.load(open(os.path.join(cache, idx))):
-            d = json.load(open(os.path.join(base, l['id'] + '.json')))
+    for sysk, idx in (('metro', 'lines/index.json'), ('rer', 'rer/lines/index.json')):
+        rd = lambda rel: json.load(open((overlay or {}).get(rel) or os.path.join(cache, 'profiles', rel)))
+        for l in rd(idx):
+            d = rd(os.path.dirname(idx) + '/' + l['id'] + '.json')
             d['sys'] = 'cvx' if l['id'] == 'CVG_Express' else sysk
             out[l['id']] = d
     return out
@@ -227,6 +229,46 @@ def repo_docs(cache):
     return out
 
 
+# Repo line files served in place of the editor's published ones while it still has the old paths: RER-2 and RER-4 on
+# the Deck's B/D route (Ben, 2026-10-27; tools/repath_rer_bd_trunk.py). Saved profiles made on the old paths are moved
+# with the re-path's chainage map.
+REPATH = 'data/profile/rer/repath_bd_trunk.json'
+
+
+def repath(cache):
+    """({published path: repo file}, {line: chainage map}) while the published lines are the old paths"""
+    f = os.path.join(HERE, '..', '..', REPATH)
+    if not os.path.exists(f):
+        return {}, {}
+    m = json.load(open(f))
+    pub = json.load(open(os.path.join(cache, 'profiles/rer/lines/index.json')))
+    old = {l['id'] for l in pub if l['id'] in m and abs(l['length_m'] - m[l['id']]['L0']) < 0.05}
+    if not old:
+        return {}, {}
+    return {rel: os.path.join(HERE, '..', '..', 'data/profile', rel) for rel in m['files']}, {lid: m[lid] for lid in old}
+
+
+def moved_docs(cache, maps, lines):
+    """the editor's saved profiles on the old paths, moved onto the re-pathed lines"""
+    out = {}
+    for lid, s in maps.items():
+        f = os.path.join(cache, 'db/profiles_db/alignments', lid + '.json')
+        if not os.path.exists(f):
+            continue
+        d = json.load(open(f))
+        if abs(d.get('length_m', 0) - s['L0']) > 0.05:
+            continue
+        mv = lambda c: round(c if c <= s['ca'] else c + s['delta'] if c >= s['cb'] else s['ca'] + (c - s['ca']) * s['dn'] / (s['cb'] - s['ca']), 1)
+        d['pvi'] = [[mv(c), z] for c, z in d.get('pvi', [])]
+        d['ovr'] = [[mv(r[0]), mv(r[1]), *r[2:]] for r in d.get('ovr', [])]
+        nc = {x['name']: x['c'] for x in lines[lid]['stations']}
+        for x in d.get('stations', []):
+            x['c'] = x['point_c'] = nc.get(x['name'], mv(x['c']))
+        d['length_m'] = lines[lid]['length_m']
+        out['alignments/' + lid] = d
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--cache', default=os.path.join(HERE, 'cache'))
@@ -238,15 +280,21 @@ def main():
     BOX = (bx0 - E0, by0 - N0, bx1 - E0, by1 - N0)
     inbox = lambda x, y: BOX[0] <= x <= BOX[2] and BOX[1] <= y <= BOX[3]
 
-    lines = load_lines(a.cache)
+    overlay, maps = repath(a.cache)
+    lines = load_lines(a.cache, overlay)
     jf, rf = os.path.join(a.cache, 'job.json'), os.path.join(a.cache, 'harness_out.json')
     if not a.skip_harness:
         job = {'lines': [{'id': lid, 'c0': 0.0, 'c1': float(d['length_m']), 'step': STEP} for lid, d in lines.items()], 'deck': True,
-               'extra_docs': repo_docs(a.cache)}
+               'extra_docs': repo_docs(a.cache), 'override_docs': moved_docs(a.cache, maps, lines),
+               'overlay': {k: os.path.abspath(v) for k, v in overlay.items()}}
         json.dump(job, open(jf, 'w'))
         subprocess.run(['node', os.path.join(HERE, 'harness.js'), a.cache, jf, rf], check=True)
     H = json.load(open(rf))
     issues = []
+    if maps:
+        issues.append(', '.join(lines[l]['line'] for l in sorted(maps)) + ": paths from the repo, re-pathed onto the Deck's B/D route from the "
+                      "trunk to Union Terminal (Ben, 2026-10-27; tools/repath_rer_bd_trunk.py); the Rail Profiles editor still has the old "
+                      "KMZ paths until it is republished, and saved profiles are moved along")
 
     # ---- Profiles lines: every sample inside the region, in pieces where a line leaves and re-enters it ----
     L = {}
@@ -311,21 +359,26 @@ def main():
             for i, s_ in enumerate(piece):
                 near_line[lid].add(s_[1], s_[2], (pi, i))
 
-    def locate(lid, q):
-        hit, d = near_line[lid].near(q[0], q[1], MATCH_M + 5)
+    def locate(lid, q, tol=MATCH_M):
+        hit, d = near_line[lid].near(q[0], q[1], tol + 5)
         if hit is None:
             return None
         pi, i = hit
         P = [(s_[0], s_[1], s_[2]) for s_ in L[lid]['S'][pi][max(0, i - 1):i + 2]]
         res = on_line(P, min(i, 1), q)
-        if res is None or res[2] > MATCH_M:
+        if res is None or res[2] > tol:
             return None
         return pi, res[0], res[1], res[2]
+
+    def rail_at(lid, pi, c):
+        P = L[lid]['S'][pi]
+        return float(np.interp(c, [s_[0] for s_ in P], [s_[3] for s_ in P]))
 
     # ---- Deck tracks (platform_track's extract.js): levelled where they follow a Profiles line ----
     dd = H['deck_design']
     tracks, unlevelled = [], []
     unlev_m = {}
+    il_dz = {}
     for t in dd['tracks']:
         cand = deck_ids(t['sys'], t['line'], L)
         pts = [(x - E0, y - N0) for x, y in resample(t['c'], TRACK_STEP)]
@@ -353,15 +406,42 @@ def main():
                 tracks.append({'line': best, 'deck_line': t['line'], 'side': t.get('side'), 'from': t['from'],
                                'c': enc([v[1][1] for v in seg], 10), 'off': enc([v[1][2] for v in seg], 100),
                                'x': enc([v[0][0] for v in seg], 10), 'y': enc([v[0][1] for v in seg], 10)})
+                # the other lines the Deck runs on this pair (interlined) and how far their Profiles levels are off
+                with_ = []
+                for o in cand:
+                    if o == best:
+                        continue
+                    lo = [(v, locate(o, v[0], INTERLINE_M)) for v in seg[::3]]
+                    lo = [(v, x) for v, x in lo if x]
+                    if len(lo) * 3 >= len(seg[::3]):
+                        with_.append(o)
+                        dz = max(abs(rail_at(o, x[0], x[1]) - rail_at(best, v[1][0], v[1][1])) for v, x in lo)
+                        il_dz[(best, o)] = max(il_dz.get((best, o), 0), dz)
+                if with_:
+                    tracks[-1]['with'] = with_
             else:
                 unlevelled.append({'deck_line': t['line'], 'sys': t['sys'], 'from': t['from'],
                                    'x': enc([v[0][0] for v in seg], 10), 'y': enc([v[0][1] for v in seg], 10)})
                 unlev_m[t['line']] = unlev_m.get(t['line'], 0) + TRACK_STEP * (len(seg) - 1)
+    for (b, o), dz in sorted(il_dz.items()):
+        if dz > 1.0:
+            issues.append(f"{L[o]['name']} interlined on the {L[b]['name']} tracks: Profiles rail up to {dz:.1f} m off {L[b]['name']}'s, drawn at {L[b]['name']}'s")
     for k, v in sorted(unlev_m.items(), key=lambda kv: -kv[1]):
         if v > 200:
             issues.append(f"Deck {k}: {v / 1000:.1f} km of track with no Profiles line within {MATCH_M:.0f} m, drawn in plan on the ground")
 
-    # where a line has no track of its own but runs on another line's (D on the A/D pair): shared, rail only
+    # interlined pairs (RER A/D, B D, B C E ...) are drawn once, on the line most of the pair follows, striped in every
+    # line's colour (Ben, 2026-10-27): 'il' on that line's samples (1 + the index in 'interline'); the other lines are
+    # marked shared within INTERLINE_M of the pair and draw nothing there. Elsewhere, where a line has no track of its
+    # own but runs on another line's, it is shared too.
+    combos = []
+    for t in tracks:
+        if t.get('with'):
+            k = [t['line']] + t['with']
+            if k not in combos:
+                combos.append(k)
+            t['il'] = combos.index(k) + 1
+    il_near = Near()
     own_near, other_near = {lid: Near() for lid in L}, Near()
     def dec(v, s):
         out, acc = [], 0
@@ -371,17 +451,22 @@ def main():
         return out
     for t in tracks:
         for x, y in zip(dec(t['x'], 10), dec(t['y'], 10)):
-            own_near[t['line']].add(x, y, 1)
+            own_near[t['line']].add(x, y, t.get('il', 0))
             other_near.add(x, y, t['line'])
+            if t.get('with'):
+                il_near.add(x, y, set(t['with']))
     for lid, l in L.items():
-        l['shared'] = []
+        l['shared'], l['il'] = [], []
         for piece in l['S']:
-            sh = []
+            sh, il = [], []
             for s_ in piece:
                 own, _ = own_near[lid].near(s_[1], s_[2], 10)
-                oth, _ = (None, 0) if own else other_near.near(s_[1], s_[2], 10)
-                sh.append(1 if (not own and oth and oth != lid and L[oth]['sys'] == l['sys']) else 0)
+                oth, _ = (None, 0) if own is not None else other_near.near(s_[1], s_[2], 10)
+                w, _ = (None, 0) if own is not None else il_near.near(s_[1], s_[2], INTERLINE_M)
+                sh.append(1 if (own is None and ((oth and oth != lid and L[oth]['sys'] == l['sys']) or (w and lid in w))) else 0)
+                il.append(own or 0)
             l['shared'].append(sh)
+            l['il'].append(il)
 
     # ---- the Deck's plan: streets, blocks, platform rings (its GeoJSON export) ----
     def to_local(coords):
@@ -560,10 +645,10 @@ def main():
         if not l['S']:
             continue
         pieces = []
-        for piece, sh in zip(l['S'], l['shared']):
+        for piece, sh, il in zip(l['S'], l['shared'], l['il']):
             pieces.append({'c0': r1(piece[0][0]), 'step': STEP, 'n': len(piece),
                            'x': enc([s_[1] for s_ in piece], 10), 'y': enc([s_[2] for s_ in piece], 10),
-                           'z': enc([s_[3] for s_ in piece], 100), 't': rle([s_[4] for s_ in piece]), 'sh': rle(sh)})
+                           'z': enc([s_[3] for s_ in piece], 100), 't': rle([s_[4] for s_ in piece]), 'sh': rle(sh), 'il': rle(il)})
         snap_lines.append({'id': lid, 'name': l['name'], 'sys': l['sys'], 'color': l['color'], 'saved': l['saved'],
                            'pieces': pieces, 'stations': l['stations']})
     struct = {lid: {t: structure(lid, t) for t in ('cutcover', 'shield', 'deep', 'elevated', 'atgrade', 'trough')} for lid in L}
@@ -572,10 +657,12 @@ def main():
         'synced_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
         'origin': {'lon': AREA['lon'], 'lat': AREA['lat'], 'E': r2(E0), 'N': r2(N0), 'crs': 'EPSG:32616'},
         'frame_turn_deg': AREA['frame_turn'], 'box': [r1(v) for v in BOX],
+        'interline': combos, 'stripe_m': STRIPE_M,
         'platform_m': PLATFORM_M, 'platform_above_rail': PLATFORM_ABOVE_RAIL, 'struct': struct, 'box_margin': BOX_MARGIN,
         'assumed': ASSUMED, 'deck_rules': dd.get('constants'), 'issues': issues,
         'rules': ['Levels: the Rail Profiles editor; plan, tracks and platforms: the Mill Creek Deck',
                   'A platform on a shared pair (RER A/D, B C E ...) serves every line on it, at the level of the saved Profiles line (Ben, 2026-10-26: A and D share the Fountain Square platforms)',
+                  'An interlined pair (RER A/D, B/D, B C E ...) is one pair of tracks, drawn once at the level of the line most of it follows and striped in every line\'s colour (Ben, 2026-10-27)',
                   'Platforms: Metro 400 ft, TRI 670 ft (Ben, 2026-10-26)'],
         'ctx': {'tile': context3d.TILE, 'counts': dict(ctx['counts'], tiles=len(gtiles)), 'sources': ctx['sources'],
                     'rules': ['CUT and Norwood Central structures from the Mill Creek Deck, drawn as in the Rail Profiles context (the same definitions)',

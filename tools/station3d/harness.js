@@ -37,7 +37,9 @@ async function open(browser, root, docs, url, html = (h) => h) {
   const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 } });
   await ctx.addInitScript(stubScript(docs));
   await ctx.route('http://editor.local/**', (route) => {
-    const p = path.join(root, decodeURIComponent(new URL(route.request().url()).pathname.slice(1) || 'index.html'));
+    const rel = decodeURIComponent(new URL(route.request().url()).pathname.slice(1) || 'index.html');
+    // repo files in place of published ones (job.overlay, from sync.py: lines re-pathed in the repo)
+    const p = (root.endsWith('profiles') && (job.overlay || {})[rel]) || path.join(root, rel);
     if (p.endsWith('jsts.min.js')) return route.fulfill({ status: 200, body: fs.readFileSync(path.join(cache, 'jsts/package/dist/jsts.min.js')), contentType: 'application/javascript' });
     if (!fs.existsSync(p)) return route.fulfill({ status: 404, body: '' });
     if (p.endsWith('index.html')) return route.fulfill({ status: 200, body: html(fs.readFileSync(p, 'utf8')), contentType: 'text/html' });
@@ -59,6 +61,8 @@ async function open(browser, root, docs, url, html = (h) => h) {
   for (const [id, d] of Object.entries(readDocs(path.join(cache, 'db/profiles_db/config')))) pdocs['config/' + id] = d;
   // repo profiles for lines the editor has not saved (job.extra_docs, from sync.py)
   for (const [k, d] of Object.entries(job.extra_docs || {})) if (!(k in pdocs)) pdocs[k] = d;
+  // saved profiles moved onto re-pathed lines (job.override_docs)
+  Object.assign(pdocs, job.override_docs || {});
   // job: [{ id, c0, c1 }], the chainage ranges to sample (from sync.py)
   for (const j of job.lines) {
     const { ctx, page } = await open(browser, path.join(cache, 'profiles'), pdocs, `http://editor.local/index.html#${j.id}`);

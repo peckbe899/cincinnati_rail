@@ -61,3 +61,21 @@ New issues the sync reports (45 in all):
 - About 430 km of Deck track (mostly TRI out to the region's edge, plus pieces of Metro 1 and 3) and 78 Deck platforms have no Profiles line within 30 m. Drawn on the ground.
 - 19 Profiles stations have no Deck station nearby (Line 3's Kentucky stations, among others).
 - Deck spacing against the Profiles structure on most Metro lines (Line 1: 2.5 km cut and cover in Profiles, twin tubes in the Deck) and TRI bored stretches too narrow for two tubes on all five lines.
+
+## 2026-10-26/27: CUT structure types, the upper deck, B/D on the Deck route, interlined pairs
+
+From the handoff (`handoff/2026-10-26_station3d_cut_norwood`, now removed): `context3d.py`, the finished-ground tiles, the CUT and Norwood structures, platforms and tracks, built from the same definitions as the Rail Profiles context. Kept; its drawing of every structure as a deck on 20 m piers replaced with Ben's structure types:
+
+- The fan from W 9th to W Liberty: an embankment with a bridge over each street.
+- Arch viaducts only on the wide multi-track stretches, an arch over each street: the south approach to the Cardinal crossing and the north arch viaduct (arches tall enough for buses, one storey).
+- Everything else a normal viaduct on piers; the intercity and C&O descents embankments with blind arches.
+- The Profiles context the same way: a line in the open under an embankment or arch viaduct clears it only through a street opening. New clashes: Lines 8, 12, 13 and RER-1 under the north arch viaduct outside the street arches.
+
+Upper deck (Ben, 2026-10-27): the lower deck (R5, B, the APEx Dayton and Norwood pairs) passes over the roads; the Indianapolis pair and D run on an upper deck at the minimum height over it, 174.5 m (the crossing rule, 7.9 m), west of the RER A viaduct to the hillside, then climb in the Floridian hillside tunnel at a constant grade to the portal at 39°9'25.61"N 84°34'0.60"W, about 186 m. D's profile north of Camp Washington follows it (`tools/make_rer4_upper.py`; repo profile, not saved in the editor).
+
+B/D from the trunk to Union Terminal (Ben, 2026-10-27: the Profiles paths were the old KMZ line, up to 237 m west of the Deck's tracks): RER-2 and RER-4 re-pathed onto the Deck's B/D route (`tools/repath_rer_bd_trunk.py`). The editor still has the old paths until it is republished, so the sync serves the repo's files in their place. RER-2 / RER-4 run times change by -0.02 to +0.23 min; B and D now pass 7.8 m / 6.7 m under the CUT lower-level box (9.0 m needed), and the old RER-2 clash with the upper deck is gone (18 context clashes, was 19).
+
+Interlined pairs (Ben, 2026-10-27): A/D and B/D are one pair each, drawn once and striped in both colours; D draws nothing along them. D has no saved profile, so its defaults differ from A by up to 6.7 m and from B by up to 6.0 m (Western: B 138.4 m, D 144.4 m); drawn at A's and B's levels and listed as issues.
+
+Published: page version 6 and the snapshot (35 parts), read back at view level.
+
