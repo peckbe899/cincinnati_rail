@@ -13,6 +13,9 @@ RER A (Deck design note of 13 and 21 October; its RER marks, street cuts and str
   Lingo 155.2, Dane 152.9) to 144.2 m under Linden, into the tunnel under Spring Grove Cemetery (not profiled beyond);
 - RER-1b (the Colerain branch): its viaduct from the split, 300 m at 167.0 m (its descent is not set in the Deck).
 
+RER B: its flyover viaduct over APEx Dayton between Paddock and Fairgrounds (the Deck: 7.3 m or more over it), at
+175.0 m over the crossing, 8.3 m over the APEx at ground (the Rail Profiles crossing rule for a viaduct over at grade).
+
 Each anchor is a Deck point, projected onto the route, so the locks follow the routes when tools/rer_deck_routes.py
 rebuilds them. The B and D locks (tools/make_rer4_upper.py, moved onto the trunks) are kept. Writes
 data/profile/rer/canon.json.
@@ -72,6 +75,14 @@ ROWS = {
         pvi=[('start', 167.0), (('c', 300.0), 167.0)],
         struct=('A (RER-1b)', ('viaduct',)),
         src='RER-1b on its viaduct from the split at 167.0 m (Deck; its descent past OH-74 is not set): locked'),
+    'RER_B_trunk': dict(
+        a=('pt', (718015.0, 4341695.0)), b=('pt', (718465.0, 4342256.0)),
+        st={},
+        pvi=[(('at', (718272.9, 4341973.3), -60.0), 175.0), (('at', (718272.9, 4341973.3), 60.0), 175.0)],   # level over the APEx
+        struct=('B', ('viaduct',)),
+        tag='Deck RER B flyover',
+        src='RER B over APEx Dayton between Paddock and Fairgrounds on the Deck\'s 720 m flyover viaduct: 175.0 m over the APEx '
+            'at ground (166.7 m), 8.3 m, the crossing rule for a viaduct over track at grade (the Deck: 7.3 m or more): locked'),
 }
 
 
@@ -105,6 +116,8 @@ def main():
                 c = min(blk['c0'], blk['c1'])
             elif q[0] in ('start', 'end'):
                 c = where((q[0],))
+            elif q[0][0] == 'at':              # ('at', Deck point, metres along the route from it)
+                c = chain(q[0][1]) + q[0][2]
             elif isinstance(q[0][0], str):     # ('c', chainage)
                 c = where(q[0])
             else:                              # a Deck point
@@ -131,8 +144,9 @@ def main():
                 ovr.append([round(a, 1), round(b, 1), t])
         ovr.sort()
         cn = canon['lines'].setdefault(rid, {})
-        cn['locked'] = [lk for lk in cn.get('locked', []) if lk.get('by') != TAG] + [
-            {'c0': round(c0, 1), 'c1': round(c1, 1), 'st': row['st'], 'pvi': pvi, 'ovr': ovr, 'src': row['src'], 'by': TAG}]
+        tag = row.get('tag', TAG)
+        cn['locked'] = [lk for lk in cn.get('locked', []) if lk.get('by') != tag] + [
+            {'c0': round(c0, 1), 'c1': round(c1, 1), 'st': row['st'], 'pvi': pvi, 'ovr': ovr, 'src': row['src'], 'by': tag}]
         print(f"{rid}: locked {c0:.0f}-{c1:.0f}, stations {row['st']}, bends {pvi}, structure {ovr}")
     jsave(canon_f, canon, indent=1)
 

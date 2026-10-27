@@ -39,6 +39,7 @@ TO_LL = Transformer.from_crs(26916, 4326, always_xy=True)
 TOL = 0.5          # a route more than this far from its Deck pieces has drifted (m)
 SIMPLIFY = 0.02    # path vertices: the Deck's own, less those within this of a straight line (m)
 STATION_REACH = 300.0
+STATION_TOL = 1.0   # a station more than this from its Deck platform's centre has drifted (m)
 
 
 def jload(p):
@@ -80,6 +81,53 @@ def deck_stations(context=None, geojson=None):
                 for f in jload(geojson)['features'] if f['properties'].get('layer') == 'rer_station' and f['geometry']['type'] == 'Point' and not f['properties'].get('deleted')]
     c = jload(context or os.path.join(ROOT, 'data', 'deck', 'context.json'))
     return [(s['name'], tuple(s['p']), set(s.get('lines') or [])) for s in c.get('rer_stations', [])]
+
+
+def deck_platforms(geojson=None):
+    """[(station, line label, UTM centre)] of the Deck's RER platforms as drawn (with Ben's slides): the station's
+    position on a route is its platform's centre"""
+    geojson = geojson or (LIVE if os.path.exists(LIVE) else None)
+    if not geojson:
+        return []
+    out = []
+    for f in jload(geojson)['features']:
+        p, g = f['properties'], f['geometry']
+        if p.get('layer') != 'rer_platform' or g['type'] not in ('Polygon', 'MultiPolygon'):
+            continue
+        ring = g['coordinates'][0] if g['type'] == 'Polygon' else g['coordinates'][0][0]
+        from shapely.geometry import Polygon
+        out.append((p.get('station'), p.get('line', ''), Polygon([TO_UTM.transform(*q[:2]) for q in ring]).centroid.coords[0]))
+    return out
+
+
+PLAT_REACH = 40.0   # a platform within this of the route is on it
+
+
+def station_target(route, L, chain, s, platforms):
+    """the chainage of station s at its Deck platform's centre on this route, or None"""
+    me = route.get('letter')
+    cand = []
+    for nm, lab, p in platforms:
+        if nm != s['name'] or L.distance(Point(p)) > PLAT_REACH:
+            continue
+        ls = letters(lab)
+        if me and (ls & set('ABCDE')) and me not in ls:   # another line's platform at the same station
+            continue
+        c = chain(p)
+        if abs(c - s['c']) < STATION_REACH:
+            cand.append((abs(c - s['c']), c))
+    return min(cand)[1] if cand else None
+
+
+def station_drift(route, platforms):
+    """[(station, current c, Deck platform c)] where they differ by more than STATION_TOL"""
+    L, chain, _ = chain_of(route['path'])
+    out = []
+    for s in route['stations']:
+        t = station_target(route, L, chain, s, platforms)
+        if t is not None and abs(t - s['c']) > STATION_TOL:
+            out.append((s['name'], s['c'], round(t, 1)))
+    return out
 
 
 def letters(label):
@@ -226,11 +274,20 @@ def apply_route(rid, route, xy, segs, files, db_dir, stations_deck):
     fill = ~np.isfinite(g)
     g[fill] = np.interp(cs[fill], inv_x, og)
     new['ground_dm'] = [None if not np.isfinite(v) else int(round(v * 10)) for v in g]
-    # stations at the Deck's point of the same name, else mapped
+    # stations at their Deck platform's centre (the platform as the Deck draws it, slid or not), else at the Deck's
+    # station point of the same name, else mapped
+    platforms = deck_platforms()
     for s in new['stations']:
+        s0 = dict(s, c=m(s['c']))
+        t = station_target(new, L, chain, s0, platforms)
         hit = [(math.dist(p, at(m(s['c'])).coords[0]), p) for nm, p, _ in stations_deck if nm == s['name']]
         hit = [h for h in hit if h[0] < STATION_REACH]
-        if hit:
+        if t is not None:
+            c = t
+            pc = at(c)
+            near = [p for nm, lab, p in platforms if nm == s['name'] and math.dist(p, pc.coords[0]) < PLAT_REACH + 60]
+            s['offset'] = round(min((L.distance(Point(p)) for p in near), default=0.0), 1)
+        elif hit:
             p = min(hit)[1]
             c = chain(p)
             s['offset'] = round(L.distance(Point(p)), 1)
@@ -288,6 +345,7 @@ def main():
     pieces = deck_pieces(a.context, a.geojson)
     idx = jload(os.path.join(SITE, 'rer', 'lines', 'index.json'))
     report, drifted = [], []
+    platforms = deck_platforms(a.geojson)
     for e in idx:
         fn = os.path.join(SITE, 'rer', 'lines', e['id'] + '.json')
         r = jload(fn)
@@ -298,8 +356,10 @@ def main():
         d, dl = drift(r, xy)
         dseg = max(abs((n['c1'] - n['c0']) - (o['c1'] - o['c0'])) for o, n in zip(r['segs'], segs))
         d = max(d, dseg)
-        ok = d <= TOL and abs(dl) <= TOL
-        report.append({'id': e['id'], 'max_m': round(d, 2), 'length_change_m': round(dl, 2), 'ok': ok, 'notes': notes})
+        sd = station_drift(r, platforms)
+        ok = d <= TOL and abs(dl) <= TOL and not sd
+        notes += [f"{nm} at {c:.1f}, its Deck platform at {t:.1f} ({t - c:+.1f} m)" for nm, c, t in sd]
+        report.append({'id': e['id'], 'max_m': round(d, 2), 'length_change_m': round(dl, 2), 'stations': sd, 'ok': ok, 'notes': notes})
         if not ok:
             drifted.append((e['id'], fn, r, xy, segs))
     for x in report:
