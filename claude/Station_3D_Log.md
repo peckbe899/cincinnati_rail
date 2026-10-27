@@ -79,3 +79,10 @@ Interlined pairs (Ben, 2026-10-27): A/D and B/D are one pair each, drawn once an
 
 Published: page version 6 and the snapshot (35 parts), read back at view level.
 
+## 2026-10-27: Rail Profiles editor updated and locked; lines on the Deck tracks
+
+- Rail Profiles editor version 34: the B/D re-path, the context, and locked stretches (B on the viaduct, Northside to Straight; D from Straight to the Floridian portal). D now takes B's levels from Union Terminal to Camp Washington, so the B/D pair is one level (Western 138.4 m for both; was D 144.4 m). The editor's saved RER-2 was moved onto the new path and RER-4 saved for the first time. Station 3D's repo stand-ins switched off by themselves.
+- Tangles (Ben: RER B north of Mitchell, Line 3 at Mitchell): the lines' structures followed the Profiles paths while their rails followed the Deck tracks, up to 60 m apart, and tracks broke into pieces past 30 m. Now each line follows its Deck tracks in plan (Profiles levels by chainage), tracks match their line within 120 m with chainage kept one way, and no drawn line or track turns back on itself (checked over the whole snapshot; the fold-backs in the Line 4, 5 and 6 Profiles paths are all under Deck track).
+- RER lines to the region edge (Ben: RER A past Westwood had no line): Deck track with no Profiles level is drawn on the ground in its line's colour (it was dashed grey).
+- Page version 7 and the snapshot published.
+

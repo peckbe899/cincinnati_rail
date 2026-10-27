@@ -319,7 +319,7 @@ const isRer = () => sys === 'rer';
 
 const S = {
   index: [], net: null, cache: {}, data: null, L: 0, step: 2, ground: null,
-  stations: [], rivers: [], crossings: [], align: null, canonSecs: [], canonFixed: {},
+  stations: [], rivers: [], crossings: [], align: null, canonSecs: [], canonFixed: {}, canonLocks: [],
   view: { c0: 0, c1: 1 }, units: 'm', tool: 'move', brush: 'auto', show: 'both',
   sel: null, hoverC: null, hoverXY: null, drag: null, yFrozen: null,
   saved: {}, dirty: false, saving: false, hist: [], fut: [], canonModes: {}, rerData: {}, defaultDocs: {}, metroRails: {},
@@ -514,6 +514,8 @@ function buildCanon() {
   Object.entries(cn.fixed || {}).forEach(([name, f]) => { const i = idx(name); if (i >= 0) S.canonFixed[i] = f; });
   S.canonModes = {};
   Object.entries(cn.modes || {}).forEach(([name, f]) => { const i = idx(name); if (i >= 0) S.canonModes[i] = f; });
+  // locked stretches (Ben, 27 October): the rail level, bend points and painted structure are canon there
+  S.canonLocks = (cn.locked || []).map((lk) => ({ ...lk, lo: +lk.c0, hi: +lk.c1 }));
   S.canonDeck = (cn.deck || []).map((dk) => {
     const ia = idx(dk.a), ib = idx(dk.b); if (ia < 0 || ib < 0) return null;
     const A = S.stations[ia], B = S.stations[ib];
@@ -521,6 +523,31 @@ function buildCanon() {
   }).filter(Boolean);
 }
 const fixedLevel = (f, gr) => (f.abs != null ? f.abs : gr + f.off);
+// ---------- locked stretches ----------
+const lockAt = (c) => (S.canonLocks || []).find((lk) => c >= lk.lo - 0.5 && c <= lk.hi + 0.5) || null;
+const lockedStation = (i) => (S.canonLocks || []).find((lk) => lk.st && S.stations[i] && typeof lk.st[S.stations[i].name] === 'number') || null;
+// Put every locked stretch back as canon has it: its bend points, its station levels (level platforms, not slid, not
+// removed) and its painted structure. Returns true if anything had to change.
+function applyLocks(al) {
+  const locks = S.canonLocks || []; if (!locks.length || !al) return false;
+  const before = JSON.stringify([al.pvi, al.st, al.sg, al.ovr, al.so, al.del]);
+  for (const lk of locks) {
+    al.pvi = al.pvi.filter((p) => p.c < lk.lo || p.c > lk.hi).concat((lk.pvi || []).map(([c, z]) => ({ c: +c, z: +z }))).sort((a, b) => a.c - b.c);
+    const ovr = [];
+    for (const o of al.ovr || []) {
+      if (o[1] <= lk.lo || o[0] >= lk.hi) { ovr.push(o); continue; }
+      if (o[0] < lk.lo) ovr.push([o[0], lk.lo, o[2]]);
+      if (o[1] > lk.hi) ovr.push([lk.hi, o[1], o[2]]);
+    }
+    al.ovr = ovr.concat((lk.ovr || []).map(([a, b, t]) => [+a, +b, t])).sort((a, b) => a[0] - b[0]);
+    Object.entries(lk.st || {}).forEach(([name, z]) => {
+      const i = S.stations.findIndex((s) => s.name === name); if (i < 0) return;
+      al.st[i] = z; if (al.sg) al.sg[i] = 0; if (al.so) al.so[i] = 0;
+      if (al.del) al.del = al.del.filter((k) => k !== keyOf(S.stations[i]));
+    });
+  }
+  return JSON.stringify([al.pvi, al.st, al.sg, al.ovr, al.so, al.del]) !== before;
+}
 // level a station's depth is measured from: its canon reference (e.g. track level at Union
 // Terminal) or the surface
 function refAt(i) { const f = S.canonFixed[i]; return f && f.ref != null ? f.ref : surfaceAt(S.stations[i].c); }
@@ -777,6 +804,7 @@ function alignFromDoc(doc) {
   if (Array.isArray(doc.pvi)) al.pvi = doc.pvi.filter((p) => Array.isArray(p) && p.length >= 2).map(([c, z]) => ({ c: +c, z: +z }));
   al.ovr = (doc.ovr || []).filter((o) => Array.isArray(o) && o.length >= 3).map(([a, b, t]) => [+a, +b, t === 'bored' ? 'shield' : t]).filter((o) => TYPES[o[2]]);
   S.stations = deriveStations(del, al.so); buildCanon();
+  applyLocks(al);
   return al;
 }
 
@@ -1227,6 +1255,14 @@ function draw(ctx, W, H, view, opt = {}) {
     ctx.fillText(`${x.with} ${x.to.label} · ${toU(x.clear).toFixed(1)} ${uLbl()} apart, needs ${toU(x.need ?? 0).toFixed(1)}`, px + 7, (y0 + y1) / 2);
   }
 
+  // locked stretches: a band with a lock note along the top
+  for (const lk of S.canonLocks || []) {
+    if (lk.hi < view.c0 || lk.lo > view.c1) continue;
+    const xa = Math.max(P.x, X(lk.lo)), xb = Math.min(P.x + P.w, X(lk.hi));
+    ctx.fillStyle = colors.ink; ctx.globalAlpha = 0.05; ctx.fillRect(xa, P.y, xb - xa, P.h); ctx.globalAlpha = 1;
+    ctx.strokeStyle = muted; ctx.setLineDash([3, 3]); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(Math.round(xa) + 0.5, P.y); ctx.lineTo(Math.round(xa) + 0.5, P.y + P.h); ctx.moveTo(Math.round(xb) - 0.5, P.y); ctx.lineTo(Math.round(xb) - 0.5, P.y + P.h); ctx.stroke(); ctx.setLineDash([]);
+    if (xb - xa > 60) { ctx.fillStyle = muted; ctx.font = `11px ${colors.num}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('Locked', xa + 4, P.y + 3); }
+  }
   // track: per-pixel sampling grouped by type
   const step = 1;
   const pts = [];
@@ -1479,6 +1515,7 @@ function updatePanels() {
   $('#flags').innerHTML = S.issues.slice(0, 60).map((x, j) => `<li><button class="flag${x.warn ? ' warn' : ''}" data-j="${j}"><span class="fk">${esc(x.kind)}${x.warn ? ' (warning)' : ''}</span> ${x.text}</button></li>`).join('') + (S.issues.length > 60 ? `<li>and ${S.issues.length - 60} more</li>` : '');
   const nm = (i) => S.stations[i] ? S.stations[i].name : '';
   const cnl = S.canonSecs.map((x) => `<li><b>${METHOD_LABEL[x.m]}</b>, ${esc(x.a)}${x.aIn === false ? ' (excl.)' : ''} to ${esc(x.b)}${x.bIn === false ? ' (excl.)' : ''}: ${esc(x.src)}</li>`)
+    .concat((S.canonLocks || []).map((lk) => `<li><b>Locked</b> ${fmtCh(lk.lo)} to ${fmtCh(lk.hi)}${lk.st ? ` (${Object.entries(lk.st).map(([n, z]) => `${esc(n)} ${fmtZ(z, 2)}`).join(', ')} ${uLbl()})` : ''}: ${esc(lk.src || '')}</li>`))
     .concat(Object.entries(S.canonFixed).map(([i, f]) => `<li><b>${esc(nm(+i))}</b> rail ${f.abs != null ? `at ${fmtZ(f.abs, 1)} ${uLbl()}` : `${f.off >= 0 ? '+' : '−'}${fmtZ(Math.abs(f.off), 0)} ${uLbl()}`}: ${esc(f.src)}</li>`));
   const er = eraOf();
   cnl.push(`<li><b>Structures</b> ${er ? `(${er.era}): rail less than ${fmtZ(METRO_ST.box.top, 1)} ${uLbl()} down is an open trough; cut-and-cover and station boxes ${fmtZ(1.0, 2)} below to ${fmtZ(4.6, 2)} ${uLbl()} above the rail (roof cover ${fmtZ(BOX_COVER, 1)}, thinner is the street itself, a warning); twin tubes ${fmtZ(0.68, 2)} below to ${fmtZ(4.08, 2)} above for deep tube${er.shield === 'tube' ? ', shield' : ''} and river crossings${er.shield === 'bore' ? `; double-track bore ${fmtZ(3.2, 1)} below to ${fmtZ(5.8, 1)} above for shield` : ''}; tubes and bores need ${fmtZ(TUBE_COVER_HIGH, 1)} ${uLbl()} of cover with their top above ${fmtZ(WATER_TABLE, 1)} ${uLbl()}, one outside diameter at or below it; shallower is cut and cover; under rivers the rail stays ${RIVER_MARGIN.metro} m below the bed` : `(RATP RER style, 1985-1996): boxes and station boxes ${fmtZ(settings.envelope, 1)} ${uLbl()} and bored tubes ${fmtZ(settings.boreCrown, 1)} ${uLbl()} above the rail; bored tunnels need ${fmtZ(settings.minCover, 1)} ${uLbl()} of cover, shallower is cut and cover; river crossings are sunk box sections in a dredged trench (Transbay model), rail ${RIVER_MARGIN.rer} m below the bed`}; crossings keep the upper floor + ${SEP_GAP} m above the lower top, or above the clear height (${OPEN_CLEAR.metro} m Metro, ${OPEN_CLEAR.rer} m RER) of a line in the open; platforms may slope up to ${sgMaxFor()}‰${er ? (er.sgMax > 5 ? ' (New York 1918 practice)' : ' (1930s-50s, near London 1 in 260)') : ' (main-line station limit)'}.</li>`);
@@ -1513,7 +1550,8 @@ function updatePanels() {
 // the whole platform painted cut and cover
 function ccFull(i) { const s = S.stations[i], half = settings.platform / 2; return (S.align.ovr || []).some((o) => o[2] === 'cutcover' && o[0] <= s.c - half + 1 && o[1] >= s.c + half - 1); }
 function updateSelCard() {
-  const el = $('#selCard'); const sel = S.sel; const ro = S.canWrite === false;
+  const el = $('#selCard'); const sel = S.sel;
+  const ro = S.canWrite === false || !!(sel && ((sel.kind === 'st' && lockedStation(sel.i)) || (sel.kind === 'pvi' && S.align.pvi[sel.j] && lockAt(S.align.pvi[sel.j].c))));   // locked stretches are read only
   if (!sel) {
     el.innerHTML = `<h2>Editing</h2><p class="hint">Drag a station bar up or down to set its rail level. Double-click the track to add a bend point, then drag it. Choose <b>Paint</b> and a structure to mark a stretch by hand; <b>Auto</b> clears it. Painted <b>Cut &amp; cover</b> keeps the box where it is and regrades the ground over it (filled to the roof plus cover, sloping back past the ends); a station's card can force its whole platform.</p>
       <p class="hint"><kbd>scroll</kbd> zoom · <kbd>drag</kbd> pan · <kbd>↑</kbd><kbd>↓</kbd> nudge 0.1 (<kbd>Shift</kbd> 1) · <kbd>Del</kbd> remove bend · <kbd>Ctrl Z</kbd> undo</p>`;
@@ -1599,7 +1637,7 @@ function pushHist() { S.hist.push(snapshot()); if (S.hist.length > 200) S.hist.s
 function syncUndo() { $('#undo').disabled = !S.hist.length || S.canWrite === false; $('#redo').disabled = !S.fut.length || S.canWrite === false; $('#solveCross').disabled = S.canWrite === false; $('#easeAll').disabled = S.canWrite === false; }
 function undo() { if (!S.hist.length) return; S.fut.push(snapshot()); S.align = JSON.parse(S.hist.pop()); S.sel = null; changed(); syncUndo(); }
 function redo() { if (!S.fut.length) return; S.hist.push(snapshot()); S.align = JSON.parse(S.fut.pop()); S.sel = null; changed(); syncUndo(); }
-function changed(save = true) { if (S.data) { S.stations = deriveStations(S.align.del || [], S.align.so || []); buildCanon(); } VERTS = vertices(); applyFill(); updatePanels(); schedule(); if (save) markDirty(); }
+function changed(save = true) { if (S.data) { S.stations = deriveStations(S.align.del || [], S.align.so || []); buildCanon(); if (applyLocks(S.align) && save) { S.stations = deriveStations(S.align.del || [], S.align.so || []); flash('Locked stretch: kept as canon'); } } VERTS = vertices(); applyFill(); updatePanels(); schedule(); if (save) markDirty(); }
 function inPlatform(c) { const half = settings.platform / 2; return S.stations.some((s) => c > s.c - half - 2 && c < s.c + half + 2); }
 function clampPviC(c, j) {
   c = clamp(c, 1, S.L - 1);
@@ -1751,7 +1789,7 @@ async function selectLine(id) {
 function groundOf(d) { if (!d._g) d._g = Float32Array.from(d.ground_dm, (v) => (v == null ? NaN : v / 10)); return d._g; }
 // run fn with another line loaded in place of the current one (for its default rail)
 function withLine(d, k, fn) {
-  const keys = ['data', 'L', 'step', 'ground', 'ground0', 'groundDem', 'ctx', 'regraded', 'filled', 'stations', 'rivers', 'crossings', 'canonSecs', 'canonFixed', 'canonModes', 'canonDeck', 'align'];
+  const keys = ['data', 'L', 'step', 'ground', 'ground0', 'groundDem', 'ctx', 'regraded', 'filled', 'stations', 'rivers', 'crossings', 'canonSecs', 'canonFixed', 'canonModes', 'canonDeck', 'canonLocks', 'align'];
   const keep = {}; keys.forEach((x) => (keep[x] = S[x])); const ks = sys, kset = settings;
   sys = k; settings = SYS[k].settings;
   try {
@@ -1799,7 +1837,8 @@ cv.addEventListener('pointerdown', (e) => {
   if (!LAYOUT) return; cv.focus({ preventScroll: true }); const { x, y } = evPos(e, cv); pointers.set(e.pointerId, { x, y });
   if (pointers.size === 2) { const [a, b] = [...pointers.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), view: { ...S.view }, cx: LAYOUT.C((a.x + b.x) / 2) }; S.drag = null; return; }
   cv.setPointerCapture(e.pointerId);
-  const hit = S.canWrite === false ? null : hitTest(x, y);
+  let hit = S.canWrite === false ? null : hitTest(x, y);
+  if (hit && ((hit.kind === 'st' && lockedStation(hit.i)) || (hit.kind === 'pvi' && lockAt(S.align.pvi[hit.j].c)))) { S.sel = hit; updatePanels(); schedule(); flash('Locked stretch: ' + ((hit.kind === 'st' ? lockedStation(hit.i) : lockAt(S.align.pvi[hit.j].c)).src || 'canon')); hit = null; S.drag = { kind: 'pan', x0: x, view: { ...S.view }, moved: false }; return; }
   if (S.tool === 'move' && hit) {
     pushHist(); S.sel = hit; S.yFrozen = LAYOUT.yr;
     S.drag = hit.kind === 'st' && e.altKey ? { kind: 'stx', i: hit.i, x0: x, so0: (S.align.so && S.align.so[hit.i]) || 0 } : hit.kind === 'st' ? { kind: 'st', i: hit.i, y0: y, z0: S.align.st[hit.i] } : { kind: 'pvi', j: hit.j, x0: x, y0: y, c0: S.align.pvi[hit.j].c, z0: S.align.pvi[hit.j].z };
@@ -1888,6 +1927,8 @@ cv.addEventListener('keydown', (e) => {
   if (e.key === 'p' || e.key === 'P') { setTool('paint'); return; }
   if (e.key === 'Escape') { S.sel = null; updatePanels(); schedule(); return; }
   if (!S.sel || S.canWrite === false) return;
+  const selLocked = (S.sel.kind === 'st' && lockedStation(S.sel.i)) || (S.sel.kind === 'pvi' && S.align.pvi[S.sel.j] && lockAt(S.align.pvi[S.sel.j].c));
+  if (selLocked && ['Delete', 'Backspace', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) { e.preventDefault(); flash('Locked stretch: ' + (selLocked.src || 'canon')); return; }
   if ((e.key === 'Delete' || e.key === 'Backspace') && S.sel.kind === 'pvi') { e.preventDefault(); removeSelectedPvi(); return; }
   const dz = e.key === 'ArrowUp' ? 1 : e.key === 'ArrowDown' ? -1 : 0; const dc = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
   if (!dz && !dc) return; e.preventDefault(); const amt = e.shiftKey ? 1 : 0.1;

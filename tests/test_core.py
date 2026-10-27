@@ -542,3 +542,25 @@ def test_context_street_openings():
     assert not x["blocked"] and x["ok"] and x["need"] == pytest.approx(6.3, abs=0.01)
     x = check(blk("viaduct", []))             # a normal viaduct: open between its piers
     assert not x["blocked"] and x["ok"]
+
+
+def test_locked_stretch_holds():
+    """Locked stretches of the RER canon (Ben, 27 October): a saved profile cannot move a locked station
+    level or add a bend point inside the lock; outside it, it can."""
+    import json
+    import tempfile
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent / "data/profile/rer"
+    lk = json.loads((root / "canon.json").read_text())["lines"]["RER_2"]["locked"][0]
+    doc = json.loads((root / "alignments/RER_2.json").read_text())
+    inside, outside = (lk["c0"] + lk["c1"]) / 2, lk["c1"] + 2000.0
+    doc["st"]["Arlington"] = lk["st"]["Arlington"] + 5.0
+    doc["pvi"] = doc["pvi"] + [[inside, 170.0], [outside, 150.0]]
+    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+        json.dump(doc, f)
+    mp = MetroProfile.load(root / "lines/RER_2.json", f.name, root / "settings.json")
+    i = next(k for k, s in enumerate(mp.stations) if s["name"] == "Arlington")
+    assert mp.st[i] == pytest.approx(lk["st"]["Arlington"])
+    assert not any(abs(c - inside) < 0.5 for c, _ in mp.pvi)
+    assert any(abs(c - outside) < 0.5 for c, _ in mp.pvi)

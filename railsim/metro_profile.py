@@ -580,6 +580,7 @@ class MetroProfile:
         self.gapfill = [k for k in ((doc or {}).get("gapfill") or []) if isinstance(k, str)]
         self.ovr = []
         if not doc:
+            self._apply_locks()
             return
         # platform slid along its drawn point: centre = point + so, the point stays on it
         half = self.settings["platform"] / 2
@@ -602,9 +603,32 @@ class MetroProfile:
                 t = "shield" if o[2] == "bored" else o[2]
                 if t in TYPES:
                     self.ovr.append((float(o[0]), float(o[1]), t))
+        self._apply_locks()
         if any(self.so):
             self.data["stations"] = [dict(s, c=s["c0"] + o) for s, o in zip(self.stations, self.so)]
             self._build_canon()
+
+    def _apply_locks(self):
+        """Locked stretches of the canon (Ben, 27 October 2026), as the page holds them: their bend points, station
+        levels (level platforms, not slid) and painted structure replace whatever the saved profile has there."""
+        cn = ((self.rer_canon.get("lines") or {}) if self.is_rer else CANON).get(self.id, {})
+        for lk in cn.get("locked") or []:
+            lo, hi = float(lk["c0"]), float(lk["c1"])
+            self.pvi = sorted([p for p in self.pvi if p[0] < lo or p[0] > hi] + [(float(c), float(z)) for c, z in lk.get("pvi") or []])
+            ovr = []
+            for o in self.ovr:
+                if o[1] <= lo or o[0] >= hi:
+                    ovr.append(o)
+                    continue
+                if o[0] < lo:
+                    ovr.append((o[0], lo, o[2]))
+                if o[1] > hi:
+                    ovr.append((hi, o[1], o[2]))
+            self.ovr = sorted(ovr + [(float(a), float(b), t) for a, b, t in lk.get("ovr") or []])
+            for name, z in (lk.get("st") or {}).items():
+                for i, st in enumerate(self.stations):
+                    if st["name"] == name:
+                        self.st[i], self.sg[i], self.so[i] = float(z), 0.0, 0.0
 
     # ------------------------------------------------------------- rail profile
     def _verts(self) -> List[dict]:

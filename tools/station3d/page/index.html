@@ -389,10 +389,24 @@ function build(snap) {
   };
   const sp = snap.streets.map((s) => { const xs = dec(s.x, 10), ys = dec(s.y, 10), w = s.w || 10; return sweepData(dens(xs, ys), [[-w / 2, 0], [w / 2, 0]], false); });
   { const ms = merged(sp, sm); if (ms) { ms.renderOrder = 4; ms.userData.kind = 'ground'; world.add(ms); } }
-  // Deck tracks with no Profiles level: dashed, on the ground
+  // Deck tracks with no Profiles level (mostly past the end of a Profiles line, out to the region's edge): on the
+  // ground in their line's colour, striped where the Deck runs several lines on them; dashed grey for no line at all
   { const um = new THREE.LineDashedMaterial({ color: 0x6f6a5e, dashSize: 12, gapSize: 8, transparent: true, opacity: 0.8, clippingPlanes: clips });
-    const list = snap.unlevelled.map((t) => { const xs = dec(t.x, 10), ys = dec(t.y, 10); return xs.map((x, i) => [X(x), Yp(x, ys[i], groundAt(x, ys[i])) + 0.6, Z(ys[i])]); });
-    const o = polylines(list, um); if (o) { o.userData.kind = 'unlev'; world.add(o); } }
+    const byCol = new Map(), grey = [];
+    for (const t of snap.unlevelled) {
+      const xs = dec(t.x, 10), ys = dec(t.y, 10), pts = xs.map((x, i) => [X(x), Yp(x, ys[i], groundAt(x, ys[i])) + 0.6, Z(ys[i])]);
+      const cols = (t.cols || []).filter(Boolean).map(kmlColor);
+      if (!cols.length) { grey.push(pts); continue; }
+      let acc = 0, cur = null, k = -1;
+      for (let i = 0; i < pts.length; i++) {
+        if (i) acc += Math.hypot(xs[i] - xs[i - 1], ys[i] - ys[i - 1]);
+        const kk = Math.floor(acc / (snap.stripe_m || 30)) % cols.length;
+        if (kk !== k) { const prev = cur && cur[cur.length - 1]; cur = prev ? [prev] : []; k = kk; if (!byCol.has(cols[kk])) byCol.set(cols[kk], []); byCol.get(cols[kk]).push(cur); }
+        cur.push(pts[i]);
+      }
+    }
+    for (const [col, list] of byCol) { const o = polylines(list.filter((r) => r.length > 1), new THREE.LineBasicMaterial({ color: col, transparent: true, opacity: 0.85, clippingPlanes: clips })); if (o) { o.userData.kind = 'unlev'; world.add(o); } }
+    const o = polylines(grey, um); if (o) { o.userData.kind = 'unlev'; world.add(o); } }
 
   // structures: each line run by run of its Profiles type, on the Deck's tracks: a tube on each track where bored,
   // one box over the pair, as wide as the tracks need, elsewhere. Stretches on another line's tracks (shared) get rails only.

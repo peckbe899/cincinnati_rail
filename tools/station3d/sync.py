@@ -29,6 +29,9 @@ AREA = dict(id='region', name='Cincinnati region', lon=-84.5125, lat=39.1018, fr
 STEP = 5.0             # Profiles sampling along each line, m
 TRACK_STEP = 10.0      # Deck tracks resampled to this spacing, m
 MATCH_M = 30.0         # a Deck track point takes a Profiles line's level within this distance
+SNAP_SMOOTH_M = 40.0   # the centre's shift is averaged over this distance either side
+SNAP_TAPER_M = 150.0   # past its Deck tracks a line's centre returns to the Profiles path over this distance
+TRACK_MATCH_M = 120.0  # a Deck track takes its own line's level within this distance (the Deck and the Profiles paths differ)
 INTERLINE_M = 60.0     # an interlined line (D on the A/D pair) is drawn by the pair within this distance of it
 STRIPE_M = 30.0        # interlined pairs: stripe length in each line's colour, m
 GRID = 200.0           # ground grid spacing, m
@@ -387,10 +390,23 @@ def main():
             continue
         best, bn = None, 0
         for lid in cand:   # the line most of the track follows; ties to a saved line (A/D: RER-1)
-            n = sum(1 for q in pts[::3] if locate(lid, q))
+            n = sum(1 for q in pts[::3] if locate(lid, q, TRACK_MATCH_M))
             if n > bn or (n == bn and n and L[lid]['saved'] and not L[best]['saved']):
                 best, bn = lid, n
-        loc = [locate(best, q) if best else None for q in pts]
+        loc = [locate(best, q, TRACK_MATCH_M) if best else None for q in pts]
+        # the chainage must run one way along the track: a point that steps back (past the line's end, or onto
+        # another stretch of the same line) is left unlevelled, so the track is never drawn folded back on itself
+        for pi in {lc[0] for lc in loc if lc}:
+            idx = [k for k, lc in enumerate(loc) if lc and lc[0] == pi]
+            if len(idx) < 2:
+                continue
+            dirn = 1 if loc[idx[-1]][1] >= loc[idx[0]][1] else -1
+            last = None
+            for k in idx:
+                if last is not None and (loc[k][1] - last) * dirn < 0.5:
+                    loc[k] = None
+                else:
+                    last = loc[k][1]
         run, runs = None, []
         for q, lc in zip(pts, loc):
             kind = 'lev' if lc else 'unlev'
@@ -402,7 +418,8 @@ def main():
             if len(seg) < 2:
                 continue
             if kind == 'lev':
-                seg.sort(key=lambda v: v[1][1])
+                if seg[-1][1][1] < seg[0][1][1]:
+                    seg.reverse()
                 tracks.append({'line': best, 'deck_line': t['line'], 'side': t.get('side'), 'from': t['from'],
                                'c': enc([v[1][1] for v in seg], 10), 'off': enc([v[1][2] for v in seg], 100),
                                'x': enc([v[0][0] for v in seg], 10), 'y': enc([v[0][1] for v in seg], 10)})
@@ -420,7 +437,7 @@ def main():
                 if with_:
                     tracks[-1]['with'] = with_
             else:
-                unlevelled.append({'deck_line': t['line'], 'sys': t['sys'], 'from': t['from'],
+                unlevelled.append({'deck_line': t['line'], 'sys': t['sys'], 'from': t['from'], 'lines': cand, 'cols': [L[i]['color'] for i in cand],
                                    'x': enc([v[0][0] for v in seg], 10), 'y': enc([v[0][1] for v in seg], 10)})
                 unlev_m[t['line']] = unlev_m.get(t['line'], 0) + TRACK_STEP * (len(seg) - 1)
     for (b, o), dz in sorted(il_dz.items()):
@@ -428,7 +445,100 @@ def main():
             issues.append(f"{L[o]['name']} interlined on the {L[b]['name']} tracks: Profiles rail up to {dz:.1f} m off {L[b]['name']}'s, drawn at {L[b]['name']}'s")
     for k, v in sorted(unlev_m.items(), key=lambda kv: -kv[1]):
         if v > 200:
-            issues.append(f"Deck {k}: {v / 1000:.1f} km of track with no Profiles line within {MATCH_M:.0f} m, drawn in plan on the ground")
+            issues.append(f"Deck {k}: {v / 1000:.1f} km of track with no Profiles line within {TRACK_MATCH_M:.0f} m (mostly past the end of the Profiles line), drawn on the ground in its colour")
+
+    # each line's plan follows its Deck tracks (Ben, 2026-10-27: the Profiles paths and the Deck's tracks differ by up
+    # to 60 m in places, which drew a line's structure and its tracks apart): where a line has its own Deck tracks
+    # its centre moves to their middle, tapering back to the Profiles path over SNAP_TAPER_M past their ends, and the
+    # tracks' offsets are taken from the moved centre. Levels stay the Profiles editor's, by chainage.
+    def dec_(v, sc):
+        out, acc = [], 0
+        for d_ in v:
+            acc += d_
+            out.append(acc / sc)
+        return out
+    by_line = {}
+    for t in tracks:
+        by_line.setdefault(t['line'], []).append(t)
+    for lid, ts in by_line.items():
+        tdat = [(np.array(dec_(t['c'], 10)), np.array(dec_(t['x'], 10)), np.array(dec_(t['y'], 10))) for t in ts]
+        moved = []
+        for pi, piece in enumerate(L[lid]['S']):
+            cs = np.array([s_[0] for s_ in piece])
+            px, py = np.array([s_[1] for s_ in piece]), np.array([s_[2] for s_ in piece])
+            sx, sy, n = np.zeros(len(cs)), np.zeros(len(cs)), np.zeros(len(cs))
+            for tc, tx, ty in tdat:
+                inside = (cs >= tc[0]) & (cs <= tc[-1])
+                sx[inside] += np.interp(cs[inside], tc, tx)
+                sy[inside] += np.interp(cs[inside], tc, ty)
+                n[inside] += 1
+            have = n > 0
+            if not have.any():
+                continue
+            # the middle of the line's Deck tracks, smoothed along each covered run (SNAP_SMOOTH_M), so a track that
+            # ends before its pair does not step the centre
+            dx, dy = np.zeros(len(cs)), np.zeros(len(cs))
+            w = max(1, int(round(SNAP_SMOOTH_M / STEP)))
+            k = 0
+            while k < len(cs):
+                if not have[k]:
+                    k += 1
+                    continue
+                j = k
+                while j + 1 < len(cs) and have[j + 1]:
+                    j += 1
+                cx, cy = sx[k:j + 1] / n[k:j + 1], sy[k:j + 1] / n[k:j + 1]
+                ker = np.ones(2 * w + 1) / (2 * w + 1)
+                cx = np.convolve(np.pad(cx, w, mode='edge'), ker, 'valid')
+                cy = np.convolve(np.pad(cy, w, mode='edge'), ker, 'valid')
+                dx[k:j + 1], dy[k:j + 1] = cx - px[k:j + 1], cy - py[k:j + 1]
+                k = j + 1
+            # past the covered runs the shift tapers back to the Profiles path over SNAP_TAPER_M
+            hc = cs[have]
+            for k in np.nonzero(~have)[0]:
+                j = int(np.argmin(np.abs(hc - cs[k])))
+                kk = int(np.nonzero(have)[0][j])
+                f_ = max(0.0, 1 - abs(cs[k] - hc[j]) / SNAP_TAPER_M)
+                dx[k], dy[k] = dx[kk] * f_, dy[kk] * f_
+            L[lid]['S'][pi] = [(s_[0], float(x + ddx), float(y + ddy)) + tuple(s_[3:]) for s_, x, y, ddx, ddy in zip(piece, px, py, dx, dy)]
+            moved.append((pi, cs, dx, dy))
+        # the tracks' offsets from the moved centre; stations move with their line
+        for t in ts:
+            tc, tx, ty = np.array(dec_(t['c'], 10)), np.array(dec_(t['x'], 10)), np.array(dec_(t['y'], 10))
+            offs = np.array(dec_(t['off'], 100))
+            for pi, cs, dx, dy in moved:
+                piece = L[lid]['S'][pi]
+                for k in range(len(tc)):
+                    if cs[0] <= tc[k] <= cs[-1]:
+                        i = int(np.clip(np.searchsorted(cs, tc[k]), 0, len(cs) - 1))
+                        res = on_line([(q[0], q[1], q[2]) for q in piece[max(0, i - 2):i + 3]], min(i, 2), (tx[k], ty[k]))
+                        if res is not None:
+                            offs[k] = res[1]
+            t['off'] = enc(list(offs), 100)
+        for st in L[lid]['stations']:
+            for pi, cs, dx, dy in moved:
+                if cs[0] <= st['c'] <= cs[-1]:
+                    k = int(np.argmin(np.abs(cs - st['c'])))
+                    st['x'], st['y'] = r2(st['x'] + dx[k]), r2(st['y'] + dy[k])
+                    break
+    # fold-backs left in the Profiles paths (a drawing error in the editor's line), listed
+    for lid, l in L.items():
+        bad = []
+        for piece in l['S']:
+            for k in range(2, len(piece) - 2):
+                u = (piece[k][1] - piece[k - 2][1], piece[k][2] - piece[k - 2][2])
+                v = (piece[k + 2][1] - piece[k][1], piece[k + 2][2] - piece[k][2])
+                la, lb = math.hypot(*u), math.hypot(*v)
+                if la > 1 and lb > 1 and (u[0] * v[0] + u[1] * v[1]) / la / lb < -0.5 and not any(abs(piece[k][0] - c) < 50 for c in bad):
+                    bad.append(piece[k][0])
+        if bad:
+            issues.append(f"{l['name']}: the Profiles path folds back on itself at c {', '.join(f'{c:.0f}' for c in bad[:6])} with no Deck track to follow there (a drawing error in the line)")
+    near_line.clear()
+    near_line.update({lid: Near() for lid in L})
+    for lid, l in L.items():
+        for pi, piece in enumerate(l['S']):
+            for i, s_ in enumerate(piece):
+                near_line[lid].add(s_[1], s_[2], (pi, i))
 
     # interlined pairs (RER A/D, B D, B C E ...) are drawn once, on the line most of the pair follows, striped in every
     # line's colour (Ben, 2026-10-27): 'il' on that line's samples (1 + the index in 'interline'); the other lines are
@@ -460,7 +570,7 @@ def main():
         for piece in l['S']:
             sh, il = [], []
             for s_ in piece:
-                own, _ = own_near[lid].near(s_[1], s_[2], 10)
+                own, _ = own_near[lid].near(s_[1], s_[2], 30)
                 oth, _ = (None, 0) if own is not None else other_near.near(s_[1], s_[2], 10)
                 w, _ = (None, 0) if own is not None else il_near.near(s_[1], s_[2], INTERLINE_M)
                 sh.append(1 if (own is None and ((oth and oth != lid and L[oth]['sys'] == l['sys']) or (w and lid in w))) else 0)

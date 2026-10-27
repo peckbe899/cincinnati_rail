@@ -66,6 +66,16 @@ Ben's rulings, in `tools/make_profile_context.py` (`structure_types()`, `upper_d
 - `rer/alignments/RER_4.json`: RER-4's profile north of Camp Washington on that upper deck and tunnel (`tools/make_rer4_upper.py`; not saved in the page). The RER-4 configs name it.
 - RER-2 and RER-4 from the trunk to Union Terminal follow the Mill Creek Deck's B/D route (`tools/repath_rer_bd_trunk.py`, from `data/deck/context.json`): the old KMZ line ran up to 237 m west of it. RER-2 c 7,040-11,570 became 4,717 m (+187.2 m past it), RER-4 c 6,966-12,842 became 6,061 m (+185.9 m). Arlington, Camp Washington, Straight, Western and (RER-4) Union Terminal at the Deck's station points; ground re-sampled; crossings recomputed (A now crosses B/D twice at the box); the saved RER-2 profile shifted. `rer/repath_bd_trunk.json` holds the chainage map. The configs still follow the KMZ track, so the designed core now covers about 2% less of each RER-2 / RER-4 route (the re-pathed stretch is more than 30 m from the KMZ line). Rerunning `tools/make_rer_profile_lines.py` would undo the re-path.
 
+## Locked stretches (2026-10-27)
+
+Ben: the B/D viaduct heights in the page must match the changes above and be locked. `rer/canon.json` lines may carry `locked`: `[{c0, c1, st: {station: rail}, pvi: [[c, z]], ovr: [[from, to, type]], src}]`. Inside a lock the page (`applyLocks()`) and `railsim/metro_profile.py` (`_apply_locks()`) put back the locked bend points, station levels (level platforms, not slid or removed) and painted structure, whatever a saved profile says; the page will not drag, nudge or type into a locked station or bend point, draws the stretch shaded and lists it under Canon structure. Written by `tools/make_rer4_upper.py`:
+
+- RER-2 (B): from the Northside / Spring Grove platform (the viaduct end) to the Straight platform: Northside 162.5, Arlington 165.9, Camp Washington 165.2, Straight 151.64 m, straight grades between.
+- RER-4 (D): from the Straight platform to the Floridian portal: the B/D pair to Camp Washington, the 2.5% climb to the upper deck (174.5 m), level to the hillside, the tunnel grade to the portal (186 m).
+- From Union Terminal to Camp Washington D takes B's station levels with no bend points between them, so the two are the same rail on the shared pair (within 3 mm); south of Straight this is not locked.
+
+Published to the page (version 34) with the re-pathed lines and the context; the page's saved RER-2 profile moved onto the new path and RER-4's saved (`alignments/RER_2`, `RER_4`).
+
 ## Update prompt (2026-10-26)
 
 > Pull the profiles-cut-norwood-context branch. data/profile was brought to the Rail Profiles page's state (README "CUT and Norwood Central context"): new context/lines.json, canon and settings changes, Line 3's Norwood end re-pathed, saved profiles re-exported. metro_profile.py now reads the context (Deck re-grades in the ground, painted cut-and-cover fill, context_clearances()). Run the tests and the Metro and RER configs, and report the run-time changes and the context clashes.
