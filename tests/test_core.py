@@ -309,7 +309,8 @@ def test_metro_profile_port_matches_saved_page_output():
     fixture = Path(__file__).resolve().parent / "data/Line_1_saved_2026-10-06.json"
     doc = json.loads(fixture.read_text())
     # the page as it was when saved: straight grades, no era cover rule, 500 ft platforms
-    mp = MetroProfile.load(root / "lines/Line_1.json", fixture,
+    # Line 1's path then (before it was tied to the Deck's pieces, 27 October)
+    mp = MetroProfile.load(Path(__file__).resolve().parent / "data/Line_1_line_2026-10-06.json", fixture,
                            root / "settings.json",
                            settings_override={"vcRadius": 0.0, "minCover_override": -1e9, "trough_override": -1e9,
                                               "platform": 152.4})
@@ -461,11 +462,12 @@ def test_platform_curvature_fit():
 
 def test_drawing_corner_flags():
     """Drawing checks: Line 1's 6th St platform sits on an S-curve (an error whatever the fitted
-    radius); the piece joins with gaps show up as join kinks or doubling back."""
+    radius); the piece joins with gaps show up as join kinks or doubling back (Line 1 as drawn from the KMZ, before it
+    was tied to the Deck's pieces)."""
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
-    mp = MetroProfile.load(root / "lines/Line_1.json", None, root / "settings.json", settings_override={"platform": 152.4})
+    mp = MetroProfile.load(Path(__file__).resolve().parent / "data/Line_1_line_2026-10-06.json", None, root / "settings.json", settings_override={"platform": 152.4})
     sixth = next(p for p in mp.platform_curves() if p["name"].strip() == "6th")
     assert sixth["scurve"] == "error"
     kinds = {f["kind"] for f in mp.drawing_flags()}
@@ -513,7 +515,10 @@ def test_cut_norwood_context():
     assert all(z == 178.0 for _, z in nw["p"])
     cm = (nw["c0"] + nw["c1"]) / 2
     assert float(l14.ground_at(cm)) == pytest.approx(178.0 - 0.8, abs=0.01)  # the cut floor
-    assert all(x["ok"] for x in l14.context_clearances())
+    # since 27 October its Norwood Central platform is the Deck's, past the north end of the cut: the default profile
+    # (no saved profile) holds the station 4.7 m over the tracks' level, short of the 7.8 m a line under them needs
+    x = [x for x in l14.context_clearances() if not x["ok"]]
+    assert x and all(y["with"] == "Norwood Central tracks" for y in x)
     # painted cut and cover: the box keeps its level and the ground is filled to roof + cover
     l9 = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json")
     s0 = l9.stations[3]["c"]
@@ -567,22 +572,26 @@ def test_locked_stretch_holds():
 
 
 def test_rer_routes_follow_deck():
-    """Every RER route of the Rail Profiles page is its Mill Creek Deck pieces (Ben, 27 October): rebuilt from the
-    Deck snapshot in data/deck, each path and each seg's length agree within tools/rer_deck_routes.TOL. A failure
-    means the Deck or a route changed: run tools/rer_deck_routes.py --apply and republish the page."""
-    import json
+    """Every RER route and Metro line of the Rail Profiles page is its Mill Creek Deck pieces (Ben, 27 October): rebuilt
+    from the Deck snapshot in data/deck, each path and each seg's length agree within tools/rer_deck_routes.TOL, and each
+    station's platform (its point plus the saved slide) is at its Deck platform's centre. A failure means the Deck or a
+    route changed: run tools/rer_deck_routes.py --apply and republish the page."""
     import sys
     from pathlib import Path
     root = Path(__file__).resolve().parent.parent
     sys.path.insert(0, str(root / "tools"))
     import rer_deck_routes as rdr
-    pieces = rdr.deck_pieces()
-    bad = []
-    for e in json.loads((root / "data/profile/rer/lines/index.json").read_text()):
-        r = json.loads((root / "data/profile/rer/lines" / (e["id"] + ".json")).read_text())
+    pieces, platforms = rdr.deck_pieces(), rdr.deck_platforms()
+    bad, n = [], 0
+    for rid, fn, al in rdr.routes():
+        r = rdr.jload(fn)
+        if not r.get("segs"):
+            continue
+        n += 1
         xy, segs, _ = rdr.rebuild(r, pieces)
         d, dl = rdr.drift(r, xy)
-        dseg = max(abs((n["c1"] - n["c0"]) - (o["c1"] - o["c0"])) for o, n in zip(r["segs"], segs))
-        if max(d, dseg, abs(dl)) > rdr.TOL:
-            bad.append((e["id"], round(d, 2), round(dl, 2), round(dseg, 2)))
-    assert not bad, bad
+        dseg = max(abs((n_["c1"] - n_["c0"]) - (o["c1"] - o["c0"])) for o, n_ in zip(r["segs"], segs))
+        sd = rdr.station_drift(r, platforms, rdr.slides(r, rdr.saved_doc(rid, al, None)))
+        if max(d, dseg, abs(dl)) > rdr.TOL or sd:
+            bad.append((rid, round(d, 2), round(dl, 2), round(dseg, 2), sd))
+    assert n >= 39 and not bad, bad

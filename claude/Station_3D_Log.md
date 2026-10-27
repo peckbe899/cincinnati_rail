@@ -95,3 +95,12 @@ Published: page version 6 and the snapshot (35 parts), read back at view level.
 - New issues: shared stretches whose two routes' saved levels differ (C CVG on B CVG 6.9 m, C Withamsville on C Eastgate 6.0 m), and the far-west A/D track, which the page's links do not list as shared (D trunk 23.4 m off the A Westwood branch). Fountain Square A/D now 155.85 m (the trunks' saved profiles; RER-1 had 156.56 m).
 - Snapshot published (39 parts).
 
+
+## 2026-10-27: Metro lines and platforms tied to the Deck
+
+- Ben: the Profiles ROW must match the Deck's and station positions matter, for Metro "arguably moreso". Every Metro line except CVG Express is now built from the Deck's Metro pieces (`segs`), checked and applied by `tools/rer_deck_routes.py` with the RER routes.
+- Decision: a platform's position is the Deck platform's centre; the Profiles station point goes there and its saved slide is reset (the Profiles and Deck slides disagreed, e.g. Xavier -60 m vs -37 m). Ben's slides on Lines 1, 2, 4, 5 and on A Xavier / B Rivercenter were reset.
+- The sync now also lists platforms off their Deck platform. None after the apply.
+- Line 14's default profile clashes with the Norwood tracks after its platform moved to the Deck's (reported, not fixed: Line 14 has no saved profile).
+- North arch viaduct context trimmed to the APEx tracks: RER A's false clash under it is gone.
+- Rail Profiles page version 39; snapshot published (38 parts, gtiles-2 removed).

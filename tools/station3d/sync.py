@@ -311,6 +311,7 @@ def main():
     live = os.path.join(a.cache, 'deck_live.geojson')
     json.dump(H['deck'], open(live, 'w'))
     pieces = rdr.deck_pieces(geojson=live)
+    plats = rdr.deck_platforms(geojson=live)
     for lid, d in lines.items():
         if not d.get('segs'):
             continue
@@ -322,6 +323,10 @@ def main():
             continue
         if max(dd, abs(dl)) > rdr.TOL:
             issues.append(f"{d['line']}: the route is up to {dd:.1f} m off the Deck's pieces ({dl:+.1f} m long); run tools/rer_deck_routes.py --apply and republish the Rail Profiles page")
+        doc = os.path.join(a.cache, 'db/profiles_db/alignments', lid + '.json')
+        sd = rdr.station_drift(d, plats, rdr.slides(d, json.load(open(doc)) if os.path.exists(doc) else None))
+        if sd:
+            issues.append(f"{d['line']}: {len(sd)} platforms off their Deck platform's centre (" + ', '.join(f'{n} {t - c:+.0f} m' for n, c, t in sd[:6]) + "); run tools/rer_deck_routes.py --apply")
     if maps:
         issues.append(', '.join(lines[l]['line'] for l in sorted(maps)) + ": paths from the repo, re-pathed onto the Deck's B/D route from the "
                       "trunk to Union Terminal (Ben, 2026-10-27; tools/repath_rer_bd_trunk.py); the Rail Profiles editor still has the old "

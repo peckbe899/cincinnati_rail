@@ -43,7 +43,7 @@ A page can read only its own database, so the Rail Profiles editor and the Mill 
 1. Fetch the editors' published files with the Artifact tool (`action: read`, `paths`, `out_dir` = `tools/station3d/cache/profiles` and `.../deck`). The Profiles page needs `index.html` and every `lines/`, `rer/` and `network.json` file; the Deck needs `index.html` and its JSON files (tiles are not needed).
 2. Fetch the saved records with ArtifactData (`out_dir` = `tools/station3d/cache/db/profiles_db` for collection `alignments` and `config`, `.../deck_db` for `deck/layout`).
 3. Write `cache/versions.json` with the versions those reads reported (optional, kept in the snapshot's `sources`).
-4. `python3 sync.py` (needs numpy and node with Playwright; about a minute). It prints the Fountain Square levels, counts, part sizes and the issues.
+4. `python3 sync.py` (needs numpy and node with Playwright; about a minute). It prints the Fountain Square levels, counts, part sizes and the issues. It also checks every RER route and Metro line against the live Deck (`tools/rer_deck_routes.py`: path within 0.5 m of the Deck's pieces, each platform at its Deck platform's centre) and lists any that are off; fetch `alignments` fresh first, since the platform check reads the saved slides.
 5. Write the parts in `cache/db_out/` under `snapshots/region/parts` (ArtifactData batches of four: a document holds at most 256 KiB, a batch 1 MiB; pin existing ones to their version), delete parts whose names are no longer in the list, then write `meta.json` as `snapshots/region` last. Open pages redraw on their own.
 
 Scheduled runs have not been tried.

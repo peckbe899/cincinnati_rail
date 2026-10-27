@@ -68,6 +68,10 @@ def build():
     SUM = T['summary']; DV = SUM['dive']
     feat = lambda layer: [f for f in T['features'] if f['properties'].get('layer') == layer]
     stru = {f['properties']['name']: shape(f['geometry']) for f in ST['features'] if f['properties'].get('name')}
+    # the Deck's north arch viaduct polygon also takes in RER A's own viaduct (to Western Hills and South Cumminsville):
+    # the APEx structure is the part within 12 m of an APEx track (RER A is not checked against its own viaduct)
+    apex_lines = unary_union([shape(f['geometry']) for f in T['features'] if f['properties'].get('layer') == 'apex'])
+    stru['North arch viaduct'] = stru['North arch viaduct'].intersection(apex_lines.buffer(12.0))
     RER_BOX, TROUGH, VIA = (1.0, 6.6), (0.8, 5.8), (1.6, 5.8)
     S = []
     def add(name, kind, geom, z, hb, src, short, plats=(), excl=(), cut=False):
@@ -119,13 +123,13 @@ def build():
         'Deck: APEx platforms 160.3 m, level with the rotunda (10l.19, 10l.24); arches drawn to the street, no footing check (Ben, 26 October)', 'CUT platform deck', plats=[(p, 160.3) for p in ap], excl=('CVG_Express',))
     add('CUT approach viaduct (south)', 'viaduct', stru['CUT approach viaduct (south)'], apex_z, VIA, 'Deck: APEx 160.3 m at CUT, 161.7 m over W 8th, 163.4 m over W 6th, 164.0 m at the bridge', 'CUT approach viaduct', excl=('CVG_Express',))
     add('North arch viaduct', 'viaduct', stru['North arch viaduct'], apex_z, VIA,
-        'Deck: one level, APEx 161.1 m over W Liberty, 164.5 m over Marshall, 166.6 m at the deck tip, 162.5 m at Ludlow (North Viaduct Plan); the upper level (Indianapolis and D, to 174.3 m) is not drawn', 'North arch viaduct', excl=('RER_2', 'RER_4'))
+        'Deck: one level, APEx 161.1 m over W Liberty, 164.5 m over Marshall, 166.6 m at the deck tip, 162.5 m at Ludlow (North Viaduct Plan); the upper level (Indianapolis and D, to 174.3 m) is not drawn', 'North arch viaduct', excl=('RER_2', 'RER_4', 'RER_B_trunk', 'RER_D_trunk'))
     fa, fb = (712678.0, 4336948.0, 162.5), (713475.0, 4337351.0, 152.0)
     def fill_z(x, y):
         t = ((x - fa[0]) * (fb[0] - fa[0]) + (y - fa[1]) * (fb[1] - fa[1])) / ((fb[0] - fa[0]) ** 2 + (fb[1] - fa[1]) ** 2)
         return fa[2] + clamp01(t) * (fb[2] - fa[2])
     clamp01 = lambda t: max(0.0, min(1.0, t))
-    add('North trunk fill (Northside / Spring Grove to ground)', 'fill', stru['North trunk fill (Northside / Spring Grove to ground)'], fill_z, VIA, 'Deck: fill from the viaduct end (162.5 m at Ludlow) back to ground, 152.0 m', 'North trunk fill', excl=('RER_2', 'RER_4'))
+    add('North trunk fill (Northside / Spring Grove to ground)', 'fill', stru['North trunk fill (Northside / Spring Grove to ground)'], fill_z, VIA, 'Deck: fill from the viaduct end (162.5 m at Ludlow) back to ground, 152.0 m', 'North trunk fill', excl=('RER_2', 'RER_4', 'RER_B_trunk', 'RER_D_trunk'))
     # ---- Norwood Central: surface tracks in a cut and the ORR / APEx trench ----
     nwf = {f['properties'].get('name'): f for f in NW['features'] if f['properties'].get('name')}
     T7 = LineString(nwf['APEx through track (north)']['geometry']['coordinates'])
@@ -234,11 +238,11 @@ def upper_deck(S, T, apex_z):
                   kind='viaduct', st='viaduct', upper=True, geom=deck, z=z, below=VIA[0], top=VIA[1], open=True, plats=[], gaps=[], cut=False,
                   src=f'Ben, 27 October: the upper deck at the minimum height over the lower deck, {UPPER_CLEAR} m over its highest rail '
                       f'({H:.1f} m; the Deck had 6.6 m), climbing at {UPPER_GRADE * 100:.1f}% from the Deck s 3,644, held west to the hillside',
-                  excl={'RER_4'}, fam='apex'))
+                  excl={'RER_4', 'RER_D_trunk'}, fam='apex'))
     S.append(dict(name='Indianapolis APEx and RER D: hillside tunnel to the Floridian portal', short='Floridian hillside tunnel',
                   kind='box', st='box', geom=tun, z=z, below=BOX[0], top=BOX[1], open=False, plats=[], gaps=[], cut=False,
                   src=f'Ben, 27 October: from the hillside ({H:.1f} m) at a constant grade, {(z_p - H) / (d_p - d_h) * 100:.2f}%, to the ground at '
-                      f'the portal, about {z_p:.0f} m (39 9 25.61 N, 84 34 0.60 W)', excl={'RER_4'}, fam='apex'))
+                      f'the portal, about {z_p:.0f} m (39 9 25.61 N, 84 34 0.60 W)', excl={'RER_4', 'RER_D_trunk'}, fam='apex'))
     # the lower deck stops at the hillside
     nv = next(st for st in S if st['short'] == 'North arch viaduct')
     nv['geom'] = nv['geom'].difference(substring(ref, d_h, ref.length + 50).buffer(60, cap_style=2))
