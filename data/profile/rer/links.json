@@ -1,0 +1,483 @@
+{
+ "note": "RER trunks and branches (Ben, 27 October 2026): a junction is one level for every route through it (a bend point at the same chainage point, or the station level where the junction is inside a platform); a shared stretch is the same track carried by two lines, edited once and copied to the other.",
+ "shared": [
+  {
+   "a": "RER_A_trunk",
+   "b": "RER_D_trunk",
+   "ca": [
+    1747.4,
+    4478.1
+   ],
+   "cb": [
+    4867.7,
+    2137.1
+   ],
+   "sign": -1,
+   "pieces": [
+    "R-AD-713024-4331860"
+   ]
+  },
+  {
+   "a": "RER_B_cvg",
+   "b": "RER_C_cvg",
+   "ca": [
+    14333.4,
+    16406.4
+   ],
+   "cb": [
+    3671.0,
+    5744.0
+   ],
+   "sign": 1,
+   "pieces": [
+    "R-BCE-704295-4325699"
+   ]
+  },
+  {
+   "a": "RER_B_cvg",
+   "b": "RER_E_cvg",
+   "ca": [
+    7080.7,
+    16406.4
+   ],
+   "cb": [
+    0.0,
+    9325.7
+   ],
+   "sign": 1,
+   "pieces": [
+    "R-BE-710273-4325127",
+    "R-BE-709351-4324281",
+    "R-BE-709254-4324211",
+    "R-BCE-704295-4325699"
+   ]
+  },
+  {
+   "a": "RER_B_trunk",
+   "b": "RER_D_trunk",
+   "ca": [
+    15725.7,
+    19037.4
+   ],
+   "cb": [
+    8345.6,
+    5033.9
+   ],
+   "sign": -1,
+   "pieces": [
+    "R-BD-712316-4334957"
+   ]
+  },
+  {
+   "a": "RER_C_cvg",
+   "b": "RER_E_cvg",
+   "ca": [
+    3671.0,
+    5744.0
+   ],
+   "cb": [
+    7252.7,
+    9325.7
+   ],
+   "sign": 1,
+   "pieces": [
+    "R-BCE-704295-4325699"
+   ]
+  }
+ ],
+ "junctions": [
+  {
+   "id": "J00",
+   "p": [
+    712364.1,
+    4333117.2
+   ],
+   "members": [
+    {
+     "r": "RER_A_trunk",
+     "c": 0.0,
+     "sign": 1
+    },
+    {
+     "r": "RER_A_westwood",
+     "c": 0.0,
+     "sign": -1
+    },
+    {
+     "r": "RER_A_cumminsville",
+     "c": 0.0,
+     "sign": -1
+    }
+   ]
+  },
+  {
+   "id": "J01",
+   "p": [
+    718350.4,
+    4336032.9
+   ],
+   "members": [
+    {
+     "r": "RER_A_trunk",
+     "c": 10769.2,
+     "sign": 1,
+     "st": "Xavier"
+    },
+    {
+     "r": "RER_A_milford",
+     "c": 0.0,
+     "sign": 1
+    },
+    {
+     "r": "RER_A_blueash",
+     "c": 0.0,
+     "sign": 1
+    }
+   ]
+  },
+  {
+   "id": "J02",
+   "p": [
+    711715.4,
+    4336932.7
+   ],
+   "members": [
+    {
+     "r": "RER_A_cumminsville",
+     "c": 3942.0,
+     "sign": 1
+    },
+    {
+     "r": "RER_A_wyoming",
+     "c": 0.0,
+     "sign": 1
+    },
+    {
+     "r": "RER_A_colerain",
+     "c": 0.0,
+     "sign": 1
+    }
+   ]
+  },
+  {
+   "id": "J03",
+   "p": [
+    715066.4,
+    4328832.2
+   ],
+   "members": [
+    {
+     "r": "RER_B_trunk",
+     "c": 24331.6,
+     "sign": 1,
+     "st": "Covington Union"
+    },
+    {
+     "r": "RER_B_cvg",
+     "c": 0.0,
+     "sign": 1
+    },
+    {
+     "r": "RER_B_latonia",
+     "c": 0.0,
+     "sign": 1
+    }
+   ]
+  },
+  {
+   "id": "J04",
+   "p": [
+    716400.9,
+    4325425.3
+   ],
+   "members": [
+    {
+     "r": "RER_B_latonia",
+     "c": 3733.2,
+     "sign": 1,
+     "st": "Latonia"
+    },
+    {
+     "r": "RER_B_decoursey",
+     "c": 0.0,
+     "sign": 1
+    },
+    {
+     "r": "RER_B_highland",
+     "c": 0.0,
+     "sign": 1
+    }
+   ]
+  },
+  {
+   "id": "J05",
+   "p": [
+    706673.8,
+    4327956.7
+   ],
+   "members": [
+    {
+     "r": "RER_C_trunk",
+     "c": 0.0,
+     "sign": 1
+    },
+    {
+     "r": "RER_C_saylerpark",
+     "c": 0.0,
+     "sign": -1
+    },
+    {
+     "r": "RER_C_cvg",
+     "c": 0.0,
+     "sign": -1
+    }
+   ]
+  },
+  {
+   "id": "J06",
+   "p": [
+    732751.4,
+    4327212.9
+   ],
+   "members": [
+    {
+     "r": "RER_C_trunk",
+     "c": 34819.8,
+     "sign": 1
+    },
+    {
+     "r": "RER_C_eastgate",
+     "c": 0.0,
+     "sign": 1
+    },
+    {
+     "r": "RER_C_withamsville",
+     "c": 0.0,
+     "sign": 1
+    }
+   ]
+  },
+  {
+   "id": "J07",
+   "p": [
+    717458.9,
+    4330612.1
+   ],
+   "members": [
+    {
+     "r": "RER_D_trunk",
+     "c": 0.0,
+     "sign": 1
+    },
+    {
+     "r": "RER_D_ross",
+     "c": 0.0,
+     "sign": -1
+    },
+    {
+     "r": "RER_D_coldspring",
+     "c": 0.0,
+     "sign": -1
+    }
+   ]
+  },
+  {
+   "id": "J08",
+   "p": [
+    710084.0,
+    4324980.9
+   ],
+   "members": [
+    {
+     "r": "RER_E_trunk",
+     "c": 37253.8,
+     "sign": 1
+    },
+    {
+     "r": "RER_E_cvg",
+     "c": 0.0,
+     "sign": 1
+    },
+    {
+     "r": "RER_B_cvg",
+     "c": 7080.7,
+     "sign": 1
+    }
+   ]
+  },
+  {
+   "id": "J09",
+   "p": [
+    708147.5,
+    4321882.1
+   ],
+   "members": [
+    {
+     "r": "RER_E_kenton",
+     "c": 2699.4,
+     "sign": 1
+    },
+    {
+     "r": "RER_E_williamstown",
+     "c": 0.0,
+     "sign": 1,
+     "st": "Edgewood"
+    },
+    {
+     "r": "RER_E_napoleon",
+     "c": 0.0,
+     "sign": 1,
+     "st": "Edgewood"
+    }
+   ]
+  },
+  {
+   "id": "J10",
+   "p": [
+    709350.8,
+    4324280.7
+   ],
+   "members": [
+    {
+     "r": "RER_E_kenton",
+     "c": 0.0,
+     "sign": 1
+    },
+    {
+     "r": "RER_E_cvg",
+     "c": 1013.9,
+     "sign": 1
+    },
+    {
+     "r": "RER_B_cvg",
+     "c": 8094.6,
+     "sign": 1
+    }
+   ]
+  },
+  {
+   "id": "J11",
+   "p": [
+    713024.1,
+    4331860.3
+   ],
+   "members": [
+    {
+     "r": "RER_A_trunk",
+     "c": 1747.4,
+     "sign": 1
+    },
+    {
+     "r": "RER_D_trunk",
+     "c": 4867.7,
+     "sign": -1
+    }
+   ]
+  },
+  {
+   "id": "J12",
+   "p": [
+    715466.5,
+    4331118.9
+   ],
+   "members": [
+    {
+     "r": "RER_A_trunk",
+     "c": 4478.1,
+     "sign": 1
+    },
+    {
+     "r": "RER_D_trunk",
+     "c": 2137.1,
+     "sign": -1
+    }
+   ]
+  },
+  {
+   "id": "J13",
+   "p": [
+    704085.3,
+    4325699.7
+   ],
+   "members": [
+    {
+     "r": "RER_B_cvg",
+     "c": 14333.4,
+     "sign": 1
+    },
+    {
+     "r": "RER_C_cvg",
+     "c": 3671.0,
+     "sign": 1
+    },
+    {
+     "r": "RER_E_cvg",
+     "c": 7252.7,
+     "sign": 1
+    }
+   ]
+  },
+  {
+   "id": "J14",
+   "p": [
+    702023.8,
+    4325538.4
+   ],
+   "members": [
+    {
+     "r": "RER_B_cvg",
+     "c": 16406.4,
+     "sign": 1
+    },
+    {
+     "r": "RER_C_cvg",
+     "c": 5744.0,
+     "sign": 1
+    },
+    {
+     "r": "RER_E_cvg",
+     "c": 9325.7,
+     "sign": 1
+    }
+   ]
+  },
+  {
+   "id": "J15",
+   "p": [
+    712299.5,
+    4334891.5
+   ],
+   "members": [
+    {
+     "r": "RER_B_trunk",
+     "c": 15725.7,
+     "sign": 1
+    },
+    {
+     "r": "RER_D_trunk",
+     "c": 8345.6,
+     "sign": -1
+    }
+   ]
+  },
+  {
+   "id": "J16",
+   "p": [
+    712858.1,
+    4331867.9
+   ],
+   "members": [
+    {
+     "r": "RER_B_trunk",
+     "c": 19037.4,
+     "sign": 1
+    },
+    {
+     "r": "RER_D_trunk",
+     "c": 5033.9,
+     "sign": -1
+    }
+   ]
+  }
+ ]
+}

@@ -552,15 +552,37 @@ def test_locked_stretch_holds():
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile/rer"
-    lk = json.loads((root / "canon.json").read_text())["lines"]["RER_2"]["locked"][0]
-    doc = json.loads((root / "alignments/RER_2.json").read_text())
+    lk = next(x for x in json.loads((root / "canon.json").read_text())["lines"]["RER_A_trunk"]["locked"] if "Evans" in x["st"])
+    doc = json.loads((root / "alignments/RER_A_trunk.json").read_text())
     inside, outside = (lk["c0"] + lk["c1"]) / 2, lk["c1"] + 2000.0
-    doc["st"]["Arlington"] = lk["st"]["Arlington"] + 5.0
+    doc.setdefault("st", {})["Evans"] = lk["st"]["Evans"] + 5.0
     doc["pvi"] = doc["pvi"] + [[inside, 170.0], [outside, 150.0]]
     with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
         json.dump(doc, f)
-    mp = MetroProfile.load(root / "lines/RER_2.json", f.name, root / "settings.json")
-    i = next(k for k, s in enumerate(mp.stations) if s["name"] == "Arlington")
-    assert mp.st[i] == pytest.approx(lk["st"]["Arlington"])
+    mp = MetroProfile.load(root / "lines/RER_A_trunk.json", f.name, root / "settings.json")
+    i = next(k for k, s in enumerate(mp.stations) if s["name"] == "Evans")
+    assert mp.st[i] == pytest.approx(lk["st"]["Evans"])
     assert not any(abs(c - inside) < 0.5 for c, _ in mp.pvi)
     assert any(abs(c - outside) < 0.5 for c, _ in mp.pvi)
+
+
+def test_rer_routes_follow_deck():
+    """Every RER route of the Rail Profiles page is its Mill Creek Deck pieces (Ben, 27 October): rebuilt from the
+    Deck snapshot in data/deck, each path and each seg's length agree within tools/rer_deck_routes.TOL. A failure
+    means the Deck or a route changed: run tools/rer_deck_routes.py --apply and republish the page."""
+    import json
+    import sys
+    from pathlib import Path
+    root = Path(__file__).resolve().parent.parent
+    sys.path.insert(0, str(root / "tools"))
+    import rer_deck_routes as rdr
+    pieces = rdr.deck_pieces()
+    bad = []
+    for e in json.loads((root / "data/profile/rer/lines/index.json").read_text()):
+        r = json.loads((root / "data/profile/rer/lines" / (e["id"] + ".json")).read_text())
+        xy, segs, _ = rdr.rebuild(r, pieces)
+        d, dl = rdr.drift(r, xy)
+        dseg = max(abs((n["c1"] - n["c0"]) - (o["c1"] - o["c0"])) for o, n in zip(r["segs"], segs))
+        if max(d, dseg, abs(dl)) > rdr.TOL:
+            bad.append((e["id"], round(d, 2), round(dl, 2), round(dseg, 2)))
+    assert not bad, bad

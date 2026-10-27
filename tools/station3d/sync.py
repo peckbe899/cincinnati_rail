@@ -61,8 +61,11 @@ ASSUMED = ['box walls 2.3 m (Metro) and 3.25 m (TRI) outside the outer track cen
            'TRI bored tubes 8.5 m outside diameter, one per track', 'platform tops 1.0 m above the rail',
            'ground: a 200 m grid averaged from the Profiles ground along every line, filled out to 1.6 km from the lines']
 # RER line to TRI letter (rer/canon.json: RER-n is TRI by KMZ colour, 1 A ... 5 E)
+# the RER lines by TRI letter: the old cores (RER_1..5), or since 27 October each letter's trunk and branches (the
+# Profiles page's rer/lines/index.json gives each route its letter); set by load_lines
 RER_LETTER = {'RER_1': 'A', 'RER_2': 'B', 'RER_3': 'C', 'RER_4': 'D', 'RER_5': 'E'}
-LETTER_RER = {v: k for k, v in RER_LETTER.items()}
+LETTER_RER = {v: [k] for k, v in RER_LETTER.items()}
+TRUNK = {v: k for k, v in RER_LETTER.items()}   # the route at Union Terminal for each letter
 
 
 def structure(line_id, t):
@@ -197,7 +200,15 @@ def load_lines(cache, overlay=None):
     out = {}
     for sysk, idx in (('metro', 'lines/index.json'), ('rer', 'rer/lines/index.json')):
         rd = lambda rel: json.load(open((overlay or {}).get(rel) or os.path.join(cache, 'profiles', rel)))
-        for l in rd(idx):
+        ix = rd(idx)
+        if sysk == 'rer' and any(l.get('letter') for l in ix):
+            RER_LETTER.clear(), LETTER_RER.clear(), TRUNK.clear()
+            for l in ix:
+                RER_LETTER[l['id']] = l['letter']
+                LETTER_RER.setdefault(l['letter'], []).append(l['id'])
+                if l.get('kind') == 'trunk':
+                    TRUNK[l['letter']] = l['id']
+        for l in ix:
             d = rd(os.path.dirname(idx) + '/' + l['id'] + '.json')
             d['sys'] = 'cvx' if l['id'] == 'CVG_Express' else sysk
             out[l['id']] = d
@@ -213,7 +224,7 @@ def deck_ids(sys_, label, by_id):
         ids = ['Line_' + label.split('Line ')[-1].strip()] if 'Line ' in label else []
     else:
         letters = label.replace('RER', '').replace('/', ' ').split()
-        ids = [LETTER_RER[x] for x in letters if x in LETTER_RER]
+        ids = [i for x in letters for i in LETTER_RER.get(x, [])]
     return [i for i in ids if i in by_id]
 
 
@@ -294,6 +305,23 @@ def main():
         subprocess.run(['node', os.path.join(HERE, 'harness.js'), a.cache, jf, rf], check=True)
     H = json.load(open(rf))
     issues = []
+    # every RER route is its Deck pieces (tools/rer_deck_routes.py): checked against the live Deck (Ben's edits)
+    sys.path.insert(0, os.path.join(HERE, '..'))
+    import rer_deck_routes as rdr
+    live = os.path.join(a.cache, 'deck_live.geojson')
+    json.dump(H['deck'], open(live, 'w'))
+    pieces = rdr.deck_pieces(geojson=live)
+    for lid, d in lines.items():
+        if not d.get('segs'):
+            continue
+        try:
+            xy, segs, notes = rdr.rebuild(d, pieces)
+            dd, dl = rdr.drift(d, xy)
+        except SystemExit as e:
+            issues.append(f"{d['line']}: {e}")
+            continue
+        if max(dd, abs(dl)) > rdr.TOL:
+            issues.append(f"{d['line']}: the route is up to {dd:.1f} m off the Deck's pieces ({dl:+.1f} m long); run tools/rer_deck_routes.py --apply and republish the Rail Profiles page")
     if maps:
         issues.append(', '.join(lines[l]['line'] for l in sorted(maps)) + ": paths from the repo, re-pathed onto the Deck's B/D route from the "
                       "trunk to Union Terminal (Ben, 2026-10-27; tools/repath_rer_bd_trunk.py); the Rail Profiles editor still has the old "
@@ -352,7 +380,7 @@ def main():
                           "7.9 m over the rails under it (Ben, 2026-10-27); not saved in the Rail Profiles editor")
         elif not h['saved'] and pieces:
             issues.append(f"{d['line']}: no saved alignment in the Profiles editor; drawn from its built-in defaults")
-        name = d['line'] if d['sys'] != 'rer' else f"{d['line']} (TRI {RER_LETTER.get(lid, '?')})"
+        name = d['line'] if d['sys'] != 'rer' or d.get('letter') else f"{d['line']} (TRI {RER_LETTER.get(lid, '?')})"
         L[lid] = {'id': lid, 'name': name, 'sys': d['sys'], 'color': d.get('color'), 'saved': h['saved'],
                   'S': pieces, 'stations': sts, 'deleted': sorted(dels)}
 
@@ -630,7 +658,7 @@ def main():
     ut = [pl for pl in plats if (pl['deck_line'] or '') == 'Union Terminal box' and pl['station'] == 'Union Terminal']
     if len(ut) == 3:
         ctr = lambda pl: (np.mean(dec(pl['x'], 100)), np.mean(dec(pl['y'], 100)))
-        for pl, ids, name in zip(sorted(ut, key=lambda q: -ctr(q)[1]), (['RER_1', 'RER_2'], ['RER_4'], ['RER_2', 'RER_1']),
+        for pl, ids, name in zip(sorted(ut, key=lambda q: -ctr(q)[1]), ([TRUNK['A'], TRUNK['B']], [TRUNK['D']], [TRUNK['B'], TRUNK['A']]),
                                  ('north island, A and B westbound', 'centre island, D', 'south island, B and A eastbound')):
             cx, cy = ctr(pl)
             levels = []
@@ -664,7 +692,7 @@ def main():
         for o in st['stops']:
             ids = deck_ids(st['sys'], o.get('line'), L)
             if not o.get('line') and st['name'] == 'Union Terminal' and st['sys'] == 'rer':
-                ids = ['RER_1', 'RER_2', 'RER_4']   # the TRI box: A, B and D (its islands above)
+                ids = [TRUNK['A'], TRUNK['B'], TRUNK['D']]   # the TRI box: A, B and D (its islands above)
             line_ids.update(ids)
             stops.append({'deck_line': o.get('line'), 'lines': ids, 'type': o.get('type'), 'type_generated': o.get('type_generated'),
                           'ben': o.get('edit'), 'L': o.get('L'), 'slid': r1((o.get('o') or 0) - (o.get('o_generated') or 0)),

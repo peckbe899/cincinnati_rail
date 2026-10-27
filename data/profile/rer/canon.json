@@ -1,5 +1,5 @@
 {
- "note": "RER canon for the Rail Profiles page, tools/make_rer_profile_lines.py and railsim/metro_profile.py (Ben's rulings). RER-n is TRI by KMZ colour: 1 A, 2 B, 3 C, 4 D, 5 E. modes: station 'under' or 'surface' (at grade); fixed: station rail level, 'abs' metres NAVD88 or 'off' metres from ground; sections: canon structure between two stations (m: covered = covered way, cut and cover; deep = deep bore); deck: rail at yard level under a deck, ground = DEM top minus 'drop'. rivers: bed 'dem' = the canon riverbed in the ground raster, else pool minus bed_below_pool_m (no survey); in tunnel the rail stays bed - 9.1 m (RER, sunk box sections) / bed - 7.5 m (Metro twin tubes). 2026-10-26 (Ben): the Union Terminal box is one level for A, B and D (135.7 m); B and D run on the north viaduct (Northside 162.5, Arlington 165.9, Camp Washington 165.2 m) into the Straight box (151.64 m) and the bores to Western; the yard-level deck under the boulevard is gone.",
+ "note": "RER canon for the Rail Profiles page, tools/make_rer_profile_lines.py and railsim/metro_profile.py (Ben's rulings). RER-n is TRI by KMZ colour: 1 A, 2 B, 3 C, 4 D, 5 E. modes: station 'under' or 'surface' (at grade); fixed: station rail level, 'abs' metres NAVD88 or 'off' metres from ground; sections: canon structure between two stations (m: covered = covered way, cut and cover; deep = deep bore); deck: rail at yard level under a deck, ground = DEM top minus 'drop'. rivers: bed 'dem' = the canon riverbed in the ground raster, else pool minus bed_below_pool_m (no survey); in tunnel the rail stays bed - 9.1 m (RER, sunk box sections) / bed - 7.5 m (Metro twin tubes). 2026-10-26 (Ben): the Union Terminal box is one level for A, B and D (135.7 m); B and D run on the north viaduct (Northside 162.5, Arlington 165.9, Camp Washington 165.2 m) into the Straight box (151.64 m) and the bores to Western; the yard-level deck under the boulevard is gone. 2026-10-27 (Ben): the RER profiles are now the trunk and each branch of the lettered lines (A-E) from the Mill Creek Deck, to the region edge (D to Miamitown South); canon moved from RER-1..5 to them by station name and, for locked stretches, by position. RER_1..RER_5: the old cores' canon, kept for the railsim configs that still run on them (the page lists only the trunks and branches).",
  "union_terminal_track_level_m": 154.0,
  "rivers": {
   "Ohio River": {
@@ -19,6 +19,448 @@
   }
  },
  "lines": {
+  "RER_A_trunk": {
+   "modes": {
+    "Union Terminal": {
+     "mode": "under",
+     "src": "All eight crosstown stations underground from 1985"
+    },
+    "City Hall": {
+     "mode": "under",
+     "src": "All eight crosstown stations underground from 1985"
+    },
+    "Fountain Square": {
+     "mode": "under",
+     "src": "All eight crosstown stations underground from 1985"
+    },
+    "Times": {
+     "mode": "under",
+     "src": "All eight crosstown stations underground from 1985"
+    },
+    "Eden Park": {
+     "mode": "under",
+     "src": "All eight crosstown stations underground from 1985"
+    },
+    "Walnut Hills": {
+     "mode": "under",
+     "src": "All eight crosstown stations underground from 1985"
+    },
+    "MLK": {
+     "mode": "under",
+     "src": "All eight crosstown stations underground from 1985"
+    },
+    "Xavier": {
+     "mode": "under",
+     "src": "All eight crosstown stations underground from 1985"
+    }
+   },
+   "fixed": {
+    "Union Terminal": {
+     "abs": 135.7,
+     "src": "Union Terminal TRI box: one level for A, B and D, since A and B change cross-platform (Ben, 26 October); 135.7 m"
+    }
+   },
+   "locked": [
+    {
+     "c0": 0.0,
+     "c1": 1983.4,
+     "st": {
+      "Evans": 147.5,
+      "Union Terminal": 135.7
+     },
+     "pvi": [
+      [
+       0.0,
+       159.3
+      ],
+      [
+       123.1,
+       155.2
+      ],
+      [
+       204.6,
+       152.5
+      ],
+      [
+       330.1,
+       148.4
+      ],
+      [
+       1461.9,
+       135.9
+      ]
+     ],
+     "ovr": [
+      [
+       274.7,
+       334.9,
+       "cutcover"
+      ],
+      [
+       334.9,
+       1558.0,
+       "cutcover"
+      ]
+     ],
+     "src": "RER A from the fork (159.3 m) down its 3.3% walled ramp (Bank 155.2, Dayton 152.5), the box under Exeter, off the deck north of York (148.4 m), Evans 147.5 m under W Liberty, 135.9 m under CUT's lower level, Union Terminal 135.7 m (Deck, Ben 13 October): locked",
+     "by": "Deck RER A"
+    }
+   ]
+  },
+  "RER_B_trunk": {
+   "modes": {
+    "Mitchell Ave / WINTON PLACE": {
+     "mode": "surface",
+     "src": "At grade north of the north viaduct and its fill (North Viaduct Plan)"
+    },
+    "Union Terminal": {
+     "mode": "under",
+     "src": "Underground from Union Terminal into the Washington Park tunnel"
+    },
+    "Roebling": {
+     "mode": "under",
+     "src": "Ohio tube to Rivercenter; depth set by the solver (may sit below RER-3)"
+    },
+    "Rivercenter": {
+     "mode": "under",
+     "src": "Ohio tube from Roebling"
+    }
+   },
+   "fixed": {
+    "Union Terminal": {
+     "abs": 135.7,
+     "src": "Union Terminal TRI box: one level for A, B and D, since A and B change cross-platform (Ben, 26 October); 135.7 m"
+    },
+    "Northside / Spring Grove": {
+     "abs": 162.5,
+     "src": "North viaduct, which ends at this platform end; rails 162.5 m over Ludlow Avenue (North Viaduct Plan; Deck)"
+    },
+    "Arlington": {
+     "abs": 165.9,
+     "src": "B's island on the north viaduct, 165.9 m (North Viaduct Plan; Deck)"
+    },
+    "Camp Washington": {
+     "abs": 165.2,
+     "src": "On the north viaduct, 165.2 m (North Viaduct Plan; Deck)"
+    },
+    "Straight": {
+     "abs": 151.64,
+     "src": "In the box under the viaduct's west side, 151.64 m; open ramp at 3.3% up to Camp Washington (North Viaduct Plan)"
+    }
+   },
+   "locked": [
+    {
+     "c0": 13355.5,
+     "c1": 16712.7,
+     "st": {
+      "Northside / Spring Grove": 162.5,
+      "Arlington": 165.9,
+      "Camp Washington": 165.2,
+      "Straight": 151.64
+     },
+     "pvi": [],
+     "ovr": [],
+     "src": "B on the north viaduct (Northside 162.5, Arlington 165.9, Camp Washington 165.2 m) and the ramp into the Straight box (151.64 m), as the Deck (Ben, 27 October): locked (moved from RER_2 c 5783.6-9146.2 by position, 27 October)"
+    }
+   ]
+  },
+  "RER_C_trunk": {
+   "modes": {
+    "Sedamsville": {
+     "mode": "surface",
+     "src": "At grade, at the west end of the covered way"
+    },
+    "Riverbend/Belterra": {
+     "mode": "surface",
+     "src": "At grade, at the east end of the covered way"
+    },
+    "Asbury": {
+     "mode": "surface",
+     "src": "Back on the ground past the embankment"
+    }
+   },
+   "fixed": {
+    "Mill Creek": {
+     "abs": 144.0,
+     "src": "Covered way rail at 144 m"
+    },
+    "Longworth": {
+     "abs": 144.0,
+     "src": "Covered way rail at 144 m"
+    },
+    "Roebling": {
+     "abs": 144.0,
+     "src": "Covered way rail at 144 m"
+    },
+    "Pennsylvania": {
+     "abs": 144.0,
+     "src": "Covered way rail at 144 m"
+    },
+    "Baines": {
+     "abs": 144.0,
+     "src": "Covered way rail at 144 m"
+    },
+    "Torrance": {
+     "abs": 144.0,
+     "src": "Covered way rail at 144 m"
+    },
+    "Columbia-Tusculum": {
+     "abs": 144.0,
+     "src": "Covered way rail at 144 m"
+    },
+    "Lunken": {
+     "abs": 144.0,
+     "src": "Covered way rail at 144 m; Lunken underground"
+    },
+    "California": {
+     "abs": 144.0,
+     "src": "Covered way rail at 144 m"
+    }
+   },
+   "sections": [
+    {
+     "a": "Sedamsville",
+     "aIn": false,
+     "b": "Riverbend/Belterra",
+     "bIn": false,
+     "m": "covered",
+     "src": "Embanked covered way along the Ohio, continuous from Sedamsville to Belterra; Lunken underground; the Little Miami crossed in tunnel"
+    }
+   ]
+  },
+  "RER_D_trunk": {
+   "modes": {
+    "Pennsylvania": {
+     "mode": "under",
+     "src": "Ohio tube toward Newport"
+    },
+    "Mansion Hill": {
+     "mode": "under",
+     "src": "Ohio tube toward Newport"
+    }
+   },
+   "fixed": {
+    "Union Terminal": {
+     "abs": 135.7,
+     "src": "Union Terminal TRI box: one level for A, B and D, since A and B change cross-platform (Ben, 26 October); 135.7 m"
+    },
+    "Camp Washington": {
+     "abs": 165.2,
+     "src": "On the north viaduct, 165.2 m (North Viaduct Plan; Deck)"
+    },
+    "Straight": {
+     "abs": 151.64,
+     "src": "In the box under the viaduct's west side, 151.64 m; open ramp at 3.3% up to Camp Washington (North Viaduct Plan)"
+    }
+   },
+   "locked": [
+    {
+     "c0": 7356.9,
+     "c1": 11726.0,
+     "st": {
+      "Straight": 151.64,
+      "Camp Washington": 165.2
+     },
+     "pvi": [
+      [
+       8311.3,
+       165.2
+      ],
+      [
+       8681.2,
+       174.45
+      ],
+      [
+       8691.2,
+       174.5
+      ],
+      [
+       10661.2,
+       174.5
+      ],
+      [
+       10671.2,
+       174.53
+      ],
+      [
+       11720.9,
+       185.95
+      ]
+     ],
+     "ovr": [
+      [
+       8311.3,
+       10668.6,
+       "elevated"
+      ],
+      [
+       10668.6,
+       11726.0,
+       "deep"
+      ]
+     ],
+     "src": "D on the B/D pair from the Straight box to Camp Washington, then the upper deck with the Indianapolis APEx (174.5 m) to the hillside and the Floridian tunnel to the portal (186 m), as the Deck (Ben, 27 October): locked (moved from RER_4 c 9849.4-14218.9 by position, 27 October)"
+    }
+   ]
+  },
+  "RER_E_trunk": {
+   "modes": {
+    "Norwood Central": {
+     "mode": "surface",
+     "src": "At grade, east of the deep-bore portal"
+    },
+    "Ludlow": {
+     "mode": "surface",
+     "src": "At grade, south of the deep-bore portal"
+    }
+   },
+   "fixed": {
+    "Union Terminal": {
+     "abs": 142.0,
+     "ref": 154.0,
+     "src": "Level -2 North, 12 m below the 154.0 m track level"
+    }
+   },
+   "sections": [
+    {
+     "a": "Norwood Central",
+     "aIn": false,
+     "b": "Ludlow",
+     "bIn": false,
+     "m": "deep",
+     "src": "1996 deep bore, portals west of Norwood Central and north of Ludlow; continuous under the Ohio"
+    }
+   ]
+  },
+  "RER_A_westwood": {
+   "locked": [
+    {
+     "c0": 0.0,
+     "c1": 498.3,
+     "st": {
+      "Westwood": 168.9
+     },
+     "pvi": [
+      [
+       0.0,
+       159.3
+      ]
+     ],
+     "ovr": [
+      [
+       0.0,
+       240.0,
+       "elevated"
+      ]
+     ],
+     "src": "RER A Westwood branch from the fork (159.3 m) on a viaduct, over State Avenue (162.5 m), 3.26% up to its platform at ground, 168.9 m (Deck, Ben 13 October): locked",
+     "by": "Deck RER A"
+    }
+   ]
+  },
+  "RER_A_cumminsville": {
+   "locked": [
+    {
+     "c0": 0.0,
+     "c1": 3942.0,
+     "st": {
+      "Western Hills": 165.2,
+      "Hopple": 168.2,
+      "South Cumminsville": 167.0
+     },
+     "pvi": [
+      [
+       0.0,
+       159.3
+      ],
+      [
+       3527.5,
+       167.0
+      ],
+      [
+       3942.0,
+       167.0
+      ]
+     ],
+     "ovr": [
+      [
+       0.0,
+       3942.0,
+       "elevated"
+      ]
+     ],
+     "src": "RER A on its viaduct from the fork: Western Hills 165.2 m over Harrison, 168.2 m over the Hopple viaduct, easing to 167.0 m under RER D (174.3 m) and held through South Cumminsville to the split (Deck, Ben 21 October): locked",
+     "by": "Deck RER A"
+    }
+   ]
+  },
+  "RER_A_wyoming": {
+   "locked": [
+    {
+     "c0": 0.0,
+     "c1": 2046.4,
+     "st": {
+      "Northside": 167.0
+     },
+     "pvi": [
+      [
+       0.0,
+       167.0
+      ],
+      [
+       1947.3,
+       144.2
+      ],
+      [
+       2046.4,
+       140.93
+      ]
+     ],
+     "ovr": [
+      [
+       0.0,
+       1576.4,
+       "elevated"
+      ],
+      [
+       1906.5,
+       2046.4,
+       "cutcover"
+      ]
+     ],
+     "src": "RER-1a from the split at 167.0 m through Northside, then 3.3% down from the platform end (Chambers 157.2, Lingo 155.2, Dane 152.9) to 144.2 m under Linden, on at 3.3% through the Deck's tunnel stretch under Spring Grove Cemetery (Deck, Ben 13 October; not profiled beyond): locked",
+     "by": "Deck RER A"
+    }
+   ]
+  },
+  "RER_A_colerain": {
+   "locked": [
+    {
+     "c0": 0.0,
+     "c1": 300.0,
+     "st": {},
+     "pvi": [
+      [
+       0.0,
+       167.0
+      ],
+      [
+       300.0,
+       167.0
+      ]
+     ],
+     "ovr": [
+      [
+       0.1,
+       300.0,
+       "elevated"
+      ]
+     ],
+     "src": "RER-1b on its viaduct from the split at 167.0 m (Deck; its descent past OH-74 is not set): locked",
+     "by": "Deck RER A"
+    }
+   ]
+  },
   "RER_1": {
    "modes": {
     "Union Terminal": {

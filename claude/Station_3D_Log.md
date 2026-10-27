@@ -87,3 +87,11 @@ Published: page version 6 and the snapshot (35 parts), read back at view level.
 - Page version 7 and the snapshot published.
 - Other systems past the Deck's structures (Ben: extend the rails past the bridges into Ludlow; no dashed rails anywhere): the APEx, intercity, C&O and Transvalley tracks now run on from each structure end at their system's grade to the ground (tunnel tracks 15 m under it, 20 m over the Ohio pool over water), 42 tracks extended, none left dashed. RER-4 runs after D took B's levels: +0.00 to +0.06 min; RER-2 unchanged.
 
+## 2026-10-27: RER trunks and branches; the routes tied to the Deck
+
+- The Rail Profiles page now has each lettered RER line as a trunk and branches. The sync maps Deck labels to them by letter (from the page's index) and the Union Terminal box to the A, B and D trunks.
+- Every sync checks each RER route against the live Deck (the harness export) with `tools/rer_deck_routes.py` and lists drift as an issue; none after the rebuild (page version 37).
+- RER A's rights of way from the Deck are locked in the page (fork, Evans, Westwood, Hopple, South Cumminsville, Northside to Linden).
+- New issues: shared stretches whose two routes' saved levels differ (C CVG on B CVG 6.9 m, C Withamsville on C Eastgate 6.0 m), and the far-west A/D track, which the page's links do not list as shared (D trunk 23.4 m off the A Westwood branch). Fountain Square A/D now 155.85 m (the trunks' saved profiles; RER-1 had 156.56 m).
+- Snapshot published (39 parts).
+

@@ -280,6 +280,120 @@ let RER_CANON = {}; let RIVERS = {};
 // CUT and Norwood Central context from the Mill Creek Deck (context/lines.json): other systems' structures
 // as chainage blocks on each line, and the Deck's street re-grades and open cuts as ground runs
 let CONTEXT = { lines: {} };
+// ---------- RER trunks and branches (Ben, 27 October 2026) ----------
+// Each lettered line is a trunk and branches, each its own profile. A junction is one level for every route through it:
+// a bend point at the junction (or the station level where the junction is inside a platform); moving it on one route
+// moves it on the others. Track carried by two lines (shared stretch) is edited on either and copied to the other.
+let LINKS = { shared: [], junctions: [] };
+const JTOL = 0.6;
+const routeName = (id) => ((S.rerData[id] || {}).short || (S.rerData[id] || {}).line || id);
+function junctionsOf(id) { const out = []; for (const j of LINKS.junctions || []) for (const m of j.members) if (m.r === id) out.push({ j, m }); return out; }
+function sharedOf(id) {
+  return (LINKS.shared || []).filter((s) => s.a === id || s.b === id).map((s) => {
+    const mine = s.a === id ? s.ca : s.cb, theirs = s.a === id ? s.cb : s.ca;
+    const map = (c) => theirs[0] + (c - mine[0]) * (theirs[1] - theirs[0]) / ((mine[1] - mine[0]) || 1);
+    return { s, P: s.a === id ? s.b : s.a, lo: Math.min(...mine), hi: Math.max(...mine), map, sign: s.sign };
+  });
+}
+// the junction bend point of the current route at c (not where the junction is in a platform)
+function junctionAt(c, id = S.data && S.data.id) { for (const { j, m } of junctionsOf(id)) if (!m.st && Math.abs(m.c - c) < JTOL) return { j, m }; return null; }
+function levelAtMember(m, al, sts) {
+  if (m.st) { const i = sts.findIndex((s) => s.name === m.st); if (i < 0 || al.st[i] == null) return null; const gp = ((al.sg && al.sg[i]) || 0) / 1000; return al.st[i] + gp * (m.c - sts[i].c); }
+  const p = al.pvi.find((q) => Math.abs(q.c - m.c) < JTOL); return p ? p.z : null;
+}
+function setAtMember(m, al, sts, z) {
+  if (z == null || !isFinite(z)) return false;
+  if (m.st) {
+    const i = sts.findIndex((s) => s.name === m.st); if (i < 0) return false;
+    const gp = ((al.sg && al.sg[i]) || 0) / 1000; const v = Math.round((z - gp * (m.c - sts[i].c)) * 100) / 100;
+    if (al.st[i] === v) return false; al.st[i] = v; return true;
+  }
+  const p = al.pvi.find((q) => Math.abs(q.c - m.c) < JTOL);
+  if (p) { if (p.z === z) return false; p.z = z; return true; }
+  al.pvi = al.pvi.filter((q) => Math.abs(q.c - m.c) >= 3); al.pvi.push({ c: m.c, z }); al.pvi.sort((a, b) => a.c - b.c); return true;
+}
+// a junction's level as another route has it saved
+function savedJunctionLevel(j, exceptId) {
+  for (const o of j.members) {
+    if (o.r === exceptId) continue; const doc = S.saved[o.r]; if (!doc) continue;
+    if (o.st) {
+      const st = (doc.stations || []).find((x) => x.name === o.st); if (!st || typeof st.rail !== 'number') continue;
+      const gp = (+((doc.sg || {})[o.st]) || 0) / 1000; return st.rail + gp * (o.c - st.c);
+    }
+    const p = (doc.pvi || []).find((q) => Math.abs(+q[0] - o.c) < JTOL); if (p) return +p[1];
+  }
+  return null;
+}
+// every junction on this route gets its bend point (outside locked stretches and platforms)
+function ensureJunctionPvis(al, sts = S.stations) {
+  if (!isRer() || !S.data || !al || !al.pvi) return false;
+  let added = false;
+  for (const { j, m } of junctionsOf(S.data.id)) {
+    if (m.st || lockAt(m.c) || al.pvi.some((q) => Math.abs(q.c - m.c) < JTOL)) continue;
+    let z = savedJunctionLevel(j, S.data.id);
+    if (z == null) z = railAt(m.c, vertices(al, sts));
+    al.pvi = al.pvi.filter((q) => Math.abs(q.c - m.c) >= 3); al.pvi.push({ c: m.c, z: Math.round(z * 100) / 100 }); added = true;
+  }
+  if (added) al.pvi.sort((a, b) => a.c - b.c);
+  return added;
+}
+// copy the current route's profile inside a shared stretch onto the other route
+function copyStretch(me, t, sh) {
+  const key = () => JSON.stringify([t.al.pvi, t.al.ovr, t.al.st, t.al.sg, t.al.so, t.al.mode]); const before = key();
+  const { lo, hi, map } = sh; const plo = Math.min(map(lo), map(hi)), phi = Math.max(map(lo), map(hi));
+  t.al.pvi = t.al.pvi.filter((p) => p.c < plo - 0.5 || p.c > phi + 0.5)
+    .concat(me.al.pvi.filter((p) => p.c >= lo - 0.5 && p.c <= hi + 0.5).map((p) => ({ c: Math.round(map(p.c) * 10) / 10, z: p.z }))).sort((a, b) => a.c - b.c);
+  const ovr = [];
+  for (const o of t.al.ovr || []) { if (o[1] <= plo || o[0] >= phi) { ovr.push(o); continue; } if (o[0] < plo) ovr.push([o[0], plo, o[2]]); if (o[1] > phi) ovr.push([phi, o[1], o[2]]); }
+  for (const o of me.al.ovr || []) { const a = Math.max(o[0], lo), b = Math.min(o[1], hi); if (b - a > 0.5) { const x = map(a), y = map(b); ovr.push([Math.round(Math.min(x, y) * 10) / 10, Math.round(Math.max(x, y) * 10) / 10, o[2]]); } }
+  t.al.ovr = ovr.sort((a, b) => a[0] - b[0]);
+  me.sts.forEach((s, i) => {
+    if (s.c < lo - 1 || s.c > hi + 1) return;
+    const k = t.sts.findIndex((q) => q.name === s.name && Math.abs(q.c - map(s.c)) < 150); if (k < 0) return;
+    t.al.st[k] = me.al.st[i];
+    if (t.al.sg) t.al.sg[k] = sh.sign * ((me.al.sg && me.al.sg[i]) || 0);
+    if (t.al.so) t.al.so[k] = sh.sign * ((me.al.so && me.al.so[i]) || 0);
+    if (t.al.mode && me.al.mode) t.al.mode[k] = me.al.mode[i];
+  });
+  return key() !== before;
+}
+// the saved document of another route (its alignment al), as serialize() writes it
+function docFor(t) {
+  const keepV = VERTS, keepSum = S.summary;
+  S.align = t.al; S.stations = deriveStations(t.al.del || [], t.al.so || []); buildCanon(); applyLocks(t.al);
+  S.stations = deriveStations(t.al.del || [], t.al.so || []); VERTS = vertices(t.al, S.stations); S.summary = null;
+  try { return serialize(); } finally { VERTS = keepV; S.summary = keepSum; }
+}
+async function writeDoc(id, body) {
+  if (S.db) { await S.db.doc(`alignments/${id}`).set(body); S.saved[id] = body; }
+  else { try { localStorage.setItem(`profile:${id}`, JSON.stringify(body)); } catch {} S.saved[id] = body; }
+}
+function linkedRoute(pid, touched) {
+  if (touched.has(pid)) return touched.get(pid);
+  const d = S.rerData[pid]; if (!d) return null;
+  const t = withLine(d, 'rer', () => { const al = alignFromDoc(S.saved[pid] || (S.store !== 'db' ? localDoc(pid) : null)); return { d, al, sts: deriveStations(al.del || [], al.so || []), changed: false }; });
+  touched.set(pid, t); return t;
+}
+// after the current route is saved: copy shared stretches, then carry every junction level to the other routes
+async function propagateLinks() {
+  if (!isRer() || !S.data) return [];
+  const id = S.data.id, me = { al: S.align, sts: S.stations }, touched = new Map();
+  for (const sh of sharedOf(id)) { const t = linkedRoute(sh.P, touched); if (t && copyStretch(me, t, sh)) t.changed = true; }
+  for (const { j, m } of junctionsOf(id)) {
+    const z = levelAtMember(m, me.al, me.sts); if (z == null) continue;
+    for (const o of j.members) { if (o.r === id) continue; const t = linkedRoute(o.r, touched); if (t && setAtMember(o, t.al, t.sts, z)) t.changed = true; }
+  }
+  const done = [];
+  const sig = (b) => b ? JSON.stringify([(b.pvi || []).map(([c, z]) => [Math.round(c * 10), Math.round(z * 100)]), b.st, b.sg, b.so, (b.ovr || []).map(([x, y, k]) => [Math.round(x * 10), Math.round(y * 10), k]), b.mode, b.del]) : '';
+  for (const [pid, t] of touched) {
+    if (!t.changed) continue;
+    const body = withLine(t.d, 'rer', () => docFor(t));
+    if (sig(body) === sig(S.saved[pid])) continue;      // nothing changed once its own canon is applied
+    await writeDoc(pid, body); done.push(pid);
+  }
+  if (done.length) refreshDefaultDocs();
+  return done;
+}
 const ctxFor = (id) => (CONTEXT.lines || {})[id] || {};
 const METHOD_LABEL = { shallow: 'Basin method', deep: 'Deep tube', canal: 'Canal-bed cut & cover', covered: 'Covered way (cut & cover)' };
 const SETTING_ROWS_BASE = [
@@ -794,7 +908,7 @@ function alignFromDoc(doc) {
   if (doc && doc.mode && isRer()) modes = S.stations.map((_, i) => (doc.mode[stKey(i)] === 'surface' || doc.mode[stKey(i)] === 'under') ? doc.mode[stKey(i)] : defaultMode(i));
   const al = defaultAlign(modes);
   al.del = del; al.so = S.stations.map(() => 0);
-  if (!doc) return al;
+  if (!doc) { ensureJunctionPvis(al, S.stations); return al; }
   const half = settings.platform / 2, soKey = doc.so || {};
   al.so = S.stations.map((_, i) => clamp(+soKey[stKey(i)] || 0, -half, half));
   const byKey = doc.st || {};
@@ -805,6 +919,7 @@ function alignFromDoc(doc) {
   al.ovr = (doc.ovr || []).filter((o) => Array.isArray(o) && o.length >= 3).map(([a, b, t]) => [+a, +b, t === 'bored' ? 'shield' : t]).filter((o) => TYPES[o[2]]);
   S.stations = deriveStations(del, al.so); buildCanon();
   applyLocks(al);
+  ensureJunctionPvis(al, S.stations);
   return al;
 }
 
@@ -979,7 +1094,7 @@ function designChecks() {
   let sumps = 0, lastSign = 0, lastC = 0;
   seg.forEach((sg) => {
     const mid = (sg.a.c + sg.b.c) / 2, t = typeAt(mid), len = sg.b.c - sg.a.c;
-    const cw = canonAt(mid); // the RER-3 covered way drains beneath into the sewers
+    const cw = canonAt(mid); // the C trunk covered way drains beneath into the sewers
     if (!sg.plat && TUNNEL.has(t) && !(cw && cw.m === 'covered') && Math.abs(sg.g) < settings.drainMin && len > 60)
       issues.push({ kind: 'Drainage', c: mid, text: `${fmtG(sg.g)} in tunnel for ${len.toFixed(0)} m from ${fmtCh(sg.a.c)}: drains poorly below ${settings.drainMin}‰` });
     const sign = Math.abs(sg.g) < 0.5 ? 0 : Math.sign(sg.g);
@@ -1531,8 +1646,9 @@ function updatePanels() {
     Object.entries(S.canonModes).forEach(([i, f]) => cnl.push(`<li><b>${esc(nm(+i))}</b> ${f.mode === 'surface' ? 'at grade' : 'underground'}: ${esc(f.src)}</li>`));
     (S.canonDeck || []).forEach((dk) => cnl.push(`<li><b>Deck</b> ${esc(dk.a)} to ${esc(dk.b)}: ${esc(dk.src)}. Ground shown at yard level.</li>`));
     riverTubes(S.stations.map((_, i) => modeOf(i))).forEach((t) => cnl.push(`<li><b>Sunk section</b> under the ${esc(t.name)} (${fmtCh(t.c0)} to ${fmtCh(t.c1)}): rail at most ${fmtZ(t.ub, 1)} ${uLbl()}. ${esc((RIVERS[t.name] || {}).src || '')}</li>`));
-    cnl.push(`<li><b>Trunk</b> ${S.data.trunks.map((t) => `${esc(t.name)} (${fmtCh(t.c0)} to ${fmtCh(t.c1)})`).join(', ')}: stations here start underground. Assumed from the drawn trunks, not canon.</li>`);
-    cnl.push(`<li><b>Core</b> of ${esc(S.data.service)}, two stations past each end of the trunk.</li>`);
+    cnl.push(`<li><b>Route</b> ${esc(S.data.line)}, from the Mill Creek Deck's lettered lines, to the edge of the region (D to Miamitown South). Stations start underground where the old RER-1 to 5 trunks had them.</li>`);
+    junctionsOf(S.data.id).forEach(({ j, m }) => cnl.push(`<li><b>Junction</b> at ${fmtCh(m.c)}${m.st ? ` (in the ${esc(m.st)} platform)` : ''} with ${j.members.filter((o) => o.r !== S.data.id).map((o) => esc(routeName(o.r))).join(', ')}: one level; changing it here changes theirs when this saves.</li>`));
+    sharedOf(S.data.id).forEach((sh) => cnl.push(`<li><b>Shared track</b> with ${esc(routeName(sh.P))}, ${fmtCh(sh.lo)} to ${fmtCh(sh.hi)}: bend points, stations and painted structure here are copied to it when this saves, and back.</li>`));
   }
   $('#canon').innerHTML = cnl.length ? cnl.join('') : '<li>No canon structure set for this line; the deep-tube threshold decides.</li>';
   // stations table
@@ -1586,6 +1702,8 @@ ${isRer() ? '' : (() => { const pc = platformCurve(sel.i); return `<dt>Platform 
         if (sec) bits.push(`${METHOD_LABEL[sec.m]}: ${esc(sec.src)}`);
         if (f) bits.push(`Canon level ${f.abs != null ? `${fmtZ(f.abs, 1)} ${uLbl()}` : `${f.off >= 0 ? '+' : '−'}${fmtZ(Math.abs(f.off), 1)} ${uLbl()}`}: ${esc(f.src)}`);
         if (cm) bits.push(`${cm.mode === 'surface' ? 'At grade' : 'Underground'}: ${esc(cm.src)}`);
+        for (const { j, m } of junctionsOf(S.data.id)) if (m.st === s.name) bits.push(`Junction in this platform with ${j.members.filter((o) => o.r !== S.data.id).map((o) => esc(routeName(o.r))).join(', ')}: their ends follow this station's level when this saves.`);
+        for (const sh of sharedOf(S.data.id)) if (s.c >= sh.lo - 1 && s.c <= sh.hi + 1) bits.push(`Shared with ${esc(routeName(sh.P))}: this station is copied to it when this saves.`);
         return bits.length ? `<p class="hint">${bits.join('<br>')}</p>` : ''; })()}`;
     const setMode = (m) => { if (modeOf(sel.i) === m) return; pushHist(); const modes = S.stations.map((_, j) => (j === sel.i ? m : modeOf(j))); const fresh = defaultAlign(modes); S.align = { ...fresh, ovr: S.align.ovr, del: S.align.del, so: S.align.so, gapfill: S.align.gapfill }; changed(); };
     $('#modeSurf')?.addEventListener('click', () => setMode('surface'));
@@ -1614,16 +1732,18 @@ ${isRer() ? '' : (() => { const pc = platformCurve(sel.i); return `<dt>Platform 
     const g = surfaceAt(p.c), d = g - p.z;
     el.innerHTML = `<h2>Bend point</h2><div class="sel-title">${fmtCh(p.c)}</div>
       <dl class="kv">
-        <dt><label for="inC">Chainage (m)</label></dt><dd><input id="inC" type="number" step="1" value="${p.c.toFixed(0)}" ${ro ? 'disabled' : ''}></dd>
+        <dt><label for="inC">Chainage (m)</label></dt><dd><input id="inC" type="number" step="1" value="${p.c.toFixed(0)}" ${ro || junctionAt(p.c) ? 'disabled' : ''}></dd>
         <dt><label for="inZ">Rail level (${uLbl()})</label></dt><dd><input id="inZ" type="number" step="0.1" value="${toU(p.z).toFixed(2)}" ${ro ? 'disabled' : ''}></dd>
         <dt><label for="inD">Rail below ground (${uLbl()})</label></dt><dd><input id="inD" type="number" step="0.1" value="${toU(d).toFixed(2)}" ${ro ? 'disabled' : ''}></dd>
         <dt>Structure</dt><dd>${TYPES[typeAt(p.c, p.z)].label}</dd>
         <dt>Grades meeting</dt><dd>${(() => { const D = design(VERTS), k = D.dv.findIndex((v) => v.kind === 'pvi' && v.j === sel.j); return k > 0 ? `${fmtG(D.g[k - 1] * 1000)} / ${fmtG(D.g[k] * 1000)}` : '—'; })()}</dd>
         <dt>Vertical curve</dt><dd>${(() => { const D = design(VERTS), k = D.dv.findIndex((v) => v.kind === 'pvi' && v.j === sel.j); if (k <= 0) return '—'; const Lk = D.L[k]; return Lk > 1e-6 ? `${Lk.toFixed(0)} m, ${fmtCh(p.c - Lk / 2)} to ${fmtCh(p.c + Lk / 2)}${D.short.some((x) => Math.abs(x.c - p.c) < 0.5) ? ' (shortened)' : ''}` : 'none (no change of grade)'; })()}</dd>
         <dt>Rail at the bend</dt><dd>${fmtZ(railAt(p.c), 2)} ${uLbl()}</dd>
-      </dl>
-      <div class="group"><button class="btn" id="delPvi" ${ro ? 'disabled' : ''}>Remove bend point</button></div>`;
-    const setP = (c, z) => { pushHist(); p.c = clampPviC(c, sel.j); p.z = Math.round(z * 100) / 100; changed(); };
+      </dl>${junctionAt(p.c) ? `
+      <p class="hint"><b>Junction</b> with ${junctionAt(p.c).j.members.filter((o) => o.r !== S.data.id).map((o) => esc(routeName(o.r))).join(', ')}: one level for all of them, so setting it here sets theirs when this saves. It stays at this chainage.</p>` : `
+      <div class="group"><button class="btn" id="delPvi" ${ro ? 'disabled' : ''}>Remove bend point</button></div>`}`;
+    const jn = junctionAt(p.c);
+    const setP = (c, z) => { pushHist(); p.c = jn ? p.c : clampPviC(c, sel.j); p.z = Math.round(z * 100) / 100; changed(); };
     $('#inC')?.addEventListener('change', (e) => setP(parseFloat(e.target.value), p.z));
     $('#inZ')?.addEventListener('change', (e) => setP(p.c, fromU(parseFloat(e.target.value))));
     $('#inD')?.addEventListener('change', (e) => setP(p.c, surfaceAt(p.c) - fromU(parseFloat(e.target.value))));
@@ -1637,7 +1757,7 @@ function pushHist() { S.hist.push(snapshot()); if (S.hist.length > 200) S.hist.s
 function syncUndo() { $('#undo').disabled = !S.hist.length || S.canWrite === false; $('#redo').disabled = !S.fut.length || S.canWrite === false; $('#solveCross').disabled = S.canWrite === false; $('#easeAll').disabled = S.canWrite === false; }
 function undo() { if (!S.hist.length) return; S.fut.push(snapshot()); S.align = JSON.parse(S.hist.pop()); S.sel = null; changed(); syncUndo(); }
 function redo() { if (!S.fut.length) return; S.hist.push(snapshot()); S.align = JSON.parse(S.fut.pop()); S.sel = null; changed(); syncUndo(); }
-function changed(save = true) { if (S.data) { S.stations = deriveStations(S.align.del || [], S.align.so || []); buildCanon(); if (applyLocks(S.align) && save) { S.stations = deriveStations(S.align.del || [], S.align.so || []); flash('Locked stretch: kept as canon'); } } VERTS = vertices(); applyFill(); updatePanels(); schedule(); if (save) markDirty(); }
+function changed(save = true) { if (S.data) { S.stations = deriveStations(S.align.del || [], S.align.so || []); buildCanon(); ensureJunctionPvis(S.align, S.stations); if (applyLocks(S.align) && save) { S.stations = deriveStations(S.align.del || [], S.align.so || []); flash('Locked stretch: kept as canon'); } } VERTS = vertices(); applyFill(); updatePanels(); schedule(); if (save) markDirty(); }
 function inPlatform(c) { const half = settings.platform / 2; return S.stations.some((s) => c > s.c - half - 2 && c < s.c + half + 2); }
 function clampPviC(c, j) {
   c = clamp(c, 1, S.L - 1);
@@ -1650,7 +1770,7 @@ function addPviAt(c) {
   pushHist(); S.align.pvi.push({ c: Math.round(c), z: Math.round(railAt(c) * 100) / 100 });
   S.align.pvi.sort((a, b) => a.c - b.c); S.sel = { kind: 'pvi', j: S.align.pvi.findIndex((p) => p.c === Math.round(c)) }; changed();
 }
-function removeSelectedPvi() { if (!S.sel || S.sel.kind !== 'pvi') return; pushHist(); S.align.pvi.splice(S.sel.j, 1); S.sel = null; changed(); }
+function removeSelectedPvi() { if (!S.sel || S.sel.kind !== 'pvi') return; if (S.align.pvi[S.sel.j] && junctionAt(S.align.pvi[S.sel.j].c)) { flash('Junction bend point: it stays; set its level'); return; } pushHist(); S.align.pvi.splice(S.sel.j, 1); S.sel = null; changed(); }
 function paintRange(a, b, brush) {
   if (b - a < 1) return; pushHist();
   const out = [];
@@ -1707,8 +1827,10 @@ async function save() {
   if (S.saving) { clearTimeout(saveTimer); saveTimer = setTimeout(save, 600); return; }
   S.saving = true; const body = serialize(); const id = S.data.id; S.dirty = false;
   try {
-    if (S.db) { setStatus('saving', 'Saving…'); syncSaveBtn(); await S.db.doc(`alignments/${id}`).set(body); S.saved[id] = body; S.lastSaved = new Date(); if (S.dirty) setStatus('saving', 'Unsaved changes'); else setStatus('saved', 'Saved'); }
-    else { try { localStorage.setItem(`profile:${id}`, JSON.stringify(body)); S.lastSaved = new Date(); setStatus('saved', 'Saved in this browser'); } catch { setStatus('error', 'Not saved'); } }
+    if (S.db) { setStatus('saving', 'Saving…'); syncSaveBtn(); await S.db.doc(`alignments/${id}`).set(body); S.saved[id] = body; S.lastSaved = new Date();
+      const linked = await propagateLinks();
+      if (S.dirty) setStatus('saving', 'Unsaved changes'); else setStatus('saved', linked.length ? `Saved, with ${linked.map(routeName).join(', ')}` : 'Saved'); }
+    else { try { localStorage.setItem(`profile:${id}`, JSON.stringify(body)); S.saved[id] = body; S.lastSaved = new Date(); await propagateLinks(); setStatus('saved', 'Saved in this browser'); } catch { setStatus('error', 'Not saved'); } }
   } catch (e) {
     S.dirty = true;
     if (e && e.code === 'invalid_argument' && S.canWrite == null) { S.canWrite = false; setStatus('readonly', 'View only'); syncUndo(); }
@@ -1760,7 +1882,7 @@ function setSystem(k) {
   SETTING_ROWS = k === 'rer' ? SETTING_ROWS_RER : SETTING_ROWS_METRO;
   $('#brandName').textContent = k === 'rer' ? 'Cincinnati RER Profiles' : 'Cincinnati Metro Profiles';
   $('#setNote').textContent = k === 'rer'
-    ? 'RER settings are starting values, not canon. Trunk stations start underground and the others at grade on the old railroad; switch a station in its card. Canon sections (the RER-3 covered way, the RER-5 deep bore) set structure there; painted stretches override everything, and painted cut and cover fills the ground over the box. Settings apply to every RER line.'
+    ? 'RER settings are starting values, not canon. Trunk stations start underground and the others at grade on the old railroad; switch a station in its card. Canon sections (the C trunk covered way, the E trunk deep bore) set structure there; painted stretches override everything, and painted cut and cover fills the ground over the box. Settings apply to every RER line.'
     : 'The founding sections of Lines 1 to 6 take their structure from canon (tracker 2D and your rulings). Elsewhere the deep-tube threshold decides. Painted stretches override both; painted cut and cover fills the ground over the box. Settings apply to every Metro line.';
   buildSettings();
 }
@@ -1812,7 +1934,7 @@ function linkRerCrossings(d) {
   d.crossings = d.crossings || [];
   Object.values(S.rerData).forEach((r) => (r.crossings || []).filter((x) => x.wid === d.id).forEach((x) => {
     const m = d.crossings.find((y) => y.kind === 'rer' && !y.wid && y.with === r.line && Math.abs(y.c - x.oc) < 120);
-    if (m) { m.wid = r.id; m.oc = x.c; } else d.crossings.push({ c: x.oc, wid: r.id, oc: x.c, kind: 'rer', with: r.line });
+    if (m) { m.wid = r.id; m.oc = x.c; } else d.crossings.push({ c: x.oc, wid: r.id, oc: x.c, kind: 'rer', with: r.short || r.line });
   }));
   d.crossings.sort((a, b) => a.c - b.c);
 }
@@ -1860,7 +1982,7 @@ cv.addEventListener('pointermove', (e) => {
     else if (dr.kind === 'stx') { setSo(dr.i, dr.so0 + LAYOUT.C(x) - LAYOUT.C(dr.x0)); S.stations = deriveStations(S.align.del || [], S.align.so); VERTS = vertices(); applyFill(); updateReadout(x, y); schedule(); }
     else if (dr.kind === 'pvi') {
       const p = S.align.pvi[dr.j]; let c = dr.c0 + (LAYOUT.C(x) - LAYOUT.C(dr.x0)); let z = dr.z0 + (LAYOUT.Z(y) - LAYOUT.Z(dr.y0));
-      p.c = clampPviC(Math.round(c), dr.j); p.z = e.shiftKey ? Math.round(z) : Math.round(z * 10) / 10;
+      p.c = junctionAt(dr.c0) ? dr.c0 : clampPviC(Math.round(c), dr.j); p.z = e.shiftKey ? Math.round(z) : Math.round(z * 10) / 10;
       S.align.pvi.sort((a, b) => a.c - b.c); dr.j = S.align.pvi.indexOf(p); S.sel = { kind: 'pvi', j: dr.j }; VERTS = vertices(); applyFill(); updateReadout(x, y); schedule();
     } else if (dr.kind === 'paint') { dr.c1 = clamp(LAYOUT.C(x), 0, S.L); schedule(); }
     else if (dr.kind === 'pan') {
@@ -1934,7 +2056,7 @@ cv.addEventListener('keydown', (e) => {
   if (!dz && !dc) return; e.preventDefault(); const amt = e.shiftKey ? 1 : 0.1;
   pushHist();
   if (S.sel.kind === 'st' && dz) S.align.st[S.sel.i] = Math.round((S.align.st[S.sel.i] + dz * fromU(amt)) * 100) / 100;
-  if (S.sel.kind === 'pvi') { const p = S.align.pvi[S.sel.j]; if (dz) p.z = Math.round((p.z + dz * fromU(amt)) * 100) / 100; if (dc) p.c = clampPviC(p.c + dc * (e.shiftKey ? 10 : 2), S.sel.j); }
+  if (S.sel.kind === 'pvi') { const p = S.align.pvi[S.sel.j]; if (dz) p.z = Math.round((p.z + dz * fromU(amt)) * 100) / 100; if (dc && !junctionAt(p.c)) p.c = clampPviC(p.c + dc * (e.shiftKey ? 10 : 2), S.sel.j); }
   changed();
 });
 
@@ -2197,6 +2319,8 @@ window.addEventListener('resize', schedule);
 window.addEventListener('beforeunload', () => { if (S.dirty) save(); });
 
 // ---------- boot ----------
+// hooks for checking the page headless
+window.__api = { selectLine, save, changed, railAt, S, withLine, alignFromDoc, defaultAlign, modeOf, lockAt, deriveStations, docFor, levelAtMember, setAtMember, copyStretch, sharedOf, junctionsOf, ensureJunctionPvis, vertices, applyLocks, buildCanon, writeDoc, refreshDefaultDocs, propagateLinks, get links() { return LINKS; } };
 (async () => {
   setTool('move'); buildBrushes();
   try { const u = localStorage.getItem('profile:units'); if (u === 'ft') setUnits('ft'); } catch {}
@@ -2212,11 +2336,13 @@ window.addEventListener('beforeunload', () => { if (S.dirty) save(); });
     CONTEXT = await loadJSON('context/lines.json').catch(() => ({ lines: {} }));
     S.index = mIdx.concat(rIdx);
     try { const cj = await loadJSON('rer/canon.json'); RER_CANON = cj.lines || {}; RIVERS = cj.rivers || {}; } catch {}
+    try { LINKS = await loadJSON('rer/links.json'); } catch {}
     const rer = await Promise.all(rIdx.map((l) => loadJSON(lineUrl(l.id)).catch(() => null)));
     rer.filter(Boolean).forEach((d) => { S.rerData[d.id] = d; S.cache[d.id] = d; });
     refreshDefaultDocs();
     const opt = (l) => `<option value="${l.id}">${esc(l.line)} · ${(l.length_m / 1000).toFixed(1)} km</option>`;
-    $('#lineSel').innerHTML = `<optgroup label="Metro">${mIdx.map(opt).join('')}</optgroup>` + (rIdx.length ? `<optgroup label="RER (core)">${rIdx.map(opt).join('')}</optgroup>` : '');
+    const ropt = (l) => `<option value="${l.id}">${esc(l.kind === 'trunk' ? 'Trunk' : l.line.replace(/^RER [A-E] /, ''))} · ${(l.length_m / 1000).toFixed(1)} km</option>`;
+    $('#lineSel').innerHTML = `<optgroup label="Metro">${mIdx.map(opt).join('')}</optgroup>` + [...new Set(rIdx.map((l) => l.letter))].map((k) => `<optgroup label="RER ${k}">${rIdx.filter((l) => l.letter === k).map(ropt).join('')}</optgroup>`).join('');
     let want = location.hash.slice(1); if (!S.index.some((l) => l.id === want)) { try { want = localStorage.getItem('profile:last'); } catch { want = null; } }
     if (!S.index.some((l) => l.id === want)) want = 'Line_6';
     await selectLine(want);
