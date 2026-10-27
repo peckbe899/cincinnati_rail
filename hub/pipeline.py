@@ -106,10 +106,19 @@ class Pipeline:
     def prepare(self):
         """the work folder laid out as the Station 3D sync's cache, with the hub's records as the editors' databases"""
         os.makedirs(WORK, exist_ok=True)
+        # links where the system allows them; copies otherwise (Windows without Developer Mode), refreshed every run
+        def place(target, link):
+            if os.path.lexists(link) and (os.path.islink(link) or os.path.isfile(link)):
+                os.remove(link)
+            elif os.path.isdir(link):
+                shutil.rmtree(link)
+            try:
+                os.symlink(target, link, target_is_directory=os.path.isdir(target))
+            except (OSError, NotImplementedError):
+                (shutil.copytree if os.path.isdir(target) else shutil.copy2)(target, link)
         dl = os.path.join(WORK, 'deck')
         if not os.path.islink(dl):
-            shutil.rmtree(dl, ignore_errors=True)
-            os.symlink(os.path.join(HUB, 'sites', 'deck'), dl)
+            place(os.path.join(HUB, 'sites', 'deck'), dl)
         # the Profiles site: the repo's data/profile, its page as index.html (as published)
         pdir, src = os.path.join(WORK, 'profiles'), os.path.join(ROOT, 'data', 'profile')
         if os.path.islink(pdir):
@@ -117,8 +126,8 @@ class Pipeline:
         os.makedirs(pdir, exist_ok=True)
         for name in os.listdir(src) + ['index.html']:
             link, target = os.path.join(pdir, name), os.path.join(src, 'profiles.html' if name == 'index.html' else name)
-            if not os.path.lexists(link):
-                os.symlink(target, link)
+            if not os.path.islink(link):
+                place(target, link)
         js = os.path.join(WORK, 'jsts', 'package', 'dist')
         os.makedirs(js, exist_ok=True)
         if not os.path.exists(os.path.join(js, 'jsts.min.js')):
