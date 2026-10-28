@@ -48,3 +48,29 @@ def test_pipeline_triggers():
     assert trigger_for("chronology/segments") == "3d" and trigger_for("params/metro_structure") == "3d"
     html = (Path(__file__).resolve().parent.parent / "data/profile/profiles.html").read_text(encoding="utf8")
     assert js_object(html, "METRO_DEFAULTS")["platform"] == 121.92 and js_object(html, "RER_DEFAULTS")["platform"] == 204.2
+
+
+def test_store_merges_a_pulled_seed(tmp_path):
+    from store import Store
+    def write(root, path, data):
+        f = root / (path + '.json'); f.parent.mkdir(parents=True, exist_ok=True); f.write_text(json.dumps(data))
+    old, new = tmp_path / 'old', tmp_path / 'new'
+    write(old, 'deck/layout', {'streets': {'A': {'c': 1}, 'B': {'c': 1}}, 'stations': {'K': {'o': 0}}})
+    write(old, 'alignments/L1', {'pvi': [1]})
+    write(old, 'alignments/L2', {'pvi': [1]})
+    st = Store(str(tmp_path / 'db.sqlite'))
+    st.load_dir(str(old))                      # a database seeded before seed_base existed
+    st.set('deck/layout', {'streets': {'A': {'c': 1}, 'B': {'c': 9}}, 'stations': {'K': {'o': 5}}}, 'Ben')
+    st.set('alignments/L2', {'pvi': [7]}, 'page')
+    write(new, 'deck/layout', {'streets': {'A': {'c': 2}, 'B': {'c': 3}}, 'stations': {'K': {'o': 0}}})
+    write(new, 'alignments/L1', {'pvi': [2]})
+    write(new, 'alignments/L2', {'pvi': [1]})
+    write(new, 'chronology/segments', {'segments': {}})
+    rep = st.merge_dir(str(new))
+    lay = st.get('deck/layout')['data']
+    assert lay['streets']['A'] == {'c': 2}        # only the seed changed it
+    assert lay['streets']['B'] == {'c': 9}        # both changed it: Ben's kept, listed
+    assert lay['stations']['K'] == {'o': 5}       # only Ben changed it
+    assert st.get('alignments/L1')['data'] == {'pvi': [2]} and st.get('alignments/L2')['data'] == {'pvi': [7]}
+    assert rep['added'] == ['chronology/segments'] and rep['conflicts'] == [{'path': 'deck/layout', 'keys': ['streets']}]
+    assert not any(st.merge_dir(str(new))[k] for k in ('added', 'updated', 'merged'))   # a second start changes nothing
