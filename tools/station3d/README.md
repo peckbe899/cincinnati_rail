@@ -89,3 +89,10 @@ Drawing values: pier spacing 25 m and thickness 2 m; blind arches every 10 m; TR
 Later rulings (Ben, 2026-10-27): the structure types above; the Indianapolis APEx pair and RER D on an upper deck at the minimum height over the lower deck (174.5 m, 7.9 m over its highest rail), held to the hillside, then the Floridian hillside tunnel at a constant grade to the portal (about 186 m); RER D tied to it (`data/profile/rer/alignments/RER_4.json`); B and D from the trunk to Union Terminal on the Deck's route; interlined pairs drawn once, striped. See `data/profile/README.md`.
 
 The Deck snapshot in `data/deck` is version 1793028977-4bc6 (layout 2461). When the Deck changes, refresh `data/deck` from its published files before syncing.
+
+## Metro structure and tunnel equipment (2026-10-28)
+
+- Structures and rail spacing come from the shared Metro structure record (hub `params/metro_structure`, else `data/profile/metro_structure.json`): bored stretches take the tube of the phase their drawn piece was built in (type A, the 9.0 m double-track bore, type C; snapshot types `shield~A` and so on); boxes 9.1 m outside. Spacing narrows only inside a box, never in a tube.
+- The snapshot's `approach` lists side platforms on bored stretches, the boxes islands on the bore need, and approaches that do not fit; `station_types` gives the Profiles type at each Metro station (the Deck's island default).
+- Tunnel equipment is drawn by the page within about 500 m of the view's centre when zoomed in, on five switches under Show, at the positions of Ben's box and tube cutaways (claude/Metro_Structure_Gauge_Handoff.md section 3.5).
+
