@@ -247,7 +247,9 @@ Published: page version 6 and the snapshot (35 parts), read back at view level.
 
 - Before publishing, the Profiles artifact's saved profiles were compared with the hub's: Ben saved Line 1 (21:43 UTC) and Line 2 (21:51 UTC) on the artifact on 27 October after the hub's seed was read, and the hub never had them (grade points, structure overrides, station grades and shifts). Merged into the hub: Line 1 as saved on the artifact; Line 2 as saved there with Freedom Center restored. The Deck layout on the artifact is the hub's starting version (2463), unchanged. Pipeline rerun; Line 1 now has 2 grades over the limit, max 68.9 per mille (Ben's profile). Approach straights: Carothers Center 19.4 m, the Line 4 box end 14.4 m, California 16.6 m.
 
-## 2026-10-28: published to the artifacts
+## 2026-10-28: published to the artifacts (in error)
+
+- The claude.ai artifacts are retired (Ben); this publish should not have happened. No further publishing to them.
 
 - Rail Profiles version 40 (with the Chronology as `chronology.html` beside it, sharing the Profiles database), Mill Creek Deck version 142 (layout record 2464), Station 3D version 8 (38 parts and the summary). Records from the hub (`hub/seed`); procedure in `hub/README.md`.
 - Station slides dropped by the pipeline: Ben's 27 October slides on Line 1 (Burnet North 15.5 m, Central Ave 61.0, Levee -61.0, McAlpin 13, Pennsylvania Station 61.0, Stratford -54, University -61.0) and Line 2 (Eastside -21, Garfield -16, Glenwood -61.0, Rivercenter West -12.5, St Bernard -27.5, Zoo -2) are on platforms placed on the Deck, where the Deck's position wins (no slide). To keep one, move that platform on the Deck.
