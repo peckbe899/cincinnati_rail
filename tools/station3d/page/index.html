@@ -121,6 +121,12 @@ ul.list li button.del { padding: 5px 8px; color: var(--ink2); }
       <label class="chk" for="others"><input type="checkbox" id="others" checked> Lines not at this station</label>
       <label class="chk" for="unlev"><input type="checkbox" id="unlev" checked> Deck tracks with no level (on the ground)</label>
       <label class="chk" for="ctx"><input type="checkbox" id="ctx" checked> Other systems at CUT and Norwood Central</label>
+      <p class="note">Metro tunnel equipment, within about 500 m of the view's centre when zoomed in:</p>
+      <label class="chk" for="eqCols"><input type="checkbox" id="eqCols" checked> Box columns</label>
+      <label class="chk" for="eqLegacy"><input type="checkbox" id="eqLegacy" checked> Legacy signals</label>
+      <label class="chk" for="eqCbtc"><input type="checkbox" id="eqCbtc" checked> CBTC and radio</label>
+      <label class="chk" for="eqSafety"><input type="checkbox" id="eqSafety" checked> Safety</label>
+      <label class="chk" for="eqServ"><input type="checkbox" id="eqServ" checked> Power, lights, drains, shafts</label>
     </section>
     <section>
       <h3>Lines</h3>
@@ -346,7 +352,7 @@ function clear() {
   S.mats = { ground: [], struct: [] }; S.groups = new Map();
 }
 function build(snap) {
-  clear(); S.snap = snap;
+  clear(); S.snap = snap; EQ.at = null;
   const D = S.D || (S.D = prepare(snap)); S.lines = D.lines; S.byId = D.byId; S.stations = D.groups;
   const gop = +$('groundOp').value, sop = +$('structOp').value, margin = snap.box_margin || { metro: 2.3, rer: 3.25 };
 
@@ -777,6 +783,131 @@ $('gltf').addEventListener('click', () => {
 
 // ---------- loop: cutaway, compass, station names nearest the view ----------
 const needle = $('needle'), dir = new THREE.Vector3(), tmp = new THREE.Vector3();
+// ---------- Metro tunnel equipment near the camera (Ben, 28 October: claude/Metro_Structure_Gauge_Handoff.md section 3.5) ----------
+// Simple repeated objects at drawing positions and spacings, on four layers, built only within EQ_R of the view's centre when zoomed
+// in and rebuilt as it moves. Box: columns 0.25 m square every 1.524 m between the tracks, walls 2.0 m outside each track centre.
+// Third rail 1.27 m off the track centre on the outer side, trip stops by the inner rail; signals at 250 m block ends and platform
+// ends; CBTC transponders every 100 m and at each stopping point, radio access points every 300 m, leaky feeder on the upper wall;
+// standpipe with hose valves every 61 m, blue lights every 250 m and at platform ends, cross passages every 200 m between twin tubes,
+// distance markers every 100 m, intrusion detection on the last 100 m into each platform; lights every 18 m, cable racks, drains,
+// a sump at each low point, vent shafts at station ends (and draught relief on deep tubes).
+const EQ_R = 500, EQ_ZOOM = 1800, EQ = { group: new THREE.Group(), at: null, key: '' };
+// positions by tunnel, from the Metro Box Cutaway and Metro Tube Cutaway pages (28 October): [metres from the track centre, + toward the
+// outer side (away from the other track), metres over the rail]. Twin tubes: third rail on the inner side, trip stop on the outer;
+// type A signals on the right of travel (outer), type C on the left (inner), clear of the walkway on the outer side. Box and bore:
+// third rail outer, trip stop by the inner rail, signals on the outer walls.
+const EQPOS = {
+  box: { third: [1.27, 0.15], trip: [-0.86, 0.064], sig: [1.8, 2.4], light: [1.92, 3.2], racks: [[1.85, 1.5], [1.85, 1.8]], feeder: [1.94, 3.55], ap: [1.9, 3.4],
+    pipe: [1.88, 1.05], hose: [1.75, 1.05], blue: [1.9, 1.6], mark: [1.97, 1.2], drain: null, floor: 0 },
+  A: { third: [-1.27, 0.15], trip: [0.86, 0.064], sig: [2.28, 2.45], light: [-2.13, 3.0], racks: [[-2.32, 1.35], [-2.36, 1.65], [2.32, 1.35]], feeder: [1.82, 3.55], ap: [-1.38, 3.9],
+    pipe: [-2.29, 1.05], hose: [-2.14, 1.05], blue: [2.41, 1.95], mark: [-2.44, 1.2], drain: [0, -0.29], floor: 0.9, bench: 0.9 },
+  C: { third: [-1.27, 0.15], trip: [0.86, 0.064], sig: [-2.12, 3.05], light: [2.12, 3.7], racks: [[-2.28, 1.4], [-2.34, 1.75], [-2.35, 2.1]], feeder: [-1.81, 3.75], ap: [1.73, 4.1],
+    pipe: [-2.28, 1.2], hose: [-2.13, 1.2], blue: [2.66, 2.6], mark: [-2.38, 1.2], drain: [0, -0.21], floor: 1.12, walk: [1.57, 2.4, 1.12], rail: [2.79, 2.12] },
+  bore: { third: [1.27, 0.15], trip: [-0.86, 0.064], sig: [2.11, 2.6], light: [2.0, 3.3], racks: [[2.13, 1.4], [2.16, 1.75]], feeder: [1.37, 4.6], ap: null,
+    pipe: [2.11, 1.05], hose: [1.96, 1.05], blue: [2.1, 1.6], mark: [2.15, 1.2], drain: [0, -0.29], floor: 0.9, bench: 0.9 },
+};
+const eqPos = (st) => EQPOS[st.k === 'box' ? 'box' : st.tube || (st.k === 'bore' ? 'bore' : 'A')] || EQPOS.A;
+scene.add(EQ.group);
+const EQM = {};
+function eqMat(name, color, emissive) { if (!EQM[name]) EQM[name] = new THREE.MeshStandardMaterial({ color, emissive: emissive || 0x000000, roughness: 0.6, clippingPlanes: clips }); return EQM[name]; }
+function eqLine(name, color) { const k = 'l' + name; if (!EQM[k]) EQM[k] = new THREE.LineBasicMaterial({ color, clippingPlanes: clips }); return EQM[k]; }
+const EQG = {};
+const eqGeo = (k, sx, sy, sz) => EQG[k] || (EQG[k] = new THREE.BoxGeometry(sx, sy, sz));
+function eqInst(geo, mat, list) {   // [[x, y, z, rotY], ...]
+  if (!list.length) return null; const m = new THREE.InstancedMesh(geo, mat, list.length), o = new THREE.Object3D();
+  list.forEach((p, i) => { o.position.set(p[0], p[1], p[2]); o.rotation.set(0, p[3] || 0, 0); o.updateMatrix(); m.setMatrixAt(i, o.matrix); }); return m;
+}
+function eqClear() { while (EQ.group.children.length) { const o = EQ.group.children.pop(); if (o.geometry && !Object.values(EQG).includes(o.geometry)) o.geometry.dispose(); } }
+function eqUpdate(force) {
+  if (!S.snap || !S.lines) return;
+  const d = camera.position.distanceTo(controls.target), on = d < EQ_ZOOM;
+  const layers = ['eqCols', 'eqLegacy', 'eqCbtc', 'eqSafety', 'eqServ'].map((id) => +$(id).checked).join('');
+  const tx = controls.target.x, ty = -controls.target.z;
+  if (!on) { if (EQ.at) { eqClear(); EQ.at = null; } return; }
+  if (!force && EQ.at && Math.hypot(EQ.at[0] - tx, EQ.at[1] - ty) < 150 && EQ.key === layers) return;
+  EQ.at = [tx, ty]; EQ.key = layers; eqClear();
+  const show = { cols: $('eqCols').checked, legacy: $('eqLegacy').checked, cbtc: $('eqCbtc').checked, safety: $('eqSafety').checked, serv: $('eqServ').checked };
+  const B = {}, Lns = {}; const add = (k, p) => (B[k] = B[k] || []).push(p), line = (k, pts) => (Lns[k] = Lns[k] || []).push(pts);
+  const near = (x, y) => Math.hypot(x - tx, y - ty) < EQ_R;
+  for (const l of S.lines) {
+    if (l.sys === 'rer' || !l.T.length) continue;
+    const stt = S.snap.struct[l.id] || {}, sts = (S.snap.lines.find((q) => q.id === l.id) || {}).stations || [];
+    const kindAt = (c) => { for (const p of l.P) { if (c < p[0].c || c > p[p.length - 1].c) continue; let lo = 0, hi = p.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (p[m].c <= c) lo = m; else hi = m; } const st = stt[p[lo].t]; return st && (st.k === 'box' || st.k === 'tube' || st.k === 'bore') ? st : null; } return null; };
+    const inPlat = (c) => sts.some((s) => c >= s.from_c && c <= s.to_c);
+    for (const tr of l.T) {
+      if (tr.length < 2) continue;
+      const s = Math.sign(tr.reduce((a, p) => a + p.off, 0)) || 1;
+      const at = (c) => {   // position, rail level and unit tangent on this track at chainage c
+        let lo = 0, hi = tr.length - 1; if (c < tr[0].c || c > tr[hi].c) return null; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (tr[m].c <= c) lo = m; else hi = m; }
+        const a = tr[lo], b = tr[hi], u = b.c > a.c ? (c - a.c) / (b.c - a.c) : 0, L = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+        return { x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u, z: a.z + (b.z - a.z) * u, tx: (b.x - a.x) / L, ty: (b.y - a.y) / L, off: a.off + (b.off - a.off) * u };
+      };
+      const P = (q, side, up) => { const nx = -q.ty, ny = q.tx, x = q.x + nx * side * s, y = q.y + ny * side * s; return [X(x), Yp(q.x, q.y, q.z) + up, Z(y), Math.atan2(q.ty, q.tx)]; };
+      const c0 = tr[0].c, c1 = tr[tr.length - 1].c;
+      const each = (step, fn, phase = 0) => { for (let c = Math.ceil((c0 - phase) / step) * step + phase; c <= c1; c += step) { const q = at(c); if (!q || !near(q.x, q.y)) continue; const st = kindAt(c); if (!st) continue; fn(c, q, st); } };
+      const run = (fn) => {   // stretches of one kind of tunnel (positions change between them)
+        let cur = [], kk = null;
+        for (let c = c0; c <= c1; c += 5) { const q = at(c), st = q && near(q.x, q.y) ? kindAt(c) : null, k = st && !inPlat(c) ? st.k + (st.tube || '') : null;
+          if (k !== kk) { if (cur.length > 1) fn(cur); cur = []; kk = k; } if (k) cur.push([q, st]); }
+        if (cur.length > 1) fn(cur); };
+      if (show.serv) {
+        run((seg) => { line('third', seg.map(([q, st]) => P(q, ...eqPos(st).third).slice(0, 3)));
+          for (let k = 0; k < 3; k++) { const pts = seg.filter(([, st]) => eqPos(st).racks[k]); if (pts.length > 1) line('rack', pts.map(([q, st]) => P(q, ...eqPos(st).racks[k]).slice(0, 3))); }
+          line('drain', seg.map(([q, st]) => { const e = eqPos(st); return (e.drain ? P(q, ...e.drain) : P(q, -(Math.abs(q.off) - 0.38), -0.2)).slice(0, 3); }));
+          const wk = seg.filter(([, st]) => eqPos(st).walk); if (wk.length > 1) { for (const k of [0, 1]) line('walk', wk.map(([q, st]) => P(q, eqPos(st).walk[k], eqPos(st).walk[2]).slice(0, 3))); line('handrail', wk.map(([q, st]) => P(q, ...eqPos(st).rail).slice(0, 3))); }
+          const bn = seg.filter(([, st]) => eqPos(st).bench); if (bn.length > 1) for (const sd of [-1, 1]) line('bench', bn.map(([q, st]) => P(q, sd * 1.6, eqPos(st).bench).slice(0, 3))); });
+        each(18, (c, q, st) => { if (!inPlat(c)) add('light', P(q, ...eqPos(st).light)); });
+      }
+      if (show.cbtc) {
+        run((seg) => line('feeder', seg.map(([q, st]) => P(q, ...eqPos(st).feeder).slice(0, 3))));
+        each(100, (c, q) => add('xpdr', P(q, 0, -0.14)));
+        each(300, (c, q, st) => { const e = eqPos(st); if (e.ap) add('radio', P(q, ...e.ap)); else if (s > 0) add('radio', P(q, -Math.abs(q.off), 6.1)); }, 150);   // the bore: at the crown
+        for (const p of sts) { const q = at((p.from_c + p.to_c) / 2); if (q && near(q.x, q.y) && kindAt((p.from_c + p.to_c) / 2)) add('xpdr', P(q, 0, -0.14)); }
+      }
+      const signalAt = (c, q, st) => { const e = eqPos(st), [u, h] = e.sig; add('sig', P(q, u, h)); add('sigR', P(q, u - Math.sign(u) * 0.17, h + 0.22)); add('trip', P(q, ...e.trip)); add('joint', P(q, 0.72, 0)); add('joint', P(q, -0.72, 0)); };
+      if (show.legacy) {
+        each(250, (c, q, st) => { if (!inPlat(c)) signalAt(c, q, st); });
+        for (const p of sts) for (const c of [p.from_c, p.to_c]) { const q = at(c), st = q && kindAt(c); if (q && st && near(q.x, q.y)) signalAt(c, q, st); }
+      }
+      if (show.safety) {
+        run((seg) => line('pipe', seg.map(([q, st]) => P(q, ...eqPos(st).pipe).slice(0, 3))));
+        each(61, (c, q, st) => { if (!inPlat(c)) add('hose', P(q, ...eqPos(st).hose)); });
+        each(250, (c, q, st) => { if (!inPlat(c)) add('blue', P(q, ...eqPos(st).blue)); }, 125);
+        each(100, (c, q, st) => add('mark', P(q, ...eqPos(st).mark)));
+        for (const p of sts) for (const c of [p.from_c, p.to_c]) { const q = at(c), st = q && kindAt(c); if (q && st && near(q.x, q.y)) add('blue', P(q, ...eqPos(st).blue)); }
+        // intrusion detection: the last 100 m into each platform, and along the platform edge
+        for (const p of sts) for (const [a, b] of [[p.from_c - 100, p.from_c], [p.to_c, p.to_c + 100], [p.from_c, p.to_c]]) {
+          const pts = []; for (let c = a; c <= b; c += 10) { const q = at(c); if (q && near(q.x, q.y) && kindAt(c)) pts.push(P(q, a === p.from_c && b === p.to_c ? -1.45 : 0, 0.05).slice(0, 3)); }
+          if (pts.length > 1) line('intrusion', pts);
+        }
+      }
+      if (s > 0) {   // once per line (its left track): the line's centre is |off| to the right, tracks being centred on it
+        const ctr = (q, up) => P(q, -Math.abs(q.off), up);
+        if (show.serv) {   // sumps at low points of the rail in tunnel; vent shafts at station ends (draught relief too on deep tubes)
+          let prev = null, prev2 = null;
+          for (let c = c0; c <= c1; c += 10) { const q = at(c); if (q && prev && prev2 && prev.z < prev2.z - 0.01 && prev.z <= q.z && near(prev.x, prev.y) && kindAt(c - 10)) add('sump', ctr(prev, -1.2)); prev2 = prev; prev = q; }
+          for (const p of sts) for (const c of [p.from_c - 5, p.to_c + 5]) { const q = at(c), st = q && kindAt(c); if (!q || !st || !near(q.x, q.y)) continue;
+            const g = groundAt(q.x, q.y), h = Math.max(2, g - q.z), pp = ctr(q, 0), y = (Yp(q.x, q.y, q.z) + Yp(q.x, q.y, g)) / 2; add('shaft', [pp[0], y, pp[2], pp[3], h]);
+            if (st.k !== 'box' && g - q.z > 20) add('shaft', [pp[0] + 8 * q.tx, y, pp[2] - 8 * q.ty, pp[3], h]); }
+        }
+        if (show.cols) for (let c = Math.ceil(c0 / 1.524) * 1.524; c <= c1; c += 1.524) { const q = at(c); if (!q || !near(q.x, q.y) || inPlat(c)) continue; const st = kindAt(c); if (st && st.k === 'box') add('col', ctr(q, 1.85)); }
+        if (show.safety) for (let c = Math.ceil(c0 / 200) * 200 + 100; c <= c1; c += 200) { const q = at(c); if (!q || !near(q.x, q.y) || inPlat(c)) continue; const st = kindAt(c); if (!st || st.k !== 'tube') continue;
+          const pp = ctr(q, eqPos(st).floor + 1.1); add('xpass', [pp[0], pp[1], pp[2], pp[3] + Math.PI / 2, 2 * Math.abs(q.off)]); }
+      }
+    }
+  }
+  const kinds = { col: [0.25, 4.3, 0.25, 0x5b6670], light: [0.6, 0.12, 0.14, 0xffe9a8, 0xffd36a], xpdr: [0.5, 0.04, 0.35, 0x2f8f55], radio: [0.35, 0.25, 0.15, 0x2f8f55],
+    sig: [0.3, 0.75, 0.3, 0x1d2a30], sigR: [0.06, 0.14, 0.14, 0xd23b2a, 0x551008], trip: [0.3, 0.06, 0.08, 0xe0b23a], joint: [0.08, 0.19, 0.1, 0xd23b2a],
+    hose: [0.3, 0.3, 0.25, 0xb8352a], blue: [0.4, 0.55, 0.15, 0x2f64c9, 0x16306a], mark: [0.5, 0.25, 0.04, 0xf2f4f5], sump: [2.0, 1.5, 2.0, 0x2b3a48] };
+  for (const [k, list] of Object.entries(B)) {
+    if (k === 'shaft') { for (const p of list) { const m = new THREE.Mesh(new THREE.BoxGeometry(3, p[4], 3), eqMat('shaft', 0x9aa6ab)); m.position.set(p[0], p[1], p[2]); m.rotation.y = p[3]; EQ.group.add(m); } continue; }
+    if (k === 'xpass') { for (const p of list) { const m = new THREE.Mesh(new THREE.BoxGeometry(Math.max(1, p[4] - 5), 2.2, 1.6), eqMat('xpass', 0xb8352a)); m.position.set(p[0], p[1], p[2]); m.rotation.y = p[3]; EQ.group.add(m); } continue; }
+    const [sx, sy, sz, col, em] = kinds[k]; const m = eqInst(eqGeo(k, sx, sy, sz), eqMat(k, col, em), list); if (m) EQ.group.add(m);
+  }
+  const lc = { third: 0xc8692c, rack: 0x3a4246, drain: 0x2b3a48, feeder: 0x2f8f55, pipe: 0xb8352a, intrusion: 0x9b59d0, walk: 0x8a959b, handrail: 0x4c565e, bench: 0x8a959b };
+  for (const [k, list] of Object.entries(Lns)) { const o = polylines(list, eqLine(k, lc[k])); if (o) EQ.group.add(o); }
+}
+['eqCols', 'eqLegacy', 'eqCbtc', 'eqSafety', 'eqServ'].forEach((id) => $(id).addEventListener('input', () => eqUpdate(true)));
 let frame = 0, lastT = new THREE.Vector3(1e9, 0, 0), lastD = 0;
 function tick() {
   controls.update();
@@ -794,10 +925,11 @@ function tick() {
     for (const sp of labelsG.children) { tmp.copy(sp.position); const dd = tmp.distanceTo(controls.target); sp.visible = false; if (show && dd < reach && !(sp.userData.ctx && !$('ctx').checked)) list.push([dd, sp]); }
     list.sort((a, b) => a[0] - b[0]); for (const [, sp] of list.slice(0, 45)) sp.visible = !S.st || sp.userData.st !== S.st.id || selG.children.length === 0;
   }
+  if (frame % 30 === 0) eqUpdate();
   renderer.render(scene, camera); requestAnimationFrame(tick);
 }
 requestAnimationFrame(tick);
-window.__station3d = { renderer, S, scene, camera, controls, lookFrom, Yp, groundAt };   // for the local render checks (test_page.js)
+window.__station3d = { renderer, S, scene, camera, controls, lookFrom, Yp, groundAt, eqUpdate, EQ };   // for the local render checks (test_page.js)
 
 // ---------- data: snapshots/region and its parts ----------
 async function loadParts(meta) {
