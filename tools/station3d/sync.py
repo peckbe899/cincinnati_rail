@@ -64,7 +64,7 @@ ERA_SHIELD = {**{f'Line_{k}': 'tube' for k in ['1', '2', '2b', '3', '4', '5', '6
 RAIL_TAPER_M = 40.0
 TRI_TUBE_GAP = 1.0
 BOX_MARGIN = {'metro': 2.3, 'rer': 3.25}   # box wall outside the outer track centre (8.5 m at 3.9 m centres; 11 m at 4.5 m)
-ASSUMED = ['rails centred on each line at the spacing its Profiles structure needs (Deck rules; TRI bored tubes 9.5 m apart), tapering over 40 m',
+ASSUMED = ['rails centred on each line at the spacing its Profiles structure needs (Metro: the structure record; TRI: Deck rules, bored tubes 9.5 m apart), tapering over the approach length',
            'box walls 2.3 m (Metro) and 3.25 m (TRI) outside the outer track centre: 8.5 m and 11 m wide boxes between stations',
            'TRI bored tubes 8.5 m outside diameter, one per track', 'platform tops 1.0 m above the rail',
            'ground: a 200 m grid averaged from the Profiles ground along every line, filled out to 1.6 km from the lines']
@@ -76,7 +76,64 @@ LETTER_RER = {v: [k] for k, v in RER_LETTER.items()}
 TRUNK = {v: k for k, v in RER_LETTER.items()}   # the route at Union Terminal for each letter
 
 
-def structure(line_id, t):
+# The shared Metro structure record (Ben, 27-28 October; claude/Metro_Structure_Gauge_Handoff.md): the hub's copy
+# (cache/db/params_db/params/metro_structure.json), else data/profile/metro_structure.json. Set by load_ms.
+MS = None
+PIECES = {}   # Metro line -> its drawn pieces [{name, c0, c1}] (the "built" phase is set per piece)
+
+
+CHR = None        # the Chronology record (hub chronology/segments): each segment's phase
+STATIONS = {}     # Metro line -> its stations (for the Chronology's segments)
+
+
+def load_ms(cache):
+    global MS, CHR
+    for f in (os.path.join(cache, 'db/params_db/params/metro_structure.json'), os.path.join(HERE, '..', '..', 'data/profile/metro_structure.json')):
+        if os.path.exists(f):
+            MS = json.load(open(f))
+            break
+    for f in (os.path.join(cache, 'db/params_db/chronology/segments.json'), os.path.join(HERE, '..', '..', 'data/profile/chronology.json')):
+        if os.path.exists(f):
+            CHR = json.load(open(f))
+            break
+    if not MS:
+        return
+    b = MS['box']
+    METRO_ST['box'].update(below=b['below'], top=b['top'], width=b['inside'] + 2 * (b['top'] - b['roof_underside']))
+    BOX_MARGIN['metro'] = (b['inside'] - b['spacing']) / 2 + (b['top'] - b['roof_underside'])
+
+
+def tube_struct(name):
+    t = MS['tubes'][name]
+    lin = (t['outside'] - t['inside']) / 2
+    out = dict(k='bore' if name == 'bore' else 'tube', below=round(t['rail_over_invert'] + lin, 3), top=round(t['inside'] - t['rail_over_invert'] + lin, 3),
+               od=t['outside'], tube=name)
+    # twin tubes: their running centres; the double-track bore holds both tracks (drawn as one circle)
+    out['spacing' if name != 'bore' else 'track_spacing'] = t['spacing']
+    return out
+
+
+def metro_phase(line_id, c=None):
+    """the building phase of a Metro line's stretch at chainage c (the Chronology, else the structure record)"""
+    import chronology
+    ph = chronology.phase_at(CHR, 'cvx' if line_id == 'CVG_Express' else 'metro', STATIONS.get(line_id) or [], c, line_id) if CHR and c is not None else None
+    if not ph:   # not set in the Chronology: the structure record's phase for the drawn piece, else the line
+        name = next((p['name'] for p in PIECES.get(line_id, []) if c is not None and p['c0'] - 5 <= c <= p['c1'] + 5), None)
+        ph = ((MS.get('piece_phase') or {}).get(line_id) or {}).get(name) or (MS.get('line_phase') or {}).get(line_id) or 'later'
+    return ph
+
+
+def metro_tube(line_id, c=None):
+    """the bored tunnel of a Metro line at chainage c: the tube of the phase the stretch was built in"""
+    return (MS['phases'].get(metro_phase(line_id, c)) or MS['phases']['later'])['tube']
+
+
+def min_radius(line_id, c=None):
+    """the minimum radius of the stretch's phase (Ben, 28 October: 40, 55, 70 m)"""
+    return float((MS['phases'].get(metro_phase(line_id, c)) or MS['phases']['later']).get('min_radius') or MS.get('min_radius') or 40.0)
+
+
+def structure(line_id, t, c=None):
     """the structure a line has for a Profiles type (the editor's structFor, river crossings aside)"""
     if t in ('elevated', 'atgrade', 'trough'):
         return dict(OPEN_ST, t=t)
@@ -84,6 +141,8 @@ def structure(line_id, t):
         return dict(RER_ST['box' if t == 'cutcover' else 'bore'])
     if t == 'cutcover':
         return dict(METRO_ST['box'])
+    if MS:
+        return tube_struct(metro_tube(line_id, c))
     if t == 'deep':
         return dict(METRO_ST['tube'])
     return dict(METRO_ST[ERA_SHIELD.get(line_id, 'tube')])
@@ -304,6 +363,10 @@ def main():
 
     overlay, maps = repath(a.cache)
     lines = load_lines(a.cache, overlay)
+    load_ms(a.cache)
+    PIECES.update({lid: d.get('pieces') or [] for lid, d in lines.items()})
+    STATIONS.update({lid: d['stations'] for lid, d in lines.items()})
+    sys.path.insert(0, os.path.join(HERE, '..'))
     jf, rf = os.path.join(a.cache, 'job.json'), os.path.join(a.cache, 'harness_out.json')
     if not a.skip_harness:
         job = {'lines': [{'id': lid, 'c0': 0.0, 'c1': float(d['length_m']), 'step': STEP} for lid, d in lines.items()], 'deck': True,
@@ -768,7 +831,7 @@ def main():
     # ---- the other systems at CUT and Norwood Central: structures, tracks, platforms, piers, finished ground ----
     import context3d
     ut_isl = [([list(q) for q in zip(dec(pl['x'], 100), dec(pl['y'], 100))], pl['rail']) for pl in ut] if len(ut) == 3 and all(pl['rail'] is not None for pl in ut) else None
-    ctx = context3d.build(E0, N0, ut_isl)
+    ctx = context3d.build(E0, N0, ut_isl, live)
     unlevelled += ctx['unlevelled']
     gtiles = context3d.tiles(ctx, E0, N0, gx0, gy0)
     context = ctx['items']
@@ -808,15 +871,66 @@ def main():
     rules = dd.get('constants') or {}
     PW = rules.get('PW') or {'metro': {'island': 8, 'side': 4}, 'rer': {'island': 11, 'side': 6}}
     EDGE = rules.get('EDGE') or {'metro': 1.45, 'rer': 1.75}
-    taper = float(rules.get('TAPER') or RAIL_TAPER_M)
+    taper = float((MS or {}).get('approach_m') or rules.get('TAPER') or RAIL_TAPER_M)
 
-    def half_base(lid, sys_, t):
-        k = structure(lid, t)
+    def half_base(lid, sys_, t, c=None):
+        k = structure(lid, t, c)
         if sys_ == 'rer':
             return max(float(rules.get('H0_rer', 2.25)), (RER_ST['bore']['od'] + TRI_TUBE_GAP) / 2) if k['k'] == 'tube' else float(rules.get('H0_rer', 2.25))
+        if MS:   # the record: twin tubes at their running centres, the bore and boxes at the box track centres
+            return (k.get('spacing') or k.get('track_spacing')) / 2 if k['k'] in ('tube', 'bore') else MS['box']['spacing'] / 2
         if k['k'] == 'tube':   # Metro twin tubes
             return float(rules.get('H0_metro_twin', METRO_ST['tube']['spacing'] / 2))
         return float(rules.get('H0_metro_bore', 1.95))   # box, the single large bore, open, viaduct
+
+    def ease(u):   # a symmetrical S (two parabolas: reverse curves of equal radius)
+        u = np.clip(u, 0.0, 1.0)
+        return np.where(u < 0.5, 2 * u * u, 1 - 2 * (1 - u) ** 2)
+
+    def appr_len(shift, lid=None, c=None):
+        return max(float(MS.get('approach_m') or 40.0), math.sqrt(4 * min_radius(lid, c) * abs(shift)))
+
+    def metro_spacing(lid, l, cs, base, h_isl):
+        """each track's offset (half the spacing) along a Metro line (Ben, 28 October; tunnel track geometry): bored tubes
+        always at their running spacing; platforms straight; every change of spacing in the station's approach (the
+        editor's approaches: the box carried on past a cut-and-cover station, or the bored approach of a bored station)
+        or inside the box, as one S-ease of max(approach_m, sqrt(4 x min radius x shift))"""
+        n = len(cs)
+        h = base.copy()
+        m = 2 * max(1, int(round(float(MS.get('approach_m') or 40.0) / STEP / 2)))
+        for i in range(n):   # elsewhere (portals, phase changes): the wider side holds, eased into the narrower
+            j0, j1 = max(0, i - m), min(n, i + m + 1)
+            d = np.abs(np.arange(j0, j1) - i) / m
+            h[i] = max(h[i], float(np.max(base[j0:j1] - (base[j0:j1] - base[i]) * ease(d))))
+        plat = np.zeros(n, bool)
+        for st in l['stations']:
+            on = (cs >= st['from_c']) & (cs <= st['to_c'])
+            isl = plat_type.get((lid, norm(st['name']))) == 'island'
+            h[on] = h_isl if isl else base[on]
+            plat |= on
+        apprs = H['profiles'].get(lid, {}).get('approaches') or []
+        done = np.zeros(n, bool)
+        for a in apprs:   # the editor's approaches: from the platform (or the box) to the tubes' spacing
+            c0, c1 = a['c'], a['c'] + a['side'] * a['len']
+            lo, hi = min(c0, c1), max(c0, c1)
+            k_out = int(np.clip(np.searchsorted(cs, c1 + a['side'] * STEP), 0, n - 1))
+            k_in = int(np.clip(np.searchsorted(cs, c0 - a['side'] * STEP), 0, n - 1))
+            v_out = float(base[k_out])
+            v_in = float(h[k_in]) if a.get('station') else MS['box']['spacing'] / 2
+            sel = (cs >= lo) & (cs <= hi)
+            h[sel] = v_in + (v_out - v_in) * ease(np.abs(cs[sel] - c0) / max(1e-6, a['len']))
+            done |= sel
+        for st in l['stations']:   # an island at a bored station: the approach is bored, as part of the station tunnels
+            if plat_type.get((lid, norm(st['name']))) != 'island':
+                continue
+            for edge, side in ((st['from_c'], -1), (st['to_c'], 1)):
+                k = int(np.clip(np.searchsorted(cs, edge + side * 3 * STEP), 0, n - 1))
+                if done[k] or plat[k]:
+                    continue
+                L = appr_len(h_isl - base[k], lid, float(cs[k]))
+                sel = (side * (cs - edge) > 0) & (side * (cs - edge) <= L) & ~done & ~plat
+                h[sel] = h_isl + (base[sel] - h_isl) * ease(np.abs(cs[sel] - edge) / L)
+        return h
 
     plat_type = {}
     for pl in plats:
@@ -825,22 +939,33 @@ def main():
     geo = {}   # line -> [(cs, x, y, nx, ny, h)] per piece
     for lid, l in L.items():
         sk = 'rer' if l['sys'] == 'rer' else 'metro'
-        h_isl = PW[sk]['island'] / 2 + EDGE[sk]
+        h_isl = MS['island_box']['spacing'] / 2 if MS and sk == 'metro' else PW[sk]['island'] / 2 + EDGE[sk]
         geo[lid] = []
         for piece in l['S']:
             cs = np.array([s_[0] for s_ in piece])
             px, py = np.array([s_[1] for s_ in piece]), np.array([s_[2] for s_ in piece])
             n = len(cs)
-            base = np.array([half_base(lid, l['sys'], s_[4]) for s_ in piece])
+            base = np.array([half_base(lid, l['sys'], s_[4], s_[0]) for s_ in piece])
             w = max(1, int(round(taper / STEP / 2)))
             ker = np.ones(2 * w + 1) / (2 * w + 1)
-            h = np.convolve(np.pad(base, w, mode='edge'), ker, 'valid') if n > 1 else base
-            for st in l['stations']:
-                if plat_type.get((lid, norm(st['name']))) != 'island':
-                    continue
-                dist = np.maximum(0, np.maximum(st['from_c'] - cs, cs - st['to_c']))
-                env = h_isl - dist * (h_isl - base) / taper
-                h = np.maximum(h, np.where(dist <= taper, env, 0))
+            if l['sys'] != 'rer' and n > 1 and MS:
+                h = metro_spacing(lid, l, cs, base, h_isl)
+            elif l['sys'] != 'rer' and n > 1:   # no record: never closer than the tube spacing in a tube; eased inside the box
+                h = base.copy()
+                m = 2 * w
+                for i in range(n):
+                    j0, j1 = max(0, i - m), min(n, i + m + 1)
+                    d = np.abs(np.arange(j0, j1) - i) / m
+                    h[i] = max(h[i], float(np.max(base[j0:j1] - (base[j0:j1] - base[i]) * d)))
+            else:
+                h = np.convolve(np.pad(base, w, mode='edge'), ker, 'valid') if n > 1 else base
+            if l['sys'] == 'rer' or not MS:
+                for st in l['stations']:
+                    if plat_type.get((lid, norm(st['name']))) != 'island':
+                        continue
+                    dist = np.maximum(0, np.maximum(st['from_c'] - cs, cs - st['to_c']))
+                    env = h_isl - dist * (h_isl - base) / taper
+                    h = np.maximum(h, np.where(dist <= taper, env, 0))
             k2 = np.clip(np.arange(n) + 2, 0, n - 1)
             k0 = np.clip(np.arange(n) - 2, 0, n - 1)
             tx, ty = px[k2] - px[k0], py[k2] - py[k0]
@@ -854,6 +979,196 @@ def main():
                 k = int(np.clip(np.searchsorted(cs, c), 0, len(cs) - 1))
                 return float(h[k]), (float(np.interp(c, cs, px)), float(np.interp(c, cs, py)), float(np.interp(c, cs, nx)), float(np.interp(c, cs, ny)))
         return None, None
+
+    # the Profiles structure type at every Metro station of each line (whole line, not only the region): the Deck takes
+    # an island by default only where it is shallow shield (written to the hub's params/station_types by the pipeline)
+    station_types = {}
+    for lid, d in lines.items():
+        if d['sys'] == 'rer':
+            continue
+        h = H['profiles'][lid]
+        sc = np.array([q[0] for q in h['samples']])
+        so = (h.get('align') or {}).get('so') or []
+        out_t = {}
+        for i, st in enumerate(d['stations']):
+            c = st['c'] + (so[i] if i < len(so) and so[i] else 0)
+            if len(sc):
+                out_t[st['name']] = h['samples'][int(np.argmin(np.abs(sc - c)))][2]
+        station_types[lid] = out_t
+
+    # along each Metro line every 10 m (Deck UTM): the tube of the stretch's phase (the Chronology, else the structure record)
+    # and each track's offset from the centreline; the Deck draws its Metro tracks from them (params/tube_points)
+    tube_points = {}
+    if MS:
+        for lid, d in lines.items():
+            if d['sys'] == 'rer':
+                continue
+            p = np.array(d['path'], float)
+            # each track's offset along the whole line, as the 3D tracks have it (approaches, islands, tubes at spacing):
+            # the Deck draws its Metro tracks from it (Ben, 28 October)
+            h_ = H['profiles'].get(lid) or {}
+            smp = h_.get('samples') or []
+            if not smp:
+                continue
+            cs2 = np.array([q[0] for q in smp], float)
+            base2 = np.array([half_base(lid, 'metro', q[2], q[0]) for q in smp])
+            so = (h_.get('align') or {}).get('so') or []
+            hp = float((d.get('settings') or {}).get('platform') or 121.92) / 2   # the line's own platforms (the CVG Express 204.2 m)
+            sts = [dict(name=s_['name'], c=s_['c'] + (so[i] if i < len(so) and so[i] else 0)) for i, s_ in enumerate(d['stations'])]
+            for s_ in sts:
+                s_['from_c'], s_['to_c'] = s_['c'] - hp, s_['c'] + hp
+            hh = metro_spacing(lid, {'stations': sts}, cs2, base2, MS['island_box']['spacing'] / 2)
+            cs = np.arange(0.0, float(p[-1, 0]), 10.0)
+            E, N = ll_to_utm(np.interp(cs, p[:, 0], p[:, 1]), np.interp(cs, p[:, 0], p[:, 2]))
+            hv = np.interp(cs, cs2, hh)
+            tube_points[lid] = [[round(float(e), 1), round(float(n), 1), metro_tube(lid, float(c)), round(float(v), 2)] for e, n, c, v in zip(E, N, cs, hv)]
+
+    # ---- station approaches (Ben, 28 October): islands by default on bored stretches; tubes ease out to the island
+    # before it; tracks closer than the tube spacing only inside a box. Reported for Ben: side platforms on bored
+    # stretches, the boxes the double-track bore needs round its islands, and approaches that do not fit.
+    approach = {'side_bored': [], 'boxes': [], 'misfit': []}
+    if MS:
+        A = float(MS.get('approach_m') or 40.0)
+        for lid, l in L.items():
+            if l['sys'] == 'rer':
+                continue
+            sts = sorted(l['stations'], key=lambda s_: s_['from_c'])
+            ends = [(p[0][0], p[-1][0]) for p in l['S'] if p]
+            for i, st in enumerate(sts):
+                ty = plat_type.get((lid, norm(st['name'])))
+                bored = st['type'] in ('shield', 'deep')
+                tube = metro_tube(lid, st['c'])
+                if ty == 'side' and bored and lid != 'CVG_Express':   # a Metro note (the CVG Express is its own system)
+                    approach['side_bored'].append({'line': l['name'], 'station': st['name'], 'c': st['c'], 'type': st['type'], 'tube': tube})
+                if ty != 'island':
+                    continue
+                a0, a1 = st['from_c'] - A, st['to_c'] + A
+                why = []
+                for o in sts[:i] + sts[i + 1:]:
+                    if o['to_c'] > a0 and o['from_c'] < a1:
+                        why.append(f"{o['name']}'s platform within {A:.0f} m")
+                terminal = any(st['from_c'] <= e0 + 5 or st['to_c'] >= e1 - 5 for e0, e1 in ends)
+                if not terminal and not any(e0 - 1 <= a0 and a1 <= e1 + 1 for e0, e1 in ends):
+                    why.append('the line leaves the region within the approach')
+                if tube == 'bore' and bored:
+                    approach['boxes'].append({'line': l['name'], 'station': st['name'], 'from_c': r1(a0), 'to_c': r1(a1), 'type': st['type']})
+                    if st['type'] == 'deep':
+                        why.append('deep: the bore cannot spread to the island, and a box this deep is not cut and cover (a mined station and approaches)')
+                if why:
+                    approach['misfit'].append({'line': l['name'], 'station': st['name'], 'c': st['c'], 'why': why})
+        if approach['side_bored']:
+            # a note to check, not an error (Ben, 28 October: "they aren't necessarily wrong, but should be noted")
+            issues.append(f"To check (not necessarily wrong): {len(approach['side_bored'])} Metro stations have side platforms on a bored stretch: "
+                          + ', '.join(f"{x['station']} ({x['line']}, {'deep' if x['type'] == 'deep' else 'shallow shield'})" for x in approach['side_bored'][:10])
+                          + (' ...' if len(approach['side_bored']) > 10 else ''))
+        if approach['boxes']:
+            issues.append(f"{len(approach['boxes'])} islands on the double-track bore need a box over the platform and {A:.0f} m either side for the tracks to spread: "
+                          + ', '.join(f"{x['station']} ({x['line']}, c {x['from_c']:.0f} to {x['to_c']:.0f})" for x in approach['boxes'][:8]) + (' ...' if len(approach['boxes']) > 8 else ''))
+        if approach['misfit']:
+            issues.append(f"{len(approach['misfit'])} station approaches do not fit: "
+                          + '; '.join(f"{x['station']} ({x['line']}): {', '.join(x['why'])}" for x in approach['misfit'][:6]) + (' ...' if len(approach['misfit']) > 6 else ''))
+
+    # ---- track geometry in the approaches (Ben, 28 October; handoff "Tunnel track geometry"), whole lines: the S-ease's
+    # reverse curves and, where the approach runs into a curve, the single arc each track takes (a^2 = shift x (2r - 2R -
+    # o_s - o_r) outside, (2R - o_s - o_r - 2r) inside), against the minimum radius; each approach box against the street
+    # it runs under (box outside = track centres + 4.0 m); the side-platform stations meeting tubes; the boxes made longer
+    geom = {'tight': [], 'side_tubes': [], 'off_street': [], 'longer': []}
+    if MS:
+        extra_out = {}   # straights where no single arc fits at the phase's minimum radius (Ben: option A)
+        ctx_lines = json.load(open(os.path.join(HERE, '..', '..', 'data', 'profile', 'context', 'lines.json'))).get('lines', {})
+        wall = MS['box']['inside'] - MS['box']['spacing']   # box outside = track centres + 4.0 m (7.90 m; the island box 14.90 m)
+        for lid, d in lines.items():
+            if d['sys'] == 'rer':
+                continue
+            ap = H['profiles'].get(lid, {}).get('approaches') or []
+            if not ap:
+                continue
+            p = np.array(d['path'], float)
+            E, N = ll_to_utm(p[:, 1], p[:, 2])
+
+            def xy(c):
+                return float(np.interp(c, p[:, 0], E)), float(np.interp(c, p[:, 0], N))
+
+            def radius(c):   # the centreline's radius at c: a circle through points 20 m either side
+                (x0, y0), (x1, y1), (x2, y2) = xy(c - 20), xy(c), xy(c + 20)
+                a, b, cc = math.hypot(x1 - x0, y1 - y0), math.hypot(x2 - x1, y2 - y1), math.hypot(x2 - x0, y2 - y0)
+                ar = abs((x1 - x0) * (y2 - y0) - (y1 - y0) * (x2 - x0)) / 2
+                return a * b * cc / (4 * ar) if ar > 1e-6 else float('inf')
+            st_runs = (ctx_lines.get(lid) or {}).get('streets') or []
+            name = d['line']
+            per_st = {}
+            for apx in ap:
+                L_ = apx['len']
+                sh = abs(apx['shift'])
+                o_s = (MS['island_box']['spacing'] if apx['kind'] == 'island' else MS['box']['spacing']) / 2 if apx.get('station') else MS['box']['spacing'] / 2
+                o_r = o_s + apx['shift']
+                c0, c1 = apx['c'], apx['c'] + apx['side'] * L_
+                where = f"{apx['station'] or 'box end'} ({name}, c {min(c0, c1):.0f} to {max(c0, c1):.0f})"
+                RMIN = min_radius(lid, c1)
+                # running into a curve just past the platform: each track one arc (Ben); else the S-ease's reverse
+                # curves, on the centreline's own curvature where the approach is on a curve throughout
+                cs_ = np.arange(c0, c1 + apx['side'] * 10, apx['side'] * 5.0)
+                Rs = [radius(c) for c in cs_]
+                k = next((i for i, r in enumerate(Rs) if r < 3000 and i > 0 and Rs[i - 1] >= 3000), None)
+                if k is not None and abs(cs_[k] - c0) > L_:   # the curve starts past the approach: the tracks are at their spacing by then
+                    k = None
+                if k is not None:
+                    R = float(np.median([r for r in Rs[k:k + 6] if math.isfinite(r)] or [Rs[k]]))
+                    aa = abs(cs_[k] - c0)                       # platform (or box) end to the curve's start
+                    closing = apx['shift'] < 0                   # tracks closing up (an island to tubes)
+                    r_mid = R - (o_s + o_r) / 2 if closing else R + (o_s + o_r) / 2
+                    # the tightening track's single arc starts a before the curve: r = r_mid - a^2 / (2 x shift); r >= the
+                    # minimum radius needs a <= sqrt(2 x shift x (r_mid - Rmin)); the arc may not start on the platform
+                    if r_mid <= RMIN:
+                        geom['tight'].append(f"{where}: runs into a {R:.0f} m curve {aa:.0f} m from the platform end; no single arc of {RMIN:.0f} m or more fits for the {'inner' if closing else 'outer'} track")
+                    else:
+                        a_max = math.sqrt(2 * sh * (r_mid - RMIN))
+                        if aa > a_max + 0.5:   # a straight first, so the arc starts no more than a_max before the curve
+                            ext = round(aa - a_max, 1)
+                            extra_out.setdefault(lid, []).append({'station': apx.get('station'), 'side': apx['side'], 'c': round(c0, 1), 'extra': ext})
+                            geom.setdefault('straights', []).append(f"{where}: {ext:.1f} m straight after the {'platform' if apx.get('station') else 'box'} end, so the {'inner' if closing else 'outer'} track's arc into the {R:.0f} m curve keeps {RMIN:.0f} m; the box grows by it")
+                else:
+                    rs = L_ * L_ / (4 * sh) if sh > 0 else float('inf')
+                    Rc = min(radius(c) for c in np.linspace(min(c0, c1), max(c0, c1), 5))
+                    r_tight = 1 / (1 / max(1.0, Rc - max(o_s, o_r)) + 1 / rs) if Rc < 3000 else rs
+                    if r_tight < RMIN - 0.5:
+                        geom['tight'].append(f"{where}: the S-ease over {L_:.0f} m" + (f" on a {Rc:.0f} m curve" if Rc < 3000 else '') + f" gives about {r_tight:.0f} m, under {RMIN:.0f} m")
+                # the approach box under the street
+                covered = any(r[0] - 300 <= max(c0, c1) and r[1] + 300 >= min(c0, c1) for r in st_runs)   # the Deck has streets near here
+                if not covered:
+                    geom.setdefault('no_streets', []).append(where)
+                if covered and (apx.get('station') or apx['kind'] == 'box'):
+                    bad = []
+                    for c in np.arange(min(c0, c1), max(c0, c1) + 0.1, 10.0):
+                        w = 2 * (o_s + (o_r - o_s) * min(1.0, abs(c - c0) / L_)) + wall
+                        st_ = next((r for r in st_runs if r[0] - 5 <= c <= r[1] + 5), None)
+                        if not st_:
+                            bad.append(('off', c, w))
+                        elif w > st_[2] + 0.01:
+                            bad.append(('narrow', c, w, st_))
+                    if bad:
+                        off = [b for b in bad if b[0] == 'off']
+                        nar = [b for b in bad if b[0] == 'narrow']
+                        msg = []
+                        if off:
+                            msg.append(f"leaves the street for about {len(off) * 10} m (under blocks, or round a corner)")
+                        if nar:
+                            msg.append(f"{max(b[2] for b in nar):.1f} m wide under {nar[0][3][3]} ({nar[0][3][2]:.1f} m)")
+                        geom['off_street'].append(f"{where}: {'; '.join(msg)}")
+                if apx.get('station'):
+                    per_st.setdefault(apx['station'], []).append(L_)
+                    if apx['kind'] == 'side':
+                        geom['side_tubes'].append(f"{apx['station']} ({name}): {L_:.0f} m approach box ({o_s * 2:.2f} to {o_r * 2:.2f} m)")
+            plat_len = float((d.get('settings') or {}).get('platform') or 121.92)
+            for s_, ls in per_st.items():
+                geom['longer'].append(f"{s_} ({name}): box {plat_len:.0f} m to {plat_len + sum(ls):.0f} m")
+        geom['extra'] = extra_out
+        if geom.get('straights'):
+            issues.append(f"{len(geom['straights'])} approach boxes with a straight before the arc into a curve (Ben: option A): " + '; '.join(geom['straights'][:6]) + (' ...' if len(geom['straights']) > 6 else ''))
+        if geom['tight']:
+            issues.append(f"{len(geom['tight'])} station approaches under the minimum radius (by phase: 40, 55, 70 m): " + '; '.join(geom['tight'][:6]) + (' ...' if len(geom['tight']) > 6 else ''))
+        if geom['off_street']:
+            issues.append(f"{len(geom['off_street'])} approach boxes not inside the street (accepted, Ben: the street grid made them necessary): " + '; '.join(geom['off_street'][:6]) + (' ...' if len(geom['off_street']) > 6 else ''))
 
     deck_tracks, tracks = tracks, []
     for lid, l in L.items():
@@ -917,6 +1232,9 @@ def main():
                 if h is not None:
                     o['track_offsets'], o['tracks_from'] = [r2(h), r2(-h)], 'centred on the line'
 
+    def tkey(lid, t, c):
+        return f'{t}~{metro_tube(lid, c)}' if MS and t in ('shield', 'deep') and L[lid]['sys'] != 'rer' else t
+
     # ---- the snapshot ----
     snap_lines = []
     for lid, l in L.items():
@@ -926,10 +1244,16 @@ def main():
         for piece, sh, il in zip(l['S'], l['shared'], l['il']):
             pieces.append({'c0': r1(piece[0][0]), 'step': STEP, 'n': len(piece),
                            'x': enc([s_[1] for s_ in piece], 10), 'y': enc([s_[2] for s_ in piece], 10),
-                           'z': enc([s_[3] for s_ in piece], 100), 't': rle([s_[4] for s_ in piece]), 'sh': rle(sh), 'il': rle(il)})
+                           'z': enc([s_[3] for s_ in piece], 100), 't': rle([tkey(lid, s_[4], s_[0]) for s_ in piece]), 'sh': rle(sh), 'il': rle(il)})
         snap_lines.append({'id': lid, 'name': l['name'], 'sys': l['sys'], 'color': l['color'], 'saved': l['saved'],
                            'pieces': pieces, 'stations': l['stations']})
     struct = {lid: {t: structure(lid, t) for t in ('cutcover', 'shield', 'deep', 'elevated', 'atgrade', 'trough')} for lid in L}
+    if MS:   # Metro bored stretches by their tube (type A, type C, the double-track bore): 'shield~A' and so on
+        for lid in L:
+            if L[lid]['sys'] != 'rer':
+                for t in ('shield', 'deep'):
+                    for name in MS['tubes']:
+                        struct[lid][f'{t}~{name}'] = tube_struct(name)
     meta = {
         'area': AREA['id'], 'name': AREA['name'], 'default_station': AREA['default_station'],
         'synced_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
@@ -937,7 +1261,8 @@ def main():
         'frame_turn_deg': AREA['frame_turn'], 'box': [r1(v) for v in BOX],
         'interline': combos, 'stripe_m': STRIPE_M,
         'platform_m': PLATFORM_M, 'platform_above_rail': PLATFORM_ABOVE_RAIL, 'struct': struct, 'box_margin': BOX_MARGIN,
-        'assumed': ASSUMED, 'deck_rules': dd.get('constants'), 'issues': issues,
+        'assumed': ASSUMED, 'deck_rules': dd.get('constants'), 'issues': issues, 'approach': approach, 'track_geometry': geom, 'station_types': station_types, 'tube_points': tube_points,
+        'station_platforms': {lid: {st['name']: plat_type.get((lid, norm(st['name']))) or 'side' for st in d['stations']} for lid, d in lines.items() if d['sys'] != 'rer'},
         'rules': ['Levels: the Rail Profiles editor; plan, tracks and platforms: the Mill Creek Deck',
                   'A platform on a shared pair (RER A/D, B C E ...) serves every line on it, at the level of the saved Profiles line (Ben, 2026-10-26: A and D share the Fountain Square platforms)',
                   'An interlined pair (RER A/D, B/D, B C E ...) is one pair of tracks, drawn once at the level of the line most of it follows and striped in every line\'s colour (Ben, 2026-10-27)',
@@ -989,7 +1314,8 @@ def main():
     json.dump({'json': json.dumps({'key': 'ground', 'value': ground}, separators=(',', ':')), 'synced_at': meta['synced_at']},
               open(os.path.join(ddir, 'ground-0.json'), 'w'))
     parts.append('ground-0')
-    json.dump({'json': json.dumps(meta, separators=(',', ':')), 'parts': parts, 'synced_at': meta['synced_at']},
+    # the page's summary document (256 KiB at most): tube_points is for the Deck (hub params/tube_points), not the page
+    json.dump({'json': json.dumps({k: v for k, v in meta.items() if k != 'tube_points'}, separators=(',', ':')), 'parts': parts, 'synced_at': meta['synced_at']},
               open(os.path.join(ddir, 'meta.json'), 'w'))
 
     # ---- report ----

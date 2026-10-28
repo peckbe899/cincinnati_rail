@@ -4,7 +4,7 @@
                              tools/rer_deck_routes.py (every RER route and Metro line rebuilt on the Deck's pieces and
                              platforms where they drifted; saved profiles moved in the database) -> metro rails table ->
                              Profiles context  ->  then 3d
-    alignments/*, config/*  ->  3d: tools/station3d/sync.py (both editors run headless on the hub's records) ->
+    alignments/*, config/*, params/metro_structure  ->  3d: tools/station3d/sync.py (both editors run headless on the hub's records) ->
                              snapshots/region in the database (the 3D view redraws) and params/registry
 
 Jobs run one at a time in a worker thread; changes arriving while a job runs are coalesced into one more run.
@@ -30,7 +30,7 @@ PY = sys.executable
 def trigger_for(path):
     if path == 'deck/layout':
         return 'deck_tie'
-    if path.startswith(('alignments/', 'config/')):
+    if path.startswith(('alignments/', 'config/')) or path in ('params/metro_structure', 'chronology/segments'):
         return '3d'
     return None
 
@@ -132,7 +132,7 @@ class Pipeline:
         os.makedirs(js, exist_ok=True)
         if not os.path.exists(os.path.join(js, 'jsts.min.js')):
             shutil.copy(os.path.join(HUB, 'static', 'vendor', 'jsts.min.js'), js)
-        for sub, colls in (('profiles_db', ('alignments', 'config')), ('deck_db', ('deck',))):
+        for sub, colls in (('profiles_db', ('alignments', 'config')), ('deck_db', ('deck',)), ('params_db', ('params', 'chronology'))):
             for c in colls:
                 d = os.path.join(WORK, 'db', sub, c)
                 shutil.rmtree(d, ignore_errors=True)
@@ -166,7 +166,9 @@ class Pipeline:
         self.sh(log, [PY, '-c', 'import sys, json; sys.path.insert(0, "tools"); import make_rer_profile_lines as m; '
                       'open("data/profile/rer/metro_rails.json", "w").write(json.dumps(m.metro_rails(), separators=(",", ":")))'])
         self.sh(log, [PY, os.path.join(ROOT, 'tools', 'make_profile_context.py')])
+        self.sh(log, [PY, os.path.join(ROOT, 'tools', 'chronology.py')])   # the Chronology view's routes
         self.store.emit({'t': 'files', 'site': 'profiles'})
+        self.store.emit({'t': 'files', 'site': 'chronology'})
 
     def job_3d(self, log):
         out = os.path.join(WORK, 'snapshot.json')
@@ -181,6 +183,35 @@ class Pipeline:
         self.store.set('snapshots/region', meta, by='pipeline')   # last: open 3D views redraw
         snap = json.load(open(out))
         self.store.set('params/registry', registry(snap, self.store), by='pipeline')
+        # the Profiles structure type at each Metro station, for the Deck's island default; a change redraws the Deck's
+        # platforms, so the 3D map is built once more with them
+        # each viaduct a selection of its own on the Deck (its RER A viaducts from the Profiles' elevated stretches)
+        self.sh(log, [PY, os.path.join(ROOT, 'tools', 'viaduct_parts.py'), os.path.join(WORK, 'harness_out.json')])
+        self.store.emit({'t': 'files', 'site': 'deck'})
+        sp = snap.get('station_platforms')   # island or side at each Metro station (the Deck's), for the Profiles' approaches
+        cur = self.store.get('params/station_platforms')
+        if sp and (cur is None or cur['data'] != sp):
+            self.store.set('params/station_platforms', sp, by='pipeline')
+            json.dump(sp, open(os.path.join(ROOT, 'data', 'profile', 'station_platforms.json'), 'w'), indent=0, ensure_ascii=False)
+        ax = (snap.get('track_geometry') or {}).get('extra')   # straights before the arc where no single arc fits
+        cur = self.store.get('params/approach_extra')
+        if ax is not None and (cur is None or cur['data'] != ax):
+            self.store.set('params/approach_extra', ax, by='pipeline')
+            json.dump(ax, open(os.path.join(ROOT, 'data', 'profile', 'approach_extra.json'), 'w'), indent=0, ensure_ascii=False)
+        tp = snap.get('tube_points')   # the bored tube along each Metro line, for the Deck's track spacing
+        cur = self.store.get('params/tube_points')
+        if tp and (cur is None or cur['data'] != tp):
+            self.store.set('params/tube_points', tp, by='pipeline')
+        st = snap.get('station_types')
+        cur = self.store.get('params/station_types')
+        if st and (cur is None or cur['data'] != st):
+            self.store.set('params/station_types', st, by='pipeline')
+            if not getattr(self, '_types_rerun', False):
+                self._types_rerun = True
+                self.schedule('3d', 'station types changed: the Deck redraws its platforms', delay=0)
+                log('Station types changed: the 3D map is built once more')
+                return
+        self._types_rerun = False
         log(f"Snapshot: {len(meta['parts'])} parts, {len(snap['issues'])} issues")
 
 
@@ -241,9 +272,18 @@ def registry(snap, store):
         row(f'{lab} vertical curve radius', 'm', profiles=prof[k].get('vcRadius'))
         row(f'{lab} box wall outside the outer track', 'm', station3d=(snap.get('box_margin') or {}).get(k))
         row(f'{lab} platform top above rail', 'm', station3d=(snap.get('platform_above_rail') or {}).get(k))
-    row('Twin tube spacing (Deck)', 'm', deck=dr.get('H_TUBE'))
-    row('Box spacing (Deck)', 'm', deck=dr.get('H_BOX'))
+    ms = (store.get('params/metro_structure') or {}).get('data') or {}
+    if ms:   # one record read by all three views (Metro structure, hub page): the same value in each
+        for name, key in (('type A tubes', 'A'), ('type C tubes', 'C'), ('double-track bore', 'bore')):
+            v = ms['tubes'][key]['spacing']
+            row(f'Metro track centres, {name}', 'm', note='the structure record', profiles=v, deck=v, station3d=v)
+        row('Metro track centres, box', 'm', note='the structure record', profiles=ms['box']['spacing'], deck=ms['box']['spacing'], station3d=ms['box']['spacing'])
+        row('Metro track centres at an island', 'm', note='the structure record', deck=ms['island_box']['spacing'], station3d=ms['island_box']['spacing'])
+        row('Metro clear height under structures in the open', 'm', note='the structure record', profiles=ms['open_clear_height'])
     row('Platform slide limit (Deck)', 'm', deck=dr.get('SLIDE_M'))
     tie = [i for i in snap.get('issues', []) if "off the Deck's pieces" in i or "off their Deck platform" in i]
-    return {'rows': rows, 'tie_issues': tie, 'synced_at': snap.get('synced_at'),
+    # notes to check, not errors: side platforms on bored stretches (Ben, 28 October)
+    checks = [{'line': x['line'], 'station': x['station'], 'text': f"side platforms on a bored stretch ({'deep tube' if x['type'] == 'deep' else 'shallow shield'}, {x['tube']} tunnel)"}
+              for x in (snap.get('approach') or {}).get('side_bored', [])]
+    return {'rows': rows, 'tie_issues': tie, 'checks': checks, 'synced_at': snap.get('synced_at'),
             'note': 'Profiles values are its settings (config/settings, config/settings_rer) over its built-in defaults; Deck values are its constants as its own code has them, and platform lengths measured from the platforms it draws; Station 3D values are sync.py constants.'}

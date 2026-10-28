@@ -1,52 +1,53 @@
 {
- "v": 1,
- "system": "Cincinnati RER",
- "line": "RER A trunk",
+ "del": [],
+ "gapfill": [],
  "length_m": 10769.1,
- "platform_m": 204.2,
- "st": {
-  "Evans": 147.5,
-  "Union Terminal": 135.7,
-  "City Hall": 140.8,
-  "Fountain Square": 141.5,
-  "Times": 148.9,
-  "Eden Park": 186.9,
-  "Walnut Hills": 213.3,
-  "MLK": 227.2,
-  "Xavier": 213.5
+ "line": "RER A trunk",
+ "mode": {
+  "City Hall": "under",
+  "Eden Park": "under",
+  "Evans": "surface",
+  "Fountain Square": "under",
+  "MLK": "under",
+  "Times": "under",
+  "Union Terminal": "under",
+  "Walnut Hills": "under",
+  "Xavier": "surface"
  },
+ "ovr": [],
+ "platform_m": 204.2,
  "pvi": [
   [
    0,
-   159.3
+   154.85
   ],
   [
-   123.1,
-   155.2
+   61.5,
+   154.53
   ],
   [
-   204.6,
-   152.5
+   356.4,
+   154.91
   ],
   [
-   330.1,
-   148.4
-  ],
-  [
-   1461.9,
-   135.9
+   1747.4,
+   135.73
   ],
   [
    2008.9,
    135.7
   ],
   [
-   2396,
-   134
+   3166.2,
+   154.3
   ],
   [
-   2664,
-   134
+   3394.5,
+   154.3
+  ],
+  [
+   3409.8,
+   154.3
   ],
   [
    4165.9,
@@ -61,18 +62,6 @@
    146.75
   ],
   [
-   8146,
-   227.2
-  ],
-  [
-   8721,
-   227.1
-  ],
-  [
-   8884,
-   225.2
-  ],
-  [
    9124.8,
    220.7
   ],
@@ -81,160 +70,127 @@
    215.9
   ],
   [
-   9502,
-   213.2
+   9632.1,
+   209.5
   ],
   [
-   9646,
-   208.4
-  ],
-  [
-   9790,
-   206.7
-  ],
-  [
-   10142,
-   206.7
+   10084.7,
+   206.2
   ]
  ],
- "ovr": [
-  [
-   274.7,
-   334.9,
-   "cutcover"
-  ],
-  [
-   334.9,
-   1558,
-   "cutcover"
-  ],
-  [
-   1983.5,
-   2039,
-   "shield"
-  ],
-  [
-   8267,
-   8671,
-   "cutcover"
-  ]
- ],
- "sg": {
-  "Eden Park": 2,
-  "Walnut Hills": 2
- },
- "gapfill": [],
- "so": {},
- "del": [],
- "mode": {
-  "Evans": "surface",
-  "Union Terminal": "under",
-  "City Hall": "under",
-  "Fountain Square": "under",
-  "Times": "under",
-  "Eden Park": "under",
-  "Walnut Hills": "under",
-  "MLK": "under",
-  "Xavier": "surface"
- },
  "route_chainage_m": [
   0,
-  10769.1
+  10760.9
  ],
+ "sg": {},
+ "so": {},
+ "st": {
+  "City Hall": 154.3,
+  "Eden Park": 190.51,
+  "Evans": 154.8,
+  "Fountain Square": 155.85,
+  "MLK": 230.2,
+  "Times": 148.9,
+  "Union Terminal": 135.7,
+  "Walnut Hills": 220.53,
+  "Xavier": 213.5
+ },
  "stations": [
   {
-   "name": "Evans",
    "c": 754.1,
-   "point_c": 754.1,
-   "rail": 147.5,
+   "depth": 0,
    "ground": 154.8,
-   "depth": 7.3,
-   "type": "cutcover"
+   "name": "Evans",
+   "point_c": 754.1,
+   "rail": 154.8,
+   "type": "atgrade"
   },
   {
-   "name": "Union Terminal",
    "c": 1881.4,
+   "depth": 17.1,
+   "ground": 152.8,
+   "name": "Union Terminal",
    "point_c": 1881.4,
    "rail": 135.7,
-   "ground": 152.8,
-   "depth": 17.1,
    "type": "cutcover"
   },
   {
-   "name": "City Hall",
    "c": 3308.9,
+   "depth": 11.8,
+   "ground": 166.1,
+   "name": "City Hall",
    "point_c": 3308.9,
-   "rail": 140.8,
-   "ground": 166.5,
-   "depth": 25.7,
-   "type": "deep"
+   "rail": 154.3,
+   "type": "cutcover"
   },
   {
-   "name": "Fountain Square",
    "c": 4005.7,
-   "point_c": 4005.7,
-   "rail": 141.5,
+   "depth": 12.25,
    "ground": 168.1,
-   "depth": 26.6,
-   "type": "deep"
+   "name": "Fountain Square",
+   "point_c": 4005.7,
+   "rail": 155.85,
+   "type": "cutcover"
   },
   {
-   "name": "Times",
    "c": 5017.9,
+   "depth": 12,
+   "ground": 160.9,
+   "name": "Times",
    "point_c": 5017.9,
    "rail": 148.9,
-   "ground": 160.9,
-   "depth": 12,
    "type": "cutcover"
   },
   {
-   "name": "Eden Park",
    "c": 6403.3,
+   "depth": 12.59,
+   "ground": 203.1,
+   "name": "Eden Park",
    "point_c": 6403.3,
-   "rail": 186.9,
-   "ground": 203.17,
-   "depth": 16.27,
+   "rail": 190.51,
    "type": "cutcover"
   },
   {
-   "name": "Walnut Hills",
    "c": 7459.5,
+   "depth": 29.71,
+   "ground": 250.24,
+   "name": "Walnut Hills",
    "point_c": 7459.5,
-   "rail": 213.3,
-   "ground": 250.35,
-   "depth": 37.05,
+   "rail": 220.53,
    "type": "deep"
   },
   {
-   "name": "MLK",
    "c": 8476.9,
+   "depth": -0.3,
+   "ground": 229.9,
+   "name": "MLK",
    "point_c": 8476.9,
-   "rail": 227.2,
-   "ground": 233.8,
-   "depth": 6.6,
-   "type": "cutcover"
+   "rail": 230.2,
+   "type": "atgrade"
   },
   {
-   "name": "Xavier",
    "c": 10706.5,
+   "depth": 0.06,
+   "ground": 213.56,
+   "name": "Xavier",
    "point_c": 10706.5,
    "rail": 213.5,
-   "ground": 213.6,
-   "depth": 0.1,
    "type": "atgrade"
   }
  ],
  "summary": {
+  "grades_over_limit": 3,
   "km_by_type": {
-   "elevated": 0.14,
-   "atgrade": 1.999,
-   "trough": 0,
-   "cutcover": 4.41,
-   "shield": 2.48,
-   "deep": 1.74
+   "atgrade": 3.201,
+   "cutcover": 5.6,
+   "deep": 0.31,
+   "elevated": 0.08,
+   "shield": 1.57,
+   "trough": 0
   },
-  "max_grade_permille": 494,
-  "grades_over_limit": 1
+  "max_grade_permille": 41.2
  },
- "updated": "2026-10-27T23:16:47.215Z"
+ "system": "Cincinnati RER",
+ "updated": "2026-10-27T14:54:27.060Z",
+ "v": 1
 }

@@ -2,7 +2,7 @@
 
 The 3D station page and the sync that feeds it, as set out in `claude/Station_3D_Brief.md`. Phases 1 (sync) and 2 (the page) are built for the whole region the Mill Creek Deck draws lines over; station design (phase 3) and the checks (phase 4) are not started.
 
-- Page: https://claude.ai/artifact/MxbB1bnkqwZYxCbbEsHQZA (source `page/index.html`).
+- Page: `page/index.html`, served by the hub at `/3d/` (the old claude.ai artifact is retired).
 - Its database:
   - `snapshots/region` (the snapshot's summary, rules, issues and the list of its parts) and `snapshots/region/parts/<key>-<n>` (lines, tracks, unlevelled, stations, platforms, streets, blocks, ground), written by the sync;
   - `views/*` (named views, shared);
@@ -41,6 +41,8 @@ A page can read only its own database, so the Rail Profiles editor and the Mill 
 
 ## Running a sync (a Claude session)
 
+RETIRED: the claude.ai artifacts are no longer used (see `CLAUDE.md`). The hub runs the sync (`hub/pipeline.py`, job 3d); the steps below are history. Do not fetch from or write to any artifact.
+
 1. Fetch the editors' published files with the Artifact tool (`action: read`, `paths`, `out_dir` = `tools/station3d/cache/profiles` and `.../deck`). The Profiles page needs `index.html` and every `lines/`, `rer/` and `network.json` file; the Deck needs `index.html` and its JSON files (tiles are not needed).
 2. Fetch the saved records with ArtifactData (`out_dir` = `tools/station3d/cache/db/profiles_db` for collection `alignments` and `config`, `.../deck_db` for `deck/layout`).
 3. Write `cache/versions.json` with the versions those reads reported (optional, kept in the snapshot's `sources`).
@@ -65,7 +67,8 @@ Ben asked for the CUT underground box, the viaducts and the CUT and Norwood plat
     - box (the lower level box, the lower-pair tunnel, the south throats, the intercity and C&O tunnels, the Union Terminal TRI box): closed, invert to roof;
     - structure types at CUT (Ben, 2026-10-26; `st`, as the Profiles context): embankment (`fill`: the fan from W 9th to W Liberty, the north trunk fill, the intercity and C&O descents), solid to the track bed and cut open at each street; arch viaduct (`arch`: the south approach to the Cardinal crossing, the north arch viaduct), solid between the streets; normal viaduct (`viaduct`: the rest, and the Indianapolis and D upper deck): the deck, underside to rail; bridge (river bridges, the Ludlow underbridge);
     - trough and cut (the lower-pair open cut from Bank to Findlay, the intercity and C&O troughs, the Norwood Central cut and trench): floor and retaining walls up to the ground.
-  - `span`: over each street opening, a flat bridge (embankment) or an arch springing at the street edges (arch viaduct), drawn along the street.
+  - `span`: over each street opening, a flat bridge (embankment), or on the arch viaducts a true arch (streets up to 11.9 m wide) or a girder bridge 2.0 m deep hidden behind the arch fascia (Ben, 2026-10-28), drawn along the street.
+  - `arcade` (Ben, 2026-10-28): each long face of the arch viaducts (APEx lower deck only, not the Indianapolis and D upper deck): the face line, rail, finished ground, width across, and its stretches `[u0, u1, kind, name]`, a street opening (`arch` or `girder`) or a block's stretch (`blind`, `shops` or `open`, from the Deck's per-block switch, `edits.blocks[id].arc`, exported as `arcade`). A block switched open carves a girder bridge through the structure. The page draws the arcade within 450 m of the view's centre when zoomed in (Show: Arcade): ashlar walls, piers 2.4 m on the building lines with granite plinths (roundels and flutes on the end piers), bays fitted to about 18.3 m, two-band archivolts, keystones with fan rays, corbels and cornice, bronze railing, glazed shopfronts, masonry catenary pylons on every fourth pier with a lattice girder to mid-deck (the middle masts wait for the 6.0 m APEx-side gaps). Style from Ben's mockup via the Viaduct Arcade 3D model.
   - `blind`: blind-arch outlines every 10 m on the faces of the descent embankments.
   - `pier`: piers every 25 m on normal viaducts only, from the finished ground to the underside (no footing check); the upper deck's piers stand on the lower deck.
   - `rail`: the APEx, lower-level, ORR, Transvalley and Norwood tracks at the level of the structure they run in. Past the structures (Ben, 2026-10-27: off the bridges into Ludlow and to the region's edge) each track runs from the structure end at no more than its system's grade (APEx 2.5%, lower level 1.5%, Transvalley 3%) to the ground smoothed over 150 m; the Deck's tunnel tracks 15 m under it; over water at least 20 m above the Ohio pool. Drawing values; `est` marks those points. Nothing is left dashed.
@@ -89,3 +92,17 @@ Drawing values: pier spacing 25 m and thickness 2 m; blind arches every 10 m; TR
 Later rulings (Ben, 2026-10-27): the structure types above; the Indianapolis APEx pair and RER D on an upper deck at the minimum height over the lower deck (174.5 m, 7.9 m over its highest rail), held to the hillside, then the Floridian hillside tunnel at a constant grade to the portal (about 186 m); RER D tied to it (`data/profile/rer/alignments/RER_4.json`); B and D from the trunk to Union Terminal on the Deck's route; interlined pairs drawn once, striped. See `data/profile/README.md`.
 
 The Deck snapshot in `data/deck` is version 1793028977-4bc6 (layout 2461). When the Deck changes, refresh `data/deck` from its published files before syncing.
+
+## Metro structure and tunnel equipment (2026-10-28)
+
+- Structures and rail spacing come from the shared Metro structure record (hub `params/metro_structure`, else `data/profile/metro_structure.json`): bored stretches take the tube of the phase their drawn piece was built in (type A, the 9.0 m double-track bore, type C; snapshot types `shield~A` and so on); boxes 9.1 m outside. Spacing narrows only inside a box, never in a tube.
+- The snapshot's `approach` lists side platforms on bored stretches, the boxes islands on the bore need, and approaches that do not fit; `station_types` gives the Profiles type at each Metro station (the Deck's island default).
+- Tunnel equipment is drawn by the page within about 500 m of the view's centre when zoomed in, on five switches under Show, at the positions of Ben's box and tube cutaways (claude/Metro_Structure_Gauge_Handoff.md section 3.5).
+
+
+## Track geometry in tunnels and station approaches (Ben, 2026-10-28)
+
+- Each Metro track is offset from the line's centreline by half its construction's spacing (box and bore 3.90 m, type A 8.74 m, type C 9.14 m, islands 10.90 m). Bored tubes always run at their spacing; platforms are straight.
+- The approach belongs to the station: a cut-and-cover station meeting bored tubes keeps its box (the Rail Profiles type) until the tracks reach the tubes' spacing; a box meeting tubes away from a station likewise; a bored station's approach is bored. Length max(approach_m, sqrt(4 x min_radius x shift per track)); the record's `min_radius` is a drawing value (150 m) until Ben sets it.
+- The sync draws each change as one S-ease (two equal reverse curves) over the editor's approach (`approaches` in the harness output); other changes (portals, phase changes) hold the wider spacing and ease into the narrower side.
+- `track_geometry` in the snapshot and the issues: approaches under the minimum radius (the S-ease's reverse curves on the centreline's curvature, or the single arc each track takes where the approach runs into a curve), side-platform stations meeting tubes, the boxes made longer, and approach boxes not inside the street (box outside = track centres + 4.0 m; streets from the Deck, `context/lines.json`).

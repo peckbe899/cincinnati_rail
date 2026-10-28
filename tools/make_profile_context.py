@@ -61,6 +61,7 @@ def sample(xy, mode='bilinear'):
 
 import glob, datetime
 from shapely.geometry import shape, box, Polygon
+import shapely
 from shapely.ops import unary_union, substring
 def build():
     """the Deck's CUT and Norwood structures (S) and street re-grades (REG), in Deck UTM metres"""
@@ -115,15 +116,20 @@ def build():
     add('C&O pair: trough', 'trough', tr, coz, TROUGH, 'Deck structures: open between retaining walls, rail 144.6 to 148.2 m', 'C&O pair (trough)', cut=True)
     add('C&O pair: viaduct', 'viaduct', stru['C&O pair: viaduct'], coz, VIA, f"Deck structures: rail 148.2 to 160.3 m; {SUM['co_g']}% onto the TRIMET C&O viaduct (160.4 m)", 'C&O pair (viaduct)')
     add('C&O viaduct (TRIMET line, to the C&O bridge)', 'viaduct', stru['C&O viaduct (TRIMET line, to the C&O bridge)'], lambda x, y: SUM['co_merge_z'], VIA, 'Deck: the C&O pair on the TRIMET approach viaduct, 160.4 m (level held, not published further)', 'C&O viaduct (TRIMET)')
-    # ---- APEx arch viaduct: rail = deck + 6.5 m (4.9 m street clearance + 1.6 m arch crown, fill and track) ----
-    marks = sorted([(4330691, 164.0), (4330777, 163.4), (4331225, 161.7), (4331549, 160.3), (4332134, 160.3), (4332332, 161.1), (4334346, 164.5), (4335532, 166.6), (4336948, 162.5)])
-    apex_z = lambda x, y: float(np.interp(y, [m[0] for m in marks], [m[1] for m in marks]))
+    # ---- APEx levels: the south approach by the Deck's marks (CUT 160.3 m to the bridge 164.0 m, 161.7 m over W 8th);
+    # the north arch viaduct by the street rule (north_profile below, set once the street re-grades are known) ----
+    marks = sorted([(4330691, 164.0), (4330777, 163.4), (4331225, 161.7), (4331549, 160.3), (4332134, 160.3)])
+    NP = {}
+    def apex_z(x, y):
+        if y <= marks[-1][0] or 'z' not in NP:
+            return float(np.interp(y, [m[0] for m in marks], [m[1] for m in marks]))
+        return NP['z'](x, y)
     ap = [shape(f['geometry']) for f in feat('apex_plat')]
     add('CUT platform deck: APEx 1-14 and platform M on the arch viaduct', 'viaduct', stru['CUT platform deck'], lambda x, y: 160.3, VIA,
         'Deck: APEx platforms 160.3 m, level with the rotunda (10l.19, 10l.24); arches drawn to the street, no footing check (Ben, 26 October)', 'CUT platform deck', plats=[(p, 160.3) for p in ap], excl=('CVG_Express',))
     add('CUT approach viaduct (south)', 'viaduct', stru['CUT approach viaduct (south)'], apex_z, VIA, 'Deck: APEx 160.3 m at CUT, 161.7 m over W 8th, 163.4 m over W 6th, 164.0 m at the bridge', 'CUT approach viaduct', excl=('CVG_Express',))
     add('North arch viaduct', 'viaduct', stru['North arch viaduct'], apex_z, VIA,
-        'Deck: one level, APEx 161.1 m over W Liberty, 164.5 m over Marshall, 166.6 m at the deck tip, 162.5 m at Ludlow (North Viaduct Plan); the upper level (Indianapolis and D, to 174.3 m) is not drawn', 'North arch viaduct', excl=('RER_2', 'RER_4', 'RER_B_trunk', 'RER_D_trunk'))
+        'Rail at the finished street + 7.4 m at every street (true arches to about 11.9 m wide, else girder bridges hidden behind the arch fascia; Ben, 28 October), straight between them from CUT (160.3 m) to the Arlington platform (165.9 m, locked), then one dip: 1.5% down, one grade up to Ludlow (162.5 m, locked); the upper level (Indianapolis and D) is a block of its own', 'North arch viaduct', excl=('RER_2', 'RER_4', 'RER_B_trunk', 'RER_D_trunk'))
     fa, fb = (712678.0, 4336948.0, 162.5), (713475.0, 4337351.0, 152.0)
     def fill_z(x, y):
         t = ((x - fa[0]) * (fb[0] - fa[0]) + (y - fa[1]) * (fb[1] - fa[1])) / ((fb[0] - fa[0]) ** 2 + (fb[1] - fa[1]) ** 2)
@@ -141,20 +147,22 @@ def build():
         rv = LineString(apx.coords[::-1]); d2 = rv.project(t7s); REF = LineString(list(substring(rv, 0, d2).coords) + list(T7.coords))
     d_ref0 = REF.project(t7s)
     frame_s = lambda x, y: 4150.0 + REF.project(Point(x, y)) - d_ref0
-    # the trench starts at the ground at s 3,220, falls 2% to 170.0 m, climbs 1.39% to 178.0 m and runs level
-    # through the station (North Viaduct Plan; Deck marker)
+    # the trench starts at the ground at s 3,220, falls 2% to 170.0 m, climbs at one grade to 185.5 m at the
+    # platforms' west end and runs level through the station (Ben: v112 ruling, roofs at street level; option A, 28 October)
+    NW_RAIL = 185.5
+    npl = [(shape(f['geometry']), f['properties'].get('label')) for f in NW['features'] if f['properties'].get('layer') == 'nw_plat']
     Z_3220 = round(float(sample([REF.interpolate(d_ref0 + 3220 - 4150).coords[0]])[0]), 1)
     S_LOW = 3220 + (Z_3220 - 170.0) / 0.02
-    S_TOP = S_LOW + (178.0 - 170.0) / 0.0139
+    S_TOP = min(frame_s(*q) for p, _ in npl for q in p.exterior.coords)
+    CLIMB = (NW_RAIL - 170.0) / (S_TOP - S_LOW)
     def nw_z(x, y):
         s = frame_s(x, y)
-        if s >= S_TOP: return 178.0
-        if s >= S_LOW: return 170.0 + 0.0139 * (s - S_LOW)
+        if s >= S_TOP: return NW_RAIL
+        if s >= S_LOW: return 170.0 + CLIMB * (s - S_LOW)
         return min(Z_3220, 170.0 + 0.02 * (S_LOW - s))
     mk = [f for f in T['features'] if (f['properties'].get('name') or '') == 'Norwood trench'][0]['geometry']['coordinates']
-    print(f'Norwood frame: trench marker at s {frame_s(*mk):.0f}; profile from the ground {Z_3220} m at s 3,220, 2% to 170.0 m at s {S_LOW:.0f}, 1.39% to 178.0 m at s {S_TOP:.0f}, level on')
+    print(f'Norwood frame: trench marker at s {frame_s(*mk):.0f}; profile from the ground {Z_3220} m at s 3,220, 2% to 170.0 m at s {S_LOW:.0f}, {CLIMB*100:.2f}% to {NW_RAIL} m at s {S_TOP:.0f}, level on')
     surf = [LineString(f['geometry']['coordinates']) for f in NW['features'] if f['properties'].get('layer') == 'nw_track' and not f['properties'].get('tunnel') and f['properties'].get('track') not in ('W1', 'W2')]
-    npl = [(shape(f['geometry']), f['properties'].get('label')) for f in NW['features'] if f['properties'].get('layer') == 'nw_plat']
     trench = [l for l in [LineString(f['geometry']['coordinates']) for f in T['features'] if (f['properties'].get('name') or '').startswith(('APEx Norwood (Transcontinental)', 'Lower-level pair E, track'))]]
     tz = []
     for l in trench:
@@ -162,8 +170,8 @@ def build():
         if len(keep) > 1: tz.append(LineString(keep))
     field = unary_union([l.buffer(4.2) for l in surf] + [p.buffer(0.5) for p, _ in npl] + [l.buffer(4.2) for l in tz]).buffer(10).buffer(-10)   # one cut across the track field
     add('Norwood Central: ORR, APEx and Transvalley tracks in the cut, with the trench', 'atgrade', field, nw_z, TROUGH,
-        f'Deck sketch v13 and North Viaduct Plan: ORR and APEx from the ground at s 3,220 ({Z_3220} m), 2% down to about 170.0 m at s {S_LOW:.0f}, 1.39% up to 178.0 m at s {S_TOP:.0f}, level through the station; platforms about 178 m, roofs at street level (levels approximate, from the ground data); not editable here (Ben, 26 October)',
-        'Norwood Central tracks', plats=[(p, 178.0) for p, _ in npl], cut=True)
+        f'Deck sketch v13 and North Viaduct Plan: ORR and APEx from the ground at s 3,220 ({Z_3220} m), 2% down to about 170.0 m at s {S_LOW:.0f}, {CLIMB*100:.2f}% up to {NW_RAIL} m at the platforms\' west end (s {S_TOP:.0f}), level through the station; platforms {NW_RAIL} m, roofs at street level, concourse above (Ben, v112 ruling; approach option A, 28 October); grades accepted, not flagged; not editable here',
+        'Norwood Central tracks', plats=[(p, NW_RAIL) for p, _ in npl], cut=True)
     # ---- street re-grades over the dive and the W 8th hump ----
     streets = {}
     for f in DK['features']:
@@ -173,28 +181,163 @@ def build():
     def street_reg(name, dz_of, src, pick=lambda l: True):
         for l, w in streets[name]:
             if pick(l): REG.append(dict(name=name, band=l.buffer(w / 2, cap_style=2), dz=dz_of, src=src))
-    w8 = [(712500, 0.0), (712600, 5.0), (712671, 5.0), (712806, 2.5), (712941, 0.0)]
+    # W 8th under the south approach: a hidden girder bridge with a pier in the median (two spans of about 16.75 m, girder
+    # 16.75 / 10 + 0.8 = 2.48 m), so the hump is at most 161.7 - 2.48 - 4.3 - 153.0 = 1.9 m under the structure (Ben,
+    # 28 October); 5.0 m over the intercity pair to x 712,671
+    w8_face = W8_WEST_FACE
+    w8 = [(712500, 0.0), (712600, 5.0), (712671, 5.0), (w8_face, W8_HUMP), (712941, 0.0)]
     street_reg('W 8th (viaduct line)', lambda x, y: float(np.interp(x, [a for a, _ in w8], [b for _, b in w8], left=0, right=0)),
-               'Deck: W 8th raised 5 m over the intercity pair (150.9 m), 2.5 m at the APEx; ramps: 100 m west of Horne as on Horne, east at the same grade to zero (drawing values)')
+               f'Deck: W 8th raised 5 m over the intercity pair (150.9 m), down to {W8_HUMP} m at the south approach\'s west face and no more under it (a hidden girder bridge with a median pier: 161.7 m rail - 2.48 m girder - 4.3 m bus clearance - 153.0 m street; Ben, 28 October), to zero at x 712,941; ramp 100 m west of Horne as on Horne (drawing values)')
     hl = [l for l, w in streets['Horne line']][0]; h0 = hl.project(hl.intersection(streets['W 8th (viaduct line)'][0][0]))
     street_reg('Horne line', lambda x, y: max(0.0, 5.0 * (1 - abs(hl.project(Point(x, y)) - h0) / 100.0)), 'Deck: Horne raised 5 m at W 8th, ramps about 100 m', pick=lambda l: l.distance(Point(712654, 4331230)) < 30)
     def across(dz):
         return lambda x, y: dz * max(0.0, min(1.0, 1 - (max(712733 - x, x - 712787, 0)) / 60.0))
     street_reg('Findlay', across(2.0), 'Deck: Findlay raised 2.0 m over the lower pairs (ramps 60 m, drawing value)')
     street_reg('Bank', across(-2.0), 'Deck: Bank lowered 2.0 m under the lower pairs (ramps 60 m, drawing value)', pick=lambda l: l.bounds[2] > 712700)
-    structure_types(S, streets, icl, icz, col, coz)
+    NP.update(north_profile(T, stru, REG))
+    structure_types(S, streets, icl, icz, col, coz, NP['streets'])
     indy = upper_deck(S, T, apex_z)
-    return dict(S=S, REG=REG, T=T, NW=NW, DK=DK, stru=stru, apex_z=apex_z, nw_z=nw_z, frame_s=frame_s, streets=streets, indy=indy)
+    return dict(S=S, REG=REG, T=T, NW=NW, DK=DK, stru=stru, apex_z=apex_z, nw_z=nw_z, frame_s=frame_s, streets=streets, indy=indy, north=NP)
+
+
+# ---- the north arch viaduct: rail at the finished street + 7.4 m (Ben, 28 October) ----
+# A true arch over a 60 ft street with 10 ft of sidewalk headroom puts the rail at about 7.4 m; streets that can't take a
+# true arch get a girder bridge hidden behind the same arch fascia, at the same rail. Along the APEx (Deck chainage on
+# APEx north approach track 3, from the CUT north end at 160.3 m):
+# - to the Arlington platform (RER B, locked at 165.9 m, Ben 27 October): through each street's minimum (its highest
+#   finished level across the structure + 7.4 m), straight between them;
+# - north of the platform: one dip, down at the trunk fill's 1.5%, then up at one grade to Ludlow, 162.5 m (the steepest
+#   grade that still clears every street on the way) (the locked Northside / Spring Grove platforms and the existing underbridge, 7.1 m over Ludlow).
+# The streets are the Deck's live layout (base streets with Ben's edits): those crossing the APEx tracks under the
+# structure. The Millvale cross streets end at MT west of the structure (section 5 of the viaduct handoff), so they are
+# left out even where the Deck still draws them through; MT and J1 run along it.
+ARCH_RAIL = 7.4                      # rail over the finished street at the arch viaducts (Ben, 28 October)
+SIDEWALK_HEAD = 3.05                 # sidewalk headroom at the pier face (Ben, 28 October)
+GIRDER_DEPTH = 2.0                   # rail to girder soffit where no span is known (drawing value)
+BUS_CLEAR = 4.3                      # bus clearance under a girder (Ben, 28 October)
+GIRDER_MAX = ARCH_RAIL - BUS_CLEAR   # 3.1 m: the deepest girder that keeps the bus clearance
+PIER_STREETS = ('Harrison', 'Garrard', 'W 8th')   # wider than 23 m: a pier in the street, built into the arcade (Ben)
+CULVERT_STREETS = ('Millvale Boulevard', 'Spring Grove', 'Ford', 'Colerain', 'Streng')   # no pier on the culvert: flagged
+
+
+def girder(span, name=''):
+    """a hidden girder bridge (Ben, 28 October): rail to soffit = span / 10 + 0.8 m (plate girders L/10 to L/7; 0.8 m deck,
+    ballast and track, an assumption), at most 3.1 m (7.4 - 4.3 bus clearance), so up to 23 m needs no support; wider gets
+    a pier in the street built into the arcade, or is flagged (no pier on the Mill Creek culvert)"""
+    d = span / 10 + 0.8
+    if name.startswith('Ludlow'):   # the existing underbridge (162.5 m), not a girder behind the arcade
+        return dict(depth=round(d, 2), spans=1, flag=None, existing=True)
+    if d <= GIRDER_MAX + 1e-6:
+        return dict(depth=round(d, 2), spans=1, flag=None)
+    if name.startswith(PIER_STREETS):
+        return dict(depth=round(span / 20 + 0.8, 2), spans=2, flag=None)
+    why = 'no pier on the culvert' if name.startswith(CULVERT_STREETS) else 'needs a pier in the street'
+    return dict(depth=round(d, 2), spans=1, flag=f'{span:.1f} m span needs {d:.2f} m of girder, over {GIRDER_MAX:.1f} m: {why}')
+TRUE_ARCH_MAX = (ARCH_RAIL - SIDEWALK_HEAD - 0.6) * math.sqrt(40) / 2   # 11.86 m: wider streets get hidden girder bridges
+FALL = 0.015                         # north of Arlington, the trunk fill's grade
+ARLINGTON_N = (4335724.0, 4335928.0, 165.9)
+LUDLOW = (4336948.0, 162.5)
+W8_HUMP, W8_WEST_FACE = 1.9, 712764.0   # Ben, 28 October: a median pier, two spans of about 16.75 m, girder 2.48 m
+ALONG = ('SMV0032', 'S056')          # MT and J1
+CLIPS = ('SB0706',)                  # Elmore only clips the east edge near Ludlow: reported, not a level
+FAN_END_Y = 4332370.0                # W Liberty's north edge: south of it the CUT fan (an embankment with bridges)
+ENDS_AT_MT = tuple(f'SMV00{i:02d}' for i in range(1, 25) if i not in (5, 6))   # M1-M20; Queen (M4, SMV0005/6) runs through
+
+
+def deck_layout():
+    """the Deck's layout record: the hub's working copy, else the seed"""
+    for p in (ROOT / 'hub' / 'work' / 'db' / 'deck_db' / 'deck' / 'layout.json', ROOT / 'hub' / 'seed' / 'deck' / 'layout.json'):
+        if p.exists():
+            return jload(p)
+    return {}
+
+
+def live_streets():
+    """the Deck's streets as drawn: base layers with the layout's edits (deleted, moved, renamed, widened)"""
+    E = deck_layout().get('streets', {})
+    out = {}
+    for fn in ('basin.json', 'deck.json', 'hwy.json'):
+        fp = ROOT / 'hub' / 'sites' / 'deck' / fn
+        if not fp.exists():
+            continue
+        for f in jload(fp)['features']:
+            p = f['properties']
+            if f['geometry']['type'] != 'LineString' or not p.get('id') or p['id'] in out:
+                continue
+            e = E.get(p['id'], {})
+            if e.get('del'):
+                continue
+            out[p['id']] = dict(id=p['id'], name=e.get('n') or p.get('name') or p['id'], w=e.get('w') or p.get('width_m') or 10.0,
+                                line=LineString(e.get('c') or f['geometry']['coordinates']))
+    return out
+
+
+def north_profile(T, stru, REG):
+    ref = [LineString(f['geometry']['coordinates']) for f in T['features'] if f['properties'].get('name') == 'APEx north approach 3 of 6'][0]
+    if ref.coords[0][1] > ref.coords[-1][1]:
+        ref = LineString(ref.coords[::-1])
+    ref = LineString([(ref.coords[0][0], 4332134.0)] + list(ref.coords))        # from the CUT north end
+    nv = stru['North arch viaduct']
+    dz = lambda x, y: max([r['dz'](x, y) for r in REG if r['band'].contains(Point(x, y))] + [0.0], key=abs)   # the larger re-grade, as on the lines
+    def d_at_y(yy):
+        dd = np.arange(0, ref.length, 1.0)
+        return float(dd[np.argmin([abs(ref.interpolate(d).y - yy) for d in dd])])
+    streets = []
+    for s in live_streets().values():
+        if s['id'] in ALONG or s['id'] in ENDS_AT_MT or not s['line'].intersects(ref):
+            continue
+        x = s['line'].intersection(ref)
+        for q in getattr(x, 'geoms', [x]):
+            if not nv.buffer(2).contains(q) or q.y < FAN_END_Y:
+                continue
+            seg = s['line'].intersection(nv)
+            seg = max(getattr(seg, 'geoms', [seg]), key=lambda g: g.length)
+            pts = [seg.interpolate(t, normalized=True) for t in np.linspace(0, 1, 21)] if seg.length > 1 else [q]
+            fin = [float(z) + dz(p.x, p.y) for p, z in zip(pts, sample(np.array([p.coords[0] for p in pts])))]
+            band = s['line'].buffer(s['w'] / 2, cap_style=2).intersection(ref)
+            ds = [ref.project(Point(c)) for g in getattr(band, 'geoms', [band]) for c in g.coords] or [ref.project(q)]
+            # the opening on the faces: the street's band along the structure's edges, longest face piece near the crossing
+            edge = s['line'].buffer(s['w'] / 2, cap_style=2).intersection(nv.boundary).intersection(q.buffer(120))
+            pieces = [g.length for g in getattr(edge, 'geoms', [edge]) if g.geom_type == 'LineString' and g.length > 1]
+            span = max(pieces) if pieces else s['w']
+            streets.append(dict(name=s['name'], id=s['id'], w=s['w'], span=round(span, 1), girder=girder(span, s['name']), line=s['line'], d=ref.project(q), d0=min(ds), d1=max(ds), street=round(max(fin), 2),
+                                need=round(max(fin) + ARCH_RAIL, 2), arch=s['w'] <= TRUE_ARCH_MAX, clip=s['id'] in CLIPS))
+    streets.sort(key=lambda s: s['d'])
+    dA0, dA1, zA = d_at_y(ARLINGTON_N[0]), d_at_y(ARLINGTON_N[1]), ARLINGTON_N[2]
+    dL = d_at_y(LUDLOW[0])
+    south = [(0.0, 160.3)] + [(d, s['need']) for s in streets if s['d1'] < dA0 and not s['clip'] for d in (s['d0'], s['d1'])] + [(dA0, zA), (dA1, zA)]
+    north = [(d, s['need']) for s in streets if dA1 < s['d0'] and s['d1'] < dL - 15 and not s['clip'] for d in (s['d0'], s['d1'])] + [(dL, LUDLOW[1])]
+    south.sort(); north.sort()
+    fall = lambda d: zA - FALL * (d - dA1)
+    # the climb: one grade back from Ludlow, the steepest that still clears every street the fall doesn't
+    g = min([FALL] + [(LUDLOW[1] - b) / (dL - a) for a, b in north if a < dL and b > fall(a)])
+    def z_of_d(d):
+        if d <= dA1:
+            return float(np.interp(d, [a for a, _ in south], [b for _, b in south]))
+        if d >= dL:
+            return LUDLOW[1]
+        return max(fall(d), LUDLOW[1] - g * (dL - d))
+    def z(x, y):
+        return z_of_d(ref.project(Point(x, y)))
+    for s in streets:
+        s['rail'] = round(min(z_of_d(s['d0']), z_of_d(s['d1'])), 2)
+    print('North arch viaduct, rail at street + 7.4 m: ' + '; '.join(f"{s['name']} {s['street']} -> {s['rail']}" for s in streets))
+    d_low = dA1 + (zA - LUDLOW[1] + g * (dL - dA1)) / (FALL + g)
+    print(f'North arch viaduct: {zA} m over the Arlington platform, 1.5% down to {fall(d_low):.2f} m, {g * 100:.2f}% up to Ludlow {LUDLOW[1]} m')
+    return dict(ref=ref, z=z, z_of_d=z_of_d, streets=streets, dA=(dA0, dA1), dL=dL, climb=g, low=(d_low, fall(d_low)))
 
 
 # ---- the Indianapolis and D upper deck and the Floridian hillside tunnel (Ben, 27 October) ----
 # The lower deck of the north arch viaduct (the ORR and Transvalley pairs, R5, B, APEx Dayton and Norwood) passes over
 # the roads (bus-height arches; the Deck's APEx marks). The Indianapolis APEx pair and RER D run on an upper deck at the
-# minimum height over the lower deck: the crossing rule, 7.9 m over its highest rail (upper deck 1.6 m + 0.5 m + 5.8 m
+# minimum height over what it crosses: the crossing rule, 7.9 m over the highest rail (upper deck 1.6 m + 0.5 m + 5.8 m
 # clear). They climb to it at 2.5% from the Deck's s 3,644 (about 250 m short of the deck tip), hold that height west to
 # the hillside (where the ground rises to it), and from there climb at a constant grade in a tunnel to the ground at
 # 39 deg 9' 25.61" N, 84 deg 34' 0.60" W, about 186 m (Ben). The Deck put the upper deck at 6.6 m over the viaduct.
 UPPER_CLEAR = 7.9
+# besides the lower deck, the upper deck crosses RER A and R5 at South Cumminsville (Deck tracks: R5 at 167.0 m on the RER
+# A viaduct): it takes the rail of whatever it crosses (viaduct handoff, 28 October)
+UPPER_CROSSES = {'RER A and R5 at South Cumminsville': 167.0}
 UPPER_GRADE = 0.025
 UPPER_FROM_Y = 4335281.0          # Deck s 3,644 on the trunk: 251 m short of the deck tip (166.6 m at N 4,335,532)
 FLORIDIAN_PORTAL = (-84.0 - 34 / 60 - 0.60 / 3600, 39.0 + 9 / 60 + 25.61 / 3600, 186.0)
@@ -210,7 +353,7 @@ def upper_deck(S, T, apex_z):
     xy = np.array([ref.interpolate(d).coords[0] for d in dd])
     lower = np.array([apex_z(x, y) for x, y in xy])
     d0 = float(dd[np.argmin(np.abs(xy[:, 1] - UPPER_FROM_Y))])
-    H = round(float(lower[dd >= d0].max()) + UPPER_CLEAR, 2)          # the minimum over the lower deck's highest rail
+    H = round(max([float(lower[dd >= d0].max())] + list(UPPER_CROSSES.values())) + UPPER_CLEAR, 2)   # over the highest rail it crosses
     d1 = d0 + (H - float(np.interp(d0, dd, lower))) / UPPER_GRADE     # on the upper deck
     gr = sample(xy)
     d_h = float(next(d for d, g in zip(dd, gr) if d > d1 and g >= H))   # the hillside: the ground up to the deck
@@ -286,7 +429,7 @@ def _side(poly, line, north=True):
     return unary_union(out) if out else Polygon()
 
 
-def structure_types(S, streets, icl, icz, col, coz):
+def structure_types(S, streets, icl, icz, col, coz, north_streets=()):
     by = {st['short']: st for st in S}
     band = lambda nm: unary_union([l.buffer(w / 2, cap_style=2) for l, w in streets.get(nm, [])])
     def we(line):   # west to east, so that a positive offset is the north side
@@ -320,7 +463,17 @@ def structure_types(S, streets, icl, icz, col, coz):
                 src=appr['src'] + '; an arch viaduct over the streets while the tracks run together, to the Cardinal crossing (Ben, 26 October)')
     S.insert(S.index(appr) + 1, dict(appr, name='CUT south approach: viaducts south of the Cardinal crossing', short='CUT south approach (viaduct)',
                                      st='viaduct', geom=norm_s, gaps=[], src=appr['src'] + '; normal viaducts once the tracks split (Ben, 26 October)'))
-    north.update(geom=north_arch, st='arch', gaps=gaps(north_arch), src=north['src'] + '; arches over the streets, piers on the street edges (Ben, 26 October)')
+    # the north arch viaduct's openings: the Deck's live streets that pass under it (north_profile), each a true arch or
+    # a girder bridge hidden behind the arch fascia (Ben, 28 October)
+    ng = []
+    for s in north_streets:
+        if s['clip']:
+            continue
+        g = north_arch.intersection(s['line'].buffer(s['w'] / 2, cap_style=2))
+        if g.area > 20:
+            ng.append((s['name'], g))
+            streets.setdefault(s['name'], []).append((s['line'], s['w']))
+    north.update(geom=north_arch, st='arch', gaps=ng, src=north['src'] + '; piers on the building lines (Ben, 26 and 28 October)')
     by['North trunk fill'].update(st='embankment', gaps=gaps(by['North trunk fill']['geom']))
     for short, line, zf in (('Intercity pair (viaduct)', icl, icz), ('C&O pair (viaduct)', col, coz)):
         st = by[short]
@@ -351,6 +504,31 @@ def main():
     out = {}
     files = sorted(glob.glob(SITE + '/lines/*_*.json')) + sorted(glob.glob(SITE + '/rer/lines/RER_*.json'))
     r2 = lambda v: round(float(v), 2)
+    # the streets a Metro line runs along (the Deck's live layout: the basin, the deck and the highways): runs where the
+    # line follows a street (within 6 m of its centre line, within 25 degrees), with the street's width, for the twin-tube
+    # check (Ben, 28 October: flagged where the street is narrower than the twin-tube footprint)
+    LS = [s for s in live_streets().values() if s['line'].length > 5]
+    st_tree = shapely.STRtree([s['line'] for s in LS])
+    def along_streets(P):
+        out, cur = [], None
+        for c in np.arange(0.0, P.cv[-1], 10.0):
+            x, y = P.at(c); x1, y1 = P.at(min(P.cv[-1], c + 5)); x0, y0 = P.at(max(0.0, c - 5))
+            hx, hy = x1 - x0, y1 - y0; hl = math.hypot(hx, hy) or 1
+            best = None
+            for k in st_tree.query(Point(x, y).buffer(6.0)):
+                s = LS[int(k)]; d = s['line'].project(Point(x, y)); q = s['line'].interpolate(d)
+                if q.distance(Point(x, y)) > 6.0: continue
+                a, b = s['line'].interpolate(max(0, d - 3)), s['line'].interpolate(min(s['line'].length, d + 3))
+                sx, sy = b.x - a.x, b.y - a.y; sl = math.hypot(sx, sy) or 1
+                if abs(hx * sx + hy * sy) / (hl * sl) < math.cos(math.radians(25)): continue
+                if best is None or s['w'] < best['w']: best = s
+            if best and cur and cur[3] == best['name'] and abs(cur[2] - best['w']) < 0.01 and c - cur[1] <= 10.01:
+                cur[1] = round(float(c), 1)
+            elif best:
+                cur = [round(float(c), 1), round(float(c), 1), round(float(best['w']), 2), best['name']]; out.append(cur)
+            else:
+                cur = None
+        return [r for r in out if r[1] - r[0] >= 20]
     for fn in files:
         d = jload(fn); P = Path(d['path']); lid = d['id']; blocks = []; env = P.L.envelope.buffer(50)
         for st in S:
@@ -412,11 +590,21 @@ def main():
         if blocks: rec['blocks'] = sorted(blocks, key=lambda x: x['c0'])
         if add_v: rec['add'] = runs(add_v); rec['add_src'] = sorted(used)
         if cap_v: rec['cap'] = runs(cap_v)
+        if not lid.startswith('RER_'):
+            sr = along_streets(P)
+            if sr: rec['streets'] = sr
         if rec: out[lid] = rec
     meta = {'built': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%MZ'), 'source': 'Mill Creek Deck published version 1793028977-4bc6 (tracks.json, structures.json, deck.json, norwood.json); layout version 2461',
             'heights': 'from each structure\'s rail: box 1.0 m below, 6.6 m above (RER sizes, 25 kV); trough and at grade 0.8 m track bed, 5.8 m clear above; viaduct 1.6 m to the arch underside (Deck rule), 5.8 m clear above',
             'structure_types': 'st: embankment (k fill; the CUT fan W 9th to W Liberty, the north trunk fill, the intercity and C&O descents), arch (k viaduct; the south approach to the Cardinal crossing, the north arch viaduct) or viaduct (normal). gaps: the street openings on an embankment or arch viaduct along the line [c0, c1, street]; a line in the open crosses only inside one (Ben, 26 October)',
-            'notes': ['Lower-pair levels rebuilt from the Deck dive figures (Ben, 26 October: until the Deck publishes a level per point)', 'Norwood levels approximate, from the ground data (North Viaduct Plan)', 'W 8th ramp ends and the Bank and Findlay ramps are drawing values']}
+            'notes': ['Lower-pair levels rebuilt from the Deck dive figures (Ben, 26 October: until the Deck publishes a level per point)', 'Norwood Central at 185.5 m, roofs at street level (Ben: v112 ruling, approach option A, 28 October)', 'North arch viaduct at the finished street + 7.4 m (Ben, 28 October); W 8th hump at most 2.4 m under the south approach', 'W 8th ramp ends and the Bank and Findlay ramps are drawing values']}
+    N = B['north']
+    meta['north_viaduct'] = dict(rule=f'rail at the finished street + {ARCH_RAIL} m; true arch to {TRUE_ARCH_MAX:.1f} m wide, else a girder bridge hidden behind the arch fascia, rail to soffit span / 10 + 0.8 m, at most {GIRDER_MAX:.1f} m (a pier in the street past 23 m, or flagged); Ben, 28 October',
+                                 low=[round(N['low'][0], 1), round(N['low'][1], 2)], climb_pct=round(N['climb'] * 100, 2), upper_deck=B['indy']['H'],
+                                 streets=[dict(name=s['name'], id=s['id'], w=s['w'], span=s['span'], d=round(s['d'], 1), street=s['street'], need=s['need'], rail=s['rail'],
+                                               type='clips the edge' if s['clip'] else 'true arch' if s['arch'] else 'hidden girder bridge',
+                                               **({} if s['arch'] or s['clip'] else {'girder_m': s['girder']['depth'], 'spans': s['girder']['spans'], 'flag': s['girder']['flag']}))
+                                          for s in N['streets']])
     import os; os.makedirs(SITE + "/context", exist_ok=True); jsave(SITE + "/context/lines.json", {"meta": meta, "lines": out})
     for k, v in out.items(): print(k, [(b["l"], b["c0"], b["c1"], b["p"][0][1]) for b in v.get("blocks", [])], "add" in v and sum(len(r["v"]) for r in v["add"]), "cap" in v and sum(len(r["v"]) for r in v["cap"]))
 

@@ -28,6 +28,7 @@ class Store:
             create index if not exists docs_coll on docs(coll);
             create table if not exists history (path text not null, version integer not null, data text not null,
                 updated real not null, by text, primary key (path, version));
+            create table if not exists seed_base (path text primary key, data text not null);
             create table if not exists runs (id integer primary key autoincrement, job text not null, state text not null,
                 started real, finished real, reason text, log text);
         ''')
@@ -149,6 +150,100 @@ class Store:
                     n += 1
         return n
 
+    # the seed as this database last saw it (taken in or exported): the common base for merging a newer seed
+    def _base_get(self, path):
+        with self.lock:
+            r = self.db.execute('select data from seed_base where path=?', (path,)).fetchone()
+        return None if r is None else json.loads(r[0])
+
+    def _base_set(self, path, data):
+        with self.lock:
+            self.db.execute('insert or replace into seed_base values (?,?)', (path, json.dumps(data, separators=(',', ':'), ensure_ascii=False)))
+            self.db.commit()
+
+    def _seed_history(self, path):
+        """earlier versions of a record written from the seed (newest first): candidate bases"""
+        with self.lock:
+            rows = self.db.execute("select data from history where path=? and by='seed' order by version desc", (path,)).fetchall()
+        return [json.loads(r[0]) for r in rows]
+
+    def merge_dir(self, root, git_versions=None):
+        """take a newer seed (pulled from git) into this database without losing local edits.
+        Per record: missing here -> added; unchanged here since the seed it came from -> replaced by the new seed;
+        changed here and not in the seed -> kept; changed on both sides -> merged key by key (two levels deep, e.g.
+        the Deck layout's streets/blocks/stations edits), a key changed differently on both sides keeps the local value
+        and is listed as a conflict. The base is the seed this database last took in or exported, else an earlier
+        seed version in the record's history, else a git version of the seed file that this database once held.
+        Returns {added, updated, merged, kept, conflicts: [{path, keys}]}."""
+        rep = {'added': [], 'updated': [], 'merged': [], 'kept': [], 'conflicts': []}
+        same = lambda a, b: json.dumps(a, sort_keys=True) == json.dumps(b, sort_keys=True)
+
+        def merge(l, s_, b, at, out):
+            if same(l, b):
+                return s_
+            if same(s_, b) or same(l, s_):
+                return l
+            if isinstance(l, dict) and isinstance(s_, dict) and isinstance(b, dict) and at < 2:
+                m = {}
+                for k in set(l) | set(s_):
+                    v = merge(l.get(k), s_.get(k), b.get(k), at + 1, out)
+                    if v is not None:
+                        m[k] = v
+                return m
+            out.append(at)
+            return l
+
+        for dirpath, _, files in os.walk(root):
+            for f in sorted(files):
+                if not f.endswith('.json'):
+                    continue
+                path = os.path.relpath(os.path.join(dirpath, f), root)[:-5].replace(os.sep, '/')
+                seed = json.load(open(os.path.join(dirpath, f), encoding='utf8'))
+                cur = self.get(path)
+                if cur is None:
+                    self.set(path, seed, 'seed', quiet=True)
+                    rep['added'].append(path)
+                    self._base_set(path, seed)
+                    continue
+                local = cur['data']
+                if same(local, seed):
+                    self._base_set(path, seed)
+                    continue
+                base = self._base_get(path)
+                if base is None:
+                    cands = ([local] if cur['by'] == 'seed' else []) + self._seed_history(path)
+                    if not cands and git_versions:   # a git version of the seed file this record once was
+                        hist = [local] + [json.loads(r[0]) for r in self.db.execute('select data from history where path=?', (path,))]
+                        cands = [g for g in git_versions(path) if any(same(g, h) for h in hist)]
+                    base = cands[0] if cands else None
+                if base is None:
+                    rep['conflicts'].append({'path': path, 'keys': ['no common base: local kept, the seed version saved for review']})
+                    continue
+                if same(local, base):
+                    self.set(path, seed, 'seed', quiet=True)
+                    rep['updated'].append(path)
+                elif same(seed, base):
+                    rep['kept'].append(path)
+                else:
+                    out = []
+                    m = {}
+                    keys = []
+                    for k in set(local) | set(seed) if isinstance(local, dict) and isinstance(seed, dict) else []:
+                        o = []
+                        v = merge(local.get(k), seed.get(k), (base or {}).get(k), 1, o)
+                        if o:
+                            keys.append(k)
+                        if v is not None:
+                            m[k] = v
+                    if not isinstance(local, dict):
+                        keys, m = ['whole record'], local
+                    self.set(path, m, 'seed', quiet=True)
+                    rep['merged'].append(path)
+                    if keys:
+                        rep['conflicts'].append({'path': path, 'keys': keys})
+                self._base_set(path, seed)
+        return rep
+
     def export_dir(self, root, skip=NO_HISTORY):
         """write every record (but the derived ones) to root/<path>.json; removes files of deleted records"""
         keep = set()
@@ -157,8 +252,10 @@ class Store:
                 continue
             f = os.path.join(root, *p.split('/')) + '.json'
             os.makedirs(os.path.dirname(f), exist_ok=True)
+            data = self.get(p)['data']
             with open(f, 'w', encoding='utf8') as fh:
-                json.dump(self.get(p)['data'], fh, ensure_ascii=False, indent=1)
+                json.dump(data, fh, ensure_ascii=False, indent=1)
+            self._base_set(p, data)
             keep.add(os.path.abspath(f))
         for dirpath, _, files in os.walk(root):
             for f in files:

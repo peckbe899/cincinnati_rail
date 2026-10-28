@@ -59,6 +59,10 @@ async function open(browser, root, docs, url, html = (h) => h) {
   // Rail Profiles: one load per line (its line is picked from the hash); rail level and type every 2 m
   const pdocs = {}; for (const [id, d] of Object.entries(readDocs(path.join(cache, 'db/profiles_db/alignments')))) pdocs['alignments/' + id] = d;
   for (const [id, d] of Object.entries(readDocs(path.join(cache, 'db/profiles_db/config')))) pdocs['config/' + id] = d;
+  // the shared records (hub: params/metro_structure), for both editors
+  const params = {}; for (const [id, d] of Object.entries(readDocs(path.join(cache, 'db/params_db/params')))) params['params/' + id] = d;
+  for (const [id, d] of Object.entries(readDocs(path.join(cache, 'db/params_db/chronology')))) params['chronology/' + id] = d;   // the Chronology record
+  Object.assign(pdocs, params);
   // repo profiles for lines the editor has not saved (job.extra_docs, from sync.py)
   for (const [k, d] of Object.entries(job.extra_docs || {})) if (!(k in pdocs)) pdocs[k] = d;
   // saved profiles moved onto re-pathed lines (job.override_docs)
@@ -71,14 +75,14 @@ async function open(browser, root, docs, url, html = (h) => h) {
     result.profiles[j.id] = await page.evaluate((j) => {
       const P = window.railProfile, samples = [];
       const step = j.step || 2; for (let c = j.c0; c <= j.c1 + 1e-9; c += step) samples.push([+c.toFixed(1), +P.railAt(c).toFixed(3), P.typeAt(c)]);
-      return { saved: P.saved(), align: P.align(), platforms: P.platforms(), samples };
+      return { saved: P.saved(), align: P.align(), platforms: P.platforms(), approaches: P.approaches ? P.approaches() : [], samples };
     }, j);
     await ctx.close();
   }
 
   // Mill Creek Deck: its own GeoJSON export (the Export button), captured from the downloads stand-in
   if (job.deck) {
-    const ddocs = {}; for (const [id, d] of Object.entries(readDocs(path.join(cache, 'db/deck_db/deck')))) ddocs['deck/' + id] = d;
+    const ddocs = { ...params }; for (const [id, d] of Object.entries(readDocs(path.join(cache, 'db/deck_db/deck')))) ddocs['deck/' + id] = d;
     const hook = (h) => {
       h = h.replace(`<script src="${JSTS_CDN}" async></script>`, '<script src="jsts.min.js"></script>');
       const n = h.replace(/indexLayers\(\); if \(\/\[\?&\]debug/, (m) => 'indexLayers(); ' + DECK_EXPOSE + m.slice('indexLayers();'.length));

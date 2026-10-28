@@ -12,6 +12,8 @@ import json
 import mimetypes
 import os
 import queue
+import shutil
+import subprocess
 import sys
 import threading
 import time
@@ -22,12 +24,13 @@ HUB = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HUB)
 sys.path.insert(0, HUB)
 from store import Store          # noqa: E402
-from pipeline import Pipeline    # noqa: E402
+from pipeline import Pipeline, trigger_for    # noqa: E402
 
 SITES = {   # url prefix -> (folder, its page)
     'deck': (os.path.join(HUB, 'sites', 'deck'), 'index.html'),
     'profiles': (os.path.join(ROOT, 'data', 'profile'), 'profiles.html'),
     '3d': (os.path.join(ROOT, 'tools', 'station3d', 'page'), 'index.html'),
+    'chronology': (os.path.join(HUB, 'sites', 'chronology'), 'index.html'),
 }
 SHIM = '<script src="/hub/shim.js"></script>'
 VENDOR = {   # the pages' CDN libraries served from hub/static/vendor (the hub works offline)
@@ -40,15 +43,79 @@ mimetypes.add_type('image/webp', '.webp')
 mimetypes.add_type('application/json', '.json')
 
 
+def fill_missing(cur, dflt):
+    """add keys the default has and the record lacks, recursively; True if any were added"""
+    added = False
+    for k, v in dflt.items():
+        if k not in cur:
+            cur[k] = v
+            added = True
+        elif isinstance(v, dict) and isinstance(cur[k], dict):
+            added = fill_missing(cur[k], v) or added
+    return added
+
+
+def git_seed_versions(path, n=40):
+    """the seed file's earlier committed versions, newest first (bases for merging a pulled seed)"""
+    rel = 'hub/seed/' + path + '.json'
+    try:
+        revs = subprocess.check_output(['git', 'log', '--format=%H', '-n', str(n), '--', rel], cwd=ROOT, text=True).split()
+        out = []
+        for r in revs:
+            try:
+                out.append(json.loads(subprocess.check_output(['git', 'show', f'{r}:{rel}'], cwd=ROOT, stderr=subprocess.DEVNULL)))
+            except Exception:
+                pass
+        return out
+    except Exception:
+        return []
+
+
+def seed_report(store, rep):
+    """print what a pulled seed changed here; save the seed versions of conflicting records for review"""
+    lines = []
+    for k, lab in (('added', 'added'), ('updated', 'updated from the seed'), ('merged', 'merged with your edits'), ('kept', 'kept (your edits, seed unchanged)')):
+        if rep[k]:
+            lines.append(f"{lab}: {', '.join(rep[k])}")
+    cdir = os.path.join(HUB, 'work', 'seed_conflicts')
+    for c in rep['conflicts']:
+        lines.append(f"CONFLICT {c['path']}: {', '.join(c['keys'])} (your value kept; the seed's is in hub/work/seed_conflicts)")
+        f = os.path.join(cdir, *c['path'].split('/')) + '.json'
+        os.makedirs(os.path.dirname(f), exist_ok=True)
+        shutil.copyfile(os.path.join(HUB, 'seed', *c['path'].split('/')) + '.json', f)
+    text = 'hub/seed taken in:\n' + '\n'.join(lines) + '\n'
+    print(text)
+    rid = store.run_start('seed', 'records from hub/seed (git pull)')
+    store.run_log(rid, text)
+    store.run_end(rid, 'failed' if rep['conflicts'] else 'ok')
+
+
 class Hub:
     def __init__(self, db_path, auto=True):
         self.store = Store(db_path)
-        n = self.store.load_dir(os.path.join(HUB, 'seed'))
-        if n:
-            print(f'seeded {n} records from hub/seed')
+        rep = self.store.merge_dir(os.path.join(HUB, 'seed'), git_versions=git_seed_versions)
+        changed = rep['added'] + rep['updated'] + rep['merged']
         self.subs = set()
         self.store.listeners.append(self.broadcast)
         self.pipeline = Pipeline(self.store, auto=auto)
+        ms_def = json.load(open(os.path.join(ROOT, 'data', 'profile', 'metro_structure.json'), encoding='utf8'))
+        cur = self.store.get('params/metro_structure')
+        if cur is None:   # the shared Metro structure record, from its default file
+            self.store.set('params/metro_structure', ms_def, 'seed', quiet=True)
+        elif fill_missing(cur['data'], ms_def):   # fields added to the default since (Ben's values kept)
+            self.store.set('params/metro_structure', cur['data'], 'seed', quiet=True)
+        ch_f = os.path.join(ROOT, 'data', 'profile', 'chronology.json')
+        if self.store.get('chronology/segments') is None and os.path.exists(ch_f):   # opening years and phases (the Chronology view)
+            self.store.set('chronology/segments', json.load(open(ch_f, encoding='utf8')), 'seed', quiet=True)
+        st_f = os.path.join(ROOT, 'data', 'profile', 'station_types.json')
+        if self.store.get('params/station_types') is None and os.path.exists(st_f):   # the Profiles type at each Metro station
+            self.store.set('params/station_types', json.load(open(st_f, encoding='utf8')), 'seed', quiet=True)
+        if changed or rep['conflicts']:
+            seed_report(self.store, rep)
+            if any(p == 'deck/layout' for p in changed):
+                self.pipeline.schedule('deck_tie', 'records taken in from hub/seed (git pull)', delay=2)
+            elif any(trigger_for(p) for p in changed):
+                self.pipeline.schedule('3d', 'records taken in from hub/seed (git pull)', delay=2)
         if self.store.get('snapshots/region') is None:   # first start: build the 3D snapshot
             self.pipeline.schedule('3d', 'first start: no 3D snapshot yet', delay=1)
 

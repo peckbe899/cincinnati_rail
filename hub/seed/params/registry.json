@@ -5,10 +5,10 @@
    "unit": "m",
    "values": {
     "profiles": 121.92,
-    "deck": 121.91,
+    "deck": 121.92,
     "station3d": 121.92
    },
-   "note": "Deck island platforms: 107 at 122 m, 79 at 120 m, 4 at 118 m",
+   "note": "Deck island platforms: 181 at 122 m, 11 at 121 m, 1 at 72 m",
    "agree": true
   },
   {
@@ -69,7 +69,7 @@
    "name": "Metro box wall outside the outer track",
    "unit": "m",
    "values": {
-    "station3d": 2.3
+    "station3d": 2.5999999999999996
    },
    "note": null,
    "agree": null
@@ -167,21 +167,66 @@
    "agree": null
   },
   {
-   "name": "Twin tube spacing (Deck)",
+   "name": "Metro track centres, type A tubes",
    "unit": "m",
    "values": {
-    "deck": 4
+    "profiles": 8.74,
+    "deck": 8.74,
+    "station3d": 8.74
    },
-   "note": null,
-   "agree": null
+   "note": "the structure record",
+   "agree": true
   },
   {
-   "name": "Box spacing (Deck)",
+   "name": "Metro track centres, type C tubes",
    "unit": "m",
    "values": {
-    "deck": 1.95
+    "profiles": 9.14,
+    "deck": 9.14,
+    "station3d": 9.14
    },
-   "note": null,
+   "note": "the structure record",
+   "agree": true
+  },
+  {
+   "name": "Metro track centres, double-track bore",
+   "unit": "m",
+   "values": {
+    "profiles": 3.9,
+    "deck": 3.9,
+    "station3d": 3.9
+   },
+   "note": "the structure record",
+   "agree": true
+  },
+  {
+   "name": "Metro track centres, box",
+   "unit": "m",
+   "values": {
+    "profiles": 3.9,
+    "deck": 3.9,
+    "station3d": 3.9
+   },
+   "note": "the structure record",
+   "agree": true
+  },
+  {
+   "name": "Metro track centres at an island",
+   "unit": "m",
+   "values": {
+    "deck": 10.9,
+    "station3d": 10.9
+   },
+   "note": "the structure record",
+   "agree": true
+  },
+  {
+   "name": "Metro clear height under structures in the open",
+   "unit": "m",
+   "values": {
+    "profiles": 4.57
+   },
+   "note": "the structure record",
    "agree": null
   },
   {
@@ -195,6 +240,108 @@
   }
  ],
  "tie_issues": [],
- "synced_at": "2026-10-28T15:38:17Z",
+ "checks": [
+  {
+   "line": "Line 1",
+   "station": "Taft Theater",
+   "text": "side platforms on a bored stretch (shallow shield, A tunnel)"
+  },
+  {
+   "line": "Line 1",
+   "station": "Pennsylvania Station",
+   "text": "side platforms on a bored stretch (deep tube, A tunnel)"
+  },
+  {
+   "line": "Line 8",
+   "station": "Morrison",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 8",
+   "station": "Jefferson",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 8",
+   "station": "Mt Auburn",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 8",
+   "station": "River Rd",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 8",
+   "station": "Ludlow",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 8",
+   "station": "Highwater",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 10",
+   "station": "Cumber",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 10",
+   "station": "Elsinore",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 10",
+   "station": "Cincinnati Art Museum",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 10",
+   "station": "Paradrome",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 10",
+   "station": "Baines",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 10",
+   "station": "Prospect",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 10",
+   "station": "Division",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 10",
+   "station": "Grandview",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 10",
+   "station": "Bonnie Leslie",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 11",
+   "station": "Arsenal",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 11",
+   "station": "Park Place",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 12",
+   "station": "Stratford/Hughes",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  }
+ ],
+ "synced_at": "2026-10-28T18:42:52Z",
  "note": "Profiles values are its settings (config/settings, config/settings_rer) over its built-in defaults; Deck values are its constants as its own code has them, and platform lengths measured from the platforms it draws; Station 3D values are sync.py constants."
 }

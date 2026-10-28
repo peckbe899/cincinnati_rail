@@ -53,13 +53,13 @@ DEFAULTS = dict(maxGrade=50.0, platform=121.92, defDepth=7.62, elevAbove=3.0, co
 # top, od = outside diameter. Cut-and-cover box (and station box) 1.0 below / 4.6 to top; twin
 # tube (4.4 m inside, 4.76 m outside, rail 0.5 m above invert) 0.68 / 4.08 for deep tube on every
 # line, shield on Lines 1-7 and every river crossing; double-track bore (9.0 m outside) 3.2 / 5.8
-# for shield on Lines 8-14. Cover over the top: tube or bore with its top above 140.0 m (basin
-# water table) 2.0 m, at or below it one outside diameter; box roof 0.6 m. Shallower than that
-# is built cut and cover.
+# for shield on Lines 8-14. Cover over the top: one outside diameter over every bored tube (Ben,
+# 28 October; was 2.0 m above the 140 m water table); box roof 0.6 m. Shallower than that is
+# built cut and cover.
 METRO_ST = {"box": {"k": "box", "below": 1.0, "top": 4.6},
             "tube": {"k": "tube", "below": 0.68, "top": 4.08, "od": 4.76},
             "bore": {"k": "bore", "below": 3.2, "top": 5.8, "od": 9.0}}
-WATER_TABLE, TUBE_COVER_HIGH, BOX_COVER = 140.0, 2.0, 0.6
+BOX_COVER = 0.6
 # rivers: rail at most bed (ground raster) - margin at every chainage of a river range, in tunnel
 # (Metro twin tube: 1.0 scour + 2.38 half-diameter cover + 4.08 rail to top; RER sunk box section
 # in a dredged trench, Transbay model: 1.0 scour + 1.5 backfill + 6.6 rail to top)
@@ -103,6 +103,16 @@ RER_DEFAULTS = dict(maxGrade=35.0, platform=204.2, defDepth=12.0, elevAbove=3.0,
                     fillTaper=50.0)
 RER_CANON_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "rer" / "canon.json"
 CONTEXT_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "context" / "lines.json"
+# the shared Metro structure record (Ben, 27-28 October; claude/Metro_Structure_Gauge_Handoff.md), as the editor reads it;
+# settings_override {"legacy_structures": True} keeps the structures of before (the 4.76 m tube, 9.0 m bore)
+MS_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "metro_structure.json"
+CHR_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "chronology.json"   # the Chronology's default record
+
+
+def _tube_of(t: dict) -> dict:
+    lin = (t["outside"] - t["inside"]) / 2
+    return {"k": "bore" if t["inside"] > 7 else "tube", "below": t["rail_over_invert"] + lin,
+            "top": t["inside"] - t["rail_over_invert"] + lin, "od": t["outside"]}
 # a line in the open under another structure needs this clear height from rail to its underside
 # (Ben): Metro 4.2 m, RER 5.8 m (25 kV); track bed 0.8 m below the rail; crossing gap 0.5 m
 OPEN_CLEAR = {"metro": 4.2, "rer": 5.8}
@@ -185,6 +195,14 @@ class MetroProfile:
         rer = "RER" in data.get("system", "")
         # per-line settings in the line file (e.g. the CVG Express's 200 m platforms)
         p = cls(data, {**load_settings(settings_json, rer=rer), **(data.get("settings") or {}), **(settings_override or {})})
+        p.ms = None
+        if not rer and not p.settings.get("legacy_structures") and MS_JSON.exists():
+            p.ms = json.loads(MS_JSON.read_text())
+        p.chr = json.loads(CHR_JSON.read_text()) if p.ms and CHR_JSON.exists() else None
+        pk = CHR_JSON.parent / "station_platforms.json"   # island or side at each Metro station (the 3D build's, from the Deck)
+        p.platforms_kind = (json.loads(pk.read_text()).get(p.data["id"]) or {}) if p.ms and pk.exists() else {}
+        ax = CHR_JSON.parent / "approach_extra.json"   # straights where no single arc fits (the 3D build's)
+        p.approach_extra = (json.loads(ax.read_text()).get(p.data["id"]) or []) if p.ms and ax.exists() else []
         if rer:
             cj = Path(canon_json) if canon_json else RER_CANON_JSON
             p.rer_canon = json.loads(cj.read_text()) if cj.exists() else {}
@@ -394,7 +412,6 @@ class MetroProfile:
         way where the canon crosses the river in tunnel (sunk box sections). Rail at most the
         lowest bed - margin over the river range."""
         rivers = self._rivers_info()
-        margin = RIVER_MARGIN["rer" if self.is_rer else "metro"]
         step = float(self.data.get("step_m", 2.0))
         out = []
         for r in self.data.get("rivers", []) or []:
@@ -420,7 +437,7 @@ class MetroProfile:
             beds = [self.bed_at(c) for c in np.arange(r["c0"], r["c1"] + 1e-9, step)]
             beds = [b for b in beds if math.isfinite(b)]
             if beds:
-                out.append({"name": r["name"], "c0": r["c0"], "c1": r["c1"], "ub": min(beds) - margin})
+                out.append({"name": r["name"], "c0": r["c0"], "c1": r["c1"], "ub": min(beds) - self.river_margin((r["c0"] + r["c1"]) / 2)})
         return out
 
     def default_mode(self, i: int) -> str:
@@ -776,39 +793,223 @@ class MetroProfile:
         half = self.settings["platform"] / 2
         return any(abs(c - s["c"]) <= half for s in self.stations)
 
-    def auto_type(self, c: float, z: float) -> str:
+    # Metro tunnels by era (Ben, 28 October; as the Rail Profiles editor): per-phase thresholds in the structure record
+    # (cc_max, min_drive, deep_from); shield needs one tube diameter of cover; between the two limits cut and cover
+    # unless the bored stretch makes a whole drive (box to box, portal or deep station: any length); no short pockets
+    # inside a longer stretch; drives end
+    # at station boxes and where the phase changes; deep stations are platform tunnels. Canon and painted still decide.
+    def _phase_at(self, c: float) -> str:
+        ms = self.ms
+        rec = getattr(self, "chr", None)
+        if rec:   # the Chronology record: the phase of the segment (two stations) c is in, set or from its year
+            sts = sorted(self.stations, key=lambda s: s["c"])
+            if len(sts) > 1:
+                i = 0
+                while i + 2 < len(sts) and c > sts[i + 1]["c"]:
+                    i += 1
+                a, b = sorted((sts[i]["name"], sts[i + 1]["name"]))
+                e = (rec.get("segments") or {}).get(f"cvx|{a}|{b}" if self.id == "CVG_Express" else f"metro|{self.id}|{a}|{b}") or {}
+                y = e.get("year")
+                ph = e.get("phase") or next((p for y0, y1, p in rec.get("phase_years") or [] if y is not None and y0 <= y <= y1), None)
+                if ph:
+                    return ph
+        name = next((p["name"] for p in self.data.get("pieces", []) if p["c0"] - 5 <= c <= p["c1"] + 5), None)
+        return ((ms.get("piece_phase") or {}).get(self.id) or {}).get(name) or (ms.get("line_phase") or {}).get(self.id) or "later"
+
+    def phase_rules(self, c: float) -> dict:
+        p = (self.ms["phases"].get(self._phase_at(c)) or self.ms["phases"]["later"]) if getattr(self, "ms", None) else {}
+        return {"cc_max": p.get("cc_max", self.settings["shallowMax"]), "min_drive": p.get("min_drive", 300.0),
+                "deep_from": p.get("deep_from", self.settings["deepBelow"])}
+
+    def _point_type(self, c: float, z: float) -> dict:
         sec0 = self.canon_at(c)
         if sec0 and sec0["m"] == "covered":
             s0 = self.surface_at(c)
-            return "elevated" if math.isfinite(s0) and z - s0 >= self.settings["elevAbove"] else "cutcover"
+            return {"t": "elevated" if math.isfinite(s0) and z - s0 >= self.settings["elevAbove"] else "cutcover"}
         if self.river_at(c):
-            return "elevated" if z >= self.pool() + 1 else "deep"
+            return {"t": "elevated" if z >= self.pool() + 1 else "deep"}
         g = float(self.ground_at(c))
         if not math.isfinite(g):
-            return "atgrade"
+            return {"t": "atgrade"}
         if z - g >= self.settings["elevAbove"]:
-            return "elevated"
+            return {"t": "elevated"}
         d = g - z
         if d < self.settings["coverBelow"]:
-            return "atgrade"
+            return {"t": "atgrade"}
         # portal ramps: rail less than a box height down is an open trough (Metro 4.6 m; RER the envelope, Ben 2026-10-28)
         if d < (float(self.settings["envelope"]) if self.is_rer else self.settings.get("trough_override", METRO_ST["box"]["top"])):
-            return "trough"
+            return {"t": "trough"}
         sec = self.canon_at(c)
+        if not sec and not self.is_rer and getattr(self, "ms", None):
+            R, tube = self.phase_rules(c), self.struct_for("shield", c)
+            shield_from = tube["top"] + tube["od"]
+            if self.in_station(c):
+                return {"t": "deep" if d >= R["deep_from"] and d >= shield_from else "cutcover", "stn": True}
+            return {"cls": "C" if d < shield_from else "B" if d > R["cc_max"] else "E", "d": d, "deep": d >= R["deep_from"],
+                    "ph": self._phase_at(c), "R": R, "shield_from": shield_from}
         m = sec["m"] if sec else ("deep" if d >= self.settings["deepBelow"] else "shallow")
         if m == "canal":
-            return "cutcover"
+            return {"t": "cutcover"}
         # too shallow to bore: built cut and cover
         if self.is_rer:
             if d < self.bore_crown() + self.min_cover():
-                return "cutcover"
+                return {"t": "cutcover"}
         else:
             sc = self.struct_for("deep" if m == "deep" else "shield", c)
             if d - sc["top"] < self.req_cover(sc, z + sc["top"]):
-                return "cutcover"
+                return {"t": "cutcover"}
         if m == "deep":
-            return "deep"
-        return "cutcover" if self.in_station(c) else "shield"
+            return {"t": "deep"}
+        return {"t": "cutcover" if self.in_station(c) else "shield"}
+
+    def stretch_types(self) -> Optional[dict]:
+        """The era rules over the whole line (Metro with the structure record): types per step and the flagged pockets."""
+        if self.is_rer or not getattr(self, "ms", None):
+            return None
+        key = (tuple(self.st), tuple((p["c"], p["z"]) if isinstance(p, dict) else tuple(p) for p in self.pvi), id(self._ground), self.length, id(getattr(self, "chr", None)))
+        cached = getattr(self, "_types", None)
+        if cached and cached["key"] == key:
+            return cached
+        step = float(self.data.get("step_m", 2.0))
+        n = int(self.length // step) + 1
+        P = []
+        for i in range(n):
+            c = min(i * step, self.length)
+            z = float(self.rail_at(c))
+            P.append(dict(self._point_type(c, z), c=c, z=z))
+        flags = []
+
+        def runs(a, b, f):
+            out, s = [], -1
+            for i in range(a, b + 2):
+                on = i <= b and f(P[i])
+                if on and s < 0:
+                    s = i
+                if not on and s >= 0:
+                    out.append((s, i - 1))
+                    s = -1
+            return out
+
+        length = lambda a, b: P[b]["c"] - P[a]["c"] + step
+
+        def resolve(fl):
+            for p in P:
+                if "cls" in p:
+                    p.pop("t", None)
+            for a0, b0 in runs(0, n - 1, lambda p: "cls" in p):
+                parts, s = [], a0
+                for i in range(a0 + 1, b0 + 2):
+                    if i > b0 or P[i]["ph"] != P[s]["ph"]:
+                        parts.append((s, i - 1))
+                        s = i
+                for a, b in parts:
+                    R = P[a]["R"]
+                    for x, y in runs(a, b, lambda p: p["cls"] != "C"):
+                        ok = (x == a and y == b) or length(x, y) >= R["min_drive"]   # box to box: a drive at any length (Ben)
+                        for i in range(x, y + 1):
+                            P[i]["t"] = "bored" if ok else "cutcover"
+                        if not ok and any(p["cls"] == "B" for p in P[x:y + 1]):
+                            fl and flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "short bored", "len": length(x, y)})
+                    for i in range(a, b + 1):
+                        P[i].setdefault("t", "cutcover")
+                    for x, y in runs(a, b, lambda p: p["t"] == "cutcover"):
+                        if x == a or y == b or length(x, y) >= R["min_drive"]:
+                            continue
+                        if all(p["cls"] != "C" for p in P[x:y + 1]):
+                            for i in range(x, y + 1):
+                                P[i]["t"] = "bored"
+                            continue
+                        fl and flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "short cut and cover", "len": length(x, y)})
+                    for x, y in runs(a, b, lambda p: p["t"] == "bored"):
+                        for i in range(x, y + 1):
+                            P[i]["t"] = "shield"
+                        for u, v in runs(x, y, lambda p: p["deep"]):
+                            touch = (u == x and x > 0 and P[x - 1].get("stn") and P[x - 1]["t"] == "deep") or \
+                                    (v == y and y < n - 1 and P[y + 1].get("stn") and P[y + 1]["t"] == "deep")
+                            if touch or length(u, v) >= R["min_drive"]:
+                                for i in range(u, v + 1):
+                                    P[i]["t"] = "deep"
+
+        resolve(False)
+        # station approaches (Ben, 28 October): a cut-and-cover station meeting bored tubes keeps its box through the
+        # approach, max(approach_m, sqrt(4 x min_radius x shift)); a box meeting tubes away from a station likewise
+        ms = self.ms
+        tube_sp = lambda c: ms["tubes"].get((ms["phases"].get(self._phase_at(c)) or ms["phases"]["later"])["tube"], ms["box"])["spacing"]
+        extra_l = getattr(self, "approach_extra", None) or []
+
+        def appr_len(sh, c, info):   # the phase's minimum radius (Ben: 40, 55, 70 m), plus a straight where no arc fits (option A)
+            rmin = float((ms["phases"].get(self._phase_at(c)) or ms["phases"]["later"]).get("min_radius") or ms.get("min_radius") or 40)
+            e = next((x["extra"] for x in extra_l if x["side"] == info["side"] and (x.get("station") == info["station"] if info["station"] else not x.get("station") and abs(x["c"] - info["c"]) < 20)), 0.0)
+            return max(float(ms.get("approach_m") or 40), math.sqrt(4 * rmin * abs(sh))) + e
+        is_bored = lambda p: p is not None and p.get("t") in ("shield", "deep") and "cls" in p
+        idx = lambda c: max(0, min(n - 1, int(round(c / step))))
+        approaches = []
+
+        def fix(i0, d, lm, info):
+            k, i = 0, i0
+            while 0 <= i < n and "cls" in P[i] and (k == 0 or abs(P[i - d]["c"] - info["c"]) < lm - 1e-6):
+                P[i].pop("cls")
+                P[i].update(t="cutcover", stn=True, appr=True)
+                i += d
+                k += 1
+            if k:   # from the platform end (or the box end) to the last sample boxed
+                approaches.append(dict(info, len=round(abs(P[i - d]["c"] - info["c"]), 2)))
+        plats = getattr(self, "platforms_kind", None) or {}
+        half = self.settings["platform"] / 2
+        for s in self.stations:
+            ic = idx(s["c"])
+            if P[ic].get("t") != "cutcover" or not P[ic].get("stn"):
+                continue
+            kind = plats.get(s["name"]) or "side"
+            sp_s = ms["island_box"]["spacing"] if kind == "island" else ms["box"]["spacing"]
+            for d in (-1, 1):
+                i0 = idx(s["c"] + d * (half + step))
+                if not is_bored(P[i0]):
+                    continue
+                sh = (tube_sp(P[i0]["c"]) - sp_s) / 2
+                if abs(sh) >= 0.01:
+                    info = {"station": s["name"], "kind": kind, "side": d, "shift": sh, "c": s["c"] + d * half}
+                    fix(i0, d, appr_len(sh, P[i0]["c"], info), info)
+        for x, y in runs(0, n - 1, is_bored):
+            for i, d in ((x, 1), (y, -1)):
+                nb = P[i - d] if 0 <= i - d < n else None
+                if not nb or nb.get("t") != "cutcover" or nb.get("stn"):
+                    continue
+                sh = (tube_sp(P[i]["c"]) - ms["box"]["spacing"]) / 2
+                if abs(sh) >= 0.01:
+                    info = {"station": None, "kind": "box", "side": d, "shift": sh, "c": P[i]["c"]}
+                    fix(i, d, appr_len(sh, P[i]["c"], info), info)
+        resolve(True)
+        # twin tubes or one bore (proposed, flagged only): twin tubes under a street narrower than their footprint; Phase 2
+        # cut and cover deep enough for type A twin tubes but not the bore
+        ms = self.ms
+        tube_name = lambda c: (ms["phases"].get(self._phase_at(c)) or ms["phases"]["later"])["tube"]
+        streets = list(self.ctx.get("streets") or []) if getattr(self, "ctx", None) else []
+        street_at = lambda c: next((r for r in streets if r[0] - 5 <= c <= r[1] + 5), None)
+        a_tube = _tube_of(ms["tubes"]["A"])
+        a_from = a_tube["top"] + a_tube["od"]
+
+        def narrow(p):
+            if p["t"] not in ("shield", "deep") or p.get("stn") or tube_name(p["c"]) == "bore":
+                return False
+            s, tb = street_at(p["c"]), ms["tubes"][tube_name(p["c"])]
+            return bool(s) and s[2] < tb["spacing"] + tb["outside"]
+        for f, kind in ((narrow, "twin under a narrow street"),
+                        (lambda p: p["t"] == "cutcover" and "cls" in p and p["ph"] == "2" and tube_name(p["c"]) == "bore" and p["d"] >= a_from, "Phase 2 twin tubes could bore")):
+            for x, y in runs(0, n - 1, f):
+                if length(x, y) >= 50:
+                    flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": kind, "len": length(x, y), "info": True})
+        self._types = {"key": key, "step": step, "t": [p["t"] for p in P], "z": [p["z"] for p in P], "flags": flags, "approaches": approaches}
+        return self._types
+
+    def auto_type(self, c: float, z: float) -> str:
+        T = self.stretch_types()
+        if T:
+            i = int(round(c / T["step"]))
+            if 0 <= i < len(T["t"]) and abs(T["z"][i] - z) < 0.3:
+                return T["t"][i]
+        p = self._point_type(c, z)
+        return p.get("t") or (("deep" if p["deep"] else "shield") if p["cls"] == "B" else "cutcover")
 
     def _era(self) -> Optional[dict]:
         return None if self.is_rer else ERA.get(self.id)
@@ -819,11 +1020,24 @@ class MetroProfile:
         if self.is_rer:  # river crossings: sunk box sections in a dredged trench
             return ({"k": "box", "below": st["invertDepth"], "top": st["envelope"]}
                     if t == "cutcover" or self.river_at(c) else {"k": "bore", "below": st["invertDepth"], "top": st["boreCrown"]})
+        ms = getattr(self, "ms", None)
+        if ms:   # the record: the box, else the tube of the phase the stretch was built in
+            if t == "cutcover" and not self.river_at(c):
+                return {"k": "box", "below": ms["box"]["below"], "top": ms["box"]["top"]}
+            ph = self._phase_at(c)
+            return _tube_of(ms["tubes"][(ms["phases"].get(ph) or ms["phases"]["later"])["tube"]])
         if self.river_at(c) or t == "deep":
             return METRO_ST["tube"]
         if t == "cutcover":
             return METRO_ST["box"]
         return METRO_ST[(self._era() or {}).get("shield", "tube")]
+
+    def river_margin(self, c: float) -> float:
+        """Rail below the bed under a river: Metro 1.0 scour + half the tube's diameter + rail to its top"""
+        if self.is_rer or not getattr(self, "ms", None):
+            return RIVER_MARGIN["rer" if self.is_rer else "metro"]
+        t = self.struct_for("deep", c)
+        return 1.0 + t["od"] / 2 + t["top"]
 
     def req_cover(self, sc: dict, top_z: float) -> float:
         """Cover a structure needs over its top (top_z = its top level)."""
@@ -833,7 +1047,7 @@ class MetroProfile:
             return 0.0 if sc["k"] == "box" else float(self.settings["minCover"])
         if sc["k"] == "box":
             return BOX_COVER
-        return TUBE_COVER_HIGH if top_z > WATER_TABLE else sc["od"]
+        return sc["od"]   # one outside diameter over every bored tube (Ben, 28 October)
 
     def min_cover(self) -> float:
         """Cover over RER bored tunnels (setting)."""
@@ -908,7 +1122,6 @@ class MetroProfile:
 
     def river_breaks(self) -> List[dict]:
         """Stretches in tunnel under a river where the rail is above bed - margin (bed = ground raster)."""
-        margin = RIVER_MARGIN["rer" if self.is_rer else "metro"]
         step = float(self.data.get("step_m", 2.0))
         out = []
         for b in self.river_bridges():  # bridges: rail at least the navigation clearance level
@@ -924,7 +1137,7 @@ class MetroProfile:
                 bed = self.bed_at(c)
                 z = float(self.rail_at(c))
                 t = self.type_at(c, z)
-                over = z - (bed - margin) if math.isfinite(bed) and t in ("cutcover", "shield", "deep") else -math.inf
+                over = z - (bed - self.river_margin(c)) if math.isfinite(bed) and t in ("cutcover", "shield", "deep") else -math.inf
                 if over > 0.005:
                     if run is None:
                         run = {"name": r["name"], "c0": c, "c1": c, "over": over}
@@ -951,7 +1164,7 @@ class MetroProfile:
 
     def open_struct(self, t: str) -> dict:
         """This line's structure when it is in the open (rail to underside, clear height above)."""
-        top = OPEN_CLEAR["rer" if self.is_rer else "metro"]
+        top = OPEN_CLEAR["rer"] if self.is_rer else float((getattr(self, "ms", None) or {}).get("open_clear_height") or OPEN_CLEAR["metro"])
         if t == "elevated":
             return {"k": "elevated", "below": float(self.settings.get("deckDepth", 1.5)), "top": top}
         return {"k": t, "below": BED_DEPTH, "top": top}

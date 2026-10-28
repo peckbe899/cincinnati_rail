@@ -1,0 +1,367 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Metro Tube Cutaway</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a drawing sheet with one large 3D view, a control column beside it, the key and notes below. */
+:root {
+  --paper: #eef1f2; --sheet: #f8fafa; --ink: #1d2a30; --muted: #5d6b72; --rule: #c6cfd3; --env: #d1531f; --scene: #e9eef0;
+  --display: "Archivo", "Arial Narrow", Arial, sans-serif; --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #11181b; --sheet: #172024; --ink: #e2e9ec; --muted: #94a3aa; --rule: #2f3c42; --env: #f07a45; --scene: #1b252a; color-scheme: dark } }
+:root[data-theme="dark"] { --paper: #11181b; --sheet: #172024; --ink: #e2e9ec; --muted: #94a3aa; --rule: #2f3c42; --env: #f07a45; --scene: #1b252a; color-scheme: dark }
+body { background: var(--paper); color: var(--ink); font: 15px/1.55 var(--display); font-stretch: 92%; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 24px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 18px; }
+header { display: grid; grid-template-columns: 1fr auto; gap: 8px 24px; align-items: end; border-bottom: 2px solid var(--ink); padding-bottom: 12px; }
+h1 { margin: 0; font-size: clamp(26px, 4vw, 38px); font-stretch: 78%; font-weight: 700; text-wrap: balance; }
+.sub { margin: 4px 0 0; color: var(--muted); max-width: 66ch; }
+.tb { font: 12px/1.6 var(--mono); color: var(--muted); text-align: right; }
+.tb b { color: var(--ink); font-weight: 500; }
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 14px; align-items: start; }
+.view { position: relative; background: var(--scene); border: 1px solid var(--rule); height: min(68vh, 620px); min-height: 360px; overflow: hidden; }
+.view canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.labels { position: absolute; inset: 0; pointer-events: none; }
+.lab { position: absolute; transform: translate(-50%, -100%); font: 500 11px var(--mono); color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); padding: 1px 5px; white-space: nowrap; }
+.lab::after { content: ""; position: absolute; left: 50%; top: 100%; width: 1px; height: 10px; background: var(--muted); }
+.lab { margin-top: -10px; }
+.hint { position: absolute; left: 10px; bottom: 8px; font: 11px var(--mono); color: var(--muted); background: var(--sheet); padding: 2px 6px; border: 1px solid var(--rule); }
+.panel { display: grid; gap: 14px; background: var(--sheet); border: 1px solid var(--rule); padding: 14px; }
+.panel h2 { margin: 0 0 6px; font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+.btns { display: flex; flex-wrap: wrap; gap: 6px; }
+button { font: 500 13px var(--display); font-stretch: 90%; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); padding: 5px 9px; cursor: pointer; }
+button:hover { border-color: var(--ink); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--env); outline-offset: 2px; }
+.toggles { display: grid; gap: 4px; }
+.toggles label { display: flex; gap: 8px; align-items: center; font-size: 14px; cursor: pointer; }
+.sw { width: 12px; height: 12px; display: inline-block; border: 1px solid var(--ink); }
+.keybox { background: var(--sheet); border: 1px solid var(--rule); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+td.v { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+.tablewrap { overflow-x: auto; }
+.notes { color: var(--muted); font-size: 14px; max-width: 80ch; display: grid; gap: 6px; }
+.notes p { margin: 0; }
+.notes a { color: var(--ink); }
+@media (max-width: 820px) { .stage { grid-template-columns: 1fr; } header { grid-template-columns: 1fr; } .tb { text-align: left; } }
+.seg { display:flex; flex-wrap:wrap; gap:6px; } .seg button[aria-pressed="true"] { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
+.caption { color: var(--muted); font-size: 14px; margin: 0; max-width: 80ch; }
+</style>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Metro tube cutaway</h1>
+      <p class="sub">250 m of bored Metro tunnel at real size and spacing, with the upper near side of each tube cut away to show the track, the lining and the equipment. Pick the tunnel type by era.</p>
+    </div>
+    <div class="tb"><b>APEx / Cincinnati Metro</b><br>28 Oct 2026<br>Drawing values, not survey</div>
+  </header>
+  <div class="seg" role="group" aria-label="Tunnel type">
+    <button id="s-A" aria-pressed="true">Type A twin tubes (Phases 1–2)</button>
+    <button id="s-C" aria-pressed="false">Type C twin tubes (Phase 3 on)</button>
+    <button id="s-B" aria-pressed="false">Double-track bore (Phase 2 option)</button>
+  </div>
+  <p class="caption" id="cap"></p>
+  <div class="stage">
+    <div class="view" id="view">
+      <canvas id="c" aria-label="3D cutaway of 250 m of bored Metro tunnel with track and equipment"></canvas>
+      <div class="labels" id="labels"></div>
+      <div class="hint">Drag to orbit · right-drag or two fingers to pan · scroll or pinch to zoom</div>
+    </div>
+    <aside class="panel">
+      <div>
+        <h2>Views</h2>
+        <div class="btns">
+          <button id="v-over">Overview</button>
+          <button id="v-track">Track level</button>
+          <button id="v-signal">Signal</button>
+          <button id="v-xp">Cross passage</button>
+          <button id="v-end">End-on</button>
+        </div>
+      </div>
+      <div>
+        <h2>Show</h2>
+        <div class="toggles">
+          <label><input type="checkbox" id="t-legacy" checked> <i class="sw" style="background:#1d2a30"></i>Legacy signals</label>
+          <label><input type="checkbox" id="t-cbtc" checked> <i class="sw" style="background:#2f8f55"></i>CBTC and radio</label>
+          <label><input type="checkbox" id="t-safety" checked> <i class="sw" style="background:#b8352a"></i>Safety</label>
+          <label><input type="checkbox" id="t-serv" checked> <i class="sw" style="background:#e0b23a"></i>Power, lights, drains</label>
+          <label><input type="checkbox" id="t-train" checked> <i class="sw" style="background:#dfe7ec"></i>Train</label>
+          <label><input type="checkbox" id="t-ribs" checked> <i class="sw" style="background:#5b6670"></i>Ring joints</label>
+          <label><input type="checkbox" id="t-labels" checked> <i class="sw" style="background:none"></i>Labels</label>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <div class="keybox tablewrap">
+    <table>
+      <thead><tr><th>Item</th><th>Type A twin tubes</th><th>Type C twin tubes</th><th>Double-track bore</th></tr></thead>
+      <tbody>
+        <tr><td>Tube</td><td class="v">5.10 / 5.50 m, cast iron</td><td class="v">5.40 / 5.90 m, concrete</td><td class="v">8.60 / 9.00 m, cast iron</td></tr>
+        <tr><td>Track centres</td><td class="v">8.74 m</td><td class="v">9.14 m</td><td class="v">3.90 m</td></tr>
+        <tr><td>Rail over the invert</td><td class="v">0.70 m</td><td class="v">0.70 m</td><td class="v">2.30 m</td></tr>
+        <tr><td>Ring joints drawn</td><td>every 0.51 m (20 in, Victorian ring width)</td><td>every 1.5 m (assumed)</td><td>every 0.51 m</td></tr>
+        <tr><td>Escape route</td><td>bench walls, cross passages</td><td>walkway, cross passages</td><td>bench walls</td></tr>
+        <tr><td>Signals</td><td>on the right of travel</td><td>on the left, clear of the walkway</td><td>outer walls</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="notes">
+    <p>The twin tubes run in opposite directions: the near tube toward the far end of the stretch, the far tube back. Third rails on the inner sides of twin tubes and the outer sides of the double bore. The equipment spacing is the same as the box cutaway: lights every 18 m, hose valves every 61 m, transponders every 100 m (assumed), one radio access point, one blue light station, one cross passage (at most 244 m apart), distance markers every 100 m, a signal and trip stop for each track. The rings are left whole over the last 40 m.</p>
+    <p>Sources: as on the Metro Tube and Box Sections page; ring width from the <a href="https://bura.brunel.ac.uk/bitstream/2438/13998/1/FullText.pdf">Brunel cast-iron ring paper</a>.</p>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function () {
+  const L = 250, CUTX = 210;
+  const HW = 2.845 / 2, CH = 3.66;
+  const view = document.getElementById('view'), canvas = document.getElementById('c'), labelsEl = document.getElementById('labels');
+  if (!window.THREE) { view.insertAdjacentHTML('beforeend', '<p style="padding:16px">The 3D library did not load.</p>'); return; }
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 2000);
+  const controls = new THREE.OrbitControls(camera, canvas);
+  controls.enableDamping = true; controls.dampingFactor = 0.08;
+  function bg() { scene.background = new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue('--scene').trim() || '#e9eef0'); }
+  bg(); try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', bg); } catch (e) {}
+  new MutationObserver(bg).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f94, 0.85));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.55); sun.position.set(-60, 120, 80); scene.add(sun);
+  const M = (c, o) => new THREE.MeshLambertMaterial(Object.assign({ color: c, side: THREE.DoubleSide }, o || {}));
+  const mat = {
+    iron: M(0x6d7883), conc: M(0xb9c3c7), fill: M(0xaeb7bb), steel: M(0x4c565e), rail: M(0x30363a), timber: M(0x8a6a45),
+    third: M(0xc8692c), ins: M(0x777777), sig: M(0x1d2a30), red: M(0xd23b2a, { emissive: 0x551008 }), amb: M(0xe5a51d), grn: M(0x2fae5a, { emissive: 0x0d3a1d }),
+    trip: M(0xe0b23a), cbtc: M(0x2f8f55), pipe: M(0xb8352a), blue: M(0x2f64c9, { emissive: 0x16306a }), lamp: M(0xffe9a8, { emissive: 0xffd36a }),
+    cable: M(0x3a4246), drain: M(0x2b3a48), car: M(0xdfe7ec), carD: M(0x46525a), win: M(0x2a3a44),
+    xp: M(0xc9d0d3, { transparent: true, opacity: 0.55 }), door: M(0xb8352a), walk: M(0xc2c9cc), joint: M(0x3b444b)
+  };
+  const groups = {}; ['structure', 'ribs', 'legacy', 'cbtc', 'safety', 'serv', 'train'].forEach(k => { groups[k] = new THREE.Group(); scene.add(groups[k]); });
+  let LBL = [], labEls = [];
+  function clearAll() {
+    Object.values(groups).forEach(g => { while (g.children.length) { const c = g.children.pop(); if (c.geometry) c.geometry.dispose(); } });
+    labEls.forEach(e => e.remove()); LBL = []; labEls = [];
+  }
+  function box(g, m, sx, sy, sz, x, y, z) { const me = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m); me.position.set(x, y, z); g.add(me); return me; }
+  function inst(g, m, geo, mats) { const me = new THREE.InstancedMesh(geo, m, mats.length); mats.forEach((mm, i) => me.setMatrixAt(i, mm)); g.add(me); return me; }
+  function T(x, y, z) { return new THREE.Matrix4().makeTranslation(x, y, z); }
+  function cyl(g, m, r, len, x, y, z) { const me = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 10), m); me.rotation.z = Math.PI / 2; me.position.set(x, y, z); g.add(me); return me; }
+  // extrude a closed (z, y) outline along x from x0 for len
+  function extrude(g, m, pts, x0, len) {
+    const sh = new THREE.Shape(pts.map(p => new THREE.Vector2(-p[0], p[1])));
+    const geo = new THREE.ExtrudeGeometry(sh, { depth: len, bevelEnabled: false, curveSegments: 1 });
+    const me = new THREE.Mesh(geo, m); me.rotation.y = Math.PI / 2; me.position.set(x0, 0, 0); g.add(me); return me;
+  }
+  function arcPts(cz, cy, r, a0, a1, n) { const out = []; for (let i = 0; i <= n; i++) { const a = a0 + (a1 - a0) * i / n; out.push([cz + r * Math.cos(a), cy + r * Math.sin(a)]); } return out; }
+  function shell(g, m, cz, cy, r0, r1, a0, a1, x0, len) {   // lining between angles a0..a1 (counter-clockwise, angle 0 toward +z)
+    const o = arcPts(cz, cy, r1, a0, a1, 72), i = arcPts(cz, cy, r0, a0, a1, 72).reverse();
+    extrude(g, m, o.concat(i), x0, len);
+  }
+  function onC(cz, cy, r, y, side) { return cz + side * Math.sqrt(Math.max(0, r * r - (y - cy) * (y - cy))); }
+  function angAt(cz, cy, r, y, side) { const z = onC(cz, cy, r, y, side); return Math.atan2(y - cy, z - cz); }
+  function segBelow(g, m, cz, cy, r, ytop, x0, len) {     // circle segment under ytop
+    const aR = angAt(cz, cy, r, ytop, 1), aL = angAt(cz, cy, r, ytop, -1);
+    let a0 = aL, a1 = aR + 2 * Math.PI; if (a1 - a0 > 2 * Math.PI) a1 -= 2 * Math.PI;
+    extrude(g, m, arcPts(cz, cy, r, aL < 0 ? aL + 2 * Math.PI : aL, aR + 2 * Math.PI, 48), x0, len);
+  }
+  function bench(g, m, cz, cy, r, zin, ytop, ybot, x0, len) {  // from zin out to the lining, ybot..ytop
+    const side = Math.sign(zin - cz);
+    const aT = angAt(cz, cy, r, ytop, side), aB = angAt(cz, cy, r, ybot, side);
+    const arc = arcPts(cz, cy, r - 0.005, aT, aB + (side < 0 ? 0 : 0), 16);
+    extrude(g, m, [[zin, ytop]].concat(arc).concat([[zin, ybot]]), x0, len);
+  }
+  function rings(g, m, cz, cy, r, a0, a1, xs) {            // ring joints as torus arcs over angles a0..a1
+    const geo = new THREE.TorusGeometry(r, 0.03, 4, 60, a1 - a0);
+    const mats = xs.map(x => { const q = new THREE.Matrix4().makeRotationY(-Math.PI / 2).multiply(new THREE.Matrix4().makeRotationZ(a0)); return T(x, cy, cz).multiply(q); });
+    return inst(g, m, geo, mats);
+  }
+  function lab(t, p, g) { LBL.push([t, p, g]); const d = document.createElement('div'); d.className = 'lab'; d.textContent = t; labelsEl.appendChild(d); labEls.push(d); }
+  // common pieces
+  function track(zc, dirOut, opts) {         // dirOut: +1 if the train's right is +z
+    const S = groups.structure;
+    [-0.7175, 0.7175].forEach(dz => box(S, mat.rail, L, 0.17, 0.07, L / 2, -0.085, zc + dz));
+    if (opts.timber) { const ms = []; for (let x = 0.3; x < L; x += 0.6) ms.push(T(x, -0.235, zc)); inst(S, mat.timber, new THREE.BoxGeometry(0.2, 0.13, 2.4), ms); }
+    const zt = zc + opts.third * 1.27; box(groups.serv, mat.third, L, 0.12, 0.09, L / 2, 0.09, zt);
+    const mi = []; for (let x = 1.5; x < L; x += 3) mi.push(T(x, -0.05, zt)); inst(groups.serv, mat.ins, new THREE.BoxGeometry(0.12, 0.16, 0.12), mi);
+    [25, 125, 225].forEach(x => box(groups.cbtc, mat.cbtc, 0.5, 0.04, 0.35, x, -0.14, zc));
+  }
+  function signal(x, z, y, face, side) {
+    const G = groups.legacy; box(G, mat.sig, 0.3, 0.75, 0.3, x, y, z);
+    [[0.22, mat.red], [0, mat.amb], [-0.22, mat.grn]].forEach(([dy, m]) => box(G, m, 0.04, 0.14, 0.14, x + face * 0.17, y + dy, z));
+  }
+  function trip(x, z) { box(groups.legacy, mat.trip, 0.06, 0.18, 0.06, x, -0.03, z); box(groups.legacy, mat.trip, 0.3, 0.04, 0.08, x, 0.064, z); }
+  function joints(x, zc) { [-0.7175, 0.7175].forEach(dz => box(groups.legacy, mat.red, 0.08, 0.19, 0.1, x, -0.085, zc + dz)); }
+  function train(zc) {
+    const R = groups.train;
+    for (let k = 0; k < 4; k++) {
+      const cx = 30 + k * 20.3 + 9.95;
+      box(R, mat.car, 19.9, 2.4, 2.845, cx, 2.15, zc); box(R, mat.car, 19.9, 0.25, 2.2, cx, 3.47, zc);
+      box(R, mat.carD, 19.0, 0.65, 2.45, cx, 0.62, zc); [cx - 7.1, cx + 7.1].forEach(tx => box(R, mat.rail, 2.6, 0.55, 2.0, tx, 0.38, zc));
+      for (let w = -8; w <= 8; w += 2) box(R, mat.win, 1.2, 0.75, 2.86, cx + w, 2.35, zc);
+    }
+  }
+  function marker(x, z, s, txt) {
+    const cv = document.createElement('canvas'); cv.width = 128; cv.height = 64; const g = cv.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, 128, 64); g.fillStyle = '#111'; g.font = 'bold 34px monospace'; g.textAlign = 'center'; g.fillText(txt, 64, 45);
+    const me = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.25), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cv), side: THREE.DoubleSide }));
+    me.position.set(x, 1.2, z); me.rotation.y = s > 0 ? Math.PI : 0; groups.safety.add(me);
+  }
+  // one tube with its equipment. zc: track centre; out: +1 if outer side is +z; dir: +1 if trains run toward +x
+  function tube(kind, zc, out, dir, withTrain) {
+    const A = kind === 'A';
+    const R = A ? 2.55 : 2.70, t = A ? 0.20 : 0.25, cy = R - 0.70, cz = zc + (A ? 0 : out * 0.17), m = A ? mat.iron : mat.conc;
+    // cut window: the upper side facing the viewer (+z), from just below springing to past the crown
+    const cutLo = -0.25, cutHi = 2.05;
+    const keepA0 = cutHi, keepA1 = cutLo + 2 * Math.PI;
+    shell(groups.structure, m, cz, cy, R, R + t, keepA0, keepA1, 0, CUTX);
+    shell(groups.structure, m, cz, cy, R, R + t, 0, 2 * Math.PI - 0.0001, CUTX, L - CUTX);
+    const rx = [], step = A ? 0.508 : 1.5; for (let x = step / 2; x < CUTX; x += step) rx.push(x);
+    rings(groups.ribs, mat.joint, cz, cy, R + 0.01, keepA0, keepA1, rx);
+    segBelow(groups.structure, mat.fill, cz, cy, R, A ? -0.30 : -0.22, 0, L);
+    box(groups.serv, mat.drain, L, 0.03, 0.18, L / 2, A ? -0.29 : -0.21, zc);
+    track(zc, out * dir, { timber: A, third: -out });
+    const right = out;                         // section's right (x > 0) is the outer side
+    const W = (y, side) => onC(cz, cy, R, y, side);
+    if (A) {
+      bench(groups.structure, mat.fill, cz, cy, R, zc - out * 1.60, 0.9, -0.30, 0, L);
+      bench(groups.structure, mat.fill, cz, cy, R, zc + out * 1.60, 0.9, -0.30, 0, L);
+    } else {
+      bench(groups.structure, mat.walk, cz, cy, R, zc + out * (HW + 0.15), 1.12, -0.22, 0, L);
+      box(groups.serv, mat.cable, L, 0.4, 0.05, L / 2, 0.65, zc + out * (HW + 0.15) - out * 0.02);
+      cyl(groups.safety, mat.steel, 0.025, L, L / 2, 2.12, W(2.12, out) - out * 0.08);
+    }
+    // racks
+    const rackY = A ? [[1.35, -1], [1.65, -1], [1.35, 1]] : [[1.4, -1], [1.75, -1], [2.1, -1]];
+    rackY.forEach(([y, sd]) => { const s = sd * out, zw = W(y, s); box(groups.serv, mat.steel, L, 0.03, 0.32, L / 2, y, zw - s * 0.18); [0.07, 0.16, 0.25].forEach(d => cyl(groups.serv, mat.cable, 0.035, L, L / 2, y + 0.05, zw - s * d)); });
+    // lights every 18 m
+    const ly = A ? 3.0 : 3.7, ls = (A ? -1 : 1) * out, lm = []; for (let x = 9; x < L; x += 18) lm.push(T(x, ly, W(ly, ls) - ls * 0.15));
+    inst(groups.serv, mat.lamp, new THREE.BoxGeometry(0.6, 0.12, 0.14), lm);
+    // leaky feeder, access point
+    const fy = A ? 3.55 : 3.75, fs = (A ? 1 : -1) * out; cyl(groups.cbtc, mat.cbtc, 0.028, L, L / 2, fy, W(fy, fs) - fs * 0.08);
+    const apy = A ? 3.9 : 4.1, aps = (A ? -1 : 1) * out; box(groups.cbtc, mat.cbtc, 0.35, 0.25, 0.15, 150, apy, W(apy, aps) - aps * 0.14);
+    // standpipe and hose valves, blue light, distance markers
+    const sy = A ? 1.05 : 1.2, ss = -out; cyl(groups.safety, mat.pipe, 0.075, L, L / 2, sy, W(sy, ss) - ss * 0.13);
+    [30.5, 91.5, 152.5, 213.5].forEach(x => box(groups.safety, mat.pipe, 0.3, 0.3, 0.25, x, sy, W(sy, ss) - ss * 0.28));
+    const by = A ? 1.95 : 2.6; box(groups.safety, mat.blue, 0.4, 0.55, 0.15, 180, by, W(by, out) - out * 0.14);
+    [0, 100, 200].forEach(x => marker(x + 0.4, W(1.2, -out) - (-out) * 0.03, -out, (x / 1000).toFixed(1)));
+    // legacy signalling: signal at the block end, trip stop on the outer (right) side by the rail, insulated joints
+    const xs = dir > 0 ? 200 : 50, face = -dir;
+    const sigSide = A ? out : -out, sgy = A ? 2.45 : 3.05;
+    signal(xs, W(sgy, sigSide) - sigSide * 0.2, sgy, face, sigSide); trip(xs, zc + out * 0.86); joints(xs, zc);
+    if (withTrain) train(zc);
+    return { cz, cy, R, t, W, xs, sigSide, sgy, sy, by, fy, ly, ls };
+  }
+  function crossPassage(zA, zB, yfloor, x) {
+    box(groups.safety, mat.xp, 2.0, 2.2, Math.abs(zB - zA), x, yfloor + 1.1, (zA + zB) / 2);
+    [zA, zB].forEach(z => box(groups.safety, mat.door, 1.2, 2.0, 0.08, x, yfloor + 1.0, z));
+  }
+  const STR = {};
+  STR.A = function () {
+    const z = 8.74 / 2, ro = 2.75;
+    const n = tube('A', z, 1, 1, true), f = tube('A', -z, -1, -1, false);
+    crossPassage(z - ro, -z + ro, 0.9, 125);
+    lab('Cast-iron rings, 5.10 m inside', [20, n.cy + n.R - 0.4, -z - 1.6], 'structure');
+    lab('Bench wall with duct banks', [14, 0.95, -z + 2.0], 'structure');
+    lab('Third rail', [22, 0.25, -z + 1.27], 'serv'); lab('Train, 4 cars', [70, 3.95, z], 'train');
+    lab('Signal (legacy)', [50, f.sgy + 0.5, f.W(f.sgy, -1) + 0.2], 'legacy'); lab('Trip stop', [50, 0.25, -z - 0.86], 'legacy');
+    lab('CBTC transponder', [25, 0.05, -z], 'cbtc'); lab('Radio access point', [150, 4.2, f.W(3.9, 1) - 0.14], 'cbtc'); lab('Leaky feeder', [40, 3.75, f.W(3.55, -1) + 0.08], 'cbtc');
+    lab('Tunnel light, every 18 m', [27, 3.25, f.W(3.0, 1) - 0.15], 'serv'); lab('Cable racks', [14, 1.95, f.W(1.65, 1) - 0.2], 'serv');
+    lab('Standpipe and hose valve', [30.5, 1.35, f.W(1.05, 1) - 0.28], 'safety'); lab('Blue light station', [180, 2.35, f.W(1.95, -1) + 0.14], 'safety');
+    lab('Cross passage, fire doors', [125, 3.4, 0], 'safety'); lab('Drain', [12, -0.2, -z], 'serv'); lab('Ring joints, every 0.51 m', [60, n.cy + n.R + 0.3, z], 'ribs');
+    return { near: z, far: -z, xp: [125, 0.9 + 1.0, 0], sig: [50, f.sgy, f.W(f.sgy, -1)] };
+  };
+  STR.C = function () {
+    const z = 9.14 / 2, ro = 2.95;
+    const n = tube('C', z, 1, 1, true), f = tube('C', -z, -1, -1, false);
+    crossPassage(z + 0.17 - ro, -z - 0.17 + ro, 1.12, 125);
+    lab('Concrete segments, 5.40 m inside', [20, n.cy + n.R - 0.4, -z - 1.6], 'structure');
+    lab('Walkway at car-floor height', [14, 1.25, -z - 2.0], 'structure'); lab('Handrail', [36, 2.3, f.W(2.12, -1) + 0.08], 'safety');
+    lab('Third rail', [22, 0.25, -z + 1.27], 'serv'); lab('Train, 4 cars', [70, 3.95, z], 'train');
+    lab('Signal (legacy)', [50, f.sgy + 0.5, f.W(f.sgy, 1) - 0.2], 'legacy'); lab('Trip stop', [50, 0.25, -z - 0.86], 'legacy');
+    lab('CBTC transponder', [25, 0.05, -z], 'cbtc'); lab('Radio access point', [150, 4.4, f.W(4.1, -1) + 0.14], 'cbtc'); lab('Leaky feeder', [40, 3.95, f.W(3.75, 1) - 0.08], 'cbtc');
+    lab('Tunnel light, every 18 m', [27, 3.95, f.W(3.7, -1) + 0.15], 'serv'); lab('Cable racks', [14, 2.3, f.W(2.1, 1) - 0.2], 'serv');
+    lab('Standpipe and hose valve', [30.5, 1.5, f.W(1.2, 1) - 0.28], 'safety'); lab('Blue light station', [180, 3.0, f.W(2.6, -1) + 0.14], 'safety');
+    lab('Cross passage, fire doors', [125, 3.6, 0], 'safety'); lab('Ring joints, every 1.5 m', [60, n.cy + n.R + 0.3, z + 0.17], 'ribs');
+    return { near: z, far: -z, xp: [125, 1.12 + 1.0, 0], sig: [50, f.sgy, f.W(f.sgy, 1)] };
+  };
+  STR.B = function () {
+    const R = 4.3, t = 0.2, cy = 2.0, XC = 1.95;
+    shell(groups.structure, mat.iron, 0, cy, R, R + t, 2.05, -0.25 + 2 * Math.PI, 0, CUTX);
+    shell(groups.structure, mat.iron, 0, cy, R, R + t, 0, 2 * Math.PI - 0.0001, CUTX, L - CUTX);
+    const rx = []; for (let x = 0.254; x < CUTX; x += 0.508) rx.push(x);
+    rings(groups.ribs, mat.joint, 0, cy, R + 0.01, 2.05, -0.25 + 2 * Math.PI, rx);
+    segBelow(groups.structure, mat.fill, 0, cy, R, -0.30, 0, L);
+    [-1, 1].forEach(s => bench(groups.structure, mat.fill, 0, cy, R, s * (XC + 1.6), 0.9, -0.30, 0, L));
+    const W = (y, s) => onC(0, cy, R, y, s);
+    [[XC, 1], [-XC, -1]].forEach(([zc, s]) => {
+      track(zc, s, { timber: true, third: s });
+      box(groups.serv, mat.drain, L, 0.03, 0.3, L / 2, -0.29, zc);
+      [1.4, 1.75].forEach(y => { const zw = W(y, s); box(groups.serv, mat.steel, L, 0.03, 0.32, L / 2, y, zw - s * 0.18); [0.07, 0.16, 0.25].forEach(d => cyl(groups.serv, mat.cable, 0.035, L, L / 2, y + 0.05, zw - s * d)); });
+      const lm = []; for (let x = 9; x < L; x += 18) lm.push(T(x, 3.3, W(3.3, s) - s * 0.15)); inst(groups.serv, mat.lamp, new THREE.BoxGeometry(0.6, 0.12, 0.14), lm);
+      const xs = s > 0 ? 200 : 50; signal(xs, W(2.6, s) - s * 0.2, 2.6, -s, s); trip(xs, zc - s * 0.86); joints(xs, zc);
+    });
+    cyl(groups.cbtc, mat.cbtc, 0.028, L, L / 2, 4.6, W(4.6, -1) + 0.1); box(groups.cbtc, mat.cbtc, 0.35, 0.25, 0.15, 150, cy + R - 0.2, 0);
+    const sy = 1.05; cyl(groups.safety, mat.pipe, 0.075, L, L / 2, sy + 0.4, W(sy + 0.4, -1) + 0.13);
+    [30.5, 91.5, 152.5, 213.5].forEach(x => box(groups.safety, mat.pipe, 0.3, 0.3, 0.25, x, sy + 0.4, W(sy + 0.4, -1) + 0.28));
+    box(groups.safety, mat.blue, 0.4, 0.55, 0.15, 180, 2.0, W(2.0, -1) + 0.14);
+    [0, 100, 200].forEach(x => marker(x + 0.4, W(1.2, -1) + 0.03, -1, (x / 1000).toFixed(1)));
+    train(XC);
+    lab('Cast-iron rings, 8.60 m inside', [20, cy + R - 0.4, -2.2], 'structure'); lab('Deep concrete invert', [14, -0.6, 0], 'structure');
+    lab('Bench wall', [14, 0.95, -XC - 2.2], 'structure'); lab('Third rail', [22, 0.25, -XC - 1.27], 'serv'); lab('Train, 4 cars', [70, 3.95, XC], 'train');
+    lab('Signal (legacy)', [50, 3.1, W(2.6, -1) + 0.2], 'legacy'); lab('Trip stop', [50, 0.25, -XC + 0.86], 'legacy'); lab('CBTC transponder', [25, 0.05, -XC], 'cbtc');
+    lab('Leaky feeder', [40, 4.8, W(4.6, -1) + 0.1], 'cbtc'); lab('Tunnel light, every 18 m', [27, 3.55, W(3.3, -1) + 0.15], 'serv');
+    lab('Standpipe and hose valve', [30.5, 1.75, W(1.45, -1) + 0.28], 'safety'); lab('Blue light station', [180, 2.4, W(2.0, -1) + 0.14], 'safety');
+    return { near: XC, far: -XC, xp: null, sig: [50, 2.6, W(2.6, -1)] };
+  };
+  const CAP = {
+    A: 'Type A, Phases 1–2: cast-iron rings 5.10 m inside, timber sleepers in concrete, bench walls with duct banks each side, twin tubes 8.74 m apart with a cross passage at bench level.',
+    C: 'Type C, Phase 3 and later: concrete segments 5.40 m inside, slab track, walkway at car-floor height on the side away from the third rail with a handrail and cable trough, twin tubes 9.14 m apart.',
+    B: 'Phase 2 option: one double-track bore, canon 9.0 m outside, 8.60 m inside, tracks 3.90 m apart, deep concrete invert, bench walls on the outer sides. No cross passages: both tracks share the bore.'
+  };
+  let cur = 'A', info = null;
+  function build(k) {
+    clearAll(); cur = k; info = STR[k]();
+    document.getElementById('cap').textContent = CAP[k];
+    ['A', 'C', 'B'].forEach(s => document.getElementById('s-' + s).setAttribute('aria-pressed', String(s === k)));
+    document.getElementById('v-xp').disabled = !info.xp;
+    applyToggles(); go('over');
+  }
+  const tog = { legacy: 't-legacy', cbtc: 't-cbtc', safety: 't-safety', serv: 't-serv', train: 't-train', ribs: 't-ribs' };
+  function applyToggles() { Object.entries(tog).forEach(([g, id]) => { groups[g].visible = document.getElementById(id).checked; }); }
+  Object.values(tog).concat(['t-labels']).forEach(id => document.getElementById(id).addEventListener('change', applyToggles));
+  function go(v) {
+    const f = info.far, s = Math.sign(f);
+    const V = {
+      over: [[-9, 12, 20], [32, 1.2, 0]],
+      track: [[6, 1.75, f], [60, 1.4, f]],
+      signal: [[58, 2.3, f + (cur === 'B' ? 0.6 : 0)], [50, info.sig[1] - 0.6, info.sig[2]]],
+      xp: info.xp ? [[118, 2.2, f], [125, info.xp[1], 0]] : null,
+      end: [[-12, 2.0, 0], [10, 1.8, 0]]
+    };
+    if (!V[v]) return;
+    camera.position.set(...V[v][0]); controls.target.set(...V[v][1]); controls.update();
+  }
+  ['A', 'C', 'B'].forEach(k => document.getElementById('s-' + k).addEventListener('click', () => build(k)));
+  ['over', 'track', 'signal', 'xp', 'end'].forEach(k => document.getElementById('v-' + k).addEventListener('click', () => go(k)));
+  function resize() { const w = view.clientWidth, h = view.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+  new ResizeObserver(resize).observe(view); resize();
+  build('A');
+  const v3 = new THREE.Vector3(), pv = new THREE.Vector3();
+  function frame() {
+    controls.update(); renderer.render(scene, camera);
+    const show = document.getElementById('t-labels').checked, w = view.clientWidth, h = view.clientHeight;
+    LBL.forEach(([t, p, g], i) => {
+      const el = labEls[i]; pv.set(p[0], p[1], p[2]); const dist = camera.position.distanceTo(pv); v3.copy(pv).project(camera);
+      const on = show && dist < 75 && (g === 'structure' || groups[g].visible) && v3.z < 1 && Math.abs(v3.x) < 1.05 && Math.abs(v3.y) < 1.05;
+      el.hidden = !on; if (on) { el.style.left = ((v3.x + 1) / 2 * w) + 'px'; el.style.top = ((1 - v3.y) / 2 * h) + 'px'; }
+    });
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+</script>
+
+</body></html>

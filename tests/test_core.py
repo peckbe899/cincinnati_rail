@@ -313,7 +313,7 @@ def test_metro_profile_port_matches_saved_page_output():
     mp = MetroProfile.load(Path(__file__).resolve().parent / "data/Line_1_line_2026-10-06.json", fixture,
                            root / "settings.json",
                            settings_override={"vcRadius": 0.0, "minCover_override": -1e9, "trough_override": -1e9,
-                                              "platform": 152.4})
+                                              "platform": 152.4, "legacy_structures": True})
     mp._ground = np.array([np.nan if v is None else v / 10 for v in mp.data["ground_dm_lidar"]])
     for i, s in enumerate(doc["stations"]):
         assert mp.st[i] == pytest.approx(s["rail"], abs=0.02)
@@ -358,7 +358,7 @@ def test_rer_core_profile_matches_page():
     assert min(z for c, z in r3.pvi) == pytest.approx(126.584, abs=0.01)  # Little Miami: pool - 3 m bed - 9.1 m
     assert r3.modes[names.index("Asbury")] == "surface"
     r5 = load("RER_5")
-    assert r5.summary()["km_by_type"]["deep"] == pytest.approx(3.72, abs=0.05)  # shallower than bore + cover: cut and cover (670 ft platforms, Norwood cut)
+    assert r5.summary()["km_by_type"]["deep"] == pytest.approx(3.61, abs=0.05)  # shallower than bore + cover: cut and cover (670 ft platforms, Norwood cut at 185.5 m)
     assert r3.summary()["shallow_tubes"] == 0
 
 
@@ -377,18 +377,21 @@ def test_vertical_curves_and_structure_rules():
     for i, s in enumerate(mp.stations):
         cc = np.arange(max(0.0, s["c"] - half), min(mp.length, s["c"] + half), 2.0)
         assert np.allclose(mp.rail_at(cc), mp.st[i], atol=1e-6)  # platforms level
-    # Ben's structure rules: Lines 8-14 shield is a double-track bore, Lines 1-7 a twin tube;
-    # deep tube and river crossings are twin tubes; cover 2.0 m above the 140 m water table,
-    # one outside diameter at or below it, 0.6 m over box roofs
+    # Ben's structure rules (the shared record, 28 October): the bored tunnel follows the building phase, shallow or
+    # deep: Lines 1-7 type A twin tubes (5.10 m inside, 5.50 m outside, rail 0.70 m over the invert: 0.90 below, 4.60 to
+    # the top), Lines 8-12 the 9.0 m double-track bore (2.50 below, 6.50 to the top); cover one outside diameter over
+    # every bored tube (Ben, 28 October: the ground arches over it), 0.6 m over box roofs
     l3 = MetroProfile.load(root / "lines/Line_3.json", None, root / "settings.json")
     assert mp.struct_for("shield", 1000.0)["k"] == "bore" and l3.struct_for("shield", 1000.0)["k"] == "tube"
-    assert mp.struct_for("deep", 1000.0)["top"] == 4.08 and mp.struct_for("cutcover", 1000.0)["top"] == 4.6
+    assert mp.struct_for("deep", 1000.0)["top"] == pytest.approx(6.5) and l3.struct_for("deep", 1000.0)["top"] == pytest.approx(4.6)
+    assert l3.struct_for("shield", 1000.0)["od"] == 5.5 and mp.struct_for("cutcover", 1000.0)["top"] == 4.6
     bore = mp.struct_for("shield", 1000.0)
-    assert mp.req_cover(bore, 150.0) == 2.0 and mp.req_cover(bore, 140.0) == 9.0
+    assert mp.req_cover(bore, 150.0) == 9.0 and mp.req_cover(bore, 140.0) == 9.0 and l3.req_cover(l3.struct_for("shield", 1000.0), 150.0) == 5.5
     assert mp.req_cover(mp.struct_for("cutcover", 1000.0), 150.0) == 0.6
     l1 = MetroProfile.load(root / "lines/Line_1.json", None, root / "settings.json")
     r = l1.data["rivers"][0]
     assert l1.struct_for("cutcover", (r["c0"] + r["c1"]) / 2)["k"] == "tube"
+    assert l1.river_margin((r["c0"] + r["c1"]) / 2) == pytest.approx(1.0 + 2.75 + 4.6)   # scour + half the tube + rail to top
 
 
 def test_sloped_platform_eases_the_bends():
@@ -499,22 +502,23 @@ def test_cut_norwood_context():
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
-    # Line 8 as saved passes 0.25 m under the CUT lower level (rail 144.0 m), needing 7.3 m
+    # Line 8 as saved passes 0.25 m under the CUT lower level (rail 144.0 m); with one bore diameter of cover (Ben, 28
+    # October) it is cut and cover there, needing 1.0 + 0.5 + 4.6 = 6.1 m (was 8.0 m in the 9.0 m bore)
     l8 = MetroProfile.load(root / "lines/Line_8.json", root / "alignments/Line_8.json", root / "settings.json")
     assert any(b["l"] == "CUT lower level" for b in l8.context_blocks())
     x = next(x for x in l8.context_clearances() if x["with"] == "CUT lower level")
-    assert not x["ok"] and x["clear"] == pytest.approx(0.25, abs=0.02) and x["need"] == pytest.approx(7.3, abs=0.01)
+    assert not x["ok"] and x["clear"] == pytest.approx(0.25, abs=0.02) and x["need"] == pytest.approx(6.1, abs=0.01)
     # Line 4 along W 8th: the street raised up to 5 m over the intercity pair (re-grades do not add up)
     l4 = MetroProfile.load(root / "lines/Line_4.json", root / "alignments/Line_4.json", root / "settings.json")
     c = np.arange(11800.0, 12200.0, 2.0)
     dz = np.array([float(l4.ground_at(ci) - l4.ground_dem_at(ci)) for ci in c])
     assert dz.max() == pytest.approx(5.0, abs=0.01)
-    # Norwood Central: the surface tracks in their cut, level at 178.0 m; Line 14 passes under them
+    # Norwood Central: the surface tracks in their cut, level at 185.5 m; Line 14 passes under them
     l14 = MetroProfile.load(root / "lines/Line_14.json", None, root / "settings.json")
     nw = next(b for b in l14.context_blocks() if b["l"] == "Norwood Central tracks")
-    assert all(z == 178.0 for _, z in nw["p"])
+    assert all(z == 185.5 for _, z in nw["p"])
     cm = (nw["c0"] + nw["c1"]) / 2
-    assert float(l14.ground_at(cm)) == pytest.approx(178.0 - 0.8, abs=0.01)  # the cut floor
+    assert float(l14.ground_at(cm)) == pytest.approx(185.5 - 0.8, abs=0.01)  # the cut floor
     # since 27 October its Norwood Central platform is the Deck's, past the north end of the cut: the default profile
     # (no saved profile) holds the station 4.7 m over the tracks' level, short of the 7.8 m a line under them needs
     x = [x for x in l14.context_clearances() if not x["ok"]]
@@ -543,10 +547,96 @@ def test_context_street_openings():
     check = lambda b: (setattr(mp, "ctx", {"blocks": [b]}), mp.context_clearances()[0])[1]
     x = check(blk("embankment", []))          # no street opening: blocked
     assert x["blocked"] and not x["ok"]
-    x = check(blk("arch", [[c - 12, c + 12, "a street"]]))   # under an arch over a street: 9.0 m clear, needs 1.6 + 0.5 + 4.2
-    assert not x["blocked"] and x["ok"] and x["need"] == pytest.approx(6.3, abs=0.01)
+    x = check(blk("arch", [[c - 12, c + 12, "a street"]]))   # under an arch over a street: 9.0 m clear, needs 1.6 + 0.5 + 4.57 (Metro clear height, 28 October)
+    assert not x["blocked"] and x["ok"] and x["need"] == pytest.approx(6.67, abs=0.01)
     x = check(blk("viaduct", []))             # a normal viaduct: open between its piers
     assert not x["blocked"] and x["ok"]
+
+
+def test_north_viaduct_street_rule():
+    """The north arch viaduct (Ben, 28 October): rail at the finished street + 7.4 m at every street it crosses,
+    165.9 m over the Arlington platform, one dip (1.5% down, one grade up) to Ludlow at 162.5 m; W 8th's hump at most
+    1.9 m under the south approach (a median pier); girders span / 10 + 0.8 m; the upper deck 7.9 m over the highest rail it crosses (RER A and R5, 167.0 m)."""
+    import sys
+    from pathlib import Path
+    pytest.importorskip("rasterio")
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
+    import make_profile_context as m
+    B = m.build()
+    N = B["north"]
+    for s in N["streets"]:
+        if not s["clip"] and s["d1"] < N["dL"] - 15:
+            assert s["rail"] >= s["need"] - 0.01, s["name"]
+    assert N["z_of_d"](sum(N["dA"]) / 2) == pytest.approx(165.9)
+    assert N["z_of_d"](N["dL"]) == pytest.approx(162.5)
+    assert 0 < N["climb"] <= 0.015
+    zs = [N["z_of_d"](d) for d in np.arange(N["dA"][1], N["dL"], 5.0)]
+    assert all(b - a <= 0.015 * 5 + 1e-6 and a - b <= 0.015 * 5 + 1e-6 for a, b in zip(zs, zs[1:]))
+    w8 = next(r for r in B["REG"] if r["name"] == "W 8th (viaduct line)")
+    assert max(w8["dz"](x, 0) for x in np.arange(m.W8_WEST_FACE, 712941, 5.0)) <= 1.9 + 1e-6   # median pier (Ben, 28 October)
+    g = m.girder(33.5, "W 8th (viaduct line)")
+    assert g["spans"] == 2 and g["depth"] == pytest.approx(2.48, abs=0.01) and 161.7 - g["depth"] - 4.3 - 153.0 >= 1.9 - 0.01
+    assert m.girder(18.3)["depth"] == pytest.approx(2.63, abs=0.01) and m.girder(50.0, "Millvale Boulevard")["flag"]
+    assert B["indy"]["H"] == pytest.approx(167.0 + 7.9, abs=0.05)
+
+
+def test_tunnel_methods_by_era():
+    """Metro tunnels by era (Ben, 28 October): shield only with a tube diameter of cover; a bored stretch is a whole drive
+    from box to box (or portal, deep station) at any length, else at least its phase's minimum drive; between the
+    shield minimum and the cut-and-cover limit, cut and cover unless it makes a drive. Station approaches (Ben, 28 October:
+    the box carries on until the tracks reach the tubes' spacing) are switch points."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent / "data/profile"
+    for lid in ("Line_3", "Line_10"):
+        mp = MetroProfile.load(root / f"lines/{lid}.json", None, root / "settings.json")
+        T = mp.stretch_types()
+        step, ts = T["step"], T["t"]
+        tun = [mp._point_type(min(k * step, mp.length), T["z"][k]) for k in range(len(ts))]
+        for a in T["approaches"]:   # station approach boxes are anchors (switch points), like the stations
+            for k in range(len(ts)):
+                if min(a["c"], a["c"] + a["side"] * a["len"]) - 1e-6 <= k * step <= max(a["c"], a["c"] + a["side"] * a["len"]) + 1e-6:
+                    tun[k] = {"t": "cutcover"}
+        bored = lambda k: "cls" in tun[k] and ts[k] in ("shield", "deep")
+        k = 0
+        while k < len(ts):
+            if not bored(k):
+                k += 1
+                continue
+            j = k
+            while j + 1 < len(ts) and bored(j + 1):
+                j += 1
+            ends_at_cc = (k > 0 and "cls" in tun[k - 1]) or (j + 1 < len(ts) and "cls" in tun[j + 1])
+            if ends_at_cc:   # a drive from a shaft: at least the minimum
+                assert (j - k + 1) * step >= mp.phase_rules(k * step)["min_drive"] - 1e-6, (lid, k * step, j * step)
+            for m in range(k, j + 1, 25):
+                c = m * step
+                sc = mp.struct_for("shield", c)
+                assert float(mp.ground_at(c) - mp.rail_at(c)) >= sc["top"] + sc["od"] - 1e-6, (lid, c)
+            k = j + 1
+    assert mp.phase_rules(1000.0) == {"cc_max": 16.5, "min_drive": 300.0, "deep_from": 18.29}   # Line 10, Phase 2
+
+
+def test_station_approach_boxes():
+    """A cut-and-cover station meeting type A tubes keeps its box through the approach (Ben, 28 October): side
+    platforms spread 2.42 m a track, islands close 1.08 m; the approach is max(approach_m, sqrt(4 x min radius x shift)), plus
+    any straight before an arc into a curve (option A)."""
+    import math
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent / "data/profile"
+    mp = MetroProfile.load(root / "lines/Line_3.json", None, root / "settings.json")
+    T = mp.stretch_types()
+    ap = [a for a in T["approaches"] if a["station"]]
+    assert ap
+    for a in ap:
+        rmin = mp.ms["phases"][mp._phase_at(a["c"])]["min_radius"]   # by phase (Ben: 40, 55, 70 m)
+        want = max(mp.ms["approach_m"], math.sqrt(4 * rmin * abs(a["shift"])))
+        want += next((x["extra"] for x in mp.approach_extra if x["side"] == a["side"] and x.get("station") == a["station"]), 0.0)
+        assert a["len"] == pytest.approx(want, abs=T["step"] + 1e-6) or a["len"] < want   # (cut short only by a neighbour)
+        assert abs(a["shift"]) == pytest.approx(2.42 if a["kind"] == "side" else 1.08, abs=0.01)
+        c = a["c"] + a["side"] * a["len"] / 2
+        assert mp.type_at(c) == "cutcover"
 
 
 def test_locked_stretch_holds():

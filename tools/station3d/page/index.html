@@ -121,6 +121,13 @@ ul.list li button.del { padding: 5px 8px; color: var(--ink2); }
       <label class="chk" for="others"><input type="checkbox" id="others" checked> Lines not at this station</label>
       <label class="chk" for="unlev"><input type="checkbox" id="unlev" checked> Deck tracks with no level (on the ground)</label>
       <label class="chk" for="ctx"><input type="checkbox" id="ctx" checked> Other systems at CUT and Norwood Central</label>
+      <label class="chk" for="arcade"><input type="checkbox" id="arcade" checked> Arcade on the arch viaducts (near the view's centre, zoomed in)</label>
+      <p class="note">Metro tunnel equipment, within about 500 m of the view's centre when zoomed in:</p>
+      <label class="chk" for="eqCols"><input type="checkbox" id="eqCols" checked> Box columns</label>
+      <label class="chk" for="eqLegacy"><input type="checkbox" id="eqLegacy" checked> Legacy signals</label>
+      <label class="chk" for="eqCbtc"><input type="checkbox" id="eqCbtc" checked> CBTC and radio</label>
+      <label class="chk" for="eqSafety"><input type="checkbox" id="eqSafety" checked> Safety</label>
+      <label class="chk" for="eqServ"><input type="checkbox" id="eqServ" checked> Power, lights, drains, shafts</label>
     </section>
     <section>
       <h3>Lines</h3>
@@ -158,7 +165,7 @@ const PRESETS = [   // facing (true bearing the camera looks along) and angle ab
   { id: 'region', name: 'Whole region', face: 0, el: 89.5 },
 ];
 const PLAT = { metro: 0xa3a69f, rer: 0xe08aab, cvx: 0xa3a69f };   // Metro grey, TRI pink; a step darker each level down
-const TYPE_NAME = { cutcover: 'cut and cover', shield: 'shallow shield', deep: 'deep tube', elevated: 'elevated', atgrade: 'at grade', trough: 'open trough' };
+const TYPE_NAME = { cutcover: 'cut and cover', shield: 'shallow shield', deep: 'deep tunnel', elevated: 'elevated', atgrade: 'at grade', trough: 'open trough' };
 
 // ---------- renderer ----------
 const stage = $('stage');
@@ -346,7 +353,7 @@ function clear() {
   S.mats = { ground: [], struct: [] }; S.groups = new Map();
 }
 function build(snap) {
-  clear(); S.snap = snap;
+  clear(); S.snap = snap; EQ.at = null;
   const D = S.D || (S.D = prepare(snap)); S.lines = D.lines; S.byId = D.byId; S.stations = D.groups;
   const gop = +$('groundOp').value, sop = +$('structOp').value, margin = snap.box_margin || { metro: 2.3, rer: 3.25 };
 
@@ -559,6 +566,11 @@ function buildContext(snap, sop) {
       const zb = [it.zb[0], it.zb[1], it.zb[1], it.zb[0]], pos = new Float32Array(24);
       for (let i = 0; i < 4; i++) { pos.set([X(it.x[i]), Yp(it.x[i], it.y[i], zb[i]), Z(it.y[i])], i * 3); pos.set([X(it.x[i]), Yp(it.x[i], it.y[i], it.zt), Z(it.y[i])], 12 + i * 3); }
       add(CTX_COL.viaduct, { pos, idx: [0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6, 3, 0, 4, 3, 4, 7, 4, 5, 6, 4, 6, 7, 0, 2, 1, 0, 3, 2] });
+    } else if (it.type === 'mast') {   // catenary middle masts (steel lattice) with the girder across the deck at 7.7-8.6 m over the rail
+      const ms = cg.userData.masts || (cg.userData.masts = []);
+      it.x.forEach((x, i) => { const y = it.y[i]; for (const [dx, dy] of [[-0.3, -0.3], [0.3, -0.3], [0.3, 0.3], [-0.3, 0.3]]) ms.push([[X(x + dx), Yp(x, y, it.z), Z(y + dy)], [X(x + dx), Yp(x, y, it.z + 8.6), Z(y + dy)]]);
+        for (let h = 0.6; h < 8.6; h += 1.2) ms.push([[X(x - 0.3), Yp(x, y, it.z + h), Z(y - 0.3)], [X(x + 0.3), Yp(x, y, it.z + h + 0.6), Z(y + 0.3)]]); });
+      if (it.x.length > 1) for (const h of [7.7, 8.6]) ms.push([[X(it.x[0]), Yp(it.x[0], it.y[0], it.z + h), Z(it.y[0])], [X(it.x[1]), Yp(it.x[1], it.y[1], it.z + h), Z(it.y[1])]]);
     } else if (it.type === 'plat') {
       const xs = dec(it.x, 100), ys = dec(it.y, 100), cx = xs.reduce((a, v) => a + v, 0) / xs.length, cy = ys.reduce((a, v) => a + v, 0) / ys.length, h = Math.max(0.3, it.top - it.rail);
       const geo = new THREE.ExtrudeGeometry(new THREE.Shape(xs.map((x, i) => new THREE.Vector2(x, ys[i]))), { depth: h, bevelEnabled: false }); geo.rotateX(-Math.PI / 2); geo.translate(0, Yp(cx, cy, it.top) - h, 0);
@@ -570,6 +582,7 @@ function buildContext(snap, sop) {
   for (const [col, parts] of byCol) { const m = structMat(col, Math.min(1, sop * 1.6)); m.userData.boost = 1.6; const ms = merged(parts, m); if (ms) cg.add(ms); }
   for (const [col, parts] of (cg.userData.pm || new Map())) { const ms = merged(parts, new THREE.MeshStandardMaterial({ color: col, roughness: 0.8, clippingPlanes: clips })); if (ms) cg.add(ms); }
   delete cg.userData.pm;
+  if (cg.userData.masts) { const o = polylines(cg.userData.masts, new THREE.LineBasicMaterial({ color: 0x59636a, clippingPlanes: clips })); if (o) cg.add(o); delete cg.userData.masts; }
   if (cg.userData.blind) { const o = polylines(cg.userData.blind, new THREE.LineBasicMaterial({ color: CTX_COL.blind, clippingPlanes: clips })); if (o) cg.add(o); delete cg.userData.blind; }
   const rails = new Map();
   for (const it of items) if (it.type === 'rail') { const xs = dec(it.x, 10), ys = dec(it.y, 10), zs = dec(it.z, 100); if (!rails.has(it.col)) rails.set(it.col, []); rails.get(it.col).push(xs.map((x, i) => [X(x), Yp(x, ys[i], zs[i]), Z(ys[i])])); }
@@ -777,6 +790,267 @@ $('gltf').addEventListener('click', () => {
 
 // ---------- loop: cutaway, compass, station names nearest the view ----------
 const needle = $('needle'), dir = new THREE.Vector3(), tmp = new THREE.Vector3();
+// ---------- Metro tunnel equipment near the camera (Ben, 28 October: claude/Metro_Structure_Gauge_Handoff.md section 3.5) ----------
+// Simple repeated objects at drawing positions and spacings, on four layers, built only within EQ_R of the view's centre when zoomed
+// in and rebuilt as it moves. Box: columns 0.25 m square every 1.524 m between the tracks, walls 2.0 m outside each track centre.
+// Third rail 1.27 m off the track centre on the outer side, trip stops by the inner rail; signals at 250 m block ends and platform
+// ends; CBTC transponders every 100 m and at each stopping point, radio access points every 300 m, leaky feeder on the upper wall;
+// standpipe with hose valves every 61 m, blue lights every 250 m and at platform ends, cross passages every 200 m between twin tubes,
+// distance markers every 100 m, intrusion detection on the last 100 m into each platform; lights every 18 m, cable racks, drains,
+// a sump at each low point, vent shafts at station ends (and draught relief on deep tubes).
+const EQ_R = 500, EQ_ZOOM = 1800, EQ = { group: new THREE.Group(), at: null, key: '' };
+// positions by tunnel, from the Metro Box Cutaway and Metro Tube Cutaway pages (28 October): [metres from the track centre, + toward the
+// outer side (away from the other track), metres over the rail]. Twin tubes: third rail on the inner side, trip stop on the outer;
+// type A signals on the right of travel (outer), type C on the left (inner), clear of the walkway on the outer side. Box and bore:
+// third rail outer, trip stop by the inner rail, signals on the outer walls.
+const EQPOS = {
+  box: { third: [1.27, 0.15], trip: [-0.86, 0.064], sig: [1.8, 2.4], light: [1.92, 3.2], racks: [[1.85, 1.5], [1.85, 1.8]], feeder: [1.94, 3.55], ap: [1.9, 3.4],
+    pipe: [1.88, 1.05], hose: [1.75, 1.05], blue: [1.9, 1.6], mark: [1.97, 1.2], drain: null, floor: 0 },
+  A: { third: [-1.27, 0.15], trip: [0.86, 0.064], sig: [2.28, 2.45], light: [-2.13, 3.0], racks: [[-2.32, 1.35], [-2.36, 1.65], [2.32, 1.35]], feeder: [1.82, 3.55], ap: [-1.38, 3.9],
+    pipe: [-2.29, 1.05], hose: [-2.14, 1.05], blue: [2.41, 1.95], mark: [-2.44, 1.2], drain: [0, -0.29], floor: 0.9, bench: 0.9 },
+  C: { third: [-1.27, 0.15], trip: [0.86, 0.064], sig: [-2.12, 3.05], light: [2.12, 3.7], racks: [[-2.28, 1.4], [-2.34, 1.75], [-2.35, 2.1]], feeder: [-1.81, 3.75], ap: [1.73, 4.1],
+    pipe: [-2.28, 1.2], hose: [-2.13, 1.2], blue: [2.66, 2.6], mark: [-2.38, 1.2], drain: [0, -0.21], floor: 1.12, walk: [1.57, 2.4, 1.12], rail: [2.79, 2.12] },
+  bore: { third: [1.27, 0.15], trip: [-0.86, 0.064], sig: [2.11, 2.6], light: [2.0, 3.3], racks: [[2.13, 1.4], [2.16, 1.75]], feeder: [1.37, 4.6], ap: null,
+    pipe: [2.11, 1.05], hose: [1.96, 1.05], blue: [2.1, 1.6], mark: [2.15, 1.2], drain: [0, -0.29], floor: 0.9, bench: 0.9 },
+};
+const eqPos = (st) => EQPOS[st.k === 'box' ? 'box' : st.tube || (st.k === 'bore' ? 'bore' : 'A')] || EQPOS.A;
+scene.add(EQ.group);
+const EQM = {};
+function eqMat(name, color, emissive) { if (!EQM[name]) EQM[name] = new THREE.MeshStandardMaterial({ color, emissive: emissive || 0x000000, roughness: 0.6, clippingPlanes: clips }); return EQM[name]; }
+function eqLine(name, color) { const k = 'l' + name; if (!EQM[k]) EQM[k] = new THREE.LineBasicMaterial({ color, clippingPlanes: clips }); return EQM[k]; }
+const EQG = {};
+const eqGeo = (k, sx, sy, sz) => EQG[k] || (EQG[k] = new THREE.BoxGeometry(sx, sy, sz));
+function eqInst(geo, mat, list) {   // [[x, y, z, rotY], ...]
+  if (!list.length) return null; const m = new THREE.InstancedMesh(geo, mat, list.length), o = new THREE.Object3D();
+  list.forEach((p, i) => { o.position.set(p[0], p[1], p[2]); o.rotation.set(0, p[3] || 0, 0); o.updateMatrix(); m.setMatrixAt(i, o.matrix); }); return m;
+}
+function eqClear() { while (EQ.group.children.length) { const o = EQ.group.children.pop(); if (o.geometry && !Object.values(EQG).includes(o.geometry)) o.geometry.dispose(); } }
+function eqUpdate(force) {
+  if (!S.snap || !S.lines) return;
+  const d = camera.position.distanceTo(controls.target), on = d < EQ_ZOOM;
+  const layers = ['eqCols', 'eqLegacy', 'eqCbtc', 'eqSafety', 'eqServ'].map((id) => +$(id).checked).join('');
+  const tx = controls.target.x, ty = -controls.target.z;
+  if (!on) { if (EQ.at) { eqClear(); EQ.at = null; } return; }
+  if (!force && EQ.at && Math.hypot(EQ.at[0] - tx, EQ.at[1] - ty) < 150 && EQ.key === layers) return;
+  EQ.at = [tx, ty]; EQ.key = layers; eqClear();
+  const show = { cols: $('eqCols').checked, legacy: $('eqLegacy').checked, cbtc: $('eqCbtc').checked, safety: $('eqSafety').checked, serv: $('eqServ').checked };
+  const B = {}, Lns = {}; const add = (k, p) => (B[k] = B[k] || []).push(p), line = (k, pts) => (Lns[k] = Lns[k] || []).push(pts);
+  const near = (x, y) => Math.hypot(x - tx, y - ty) < EQ_R;
+  for (const l of S.lines) {
+    if (l.sys === 'rer' || !l.T.length) continue;
+    const stt = S.snap.struct[l.id] || {}, sts = (S.snap.lines.find((q) => q.id === l.id) || {}).stations || [];
+    const kindAt = (c) => { for (const p of l.P) { if (c < p[0].c || c > p[p.length - 1].c) continue; let lo = 0, hi = p.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (p[m].c <= c) lo = m; else hi = m; } const st = stt[p[lo].t]; return st && (st.k === 'box' || st.k === 'tube' || st.k === 'bore') ? st : null; } return null; };
+    const inPlat = (c) => sts.some((s) => c >= s.from_c && c <= s.to_c);
+    for (const tr of l.T) {
+      if (tr.length < 2) continue;
+      const s = Math.sign(tr.reduce((a, p) => a + p.off, 0)) || 1;
+      const at = (c) => {   // position, rail level and unit tangent on this track at chainage c
+        let lo = 0, hi = tr.length - 1; if (c < tr[0].c || c > tr[hi].c) return null; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (tr[m].c <= c) lo = m; else hi = m; }
+        const a = tr[lo], b = tr[hi], u = b.c > a.c ? (c - a.c) / (b.c - a.c) : 0, L = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+        return { x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u, z: a.z + (b.z - a.z) * u, tx: (b.x - a.x) / L, ty: (b.y - a.y) / L, off: a.off + (b.off - a.off) * u };
+      };
+      const P = (q, side, up) => { const nx = -q.ty, ny = q.tx, x = q.x + nx * side * s, y = q.y + ny * side * s; return [X(x), Yp(q.x, q.y, q.z) + up, Z(y), Math.atan2(q.ty, q.tx)]; };
+      const c0 = tr[0].c, c1 = tr[tr.length - 1].c;
+      const each = (step, fn, phase = 0) => { for (let c = Math.ceil((c0 - phase) / step) * step + phase; c <= c1; c += step) { const q = at(c); if (!q || !near(q.x, q.y)) continue; const st = kindAt(c); if (!st) continue; fn(c, q, st); } };
+      const run = (fn) => {   // stretches of one kind of tunnel (positions change between them)
+        let cur = [], kk = null;
+        for (let c = c0; c <= c1; c += 5) { const q = at(c), st = q && near(q.x, q.y) ? kindAt(c) : null, k = st && !inPlat(c) ? st.k + (st.tube || '') : null;
+          if (k !== kk) { if (cur.length > 1) fn(cur); cur = []; kk = k; } if (k) cur.push([q, st]); }
+        if (cur.length > 1) fn(cur); };
+      if (show.serv) {
+        run((seg) => { line('third', seg.map(([q, st]) => P(q, ...eqPos(st).third).slice(0, 3)));
+          for (let k = 0; k < 3; k++) { const pts = seg.filter(([, st]) => eqPos(st).racks[k]); if (pts.length > 1) line('rack', pts.map(([q, st]) => P(q, ...eqPos(st).racks[k]).slice(0, 3))); }
+          line('drain', seg.map(([q, st]) => { const e = eqPos(st); return (e.drain ? P(q, ...e.drain) : P(q, -(Math.abs(q.off) - 0.38), -0.2)).slice(0, 3); }));
+          const wk = seg.filter(([, st]) => eqPos(st).walk); if (wk.length > 1) { for (const k of [0, 1]) line('walk', wk.map(([q, st]) => P(q, eqPos(st).walk[k], eqPos(st).walk[2]).slice(0, 3))); line('handrail', wk.map(([q, st]) => P(q, ...eqPos(st).rail).slice(0, 3))); }
+          const bn = seg.filter(([, st]) => eqPos(st).bench); if (bn.length > 1) for (const sd of [-1, 1]) line('bench', bn.map(([q, st]) => P(q, sd * 1.6, eqPos(st).bench).slice(0, 3))); });
+        each(18, (c, q, st) => { if (!inPlat(c)) add('light', P(q, ...eqPos(st).light)); });
+      }
+      if (show.cbtc) {
+        run((seg) => line('feeder', seg.map(([q, st]) => P(q, ...eqPos(st).feeder).slice(0, 3))));
+        each(100, (c, q) => add('xpdr', P(q, 0, -0.14)));
+        each(300, (c, q, st) => { const e = eqPos(st); if (e.ap) add('radio', P(q, ...e.ap)); else if (s > 0) add('radio', P(q, -Math.abs(q.off), 6.1)); }, 150);   // the bore: at the crown
+        for (const p of sts) { const q = at((p.from_c + p.to_c) / 2); if (q && near(q.x, q.y) && kindAt((p.from_c + p.to_c) / 2)) add('xpdr', P(q, 0, -0.14)); }
+      }
+      const signalAt = (c, q, st) => { const e = eqPos(st), [u, h] = e.sig; add('sig', P(q, u, h)); add('sigR', P(q, u - Math.sign(u) * 0.17, h + 0.22)); add('trip', P(q, ...e.trip)); add('joint', P(q, 0.72, 0)); add('joint', P(q, -0.72, 0)); };
+      if (show.legacy) {
+        each(250, (c, q, st) => { if (!inPlat(c)) signalAt(c, q, st); });
+        for (const p of sts) for (const c of [p.from_c, p.to_c]) { const q = at(c), st = q && kindAt(c); if (q && st && near(q.x, q.y)) signalAt(c, q, st); }
+      }
+      if (show.safety) {
+        run((seg) => line('pipe', seg.map(([q, st]) => P(q, ...eqPos(st).pipe).slice(0, 3))));
+        each(61, (c, q, st) => { if (!inPlat(c)) add('hose', P(q, ...eqPos(st).hose)); });
+        each(250, (c, q, st) => { if (!inPlat(c)) add('blue', P(q, ...eqPos(st).blue)); }, 125);
+        each(100, (c, q, st) => add('mark', P(q, ...eqPos(st).mark)));
+        for (const p of sts) for (const c of [p.from_c, p.to_c]) { const q = at(c), st = q && kindAt(c); if (q && st && near(q.x, q.y)) add('blue', P(q, ...eqPos(st).blue)); }
+        // intrusion detection: the last 100 m into each platform, and along the platform edge
+        for (const p of sts) for (const [a, b] of [[p.from_c - 100, p.from_c], [p.to_c, p.to_c + 100], [p.from_c, p.to_c]]) {
+          const pts = []; for (let c = a; c <= b; c += 10) { const q = at(c); if (q && near(q.x, q.y) && kindAt(c)) pts.push(P(q, a === p.from_c && b === p.to_c ? -1.45 : 0, 0.05).slice(0, 3)); }
+          if (pts.length > 1) line('intrusion', pts);
+        }
+      }
+      if (s > 0) {   // once per line (its left track): the line's centre is |off| to the right, tracks being centred on it
+        const ctr = (q, up) => P(q, -Math.abs(q.off), up);
+        if (show.serv) {   // sumps at low points of the rail in tunnel; vent shafts at station ends (draught relief too on deep tubes)
+          let prev = null, prev2 = null;
+          for (let c = c0; c <= c1; c += 10) { const q = at(c); if (q && prev && prev2 && prev.z < prev2.z - 0.01 && prev.z <= q.z && near(prev.x, prev.y) && kindAt(c - 10)) add('sump', ctr(prev, -1.2)); prev2 = prev; prev = q; }
+          for (const p of sts) for (const c of [p.from_c - 5, p.to_c + 5]) { const q = at(c), st = q && kindAt(c); if (!q || !st || !near(q.x, q.y)) continue;
+            const g = groundAt(q.x, q.y), h = Math.max(2, g - q.z), pp = ctr(q, 0), y = (Yp(q.x, q.y, q.z) + Yp(q.x, q.y, g)) / 2; add('shaft', [pp[0], y, pp[2], pp[3], h]);
+            if (st.k !== 'box' && g - q.z > 20) add('shaft', [pp[0] + 8 * q.tx, y, pp[2] - 8 * q.ty, pp[3], h]); }
+        }
+        if (show.cols) for (let c = Math.ceil(c0 / 1.524) * 1.524; c <= c1; c += 1.524) { const q = at(c); if (!q || !near(q.x, q.y) || inPlat(c)) continue; const st = kindAt(c); if (st && st.k === 'box') add('col', ctr(q, 1.85)); }
+        if (show.safety) for (let c = Math.ceil(c0 / 200) * 200 + 100; c <= c1; c += 200) { const q = at(c); if (!q || !near(q.x, q.y) || inPlat(c)) continue; const st = kindAt(c); if (!st || st.k !== 'tube') continue;
+          const pp = ctr(q, eqPos(st).floor + 1.1); add('xpass', [pp[0], pp[1], pp[2], pp[3] + Math.PI / 2, 2 * Math.abs(q.off)]); }
+      }
+    }
+  }
+  const kinds = { col: [0.25, 4.3, 0.25, 0x5b6670], light: [0.6, 0.12, 0.14, 0xffe9a8, 0xffd36a], xpdr: [0.5, 0.04, 0.35, 0x2f8f55], radio: [0.35, 0.25, 0.15, 0x2f8f55],
+    sig: [0.3, 0.75, 0.3, 0x1d2a30], sigR: [0.06, 0.14, 0.14, 0xd23b2a, 0x551008], trip: [0.3, 0.06, 0.08, 0xe0b23a], joint: [0.08, 0.19, 0.1, 0xd23b2a],
+    hose: [0.3, 0.3, 0.25, 0xb8352a], blue: [0.4, 0.55, 0.15, 0x2f64c9, 0x16306a], mark: [0.5, 0.25, 0.04, 0xf2f4f5], sump: [2.0, 1.5, 2.0, 0x2b3a48] };
+  for (const [k, list] of Object.entries(B)) {
+    if (k === 'shaft') { for (const p of list) { const m = new THREE.Mesh(new THREE.BoxGeometry(3, p[4], 3), eqMat('shaft', 0x9aa6ab)); m.position.set(p[0], p[1], p[2]); m.rotation.y = p[3]; EQ.group.add(m); } continue; }
+    if (k === 'xpass') { for (const p of list) { const m = new THREE.Mesh(new THREE.BoxGeometry(Math.max(1, p[4] - 5), 2.2, 1.6), eqMat('xpass', 0xb8352a)); m.position.set(p[0], p[1], p[2]); m.rotation.y = p[3]; EQ.group.add(m); } continue; }
+    const [sx, sy, sz, col, em] = kinds[k]; const m = eqInst(eqGeo(k, sx, sy, sz), eqMat(k, col, em), list); if (m) EQ.group.add(m);
+  }
+  const lc = { third: 0xc8692c, rack: 0x3a4246, drain: 0x2b3a48, feeder: 0x2f8f55, pipe: 0xb8352a, intrusion: 0x9b59d0, walk: 0x8a959b, handrail: 0x4c565e, bench: 0x8a959b };
+  for (const [k, list] of Object.entries(Lns)) { const o = polylines(list, eqLine(k, lc[k])); if (o) EQ.group.add(o); }
+}
+['eqCols', 'eqLegacy', 'eqCbtc', 'eqSafety', 'eqServ'].forEach((id) => $(id).addEventListener('input', () => eqUpdate(true)));
+// ---------- the arcade on the arch viaducts (Ben, 28 October; style from the Viaduct Arcade 3D model) ----------
+// Each face run from the sync (context3d.arcade): the face line, rail, finished ground, width across, and its stretches: a
+// street opening (a true arch, or a girder bridge hidden behind the same arch fascia) or a block's stretch, blind (default),
+// shops or open, as switched on the Deck. Drawn within ARC_R of the view's centre when zoomed in, like the tunnel equipment.
+// Drawing values: piers 2.4 m on the building lines, bays fitted to 16.5-19.3 m, arches springing 3.05 m over the street (10 ft
+// headroom at the pier face) to the girder soffit 2.0 m under the rail (true arches 2.21 m), cornice 1.0 m under the rail, bronze
+// railing to 1.1 m over it, masonry catenary pylons on every fourth pier with a lattice girder 7.7-8.6 m over the rail.
+const ARC_R = 450, ARC = { group: new THREE.Group(), at: null, key: '' }, ARCD = { pier: 2.4, bay: 18.3, spring: 3.05, girder: 2.0, arch: 2.21, cornice: 1.0 };
+scene.add(ARC.group);
+function ashlarTex(base, joint) {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 128; const g = c.getContext('2d');
+  g.fillStyle = base; g.fillRect(0, 0, 256, 128);
+  for (let i = 0; i < 400; i++) { g.fillStyle = 'rgba(0,0,0,' + (Math.random() * 0.035) + ')'; g.fillRect(Math.random() * 256, Math.random() * 128, 2, 2); }
+  g.strokeStyle = joint; g.lineWidth = 2; g.beginPath(); g.moveTo(0, 1); g.lineTo(256, 1); g.moveTo(0, 64); g.lineTo(256, 64);
+  g.moveTo(1, 0); g.lineTo(1, 64); g.moveTo(129, 0); g.lineTo(129, 64); g.moveTo(64, 64); g.lineTo(64, 128); g.moveTo(192, 64); g.lineTo(192, 128); g.stroke();
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;   // one tile = 2.4 x 1.2 m (uv in those units)
+}
+const ARCM = {};
+function arcMat(k) {
+  if (ARCM[k]) return ARCM[k];
+  const o = { stone: { map: ashlarTex('#dcc7a0', '#bfa77e') }, recess: { map: ashlarTex('#c9b58e', '#ad9670') }, trim: { color: 0xd6bf94 }, trimD: { color: 0xc9b083 },
+    groove: { color: 0x8f7a58 }, granite: { color: 0x4b4f53 }, bronze: { color: 0x5b4a33, metalness: 0.3 }, glass: { color: 0x33434b, emissive: 0x4a3010 }, steel: { color: 0x59636a } }[k];
+  return (ARCM[k] = new THREE.MeshStandardMaterial(Object.assign({ color: 0xffffff, roughness: 0.85, side: THREE.DoubleSide, clippingPlanes: clips }, o)));
+}
+function arcClear() { while (ARC.group.children.length) { const o = ARC.group.children.pop(); if (o.geometry) o.geometry.dispose(); } }
+function arcRun(it) {   // decoded face run, with lookups by u (metres along it)
+  const xs = dec(it.x, 10), ys = dec(it.y, 10), zs = dec(it.z, 100), gs = dec(it.g, 100), ws = dec(it.wd, 10), u = [0];
+  for (let i = 1; i < xs.length; i++) u.push(u[i - 1] + Math.hypot(xs[i] - xs[i - 1], ys[i] - ys[i - 1]));
+  const at = (s) => {
+    s = Math.max(0, Math.min(u[u.length - 1], s)); let lo = 0, hi = u.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (u[m] <= s) lo = m; else hi = m; }
+    const t = u[hi] > u[lo] ? (s - u[lo]) / (u[hi] - u[lo]) : 0, L = Math.hypot(xs[hi] - xs[lo], ys[hi] - ys[lo]) || 1, l = (a) => a[lo] + (a[hi] - a[lo]) * t;
+    return { x: l(xs), y: l(ys), z: l(zs), g: l(gs), wd: l(ws), tx: (xs[hi] - xs[lo]) / L, ty: (ys[hi] - ys[lo]) / L };
+  };
+  return { at, L: u[u.length - 1], segs: it.segs };
+}
+function arcUpdate(force) {
+  if (!S.snap) return;
+  const items = (S.snap.context || []).filter((i) => i.type === 'arcade'); if (!items.length) return;
+  const d = camera.position.distanceTo(controls.target), on = d < EQ_ZOOM && $('arcade').checked && $('ctx').checked, tx = controls.target.x, ty = -controls.target.z;
+  if (!on) { if (ARC.at) { arcClear(); ARC.at = null; } return; }
+  if (!force && ARC.at && Math.hypot(ARC.at[0] - tx, ARC.at[1] - ty) < 120) return;
+  ARC.at = [tx, ty]; arcClear();
+  const soup = {}, lines = { bronze: [], steel: [] };
+  const sp = (k) => soup[k] || (soup[k] = { pos: [], uv: [] });
+  for (const it of items) {
+    const R = arcRun(it), W = (s, h, w) => { const q = R.at(s), x = q.x + q.ty * w, y = q.y - q.tx * w; return [X(x), Yp(x, y, h), Z(y)]; };   // outward = right of the run
+    const near = (s) => { const q = R.at(s); return Math.hypot(q.x - tx, q.y - ty) < ARC_R; };
+    const tri = (k, a, b, c, ua, ub, uc) => { const p = sp(k); p.pos.push(...a, ...b, ...c); p.uv.push(...(ua || [0, 0]), ...(ub || [0, 0]), ...(uc || [0, 0])); };
+    const quad = (k, a, b, c, d2, uv) => { tri(k, a, b, c, uv && uv[0], uv && uv[1], uv && uv[2]); tri(k, a, c, d2, uv && uv[0], uv && uv[2], uv && uv[3]); };
+    const face = (k, poly, w) => {   // a polygon [[s, h]...] in the face at offset w, triangulated in (s, h)
+      let tris; try { tris = THREE.ShapeUtils.triangulateShape(poly.map(([s, h]) => new THREE.Vector2(s, h)), []); } catch (e) { return; }
+      const P = poly.map(([s, h]) => W(s, h, w)), U = poly.map(([s, h]) => [s / 2.4, h / 1.2]);
+      for (const [a, b, c] of tris) tri(k, P[a], P[b], P[c], U[a], U[b], U[c]);
+    };
+    const strip = (k, path, w0, w1) => { for (let i = 0; i + 1 < path.length; i++) { const [s0, h0] = path[i], [s1, h1] = path[i + 1], l = Math.hypot(s1 - s0, h1 - h0) / 2.4; quad(k, W(s0, h0, w0), W(s1, h1, w0), W(s1, h1, w1), W(s0, h0, w1), [[0, 0], [l, 0], [l, (w1 - w0) / 1.2], [0, (w1 - w0) / 1.2]]); } };
+    const box = (k, s, ds, h0, h1, w0, w1) => {   // a block centred at s, ds along the face, h0-h1 high, w0-w1 out from it
+      const c = [[s - ds / 2, w0], [s + ds / 2, w0], [s + ds / 2, w1], [s - ds / 2, w1]], lo = c.map(([a, w]) => W(a, h0, w)), hi = c.map(([a, w]) => W(a, h1, w));
+      for (let i = 0; i < 4; i++) { const j = (i + 1) % 4; quad(k, lo[i], lo[j], hi[j], hi[i]); } quad(k, hi[0], hi[1], hi[2], hi[3]); };
+    const rail = (s) => R.at(s).z, gnd = (s) => R.at(s).g, top = (s) => rail(s) - ARCD.cornice;
+    // piers and arches along the run
+    const piers = [], arches = [];
+    for (const [a, b, k, name, dep] of R.segs) {
+      if (k === 'arch' || k === 'girder') { arches.push({ a, b, k, street: name, dep }); continue; }   // dep: the girder's depth, rail to soffit (span / 10 + 0.8 m)
+      const P = ARCD.pier, Ls = b - a;
+      const n = Ls < 2 * P + 6 ? 0 : Math.max(1, Math.round((Ls - P) / (ARCD.bay + P))), S = n ? (Ls - (n + 1) * P) / n : 0;
+      for (let i = 0; i <= n; i++) piers.push({ s: n ? a + P / 2 + i * (S + P) : (a + b) / 2, w: n ? P : Ls, end: i === 0 || i === n });
+      for (let i = 0; i < n; i++) arches.push({ a: a + P + i * (S + P), b: a + P + i * (S + P) + S, k });
+    }
+    piers.sort((p, q) => p.s - q.s);
+    // the wall: one outline per run, notched up into each arch (stone), drawn only near the camera
+    const shapeOf = (A) => { const S = A.b - A.a, uc = (A.a + A.b) / 2, ys = gnd(uc) + ARCD.spring, crown = rail(uc) - (A.k === 'arch' ? ARCD.arch : A.dep || ARCD.girder), f = crown - ys;   // the fascia's crown at the girder soffit
+      if (S < 3 || f < 0.4) return null; const Rr = (S * S / 4 + f * f) / (2 * f), yc = crown - Rr, th = Math.asin(Math.min(1, S / 2 / Rr));
+      const arc = (dr) => Array.from({ length: 17 }, (_, i) => { const ph = Math.PI / 2 + th - 2 * th * i / 16; return [uc + (Rr + dr) * Math.cos(ph), yc + (Rr + dr) * Math.sin(ph)]; });
+      return { S, uc, ys, crown, arc, intr: (s) => yc + Math.sqrt(Math.max(0, Rr * Rr - (s - uc) * (s - uc))) }; };
+    const vis = arches.filter((A) => near((A.a + A.b) / 2)), segS = [];
+    if (!vis.length && !piers.some((p) => near(p.s))) continue;
+    let s0 = Math.max(0, Math.min(...vis.map((A) => A.a), ...piers.filter((p) => near(p.s)).map((p) => p.s - p.w / 2)) - 1), s1 = Math.min(R.L, Math.max(...vis.map((A) => A.b), ...piers.filter((p) => near(p.s)).map((p) => p.s + p.w / 2)) + 1);
+    // the wall in vertical strips (it follows the curve): from the ground, or the arch intrados inside an arch, to the cornice
+    const ss = [];
+    for (let s = s0; s <= s1; s += 2) ss.push(s);
+    for (const A of arches) { if (A.b <= s0 || A.a >= s1) continue; const sh = shapeOf(A); if (!sh) continue; A.sh = sh; ss.push(A.a, A.b, ...sh.arc(0).map(([s]) => s)); }
+    ss.sort((a, b) => a - b);
+    const inArch = (m) => arches.find((A) => A.sh && A.a <= m && m <= A.b);
+    for (let i = 0; i + 1 < ss.length; i++) {
+      const a = ss[i], b = ss[i + 1]; if (b - a < 1e-3 || a < s0 || b > s1) continue;
+      const A = inArch((a + b) / 2), lo = (s) => A ? A.sh.intr(s) : gnd(s), ta = top(a), tb = top(b), la = Math.min(lo(a), ta), lb = Math.min(lo(b), tb);
+      if (ta - la < 0.05 && tb - lb < 0.05) continue;
+      quad('stone', W(a, la, 0), W(b, lb, 0), W(b, tb, 0), W(a, ta, 0), [[a / 2.4, la / 1.2], [b / 2.4, lb / 1.2], [b / 2.4, tb / 1.2], [a / 2.4, ta / 1.2]]);
+    }
+    for (const A of arches) {
+      if (!A.sh) continue; const { S, uc, ys, crown, arc } = A.sh, inner = arc(0), o1 = arc(0.45), o2 = arc(0.62);
+      // archivolt: two stepped bands; keystone with three grooves; the intrados back to the recess or through
+      face('trim', inner.concat(o1.slice().reverse()), 0.14); face('trimD', o1.concat(o2.slice().reverse()), 0.07);
+      box('trim', uc, 1.0, crown - 0.3, top(uc) - 0.36, 0, 0.3); for (const du of [-0.24, 0, 0.24]) box('groove', uc + du, 0.07, crown, top(uc) - 0.6, 0.3, 0.34);
+      for (const sd of [-1, 1]) for (const [ang, len] of [[0.45, 0.95], [0.85, 0.8], [1.25, 0.62]]) { const th = Math.PI / 2 - ang * 0.9, bx = uc + sd * 0.62, by = crown + 0.12; face('trimD', [[bx - 0.06, by], [bx + 0.06, by], [bx + sd * Math.cos(th) * len, by + Math.sin(th) * len]], 0.1); }
+      const depth = A.k === 'blind' || A.k === 'shops' ? 0.4 : 1.2;
+      strip('recess', [[A.a, gnd(A.a)], [A.a, ys], ...inner.slice(1, -1), [A.b, ys], [A.b, gnd(A.b)]], 0, -depth);
+      if (A.k === 'blind') face('recess', [[A.a, gnd(A.a)], [A.a, ys], ...inner.slice(1, -1), [A.b, ys], [A.b, gnd(A.b)]], -0.4);
+      if (A.k === 'shops') {   // shopfronts cut into the embankment: three units per arch, glazed to the arch, granite stall riser
+        const g0 = gnd(uc), glass = [[A.a + 0.3, g0 + 0.45], [A.b - 0.3, g0 + 0.45], [A.b - 0.3, ys - 0.3],
+          ...inner.slice(1, -1).reverse().filter(([s]) => s > A.a + 0.35 && s < A.b - 0.35).map(([s, h]) => [s, h - 0.3]), [A.a + 0.3, ys - 0.3]];
+        face('glass', glass, -0.36); box('granite', uc, S - 0.6, g0, g0 + 0.45, -0.4, -0.2);
+        for (const k of [1, 2]) { const s = A.a + S * k / 3; box('bronze', s, 0.22, g0 + 0.45, crown - 0.4 - Math.abs(s - uc) * 0.2, -0.4, -0.26); }
+        box('bronze', uc, S - 0.6, g0 + 2.8, g0 + 2.96, -0.4, -0.26);
+      }
+    }
+    for (const p of piers) {   // pilaster, granite plinth, cap; the end piers by a bridge carry a winged-wheel roundel and flutes
+      if (!near(p.s) || p.w > 30) continue; const g = gnd(p.s), H = top(p.s); if (H - g < 2) continue;
+      box('trim', p.s, p.w - 0.3, g + 0.9, H, 0, 0.2); box('granite', p.s, p.w + 0.3, g, g + 0.9, 0, 0.55); box('granite', p.s, p.w + 0.1, g + 0.9, g + 1.15, 0, 0.62);
+      if (p.end) { const cy = H - 1.0; face('trimD', circle(p.s, cy, 0.42, 16), 0.26); for (const sd of [-1, 1]) box('trimD', p.s + sd * 0.62, 0.55, cy, cy + 0.16, 0.2, 0.26); for (const du of [-0.3, 0, 0.3]) box('groove', p.s + du, 0.08, g + 1.4, cy - 0.7, 0.2, 0.24); }
+      box('trim', p.s, p.w + 0.2, H, H + 0.62, 0, 0.78);
+    }
+    // cornice, corbels, parapet; the bronze railing
+    for (let s = s0; s < s1; s += 4) { const e = Math.min(s1, s + 4); quad('trim', W(s, top(s), 0.55), W(e, top(e), 0.55), W(e, top(e) + 0.55, 0.55), W(s, top(s) + 0.55, 0.55)); quad('trim', W(s, top(s), 0), W(e, top(e), 0), W(e, top(e), 0.55), W(s, top(s), 0.55));
+      quad('stone', W(s, top(s) + 0.55, 0), W(e, top(e) + 0.55, 0), W(e, rail(e) + 0.1, 0), W(s, rail(s) + 0.1, 0)); }
+    for (let s = s0 + 0.5; s < s1; s += 1.05) box('trimD', s, 0.26, top(s) - 0.3, top(s), 0.2, 0.4);
+    for (const h of [0.15, 0.6, 1.0]) { const l = []; for (let s = s0; s <= s1; s += 3) l.push(W(s, rail(s) + h, 0.05)); lines.bronze.push(l); }
+    for (let s = s0; s <= s1; s += 2.5) lines.bronze.push([W(s, rail(s) + 0.1, 0.05), W(s, rail(s) + 1.1, 0.05)]);
+    // catenary: masonry pylons on every fourth pier, a lattice girder to the middle of the deck (Ben, 28 October; the middle masts
+    // need the 6.0 m APEx-side gaps, not yet drawn)
+    piers.filter((p) => p.w <= 30).forEach((p, i) => {
+      if (i % 4 || !near(p.s)) return; const r = rail(p.s), H = top(p.s), q = R.at(p.s);
+      box('stone', p.s, 2.4, H, r + 8.6, -2.0, 0.3); box('trim', p.s, 2.8, r + 8.6, r + 9.0, -2.2, 0.5);
+      const half = Math.max(2, q.wd / 2), l0 = [], l1 = [];
+      for (let k = 0; k <= Math.round(half / 2); k++) { const w = -2.0 - k * (half - 2) / Math.max(1, Math.round(half / 2)); l0.push(W(p.s, r + 8.6, w)); l1.push(W(p.s, r + 7.7, w)); }
+      lines.steel.push(l0, l1); for (let k = 0; k + 1 < l0.length; k++) lines.steel.push([l1[k], l0[k + 1]]);
+    });
+  }
+  for (const [k, p] of Object.entries(soup)) {
+    if (!p.pos.length) continue; const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(p.pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(p.uv, 2)); g.computeVertexNormals();
+    ARC.group.add(new THREE.Mesh(g, arcMat(k)));
+  }
+  for (const [k, list] of Object.entries(lines)) { const o = polylines(list, new THREE.LineBasicMaterial({ color: k === 'bronze' ? 0x5b4a33 : 0x59636a, clippingPlanes: clips })); if (o) ARC.group.add(o); }
+}
+$('arcade').addEventListener('input', () => arcUpdate(true));
+
 let frame = 0, lastT = new THREE.Vector3(1e9, 0, 0), lastD = 0;
 function tick() {
   controls.update();
@@ -794,10 +1068,11 @@ function tick() {
     for (const sp of labelsG.children) { tmp.copy(sp.position); const dd = tmp.distanceTo(controls.target); sp.visible = false; if (show && dd < reach && !(sp.userData.ctx && !$('ctx').checked)) list.push([dd, sp]); }
     list.sort((a, b) => a[0] - b[0]); for (const [, sp] of list.slice(0, 45)) sp.visible = !S.st || sp.userData.st !== S.st.id || selG.children.length === 0;
   }
+  if (frame % 30 === 0) { eqUpdate(); arcUpdate(); }
   renderer.render(scene, camera); requestAnimationFrame(tick);
 }
 requestAnimationFrame(tick);
-window.__station3d = { renderer, S, scene, camera, controls, lookFrom, Yp, groundAt };   // for the local render checks (test_page.js)
+window.__station3d = { renderer, S, scene, camera, controls, lookFrom, Yp, groundAt, eqUpdate, EQ, arcUpdate, ARC };   // for the local render checks (test_page.js)
 
 // ---------- data: snapshots/region and its parts ----------
 async function loadParts(meta) {

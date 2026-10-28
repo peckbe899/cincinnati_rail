@@ -27,7 +27,9 @@ import sys
 
 import numpy as np
 import shapely
+import shapely.ops
 import shapely.prepared
+import shapely.geometry.polygon
 from shapely.geometry import LineString, MultiPolygon, Point, Polygon
 from shapely.ops import unary_union
 
@@ -124,8 +126,140 @@ def extend_levels(nm, sysk, pts, zs, ds):
     return [float(v) for v in z]
 
 
-def build(E0, N0, ut_islands=None):
-    """ut_islands: [(ring [[x, y] local], rail)] for the Union Terminal TRI box islands (sync.py's platforms)"""
+# ---- the arcade (Ben, 28 October; the Viaduct Arcade 3D model) ----
+# On both arch viaducts (the north arch viaduct and the south approach, W 9th to the Cardinal crossing) the faces read as a
+# continuous Art Deco arcade: an opening at each street (a true arch to about 11.9 m wide, else a girder bridge behind the
+# same arch fascia), blind arches between, or shops or open arches where Ben switches the block facing them on the Deck.
+# The sync sends each face run with its rail, finished ground and width across; the page draws the arcade near the camera.
+FACE_ANGLE = 35.0     # a ring edge within this of the nearest APEx track is a long face (not an end)
+FACE_MIN = 30.0       # shorter face runs are left plain
+FACE_STEP = 2.0
+BLOCK_REACH = 45.0    # a block within a frontage street of the face
+PIER_ARC = 2.4        # a pier in a wide street, built into the arcade (drawing value, as the arcade's piers)
+
+
+def live_blocks(path):
+    """the Deck's blocks (live export), in Deck UTM, with their arcade state (blind unless switched)"""
+    import json
+    import make_profile_context as mpc
+    if not path or not os.path.exists(path):
+        return None
+    out = []
+    for f in json.load(open(path))['features']:
+        p = f['properties']
+        if p.get('layer') != 'block' or f['geometry']['type'] not in ('Polygon', 'MultiPolygon'):
+            continue
+        g = shapely.geometry.shape(f['geometry'])
+        g = shapely.ops.transform(lambda x, y, z=None: mpc.TO_UTM.transform(x, y), g)
+        out.append((p.get('id'), p.get('arcade') or 'blind', g))
+    tree = shapely.STRtree([g for _, _, g in out]) if out else None
+    return dict(list=out, tree=tree)
+
+
+def arcade(st, finished, blocks, apex_dir, widths, E0, N0):
+    """face runs of an arch viaduct: [items], [polygons opened by a block switched to open arches]"""
+    import make_profile_context as mpc
+    items, carve = [], []
+    gap_polys = [(nm, g) for nm, g in st.get('gaps') or []]
+    for q in polys(st['geom']):
+        q = shapely.geometry.polygon.orient(q, 1.0)          # counter-clockwise: the inside on the left
+        ring = LineString(q.exterior.coords)
+        n = max(8, int(ring.length / FACE_STEP))
+        ds = np.linspace(0, ring.length, n, endpoint=False)
+        pts = [ring.interpolate(d) for d in ds]
+        face = []
+        for i, p in enumerate(pts):
+            a, b = pts[i - 1], pts[(i + 1) % n]
+            tx, ty = b.x - a.x, b.y - a.y
+            L = math.hypot(tx, ty) or 1
+            ud = apex_dir(p.x, p.y)
+            if ud is None:
+                face.append(False)
+                continue
+            ux, uy = ud
+            face.append(abs(tx / L * ux + ty / L * uy) > math.cos(math.radians(FACE_ANGLE)))
+        if all(face):
+            continue
+        k0 = face.index(False)                                # start the walk at an end, so no run wraps
+        order = list(range(k0, n)) + list(range(0, k0))
+        runs, cur = [], []
+        for i in order:
+            if face[i]:
+                cur.append(i)
+            elif cur:
+                runs.append(cur); cur = []
+        if cur:
+            runs.append(cur)
+        for run in runs:
+            if len(run) * ring.length / n < FACE_MIN:
+                continue
+            xy = np.array([pts[i].coords[0] for i in run])
+            line = LineString(xy)
+            u = np.concatenate([[0], np.cumsum(np.hypot(*np.diff(xy, axis=0).T))])
+            z = np.array([st['z'](x, y) for x, y in xy])
+            g = finished(xy)
+            g = np.where(np.isnan(g), np.nanmin(g) if not np.isnan(g).all() else z - 7.4, g)
+            wd = []
+            for i, (x, y) in enumerate(xy):   # width across to the opposite face, along the inward (left) normal
+                j0, j1 = max(0, i - 1), min(len(xy) - 1, i + 1)
+                tx, ty = xy[j1] - xy[j0]
+                L = math.hypot(tx, ty) or 1
+                cut = LineString([(x - ty / L * 0.05, y + tx / L * 0.05), (x - ty / L * 160, y + tx / L * 160)]).intersection(q)
+                parts = [c for c in getattr(cut, 'geoms', [cut]) if c.geom_type == 'LineString']
+                wd.append(min([c.length for c in parts if c.distance(Point(x, y)) < 0.3] or [0.0]))
+            segs, opens = [], []
+            for nm, gp in gap_polys:
+                h = line.intersection(gp.buffer(0.3))
+                for c in getattr(h, 'geoms', [h]):
+                    if c.geom_type == 'LineString' and c.length > 2:
+                        a_, b_ = sorted((line.project(Point(c.coords[0])), line.project(Point(c.coords[-1]))))
+                        w = widths.get(nm, b_ - a_)
+                        if w <= mpc.TRUE_ARCH_MAX:
+                            opens.append((a_, b_, 'arch', nm, None))
+                            continue
+                        gd = mpc.girder(b_ - a_, nm)   # Ben, 28 October: span / 10 + 0.8 m; a pier in the street past 23 m
+                        dep = st.setdefault('gap_depth', {})
+                        dep[nm] = max(dep.get(nm, 0), gd['depth'])
+                        if gd['flag']:
+                            st.setdefault('gap_flags', {})[nm] = gd['flag']
+                        if gd['spans'] == 2:   # a pier in the middle of the street, built into the arcade
+                            m_ = (a_ + b_) / 2
+                            opens += [(a_, m_ - PIER_ARC / 2, 'girder', nm, gd['depth']), (m_ - PIER_ARC / 2, m_ + PIER_ARC / 2, 'pier', nm, None),
+                                      (m_ + PIER_ARC / 2, b_, 'girder', nm, gd['depth'])]
+                        else:
+                            opens.append((a_, b_, 'girder', nm, gd['depth']))
+            opens.sort()
+            prev = 0.0
+            for a_, b_, k, nm, dep_ in opens + [(u[-1], u[-1], None, None, None)]:
+                if a_ - prev > 4:   # between streets: the block facing it
+                    mid = line.interpolate((prev + a_) / 2)
+                    pa, pb = line.interpolate(max(0, (prev + a_) / 2 - 1)), line.interpolate(min(line.length, (prev + a_) / 2 + 1))
+                    tx, ty = pb.x - pa.x, pb.y - pa.y
+                    L = math.hypot(tx, ty) or 1
+                    out_pt = Point(mid.x + ty / L * 20, mid.y - tx / L * 20)
+                    state, bid = 'blind', None
+                    if blocks and blocks['tree'] is not None:
+                        near = [int(i) for i in blocks['tree'].query(out_pt.buffer(BLOCK_REACH))]
+                        if near:
+                            i = min(near, key=lambda i: blocks['list'][i][2].distance(out_pt))
+                            bid, state = blocks['list'][i][0], blocks['list'][i][1]
+                    segs.append([round(prev, 1), round(a_, 1), state, bid])
+                    if state == 'open':
+                        sub = shapely.ops.substring(line, prev, a_)
+                        carve.append(sub.buffer(max(wd) + 5, single_sided=True).intersection(q))
+                if k == 'pier':   # a street pier: a blind bay of one pier's width
+                    segs.append([round(a_, 1), round(b_, 1), 'blind', None])
+                elif k:
+                    segs.append([round(a_, 1), round(b_, 1), k, nm] + ([dep_] if dep_ else []))
+                prev = max(prev, b_)
+            items.append({'type': 'arcade', 'of': st['short'], 'x': enc(xy[:, 0] - E0, 10), 'y': enc(xy[:, 1] - N0, 10), 'z': enc(z, 100), 'g': enc(g, 100),
+                          'wd': enc(np.array(wd), 10), 'segs': segs})
+    return items, carve
+
+
+def build(E0, N0, ut_islands=None, deck_live=None):
+    """ut_islands: [(ring [[x, y] local], rail)] for the Union Terminal TRI box islands (sync.py's platforms);
+    deck_live: the live Deck export (blocks with their arcade switch)"""
     import make_profile_context as mpc
     B = mpc.build()
     S, REG, T, NW, stru, streets = B['S'], B['REG'], B['T'], B['NW'], B['stru'], B['streets']
@@ -160,6 +294,21 @@ def build(E0, N0, ut_islands=None):
         return z
 
     items, notes = [], []
+    blocks = live_blocks(deck_live)
+    widths = {nm: max(w for _, w in v) for nm, v in streets.items() if v}
+    apex_lines = [LineString(f['geometry']['coordinates']) for f in T['features'] if f['properties'].get('layer') == 'apex' and f['geometry']['type'] == 'LineString']
+    apex_tree = shapely.STRtree(apex_lines)
+    # the lower deck's own APEx tracks (not the Indianapolis pair, which leaves west on the upper deck on columns)
+    trunk = unary_union([l for l, f in zip(apex_lines, [f for f in T['features'] if f['properties'].get('layer') == 'apex' and f['geometry']['type'] == 'LineString'])
+                         if not f['properties']['name'].startswith(('APEx north approach 1 of', 'APEx north approach 2 of'))])
+    trunk_near = shapely.prepared.prep(trunk.buffer(30.0))
+    def apex_dir(x, y):   # unit direction of the nearest APEx track; None off the lower deck
+        if not trunk_near.contains(Point(x, y)):
+            return None
+        l = apex_lines[int(apex_tree.nearest(Point(x, y)))]
+        d = l.project(Point(x, y)); a, b = l.interpolate(max(0.0, d - 2)), l.interpolate(min(l.length, d + 2))
+        L = math.hypot(b.x - a.x, b.y - a.y) or 1
+        return (b.x - a.x) / L, (b.y - a.y) / L
     # ---- structures (Ben, 26 October: structure types at CUT) ----
     # embankment (st 'embankment', k 'fill'): fill from the finished ground to the track bed, cut open at each street,
     #   where a flat bridge spans the street ('span', kind 'bridge'); the descents get blind arches on their faces;
@@ -180,8 +329,16 @@ def build(E0, N0, ut_islands=None):
         stype = st.get('st', st['kind'])
         gaps = st.get('gaps') or []
         geom = st['geom']
-        if gaps:
-            geom = geom.difference(unary_union([g for _, g in gaps]))
+        carve = []
+        if stype == 'arch':   # the arcade on its faces; blocks switched open become hidden girder bridges through it
+            a_items, carve = arcade(st, finished, blocks, apex_dir, widths, E0, N0)
+            items.extend(a_items)
+        if gaps or carve:
+            geom = geom.difference(unary_union([g for _, g in gaps] + carve))
+        for cq in carve:
+            for q in polys(cq.difference(unary_union([g for _, g in gaps])) if gaps else cq):
+                items.append({'type': 'struct', 'n': st['name'] + ': open arches', 'l': st['short'], 'k': 'viaduct', 'st': 'girder', 'f': st['fam'], 'b': mpc.GIRDER_DEPTH,
+                              't': st['top'], 's': 'a block switched to open arches: a girder bridge hidden behind the arch fascia (Ben, 28 October)', 'polys': [ring_item(q, st)]})
         out = [ring_item(q, st) for p in polys(geom) for q in polys(p.buffer(0))]
         k = 'arch' if stype == 'arch' else st['kind']
         if out:
@@ -202,8 +359,9 @@ def build(E0, N0, ut_islands=None):
                 zs = [st['z'](x, y) for x, y in pts]
                 gs = finished(pts)
                 gs = np.nan_to_num(gs, nan=float(np.nanmin(gs)) if not np.isnan(gs).all() else min(zs) - 6.5)
-                items.append({'type': 'span', 'kind': 'arch' if stype == 'arch' else 'bridge', 'of': st['short'], 'street': nm, 'w': round(float(w), 2),
-                              'b': st['below'], 'x': enc(pts[:, 0] - E0, 10), 'y': enc(pts[:, 1] - N0, 10), 'z': enc(zs, 100), 'g': enc(gs, 100)})
+                true_arch = stype == 'arch' and w <= mpc.TRUE_ARCH_MAX   # Ben, 28 October: wider streets get a girder bridge behind the fascia
+                items.append({'type': 'span', 'kind': 'arch' if true_arch else 'bridge', 'of': st['short'], 'street': nm, 'w': round(float(w), 2),
+                              'b': (mpc.ARCH_RAIL - mpc.SIDEWALK_HEAD - 2.0) if true_arch else (st.get('gap_depth') or {}).get(nm, mpc.GIRDER_DEPTH) if stype == 'arch' else st['below'], 'x': enc(pts[:, 0] - E0, 10), 'y': enc(pts[:, 1] - N0, 10), 'z': enc(zs, 100), 'g': enc(gs, 100)})
                 nspan += 1
         # blind arches on the faces of the descents: an outline every BLIND m along the long faces
         if st.get('blind'):
@@ -226,6 +384,40 @@ def build(E0, N0, ut_islands=None):
                     items.append({'type': 'blind', 'of': st['short'], 'x': [round(x - E0, 2) for x, _, _ in outline], 'y': [round(y - N0, 2) for _, y, _ in outline],
                                   'z': [round(z, 2) for _, _, z in outline]})
                     nblind += 1
+
+    # ---- catenary middle masts on the north arch viaduct (Ben, 28 October): steel lattice masts in the two 6.0 m gaps
+    # either side of the APEx group (between the ORR / Transvalley pairs and APEx tracks 1 and 6), every 85 m (about every
+    # fourth pier), carrying the lattice girder from the masonry pylons; only where a gap is 5.9 m or more ----
+    named = lambda pre: [LineString(f['geometry']['coordinates']) for f in T['features'] if (f['properties'].get('name') or '').startswith(pre) and f['geometry']['type'] == 'LineString']
+    ref = (named('APEx north approach 3 of 6') or [None])[0]
+    nmast = 0
+    if ref is not None:
+        if ref.coords[0][1] > ref.coords[-1][1]:
+            ref = LineString(ref.coords[::-1])
+        A1, A6 = unary_union(named('APEx north approach 1 of 6')), unary_union(named('APEx north approach 6 of 6'))
+        W2, E1 = unary_union([l for l in named('Lower-level pair W, track 2, on the viaduct')]), unary_union([l for l in named('Lower-level pair E, track 1, on the viaduct')])
+        nv = next(st for st in S if st['short'] == 'North arch viaduct')
+        for d in np.arange(150.0, ref.length - 200.0, 85.0):
+            c = ref.interpolate(d)
+            a, b = ref.interpolate(d - 2), ref.interpolate(d + 2)
+            tx, ty = b.x - a.x, b.y - a.y
+            Ln = math.hypot(tx, ty) or 1
+            nx_, ny_ = -ty / Ln, tx / Ln
+            cut = LineString([(c.x - nx_ * 45, c.y - ny_ * 45), (c.x + nx_ * 45, c.y + ny_ * 45)])
+            off = lambda g: [(q.x - c.x) * nx_ + (q.y - c.y) * ny_ for q in getattr(cut.intersection(g), 'geoms', [cut.intersection(g)]) if q.geom_type == 'Point']
+            pos = []
+            for inner, outer in ((off(A1), off(W2)), (off(A6), off(E1))):
+                if inner and outer:
+                    i_, o_ = inner[0], min(outer, key=lambda v: abs(v - inner[0]))
+                    if 5.9 <= abs(o_ - i_) <= 12:   # a gap with room for a mast (not where the pair has gone far off)
+                        pos.append((i_ + o_) / 2)
+            if not pos or not nv['geom'].buffer(1).contains(c):
+                continue
+            z = float(nv['z'](c.x, c.y))
+            pts = [(c.x + nx_ * o, c.y + ny_ * o) for o in pos]
+            items.append({'type': 'mast', 'x': [round(x - E0, 2) for x, _ in pts], 'y': [round(y - N0, 2) for _, y in pts], 'z': round(z, 2),
+                          'nx': round(nx_, 4), 'ny': round(ny_, 4)})
+            nmast += len(pts)
 
     # ---- tracks: each at the level of the structure it runs in (its own family first) ----
     tracks = []
@@ -296,7 +488,7 @@ def build(E0, N0, ut_islands=None):
     # ---- platforms ----
     plats = [(shapely.geometry.shape(f['geometry']), 160.3, 'apex', f['properties'].get('name')) for f in T['features'] if f['properties'].get('layer') == 'apex_plat']
     plats += [(shapely.geometry.shape(f['geometry']), 144.0, 'orr', f['properties'].get('name')) for f in T['features'] if f['properties'].get('layer') == 'lower_plat']
-    plats += [(shapely.geometry.shape(f['geometry']), 178.0, f['properties'].get('sys', 'apex'), f['properties'].get('name')) for f in NW['features'] if f['properties'].get('layer') == 'nw_plat']
+    plats += [(shapely.geometry.shape(f['geometry']), 185.5, f['properties'].get('sys', 'apex'), f['properties'].get('name')) for f in NW['features'] if f['properties'].get('layer') == 'nw_plat']
     for poly, rail, sysk, nm in plats:
         for q in polys(poly):
             a = np.array(q.exterior.coords[:-1])
@@ -357,7 +549,7 @@ def build(E0, N0, ut_islands=None):
     # ---- finished-ground tiles round every structure and re-grade, aligned to the snapshot's 200 m grid ----
     return dict(items=items, unlevelled=unlev, finished=finished, region=unary_union([st['geom'] for st in S] + [rg['band'] for rg in REG]),
                 counts={'structures': sum(1 for i in items if i['type'] == 'struct'), 'rails': nlev, 'extended': nest, 'unlevelled': len(unlev),
-                        'platforms': sum(1 for i in items if i['type'] == 'plat'), 'piers': npier, 'spans': nspan, 'blind_arches': nblind},
+                        'platforms': sum(1 for i in items if i['type'] == 'plat'), 'piers': npier, 'spans': nspan, 'blind_arches': nblind, 'masts': nmast},
                 sources=['Mill Creek Deck tracks.json, structures.json, deck.json, norwood.json (data/deck)', 'Rail Profiles context definitions (tools/make_profile_context.py)',
                          'map 3 ground (data/profile/dem)'])
 

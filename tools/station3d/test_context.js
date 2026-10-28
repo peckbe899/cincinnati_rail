@@ -8,7 +8,8 @@ const VIEWS = [   // name, UTM E, N, rail level at the target, facing, angle, di
   ['cut_west', 712600, 4331890, 150, 80, 12, 520], ['cut_north_viaduct', 712450, 4333600, 160, 40, 14, 700],
   ['cut_dive', 712760, 4332750, 152, 300, 28, 380], ['cut_south', 712900, 4331300, 150, 300, 20, 700],
   ['cut_below', 712780, 4331900, 140, 30, -15, 450], ['cut_fan_gest', 712900, 4331560, 158, 270, 8, 170], ['cut_arch_w8th', 712860, 4331225, 158, 280, 6, 160], ['cut_cardinal', 712900, 4330950, 158, 300, 15, 320],
-  ['norwood', 720140, 4337981, 176, 30, 22, 600], ['norwood_trench', 719100, 4337700, 172, 70, 25, 650]];
+  ['norwood', 720140, 4337981, 176, 30, 22, 600], ['norwood_trench', 719100, 4337700, 172, 70, 25, 650],
+  ['arcade_dolph', 712735, 4333090, 160, 80, 6, 110], ['arcade_harrison', 712740, 4333390, 160, 60, 10, 220], ['arcade_hopple', 712330, 4334870, 164, 60, 8, 170], ['arcade_shops', 712735, 4333180, 158, 80, 4, 60]];
 (async () => {
   fs.mkdirSync(outDir, { recursive: true });
   const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
@@ -32,6 +33,8 @@ const VIEWS = [   // name, UTM E, N, rail level at the target, facing, angle, di
   for (const [nm, E, N, z, face, el, dist] of VIEWS.filter((v) => !only || only.split(',').includes(v[0]))) {
     if (nm === 'norwood' || (nm === 'norwood_trench' && only === 'norwood_trench')) { await page.$eval('#stSearch', (i) => { i.value = 'norwood central'; i.dispatchEvent(new Event('input')); }); await page.$eval('#stList [data-st]', (b) => b.click()); await page.waitForTimeout(2000); }
     await page.evaluate(([x, y, z, face, el, dist]) => { const W = window.__station3d; W.lookFrom(face, el, dist, new W.camera.position.constructor(x, W.Yp(x, y, z), -y)); }, [E - E0, N - N0, z, face, el, dist]);
+    if (nm === 'arcade_shops') await page.evaluate(() => { for (const it of window.__station3d.S.snap.context) if (it.type === 'arcade') for (const s of it.segs) if (s[2] === 'blind') s[2] = 'shops'; });   // as if every block were switched to shops
+    await page.evaluate(() => window.__station3d.arcUpdate(true));
     await page.waitForTimeout(2500); await page.screenshot({ path: path.join(outDir, nm + '.png'), timeout: 120000 });
   }
   console.log('errors:', errs.length ? errs : 'none'); await browser.close();
