@@ -358,7 +358,7 @@ def test_rer_core_profile_matches_page():
     assert min(z for c, z in r3.pvi) == pytest.approx(126.584, abs=0.01)  # Little Miami: pool - 3 m bed - 9.1 m
     assert r3.modes[names.index("Asbury")] == "surface"
     r5 = load("RER_5")
-    assert r5.summary()["km_by_type"]["deep"] == pytest.approx(3.72, abs=0.05)  # shallower than bore + cover: cut and cover (670 ft platforms, Norwood cut)
+    assert r5.summary()["km_by_type"]["deep"] == pytest.approx(3.61, abs=0.05)  # shallower than bore + cover: cut and cover (670 ft platforms, Norwood cut at 185.5 m)
     assert r3.summary()["shallow_tubes"] == 0
 
 
@@ -513,12 +513,12 @@ def test_cut_norwood_context():
     c = np.arange(11800.0, 12200.0, 2.0)
     dz = np.array([float(l4.ground_at(ci) - l4.ground_dem_at(ci)) for ci in c])
     assert dz.max() == pytest.approx(5.0, abs=0.01)
-    # Norwood Central: the surface tracks in their cut, level at 178.0 m; Line 14 passes under them
+    # Norwood Central: the surface tracks in their cut, level at 185.5 m; Line 14 passes under them
     l14 = MetroProfile.load(root / "lines/Line_14.json", None, root / "settings.json")
     nw = next(b for b in l14.context_blocks() if b["l"] == "Norwood Central tracks")
-    assert all(z == 178.0 for _, z in nw["p"])
+    assert all(z == 185.5 for _, z in nw["p"])
     cm = (nw["c0"] + nw["c1"]) / 2
-    assert float(l14.ground_at(cm)) == pytest.approx(178.0 - 0.8, abs=0.01)  # the cut floor
+    assert float(l14.ground_at(cm)) == pytest.approx(185.5 - 0.8, abs=0.01)  # the cut floor
     # since 27 October its Norwood Central platform is the Deck's, past the north end of the cut: the default profile
     # (no saved profile) holds the station 4.7 m over the tracks' level, short of the 7.8 m a line under them needs
     x = [x for x in l14.context_clearances() if not x["ok"]]
@@ -551,6 +551,30 @@ def test_context_street_openings():
     assert not x["blocked"] and x["ok"] and x["need"] == pytest.approx(6.67, abs=0.01)
     x = check(blk("viaduct", []))             # a normal viaduct: open between its piers
     assert not x["blocked"] and x["ok"]
+
+
+def test_north_viaduct_street_rule():
+    """The north arch viaduct (Ben, 28 October): rail at the finished street + 7.4 m at every street it crosses,
+    165.9 m over the Arlington platform, one dip (1.5% down, one grade up) to Ludlow at 162.5 m; W 8th's hump at most
+    2.4 m under the south approach; the upper deck 7.9 m over the highest rail it crosses (RER A and R5, 167.0 m)."""
+    import sys
+    from pathlib import Path
+    pytest.importorskip("rasterio")
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
+    import make_profile_context as m
+    B = m.build()
+    N = B["north"]
+    for s in N["streets"]:
+        if not s["clip"] and s["d1"] < N["dL"] - 15:
+            assert s["rail"] >= s["need"] - 0.01, s["name"]
+    assert N["z_of_d"](sum(N["dA"]) / 2) == pytest.approx(165.9)
+    assert N["z_of_d"](N["dL"]) == pytest.approx(162.5)
+    assert 0 < N["climb"] <= 0.015
+    zs = [N["z_of_d"](d) for d in np.arange(N["dA"][1], N["dL"], 5.0)]
+    assert all(b - a <= 0.015 * 5 + 1e-6 and a - b <= 0.015 * 5 + 1e-6 for a, b in zip(zs, zs[1:]))
+    w8 = next(r for r in B["REG"] if r["name"] == "W 8th (viaduct line)")
+    assert max(w8["dz"](x, 0) for x in np.arange(m.W8_WEST_FACE, 712941, 5.0)) <= 2.4 + 1e-6
+    assert B["indy"]["H"] == pytest.approx(167.0 + 7.9, abs=0.05)
 
 
 def test_locked_stretch_holds():

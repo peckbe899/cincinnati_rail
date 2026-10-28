@@ -296,7 +296,7 @@ def build(E0, N0, ut_islands=None):
     # ---- platforms ----
     plats = [(shapely.geometry.shape(f['geometry']), 160.3, 'apex', f['properties'].get('name')) for f in T['features'] if f['properties'].get('layer') == 'apex_plat']
     plats += [(shapely.geometry.shape(f['geometry']), 144.0, 'orr', f['properties'].get('name')) for f in T['features'] if f['properties'].get('layer') == 'lower_plat']
-    plats += [(shapely.geometry.shape(f['geometry']), 178.0, f['properties'].get('sys', 'apex'), f['properties'].get('name')) for f in NW['features'] if f['properties'].get('layer') == 'nw_plat']
+    plats += [(shapely.geometry.shape(f['geometry']), 185.5, f['properties'].get('sys', 'apex'), f['properties'].get('name')) for f in NW['features'] if f['properties'].get('layer') == 'nw_plat']
     for poly, rail, sysk, nm in plats:
         for q in polys(poly):
             a = np.array(q.exterior.coords[:-1])

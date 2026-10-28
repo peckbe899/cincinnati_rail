@@ -96,7 +96,7 @@ G = {
               'between W Liberty and Alfred, linear (deck + 6.5 m along the deck)'),
              (*STREET_XY['Alfred'], APEX_LV['Alfred'], 'apex_levels Alfred'), (*STREET_XY['Straight'], APEX_LV['Straight'], 'apex_levels Straight'),
              (712760, 4332400, round(APEX_LV['W Liberty'] + (4332400 - 4332357) / (4333983 - 4332357) * (APEX_LV['Alfred'] - APEX_LV['W Liberty']), 2), 'north throat end, between W Liberty and Alfred, linear')]
-            + trunk_north + [mk('Norwood trench'), (720190, 4337955, 178.0, 'Norwood Central platforms, about 178 m (North Viaduct Plan, approximate)'),
+            + trunk_north + [mk('Norwood trench'), (720190, 4337955, 185.5, 'Norwood Central platforms, 185.5 m (Ben: roofs at street level, 28 October)'),
              mk('APEx bridge', 164.0), mk('Ludlow: APEx up from the bank'), mk('APEx tunnel portal'), mk('APEx under the CS line'),
              mk('Three levels', idx=1)],
     'indy': [(712752, 4332842, round(APEX_LV['W Liberty'] + (4332842 - 4332357) / (4333983 - 4332357) * (APEX_LV['Alfred'] - APEX_LV['W Liberty']), 2), 'between W Liberty and Alfred, linear'),
@@ -235,7 +235,7 @@ for t in tracks:
     grp = 'nw' if t['sys'].startswith('nw_') else group_of(t['name'], t['sys'], t['name'], t['pid'])
     if grp == 'nw':
         if t['kind'] != 'tunnel':
-            z[:] = np.where(np.isnan(z), 178.0, z); zsrc = [s or 'Norwood Central about 178 m (approximate)' for s in zsrc]
+            z[:] = np.where(np.isnan(z), 185.5, z); zsrc = [s or 'Norwood Central 185.5 m (Ben, 28 October)' for s in zsrc]
     elif grp:
         dz_, ds_ = deck_level(xy, grp)
         both = ~np.isnan(z) & ~np.isnan(dz_)

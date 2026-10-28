@@ -98,7 +98,7 @@ for txt, q, z in (('lower level 144 m', (712783, 4331900), 142.2), ('dive 2.72%'
                   ('Indianapolis + D to 174.3 m', (712267, 4335609), 175.6), ('B/D box 151.6 m, then 3.3% up', (712700, 4334300), 149.0),
                   ('TRI A 135.9 m under the lower level (Deck)', (712783, 4331860), 133.6), ('no APEx tracks in tracks.json here', (712762, 4332620), 157.0)):
     ax.text(REF.project(Point(q)) - S0, z, txt, fontsize=8.5, color=INK, ha='center', bbox=dict(fc=SURF, ec='none', alpha=0.8, pad=0.5))
-ax.set_xlim(-650, 5400); ax.set_ylim(128, 178)
+ax.set_xlim(-650, 5400); ax.set_ylim(128, 192)
 ax.set_xlabel('Distance along the APEx trunk from the CUT platform centre (m), north to the right', color=MUTED, fontsize=9); ax.set_ylabel('Rail level (m, NAVD88)', color=MUTED, fontsize=9)
 ax.tick_params(colors=MUTED, labelsize=8, length=0)
 for sp in ax.spines.values(): sp.set_color('#dddddd')
@@ -178,7 +178,7 @@ def view3d(name, box, title, sub, elev, azim, ex=3.0, zlim=(125, 180)):
         p, g = f['properties'], f['geometry']
         if p.get('layer') == 'nw_plat':
             a = np.array(g['coordinates'][0])
-            if (a[:, 0] > x0).all() and (a[:, 0] < x1).all(): polys.append([(q[0], q[1], (178.0 - zlim[0]) * ex) for q in a]); cols.append(C.get({'bay': 'orr'}.get(p['sys'], p['sys']), MUTED))
+            if (a[:, 0] > x0).all() and (a[:, 0] < x1).all(): polys.append([(q[0], q[1], (185.5 - zlim[0]) * ex) for q in a]); cols.append(C.get({'bay': 'orr'}.get(p['sys'], p['sys']), MUTED))
     if polys: ax.add_collection3d(Poly3DCollection(polys, facecolors=cols, edgecolors='none', alpha=0.35))
     ax.set_xlim(x0, x1); ax.set_ylim(y0, y1); ax.set_zlim(0, (zlim[1] - zlim[0]) * ex)
     zt = np.arange(math.ceil(zlim[0] / 10) * 10, zlim[1] + 1, 10); ax.set_zticks((zt - zlim[0]) * ex); ax.set_zticklabels(['%d' % v for v in zt])
