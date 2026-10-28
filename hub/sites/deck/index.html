@@ -2109,7 +2109,7 @@ function renderSel() {
       sub.textContent = p.note + '. Footprint: outer track centre plus 4.2 m each side (overhead line masts on the deck edge, walkway, parapet; a drawing value), gaps under 6 m between tracks decked over, platforms of stations on the structure included.'; }
     if (L === 'cvg_plat') { const V = S.tracks.summary.cvg; kv('Platforms', fmt(V.plat) + ' m, side platforms with screen doors (this is the ' + p.side + ' one)'); kv('Rail', fmt(p.z, 1) + ' m, ' + fmt(p.depth, 1) + ' m under the ground (' + fmt(p.ground, 1) + ' m)'); kv('From CUT', fmt(p.km, 2) + ' km from the south end of platform M');
       sub.textContent = 'CVG Express station, airside: deep-bored, GoA3 with platform screen doors (stop points from CVG Express Final.kmz)'; }
-    if (L === 'yard_fan') { kv('Tracks', p.tracks + (p.stubs ? ' (' + p.stubs + ' stub-ended)' : '')); kv('Yard floor', fmt(p.floor[1], 1) + ' to ' + fmt(p.floor[0], 1) + ' m (deck less 8.5 m)'); sub.textContent = 'Draft 5. ' + p.note + '. Tracks 4.5 m apart (the real yard); No. 8 turnouts; curves of 200 m radius and up (drawing values).'; }
+    if (L === 'yard_fan') { kv('Tracks', p.tracks + (p.stubs ? ' (' + p.stubs + ' stub-ended)' : '')); kv('Yard floor', fmt(p.floor[1], 1) + ' to ' + fmt(p.floor[0], 1) + ' m (deck less 8.5 m)'); sub.textContent = 'Draft 6. ' + p.note + '. Tracks 4.5 m apart (the real yard); No. 8 turnouts; curves of 200 m radius and up (drawing values).'; }
     if (L === 'yard_lead') sub.textContent = 'Draft. ' + p.note + '.';
     if (L === 'yard_limit') sub.textContent = p.note;
     if (L === 'yard_hist') sub.textContent = 'Traced by eye from the Sanborn sheets, for reference.';
