@@ -159,3 +159,10 @@ Published: page version 6 and the snapshot (35 parts), read back at view level.
 - W 8th: the hump is 5.0 m to x 712,671, 2.4 m at the south approach's west face (x 712,764), to zero at 712,941 (161.7 - 153.0 - 4.3 - 2.0).
 - Upper deck: 7.9 m over the highest rail it crosses, now including RER A and R5 at South Cumminsville (167.0 m): 174.9 m (was 174.5).
 - Clearance changes: RER A Cumminsville under the upper deck 7.89 m (ok, was 7.49 short); RER A Cumminsville over the lower deck 6.4 m (needs 8.3; was 3.2); Lines 8 and 12 still cross the north viaduct outside a street opening, as before.
+
+## 2026-10-28: one diameter of cover over bored Metro tubes (handoff of 28 October)
+
+- Ben: every shield-driven tube (shallow shield, deep tube, the double-track bore) needs at least one outside diameter of ground over its crown. Replaces 2.0 m above the 140 m water table. `reqCover` (Rail Profiles) and `req_cover` (railsim port) return the tube's outside diameter; `TUBE_COVER_HIGH` and `WATER_TABLE` are gone. River rule, box roof cover (0.6 m) and the stacked-tube separation (upper floor + 0.5 m + lower top) unchanged.
+- Minimum rail depth for a bored tube: type A 10.10 m, type C 10.85 m, the bore 15.50 m; shallower is cut and cover.
+- Effect (current profiles, saved where there is one, default otherwise; Profiles port): no station changes type (the 7 shallow-shield stations are 11.8 to 20.7 m deep). Running tunnel from shield to cut and cover: Line 1 2.0 km, Line 2 2.5 km (0.2 of it deep tube), Line 2b 1.0, Line 3 3.3, Line 4 1.6, Line 5 9.2, Line 6 7.1, Line 7 8.8 (default), Line 8 5.6, Line 9 7.4 (default), Line 10 6.4 (default), Line 11 6.1 (default), Line 12 6.0 (default), Line 13 9.5 (default), Line 14 9.3 (default), CVG Express 1.1 km: about 87 km in all.
+- Line 8 under CUT's lower level is now cut and cover there (need 6.1 m; test updated).

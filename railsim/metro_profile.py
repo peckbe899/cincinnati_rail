@@ -53,13 +53,13 @@ DEFAULTS = dict(maxGrade=50.0, platform=121.92, defDepth=7.62, elevAbove=3.0, co
 # top, od = outside diameter. Cut-and-cover box (and station box) 1.0 below / 4.6 to top; twin
 # tube (4.4 m inside, 4.76 m outside, rail 0.5 m above invert) 0.68 / 4.08 for deep tube on every
 # line, shield on Lines 1-7 and every river crossing; double-track bore (9.0 m outside) 3.2 / 5.8
-# for shield on Lines 8-14. Cover over the top: tube or bore with its top above 140.0 m (basin
-# water table) 2.0 m, at or below it one outside diameter; box roof 0.6 m. Shallower than that
-# is built cut and cover.
+# for shield on Lines 8-14. Cover over the top: one outside diameter over every bored tube (Ben,
+# 28 October; was 2.0 m above the 140 m water table); box roof 0.6 m. Shallower than that is
+# built cut and cover.
 METRO_ST = {"box": {"k": "box", "below": 1.0, "top": 4.6},
             "tube": {"k": "tube", "below": 0.68, "top": 4.08, "od": 4.76},
             "bore": {"k": "bore", "below": 3.2, "top": 5.8, "od": 9.0}}
-WATER_TABLE, TUBE_COVER_HIGH, BOX_COVER = 140.0, 2.0, 0.6
+BOX_COVER = 0.6
 # rivers: rail at most bed (ground raster) - margin at every chainage of a river range, in tunnel
 # (Metro twin tube: 1.0 scour + 2.38 half-diameter cover + 4.08 rail to top; RER sunk box section
 # in a dredged trench, Transbay model: 1.0 scour + 1.5 backfill + 6.6 rail to top)
@@ -858,7 +858,7 @@ class MetroProfile:
             return 0.0 if sc["k"] == "box" else float(self.settings["minCover"])
         if sc["k"] == "box":
             return BOX_COVER
-        return TUBE_COVER_HIGH if top_z > WATER_TABLE else sc["od"]
+        return sc["od"]   # one outside diameter over every bored tube (Ben, 28 October)
 
     def min_cover(self) -> float:
         """Cover over RER bored tunnels (setting)."""

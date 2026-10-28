@@ -379,14 +379,14 @@ def test_vertical_curves_and_structure_rules():
         assert np.allclose(mp.rail_at(cc), mp.st[i], atol=1e-6)  # platforms level
     # Ben's structure rules (the shared record, 28 October): the bored tunnel follows the building phase, shallow or
     # deep: Lines 1-7 type A twin tubes (5.10 m inside, 5.50 m outside, rail 0.70 m over the invert: 0.90 below, 4.60 to
-    # the top), Lines 8-12 the 9.0 m double-track bore (2.50 below, 6.50 to the top); cover 2.0 m above the 140 m water
-    # table, one outside diameter at or below it, 0.6 m over box roofs
+    # the top), Lines 8-12 the 9.0 m double-track bore (2.50 below, 6.50 to the top); cover one outside diameter over
+    # every bored tube (Ben, 28 October: the ground arches over it), 0.6 m over box roofs
     l3 = MetroProfile.load(root / "lines/Line_3.json", None, root / "settings.json")
     assert mp.struct_for("shield", 1000.0)["k"] == "bore" and l3.struct_for("shield", 1000.0)["k"] == "tube"
     assert mp.struct_for("deep", 1000.0)["top"] == pytest.approx(6.5) and l3.struct_for("deep", 1000.0)["top"] == pytest.approx(4.6)
     assert l3.struct_for("shield", 1000.0)["od"] == 5.5 and mp.struct_for("cutcover", 1000.0)["top"] == 4.6
     bore = mp.struct_for("shield", 1000.0)
-    assert mp.req_cover(bore, 150.0) == 2.0 and mp.req_cover(bore, 140.0) == 9.0
+    assert mp.req_cover(bore, 150.0) == 9.0 and mp.req_cover(bore, 140.0) == 9.0 and l3.req_cover(l3.struct_for("shield", 1000.0), 150.0) == 5.5
     assert mp.req_cover(mp.struct_for("cutcover", 1000.0), 150.0) == 0.6
     l1 = MetroProfile.load(root / "lines/Line_1.json", None, root / "settings.json")
     r = l1.data["rivers"][0]
@@ -502,12 +502,12 @@ def test_cut_norwood_context():
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
-    # Line 8 as saved passes 0.25 m under the CUT lower level (rail 144.0 m), needing 8.0 m (its 9.0 m double-track
-    # bore stands 6.5 m over the rail since the structure record of 28 October; was 7.3 m with the 5.8 m bore)
+    # Line 8 as saved passes 0.25 m under the CUT lower level (rail 144.0 m); with one bore diameter of cover (Ben, 28
+    # October) it is cut and cover there, needing 1.0 + 0.5 + 4.6 = 6.1 m (was 8.0 m in the 9.0 m bore)
     l8 = MetroProfile.load(root / "lines/Line_8.json", root / "alignments/Line_8.json", root / "settings.json")
     assert any(b["l"] == "CUT lower level" for b in l8.context_blocks())
     x = next(x for x in l8.context_clearances() if x["with"] == "CUT lower level")
-    assert not x["ok"] and x["clear"] == pytest.approx(0.25, abs=0.02) and x["need"] == pytest.approx(8.0, abs=0.01)
+    assert not x["ok"] and x["clear"] == pytest.approx(0.25, abs=0.02) and x["need"] == pytest.approx(6.1, abs=0.01)
     # Line 4 along W 8th: the street raised up to 5 m over the intercity pair (re-grades do not add up)
     l4 = MetroProfile.load(root / "lines/Line_4.json", root / "alignments/Line_4.json", root / "settings.json")
     c = np.arange(11800.0, 12200.0, 2.0)
