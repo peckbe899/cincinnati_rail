@@ -181,12 +181,13 @@ def build():
     def street_reg(name, dz_of, src, pick=lambda l: True):
         for l, w in streets[name]:
             if pick(l): REG.append(dict(name=name, band=l.buffer(w / 2, cap_style=2), dz=dz_of, src=src))
-    # W 8th under the south approach: a hidden girder bridge, so the hump is at most 161.7 - 153.0 - (4.3 m bus clearance
-    # + 2.0 m girder) = 2.4 m under the structure (Ben, 28 October); 5.0 m over the intercity pair to x 712,671
+    # W 8th under the south approach: a hidden girder bridge with a pier in the median (two spans of about 16.75 m, girder
+    # 16.75 / 10 + 0.8 = 2.48 m), so the hump is at most 161.7 - 2.48 - 4.3 - 153.0 = 1.9 m under the structure (Ben,
+    # 28 October); 5.0 m over the intercity pair to x 712,671
     w8_face = W8_WEST_FACE
     w8 = [(712500, 0.0), (712600, 5.0), (712671, 5.0), (w8_face, W8_HUMP), (712941, 0.0)]
     street_reg('W 8th (viaduct line)', lambda x, y: float(np.interp(x, [a for a, _ in w8], [b for _, b in w8], left=0, right=0)),
-               f'Deck: W 8th raised 5 m over the intercity pair (150.9 m), down to {W8_HUMP} m at the south approach\'s west face and no more under it (a hidden girder bridge: 161.7 m rail - 153.0 m street - 4.3 m bus clearance - 2.0 m girder; Ben, 28 October), to zero at x 712,941; ramp 100 m west of Horne as on Horne (drawing values)')
+               f'Deck: W 8th raised 5 m over the intercity pair (150.9 m), down to {W8_HUMP} m at the south approach\'s west face and no more under it (a hidden girder bridge with a median pier: 161.7 m rail - 2.48 m girder - 4.3 m bus clearance - 153.0 m street; Ben, 28 October), to zero at x 712,941; ramp 100 m west of Horne as on Horne (drawing values)')
     hl = [l for l, w in streets['Horne line']][0]; h0 = hl.project(hl.intersection(streets['W 8th (viaduct line)'][0][0]))
     street_reg('Horne line', lambda x, y: max(0.0, 5.0 * (1 - abs(hl.project(Point(x, y)) - h0) / 100.0)), 'Deck: Horne raised 5 m at W 8th, ramps about 100 m', pick=lambda l: l.distance(Point(712654, 4331230)) < 30)
     def across(dz):
@@ -212,12 +213,31 @@ def build():
 # left out even where the Deck still draws them through; MT and J1 run along it.
 ARCH_RAIL = 7.4                      # rail over the finished street at the arch viaducts (Ben, 28 October)
 SIDEWALK_HEAD = 3.05                 # sidewalk headroom at the pier face (Ben, 28 October)
-GIRDER_DEPTH = 2.0                   # rail to girder soffit at a hidden girder bridge: drawing value, not checked
+GIRDER_DEPTH = 2.0                   # rail to girder soffit where no span is known (drawing value)
+BUS_CLEAR = 4.3                      # bus clearance under a girder (Ben, 28 October)
+GIRDER_MAX = ARCH_RAIL - BUS_CLEAR   # 3.1 m: the deepest girder that keeps the bus clearance
+PIER_STREETS = ('Harrison', 'Garrard', 'W 8th')   # wider than 23 m: a pier in the street, built into the arcade (Ben)
+CULVERT_STREETS = ('Millvale Boulevard', 'Spring Grove', 'Ford', 'Colerain', 'Streng')   # no pier on the culvert: flagged
+
+
+def girder(span, name=''):
+    """a hidden girder bridge (Ben, 28 October): rail to soffit = span / 10 + 0.8 m (plate girders L/10 to L/7; 0.8 m deck,
+    ballast and track, an assumption), at most 3.1 m (7.4 - 4.3 bus clearance), so up to 23 m needs no support; wider gets
+    a pier in the street built into the arcade, or is flagged (no pier on the Mill Creek culvert)"""
+    d = span / 10 + 0.8
+    if name.startswith('Ludlow'):   # the existing underbridge (162.5 m), not a girder behind the arcade
+        return dict(depth=round(d, 2), spans=1, flag=None, existing=True)
+    if d <= GIRDER_MAX + 1e-6:
+        return dict(depth=round(d, 2), spans=1, flag=None)
+    if name.startswith(PIER_STREETS):
+        return dict(depth=round(span / 20 + 0.8, 2), spans=2, flag=None)
+    why = 'no pier on the culvert' if name.startswith(CULVERT_STREETS) else 'needs a pier in the street'
+    return dict(depth=round(d, 2), spans=1, flag=f'{span:.1f} m span needs {d:.2f} m of girder, over {GIRDER_MAX:.1f} m: {why}')
 TRUE_ARCH_MAX = (ARCH_RAIL - SIDEWALK_HEAD - 0.6) * math.sqrt(40) / 2   # 11.86 m: wider streets get hidden girder bridges
 FALL = 0.015                         # north of Arlington, the trunk fill's grade
 ARLINGTON_N = (4335724.0, 4335928.0, 165.9)
 LUDLOW = (4336948.0, 162.5)
-W8_HUMP, W8_WEST_FACE = 2.4, 712764.0
+W8_HUMP, W8_WEST_FACE = 1.9, 712764.0   # Ben, 28 October: a median pier, two spans of about 16.75 m, girder 2.48 m
 ALONG = ('SMV0032', 'S056')          # MT and J1
 CLIPS = ('SB0706',)                  # Elmore only clips the east edge near Ludlow: reported, not a level
 FAN_END_Y = 4332370.0                # W Liberty's north edge: south of it the CUT fan (an embankment with bridges)
@@ -276,7 +296,11 @@ def north_profile(T, stru, REG):
             fin = [float(z) + dz(p.x, p.y) for p, z in zip(pts, sample(np.array([p.coords[0] for p in pts])))]
             band = s['line'].buffer(s['w'] / 2, cap_style=2).intersection(ref)
             ds = [ref.project(Point(c)) for g in getattr(band, 'geoms', [band]) for c in g.coords] or [ref.project(q)]
-            streets.append(dict(name=s['name'], id=s['id'], w=s['w'], line=s['line'], d=ref.project(q), d0=min(ds), d1=max(ds), street=round(max(fin), 2),
+            # the opening on the faces: the street's band along the structure's edges, longest face piece near the crossing
+            edge = s['line'].buffer(s['w'] / 2, cap_style=2).intersection(nv.boundary).intersection(q.buffer(120))
+            pieces = [g.length for g in getattr(edge, 'geoms', [edge]) if g.geom_type == 'LineString' and g.length > 1]
+            span = max(pieces) if pieces else s['w']
+            streets.append(dict(name=s['name'], id=s['id'], w=s['w'], span=round(span, 1), girder=girder(span, s['name']), line=s['line'], d=ref.project(q), d0=min(ds), d1=max(ds), street=round(max(fin), 2),
                                 need=round(max(fin) + ARCH_RAIL, 2), arch=s['w'] <= TRUE_ARCH_MAX, clip=s['id'] in CLIPS))
     streets.sort(key=lambda s: s['d'])
     dA0, dA1, zA = d_at_y(ARLINGTON_N[0]), d_at_y(ARLINGTON_N[1]), ARLINGTON_N[2]
@@ -575,10 +599,12 @@ def main():
             'structure_types': 'st: embankment (k fill; the CUT fan W 9th to W Liberty, the north trunk fill, the intercity and C&O descents), arch (k viaduct; the south approach to the Cardinal crossing, the north arch viaduct) or viaduct (normal). gaps: the street openings on an embankment or arch viaduct along the line [c0, c1, street]; a line in the open crosses only inside one (Ben, 26 October)',
             'notes': ['Lower-pair levels rebuilt from the Deck dive figures (Ben, 26 October: until the Deck publishes a level per point)', 'Norwood Central at 185.5 m, roofs at street level (Ben: v112 ruling, approach option A, 28 October)', 'North arch viaduct at the finished street + 7.4 m (Ben, 28 October); W 8th hump at most 2.4 m under the south approach', 'W 8th ramp ends and the Bank and Findlay ramps are drawing values']}
     N = B['north']
-    meta['north_viaduct'] = dict(rule=f'rail at the finished street + {ARCH_RAIL} m; true arch to {TRUE_ARCH_MAX:.1f} m wide, else a girder bridge hidden behind the arch fascia (girder {GIRDER_DEPTH} m, not checked); Ben, 28 October',
+    meta['north_viaduct'] = dict(rule=f'rail at the finished street + {ARCH_RAIL} m; true arch to {TRUE_ARCH_MAX:.1f} m wide, else a girder bridge hidden behind the arch fascia, rail to soffit span / 10 + 0.8 m, at most {GIRDER_MAX:.1f} m (a pier in the street past 23 m, or flagged); Ben, 28 October',
                                  low=[round(N['low'][0], 1), round(N['low'][1], 2)], climb_pct=round(N['climb'] * 100, 2), upper_deck=B['indy']['H'],
-                                 streets=[dict(name=s['name'], id=s['id'], w=s['w'], d=round(s['d'], 1), street=s['street'], need=s['need'], rail=s['rail'],
-                                               type='clips the edge' if s['clip'] else 'true arch' if s['arch'] else 'hidden girder bridge') for s in N['streets']])
+                                 streets=[dict(name=s['name'], id=s['id'], w=s['w'], span=s['span'], d=round(s['d'], 1), street=s['street'], need=s['need'], rail=s['rail'],
+                                               type='clips the edge' if s['clip'] else 'true arch' if s['arch'] else 'hidden girder bridge',
+                                               **({} if s['arch'] or s['clip'] else {'girder_m': s['girder']['depth'], 'spans': s['girder']['spans'], 'flag': s['girder']['flag']}))
+                                          for s in N['streets']])
     import os; os.makedirs(SITE + "/context", exist_ok=True); jsave(SITE + "/context/lines.json", {"meta": meta, "lines": out})
     for k, v in out.items(): print(k, [(b["l"], b["c0"], b["c1"], b["p"][0][1]) for b in v.get("blocks", [])], "add" in v and sum(len(r["v"]) for r in v["add"]), "cap" in v and sum(len(r["v"]) for r in v["cap"]))
 

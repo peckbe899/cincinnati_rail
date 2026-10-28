@@ -970,8 +970,8 @@ function arcUpdate(force) {
     const rail = (s) => R.at(s).z, gnd = (s) => R.at(s).g, top = (s) => rail(s) - ARCD.cornice;
     // piers and arches along the run
     const piers = [], arches = [];
-    for (const [a, b, k, name] of R.segs) {
-      if (k === 'arch' || k === 'girder') { arches.push({ a, b, k, street: name }); continue; }
+    for (const [a, b, k, name, dep] of R.segs) {
+      if (k === 'arch' || k === 'girder') { arches.push({ a, b, k, street: name, dep }); continue; }   // dep: the girder's depth, rail to soffit (span / 10 + 0.8 m)
       const P = ARCD.pier, Ls = b - a;
       const n = Ls < 2 * P + 6 ? 0 : Math.max(1, Math.round((Ls - P) / (ARCD.bay + P))), S = n ? (Ls - (n + 1) * P) / n : 0;
       for (let i = 0; i <= n; i++) piers.push({ s: n ? a + P / 2 + i * (S + P) : (a + b) / 2, w: n ? P : Ls, end: i === 0 || i === n });
@@ -979,7 +979,7 @@ function arcUpdate(force) {
     }
     piers.sort((p, q) => p.s - q.s);
     // the wall: one outline per run, notched up into each arch (stone), drawn only near the camera
-    const shapeOf = (A) => { const S = A.b - A.a, uc = (A.a + A.b) / 2, ys = gnd(uc) + ARCD.spring, crown = rail(uc) - (A.k === 'arch' ? ARCD.arch : ARCD.girder), f = crown - ys;
+    const shapeOf = (A) => { const S = A.b - A.a, uc = (A.a + A.b) / 2, ys = gnd(uc) + ARCD.spring, crown = rail(uc) - (A.k === 'arch' ? ARCD.arch : A.dep || ARCD.girder), f = crown - ys;   // the fascia's crown at the girder soffit
       if (S < 3 || f < 0.4) return null; const Rr = (S * S / 4 + f * f) / (2 * f), yc = crown - Rr, th = Math.asin(Math.min(1, S / 2 / Rr));
       const arc = (dr) => Array.from({ length: 17 }, (_, i) => { const ph = Math.PI / 2 + th - 2 * th * i / 16; return [uc + (Rr + dr) * Math.cos(ph), yc + (Rr + dr) * Math.sin(ph)]; });
       return { S, uc, ys, crown, arc, intr: (s) => yc + Math.sqrt(Math.max(0, Rr * Rr - (s - uc) * (s - uc))) }; };

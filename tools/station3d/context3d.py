@@ -135,6 +135,7 @@ FACE_ANGLE = 35.0     # a ring edge within this of the nearest APEx track is a l
 FACE_MIN = 30.0       # shorter face runs are left plain
 FACE_STEP = 2.0
 BLOCK_REACH = 45.0    # a block within a frontage street of the face
+PIER_ARC = 2.4        # a pier in a wide street, built into the arcade (drawing value, as the arcade's piers)
 
 
 def live_blocks(path):
@@ -213,10 +214,23 @@ def arcade(st, finished, blocks, apex_dir, widths, E0, N0):
                     if c.geom_type == 'LineString' and c.length > 2:
                         a_, b_ = sorted((line.project(Point(c.coords[0])), line.project(Point(c.coords[-1]))))
                         w = widths.get(nm, b_ - a_)
-                        opens.append((a_, b_, 'arch' if w <= mpc.TRUE_ARCH_MAX else 'girder', nm))
+                        if w <= mpc.TRUE_ARCH_MAX:
+                            opens.append((a_, b_, 'arch', nm, None))
+                            continue
+                        gd = mpc.girder(b_ - a_, nm)   # Ben, 28 October: span / 10 + 0.8 m; a pier in the street past 23 m
+                        dep = st.setdefault('gap_depth', {})
+                        dep[nm] = max(dep.get(nm, 0), gd['depth'])
+                        if gd['flag']:
+                            st.setdefault('gap_flags', {})[nm] = gd['flag']
+                        if gd['spans'] == 2:   # a pier in the middle of the street, built into the arcade
+                            m_ = (a_ + b_) / 2
+                            opens += [(a_, m_ - PIER_ARC / 2, 'girder', nm, gd['depth']), (m_ - PIER_ARC / 2, m_ + PIER_ARC / 2, 'pier', nm, None),
+                                      (m_ + PIER_ARC / 2, b_, 'girder', nm, gd['depth'])]
+                        else:
+                            opens.append((a_, b_, 'girder', nm, gd['depth']))
             opens.sort()
             prev = 0.0
-            for a_, b_, k, nm in opens + [(u[-1], u[-1], None, None)]:
+            for a_, b_, k, nm, dep_ in opens + [(u[-1], u[-1], None, None, None)]:
                 if a_ - prev > 4:   # between streets: the block facing it
                     mid = line.interpolate((prev + a_) / 2)
                     pa, pb = line.interpolate(max(0, (prev + a_) / 2 - 1)), line.interpolate(min(line.length, (prev + a_) / 2 + 1))
@@ -233,8 +247,10 @@ def arcade(st, finished, blocks, apex_dir, widths, E0, N0):
                     if state == 'open':
                         sub = shapely.ops.substring(line, prev, a_)
                         carve.append(sub.buffer(max(wd) + 5, single_sided=True).intersection(q))
-                if k:
-                    segs.append([round(a_, 1), round(b_, 1), k, nm])
+                if k == 'pier':   # a street pier: a blind bay of one pier's width
+                    segs.append([round(a_, 1), round(b_, 1), 'blind', None])
+                elif k:
+                    segs.append([round(a_, 1), round(b_, 1), k, nm] + ([dep_] if dep_ else []))
                 prev = max(prev, b_)
             items.append({'type': 'arcade', 'of': st['short'], 'x': enc(xy[:, 0] - E0, 10), 'y': enc(xy[:, 1] - N0, 10), 'z': enc(z, 100), 'g': enc(g, 100),
                           'wd': enc(np.array(wd), 10), 'segs': segs})
@@ -345,7 +361,7 @@ def build(E0, N0, ut_islands=None, deck_live=None):
                 gs = np.nan_to_num(gs, nan=float(np.nanmin(gs)) if not np.isnan(gs).all() else min(zs) - 6.5)
                 true_arch = stype == 'arch' and w <= mpc.TRUE_ARCH_MAX   # Ben, 28 October: wider streets get a girder bridge behind the fascia
                 items.append({'type': 'span', 'kind': 'arch' if true_arch else 'bridge', 'of': st['short'], 'street': nm, 'w': round(float(w), 2),
-                              'b': (mpc.ARCH_RAIL - mpc.SIDEWALK_HEAD - 2.0) if true_arch else mpc.GIRDER_DEPTH if stype == 'arch' else st['below'], 'x': enc(pts[:, 0] - E0, 10), 'y': enc(pts[:, 1] - N0, 10), 'z': enc(zs, 100), 'g': enc(gs, 100)})
+                              'b': (mpc.ARCH_RAIL - mpc.SIDEWALK_HEAD - 2.0) if true_arch else (st.get('gap_depth') or {}).get(nm, mpc.GIRDER_DEPTH) if stype == 'arch' else st['below'], 'x': enc(pts[:, 0] - E0, 10), 'y': enc(pts[:, 1] - N0, 10), 'z': enc(zs, 100), 'g': enc(gs, 100)})
                 nspan += 1
         # blind arches on the faces of the descents: an outline every BLIND m along the long faces
         if st.get('blind'):

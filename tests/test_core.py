@@ -556,7 +556,7 @@ def test_context_street_openings():
 def test_north_viaduct_street_rule():
     """The north arch viaduct (Ben, 28 October): rail at the finished street + 7.4 m at every street it crosses,
     165.9 m over the Arlington platform, one dip (1.5% down, one grade up) to Ludlow at 162.5 m; W 8th's hump at most
-    2.4 m under the south approach; the upper deck 7.9 m over the highest rail it crosses (RER A and R5, 167.0 m)."""
+    1.9 m under the south approach (a median pier); girders span / 10 + 0.8 m; the upper deck 7.9 m over the highest rail it crosses (RER A and R5, 167.0 m)."""
     import sys
     from pathlib import Path
     pytest.importorskip("rasterio")
@@ -573,7 +573,10 @@ def test_north_viaduct_street_rule():
     zs = [N["z_of_d"](d) for d in np.arange(N["dA"][1], N["dL"], 5.0)]
     assert all(b - a <= 0.015 * 5 + 1e-6 and a - b <= 0.015 * 5 + 1e-6 for a, b in zip(zs, zs[1:]))
     w8 = next(r for r in B["REG"] if r["name"] == "W 8th (viaduct line)")
-    assert max(w8["dz"](x, 0) for x in np.arange(m.W8_WEST_FACE, 712941, 5.0)) <= 2.4 + 1e-6
+    assert max(w8["dz"](x, 0) for x in np.arange(m.W8_WEST_FACE, 712941, 5.0)) <= 1.9 + 1e-6   # median pier (Ben, 28 October)
+    g = m.girder(33.5, "W 8th (viaduct line)")
+    assert g["spans"] == 2 and g["depth"] == pytest.approx(2.48, abs=0.01) and 161.7 - g["depth"] - 4.3 - 153.0 >= 1.9 - 0.01
+    assert m.girder(18.3)["depth"] == pytest.approx(2.63, abs=0.01) and m.girder(50.0, "Millvale Boulevard")["flag"]
     assert B["indy"]["H"] == pytest.approx(167.0 + 7.9, abs=0.05)
 
 
