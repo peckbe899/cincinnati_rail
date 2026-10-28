@@ -2765,15 +2765,19 @@ async function boot() {
   setStatus('local', 'Not saving in this view'); S.canWrite = true; renderEdits(); hist.last = snapEdits(); renderHist();
   connect();
 }
+// the hub's records as files beside the page (published copies; tube_points is too large for one database document):
+// used until the database holds the record
+const RECS = { metro_structure: (d) => { applyMSR(d); }, station_types: (d) => { ST_TYPES = d; }, tube_points: (d) => { TUBE_PTS = d; for (const f of S.tf || []) delete f.properties._hsg; } };
+const recFile = (k) => fetch(k + '.json').then(r => (r.ok ? r.json() : null)).then(d => { if (d && !S.recDb?.[k]) { RECS[k](d); S.ver++; S.live = null; redraw(); } }).catch(() => {});
 async function connect() {
+  if (!location.pathname.startsWith('/deck/')) Object.keys(RECS).forEach(recFile);
   const db = window.claude && window.claude.use ? await window.claude.use('db') : null;
   if (!db) { setStatus('local', 'Not saving in this view'); return; }
   const user = await window.claude.use('user'); const cw = user ? await user.can('data.write') : null;
   S.db = db; S.docRef = db.doc('deck/layout'); S.canWrite = cw !== false;
   setStatus(S.canWrite ? 'saved' : 'readonly', S.canWrite ? 'Saved' : 'Read only');
-  db.doc('params/metro_structure').onSnapshot(d => { if (d.exists) { applyMSR(d.data()); redraw(); } }, () => {});
-  db.doc('params/station_types').onSnapshot(d => { if (d.exists) { ST_TYPES = d.data(); S.ver++; S.live = null; redraw(); } }, () => {});
-  db.doc('params/tube_points').onSnapshot(d => { if (d.exists) { TUBE_PTS = d.data(); for (const f of S.tf || []) delete f.properties._hsg; S.ver++; S.live = null; redraw(); } }, () => {});
+  S.recDb = {};
+  for (const k of Object.keys(RECS)) db.doc('params/' + k).onSnapshot(d => { if (d.exists) { S.recDb[k] = true; RECS[k](d.data()); S.ver++; S.live = null; redraw(); } }, () => {});
   S.docRef.onSnapshot(snap => {
     if (snap.metadata.hasPendingWrites || S.dirty || S.saving || S.drag) return;
     const d = snap.exists ? snap.data() : null;

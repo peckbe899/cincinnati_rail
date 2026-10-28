@@ -1094,7 +1094,7 @@ def main():
                 a, b, cc = math.hypot(x1 - x0, y1 - y0), math.hypot(x2 - x1, y2 - y1), math.hypot(x2 - x0, y2 - y0)
                 ar = abs((x1 - x0) * (y2 - y0) - (y1 - y0) * (x2 - x0)) / 2
                 return a * b * cc / (4 * ar) if ar > 1e-6 else float('inf')
-            streets = (ctx_lines.get(lid) or {}).get('streets') or []
+            st_runs = (ctx_lines.get(lid) or {}).get('streets') or []
             name = d['line']
             per_st = {}
             for apx in ap:
@@ -1134,14 +1134,14 @@ def main():
                     if r_tight < RMIN - 0.5:
                         geom['tight'].append(f"{where}: the S-ease over {L_:.0f} m" + (f" on a {Rc:.0f} m curve" if Rc < 3000 else '') + f" gives about {r_tight:.0f} m, under {RMIN:.0f} m")
                 # the approach box under the street
-                covered = any(r[0] - 300 <= max(c0, c1) and r[1] + 300 >= min(c0, c1) for r in streets)   # the Deck has streets near here
+                covered = any(r[0] - 300 <= max(c0, c1) and r[1] + 300 >= min(c0, c1) for r in st_runs)   # the Deck has streets near here
                 if not covered:
                     geom.setdefault('no_streets', []).append(where)
                 if covered and (apx.get('station') or apx['kind'] == 'box'):
                     bad = []
                     for c in np.arange(min(c0, c1), max(c0, c1) + 0.1, 10.0):
                         w = 2 * (o_s + (o_r - o_s) * min(1.0, abs(c - c0) / L_)) + wall
-                        st_ = next((r for r in streets if r[0] - 5 <= c <= r[1] + 5), None)
+                        st_ = next((r for r in st_runs if r[0] - 5 <= c <= r[1] + 5), None)
                         if not st_:
                             bad.append(('off', c, w))
                         elif w > st_[2] + 0.01:
@@ -1314,7 +1314,8 @@ def main():
     json.dump({'json': json.dumps({'key': 'ground', 'value': ground}, separators=(',', ':')), 'synced_at': meta['synced_at']},
               open(os.path.join(ddir, 'ground-0.json'), 'w'))
     parts.append('ground-0')
-    json.dump({'json': json.dumps(meta, separators=(',', ':')), 'parts': parts, 'synced_at': meta['synced_at']},
+    # the page's summary document (256 KiB at most): tube_points is for the Deck (hub params/tube_points), not the page
+    json.dump({'json': json.dumps({k: v for k, v in meta.items() if k != 'tube_points'}, separators=(',', ':')), 'parts': parts, 'synced_at': meta['synced_at']},
               open(os.path.join(ddir, 'meta.json'), 'w'))
 
     # ---- report ----

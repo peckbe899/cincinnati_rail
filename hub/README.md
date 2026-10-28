@@ -36,7 +36,13 @@ Options: `--port`, `--no-auto` (run the pipeline only from the hub page), `--no-
 
 ## The artifacts
 
-The claude.ai artifacts are not updated by the hub: from now on the hub is where the design lives. To show the work there again, a Claude session can publish the repo's files and write `hub/seed` records to an artifact's database.
+The claude.ai artifacts are not updated by the hub: from now on the hub is where the design lives. To show the work there again, a Claude session publishes the repo's files and writes `hub/seed` records to an artifact's database (done 28 October):
+
+- Rail Profiles (https://claude.ai/artifact/A5XH4264dpWHdPdDKZgDsG): `data/profile/profiles.html` and its data files, plus the Chronology as `chronology.html` beside it (with `chronology_rules.js`, `chronology_lines.json`, and `chronology.json` for a read-only view), so the two share the Profiles database: `alignments/*`, `chronology/segments`, `params/metro_structure`, `params/station_platforms`, `params/approach_extra`.
+- Mill Creek Deck (https://claude.ai/artifact/L81dVQSV8THSWai2LhZhcv): `hub/sites/deck/` (no tiles; they are kept from the earlier versions) plus `metro_structure.json`, `station_types.json` and `tube_points.json` beside the page (tube_points is too large for one database document; a database record, where present, wins); database: `deck/layout`.
+- Station 3D (https://claude.ai/artifact/MxbB1bnkqwZYxCbbEsHQZA): the page, and the 3D build's `hub/work/db_out/` parts written to `snapshots/region/parts` (meta last, as `snapshots/region`).
+
+Before publishing, compare each artifact's database with the hub: anything saved there after the hub was seeded must be brought into the hub first.
 
 ## Checks
 

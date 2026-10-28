@@ -50,7 +50,7 @@ a.seg { color:var(--accent); cursor:pointer; text-decoration:none }
     <p class="muted small" id="about"></p>
   </aside>
 </main>
-<script src="/hub/chronology_rules.js"></script>
+<script>/* the hub serves the rules at /hub/; published, they sit next to the page */ document.write('<script src="' + (location.pathname.startsWith('/chronology/') ? '/hub/' : '') + 'chronology_rules.js"><\/script>');</script>
 <script>
 // The Chronology view (Ben, 28 October): the opening year and phase of every Metro and TRI segment and station, in the hub's
 // record chronology/segments. The phase sets each stretch's tunnel (Rail Profiles, Deck, Station 3D). Order rules in
@@ -180,7 +180,8 @@ async function apply(edit, push = false) {
       <div class="row"><button class="primary" id="doPush">Push them (and their stations) to the same year</button><button id="noPush">Cancel</button></div>`);
     $('doPush').onclick = () => apply(edit, true); $('noPush').onclick = () => selPanel(); return;
   }
-  REC = res.rec; A = res.analysis; await DB.doc('chronology/segments').set(REC); refresh(); selPanel('<p class="ok small">Saved.</p>');
+  try { await DB.doc('chronology/segments').set(res.rec); } catch (e) { selPanel(`<p class="bad small">Not saved: ${e.message}</p>`); return; }
+  REC = res.rec; A = res.analysis; refresh(); selPanel('<p class="ok small">Saved.</p>');
 }
 function lists() {
   const name = (k) => esc(C.keyName(k)), link = (k) => `<a class="seg" data-k="${esc(k)}">${name(k)}</a>`;
@@ -230,10 +231,16 @@ $('asOf').addEventListener('input', () => { $('asOfV').textContent = +$('asOf').
 
 // ---- data ----
 (async () => {
-  const routes = await fetch('/profiles/chronology_lines.json').then((r) => r.json());
+  const HUB = location.pathname.startsWith('/chronology/');
+  const routes = await fetch(HUB ? '/profiles/chronology_lines.json' : 'chronology_lines.json').then((r) => r.json());
   R = routes.routes; buildSegs(); STATIONS = STN(); fit(); legend();
   $('about').textContent = `${R.length} routes (Metro lines, the TRI's lettered routes and the CVG Express), ${SEG.size} segments, ${STATIONS.size} stations. A segment shared by several lines is one segment. Saved in the hub (chronology/segments); the phase of each stretch sets its tunnel in the Rail Profiles, the Deck and Station 3D.`;
-  DB = (await window.claude.use('db'));
+  DB = window.claude && typeof window.claude.use === 'function' ? await window.claude.use('db').catch(() => null) : null;
+  if (!DB) {   // no database here (a page beside the Rail Profiles without its runtime): the record as last exported, read only
+    const rec = await fetch('chronology.json').then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    const ro = () => Promise.reject(new Error('read only here: edit the Chronology in the Rail Profiles or the hub'));
+    DB = { doc: () => ({ onSnapshot: (cb) => cb({ exists: !!rec, data: () => JSON.parse(JSON.stringify(rec)) }), set: ro, update: ro, get: async () => ({ exists: !!rec, data: () => rec }) }) };
+  }
   DB.doc('chronology/segments').onSnapshot((d) => {
     REC = d.exists ? d.data() : { phase_years: [], segments: {}, stations: {}, core: {} }; REC.segments = REC.segments || {}; REC.stations = REC.stations || {};
     refresh(); selPanel();
