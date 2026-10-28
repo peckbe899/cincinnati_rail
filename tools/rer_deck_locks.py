@@ -4,7 +4,8 @@ Cemetery").
 
 RER A (Deck design note of 13 and 21 October; its RER marks, street cuts and structure lines, data/deck):
 - trunk, fork to Union Terminal: 159.3 m at the fork (Dolph), a walled ramp down at 3.3% (Bank 155.2, Dayton 152.5),
-  the box under Exeter, 148.4 m where it leaves the deck north of York, 147.5 m at Evans under W Liberty, 135.9 m
+  the box under Exeter, 148.4 m where it leaves the deck north of York, 139.0 m at Evans (lowered under the yards,
+  27 October; was 147.5 m under W Liberty), 135.9 m
   under CUT's lower level (8.1 m under its 144.0 m rail), Union Terminal 135.7 m;
 - Westwood branch: from the fork on a viaduct, 3.26% up to its platform at ground, 168.9 m;
 - the stem to South Cumminsville, on a viaduct: Western Hills 165.2 m (over Harrison), 168.2 m over the Hopple
@@ -38,13 +39,14 @@ STATE_TYPE = {'viaduct': 'elevated', 'tunnel': 'cutcover', 'deck': 'cutcover', '
 ROWS = {
     'RER_A_trunk': dict(
         a=('c', 0.0), b=('platform_end', 'Union Terminal'),
-        st={'Evans': 147.5, 'Union Terminal': 135.7},
+        st={'Evans': 139.0, 'Union Terminal': 135.7},   # Evans lowered under the yards (Ben, 27 October; Deck draft 6)
         pvi=[('start', 159.3), ((712359.0, 4332994.0), 155.2), ((712352.3, 4332912.8), 152.5),
              ((712341.5, 4332787.8), 148.4), ('ctx', 'CUT lower level', 135.9)],
         struct=('A', ('ramp', 'tunnel', 'deck')),
         src='RER A from the fork (159.3 m) down its 3.3% walled ramp (Bank 155.2, Dayton 152.5), the box under Exeter, '
-            'off the deck north of York (148.4 m), Evans 147.5 m under W Liberty, 135.9 m under CUT\'s lower level, '
-            'Union Terminal 135.7 m (Deck, Ben 13 October): locked'),
+            'off the deck north of York (148.4 m), then down under the yards to Evans at 139.0 m (lowered at least 7 m under '
+            'the yard floor, Ben 27 October; level platform, so about 2.9% from the deck edge), 135.9 m under CUT\'s lower '
+            'level, Union Terminal 135.7 m (Deck, Ben 13 and 27 October): locked'),
     'RER_A_westwood': dict(
         a=('c', 0.0), b=('platform_end', 'Westwood'),
         st={'Westwood': 168.9},
