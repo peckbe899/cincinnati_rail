@@ -4,7 +4,7 @@
                              tools/rer_deck_routes.py (every RER route and Metro line rebuilt on the Deck's pieces and
                              platforms where they drifted; saved profiles moved in the database) -> metro rails table ->
                              Profiles context  ->  then 3d
-    alignments/*, config/*  ->  3d: tools/station3d/sync.py (both editors run headless on the hub's records) ->
+    alignments/*, config/*, params/metro_structure  ->  3d: tools/station3d/sync.py (both editors run headless on the hub's records) ->
                              snapshots/region in the database (the 3D view redraws) and params/registry
 
 Jobs run one at a time in a worker thread; changes arriving while a job runs are coalesced into one more run.
@@ -30,7 +30,7 @@ PY = sys.executable
 def trigger_for(path):
     if path == 'deck/layout':
         return 'deck_tie'
-    if path.startswith(('alignments/', 'config/')):
+    if path.startswith(('alignments/', 'config/')) or path == 'params/metro_structure':
         return '3d'
     return None
 
@@ -132,7 +132,7 @@ class Pipeline:
         os.makedirs(js, exist_ok=True)
         if not os.path.exists(os.path.join(js, 'jsts.min.js')):
             shutil.copy(os.path.join(HUB, 'static', 'vendor', 'jsts.min.js'), js)
-        for sub, colls in (('profiles_db', ('alignments', 'config')), ('deck_db', ('deck',))):
+        for sub, colls in (('profiles_db', ('alignments', 'config')), ('deck_db', ('deck',)), ('params_db', ('params',))):
             for c in colls:
                 d = os.path.join(WORK, 'db', sub, c)
                 shutil.rmtree(d, ignore_errors=True)

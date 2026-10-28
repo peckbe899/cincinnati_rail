@@ -692,9 +692,10 @@ function riverBridges() {
 // covered way where the canon crosses the river in tunnel (sunk box sections). The rail stays
 // bed - margin over the whole river range: ub = lowest bed - margin.
 function riverTubes(md) {
-  const out = [], margin = RIVER_MARGIN[isRer() ? 'rer' : 'metro'];
+  const out = [];
   S.rivers.forEach((r) => {
     if (bridgeOf(r)) return;
+    const margin = riverMarginAt((r.c0 + r.c1) / 2);
     if (isRer()) {
       if (!md) return;
       const info = RIVERS[r.name] || {}; const sec = canonAt((r.c0 + r.c1) / 2);
@@ -728,11 +729,48 @@ const METRO_ST = {
   tube: { k: 'tube', below: 0.68, top: 4.08, od: 4.76, label: 'twin tube' },
   bore: { k: 'bore', below: 3.2, top: 5.8, od: 9.0, label: 'double-track bore' },
 };
+// Metro structure gauge (Ben, 27-28 October; claude/Metro_Structure_Gauge_Handoff.md): one shared record, live from the
+// hub's database (params/metro_structure), else metro_structure.json beside the page. Tunnels are sized to the dynamic
+// envelope plus running clearance, and the bored tube follows the building phase of each stretch: type A (Phase 1),
+// the 9.0 m double-track bore (Phase 2), type C (Phase 3 and later). Heights from the rail: below = rail over the
+// invert plus the lining, top = inside less rail over the invert plus the lining.
+let MS = null;
+const tubeOf = (t) => ({ k: t.inside > 7 ? 'bore' : 'tube', below: t.rail_over_invert + (t.outside - t.inside) / 2,
+  top: t.inside - t.rail_over_invert + (t.outside - t.inside) / 2, od: t.outside, label: t.label || 'tube' });
+function applyMS(p) {
+  if (!p || !p.tubes) return;
+  MS = p;
+  Object.assign(METRO_ST.box, { below: p.box.below, top: p.box.top });
+  METRO_ST.tube = tubeOf(p.tubes.A); METRO_ST.tubeC = tubeOf(p.tubes.C); METRO_ST.bore = tubeOf(p.tubes.bore);
+  OPEN_CLEAR.metro = p.open_clear_height;
+}
+// the phase a stretch of a Metro line was built in (Ben sets it per drawn piece), and its bored tunnel
+function phaseAt(c, id = S.data && S.data.id) {
+  if (!MS) return null;
+  const pc = id === (S.data && S.data.id) ? pieceAt(S.data, c) : '';
+  return ((MS.piece_phase || {})[id] || {})[pc] || (MS.line_phase || {})[id] || 'later';
+}
+function metroTube(c, id) {
+  if (!MS) return METRO_ST[(ERA[id] || {}).shield || 'tube'];
+  const t = (MS.phases[phaseAt(c, id)] || MS.phases.later).tube;
+  return t === 'bore' ? METRO_ST.bore : t === 'C' ? METRO_ST.tubeC : METRO_ST.tube;
+}
+// straight (train-averaged radius at least the record's straight radius) and underground (bored or box, not a trough):
+// a Metro grade there may reach the higher limit as a warning (Ben, 28 October)
+const UNDER_T = new Set(['shield', 'deep', 'cutcover']);
+function straightUnder(c) {
+  if (!MS || isRer()) return false;
+  const add = allowanceAt(c);
+  return (!(add > 0) || settings.curveK / add >= MS.grades.straight_radius) && UNDER_T.has(typeAt(c));
+}
 const WATER_TABLE = 140.0, TUBE_COVER_HIGH = 2.0, BOX_COVER = 0.6, SEP_GAP = 0.5, BED_DEPTH = 0.8;
 // rivers (Ben's rules): rail at most bed - margin at every chainage in a river range (bedAt).
 // Metro 1.0 scour + 2.38 half-diameter cover + 4.08 rail to top (twin tube); RER 1.0 scour +
 // 1.5 backfill + 6.6 rail to top (sunk box section)
 const RIVER_MARGIN = { metro: 7.5, rer: 9.1 };
+// Metro under a river: 1.0 m scour + half the tube's outside diameter of cover + rail to the tube's top, for the tube of
+// the stretch's building phase (the record); 7.5 m for the old 4.76 m tube
+const riverMarginAt = (c) => { if (isRer()) return RIVER_MARGIN.rer; if (!MS) return RIVER_MARGIN.metro; const t = metroTube(c, S.data.id); return 1.0 + t.od / 2 + t.top; };
 const ERA = {};
 ['1', '2', '2b', '3', '4', '5', '6'].forEach((k) => (ERA[`Line_${k}`] = { shield: 'tube', sgMax: 7.5, era: k === '2b' ? '1903-1913 (with Line 2)' : '1903-1913' }));
 ERA.Line_7 = { shield: 'tube', sgMax: 7.5, era: '1913' };
@@ -756,10 +794,9 @@ function structFor(t, c, id = S.data.id) {
   if (t === 'trough') return { k: 'trough', below: BED_DEPTH, top: openTop(id), label: 'open trough' };
   // RER river crossings: sunk box sections in a dredged trench (Transbay model)
   if (isRerId(id)) return t === 'cutcover' || riverAt(c) ? { k: 'box', below: st.invertDepth, top: st.envelope, label: 'box' } : { k: 'bore', below: st.invertDepth, top: st.boreCrown, label: 'bored tube' };
-  if (riverAt(c)) return METRO_ST.tube;
-  if (t === 'cutcover') return METRO_ST.box;
-  if (t === 'deep') return METRO_ST.tube;
-  return METRO_ST[(ERA[id] || {}).shield || 'tube'];
+  if (t === 'cutcover' && !riverAt(c)) return METRO_ST.box;
+  // bored (shallow shield, deep in the hills, under a river): the tube of the stretch's building phase
+  return MS ? metroTube(c, id) : riverAt(c) || t === 'deep' ? METRO_ST.tube : METRO_ST[(ERA[id] || {}).shield || 'tube'];
 }
 // cover a structure needs over its top (topZ = its top level)
 function reqCover(sc, topZ, id = S.data.id) {
@@ -949,11 +986,11 @@ function computeSummary() {
   }
   const clashes = crossingClearances().filter((x) => x.clear != null && !x.ok).concat(contextClearances().filter((x) => !x.ok));
   // river rule: in tunnel under a river the rail stays the margin below the bed (raster) at every chainage
-  const shallowTubes = []; const margin = RIVER_MARGIN[isRer() ? 'rer' : 'metro'];
+  const shallowTubes = [];
   S.rivers.forEach((r) => {
     let run = null;
     for (let i = Math.ceil(r.c0 / S.step); i * S.step <= r.c1; i++) {
-      const c = i * S.step, bed = bedAt(c), z = railAt(c), t = typeAt(c, z);
+      const c = i * S.step, bed = bedAt(c), z = railAt(c), t = typeAt(c, z), margin = riverMarginAt(c);
       const over = TUNNEL.has(t) && isFinite(bed) ? z - (bed - margin) : -Infinity;
       if (over > 0.005) { if (!run) { run = { name: r.name, c0: c, c1: c, c, over }; shallowTubes.push(run); } run.c1 = c; if (over > run.over) { run.over = over; run.c = c; } }
       else run = null;
@@ -1012,6 +1049,7 @@ function curveGradeRanges() {
     if (inStation(c)) continue;
     const add = allowanceAt(c), g = Math.abs(gradeAt(c));
     if (!(add > 0.5 && g + add > settings.maxGrade + 0.05)) continue;
+    if (straightUnder(c)) continue;   // straight: the grade rule covers it
     if (on && c - on.c1 <= 20) { on.c1 = c; if (g + add > on.worst) Object.assign(on, { worst: g + add, g, add }); }
     else { on = { c0: c, c1: c, worst: g + add, g, add }; out.push(on); }
   }
@@ -1153,7 +1191,14 @@ function designChecks() {
 // every flag with a chainage, sorted along the line, for the list and the markers on the profile
 function allIssues(sm) {
   const out = [];
-  sm.over.forEach((o) => out.push({ kind: 'Grade', c: (o.c0 + o.c1) / 2, text: `${fmtG(o.g)} from ${fmtCh(o.c0)} to ${fmtCh(o.c1)} exceeds ${settings.maxGrade}‰` }));
+  sm.over.forEach((o) => {
+    // Metro (Ben, 28 October): on a straight bored or box stretch over the limit is a warning up to the higher limit
+    let straight = !!MS && !isRer();
+    for (let c = o.c0 + 5; straight && c < o.c1; c += 10) straight = straightUnder(c);
+    const hi = MS ? MS.grades.straight_underground_max : settings.maxGrade;
+    if (straight && Math.abs(o.g) <= hi + 0.05) out.push({ kind: 'Grade', warn: true, c: (o.c0 + o.c1) / 2, text: `${fmtG(o.g)} from ${fmtCh(o.c0)} to ${fmtCh(o.c1)}: over ${settings.maxGrade}‰ on a straight stretch underground (allowed up to ${hi}‰)` });
+    else out.push({ kind: 'Grade', c: (o.c0 + o.c1) / 2, text: `${fmtG(o.g)} from ${fmtCh(o.c0)} to ${fmtCh(o.c1)} exceeds ${straight ? hi : settings.maxGrade}‰${straight ? ' (straight underground)' : ''}` });
+  });
   sm.clashes.forEach((x) => out.push({ kind: 'Clearance', c: x.c, text: x.level
     ? `Crosses ${esc(x.with)} at grade at ${fmtCh(x.c)}: needs a grade separation`
     : `${toU(x.clear).toFixed(2)} ${uLbl()} ${x.meUp ? 'over' : 'under'} ${esc(x.with)} at ${fmtCh(x.c)}; needs ${toU(x.need).toFixed(2)} ${uLbl()} (${(x.meUp ? x.t : x.to).label} over ${(x.meUp ? x.to : x.t).label})` }));
@@ -1672,7 +1717,7 @@ function updatePanels() {
     .concat((S.canonLocks || []).map((lk) => `<li><b>Locked</b> ${fmtCh(lk.lo)} to ${fmtCh(lk.hi)}${lk.st ? ` (${Object.entries(lk.st).map(([n, z]) => `${esc(n)} ${fmtZ(z, 2)}`).join(', ')} ${uLbl()})` : ''}: ${esc(lk.src || '')}</li>`))
     .concat(Object.entries(S.canonFixed).map(([i, f]) => `<li><b>${esc(nm(+i))}</b> rail ${f.abs != null ? `at ${fmtZ(f.abs, 1)} ${uLbl()}` : `${f.off >= 0 ? '+' : '−'}${fmtZ(Math.abs(f.off), 0)} ${uLbl()}`}: ${esc(f.src)}</li>`));
   const er = eraOf();
-  cnl.push(`<li><b>Structures</b> ${er ? `(${er.era}): rail less than ${fmtZ(METRO_ST.box.top, 1)} ${uLbl()} down is an open trough; cut-and-cover and station boxes ${fmtZ(1.0, 2)} below to ${fmtZ(4.6, 2)} ${uLbl()} above the rail (roof cover ${fmtZ(BOX_COVER, 1)}, thinner is the street itself, a warning); twin tubes ${fmtZ(0.68, 2)} below to ${fmtZ(4.08, 2)} above for deep tube${er.shield === 'tube' ? ', shield' : ''} and river crossings${er.shield === 'bore' ? `; double-track bore ${fmtZ(3.2, 1)} below to ${fmtZ(5.8, 1)} above for shield` : ''}; tubes and bores need ${fmtZ(TUBE_COVER_HIGH, 1)} ${uLbl()} of cover with their top above ${fmtZ(WATER_TABLE, 1)} ${uLbl()}, one outside diameter at or below it; shallower is cut and cover; under rivers the rail stays ${RIVER_MARGIN.metro} m below the bed` : `(RATP RER style, 1985-1996): boxes and station boxes ${fmtZ(settings.envelope, 1)} ${uLbl()} and bored tubes ${fmtZ(settings.boreCrown, 1)} ${uLbl()} above the rail; bored tunnels need ${fmtZ(settings.minCover, 1)} ${uLbl()} of cover, shallower is cut and cover; river crossings are sunk box sections in a dredged trench (Transbay model), rail ${RIVER_MARGIN.rer} m below the bed`}; crossings keep the upper floor + ${SEP_GAP} m above the lower top, or above the clear height (${OPEN_CLEAR.metro} m Metro, ${OPEN_CLEAR.rer} m RER) of a line in the open; platforms may slope up to ${sgMaxFor()}‰${er ? (er.sgMax > 5 ? ' (New York 1918 practice)' : ' (1930s-50s, near London 1 in 260)') : ' (main-line station limit)'}.</li>`);
+  cnl.push(`<li><b>Structures</b> ${er ? `(${er.era}): rail less than ${fmtZ(METRO_ST.box.top, 1)} ${uLbl()} down is an open trough; cut-and-cover and station boxes ${fmtZ(METRO_ST.box.below, 2)} below to ${fmtZ(METRO_ST.box.top, 2)} ${uLbl()} above the rail (roof cover ${fmtZ(BOX_COVER, 1)}, thinner is the street itself, a warning); bored (shield, deep and under rivers): ${(() => { const t = metroTube(S.L / 2, S.data.id); return `${t.label}, ${fmtZ(t.od, 2)} ${uLbl()} outside, ${fmtZ(t.below, 2)} below to ${fmtZ(t.top, 2)} above the rail`; })()}${MS ? ` (Phase ${phaseAt(S.L / 2)}; per stretch by the phase it was built in, set on the hub page)` : ''}; tubes and bores need ${fmtZ(TUBE_COVER_HIGH, 1)} ${uLbl()} of cover with their top above ${fmtZ(WATER_TABLE, 1)} ${uLbl()}, one outside diameter at or below it; shallower is cut and cover; under rivers the rail stays ${riverMarginAt(S.L / 2).toFixed(2)} m below the bed` : `(RATP RER style, 1985-1996): boxes and station boxes ${fmtZ(settings.envelope, 1)} ${uLbl()} and bored tubes ${fmtZ(settings.boreCrown, 1)} ${uLbl()} above the rail; bored tunnels need ${fmtZ(settings.minCover, 1)} ${uLbl()} of cover, shallower is cut and cover; river crossings are sunk box sections in a dredged trench (Transbay model), rail ${RIVER_MARGIN.rer} m below the bed`}; crossings keep the upper floor + ${SEP_GAP} m above the lower top, or above the clear height (${OPEN_CLEAR.metro} m Metro, ${OPEN_CLEAR.rer} m RER) of a line in the open; platforms may slope up to ${sgMaxFor()}‰${er ? (er.sgMax > 5 ? ' (New York 1918 practice)' : ' (1930s-50s, near London 1 in 260)') : ' (main-line station limit)'}.</li>`);
   if (S.filled) cnl.push(`<li><b>Regraded ground</b> over painted cut and cover: filled to the box roof plus cover (${isRer() ? `box ${fmtZ(settings.envelope, 1)} ${uLbl()}` : `${fmtZ(METRO_ST.box.top, 1)} + ${fmtZ(BOX_COVER, 1)} ${uLbl()}`} above the rail), sloping back to the surveyed ground (dashed) at ${settings.fillTaper}‰. The level solver works from the ground before the fill.</li>`);
   { const seen = new Map(); ctxBlocks().forEach((b) => { const e = seen.get(b.n); if (e) e.c1 = b.c1; else seen.set(b.n, { b, c0: b.c0, c1: b.c1 }); });
     seen.forEach(({ b, c0, c1 }) => cnl.push(`<li><b>${esc(b.n)}</b> (${fmtCh(c0)} to ${fmtCh(c1)}): ${esc(b.s)}. Drawn grey and checked for clearance; not editable here.</li>`));
@@ -1680,7 +1725,7 @@ function updatePanels() {
     if (seen.size || S.regraded) cnl.push(`<li><b>Context source</b>: ${esc((CONTEXT.meta || {}).source || '')}, built ${esc((CONTEXT.meta || {}).built || '')}. Heights ${esc((CONTEXT.meta || {}).heights || '')}. ${((CONTEXT.meta || {}).notes || []).map(esc).join('. ')}.</li>`); }
   cnl.push(`<li><b>Vertical curves</b> radius ${fmtZ(settings.vcRadius, 0)} ${uLbl()}, kept off the platforms by a level transition at each end.</li>`);
   if (!isRer()) riverBridges().forEach((b) => cnl.push(`<li><b>Bridge</b> over the ${esc(b.name)} (${fmtCh(b.c0)} to ${fmtCh(b.c1)}): rail at least ${fmtZ(b.lb, 1)} ${uLbl()}. ${esc(b.src)}</li>`));
-  if (!isRer()) riverTubes(null).forEach((t) => cnl.push(`<li><b>Twin tubes</b> under the ${esc(t.name)} (${fmtCh(t.c0)} to ${fmtCh(t.c1)}): rail at most ${fmtZ(t.ub, 1)} ${uLbl()} (lowest bed − ${RIVER_MARGIN.metro} m); the solver holds it, saved profiles are only flagged.</li>`));
+  if (!isRer()) riverTubes(null).forEach((t) => cnl.push(`<li><b>Twin tubes</b> under the ${esc(t.name)} (${fmtCh(t.c0)} to ${fmtCh(t.c1)}): rail at most ${fmtZ(t.ub, 1)} ${uLbl()} (lowest bed − ${riverMarginAt((t.c0 + t.c1) / 2).toFixed(2)} m); the solver holds it, saved profiles are only flagged.</li>`));
   if (isRer()) {
     Object.entries(S.canonModes).forEach(([i, f]) => cnl.push(`<li><b>${esc(nm(+i))}</b> ${f.mode === 'surface' ? 'at grade' : 'underground'}: ${esc(f.src)}</li>`));
     (S.canonDeck || []).forEach((dk) => cnl.push(`<li><b>Deck</b> ${esc(dk.a)} to ${esc(dk.b)}: ${esc(dk.src)}. Ground shown at yard level.</li>`));
@@ -1888,6 +1933,8 @@ async function connect() {
   if (!db) { S.store = 'local'; setStatus('saved', 'Saving in this browser'); showBanner('Shared saving is unavailable in this view, so edits are kept in this browser only.'); return; }
   S.db = db; S.store = 'db';
   if (S.canWrite === false) { setStatus('readonly', 'View only'); syncUndo(); } else setStatus('saved', 'Saved');
+  // the shared Metro structure record (hub): live
+  db.doc('params/metro_structure').onSnapshot((d) => { if (d.exists) { applyMS(d.data()); if (S.data) changed(false); } }, () => {});
   db.collection('alignments').onSnapshot((snap) => {
     snap.docs.forEach((d) => { S.saved[d.id] = d.data(); });
     refreshDefaultDocs();
@@ -2376,6 +2423,7 @@ window.__api = { selectLine, save, changed, railAt, S, withLine, alignFromDoc, d
     S.index = mIdx.concat(rIdx);
     try { const cj = await loadJSON('rer/canon.json'); RER_CANON = cj.lines || {}; RIVERS = cj.rivers || {}; } catch {}
     try { LINKS = await loadJSON('rer/links.json'); } catch {}
+    if (!MS) try { applyMS(await loadJSON('metro_structure.json')); } catch {}   // the hub's record replaces it (connect)
     const rer = await Promise.all(rIdx.map((l) => loadJSON(lineUrl(l.id)).catch(() => null)));
     rer.filter(Boolean).forEach((d) => { S.rerData[d.id] = d; S.cache[d.id] = d; });
     refreshDefaultDocs();

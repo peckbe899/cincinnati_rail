@@ -1,0 +1,177 @@
+{
+ "about": "Metro structure gauge (Ben, 27-28 October 2026; claude/Metro_Structure_Gauge_Handoff.md). Drawing values. Read by the Rail Profiles editor, the Mill Creek Deck and Station 3D; edit on the hub page.",
+ "car": {
+  "width": 2.85,
+  "height": 3.66,
+  "floor": 1.12
+ },
+ "envelope": {
+  "sway": 0.15,
+  "bounce": 0.05,
+  "running_clearance": 0.15,
+  "bored_tolerance": 0.1,
+  "shoe_offset": 1.45,
+  "third_rail_offset": 1.27,
+  "open_width": 4.37,
+  "open_height": 4.42
+ },
+ "open_clear_height": 4.57,
+ "tubes": {
+  "A": {
+   "label": "type A tube (cast iron, bench walls)",
+   "inside": 5.1,
+   "outside": 5.5,
+   "rail_over_invert": 0.7,
+   "spacing": 8.74,
+   "island_ease": 1.08,
+   "offset": 0.0
+  },
+  "C": {
+   "label": "type C tube (concrete segments, walkway)",
+   "inside": 5.4,
+   "outside": 5.9,
+   "rail_over_invert": 0.7,
+   "spacing": 9.14,
+   "island_ease": 0.88,
+   "offset": 0.17
+  },
+  "bore": {
+   "label": "double-track bore",
+   "inside": 8.6,
+   "outside": 9.0,
+   "rail_over_invert": 2.3,
+   "spacing": 3.9
+  }
+ },
+ "box": {
+  "spacing": 3.9,
+  "inside": 7.9,
+  "roof_underside": 4.0,
+  "below": 1.0,
+  "top": 4.6,
+  "column_size": 0.25,
+  "column_every": 1.524
+ },
+ "island_box": {
+  "spacing": 10.9,
+  "island": 8.0,
+  "edge": 1.45,
+  "platform_height": 1.12,
+  "inside": 14.9,
+  "roof_underside": 4.6
+ },
+ "approach_m": 40.0,
+ "phases": {
+  "1": {
+   "label": "Phase 1, founding (1903-18)",
+   "tube": "A"
+  },
+  "2": {
+   "label": "Phase 2, New Deal (1934-41)",
+   "tube": "bore"
+  },
+  "3": {
+   "label": "Phase 3, final lines (1950s-70s)",
+   "tube": "C"
+  },
+  "later": {
+   "label": "Later extensions and infill",
+   "tube": "C"
+  }
+ },
+ "line_phase": {
+  "Line_1": "1",
+  "Line_2": "1",
+  "Line_2b": "1",
+  "Line_3": "1",
+  "Line_4": "1",
+  "Line_5": "1",
+  "Line_6": "1",
+  "Line_7": "1",
+  "Line_8": "2",
+  "Line_9": "2",
+  "Line_10": "2",
+  "Line_11": "2",
+  "Line_12": "2",
+  "Line_13": "3",
+  "Line_14": "3",
+  "CVG_Express": "later"
+ },
+ "piece_phase": {
+  "Line_1": {
+   "Line 1 North Ext 2": "1",
+   "Line 1 North Ext 1": "1",
+   "Line 1": "1",
+   "Line 1 South Ext 1": "1"
+  },
+  "Line_2": {
+   "Line 2 North Ext": "1",
+   "Line 2": "1",
+   "Line 2 South Ext 1": "1",
+   "Line 3 South Ext 2": "1"
+  },
+  "Line_2b": {
+   "Devou Shuttle": "1"
+  },
+  "Line_3": {
+   "Line 3 North Ext Line": "1",
+   "Line 3 MCE": "1",
+   "Line 3": "1",
+   "Line 3 South Ext 1": "1",
+   "Line 3 South Ext 2": "1"
+  },
+  "Line_4": {
+   "Line 4 West Ext": "1",
+   "Line 4": "1",
+   "Line 4 East Ext": "1"
+  },
+  "Line_5": {
+   "Line 5 North Ext": "1",
+   "Line 5": "1",
+   "Line 5 South Ext": "1"
+  },
+  "Line_6": {
+   "Line 6 North Ext": "1",
+   "Line 6": "1",
+   "Line 6 South Ext 1": "1",
+   "Line 6 South Ext 2": "1"
+  },
+  "Line_7": {
+   "Line 7 West": "1",
+   "Line 7 East": "1"
+  },
+  "Line_8": {
+   "Line 8?": "2"
+  },
+  "Line_9": {
+   "Line 9": "2"
+  },
+  "Line_10": {
+   "Line 10": "2"
+  },
+  "Line_11": {
+   "Line 11": "2"
+  },
+  "Line_12": {
+   "Line 12": "2"
+  },
+  "Line_13": {
+   "Line 13": "3"
+  },
+  "Line_14": {
+   "Line 14": "3"
+  },
+  "CVG_Express": {
+   "CVG Express 1": "later",
+   "CVG Express 2": "later",
+   "CVG Express 3": "later",
+   "CVG Express 4": "later",
+   "CVG Express 5 - Today": "later"
+  }
+ },
+ "grades": {
+  "limit": 50.0,
+  "straight_underground_max": 60.0,
+  "straight_radius": 1000.0
+ }
+}

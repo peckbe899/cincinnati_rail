@@ -64,7 +64,7 @@ ERA_SHIELD = {**{f'Line_{k}': 'tube' for k in ['1', '2', '2b', '3', '4', '5', '6
 RAIL_TAPER_M = 40.0
 TRI_TUBE_GAP = 1.0
 BOX_MARGIN = {'metro': 2.3, 'rer': 3.25}   # box wall outside the outer track centre (8.5 m at 3.9 m centres; 11 m at 4.5 m)
-ASSUMED = ['rails centred on each line at the spacing its Profiles structure needs (Deck rules; TRI bored tubes 9.5 m apart), tapering over 40 m',
+ASSUMED = ['rails centred on each line at the spacing its Profiles structure needs (Metro: the structure record; TRI: Deck rules, bored tubes 9.5 m apart), tapering over the approach length',
            'box walls 2.3 m (Metro) and 3.25 m (TRI) outside the outer track centre: 8.5 m and 11 m wide boxes between stations',
            'TRI bored tubes 8.5 m outside diameter, one per track', 'platform tops 1.0 m above the rail',
            'ground: a 200 m grid averaged from the Profiles ground along every line, filled out to 1.6 km from the lines']
@@ -76,7 +76,43 @@ LETTER_RER = {v: [k] for k, v in RER_LETTER.items()}
 TRUNK = {v: k for k, v in RER_LETTER.items()}   # the route at Union Terminal for each letter
 
 
-def structure(line_id, t):
+# The shared Metro structure record (Ben, 27-28 October; claude/Metro_Structure_Gauge_Handoff.md): the hub's copy
+# (cache/db/params_db/params/metro_structure.json), else data/profile/metro_structure.json. Set by load_ms.
+MS = None
+PIECES = {}   # Metro line -> its drawn pieces [{name, c0, c1}] (the "built" phase is set per piece)
+
+
+def load_ms(cache):
+    global MS
+    for f in (os.path.join(cache, 'db/params_db/params/metro_structure.json'), os.path.join(HERE, '..', '..', 'data/profile/metro_structure.json')):
+        if os.path.exists(f):
+            MS = json.load(open(f))
+            break
+    if not MS:
+        return
+    b = MS['box']
+    METRO_ST['box'].update(below=b['below'], top=b['top'], width=b['inside'] + 2 * (b['top'] - b['roof_underside']))
+    BOX_MARGIN['metro'] = (b['inside'] - b['spacing']) / 2 + (b['top'] - b['roof_underside'])
+
+
+def tube_struct(name):
+    t = MS['tubes'][name]
+    lin = (t['outside'] - t['inside']) / 2
+    out = dict(k='bore' if name == 'bore' else 'tube', below=round(t['rail_over_invert'] + lin, 3), top=round(t['inside'] - t['rail_over_invert'] + lin, 3),
+               od=t['outside'], tube=name)
+    # twin tubes: their running centres; the double-track bore holds both tracks (drawn as one circle)
+    out['spacing' if name != 'bore' else 'track_spacing'] = t['spacing']
+    return out
+
+
+def metro_tube(line_id, c=None):
+    """the bored tunnel of a Metro line at chainage c: the tube of the phase the stretch was built in"""
+    name = next((p['name'] for p in PIECES.get(line_id, []) if c is not None and p['c0'] - 5 <= c <= p['c1'] + 5), None)
+    ph = ((MS.get('piece_phase') or {}).get(line_id) or {}).get(name) or (MS.get('line_phase') or {}).get(line_id) or 'later'
+    return (MS['phases'].get(ph) or MS['phases']['later'])['tube']
+
+
+def structure(line_id, t, c=None):
     """the structure a line has for a Profiles type (the editor's structFor, river crossings aside)"""
     if t in ('elevated', 'atgrade', 'trough'):
         return dict(OPEN_ST, t=t)
@@ -84,6 +120,8 @@ def structure(line_id, t):
         return dict(RER_ST['box' if t == 'cutcover' else 'bore'])
     if t == 'cutcover':
         return dict(METRO_ST['box'])
+    if MS:
+        return tube_struct(metro_tube(line_id, c))
     if t == 'deep':
         return dict(METRO_ST['tube'])
     return dict(METRO_ST[ERA_SHIELD.get(line_id, 'tube')])
@@ -304,6 +342,8 @@ def main():
 
     overlay, maps = repath(a.cache)
     lines = load_lines(a.cache, overlay)
+    load_ms(a.cache)
+    PIECES.update({lid: d.get('pieces') or [] for lid, d in lines.items()})
     jf, rf = os.path.join(a.cache, 'job.json'), os.path.join(a.cache, 'harness_out.json')
     if not a.skip_harness:
         job = {'lines': [{'id': lid, 'c0': 0.0, 'c1': float(d['length_m']), 'step': STEP} for lid, d in lines.items()], 'deck': True,
@@ -808,12 +848,14 @@ def main():
     rules = dd.get('constants') or {}
     PW = rules.get('PW') or {'metro': {'island': 8, 'side': 4}, 'rer': {'island': 11, 'side': 6}}
     EDGE = rules.get('EDGE') or {'metro': 1.45, 'rer': 1.75}
-    taper = float(rules.get('TAPER') or RAIL_TAPER_M)
+    taper = float((MS or {}).get('approach_m') or rules.get('TAPER') or RAIL_TAPER_M)
 
-    def half_base(lid, sys_, t):
-        k = structure(lid, t)
+    def half_base(lid, sys_, t, c=None):
+        k = structure(lid, t, c)
         if sys_ == 'rer':
             return max(float(rules.get('H0_rer', 2.25)), (RER_ST['bore']['od'] + TRI_TUBE_GAP) / 2) if k['k'] == 'tube' else float(rules.get('H0_rer', 2.25))
+        if MS:   # the record: twin tubes at their running centres, the bore and boxes at the box track centres
+            return (k.get('spacing') or k.get('track_spacing')) / 2 if k['k'] in ('tube', 'bore') else MS['box']['spacing'] / 2
         if k['k'] == 'tube':   # Metro twin tubes
             return float(rules.get('H0_metro_twin', METRO_ST['tube']['spacing'] / 2))
         return float(rules.get('H0_metro_bore', 1.95))   # box, the single large bore, open, viaduct
@@ -825,13 +867,13 @@ def main():
     geo = {}   # line -> [(cs, x, y, nx, ny, h)] per piece
     for lid, l in L.items():
         sk = 'rer' if l['sys'] == 'rer' else 'metro'
-        h_isl = PW[sk]['island'] / 2 + EDGE[sk]
+        h_isl = MS['island_box']['spacing'] / 2 if MS and sk == 'metro' else PW[sk]['island'] / 2 + EDGE[sk]
         geo[lid] = []
         for piece in l['S']:
             cs = np.array([s_[0] for s_ in piece])
             px, py = np.array([s_[1] for s_ in piece]), np.array([s_[2] for s_ in piece])
             n = len(cs)
-            base = np.array([half_base(lid, l['sys'], s_[4]) for s_ in piece])
+            base = np.array([half_base(lid, l['sys'], s_[4], s_[0]) for s_ in piece])
             w = max(1, int(round(taper / STEP / 2)))
             ker = np.ones(2 * w + 1) / (2 * w + 1)
             h = np.convolve(np.pad(base, w, mode='edge'), ker, 'valid') if n > 1 else base
@@ -917,6 +959,9 @@ def main():
                 if h is not None:
                     o['track_offsets'], o['tracks_from'] = [r2(h), r2(-h)], 'centred on the line'
 
+    def tkey(lid, t, c):
+        return f'{t}~{metro_tube(lid, c)}' if MS and t in ('shield', 'deep') and L[lid]['sys'] != 'rer' else t
+
     # ---- the snapshot ----
     snap_lines = []
     for lid, l in L.items():
@@ -926,10 +971,16 @@ def main():
         for piece, sh, il in zip(l['S'], l['shared'], l['il']):
             pieces.append({'c0': r1(piece[0][0]), 'step': STEP, 'n': len(piece),
                            'x': enc([s_[1] for s_ in piece], 10), 'y': enc([s_[2] for s_ in piece], 10),
-                           'z': enc([s_[3] for s_ in piece], 100), 't': rle([s_[4] for s_ in piece]), 'sh': rle(sh), 'il': rle(il)})
+                           'z': enc([s_[3] for s_ in piece], 100), 't': rle([tkey(lid, s_[4], s_[0]) for s_ in piece]), 'sh': rle(sh), 'il': rle(il)})
         snap_lines.append({'id': lid, 'name': l['name'], 'sys': l['sys'], 'color': l['color'], 'saved': l['saved'],
                            'pieces': pieces, 'stations': l['stations']})
     struct = {lid: {t: structure(lid, t) for t in ('cutcover', 'shield', 'deep', 'elevated', 'atgrade', 'trough')} for lid in L}
+    if MS:   # Metro bored stretches by their tube (type A, type C, the double-track bore): 'shield~A' and so on
+        for lid in L:
+            if L[lid]['sys'] != 'rer':
+                for t in ('shield', 'deep'):
+                    for name in MS['tubes']:
+                        struct[lid][f'{t}~{name}'] = tube_struct(name)
     meta = {
         'area': AREA['id'], 'name': AREA['name'], 'default_station': AREA['default_station'],
         'synced_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),

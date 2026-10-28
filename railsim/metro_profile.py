@@ -103,6 +103,15 @@ RER_DEFAULTS = dict(maxGrade=35.0, platform=204.2, defDepth=12.0, elevAbove=3.0,
                     fillTaper=50.0)
 RER_CANON_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "rer" / "canon.json"
 CONTEXT_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "context" / "lines.json"
+# the shared Metro structure record (Ben, 27-28 October; claude/Metro_Structure_Gauge_Handoff.md), as the editor reads it;
+# settings_override {"legacy_structures": True} keeps the structures of before (the 4.76 m tube, 9.0 m bore)
+MS_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "metro_structure.json"
+
+
+def _tube_of(t: dict) -> dict:
+    lin = (t["outside"] - t["inside"]) / 2
+    return {"k": "bore" if t["inside"] > 7 else "tube", "below": t["rail_over_invert"] + lin,
+            "top": t["inside"] - t["rail_over_invert"] + lin, "od": t["outside"]}
 # a line in the open under another structure needs this clear height from rail to its underside
 # (Ben): Metro 4.2 m, RER 5.8 m (25 kV); track bed 0.8 m below the rail; crossing gap 0.5 m
 OPEN_CLEAR = {"metro": 4.2, "rer": 5.8}
@@ -185,6 +194,9 @@ class MetroProfile:
         rer = "RER" in data.get("system", "")
         # per-line settings in the line file (e.g. the CVG Express's 200 m platforms)
         p = cls(data, {**load_settings(settings_json, rer=rer), **(data.get("settings") or {}), **(settings_override or {})})
+        p.ms = None
+        if not rer and not p.settings.get("legacy_structures") and MS_JSON.exists():
+            p.ms = json.loads(MS_JSON.read_text())
         if rer:
             cj = Path(canon_json) if canon_json else RER_CANON_JSON
             p.rer_canon = json.loads(cj.read_text()) if cj.exists() else {}
@@ -394,7 +406,6 @@ class MetroProfile:
         way where the canon crosses the river in tunnel (sunk box sections). Rail at most the
         lowest bed - margin over the river range."""
         rivers = self._rivers_info()
-        margin = RIVER_MARGIN["rer" if self.is_rer else "metro"]
         step = float(self.data.get("step_m", 2.0))
         out = []
         for r in self.data.get("rivers", []) or []:
@@ -420,7 +431,7 @@ class MetroProfile:
             beds = [self.bed_at(c) for c in np.arange(r["c0"], r["c1"] + 1e-9, step)]
             beds = [b for b in beds if math.isfinite(b)]
             if beds:
-                out.append({"name": r["name"], "c0": r["c0"], "c1": r["c1"], "ub": min(beds) - margin})
+                out.append({"name": r["name"], "c0": r["c0"], "c1": r["c1"], "ub": min(beds) - self.river_margin((r["c0"] + r["c1"]) / 2)})
         return out
 
     def default_mode(self, i: int) -> str:
@@ -819,11 +830,25 @@ class MetroProfile:
         if self.is_rer:  # river crossings: sunk box sections in a dredged trench
             return ({"k": "box", "below": st["invertDepth"], "top": st["envelope"]}
                     if t == "cutcover" or self.river_at(c) else {"k": "bore", "below": st["invertDepth"], "top": st["boreCrown"]})
+        ms = getattr(self, "ms", None)
+        if ms:   # the record: the box, else the tube of the phase the stretch was built in
+            if t == "cutcover" and not self.river_at(c):
+                return {"k": "box", "below": ms["box"]["below"], "top": ms["box"]["top"]}
+            name = next((p["name"] for p in self.data.get("pieces", []) if p["c0"] - 5 <= c <= p["c1"] + 5), None)
+            ph = ((ms.get("piece_phase") or {}).get(self.id) or {}).get(name) or (ms.get("line_phase") or {}).get(self.id) or "later"
+            return _tube_of(ms["tubes"][(ms["phases"].get(ph) or ms["phases"]["later"])["tube"]])
         if self.river_at(c) or t == "deep":
             return METRO_ST["tube"]
         if t == "cutcover":
             return METRO_ST["box"]
         return METRO_ST[(self._era() or {}).get("shield", "tube")]
+
+    def river_margin(self, c: float) -> float:
+        """Rail below the bed under a river: Metro 1.0 scour + half the tube's diameter + rail to its top"""
+        if self.is_rer or not getattr(self, "ms", None):
+            return RIVER_MARGIN["rer" if self.is_rer else "metro"]
+        t = self.struct_for("deep", c)
+        return 1.0 + t["od"] / 2 + t["top"]
 
     def req_cover(self, sc: dict, top_z: float) -> float:
         """Cover a structure needs over its top (top_z = its top level)."""
@@ -908,7 +933,6 @@ class MetroProfile:
 
     def river_breaks(self) -> List[dict]:
         """Stretches in tunnel under a river where the rail is above bed - margin (bed = ground raster)."""
-        margin = RIVER_MARGIN["rer" if self.is_rer else "metro"]
         step = float(self.data.get("step_m", 2.0))
         out = []
         for b in self.river_bridges():  # bridges: rail at least the navigation clearance level
@@ -924,7 +948,7 @@ class MetroProfile:
                 bed = self.bed_at(c)
                 z = float(self.rail_at(c))
                 t = self.type_at(c, z)
-                over = z - (bed - margin) if math.isfinite(bed) and t in ("cutcover", "shield", "deep") else -math.inf
+                over = z - (bed - self.river_margin(c)) if math.isfinite(bed) and t in ("cutcover", "shield", "deep") else -math.inf
                 if over > 0.005:
                     if run is None:
                         run = {"name": r["name"], "c0": c, "c1": c, "over": over}
@@ -951,7 +975,7 @@ class MetroProfile:
 
     def open_struct(self, t: str) -> dict:
         """This line's structure when it is in the open (rail to underside, clear height above)."""
-        top = OPEN_CLEAR["rer" if self.is_rer else "metro"]
+        top = OPEN_CLEAR["rer"] if self.is_rer else float((getattr(self, "ms", None) or {}).get("open_clear_height") or OPEN_CLEAR["metro"])
         if t == "elevated":
             return {"k": "elevated", "below": float(self.settings.get("deckDepth", 1.5)), "top": top}
         return {"k": t, "below": BED_DEPTH, "top": top}

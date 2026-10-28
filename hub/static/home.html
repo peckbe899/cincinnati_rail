@@ -25,6 +25,12 @@ details summary { cursor:pointer }
 .item textarea { min-height:38px; resize:vertical }
 .add { display:grid; grid-template-columns:140px 1fr auto; gap:8px; margin-top:8px }
 .scroll { overflow-x:auto }
+.msgrid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; align-items:start }
+@media (max-width: 760px) { .msgrid { grid-template-columns:1fr } }
+#msT input { width:80px; font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:5px; padding:2px 6px; text-align:right }
+#msP select, #msL select { font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:5px; padding:2px 4px }
+#msL details { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:6px 10px; margin-bottom:6px }
+#msL .pc { display:flex; justify-content:space-between; gap:8px; padding:3px 0 3px 14px; font-size:13px }
 </style></head><body><main>
 <h1>Cincinnati Rail hub</h1>
 <div class="muted">One local database for the Mill Creek Deck, the Rail Profiles and Station 3D. Change a view and the others follow: the Deck's routes and platforms drive the Profiles, both drive the 3D map.</div>
@@ -42,6 +48,13 @@ details summary { cursor:pointer }
 <div class="muted" style="margin-bottom:8px" id="regNote"></div>
 <div class="scroll"><table><thead><tr><th>Parameter</th><th>Unit</th><th>Profiles</th><th>Deck</th><th>Station 3D</th><th></th></tr></thead><tbody id="regT"></tbody></table></div>
 <div id="tie" style="margin-top:8px"></div>
+
+<h2 id="structure">Metro structure</h2>
+<div class="muted" style="margin-bottom:8px">One record for the Deck, the Profiles and the 3D map (Ben, 27-28 October: tunnels sized to the dynamic envelope plus running clearance; the bored tunnel follows the building phase). Metres unless noted. Saving rebuilds the 3D map; open Profiles pages update at once.</div>
+<div class="msgrid"><div class="scroll"><table><thead><tr><th>Value</th><th>Now</th></tr></thead><tbody id="msT"></tbody></table></div>
+<div><table><thead><tr><th>Phase</th><th>Bored tunnel</th></tr></thead><tbody id="msP"></tbody></table>
+<h3 style="font-size:14px;margin:14px 0 6px">Built in phase, by line and drawn piece</h3><div id="msL"></div></div></div>
+<div style="margin-top:8px"><button class="primary" id="msSave">Save the structure record</button> <span id="msNote" class="muted"></span></div>
 
 <h2>Roadmap</h2>
 <div id="road"></div>
@@ -85,6 +98,41 @@ db.doc('params/registry').onSnapshot((d) => {
     <td>${r.agree === true ? '<span class="ok">agree</span>' : r.agree === false ? '<span class="bad">differ</span>' : ''}</td></tr>`).join('');
   $('tie').innerHTML = g.tie_issues.length ? `<div class="bad">Off the Deck:</div><ul>${g.tie_issues.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>` : '<span class="ok">Every route and platform is on the Deck.</span>';
 });
+
+// the Metro structure record
+const MSF = [['Type A tube, inside', 'tubes.A.inside'], ['Type A tube, outside', 'tubes.A.outside'], ['Type A, rail over the invert', 'tubes.A.rail_over_invert'],
+  ['Type A, running centres', 'tubes.A.spacing'], ['Type A, ease out before an island (each)', 'tubes.A.island_ease'],
+  ['Type C tube, inside', 'tubes.C.inside'], ['Type C tube, outside', 'tubes.C.outside'], ['Type C, rail over the invert', 'tubes.C.rail_over_invert'],
+  ['Type C, running centres', 'tubes.C.spacing'], ['Type C, ease out before an island (each)', 'tubes.C.island_ease'], ['Type C, centre toward the walkway', 'tubes.C.offset'],
+  ['Double-track bore, inside', 'tubes.bore.inside'], ['Double-track bore, outside', 'tubes.bore.outside'], ['Double-track bore, rail over the invert', 'tubes.bore.rail_over_invert'], ['Double-track bore, track centres', 'tubes.bore.spacing'],
+  ['Box, track centres', 'box.spacing'], ['Box, inside width', 'box.inside'], ['Box, rail to roof underside', 'box.roof_underside'], ['Box, below the rail (outside)', 'box.below'], ['Box, rail to roof top', 'box.top'],
+  ['Box columns, size', 'box.column_size'], ['Box columns, spacing', 'box.column_every'],
+  ['Island box, track centres', 'island_box.spacing'], ['Island width', 'island_box.island'], ['Island edge from the track centre', 'island_box.edge'], ['Platform over the rail', 'island_box.platform_height'], ['Island box, inside width', 'island_box.inside'], ['Island box, rail to roof underside', 'island_box.roof_underside'],
+  ['Approach length (tubes easing to the island)', 'approach_m'], ['Clear height in the open under structures', 'open_clear_height'],
+  ['Grade limit (‰)', 'grades.limit'], ['Straight underground: warning up to (‰)', 'grades.straight_underground_max'], ['Straight: train-averaged radius at least', 'grades.straight_radius']];
+const getP = (o, p) => p.split('.').reduce((a, k) => (a == null ? a : a[k]), o);
+const setP = (o, p, v) => { const ks = p.split('.'); let a = o; for (const k of ks.slice(0, -1)) a = a[k] = a[k] || {}; a[ks[ks.length - 1]] = v; };
+let MSR = null, msDirty = false;
+const TUBES = { A: 'type A tube', C: 'type C tube', bore: 'double-track bore' };
+function drawMS() {
+  if (!MSR) return;
+  $('msT').innerHTML = MSF.map(([n, p]) => `<tr><td>${esc(n)}</td><td><input type="number" step="0.01" data-p="${p}" value="${getP(MSR, p) ?? ''}"></td></tr>`).join('');
+  const ph = Object.keys(MSR.phases);
+  $('msP').innerHTML = ph.map((k) => `<tr><td>${esc(MSR.phases[k].label || k)}</td><td><select data-ph="${k}">${Object.keys(TUBES).map((t) => `<option value="${t}" ${MSR.phases[k].tube === t ? 'selected' : ''}>${TUBES[t]}</option>`).join('')}</select></td></tr>`).join('');
+  const opt = (v) => ph.map((k) => `<option value="${k}" ${v === k ? 'selected' : ''}>${k === 'later' ? 'later' : 'Phase ' + k}</option>`).join('');
+  $('msL').innerHTML = Object.keys(MSR.line_phase).map((lid) => { const pcs = (MSR.piece_phase || {})[lid] || {};
+    return `<details><summary>${esc(lid.replace('_', ' '))} <select data-line="${lid}">${opt(MSR.line_phase[lid])}</select></summary>${Object.keys(pcs).map((n) => `<div class="pc"><span>${esc(n)}</span><select data-line="${lid}" data-piece="${esc(n)}">${opt(pcs[n])}</select></div>`).join('')}</details>`; }).join('');
+}
+db.doc('params/metro_structure').onSnapshot((d) => { if (!d.exists || msDirty) return; MSR = d.data(); drawMS(); });
+document.addEventListener('change', (e) => {
+  const t = e.target; if (!MSR || !t.closest('#msT, #msP, #msL')) return; msDirty = true; $('msNote').textContent = 'Not saved';
+  if (t.dataset.p) setP(MSR, t.dataset.p, +t.value);
+  else if (t.dataset.ph) MSR.phases[t.dataset.ph].tube = t.value;
+  else if (t.dataset.piece) MSR.piece_phase[t.dataset.line][t.dataset.piece] = t.value;
+  else if (t.dataset.line) { const was = MSR.line_phase[t.dataset.line]; MSR.line_phase[t.dataset.line] = t.value;   // pieces that followed the line follow it
+    const pcs = MSR.piece_phase[t.dataset.line] || {}; for (const n in pcs) if (pcs[n] === was) pcs[n] = t.value; drawMS(); }
+});
+$('msSave').onclick = async () => { if (!MSR) return; await db.doc('params/metro_structure').set(MSR); msDirty = false; $('msNote').textContent = 'Saved; the 3D map rebuilds in a moment'; };
 
 // roadmap
 const ORDER = { doing: 0, todo: 1, done: 2 };

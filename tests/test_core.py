@@ -313,7 +313,7 @@ def test_metro_profile_port_matches_saved_page_output():
     mp = MetroProfile.load(Path(__file__).resolve().parent / "data/Line_1_line_2026-10-06.json", fixture,
                            root / "settings.json",
                            settings_override={"vcRadius": 0.0, "minCover_override": -1e9, "trough_override": -1e9,
-                                              "platform": 152.4})
+                                              "platform": 152.4, "legacy_structures": True})
     mp._ground = np.array([np.nan if v is None else v / 10 for v in mp.data["ground_dm_lidar"]])
     for i, s in enumerate(doc["stations"]):
         assert mp.st[i] == pytest.approx(s["rail"], abs=0.02)
@@ -377,18 +377,21 @@ def test_vertical_curves_and_structure_rules():
     for i, s in enumerate(mp.stations):
         cc = np.arange(max(0.0, s["c"] - half), min(mp.length, s["c"] + half), 2.0)
         assert np.allclose(mp.rail_at(cc), mp.st[i], atol=1e-6)  # platforms level
-    # Ben's structure rules: Lines 8-14 shield is a double-track bore, Lines 1-7 a twin tube;
-    # deep tube and river crossings are twin tubes; cover 2.0 m above the 140 m water table,
-    # one outside diameter at or below it, 0.6 m over box roofs
+    # Ben's structure rules (the shared record, 28 October): the bored tunnel follows the building phase, shallow or
+    # deep: Lines 1-7 type A twin tubes (5.10 m inside, 5.50 m outside, rail 0.70 m over the invert: 0.90 below, 4.60 to
+    # the top), Lines 8-12 the 9.0 m double-track bore (2.50 below, 6.50 to the top); cover 2.0 m above the 140 m water
+    # table, one outside diameter at or below it, 0.6 m over box roofs
     l3 = MetroProfile.load(root / "lines/Line_3.json", None, root / "settings.json")
     assert mp.struct_for("shield", 1000.0)["k"] == "bore" and l3.struct_for("shield", 1000.0)["k"] == "tube"
-    assert mp.struct_for("deep", 1000.0)["top"] == 4.08 and mp.struct_for("cutcover", 1000.0)["top"] == 4.6
+    assert mp.struct_for("deep", 1000.0)["top"] == pytest.approx(6.5) and l3.struct_for("deep", 1000.0)["top"] == pytest.approx(4.6)
+    assert l3.struct_for("shield", 1000.0)["od"] == 5.5 and mp.struct_for("cutcover", 1000.0)["top"] == 4.6
     bore = mp.struct_for("shield", 1000.0)
     assert mp.req_cover(bore, 150.0) == 2.0 and mp.req_cover(bore, 140.0) == 9.0
     assert mp.req_cover(mp.struct_for("cutcover", 1000.0), 150.0) == 0.6
     l1 = MetroProfile.load(root / "lines/Line_1.json", None, root / "settings.json")
     r = l1.data["rivers"][0]
     assert l1.struct_for("cutcover", (r["c0"] + r["c1"]) / 2)["k"] == "tube"
+    assert l1.river_margin((r["c0"] + r["c1"]) / 2) == pytest.approx(1.0 + 2.75 + 4.6)   # scour + half the tube + rail to top
 
 
 def test_sloped_platform_eases_the_bends():
@@ -499,11 +502,12 @@ def test_cut_norwood_context():
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
-    # Line 8 as saved passes 0.25 m under the CUT lower level (rail 144.0 m), needing 7.3 m
+    # Line 8 as saved passes 0.25 m under the CUT lower level (rail 144.0 m), needing 8.0 m (its 9.0 m double-track
+    # bore stands 6.5 m over the rail since the structure record of 28 October; was 7.3 m with the 5.8 m bore)
     l8 = MetroProfile.load(root / "lines/Line_8.json", root / "alignments/Line_8.json", root / "settings.json")
     assert any(b["l"] == "CUT lower level" for b in l8.context_blocks())
     x = next(x for x in l8.context_clearances() if x["with"] == "CUT lower level")
-    assert not x["ok"] and x["clear"] == pytest.approx(0.25, abs=0.02) and x["need"] == pytest.approx(7.3, abs=0.01)
+    assert not x["ok"] and x["clear"] == pytest.approx(0.25, abs=0.02) and x["need"] == pytest.approx(8.0, abs=0.01)
     # Line 4 along W 8th: the street raised up to 5 m over the intercity pair (re-grades do not add up)
     l4 = MetroProfile.load(root / "lines/Line_4.json", root / "alignments/Line_4.json", root / "settings.json")
     c = np.arange(11800.0, 12200.0, 2.0)
@@ -543,8 +547,8 @@ def test_context_street_openings():
     check = lambda b: (setattr(mp, "ctx", {"blocks": [b]}), mp.context_clearances()[0])[1]
     x = check(blk("embankment", []))          # no street opening: blocked
     assert x["blocked"] and not x["ok"]
-    x = check(blk("arch", [[c - 12, c + 12, "a street"]]))   # under an arch over a street: 9.0 m clear, needs 1.6 + 0.5 + 4.2
-    assert not x["blocked"] and x["ok"] and x["need"] == pytest.approx(6.3, abs=0.01)
+    x = check(blk("arch", [[c - 12, c + 12, "a street"]]))   # under an arch over a street: 9.0 m clear, needs 1.6 + 0.5 + 4.57 (Metro clear height, 28 October)
+    assert not x["blocked"] and x["ok"] and x["need"] == pytest.approx(6.67, abs=0.01)
     x = check(blk("viaduct", []))             # a normal viaduct: open between its piers
     assert not x["blocked"] and x["ok"]
 
