@@ -611,7 +611,7 @@ function gradeAt(c, verts = VERTS) {
 }
 // the straight grades between bends (for limits, labels and the overview)
 const chords = (verts = VERTS) => design(verts).dv;
-window.railProfile = { railAt: (c) => railAt(c), typeAt: (c) => typeAt(c), phaseAt: (c) => phaseAt(c), chrSegments: () => chrSegments(), curveAt: (c) => ({ grade: gradeAt(c), allowance: allowanceAt(c), radius: radiusAt(c) }), line: () => S.data && S.data.id, issues: () => S.issues || [], view: (c0, c1) => { S.view = { c0, c1 }; schedule(); }, align: () => JSON.parse(JSON.stringify(S.align)), exportGeo: () => { const m = exportModel(); return { runs: m.runs.length, pts: m.runs.reduce((a, r) => a + r.pts.length, 0), stations: m.stations.length }; }, kml: () => buildKml(), platforms: () => (isRer() ? [] : S.stations.map((s, i) => ({ name: s.name, c: s.c, ...platformCurve(i), R: isFinite(platformCurve(i).R) ? platformCurve(i).R : null }))), drawing: () => (isRer() ? [] : drawingFlags(S.data)), saved: () => !!(S.data && S.saved[S.data.id]) };
+window.railProfile = { railAt: (c) => railAt(c), typeAt: (c) => typeAt(c), approaches: () => (stretchTypes() || {}).approaches || [], phaseAt: (c) => phaseAt(c), chrSegments: () => chrSegments(), curveAt: (c) => ({ grade: gradeAt(c), allowance: allowanceAt(c), radius: radiusAt(c) }), line: () => S.data && S.data.id, issues: () => S.issues || [], view: (c0, c1) => { S.view = { c0, c1 }; schedule(); }, align: () => JSON.parse(JSON.stringify(S.align)), exportGeo: () => { const m = exportModel(); return { runs: m.runs.length, pts: m.runs.reduce((a, r) => a + r.pts.length, 0), stations: m.stations.length }; }, kml: () => buildKml(), platforms: () => (isRer() ? [] : S.stations.map((s, i) => ({ name: s.name, c: s.c, ...platformCurve(i), R: isFinite(platformCurve(i).R) ? platformCurve(i).R : null }))), drawing: () => (isRer() ? [] : drawingFlags(S.data)), saved: () => !!(S.data && S.saved[S.data.id]) };
 function overrideAt(c) { const o = S.align.ovr; for (let k = o.length - 1; k >= 0; k--) if (c >= o[k][0] && c <= o[k][1]) return o[k][2]; return null; }
 // ---------- canon ----------
 function buildCanon() {
@@ -868,39 +868,75 @@ function pointType(c, z) {   // one chainage on its own: the type, or for a Metr
   return { t: inStation(c) ? 'cutcover' : 'shield' };
 }
 // the era rules over the whole line, cached with the profile (VERTS), the ground and the record
+// Station approaches (Ben, 28 October; handoff "Tunnel track geometry"): the stretch where the tracks change spacing
+// beside a station is part of the station and built as it is. A cut-and-cover station meeting bored tubes carries its
+// box on through the approach until the tracks reach the tubes' running spacing (side platforms 3.90 m, islands
+// 10.90 m, to type A 8.74 m or type C 9.14 m; the bore is 3.90 m); a box meeting tubes away from a station does the
+// same inside the box. The approach is at least the record's approach_m and long enough for the reverse curves to keep
+// the minimum radius: L = max(approach_m, sqrt(4 x min_radius x shift per track)). The approach box is a switch point
+// (it does not count toward a drive). Island or side from the 3D build (hub params/station_platforms), else island
+// where the station is shallow shield (the Deck's default).
+let ST_PLAT = null;
+const platKind = (name, t) => { const v = ST_PLAT && ST_PLAT[S.data.id] && ST_PLAT[S.data.id][name]; return v || (t === 'shield' ? 'island' : 'side'); };
+const approachLen = (shift) => Math.max(MS.approach_m || 40, Math.sqrt(4 * (MS.min_radius || 150) * Math.abs(shift)));
 function stretchTypes() {
   const V = VERTS; if (!S.data || isRer() || !MS || !V) return null;
-  if (V._types && V._types.g === S.ground && V._types.ms === MS && V._types.chr === CHR && V._types.L === S.L) return V._types;
-  const step = S.step || 2, n = Math.floor(S.L / step) + 1, P = [], flags = [];
+  if (V._types && V._types.g === S.ground && V._types.ms === MS && V._types.chr === CHR && V._types.plat === ST_PLAT && V._types.L === S.L) return V._types;
+  const step = S.step || 2, n = Math.floor(S.L / step) + 1, P = [], flags = [], approaches = [];
   for (let i = 0; i < n; i++) { const c = Math.min(i * step, S.L), z = railAt(c); P.push(Object.assign({ c, z }, pointType(c, z))); }
   const runs = (a, b, f) => { const out = []; let s = -1; for (let i = a; i <= b + 1; i++) { const on = i <= b && f(P[i]); if (on && s < 0) s = i; if (!on && s >= 0) { out.push([s, i - 1]); s = -1; } } return out; };
   const len = (a, b) => P[b].c - P[a].c + step;
-  // stretches: tunnel samples between station boxes, portals, canon sections and rivers, in one phase
-  for (const [a0, b0] of runs(0, n - 1, (p) => !!p.cls)) {
-    const parts = []; let s = a0; for (let i = a0 + 1; i <= b0 + 1; i++) if (i > b0 || P[i].ph !== P[s].ph) { parts.push([s, i - 1]); s = i; }
-    for (const [a, b] of parts) {
-      const R = P[a].R;
-      for (const [x, y] of runs(a, b, (p) => p.cls !== 'C')) {
-        const ok = (x === a && y === b) || len(x, y) >= R.minDrive;   // box to box (or portal, deep station): a drive at any length (Ben)
-        for (let i = x; i <= y; i++) P[i].t = ok ? 'bored' : 'cutcover';
-        if (!ok && P.slice(x, y + 1).some((p) => p.cls === 'B')) flags.push({ c0: P[x].c, c1: P[y].c, text: `a bored stretch shorter than a drive (${Math.round(len(x, y))} m, at least ${R.minDrive} m) and deeper than the cut-and-cover limit (${fmtZ(R.ccMax, 2)} ${uLbl()}): the profile has to rise, or the drive be longer` });
-      }
-      for (let i = a; i <= b; i++) if (!P[i].t) P[i].t = 'cutcover';
-      const cc = runs(a, b, (p) => p.t === 'cutcover');
-      for (const [x, y] of cc) {
-        if (x === a || y === b || len(x, y) >= R.minDrive) continue;   // at a box or portal, or a stretch of its own
-        if (P.slice(x, y + 1).every((p) => p.cls !== 'C')) { for (let i = x; i <= y; i++) P[i].t = 'bored'; continue; }
-        flags.push({ c0: P[x].c, c1: P[y].c, text: `a cut-and-cover pocket inside a shield drive (${Math.round(len(x, y))} m, shorter than ${R.minDrive} m) with too little cover to bore (${fmtZ(P[x].shieldFrom, 2)} ${uLbl()} to the rail): the profile has to dive, or a shaft at each end` });
-      }
-      for (const [x, y] of runs(a, b, (p) => p.t === 'bored')) {
-        for (let i = x; i <= y; i++) P[i].t = 'shield';
-        for (const [u, v] of runs(x, y, (p) => p.deep)) {
-          const touch = (u === x && x > 0 && P[x - 1].stn && P[x - 1].t === 'deep') || (v === y && y < n - 1 && P[y + 1].stn && P[y + 1].t === 'deep');
-          if (touch || len(u, v) >= R.minDrive) for (let i = u; i <= v; i++) P[i].t = 'deep';
+  const resolve = (fl) => {   // the era rules over each stretch between anchors (station boxes and approaches, portals, canon, rivers), in one phase
+    for (const p of P) if (p.cls) delete p.t;
+    for (const [a0, b0] of runs(0, n - 1, (p) => !!p.cls)) {
+      const parts = []; let s = a0; for (let i = a0 + 1; i <= b0 + 1; i++) if (i > b0 || P[i].ph !== P[s].ph) { parts.push([s, i - 1]); s = i; }
+      for (const [a, b] of parts) {
+        const R = P[a].R;
+        for (const [x, y] of runs(a, b, (p) => p.cls !== 'C')) {
+          const ok = (x === a && y === b) || len(x, y) >= R.minDrive;   // box to box (or portal, deep station): a drive at any length (Ben)
+          for (let i = x; i <= y; i++) P[i].t = ok ? 'bored' : 'cutcover';
+          if (fl && !ok && P.slice(x, y + 1).some((p) => p.cls === 'B')) flags.push({ c0: P[x].c, c1: P[y].c, text: `a bored stretch shorter than a drive (${Math.round(len(x, y))} m, at least ${R.minDrive} m) and deeper than the cut-and-cover limit (${fmtZ(R.ccMax, 2)} ${uLbl()}): the profile has to rise, or the drive be longer` });
+        }
+        for (let i = a; i <= b; i++) if (!P[i].t) P[i].t = 'cutcover';
+        for (const [x, y] of runs(a, b, (p) => p.t === 'cutcover')) {
+          if (x === a || y === b || len(x, y) >= R.minDrive) continue;   // at a box or portal, or a stretch of its own
+          if (P.slice(x, y + 1).every((p) => p.cls !== 'C')) { for (let i = x; i <= y; i++) P[i].t = 'bored'; continue; }
+          if (fl) flags.push({ c0: P[x].c, c1: P[y].c, text: `a cut-and-cover pocket inside a shield drive (${Math.round(len(x, y))} m, shorter than ${R.minDrive} m) with too little cover to bore (${fmtZ(P[x].shieldFrom, 2)} ${uLbl()} to the rail): the profile has to dive, or a shaft at each end` });
+        }
+        for (const [x, y] of runs(a, b, (p) => p.t === 'bored')) {
+          for (let i = x; i <= y; i++) P[i].t = 'shield';
+          for (const [u, v] of runs(x, y, (p) => p.deep)) {
+            const touch = (u === x && x > 0 && P[x - 1].stn && P[x - 1].t === 'deep') || (v === y && y < n - 1 && P[y + 1].stn && P[y + 1].t === 'deep');
+            if (touch || len(u, v) >= R.minDrive) for (let i = u; i <= v; i++) P[i].t = 'deep';
+          }
         }
       }
     }
+  };
+  resolve(false);
+  // the approaches: box on to where the tracks reach the tubes' spacing
+  const tubeSp = (c) => { const tb = MS.tubes[(MS.phases[phaseAt(c)] || MS.phases.later).tube]; return tb ? tb.spacing : MS.box.spacing; };
+  const bored = (p) => p && (p.t === 'shield' || p.t === 'deep') && p.cls;
+  const stIdx = (c) => Math.max(0, Math.min(n - 1, Math.round(c / step)));
+  const fix = (i0, dir, Lm, info) => { let k = 0, i = i0; for (; i >= 0 && i < n && (k === 0 || Math.abs(P[i - dir].c - info.c) < Lm - 1e-6); i += dir, k++) { if (!P[i].cls) break; delete P[i].cls; P[i].t = 'cutcover'; P[i].stn = true; P[i].appr = true; } if (k) approaches.push(Object.assign({}, info, { len: Math.round(Math.abs(P[i - dir].c - info.c) * 100) / 100 })); };   // from the platform end (or box end) to the last sample boxed
+  const half = settings.platform / 2;
+  for (const s of S.stations) {
+    const ic = stIdx(s.c); if (!P[ic] || P[ic].t !== 'cutcover' || !P[ic].stn) continue;
+    const kind = platKind(s.name, 'cutcover'), spS = kind === 'island' ? MS.island_box.spacing : MS.box.spacing;
+    for (const dir of [-1, 1]) {
+      const i0 = stIdx(s.c + dir * (half + step)); if (!bored(P[i0])) continue;
+      const shift = (tubeSp(P[i0].c) - spS) / 2; if (Math.abs(shift) < 0.01) continue;
+      fix(i0, dir, approachLen(shift), { station: s.name, kind, side: dir, shift, c: s.c + dir * half });
+    }
   }
+  for (const [x, y] of runs(0, n - 1, (p) => bored(p))) {   // a box meeting tubes away from a station: the change inside the box
+    for (const [i, dir] of [[x, 1], [y, -1]]) {
+      const nb = P[i - dir]; if (!nb || nb.t !== 'cutcover' || nb.stn) continue;
+      const shift = (tubeSp(P[i].c) - MS.box.spacing) / 2; if (Math.abs(shift) < 0.01) continue;
+      fix(i, dir, approachLen(shift), { station: null, kind: 'box', side: dir, shift, c: P[i].c });
+    }
+  }
+  resolve(true);   // again with the approaches as anchors (the flags from this pass)
   // twin tubes or one bore (proposed, flagged only; Ben, 28 October): a twin-tube stretch under a street narrower than the
   // tubes' footprint (centres + one diameter) could be the single bore or stacked tubes; a Phase 2 stretch built cut and
   // cover where the bore can't reach 15.5 m but type A twin tubes would have their cover could be twin tubes
@@ -911,7 +947,7 @@ function stretchTypes() {
     (p) => { const s = streetAt(p.c), tb = MS.tubes[tubeName(p.c)]; return `twin tubes under ${esc(s[3])} (${fmtZ(s[2], 1)} ${uLbl()}), narrower than their footprint (${fmtZ(tb.spacing + tb.outside, 1)} ${uLbl()}): the single bore or stacked tubes would stay under the street (proposed, not applied)`; });
   note((p) => p.t === 'cutcover' && p.cls && p.ph === '2' && tubeName(p.c) === 'bore' && p.d >= aFrom,
     () => `Phase 2 cut and cover deep enough for type A twin tubes (${fmtZ(aFrom, 2)} ${uLbl()}) but not the bore (${fmtZ(METRO_ST.bore.top + METRO_ST.bore.od, 2)} ${uLbl()}): twin tubes could bore here (proposed, not applied)`);
-  V._types = { g: S.ground, ms: MS, chr: CHR, L: S.L, step, t: P.map((p) => p.t), z: P.map((p) => p.z), flags };
+  V._types = { g: S.ground, ms: MS, chr: CHR, plat: ST_PLAT, L: S.L, step, t: P.map((p) => p.t), z: P.map((p) => p.z), flags, approaches };
   return V._types;
 }
 function autoType(c, z) {
@@ -2036,6 +2072,7 @@ async function connect() {
   // the shared Metro structure record (hub): live
   db.doc('params/metro_structure').onSnapshot((d) => { if (d.exists) { applyMS(d.data()); if (S.data) changed(false); } }, () => {});
   db.doc('chronology/segments').onSnapshot((d) => { if (d.exists) { CHR = d.data(); if (S.data) changed(false); } }, () => {});
+  db.doc('params/station_platforms').onSnapshot((d) => { if (d.exists) { ST_PLAT = d.data(); if (S.data) changed(false); } }, () => {});
   db.collection('alignments').onSnapshot((snap) => {
     snap.docs.forEach((d) => { S.saved[d.id] = d.data(); });
     refreshDefaultDocs();
@@ -2530,6 +2567,7 @@ window.__api = { selectLine, save, changed, railAt, S, withLine, alignFromDoc, d
     try { LINKS = await loadJSON('rer/links.json'); } catch {}
     if (!MS) try { applyMS(await loadJSON('metro_structure.json')); } catch {}   // the hub's record replaces it (connect)
     if (!CHR) try { CHR = await loadJSON('chronology.json'); } catch {}
+    if (!ST_PLAT) try { ST_PLAT = await loadJSON('station_platforms.json'); } catch {}
     const rer = await Promise.all(rIdx.map((l) => loadJSON(lineUrl(l.id)).catch(() => null)));
     rer.filter(Boolean).forEach((d) => { S.rerData[d.id] = d; S.cache[d.id] = d; });
     refreshDefaultDocs();

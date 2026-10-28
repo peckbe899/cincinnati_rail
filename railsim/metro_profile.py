@@ -199,6 +199,8 @@ class MetroProfile:
         if not rer and not p.settings.get("legacy_structures") and MS_JSON.exists():
             p.ms = json.loads(MS_JSON.read_text())
         p.chr = json.loads(CHR_JSON.read_text()) if p.ms and CHR_JSON.exists() else None
+        pk = CHR_JSON.parent / "station_platforms.json"   # island or side at each Metro station (the 3D build's, from the Deck)
+        p.platforms_kind = (json.loads(pk.read_text()).get(p.data["id"]) or {}) if p.ms and pk.exists() else {}
         if rer:
             cj = Path(canon_json) if canon_json else RER_CANON_JSON
             p.rer_canon = json.loads(cj.read_text()) if cj.exists() else {}
@@ -887,39 +889,88 @@ class MetroProfile:
             return out
 
         length = lambda a, b: P[b]["c"] - P[a]["c"] + step
-        for a0, b0 in runs(0, n - 1, lambda p: "cls" in p):
-            parts, s = [], a0
-            for i in range(a0 + 1, b0 + 2):
-                if i > b0 or P[i]["ph"] != P[s]["ph"]:
-                    parts.append((s, i - 1))
-                    s = i
-            for a, b in parts:
-                R = P[a]["R"]
-                for x, y in runs(a, b, lambda p: p["cls"] != "C"):
-                    ok = (x == a and y == b) or length(x, y) >= R["min_drive"]   # box to box: a drive at any length (Ben)
-                    for i in range(x, y + 1):
-                        P[i]["t"] = "bored" if ok else "cutcover"
-                    if not ok and any(p["cls"] == "B" for p in P[x:y + 1]):
-                        flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "short bored", "len": length(x, y)})
-                for i in range(a, b + 1):
-                    P[i].setdefault("t", "cutcover")
-                for x, y in runs(a, b, lambda p: p["t"] == "cutcover"):
-                    if x == a or y == b or length(x, y) >= R["min_drive"]:
-                        continue
-                    if all(p["cls"] != "C" for p in P[x:y + 1]):
+
+        def resolve(fl):
+            for p in P:
+                if "cls" in p:
+                    p.pop("t", None)
+            for a0, b0 in runs(0, n - 1, lambda p: "cls" in p):
+                parts, s = [], a0
+                for i in range(a0 + 1, b0 + 2):
+                    if i > b0 or P[i]["ph"] != P[s]["ph"]:
+                        parts.append((s, i - 1))
+                        s = i
+                for a, b in parts:
+                    R = P[a]["R"]
+                    for x, y in runs(a, b, lambda p: p["cls"] != "C"):
+                        ok = (x == a and y == b) or length(x, y) >= R["min_drive"]   # box to box: a drive at any length (Ben)
                         for i in range(x, y + 1):
-                            P[i]["t"] = "bored"
-                        continue
-                    flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "short cut and cover", "len": length(x, y)})
-                for x, y in runs(a, b, lambda p: p["t"] == "bored"):
-                    for i in range(x, y + 1):
-                        P[i]["t"] = "shield"
-                    for u, v in runs(x, y, lambda p: p["deep"]):
-                        touch = (u == x and x > 0 and P[x - 1].get("stn") and P[x - 1]["t"] == "deep") or \
-                                (v == y and y < n - 1 and P[y + 1].get("stn") and P[y + 1]["t"] == "deep")
-                        if touch or length(u, v) >= R["min_drive"]:
-                            for i in range(u, v + 1):
-                                P[i]["t"] = "deep"
+                            P[i]["t"] = "bored" if ok else "cutcover"
+                        if not ok and any(p["cls"] == "B" for p in P[x:y + 1]):
+                            fl and flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "short bored", "len": length(x, y)})
+                    for i in range(a, b + 1):
+                        P[i].setdefault("t", "cutcover")
+                    for x, y in runs(a, b, lambda p: p["t"] == "cutcover"):
+                        if x == a or y == b or length(x, y) >= R["min_drive"]:
+                            continue
+                        if all(p["cls"] != "C" for p in P[x:y + 1]):
+                            for i in range(x, y + 1):
+                                P[i]["t"] = "bored"
+                            continue
+                        fl and flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "short cut and cover", "len": length(x, y)})
+                    for x, y in runs(a, b, lambda p: p["t"] == "bored"):
+                        for i in range(x, y + 1):
+                            P[i]["t"] = "shield"
+                        for u, v in runs(x, y, lambda p: p["deep"]):
+                            touch = (u == x and x > 0 and P[x - 1].get("stn") and P[x - 1]["t"] == "deep") or \
+                                    (v == y and y < n - 1 and P[y + 1].get("stn") and P[y + 1]["t"] == "deep")
+                            if touch or length(u, v) >= R["min_drive"]:
+                                for i in range(u, v + 1):
+                                    P[i]["t"] = "deep"
+
+        resolve(False)
+        # station approaches (Ben, 28 October): a cut-and-cover station meeting bored tubes keeps its box through the
+        # approach, max(approach_m, sqrt(4 x min_radius x shift)); a box meeting tubes away from a station likewise
+        ms = self.ms
+        tube_sp = lambda c: ms["tubes"].get((ms["phases"].get(self._phase_at(c)) or ms["phases"]["later"])["tube"], ms["box"])["spacing"]
+        appr_len = lambda sh: max(float(ms.get("approach_m") or 40), math.sqrt(4 * float(ms.get("min_radius") or 150) * abs(sh)))
+        is_bored = lambda p: p is not None and p.get("t") in ("shield", "deep") and "cls" in p
+        idx = lambda c: max(0, min(n - 1, int(round(c / step))))
+        approaches = []
+
+        def fix(i0, d, lm, info):
+            k, i = 0, i0
+            while 0 <= i < n and "cls" in P[i] and (k == 0 or abs(P[i - d]["c"] - info["c"]) < lm - 1e-6):
+                P[i].pop("cls")
+                P[i].update(t="cutcover", stn=True, appr=True)
+                i += d
+                k += 1
+            if k:   # from the platform end (or the box end) to the last sample boxed
+                approaches.append(dict(info, len=round(abs(P[i - d]["c"] - info["c"]), 2)))
+        plats = getattr(self, "platforms_kind", None) or {}
+        half = self.settings["platform"] / 2
+        for s in self.stations:
+            ic = idx(s["c"])
+            if P[ic].get("t") != "cutcover" or not P[ic].get("stn"):
+                continue
+            kind = plats.get(s["name"]) or "side"
+            sp_s = ms["island_box"]["spacing"] if kind == "island" else ms["box"]["spacing"]
+            for d in (-1, 1):
+                i0 = idx(s["c"] + d * (half + step))
+                if not is_bored(P[i0]):
+                    continue
+                sh = (tube_sp(P[i0]["c"]) - sp_s) / 2
+                if abs(sh) >= 0.01:
+                    fix(i0, d, appr_len(sh), {"station": s["name"], "kind": kind, "side": d, "shift": sh, "c": s["c"] + d * half})
+        for x, y in runs(0, n - 1, is_bored):
+            for i, d in ((x, 1), (y, -1)):
+                nb = P[i - d] if 0 <= i - d < n else None
+                if not nb or nb.get("t") != "cutcover" or nb.get("stn"):
+                    continue
+                sh = (tube_sp(P[i]["c"]) - ms["box"]["spacing"]) / 2
+                if abs(sh) >= 0.01:
+                    fix(i, d, appr_len(sh), {"station": None, "kind": "box", "side": d, "shift": sh, "c": P[i]["c"]})
+        resolve(True)
         # twin tubes or one bore (proposed, flagged only): twin tubes under a street narrower than their footprint; Phase 2
         # cut and cover deep enough for type A twin tubes but not the bore
         ms = self.ms
@@ -939,7 +990,7 @@ class MetroProfile:
             for x, y in runs(0, n - 1, f):
                 if length(x, y) >= 50:
                     flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": kind, "len": length(x, y), "info": True})
-        self._types = {"key": key, "step": step, "t": [p["t"] for p in P], "z": [p["z"] for p in P], "flags": flags}
+        self._types = {"key": key, "step": step, "t": [p["t"] for p in P], "z": [p["z"] for p in P], "flags": flags, "approaches": approaches}
         return self._types
 
     def auto_type(self, c: float, z: float) -> str:

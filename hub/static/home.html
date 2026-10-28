@@ -112,7 +112,7 @@ const MSF = [['Type A tube, inside', 'tubes.A.inside'], ['Type A tube, outside',
   ['Box, track centres', 'box.spacing'], ['Box, inside width', 'box.inside'], ['Box, rail to roof underside', 'box.roof_underside'], ['Box, below the rail (outside)', 'box.below'], ['Box, rail to roof top', 'box.top'],
   ['Box columns, size', 'box.column_size'], ['Box columns, spacing', 'box.column_every'],
   ['Island box, track centres', 'island_box.spacing'], ['Island width', 'island_box.island'], ['Island edge from the track centre', 'island_box.edge'], ['Platform over the rail', 'island_box.platform_height'], ['Island box, inside width', 'island_box.inside'], ['Island box, rail to roof underside', 'island_box.roof_underside'],
-  ['Approach length (tubes easing to the island)', 'approach_m'], ['Clear height in the open under structures', 'open_clear_height'],
+  ['Approach length, at least (station approaches, box to tube changes)', 'approach_m'], ['Minimum radius (approach curves; drawing value)', 'min_radius'], ['Clear height in the open under structures', 'open_clear_height'],
   ['Grade limit (‰)', 'grades.limit'], ['Straight underground: warning up to (‰)', 'grades.straight_underground_max'], ['Straight: train-averaged radius at least', 'grades.straight_radius']];
 const getP = (o, p) => p.split('.').reduce((a, k) => (a == null ? a : a[k]), o);
 const setP = (o, p, v) => { const ks = p.split('.'); let a = o; for (const k of ks.slice(0, -1)) a = a[k] = a[k] || {}; a[ks[ks.length - 1]] = v; };

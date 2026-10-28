@@ -580,7 +580,8 @@ def test_north_viaduct_street_rule():
 def test_tunnel_methods_by_era():
     """Metro tunnels by era (Ben, 28 October): shield only with a tube diameter of cover; a bored stretch is a whole drive
     from box to box (or portal, deep station) at any length, else at least its phase's minimum drive; between the
-    shield minimum and the cut-and-cover limit, cut and cover unless it makes a drive."""
+    shield minimum and the cut-and-cover limit, cut and cover unless it makes a drive. Station approaches (Ben, 28 October:
+    the box carries on until the tracks reach the tubes' spacing) are switch points."""
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
@@ -589,6 +590,10 @@ def test_tunnel_methods_by_era():
         T = mp.stretch_types()
         step, ts = T["step"], T["t"]
         tun = [mp._point_type(min(k * step, mp.length), T["z"][k]) for k in range(len(ts))]
+        for a in T["approaches"]:   # station approach boxes are anchors (switch points), like the stations
+            for k in range(len(ts)):
+                if min(a["c"], a["c"] + a["side"] * a["len"]) - 1e-6 <= k * step <= max(a["c"], a["c"] + a["side"] * a["len"]) + 1e-6:
+                    tun[k] = {"t": "cutcover"}
         bored = lambda k: "cls" in tun[k] and ts[k] in ("shield", "deep")
         k = 0
         while k < len(ts):
@@ -607,6 +612,25 @@ def test_tunnel_methods_by_era():
                 assert float(mp.ground_at(c) - mp.rail_at(c)) >= sc["top"] + sc["od"] - 1e-6, (lid, c)
             k = j + 1
     assert mp.phase_rules(1000.0) == {"cc_max": 16.5, "min_drive": 300.0, "deep_from": 18.29}   # Line 10, Phase 2
+
+
+def test_station_approach_boxes():
+    """A cut-and-cover station meeting type A tubes keeps its box through the approach (Ben, 28 October): side
+    platforms spread 2.42 m a track, islands close 1.08 m; the approach is max(approach_m, sqrt(4 x min radius x shift))."""
+    import math
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent / "data/profile"
+    mp = MetroProfile.load(root / "lines/Line_3.json", None, root / "settings.json")
+    T = mp.stretch_types()
+    ap = [a for a in T["approaches"] if a["station"]]
+    assert ap
+    for a in ap:
+        want = max(mp.ms["approach_m"], math.sqrt(4 * mp.ms["min_radius"] * abs(a["shift"])))
+        assert a["len"] == pytest.approx(want, abs=T["step"] + 1e-6) or a["len"] < want   # (cut short only by a neighbour)
+        assert abs(a["shift"]) == pytest.approx(2.42 if a["kind"] == "side" else 1.08, abs=0.01)
+        c = a["c"] + a["side"] * a["len"] / 2
+        assert mp.type_at(c) == "cutcover"
 
 
 def test_locked_stretch_holds():

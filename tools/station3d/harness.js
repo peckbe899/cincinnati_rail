@@ -75,7 +75,7 @@ async function open(browser, root, docs, url, html = (h) => h) {
     result.profiles[j.id] = await page.evaluate((j) => {
       const P = window.railProfile, samples = [];
       const step = j.step || 2; for (let c = j.c0; c <= j.c1 + 1e-9; c += step) samples.push([+c.toFixed(1), +P.railAt(c).toFixed(3), P.typeAt(c)]);
-      return { saved: P.saved(), align: P.align(), platforms: P.platforms(), samples };
+      return { saved: P.saved(), align: P.align(), platforms: P.platforms(), approaches: P.approaches ? P.approaches() : [], samples };
     }, j);
     await ctx.close();
   }

@@ -188,6 +188,11 @@ class Pipeline:
         # each viaduct a selection of its own on the Deck (its RER A viaducts from the Profiles' elevated stretches)
         self.sh(log, [PY, os.path.join(ROOT, 'tools', 'viaduct_parts.py'), os.path.join(WORK, 'harness_out.json')])
         self.store.emit({'t': 'files', 'site': 'deck'})
+        sp = snap.get('station_platforms')   # island or side at each Metro station (the Deck's), for the Profiles' approaches
+        cur = self.store.get('params/station_platforms')
+        if sp and (cur is None or cur['data'] != sp):
+            self.store.set('params/station_platforms', sp, by='pipeline')
+            json.dump(sp, open(os.path.join(ROOT, 'data', 'profile', 'station_platforms.json'), 'w'), indent=0, ensure_ascii=False)
         tp = snap.get('tube_points')   # the bored tube along each Metro line, for the Deck's track spacing
         cur = self.store.get('params/tube_points')
         if tp and (cur is None or cur['data'] != tp):

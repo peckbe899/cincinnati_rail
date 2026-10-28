@@ -97,3 +97,10 @@ The Deck snapshot in `data/deck` is version 1793028977-4bc6 (layout 2461). When 
 - The snapshot's `approach` lists side platforms on bored stretches, the boxes islands on the bore need, and approaches that do not fit; `station_types` gives the Profiles type at each Metro station (the Deck's island default).
 - Tunnel equipment is drawn by the page within about 500 m of the view's centre when zoomed in, on five switches under Show, at the positions of Ben's box and tube cutaways (claude/Metro_Structure_Gauge_Handoff.md section 3.5).
 
+
+## Track geometry in tunnels and station approaches (Ben, 2026-10-28)
+
+- Each Metro track is offset from the line's centreline by half its construction's spacing (box and bore 3.90 m, type A 8.74 m, type C 9.14 m, islands 10.90 m). Bored tubes always run at their spacing; platforms are straight.
+- The approach belongs to the station: a cut-and-cover station meeting bored tubes keeps its box (the Rail Profiles type) until the tracks reach the tubes' spacing; a box meeting tubes away from a station likewise; a bored station's approach is bored. Length max(approach_m, sqrt(4 x min_radius x shift per track)); the record's `min_radius` is a drawing value (150 m) until Ben sets it.
+- The sync draws each change as one S-ease (two equal reverse curves) over the editor's approach (`approaches` in the harness output); other changes (portals, phase changes) hold the wider spacing and ease into the narrower side.
+- `track_geometry` in the snapshot and the issues: approaches under the minimum radius (the S-ease's reverse curves on the centreline's curvature, or the single arc each track takes where the approach runs into a curve), side-platform stations meeting tubes, the boxes made longer, and approach boxes not inside the street (box outside = track centres + 4.0 m; streets from the Deck, `context/lines.json`).
