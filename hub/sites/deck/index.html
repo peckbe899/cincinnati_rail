@@ -631,10 +631,15 @@ function applyMSR(r) {
 // the tube at a point: the 3D build's points along each line (hub params/tube_points: the phase of each stretch, from the
 // Chronology or the structure record), else the line's phase
 let TUBE_PTS = null;
-function tubeAt(lid, x, y) {
+const TP_GRID = new Map();   // line -> grid of the published points, 50 m cells
+function tpNear(lid, x, y) {
   const pts = TUBE_PTS && TUBE_PTS[lid]; if (!pts || x == null) return null;
-  let best = 1e4, t = null; for (const q of pts) { const d = (q[0] - x) ** 2 + (q[1] - y) ** 2; if (d < best) { best = d; t = q[2]; } } return t;
+  let g = TP_GRID.get(lid); if (!g || g.src !== pts) { g = { src: pts, m: new Map() }; for (const q of pts) { const k = Math.floor(q[0] / 50) + ',' + Math.floor(q[1] / 50); if (!g.m.has(k)) g.m.set(k, []); g.m.get(k).push(q); } TP_GRID.set(lid, g); }
+  const cx = Math.floor(x / 50), cy = Math.floor(y / 50); let best = 1600, b = null;
+  for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) for (const q of g.m.get((cx + i) + ',' + (cy + j)) || []) { const d = (q[0] - x) ** 2 + (q[1] - y) ** 2; if (d < best) { best = d; b = q; } }
+  return b;
 }
+function tubeAt(lid, x, y) { const q = tpNear(lid, x, y); return q ? q[2] : null; }
 const tubeH = (p, x, y) => { const lid = String(p.name || '').replace(' ', '_'); const t = tubeAt(lid, x, y) || ((MSR.phases[(MSR.line_phase || {})[lid]] || MSR.phases.later) || {}).tube || 'A'; return MSR.tubes[t].spacing / 2; };
 const boxH = () => MSR.box.spacing / 2;
 const boredAt = (p, x, y) => { if (!p || !p.hs) return p && p.era === 'twin'; const g = hsGrid(p), cx = Math.floor(x / 25), cy = Math.floor(y / 25); let best = 3600, b = false;
@@ -646,6 +651,10 @@ function hAt(p, x, y, dflt) {
   for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) { const a = g.get((cx + i) + ',' + (cy + j)); if (!a) continue; for (const q of a) { const d = (q[0] - x) ** 2 + (q[1] - y) ** 2; if (d < best) { best = d; h = p.sys === 'metro' ? (q[2] ? tubeH(p, x, y) : boxH()) : q[2] ? H_TUBE : H_BOX; } } }
   return h;
 }
+// Metro: each track's offset as the 3D build has it (Ben, 28 October: tubes at their spacing, every change in the station's
+// approach or inside the box, islands), from the published points; else by construction, eased over the taper length
+const liveMetroH = (p, c) => { if (p.sys !== 'metro' || !TUBE_PTS) return null; const lid = String(p.name || '').replace(' ', '_'); if (!TUBE_PTS[lid] || TUBE_PTS[lid][0].length < 4) return null;
+  const out = c.map(q => { const r = tpNear(lid, q[0], q[1]); return r ? r[3] : null; }); return out.filter(v => v != null).length > c.length * 0.5 ? out.map((v, i) => v ?? out.find(w => w != null)) : null; };
 function baseH(p, c) {   // half spacing along a line, by construction, eased over the taper length
   const d0 = p.sys === 'metro' ? (p.era === 'twin' ? tubeH(p) : boxH()) : H0(p.sys, p.era); if (!p.hs) return c.map(() => d0);
   const raw = c.map(q => hAt(p, q[0], q[1], d0)), n = Math.max(1, Math.round(TAPER / 2)), out = new Array(c.length);
@@ -739,8 +748,9 @@ function resampleLine(c, step) { const out = [c[0]]; for (let i = 1; i < c.lengt
 function projectOn(c, cs, q) { let best = 1e18, bs = 0, bo = 0; for (let i = 1; i < c.length; i++) { const a = c[i - 1], b = c[i], dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy || 1e-9; let t = ((q[0] - a[0]) * dx + (q[1] - a[1]) * dy) / L2; t = Math.max(0, Math.min(1, t)); const px = a[0] + t * dx, py = a[1] + t * dy, d = Math.hypot(q[0] - px, q[1] - py); if (d < best) { best = d; bs = cs[i - 1] + t * Math.sqrt(L2); bo = Math.sign(dx * (q[1] - a[1]) - dy * (q[0] - a[0])) * d; } } return [bs, bo, best]; }
 function trackPair(f) {
   const p = f.properties, g = geomOf(f); if (g.pair && g.pver === S.ver) return g.pair;
-  const edge = EDGE(p.sys), c = g.c, cs = g.cs, n = c.length, hb = baseH(p, c), hL = hb.slice(), hR = hb.slice(), W = new Array(n).fill(0);
-  for (const st of S.sf) { if (stDeleted(st)) continue; for (const sp of st.properties.stops) { if (sp.pid !== p.id) continue;
+  const live = liveMetroH(p, g.c);
+  const edge = EDGE(p.sys), c = g.c, cs = g.cs, n = c.length, hb = live || baseH(p, c), hL = hb.slice(), hR = hb.slice(), W = new Array(n).fill(0);
+  if (!live) for (const st of S.sf) { if (stDeleted(st)) continue; for (const sp of st.properties.stops) { if (sp.pid !== p.id) continue;
     const [, sc] = stopFrame(sp), s0 = sc - sp.L / 2, s1 = sc + sp.L / 2, lat = sp.lat0, b = stopBands(sp)[0];
     const qs = frameAt(c, cs, sc), hs0 = p.hs ? hAt(p, qs[0], qs[1], H0(p.sys, p.era)) : H0(p.sys, p.era);
     const tL = stopType(sp) === 'island' ? b[1] + edge : lat + hs0, tR = stopType(sp) === 'island' ? edge - b[0] : hs0 - lat;
@@ -2743,7 +2753,7 @@ async function boot() {
   try { S.nw = await fetch('norwood.json').then(r => r.json()); for (const f of S.nw.features) f._bb = structBB(f.geometry); } catch (e) { S.nw = null; }
   try { S.airport = await fetch('airport.json').then(r => r.json()); for (const f of S.airport.features) f._bb = featBB(f); } catch (e) { S.airport = null; }
   try { const we = await fetch('basin.json').then(r => r.json()); S.we = we; for (const f of we.features) S.deck.features.push(f); } catch (e) { S.we = null; }
-  indexLayers(); if (/[?&]debug\b/.test(location.search)) { window.__S = S; window.__kml = kml; window.__fn = { jOf, ov, partsJ, uunion, applyOps, pushOp, joInfo, streetRuns, mergeStreets, touching, dupScan, streetRun, stName, stLabel, deleteStreets, select, feats, streetCoords, lenOf, sameCourse }; }
+  indexLayers(); if (/[?&]debug\b/.test(location.search)) { window.__S = S; window.__kml = kml; window.__fn = { fit, redraw, jOf, ov, partsJ, uunion, applyOps, pushOp, joInfo, streetRuns, mergeStreets, touching, dupScan, streetRun, stName, stLabel, deleteStreets, select, feats, streetCoords, lenOf, sameCourse }; }
   fetch('plots.json').then(r => r.json()).then(D => { S.plots0 = decodePlots(D); setPlotNote(fmt(S.plots0.length) + ' plots loaded'); schedulePlots(0); }).catch(e => { console.error(e); setPlotNote('Plots could not be loaded'); });
   try { S.t12 = await fetch('tiles12/index.json').then(r => r.json()); } catch (e) { S.t12 = null; }
   try { S.t22 = await fetch('tiles_22/index.json').then(r => r.json()); S.t22OvMeta = await fetch('tiles_22/overview.json').then(r => r.json()); } catch (e) { S.t22 = null; }

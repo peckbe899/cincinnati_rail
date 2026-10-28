@@ -996,17 +996,32 @@ def main():
                 out_t[st['name']] = h['samples'][int(np.argmin(np.abs(sc - c)))][2]
         station_types[lid] = out_t
 
-    # the bored tube along each Metro line every 50 m (Deck UTM, the tube of the stretch's phase, from the Chronology or the
-    # structure record): the Deck draws its tracks at that tube's spacing (written to params/tube_points by the pipeline)
+    # along each Metro line every 10 m (Deck UTM): the tube of the stretch's phase (the Chronology, else the structure record)
+    # and each track's offset from the centreline; the Deck draws its Metro tracks from them (params/tube_points)
     tube_points = {}
     if MS:
         for lid, d in lines.items():
             if d['sys'] == 'rer':
                 continue
             p = np.array(d['path'], float)
-            cs = np.arange(0.0, float(p[-1, 0]), 50.0)
+            # each track's offset along the whole line, as the 3D tracks have it (approaches, islands, tubes at spacing):
+            # the Deck draws its Metro tracks from it (Ben, 28 October)
+            h_ = H['profiles'].get(lid) or {}
+            smp = h_.get('samples') or []
+            if not smp:
+                continue
+            cs2 = np.array([q[0] for q in smp], float)
+            base2 = np.array([half_base(lid, 'metro', q[2], q[0]) for q in smp])
+            so = (h_.get('align') or {}).get('so') or []
+            hp = float(MS.get('platform_half') or 121.92 / 2)
+            sts = [dict(name=s_['name'], c=s_['c'] + (so[i] if i < len(so) and so[i] else 0)) for i, s_ in enumerate(d['stations'])]
+            for s_ in sts:
+                s_['from_c'], s_['to_c'] = s_['c'] - hp, s_['c'] + hp
+            hh = metro_spacing(lid, {'stations': sts}, cs2, base2, MS['island_box']['spacing'] / 2)
+            cs = np.arange(0.0, float(p[-1, 0]), 10.0)
             E, N = ll_to_utm(np.interp(cs, p[:, 0], p[:, 1]), np.interp(cs, p[:, 0], p[:, 2]))
-            tube_points[lid] = [[round(float(e), 1), round(float(n), 1), metro_tube(lid, float(c))] for e, n, c in zip(E, N, cs)]
+            hv = np.interp(cs, cs2, hh)
+            tube_points[lid] = [[round(float(e), 1), round(float(n), 1), metro_tube(lid, float(c)), round(float(v), 2)] for e, n, c, v in zip(E, N, cs, hv)]
 
     # ---- station approaches (Ben, 28 October): islands by default on bored stretches; tubes ease out to the island
     # before it; tracks closer than the tube spacing only inside a box. Reported for Ben: side platforms on bored
