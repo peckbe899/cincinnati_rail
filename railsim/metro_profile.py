@@ -791,7 +791,8 @@ class MetroProfile:
         d = g - z
         if d < self.settings["coverBelow"]:
             return "atgrade"
-        if not self.is_rer and d < self.settings.get("trough_override", METRO_ST["box"]["top"]):  # Metro portal ramps: open trough
+        # portal ramps: rail less than a box height down is an open trough (Metro 4.6 m; RER the envelope, Ben 2026-10-28)
+        if d < (float(self.settings["envelope"]) if self.is_rer else self.settings.get("trough_override", METRO_ST["box"]["top"])):
             return "trough"
         sec = self.canon_at(c)
         m = sec["m"] if sec else ("deep" if d >= self.settings["deepBelow"] else "shallow")

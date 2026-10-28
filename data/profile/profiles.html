@@ -783,8 +783,9 @@ function autoType(c, z) {
   if (z - g >= settings.elevAbove) return 'elevated';
   const d = g - z;
   if (d < settings.coverBelow) return 'atgrade';
-  // Metro portal ramps (Ben): rail less than a box height down is an open trough
-  if (!isRer() && d < METRO_ST.box.top) return 'trough';
+  // portal ramps (Ben): rail less than a box height down is an open trough, so the box only starts where its roof is
+  // under the ground (Metro 4.6 m; RER the 25 kV envelope, 6.6 m: Ben, 28 October)
+  if (d < (isRer() ? settings.envelope : METRO_ST.box.top)) return 'trough';
   const sec = canonAt(c);
   const m = sec ? sec.m : (d >= settings.deepBelow ? 'deep' : 'shallow');
   if (m === 'canal') return 'cutcover';
