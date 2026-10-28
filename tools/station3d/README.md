@@ -2,7 +2,7 @@
 
 The 3D station page and the sync that feeds it, as set out in `claude/Station_3D_Brief.md`. Phases 1 (sync) and 2 (the page) are built for the whole region the Mill Creek Deck draws lines over; station design (phase 3) and the checks (phase 4) are not started.
 
-- Page: https://claude.ai/artifact/MxbB1bnkqwZYxCbbEsHQZA (source `page/index.html`).
+- Page: `page/index.html`, served by the hub at `/3d/` (the old claude.ai artifact is retired).
 - Its database:
   - `snapshots/region` (the snapshot's summary, rules, issues and the list of its parts) and `snapshots/region/parts/<key>-<n>` (lines, tracks, unlevelled, stations, platforms, streets, blocks, ground), written by the sync;
   - `views/*` (named views, shared);
@@ -40,6 +40,8 @@ A page can read only its own database, so the Rail Profiles editor and the Mill 
 - `cache/`: downloads and outputs, not committed.
 
 ## Running a sync (a Claude session)
+
+RETIRED: the claude.ai artifacts are no longer used (see `CLAUDE.md`). The hub runs the sync (`hub/pipeline.py`, job 3d); the steps below are history. Do not fetch from or write to any artifact.
 
 1. Fetch the editors' published files with the Artifact tool (`action: read`, `paths`, `out_dir` = `tools/station3d/cache/profiles` and `.../deck`). The Profiles page needs `index.html` and every `lines/`, `rer/` and `network.json` file; the Deck needs `index.html` and its JSON files (tiles are not needed).
 2. Fetch the saved records with ArtifactData (`out_dir` = `tools/station3d/cache/db/profiles_db` for collection `alignments` and `config`, `.../deck_db` for `deck/layout`).
