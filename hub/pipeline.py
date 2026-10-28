@@ -181,6 +181,18 @@ class Pipeline:
         self.store.set('snapshots/region', meta, by='pipeline')   # last: open 3D views redraw
         snap = json.load(open(out))
         self.store.set('params/registry', registry(snap, self.store), by='pipeline')
+        # the Profiles structure type at each Metro station, for the Deck's island default; a change redraws the Deck's
+        # platforms, so the 3D map is built once more with them
+        st = snap.get('station_types')
+        cur = self.store.get('params/station_types')
+        if st and (cur is None or cur['data'] != st):
+            self.store.set('params/station_types', st, by='pipeline')
+            if not getattr(self, '_types_rerun', False):
+                self._types_rerun = True
+                self.schedule('3d', 'station types changed: the Deck redraws its platforms', delay=0)
+                log('Station types changed: the 3D map is built once more')
+                return
+        self._types_rerun = False
         log(f"Snapshot: {len(meta['parts'])} parts, {len(snap['issues'])} issues")
 
 
@@ -241,8 +253,14 @@ def registry(snap, store):
         row(f'{lab} vertical curve radius', 'm', profiles=prof[k].get('vcRadius'))
         row(f'{lab} box wall outside the outer track', 'm', station3d=(snap.get('box_margin') or {}).get(k))
         row(f'{lab} platform top above rail', 'm', station3d=(snap.get('platform_above_rail') or {}).get(k))
-    row('Twin tube spacing (Deck)', 'm', deck=dr.get('H_TUBE'))
-    row('Box spacing (Deck)', 'm', deck=dr.get('H_BOX'))
+    ms = (store.get('params/metro_structure') or {}).get('data') or {}
+    if ms:   # one record read by all three views (Metro structure, hub page): the same value in each
+        for name, key in (('type A tubes', 'A'), ('type C tubes', 'C'), ('double-track bore', 'bore')):
+            v = ms['tubes'][key]['spacing']
+            row(f'Metro track centres, {name}', 'm', note='the structure record', profiles=v, deck=v, station3d=v)
+        row('Metro track centres, box', 'm', note='the structure record', profiles=ms['box']['spacing'], deck=ms['box']['spacing'], station3d=ms['box']['spacing'])
+        row('Metro track centres at an island', 'm', note='the structure record', deck=ms['island_box']['spacing'], station3d=ms['island_box']['spacing'])
+        row('Metro clear height under structures in the open', 'm', note='the structure record', profiles=ms['open_clear_height'])
     row('Platform slide limit (Deck)', 'm', deck=dr.get('SLIDE_M'))
     tie = [i for i in snap.get('issues', []) if "off the Deck's pieces" in i or "off their Deck platform" in i]
     return {'rows': rows, 'tie_issues': tie, 'synced_at': snap.get('synced_at'),

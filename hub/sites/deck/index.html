@@ -611,15 +611,40 @@ const H0 = (sys, era) => sys === 'rer' || sys === 'cvx' ? 2.25 : era === 'twin' 
 // elevated one double-track structure (3.9 m). p.hs holds samples [x, y, 1 = bored] every 20 m along the generated line; an edited line takes the
 // nearest sample within 60 m (else the era default) and the change is eased over 40 m.
 const H_TUBE = 4.0, H_BOX = 1.95;
+// Metro structure gauge (Ben, 27-28 October; claude/Metro_Structure_Gauge_Handoff.md): the shared record (hub: params/metro_structure)
+// sets the bored tunnel of each line by its building phase (type A twin tubes 8.74 m apart, the 9.0 m double-track bore at 3.90 m,
+// type C 9.14 m), the box (3.90 m) and the island (8.0 m, edges 1.45 m: 10.90 m centres). Tracks only come closer than the tube
+// spacing inside a box, so a change of spacing between a bored stretch and a box is eased inside the box. Every Metro line is drawn
+// from these settings, and an island is the default where the platform centre is on a bored stretch (Ben's per-station type wins).
+let ST_TYPES = null;   // {Metro line id: {station: Profiles type}} from the hub
+let MSR = { box: { spacing: 3.9 }, island_box: { island: 8.0, edge: 1.45 }, approach_m: 40,
+  tubes: { A: { spacing: 8.74 }, C: { spacing: 9.14 }, bore: { spacing: 3.9 } },
+  phases: { 1: { tube: 'A' }, 2: { tube: 'bore' }, 3: { tube: 'C' }, later: { tube: 'C' } },
+  line_phase: { Line_1: '1', Line_2: '1', Line_2b: '1', Line_3: '1', Line_4: '1', Line_5: '1', Line_6: '1', Line_7: '1', Line_8: '2', Line_9: '2', Line_10: '2', Line_11: '2', Line_12: '2', Line_13: '3', Line_14: '3' } };
+function applyMSR(r) {
+  if (!r || !r.tubes) return; MSR = r;
+  PW.metro.island = r.island_box.island;
+  for (const f of S.tf || []) { delete f.properties._hsg; }
+  S.ver++; if (S.live) S.live = null;
+}
+const tubeH = p => { const t = ((MSR.phases[(MSR.line_phase || {})[String(p.name || '').replace(' ', '_')]] || MSR.phases.later) || {}).tube || 'A'; return MSR.tubes[t].spacing / 2; };
+const boxH = () => MSR.box.spacing / 2;
+const boredAt = (p, x, y) => { if (!p || !p.hs) return p && p.era === 'twin'; const g = hsGrid(p), cx = Math.floor(x / 25), cy = Math.floor(y / 25); let best = 3600, b = false;
+  for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) { const a = g.get((cx + i) + ',' + (cy + j)); if (!a) continue; for (const q of a) { const d = (q[0] - x) ** 2 + (q[1] - y) ** 2; if (d < best) { best = d; b = !!q[2]; } } }
+  return b; };
 function hsGrid(p) { if (p._hsg) return p._hsg; const g = new Map(); for (const q of (p.hs || [])) { const k = Math.floor(q[0] / 25) + ',' + Math.floor(q[1] / 25); if (!g.has(k)) g.set(k, []); g.get(k).push(q); } p._hsg = g; return g; }
 function hAt(p, x, y, dflt) {
   if (!p || !p.hs) return dflt; const g = hsGrid(p), cx = Math.floor(x / 25), cy = Math.floor(y / 25); let best = 3600, h = dflt;
-  for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) { const a = g.get((cx + i) + ',' + (cy + j)); if (!a) continue; for (const q of a) { const d = (q[0] - x) ** 2 + (q[1] - y) ** 2; if (d < best) { best = d; h = q[2] ? H_TUBE : H_BOX; } } }
+  for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) { const a = g.get((cx + i) + ',' + (cy + j)); if (!a) continue; for (const q of a) { const d = (q[0] - x) ** 2 + (q[1] - y) ** 2; if (d < best) { best = d; h = p.sys === 'metro' ? (q[2] ? tubeH(p) : boxH()) : q[2] ? H_TUBE : H_BOX; } } }
   return h;
 }
 function baseH(p, c) {   // half spacing along a line, by construction, eased over the taper length
-  const d0 = H0(p.sys, p.era); if (!p.hs) return c.map(() => d0);
+  const d0 = p.sys === 'metro' ? (p.era === 'twin' ? tubeH(p) : boxH()) : H0(p.sys, p.era); if (!p.hs) return c.map(() => d0);
   const raw = c.map(q => hAt(p, q[0], q[1], d0)), n = Math.max(1, Math.round(TAPER / 2)), out = new Array(c.length);
+  if (p.sys === 'metro') {   // never closer than the tube spacing in a tube: the wider spacing holds and eases down over the taper on the narrow side
+    for (let i = 0; i < c.length; i++) { let h = raw[i]; for (let j = Math.max(0, i - n); j <= Math.min(c.length - 1, i + n); j++) if (raw[j] > h) h = Math.max(h, raw[j] - (raw[j] - raw[i]) * Math.abs(j - i) / n); out[i] = h; }
+    return out;
+  }
   for (let i = 0; i < c.length; i++) { let s = 0, k = 0; for (let j = i - (n >> 1); j <= i + (n >> 1); j++) { s += raw[Math.max(0, Math.min(c.length - 1, j))]; k++; } out[i] = s / k; }
   return out;
 }
@@ -659,13 +684,24 @@ function buildStations() {
 }
 const stDeleted = st => !!(S.edits.stations[st.properties.id] && S.edits.stations[st.properties.id].del);
 function stopEdit(stop) { const e = S.edits.stations[stop.key]; return (e && e.s && stop.pid && e.s[stop.pid]) || null; }
-function stopType(stop) { const e = stopEdit(stop); return (e && e.t) || stop.type0; }
+function stopType(stop) { const e = stopEdit(stop); return (e && e.t) || defaultType(stop); }
+// the default: an island where a Metro platform's centre is on a bored stretch (Ben, 28 October), else as generated
+function defaultType(stop) {
+  if (stop.sys !== 'metro' || !stop.pid) return stop.type0;
+  if (stop._dtv === S.ver) return stop._dt;
+  const lf = S.tfById.get(stop.pid), g = geomOf(lf), sp = projectOn(g.c, g.cs, stop.st.geometry.coordinates)[0], e = stopEdit(stop);
+  const q = frameAt(g.c, g.cs, sp + (e && typeof e.o === 'number' ? e.o : stop.o0));
+  // shallow shield only: the Profiles type at the station (hub params/station_types); with no types, the Deck's bored flag
+  const ty = ((ST_TYPES || {})[String(lf.properties.name || '').replace(' ', '_')] || {})[stop.st.properties.name];
+  stop._dt = (ST_TYPES ? ty === 'shield' : boredAt(lf.properties, q[0], q[1])) ? 'island' : stop.type0; stop._dtv = S.ver; return stop._dt;
+}
 const SLIDE_M = 150;   // a platform may slide up to 150 m either way from its station point (Ben, 24 October; was half a platform)
 const slideMax = stop => Math.max(SLIDE_M, stop.L / 2);
 function stopOff(stop) { const e = stopEdit(stop); return e && typeof e.o === 'number' ? Math.max(-slideMax(stop), Math.min(slideMax(stop), e.o)) : stop.o0; }
 function liveLines() {   // lines drawn from settings: edited, or with an edited or deleted station
   if (S.live && S.live.ver === S.ver) return S.live.set;
   const set = new Set(Object.keys(S.edits.transit));
+  for (const f of S.tf || []) if (f.properties.sys === 'metro') set.add(f.properties.id);   // every Metro line from the structure settings
   for (const st of S.sf) { const e = S.edits.stations[st.properties.id]; if (!e) continue; for (const sp of st.properties.stops) if (sp.pid && (e.del || (e.s && e.s[sp.pid]))) set.add(sp.pid); }
   S.live = { ver: S.ver, set }; return set;
 }
@@ -677,7 +713,7 @@ function stopFrame(stop) {   // [sp, sc, line geometry]: station point and platf
 function stopBands(stop) {   // sideways extents of the platforms, metres left of the line
   const t = stopType(stop), lat = stop.lat0, lf = stop.pid ? S.tfById.get(stop.pid) : null, e = EDGE(stop.sys);
   let h0 = H0(stop.sys, stop.era); if (lf && lf.properties.hs && stopLive(stop)) { const [, sc, g] = stopFrame(stop), q = frameAt(g.c, g.cs, sc); h0 = hAt(lf.properties, q[0], q[1], h0); }
-  if (t === 'island') { const w = stop.type0 === 'island' ? stop.w0 : PW[stop.sys].island; return [[lat - w / 2, lat + w / 2]]; }
+  if (t === 'island') { const w = stop.sys === 'metro' ? MSR.island_box.island : stop.type0 === 'island' ? stop.w0 : PW[stop.sys].island; return [[lat - w / 2, lat + w / 2]]; }
   const sw = PW[stop.sys].side; return [[lat + h0 + e, lat + h0 + e + sw], [lat - h0 - e - sw, lat - h0 - e]];
 }
 function stopRings(stop) {
@@ -2659,6 +2695,8 @@ async function connect() {
   const user = await window.claude.use('user'); const cw = user ? await user.can('data.write') : null;
   S.db = db; S.docRef = db.doc('deck/layout'); S.canWrite = cw !== false;
   setStatus(S.canWrite ? 'saved' : 'readonly', S.canWrite ? 'Saved' : 'Read only');
+  db.doc('params/metro_structure').onSnapshot(d => { if (d.exists) { applyMSR(d.data()); redraw(); } }, () => {});
+  db.doc('params/station_types').onSnapshot(d => { if (d.exists) { ST_TYPES = d.data(); S.ver++; S.live = null; redraw(); } }, () => {});
   S.docRef.onSnapshot(snap => {
     if (snap.metadata.hasPendingWrites || S.dirty || S.saving || S.drag) return;
     const d = snap.exists ? snap.data() : null;

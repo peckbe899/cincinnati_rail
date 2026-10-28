@@ -876,7 +876,15 @@ def main():
             base = np.array([half_base(lid, l['sys'], s_[4], s_[0]) for s_ in piece])
             w = max(1, int(round(taper / STEP / 2)))
             ker = np.ones(2 * w + 1) / (2 * w + 1)
-            h = np.convolve(np.pad(base, w, mode='edge'), ker, 'valid') if n > 1 else base
+            if l['sys'] != 'rer' and n > 1:   # Metro: never closer than the tube spacing in a tube; the change is eased inside the box
+                h = base.copy()
+                m = 2 * w
+                for i in range(n):
+                    j0, j1 = max(0, i - m), min(n, i + m + 1)
+                    d = np.abs(np.arange(j0, j1) - i) / m
+                    h[i] = max(h[i], float(np.max(base[j0:j1] - (base[j0:j1] - base[i]) * d)))
+            else:
+                h = np.convolve(np.pad(base, w, mode='edge'), ker, 'valid') if n > 1 else base
             for st in l['stations']:
                 if plat_type.get((lid, norm(st['name']))) != 'island':
                     continue
@@ -896,6 +904,65 @@ def main():
                 k = int(np.clip(np.searchsorted(cs, c), 0, len(cs) - 1))
                 return float(h[k]), (float(np.interp(c, cs, px)), float(np.interp(c, cs, py)), float(np.interp(c, cs, nx)), float(np.interp(c, cs, ny)))
         return None, None
+
+    # the Profiles structure type at every Metro station of each line (whole line, not only the region): the Deck takes
+    # an island by default only where it is shallow shield (written to the hub's params/station_types by the pipeline)
+    station_types = {}
+    for lid, d in lines.items():
+        if d['sys'] == 'rer':
+            continue
+        h = H['profiles'][lid]
+        sc = np.array([q[0] for q in h['samples']])
+        so = (h.get('align') or {}).get('so') or []
+        out_t = {}
+        for i, st in enumerate(d['stations']):
+            c = st['c'] + (so[i] if i < len(so) and so[i] else 0)
+            if len(sc):
+                out_t[st['name']] = h['samples'][int(np.argmin(np.abs(sc - c)))][2]
+        station_types[lid] = out_t
+
+    # ---- station approaches (Ben, 28 October): islands by default on bored stretches; tubes ease out to the island
+    # before it; tracks closer than the tube spacing only inside a box. Reported for Ben: side platforms on bored
+    # stretches, the boxes the double-track bore needs round its islands, and approaches that do not fit.
+    approach = {'side_bored': [], 'boxes': [], 'misfit': []}
+    if MS:
+        A = float(MS.get('approach_m') or 40.0)
+        for lid, l in L.items():
+            if l['sys'] == 'rer':
+                continue
+            sts = sorted(l['stations'], key=lambda s_: s_['from_c'])
+            ends = [(p[0][0], p[-1][0]) for p in l['S'] if p]
+            for i, st in enumerate(sts):
+                ty = plat_type.get((lid, norm(st['name'])))
+                bored = st['type'] in ('shield', 'deep')
+                tube = metro_tube(lid, st['c'])
+                if ty == 'side' and bored:
+                    approach['side_bored'].append({'line': l['name'], 'station': st['name'], 'c': st['c'], 'type': st['type'], 'tube': tube})
+                if ty != 'island':
+                    continue
+                a0, a1 = st['from_c'] - A, st['to_c'] + A
+                why = []
+                for o in sts[:i] + sts[i + 1:]:
+                    if o['to_c'] > a0 and o['from_c'] < a1:
+                        why.append(f"{o['name']}'s platform within {A:.0f} m")
+                terminal = any(st['from_c'] <= e0 + 5 or st['to_c'] >= e1 - 5 for e0, e1 in ends)
+                if not terminal and not any(e0 - 1 <= a0 and a1 <= e1 + 1 for e0, e1 in ends):
+                    why.append('the line leaves the region within the approach')
+                if tube == 'bore' and bored:
+                    approach['boxes'].append({'line': l['name'], 'station': st['name'], 'from_c': r1(a0), 'to_c': r1(a1), 'type': st['type']})
+                    if st['type'] == 'deep':
+                        why.append('deep: the bore cannot spread to the island, and a box this deep is not cut and cover (a mined station and approaches)')
+                if why:
+                    approach['misfit'].append({'line': l['name'], 'station': st['name'], 'c': st['c'], 'why': why})
+        if approach['side_bored']:
+            issues.append(f"{len(approach['side_bored'])} Metro stations with side platforms on bored stretches (island by default; Ben's setting kept): "
+                          + ', '.join(f"{x['station']} ({x['line']})" for x in approach['side_bored'][:10]) + (' ...' if len(approach['side_bored']) > 10 else ''))
+        if approach['boxes']:
+            issues.append(f"{len(approach['boxes'])} islands on the double-track bore need a box over the platform and {A:.0f} m either side for the tracks to spread: "
+                          + ', '.join(f"{x['station']} ({x['line']}, c {x['from_c']:.0f} to {x['to_c']:.0f})" for x in approach['boxes'][:8]) + (' ...' if len(approach['boxes']) > 8 else ''))
+        if approach['misfit']:
+            issues.append(f"{len(approach['misfit'])} station approaches do not fit: "
+                          + '; '.join(f"{x['station']} ({x['line']}): {', '.join(x['why'])}" for x in approach['misfit'][:6]) + (' ...' if len(approach['misfit']) > 6 else ''))
 
     deck_tracks, tracks = tracks, []
     for lid, l in L.items():
@@ -988,7 +1055,7 @@ def main():
         'frame_turn_deg': AREA['frame_turn'], 'box': [r1(v) for v in BOX],
         'interline': combos, 'stripe_m': STRIPE_M,
         'platform_m': PLATFORM_M, 'platform_above_rail': PLATFORM_ABOVE_RAIL, 'struct': struct, 'box_margin': BOX_MARGIN,
-        'assumed': ASSUMED, 'deck_rules': dd.get('constants'), 'issues': issues,
+        'assumed': ASSUMED, 'deck_rules': dd.get('constants'), 'issues': issues, 'approach': approach, 'station_types': station_types,
         'rules': ['Levels: the Rail Profiles editor; plan, tracks and platforms: the Mill Creek Deck',
                   'A platform on a shared pair (RER A/D, B C E ...) serves every line on it, at the level of the saved Profiles line (Ben, 2026-10-26: A and D share the Fountain Square platforms)',
                   'An interlined pair (RER A/D, B/D, B C E ...) is one pair of tracks, drawn once at the level of the line most of it follows and striped in every line\'s colour (Ben, 2026-10-27)',
