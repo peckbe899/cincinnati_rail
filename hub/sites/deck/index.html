@@ -1681,6 +1681,22 @@ function drawAirport(v) {   // CVG Layout.kmz: areas, runways (150 ft on their c
       const [x, y] = W2S(cx, cy), t = p.layer === 'cvg_runway' ? p.name.replace('Runway ', '') : p.name; ctx.font = (big ? '700 12px ' : '600 11px ') + css('--font-ui');
       const tw = ctx.measureText(t).width; ctx.globalAlpha = 0.88; ctx.fillStyle = C.panel; ctx.fillRect(x - tw / 2 - 3, y - 8, tw + 6, 16); ctx.globalAlpha = 1; ctx.fillStyle = p.layer === 'cvg_area' ? C.muted : C.ink; ctx.fillText(t, x - tw / 2, y); } }
   ctx.restore(); }
+// ---- the arcade on the arch viaducts (Ben, 28 October): a switch per block beside them, blind (default), shops or open ----
+const ARCADE = [['blind', 'Blind arches'], ['shops', 'Shops in the arches'], ['open', 'Open arches']];
+const ARCADE_OF = ['North arch viaduct', 'CUT approach viaduct (south)'], ARCADE_SOUTH_Y = 4331005, ARCADE_REACH = 45;   // north of the Cardinal crossing; within a frontage street of the face
+function arcadeNear(f) {   // the arch viaduct a block faces, if any
+  if (!S.struct) return null; const bb = structBB(f.geometry);
+  for (const sf of S.struct.features) {
+    if (!ARCADE_OF.includes(sf.properties.name) || !bbHit(sf._bb, [bb[0] - ARCADE_REACH, bb[1] - ARCADE_REACH, bb[2] + ARCADE_REACH, bb[3] + ARCADE_REACH])) continue;
+    const segs = []; for (const poly of polysOf(sf.geometry)) for (const r of poly) for (let i = 0; i + 1 < r.length; i++) segs.push([r[i], r[i + 1]]);
+    for (const poly of polysOf(f.geometry)) for (const q of poly[0]) {
+      if (sf.properties.name !== ARCADE_OF[0] && q[1] < ARCADE_SOUTH_Y) continue;
+      for (const [a, b] of segs) { const dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy || 1, u = Math.max(0, Math.min(1, ((q[0] - a[0]) * dx + (q[1] - a[1]) * dy) / L2));
+        if (Math.hypot(q[0] - a[0] - u * dx, q[1] - a[1] - u * dy) < ARCADE_REACH) return sf.properties.name; }
+    }
+  }
+  return null;
+}
 function structBB(g) { const b = [1e18, 1e18, -1e18, -1e18], go = c => { if (typeof c[0] === 'number') { b[0] = Math.min(b[0], c[0]); b[1] = Math.min(b[1], c[1]); b[2] = Math.max(b[2], c[0]); b[3] = Math.max(b[3], c[1]); } else c.forEach(go); }; go(g.coordinates); return b; }
 const NWC = { tv: '#0f8b8d' };
 function drawNorwood(v) {   // Norwood Central (norwood.json, 23 October): surface tracks and platforms of sketch v10, the building, level -1 passages
@@ -2006,6 +2022,14 @@ function renderSel() {
     const ni = document.createElement('input'); ni.type = 'text'; ni.id = 'bName'; ni.className = 'namein'; ni.maxLength = 80; ni.value = nm; ni.disabled = !S.canWrite; ni.placeholder = 'No name';
     ni.addEventListener('change', () => { setBlockEdit(f, { n: ni.value.trim() }); renderSel(); });
     body.append(nl, ni);
+    const av = arcadeNear(f);
+    if (av) {
+      const box = document.createElement('div'); box.className = 'stop'; const hh = document.createElement('p'); hh.className = 'stop-h'; hh.textContent = 'Arcade facing this block (' + av + ')'; box.append(hh);
+      const cur = blockField(f, 'arc') || 'blind', sa = document.createElement('div'); sa.className = 'seg';
+      for (const [k, lab] of ARCADE) { const b = document.createElement('button'); b.className = 'btn'; b.setAttribute('aria-pressed', String(cur === k)); b.disabled = !S.canWrite; b.textContent = lab; b.addEventListener('click', () => { setBlockEdit(f, { arc: k === 'blind' ? undefined : k }); renderSel(); }); sa.append(b); }
+      const n = document.createElement('p'); n.className = 'notes'; n.style.marginTop = '8px'; n.textContent = 'The arches on the viaduct face beside this block, between the streets: blind (recessed stone, the default), shops cut into the embankment behind them (two or three shopfronts glazed to each arch), or open (a hidden girder bridge, like the streets). Drawn in Station 3D (Ben, 28 October).';
+      box.append(sa, n); body.append(box);
+    }
     if (mix) {
       const box = document.createElement('div'); box.className = 'stop'; const hh = document.createElement('p'); hh.className = 'stop-h'; hh.textContent = 'Land use for every plot in the block'; box.append(hh);
       const bu = blockField(f, 'u'), seg2 = document.createElement('div'); seg2.className = 'seg';
@@ -2594,7 +2618,7 @@ function currentFeatures(ll) {
   const mapG = g => { if (g.type === 'LineString') return { type: g.type, coordinates: g.coordinates.map(tr) }; if (g.type === 'Polygon') return { type: g.type, coordinates: g.coordinates.map(r => r.map(tr)) }; if (g.type === 'MultiPolygon') return { type: g.type, coordinates: g.coordinates.map(p => p.map(r => r.map(tr))) }; if (g.type === 'Point') return { type: g.type, coordinates: tr(g.coordinates) }; return g; };
   const extra = (S.tracks ? S.tracks.features : []).map(f => ({ type: 'Feature', properties: Object.assign({ group: 'cut_tracks' }, f.properties), geometry: mapG(f.geometry) }));
   const cvg = (S.airport ? S.airport.features : []).map(f => ({ type: 'Feature', properties: Object.assign({ group: 'cvg' }, f.properties), geometry: mapG(f.geometry) }));     // CVG airport (18 October: exported as its own folders)
-  const blocks = blockList().map(f => { const p = Object.assign({}, f.properties); delete p.live; p.type = blockType(f); if (blockName(f)) p.block_name = blockName(f); const bu = blockField(f, 'u'); if (bu !== undefined && bu !== null) p.use_for_all_plots = UNAME[bu];
+  const blocks = blockList().map(f => { const p = Object.assign({}, f.properties); delete p.live; p.type = blockType(f); if (blockName(f)) p.block_name = blockName(f); const bu = blockField(f, 'u'); if (bu !== undefined && bu !== null) p.use_for_all_plots = UNAME[bu]; const ar = blockField(f, 'arc'); if (ar) p.arcade = ar;
     if (S.pl) { const mix = blockUseMix(f); p.plots = mix.n; p.land_use = mix.list.map(x => UNAME[x.u] + ' ' + x.n).join(', '); } p.edited = !!(S.edits.blocks[p.id] || (p.gen && S.edits.blocks[p.gen])); p.plots_locked = blockLocked(f) ? (lockDate(f) || true) : false; if (p.joined) p.joined = p.joined.join(', '); else delete p.joined; return { type: 'Feature', properties: p, geometry: mapG(f.geometry) }; });
   const plots = S.pl ? S.pl.plots.map(pf => { const [u, src] = plotUse(pf), p = pf.properties, sf = p.street && S.streetById.get(p.street), o = { layer: 'plot', id: p.id, block: pf.lb || p.block, use: UNAME[u || ''], use_code: u || '', use_from: src ? USRC[src] : '', area_m2: Math.round(pf.area) };
     if (plotName(pf)) o.name = plotName(pf); if (sf) o.fronts = stLabel(sf); if (p.lab && p.lab.length) o.sheet_labels = p.lab.join('; '); return { type: 'Feature', properties: o, geometry: mapG(pf.geometry) }; }) : [];

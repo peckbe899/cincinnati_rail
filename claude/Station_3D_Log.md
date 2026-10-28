@@ -166,3 +166,11 @@ Published: page version 6 and the snapshot (35 parts), read back at view level.
 - Minimum rail depth for a bored tube: type A 10.10 m, type C 10.85 m, the bore 15.50 m; shallower is cut and cover.
 - Effect (current profiles, saved where there is one, default otherwise; Profiles port): no station changes type (the 7 shallow-shield stations are 11.8 to 20.7 m deep). Running tunnel from shield to cut and cover: Line 1 2.0 km, Line 2 2.5 km (0.2 of it deep tube), Line 2b 1.0, Line 3 3.3, Line 4 1.6, Line 5 9.2, Line 6 7.1, Line 7 8.8 (default), Line 8 5.6, Line 9 7.4 (default), Line 10 6.4 (default), Line 11 6.1 (default), Line 12 6.0 (default), Line 13 9.5 (default), Line 14 9.3 (default), CVG Express 1.1 km: about 87 km in all.
 - Line 8 under CUT's lower level is now cut and cover there (need 6.1 m; test updated).
+
+## 2026-10-28: the arcade remodel (viaduct handoff v2, section 4)
+
+- Deck: a block beside an arch viaduct (within 45 m of the north arch viaduct, or of the south approach north of the Cardinal crossing) has an "Arcade facing this block" switch on its card: blind arches (default), shops in the arches, open arches. Saved in the layout (`edits.blocks[id].arc`), exported with the block (`arcade`).
+- Station 3D: the arch viaducts' long faces (only along the lower deck's APEx tracks; the Indianapolis and D branch on columns is left plain) are sent as `arcade` items with each street opening (true arch up to 11.9 m wide: Meeker, Streng, Ford; all others hidden girder bridges) and each block's stretch with its state. The page draws the arcade near the camera in the mockup's style; open blocks carve a girder bridge (2.0 m deep, drawing value) through the structure. Street spans over the arch viaducts are now girder bridges at 2.0 m under the rail (true arches at 2.21 m).
+- About 10 km of face in all. The Millvale-side west face from Hopple to Arlington is one blind run: the Millvale cross streets end at MT (still to be moved, section 5).
+- Catenary: masonry pylons on every fourth pier with a lattice girder to mid-deck; the middle masts need the 6.0 m APEx-side gaps (section 7.2, not yet done).
+- Checks: `test_context.js` views arcade_dolph, arcade_harrison, arcade_hopple, arcade_shops (every block switched to shops in the page); an open block tested in context3d.

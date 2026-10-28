@@ -808,7 +808,7 @@ def main():
     # ---- the other systems at CUT and Norwood Central: structures, tracks, platforms, piers, finished ground ----
     import context3d
     ut_isl = [([list(q) for q in zip(dec(pl['x'], 100), dec(pl['y'], 100))], pl['rail']) for pl in ut] if len(ut) == 3 and all(pl['rail'] is not None for pl in ut) else None
-    ctx = context3d.build(E0, N0, ut_isl)
+    ctx = context3d.build(E0, N0, ut_isl, live)
     unlevelled += ctx['unlevelled']
     gtiles = context3d.tiles(ctx, E0, N0, gx0, gy0)
     context = ctx['items']
