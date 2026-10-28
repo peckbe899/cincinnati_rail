@@ -263,5 +263,8 @@ def registry(snap, store):
         row('Metro clear height under structures in the open', 'm', note='the structure record', profiles=ms['open_clear_height'])
     row('Platform slide limit (Deck)', 'm', deck=dr.get('SLIDE_M'))
     tie = [i for i in snap.get('issues', []) if "off the Deck's pieces" in i or "off their Deck platform" in i]
-    return {'rows': rows, 'tie_issues': tie, 'synced_at': snap.get('synced_at'),
+    # notes to check, not errors: side platforms on bored stretches (Ben, 28 October)
+    checks = [{'line': x['line'], 'station': x['station'], 'text': f"side platforms on a bored stretch ({'deep tube' if x['type'] == 'deep' else 'shallow shield'}, {x['tube']} tunnel)"}
+              for x in (snap.get('approach') or {}).get('side_bored', [])]
+    return {'rows': rows, 'tie_issues': tie, 'checks': checks, 'synced_at': snap.get('synced_at'),
             'note': 'Profiles values are its settings (config/settings, config/settings_rer) over its built-in defaults; Deck values are its constants as its own code has them, and platform lengths measured from the platforms it draws; Station 3D values are sync.py constants.'}

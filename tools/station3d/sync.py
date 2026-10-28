@@ -955,8 +955,10 @@ def main():
                 if why:
                     approach['misfit'].append({'line': l['name'], 'station': st['name'], 'c': st['c'], 'why': why})
         if approach['side_bored']:
-            issues.append(f"{len(approach['side_bored'])} Metro stations with side platforms on bored stretches (island by default; Ben's setting kept): "
-                          + ', '.join(f"{x['station']} ({x['line']})" for x in approach['side_bored'][:10]) + (' ...' if len(approach['side_bored']) > 10 else ''))
+            # a note to check, not an error (Ben, 28 October: "they aren't necessarily wrong, but should be noted")
+            issues.append(f"To check (not necessarily wrong): {len(approach['side_bored'])} Metro stations have side platforms on a bored stretch: "
+                          + ', '.join(f"{x['station']} ({x['line']}, {'deep' if x['type'] == 'deep' else 'shallow shield'})" for x in approach['side_bored'][:10])
+                          + (' ...' if len(approach['side_bored']) > 10 else ''))
         if approach['boxes']:
             issues.append(f"{len(approach['boxes'])} islands on the double-track bore need a box over the platform and {A:.0f} m either side for the tracks to spread: "
                           + ', '.join(f"{x['station']} ({x['line']}, c {x['from_c']:.0f} to {x['to_c']:.0f})" for x in approach['boxes'][:8]) + (' ...' if len(approach['boxes']) > 8 else ''))

@@ -48,6 +48,7 @@ details summary { cursor:pointer }
 <div class="muted" style="margin-bottom:8px" id="regNote"></div>
 <div class="scroll"><table><thead><tr><th>Parameter</th><th>Unit</th><th>Profiles</th><th>Deck</th><th>Station 3D</th><th></th></tr></thead><tbody id="regT"></tbody></table></div>
 <div id="tie" style="margin-top:8px"></div>
+<div id="checks" style="margin-top:8px"></div>
 
 <h2 id="structure">Metro structure</h2>
 <div class="muted" style="margin-bottom:8px">One record for the Deck, the Profiles and the 3D map (Ben, 27-28 October: tunnels sized to the dynamic envelope plus running clearance; the bored tunnel follows the building phase). Metres unless noted. Saving rebuilds the 3D map; open Profiles pages update at once.</div>
@@ -96,6 +97,8 @@ db.doc('params/registry').onSnapshot((d) => {
   $('regNote').textContent = g.note + (g.synced_at ? ` As of ${new Date(g.synced_at).toLocaleString()}.` : '');
   $('regT').innerHTML = g.rows.map((r) => `<tr><td>${esc(r.name)}${r.note ? `<div class="muted" style="font-size:12px">${esc(r.note)}</div>` : ''}</td><td class="muted">${esc(r.unit)}</td><td class="num">${f(r.values.profiles)}</td><td class="num">${f(r.values.deck)}</td><td class="num">${f(r.values.station3d)}</td>
     <td>${r.agree === true ? '<span class="ok">agree</span>' : r.agree === false ? '<span class="bad">differ</span>' : ''}</td></tr>`).join('');
+  const ck = g.checks || [];
+  $('checks').innerHTML = ck.length ? `<div class="warn">To check (not necessarily wrong): side platforms on bored stretches, ${ck.length} stations</div><ul>${ck.map((c) => `<li>${esc(c.station)} (${esc(c.line)}): ${esc(c.text)}</li>`).join('')}</ul>` : '';
   $('tie').innerHTML = g.tie_issues.length ? `<div class="bad">Off the Deck:</div><ul>${g.tie_issues.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>` : '<span class="ok">Every route and platform is on the Deck.</span>';
 });
 
