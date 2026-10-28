@@ -566,6 +566,11 @@ function buildContext(snap, sop) {
       const zb = [it.zb[0], it.zb[1], it.zb[1], it.zb[0]], pos = new Float32Array(24);
       for (let i = 0; i < 4; i++) { pos.set([X(it.x[i]), Yp(it.x[i], it.y[i], zb[i]), Z(it.y[i])], i * 3); pos.set([X(it.x[i]), Yp(it.x[i], it.y[i], it.zt), Z(it.y[i])], 12 + i * 3); }
       add(CTX_COL.viaduct, { pos, idx: [0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6, 3, 0, 4, 3, 4, 7, 4, 5, 6, 4, 6, 7, 0, 2, 1, 0, 3, 2] });
+    } else if (it.type === 'mast') {   // catenary middle masts (steel lattice) with the girder across the deck at 7.7-8.6 m over the rail
+      const ms = cg.userData.masts || (cg.userData.masts = []);
+      it.x.forEach((x, i) => { const y = it.y[i]; for (const [dx, dy] of [[-0.3, -0.3], [0.3, -0.3], [0.3, 0.3], [-0.3, 0.3]]) ms.push([[X(x + dx), Yp(x, y, it.z), Z(y + dy)], [X(x + dx), Yp(x, y, it.z + 8.6), Z(y + dy)]]);
+        for (let h = 0.6; h < 8.6; h += 1.2) ms.push([[X(x - 0.3), Yp(x, y, it.z + h), Z(y - 0.3)], [X(x + 0.3), Yp(x, y, it.z + h + 0.6), Z(y + 0.3)]]); });
+      if (it.x.length > 1) for (const h of [7.7, 8.6]) ms.push([[X(it.x[0]), Yp(it.x[0], it.y[0], it.z + h), Z(it.y[0])], [X(it.x[1]), Yp(it.x[1], it.y[1], it.z + h), Z(it.y[1])]]);
     } else if (it.type === 'plat') {
       const xs = dec(it.x, 100), ys = dec(it.y, 100), cx = xs.reduce((a, v) => a + v, 0) / xs.length, cy = ys.reduce((a, v) => a + v, 0) / ys.length, h = Math.max(0.3, it.top - it.rail);
       const geo = new THREE.ExtrudeGeometry(new THREE.Shape(xs.map((x, i) => new THREE.Vector2(x, ys[i]))), { depth: h, bevelEnabled: false }); geo.rotateX(-Math.PI / 2); geo.translate(0, Yp(cx, cy, it.top) - h, 0);
@@ -577,6 +582,7 @@ function buildContext(snap, sop) {
   for (const [col, parts] of byCol) { const m = structMat(col, Math.min(1, sop * 1.6)); m.userData.boost = 1.6; const ms = merged(parts, m); if (ms) cg.add(ms); }
   for (const [col, parts] of (cg.userData.pm || new Map())) { const ms = merged(parts, new THREE.MeshStandardMaterial({ color: col, roughness: 0.8, clippingPlanes: clips })); if (ms) cg.add(ms); }
   delete cg.userData.pm;
+  if (cg.userData.masts) { const o = polylines(cg.userData.masts, new THREE.LineBasicMaterial({ color: 0x59636a, clippingPlanes: clips })); if (o) cg.add(o); delete cg.userData.masts; }
   if (cg.userData.blind) { const o = polylines(cg.userData.blind, new THREE.LineBasicMaterial({ color: CTX_COL.blind, clippingPlanes: clips })); if (o) cg.add(o); delete cg.userData.blind; }
   const rails = new Map();
   for (const it of items) if (it.type === 'rail') { const xs = dec(it.x, 10), ys = dec(it.y, 10), zs = dec(it.z, 100); if (!rails.has(it.col)) rails.set(it.col, []); rails.get(it.col).push(xs.map((x, i) => [X(x), Yp(x, ys[i], zs[i]), Z(ys[i])])); }

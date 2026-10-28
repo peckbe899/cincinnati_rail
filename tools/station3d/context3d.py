@@ -385,6 +385,40 @@ def build(E0, N0, ut_islands=None, deck_live=None):
                                   'z': [round(z, 2) for _, _, z in outline]})
                     nblind += 1
 
+    # ---- catenary middle masts on the north arch viaduct (Ben, 28 October): steel lattice masts in the two 6.0 m gaps
+    # either side of the APEx group (between the ORR / Transvalley pairs and APEx tracks 1 and 6), every 85 m (about every
+    # fourth pier), carrying the lattice girder from the masonry pylons; only where a gap is 5.9 m or more ----
+    named = lambda pre: [LineString(f['geometry']['coordinates']) for f in T['features'] if (f['properties'].get('name') or '').startswith(pre) and f['geometry']['type'] == 'LineString']
+    ref = (named('APEx north approach 3 of 6') or [None])[0]
+    nmast = 0
+    if ref is not None:
+        if ref.coords[0][1] > ref.coords[-1][1]:
+            ref = LineString(ref.coords[::-1])
+        A1, A6 = unary_union(named('APEx north approach 1 of 6')), unary_union(named('APEx north approach 6 of 6'))
+        W2, E1 = unary_union([l for l in named('Lower-level pair W, track 2, on the viaduct')]), unary_union([l for l in named('Lower-level pair E, track 1, on the viaduct')])
+        nv = next(st for st in S if st['short'] == 'North arch viaduct')
+        for d in np.arange(150.0, ref.length - 200.0, 85.0):
+            c = ref.interpolate(d)
+            a, b = ref.interpolate(d - 2), ref.interpolate(d + 2)
+            tx, ty = b.x - a.x, b.y - a.y
+            Ln = math.hypot(tx, ty) or 1
+            nx_, ny_ = -ty / Ln, tx / Ln
+            cut = LineString([(c.x - nx_ * 45, c.y - ny_ * 45), (c.x + nx_ * 45, c.y + ny_ * 45)])
+            off = lambda g: [(q.x - c.x) * nx_ + (q.y - c.y) * ny_ for q in getattr(cut.intersection(g), 'geoms', [cut.intersection(g)]) if q.geom_type == 'Point']
+            pos = []
+            for inner, outer in ((off(A1), off(W2)), (off(A6), off(E1))):
+                if inner and outer:
+                    i_, o_ = inner[0], min(outer, key=lambda v: abs(v - inner[0]))
+                    if 5.9 <= abs(o_ - i_) <= 12:   # a gap with room for a mast (not where the pair has gone far off)
+                        pos.append((i_ + o_) / 2)
+            if not pos or not nv['geom'].buffer(1).contains(c):
+                continue
+            z = float(nv['z'](c.x, c.y))
+            pts = [(c.x + nx_ * o, c.y + ny_ * o) for o in pos]
+            items.append({'type': 'mast', 'x': [round(x - E0, 2) for x, _ in pts], 'y': [round(y - N0, 2) for _, y in pts], 'z': round(z, 2),
+                          'nx': round(nx_, 4), 'ny': round(ny_, 4)})
+            nmast += len(pts)
+
     # ---- tracks: each at the level of the structure it runs in (its own family first) ----
     tracks = []
     for f in T['features']:
@@ -515,7 +549,7 @@ def build(E0, N0, ut_islands=None, deck_live=None):
     # ---- finished-ground tiles round every structure and re-grade, aligned to the snapshot's 200 m grid ----
     return dict(items=items, unlevelled=unlev, finished=finished, region=unary_union([st['geom'] for st in S] + [rg['band'] for rg in REG]),
                 counts={'structures': sum(1 for i in items if i['type'] == 'struct'), 'rails': nlev, 'extended': nest, 'unlevelled': len(unlev),
-                        'platforms': sum(1 for i in items if i['type'] == 'plat'), 'piers': npier, 'spans': nspan, 'blind_arches': nblind},
+                        'platforms': sum(1 for i in items if i['type'] == 'plat'), 'piers': npier, 'spans': nspan, 'blind_arches': nblind, 'masts': nmast},
                 sources=['Mill Creek Deck tracks.json, structures.json, deck.json, norwood.json (data/deck)', 'Rail Profiles context definitions (tools/make_profile_context.py)',
                          'map 3 ground (data/profile/dem)'])
 

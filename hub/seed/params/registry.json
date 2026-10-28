@@ -5,10 +5,10 @@
    "unit": "m",
    "values": {
     "profiles": 121.92,
-    "deck": 121.91,
+    "deck": 121.92,
     "station3d": 121.92
    },
-   "note": "Deck island platforms: 108 at 122 m, 79 at 120 m, 4 at 118 m",
+   "note": "Deck island platforms: 181 at 122 m, 11 at 121 m, 1 at 72 m",
    "agree": true
   },
   {
@@ -239,10 +239,7 @@
    "agree": null
   }
  ],
- "tie_issues": [
-  "Line 2b: 1 platforms off their Deck platform's centre (West Covington +14 m); run tools/rer_deck_routes.py --apply",
-  "Line 4: 1 platforms off their Deck platform's centre (Price Hill +24 m); run tools/rer_deck_routes.py --apply"
- ],
+ "tie_issues": [],
  "checks": [
   {
    "line": "Line 1",
@@ -345,6 +342,6 @@
    "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
   }
  ],
- "synced_at": "2026-10-28T17:55:28Z",
+ "synced_at": "2026-10-28T18:25:51Z",
  "note": "Profiles values are its settings (config/settings, config/settings_rer) over its built-in defaults; Deck values are its constants as its own code has them, and platform lengths measured from the platforms it draws; Station 3D values are sync.py constants."
 }
