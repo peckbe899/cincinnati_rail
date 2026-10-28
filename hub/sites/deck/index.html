@@ -187,9 +187,9 @@ aside section { min-width: 0; }
         <label><input type="checkbox" id="lStr" checked> Streets</label>
         <label><input type="checkbox" id="lMet" checked> Metro</label>
         <label><input type="checkbox" id="lRer" checked> RER</label>
-        <label><input type="checkbox" id="lTrk" checked> CUT tracks</label>
-        <div class="sublayers" style="margin:2px 0 4px 22px;display:grid;gap:2px">
-          <span style="font-size:11px;color:var(--muted)">Union Terminal</span>
+        <label style="grid-column:1/-1"><input type="checkbox" id="lTrk" checked> CUT tracks</label>
+        <div class="sublayers" style="margin:2px 0 4px 22px;display:grid;gap:2px;grid-column:1/-1">
+          <label><input type="checkbox" id="lUT" checked> <b>Union Terminal</b> (all its parts)</label>
           <label><input type="checkbox" id="lCB" checked> Building</label>
           <label><input type="checkbox" id="lCC" checked> Train concourse</label>
           <label><input type="checkbox" id="lCR" checked> Roads and ramps</label>
@@ -198,11 +198,12 @@ aside section { min-width: 0; }
           <label><input type="checkbox" id="lCL" checked> Lower level and intercity</label>
         </div>
         <label><input type="checkbox" id="lApt" checked> CVG airport</label>
-        <label><input type="checkbox" id="lVia" checked> Viaducts and bridges</label>
+        <label style="grid-column:1/-1"><input type="checkbox" id="lVia" checked> <b>Viaducts and bridges</b> (each viaduct)</label>
+        <div class="sublayers" id="viaSubs" style="margin:2px 0 4px 22px;display:grid;gap:2px;grid-column:1/-1"></div>
         <label><input type="checkbox" id="lHwy" checked> Highways (lanes)</label>
         <label><input type="checkbox" id="lNw" checked> Norwood Central</label>
-        <label><input type="checkbox" id="lYrd" checked> Yards under the deck (draft)</label>
-        <div class="sublayers" style="margin:2px 0 4px 22px;display:grid;gap:2px">
+        <label style="grid-column:1/-1"><input type="checkbox" id="lYrd" checked> Yards under the deck (draft)</label>
+        <div class="sublayers" style="margin:2px 0 4px 22px;display:grid;gap:2px;grid-column:1/-1">
           <label><input type="checkbox" id="lYP" checked> Proposed yard, lead and limit</label>
           <label><input type="checkbox" id="lYH" checked> Historic and today's yards</label>
           <label><input type="checkbox" id="lYS" checked> Structures under the deck</label>
@@ -1774,10 +1775,27 @@ function drawYard(v) {   // yards under the deck (yard.json): limit, proposed fa
       if (L.yS && p.layer === 'ud_box' && v.s >= 1.0 && p.kind !== 'creek') { const [cx, cy] = cen(f.geometry), [x, y] = W2S(cx, cy); const z = p.rail && p.rail[0] != null ? 'rail ' + p.rail[0] + (p.rail[1] != null && p.rail[1] !== p.rail[0] ? '-' + p.rail[1] : '') + ' m' : 'level not set'; tag(x, y, p.name + ': ' + z + (p.yard ? ', yard floor ' + p.yard[0] + ' m' : ''), CL[p.cls] || C.muted); } } }
   ctx.restore(); }
 const HW = { brt: '#d6336c', pocket: '#3b5ea8', plat: '#9b6fb5', sig: '#f2b705' };
+// the Viaducts and bridges layer, one selection per viaduct (Ben, 28 October; viaducts.json from tools/viaduct_parts.py:
+// the north arch viaduct, the CUT south approach's arch viaduct and three branches, the Cincinnati Western viaduct's two
+// decks, RER A's Westwood, Northgate, Northside and Western Hills - South Cumminsville viaducts, the C&O viaduct); the rest of
+// structures.json as river bridges and other structures. The Deck polygons the parts replace are not drawn twice.
+const VIA_REPLACED = new Set(['North arch viaduct', 'CUT approach viaduct (south)', 'C&O pair: viaduct', 'C&O viaduct (TRIMET line, to the C&O bridge)']);
+const structSel = f => (S.vparts && VIA_REPLACED.has(f.properties.name)) ? '_replaced' : f.properties.kind === 'bridge' ? 'bridges' : 'other';
+S.vsel = { bridges: true, other: true };
+function viaSubs() {
+  const box = $('viaSubs'); if (!box) return;
+  const items = (S.vparts ? S.vparts.features.map(f => [f.properties.sel, f.properties.name]) : []).concat([['bridges', 'River bridges and the Ludlow underbridge'], ['other', 'Other structures (CUT deck, intercity, troughs, fills)']]);
+  for (const [k] of items) if (S.vsel[k] === undefined) S.vsel[k] = true;
+  box.innerHTML = items.map(([k, n]) => `<label><input type="checkbox" data-vsel="${k}" ${S.vsel[k] ? "checked" : ""}> ${String(n).replace(/[&<>"]/g, (c) => "&#" + c.charCodeAt(0) + ";")}</label>`).join('');
+  syncParent('lVia', box);
+}
+function syncParent(id, box) { const cs = [...box.querySelectorAll('input[type=checkbox]')], on = cs.filter(c => c.checked).length; $(id).checked = on > 0; $(id).indeterminate = on > 0 && on < cs.length; }
 function drawStruct(v) {   // rail viaduct and bridge footprints (structures.json): outer track centre + 4.2 m each side, drawing values
   const r0 = cv.getBoundingClientRect(), [qx0, qy1] = S2W(0, 0), [qx1, qy0] = S2W(r0.width, r0.height), vb = [qx0 - 50, qy0 - 50, qx1 + 50, qy1 + 50];
   const SF = S.struct.features.filter(f => bbHit(f._bb, vb)); ctx.save();
-  for (const f of SF) { const p = f.properties; if (p.layer !== 'struct') continue;
+  if (S.vparts) for (const f of S.vparts.features) { if (!S.vsel[f.properties.sel] || !bbHit(f._bb, vb)) continue;   // each viaduct, a selection of its own
+    fillPoly(f.geometry, C.warn, null, 1, 0.13); fillPoly(f.geometry, null, C.warn, Math.max(1.2, Math.min(2.4, 1.4 * v.s)), 0.95); }
+  for (const f of SF) { const p = f.properties; if (p.layer !== 'struct' || !S.vsel[structSel(f)]) continue;
     const col = p.kind === 'viaduct_existing' ? C.muted : p.kind === 'bridge' ? C.apex : p.kind === 'embankment' ? C.lower : C.warn;
     ctx.setLineDash(p.kind === 'trough' ? [6, 4] : p.kind === 'embankment' ? [2, 3] : []); fillPoly(f.geometry, col, null, 1, 0.13); fillPoly(f.geometry, null, col, Math.max(1.2, Math.min(2.4, 1.4 * v.s)), 0.95); }
   ctx.setLineDash([]);
@@ -1921,7 +1939,8 @@ function pickAll(wx, wy) {
   for (const L of ['palace', 'cut_headhouse', 'cut_road', 'cut_terrace', 'cut_building', 'cut_concourse', 'cut_square', 'cut_plaza', 'cut_park', 'cut_lincoln', 'forecourt', 'roundabout', 'boulevard', 'cut_precinct']) { if (!CUT_ON(L)) continue; for (const f of feats(L)) if (polysOf(f.geometry).some(q => inPoly(p, q))) { area = f; break; } if (area) break; }
   if (!area) for (const f of feats('rail_open')) if (polysOf(f.geometry).some(q => inPoly(p, q))) { area = f; break; }
   if (!area && S.layers.trk && S.tracks) for (const L of ['cvg_shop', 'cvg_yard']) { for (const f of S.tracks.features) if (f.properties.layer === L && bbHit(f._bb || (f._bb = featBB(f)), [p[0], p[1], p[0], p[1]]) && inPoly(p, f.geometry.coordinates)) { area = f; break; } if (area) break; }
-  if (!area && S.layers.via && S.struct) for (const f of S.struct.features) if (f.properties.layer === 'struct' && bbHit(f._bb, [p[0], p[1], p[0], p[1]]) && polysOf(f.geometry).some(q => inPoly(p, q))) { area = f; break; }
+  if (!area && S.layers.via && S.vparts) for (const f of S.vparts.features) if (S.vsel[f.properties.sel] && bbHit(f._bb, [p[0], p[1], p[0], p[1]]) && polysOf(f.geometry).some(q => inPoly(p, q))) { area = f; break; }
+  if (!area && S.layers.via && S.struct) for (const f of S.struct.features) if (f.properties.layer === 'struct' && S.vsel[structSel(f)] && bbHit(f._bb, [p[0], p[1], p[0], p[1]]) && polysOf(f.geometry).some(q => inPoly(p, q))) { area = f; break; }
   if (!area && S.layers.apt && S.airport) for (const L of ['cvg_building', 'cvg_runway', 'cvg_stand', 'cvg_taxi', 'cvg_apron', 'cvg_area']) { for (const f of S.airport.features) if (f.properties.layer === L && bbHit(f._bb, [p[0], p[1], p[0], p[1]]) && inPoly(p, f.geometry.coordinates)) { area = f; break; } if (area) break; }
   if (S.layers.yrd && S.yard) { const L = S.layers, pb0 = [p[0], p[1], p[0], p[1]], inY = f => bbHit(f._bb, pb0) && polysOf(f.geometry).some(q => inPoly(p, q)), yf = S.yard.features;
     if (L.yP) for (const f of yf) if (f.properties.layer === 'yard_lead' && lineDist(p, f.geometry.coordinates) < tol + 4) out.push(f);
@@ -2178,6 +2197,7 @@ function renderSel() {
     if (L === 'cvg_taxi') sub.textContent = 'Taxiway (designed): 25 m wide, parallels 550 ft (167.6 m) off the runways (FAA 13A, approaches below 1/2 mile), 30\u00b0 rapid exits, filleted junctions';
     if (L === 'cvg_apron') sub.textContent = 'Apron: contact stands and the taxilanes behind them (ICAO Annex 14 clearances), cargo and maintenance aprons';
     if (L === 'cvg_stand') { kv('Stand', fmt(p.w, 1) + ' m wide (span plus 7.5 m / 25 ft wingtip clearance); aircraft ' + fmt(p.d, 1) + ' m long, nose 11.3 m (37 ft) off the facade, 1.5 m tail clearance and a 7.6 m tail-of-stand road behind'); kv('Terminal', p.terminal); if (p.airline) kv('Airline', p.airline); sub.textContent = p.kind + ({X: ': A380 span (79.8 m) by 777-9 length (76.7 m), Code F; ADG VI taxilane behind (51 m to objects)', L: ': 747-8 span (68.4 m) by 777-9 length (76.7 m); ADG VI taxilane behind (51 m to objects)', S: ': A350-900 span (64.8 m) by 787-10 length (68.3 m), Code E; ADG V taxilane (42 m to objects)', D: ': 767-300ER with winglets (50.9 m span, 54.9 m long), Code D'}[p.cls] || '') + '. A smaller aircraft can use any larger stand (a 797 any stand; 747s and 777s large or A380 stands; A380s only A380 stands)' + '; dual taxilanes between facing rows' + '; nose-in contact stand, measured along the terminal face'; }
+    if (L === 'viaduct_part') { kv('Viaduct', p.name); kv('Footprint', fmt(p.area_m2) + ' m²'); kv('From', 'tools/viaduct_parts.py: the Deck\'s structures, the Rail Profiles context and the elevated stretches in the Rail Profiles (rebuilt with the 3D map)'); }
     if (L === 'struct') { kv('Structure', { viaduct: 'Viaduct', station: 'Station deck on the viaduct', trough: 'Open trough between retaining walls', bridge: 'Bridge', embankment: 'Rail on fill (embankment)', viaduct_existing: 'Viaduct (existing line)' }[p.kind] || p.kind);
       if (p.w_min) kv('Width', p.w_min === p.w_max ? fmt(p.w_min, 1) + ' m' : fmt(p.w_min, 1) + ' to ' + fmt(p.w_max, 1) + ' m'); if (p.tracks) kv('Tracks', p.tracks); if (p.length_m) kv('Length', fmt(p.length_m) + ' m');
       sub.textContent = p.note + '. Footprint: outer track centre plus 4.2 m each side (overhead line masts on the deck edge, walkway, parapet; a drawing value), gaps under 6 m between tracks decked over, platforms of stations on the structure included.'; }
@@ -2610,6 +2630,12 @@ $('zCvg').onclick = () => fit(699200, 4321900, 706000, 4327700);
 $('lockAll').onclick = () => lockAllEdited();
 $('tSel').onclick = () => setTool('select'); $('tEdit').onclick = () => setTool('edit');
 $('colBy').addEventListener('change', e => { S.colorBy = e.target.value; redraw(); });
+// parent switches: Union Terminal (its six parts) and Viaducts and bridges (one per viaduct)
+const UT_KIDS = ['lCB', 'lCC', 'lCR', 'lCP', 'lCA', 'lCL'];
+$('lUT').addEventListener('change', e => { for (const id of UT_KIDS) { $(id).checked = e.target.checked; $(id).dispatchEvent(new Event('change')); } $('lUT').indeterminate = false; });
+for (const id of UT_KIDS) $(id).addEventListener('change', () => { const on = UT_KIDS.filter(k => $(k).checked).length; $('lUT').checked = on > 0; $('lUT').indeterminate = on > 0 && on < UT_KIDS.length; });
+$('viaSubs').addEventListener('change', e => { const k = e.target.dataset.vsel; if (!k) return; S.vsel[k] = e.target.checked; syncParent('lVia', $('viaSubs')); S.layers.via = Object.values(S.vsel).some(Boolean); redraw(); });
+$('lVia').addEventListener('change', e => { for (const c of $('viaSubs').querySelectorAll('input')) { c.checked = e.target.checked; S.vsel[c.dataset.vsel] = e.target.checked; } $('lVia').indeterminate = false; });
 for (const [id, key] of [['lSan', 'san'], ['lRel', 'rel'], ['lBlk', 'blk'], ['lStr', 'str'], ['lMet', 'met'], ['lRer', 'rer'], ['lTrk', 'trk'], ['lLab', 'lab'], ['lIdx', 'idx'], ['lWe', 'we'], ['l12', 's12'], ['l22', 's22'], ['lPlt', 'plt'], ['lCB', 'cutB'], ['lCC', 'cutC'], ['lCR', 'cutR'], ['lCP', 'cutP'], ['lCA', 'cutA'], ['lCL', 'cutL'], ['lApt', 'apt'], ['lVia', 'via'], ['lHwy', 'hwy'], ['lNw', 'nw'], ['lYrd', 'yrd'], ['lYP', 'yP'], ['lYH', 'yH'], ['lYS', 'yS'], ['lYC', 'yC']]) $(id).addEventListener('change', e => { S.layers[key] = e.target.checked; redraw(); });
 $('opSan').addEventListener('input', e => { S.op.san = e.target.value / 100; redraw(); });
 $('opBlk').addEventListener('input', e => { S.op.blk = e.target.value / 100; redraw(); });
@@ -2710,6 +2736,8 @@ async function boot() {
   try { S.tracks = await fetch('tracks.json').then(r => r.json()); } catch (e) { S.tracks = null; }
   buildTransitFeats();
   try { S.struct = await fetch('structures.json').then(r => r.json()); for (const f of S.struct.features) f._bb = structBB(f.geometry); } catch (e) { S.struct = null; }
+  try { S.vparts = await fetch('viaducts.json').then(r => r.json()); for (const f of S.vparts.features) f._bb = structBB(f.geometry); } catch (e) { S.vparts = null; }
+  viaSubs();
   try { S.hwy = await fetch('hwy.json').then(r => r.json()); for (const f of S.hwy.features) f._bb = structBB(f.geometry); } catch (e) { S.hwy = null; }
   try { S.yard = await fetch('yard.json').then(r => r.json()); for (const f of S.yard.features) f._bb = structBB(f.geometry); } catch (e) { S.yard = null; }
   try { S.nw = await fetch('norwood.json').then(r => r.json()); for (const f of S.nw.features) f._bb = structBB(f.geometry); } catch (e) { S.nw = null; }

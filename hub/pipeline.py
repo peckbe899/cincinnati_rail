@@ -185,6 +185,9 @@ class Pipeline:
         self.store.set('params/registry', registry(snap, self.store), by='pipeline')
         # the Profiles structure type at each Metro station, for the Deck's island default; a change redraws the Deck's
         # platforms, so the 3D map is built once more with them
+        # each viaduct a selection of its own on the Deck (its RER A viaducts from the Profiles' elevated stretches)
+        self.sh(log, [PY, os.path.join(ROOT, 'tools', 'viaduct_parts.py'), os.path.join(WORK, 'harness_out.json')])
+        self.store.emit({'t': 'files', 'site': 'deck'})
         tp = snap.get('tube_points')   # the bored tube along each Metro line, for the Deck's track spacing
         cur = self.store.get('params/tube_points')
         if tp and (cur is None or cur['data'] != tp):
