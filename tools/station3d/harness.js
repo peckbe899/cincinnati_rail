@@ -61,6 +61,7 @@ async function open(browser, root, docs, url, html = (h) => h) {
   for (const [id, d] of Object.entries(readDocs(path.join(cache, 'db/profiles_db/config')))) pdocs['config/' + id] = d;
   // the shared records (hub: params/metro_structure), for both editors
   const params = {}; for (const [id, d] of Object.entries(readDocs(path.join(cache, 'db/params_db/params')))) params['params/' + id] = d;
+  for (const [id, d] of Object.entries(readDocs(path.join(cache, 'db/params_db/chronology')))) params['chronology/' + id] = d;   // the Chronology record
   Object.assign(pdocs, params);
   // repo profiles for lines the editor has not saved (job.extra_docs, from sync.py)
   for (const [k, d] of Object.entries(job.extra_docs || {})) if (!(k in pdocs)) pdocs[k] = d;

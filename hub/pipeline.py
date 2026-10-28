@@ -30,7 +30,7 @@ PY = sys.executable
 def trigger_for(path):
     if path == 'deck/layout':
         return 'deck_tie'
-    if path.startswith(('alignments/', 'config/')) or path == 'params/metro_structure':
+    if path.startswith(('alignments/', 'config/')) or path in ('params/metro_structure', 'chronology/segments'):
         return '3d'
     return None
 
@@ -132,7 +132,7 @@ class Pipeline:
         os.makedirs(js, exist_ok=True)
         if not os.path.exists(os.path.join(js, 'jsts.min.js')):
             shutil.copy(os.path.join(HUB, 'static', 'vendor', 'jsts.min.js'), js)
-        for sub, colls in (('profiles_db', ('alignments', 'config')), ('deck_db', ('deck',)), ('params_db', ('params',))):
+        for sub, colls in (('profiles_db', ('alignments', 'config')), ('deck_db', ('deck',)), ('params_db', ('params', 'chronology'))):
             for c in colls:
                 d = os.path.join(WORK, 'db', sub, c)
                 shutil.rmtree(d, ignore_errors=True)
@@ -166,7 +166,9 @@ class Pipeline:
         self.sh(log, [PY, '-c', 'import sys, json; sys.path.insert(0, "tools"); import make_rer_profile_lines as m; '
                       'open("data/profile/rer/metro_rails.json", "w").write(json.dumps(m.metro_rails(), separators=(",", ":")))'])
         self.sh(log, [PY, os.path.join(ROOT, 'tools', 'make_profile_context.py')])
+        self.sh(log, [PY, os.path.join(ROOT, 'tools', 'chronology.py')])   # the Chronology view's routes
         self.store.emit({'t': 'files', 'site': 'profiles'})
+        self.store.emit({'t': 'files', 'site': 'chronology'})
 
     def job_3d(self, log):
         out = os.path.join(WORK, 'snapshot.json')
@@ -183,6 +185,10 @@ class Pipeline:
         self.store.set('params/registry', registry(snap, self.store), by='pipeline')
         # the Profiles structure type at each Metro station, for the Deck's island default; a change redraws the Deck's
         # platforms, so the 3D map is built once more with them
+        tp = snap.get('tube_points')   # the bored tube along each Metro line, for the Deck's track spacing
+        cur = self.store.get('params/tube_points')
+        if tp and (cur is None or cur['data'] != tp):
+            self.store.set('params/tube_points', tp, by='pipeline')
         st = snap.get('station_types')
         cur = self.store.get('params/station_types')
         if st and (cur is None or cur['data'] != st):

@@ -627,7 +627,14 @@ function applyMSR(r) {
   for (const f of S.tf || []) { delete f.properties._hsg; }
   S.ver++; if (S.live) S.live = null;
 }
-const tubeH = p => { const t = ((MSR.phases[(MSR.line_phase || {})[String(p.name || '').replace(' ', '_')]] || MSR.phases.later) || {}).tube || 'A'; return MSR.tubes[t].spacing / 2; };
+// the tube at a point: the 3D build's points along each line (hub params/tube_points: the phase of each stretch, from the
+// Chronology or the structure record), else the line's phase
+let TUBE_PTS = null;
+function tubeAt(lid, x, y) {
+  const pts = TUBE_PTS && TUBE_PTS[lid]; if (!pts || x == null) return null;
+  let best = 1e4, t = null; for (const q of pts) { const d = (q[0] - x) ** 2 + (q[1] - y) ** 2; if (d < best) { best = d; t = q[2]; } } return t;
+}
+const tubeH = (p, x, y) => { const lid = String(p.name || '').replace(' ', '_'); const t = tubeAt(lid, x, y) || ((MSR.phases[(MSR.line_phase || {})[lid]] || MSR.phases.later) || {}).tube || 'A'; return MSR.tubes[t].spacing / 2; };
 const boxH = () => MSR.box.spacing / 2;
 const boredAt = (p, x, y) => { if (!p || !p.hs) return p && p.era === 'twin'; const g = hsGrid(p), cx = Math.floor(x / 25), cy = Math.floor(y / 25); let best = 3600, b = false;
   for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) { const a = g.get((cx + i) + ',' + (cy + j)); if (!a) continue; for (const q of a) { const d = (q[0] - x) ** 2 + (q[1] - y) ** 2; if (d < best) { best = d; b = !!q[2]; } } }
@@ -635,7 +642,7 @@ const boredAt = (p, x, y) => { if (!p || !p.hs) return p && p.era === 'twin'; co
 function hsGrid(p) { if (p._hsg) return p._hsg; const g = new Map(); for (const q of (p.hs || [])) { const k = Math.floor(q[0] / 25) + ',' + Math.floor(q[1] / 25); if (!g.has(k)) g.set(k, []); g.get(k).push(q); } p._hsg = g; return g; }
 function hAt(p, x, y, dflt) {
   if (!p || !p.hs) return dflt; const g = hsGrid(p), cx = Math.floor(x / 25), cy = Math.floor(y / 25); let best = 3600, h = dflt;
-  for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) { const a = g.get((cx + i) + ',' + (cy + j)); if (!a) continue; for (const q of a) { const d = (q[0] - x) ** 2 + (q[1] - y) ** 2; if (d < best) { best = d; h = p.sys === 'metro' ? (q[2] ? tubeH(p) : boxH()) : q[2] ? H_TUBE : H_BOX; } } }
+  for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) { const a = g.get((cx + i) + ',' + (cy + j)); if (!a) continue; for (const q of a) { const d = (q[0] - x) ** 2 + (q[1] - y) ** 2; if (d < best) { best = d; h = p.sys === 'metro' ? (q[2] ? tubeH(p, x, y) : boxH()) : q[2] ? H_TUBE : H_BOX; } } }
   return h;
 }
 function baseH(p, c) {   // half spacing along a line, by construction, eased over the taper length
@@ -2728,6 +2735,7 @@ async function connect() {
   setStatus(S.canWrite ? 'saved' : 'readonly', S.canWrite ? 'Saved' : 'Read only');
   db.doc('params/metro_structure').onSnapshot(d => { if (d.exists) { applyMSR(d.data()); redraw(); } }, () => {});
   db.doc('params/station_types').onSnapshot(d => { if (d.exists) { ST_TYPES = d.data(); S.ver++; S.live = null; redraw(); } }, () => {});
+  db.doc('params/tube_points').onSnapshot(d => { if (d.exists) { TUBE_PTS = d.data(); for (const f of S.tf || []) delete f.properties._hsg; S.ver++; S.live = null; redraw(); } }, () => {});
   S.docRef.onSnapshot(snap => {
     if (snap.metadata.hasPendingWrites || S.dirty || S.saving || S.drag) return;
     const d = snap.exists ? snap.data() : null;

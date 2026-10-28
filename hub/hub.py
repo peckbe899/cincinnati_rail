@@ -28,6 +28,7 @@ SITES = {   # url prefix -> (folder, its page)
     'deck': (os.path.join(HUB, 'sites', 'deck'), 'index.html'),
     'profiles': (os.path.join(ROOT, 'data', 'profile'), 'profiles.html'),
     '3d': (os.path.join(ROOT, 'tools', 'station3d', 'page'), 'index.html'),
+    'chronology': (os.path.join(HUB, 'sites', 'chronology'), 'index.html'),
 }
 SHIM = '<script src="/hub/shim.js"></script>'
 VENDOR = {   # the pages' CDN libraries served from hub/static/vendor (the hub works offline)
@@ -67,6 +68,9 @@ class Hub:
             self.store.set('params/metro_structure', ms_def, 'seed', quiet=True)
         elif fill_missing(cur['data'], ms_def):   # fields added to the default since (Ben's values kept)
             self.store.set('params/metro_structure', cur['data'], 'seed', quiet=True)
+        ch_f = os.path.join(ROOT, 'data', 'profile', 'chronology.json')
+        if self.store.get('chronology/segments') is None and os.path.exists(ch_f):   # opening years and phases (the Chronology view)
+            self.store.set('chronology/segments', json.load(open(ch_f, encoding='utf8')), 'seed', quiet=True)
         st_f = os.path.join(ROOT, 'data', 'profile', 'station_types.json')
         if self.store.get('params/station_types') is None and os.path.exists(st_f):   # the Profiles type at each Metro station
             self.store.set('params/station_types', json.load(open(st_f, encoding='utf8')), 'seed', quiet=True)

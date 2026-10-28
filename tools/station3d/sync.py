@@ -82,11 +82,19 @@ MS = None
 PIECES = {}   # Metro line -> its drawn pieces [{name, c0, c1}] (the "built" phase is set per piece)
 
 
+CHR = None        # the Chronology record (hub chronology/segments): each segment's phase
+STATIONS = {}     # Metro line -> its stations (for the Chronology's segments)
+
+
 def load_ms(cache):
-    global MS
+    global MS, CHR
     for f in (os.path.join(cache, 'db/params_db/params/metro_structure.json'), os.path.join(HERE, '..', '..', 'data/profile/metro_structure.json')):
         if os.path.exists(f):
             MS = json.load(open(f))
+            break
+    for f in (os.path.join(cache, 'db/params_db/chronology/segments.json'), os.path.join(HERE, '..', '..', 'data/profile/chronology.json')):
+        if os.path.exists(f):
+            CHR = json.load(open(f))
             break
     if not MS:
         return
@@ -107,8 +115,11 @@ def tube_struct(name):
 
 def metro_tube(line_id, c=None):
     """the bored tunnel of a Metro line at chainage c: the tube of the phase the stretch was built in"""
-    name = next((p['name'] for p in PIECES.get(line_id, []) if c is not None and p['c0'] - 5 <= c <= p['c1'] + 5), None)
-    ph = ((MS.get('piece_phase') or {}).get(line_id) or {}).get(name) or (MS.get('line_phase') or {}).get(line_id) or 'later'
+    import chronology
+    ph = chronology.phase_at(CHR, 'metro', STATIONS.get(line_id) or [], c, line_id) if CHR and c is not None else None
+    if not ph:   # not set in the Chronology: the structure record's phase for the drawn piece, else the line
+        name = next((p['name'] for p in PIECES.get(line_id, []) if c is not None and p['c0'] - 5 <= c <= p['c1'] + 5), None)
+        ph = ((MS.get('piece_phase') or {}).get(line_id) or {}).get(name) or (MS.get('line_phase') or {}).get(line_id) or 'later'
     return (MS['phases'].get(ph) or MS['phases']['later'])['tube']
 
 
@@ -344,6 +355,8 @@ def main():
     lines = load_lines(a.cache, overlay)
     load_ms(a.cache)
     PIECES.update({lid: d.get('pieces') or [] for lid, d in lines.items()})
+    STATIONS.update({lid: d['stations'] for lid, d in lines.items()})
+    sys.path.insert(0, os.path.join(HERE, '..'))
     jf, rf = os.path.join(a.cache, 'job.json'), os.path.join(a.cache, 'harness_out.json')
     if not a.skip_harness:
         job = {'lines': [{'id': lid, 'c0': 0.0, 'c1': float(d['length_m']), 'step': STEP} for lid, d in lines.items()], 'deck': True,
@@ -921,6 +934,18 @@ def main():
                 out_t[st['name']] = h['samples'][int(np.argmin(np.abs(sc - c)))][2]
         station_types[lid] = out_t
 
+    # the bored tube along each Metro line every 50 m (Deck UTM, the tube of the stretch's phase, from the Chronology or the
+    # structure record): the Deck draws its tracks at that tube's spacing (written to params/tube_points by the pipeline)
+    tube_points = {}
+    if MS:
+        for lid, d in lines.items():
+            if d['sys'] == 'rer':
+                continue
+            p = np.array(d['path'], float)
+            cs = np.arange(0.0, float(p[-1, 0]), 50.0)
+            E, N = ll_to_utm(np.interp(cs, p[:, 0], p[:, 1]), np.interp(cs, p[:, 0], p[:, 2]))
+            tube_points[lid] = [[round(float(e), 1), round(float(n), 1), metro_tube(lid, float(c))] for e, n, c in zip(E, N, cs)]
+
     # ---- station approaches (Ben, 28 October): islands by default on bored stretches; tubes ease out to the island
     # before it; tracks closer than the tube spacing only inside a box. Reported for Ben: side platforms on bored
     # stretches, the boxes the double-track bore needs round its islands, and approaches that do not fit.
@@ -1057,7 +1082,7 @@ def main():
         'frame_turn_deg': AREA['frame_turn'], 'box': [r1(v) for v in BOX],
         'interline': combos, 'stripe_m': STRIPE_M,
         'platform_m': PLATFORM_M, 'platform_above_rail': PLATFORM_ABOVE_RAIL, 'struct': struct, 'box_margin': BOX_MARGIN,
-        'assumed': ASSUMED, 'deck_rules': dd.get('constants'), 'issues': issues, 'approach': approach, 'station_types': station_types,
+        'assumed': ASSUMED, 'deck_rules': dd.get('constants'), 'issues': issues, 'approach': approach, 'station_types': station_types, 'tube_points': tube_points,
         'rules': ['Levels: the Rail Profiles editor; plan, tracks and platforms: the Mill Creek Deck',
                   'A platform on a shared pair (RER A/D, B C E ...) serves every line on it, at the level of the saved Profiles line (Ben, 2026-10-26: A and D share the Fountain Square platforms)',
                   'An interlined pair (RER A/D, B/D, B C E ...) is one pair of tracks, drawn once at the level of the line most of it follows and striped in every line\'s colour (Ben, 2026-10-27)',

@@ -106,6 +106,7 @@ CONTEXT_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "co
 # the shared Metro structure record (Ben, 27-28 October; claude/Metro_Structure_Gauge_Handoff.md), as the editor reads it;
 # settings_override {"legacy_structures": True} keeps the structures of before (the 4.76 m tube, 9.0 m bore)
 MS_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "metro_structure.json"
+CHR_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "chronology.json"   # the Chronology's default record
 
 
 def _tube_of(t: dict) -> dict:
@@ -197,6 +198,7 @@ class MetroProfile:
         p.ms = None
         if not rer and not p.settings.get("legacy_structures") and MS_JSON.exists():
             p.ms = json.loads(MS_JSON.read_text())
+        p.chr = json.loads(CHR_JSON.read_text()) if p.ms and CHR_JSON.exists() else None
         if rer:
             cj = Path(canon_json) if canon_json else RER_CANON_JSON
             p.rer_canon = json.loads(cj.read_text()) if cj.exists() else {}
@@ -794,6 +796,19 @@ class MetroProfile:
     # at station boxes and where the phase changes; deep stations are platform tunnels. Canon and painted still decide.
     def _phase_at(self, c: float) -> str:
         ms = self.ms
+        rec = getattr(self, "chr", None)
+        if rec:   # the Chronology record: the phase of the segment (two stations) c is in, set or from its year
+            sts = sorted(self.stations, key=lambda s: s["c"])
+            if len(sts) > 1:
+                i = 0
+                while i + 2 < len(sts) and c > sts[i + 1]["c"]:
+                    i += 1
+                a, b = sorted((sts[i]["name"], sts[i + 1]["name"]))
+                e = (rec.get("segments") or {}).get(f"metro|{self.id}|{a}|{b}") or {}
+                y = e.get("year")
+                ph = e.get("phase") or next((p for y0, y1, p in rec.get("phase_years") or [] if y is not None and y0 <= y <= y1), None)
+                if ph:
+                    return ph
         name = next((p["name"] for p in self.data.get("pieces", []) if p["c0"] - 5 <= c <= p["c1"] + 5), None)
         return ((ms.get("piece_phase") or {}).get(self.id) or {}).get(name) or (ms.get("line_phase") or {}).get(self.id) or "later"
 
@@ -847,7 +862,7 @@ class MetroProfile:
         """The era rules over the whole line (Metro with the structure record): types per step and the flagged pockets."""
         if self.is_rer or not getattr(self, "ms", None):
             return None
-        key = (tuple(self.st), tuple((p["c"], p["z"]) if isinstance(p, dict) else tuple(p) for p in self.pvi), id(self._ground), self.length)
+        key = (tuple(self.st), tuple((p["c"], p["z"]) if isinstance(p, dict) else tuple(p) for p in self.pvi), id(self._ground), self.length, id(getattr(self, "chr", None)))
         cached = getattr(self, "_types", None)
         if cached and cached["key"] == key:
             return cached
@@ -949,8 +964,7 @@ class MetroProfile:
         if ms:   # the record: the box, else the tube of the phase the stretch was built in
             if t == "cutcover" and not self.river_at(c):
                 return {"k": "box", "below": ms["box"]["below"], "top": ms["box"]["top"]}
-            name = next((p["name"] for p in self.data.get("pieces", []) if p["c0"] - 5 <= c <= p["c1"] + 5), None)
-            ph = ((ms.get("piece_phase") or {}).get(self.id) or {}).get(name) or (ms.get("line_phase") or {}).get(self.id) or "later"
+            ph = self._phase_at(c)
             return _tube_of(ms["tubes"][(ms["phases"].get(ph) or ms["phases"]["later"])["tube"]])
         if self.river_at(c) or t == "deep":
             return METRO_ST["tube"]

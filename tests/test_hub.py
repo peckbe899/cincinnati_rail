@@ -45,5 +45,6 @@ def test_pipeline_triggers():
     assert trigger_for("deck/layout") == "deck_tie"
     assert trigger_for("alignments/Line_8") == "3d" and trigger_for("config/settings_rer") == "3d"
     assert trigger_for("snapshots/region") is None and trigger_for("roadmap/r1") is None
+    assert trigger_for("chronology/segments") == "3d" and trigger_for("params/metro_structure") == "3d"
     html = (Path(__file__).resolve().parent.parent / "data/profile/profiles.html").read_text(encoding="utf8")
     assert js_object(html, "METRO_DEFAULTS")["platform"] == 121.92 and js_object(html, "RER_DEFAULTS")["platform"] == 204.2

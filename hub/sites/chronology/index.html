@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chronology</title>
+<style>
+:root { --bg:#f6f5f1; --panel:#fff; --ink:#1c2126; --muted:#69737c; --line:#e1ded6; --accent:#2f6fb3; --ok:#2e7d4f; --warn:#b26a00; --bad:#b3261e; --map:#eceae3; }
+@media (prefers-color-scheme: dark) { :root { --bg:#14181c; --panel:#1d2329; --ink:#e7ecf0; --muted:#97a2ab; --line:#2c343b; --accent:#7fb2ea; --ok:#6cc58f; --warn:#e6a54a; --bad:#f08a80; --map:#1a1f24; } }
+* { box-sizing:border-box }
+body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif; height:100vh; display:flex; flex-direction:column }
+header { padding:8px 14px; display:flex; flex-wrap:wrap; gap:14px; align-items:center; border-bottom:1px solid var(--line) }
+header h1 { font-size:17px; margin:0 }
+header label { display:flex; gap:6px; align-items:center; font-size:13px }
+main { flex:1; display:flex; min-height:0 }
+#map { flex:1; position:relative; background:var(--map); min-width:0 }
+#map canvas { position:absolute; inset:0; width:100%; height:100%; cursor:crosshair }
+aside { width:360px; max-width:45vw; overflow:auto; border-left:1px solid var(--line); background:var(--panel); padding:12px 14px 60px }
+aside h2 { font-size:14px; margin:14px 0 6px }
+.muted { color:var(--muted) } .bad { color:var(--bad) } .ok { color:var(--ok) } .warn { color:var(--warn) }
+.row { display:flex; gap:8px; align-items:center; margin:6px 0; flex-wrap:wrap }
+input, select, textarea, button { font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:5px; padding:3px 7px }
+button { cursor:pointer } button.primary { background:var(--accent); color:#fff; border-color:var(--accent) }
+ul { margin:4px 0; padding-left:18px } li { margin:2px 0 }
+.legend span { display:inline-flex; align-items:center; gap:4px; margin-right:10px; font-size:12px }
+.legend i { width:18px; height:4px; border-radius:2px; display:inline-block }
+.small { font-size:12px }
+a.seg { color:var(--accent); cursor:pointer; text-decoration:none }
+#hint { position:absolute; left:10px; bottom:46px; font-size:12px; background:var(--panel); padding:4px 8px; border-radius:5px; border:1px solid var(--line); max-width:70% }
+</style>
+</head>
+<body>
+<header>
+  <h1>Chronology</h1>
+  <label>Colour by <select id="colBy"><option value="phase">Phase</option><option value="year">Opening year</option></select></label>
+  <label>Network as of <input type="range" id="asOf" min="1900" max="2030" step="1" value="2030"> <b id="asOfV">all</b></label>
+  <label><input type="checkbox" id="showTri" checked> TRI</label>
+  <label><input type="checkbox" id="showMetro" checked> Metro</label>
+  <span class="legend" id="legend"></span>
+</header>
+<main>
+  <div id="map"><canvas id="cv"></canvas><div id="hint">Click a station, then another on the same line to select the segments between. Shift-click adds a segment, Alt-drag draws a box round segments. Esc clears.</div></div>
+  <aside>
+    <div id="sel"><p class="muted">Nothing selected.</p></div>
+    <h2>Rule breaks <span id="nViol" class="muted"></span></h2><div id="viol"></div>
+    <h2>Not set <span id="nUnset" class="muted"></span></h2><div id="unset" class="small"></div>
+    <h2>Orphans <span id="nOrph" class="muted"></span></h2><div id="orph" class="small"></div>
+    <h2>Infill stations <span id="nInf" class="muted"></span></h2><div id="inf" class="small"></div>
+    <p class="muted small" id="about"></p>
+  </aside>
+</main>
+<script src="/hub/chronology_rules.js"></script>
+<script>
+// The Chronology view (Ben, 28 October): the opening year and phase of every Metro and TRI segment and station, in the hub's
+// record chronology/segments. The phase sets each stretch's tunnel (Rail Profiles, Deck, Station 3D). Order rules in
+// /hub/chronology_rules.js: outward from each line's core never older; a station no earlier than its track (later is infill).
+const $ = (id) => document.getElementById(id), esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const C = window.CHRONO, PH_COL = { 1: '#2f6fb3', 2: '#c2571a', 3: '#2e8b57', later: '#8e5bb5' };
+let R = [], REC = null, A = null, DB = null;
+const S = { sel: new Set(), st: null, view: null, drag: null, hover: null };
+const yearCol = (y) => { const t = Math.max(0, Math.min(1, (y - 1900) / 110)); return `hsl(${Math.round(220 - 200 * t)},65%,${Math.round(42 + 8 * t)}%)`; };
+
+// ---- geometry: each segment's polyline (lon, lat) between its two stations ----
+const SEG = new Map();   // key -> {key, sys, routes: [route], pts: [[lon, lat]], a, b}
+function slice(route, c0, c1) {
+  const out = [], P = route.path; let lo = Math.min(c0, c1), hi = Math.max(c0, c1);
+  const at = (c) => { for (let i = 1; i < P.length; i++) if (P[i][0] >= c) { const a = P[i - 1], b = P[i], t = b[0] > a[0] ? (c - a[0]) / (b[0] - a[0]) : 0; return [a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; } return [P[P.length - 1][1], P[P.length - 1][2]]; };
+  out.push(at(lo)); for (const p of P) if (p[0] > lo && p[0] < hi) out.push([p[1], p[2]]); out.push(at(hi)); return out;
+}
+function buildSegs() {
+  SEG.clear();
+  for (const r of R) r.segments.forEach((k, i) => {
+    const a = r.stations[i], b = r.stations[i + 1];
+    if (!SEG.has(k)) SEG.set(k, { key: k, sys: r.sys, routes: [], pts: slice(r, a.c, b.c), a: a.name, b: b.name });
+    SEG.get(k).routes.push(r);
+  });
+}
+const STN = () => { const m = new Map(); for (const r of R) for (const s of r.stations) { const k = C.stKey(r.sys, s.name); if (!m.has(k)) m.set(k, { key: k, name: s.name, sys: r.sys, lon: s.lon, lat: s.lat, routes: [] }); m.get(k).routes.push(r); } return m; };
+let STATIONS = new Map();
+
+// ---- the map ----
+const cv = $('cv'), cx = cv.getContext('2d');
+const K = Math.cos(39.1 * Math.PI / 180);
+function fit() {
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const r of R) for (const p of r.path) { x0 = Math.min(x0, p[1]); x1 = Math.max(x1, p[1]); y0 = Math.min(y0, p[2]); y1 = Math.max(y1, p[2]); }
+  const w = cv.clientWidth, h = cv.clientHeight, s = Math.min(w / ((x1 - x0) * K), h / (y1 - y0)) * 0.92;
+  S.view = { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, s };
+}
+const toS = (lon, lat) => [cv.clientWidth / 2 + (lon - S.view.cx) * K * S.view.s, cv.clientHeight / 2 - (lat - S.view.cy) * S.view.s];
+const toW = (x, y) => [S.view.cx + (x - cv.clientWidth / 2) / (K * S.view.s), S.view.cy - (y - cv.clientHeight / 2) / S.view.s];
+const shown = (sys) => (sys === 'tri' ? $('showTri').checked : $('showMetro').checked);
+function draw() {
+  const dpr = window.devicePixelRatio || 1; cv.width = cv.clientWidth * dpr; cv.height = cv.clientHeight * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  cx.clearRect(0, 0, cv.clientWidth, cv.clientHeight); if (!REC || !S.view) return;
+  const asOf = +$('asOf').value, all = asOf >= 2030, by = $('colBy').value, bad = new Set(A.violations.filter((v) => v.key).map((v) => v.key));
+  const css = getComputedStyle(document.documentElement), muted = css.getPropertyValue('--muted'), badC = css.getPropertyValue('--bad'), ink = css.getPropertyValue('--ink');
+  for (const pass of [0, 1, 2]) for (const s of SEG.values()) {
+    if (!shown(s.sys)) continue;
+    const y = C.segYear(REC, s.key), ph = C.segPhase(REC, s.key);
+    if (!all && (y == null || y > asOf)) continue;
+    const sel = S.sel.has(s.key);
+    if ((pass === 0) !== sel && pass !== 2) { if (pass === 0 || !sel) { if (pass === 1) continue; } }
+    cx.beginPath(); s.pts.forEach(([lon, lat], i) => { const [x, yy] = toS(lon, lat); i ? cx.lineTo(x, yy) : cx.moveTo(x, yy); });
+    if (pass === 0) { if (!sel) continue; cx.strokeStyle = '#f5c400'; cx.lineWidth = 9; cx.setLineDash([]); cx.stroke(); continue; }
+    if (pass === 1) { if (!bad.has(s.key)) continue; cx.strokeStyle = badC; cx.lineWidth = 7; cx.setLineDash([]); cx.stroke(); continue; }
+    const unset = y == null && !ph;
+    cx.strokeStyle = unset ? muted : by === 'year' ? (y != null ? yearCol(y) : muted) : PH_COL[ph] || muted;
+    cx.lineWidth = s.sys === 'tri' ? 2.5 : 3.5; cx.setLineDash(unset || (by === 'year' && y == null) ? [6, 5] : []); cx.stroke();
+  }
+  cx.setLineDash([]);
+  const r0 = S.view.s > 3000 ? 3.5 : 2.2;
+  for (const st of STATIONS.values()) {
+    if (!shown(st.sys)) continue; const info = A.stations[st.key] || {}; if (!all && !(info.year != null && info.year <= asOf)) continue;
+    const [x, y] = toS(st.lon, st.lat); cx.beginPath(); cx.arc(x, y, info.infill ? r0 + 1.5 : r0, 0, 7);
+    cx.fillStyle = S.st === st.key ? '#f5c400' : info.infill ? '#fff' : ink; cx.fill(); if (info.infill) { cx.strokeStyle = ink; cx.lineWidth = 1.5; cx.stroke(); }
+    if (S.view.s > 9000 || S.st === st.key) { cx.fillStyle = ink; cx.font = '11px system-ui'; cx.fillText(st.name, x + 5, y - 4); }
+  }
+  if (S.drag && S.drag.box) { const [a, b, c, d] = S.drag.box; cx.strokeStyle = '#f5c400'; cx.setLineDash([4, 3]); cx.strokeRect(a, b, c - a, d - b); cx.setLineDash([]); }
+}
+function legend() {
+  $('legend').innerHTML = $('colBy').value === 'phase' ? Object.entries(PH_COL).map(([k, c]) => `<span><i style="background:${c}"></i>${C.PHASE_NAME[k]}</span>`).join('') + '<span><i style="background:repeating-linear-gradient(90deg,var(--muted) 0 5px,transparent 5px 9px)"></i>Not set</span>'
+    : [1905, 1935, 1965, 1995].map((y) => `<span><i style="background:${yearCol(y)}"></i>${y}</span>`).join('') + '<span><i style="background:repeating-linear-gradient(90deg,var(--muted) 0 5px,transparent 5px 9px)"></i>No year</span>';
+}
+
+// ---- picking ----
+function nearestStation(x, y) { let best = 10, b = null; for (const st of STATIONS.values()) { if (!shown(st.sys)) continue; const [sx, sy] = toS(st.lon, st.lat), d = Math.hypot(sx - x, sy - y); if (d < best) { best = d; b = st; } } return b; }
+function nearestSeg(x, y) {
+  let best = 8, b = null;
+  for (const s of SEG.values()) { if (!shown(s.sys)) continue; for (let i = 1; i < s.pts.length; i++) {
+    const [ax, ay] = toS(...s.pts[i - 1]), [bx, by] = toS(...s.pts[i]), dx = bx - ax, dy = by - ay, L2 = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / L2)), d = Math.hypot(ax + t * dx - x, ay + t * dy - y);
+    if (d < best) { best = d; b = s; } } }
+  return b;
+}
+function between(st1, st2) {   // the segments of a route between two of its stations
+  for (const r of st1.routes) {
+    if (!st2.routes.includes(r)) continue;
+    const i = r.stations.findIndex((s) => s.name === st1.name), j = r.stations.findIndex((s) => s.name === st2.name);
+    if (i < 0 || j < 0 || i === j) continue; const [a, b] = [Math.min(i, j), Math.max(i, j)]; return r.segments.slice(a, b);
+  }
+  return null;
+}
+
+// ---- the side panel ----
+function selPanel(msg) {
+  const el = $('sel');
+  if (S.st && !S.sel.size) {
+    const st = STATIONS.get(S.st), info = A.stations[S.st] || {}, own = (REC.stations || {})[S.st] || {};
+    el.innerHTML = `<h2 style="margin-top:0">${esc(st.name)} <span class="muted small">${st.sys === 'tri' ? 'TRI' : 'Metro'} station · ${esc(st.routes.map((r) => r.name).join(', '))}</span></h2>
+      <p class="small">Track here opened ${info.min ?? '<span class="muted">not set</span>'}; the station ${info.own != null ? `${info.own}${info.infill ? ' <b>(infill)</b>' : ''}` : 'with its track'}.</p>
+      <div class="row"><label>Opening year <input id="stY" type="number" min="1850" max="2100" style="width:90px" value="${own.year ?? ''}"></label></div>
+      <div class="row"><input id="stN" placeholder="Note" style="flex:1" value="${esc(own.note || '')}"></div>
+      <div class="row"><button class="primary" id="stApply">Set</button><button id="stClear">Clear (with its track)</button></div>
+      <p class="muted small">Click another station on the same line to select the segments between them.</p><div id="msg">${msg || ''}</div>`;
+    $('stApply').onclick = () => apply({ stations: { [S.st]: { year: $('stY').value ? +$('stY').value : null, note: $('stN').value || null, src: 'Ben' } } });
+    $('stClear').onclick = () => apply({ stations: { [S.st]: { year: null, note: null, src: null } } });
+    return;
+  }
+  if (!S.sel.size) { el.innerHTML = '<p class="muted">Nothing selected.</p>' + (msg || ''); return; }
+  const ks = [...S.sel], ys = [...new Set(ks.map((k) => C.segYear(REC, k)))], ps = [...new Set(ks.map((k) => (REC.segments[k] || {}).phase || ''))];
+  const routes = [...new Set(ks.flatMap((k) => (SEG.get(k) ? SEG.get(k).routes.map((r) => r.name) : [])))];
+  const rg = ks.length === 1 && A.ranges[ks[0]] ? A.ranges[ks[0]] : null, e1 = ks.length === 1 ? REC.segments[ks[0]] || {} : {};
+  el.innerHTML = `<h2 style="margin-top:0">${ks.length === 1 ? esc(C.keyName(ks[0])) : ks.length + ' segments'}</h2>
+    <p class="small muted">${esc(routes.join(', '))}${ks.length > 1 ? '' : SEG.get(ks[0]) && SEG.get(ks[0]).routes.length > 1 ? ' · shared: one year for every line' : ''}</p>
+    <p class="small">Now: ${ys.map((y) => y ?? 'no year').join(', ')}; phase ${ps.map((p) => (p ? C.PHASE_NAME[p] : 'from the year')).join(', ')}${ks.length === 1 && e1.src ? ` · from ${esc(e1.src)}` : ''}${e1.note ? `<br>${esc(e1.note)}` : ''}${rg ? `<br>May take ${rg[0] ?? 'any year'} to ${rg[1] ?? 'any year'} (the segments either side)` : ''}</p>
+    <div class="row"><label>Opening year <input id="sgY" type="number" min="1850" max="2100" style="width:90px" value="${ys.length === 1 && ys[0] != null ? ys[0] : ''}"></label>
+      <label ${ks.every((k) => k.startsWith('tri|')) ? 'hidden' : ''}>Phase <select id="sgP"><option value="">from the year</option>${Object.keys(PH_COL).map((p) => `<option value="${p}" ${ps.length === 1 && ps[0] === p ? 'selected' : ''}>${C.PHASE_NAME[p]}</option>`).join('')}</select></label></div>
+    <div class="row"><input id="sgN" placeholder="Note" style="flex:1" value="${ks.length === 1 ? esc(e1.note || '') : ''}"></div>
+    <div class="row"><button class="primary" id="sgApply">Set</button><button id="sgClear">Clear (not set)</button></div><div id="msg">${msg || ''}</div>
+    <p class="muted small">Phase from the year: ${(REC.phase_years || []).map(([a, b, p]) => `${C.PHASE_NAME[p]} ${a <= 1800 ? 'to' : a}${a <= 1800 ? '' : '-'}${b >= 2200 ? 'on' : b}`).join(', ')}.</p>`;
+  const patch = () => ({ year: $('sgY').value ? +$('sgY').value : null, phase: $('sgP').value || null, note: $('sgN').value || null, src: 'Ben' });
+  $('sgApply').onclick = () => { const p = patch(); if (ks.every((k) => k.startsWith('tri|'))) delete p.phase; /* TRI: years only */ if (ks.length > 1 && !$('sgN').value) delete p.note; apply({ segments: Object.fromEntries(ks.map((k) => [k, p])) }); };
+  $('sgClear').onclick = () => apply({ segments: Object.fromEntries(ks.map((k) => [k, { year: null, phase: null, note: null, src: null }])) });
+}
+async function apply(edit, push = false) {
+  const res = C.tryEdit(R, REC, edit, push);
+  if (res.refused.length) return selPanel(`<p class="bad small"><b>Not set:</b> ${res.refused.map((v) => esc(v.text)).join('; ')}.</p>`);
+  if (res.pushable.length && !push) {
+    selPanel(`<p class="warn small">${res.pushable.length} segment${res.pushable.length > 1 ? 's' : ''} further out would be older than this: ${res.pushable.slice(0, 4).map((v) => esc(v.text)).join('; ')}${res.pushable.length > 4 ? ' ...' : ''}.</p>
+      <div class="row"><button class="primary" id="doPush">Push them (and their stations) to the same year</button><button id="noPush">Cancel</button></div>`);
+    $('doPush').onclick = () => apply(edit, true); $('noPush').onclick = () => selPanel(); return;
+  }
+  REC = res.rec; A = res.analysis; await DB.doc('chronology/segments').set(REC); refresh(); selPanel('<p class="ok small">Saved.</p>');
+}
+function lists() {
+  const name = (k) => esc(C.keyName(k)), link = (k) => `<a class="seg" data-k="${esc(k)}">${name(k)}</a>`;
+  $('nViol').textContent = `(${A.violations.length})`;
+  $('viol').innerHTML = A.violations.length ? '<ul class="small">' + A.violations.map((v) => `<li class="bad">${v.key ? link(v.key) + ': ' : ''}${esc(v.text)}</li>`).join('') + '</ul>' : '<p class="ok small">None.</p>';
+  const byR = {}; for (const k of A.unset) { const s = SEG.get(k); if (s) for (const r of s.routes) (byR[r.name] = byR[r.name] || []).push(k); }
+  $('nUnset').textContent = `(${A.unset.length} of ${SEG.size})`;
+  $('unset').innerHTML = Object.entries(byR).sort().map(([n, ks]) => `<details><summary>${esc(n)}: ${ks.length}</summary>${ks.map(link).join('<br>')}</details>`).join('');
+  const o = A.orphans; $('nOrph').textContent = `(${o.segments.length + o.stations.length})`;
+  $('orph').innerHTML = o.segments.length + o.stations.length ? '<p class="muted">Kept: their stations are no longer on a line (after a Deck edit, or a name the line does not have).</p><ul>' + o.segments.map((k) => `<li>${name(k)}: ${esc(JSON.stringify(REC.segments[k]))}</li>`).join('') + o.stations.map((k) => `<li>${esc(k)}</li>`).join('') + '</ul>' : '<p class="ok">None.</p>';
+  const inf = Object.entries(A.stations).filter(([, s]) => s.infill); $('nInf').textContent = `(${inf.length})`;
+  $('inf').innerHTML = inf.map(([k, s]) => `${esc(k.split('|')[1])} ${s.own} (track ${s.min})`).join('<br>') || '<span class="muted">None.</span>';
+}
+document.addEventListener('click', (e) => { const a = e.target.closest('a.seg'); if (a) focus(a.dataset.k); });
+function focus(k) { const s = SEG.get(k); if (!s) return; S.sel = new Set([k]); S.st = null; const m = s.pts[Math.floor(s.pts.length / 2)]; S.view.cx = m[0]; S.view.cy = m[1]; S.view.s = Math.max(S.view.s, 6000); draw(); selPanel(); history.replaceState(null, '', '#' + encodeURIComponent(k)); }
+function refresh() { A = C.analyse(R, REC); lists(); draw(); }
+
+// ---- mouse ----
+cv.addEventListener('mousedown', (e) => { const r = cv.getBoundingClientRect(); S.drag = { x: e.clientX - r.left, y: e.clientY - r.top, cx: S.view.cx, cy: S.view.cy, alt: e.altKey, moved: false }; });
+window.addEventListener('mousemove', (e) => {
+  if (!S.drag) return; const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  if (Math.hypot(x - S.drag.x, y - S.drag.y) > 3) S.drag.moved = true;
+  if (S.drag.alt) S.drag.box = [Math.min(x, S.drag.x), Math.min(y, S.drag.y), Math.max(x, S.drag.x), Math.max(y, S.drag.y)];
+  else { S.view.cx = S.drag.cx - (x - S.drag.x) / (K * S.view.s); S.view.cy = S.drag.cy + (y - S.drag.y) / S.view.s; }
+  draw();
+});
+window.addEventListener('mouseup', (e) => {
+  const d = S.drag; S.drag = null; if (!d) return; const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  if (d.alt && d.box) { const [a, b, c, dd] = d.box; for (const s of SEG.values()) { if (!shown(s.sys)) continue; const [mx, my] = toS(...s.pts[Math.floor(s.pts.length / 2)]); if (mx >= a && mx <= c && my >= b && my <= dd) S.sel.add(s.key); } S.st = null; draw(); selPanel(); return; }
+  if (d.moved) return;
+  const st = nearestStation(x, y);
+  if (st) {
+    if (S.st && S.st !== st.key) { const ks = between(STATIONS.get(S.st), st); if (ks) { if (!e.shiftKey) S.sel.clear(); ks.forEach((k) => S.sel.add(k)); S.st = null; draw(); selPanel(); return; } }
+    S.st = st.key; if (!e.shiftKey) S.sel.clear(); draw(); selPanel(); return;
+  }
+  const s = nearestSeg(x, y);
+  if (s) { if (e.shiftKey) { S.sel.has(s.key) ? S.sel.delete(s.key) : S.sel.add(s.key); } else S.sel = new Set([s.key]); S.st = null; draw(); selPanel(); history.replaceState(null, '', '#' + encodeURIComponent(s.key)); return; }
+  if (!e.shiftKey) { S.sel.clear(); S.st = null; draw(); selPanel(); }
+});
+cv.addEventListener('wheel', (e) => { e.preventDefault(); const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, [lon, lat] = toW(x, y), f = Math.exp(-e.deltaY * 0.0015);
+  S.view.s *= f; const [lon2, lat2] = toW(x, y); S.view.cx += lon - lon2; S.view.cy += lat - lat2; draw(); }, { passive: false });
+window.addEventListener('keydown', (e) => { if (e.key === 'Escape') { S.sel.clear(); S.st = null; draw(); selPanel(); } });
+window.addEventListener('resize', draw);
+window.addEventListener('hashchange', () => { if (location.hash.length > 1 && REC) focus(decodeURIComponent(location.hash.slice(1))); });
+$('asOf').addEventListener('input', () => { $('asOfV').textContent = +$('asOf').value >= 2030 ? 'all' : $('asOf').value; draw(); });
+['colBy', 'showTri', 'showMetro'].forEach((id) => $(id).addEventListener('change', () => { legend(); draw(); }));
+
+// ---- data ----
+(async () => {
+  const routes = await fetch('/profiles/chronology_lines.json').then((r) => r.json());
+  R = routes.routes; buildSegs(); STATIONS = STN(); fit(); legend();
+  $('about').textContent = `${R.length} routes (Metro lines and the TRI's lettered routes), ${SEG.size} segments, ${STATIONS.size} stations. A segment shared by several lines is one segment. Saved in the hub (chronology/segments); the phase of each stretch sets its tunnel in the Rail Profiles, the Deck and Station 3D.`;
+  DB = (await window.claude.use('db'));
+  DB.doc('chronology/segments').onSnapshot((d) => {
+    REC = d.exists ? d.data() : { phase_years: [], segments: {}, stations: {}, core: {} }; REC.segments = REC.segments || {}; REC.stations = REC.stations || {};
+    refresh(); selPanel();
+    if (location.hash.length > 1 && !S.sel.size) focus(decodeURIComponent(location.hash.slice(1)));
+  });
+})();
+</script>
+</body>
+</html>

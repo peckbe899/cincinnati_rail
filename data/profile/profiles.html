@@ -611,7 +611,7 @@ function gradeAt(c, verts = VERTS) {
 }
 // the straight grades between bends (for limits, labels and the overview)
 const chords = (verts = VERTS) => design(verts).dv;
-window.railProfile = { railAt: (c) => railAt(c), typeAt: (c) => typeAt(c), curveAt: (c) => ({ grade: gradeAt(c), allowance: allowanceAt(c), radius: radiusAt(c) }), line: () => S.data && S.data.id, issues: () => S.issues || [], view: (c0, c1) => { S.view = { c0, c1 }; schedule(); }, align: () => JSON.parse(JSON.stringify(S.align)), exportGeo: () => { const m = exportModel(); return { runs: m.runs.length, pts: m.runs.reduce((a, r) => a + r.pts.length, 0), stations: m.stations.length }; }, kml: () => buildKml(), platforms: () => (isRer() ? [] : S.stations.map((s, i) => ({ name: s.name, c: s.c, ...platformCurve(i), R: isFinite(platformCurve(i).R) ? platformCurve(i).R : null }))), drawing: () => (isRer() ? [] : drawingFlags(S.data)), saved: () => !!(S.data && S.saved[S.data.id]) };
+window.railProfile = { railAt: (c) => railAt(c), typeAt: (c) => typeAt(c), phaseAt: (c) => phaseAt(c), chrSegments: () => chrSegments(), curveAt: (c) => ({ grade: gradeAt(c), allowance: allowanceAt(c), radius: radiusAt(c) }), line: () => S.data && S.data.id, issues: () => S.issues || [], view: (c0, c1) => { S.view = { c0, c1 }; schedule(); }, align: () => JSON.parse(JSON.stringify(S.align)), exportGeo: () => { const m = exportModel(); return { runs: m.runs.length, pts: m.runs.reduce((a, r) => a + r.pts.length, 0), stations: m.stations.length }; }, kml: () => buildKml(), platforms: () => (isRer() ? [] : S.stations.map((s, i) => ({ name: s.name, c: s.c, ...platformCurve(i), R: isFinite(platformCurve(i).R) ? platformCurve(i).R : null }))), drawing: () => (isRer() ? [] : drawingFlags(S.data)), saved: () => !!(S.data && S.saved[S.data.id]) };
 function overrideAt(c) { const o = S.align.ovr; for (let k = o.length - 1; k >= 0; k--) if (c >= o[k][0] && c <= o[k][1]) return o[k][2]; return null; }
 // ---------- canon ----------
 function buildCanon() {
@@ -745,8 +745,24 @@ function applyMS(p) {
   OPEN_CLEAR.metro = p.open_clear_height;
 }
 // the phase a stretch of a Metro line was built in (Ben sets it per drawn piece), and its bored tunnel
+// the Chronology record (hub chronology/segments, Ben 28 October): the phase of the segment (between two stations) a
+// chainage is in, set by hand or from its opening year; where a segment is not set, the structure record's phase stands
+let CHR = null;
+const chrPhaseOfYear = (y) => { if (y == null || !CHR) return null; for (const [a, b, p] of CHR.phase_years || []) if (y >= a && y <= b) return p; return null; };
+function chrSegments() {   // this line's segments: [{key, c0, c1, year, phase, src}]
+  if (!CHR || !S.data || !S.stations || S.stations.length < 2) return [];
+  if (S._chr && S._chr.rec === CHR && S._chr.st === S.stations) return S._chr.list;
+  const sys = isRer() ? 'tri' : 'metro', st = S.stations.slice().sort((a, b) => a.c - b.c), list = [];
+  for (let i = 0; i + 1 < st.length; i++) {
+    const [x, y] = [st[i].name, st[i + 1].name].sort(), key = sys === 'metro' ? `metro|${S.data.id}|${x}|${y}` : `tri|${x}|${y}`, e = (CHR.segments || {})[key] || {};   // Metro: per line; TRI: shared track is one segment
+    const yr = e.year == null || e.year === '' ? null : +e.year;
+    list.push({ key, c0: i ? st[i].c : 0, c1: i + 2 < st.length ? st[i + 1].c : S.L, year: yr, phase: e.phase || chrPhaseOfYear(yr), set: !!(e.phase || yr != null) });
+  }
+  S._chr = { rec: CHR, st: S.stations, list }; return list;
+}
 function phaseAt(c, id = S.data && S.data.id) {
   if (!MS) return null;
+  if (CHR && id === (S.data && S.data.id)) { const sg = chrSegments().find((s) => c >= s.c0 && c <= s.c1); if (sg && sg.phase) return sg.phase; }
   const pc = id === (S.data && S.data.id) ? pieceAt(S.data, c) : '';
   return ((MS.piece_phase || {})[id] || {})[pc] || (MS.line_phase || {})[id] || 'later';
 }
@@ -854,7 +870,7 @@ function pointType(c, z) {   // one chainage on its own: the type, or for a Metr
 // the era rules over the whole line, cached with the profile (VERTS), the ground and the record
 function stretchTypes() {
   const V = VERTS; if (!S.data || isRer() || !MS || !V) return null;
-  if (V._types && V._types.g === S.ground && V._types.ms === MS && V._types.L === S.L) return V._types;
+  if (V._types && V._types.g === S.ground && V._types.ms === MS && V._types.chr === CHR && V._types.L === S.L) return V._types;
   const step = S.step || 2, n = Math.floor(S.L / step) + 1, P = [], flags = [];
   for (let i = 0; i < n; i++) { const c = Math.min(i * step, S.L), z = railAt(c); P.push(Object.assign({ c, z }, pointType(c, z))); }
   const runs = (a, b, f) => { const out = []; let s = -1; for (let i = a; i <= b + 1; i++) { const on = i <= b && f(P[i]); if (on && s < 0) s = i; if (!on && s >= 0) { out.push([s, i - 1]); s = -1; } } return out; };
@@ -895,7 +911,7 @@ function stretchTypes() {
     (p) => { const s = streetAt(p.c), tb = MS.tubes[tubeName(p.c)]; return `twin tubes under ${esc(s[3])} (${fmtZ(s[2], 1)} ${uLbl()}), narrower than their footprint (${fmtZ(tb.spacing + tb.outside, 1)} ${uLbl()}): the single bore or stacked tubes would stay under the street (proposed, not applied)`; });
   note((p) => p.t === 'cutcover' && p.cls && p.ph === '2' && tubeName(p.c) === 'bore' && p.d >= aFrom,
     () => `Phase 2 cut and cover deep enough for type A twin tubes (${fmtZ(aFrom, 2)} ${uLbl()}) but not the bore (${fmtZ(METRO_ST.bore.top + METRO_ST.bore.od, 2)} ${uLbl()}): twin tubes could bore here (proposed, not applied)`);
-  V._types = { g: S.ground, ms: MS, L: S.L, step, t: P.map((p) => p.t), z: P.map((p) => p.z), flags };
+  V._types = { g: S.ground, ms: MS, chr: CHR, L: S.L, step, t: P.map((p) => p.t), z: P.map((p) => p.z), flags };
   return V._types;
 }
 function autoType(c, z) {
@@ -1371,7 +1387,7 @@ function yRangeFor(view, plotW) {
 
 function draw(ctx, W, H, view, opt = {}) {
   const narrow = W < 560;
-  const M = { l: narrow ? 46 : 60, r: 14, t: opt.title ? 118 : (narrow ? 64 : 84), b: 56 };
+  const M = { l: narrow ? 46 : 60, r: 14, t: opt.title ? 118 : (narrow ? 64 : 84), b: CHR && !opt.title ? 74 : 56 };
   const P = { x: M.l, y: M.t, w: Math.max(10, W - M.l - M.r), h: Math.max(10, H - M.t - M.b) };
   let yr = opt.yr || yRangeFor(view, P.w);
   if (!opt.yr && S.yFrozen && S.drag) {
@@ -1663,6 +1679,17 @@ function draw(ctx, W, H, view, opt = {}) {
       if (xb - xa > 70) { ctx.fillStyle = '#fff'; ctx.font = `600 11px ${colors.ui}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(TYPES[t].label.toUpperCase(), (xa + xb) / 2, bandY + bandH / 2 + 0.5); }
       b0 = k;
     }
+  }
+  // the Chronology band: each segment's opening year and phase (click to open it in the Chronology view)
+  if (CHR && !opt.title) {
+    const cy = P.y + P.h + 52, ch = 13, PHC = { 1: '#2f6fb3', 2: '#c2571a', 3: '#2e8b57', later: '#8e5bb5' };
+    for (const sg of chrSegments()) {
+      const xa = Math.max(P.x, X(sg.c0)), xb = Math.min(P.x + P.w, X(sg.c1)); if (xb <= xa) continue;
+      ctx.fillStyle = sg.phase ? PHC[sg.phase] || muted : colors.grid; ctx.globalAlpha = sg.set ? 0.9 : 0.35; ctx.fillRect(xa + 0.5, cy, xb - xa - 1, ch); ctx.globalAlpha = 1;
+      const lab = sg.set ? `${sg.year ?? ''}${sg.year != null && sg.phase ? ' · ' : ''}${sg.phase ? (sg.phase === 'later' ? 'later' : 'P' + sg.phase) : ''}` : 'not set';
+      if (xb - xa > ctx.measureText(lab).width + 8) { ctx.fillStyle = sg.set ? '#fff' : muted; ctx.font = `600 10px ${colors.ui}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(lab, (xa + xb) / 2, cy + ch / 2 + 0.5); }
+    }
+    L.chrono = { y0: cy, y1: cy + ch };
   }
   // overrides marked under band
   for (const o of S.align.ovr) { const xa = X(o[0]), xb = X(o[1]); if (xb < P.x || xa > P.x + P.w) continue; ctx.fillStyle = ink; ctx.fillRect(Math.max(xa, P.x), bandY + bandH + 1, Math.min(xb, P.x + P.w) - Math.max(xa, P.x), 2); }
@@ -2008,6 +2035,7 @@ async function connect() {
   if (S.canWrite === false) { setStatus('readonly', 'View only'); syncUndo(); } else setStatus('saved', 'Saved');
   // the shared Metro structure record (hub): live
   db.doc('params/metro_structure').onSnapshot((d) => { if (d.exists) { applyMS(d.data()); if (S.data) changed(false); } }, () => {});
+  db.doc('chronology/segments').onSnapshot((d) => { if (d.exists) { CHR = d.data(); if (S.data) changed(false); } }, () => {});
   db.collection('alignments').onSnapshot((snap) => {
     snap.docs.forEach((d) => { S.saved[d.id] = d.data(); });
     refreshDefaultDocs();
@@ -2117,6 +2145,10 @@ const pointers = new Map(); let pinch = null;
 cv.addEventListener('pointerdown', (e) => {
   if (!LAYOUT) return; cv.focus({ preventScroll: true }); const { x, y } = evPos(e, cv); pointers.set(e.pointerId, { x, y });
   if (pointers.size === 2) { const [a, b] = [...pointers.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), view: { ...S.view }, cx: LAYOUT.C((a.x + b.x) / 2) }; S.drag = null; return; }
+  if (LAYOUT.chrono && y >= LAYOUT.chrono.y0 && y <= LAYOUT.chrono.y1) {   // the Chronology band: open that segment there
+    const c = LAYOUT.C(x), sg = chrSegments().find((s) => c >= s.c0 && c <= s.c1);
+    if (sg) { window.open((location.pathname.startsWith('/profiles') ? '/chronology/' : 'chronology.html') + '#' + encodeURIComponent(sg.key), 'chronology'); return; }
+  }
   cv.setPointerCapture(e.pointerId);
   let hit = S.canWrite === false ? null : hitTest(x, y);
   if (hit && ((hit.kind === 'st' && lockedStation(hit.i)) || (hit.kind === 'pvi' && lockAt(S.align.pvi[hit.j].c)))) { S.sel = hit; updatePanels(); schedule(); flash('Locked stretch: ' + ((hit.kind === 'st' ? lockedStation(hit.i) : lockAt(S.align.pvi[hit.j].c)).src || 'canon')); hit = null; S.drag = { kind: 'pan', x0: x, view: { ...S.view }, moved: false }; return; }
@@ -2497,6 +2529,7 @@ window.__api = { selectLine, save, changed, railAt, S, withLine, alignFromDoc, d
     try { const cj = await loadJSON('rer/canon.json'); RER_CANON = cj.lines || {}; RIVERS = cj.rivers || {}; } catch {}
     try { LINKS = await loadJSON('rer/links.json'); } catch {}
     if (!MS) try { applyMS(await loadJSON('metro_structure.json')); } catch {}   // the hub's record replaces it (connect)
+    if (!CHR) try { CHR = await loadJSON('chronology.json'); } catch {}
     const rer = await Promise.all(rIdx.map((l) => loadJSON(lineUrl(l.id)).catch(() => null)));
     rer.filter(Boolean).forEach((d) => { S.rerData[d.id] = d; S.cache[d.id] = d; });
     refreshDefaultDocs();
