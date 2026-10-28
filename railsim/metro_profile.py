@@ -808,7 +808,7 @@ class MetroProfile:
                 while i + 2 < len(sts) and c > sts[i + 1]["c"]:
                     i += 1
                 a, b = sorted((sts[i]["name"], sts[i + 1]["name"]))
-                e = (rec.get("segments") or {}).get(f"metro|{self.id}|{a}|{b}") or {}
+                e = (rec.get("segments") or {}).get(f"cvx|{a}|{b}" if self.id == "CVG_Express" else f"metro|{self.id}|{a}|{b}") or {}
                 y = e.get("year")
                 ph = e.get("phase") or next((p for y0, y1, p in rec.get("phase_years") or [] if y is not None and y0 <= y <= y1), None)
                 if ph:

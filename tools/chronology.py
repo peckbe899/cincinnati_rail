@@ -1,6 +1,7 @@
 """The Chronology record (hub chronology/segments; Ben, 28 October): opening year and phase of every Metro and TRI
 segment (between two neighbouring stations of a route) and station.
 
+- Systems: metro, tri, cvx (the CVG Express, the airport line: its own system, Ben 28 October).
 - Segment key: Metro, the line and the two station names, sorted ("metro|Line_11|Clay|Manhattan"); TRI, the two station
   names ("tri|City Hall|Fountain Square"), so track shared by several TRI routes is one segment (no Metro lines share
   track: two Metro lines between the same two stations run in their own tunnels). Station key: system and name.
@@ -90,7 +91,8 @@ def routes():
     out = []
     for fn in sorted(glob.glob(os.path.join(PROFILE, 'lines', '*_*.json'))):
         d = json.load(open(fn, encoding='utf8'))
-        out.append(dict(id=d['id'], sys='metro', name=d['line'], color=d.get('color'), kind='branch' if d['id'] == 'Line_2b' else 'line',
+        cvx = d['id'] == 'CVG_Express'   # the CVG Express: its own system, the airport line (Ben, 28 October)
+        out.append(dict(id=d['id'], sys='cvx' if cvx else 'metro', name=d['line'], color=d.get('color'), kind='branch' if d['id'] == 'Line_2b' else 'line',
                         parent='Line_2' if d['id'] == 'Line_2b' else None, data=d))
     for fn in sorted(glob.glob(os.path.join(PROFILE, 'rer', 'lines', 'RER_*_*.json'))):
         d = json.load(open(fn, encoding='utf8'))
@@ -136,7 +138,7 @@ def default_record(rs):
             k = seg_key('metro', a, b, lid)
             rec['segments'][k] = {'year': y, 'phase': '2', 'src': 'tracker', 'note': note + '; a station is not on the line'}
             rec['core'][lid] = [k]
-    for k in by['CVG_Express']['segments']:
+    for k in by['CVG_Express']['segments']:   # cvx|... keys
         rec['segments'][k] = {'year': 1969, 'phase': 'later', 'src': 'Ben', 'note': 'CVG Express opened 1969 (Ben); built as a later extension'}
     for r in rs:
         if r['sys'] == 'tri' and r.get('opened'):

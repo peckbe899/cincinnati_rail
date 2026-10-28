@@ -1,0 +1,350 @@
+{
+ "rows": [
+  {
+   "name": "Metro platform length",
+   "unit": "m",
+   "values": {
+    "profiles": 121.92,
+    "deck": 121.91,
+    "station3d": 121.92
+   },
+   "note": "Deck island platforms: 108 at 122 m, 79 at 120 m, 4 at 118 m",
+   "agree": true
+  },
+  {
+   "name": "Metro island platform width",
+   "unit": "m",
+   "values": {
+    "deck": 8
+   },
+   "note": null,
+   "agree": null
+  },
+  {
+   "name": "Metro side platform width",
+   "unit": "m",
+   "values": {
+    "deck": 4
+   },
+   "note": null,
+   "agree": null
+  },
+  {
+   "name": "Metro default station rail depth",
+   "unit": "m",
+   "values": {
+    "profiles": 7.62
+   },
+   "note": null,
+   "agree": null
+  },
+  {
+   "name": "Metro maximum grade",
+   "unit": "per mille",
+   "values": {
+    "profiles": 50
+   },
+   "note": null,
+   "agree": null
+  },
+  {
+   "name": "Metro platform grade limit",
+   "unit": "per mille",
+   "values": {
+    "profiles": 7.5
+   },
+   "note": null,
+   "agree": null
+  },
+  {
+   "name": "Metro vertical curve radius",
+   "unit": "m",
+   "values": {
+    "profiles": 1500
+   },
+   "note": null,
+   "agree": null
+  },
+  {
+   "name": "Metro box wall outside the outer track",
+   "unit": "m",
+   "values": {
+    "station3d": 2.5999999999999996
+   },
+   "note": null,
+   "agree": null
+  },
+  {
+   "name": "Metro platform top above rail",
+   "unit": "m",
+   "values": {
+    "station3d": 1.0
+   },
+   "note": null,
+   "agree": null
+  },
+  {
+   "name": "RER platform length",
+   "unit": "m",
+   "values": {
+    "profiles": 204.2,
+    "deck": 202.06,
+    "station3d": 204.216
+   },
+   "note": "Deck island platforms: 64 at 202 m, 44 at 204 m, 1 at 124 m",
+   "agree": false
+  },
+  {
+   "name": "RER island platform width",
+   "unit": "m",
+   "values": {
+    "deck": 11
+   },
+   "note": null,
+   "agree": null
+  },
+  {
+   "name": "RER side platform width",
+   "unit": "m",
+   "values": {
+    "deck": 6
+   },
+   "note": null,
+   "agree": null
+  },
+  {
+   "name": "RER default station rail depth",
+   "unit": "m",
+   "values": {
+    "profiles": 12
+   },
+   "note": null,
+   "agree": null
+  },
+  {
+   "name": "RER maximum grade",
+   "unit": "per mille",
+   "values": {
+    "profiles": 35
+   },
+   "note": null,
+   "agree": null
+  },
+  {
+   "name": "RER platform grade limit",
+   "unit": "per mille",
+   "values": {
+    "profiles": 2.5
+   },
+   "note": null,
+   "agree": null
+  },
+  {
+   "name": "RER vertical curve radius",
+   "unit": "m",
+   "values": {
+    "profiles": 3000
+   },
+   "note": null,
+   "agree": null
+  },
+  {
+   "name": "RER box wall outside the outer track",
+   "unit": "m",
+   "values": {
+    "station3d": 3.25
+   },
+   "note": null,
+   "agree": null
+  },
+  {
+   "name": "RER platform top above rail",
+   "unit": "m",
+   "values": {
+    "station3d": 1.0
+   },
+   "note": null,
+   "agree": null
+  },
+  {
+   "name": "Metro track centres, type A tubes",
+   "unit": "m",
+   "values": {
+    "profiles": 8.74,
+    "deck": 8.74,
+    "station3d": 8.74
+   },
+   "note": "the structure record",
+   "agree": true
+  },
+  {
+   "name": "Metro track centres, type C tubes",
+   "unit": "m",
+   "values": {
+    "profiles": 9.14,
+    "deck": 9.14,
+    "station3d": 9.14
+   },
+   "note": "the structure record",
+   "agree": true
+  },
+  {
+   "name": "Metro track centres, double-track bore",
+   "unit": "m",
+   "values": {
+    "profiles": 3.9,
+    "deck": 3.9,
+    "station3d": 3.9
+   },
+   "note": "the structure record",
+   "agree": true
+  },
+  {
+   "name": "Metro track centres, box",
+   "unit": "m",
+   "values": {
+    "profiles": 3.9,
+    "deck": 3.9,
+    "station3d": 3.9
+   },
+   "note": "the structure record",
+   "agree": true
+  },
+  {
+   "name": "Metro track centres at an island",
+   "unit": "m",
+   "values": {
+    "deck": 10.9,
+    "station3d": 10.9
+   },
+   "note": "the structure record",
+   "agree": true
+  },
+  {
+   "name": "Metro clear height under structures in the open",
+   "unit": "m",
+   "values": {
+    "profiles": 4.57
+   },
+   "note": "the structure record",
+   "agree": null
+  },
+  {
+   "name": "Platform slide limit (Deck)",
+   "unit": "m",
+   "values": {
+    "deck": 150
+   },
+   "note": null,
+   "agree": null
+  }
+ ],
+ "tie_issues": [
+  "Line 2b: 1 platforms off their Deck platform's centre (West Covington +14 m); run tools/rer_deck_routes.py --apply",
+  "Line 4: 1 platforms off their Deck platform's centre (Price Hill +24 m); run tools/rer_deck_routes.py --apply"
+ ],
+ "checks": [
+  {
+   "line": "Line 1",
+   "station": "Taft Theater",
+   "text": "side platforms on a bored stretch (shallow shield, A tunnel)"
+  },
+  {
+   "line": "Line 1",
+   "station": "Pennsylvania Station",
+   "text": "side platforms on a bored stretch (deep tube, A tunnel)"
+  },
+  {
+   "line": "Line 8",
+   "station": "Morrison",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 8",
+   "station": "Jefferson",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 8",
+   "station": "Mt Auburn",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 8",
+   "station": "River Rd",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 8",
+   "station": "Ludlow",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 8",
+   "station": "Highwater",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 10",
+   "station": "Cumber",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 10",
+   "station": "Elsinore",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 10",
+   "station": "Cincinnati Art Museum",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 10",
+   "station": "Paradrome",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 10",
+   "station": "Baines",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 10",
+   "station": "Prospect",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 10",
+   "station": "Division",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 10",
+   "station": "Grandview",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 10",
+   "station": "Bonnie Leslie",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 11",
+   "station": "Arsenal",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 11",
+   "station": "Park Place",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 12",
+   "station": "Stratford/Hughes",
+   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  }
+ ],
+ "synced_at": "2026-10-28T17:55:28Z",
+ "note": "Profiles values are its settings (config/settings, config/settings_rer) over its built-in defaults; Deck values are its constants as its own code has them, and platform lengths measured from the platforms it draws; Station 3D values are sync.py constants."
+}

@@ -218,3 +218,14 @@ Published: page version 6 and the snapshot (35 parts), read back at view level.
 - Rerun at the phase minimums: one approach still under it: the Line 3 box end at c 23,078, an S-ease on a 53 m curve (about 38 m against 40 m). Levee and the S-eases on 160-500 m curves pass.
 - Approach boxes outside the street (Ben: option C): accepted everywhere, each a warning in the Profiles ("Approach box": where it leaves the street, or how much wider it is) and in the 3D issues; 29 found; the 29 where the Deck has no streets stay unchecked.
 - The Deck draws its Metro tracks as the 3D build has them (Ben: switch the Deck): the build publishes each line's track offset every 10 m along the whole line with the tube (`params/tube_points`: E, N, tube, offset), and the Deck takes the offset at each point (a 50 m grid lookup), islands and approaches included; lines without published points keep the Deck's own spacing.
+
+## 2026-10-28: answers on the Chronology, stations and the CVG Express (Ben)
+
+- The CVG Express is not a Metro line: a separate entity, the dedicated airport line arriving airside at CVG. Its line file's system is "CVG Express" (and its generator's); the Chronology has it as its own system (`cvx|A|B` keys, its own switch on the map); it is out of the Metro "side platforms on a bored stretch" note; its own platforms (670 ft, 204.2 m, Ben 16 October) are used for its boxes and the 3D offsets (the earlier report took 122 m).
+- Line 11's opening segment: Manhattan to Bullock, 1939 (Ben chose Bullock for the tracker's "Ludlow", which is on Lines 8 and 2b); the orphan is gone; Line 11's core.
+- Goebel station is now Scholl (station data: Line 11, the Deck's context, the station records). Name history in the station's Chronology note: Goebel to early 1942, Commonwealth early 1942-1946, Scholl from 1946 (Hans and Sophie Scholl; Cincinnati and Covington Munich's sister city). Goebel Park keeps its name.
+- Baltimore (Line 3) and Freedom Center (Line 2) restored where they were (the editor's Restore, on the hub's saved profiles); Line 3's original termini (St Bernard to Baltimore) set as Phase 1 (tracker 2B), years not set.
+- Pearl Street Trunk: Line 1's first segment stays not set.
+- Track year and service year apart: shared track keeps its year (RER B's CVG track 1988) with each route's service year in `services` (RER E 1996); a line running onto older track is exempt from the order rule there, its own new segments still checked. No rule breaks now (3 exempt).
+- TRI defaults: the route data's opening year, marked "route data", editable.
+- Record now: 0 rule breaks, 0 orphans, 326 segments not set. The hub's records exported to `hub/seed`.

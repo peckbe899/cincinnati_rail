@@ -7,7 +7,8 @@
 // 2. Going outward from the core a segment is never older than the one it extends from.
 // 3. A station opens no earlier than the earliest segment that touches it (by default that year).
 // 4. A station later than that is infill (marked, not an error).
-// 5. A shared segment has one year and meets rule 2 on every line.
+// 5. A shared segment has one year (the track's) and meets rule 2 on every line, except that a line running onto older
+//    track is exempt there (its service year can be kept in the segment's `services`); its own new segments are checked.
 // 6. Unset segments are skipped; an unset segment between set ones gets the range of years it may take.
 (function (root) {
   // Metro: per line (no Metro lines share track); TRI: the station pair, so shared track is one segment
@@ -18,6 +19,7 @@
   const segOf = (rec, k) => (rec.segments || {})[k] || {};
   const segYear = (rec, k) => { const y = segOf(rec, k).year; return y == null || y === '' ? null : +y; };
   const segPhase = (rec, k) => segOf(rec, k).phase || phaseOfYear(rec, segYear(rec, k));
+  const SYS_NAME = { metro: 'Metro', tri: 'TRI', cvx: 'CVG Express' };
   const PHASE_NAME = { 1: 'Phase 1', 2: 'Phase 2', 3: 'Phase 3', later: 'Later' };
 
   function nearestC(route, lon, lat) {   // chainage of the route's path point nearest (lon, lat)
@@ -60,7 +62,8 @@
   }
 
   function analyse(routes, rec) {
-    const O = orders(routes, rec), viol = [], ranges = {}, unset = [];
+    const O = orders(routes, rec), viol = [], ranges = {}, unset = [], exempt = [], shared = {};
+    for (const r of routes) for (const k of r.segments) shared[k] = (shared[k] || 0) + 1;
     const label = keyName;
     for (const r of routes) {
       const o = O[r.id]; if (!o) continue;
@@ -74,6 +77,9 @@
         for (const s of side) {
           const y = segYear(rec, s.key);
           if (y == null) continue;
+          // a line running onto older track (shared with another route, opened before) is exempt there; its own new
+          // segments are still checked (Ben, 28 October: RER E on RER B's CVG track)
+          if (inside != null && y < inside && (shared[s.key] || 0) > 1) { exempt.push({ key: s.key, route: r.id, year: y }); continue; }
           if (inside != null && y < inside) viol.push({ rule: 2, key: s.key, route: r.id, need: inside, inner: insideKey,
             text: `${label(s.key)} (${r.name}) opened ${y}, before ${label(insideKey)} inside it (${inside})` });
           if (inside == null || y > inside) { inside = y; insideKey = s.key; }
@@ -105,7 +111,7 @@
     // orphans: record entries whose stations are not on any route (kept, listed)
     const segSet = new Set(routes.flatMap((r) => r.segments));
     const orphans = { segments: Object.keys(rec.segments || {}).filter((k) => !segSet.has(k)), stations: Object.keys(rec.stations || {}).filter((k) => !touch[k]) };
-    return { orders: O, violations: viol, ranges, unset, stations, orphans };
+    return { orders: O, violations: viol, ranges, unset, stations, orphans, exempt };
   }
 
   // an edit: {segments: {key: patch}, stations: {key: patch}}; refused when it would add a rule 2, 3 or 5 violation;
@@ -134,6 +140,6 @@
     return { ok: !added.length, refused, pushable: added.filter((v) => v.rule === 2 && !edited.has(v.key)), rec: clone, analysis: after };
   }
 
-  const api = { segKey, keyName, stKey, phaseOfYear, segYear, segPhase, PHASE_NAME, analyse, tryEdit, orders };
+  const api = { SYS_NAME, segKey, keyName, stKey, phaseOfYear, segYear, segPhase, PHASE_NAME, analyse, tryEdit, orders };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.CHRONO = api;
 })(typeof self !== 'undefined' ? self : this);

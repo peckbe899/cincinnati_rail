@@ -116,7 +116,7 @@ def tube_struct(name):
 def metro_phase(line_id, c=None):
     """the building phase of a Metro line's stretch at chainage c (the Chronology, else the structure record)"""
     import chronology
-    ph = chronology.phase_at(CHR, 'metro', STATIONS.get(line_id) or [], c, line_id) if CHR and c is not None else None
+    ph = chronology.phase_at(CHR, 'cvx' if line_id == 'CVG_Express' else 'metro', STATIONS.get(line_id) or [], c, line_id) if CHR and c is not None else None
     if not ph:   # not set in the Chronology: the structure record's phase for the drawn piece, else the line
         name = next((p['name'] for p in PIECES.get(line_id, []) if c is not None and p['c0'] - 5 <= c <= p['c1'] + 5), None)
         ph = ((MS.get('piece_phase') or {}).get(line_id) or {}).get(name) or (MS.get('line_phase') or {}).get(line_id) or 'later'
@@ -1013,7 +1013,7 @@ def main():
             cs2 = np.array([q[0] for q in smp], float)
             base2 = np.array([half_base(lid, 'metro', q[2], q[0]) for q in smp])
             so = (h_.get('align') or {}).get('so') or []
-            hp = float(MS.get('platform_half') or 121.92 / 2)
+            hp = float((d.get('settings') or {}).get('platform') or 121.92) / 2   # the line's own platforms (the CVG Express 204.2 m)
             sts = [dict(name=s_['name'], c=s_['c'] + (so[i] if i < len(so) and so[i] else 0)) for i, s_ in enumerate(d['stations'])]
             for s_ in sts:
                 s_['from_c'], s_['to_c'] = s_['c'] - hp, s_['c'] + hp
@@ -1038,7 +1038,7 @@ def main():
                 ty = plat_type.get((lid, norm(st['name'])))
                 bored = st['type'] in ('shield', 'deep')
                 tube = metro_tube(lid, st['c'])
-                if ty == 'side' and bored:
+                if ty == 'side' and bored and lid != 'CVG_Express':   # a Metro note (the CVG Express is its own system)
                     approach['side_bored'].append({'line': l['name'], 'station': st['name'], 'c': st['c'], 'type': st['type'], 'tube': tube})
                 if ty != 'island':
                     continue
@@ -1159,7 +1159,7 @@ def main():
                     per_st.setdefault(apx['station'], []).append(L_)
                     if apx['kind'] == 'side':
                         geom['side_tubes'].append(f"{apx['station']} ({name}): {L_:.0f} m approach box ({o_s * 2:.2f} to {o_r * 2:.2f} m)")
-            plat_len = float(d.get('platform_m') or 121.92)
+            plat_len = float((d.get('settings') or {}).get('platform') or 121.92)
             for s_, ls in per_st.items():
                 geom['longer'].append(f"{s_} ({name}): box {plat_len:.0f} m to {plat_len + sum(ls):.0f} m")
         geom['extra'] = extra_out

@@ -121,7 +121,8 @@ def main(variant: str = "Today"):
         others.append((e["id"], md["line"], "metro", np.column_stack(proj.to_xy(mp[:, 2], mp[:, 1])), mp[:, 0]))
     cr = crossings(pxy, ch, others, proj)
 
-    doc = {"id": LID, "line": "CVG Express", "system": "Cincinnati Metro", "variant": variant, "opened": 1969,
+    doc = {"id": LID, "line": "CVG Express", "system": "CVG Express",   # its own system: the airport line, airside at CVG (Ben, 28 October)
+           "variant": variant, "opened": 1969,
            "settings": {"platform": PLATFORM},
            "length_m": round(L, 1), "step_m": STEP,
            "ground_dm": [None if not np.isfinite(g) else int(round(g * 10)) for g in ground],

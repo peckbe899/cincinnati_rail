@@ -36,6 +36,7 @@ a.seg { color:var(--accent); cursor:pointer; text-decoration:none }
   <label>Network as of <input type="range" id="asOf" min="1900" max="2030" step="1" value="2030"> <b id="asOfV">all</b></label>
   <label><input type="checkbox" id="showTri" checked> TRI</label>
   <label><input type="checkbox" id="showMetro" checked> Metro</label>
+  <label><input type="checkbox" id="showCvx" checked> CVG Express</label>
   <span class="legend" id="legend"></span>
 </header>
 <main>
@@ -88,7 +89,7 @@ function fit() {
 }
 const toS = (lon, lat) => [cv.clientWidth / 2 + (lon - S.view.cx) * K * S.view.s, cv.clientHeight / 2 - (lat - S.view.cy) * S.view.s];
 const toW = (x, y) => [S.view.cx + (x - cv.clientWidth / 2) / (K * S.view.s), S.view.cy - (y - cv.clientHeight / 2) / S.view.s];
-const shown = (sys) => (sys === 'tri' ? $('showTri').checked : $('showMetro').checked);
+const shown = (sys) => (sys === 'tri' ? $('showTri').checked : sys === 'cvx' ? $('showCvx').checked : $('showMetro').checked);
 function draw() {
   const dpr = window.devicePixelRatio || 1; cv.width = cv.clientWidth * dpr; cv.height = cv.clientHeight * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
   cx.clearRect(0, 0, cv.clientWidth, cv.clientHeight); if (!REC || !S.view) return;
@@ -145,7 +146,7 @@ function selPanel(msg) {
   const el = $('sel');
   if (S.st && !S.sel.size) {
     const st = STATIONS.get(S.st), info = A.stations[S.st] || {}, own = (REC.stations || {})[S.st] || {};
-    el.innerHTML = `<h2 style="margin-top:0">${esc(st.name)} <span class="muted small">${st.sys === 'tri' ? 'TRI' : 'Metro'} station · ${esc(st.routes.map((r) => r.name).join(', '))}</span></h2>
+    el.innerHTML = `<h2 style="margin-top:0">${esc(st.name)} <span class="muted small">${C.SYS_NAME[st.sys] || st.sys} station · ${esc(st.routes.map((r) => r.name).join(', '))}</span></h2>
       <p class="small">Track here opened ${info.min ?? '<span class="muted">not set</span>'}; the station ${info.own != null ? `${info.own}${info.infill ? ' <b>(infill)</b>' : ''}` : 'with its track'}.</p>
       <div class="row"><label>Opening year <input id="stY" type="number" min="1850" max="2100" style="width:90px" value="${own.year ?? ''}"></label></div>
       <div class="row"><input id="stN" placeholder="Note" style="flex:1" value="${esc(own.note || '')}"></div>
@@ -161,7 +162,7 @@ function selPanel(msg) {
   const rg = ks.length === 1 && A.ranges[ks[0]] ? A.ranges[ks[0]] : null, e1 = ks.length === 1 ? REC.segments[ks[0]] || {} : {};
   el.innerHTML = `<h2 style="margin-top:0">${ks.length === 1 ? esc(C.keyName(ks[0])) : ks.length + ' segments'}</h2>
     <p class="small muted">${esc(routes.join(', '))}${ks.length > 1 ? '' : SEG.get(ks[0]) && SEG.get(ks[0]).routes.length > 1 ? ' · shared: one year for every line' : ''}</p>
-    <p class="small">Now: ${ys.map((y) => y ?? 'no year').join(', ')}; phase ${ps.map((p) => (p ? C.PHASE_NAME[p] : 'from the year')).join(', ')}${ks.length === 1 && e1.src ? ` · from ${esc(e1.src)}` : ''}${e1.note ? `<br>${esc(e1.note)}` : ''}${rg ? `<br>May take ${rg[0] ?? 'any year'} to ${rg[1] ?? 'any year'} (the segments either side)` : ''}</p>
+    <p class="small">Now: ${ys.map((y) => y ?? 'no year').join(', ')}; phase ${ps.map((p) => (p ? C.PHASE_NAME[p] : 'from the year')).join(', ')}${ks.length === 1 && e1.src ? ` · from ${esc(e1.src)}` : ''}${e1.note ? `<br>${esc(e1.note)}` : ''}${e1.services ? `<br>Services on this track: ${Object.entries(e1.services).map(([r, y]) => esc((R.find((q) => q.id === r) || { name: r }).name) + ' from ' + y).join(', ')}` : ''}${rg ? `<br>May take ${rg[0] ?? 'any year'} to ${rg[1] ?? 'any year'} (the segments either side)` : ''}</p>
     <div class="row"><label>Opening year <input id="sgY" type="number" min="1850" max="2100" style="width:90px" value="${ys.length === 1 && ys[0] != null ? ys[0] : ''}"></label>
       <label ${ks.every((k) => k.startsWith('tri|')) ? 'hidden' : ''}>Phase <select id="sgP"><option value="">from the year</option>${Object.keys(PH_COL).map((p) => `<option value="${p}" ${ps.length === 1 && ps[0] === p ? 'selected' : ''}>${C.PHASE_NAME[p]}</option>`).join('')}</select></label></div>
     <div class="row"><input id="sgN" placeholder="Note" style="flex:1" value="${ks.length === 1 ? esc(e1.note || '') : ''}"></div>
@@ -225,13 +226,13 @@ window.addEventListener('keydown', (e) => { if (e.key === 'Escape') { S.sel.clea
 window.addEventListener('resize', draw);
 window.addEventListener('hashchange', () => { if (location.hash.length > 1 && REC) focus(decodeURIComponent(location.hash.slice(1))); });
 $('asOf').addEventListener('input', () => { $('asOfV').textContent = +$('asOf').value >= 2030 ? 'all' : $('asOf').value; draw(); });
-['colBy', 'showTri', 'showMetro'].forEach((id) => $(id).addEventListener('change', () => { legend(); draw(); }));
+['colBy', 'showTri', 'showMetro', 'showCvx'].forEach((id) => $(id).addEventListener('change', () => { legend(); draw(); }));
 
 // ---- data ----
 (async () => {
   const routes = await fetch('/profiles/chronology_lines.json').then((r) => r.json());
   R = routes.routes; buildSegs(); STATIONS = STN(); fit(); legend();
-  $('about').textContent = `${R.length} routes (Metro lines and the TRI's lettered routes), ${SEG.size} segments, ${STATIONS.size} stations. A segment shared by several lines is one segment. Saved in the hub (chronology/segments); the phase of each stretch sets its tunnel in the Rail Profiles, the Deck and Station 3D.`;
+  $('about').textContent = `${R.length} routes (Metro lines, the TRI's lettered routes and the CVG Express), ${SEG.size} segments, ${STATIONS.size} stations. A segment shared by several lines is one segment. Saved in the hub (chronology/segments); the phase of each stretch sets its tunnel in the Rail Profiles, the Deck and Station 3D.`;
   DB = (await window.claude.use('db'));
   DB.doc('chronology/segments').onSnapshot((d) => {
     REC = d.exists ? d.data() : { phase_years: [], segments: {}, stations: {}, core: {} }; REC.segments = REC.segments || {}; REC.stations = REC.stations || {};

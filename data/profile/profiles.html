@@ -752,7 +752,7 @@ const chrPhaseOfYear = (y) => { if (y == null || !CHR) return null; for (const [
 function chrSegments() {   // this line's segments: [{key, c0, c1, year, phase, src}]
   if (!CHR || !S.data || !S.stations || S.stations.length < 2) return [];
   if (S._chr && S._chr.rec === CHR && S._chr.st === S.stations) return S._chr.list;
-  const sys = isRer() ? 'tri' : 'metro', st = S.stations.slice().sort((a, b) => a.c - b.c), list = [];
+  const sys = isRer() ? 'tri' : S.data.id === 'CVG_Express' ? 'cvx' : 'metro', st = S.stations.slice().sort((a, b) => a.c - b.c), list = [];
   for (let i = 0; i + 1 < st.length; i++) {
     const [x, y] = [st[i].name, st[i + 1].name].sort(), key = sys === 'metro' ? `metro|${S.data.id}|${x}|${y}` : `tri|${x}|${y}`, e = (CHR.segments || {})[key] || {};   // Metro: per line; TRI: shared track is one segment
     const yr = e.year == null || e.year === '' ? null : +e.year;
