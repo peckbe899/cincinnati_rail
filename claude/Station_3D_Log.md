@@ -121,3 +121,9 @@ Published: page version 6 and the snapshot (35 parts), read back at view level.
 - Decision: TRI bored stretches at 9.5 m (two 8.5 m tubes, 1 m apart); the Deck's 4.5 m cannot hold two tubes.
 - Follow-up (Ben: Rivercenter West still off to one side in plan): the centred rails sat on a centre still moved to the middle of the Deck's track pair, which leans 5 m to one side there. A line tied to the Deck's pieces now keeps its own path (the Deck's line); the island at Rivercenter West is 0.02 m off the line, rails at 5.45 m either side. This exposes fold-backs in the Deck's edited RER A Westwood piece (c 724 to 1561, 3 to 48 m spikes), listed as an issue for Ben.
 - Each view served by the hub has a Home button in its bar.
+
+## 2026-10-28: curve grade check
+
+- Ben: RER A Blue Ash "Grade plus curve allowance reaches 36.2 per mille (tightest radius 378 m)", but the diagram showed nothing over 35.
+- Cause: the allowance (800 / R) took R from a three-point circle over +/- 40 m of the drawn line, which jumps between 313 and 5,490 m on a hand-drawn curve; one kink set the figure. The diagram shows only the grade.
+- Now (Rail Profiles editor): the allowance is the curvature averaged over a train length (the platform length) times k; the stretch is marked on the diagram (dashed, with "x per mille with curve"), the hover readout gives grade with curve, and the issue gives grade, allowance and the equivalent radius. On a 34.5 per mille test grade there the allowance is 0.6 to 1.5 per mille (was up to 2.6): still over 35, as the curve is real (about 530 m averaged).

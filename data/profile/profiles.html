@@ -611,7 +611,7 @@ function gradeAt(c, verts = VERTS) {
 }
 // the straight grades between bends (for limits, labels and the overview)
 const chords = (verts = VERTS) => design(verts).dv;
-window.railProfile = { railAt: (c) => railAt(c), typeAt: (c) => typeAt(c), line: () => S.data && S.data.id, issues: () => S.issues || [], view: (c0, c1) => { S.view = { c0, c1 }; schedule(); }, align: () => JSON.parse(JSON.stringify(S.align)), exportGeo: () => { const m = exportModel(); return { runs: m.runs.length, pts: m.runs.reduce((a, r) => a + r.pts.length, 0), stations: m.stations.length }; }, kml: () => buildKml(), platforms: () => (isRer() ? [] : S.stations.map((s, i) => ({ name: s.name, c: s.c, ...platformCurve(i), R: isFinite(platformCurve(i).R) ? platformCurve(i).R : null }))), drawing: () => (isRer() ? [] : drawingFlags(S.data)), saved: () => !!(S.data && S.saved[S.data.id]) };
+window.railProfile = { railAt: (c) => railAt(c), typeAt: (c) => typeAt(c), curveAt: (c) => ({ grade: gradeAt(c), allowance: allowanceAt(c), radius: radiusAt(c) }), line: () => S.data && S.data.id, issues: () => S.issues || [], view: (c0, c1) => { S.view = { c0, c1 }; schedule(); }, align: () => JSON.parse(JSON.stringify(S.align)), exportGeo: () => { const m = exportModel(); return { runs: m.runs.length, pts: m.runs.reduce((a, r) => a + r.pts.length, 0), stations: m.stations.length }; }, kml: () => buildKml(), platforms: () => (isRer() ? [] : S.stations.map((s, i) => ({ name: s.name, c: s.c, ...platformCurve(i), R: isFinite(platformCurve(i).R) ? platformCurve(i).R : null }))), drawing: () => (isRer() ? [] : drawingFlags(S.data)), saved: () => !!(S.data && S.saved[S.data.id]) };
 function overrideAt(c) { const o = S.align.ovr; for (let k = o.length - 1; k >= 0; k--) if (c >= o[k][0] && c <= o[k][1]) return o[k][2]; return null; }
 // ---------- canon ----------
 function buildCanon() {
@@ -989,6 +989,33 @@ function radii(d) {
   d._R = R; return R;
 }
 const radiusAt = (c) => { const R = radii(S.data); return R[clamp(Math.round(c / 10), 0, R.length - 1)]; };
+// Curve allowance (Ben, 28 October: a wobble in the drawn line flagged 36.2 per mille that the diagram never showed):
+// curve resistance acts on the whole train, so the allowance is k times the curvature averaged over a train length
+// (the platform length). A real curve counts in full; a kink of a few tens of metres in the drawing does not.
+function curveAllowance(d = S.data) {
+  const key = settings.curveK + '/' + settings.platform;
+  if (d._CA && d._CA.key === key) return d._CA.v;
+  const R = radii(d), n = R.length, w = Math.max(1, Math.round(settings.platform / 20));
+  const cum = new Float64Array(n + 1);
+  for (let i = 0; i < n; i++) cum[i + 1] = cum[i] + (isFinite(R[i]) && R[i] > 0 ? 1 / R[i] : 0);
+  const v = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const a = Math.max(0, i - w), b = Math.min(n, i + w + 1); v[i] = settings.curveK * (cum[b] - cum[a]) / (b - a); }
+  d._CA = { key, v }; return v;
+}
+const allowanceAt = (c) => { const v = curveAllowance(); return v[clamp(Math.round(c / 10), 0, v.length - 1)]; };
+// stretches where grade plus curve allowance is over the limit: [{c0, c1, worst, g, add}] (the check and the diagram)
+function curveGradeRanges() {
+  const out = []; let on = null;
+  if (!(settings.curveK > 0)) return out;
+  for (let c = 5; c < S.L; c += 10) {
+    if (inStation(c)) continue;
+    const add = allowanceAt(c), g = Math.abs(gradeAt(c));
+    if (!(add > 0.5 && g + add > settings.maxGrade + 0.05)) continue;
+    if (on && c - on.c1 <= 20) { on.c1 = c; if (g + add > on.worst) Object.assign(on, { worst: g + add, g, add }); }
+    else { on = { c0: c, c1: c, worst: g + add, g, add }; out.push(on); }
+  }
+  return out;
+}
 // Platform curvature (Ben): over the platform span (centre +/- half a platform, wherever the
 // platform has been slid) the drawn path is resampled every 2 m and a circle fitted by least
 // squares (the KMZ lines are straight segments with corners, so the fit, not corner angles,
@@ -1102,14 +1129,10 @@ function designChecks() {
   });
   // curve compensation and cover, sampled every 10 m
   const ranges = (kind) => ({ kind, on: null, list: [] });
-  const comp = ranges('Curve grade'), cover = ranges('Cover'), roof = ranges('Cover'), thin = ranges('Thin cover');
+  const cover = ranges('Cover'), roof = ranges('Cover'), thin = ranges('Thin cover');
   const hit = (r, c, val) => { if (r.on && c - r.on.c1 <= 20) { r.on.c1 = c; if (val < r.on.v) r.on.v = val; if (val < r.on.worst) r.on.worst = val; } else { r.on = { c0: c, c1: c, v: val, worst: val }; r.list.push(r.on); } };
   for (let c = 5; c < S.L; c += 10) {
     const z = railAt(c), t = typeAt(c, z);
-    if (settings.curveK > 0 && !inStation(c)) {
-      const R = radiusAt(c), add = settings.curveK / R, g = Math.abs(gradeAt(c));
-      if (add > 0.5 && g + add > settings.maxGrade + 0.05) { hit(comp, c, -(g + add)); comp.on.R = Math.min(comp.on.R ?? Infinity, R); }
-    }
     if (!riverAt(c)) {
       const gr = groundAt(c); if (!isFinite(gr) || !TUNNEL.has(t)) continue; const sc = structFor(t, c), top = z + sc.top, cv = gr - top, need = reqCover(sc, top);
       // Metro boxes (Ben): roof less than 0.6 m down is the street surface itself, a warning;
@@ -1118,7 +1141,7 @@ function designChecks() {
       if (r) { hit(r, c, cv - need); r.on.k = sc.label; r.on.need = Math.max(r.on.need ?? 0, need); r.on.cv = Math.min(r.on.cv ?? Infinity, cv); }
     }
   }
-  comp.list.forEach((r) => issues.push({ kind: comp.kind, c: (r.c0 + r.c1) / 2, text: `Grade plus curve allowance reaches ${(-r.worst).toFixed(1)}‰ from ${fmtCh(r.c0)} to ${fmtCh(r.c1)} (limit ${settings.maxGrade}‰, tightest radius ${Math.round(r.R)} m)` }));
+  curveGradeRanges().forEach((r) => issues.push({ kind: 'Curve grade', c: (r.c0 + r.c1) / 2, text: `Grade ${r.g.toFixed(1)}‰ plus ${r.add.toFixed(1)}‰ for the curve reaches ${r.worst.toFixed(1)}‰ from ${fmtCh(r.c0)} to ${fmtCh(r.c1)} (limit ${settings.maxGrade}‰; curve averaged over a ${Math.round(settings.platform)} m train, as a ${Math.round(settings.curveK / r.add)} m radius)` }));
   cover.list.forEach((r) => issues.push({ kind: 'Cover', c: (r.c0 + r.c1) / 2, text: `${r.k[0].toUpperCase() + r.k.slice(1)} cover down to ${fmtZ(r.cv, 1)} ${uLbl()} from ${fmtCh(r.c0)} to ${fmtCh(r.c1)}, needs ${fmtZ(r.need, 2)} ${uLbl()}` }));
   roof.list.forEach((r) => issues.push({ kind: 'Cover', c: (r.c0 + r.c1) / 2, text: `Box roof ${fmtZ(-r.cv, 1)} ${uLbl()} above ground from ${fmtCh(r.c0)} to ${fmtCh(r.c1)}` }));
   thin.list.forEach((r) => issues.push({ kind: 'Thin cover', warn: true, c: (r.c0 + r.c1) / 2, text: `Box roof forms the street: cover down to ${fmtZ(r.cv, 2)} ${uLbl()} from ${fmtCh(r.c0)} to ${fmtCh(r.c1)} (under ${fmtZ(r.need, 1)} ${uLbl()})` }));
@@ -1440,6 +1463,19 @@ function draw(ctx, W, H, view, opt = {}) {
     ctx.fillStyle = colors.paper; ctx.globalAlpha = 0.85; ctx.fillRect(xm - w / 2, ym - 14, w, 14); ctx.globalAlpha = 1;
     ctx.fillStyle = bad ? colors.warn : muted; ctx.fillText(txt, xm, ym);
   }
+
+  // grade plus curve allowance over the limit: marked under the rail with its figure
+  ctx.save(); ctx.strokeStyle = colors.warn; ctx.fillStyle = colors.warn; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
+  for (const r of curveGradeRanges()) {
+    const xa = X(r.c0 - 5), xb = X(r.c1 + 5); if (xb < P.x || xa > P.x + P.w) continue;
+    ctx.beginPath(); for (let x = Math.max(xa, P.x); x <= Math.min(xb, P.x + P.w); x += 3) { const y = Y(railAt(C(x))) + 7; x === Math.max(xa, P.x) ? ctx.moveTo(x, y) : ctx.lineTo(x, y); } ctx.stroke();
+    const xm = (Math.max(xa, P.x) + Math.min(xb, P.x + P.w)) / 2, txt = `${fmtG(r.worst)} with curve`;
+    // above the grade label (rail - 8 px), clear of the line on either side of the label's middle
+    ctx.setLineDash([]); ctx.textBaseline = 'bottom'; const w = ctx.measureText(txt).width + 8;
+    const ym = Math.min(Y(railAt(C(xm - w / 2))), Y(railAt(C(xm))), Y(railAt(C(xm + w / 2)))) - 26;
+    ctx.globalAlpha = 0.85; ctx.fillStyle = colors.paper; ctx.fillRect(xm - w / 2, ym - 14, w, 14); ctx.globalAlpha = 1; ctx.fillStyle = colors.warn; ctx.fillText(txt, xm, ym); ctx.setLineDash([5, 4]);
+  }
+  ctx.restore();
 
   // stations
   const half = settings.platform / 2;
@@ -2022,7 +2058,7 @@ function updateReadout(x, y) {
   const z = railAt(c), g = groundAt(c), r = riverAt(c), sf = surfaceAt(c), d = sf - z, t = typeAt(c, z);
   ro.innerHTML = `<div class="t">${fmtCh(c)}${r ? ' · ' + esc(r.name) : ''}</div>
     ${r ? `Water ${fmtZ(sf, 2)} ${uLbl()} · bed ${fmtZ(bedAt(c), 2)}` : `Ground ${fmtZ(g, 2)} ${uLbl()}${Math.abs(g - groundDemAt(c)) > 0.02 ? `<br>${g > groundDemAt(c) ? 'Fill&nbsp;&nbsp;' : 'Cut&nbsp;&nbsp;&nbsp;'} ${fmtZ(Math.abs(g - groundDemAt(c)), 2)} ${uLbl()} from surveyed ${fmtZ(groundDemAt(c), 2)}` : ''}`}<br>Rail&nbsp;&nbsp; ${fmtZ(z, 2)} ${uLbl()}<br>
-    ${d >= 0 ? `Below&nbsp; ${fmtZ(d, 2)} ${uLbl()}` : `Above&nbsp; ${fmtZ(-d, 2)} ${uLbl()}`}<br>${TUNNEL.has(t) ? (() => { const sc = structFor(t, c); return `Top&nbsp;&nbsp;&nbsp; ${fmtZ(z + sc.top, 2)} ${uLbl()} · cover ${fmtZ(sf - z - sc.top, 1)}<br>Bottom ${fmtZ(z - sc.below, 2)} ${uLbl()} · ${sc.label}<br>`; })() : ''}Grade&nbsp; ${fmtG(gradeAt(c))}<br>
+    ${d >= 0 ? `Below&nbsp; ${fmtZ(d, 2)} ${uLbl()}` : `Above&nbsp; ${fmtZ(-d, 2)} ${uLbl()}`}<br>${TUNNEL.has(t) ? (() => { const sc = structFor(t, c); return `Top&nbsp;&nbsp;&nbsp; ${fmtZ(z + sc.top, 2)} ${uLbl()} · cover ${fmtZ(sf - z - sc.top, 1)}<br>Bottom ${fmtZ(z - sc.below, 2)} ${uLbl()} · ${sc.label}<br>`; })() : ''}Grade&nbsp; ${fmtG(gradeAt(c))}${allowanceAt(c) > 0.5 ? ` · ${fmtG(Math.abs(gradeAt(c)) + allowanceAt(c))} with curve` : ''}<br>
     <span style="color:var(${TYPES[t].css});font-family:var(--font-ui);font-weight:600">${TYPES[t].label}${overrideAt(c) ? ' (painted)' : ''}</span>${ctxBlocks().filter((b) => c >= b.c0 && c <= b.c1).map((b) => `<br><span style="font-family:var(--font-ui);color:var(--muted)">${esc(b.l)} · rail ${fmtZ(interpP(b.p, c), 2)} ${uLbl()}</span>`).join('')}`;
   ro.hidden = false;
   const wr = $('#wrap').getBoundingClientRect(); const rw = ro.offsetWidth, rh = ro.offsetHeight;
