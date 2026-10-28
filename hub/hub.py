@@ -40,6 +40,18 @@ mimetypes.add_type('image/webp', '.webp')
 mimetypes.add_type('application/json', '.json')
 
 
+def fill_missing(cur, dflt):
+    """add keys the default has and the record lacks, recursively; True if any were added"""
+    added = False
+    for k, v in dflt.items():
+        if k not in cur:
+            cur[k] = v
+            added = True
+        elif isinstance(v, dict) and isinstance(cur[k], dict):
+            added = fill_missing(cur[k], v) or added
+    return added
+
+
 class Hub:
     def __init__(self, db_path, auto=True):
         self.store = Store(db_path)
@@ -49,8 +61,12 @@ class Hub:
         self.subs = set()
         self.store.listeners.append(self.broadcast)
         self.pipeline = Pipeline(self.store, auto=auto)
-        if self.store.get('params/metro_structure') is None:   # the shared Metro structure record, from its default file
-            self.store.set('params/metro_structure', json.load(open(os.path.join(ROOT, 'data', 'profile', 'metro_structure.json'), encoding='utf8')), 'seed', quiet=True)
+        ms_def = json.load(open(os.path.join(ROOT, 'data', 'profile', 'metro_structure.json'), encoding='utf8'))
+        cur = self.store.get('params/metro_structure')
+        if cur is None:   # the shared Metro structure record, from its default file
+            self.store.set('params/metro_structure', ms_def, 'seed', quiet=True)
+        elif fill_missing(cur['data'], ms_def):   # fields added to the default since (Ben's values kept)
+            self.store.set('params/metro_structure', cur['data'], 'seed', quiet=True)
         st_f = os.path.join(ROOT, 'data', 'profile', 'station_types.json')
         if self.store.get('params/station_types') is None and os.path.exists(st_f):   # the Profiles type at each Metro station
             self.store.set('params/station_types', json.load(open(st_f, encoding='utf8')), 'seed', quiet=True)

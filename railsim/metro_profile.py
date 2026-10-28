@@ -787,39 +787,154 @@ class MetroProfile:
         half = self.settings["platform"] / 2
         return any(abs(c - s["c"]) <= half for s in self.stations)
 
-    def auto_type(self, c: float, z: float) -> str:
+    # Metro tunnels by era (Ben, 28 October; as the Rail Profiles editor): per-phase thresholds in the structure record
+    # (cc_max, min_drive, deep_from); shield needs one tube diameter of cover; between the two limits cut and cover
+    # unless the bored stretch makes a whole drive (box to box, portal or deep station: any length); no short pockets
+    # inside a longer stretch; drives end
+    # at station boxes and where the phase changes; deep stations are platform tunnels. Canon and painted still decide.
+    def _phase_at(self, c: float) -> str:
+        ms = self.ms
+        name = next((p["name"] for p in self.data.get("pieces", []) if p["c0"] - 5 <= c <= p["c1"] + 5), None)
+        return ((ms.get("piece_phase") or {}).get(self.id) or {}).get(name) or (ms.get("line_phase") or {}).get(self.id) or "later"
+
+    def phase_rules(self, c: float) -> dict:
+        p = (self.ms["phases"].get(self._phase_at(c)) or self.ms["phases"]["later"]) if getattr(self, "ms", None) else {}
+        return {"cc_max": p.get("cc_max", self.settings["shallowMax"]), "min_drive": p.get("min_drive", 300.0),
+                "deep_from": p.get("deep_from", self.settings["deepBelow"])}
+
+    def _point_type(self, c: float, z: float) -> dict:
         sec0 = self.canon_at(c)
         if sec0 and sec0["m"] == "covered":
             s0 = self.surface_at(c)
-            return "elevated" if math.isfinite(s0) and z - s0 >= self.settings["elevAbove"] else "cutcover"
+            return {"t": "elevated" if math.isfinite(s0) and z - s0 >= self.settings["elevAbove"] else "cutcover"}
         if self.river_at(c):
-            return "elevated" if z >= self.pool() + 1 else "deep"
+            return {"t": "elevated" if z >= self.pool() + 1 else "deep"}
         g = float(self.ground_at(c))
         if not math.isfinite(g):
-            return "atgrade"
+            return {"t": "atgrade"}
         if z - g >= self.settings["elevAbove"]:
-            return "elevated"
+            return {"t": "elevated"}
         d = g - z
         if d < self.settings["coverBelow"]:
-            return "atgrade"
+            return {"t": "atgrade"}
         # portal ramps: rail less than a box height down is an open trough (Metro 4.6 m; RER the envelope, Ben 2026-10-28)
         if d < (float(self.settings["envelope"]) if self.is_rer else self.settings.get("trough_override", METRO_ST["box"]["top"])):
-            return "trough"
+            return {"t": "trough"}
         sec = self.canon_at(c)
+        if not sec and not self.is_rer and getattr(self, "ms", None):
+            R, tube = self.phase_rules(c), self.struct_for("shield", c)
+            shield_from = tube["top"] + tube["od"]
+            if self.in_station(c):
+                return {"t": "deep" if d >= R["deep_from"] and d >= shield_from else "cutcover", "stn": True}
+            return {"cls": "C" if d < shield_from else "B" if d > R["cc_max"] else "E", "d": d, "deep": d >= R["deep_from"],
+                    "ph": self._phase_at(c), "R": R, "shield_from": shield_from}
         m = sec["m"] if sec else ("deep" if d >= self.settings["deepBelow"] else "shallow")
         if m == "canal":
-            return "cutcover"
+            return {"t": "cutcover"}
         # too shallow to bore: built cut and cover
         if self.is_rer:
             if d < self.bore_crown() + self.min_cover():
-                return "cutcover"
+                return {"t": "cutcover"}
         else:
             sc = self.struct_for("deep" if m == "deep" else "shield", c)
             if d - sc["top"] < self.req_cover(sc, z + sc["top"]):
-                return "cutcover"
+                return {"t": "cutcover"}
         if m == "deep":
-            return "deep"
-        return "cutcover" if self.in_station(c) else "shield"
+            return {"t": "deep"}
+        return {"t": "cutcover" if self.in_station(c) else "shield"}
+
+    def stretch_types(self) -> Optional[dict]:
+        """The era rules over the whole line (Metro with the structure record): types per step and the flagged pockets."""
+        if self.is_rer or not getattr(self, "ms", None):
+            return None
+        key = (tuple(self.st), tuple((p["c"], p["z"]) if isinstance(p, dict) else tuple(p) for p in self.pvi), id(self._ground), self.length)
+        cached = getattr(self, "_types", None)
+        if cached and cached["key"] == key:
+            return cached
+        step = float(self.data.get("step_m", 2.0))
+        n = int(self.length // step) + 1
+        P = []
+        for i in range(n):
+            c = min(i * step, self.length)
+            z = float(self.rail_at(c))
+            P.append(dict(self._point_type(c, z), c=c, z=z))
+        flags = []
+
+        def runs(a, b, f):
+            out, s = [], -1
+            for i in range(a, b + 2):
+                on = i <= b and f(P[i])
+                if on and s < 0:
+                    s = i
+                if not on and s >= 0:
+                    out.append((s, i - 1))
+                    s = -1
+            return out
+
+        length = lambda a, b: P[b]["c"] - P[a]["c"] + step
+        for a0, b0 in runs(0, n - 1, lambda p: "cls" in p):
+            parts, s = [], a0
+            for i in range(a0 + 1, b0 + 2):
+                if i > b0 or P[i]["ph"] != P[s]["ph"]:
+                    parts.append((s, i - 1))
+                    s = i
+            for a, b in parts:
+                R = P[a]["R"]
+                for x, y in runs(a, b, lambda p: p["cls"] != "C"):
+                    ok = (x == a and y == b) or length(x, y) >= R["min_drive"]   # box to box: a drive at any length (Ben)
+                    for i in range(x, y + 1):
+                        P[i]["t"] = "bored" if ok else "cutcover"
+                    if not ok and any(p["cls"] == "B" for p in P[x:y + 1]):
+                        flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "short bored", "len": length(x, y)})
+                for i in range(a, b + 1):
+                    P[i].setdefault("t", "cutcover")
+                for x, y in runs(a, b, lambda p: p["t"] == "cutcover"):
+                    if x == a or y == b or length(x, y) >= R["min_drive"]:
+                        continue
+                    if all(p["cls"] != "C" for p in P[x:y + 1]):
+                        for i in range(x, y + 1):
+                            P[i]["t"] = "bored"
+                        continue
+                    flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "short cut and cover", "len": length(x, y)})
+                for x, y in runs(a, b, lambda p: p["t"] == "bored"):
+                    for i in range(x, y + 1):
+                        P[i]["t"] = "shield"
+                    for u, v in runs(x, y, lambda p: p["deep"]):
+                        touch = (u == x and x > 0 and P[x - 1].get("stn") and P[x - 1]["t"] == "deep") or \
+                                (v == y and y < n - 1 and P[y + 1].get("stn") and P[y + 1]["t"] == "deep")
+                        if touch or length(u, v) >= R["min_drive"]:
+                            for i in range(u, v + 1):
+                                P[i]["t"] = "deep"
+        # twin tubes or one bore (proposed, flagged only): twin tubes under a street narrower than their footprint; Phase 2
+        # cut and cover deep enough for type A twin tubes but not the bore
+        ms = self.ms
+        tube_name = lambda c: (ms["phases"].get(self._phase_at(c)) or ms["phases"]["later"])["tube"]
+        streets = list(self.ctx.get("streets") or []) if getattr(self, "ctx", None) else []
+        street_at = lambda c: next((r for r in streets if r[0] - 5 <= c <= r[1] + 5), None)
+        a_tube = _tube_of(ms["tubes"]["A"])
+        a_from = a_tube["top"] + a_tube["od"]
+
+        def narrow(p):
+            if p["t"] not in ("shield", "deep") or p.get("stn") or tube_name(p["c"]) == "bore":
+                return False
+            s, tb = street_at(p["c"]), ms["tubes"][tube_name(p["c"])]
+            return bool(s) and s[2] < tb["spacing"] + tb["outside"]
+        for f, kind in ((narrow, "twin under a narrow street"),
+                        (lambda p: p["t"] == "cutcover" and "cls" in p and p["ph"] == "2" and tube_name(p["c"]) == "bore" and p["d"] >= a_from, "Phase 2 twin tubes could bore")):
+            for x, y in runs(0, n - 1, f):
+                if length(x, y) >= 50:
+                    flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": kind, "len": length(x, y), "info": True})
+        self._types = {"key": key, "step": step, "t": [p["t"] for p in P], "z": [p["z"] for p in P], "flags": flags}
+        return self._types
+
+    def auto_type(self, c: float, z: float) -> str:
+        T = self.stretch_types()
+        if T:
+            i = int(round(c / T["step"]))
+            if 0 <= i < len(T["t"]) and abs(T["z"][i] - z) < 0.3:
+                return T["t"][i]
+        p = self._point_type(c, z)
+        return p.get("t") or (("deep" if p["deep"] else "shield") if p["cls"] == "B" else "cutcover")
 
     def _era(self) -> Optional[dict]:
         return None if self.is_rer else ERA.get(self.id)

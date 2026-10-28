@@ -61,6 +61,7 @@ def sample(xy, mode='bilinear'):
 
 import glob, datetime
 from shapely.geometry import shape, box, Polygon
+import shapely
 from shapely.ops import unary_union, substring
 def build():
     """the Deck's CUT and Norwood structures (S) and street re-grades (REG), in Deck UTM metres"""
@@ -479,6 +480,31 @@ def main():
     out = {}
     files = sorted(glob.glob(SITE + '/lines/*_*.json')) + sorted(glob.glob(SITE + '/rer/lines/RER_*.json'))
     r2 = lambda v: round(float(v), 2)
+    # the streets a Metro line runs along (the Deck's live layout: the basin, the deck and the highways): runs where the
+    # line follows a street (within 6 m of its centre line, within 25 degrees), with the street's width, for the twin-tube
+    # check (Ben, 28 October: flagged where the street is narrower than the twin-tube footprint)
+    LS = [s for s in live_streets().values() if s['line'].length > 5]
+    st_tree = shapely.STRtree([s['line'] for s in LS])
+    def along_streets(P):
+        out, cur = [], None
+        for c in np.arange(0.0, P.cv[-1], 10.0):
+            x, y = P.at(c); x1, y1 = P.at(min(P.cv[-1], c + 5)); x0, y0 = P.at(max(0.0, c - 5))
+            hx, hy = x1 - x0, y1 - y0; hl = math.hypot(hx, hy) or 1
+            best = None
+            for k in st_tree.query(Point(x, y).buffer(6.0)):
+                s = LS[int(k)]; d = s['line'].project(Point(x, y)); q = s['line'].interpolate(d)
+                if q.distance(Point(x, y)) > 6.0: continue
+                a, b = s['line'].interpolate(max(0, d - 3)), s['line'].interpolate(min(s['line'].length, d + 3))
+                sx, sy = b.x - a.x, b.y - a.y; sl = math.hypot(sx, sy) or 1
+                if abs(hx * sx + hy * sy) / (hl * sl) < math.cos(math.radians(25)): continue
+                if best is None or s['w'] < best['w']: best = s
+            if best and cur and cur[3] == best['name'] and abs(cur[2] - best['w']) < 0.01 and c - cur[1] <= 10.01:
+                cur[1] = round(float(c), 1)
+            elif best:
+                cur = [round(float(c), 1), round(float(c), 1), round(float(best['w']), 2), best['name']]; out.append(cur)
+            else:
+                cur = None
+        return [r for r in out if r[1] - r[0] >= 20]
     for fn in files:
         d = jload(fn); P = Path(d['path']); lid = d['id']; blocks = []; env = P.L.envelope.buffer(50)
         for st in S:
@@ -540,6 +566,9 @@ def main():
         if blocks: rec['blocks'] = sorted(blocks, key=lambda x: x['c0'])
         if add_v: rec['add'] = runs(add_v); rec['add_src'] = sorted(used)
         if cap_v: rec['cap'] = runs(cap_v)
+        if not lid.startswith('RER_'):
+            sr = along_streets(P)
+            if sr: rec['streets'] = sr
         if rec: out[lid] = rec
     meta = {'built': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%MZ'), 'source': 'Mill Creek Deck published version 1793028977-4bc6 (tracks.json, structures.json, deck.json, norwood.json); layout version 2461',
             'heights': 'from each structure\'s rail: box 1.0 m below, 6.6 m above (RER sizes, 25 kV); trough and at grade 0.8 m track bed, 5.8 m clear above; viaduct 1.6 m to the arch underside (Deck rule), 5.8 m clear above',

@@ -2125,7 +2125,7 @@ function renderSel() {
       if (!sp.pid || stopType(sp) !== 'side') continue;
       const lf = S.tfById.get(sp.pid), ty = ((ST_TYPES || {})[String(lf.properties.name || '').replace(' ', '_')] || {})[p.name];
       const bored = ST_TYPES ? (ty === 'shield' || ty === 'deep') : (() => { const [, sc, g] = stopFrame(sp), q = frameAt(g.c, g.cs, sc); return boredAt(lf.properties, q[0], q[1]); })();
-      if (bored) kv('To check', featLabel(lf) + ': side platforms on a bored stretch' + (ty ? ' (' + (ty === 'deep' ? 'deep tube' : 'shallow shield') + ')' : '') + '. Not necessarily wrong; the default on shallow shield is an island.');
+      if (bored) kv('To check', featLabel(lf) + ': side platforms on a bored stretch' + (ty ? ' (' + (ty === 'deep' ? 'deep tunnel' : 'shallow shield') + ')' : '') + '. Not necessarily wrong; the default on shallow shield is an island.');
     }
     kv('Edited', S.edits.stations[p.id] ? 'yes' : 'no'); body.append(h, sub, dl);
     if (del) { const n = document.createElement('p'); n.className = 'notes'; n.textContent = 'Deleted: its platforms are gone and the tracks run straight through. It shows as a dashed ring while editing.'; body.append(n); }

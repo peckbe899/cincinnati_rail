@@ -225,7 +225,7 @@ const TYPES = {
   trough: { label: 'Open trough', css: '--trough' },
   cutcover: { label: 'Cut & cover', css: '--cc' },
   shield: { label: 'Shallow shield', css: '--shield' },
-  deep: { label: 'Deep tube', css: '--deep' },
+  deep: { label: 'Deep tunnel', css: '--deep' },
 };
 const TYPE_KEYS = Object.keys(TYPES);
 // Design defaults. Platform 400 ft (Ben, 23 October: 6 cars of about 67 ft or 8 of about 50 ft;
@@ -246,7 +246,7 @@ const RER_DEFAULTS = { maxGrade: 35, platform: 204.2, defDepth: 12, elevAbove: 3
 let DEFAULTS = METRO_DEFAULTS;
 // Canon structure for the founding sections (Lines 1-6 as first opened).
 // m: 'shallow' = basin method (shallow shield running tunnels, cut-and-cover station boxes);
-//    'deep' = deep tube (Greathead shield, elevator stations); 'canal' = cut-and-cover in the canal bed.
+//    'deep' = deep tunnel (shield in soft ground, drill-and-blast in the hills' rock; lift stations; Ben, 28 October); 'canal' = cut-and-cover in the canal bed.
 // Later entries win where sections overlap. aIn/bIn false leaves that end station out of the section.
 // fixed: station rail level relative to ground (m, + above).
 const CANON = {
@@ -395,14 +395,14 @@ async function propagateLinks() {
   return done;
 }
 const ctxFor = (id) => (CONTEXT.lines || {})[id] || {};
-const METHOD_LABEL = { shallow: 'Basin method', deep: 'Deep tube', canal: 'Canal-bed cut & cover', covered: 'Covered way (cut & cover)' };
+const METHOD_LABEL = { shallow: 'Basin method', deep: 'Deep tunnel', canal: 'Canal-bed cut & cover', covered: 'Covered way (cut & cover)' };
 const SETTING_ROWS_BASE = [
   ['maxGrade', 'Max grade', '‰', 1],
   ['platform', 'Platform length', 'len', 0.1],
   ['defDepth', 'Default rail depth at stations', 'len', 0.1],
   ['elevAbove', 'Elevated when rail is above ground by', 'len', 0.1],
   ['coverBelow', 'Covered when rail is below ground by', 'len', 0.1],
-  ['deepBelow', 'Deep tube (outside canon) when rail is below ground by', 'len', 0.5],
+  ['deepBelow', 'Deep tunnel (outside canon) when rail is below ground by', 'len', 0.5],
   ['shallowMax', 'Flag canon-shallow stretches deeper than', 'len', 0.5],
   ['envelope', 'Box and station box height above rail', 'len', 0.1],
   ['boreCrown', 'Bored tube crown above rail', 'len', 0.1],
@@ -811,26 +811,98 @@ const maxBelow = () => (isRer() ? settings.invertDepth : METRO_ST.bore.below);
 // Lines 8-14 4 per mille (near London's historic 1 in 260); RER per settings (2.5 per
 // mille, the modern main-line station limit: EBO / TSI, UK 1 in 400)
 function sgMaxFor() { const e = eraOf(); return e ? e.sgMax : settings.stationMaxGrade; }
-function autoType(c, z) {
+// Metro tunnels by era (Ben, 28 October; claude handoff "Chronology and tunnel methods", section 2): the thresholds per
+// building phase are in the structure record (phases: cc_max, the deepest cut and cover; min_drive, the shortest shield
+// drive; deep_from, lift or escalator stations). Shield needs one tube diameter of cover over the crown (type A 10.10 m,
+// type C 10.85 m, the bore 15.50 m to the rail). By depth: shallower than that is cut and cover, deeper than cc_max
+// bored, between the two cut and cover unless the bored stretch makes a whole drive. A tunnel from box to box (or a
+// portal, or a deep station) is a drive at any length (Ben, 28 October); inside a longer stretch no pocket is shorter than
+// a drive: a short bored pocket is cut and cover (flagged if deeper than cc_max), a short
+// cut-and-cover pocket inside a drive is bored where the cover allows (else flagged: the profile has to dive), a short
+// deep pocket is shallow shield. Drives run box to box (or to a portal), and end where the phase changes; deep stations
+// are platform tunnels. Canon sections and painted stretches still decide where they apply.
+function phaseRules(c) {
+  const p = (MS && (MS.phases[phaseAt(c)] || MS.phases.later)) || {};
+  return { ccMax: p.cc_max ?? settings.shallowMax, minDrive: p.min_drive ?? 300, deepFrom: p.deep_from ?? settings.deepBelow };
+}
+function pointType(c, z) {   // one chainage on its own: the type, or for a Metro tunnel stretch its class (C, E, B)
   const sec0 = canonAt(c);
-  if (sec0 && sec0.m === 'covered') { const s0 = surfaceAt(c); return isFinite(s0) && z - s0 >= settings.elevAbove ? 'elevated' : 'cutcover'; }
+  if (sec0 && sec0.m === 'covered') { const s0 = surfaceAt(c); return { t: isFinite(s0) && z - s0 >= settings.elevAbove ? 'elevated' : 'cutcover' }; }
   const r = riverAt(c);
-  if (r) return z >= pool() + 1 ? 'elevated' : 'deep';
-  const g = groundAt(c); if (!isFinite(g)) return 'atgrade';
-  if (z - g >= settings.elevAbove) return 'elevated';
+  if (r) return { t: z >= pool() + 1 ? 'elevated' : 'deep' };
+  const g = groundAt(c); if (!isFinite(g)) return { t: 'atgrade' };
+  if (z - g >= settings.elevAbove) return { t: 'elevated' };
   const d = g - z;
-  if (d < settings.coverBelow) return 'atgrade';
+  if (d < settings.coverBelow) return { t: 'atgrade' };
   // portal ramps (Ben): rail less than a box height down is an open trough, so the box only starts where its roof is
   // under the ground (Metro 4.6 m; RER the 25 kV envelope, 6.6 m: Ben, 28 October)
-  if (d < (isRer() ? settings.envelope : METRO_ST.box.top)) return 'trough';
+  if (d < (isRer() ? settings.envelope : METRO_ST.box.top)) return { t: 'trough' };
   const sec = canonAt(c);
+  if (!sec && !isRer() && MS) {
+    const R = phaseRules(c), tube = metroTube(c, S.data.id), shieldFrom = tube.top + tube.od;
+    if (inStation(c)) return { t: d >= R.deepFrom && d >= shieldFrom ? 'deep' : 'cutcover', stn: true };
+    return { cls: d < shieldFrom ? 'C' : d > R.ccMax ? 'B' : 'E', d, deep: d >= R.deepFrom, ph: phaseAt(c), R, shieldFrom };
+  }
   const m = sec ? sec.m : (d >= settings.deepBelow ? 'deep' : 'shallow');
-  if (m === 'canal') return 'cutcover';
+  if (m === 'canal') return { t: 'cutcover' };
   // too shallow to bore: built cut and cover
-  if (isRer()) { if (d < settings.boreCrown + settings.minCover) return 'cutcover'; }
-  else { const sc = structFor(m === 'deep' ? 'deep' : 'shield', c); if (d - sc.top < reqCover(sc, z + sc.top)) return 'cutcover'; }
-  if (m === 'deep') return 'deep';
-  return inStation(c) ? 'cutcover' : 'shield';
+  if (isRer()) { if (d < settings.boreCrown + settings.minCover) return { t: 'cutcover' }; }
+  else { const sc = structFor(m === 'deep' ? 'deep' : 'shield', c); if (d - sc.top < reqCover(sc, z + sc.top)) return { t: 'cutcover' }; }
+  if (m === 'deep') return { t: 'deep' };
+  return { t: inStation(c) ? 'cutcover' : 'shield' };
+}
+// the era rules over the whole line, cached with the profile (VERTS), the ground and the record
+function stretchTypes() {
+  const V = VERTS; if (!S.data || isRer() || !MS || !V) return null;
+  if (V._types && V._types.g === S.ground && V._types.ms === MS && V._types.L === S.L) return V._types;
+  const step = S.step || 2, n = Math.floor(S.L / step) + 1, P = [], flags = [];
+  for (let i = 0; i < n; i++) { const c = Math.min(i * step, S.L), z = railAt(c); P.push(Object.assign({ c, z }, pointType(c, z))); }
+  const runs = (a, b, f) => { const out = []; let s = -1; for (let i = a; i <= b + 1; i++) { const on = i <= b && f(P[i]); if (on && s < 0) s = i; if (!on && s >= 0) { out.push([s, i - 1]); s = -1; } } return out; };
+  const len = (a, b) => P[b].c - P[a].c + step;
+  // stretches: tunnel samples between station boxes, portals, canon sections and rivers, in one phase
+  for (const [a0, b0] of runs(0, n - 1, (p) => !!p.cls)) {
+    const parts = []; let s = a0; for (let i = a0 + 1; i <= b0 + 1; i++) if (i > b0 || P[i].ph !== P[s].ph) { parts.push([s, i - 1]); s = i; }
+    for (const [a, b] of parts) {
+      const R = P[a].R;
+      for (const [x, y] of runs(a, b, (p) => p.cls !== 'C')) {
+        const ok = (x === a && y === b) || len(x, y) >= R.minDrive;   // box to box (or portal, deep station): a drive at any length (Ben)
+        for (let i = x; i <= y; i++) P[i].t = ok ? 'bored' : 'cutcover';
+        if (!ok && P.slice(x, y + 1).some((p) => p.cls === 'B')) flags.push({ c0: P[x].c, c1: P[y].c, text: `a bored stretch shorter than a drive (${Math.round(len(x, y))} m, at least ${R.minDrive} m) and deeper than the cut-and-cover limit (${fmtZ(R.ccMax, 2)} ${uLbl()}): the profile has to rise, or the drive be longer` });
+      }
+      for (let i = a; i <= b; i++) if (!P[i].t) P[i].t = 'cutcover';
+      const cc = runs(a, b, (p) => p.t === 'cutcover');
+      for (const [x, y] of cc) {
+        if (x === a || y === b || len(x, y) >= R.minDrive) continue;   // at a box or portal, or a stretch of its own
+        if (P.slice(x, y + 1).every((p) => p.cls !== 'C')) { for (let i = x; i <= y; i++) P[i].t = 'bored'; continue; }
+        flags.push({ c0: P[x].c, c1: P[y].c, text: `a cut-and-cover pocket inside a shield drive (${Math.round(len(x, y))} m, shorter than ${R.minDrive} m) with too little cover to bore (${fmtZ(P[x].shieldFrom, 2)} ${uLbl()} to the rail): the profile has to dive, or a shaft at each end` });
+      }
+      for (const [x, y] of runs(a, b, (p) => p.t === 'bored')) {
+        for (let i = x; i <= y; i++) P[i].t = 'shield';
+        for (const [u, v] of runs(x, y, (p) => p.deep)) {
+          const touch = (u === x && x > 0 && P[x - 1].stn && P[x - 1].t === 'deep') || (v === y && y < n - 1 && P[y + 1].stn && P[y + 1].t === 'deep');
+          if (touch || len(u, v) >= R.minDrive) for (let i = u; i <= v; i++) P[i].t = 'deep';
+        }
+      }
+    }
+  }
+  // twin tubes or one bore (proposed, flagged only; Ben, 28 October): a twin-tube stretch under a street narrower than the
+  // tubes' footprint (centres + one diameter) could be the single bore or stacked tubes; a Phase 2 stretch built cut and
+  // cover where the bore can't reach 15.5 m but type A twin tubes would have their cover could be twin tubes
+  const tubeName = (c) => (MS.phases[phaseAt(c)] || MS.phases.later).tube, A = METRO_ST.tube, aFrom = A.top + A.od;
+  const streetAt = (c) => ((S.ctx && S.ctx.streets) || []).find((r) => c >= r[0] - 5 && c <= r[1] + 5);
+  const note = (pred, text) => { for (const [x, y] of runs(0, n - 1, pred)) if (len(x, y) >= 50) flags.push({ c0: P[x].c, c1: P[y].c, info: true, text: text(P[x]) }); };
+  note((p) => (p.t === 'shield' || p.t === 'deep') && !p.stn && tubeName(p.c) !== 'bore' && (() => { const s = streetAt(p.c), tb = MS.tubes[tubeName(p.c)]; return s && s[2] < tb.spacing + tb.outside; })(),
+    (p) => { const s = streetAt(p.c), tb = MS.tubes[tubeName(p.c)]; return `twin tubes under ${esc(s[3])} (${fmtZ(s[2], 1)} ${uLbl()}), narrower than their footprint (${fmtZ(tb.spacing + tb.outside, 1)} ${uLbl()}): the single bore or stacked tubes would stay under the street (proposed, not applied)`; });
+  note((p) => p.t === 'cutcover' && p.cls && p.ph === '2' && tubeName(p.c) === 'bore' && p.d >= aFrom,
+    () => `Phase 2 cut and cover deep enough for type A twin tubes (${fmtZ(aFrom, 2)} ${uLbl()}) but not the bore (${fmtZ(METRO_ST.bore.top + METRO_ST.bore.od, 2)} ${uLbl()}): twin tubes could bore here (proposed, not applied)`);
+  V._types = { g: S.ground, ms: MS, L: S.L, step, t: P.map((p) => p.t), z: P.map((p) => p.z), flags };
+  return V._types;
+}
+function autoType(c, z) {
+  const T = stretchTypes();
+  if (T) { const i = Math.round(c / T.step); if (i >= 0 && i < T.t.length && Math.abs(T.z[i] - z) < 0.3) return T.t[i]; }
+  const p = pointType(c, z);   // off the drawn profile: the point on its own
+  return p.t || (p.cls === 'B' ? (p.deep ? 'deep' : 'shield') : 'cutcover');
 }
 function typeAt(c, z = railAt(c)) { return overrideAt(c) || autoType(c, z); }
 // Painted cut and cover (Ben, Oct 26): the box holds its level and the ground is regraded over
@@ -1205,6 +1277,7 @@ function allIssues(sm) {
   (sm.shallowTubes || []).forEach((t) => out.push(t.bridge ? { kind: 'River', c: t.c, text: `Bridge over the ${esc(t.name)}: rail up to ${fmtZ(t.over, 2)} ${uLbl()} below the navigation clearance level (worst at ${fmtCh(t.c)})` } : { kind: 'River', c: t.c, text: `Under the ${esc(t.name)} from ${fmtCh(t.c0)} to ${fmtCh(t.c1)} the rail is up to ${fmtZ(t.over, 2)} ${uLbl()} above bed − ${RIVER_MARGIN[isRer() ? 'rer' : 'metro']} m (worst at ${fmtCh(t.c)})` }));
   sm.deepShallow.forEach((f) => out.push({ kind: 'Canon', c: f.c, text: `${esc(f.name)} is ${fmtZ(f.d, 0)} ${uLbl()} down in a shallow-canon section` }));
   (sm.checks || []).forEach((x) => out.push(x));
+  const T = stretchTypes(); if (T) T.flags.forEach((f) => out.push({ kind: f.info ? 'Tube choice' : 'Tunnel method', warn: true, c: (f.c0 + f.c1) / 2, text: `${fmtCh(f.c0)} to ${fmtCh(f.c1)}: ${f.text}` }));
   return out.sort((a, b) => a.c - b.c);
 }
 

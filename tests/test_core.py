@@ -577,6 +577,38 @@ def test_north_viaduct_street_rule():
     assert B["indy"]["H"] == pytest.approx(167.0 + 7.9, abs=0.05)
 
 
+def test_tunnel_methods_by_era():
+    """Metro tunnels by era (Ben, 28 October): shield only with a tube diameter of cover; a bored stretch is a whole drive
+    from box to box (or portal, deep station) at any length, else at least its phase's minimum drive; between the
+    shield minimum and the cut-and-cover limit, cut and cover unless it makes a drive."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent / "data/profile"
+    for lid in ("Line_3", "Line_10"):
+        mp = MetroProfile.load(root / f"lines/{lid}.json", None, root / "settings.json")
+        T = mp.stretch_types()
+        step, ts = T["step"], T["t"]
+        tun = [mp._point_type(min(k * step, mp.length), T["z"][k]) for k in range(len(ts))]
+        bored = lambda k: "cls" in tun[k] and ts[k] in ("shield", "deep")
+        k = 0
+        while k < len(ts):
+            if not bored(k):
+                k += 1
+                continue
+            j = k
+            while j + 1 < len(ts) and bored(j + 1):
+                j += 1
+            ends_at_cc = (k > 0 and "cls" in tun[k - 1]) or (j + 1 < len(ts) and "cls" in tun[j + 1])
+            if ends_at_cc:   # a drive from a shaft: at least the minimum
+                assert (j - k + 1) * step >= mp.phase_rules(k * step)["min_drive"] - 1e-6, (lid, k * step, j * step)
+            for m in range(k, j + 1, 25):
+                c = m * step
+                sc = mp.struct_for("shield", c)
+                assert float(mp.ground_at(c) - mp.rail_at(c)) >= sc["top"] + sc["od"] - 1e-6, (lid, c)
+            k = j + 1
+    assert mp.phase_rules(1000.0) == {"cc_max": 16.5, "min_drive": 300.0, "deep_from": 18.29}   # Line 10, Phase 2
+
+
 def test_locked_stretch_holds():
     """Locked stretches of the RER canon (Ben, 27 October): a saved profile cannot move a locked station
     level or add a bend point inside the lock; outside it, it can."""

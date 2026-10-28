@@ -53,7 +53,7 @@ details summary { cursor:pointer }
 <h2 id="structure">Metro structure</h2>
 <div class="muted" style="margin-bottom:8px">One record for the Deck, the Profiles and the 3D map (Ben, 27-28 October: tunnels sized to the dynamic envelope plus running clearance; the bored tunnel follows the building phase). Metres unless noted. Saving rebuilds the 3D map; open Profiles pages update at once.</div>
 <div class="msgrid"><div class="scroll"><table><thead><tr><th>Value</th><th>Now</th></tr></thead><tbody id="msT"></tbody></table></div>
-<div><table><thead><tr><th>Phase</th><th>Bored tunnel</th></tr></thead><tbody id="msP"></tbody></table>
+<div><table><tbody id="msP"></tbody></table>
 <h3 style="font-size:14px;margin:14px 0 6px">Built in phase, by line and drawn piece</h3><div id="msL"></div></div></div>
 <div style="margin-top:8px"><button class="primary" id="msSave">Save the structure record</button> <span id="msNote" class="muted"></span></div>
 
@@ -121,7 +121,11 @@ function drawMS() {
   if (!MSR) return;
   $('msT').innerHTML = MSF.map(([n, p]) => `<tr><td>${esc(n)}</td><td><input type="number" step="0.01" data-p="${p}" value="${getP(MSR, p) ?? ''}"></td></tr>`).join('');
   const ph = Object.keys(MSR.phases);
-  $('msP').innerHTML = ph.map((k) => `<tr><td>${esc(MSR.phases[k].label || k)}</td><td><select data-ph="${k}">${Object.keys(TUBES).map((t) => `<option value="${t}" ${MSR.phases[k].tube === t ? 'selected' : ''}>${TUBES[t]}</option>`).join('')}</select></td></tr>`).join('');
+  const num = (k, f) => `<input type="number" step="0.01" style="width:70px" data-phf="${f}" data-ph="${k}" value="${MSR.phases[k][f] ?? ''}">`;
+  const shieldFrom = (k) => { const t = MSR.tubes[MSR.phases[k].tube]; return t ? (t.inside - t.rail_over_invert + (t.outside - t.inside) / 2 + t.outside).toFixed(2) : ''; };
+  $('msP').innerHTML = '<tr><th>Phase</th><th>Tube</th><th>Shield from</th><th>Deepest cut and cover</th><th>Shortest drive</th><th>Deep from</th></tr>' + ph.map((k) => `<tr><td>${esc(MSR.phases[k].label || k)}</td><td><select data-ph="${k}">${Object.keys(TUBES).map((t) => `<option value="${t}" ${MSR.phases[k].tube === t ? 'selected' : ''}>${TUBES[t]}</option>`).join('')}</select></td>
+    <td class="num muted">${shieldFrom(k)}</td><td>${num(k, 'cc_max')}</td><td>${num(k, 'min_drive')}</td><td>${num(k, 'deep_from')}</td></tr>`).join('') +
+    '<tr><td colspan="6" class="muted" style="font-size:12px">Rail depths in metres. Shield needs one tube diameter of cover (from the tube); between that and the deepest cut and cover a stretch is bored only if it makes a drive; a tunnel from box to box is a drive at any length (Ben, 28 October).</td></tr>';
   const opt = (v) => ph.map((k) => `<option value="${k}" ${v === k ? 'selected' : ''}>${k === 'later' ? 'later' : 'Phase ' + k}</option>`).join('');
   $('msL').innerHTML = Object.keys(MSR.line_phase).map((lid) => { const pcs = (MSR.piece_phase || {})[lid] || {};
     return `<details><summary>${esc(lid.replace('_', ' '))} <select data-line="${lid}">${opt(MSR.line_phase[lid])}</select></summary>${Object.keys(pcs).map((n) => `<div class="pc"><span>${esc(n)}</span><select data-line="${lid}" data-piece="${esc(n)}">${opt(pcs[n])}</select></div>`).join('')}</details>`; }).join('');
@@ -130,7 +134,8 @@ db.doc('params/metro_structure').onSnapshot((d) => { if (!d.exists || msDirty) r
 document.addEventListener('change', (e) => {
   const t = e.target; if (!MSR || !t.closest('#msT, #msP, #msL')) return; msDirty = true; $('msNote').textContent = 'Not saved';
   if (t.dataset.p) setP(MSR, t.dataset.p, +t.value);
-  else if (t.dataset.ph) MSR.phases[t.dataset.ph].tube = t.value;
+  else if (t.dataset.phf) MSR.phases[t.dataset.ph][t.dataset.phf] = +t.value;
+  else if (t.dataset.ph) { MSR.phases[t.dataset.ph].tube = t.value; drawMS(); }
   else if (t.dataset.piece) MSR.piece_phase[t.dataset.line][t.dataset.piece] = t.value;
   else if (t.dataset.line) { const was = MSR.line_phase[t.dataset.line]; MSR.line_phase[t.dataset.line] = t.value;   // pieces that followed the line follow it
     const pcs = MSR.piece_phase[t.dataset.line] || {}; for (const n in pcs) if (pcs[n] === was) pcs[n] = t.value; drawMS(); }
