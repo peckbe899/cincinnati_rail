@@ -616,7 +616,8 @@ def test_tunnel_methods_by_era():
 
 def test_station_approach_boxes():
     """A cut-and-cover station meeting type A tubes keeps its box through the approach (Ben, 28 October): side
-    platforms spread 2.42 m a track, islands close 1.08 m; the approach is max(approach_m, sqrt(4 x min radius x shift))."""
+    platforms spread 2.42 m a track, islands close 1.08 m; the approach is max(approach_m, sqrt(4 x min radius x shift)), plus
+    any straight before an arc into a curve (option A)."""
     import math
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
@@ -626,7 +627,9 @@ def test_station_approach_boxes():
     ap = [a for a in T["approaches"] if a["station"]]
     assert ap
     for a in ap:
-        want = max(mp.ms["approach_m"], math.sqrt(4 * mp.ms["min_radius"] * abs(a["shift"])))
+        rmin = mp.ms["phases"][mp._phase_at(a["c"])]["min_radius"]   # by phase (Ben: 40, 55, 70 m)
+        want = max(mp.ms["approach_m"], math.sqrt(4 * rmin * abs(a["shift"])))
+        want += next((x["extra"] for x in mp.approach_extra if x["side"] == a["side"] and x.get("station") == a["station"]), 0.0)
         assert a["len"] == pytest.approx(want, abs=T["step"] + 1e-6) or a["len"] < want   # (cut short only by a neighbour)
         assert abs(a["shift"]) == pytest.approx(2.42 if a["kind"] == "side" else 1.08, abs=0.01)
         c = a["c"] + a["side"] * a["len"] / 2

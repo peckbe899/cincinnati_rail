@@ -878,10 +878,16 @@ function pointType(c, z) {   // one chainage on its own: the type, or for a Metr
 // where the station is shallow shield (the Deck's default).
 let ST_PLAT = null;
 const platKind = (name, t) => { const v = ST_PLAT && ST_PLAT[S.data.id] && ST_PLAT[S.data.id][name]; return v || (t === 'shield' ? 'island' : 'side'); };
-const approachLen = (shift) => Math.max(MS.approach_m || 40, Math.sqrt(4 * (MS.min_radius || 150) * Math.abs(shift)));
+// the minimum radius by building phase (Ben, 28 October: 40, 55, 70 m); where an approach runs into a curve too tight for a
+// single arc at it, a short straight after the platform (or box) end, computed by the 3D build from the plan's curvature
+// (hub params/approach_extra; Ben: option A), lengthens the box
+let APX_EXTRA = null;
+const minRadiusAt = (c) => ((MS.phases[phaseAt(c)] || MS.phases.later) || {}).min_radius || MS.min_radius || 40;
+const approachExtra = (info) => { const L = (APX_EXTRA && APX_EXTRA[S.data.id]) || []; const e = L.find((x) => x.side === info.side && (info.station ? x.station === info.station : !x.station && Math.abs(x.c - info.c) < 20)); return e ? e.extra : 0; };
+const approachLen = (shift, c, info) => Math.max(MS.approach_m || 40, Math.sqrt(4 * minRadiusAt(c) * Math.abs(shift))) + (info ? approachExtra(info) : 0);
 function stretchTypes() {
   const V = VERTS; if (!S.data || isRer() || !MS || !V) return null;
-  if (V._types && V._types.g === S.ground && V._types.ms === MS && V._types.chr === CHR && V._types.plat === ST_PLAT && V._types.L === S.L) return V._types;
+  if (V._types && V._types.g === S.ground && V._types.ms === MS && V._types.chr === CHR && V._types.plat === ST_PLAT && V._types.ax === APX_EXTRA && V._types.L === S.L) return V._types;
   const step = S.step || 2, n = Math.floor(S.L / step) + 1, P = [], flags = [], approaches = [];
   for (let i = 0; i < n; i++) { const c = Math.min(i * step, S.L), z = railAt(c); P.push(Object.assign({ c, z }, pointType(c, z))); }
   const runs = (a, b, f) => { const out = []; let s = -1; for (let i = a; i <= b + 1; i++) { const on = i <= b && f(P[i]); if (on && s < 0) s = i; if (!on && s >= 0) { out.push([s, i - 1]); s = -1; } } return out; };
@@ -926,17 +932,30 @@ function stretchTypes() {
     for (const dir of [-1, 1]) {
       const i0 = stIdx(s.c + dir * (half + step)); if (!bored(P[i0])) continue;
       const shift = (tubeSp(P[i0].c) - spS) / 2; if (Math.abs(shift) < 0.01) continue;
-      fix(i0, dir, approachLen(shift), { station: s.name, kind, side: dir, shift, c: s.c + dir * half });
+      { const info = { station: s.name, kind, side: dir, shift, c: s.c + dir * half }; fix(i0, dir, approachLen(shift, P[i0].c, info), info); }
     }
   }
   for (const [x, y] of runs(0, n - 1, (p) => bored(p))) {   // a box meeting tubes away from a station: the change inside the box
     for (const [i, dir] of [[x, 1], [y, -1]]) {
       const nb = P[i - dir]; if (!nb || nb.t !== 'cutcover' || nb.stn) continue;
       const shift = (tubeSp(P[i].c) - MS.box.spacing) / 2; if (Math.abs(shift) < 0.01) continue;
-      fix(i, dir, approachLen(shift), { station: null, kind: 'box', side: dir, shift, c: P[i].c });
+      { const info = { station: null, kind: 'box', side: dir, shift, c: P[i].c }; fix(i, dir, approachLen(shift, P[i].c, info), info); }
     }
   }
   resolve(true);   // again with the approaches as anchors (the flags from this pass)
+  // approach boxes under the street (Ben, 28 October: accepted where they leave it, round corners or are wider: the street
+  // grid made them necessary; each a warning saying where and by how much). Box outside = track centres + 4.0 m.
+  const sts = (S.ctx && S.ctx.streets) || [], wall = MS.box.inside - MS.box.spacing;
+  for (const a of approaches) {
+    const c0 = a.c, c1 = a.c + a.side * a.len, lo = Math.min(c0, c1), hi = Math.max(c0, c1);
+    if (!sts.some((r) => r[0] - 300 <= hi && r[1] + 300 >= lo)) continue;   // no Deck streets here: not checked
+    const oS = (a.kind === 'island' ? MS.island_box.spacing : MS.box.spacing) / 2, oR = oS + a.shift; let off = 0, wide = null;
+    for (let c = lo; c <= hi + 0.01; c += 10) {
+      const w = 2 * (oS + (oR - oS) * Math.min(1, Math.abs(c - c0) / a.len)) + wall, st = sts.find((r) => c >= r[0] - 5 && c <= r[1] + 5);
+      if (!st) off += 10; else if (w > st[2] + 0.01 && (!wide || w - st[2] > wide.w - wide.st[2])) wide = { w, st };
+    }
+    if (off || wide) flags.push({ c0: lo, c1: hi, info: true, kind: 'Approach box', text: `the ${a.station ? esc(a.station) + ' ' : ''}approach box ${[off ? `leaves the street for about ${off} m (under blocks or round a corner)` : '', wide ? `is ${fmtZ(wide.w, 1)} ${uLbl()} wide under ${esc(wide.st[3])} (${fmtZ(wide.st[2], 1)} ${uLbl()})` : ''].filter(Boolean).join(' and ')}: accepted (Ben)` });
+  }
   // twin tubes or one bore (proposed, flagged only; Ben, 28 October): a twin-tube stretch under a street narrower than the
   // tubes' footprint (centres + one diameter) could be the single bore or stacked tubes; a Phase 2 stretch built cut and
   // cover where the bore can't reach 15.5 m but type A twin tubes would have their cover could be twin tubes
@@ -947,7 +966,7 @@ function stretchTypes() {
     (p) => { const s = streetAt(p.c), tb = MS.tubes[tubeName(p.c)]; return `twin tubes under ${esc(s[3])} (${fmtZ(s[2], 1)} ${uLbl()}), narrower than their footprint (${fmtZ(tb.spacing + tb.outside, 1)} ${uLbl()}): the single bore or stacked tubes would stay under the street (proposed, not applied)`; });
   note((p) => p.t === 'cutcover' && p.cls && p.ph === '2' && tubeName(p.c) === 'bore' && p.d >= aFrom,
     () => `Phase 2 cut and cover deep enough for type A twin tubes (${fmtZ(aFrom, 2)} ${uLbl()}) but not the bore (${fmtZ(METRO_ST.bore.top + METRO_ST.bore.od, 2)} ${uLbl()}): twin tubes could bore here (proposed, not applied)`);
-  V._types = { g: S.ground, ms: MS, chr: CHR, plat: ST_PLAT, L: S.L, step, t: P.map((p) => p.t), z: P.map((p) => p.z), flags, approaches };
+  V._types = { g: S.ground, ms: MS, chr: CHR, plat: ST_PLAT, ax: APX_EXTRA, L: S.L, step, t: P.map((p) => p.t), z: P.map((p) => p.z), flags, approaches };
   return V._types;
 }
 function autoType(c, z) {
@@ -1329,7 +1348,7 @@ function allIssues(sm) {
   (sm.shallowTubes || []).forEach((t) => out.push(t.bridge ? { kind: 'River', c: t.c, text: `Bridge over the ${esc(t.name)}: rail up to ${fmtZ(t.over, 2)} ${uLbl()} below the navigation clearance level (worst at ${fmtCh(t.c)})` } : { kind: 'River', c: t.c, text: `Under the ${esc(t.name)} from ${fmtCh(t.c0)} to ${fmtCh(t.c1)} the rail is up to ${fmtZ(t.over, 2)} ${uLbl()} above bed − ${RIVER_MARGIN[isRer() ? 'rer' : 'metro']} m (worst at ${fmtCh(t.c)})` }));
   sm.deepShallow.forEach((f) => out.push({ kind: 'Canon', c: f.c, text: `${esc(f.name)} is ${fmtZ(f.d, 0)} ${uLbl()} down in a shallow-canon section` }));
   (sm.checks || []).forEach((x) => out.push(x));
-  const T = stretchTypes(); if (T) T.flags.forEach((f) => out.push({ kind: f.info ? 'Tube choice' : 'Tunnel method', warn: true, c: (f.c0 + f.c1) / 2, text: `${fmtCh(f.c0)} to ${fmtCh(f.c1)}: ${f.text}` }));
+  const T = stretchTypes(); if (T) T.flags.forEach((f) => out.push({ kind: f.kind || (f.info ? 'Tube choice' : 'Tunnel method'), warn: true, c: (f.c0 + f.c1) / 2, text: `${fmtCh(f.c0)} to ${fmtCh(f.c1)}: ${f.text}` }));
   return out.sort((a, b) => a.c - b.c);
 }
 
@@ -2073,6 +2092,7 @@ async function connect() {
   db.doc('params/metro_structure').onSnapshot((d) => { if (d.exists) { applyMS(d.data()); if (S.data) changed(false); } }, () => {});
   db.doc('chronology/segments').onSnapshot((d) => { if (d.exists) { CHR = d.data(); if (S.data) changed(false); } }, () => {});
   db.doc('params/station_platforms').onSnapshot((d) => { if (d.exists) { ST_PLAT = d.data(); if (S.data) changed(false); } }, () => {});
+  db.doc('params/approach_extra').onSnapshot((d) => { if (d.exists) { APX_EXTRA = d.data(); if (S.data) changed(false); } }, () => {});
   db.collection('alignments').onSnapshot((snap) => {
     snap.docs.forEach((d) => { S.saved[d.id] = d.data(); });
     refreshDefaultDocs();
@@ -2568,6 +2588,7 @@ window.__api = { selectLine, save, changed, railAt, S, withLine, alignFromDoc, d
     if (!MS) try { applyMS(await loadJSON('metro_structure.json')); } catch {}   // the hub's record replaces it (connect)
     if (!CHR) try { CHR = await loadJSON('chronology.json'); } catch {}
     if (!ST_PLAT) try { ST_PLAT = await loadJSON('station_platforms.json'); } catch {}
+    if (!APX_EXTRA) try { APX_EXTRA = await loadJSON('approach_extra.json'); } catch {}
     const rer = await Promise.all(rIdx.map((l) => loadJSON(lineUrl(l.id)).catch(() => null)));
     rer.filter(Boolean).forEach((d) => { S.rerData[d.id] = d; S.cache[d.id] = d; });
     refreshDefaultDocs();

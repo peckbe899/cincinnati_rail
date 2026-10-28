@@ -93,7 +93,7 @@ $('run3d').onclick = () => fetch('/api/run?job=3d', { method: 'POST' }).then(dra
 
 // parameters
 db.doc('params/registry').onSnapshot((d) => {
-  if (!d.exists) { $('regT').innerHTML = '<tr><td colspan="6" class="muted">Filled by the first 3D rebuild</td></tr>'; return; }
+  if (!d.exists) { $('regT').innerHTML = '<tr><td colspan="7" class="muted">Filled by the first 3D rebuild</td></tr>'; return; }
   const g = d.data(); const f = (v) => (v == null ? '<span class="muted">n/a</span>' : esc(typeof v === 'number' ? +v.toFixed(2) : v));
   $('regNote').textContent = g.note + (g.synced_at ? ` As of ${new Date(g.synced_at).toLocaleString()}.` : '');
   $('regT').innerHTML = g.rows.map((r) => `<tr><td>${esc(r.name)}${r.note ? `<div class="muted" style="font-size:12px">${esc(r.note)}</div>` : ''}</td><td class="muted">${esc(r.unit)}</td><td class="num">${f(r.values.profiles)}</td><td class="num">${f(r.values.deck)}</td><td class="num">${f(r.values.station3d)}</td>
@@ -112,7 +112,7 @@ const MSF = [['Type A tube, inside', 'tubes.A.inside'], ['Type A tube, outside',
   ['Box, track centres', 'box.spacing'], ['Box, inside width', 'box.inside'], ['Box, rail to roof underside', 'box.roof_underside'], ['Box, below the rail (outside)', 'box.below'], ['Box, rail to roof top', 'box.top'],
   ['Box columns, size', 'box.column_size'], ['Box columns, spacing', 'box.column_every'],
   ['Island box, track centres', 'island_box.spacing'], ['Island width', 'island_box.island'], ['Island edge from the track centre', 'island_box.edge'], ['Platform over the rail', 'island_box.platform_height'], ['Island box, inside width', 'island_box.inside'], ['Island box, rail to roof underside', 'island_box.roof_underside'],
-  ['Approach length, at least (station approaches, box to tube changes)', 'approach_m'], ['Minimum radius (approach curves; drawing value)', 'min_radius'], ['Clear height in the open under structures', 'open_clear_height'],
+  ['Approach length, at least (station approaches, box to tube changes)', 'approach_m'], ['Clear height in the open under structures', 'open_clear_height'],
   ['Grade limit (‰)', 'grades.limit'], ['Straight underground: warning up to (‰)', 'grades.straight_underground_max'], ['Straight: train-averaged radius at least', 'grades.straight_radius']];
 const getP = (o, p) => p.split('.').reduce((a, k) => (a == null ? a : a[k]), o);
 const setP = (o, p, v) => { const ks = p.split('.'); let a = o; for (const k of ks.slice(0, -1)) a = a[k] = a[k] || {}; a[ks[ks.length - 1]] = v; };
@@ -124,9 +124,9 @@ function drawMS() {
   const ph = Object.keys(MSR.phases);
   const num = (k, f) => `<input type="number" step="0.01" style="width:70px" data-phf="${f}" data-ph="${k}" value="${MSR.phases[k][f] ?? ''}">`;
   const shieldFrom = (k) => { const t = MSR.tubes[MSR.phases[k].tube]; return t ? (t.inside - t.rail_over_invert + (t.outside - t.inside) / 2 + t.outside).toFixed(2) : ''; };
-  $('msP').innerHTML = '<tr><th>Phase</th><th>Tube</th><th>Shield from</th><th>Deepest cut and cover</th><th>Shortest drive</th><th>Deep from</th></tr>' + ph.map((k) => `<tr><td>${esc(MSR.phases[k].label || k)}</td><td><select data-ph="${k}">${Object.keys(TUBES).map((t) => `<option value="${t}" ${MSR.phases[k].tube === t ? 'selected' : ''}>${TUBES[t]}</option>`).join('')}</select></td>
-    <td class="num muted">${shieldFrom(k)}</td><td>${num(k, 'cc_max')}</td><td>${num(k, 'min_drive')}</td><td>${num(k, 'deep_from')}</td></tr>`).join('') +
-    '<tr><td colspan="6" class="muted" style="font-size:12px">Rail depths in metres. Shield needs one tube diameter of cover (from the tube); between that and the deepest cut and cover a stretch is bored only if it makes a drive; a tunnel from box to box is a drive at any length (Ben, 28 October).</td></tr>';
+  $('msP').innerHTML = '<tr><th>Phase</th><th>Tube</th><th>Shield from</th><th>Deepest cut and cover</th><th>Shortest drive</th><th>Deep from</th><th>Min radius</th></tr>' + ph.map((k) => `<tr><td>${esc(MSR.phases[k].label || k)}</td><td><select data-ph="${k}">${Object.keys(TUBES).map((t) => `<option value="${t}" ${MSR.phases[k].tube === t ? 'selected' : ''}>${TUBES[t]}</option>`).join('')}</select></td>
+    <td class="num muted">${shieldFrom(k)}</td><td>${num(k, 'cc_max')}</td><td>${num(k, 'min_drive')}</td><td>${num(k, 'deep_from')}</td><td>${num(k, 'min_radius')}</td></tr>`).join('') +
+    '<tr><td colspan="7" class="muted" style="font-size:12px">Rail depths in metres. Shield needs one tube diameter of cover (from the tube); between that and the deepest cut and cover a stretch is bored only if it makes a drive; a tunnel from box to box is a drive at any length (Ben, 28 October).</td></tr>';
   const opt = (v) => ph.map((k) => `<option value="${k}" ${v === k ? 'selected' : ''}>${k === 'later' ? 'later' : 'Phase ' + k}</option>`).join('');
   $('msL').innerHTML = Object.keys(MSR.line_phase).map((lid) => { const pcs = (MSR.piece_phase || {})[lid] || {};
     return `<details><summary>${esc(lid.replace('_', ' '))} <select data-line="${lid}">${opt(MSR.line_phase[lid])}</select></summary>${Object.keys(pcs).map((n) => `<div class="pc"><span>${esc(n)}</span><select data-line="${lid}" data-piece="${esc(n)}">${opt(pcs[n])}</select></div>`).join('')}</details>`; }).join('');

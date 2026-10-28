@@ -113,14 +113,24 @@ def tube_struct(name):
     return out
 
 
-def metro_tube(line_id, c=None):
-    """the bored tunnel of a Metro line at chainage c: the tube of the phase the stretch was built in"""
+def metro_phase(line_id, c=None):
+    """the building phase of a Metro line's stretch at chainage c (the Chronology, else the structure record)"""
     import chronology
     ph = chronology.phase_at(CHR, 'metro', STATIONS.get(line_id) or [], c, line_id) if CHR and c is not None else None
     if not ph:   # not set in the Chronology: the structure record's phase for the drawn piece, else the line
         name = next((p['name'] for p in PIECES.get(line_id, []) if c is not None and p['c0'] - 5 <= c <= p['c1'] + 5), None)
         ph = ((MS.get('piece_phase') or {}).get(line_id) or {}).get(name) or (MS.get('line_phase') or {}).get(line_id) or 'later'
-    return (MS['phases'].get(ph) or MS['phases']['later'])['tube']
+    return ph
+
+
+def metro_tube(line_id, c=None):
+    """the bored tunnel of a Metro line at chainage c: the tube of the phase the stretch was built in"""
+    return (MS['phases'].get(metro_phase(line_id, c)) or MS['phases']['later'])['tube']
+
+
+def min_radius(line_id, c=None):
+    """the minimum radius of the stretch's phase (Ben, 28 October: 40, 55, 70 m)"""
+    return float((MS['phases'].get(metro_phase(line_id, c)) or MS['phases']['later']).get('min_radius') or MS.get('min_radius') or 40.0)
 
 
 def structure(line_id, t, c=None):
@@ -877,8 +887,8 @@ def main():
         u = np.clip(u, 0.0, 1.0)
         return np.where(u < 0.5, 2 * u * u, 1 - 2 * (1 - u) ** 2)
 
-    def appr_len(shift):
-        return max(float(MS.get('approach_m') or 40.0), math.sqrt(4 * float(MS.get('min_radius') or 150.0) * abs(shift)))
+    def appr_len(shift, lid=None, c=None):
+        return max(float(MS.get('approach_m') or 40.0), math.sqrt(4 * min_radius(lid, c) * abs(shift)))
 
     def metro_spacing(lid, l, cs, base, h_isl):
         """each track's offset (half the spacing) along a Metro line (Ben, 28 October; tunnel track geometry): bored tubes
@@ -917,7 +927,7 @@ def main():
                 k = int(np.clip(np.searchsorted(cs, edge + side * 3 * STEP), 0, n - 1))
                 if done[k] or plat[k]:
                     continue
-                L = appr_len(h_isl - base[k])
+                L = appr_len(h_isl - base[k], lid, float(cs[k]))
                 sel = (side * (cs - edge) > 0) & (side * (cs - edge) <= L) & ~done & ~plat
                 h[sel] = h_isl + (base[sel] - h_isl) * ease(np.abs(cs[sel] - edge) / L)
         return h
@@ -1049,7 +1059,7 @@ def main():
     # it runs under (box outside = track centres + 4.0 m); the side-platform stations meeting tubes; the boxes made longer
     geom = {'tight': [], 'side_tubes': [], 'off_street': [], 'longer': []}
     if MS:
-        RMIN = float(MS.get('min_radius') or 150.0)
+        extra_out = {}   # straights where no single arc fits at the phase's minimum radius (Ben: option A)
         ctx_lines = json.load(open(os.path.join(HERE, '..', '..', 'data', 'profile', 'context', 'lines.json'))).get('lines', {})
         wall = MS['box']['inside'] - MS['box']['spacing']   # box outside = track centres + 4.0 m (7.90 m; the island box 14.90 m)
         for lid, d in lines.items():
@@ -1079,6 +1089,7 @@ def main():
                 o_r = o_s + apx['shift']
                 c0, c1 = apx['c'], apx['c'] + apx['side'] * L_
                 where = f"{apx['station'] or 'box end'} ({name}, c {min(c0, c1):.0f} to {max(c0, c1):.0f})"
+                RMIN = min_radius(lid, c1)
                 # running into a curve just past the platform: each track one arc (Ben); else the S-ease's reverse
                 # curves, on the centreline's own curvature where the approach is on a curve throughout
                 cs_ = np.arange(c0, c1 + apx['side'] * 10, apx['side'] * 5.0)
@@ -1088,12 +1099,19 @@ def main():
                     k = None
                 if k is not None:
                     R = float(np.median([r for r in Rs[k:k + 6] if math.isfinite(r)] or [Rs[k]]))
-                    aa = abs(cs_[k] - c0)                       # the arc may start no nearer the platform than its end
+                    aa = abs(cs_[k] - c0)                       # platform (or box) end to the curve's start
                     closing = apx['shift'] < 0                   # tracks closing up (an island to tubes)
-                    r_arc = (R - (o_s + o_r) / 2 if closing else R + (o_s + o_r) / 2) - aa * aa / (2 * sh)
-                    if r_arc < RMIN - 0.5:
-                        geom['tight'].append(f"{where}: runs into a {R:.0f} m curve {aa:.0f} m from the platform end; the {'inner' if closing else 'outer'} track's single arc "
-                                             + (f"would be {r_arc:.0f} m, under {RMIN:.0f} m" if r_arc > 0 else "does not fit") + ": move the curve or lengthen the approach")
+                    r_mid = R - (o_s + o_r) / 2 if closing else R + (o_s + o_r) / 2
+                    # the tightening track's single arc starts a before the curve: r = r_mid - a^2 / (2 x shift); r >= the
+                    # minimum radius needs a <= sqrt(2 x shift x (r_mid - Rmin)); the arc may not start on the platform
+                    if r_mid <= RMIN:
+                        geom['tight'].append(f"{where}: runs into a {R:.0f} m curve {aa:.0f} m from the platform end; no single arc of {RMIN:.0f} m or more fits for the {'inner' if closing else 'outer'} track")
+                    else:
+                        a_max = math.sqrt(2 * sh * (r_mid - RMIN))
+                        if aa > a_max + 0.5:   # a straight first, so the arc starts no more than a_max before the curve
+                            ext = round(aa - a_max, 1)
+                            extra_out.setdefault(lid, []).append({'station': apx.get('station'), 'side': apx['side'], 'c': round(c0, 1), 'extra': ext})
+                            geom.setdefault('straights', []).append(f"{where}: {ext:.1f} m straight after the {'platform' if apx.get('station') else 'box'} end, so the {'inner' if closing else 'outer'} track's arc into the {R:.0f} m curve keeps {RMIN:.0f} m; the box grows by it")
                 else:
                     rs = L_ * L_ / (4 * sh) if sh > 0 else float('inf')
                     Rc = min(radius(c) for c in np.linspace(min(c0, c1), max(c0, c1), 5))
@@ -1129,10 +1147,13 @@ def main():
             plat_len = float(d.get('platform_m') or 121.92)
             for s_, ls in per_st.items():
                 geom['longer'].append(f"{s_} ({name}): box {plat_len:.0f} m to {plat_len + sum(ls):.0f} m")
+        geom['extra'] = extra_out
+        if geom.get('straights'):
+            issues.append(f"{len(geom['straights'])} approach boxes with a straight before the arc into a curve (Ben: option A): " + '; '.join(geom['straights'][:6]) + (' ...' if len(geom['straights']) > 6 else ''))
         if geom['tight']:
-            issues.append(f"{len(geom['tight'])} station approaches under the minimum radius ({RMIN:.0f} m): " + '; '.join(geom['tight'][:6]) + (' ...' if len(geom['tight']) > 6 else ''))
+            issues.append(f"{len(geom['tight'])} station approaches under the minimum radius (by phase: 40, 55, 70 m): " + '; '.join(geom['tight'][:6]) + (' ...' if len(geom['tight']) > 6 else ''))
         if geom['off_street']:
-            issues.append(f"{len(geom['off_street'])} approach boxes not inside the street: " + '; '.join(geom['off_street'][:6]) + (' ...' if len(geom['off_street']) > 6 else ''))
+            issues.append(f"{len(geom['off_street'])} approach boxes not inside the street (accepted, Ben: the street grid made them necessary): " + '; '.join(geom['off_street'][:6]) + (' ...' if len(geom['off_street']) > 6 else ''))
 
     deck_tracks, tracks = tracks, []
     for lid, l in L.items():

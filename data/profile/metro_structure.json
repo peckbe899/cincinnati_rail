@@ -67,28 +67,32 @@
    "tube": "A",
    "cc_max": 12.19,
    "min_drive": 400.0,
-   "deep_from": 18.29
+   "deep_from": 18.29,
+   "min_radius": 40.0
   },
   "2": {
    "label": "Phase 2, New Deal (1934-41)",
    "tube": "bore",
    "cc_max": 16.5,
    "min_drive": 300.0,
-   "deep_from": 18.29
+   "deep_from": 18.29,
+   "min_radius": 55.0
   },
   "3": {
    "label": "Phase 3, final lines (1950s-70s)",
    "tube": "C",
    "cc_max": 15.0,
    "min_drive": 300.0,
-   "deep_from": 18.29
+   "deep_from": 18.29,
+   "min_radius": 70.0
   },
   "later": {
    "label": "Later extensions and infill",
    "tube": "C",
    "cc_max": 15.0,
    "min_drive": 300.0,
-   "deep_from": 18.29
+   "deep_from": 18.29,
+   "min_radius": 70.0
   }
  },
  "line_phase": {
@@ -186,7 +190,5 @@
   "straight_underground_max": 60.0,
   "straight_radius": 1000.0
  },
- "phases_about": "Per phase (Ben, 28 October; tunnel methods by era): cc_max is the deepest cut and cover (rail depth, m); min_drive the shortest shield drive (m; a judgement, not sourced); deep_from the rail depth of lift or escalator stations. Shield needs one tube diameter of cover over the crown: type A from 10.10 m, the bore from 15.50 m, type C from 10.85 m. Phase 1 cc_max 12.19 m (40 ft, the canon-shallow flag); Phase 2 16.5 m (the bore minimum + 1 m, so the methods overlap); Phase 3 15 m.",
- "min_radius": 150.0,
- "min_radius_about": "Metro minimum horizontal radius (m) for station approaches and spacing changes: a drawing value from the track geometry handoff's example (28 October), not Ben's; set it on the hub page."
+ "phases_about": "Per phase (Ben, 28 October; tunnel methods by era): cc_max is the deepest cut and cover (rail depth, m); min_drive the shortest shield drive (m; a judgement, not sourced); deep_from the rail depth of lift or escalator stations. Shield needs one tube diameter of cover over the crown: type A from 10.10 m, the bore from 15.50 m, type C from 10.85 m. Phase 1 cc_max 12.19 m (40 ft, the canon-shallow flag); Phase 2 16.5 m (the bore minimum + 1 m, so the methods overlap); Phase 3 15 m. min_radius: the minimum horizontal radius for station approaches and spacing changes (Ben, 28 October: 40, 55, 70 m)."
 }

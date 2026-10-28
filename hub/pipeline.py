@@ -193,6 +193,11 @@ class Pipeline:
         if sp and (cur is None or cur['data'] != sp):
             self.store.set('params/station_platforms', sp, by='pipeline')
             json.dump(sp, open(os.path.join(ROOT, 'data', 'profile', 'station_platforms.json'), 'w'), indent=0, ensure_ascii=False)
+        ax = (snap.get('track_geometry') or {}).get('extra')   # straights before the arc where no single arc fits
+        cur = self.store.get('params/approach_extra')
+        if ax is not None and (cur is None or cur['data'] != ax):
+            self.store.set('params/approach_extra', ax, by='pipeline')
+            json.dump(ax, open(os.path.join(ROOT, 'data', 'profile', 'approach_extra.json'), 'w'), indent=0, ensure_ascii=False)
         tp = snap.get('tube_points')   # the bored tube along each Metro line, for the Deck's track spacing
         cur = self.store.get('params/tube_points')
         if tp and (cur is None or cur['data'] != tp):

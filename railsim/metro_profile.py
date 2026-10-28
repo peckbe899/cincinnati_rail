@@ -201,6 +201,8 @@ class MetroProfile:
         p.chr = json.loads(CHR_JSON.read_text()) if p.ms and CHR_JSON.exists() else None
         pk = CHR_JSON.parent / "station_platforms.json"   # island or side at each Metro station (the 3D build's, from the Deck)
         p.platforms_kind = (json.loads(pk.read_text()).get(p.data["id"]) or {}) if p.ms and pk.exists() else {}
+        ax = CHR_JSON.parent / "approach_extra.json"   # straights where no single arc fits (the 3D build's)
+        p.approach_extra = (json.loads(ax.read_text()).get(p.data["id"]) or []) if p.ms and ax.exists() else []
         if rer:
             cj = Path(canon_json) if canon_json else RER_CANON_JSON
             p.rer_canon = json.loads(cj.read_text()) if cj.exists() else {}
@@ -933,7 +935,12 @@ class MetroProfile:
         # approach, max(approach_m, sqrt(4 x min_radius x shift)); a box meeting tubes away from a station likewise
         ms = self.ms
         tube_sp = lambda c: ms["tubes"].get((ms["phases"].get(self._phase_at(c)) or ms["phases"]["later"])["tube"], ms["box"])["spacing"]
-        appr_len = lambda sh: max(float(ms.get("approach_m") or 40), math.sqrt(4 * float(ms.get("min_radius") or 150) * abs(sh)))
+        extra_l = getattr(self, "approach_extra", None) or []
+
+        def appr_len(sh, c, info):   # the phase's minimum radius (Ben: 40, 55, 70 m), plus a straight where no arc fits (option A)
+            rmin = float((ms["phases"].get(self._phase_at(c)) or ms["phases"]["later"]).get("min_radius") or ms.get("min_radius") or 40)
+            e = next((x["extra"] for x in extra_l if x["side"] == info["side"] and (x.get("station") == info["station"] if info["station"] else not x.get("station") and abs(x["c"] - info["c"]) < 20)), 0.0)
+            return max(float(ms.get("approach_m") or 40), math.sqrt(4 * rmin * abs(sh))) + e
         is_bored = lambda p: p is not None and p.get("t") in ("shield", "deep") and "cls" in p
         idx = lambda c: max(0, min(n - 1, int(round(c / step))))
         approaches = []
@@ -961,7 +968,8 @@ class MetroProfile:
                     continue
                 sh = (tube_sp(P[i0]["c"]) - sp_s) / 2
                 if abs(sh) >= 0.01:
-                    fix(i0, d, appr_len(sh), {"station": s["name"], "kind": kind, "side": d, "shift": sh, "c": s["c"] + d * half})
+                    info = {"station": s["name"], "kind": kind, "side": d, "shift": sh, "c": s["c"] + d * half}
+                    fix(i0, d, appr_len(sh, P[i0]["c"], info), info)
         for x, y in runs(0, n - 1, is_bored):
             for i, d in ((x, 1), (y, -1)):
                 nb = P[i - d] if 0 <= i - d < n else None
@@ -969,7 +977,8 @@ class MetroProfile:
                     continue
                 sh = (tube_sp(P[i]["c"]) - ms["box"]["spacing"]) / 2
                 if abs(sh) >= 0.01:
-                    fix(i, d, appr_len(sh), {"station": None, "kind": "box", "side": d, "shift": sh, "c": P[i]["c"]})
+                    info = {"station": None, "kind": "box", "side": d, "shift": sh, "c": P[i]["c"]}
+                    fix(i, d, appr_len(sh, P[i]["c"], info), info)
         resolve(True)
         # twin tubes or one bore (proposed, flagged only): twin tubes under a street narrower than their footprint; Phase 2
         # cut and cover deep enough for type A twin tubes but not the bore
