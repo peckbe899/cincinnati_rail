@@ -45,6 +45,7 @@ a.seg { color:var(--accent); cursor:pointer; text-decoration:none }
   <div id="map"><canvas id="cv"></canvas><div id="hint">Click a station, then another on the same line to select the segments between. Shift-click adds a segment, Alt-drag draws a box round segments. Esc clears.</div></div>
   <aside>
     <div id="sel"><p class="muted">Nothing selected.</p></div>
+    <h2>Lines</h2><div id="lineList"></div>
     <h2>Not set <span id="nUnset" class="muted"></span></h2><div id="unset" class="small"></div>
     <h2>Orphans <span id="nOrph" class="muted"></span></h2><div id="orph" class="small"></div>
     <h2>Infill stations <span id="nInf" class="muted"></span></h2><div id="inf" class="small"></div>
@@ -98,13 +99,28 @@ function fit() {
 const toS = (lon, lat) => [cv.clientWidth / 2 + (lon - S.view.cx) * K * S.view.s, cv.clientHeight / 2 - (lat - S.view.cy) * S.view.s];
 const toW = (x, y) => [S.view.cx + (x - cv.clientWidth / 2) / (K * S.view.s), S.view.cy - (y - cv.clientHeight / 2) / S.view.s];
 const shown = (sys) => (sys === 'tri' ? $('showTri').checked : sys === 'cvx' ? $('showCvx').checked : $('showMetro').checked);
+// each line on or off (Ben, 29 October), remembered in this browser; a segment or station shows while any of its lines does
+const HIDDEN = new Set(JSON.parse(localStorage.getItem('chronology:hidden') || '[]'));
+const vis = (x) => shown(x.sys) && x.routes.some((r) => !HIDDEN.has(r.id));
+function lineList() {
+  const groups = [['metro', 'Metro'], ['cvx', 'CVG Express'], ['tri', 'TRI']], nat = (a, b) => a.name.localeCompare(b.name, 'en', { numeric: true });
+  $('lineList').innerHTML = '<div class="row small"><button id="lnAll">All</button><button id="lnNone">None</button></div>' + groups.map(([sys, n]) => {
+    const rs = R.filter((r) => r.sys === sys).sort(nat); if (!rs.length) return '';
+    return `<details ${sys === 'metro' ? 'open' : ''}><summary>${n} (${rs.filter((r) => !HIDDEN.has(r.id)).length} of ${rs.length})</summary>` + rs.map((r) =>
+      `<label class="small" style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-line="${esc(r.id)}" ${HIDDEN.has(r.id) ? '' : 'checked'}>${r.color ? `<i style="width:12px;height:4px;border-radius:2px;background:${esc(r.color)}"></i>` : ''}${esc(r.name)}</label>`).join('') + '</details>';
+  }).join('');
+  const done = () => { localStorage.setItem('chronology:hidden', JSON.stringify([...HIDDEN])); lineList(); draw(); };
+  $('lineList').querySelectorAll('[data-line]').forEach((c) => (c.onchange = () => { c.checked ? HIDDEN.delete(c.dataset.line) : HIDDEN.add(c.dataset.line); done(); }));
+  $('lnAll').onclick = () => { HIDDEN.clear(); done(); };
+  $('lnNone').onclick = () => { R.forEach((r) => HIDDEN.add(r.id)); done(); };
+}
 function draw() {
   const dpr = window.devicePixelRatio || 1; cv.width = cv.clientWidth * dpr; cv.height = cv.clientHeight * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
   cx.clearRect(0, 0, cv.clientWidth, cv.clientHeight); if (!REC || !S.view) return;
   const asOf = +$('asOf').value, all = asOf >= 2030, by = $('colBy').value;
   const css = getComputedStyle(document.documentElement), muted = css.getPropertyValue('--muted'), badC = css.getPropertyValue('--bad'), ink = css.getPropertyValue('--ink');
   for (const pass of [0, 1, 2]) for (const s of SEG.values()) {
-    if (!shown(s.sys)) continue;
+    if (!vis(s)) continue;
     const y = C.segYear(REC, s.key), ph = C.segPhase(REC, s.key);
     if (!all && (y == null || y > asOf)) continue;
     const sel = S.sel.has(s.key);
@@ -119,7 +135,7 @@ function draw() {
   cx.setLineDash([]);
   const r0 = S.view.s > 3000 ? 3.5 : 2.2;
   for (const st of STATIONS.values()) {
-    if (!shown(st.sys)) continue; const info = A.stations[st.key] || {}; if (!all && !(info.year != null && info.year <= asOf)) continue;
+    if (!vis(st)) continue; const info = A.stations[st.key] || {}; if (!all && !(info.year != null && info.year <= asOf)) continue;
     const [x, y] = toS(st.lon, st.lat); cx.beginPath(); cx.arc(x, y, info.infill ? r0 + 1.5 : r0, 0, 7);
     cx.fillStyle = S.st === st.key ? '#f5c400' : info.infill ? '#fff' : ink; cx.fill(); if (info.infill) { cx.strokeStyle = ink; cx.lineWidth = 1.5; cx.stroke(); }
     if (S.view.s > 9000 || S.st === st.key) { cx.fillStyle = ink; cx.font = '11px system-ui'; cx.fillText(st.name, x + 5, y - 4); }
@@ -132,10 +148,10 @@ function legend() {
 }
 
 // ---- picking ----
-function nearestStation(x, y) { let best = 10, b = null; for (const st of STATIONS.values()) { if (!shown(st.sys)) continue; const [sx, sy] = toS(st.lon, st.lat), d = Math.hypot(sx - x, sy - y); if (d < best) { best = d; b = st; } } return b; }
+function nearestStation(x, y) { let best = 10, b = null; for (const st of STATIONS.values()) { if (!vis(st)) continue; const [sx, sy] = toS(st.lon, st.lat), d = Math.hypot(sx - x, sy - y); if (d < best) { best = d; b = st; } } return b; }
 function nearestSeg(x, y) {
   let best = 8, b = null;
-  for (const s of SEG.values()) { if (!shown(s.sys)) continue; for (let i = 1; i < s.pts.length; i++) {
+  for (const s of SEG.values()) { if (!vis(s)) continue; for (let i = 1; i < s.pts.length; i++) {
     const [ax, ay] = toS(...s.pts[i - 1]), [bx, by] = toS(...s.pts[i]), dx = bx - ax, dy = by - ay, L2 = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / L2)), d = Math.hypot(ax + t * dx - x, ay + t * dy - y);
     if (d < best) { best = d; b = s; } } }
   return b;
@@ -225,7 +241,7 @@ function lists() {
   const name = (k) => esc(C.keyName(k)), link = (k) => `<a class="seg" data-k="${esc(k)}">${name(k)}</a>`;
   const byR = {}; for (const k of A.unset) { const s = SEG.get(k); if (s) for (const r of s.routes) (byR[r.name] = byR[r.name] || []).push(k); }
   $('nUnset').textContent = `(${A.unset.length} of ${SEG.size})`;
-  $('unset').innerHTML = Object.entries(byR).sort().map(([n, ks]) => `<details><summary>${esc(n)}: ${ks.length}</summary>${ks.map(link).join('<br>')}</details>`).join('');
+  $('unset').innerHTML = Object.entries(byR).sort((x, y) => x[0].localeCompare(y[0], 'en', { numeric: true })).map(([n, ks]) => `<details><summary>${esc(n)}: ${ks.length}</summary>${ks.map(link).join('<br>')}</details>`).join('');
   const o = A.orphans; $('nOrph').textContent = `(${o.segments.length + o.stations.length})`;
   $('orph').innerHTML = o.segments.length + o.stations.length ? '<p class="muted">Kept: their stations are no longer on a line (after a Deck edit, or a name the line does not have).</p><ul>' + o.segments.map((k) => `<li>${name(k)}: ${esc(JSON.stringify(REC.segments[k]))}</li>`).join('') + o.stations.map((k) => `<li>${esc(k)}</li>`).join('') + '</ul>' : '<p class="ok">None.</p>';
   const inf = Object.entries(A.stations).filter(([, s]) => s.infill); $('nInf').textContent = `(${inf.length})`;
@@ -246,7 +262,7 @@ window.addEventListener('mousemove', (e) => {
 });
 window.addEventListener('mouseup', (e) => {
   const d = S.drag; S.drag = null; if (!d) return; const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
-  if (d.alt && d.box) { const [a, b, c, dd] = d.box; for (const s of SEG.values()) { if (!shown(s.sys)) continue; const [mx, my] = toS(...s.pts[Math.floor(s.pts.length / 2)]); if (mx >= a && mx <= c && my >= b && my <= dd) S.sel.add(s.key); } S.st = null; draw(); selPanel(); return; }
+  if (d.alt && d.box) { const [a, b, c, dd] = d.box; for (const s of SEG.values()) { if (!vis(s)) continue; const [mx, my] = toS(...s.pts[Math.floor(s.pts.length / 2)]); if (mx >= a && mx <= c && my >= b && my <= dd) S.sel.add(s.key); } S.st = null; draw(); selPanel(); return; }
   if (d.moved) return;
   const st = nearestStation(x, y);
   if (st) {
@@ -278,7 +294,7 @@ $('tlBtn').addEventListener('click', async () => {
 (async () => {
   const HUB = location.pathname.startsWith('/chronology/');
   const routes = await fetch(HUB ? '/profiles/chronology_lines.json' : 'chronology_lines.json').then((r) => r.json());
-  R = routes.routes; buildSegs(); STATIONS = STN(); fit(); legend();
+  R = routes.routes; buildSegs(); STATIONS = STN(); fit(); legend(); lineList();
   $('about').textContent = `${R.length} routes (Metro lines, the TRI's lettered routes and the CVG Express), ${SEG.size} segments, ${STATIONS.size} stations. A segment shared by several lines is one segment. Saved in the hub (chronology/segments); the phase of each stretch sets its tunnel in the Rail Profiles, the Deck and Station 3D.`;
   DB = window.claude && typeof window.claude.use === 'function' ? await window.claude.use('db').catch(() => null) : null;
   if (!DB) {   // no database here (a page beside the Rail Profiles without its runtime): the record as last exported, read only
