@@ -71,6 +71,15 @@ def git_seed_versions(path, n=40):
         return []
 
 
+def write_timeline():
+    """the Chronology timeline (data/profile/chronology_timeline.md) from the exported record"""
+    try:
+        r = subprocess.run(['node', os.path.join(ROOT, 'tools', 'chronology_timeline.js')], cwd=ROOT, capture_output=True, text=True, timeout=60)
+        print((r.stdout or r.stderr).strip())
+    except Exception as e:
+        print('timeline not written:', e)
+
+
 def seed_report(store, rep):
     """print what a pulled seed changed here; save the seed versions of conflicting records for review"""
     lines = []
@@ -258,7 +267,9 @@ def make_handler(hub):
                 q = self.q()
                 return self.send(200, {'version': hub.store.restore(q['p'], int(q['v']))})
             if u == '/api/export':
-                return self.send(200, {'records': hub.store.export_dir(os.path.join(HUB, 'seed'))})
+                n = hub.store.export_dir(os.path.join(HUB, 'seed'))
+                write_timeline()
+                return self.send(200, {'records': n})
             return self.send(404, None)
     return H
 
@@ -274,6 +285,7 @@ def main():
     if a.command == 'export':
         n = Store(a.db).export_dir(os.path.join(HUB, 'seed'))
         print(f'{n} records written to hub/seed')
+        write_timeline()
         return
     hub = Hub(a.db, auto=not a.no_auto)
     srv = ThreadingHTTPServer(('127.0.0.1', a.port), make_handler(hub))

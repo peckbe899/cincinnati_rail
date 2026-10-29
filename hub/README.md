@@ -46,3 +46,7 @@ The claude.ai artifacts are retired (Ben): do not publish to them or write their
 python -m pytest tests/test_hub.py
 node hub/test_hub.js            # with the hub running: the four views load on it, a change reaches an open view live (a Chronology phase reaches the Profiles)
 ```
+
+## Chronology timeline
+
+The Chronology's **Timeline (.md)** button downloads every set opening in date order (by decade, year and month) as Markdown. Each Export also writes it to `data/profile/chronology_timeline.md` (`tools/chronology_timeline.js`). Segments and stations take an optional month; with a month missing on either side, two openings in the same year count as the same date for the order rules.
