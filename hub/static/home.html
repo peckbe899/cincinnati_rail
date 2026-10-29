@@ -84,7 +84,7 @@ async function drawRuns() {
   let res; try { res = await fetch('/api/runs', { cache: 'no-store' }).then((r) => r.json()); $('down').hidden = true; } catch (e) { $('down').hidden = false; return; }
   const { runs, current, pending } = res;
   $('runsT').innerHTML = (pending.length ? `<tr><td colspan="5" class="warn">Waiting to run: ${pending.join(', ')}</td></tr>` : '') + runs.map((r) => `<tr>
-    <td>${esc(r.job === '3d' ? '3D snapshot' : 'Deck tie')}</td><td class="${r.state === 'ok' ? 'ok' : r.state === 'failed' ? 'bad' : 'warn'}">${esc(r.state)}</td>
+    <td>${esc({ '3d': '3D snapshot', deck_tie: 'Deck tie', platform_tie: 'Platform tie (Profiles to Deck)', seed: 'Records from hub/seed' }[r.job] || r.job)}</td><td class="${r.state === 'ok' ? 'ok' : r.state === 'failed' ? 'bad' : 'warn'}">${esc(r.state)}</td>
     <td>${ago(r.started)}</td><td class="num">${r.finished ? Math.round(r.finished - r.started) + ' s' : ''}</td>
     <td>${esc(r.reason)}<details><summary class="muted">log</summary><pre>${esc(r.log)}</pre></details></td></tr>`).join('') || '<tr><td colspan="5" class="muted">No runs yet</td></tr>';
 }

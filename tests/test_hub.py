@@ -43,7 +43,7 @@ def test_store_seed_and_export_round_trip(tmp_path):
 def test_pipeline_triggers():
     from pipeline import trigger_for, js_object
     assert trigger_for("deck/layout") == "deck_tie"
-    assert trigger_for("alignments/Line_8") == "3d" and trigger_for("config/settings_rer") == "3d"
+    assert trigger_for("alignments/Line_8") == "platform_tie" and trigger_for("config/settings_rer") == "3d"
     assert trigger_for("snapshots/region") is None and trigger_for("roadmap/r1") is None
     assert trigger_for("chronology/segments") == "3d" and trigger_for("params/metro_structure") == "3d"
     html = (Path(__file__).resolve().parent.parent / "data/profile/profiles.html").read_text(encoding="utf8")
@@ -98,3 +98,9 @@ def test_store_merge_skips_an_unreadable_seed_file(tmp_path):
     st = Store(str(tmp_path / 'db.sqlite')); st.set('deck/layout', {'a': 0}, 'Ben')
     rep = st.merge_dir(str(root))   # no exception: the record is kept and the file listed
     assert st.get('deck/layout')['data'] == {'a': 0} and rep['conflicts'][0]['path'] == 'deck/layout'
+
+
+def test_pipeline_runs_the_platform_tie_on_a_profile_save():
+    from pipeline import trigger_for
+    assert trigger_for('alignments/Line_5') == 'platform_tie' and trigger_for('deck/layout') == 'deck_tie'
+    assert trigger_for('params/metro_structure') == '3d'

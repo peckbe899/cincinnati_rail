@@ -276,3 +276,9 @@ Published: page version 6 and the snapshot (35 parts), read back at view level.
 ## 2026-10-29: elevated structure in the Rail Profiles (Ben)
 
 - Elevated stretches now draw the structure they need (Rail + box and Box views): piers every 25 m (drawing value, as the 3D view's normal viaducts), kept 7 m clear of the lines crossing under them; over a river, equal spans of at most 120 m with piers to the surveyed bed. A span up to 40 m is a girder under the deck, rail to soffit span/10 + 0.8 m (Ben's girder rule: 3.3 m for 25 m); a longer one is a through truss over the rail (span/8 deep) with the deck (deckDepth, 1.5 m Metro, 2.0 m RER) under it: the Ohio on Line 6 is three trusses of about 108 m. The tooltip gives the span, the soffit and the girder or truss. Clearance checks still use the deck depth setting.
+
+## 2026-10-29: platforms both ways (Ben: "it should run in both directions; the more recent one wins")
+
+- `tools/platform_tie.py` and the hub's `platform_tie` job (on every profile save, before the Deck tie): a Profiles slide on a station drawn on the Deck becomes the Deck platform's offset along its line piece (`stations[id].s[pid].o`); the slide is cleared and the Deck tie puts the station at the moved platform. Per platform, the side that moved it wins; both moved: the more recent record. The sync record `params/platform_sync` (each platform's Deck offset after each Deck tie) tells which side moved it. The Deck's export now carries each platform's station id, line piece, offset and slide limit.
+- Tested on the hub: Line 5 Sassafras slid +20 m in the Profiles -> Deck offset 96 -> 116 m, station 10+050.2 -> 10+070.1, slide cleared; slid -40 m and then moved on the Deck before the hub ran -> the Deck won (130 m, 10+084.1); put back.
+- The hub page names each job (it showed every job but the 3D build as "Deck tie").

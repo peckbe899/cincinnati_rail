@@ -50,3 +50,7 @@ node hub/test_hub.js            # with the hub running: the four views load on i
 ## Chronology timeline
 
 The Chronology's **Timeline (.md)** button downloads every set opening in date order (by decade, year and month) as Markdown. Each Export also writes it to `data/profile/chronology_timeline.md` (`tools/chronology_timeline.js`). Segments and stations take an optional month.
+
+## Platforms both ways (Ben, 29 October)
+
+The Deck and the Profiles move platforms both ways. A platform slid in the Profiles (on a station whose platform is drawn on the Deck) is written into the Deck layout as that platform's offset along its line; the Deck tie then puts the station at the moved platform and clears the slide (`tools/platform_tie.py`, the `platform_tie` job, run on every profile save before anything else). A platform moved on the Deck moves the station in the Profiles, as before. Where both moved the same platform, the more recent save wins; the hub keeps each platform's offset as of the last time the two agreed (`params/platform_sync`) to tell which side moved it. A slide on a station with no platform on the Deck stays in the profile. The Deck caps a slide at 150 m (or half the platform); a longer one is held there and noted in the run's log.

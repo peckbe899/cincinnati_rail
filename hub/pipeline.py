@@ -1,5 +1,7 @@
 """What the hub recomputes when a record changes, so the three views stay one design:
 
+    alignments/* changed ->  platform_tie: platforms slid in the Profiles written into the Deck layout (tools/platform_tie.py;
+                             the more recent side wins where both moved one) -> deck_tie if it moved any, else 3d
     deck/layout changed  ->  deck_tie: the Deck run headless (its own export) -> data/deck/rer_routes.geojson ->
                              tools/rer_deck_routes.py (every RER route and Metro line rebuilt on the Deck's pieces and
                              platforms where they drifted; saved profiles moved in the database) -> metro rails table ->
@@ -30,7 +32,9 @@ PY = sys.executable
 def trigger_for(path):
     if path == 'deck/layout':
         return 'deck_tie'
-    if path.startswith(('alignments/', 'config/')) or path in ('params/metro_structure', 'chronology/segments'):
+    if path.startswith('alignments/'):
+        return 'platform_tie'
+    if path.startswith('config/') or path in ('params/metro_structure', 'chronology/segments'):
         return '3d'
     return None
 
@@ -66,8 +70,9 @@ class Pipeline:
                     now = time.time()
                     ready = [(t, j) for j, (t, _) in self.pending.items() if t <= now]
                     if ready:
-                        # the Deck tie first: the 3D snapshot depends on it
-                        job = 'deck_tie' if any(j == 'deck_tie' for _, j in ready) else min(ready)[1]
+                        # the platform tie first (it may move Deck platforms), then the Deck tie: the 3D snapshot depends on them
+                        first = [j for j in ('platform_tie', 'deck_tie') if any(r == j for _, r in ready)]
+                        job = first[0] if first else min(ready)[1]
                         reason = self.pending.pop(job)[1]
                         break
                     self.cv.wait(timeout=min([t - now for t, _ in self.pending.values()] + [3600]))
@@ -140,7 +145,54 @@ class Pipeline:
                 for r in self.store.list(c):
                     json.dump(r['data'], open(os.path.join(d, r['path'].split('/')[-1] + '.json'), 'w'), ensure_ascii=False)
 
-    def job_deck_tie(self, log):
+    def job_platform_tie(self, log):
+        """platforms slid in the Profiles to the Deck (the more recent side wins); then the Deck tie, else the 3D map"""
+        lay = self.store.get('deck/layout')
+        if lay is None:
+            self.schedule('3d', 'a saved profile changed', delay=0)
+            return
+        gj = os.path.join(ROOT, 'data', 'deck', 'rer_routes.geojson')
+        fresh = os.path.exists(gj) and os.path.getmtime(gj) >= lay['updated'] and '"pid"' in open(gj, encoding='utf8').read(200000)
+        if not fresh:   # the Deck's export older than its layout, or without the platform keys: export it now
+            self.deck_export(log)
+        tf, sf, of = (os.path.join(WORK, n) for n in ('platform_times.json', 'platform_sync.json', 'platform_out.json'))
+        times = {'deck/layout': lay['updated']}
+        for r in self.store.list('alignments'):
+            times[r['path']] = r['updated']
+        json.dump(times, open(tf, 'w'))
+        sync = self.store.get('params/platform_sync')
+        if sync:
+            json.dump(sync['data'], open(sf, 'w'))
+        elif os.path.exists(sf):
+            os.remove(sf)
+        self.sh(log, [PY, os.path.join(ROOT, 'tools', 'platform_tie.py'), '--docs', os.path.join(WORK, 'db', 'profiles_db', 'alignments'),
+                      '--layout', os.path.join(WORK, 'db', 'deck_db', 'deck', 'layout.json'), '--times', tf, '--sync', sf, '--out', of])
+        out = json.load(open(of))
+        if out['layout']:
+            self.store.set('deck/layout', out['layout'], by='pipeline', if_version=lay['version'])
+            # the slides now on the Deck are cleared in the profiles; the Deck tie puts each station at its moved platform
+            for rid in {m['route'] for m in out['moves'] if m['done']}:
+                cur = self.store.get('alignments/' + rid)
+                if not cur:
+                    continue
+                doc = json.loads(json.dumps(cur['data']))
+                for m in out['moves']:
+                    if m['done'] and m['route'] == rid:
+                        (doc.get('so') or {}).pop(m['key'], None)
+                self.store.set('alignments/' + rid, doc, by='pipeline', if_version=cur['version'])
+            log(f"{sum(m['done'] for m in out['moves'])} platforms moved on the Deck; the Deck tie follows")
+            self.schedule('deck_tie', 'platforms moved from the Profiles', delay=0)
+        else:
+            self.schedule('3d', 'a saved profile changed', delay=0)
+
+    def record_platform_sync(self, log):
+        """the Deck's platform offsets as the point where the Deck and the Profiles agree (after each Deck tie)"""
+        sf = os.path.join(WORK, 'platform_sync_new.json')
+        self.sh(log, [PY, os.path.join(ROOT, 'tools', 'platform_tie.py'), '--snapshot', '--out', sf])
+        self.store.set('params/platform_sync', json.load(open(sf)), by='pipeline', quiet=True)
+
+    def deck_export(self, log):
+        """the Deck run headless on the hub's layout: its routes, stations and platforms -> data/deck/rer_routes.geojson"""
         jf, out = os.path.join(WORK, 'deck_job.json'), os.path.join(WORK, 'deck_out.json')
         json.dump({'lines': [], 'deck': True}, open(jf, 'w'))
         self.sh(log, ['node', os.path.join(ROOT, 'tools', 'station3d', 'harness.js'), WORK, jf, out])
@@ -148,10 +200,14 @@ class Pipeline:
         fc = {'type': 'FeatureCollection', 'features': [f for f in deck['features'] if f['properties'].get('layer') in DECK_LAYERS]}
         json.dump(fc, open(os.path.join(ROOT, 'data', 'deck', 'rer_routes.geojson'), 'w'), separators=(',', ':'))
         log(f"Deck export: {len(fc['features'])} route, station and platform features")
+
+    def job_deck_tie(self, log):
+        self.deck_export(log)
         db = os.path.join(WORK, 'db', 'profiles_db', 'alignments')
         tool = os.path.join(ROOT, 'tools', 'rer_deck_routes.py')
         if self.sh(log, [PY, tool, '--db', db], ok=(0, 1)) == 0:
             log('Every route and platform matches the Deck: nothing to move')
+            self.record_platform_sync(log)
             return
         self.sh(log, [PY, tool, '--apply', '--db', db])
         moved = 0
@@ -169,6 +225,7 @@ class Pipeline:
         self.sh(log, [PY, os.path.join(ROOT, 'tools', 'chronology.py')])   # the Chronology view's routes
         self.store.emit({'t': 'files', 'site': 'profiles'})
         self.store.emit({'t': 'files', 'site': 'chronology'})
+        self.record_platform_sync(log)
 
     def job_3d(self, log):
         out = os.path.join(WORK, 'snapshot.json')
