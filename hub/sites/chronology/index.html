@@ -44,7 +44,7 @@ a.seg { color:var(--accent); cursor:pointer; text-decoration:none }
   <div id="map"><canvas id="cv"></canvas><div id="hint">Click a station, then another on the same line to select the segments between. Shift-click adds a segment, Alt-drag draws a box round segments. Esc clears.</div></div>
   <aside>
     <div id="sel"><p class="muted">Nothing selected.</p></div>
-    <h2>Rule breaks <span id="nViol" class="muted"></span></h2><div id="viol"></div>
+    <h2>Warnings <span id="nViol" class="muted"></span></h2><div id="viol"></div>
     <h2>Not set <span id="nUnset" class="muted"></span></h2><div id="unset" class="small"></div>
     <h2>Orphans <span id="nOrph" class="muted"></span></h2><div id="orph" class="small"></div>
     <h2>Infill stations <span id="nInf" class="muted"></span></h2><div id="inf" class="small"></div>
@@ -151,6 +151,9 @@ function between(st1, st2) {   // the segments of a route between two of its sta
 
 // ---- the side panel ----
 function selPanel(msg) {
+  // the message stays while the selection does (the hub echoes each save back, which redraws the panel)
+  const sk = (S.st || '') + '|' + [...S.sel].join(',');
+  if (msg !== undefined) S.msg = { sk, msg }; else if (S.msg && S.msg.sk === sk) msg = S.msg.msg;
   const el = $('sel');
   if (S.st && !S.sel.size) {
     const st = STATIONS.get(S.st), info = A.stations[S.st] || {}, own = (REC.stations || {})[S.st] || {};
@@ -181,20 +184,23 @@ function selPanel(msg) {
   $('sgClear').onclick = () => apply({ segments: Object.fromEntries(ks.map((k) => [k, { year: null, month: null, phase: null, note: null, src: null }])) });
 }
 async function apply(edit, push = false) {
+  // never refused (Ben, 29 October: a warning at most): the edit is saved, and anything out of order is a warning, with
+  // the option to push the segments further out to the same date
   const res = C.tryEdit(R, REC, edit, push);
-  if (res.refused.length) return selPanel(`<p class="bad small"><b>Not set:</b> ${res.refused.map((v) => esc(v.text)).join('; ')}.</p>`);
-  if (res.pushable.length && !push) {
-    selPanel(`<p class="warn small">${res.pushable.length} segment${res.pushable.length > 1 ? 's' : ''} further out would be older than this: ${res.pushable.slice(0, 4).map((v) => esc(v.text)).join('; ')}${res.pushable.length > 4 ? ' ...' : ''}.</p>
-      <div class="row"><button class="primary" id="doPush">Push them (and their stations) to the same year</button><button id="noPush">Cancel</button></div>`);
-    $('doPush').onclick = () => apply(edit, true); $('noPush').onclick = () => selPanel(); return;
-  }
   try { await DB.doc('chronology/segments').set(res.rec); } catch (e) { selPanel(`<p class="bad small">Not saved: ${e.message}</p>`); return; }
-  REC = res.rec; A = res.analysis; refresh(); selPanel('<p class="ok small">Saved.</p>');
+  REC = res.rec; A = res.analysis; refresh();
+  const warn = res.warnings.filter((v) => !res.pushable.includes(v));
+  let msg = '<p class="ok small">Saved.</p>';
+  if (warn.length) msg += `<p class="warn small"><b>Warning:</b> ${warn.map((v) => esc(v.text)).join('; ')}.</p>`;
+  if (res.pushable.length) msg += `<p class="warn small"><b>Warning:</b> ${res.pushable.length} segment${res.pushable.length > 1 ? 's' : ''} further out ${res.pushable.length > 1 ? 'are' : 'is'} now older than this: ${res.pushable.slice(0, 4).map((v) => esc(v.text)).join('; ')}${res.pushable.length > 4 ? ' ...' : ''}.</p>
+    <div class="row"><button id="doPush">Push them (and their stations) to the same date</button></div>`;
+  selPanel(msg);
+  if (res.pushable.length) $('doPush').onclick = () => apply(edit, true);
 }
 function lists() {
   const name = (k) => esc(C.keyName(k)), link = (k) => `<a class="seg" data-k="${esc(k)}">${name(k)}</a>`;
   $('nViol').textContent = `(${A.violations.length})`;
-  $('viol').innerHTML = A.violations.length ? '<ul class="small">' + A.violations.map((v) => `<li class="bad">${v.key ? link(v.key) + ': ' : ''}${esc(v.text)}</li>`).join('') + '</ul>' : '<p class="ok small">None.</p>';
+  $('viol').innerHTML = A.violations.length ? '<ul class="small">' + A.violations.map((v) => `<li class="warn">${v.key ? link(v.key) + ': ' : ''}${esc(v.text)}</li>`).join('') + '</ul>' : '<p class="ok small">None.</p>';
   const byR = {}; for (const k of A.unset) { const s = SEG.get(k); if (s) for (const r of s.routes) (byR[r.name] = byR[r.name] || []).push(k); }
   $('nUnset').textContent = `(${A.unset.length} of ${SEG.size})`;
   $('unset').innerHTML = Object.entries(byR).sort().map(([n, ks]) => `<details><summary>${esc(n)}: ${ks.length}</summary>${ks.map(link).join('<br>')}</details>`).join('');

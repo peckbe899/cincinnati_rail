@@ -10,6 +10,7 @@
 // 5. A shared segment has one year (the track's) and meets rule 2 on every line, except that a line running onto older
 //    track is exempt there (its service year can be kept in the segment's `services`); its own new segments are checked.
 // 6. Unset segments are skipped; an unset segment between set ones gets the range of years it may take.
+// Breaking a rule is a warning, never a stop: edits are always saved (Ben, 29 October).
 (function (root) {
   // Metro: per line (no Metro lines share track); TRI: the station pair, so shared track is one segment
   const segKey = (sys, a, b, line) => { const [x, y] = [a, b].sort(); return sys === 'metro' ? `metro|${line}|${x}|${y}` : `${sys}|${x}|${y}`; };
@@ -123,8 +124,9 @@
     return { orders: O, violations: viol, ranges, unset, stations, orphans, exempt };
   }
 
-  // an edit: {segments: {key: patch}, stations: {key: patch}}; refused when it would add a rule 2, 3 or 5 violation;
-  // outer segments left older than a newly set year can be pushed to it
+  // an edit: {segments: {key: patch}, stations: {key: patch}}; always applied (Ben, 29 October: a warning at most, never
+  // a stop): what it puts out of order is returned as warnings; outer segments left older than a newly set date can be
+  // pushed to it
   function tryEdit(routes, rec, edit, push = false) {
     const clone = JSON.parse(JSON.stringify(rec)); clone.segments = clone.segments || {}; clone.stations = clone.stations || {};
     const put = (coll, k, p) => { const e = Object.assign({}, coll[k] || {}, p); for (const f of Object.keys(e)) if (e[f] === null || e[f] === '' || e[f] === undefined) delete e[f]; if (Object.keys(e).length) coll[k] = e; else delete coll[k]; };
@@ -145,8 +147,7 @@
       for (const [sk, st] of Object.entries(analyse(routes, clone).stations)) if (before(st.ownW, st.minW)) put(clone.stations, sk, { year: st.minW.y, month: st.minW.m ?? null });
       after = analyse(routes, clone); added = after.violations.filter((v) => !had.has(sig(v)));
     }
-    const refused = added.filter((v) => !(v.rule === 2 && !edited.has(v.key)));
-    return { ok: !added.length, refused, pushable: added.filter((v) => v.rule === 2 && !edited.has(v.key)), rec: clone, analysis: after };
+    return { ok: !added.length, warnings: added, refused: [], pushable: added.filter((v) => v.rule === 2 && !edited.has(v.key)), rec: clone, analysis: after };
   }
 
   // ---- the timeline (Markdown): every set opening in date order, runs of a line's segments opened together, stations
@@ -186,7 +187,7 @@
     L.push(`From the Chronology record (hub \`chronology/segments\`)${opts.when ? ', ' + opts.when : ''}. Dates are opening dates; the month where it is set. ` +
       'A run is a line\'s segments that opened on the same date one after another; stations are listed with the run that reached them, later stations as infill. Shared track is listed once, under the first line that has it.', '');
     const nSet = claimed.size, nAll = new Set(routes.flatMap((r) => r.segments)).size;
-    L.push(`${nSet} of ${nAll} segments have a date; ${A.unset.length} are not set${A.violations.length ? `; **${A.violations.length} rule breaks** (see the Chronology)` : ''}.`, '');
+    L.push(`${nSet} of ${nAll} segments have a date; ${A.unset.length} are not set${A.violations.length ? `; ${A.violations.length} warnings (see the Chronology)` : ''}.`, '');
     let dec = null, yr = null, mo;
     for (const e of ev) {
       const d = Math.floor(e.w.y / 10) * 10;
