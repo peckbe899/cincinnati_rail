@@ -910,7 +910,10 @@ function stretchTypes() {
         const drives = [];
         for (const [x, y] of runs(a, b, (p) => p.cls !== 'C')) { const d = drives[drives.length - 1]; if (d) { d.y = y; d.pieces.push([x, y]); } else drives.push({ x, y, pieces: [[x, y]] }); }
         for (const { x, y, pieces } of drives) {
-          const ok = (x === a && y === b) || drives.length === 1 || len(x, y) >= R.minDrive;
+          // one type per gap (Ben, 29 October): a drive only where it is most of the stretch; where the shallow ends (too
+          // shallow to bore) are longer than the drive, the whole stretch is cut and cover
+          const ends = (x > a ? len(a, x - 1) : 0) + (y < b ? len(y + 1, b) : 0);
+          const ok = (x === a && y === b) || (drives.length === 1 && len(x, y) >= ends) || len(x, y) >= R.minDrive && len(x, y) >= ends;
           for (const [u, v] of pieces) for (let i = u; i <= v; i++) P[i].t = ok ? 'bored' : 'cutcover';
           if (fl && !ok && P.slice(x, y + 1).some((p) => p.cls === 'B')) flags.push({ c0: P[x].c, c1: P[y].c, text: `a bored stretch shorter than a drive (${Math.round(len(x, y))} m, at least ${R.minDrive} m) and deeper than the cut-and-cover limit (${fmtZ(R.ccMax, 2)} ${uLbl()}): the profile has to rise, or the drive be longer` });
         }
@@ -942,7 +945,8 @@ function stretchTypes() {
     const ic = stIdx(s.c); if (!P[ic] || P[ic].t !== 'cutcover' || !P[ic].stn) continue;
     const kind = platKind(s.name, 'cutcover'), spS = kind === 'island' ? MS.island_box.spacing : MS.box.spacing;
     for (const dir of [-1, 1]) {
-      const i0 = stIdx(s.c + dir * (half + step)); if (!bored(P[i0])) continue;
+      let i0 = stIdx(s.c + dir * half); while (P[i0] && P[i0].stn) i0 += dir;   // the first sample past the platform
+      if (!bored(P[i0])) continue;
       const shift = (tubeSp(P[i0].c) - spS) / 2; if (Math.abs(shift) < 0.01) continue;
       { const info = { station: s.name, kind, side: dir, shift, c: s.c + dir * half }; fix(i0, dir, approachLen(shift, P[i0].c, info), info); }
     }

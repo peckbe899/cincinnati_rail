@@ -919,7 +919,10 @@ class MetroProfile:
                         else:
                             drives.append([x, y, [(x, y)]])
                     for x, y, pieces in drives:
-                        ok = (x == a and y == b) or len(drives) == 1 or length(x, y) >= R["min_drive"]
+                        # one type per gap (Ben, 29 October): a drive only where it is most of the stretch
+                        ends = (length(a, x - 1) if x > a else 0) + (length(y + 1, b) if y < b else 0)
+                        ok = (x == a and y == b) or (len(drives) == 1 and length(x, y) >= ends) or \
+                            (length(x, y) >= R["min_drive"] and length(x, y) >= ends)
                         for u, v in pieces:
                             for i in range(u, v + 1):
                                 P[i]["t"] = "bored" if ok else "cutcover"
@@ -976,8 +979,10 @@ class MetroProfile:
             kind = plats.get(s["name"]) or "side"
             sp_s = ms["island_box"]["spacing"] if kind == "island" else ms["box"]["spacing"]
             for d in (-1, 1):
-                i0 = idx(s["c"] + d * (half + step))
-                if not is_bored(P[i0]):
+                i0 = idx(s["c"] + d * half)
+                while 0 <= i0 < n and P[i0].get("stn"):   # the first sample past the platform
+                    i0 += d
+                if not (0 <= i0 < n) or not is_bored(P[i0]):
                     continue
                 sh = (tube_sp(P[i0]["c"]) - sp_s) / 2
                 if abs(sh) >= 0.01:
