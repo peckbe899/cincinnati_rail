@@ -822,6 +822,29 @@ function straightUnder(c) {
   const add = allowanceAt(c);
   return (!(add > 0) || settings.curveK / add >= MS.grades.straight_radius) && UNDER_T.has(typeAt(c));
 }
+// the grade limit at c by building phase (Ben, 29 October; the structure record's phases): 5% everywhere; Phases 1-2 a
+// straight stretch underground up to 6% as a warning; after Phase 2 up to 6% on a straight; after Phase 3 also up to 6% on
+// curves over 500 m (train-averaged radius). {lim, warn (a warning up to this, else null), why}
+function gradeLimitAt(c) {
+  const base = settings.maxGrade;
+  if (!MS || isRer()) return { lim: base, warn: null, why: '' };
+  const p = (MS.phases[phaseAt(c)] || MS.phases.later) || {}, add = allowanceAt(c), R = add > 0 ? settings.curveK / add : Infinity;
+  const mx = p.grade_max ?? base, st = p.grade_straight ?? MS.grades.straight_underground_max ?? mx, ph = phaseAt(c);
+  const pl = ph === 'later' ? 'later' : 'Phase ' + ph;
+  if (R >= (MS.grades.straight_radius || 1000)) {
+    if (p.straight_warn ?? true) { const u = UNDER_T.has(typeAt(c)); return { lim: mx, warn: u ? st : null, why: u ? `${pl}: straight underground up to ${st}‰ as a warning` : `${pl}: straight but not underground, ${mx}‰` }; }
+    return { lim: st, warn: null, why: `${pl}: straight, up to ${st}‰` };
+  }
+  if (p.grade_curve && R > (p.curve_radius || 500)) return { lim: p.grade_curve, warn: null, why: `${pl}: a curve over ${p.curve_radius || 500} m, up to ${p.grade_curve}‰` };
+  return { lim: mx, warn: null, why: `${pl}: ${R < Infinity ? `a ${Math.round(R)} m curve` : 'curve'}, ${mx}‰` };
+}
+// the strictest limit over a stretch (sampled every 10 m)
+function gradeLimitOver(c0, c1) {
+  let lim = Infinity, warn = Infinity, why = '';
+  for (let c = c0 + Math.min(5, (c1 - c0) / 2); c <= c1; c += 10) { const L = gradeLimitAt(c); if (L.lim < lim) { lim = L.lim; why = L.why; } warn = Math.min(warn, L.warn ?? -Infinity); }
+  if (!isFinite(lim)) { const L = gradeLimitAt((c0 + c1) / 2); return L; }
+  return { lim, warn: warn > lim ? warn : null, why };
+}
 const BOX_COVER = 0.6, SEP_GAP = 0.5, BED_DEPTH = 0.8;
 // rivers (Ben's rules): rail at most bed - margin at every chainage in a river range (bedAt).
 // Metro 1.0 scour + 2.38 half-diameter cover + 4.08 rail to top (twin tube); RER 1.0 scour +
@@ -1181,7 +1204,7 @@ function computeSummary() {
     const a = CV[k], b = CV[k + 1]; if (b.c - a.c < 1e-6) continue;
     const g = (b.z - a.z) / (b.c - a.c) * 1000;
     if (Math.abs(g) > Math.abs(maxG)) { maxG = g; maxGc = (a.c + b.c) / 2; }
-    if (Math.abs(g) > settings.maxGrade + 0.05) over.push({ c0: a.c, c1: b.c, g });
+    if (Math.abs(g) > settings.maxGrade + 0.05) { const L = gradeLimitOver(a.c, b.c); if (Math.abs(g) > L.lim + 0.05) over.push({ c0: a.c, c1: b.c, g, L }); }
   }
   const clashes = crossingClearances().filter((x) => x.clear != null && !x.ok).concat(contextClearances().filter((x) => !x.ok));
   // river rule: in tunnel under a river the rail stays the margin below the bed (raster) at every chainage
@@ -1249,8 +1272,9 @@ function curveGradeRanges() {
     const add = allowanceAt(c), g = Math.abs(gradeAt(c));
     if (!(add > 0.5 && g + add > settings.maxGrade + 0.05)) continue;
     if (straightUnder(c)) continue;   // straight: the grade rule covers it
-    if (on && c - on.c1 <= 20) { on.c1 = c; if (g + add > on.worst) Object.assign(on, { worst: g + add, g, add }); }
-    else { on = { c0: c, c1: c, worst: g + add, g, add }; out.push(on); }
+    const L = gradeLimitAt(c); if (g + add <= L.lim + 0.05) continue;   // the phase allows it (a long curve after Phase 3)
+    if (on && c - on.c1 <= 20) { on.c1 = c; if (g + add > on.worst) Object.assign(on, { worst: g + add, g, add, L }); }
+    else { on = { c0: c, c1: c, worst: g + add, g, add, L }; out.push(on); }
   }
   return out;
 }
@@ -1381,7 +1405,7 @@ function designChecks() {
       if (r) { hit(r, c, cv - need); r.on.k = sc.label; r.on.need = Math.max(r.on.need ?? 0, need); r.on.cv = Math.min(r.on.cv ?? Infinity, cv); }
     }
   }
-  curveGradeRanges().forEach((r) => issues.push({ kind: 'Curve grade', c: (r.c0 + r.c1) / 2, text: `Grade ${r.g.toFixed(1)}‰ plus ${r.add.toFixed(1)}‰ for the curve reaches ${r.worst.toFixed(1)}‰ from ${fmtCh(r.c0)} to ${fmtCh(r.c1)} (limit ${settings.maxGrade}‰; curve averaged over a ${Math.round(settings.platform)} m train, as a ${Math.round(settings.curveK / r.add)} m radius)` }));
+  curveGradeRanges().forEach((r) => issues.push({ kind: 'Curve grade', c: (r.c0 + r.c1) / 2, text: `Grade ${r.g.toFixed(1)}‰ plus ${r.add.toFixed(1)}‰ for the curve reaches ${r.worst.toFixed(1)}‰ from ${fmtCh(r.c0)} to ${fmtCh(r.c1)} (limit ${r.L ? r.L.lim : settings.maxGrade}‰${r.L && r.L.why ? `, ${r.L.why}` : ''}; curve averaged over a ${Math.round(settings.platform)} m train, as a ${Math.round(settings.curveK / r.add)} m radius)` }));
   cover.list.forEach((r) => issues.push({ kind: 'Cover', c: (r.c0 + r.c1) / 2, text: `${r.k[0].toUpperCase() + r.k.slice(1)} cover down to ${fmtZ(r.cv, 1)} ${uLbl()} from ${fmtCh(r.c0)} to ${fmtCh(r.c1)}, needs ${fmtZ(r.need, 2)} ${uLbl()}` }));
   roof.list.forEach((r) => issues.push({ kind: 'Cover', c: (r.c0 + r.c1) / 2, text: `Box roof ${fmtZ(-r.cv, 1)} ${uLbl()} above ground from ${fmtCh(r.c0)} to ${fmtCh(r.c1)}` }));
   thin.list.forEach((r) => issues.push({ kind: 'Thin cover', warn: true, c: (r.c0 + r.c1) / 2, text: `Box roof forms the street: cover down to ${fmtZ(r.cv, 2)} ${uLbl()} from ${fmtCh(r.c0)} to ${fmtCh(r.c1)} (under ${fmtZ(r.need, 1)} ${uLbl()})` }));
@@ -1391,12 +1415,10 @@ function designChecks() {
 function allIssues(sm) {
   const out = [];
   sm.over.forEach((o) => {
-    // Metro (Ben, 28 October): on a straight bored or box stretch over the limit is a warning up to the higher limit
-    let straight = !!MS && !isRer();
-    for (let c = o.c0 + 5; straight && c < o.c1; c += 10) straight = straightUnder(c);
-    const hi = MS ? MS.grades.straight_underground_max : settings.maxGrade;
-    if (straight && Math.abs(o.g) <= hi + 0.05) out.push({ kind: 'Grade', warn: true, c: (o.c0 + o.c1) / 2, text: `${fmtG(o.g)} from ${fmtCh(o.c0)} to ${fmtCh(o.c1)}: over ${settings.maxGrade}‰ on a straight stretch underground (allowed up to ${hi}‰)` });
-    else out.push({ kind: 'Grade', c: (o.c0 + o.c1) / 2, text: `${fmtG(o.g)} from ${fmtCh(o.c0)} to ${fmtCh(o.c1)} exceeds ${straight ? hi : settings.maxGrade}‰${straight ? ' (straight underground)' : ''}` });
+    // by building phase (Ben, 29 October): the strictest limit over the stretch; a warning where it allows one
+    const L = o.L || gradeLimitOver(o.c0, o.c1);
+    if (L.warn && Math.abs(o.g) <= L.warn + 0.05) out.push({ kind: 'Grade', warn: true, c: (o.c0 + o.c1) / 2, text: `${fmtG(o.g)} from ${fmtCh(o.c0)} to ${fmtCh(o.c1)}: over ${L.lim}‰ (${L.why})` });
+    else out.push({ kind: 'Grade', c: (o.c0 + o.c1) / 2, text: `${fmtG(o.g)} from ${fmtCh(o.c0)} to ${fmtCh(o.c1)} exceeds ${L.warn || L.lim}‰${L.why ? ` (${L.why})` : ''}` });
   });
   sm.clashes.forEach((x) => out.push({ kind: 'Clearance', c: x.c, text: x.level
     ? `Crosses ${esc(x.with)} at grade at ${fmtCh(x.c)}: needs a grade separation`
@@ -1734,7 +1756,7 @@ function draw(ctx, W, H, view, opt = {}) {
   for (let k = 0; k < CV.length - 1; k++) {
     const a = CV[k], b = CV[k + 1]; if (b.c - a.c < 1e-6 || Math.abs(b.z - a.z) < 1e-9 && ((a.kind === 'ps' && b.kind === 'pe' && a.i === b.i) || a.kind === 'x' || b.kind === 'x')) continue;
     const xa = X(a.c), xb = X(b.c); if (xb < P.x || xa > P.x + P.w || xb - xa < (narrow ? 56 : 66)) continue;
-    const gr = (b.z - a.z) / (b.c - a.c) * 1000; const bad = Math.abs(gr) > settings.maxGrade + 0.05;
+    const gr = (b.z - a.z) / (b.c - a.c) * 1000; const bad = Math.abs(gr) > settings.maxGrade + 0.05 && Math.abs(gr) > gradeLimitOver(a.c, b.c).lim + 0.05;
     const xm = (Math.max(xa, P.x) + Math.min(xb, P.x + P.w)) / 2; const ym = Y(railAt(C(xm))) - 8;
     const txt = fmtG(gr); const w = ctx.measureText(txt).width + 8;
     ctx.fillStyle = colors.paper; ctx.globalAlpha = 0.85; ctx.fillRect(xm - w / 2, ym - 14, w, 14); ctx.globalAlpha = 1;
@@ -1943,7 +1965,7 @@ function updatePanels() {
     <dt>Length</dt><dd>${(S.L / 1000).toFixed(2)} km</dd>
     <dt>Stations</dt><dd>${S.stations.length}${isRer() ? `, ${S.stations.filter((_, i) => modeOf(i) === 'under').length} underground` : ''}</dd>
     ${isRer() ? `<dt>Through-running</dt><dd>from ${S.data.opened || '–'}</dd><dt>Route km</dt><dd>${(S.data.route_chainage_m[0] / 1000).toFixed(1)} to ${(S.data.route_chainage_m[1] / 1000).toFixed(1)}</dd>` : ''}
-    <dt>Steepest grade</dt><dd style="color:${Math.abs(sm.maxG) > settings.maxGrade + 0.05 ? 'var(--warn)' : 'inherit'}">${fmtG(sm.maxG)} at ${fmtCh(sm.maxGc)}</dd>
+    <dt>Steepest grade</dt><dd style="color:${sm.over.length ? 'var(--warn)' : 'inherit'}">${fmtG(sm.maxG)} at ${fmtCh(sm.maxGc)}</dd>
     <dt>Deepest rail</dt><dd>${fmtZ(sm.deepest.d)} ${uLbl()} below, ${fmtCh(sm.deepest.c)}</dd>
     <dt>Highest rail</dt><dd>${sm.highest.h > 0 ? `${fmtZ(sm.highest.h)} ${uLbl()} above, ${fmtCh(sm.highest.c)}` : 'none above ground'}</dd>
     <dt>Tunnel low points (sumps)</dt><dd>${sm.sumps}</dd>`;
