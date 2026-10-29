@@ -268,8 +268,30 @@ def live_streets():
             if e.get('del'):
                 continue
             out[p['id']] = dict(id=p['id'], name=e.get('n') or p.get('name') or p['id'], w=e.get('w') or p.get('width_m') or 10.0,
-                                line=LineString(e.get('c') or f['geometry']['coordinates']))
+                                line=LineString(e.get('c') or f['geometry']['coordinates']), kind=p.get('kind'), osm=p.get('osm_class'))
+    hp = ROOT / 'hub' / 'sites' / 'deck' / 'hwy.json'   # the highways (OH-75 and the others), by piece
+    if hp.exists():
+        for i, f in enumerate(jload(hp)['features']):
+            p = f['properties']
+            if p.get('layer') == 'hw_piece' and f['geometry']['type'] == 'LineString' and not p.get('tunnel'):
+                out[f'HW{i:03d}'] = dict(id=f'HW{i:03d}', name=p.get('name') or p.get('route') or 'highway', w=p.get('w') or 30.0,
+                                         line=LineString(f['geometry']['coordinates']), kind='highway', osm=None)
     return out
+
+
+# road classes for the clearance under a line over them (Ben, 29 October: "major routes need clearances"): the highways;
+# the Deck's through and radial streets, boulevard and axis; basin streets OpenStreetMap ranks primary or secondary (or
+# above), or at least 80 ft (24.4 m) wide. Others are minor: no clearance check, but never crossed at grade.
+MAJOR_KINDS = {'through', 'radial', 'boulevard', 'axis'}
+MAJOR_OSM = {'motorway', 'trunk', 'primary', 'secondary', 'motorway_link', 'trunk_link', 'primary_link'}
+
+
+def road_class(s):
+    if s.get('kind') == 'highway':
+        return 'highway'
+    if s.get('kind') in MAJOR_KINDS or (s.get('osm') or '') in MAJOR_OSM or (s.get('w') or 0) >= 24.4 - 0.01:
+        return 'major'
+    return 'minor'
 
 
 def north_profile(T, stru, REG):
@@ -529,6 +551,31 @@ def main():
             else:
                 cur = None
         return [r for r in out if r[1] - r[0] >= 20]
+
+    def crossing_roads(P, along):
+        """the roads a line crosses (more than 25 degrees to it): [c, c0, c1, width, name, class], c0-c1 the road's
+        width along the line (skew included, at most 3 times the width)"""
+        out = []
+        for k in st_tree.query(P.L):
+            s = LS[int(k)]
+            hit = P.L.intersection(s['line'])
+            for q in [g for g in getattr(hit, 'geoms', [hit]) if g.geom_type == 'Point']:
+                c = P.chain((q.x, q.y))
+                x0, y0 = P.at(max(0.0, c - 5)); x1, y1 = P.at(min(P.cv[-1], c + 5))
+                d = s['line'].project(q); a, b = s['line'].interpolate(max(0, d - 3)), s['line'].interpolate(min(s['line'].length, d + 3))
+                hx, hy, sx, sy = x1 - x0, y1 - y0, b.x - a.x, b.y - a.y
+                cosang = abs(hx * sx + hy * sy) / ((math.hypot(hx, hy) * math.hypot(sx, sy)) or 1)
+                if cosang > math.cos(math.radians(25)) or any(r[0] - 5 <= c <= r[1] + 5 and r[3] == s['name'] for r in along):
+                    continue
+                half = min(3 * s['w'], s['w'] / max(0.2, math.sqrt(max(0.0, 1 - cosang ** 2)))) / 2
+                out.append([round(c, 1), round(max(0.0, c - half), 1), round(min(P.cv[-1], c + half), 1), round(float(s['w']), 2), s['name'], road_class(s)])
+        out.sort()
+        ded = []
+        for r in out:   # one crossing per road and place (a street in pieces meets the line once)
+            if ded and ded[-1][4] == r[4] and abs(ded[-1][0] - r[0]) < 15:
+                continue
+            ded.append(r)
+        return ded
     for fn in files:
         d = jload(fn); P = Path(d['path']); lid = d['id']; blocks = []; env = P.L.envelope.buffer(50)
         for st in S:
@@ -590,9 +637,10 @@ def main():
         if blocks: rec['blocks'] = sorted(blocks, key=lambda x: x['c0'])
         if add_v: rec['add'] = runs(add_v); rec['add_src'] = sorted(used)
         if cap_v: rec['cap'] = runs(cap_v)
-        if not lid.startswith('RER_'):
-            sr = along_streets(P)
-            if sr: rec['streets'] = sr
+        sr = along_streets(P)   # every line (Ben, 29 October: under a road or not); the twin-tube check reads Metro only
+        if sr: rec['streets'] = [r + [road_class(next((s for s in LS if s['name'] == r[3]), {}))] for r in sr]
+        rr = crossing_roads(P, sr)
+        if rr: rec['roads'] = rr
         if rec: out[lid] = rec
     meta = {'built': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%MZ'), 'source': 'Mill Creek Deck published version 1793028977-4bc6 (tracks.json, structures.json, deck.json, norwood.json); layout version 2461',
             'heights': 'from each structure\'s rail: box 1.0 m below, 6.6 m above (RER sizes, 25 kV); trough and at grade 0.8 m track bed, 5.8 m clear above; viaduct 1.6 m to the arch underside (Deck rule), 5.8 m clear above',
