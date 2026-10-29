@@ -683,6 +683,46 @@ function groundFor(d) {
 // river crossings on a bridge (line canon `bridges`): the rail stays at least the navigation
 // clearance above the normal pool plus the deck under the rail, over the whole river range
 function bridgeOf(r) { const cn = (!isRer() && S.data && CANON[S.data.id]) || {}; return (cn.bridges || {})[r.name] || null; }
+// Elevated structure (Ben, 29 October: show the minimum structure an elevated stretch needs). Drawing values: piers every
+// VIA_SPAN m along each elevated run, kept clear of the lines crossing under it (VIA_CLEAR m either side); over a river,
+// equal spans of at most RIVER_SPAN m. A span up to GIRDER_MAX m is a girder under the deck, rail to soffit span/10 +
+// 0.8 m (Ben's girder rule); a longer one is a through truss over the rail, span/8 deep, with the deck (deckDepth) under it.
+const VIA_SPAN = 25, VIA_CLEAR = 7, RIVER_SPAN = 120, GIRDER_MAX = 40;
+function viaductSpans() {
+  const T = (S.data && VERTS) ? VERTS : null; if (!T) return [];
+  if (T._via && T._via.g === S.ground && T._via.x === S.crossings) return T._via.spans;
+  const step = S.step || 2, runs = []; let a = null;
+  for (let c = 0; c <= S.L + step; c += step) { const on = c <= S.L && typeAt(c) === 'elevated'; if (on && a == null) a = c; if (!on && a != null) { runs.push([a, c - step]); a = null; } }
+  const spans = [];
+  for (const [c0, c1] of runs) {
+    if (c1 - c0 < 1) continue;
+    const keep = [];   // stretches with no pier: rivers (their own piers below) and crossing lines
+    for (const r of S.rivers) if (r.c1 > c0 && r.c0 < c1) keep.push([Math.max(c0, r.c0), Math.min(c1, r.c1), r]);
+    for (const x of S.crossings || []) if (x.c > c0 && x.c < c1) keep.push([x.c - VIA_CLEAR, x.c + VIA_CLEAR, null]);
+    keep.sort((u, v) => u[0] - v[0]);
+    const piers = [c0]; let c = c0;
+    const blocked = (q) => keep.find(([u, v]) => q > u && q < v);
+    while (c < c1) {
+      let q = Math.min(c1, c + VIA_SPAN), k = blocked(q);
+      if (k) {
+        if (k[2]) {   // a river: its own equal spans, piers at the banks
+          if (k[0] - c > 1) piers.push(k[0]);
+          const n = Math.max(1, Math.ceil((k[1] - k[0]) / RIVER_SPAN)); for (let i = 1; i <= n; i++) piers.push(k[0] + (k[1] - k[0]) * i / n);
+          q = k[1];
+        } else q = k[1] - c > VIA_SPAN * 1.6 && k[0] - c > 3 ? k[0] : k[1];   // a pier before or after the crossing
+      }
+      if (q - c > 0.5) piers.push(q); c = q;
+    }
+    const ps = [...new Set(piers.map((v) => Math.round(v * 10) / 10))].sort((u, v) => u - v);
+    for (let i = 0; i + 1 < ps.length; i++) {
+      const L = ps[i + 1] - ps[i]; if (L < 0.5) continue;
+      const truss = L > GIRDER_MAX;
+      spans.push({ c0: ps[i], c1: ps[i + 1], L, truss, below: truss ? settings.deckDepth : L / 10 + 0.8, above: truss ? L / 8 : 0, ends: [i === 0, i + 2 === ps.length] });
+    }
+  }
+  T._via = { g: S.ground, x: S.crossings, spans }; return spans;
+}
+const spanAt = (c) => viaductSpans().find((s) => c >= s.c0 && c <= s.c1);
 function riverBridges() {
   // the solver puts the bridge at its clearance level (ub = lb), no higher than it needs to be
   return S.rivers.filter((r) => bridgeOf(r)).map((r) => { const lb = pool() + bridgeOf(r).clear + settings.deckDepth; return { name: r.name, c0: r.c0, c1: r.c1, lb, ub: lb, src: bridgeOf(r).src }; });
@@ -1646,12 +1686,36 @@ function draw(ctx, W, H, view, opt = {}) {
     }
     k0 = k1 + 1;
   }
-  // piers
-  ctx.lineWidth = 1; ctx.strokeStyle = colors.elevated;
-  const pierEvery = 18;
-  for (let k = 0; k < pts.length; k += pierEvery) {
-    const p = pts[k]; if (p.t !== 'elevated') continue; const s = surfaceAt(p.c); if (!isFinite(s) || s >= p.z) continue;
-    ctx.globalAlpha = 0.6; ctx.beginPath(); ctx.moveTo(p.x + 0.5, Y(p.z)); ctx.lineTo(p.x + 0.5, Y(s)); ctx.stroke(); ctx.globalAlpha = 1;
+  // elevated structure: the deck and girders (or a through truss) by span, and the piers to the ground or river bed
+  if (S.show !== 'rail') {
+    const col = colors.elevated, sub = Math.max(2, (view.c1 - view.c0) / P.w * 3);
+    for (const sp of viaductSpans()) {
+      if (sp.c1 < view.c0 || sp.c0 > view.c1) continue;
+      const cs = []; for (let c = sp.c0; c < sp.c1; c += sub) cs.push(c); cs.push(sp.c1);
+      ctx.fillStyle = col; ctx.globalAlpha = S.show === 'box' ? 0.28 : 0.18; ctx.beginPath();
+      cs.forEach((c, j) => (j ? ctx.lineTo(X(c), Y(railAt(c) + 0.3)) : ctx.moveTo(X(c), Y(railAt(c) + 0.3))));
+      for (let j = cs.length - 1; j >= 0; j--) ctx.lineTo(X(cs[j]), Y(railAt(cs[j]) - sp.below));
+      ctx.closePath(); ctx.fill(); ctx.globalAlpha = 0.85; ctx.strokeStyle = col; ctx.lineWidth = 1.25; ctx.stroke();
+      if (sp.truss) {   // through truss: chords and diagonals over the rail
+        const top = (c) => Y(railAt(c) + sp.above), bot = (c) => Y(railAt(c)), n = Math.max(2, Math.round(sp.L / Math.max(6, sp.above)));
+        ctx.globalAlpha = 0.75; ctx.lineWidth = 1.25; ctx.beginPath();
+        ctx.moveTo(X(sp.c0), bot(sp.c0)); ctx.lineTo(X(sp.c0 + sp.L / n), top(sp.c0 + sp.L / n)); ctx.lineTo(X(sp.c1 - sp.L / n), top(sp.c1 - sp.L / n)); ctx.lineTo(X(sp.c1), bot(sp.c1));
+        for (let i = 1; i < n; i++) { const c = sp.c0 + sp.L * i / n, cn = sp.c0 + sp.L * (i + 1) / n; ctx.moveTo(X(c), top(c)); ctx.lineTo(X(c), bot(c)); if (i + 1 < n) { ctx.moveTo(X(c), top(c)); ctx.lineTo(X(cn), bot(cn)); } }
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+    // piers: from the soffit to the ground (or the river bed)
+    const pw = Math.max(2, Math.min(8, 1.6 / ((view.c1 - view.c0) / P.w)));
+    ctx.fillStyle = col; ctx.globalAlpha = 0.55;
+    const seen = new Set();
+    for (const sp of viaductSpans()) for (const [c, below] of [[sp.c0, sp.below], [sp.c1, sp.below]]) {
+      if (c < view.c0 || c > view.c1 || seen.has(c)) continue; seen.add(c);
+      const r = riverAt(c), g0 = groundAt(c), gz = r ? (isFinite(g0) && g0 < pool() ? g0 : (bedOf(r) ?? pool() - 3)) : g0; if (!isFinite(gz)) continue;   // in a river: to the surveyed bed
+      const zt = railAt(c) - Math.max(...viaductSpans().filter((q) => q.c0 === c || q.c1 === c).map((q) => q.below)); if (zt <= gz) continue;
+      ctx.fillRect(X(c) - pw / 2, Y(zt), pw, Y(gz) - Y(zt));
+    }
+    ctx.globalAlpha = 1;
   }
   ctx.lineWidth = 3; ctx.lineJoin = 'round';
   let k0 = 0;
@@ -2291,7 +2355,7 @@ function updateReadout(x, y) {
   const z = railAt(c), g = groundAt(c), r = riverAt(c), sf = surfaceAt(c), d = sf - z, t = typeAt(c, z);
   ro.innerHTML = `<div class="t">${fmtCh(c)}${r ? ' · ' + esc(r.name) : ''}</div>
     ${r ? `Water ${fmtZ(sf, 2)} ${uLbl()} · bed ${fmtZ(bedAt(c), 2)}` : `Ground ${fmtZ(g, 2)} ${uLbl()}${Math.abs(g - groundDemAt(c)) > 0.02 ? `<br>${g > groundDemAt(c) ? 'Fill&nbsp;&nbsp;' : 'Cut&nbsp;&nbsp;&nbsp;'} ${fmtZ(Math.abs(g - groundDemAt(c)), 2)} ${uLbl()} from surveyed ${fmtZ(groundDemAt(c), 2)}` : ''}`}<br>Rail&nbsp;&nbsp; ${fmtZ(z, 2)} ${uLbl()}<br>
-    ${d >= 0 ? `Below&nbsp; ${fmtZ(d, 2)} ${uLbl()}` : `Above&nbsp; ${fmtZ(-d, 2)} ${uLbl()}`}<br>${TUNNEL.has(t) ? (() => { const sc = structFor(t, c); return `Top&nbsp;&nbsp;&nbsp; ${fmtZ(z + sc.top, 2)} ${uLbl()} · cover ${fmtZ(sf - z - sc.top, 1)}<br>Bottom ${fmtZ(z - sc.below, 2)} ${uLbl()} · ${sc.label}<br>`; })() : ''}Grade&nbsp; ${fmtG(gradeAt(c))}${allowanceAt(c) > 0.5 ? ` · ${fmtG(Math.abs(gradeAt(c)) + allowanceAt(c))} with curve` : ''}<br>
+    ${d >= 0 ? `Below&nbsp; ${fmtZ(d, 2)} ${uLbl()}` : `Above&nbsp; ${fmtZ(-d, 2)} ${uLbl()}`}<br>${TUNNEL.has(t) ? (() => { const sc = structFor(t, c); return `Top&nbsp;&nbsp;&nbsp; ${fmtZ(z + sc.top, 2)} ${uLbl()} · cover ${fmtZ(sf - z - sc.top, 1)}<br>Bottom ${fmtZ(z - sc.below, 2)} ${uLbl()} · ${sc.label}<br>`; })() : ''}${t === 'elevated' && spanAt(c) ? (() => { const sp = spanAt(c); return `Soffit ${fmtZ(z - sp.below, 2)} ${uLbl()} · ${fmtZ(sp.L, 1)} ${uLbl()} span, ${sp.truss ? `through truss ${fmtZ(sp.above, 1)} ${uLbl()} over the rail` : `girder ${fmtZ(sp.below, 2)} ${uLbl()} rail to soffit`}<br>`; })() : ''}Grade&nbsp; ${fmtG(gradeAt(c))}${allowanceAt(c) > 0.5 ? ` · ${fmtG(Math.abs(gradeAt(c)) + allowanceAt(c))} with curve` : ''}<br>
     <span style="color:var(${TYPES[t].css});font-family:var(--font-ui);font-weight:600">${TYPES[t].label}${overrideAt(c) ? ' (painted)' : ''}</span>${ctxBlocks().filter((b) => c >= b.c0 && c <= b.c1).map((b) => `<br><span style="font-family:var(--font-ui);color:var(--muted)">${esc(b.l)} · rail ${fmtZ(interpP(b.p, c), 2)} ${uLbl()}</span>`).join('')}`;
   ro.hidden = false;
   const wr = $('#wrap').getBoundingClientRect(); const rw = ro.offsetWidth, rh = ro.offsetHeight;
