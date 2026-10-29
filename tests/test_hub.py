@@ -74,6 +74,10 @@ def test_store_merges_a_pulled_seed(tmp_path):
     assert st.get('alignments/L1')['data'] == {'pvi': [2]} and st.get('alignments/L2')['data'] == {'pvi': [7]}
     assert rep['added'] == ['chronology/segments'] and rep['conflicts'] == [{'path': 'deck/layout', 'keys': ['streets']}]
     assert not any(st.merge_dir(str(new))[k] for k in ('added', 'updated', 'merged'))   # a second start changes nothing
+    st.set('alignments/L3', {'pvi': [5]}, 'Ben')   # no seed base for it: reported once, then not again
+    write(new, 'alignments/L3', {'pvi': [6]})
+    assert any(c['path'] == 'alignments/L3' for c in st.merge_dir(str(new))['conflicts'])
+    assert not any(c['path'] == 'alignments/L3' for c in st.merge_dir(str(new))['conflicts']) and st.get('alignments/L3')['data'] == {'pvi': [5]}
 
 
 def test_chronology_months_and_timeline():

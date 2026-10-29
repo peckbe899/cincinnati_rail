@@ -220,8 +220,9 @@ class Store:
                         hist = [local] + [json.loads(r[0]) for r in self.db.execute('select data from history where path=?', (path,))]
                         cands = [g for g in git_versions(path) if any(same(g, h) for h in hist)]
                     base = cands[0] if cands else None
-                if base is None:
+                if base is None:   # reported once: this seed version becomes the base, so it is listed again only if the seed changes
                     rep['conflicts'].append({'path': path, 'keys': ['no common base: local kept, the seed version saved for review']})
+                    self._base_set(path, seed)
                     continue
                 if same(local, base):
                     self.set(path, seed, 'seed', quiet=True)

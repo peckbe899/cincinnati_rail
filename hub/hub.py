@@ -88,7 +88,7 @@ def seed_report(store, rep):
             lines.append(f"{lab}: {', '.join(rep[k])}")
     cdir = os.path.join(HUB, 'work', 'seed_conflicts')
     for c in rep['conflicts']:
-        lines.append(f"CONFLICT {c['path']}: {', '.join(c['keys'])} (your value kept; the seed's is in hub/work/seed_conflicts)")
+        lines.append(f"Kept yours, {c['path']}: {', '.join(c['keys'])} (the seed's copy is in hub/work/seed_conflicts)")
         f = os.path.join(cdir, *c['path'].split('/')) + '.json'
         os.makedirs(os.path.dirname(f), exist_ok=True)
         try:
@@ -99,7 +99,7 @@ def seed_report(store, rep):
     print(text)
     rid = store.run_start('seed', 'records from hub/seed (git pull)')
     store.run_log(rid, text)
-    store.run_end(rid, 'failed' if rep['conflicts'] else 'ok')
+    store.run_end(rid, 'ok')   # conflicts are notes (your version kept), not a failure
 
 
 class Hub:
