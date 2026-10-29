@@ -89,3 +89,12 @@ console.log(md.includes('**June**') && md.includes('**September**') && md.indexO
 """
     out = subprocess.run(['node', '-e', js], cwd=str(Path(__file__).resolve().parent.parent), capture_output=True, text=True).stdout.split()
     assert out == ['true', 'true']
+
+
+def test_store_merge_skips_an_unreadable_seed_file(tmp_path):
+    from store import Store
+    root = tmp_path / 'seed'; (root / 'deck').mkdir(parents=True)
+    (root / 'deck' / 'layout.json').write_text('<<<<<<< HEAD\n{"a": 1}\n=======\n{"a": 2}\n>>>>>>> theirs\n')
+    st = Store(str(tmp_path / 'db.sqlite')); st.set('deck/layout', {'a': 0}, 'Ben')
+    rep = st.merge_dir(str(root))   # no exception: the record is kept and the file listed
+    assert st.get('deck/layout')['data'] == {'a': 0} and rep['conflicts'][0]['path'] == 'deck/layout'

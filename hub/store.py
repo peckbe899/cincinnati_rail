@@ -198,7 +198,11 @@ class Store:
                 if not f.endswith('.json'):
                     continue
                 path = os.path.relpath(os.path.join(dirpath, f), root)[:-5].replace(os.sep, '/')
-                seed = json.load(open(os.path.join(dirpath, f), encoding='utf8'))
+                try:
+                    seed = json.load(open(os.path.join(dirpath, f), encoding='utf8'))
+                except (ValueError, OSError) as e:   # e.g. git conflict markers after a pull: skip it, keep the record here
+                    rep['conflicts'].append({'path': path, 'keys': [f'the seed file could not be read ({e.__class__.__name__}: {str(e)[:80]}); look for <<<<<<< in hub/seed/{path}.json']})
+                    continue
                 cur = self.get(path)
                 if cur is None:
                     self.set(path, seed, 'seed', quiet=True)

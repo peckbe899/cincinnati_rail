@@ -91,7 +91,10 @@ def seed_report(store, rep):
         lines.append(f"CONFLICT {c['path']}: {', '.join(c['keys'])} (your value kept; the seed's is in hub/work/seed_conflicts)")
         f = os.path.join(cdir, *c['path'].split('/')) + '.json'
         os.makedirs(os.path.dirname(f), exist_ok=True)
-        shutil.copyfile(os.path.join(HUB, 'seed', *c['path'].split('/')) + '.json', f)
+        try:
+            shutil.copyfile(os.path.join(HUB, 'seed', *c['path'].split('/')) + '.json', f)
+        except OSError:
+            pass
     text = 'hub/seed taken in:\n' + '\n'.join(lines) + '\n'
     print(text)
     rid = store.run_start('seed', 'records from hub/seed (git pull)')

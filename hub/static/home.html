@@ -32,6 +32,7 @@ details summary { cursor:pointer }
 #msL details { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:6px 10px; margin-bottom:6px }
 #msL .pc { display:flex; justify-content:space-between; gap:8px; padding:3px 0 3px 14px; font-size:13px }
 </style></head><body><main>
+<div id="down" hidden style="background:#b3261e;color:#fff;padding:10px 14px;border-radius:8px;margin-bottom:12px"><b>The hub is not responding.</b> This page is a copy your browser kept: the hub stopped or did not start. Look at the PowerShell window where you ran <code>rail</code> for the error, then start it again.</div>
 <h1>Cincinnati Rail hub</h1>
 <div class="muted">One local database for the Mill Creek Deck, the Rail Profiles and Station 3D. Change a view and the others follow: the Deck's routes and platforms drive the Profiles, both drive the 3D map.</div>
 <div class="views">
@@ -80,7 +81,8 @@ db.doc('snapshots/region').onSnapshot((d) => { const m = d.exists ? JSON.parse(d
 
 // runs
 async function drawRuns() {
-  const { runs, current, pending } = await fetch('/api/runs').then((r) => r.json());
+  let res; try { res = await fetch('/api/runs', { cache: 'no-store' }).then((r) => r.json()); $('down').hidden = true; } catch (e) { $('down').hidden = false; return; }
+  const { runs, current, pending } = res;
   $('runsT').innerHTML = (pending.length ? `<tr><td colspan="5" class="warn">Waiting to run: ${pending.join(', ')}</td></tr>` : '') + runs.map((r) => `<tr>
     <td>${esc(r.job === '3d' ? '3D snapshot' : 'Deck tie')}</td><td class="${r.state === 'ok' ? 'ok' : r.state === 'failed' ? 'bad' : 'warn'}">${esc(r.state)}</td>
     <td>${ago(r.started)}</td><td class="num">${r.finished ? Math.round(r.finished - r.started) + ' s' : ''}</td>
