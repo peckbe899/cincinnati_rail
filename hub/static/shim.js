@@ -41,18 +41,26 @@
 
   // ---- live events ----
   const bar = { el: null, runs: {} };
-  const es = new EventSource('/api/events');
-  es.onmessage = (m) => {
-    const ev = JSON.parse(m.data);
+  // one live connection shared by every open view (a shared worker; browsers allow six connections to one address);
+  // each event is also passed on as a 'hub-event' on window for the page's own use
+  const onEvent = (ev) => {
     if (ev.t === 'doc') {
       fireDoc(ev.p).catch(console.error);
       const c = ev.p.includes('/') ? ev.p.slice(0, ev.p.lastIndexOf('/')) : '';
       fireColl(c).catch(console.error);
     } else if (ev.t === 'run') { bar.runs[ev.job] = ev.state; drawBar(); }
     else if (ev.t === 'files' && ev.site === SITE) { filesChanged = true; drawBar(); }
+    window.dispatchEvent(new CustomEvent('hub-event', { detail: ev }));
   };
-  es.onerror = () => { offline = true; drawBar(); };
-  es.onopen = () => { offline = false; drawBar(); };
+  const onOpen = () => { offline = false; drawBar(); }, onErr = () => { offline = true; drawBar(); };
+  if (window.SharedWorker) {
+    const w = new SharedWorker('/hub/events_worker.js');
+    w.port.onmessage = (m) => { const d = m.data; if (d.kind === 'msg') onEvent(JSON.parse(d.data)); else if (d.kind === 'open') onOpen(); else if (d.kind === 'error') onErr(); };
+    w.port.start(); window.addEventListener('pagehide', () => { try { w.port.postMessage('bye'); } catch (e) {} });
+  } else {
+    const es = new EventSource('/api/events');
+    es.onmessage = (m) => onEvent(JSON.parse(m.data)); es.onerror = onErr; es.onopen = onOpen;
+  }
 
   // ---- the hub bar ----
   const SITE = location.pathname.split('/')[1] || '';

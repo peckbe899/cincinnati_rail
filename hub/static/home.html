@@ -88,7 +88,7 @@ async function drawRuns() {
     <td>${ago(r.started)}</td><td class="num">${r.finished ? Math.round(r.finished - r.started) + ' s' : ''}</td>
     <td>${esc(r.reason)}<details><summary class="muted">log</summary><pre>${esc(r.log)}</pre></details></td></tr>`).join('') || '<tr><td colspan="5" class="muted">No runs yet</td></tr>';
 }
-drawRuns(); new EventSource('/api/events').onmessage = (m) => { const e = JSON.parse(m.data); if (e.t === 'run') drawRuns(); };
+drawRuns(); window.addEventListener('hub-event', (e) => { if (e.detail.t === 'run') drawRuns(); });   // the shim's shared connection
 setInterval(drawRuns, 15000);
 $('runTie').onclick = () => fetch('/api/run?job=deck_tie', { method: 'POST' }).then(drawRuns);
 $('run3d').onclick = () => fetch('/api/run?job=3d', { method: 'POST' }).then(drawRuns);
