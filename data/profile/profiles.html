@@ -747,14 +747,17 @@ function applyMS(p) {
 // the phase a stretch of a Metro line was built in (Ben sets it per drawn piece), and its bored tunnel
 // the Chronology record (hub chronology/segments, Ben 28 October): the phase of the segment (between two stations) a
 // chainage is in, set by hand or from its opening year; where a segment is not set, the structure record's phase stands
-let CHR = null;
+let CHR = null, CHR_LINES = null;
 const chrPhaseOfYear = (y) => { if (y == null || !CHR) return null; for (const [a, b, p] of CHR.phase_years || []) if (y >= a && y <= b) return p; return null; };
 function chrSegments() {   // this line's segments: [{key, c0, c1, year, phase, src}]
   if (!CHR || !S.data || !S.stations || S.stations.length < 2) return [];
   if (S._chr && S._chr.rec === CHR && S._chr.st === S.stations) return S._chr.list;
-  const sys = isRer() ? 'tri' : S.data.id === 'CVG_Express' ? 'cvx' : 'metro', st = S.stations.slice().sort((a, b) => a.c - b.c), list = [];
+  // the Chronology's own route (chronology_lines.json: TRI branches from their junction station, same-name stations told
+  // apart) when it has this line, else the line's stations
+  const cr = CHR_LINES && CHR_LINES.find((r) => r.id === S.data.id);
+  const sys = cr ? cr.sys : isRer() ? 'tri' : S.data.id === 'CVG_Express' ? 'cvx' : 'metro', st = cr ? cr.stations : S.stations.slice().sort((a, b) => a.c - b.c), list = [];
   for (let i = 0; i + 1 < st.length; i++) {
-    const [x, y] = [st[i].name, st[i + 1].name].sort(), key = sys === 'metro' ? `metro|${S.data.id}|${x}|${y}` : `tri|${x}|${y}`, e = (CHR.segments || {})[key] || {};   // Metro: per line; TRI: shared track is one segment
+    const [x, y] = [st[i].name, st[i + 1].name].sort(), key = cr ? cr.segments[i] : sys === 'metro' ? `metro|${S.data.id}|${x}|${y}` : `${sys}|${x}|${y}`, e = (CHR.segments || {})[key] || {};   // Metro: per line; TRI: shared track is one segment
     const yr = e.year == null || e.year === '' ? null : +e.year;
     list.push({ key, c0: i ? st[i].c : 0, c1: i + 2 < st.length ? st[i + 1].c : S.L, year: yr, phase: e.phase || chrPhaseOfYear(yr), set: !!(e.phase || yr != null) });
   }
@@ -2592,6 +2595,7 @@ window.__api = { selectLine, save, changed, railAt, S, withLine, alignFromDoc, d
     try { LINKS = await loadJSON('rer/links.json'); } catch {}
     if (!MS) try { applyMS(await loadJSON('metro_structure.json')); } catch {}   // the hub's record replaces it (connect)
     if (!CHR) try { CHR = await loadJSON('chronology.json'); } catch {}
+    try { CHR_LINES = (await loadJSON('chronology_lines.json')).routes; } catch {}
     if (!ST_PLAT) try { ST_PLAT = await loadJSON('station_platforms.json'); } catch {}
     if (!APX_EXTRA) try { APX_EXTRA = await loadJSON('approach_extra.json'); } catch {}
     const rer = await Promise.all(rIdx.map((l) => loadJSON(lineUrl(l.id)).catch(() => null)));

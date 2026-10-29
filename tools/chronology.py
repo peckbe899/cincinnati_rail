@@ -87,6 +87,96 @@ def _light(path, tol=3.0):
     return [[round(p[0], 1), round(p[1], 7), round(p[2], 7)] for p, f in zip(path, keep) if f]
 
 
+JUNCTION_M = 25      # TRI path ends this close meet at a junction
+JUNCTION_ST_M = 200  # a station this close to a junction is the junction
+
+
+def join_routes(rs):
+    """TRI routes meet where their paths end at the same point (Ben, 29 October: branches did not reach their trunks).
+    Each route gets the junction as its end station there: a station within JUNCTION_ST_M of the point (Xavier, Covington
+    Union, Latonia, Edgewood, South Cumminsville), else a junction point named after the nearest station ("Anderson Ferry
+    junction"; `pseudo`, not drawn as a station), so the stretch from the junction is a segment. A route end on another
+    route's path (not at its end) joins it the same way."""
+    kx, ky = 111320 * math.cos(math.radians(39.1)), 110540
+    dist = lambda a, b: math.hypot((a[0] - b[0]) * kx, (a[1] - b[1]) * ky)
+    stations = [s for r in rs for s in r['data']['stations']]
+    ends = [(r, e, (r['data']['path'][e][1], r['data']['path'][e][2]), r['data']['path'][e][0]) for r in rs for e in (0, -1)]
+    groups = []
+    for x in ends:
+        for g in groups:
+            if any(dist(x[2], y[2]) <= JUNCTION_M for y in g):
+                g.append(x); break
+        else:
+            groups.append([x])
+
+    def on_other_path(x):
+        r, _, p, _ = x
+        for q in rs:
+            if q is r:
+                continue
+            P = q['data']['path']
+            for a, b in zip(P, P[1:]):
+                ax, ay, bx, by = (a[1] - p[0]) * kx, (a[2] - p[1]) * ky, (b[1] - p[0]) * kx, (b[2] - p[1]) * ky
+                dx, dy = bx - ax, by - ay
+                t = max(0, min(1, -(ax * dx + ay * dy) / ((dx * dx + dy * dy) or 1)))
+                if math.hypot(ax + t * dx, ay + t * dy) <= JUNCTION_M:
+                    return True
+        return False
+    used = {}
+    for g in groups:
+        if len({x[0]['id'] for x in g}) < 2 and not on_other_path(g[0]):
+            continue
+        pt = (sum(x[2][0] for x in g) / len(g), sum(x[2][1] for x in g) / len(g))
+        near = min(stations, key=lambda s: dist(pt, (s['lon'], s['lat'])))
+        if dist(pt, (near['lon'], near['lat'])) <= JUNCTION_ST_M:
+            J = {'name': near['name'], 'lon': near['lon'], 'lat': near['lat']}
+        else:
+            nm = near['name'] + ' junction'
+            if nm in used and dist(used[nm], pt) > JUNCTION_M:   # another junction near the same station: by its route
+                nm = sorted(x[0]['name'] for x in g)[0] + ' junction'
+            used[nm] = pt
+            J = {'name': nm, 'lon': round(pt[0], 7), 'lat': round(pt[1], 7), 'pseudo': True}
+        for r, e, p, c in g:
+            st = r['_st']
+            if not st or st[e]['name'] == J['name']:
+                continue
+            j = dict(J, c=c, junction=True)
+            r['_st'] = [j] + st if e == 0 else st + [j]
+
+
+SAME_STATION_M = 1000   # TRI stations of one name further apart than this are different stations
+
+
+def split_names(rs):
+    """TRI stations are keyed by name, so two different stations of one name would share an opening year: Western Hills
+    (the RER A junction, and the Westwood branch's station 5.4 km out) and Dent (RER A Westwood, RER D 1.6 km away).
+    Places of one name more than SAME_STATION_M apart: the place on the most routes keeps the name, the others take
+    "name (route)"."""
+    kx, ky = 111320 * math.cos(math.radians(39.1)), 110540
+    by = {}
+    for r in rs:
+        for s in r['_st']:
+            if not s.get('pseudo'):
+                by.setdefault(s['name'], []).append((r, s))
+    for name, inst in by.items():
+        places = []   # [[(r, s), ...]] by location
+        for r, s in inst:
+            for pl in places:
+                q = pl[0][1]
+                if math.hypot((q['lon'] - s['lon']) * kx, (q['lat'] - s['lat']) * ky) <= SAME_STATION_M:
+                    pl.append((r, s)); break
+            else:
+                places.append([(r, s)])
+        if len(places) < 2:
+            continue
+        places.sort(key=lambda pl: (-len({r['id'] for r, _ in pl}), min(r['id'] for r, _ in pl)))
+        for pl in places[1:]:
+            label = sorted({r['name'] for r, _ in pl})[0]
+            for r, s in pl:
+                i = r['_st'].index(s)
+                r['_st'][i] = dict(s, name=f'{name} ({label})', was=name)
+
+
 def routes():
     out = []
     for fn in sorted(glob.glob(os.path.join(PROFILE, 'lines', '*_*.json'))):
@@ -102,11 +192,15 @@ def routes():
         out.append(dict(id=d['id'], sys='tri', name=d['line'], color=d.get('color'), kind=d.get('kind') or 'trunk',
                         parent=None if d.get('kind') == 'trunk' else f'RER_{m.group(1)}_trunk', opened=d.get('opened'), data=d))
     for r in out:
+        r['_st'] = stations_sorted(r['data']['stations'])
+    join_routes([r for r in out if r['sys'] == 'tri'])
+    split_names([r for r in out if r['sys'] == 'tri'])
+    for r in out:
         d = r.pop('data')
-        st = stations_sorted(d['stations'])
+        st = r.pop('_st')
         r['length'] = d['length_m']
         r['path'] = _light(d['path'])
-        r['stations'] = [dict(name=s['name'], c=round(s['c'], 1), lon=s['lon'], lat=s['lat']) for s in st]
+        r['stations'] = [dict(name=s['name'], c=round(s['c'], 1), lon=s['lon'], lat=s['lat'], **{k: s[k] for k in ('was', 'junction', 'pseudo') if k in s}) for s in st]
         r['segments'] = [seg_key(r['sys'], a['name'], b['name'], r['id']) for a, b in zip(st, st[1:])]
     return out
 

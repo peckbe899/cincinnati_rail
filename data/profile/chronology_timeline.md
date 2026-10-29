@@ -2,7 +2,7 @@
 
 From the Chronology record (hub `chronology/segments`). Dates are opening dates; the month where it is set. A run is a line's segments that opened on the same date one after another; stations are listed with the run that reached them, later stations as infill. Shared track is listed once, under the first line that has it.
 
-190 of 532 segments have a date; 326 are not set.
+214 of 556 segments have a date; 326 are not set.
 
 ## 1930s
 
@@ -38,39 +38,42 @@ From the Chronology record (hub `chronology/segments`). Dates are opening dates;
 
 ### 1985
 
-- **TRI RER A Blue Ash branch**: Montgomery Park to Blue Ash (6 segments). Stations: Montgomery Park, Norwood Central, Pleasant Ridge, Kennedy Heights, Silverton, Deer Park / KENWOOD TOWN CENTRE, Blue Ash
-- **TRI RER A Mt Airy to Colerain branch**: Mt Airy to Colerain (2 segments). Stations: Mt Airy, Grosebeck, Colerain
-- **TRI RER A Western Hills to South Cumminsville stem**: Western Hills to South Cumminsville (2 segments). Stations: Western Hills, Hopple, South Cumminsville
-- **TRI RER A Milford branch**: Rookwood Commons to Milford (6 segments). Stations: Rookwood Commons, Hyde Park Plaza, Erie Ave, Fairfax, Mariemont, Terrace Park, Milford
-- **TRI RER A trunk**: Evans to Xavier (8 segments). Stations: Evans, Union Terminal, City Hall, Fountain Square, Times, Eden Park, Walnut Hills, MLK, Xavier. Also used by RER D trunk
-- **TRI RER A Westwood branch**: Westwood to Wesselman (8 segments). Stations: Westwood, Quebec Rd, Sunset Ave, Muddy Creek, Glenway Ave, Bridgetown, Dent, Wesselman
-- **TRI RER A Northside to Wyoming branch**: Northside to Wyoming/Lockland (5 segments). Stations: Northside, Winton Place, Elmwood Place, N Bend Rd / CARTHAGE, Galbraith Rd / HARTWELL, Wyoming/Lockland
+- **TRI RER A Blue Ash branch**: Xavier to Blue Ash (7 segments). Stations: Xavier, Montgomery Park, Norwood Central, Pleasant Ridge, Kennedy Heights, Silverton, Deer Park / KENWOOD TOWN CENTRE, Blue Ash
+- **TRI RER A Mt Airy to Colerain branch**: South Cumminsville to Colerain (3 segments). Stations: South Cumminsville, Mt Airy, Grosebeck, Colerain
+- **TRI RER A Western Hills to South Cumminsville stem**: Western Hills junction to South Cumminsville (3 segments). Stations: Western Hills, Hopple
+- **TRI RER A Milford branch**: Xavier to Milford (7 segments). Stations: Rookwood Commons, Hyde Park Plaza, Erie Ave, Fairfax, Mariemont, Terrace Park, Milford
+- **TRI RER A trunk**: Western Hills junction to Xavier (9 segments). Stations: Evans, Union Terminal, City Hall, Fountain Square, Times, Eden Park, Walnut Hills, MLK. Also used by RER D trunk
+- **TRI RER A Westwood branch**: Western Hills junction to Wesselman (9 segments). Stations: Westwood, Quebec Rd, Sunset Ave, Western Hills (RER A Westwood branch), Muddy Creek, Glenway Ave, Bridgetown, Dent, Wesselman
+- **TRI RER A Northside to Wyoming branch**: South Cumminsville to Wyoming/Lockland (6 segments). Stations: Northside, Winton Place, Elmwood Place, N Bend Rd / CARTHAGE, Galbraith Rd / HARTWELL, Wyoming/Lockland
 
 ### 1988
 
-- **TRI RER B CVG branch**: Fort Wright to CVG Terminal 1 (5 segments). Stations: Fort Wright, Fort Mitcehll, Crescent Springs, Mineola, CVG Terminal 2/3/4, CVG Terminal 1. Also used by RER E CVG branch, RER C CVG branch
-- **TRI RER B Decoursey branch**: Winston Park to Decoursey (1 segment). Stations: Winston Park, Decoursey
-- **TRI RER B Highland branch**: Litzler to Highland (1 segment). Stations: Litzler, Highland
-- **TRI RER B Latonia stem**: 15th St to Latonia (2 segments). Stations: 15th St, Wallace Woods, Latonia
-- **TRI RER B trunk**: Aviation to Covington Union (18 segments). Stations: Aviation, Lockland/Reading, Arlington Heights, Hamilton County Fairgrounds, Paddock, Ivorydale, Mitchell Ave / WINTON PLACE, Northside / Spring Grove, Arlington, Camp Washington, Straight, Western, Music Hall/Washington, Roebling, Rivercenter, Covington Union. Also used by RER D trunk
-- **TRI RER C Eastgate branch**: Beechmont to Eastgate (2 segments). Stations: Beechmont, Am-Beth, Eastgate
-- **TRI RER C Sayler Park branch**: Anderson Ferry to Sayler Park (1 segment). Stations: Anderson Ferry, Sayler Park
-- **TRI RER C trunk**: Sedamsville to Asbury (11 segments). Stations: Sedamsville, Mill Creek, Longworth, Pennsylvania, Baines, Torrance, Columbia-Tusculum, Lunken, California, Riverbend/Belterra, Asbury
-- **TRI RER C Withamsville branch**: Mt Moriah to Withamsville (1 segment). Stations: Mt Moriah, Withamsville
+- **TRI RER B CVG branch**: Covington Union to CVG Terminal 1 (6 segments). Stations: Covington Union, Fort Wright, Fort Mitcehll, Crescent Springs, Mineola, CVG Terminal 2/3/4, CVG Terminal 1. Also used by RER E CVG branch, RER C CVG branch
+- **TRI RER B Decoursey branch**: Latonia to Decoursey (2 segments). Stations: Latonia, Winston Park, Decoursey
+- **TRI RER B Highland branch**: Latonia to Highland (2 segments). Stations: Litzler, Highland
+- **TRI RER B Latonia stem**: Covington Union to Latonia (3 segments). Stations: 15th St, Wallace Woods
+- **TRI RER B trunk**: Aviation to Covington Union (18 segments). Stations: Aviation, Lockland/Reading, Arlington Heights, Hamilton County Fairgrounds, Paddock, Ivorydale, Mitchell Ave / WINTON PLACE, Northside / Spring Grove, Arlington, Camp Washington, Straight, Western, Music Hall/Washington, Roebling, Rivercenter. Also used by RER D trunk
+- **TRI RER C CVG branch**: Anderson Ferry junction to CVG Terminal 2/3/4 (1 segment)
+- **TRI RER C Eastgate branch**: Beechmont junction to Eastgate (3 segments). Stations: Beechmont, Am-Beth, Eastgate
+- **TRI RER C Sayler Park branch**: Anderson Ferry junction to Sayler Park (2 segments). Stations: Anderson Ferry, Sayler Park
+- **TRI RER C trunk**: Anderson Ferry junction to Beechmont junction (13 segments). Stations: Sedamsville, Mill Creek, Longworth, Pennsylvania, Baines, Torrance, Columbia-Tusculum, Lunken, California, Riverbend/Belterra, Asbury
+- **TRI RER C Withamsville branch**: Beechmont junction to Withamsville (2 segments). Stations: Mt Moriah, Withamsville
 
 ## 1990s
 
 ### 1990
 
-- **TRI RER D Cold Spring branch**: Woodlawn to Cold Spring (4 segments). Stations: Woodlawn, Southgate, Highland Ridge, Highland Heights/NKU, Cold Spring
-- **TRI RER D Ross branch**: Bellevue to Ross (9 segments). Stations: Bellevue, Dayton, Riverside Gardens, Tower Hill, Ft Thomas, Threemile, Dodsworth, Silver Grove, Melbourne, Ross
-- **TRI RER D trunk**: Mansion Hill to Fountain Square (2 segments). Stations: Mansion Hill
-- **TRI RER D trunk**: Camp Washington to Miamitown South (3 segments). Stations: Monfort Heights, Miamitown South
+- **TRI RER D Cold Spring branch**: Mansion Hill junction to Cold Spring (5 segments). Stations: Woodlawn, Southgate, Highland Ridge, Highland Heights/NKU, Cold Spring
+- **TRI RER D Ross branch**: Mansion Hill junction to Ross (10 segments). Stations: Bellevue, Dayton, Riverside Gardens, Tower Hill, Ft Thomas, Threemile, Dodsworth, Silver Grove, Melbourne, Ross
+- **TRI RER D trunk**: Mansion Hill junction to Fountain Square (3 segments). Stations: Mansion Hill
+- **TRI RER D trunk**: Camp Washington to Miamitown South (3 segments). Stations: Monfort Heights, Dent (RER D trunk), Miamitown South
 
 ### 1996
 
-- **TRI RER E Napoleon branch**: Edgewood to Elsmere (1 segment). Stations: Edgewood, Elsmere
-- **TRI RER E trunk**: Remington to Ludlow (14 segments). Stations: Remington, Madeira, Madisonville, Red Bank Rd, Oakley, Maverick, Avondale, UC Medical, University of Cincinnati, Mt Auburn, Central Parkway, Ludlow
+- **TRI RER E CVG branch**: Crescent Springs junction to Crescent Springs (1 segment)
+- **TRI RER E Kenton stem**: RER E Kenton stem junction to Edgewood (2 segments). Stations: Kenton, Edgewood
+- **TRI RER E Napoleon branch**: Edgewood to Elsmere (1 segment). Stations: Elsmere
+- **TRI RER E trunk**: Remington to Crescent Springs junction (15 segments). Stations: Remington, Madeira, Madisonville, Red Bank Rd, Oakley, Maverick, Avondale, UC Medical, University of Cincinnati, Mt Auburn, Central Parkway, Ludlow
 - **TRI RER E CVG branch** services begin on older track: 3 segments (opened 1988)
 
 ## Not set

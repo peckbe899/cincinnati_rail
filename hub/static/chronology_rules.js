@@ -108,7 +108,9 @@
     // stations: no earlier than their track; later is infill
     const stations = {}, touch = {};
     for (const r of routes) r.segments.forEach((k, i) => { for (const s of [r.stations[i], r.stations[i + 1]]) { const sk = stKey(r.sys, s.name); (touch[sk] = touch[sk] || new Set()).add(k); } });
+    const pseudo = new Set(routes.flatMap((r) => r.stations.filter((s) => s.pseudo).map((s) => stKey(r.sys, s.name))));
     for (const [sk, ks] of Object.entries(touch)) {
+      if (pseudo.has(sk)) continue;   // junction points are not stations
       let minW = null; for (const k of ks) { const w = segWhen(rec, k); if (w && (!minW || before(w, minW) || (w.y === minW.y && minW.m == null && w.m != null))) minW = w; }
       const se = (rec.stations || {})[sk], ownW = se && se.year != null && se.year !== '' ? { y: +se.year, m: monthOf(se) } : null;
       const own = ownW ? ownW.y : null, min = minW ? minW.y : null, w = ownW || minW;
@@ -171,7 +173,8 @@
     for (const [sk, st] of Object.entries(A.stations)) if (st.ownW && st.infill) ev.push({ kind: 'infill', w: st.ownW, name: sk.split('|')[1], sys: sk.split('|')[0], track: st.minW, note: ((rec.stations || {})[sk] || {}).note });
     for (const e of ev) if (e.kind === 'run') {
       const r = e.route; const names = r.stations.slice(r.segments.indexOf(e.segs[0]), e.end + 1).map((s) => s.name);
-      e.stations = names.filter((n) => { const sk = stKey(r.sys, n), st = A.stations[sk]; if (!st || st.infill || stAt.has(sk)) return false; if (st.year !== e.w.y) return false; stAt.set(sk, e); return true; });
+      const pseudo = new Set(r.stations.filter((s) => s.pseudo).map((s) => s.name));
+      e.stations = names.filter((n) => { if (pseudo.has(n)) return false; const sk = stKey(r.sys, n), st = A.stations[sk]; if (!st || st.infill || stAt.has(sk)) return false; if (st.year !== e.w.y) return false; stAt.set(sk, e); return true; });
     }
     const sv = new Map();   // services onto track that opened earlier, per route and year
     for (const [k, e] of Object.entries(rec.segments || {})) for (const [rid, y] of Object.entries(e.services || {})) {
