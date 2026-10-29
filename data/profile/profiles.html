@@ -891,7 +891,6 @@ let APX_EXTRA = null;
 const minRadiusAt = (c) => ((MS.phases[phaseAt(c)] || MS.phases.later) || {}).min_radius || MS.min_radius || 40;
 const approachExtra = (info) => { const L = (APX_EXTRA && APX_EXTRA[S.data.id]) || []; const e = L.find((x) => x.side === info.side && (info.station ? x.station === info.station : !x.station && Math.abs(x.c - info.c) < 20)); return e ? e.extra : 0; };
 const approachLen = (shift, c, info) => Math.max(MS.approach_m || 40, Math.sqrt(4 * minRadiusAt(c) * Math.abs(shift))) + (info ? approachExtra(info) : 0);
-const DIP_BORE_M = 50;   // a shield drive bores through a spot with too little cover up to this long (drawing value)
 function stretchTypes() {
   const V = VERTS; if (!S.data || isRer() || !MS || !V) return null;
   if (V._types && V._types.g === S.ground && V._types.ms === MS && V._types.chr === CHR && V._types.plat === ST_PLAT && V._types.ax === APX_EXTRA && V._types.L === S.L) return V._types;
@@ -905,11 +904,11 @@ function stretchTypes() {
       const parts = []; let s = a0; for (let i = a0 + 1; i <= b0 + 1; i++) if (i > b0 || P[i].ph !== P[s].ph) { parts.push([s, i - 1]); s = i; }
       for (const [a, b] of parts) {
         const R = P[a].R;
-        // the boreable stretches, joined across short too-shallow spots it bores through (DIP_BORE_M; flagged below). A drive
-        // between two stations at any length (Ben, 28-29 October): the whole stretch, or the only drive between the anchors
-        // (the station boxes carry on through the shallow ends until the tube has its cover); else at least min_drive
+        // one drive between two anchors (Ben, 28-29 October: station to station at any length, no switching between): every
+        // boreable stretch between them, joined through the spots with too little cover (bored through, flagged below: the
+        // profile should dive there); the station boxes carry on through the shallow ends until the tube has its cover
         const drives = [];
-        for (const [x, y] of runs(a, b, (p) => p.cls !== 'C')) { const d = drives[drives.length - 1]; if (d && len(d.y + 1, x - 1) <= DIP_BORE_M) { d.y = y; d.pieces.push([x, y]); } else drives.push({ x, y, pieces: [[x, y]] }); }
+        for (const [x, y] of runs(a, b, (p) => p.cls !== 'C')) { const d = drives[drives.length - 1]; if (d) { d.y = y; d.pieces.push([x, y]); } else drives.push({ x, y, pieces: [[x, y]] }); }
         for (const { x, y, pieces } of drives) {
           const ok = (x === a && y === b) || drives.length === 1 || len(x, y) >= R.minDrive;
           for (const [u, v] of pieces) for (let i = u; i <= v; i++) P[i].t = ok ? 'bored' : 'cutcover';
@@ -917,12 +916,11 @@ function stretchTypes() {
         }
         for (let i = a; i <= b; i++) if (!P[i].t) P[i].t = 'cutcover';
         for (const [x, y] of runs(a, b, (p) => p.t === 'cutcover')) {
-          if (x === a || y === b || len(x, y) >= R.minDrive) continue;   // at a box or portal, or a stretch of its own
+          const tunnel = (p) => !!p && !p.stn && (p.t === 'shield' || p.t === 'deep');   // a canon or river tunnel beyond
+          if ((x === a && !tunnel(P[a - 1])) || (y === b && !tunnel(P[b + 1]))) continue;   // at a box or portal: the box carries on
           const shallow = P.slice(x, y + 1).some((p) => p.cls === 'C');
-          // a drive bores through a short spot with too little cover (up to DIP_BORE_M, ground treatment; drawing value);
-          // a longer one stays cut and cover: the profile should dive there
-          if (!shallow || len(x, y) <= DIP_BORE_M) for (let i = x; i <= y; i++) P[i].t = 'bored';
-          if (fl && shallow) flags.push({ c0: P[x].c, c1: P[y].c, text: `${len(x, y) <= DIP_BORE_M ? 'a short spot' : 'a stretch'} inside a shield drive (${Math.round(len(x, y))} m) with less than one diameter of cover (${fmtZ(P[x].shieldFrom, 2)} ${uLbl()} to the rail): ${len(x, y) <= DIP_BORE_M ? 'bored through' : 'cut and cover'}; the profile should dive here` });
+          for (let i = x; i <= y; i++) P[i].t = 'bored';   // inside the drive: bored through
+          if (fl && shallow) flags.push({ c0: P[x].c, c1: P[y].c, text: `a stretch inside a shield drive (${Math.round(len(x, y))} m) with less than one diameter of cover (${fmtZ(P[x].shieldFrom, 2)} ${uLbl()} to the rail): bored through; the profile should dive here` });
         }
         for (const [x, y] of runs(a, b, (p) => p.t === 'bored')) {   // a drive is one type (Ben, 29 October): deep if it
           // reaches a deep station or runs a whole drive below deep_from, else shallow shield

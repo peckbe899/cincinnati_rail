@@ -172,9 +172,6 @@ def load_settings(path: Optional[str | Path], rer: bool = False) -> dict:
     return s
 
 
-DIP_BORE_M = 50.0   # a shield drive bores through a spot with too little cover up to this long (drawing value, as the editor)
-
-
 @dataclass
 class MetroProfile:
     data: dict
@@ -911,12 +908,12 @@ class MetroProfile:
                         s = i
                 for a, b in parts:
                     R = P[a]["R"]
-                    # the boreable stretches, joined across short too-shallow spots (DIP_BORE_M); box to box at any
-                    # length (Ben): the whole stretch, or the only drive between the anchors (the station boxes carry on
-                    # through the shallow ends until the tube has its cover; 29 October); else at least min_drive
+                    # one drive between two anchors (Ben, 28-29 October: station to station at any length, no switching
+                    # between): every boreable stretch, joined through the low-cover spots (bored through, flagged); the
+                    # station boxes carry on through the shallow ends until the tube has its cover
                     drives = []
                     for x, y in runs(a, b, lambda p: p["cls"] != "C"):
-                        if drives and length(drives[-1][1] + 1, x - 1) <= DIP_BORE_M:
+                        if drives:   # one drive between two anchors (Ben, 29 October): joined through the low-cover spots
                             drives[-1][1] = y
                             drives[-1][2].append((x, y))
                         else:
@@ -931,12 +928,12 @@ class MetroProfile:
                     for i in range(a, b + 1):
                         P[i].setdefault("t", "cutcover")
                     for x, y in runs(a, b, lambda p: p["t"] == "cutcover"):
-                        if x == a or y == b or length(x, y) >= R["min_drive"]:
+                        tunnel = lambda i: 0 <= i < n and not P[i].get("stn") and P[i].get("t") in ("shield", "deep")
+                        if (x == a and not tunnel(a - 1)) or (y == b and not tunnel(b + 1)):   # at a box or portal: the box carries on
                             continue
                         shallow = any(p["cls"] == "C" for p in P[x:y + 1])
-                        if not shallow or length(x, y) <= DIP_BORE_M:   # a short low-cover spot is bored through
-                            for i in range(x, y + 1):
-                                P[i]["t"] = "bored"
+                        for i in range(x, y + 1):   # inside the drive: bored through (flagged where the cover is short)
+                            P[i]["t"] = "bored"
                         if shallow:
                             fl and flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "shallow dip in a drive", "len": length(x, y)})
                     for x, y in runs(a, b, lambda p: p["t"] == "bored"):   # a drive is one type (Ben, 29 October)
