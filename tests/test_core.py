@@ -586,7 +586,7 @@ def test_tunnel_methods_by_era():
     shield minimum and the cut-and-cover limit, cut and cover unless it makes a drive. Station approaches (Ben, 28 October:
     the box carries on until the tracks reach the tubes' spacing) are switch points."""
     from pathlib import Path
-    from railsim.metro_profile import MetroProfile
+    from railsim.metro_profile import MetroProfile, DIP_BORE_M
     root = Path(__file__).resolve().parent.parent / "data/profile"
     for lid in ("Line_3", "Line_10"):
         mp = MetroProfile.load(root / f"lines/{lid}.json", None, root / "settings.json")
@@ -607,12 +607,30 @@ def test_tunnel_methods_by_era():
             while j + 1 < len(ts) and bored(j + 1):
                 j += 1
             ends_at_cc = (k > 0 and "cls" in tun[k - 1]) or (j + 1 < len(ts) and "cls" in tun[j + 1])
-            if ends_at_cc:   # a drive from a shaft: at least the minimum
+            # the anchors either side (station boxes, approaches, portals): a drive is the only one between them, at any
+            # length (Ben, 29 October: the boxes carry on through the shallow ends), else at least the minimum
+            a0 = k
+            while a0 > 0 and "cls" in tun[a0 - 1]:
+                a0 -= 1
+            b0 = j
+            while b0 + 1 < len(ts) and "cls" in tun[b0 + 1]:
+                b0 += 1
+            others = any(bored(i) for i in list(range(a0, k)) + list(range(j + 1, b0 + 1)))
+            if ends_at_cc and others:
                 assert (j - k + 1) * step >= mp.phase_rules(k * step)["min_drive"] - 1e-6, (lid, k * step, j * step)
+            low = [m for m in range(k, j + 1) if tun[m].get("cls") == "C"]   # bored through: only short spots
+            runs_low, r0 = [], None
+            for m in low:
+                if r0 is None or m != r0[1] + 1:
+                    r0 = [m, m]; runs_low.append(r0)
+                else:
+                    r0[1] = m
+            assert all((v - u + 1) * step <= DIP_BORE_M + step for u, v in runs_low), (lid, k * step)
             for m in range(k, j + 1, 25):
                 c = m * step
                 sc = mp.struct_for("shield", c)
-                assert float(mp.ground_at(c) - mp.rail_at(c)) >= sc["top"] + sc["od"] - 1e-6, (lid, c)
+                if tun[m].get("cls") != "C":
+                    assert float(mp.ground_at(c) - mp.rail_at(c)) >= sc["top"] + sc["od"] - 1e-6, (lid, c)
             k = j + 1
     assert mp.phase_rules(1000.0) == {"cc_max": 16.5, "min_drive": 300.0, "deep_from": 18.29}   # Line 10, Phase 2
 

@@ -172,6 +172,9 @@ def load_settings(path: Optional[str | Path], rer: bool = False) -> dict:
     return s
 
 
+DIP_BORE_M = 50.0   # a shield drive bores through a spot with too little cover up to this long (drawing value, as the editor)
+
+
 @dataclass
 class MetroProfile:
     data: dict
@@ -843,8 +846,12 @@ class MetroProfile:
         if not sec and not self.is_rer and getattr(self, "ms", None):
             R, tube = self.phase_rules(c), self.struct_for("shield", c)
             shield_from = tube["top"] + tube["od"]
-            if self.in_station(c):
-                return {"t": "deep" if d >= R["deep_from"] and d >= shield_from else "cutcover", "stn": True}
+            if self.in_station(c):   # a station is one type: by its depth at the platform centre (Ben, 29 October)
+                half = self.settings["platform"] / 2
+                st = next(s for s in self.stations if abs(c - s["c"]) <= half)
+                gs = float(self.ground_at(st["c"]))
+                ds = gs - self.rail_at(st["c"]) if math.isfinite(gs) else d
+                return {"t": "deep" if ds >= R["deep_from"] and ds >= shield_from else "cutcover", "stn": True}
             return {"cls": "C" if d < shield_from else "B" if d > R["cc_max"] else "E", "d": d, "deep": d >= R["deep_from"],
                     "ph": self._phase_at(c), "R": R, "shield_from": shield_from}
         m = sec["m"] if sec else ("deep" if d >= self.settings["deepBelow"] else "shallow")
@@ -904,10 +911,21 @@ class MetroProfile:
                         s = i
                 for a, b in parts:
                     R = P[a]["R"]
+                    # the boreable stretches, joined across short too-shallow spots (DIP_BORE_M); box to box at any
+                    # length (Ben): the whole stretch, or the only drive between the anchors (the station boxes carry on
+                    # through the shallow ends until the tube has its cover; 29 October); else at least min_drive
+                    drives = []
                     for x, y in runs(a, b, lambda p: p["cls"] != "C"):
-                        ok = (x == a and y == b) or length(x, y) >= R["min_drive"]   # box to box: a drive at any length (Ben)
-                        for i in range(x, y + 1):
-                            P[i]["t"] = "bored" if ok else "cutcover"
+                        if drives and length(drives[-1][1] + 1, x - 1) <= DIP_BORE_M:
+                            drives[-1][1] = y
+                            drives[-1][2].append((x, y))
+                        else:
+                            drives.append([x, y, [(x, y)]])
+                    for x, y, pieces in drives:
+                        ok = (x == a and y == b) or len(drives) == 1 or length(x, y) >= R["min_drive"]
+                        for u, v in pieces:
+                            for i in range(u, v + 1):
+                                P[i]["t"] = "bored" if ok else "cutcover"
                         if not ok and any(p["cls"] == "B" for p in P[x:y + 1]):
                             fl and flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "short bored", "len": length(x, y)})
                     for i in range(a, b + 1):
@@ -915,20 +933,18 @@ class MetroProfile:
                     for x, y in runs(a, b, lambda p: p["t"] == "cutcover"):
                         if x == a or y == b or length(x, y) >= R["min_drive"]:
                             continue
-                        if all(p["cls"] != "C" for p in P[x:y + 1]):
+                        shallow = any(p["cls"] == "C" for p in P[x:y + 1])
+                        if not shallow or length(x, y) <= DIP_BORE_M:   # a short low-cover spot is bored through
                             for i in range(x, y + 1):
                                 P[i]["t"] = "bored"
-                            continue
-                        fl and flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "short cut and cover", "len": length(x, y)})
-                    for x, y in runs(a, b, lambda p: p["t"] == "bored"):
+                        if shallow:
+                            fl and flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "shallow dip in a drive", "len": length(x, y)})
+                    for x, y in runs(a, b, lambda p: p["t"] == "bored"):   # a drive is one type (Ben, 29 October)
+                        touch = (x > 0 and P[x - 1].get("stn") and P[x - 1]["t"] == "deep") or \
+                                (y < n - 1 and P[y + 1].get("stn") and P[y + 1]["t"] == "deep")
+                        deep = touch or any(length(u, v) >= R["min_drive"] for u, v in runs(x, y, lambda p: p["deep"]))
                         for i in range(x, y + 1):
-                            P[i]["t"] = "shield"
-                        for u, v in runs(x, y, lambda p: p["deep"]):
-                            touch = (u == x and x > 0 and P[x - 1].get("stn") and P[x - 1]["t"] == "deep") or \
-                                    (v == y and y < n - 1 and P[y + 1].get("stn") and P[y + 1]["t"] == "deep")
-                            if touch or length(u, v) >= R["min_drive"]:
-                                for i in range(u, v + 1):
-                                    P[i]["t"] = "deep"
+                            P[i]["t"] = "deep" if deep else "shield"
 
         resolve(False)
         # station approaches (Ben, 28 October): a cut-and-cover station meeting bored tubes keeps its box through the

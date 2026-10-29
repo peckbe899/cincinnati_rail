@@ -262,3 +262,11 @@ Published: page version 6 and the snapshot (35 parts), read back at view level.
 - The Profiles' Chronology band uses the Chronology's route list, so the two agree.
 - Year colours: Plasma, 1905 to the end of the "Network as of" scale (2030).
 - Record: 0 rule breaks, 0 orphans, 326 segments not set (all Metro).
+
+## 2026-10-29: tunnel drives between stations (Ben: "between-station drives not working"; the Fort Mitchell screenshot)
+
+- A tunnel between two stations is usually too shallow for a shield near each station and boreable in the middle. "Box to box at any length" only counted when the whole stretch was boreable, so a short middle (under 300-400 m) went cut and cover, even below the cut-and-cover limit. Now the only drive between two anchors is bored at any length (the station boxes carry on through the shallow ends until the tube has its cover). Drives join across spots with too little cover up to 50 m long (bored through, flagged: the profile should dive); a longer spot stays cut and cover (flagged) and splits the drives, each then at least the minimum drive.
+- A station is one type, from its depth at the platform centre (Fort Mitchell, Line 6, alternated between deep and cut and cover point by point).
+- A drive is one type: deep if it reaches a deep station or runs a whole drive below 18.29 m, else shallow shield (no switch partway; Kyles Lane to the valley is deep tunnel throughout).
+- Result: 139 station-to-station tunnels bored (was 90). Still cut and cover below the limit, flagged: Line 1 at 2+984, Line 3 at 21+158, Line 5 at 28+916, Line 7 at 2+442, Line 10 at 17+838 (separate short drives; the profile has to rise or the drive be longer). The other mixed stations and shield/deep switches left are Ben's painted stretches.
+- Same rules in the editor (`data/profile/profiles.html`) and the port (`railsim/metro_profile.py`); the test follows the new rule.
