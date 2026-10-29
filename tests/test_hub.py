@@ -81,12 +81,11 @@ def test_chronology_months_and_timeline():
     js = r"""
 const C = require('./hub/static/chronology_rules.js');
 const r = { id: 'L', name: 'Line X', sys: 'metro', segments: ['a', 'b'], stations: [{ name: 'P', c: 0 }, { name: 'Q', c: 1 }, { name: 'R', c: 2 }], path: [[0, 0, 0]] };
-const rec = (ma, mb, y = 1930) => ({ phase_years: [[1800, 2200, '1']], core: { L: ['a'] }, segments: { a: { year: 1930, month: ma }, b: { year: y, month: mb } }, stations: {} });
-const n = (x) => C.analyse([r], x).violations.length;
-console.log(JSON.stringify([n(rec(6, 3)), n(rec(6, 9)), n(rec(6, null)), n(rec(null, 3)), n(rec(6, 3, 1931))]));
-const md = C.timeline([r], rec(6, 9));
-console.log(md.includes('**June**') && md.includes('**September**') && md.includes('P to Q'));
+const rec = { phase_years: [[1800, 2200, '1']], segments: { a: { year: 1930, month: 6 }, b: { year: 1925, month: 9 } }, stations: {} };
+const ed = C.applyEdit([r], rec, { segments: { b: { year: 1920 } } });   // no order rules: any year is taken
+console.log(ed.rec.segments.b.year === 1920 && !('violations' in ed.analysis));
+const md = C.timeline([r], rec);
+console.log(md.includes('**June**') && md.includes('**September**') && md.indexOf('1925') < md.indexOf('1930') && md.includes('P to Q'));
 """
     out = subprocess.run(['node', '-e', js], cwd=str(Path(__file__).resolve().parent.parent), capture_output=True, text=True).stdout.split()
-    assert out[0] == '[1,0,0,0,0]'   # only a later year, or both months set and out of order, breaks the order
-    assert out[1] == 'true'
+    assert out == ['true', 'true']

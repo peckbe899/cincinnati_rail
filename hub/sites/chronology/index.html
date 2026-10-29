@@ -38,13 +38,13 @@ a.seg { color:var(--accent); cursor:pointer; text-decoration:none }
   <label><input type="checkbox" id="showMetro" checked> Metro</label>
   <label><input type="checkbox" id="showCvx" checked> CVG Express</label>
   <span class="legend" id="legend"></span>
+  <button id="undoBtn" title="Undo the last change (Ctrl+Z)" disabled>Undo</button><button id="redoBtn" title="Redo (Ctrl+Shift+Z)" disabled>Redo</button>
   <button id="tlBtn" title="Every set opening in date order, as a Markdown file">Timeline (.md)</button>
 </header>
 <main>
   <div id="map"><canvas id="cv"></canvas><div id="hint">Click a station, then another on the same line to select the segments between. Shift-click adds a segment, Alt-drag draws a box round segments. Esc clears.</div></div>
   <aside>
     <div id="sel"><p class="muted">Nothing selected.</p></div>
-    <h2>Warnings <span id="nViol" class="muted"></span></h2><div id="viol"></div>
     <h2>Not set <span id="nUnset" class="muted"></span></h2><div id="unset" class="small"></div>
     <h2>Orphans <span id="nOrph" class="muted"></span></h2><div id="orph" class="small"></div>
     <h2>Infill stations <span id="nInf" class="muted"></span></h2><div id="inf" class="small"></div>
@@ -55,7 +55,7 @@ a.seg { color:var(--accent); cursor:pointer; text-decoration:none }
 <script>
 // The Chronology view (Ben, 28 October): the opening year and phase of every Metro and TRI segment and station, in the hub's
 // record chronology/segments. The phase sets each stretch's tunnel (Rail Profiles, Deck, Station 3D). Order rules in
-// /hub/chronology_rules.js: outward from each line's core never older; a station no earlier than its track (later is infill).
+// /hub/chronology_rules.js: no order rules (any segment may open in any year); a station opens with its track unless set.
 const $ = (id) => document.getElementById(id), esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const C = window.CHRONO, PH_COL = { 1: '#2f6fb3', 2: '#c2571a', 3: '#2e8b57', later: '#8e5bb5' };
 let R = [], REC = null, A = null, DB = null;
@@ -101,7 +101,7 @@ const shown = (sys) => (sys === 'tri' ? $('showTri').checked : sys === 'cvx' ? $
 function draw() {
   const dpr = window.devicePixelRatio || 1; cv.width = cv.clientWidth * dpr; cv.height = cv.clientHeight * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
   cx.clearRect(0, 0, cv.clientWidth, cv.clientHeight); if (!REC || !S.view) return;
-  const asOf = +$('asOf').value, all = asOf >= 2030, by = $('colBy').value, bad = new Set(A.violations.filter((v) => v.key).map((v) => v.key));
+  const asOf = +$('asOf').value, all = asOf >= 2030, by = $('colBy').value;
   const css = getComputedStyle(document.documentElement), muted = css.getPropertyValue('--muted'), badC = css.getPropertyValue('--bad'), ink = css.getPropertyValue('--ink');
   for (const pass of [0, 1, 2]) for (const s of SEG.values()) {
     if (!shown(s.sys)) continue;
@@ -111,7 +111,7 @@ function draw() {
     if ((pass === 0) !== sel && pass !== 2) { if (pass === 0 || !sel) { if (pass === 1) continue; } }
     cx.beginPath(); s.pts.forEach(([lon, lat], i) => { const [x, yy] = toS(lon, lat); i ? cx.lineTo(x, yy) : cx.moveTo(x, yy); });
     if (pass === 0) { if (!sel) continue; cx.strokeStyle = '#f5c400'; cx.lineWidth = 9; cx.setLineDash([]); cx.stroke(); continue; }
-    if (pass === 1) { if (!bad.has(s.key)) continue; cx.strokeStyle = badC; cx.lineWidth = 7; cx.setLineDash([]); cx.stroke(); continue; }
+    if (pass === 1) continue;
     const unset = y == null && !ph;
     cx.strokeStyle = unset ? muted : by === 'year' ? (y != null ? yearCol(y) : muted) : PH_COL[ph] || muted;
     cx.lineWidth = s.sys === 'tri' ? 2.5 : 3.5; cx.setLineDash(unset || (by === 'year' && y == null) ? [6, 5] : []); cx.stroke();
@@ -162,7 +162,8 @@ function selPanel(msg) {
       <div class="row"><label>Opening year <input id="stY" type="number" min="1850" max="2100" style="width:90px" value="${own.year ?? ''}"></label> <select id="stM" title="Month (optional)"><option value="">month</option>${C.MONTHS.map((m, i) => `<option value="${i + 1}" ${+own.month === i + 1 ? 'selected' : ''}>${m}</option>`).join('')}</select></div>
       <div class="row"><input id="stN" placeholder="Note" style="flex:1" value="${esc(own.note || '')}"></div>
       <div class="row"><button class="primary" id="stApply">Set</button><button id="stClear">Clear (with its track)</button></div>
-      <p class="muted small">Click another station on the same line to select the segments between them.</p><div id="msg">${msg || ''}</div>`;
+      <p class="muted small">Click another station on the same line to select the segments between them.</p>${resetRow(st.routes)}<div id="msg">${msg || ''}</div>`;
+    wireReset();
     $('stApply').onclick = () => apply({ stations: { [S.st]: { year: $('stY').value ? +$('stY').value : null, month: $('stY').value && $('stM').value ? +$('stM').value : null, note: $('stN').value || null, src: 'Ben' } } });
     $('stClear').onclick = () => apply({ stations: { [S.st]: { year: null, month: null, note: null, src: null } } });
     return;
@@ -170,37 +171,58 @@ function selPanel(msg) {
   if (!S.sel.size) { el.innerHTML = '<p class="muted">Nothing selected.</p>' + (msg || ''); return; }
   const ks = [...S.sel], ws = [...new Set(ks.map((k) => C.fmtWhen(C.segWhen(REC, k))))], ms = [...new Set(ks.map((k) => (C.segWhen(REC, k) || {}).m ?? null))], ys = [...new Set(ks.map((k) => C.segYear(REC, k)))], ps = [...new Set(ks.map((k) => (REC.segments[k] || {}).phase || ''))];
   const routes = [...new Set(ks.flatMap((k) => (SEG.get(k) ? SEG.get(k).routes.map((r) => r.name) : [])))];
-  const rg = ks.length === 1 && A.ranges[ks[0]] ? A.ranges[ks[0]] : null, e1 = ks.length === 1 ? REC.segments[ks[0]] || {} : {};
+  const e1 = ks.length === 1 ? REC.segments[ks[0]] || {} : {};
   el.innerHTML = `<h2 style="margin-top:0">${ks.length === 1 ? esc(C.keyName(ks[0])) : ks.length + ' segments'}</h2>
     <p class="small muted">${esc(routes.join(', '))}${ks.length > 1 ? '' : SEG.get(ks[0]) && SEG.get(ks[0]).routes.length > 1 ? ' · shared: one year for every line' : ''}</p>
-    <p class="small">Now: ${ws.join(', ')}; phase ${ps.map((p) => (p ? C.PHASE_NAME[p] : 'from the year')).join(', ')}${ks.length === 1 && e1.src ? ` · from ${esc(e1.src)}` : ''}${e1.note ? `<br>${esc(e1.note)}` : ''}${e1.services ? `<br>Services on this track: ${Object.entries(e1.services).map(([r, y]) => esc((R.find((q) => q.id === r) || { name: r }).name) + ' from ' + y).join(', ')}` : ''}${rg ? `<br>May take ${rg[0] ?? 'any year'} to ${rg[1] ?? 'any year'} (the segments either side)` : ''}</p>
+    <p class="small">Now: ${ws.join(', ')}; phase ${ps.map((p) => (p ? C.PHASE_NAME[p] : 'from the year')).join(', ')}${ks.length === 1 && e1.src ? ` · from ${esc(e1.src)}` : ''}${e1.note ? `<br>${esc(e1.note)}` : ''}${e1.services ? `<br>Services on this track: ${Object.entries(e1.services).map(([r, y]) => esc((R.find((q) => q.id === r) || { name: r }).name) + ' from ' + y).join(', ')}` : ''}</p>
     <div class="row"><label>Opening year <input id="sgY" type="number" min="1850" max="2100" style="width:90px" value="${ys.length === 1 && ys[0] != null ? ys[0] : ''}"></label> <select id="sgM" title="Month (optional)"><option value="">month</option>${C.MONTHS.map((m, i) => `<option value="${i + 1}" ${(ms.length === 1 ? ms[0] : null) === i + 1 ? 'selected' : ''}>${m}</option>`).join('')}</select>
       <label ${ks.every((k) => k.startsWith('tri|')) ? 'hidden' : ''}>Phase <select id="sgP"><option value="">from the year</option>${Object.keys(PH_COL).map((p) => `<option value="${p}" ${ps.length === 1 && ps[0] === p ? 'selected' : ''}>${C.PHASE_NAME[p]}</option>`).join('')}</select></label></div>
     <div class="row"><input id="sgN" placeholder="Note" style="flex:1" value="${ks.length === 1 ? esc(e1.note || '') : ''}"></div>
-    <div class="row"><button class="primary" id="sgApply">Set</button><button id="sgClear">Clear (not set)</button></div><div id="msg">${msg || ''}</div>
+    <div class="row"><button class="primary" id="sgApply">Set</button><button id="sgClear">Clear (not set)</button></div>${resetRow(ks.flatMap((k) => (SEG.get(k) ? SEG.get(k).routes : [])))}<div id="msg">${msg || ''}</div>
     <p class="muted small">Phase from the year: ${(REC.phase_years || []).map(([a, b, p]) => `${C.PHASE_NAME[p]} ${a <= 1800 ? 'to' : a}${a <= 1800 ? '' : '-'}${b >= 2200 ? 'on' : b}`).join(', ')}.</p>`;
+  wireReset();
   const patch = () => ({ year: $('sgY').value ? +$('sgY').value : null, month: $('sgY').value && $('sgM').value ? +$('sgM').value : null, phase: $('sgP').value || null, note: $('sgN').value || null, src: 'Ben' });
   $('sgApply').onclick = () => { const p = patch(); if (ks.every((k) => k.startsWith('tri|'))) delete p.phase; /* TRI: years only */ if (ks.length > 1 && !$('sgN').value) delete p.note; apply({ segments: Object.fromEntries(ks.map((k) => [k, p])) }); };
   $('sgClear').onclick = () => apply({ segments: Object.fromEntries(ks.map((k) => [k, { year: null, month: null, phase: null, note: null, src: null }])) });
 }
-async function apply(edit, push = false) {
-  // never refused (Ben, 29 October: a warning at most): the edit is saved, and anything out of order is a warning, with
-  // the option to push the segments further out to the same date
-  const res = C.tryEdit(R, REC, edit, push);
-  try { await DB.doc('chronology/segments').set(res.rec); } catch (e) { selPanel(`<p class="bad small">Not saved: ${e.message}</p>`); return; }
-  REC = res.rec; A = res.analysis; refresh();
-  const warn = res.warnings.filter((v) => !res.pushable.includes(v));
-  let msg = '<p class="ok small">Saved.</p>';
-  if (warn.length) msg += `<p class="warn small"><b>Warning:</b> ${warn.map((v) => esc(v.text)).join('; ')}.</p>`;
-  if (res.pushable.length) msg += `<p class="warn small"><b>Warning:</b> ${res.pushable.length} segment${res.pushable.length > 1 ? 's' : ''} further out ${res.pushable.length > 1 ? 'are' : 'is'} now older than this: ${res.pushable.slice(0, 4).map((v) => esc(v.text)).join('; ')}${res.pushable.length > 4 ? ' ...' : ''}.</p>
-    <div class="row"><button id="doPush">Push them (and their stations) to the same date</button></div>`;
-  selPanel(msg);
-  if (res.pushable.length) $('doPush').onclick = () => apply(edit, true);
+// reset a line (Ben, 29 October): its segments and stations back to the starting record (data/profile/chronology.json:
+// the tracker's opening segments, the TRI routes' opening years, Ben's answers of 28 October); undoable
+let DEFAULT_REC = null;
+const resetRow = (routes) => { const rs = [...new Set(routes)]; return rs.length ? `<div class="row small">${rs.map((r) => `<button data-reset="${esc(r.id)}" title="Put every segment and station of ${esc(r.name)} back to the starting record">Reset ${esc(r.name)}</button>`).join('')}</div>` : ''; };
+function wireReset() { document.querySelectorAll('[data-reset]').forEach((b) => (b.onclick = () => resetLine(b.dataset.reset))); }
+async function resetLine(id) {
+  const r = R.find((q) => q.id === id); if (!r) return;
+  if (!DEFAULT_REC) DEFAULT_REC = await fetch(location.pathname.startsWith('/chronology/') ? '/profiles/chronology.json' : 'chronology.json').then((x) => x.json()).catch(() => null);
+  if (!DEFAULT_REC) return selPanel('<p class="bad small">The starting record could not be loaded.</p>');
+  const D = DEFAULT_REC, shared = r.segments.filter((k) => SEG.get(k) && SEG.get(k).routes.length > 1);
+  const segs = Object.fromEntries(r.segments.map((k) => [k, { year: null, month: null, phase: null, note: null, src: null, services: null, ...((D.segments || {})[k] || {}) }]));
+  const sts = Object.fromEntries(r.stations.filter((s) => !s.pseudo).map((s) => C.stKey(r.sys, s.name)).map((k) => [k, { year: null, month: null, note: null, src: null, ...((D.stations || {})[k] || {}) }]));
+  if (!confirm(`Reset ${r.name}: ${r.segments.length} segments and ${Object.keys(sts).length} stations back to the starting record?` + (shared.length ? `\n\n${shared.length} of its segments are shared with other routes and change for them too.` : '') + '\n\nUndo puts it back.')) return;
+  await apply({ segments: segs, stations: sts });
+  selPanel(`<p class="ok small">${esc(r.name)} reset to the starting record. Undo puts it back.</p>`);
 }
+
+// undo and redo: the record before each change made in this page (Ben, 29 October)
+const UNDO = [], REDO = [];
+const undoBtns = () => { $('undoBtn').disabled = !UNDO.length; $('redoBtn').disabled = !REDO.length; };
+async function save(rec, label) {
+  try { await DB.doc('chronology/segments').set(rec); } catch (e) { selPanel(`<p class="bad small">Not saved: ${e.message}</p>`); return false; }
+  REC = rec; refresh(); selPanel(`<p class="ok small">${label}</p>`); return true;
+}
+async function apply(edit) {
+  const before = JSON.parse(JSON.stringify(REC)), res = C.applyEdit(R, REC, edit);
+  if (await save(res.rec, 'Saved.')) { UNDO.push(before); if (UNDO.length > 100) UNDO.shift(); REDO.length = 0; undoBtns(); }
+}
+async function undo() { if (!UNDO.length) return; const now = JSON.parse(JSON.stringify(REC)), prev = UNDO.pop(); if (await save(prev, 'Undone.')) REDO.push(now); else UNDO.push(prev); undoBtns(); }
+async function redo() { if (!REDO.length) return; const now = JSON.parse(JSON.stringify(REC)), next = REDO.pop(); if (await save(next, 'Redone.')) UNDO.push(now); else REDO.push(next); undoBtns(); }
+$('undoBtn').addEventListener('click', undo); $('redoBtn').addEventListener('click', redo);
+window.addEventListener('keydown', (e) => {
+  if (!(e.ctrlKey || e.metaKey) || e.target.closest('input, textarea, select')) return;
+  const k = e.key.toLowerCase();
+  if (k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); } else if ((k === 'z' && e.shiftKey) || k === 'y') { e.preventDefault(); redo(); }
+});
 function lists() {
   const name = (k) => esc(C.keyName(k)), link = (k) => `<a class="seg" data-k="${esc(k)}">${name(k)}</a>`;
-  $('nViol').textContent = `(${A.violations.length})`;
-  $('viol').innerHTML = A.violations.length ? '<ul class="small">' + A.violations.map((v) => `<li class="warn">${v.key ? link(v.key) + ': ' : ''}${esc(v.text)}</li>`).join('') + '</ul>' : '<p class="ok small">None.</p>';
   const byR = {}; for (const k of A.unset) { const s = SEG.get(k); if (s) for (const r of s.routes) (byR[r.name] = byR[r.name] || []).push(k); }
   $('nUnset').textContent = `(${A.unset.length} of ${SEG.size})`;
   $('unset').innerHTML = Object.entries(byR).sort().map(([n, ks]) => `<details><summary>${esc(n)}: ${ks.length}</summary>${ks.map(link).join('<br>')}</details>`).join('');

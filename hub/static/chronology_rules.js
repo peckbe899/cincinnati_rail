@@ -1,16 +1,12 @@
-// The Chronology rules (Ben, 28 October; handoff "Chronology and tunnel methods", section 1.4), shared by the Chronology
-// page and the checks (node). The record: chronology/segments {phase_years, segments: {key: {year, phase, src, note}},
-// stations: {key: {year, src, note}}, core: {route: [segment keys]}}; the routes: chronology_lines.json (tools/chronology.py).
+// The Chronology's shared logic (Ben, 28-29 October), for the Chronology page and node (the timeline, the tests). The
+// record: chronology/segments {phase_years, segments: {key: {year, month, phase, src, note, services}}, stations: {key:
+// {year, month, src, note}}} (its `core` lists are no longer read); the routes: chronology_lines.json (tools/chronology.py).
 //
-// 1. Each line's core is its opening segment (core in the record), else its earliest year set. A branch's core is the
-//    segment of its parent at the junction.
-// 2. Going outward from the core a segment is never older than the one it extends from.
-// 3. A station opens no earlier than the earliest segment that touches it (by default that year).
-// 4. A station later than that is infill (marked, not an error).
-// 5. A shared segment has one year (the track's) and meets rule 2 on every line, except that a line running onto older
-//    track is exempt there (its service year can be kept in the segment's `services`); its own new segments are checked.
-// 6. Unset segments are skipped; an unset segment between set ones gets the range of years it may take.
-// Breaking a rule is a warning, never a stop: edits are always saved (Ben, 29 October).
+// No order rules (Ben, 29 October): parts of a line are built before others, the RER runs on old railroad rights of way
+// and the central tunnels come last, so any segment may open in any year. What is kept, as information only:
+// - a station opens with the earliest segment that touches it, unless its own year is set; a later one is infill;
+// - shared TRI track is one segment (one year: the track's), each route's service year can be kept in `services`;
+// - unset segments are listed, and record entries whose stations are no longer on a line (orphans).
 (function (root) {
   // Metro: per line (no Metro lines share track); TRI: the station pair, so shared track is one segment
   const segKey = (sys, a, b, line) => { const [x, y] = [a, b].sort(); return sys === 'metro' ? `metro|${line}|${x}|${y}` : `${sys}|${x}|${y}`; };
@@ -20,8 +16,7 @@
   const segOf = (rec, k) => (rec.segments || {})[k] || {};
   const segYear = (rec, k) => { const y = segOf(rec, k).year; return y == null || y === '' ? null : +y; };
   const segPhase = (rec, k) => segOf(rec, k).phase || phaseOfYear(rec, segYear(rec, k));
-  // a date: {y, m} with the month (1-12) optional (Ben, 29 October). With a month missing on either side, two dates in the
-  // same year count as the same date: the order rules never break on a month that is not set.
+  // a date: {y, m} with the month (1-12) optional (Ben, 29 October); a missing month sorts after the set ones of its year
   const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const monthOf = (e) => { const m = e && e.month != null && e.month !== '' ? +e.month : null; return m >= 1 && m <= 12 ? m : null; };
   const segWhen = (rec, k) => { const y = segYear(rec, k); return y == null ? null : { y, m: monthOf(segOf(rec, k)) }; };
@@ -30,83 +25,10 @@
   const SYS_NAME = { metro: 'Metro', tri: 'TRI', cvx: 'CVG Express' };
   const PHASE_NAME = { 1: 'Phase 1', 2: 'Phase 2', 3: 'Phase 3', later: 'Later' };
 
-  function nearestC(route, lon, lat) {   // chainage of the route's path point nearest (lon, lat)
-    let best = Infinity, c = 0; const k = Math.cos(lat * Math.PI / 180);
-    for (const [cc, x, y] of route.path) { const d = ((x - lon) * k) ** 2 + (y - lat) ** 2; if (d < best) { best = d; c = cc; } }
-    return { c, d: Math.sqrt(best) * 111320 };
-  }
-  function segAtC(route, c) { const st = route.stations; let i = 0; while (i + 2 < st.length && c > st[i + 1].c) i++; return i; }
-
-  // the order of each route outward from its core: [{key, from}] with from = the key it extends (null at the core)
-  function orders(routes, rec) {
-    const byId = Object.fromEntries(routes.map((r) => [r.id, r])), out = {};
-    for (const r of routes) {
-      const n = r.segments.length; if (!n) continue;
-      let core = null, inner = null;   // core: indices; inner: the parent segment a branch extends
-      if (r.parent && byId[r.parent]) {
-        const p = byId[r.parent], s0 = r.stations[0], s1 = r.stations[r.stations.length - 1];
-        const a = nearestC(p, s0.lon, s0.lat), b = nearestC(p, s1.lon, s1.lat), atStart = a.d <= b.d;
-        inner = p.segments[segAtC(p, (atStart ? a : b).c)];
-        core = atStart ? [-1] : [n];   // a virtual core just beyond the junction end
-      } else {
-        const ck = (rec.core || {})[r.id];
-        const idx = ck ? r.segments.map((k, i) => (ck.includes(k) ? i : -1)).filter((i) => i >= 0) : [];
-        if (idx.length) core = [Math.min(...idx), Math.max(...idx)];
-        else {
-          let best = null; r.segments.forEach((k, i) => { const y = segYear(rec, k); if (y != null && (best == null || y < segYear(rec, r.segments[best]))) best = i; });
-          if (best != null) core = [best, best];
-        }
-      }
-      const seq = [];
-      if (core) {
-        const lo = core[0], hi = core[core.length - 1];
-        for (let i = Math.max(lo, 0); i <= Math.min(hi, n - 1); i++) seq.push({ key: r.segments[i], from: null, core: true });
-        for (let i = hi + 1; i < n; i++) seq.push({ key: r.segments[i], from: i - 1 >= 0 && i - 1 >= lo ? r.segments[i - 1] : inner, out: 1, i });
-        for (let i = lo - 1; i >= 0; i--) seq.push({ key: r.segments[i], from: i + 1 <= hi && i + 1 < n ? r.segments[i + 1] : inner, out: -1, i });
-      }
-      out[r.id] = { core, inner, seq };
-    }
-    return out;
-  }
-
   function analyse(routes, rec) {
-    const O = orders(routes, rec), viol = [], ranges = {}, unset = [], exempt = [], shared = {};
-    for (const r of routes) for (const k of r.segments) shared[k] = (shared[k] || 0) + 1;
-    const label = keyName;
-    for (const r of routes) {
-      const o = O[r.id]; if (!o) continue;
-      // walk outward on each side keeping the newest year inside
-      for (const dir of [1, -1]) {
-        const side = o.seq.filter((s) => s.out === dir);
-        let inside = null, insideKey = null;
-        for (const s of o.seq.filter((t) => t.core)) { const w = segWhen(rec, s.key); if (w && (!inside || before(inside, w) || (inside.y === w.y && inside.m == null && w.m != null))) { inside = w; insideKey = s.key; } }
-        if (o.inner && segWhen(rec, o.inner)) { inside = segWhen(rec, o.inner); insideKey = o.inner; }
-        for (const s of side) {
-          const y = segWhen(rec, s.key);
-          if (y == null) continue;
-          // a line running onto older track (shared with another route, opened before) is exempt there; its own new
-          // segments are still checked (Ben, 28 October: RER E on RER B's CVG track)
-          if (before(y, inside) && (shared[s.key] || 0) > 1) { exempt.push({ key: s.key, route: r.id, year: y.y }); continue; }
-          if (before(y, inside)) viol.push({ rule: 2, key: s.key, route: r.id, need: inside.y, needM: inside.m, inner: insideKey,
-            text: `${label(s.key)} (${r.name}) opened ${fmtWhen(y)}, before ${label(insideKey)} inside it (${fmtWhen(inside)})` });
-          if (inside == null || before(inside, y) || (inside.y === y.y && inside.m == null && y.m != null)) { inside = y; insideKey = s.key; }
-        }
-      }
-      // ranges for unset segments: from the newest year inside to the oldest set year outside
-      for (const dir of [1, -1]) {
-        const side = o.seq.filter((s) => s.out === dir);
-        side.forEach((s, j) => {
-          if (segYear(rec, s.key) != null) return;
-          const ins = side.slice(0, j).map((t) => segYear(rec, t.key)).concat(o.seq.filter((t) => t.core).map((t) => segYear(rec, t.key)), o.inner ? [segYear(rec, o.inner)] : []).filter((y) => y != null);
-          const outs = side.slice(j + 1).map((t) => segYear(rec, t.key)).filter((y) => y != null);
-          const lo = ins.length ? Math.max(...ins) : null, hi = outs.length ? Math.min(...outs) : null;
-          const prev = ranges[s.key] || [null, null];
-          ranges[s.key] = [lo == null ? prev[0] : Math.max(lo, prev[0] ?? lo), hi == null ? prev[1] : Math.min(hi, prev[1] ?? hi)];
-        });
-      }
-      for (const k of r.segments) if (segYear(rec, k) == null && !segOf(rec, k).phase && !unset.includes(k)) unset.push(k);
-    }
-    // stations: no earlier than their track; later is infill
+    const unset = [];
+    for (const r of routes) for (const k of r.segments) if (segYear(rec, k) == null && !segOf(rec, k).phase && !unset.includes(k)) unset.push(k);
+    // stations: with their earliest track unless set; later is infill (information)
     const stations = {}, touch = {};
     for (const r of routes) r.segments.forEach((k, i) => { for (const s of [r.stations[i], r.stations[i + 1]]) { const sk = stKey(r.sys, s.name); (touch[sk] = touch[sk] || new Set()).add(k); } });
     const pseudo = new Set(routes.flatMap((r) => r.stations.filter((s) => s.pseudo).map((s) => stKey(r.sys, s.name))));
@@ -116,38 +38,20 @@
       const se = (rec.stations || {})[sk], ownW = se && se.year != null && se.year !== '' ? { y: +se.year, m: monthOf(se) } : null;
       const own = ownW ? ownW.y : null, min = minW ? minW.y : null, w = ownW || minW;
       stations[sk] = { year: w ? w.y : null, month: w ? w.m : null, own, min, ownW, minW, infill: before(minW, ownW) };
-      if (before(ownW, minW)) viol.push({ rule: 3, station: sk, need: min, needM: minW.m, text: `${sk.split('|')[1]} station opened ${fmtWhen(ownW)}, before its track (${fmtWhen(minW)})` });
     }
     // orphans: record entries whose stations are not on any route (kept, listed)
     const segSet = new Set(routes.flatMap((r) => r.segments));
     const orphans = { segments: Object.keys(rec.segments || {}).filter((k) => !segSet.has(k)), stations: Object.keys(rec.stations || {}).filter((k) => !touch[k]) };
-    return { orders: O, violations: viol, ranges, unset, stations, orphans, exempt };
+    return { unset, stations, orphans };
   }
 
-  // an edit: {segments: {key: patch}, stations: {key: patch}}; always applied (Ben, 29 October: a warning at most, never
-  // a stop): what it puts out of order is returned as warnings; outer segments left older than a newly set date can be
-  // pushed to it
-  function tryEdit(routes, rec, edit, push = false) {
+  // an edit: {segments: {key: patch}, stations: {key: patch}}, applied as it is (a field set to null or '' is removed)
+  function applyEdit(routes, rec, edit) {
     const clone = JSON.parse(JSON.stringify(rec)); clone.segments = clone.segments || {}; clone.stations = clone.stations || {};
     const put = (coll, k, p) => { const e = Object.assign({}, coll[k] || {}, p); for (const f of Object.keys(e)) if (e[f] === null || e[f] === '' || e[f] === undefined) delete e[f]; if (Object.keys(e).length) coll[k] = e; else delete coll[k]; };
     for (const [k, p] of Object.entries(edit.segments || {})) put(clone.segments, k, p);
     for (const [k, p] of Object.entries(edit.stations || {})) put(clone.stations, k, p);
-    const before = analyse(routes, rec), sig = (v) => v.rule + '|' + (v.key || v.station) + '|' + (v.inner || '');
-    const had = new Set(before.violations.map(sig));
-    let after = analyse(routes, clone), added = after.violations.filter((v) => !had.has(sig(v)));
-    const edited = new Set(Object.keys(edit.segments || {}));
-    // violations on segments outside the edit, caused by the edit: these can be pushed
-    const pushable = added.filter((v) => v.rule === 2 && !edited.has(v.key));
-    if (push && pushable.length) {
-      for (let guard = 0; guard < 50; guard++) {
-        const a = analyse(routes, clone), extra = a.violations.filter((v) => v.rule === 2 && !had.has(sig(v)) && !edited.has(v.key));
-        if (!extra.length) break;
-        for (const v of extra) put(clone.segments, v.key, { year: v.need, month: v.needM ?? null, src: 'Ben', note: 'pushed out with the segment inside it' });
-      }
-      for (const [sk, st] of Object.entries(analyse(routes, clone).stations)) if (before(st.ownW, st.minW)) put(clone.stations, sk, { year: st.minW.y, month: st.minW.m ?? null });
-      after = analyse(routes, clone); added = after.violations.filter((v) => !had.has(sig(v)));
-    }
-    return { ok: !added.length, warnings: added, refused: [], pushable: added.filter((v) => v.rule === 2 && !edited.has(v.key)), rec: clone, analysis: after };
+    return { rec: clone, analysis: analyse(routes, clone) };
   }
 
   // ---- the timeline (Markdown): every set opening in date order, runs of a line's segments opened together, stations
@@ -187,7 +91,7 @@
     L.push(`From the Chronology record (hub \`chronology/segments\`)${opts.when ? ', ' + opts.when : ''}. Dates are opening dates; the month where it is set. ` +
       'A run is a line\'s segments that opened on the same date one after another; stations are listed with the run that reached them, later stations as infill. Shared track is listed once, under the first line that has it.', '');
     const nSet = claimed.size, nAll = new Set(routes.flatMap((r) => r.segments)).size;
-    L.push(`${nSet} of ${nAll} segments have a date; ${A.unset.length} are not set${A.violations.length ? `; ${A.violations.length} warnings (see the Chronology)` : ''}.`, '');
+    L.push(`${nSet} of ${nAll} segments have a date; ${A.unset.length} are not set.`, '');
     let dec = null, yr = null, mo;
     for (const e of ev) {
       const d = Math.floor(e.w.y / 10) * 10;
@@ -212,6 +116,6 @@
     return L.join('\n') + '\n';
   }
 
-  const api = { SYS_NAME, MONTHS, segKey, keyName, stKey, phaseOfYear, segYear, segWhen, fmtWhen, segPhase, PHASE_NAME, analyse, tryEdit, orders, timeline };
+  const api = { SYS_NAME, MONTHS, segKey, keyName, stKey, phaseOfYear, segYear, segWhen, fmtWhen, segPhase, PHASE_NAME, analyse, applyEdit, timeline };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.CHRONO = api;
 })(typeof self !== 'undefined' ? self : this);
