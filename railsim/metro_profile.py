@@ -1183,6 +1183,16 @@ class MetroProfile:
     def type_at(self, c: float, z: Optional[float] = None) -> str:
         if z is None:
             z = float(self.rail_at(c))
+        # a station is one type (Ben, 30 October; as the editor): a paint over part of a platform applies to the whole
+        # platform, by the paint at its centre
+        half = self.settings["platform"] / 2
+        st = next((s for s in self.stations if abs(c - s["c"]) <= half), None)
+        if st is not None:
+            o = self.override_at(st["c"])
+            if o:
+                return o
+            if self.override_at(c):
+                return self.auto_type(st["c"], float(self.rail_at(st["c"])))
         return self.override_at(c) or self.auto_type(c, z)
 
     # ------------------------------------------------------------- context
@@ -1252,7 +1262,14 @@ class MetroProfile:
         ok = dcs > 1e-6
         g = np.zeros_like(dcs)
         g[ok] = np.diff(vz)[ok] / dcs[ok] * 1000.0
-        over = int(np.sum(np.abs(g) > self.settings["maxGrade"] + 0.05))
+        # sustained grades only (Ben, 30 October; as the editor): a chord over the limit counts where the grade averaged
+        # over the sustained length (two platform lengths) is over it too; shorter excursions are warnings
+        W = min(L, float(self.settings.get("sustainedLen") or 2 * self.settings["platform"]))
+        over = 0
+        for k in np.where(np.abs(g) > self.settings["maxGrade"] + 0.05)[0]:
+            cs = np.arange(max(0.0, vc[k] - W), max(0.0, min(L - W, vc[k + 1])) + 1e-9, 5.0)
+            if len(cs) and float(np.max(np.abs(self.rail_at(cs + W) - self.rail_at(cs)) / W * 1000.0)) > self.settings["maxGrade"] + 0.05:
+                over += 1
         shallow = 0
         for t in self.river_tubes(self.modes or None):
             zz = self.rail_at(np.arange(t["c0"], t["c1"] + 1e-9, 5.0))
