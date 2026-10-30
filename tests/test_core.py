@@ -332,7 +332,7 @@ def test_metro_default_solver_respects_grade_limit():
 def test_rer_core_profile_matches_page():
     """RER cores with the canon rulings: the Union Terminal TRI box one level for A, B and D
     (135.7 m; Ben, 26 October), B/D on the north viaduct into the Straight box, the RER-3 covered
-    way at 144 m dipping under the Little Miami, the Ohio tubes, the RER-5 deep bore; values as
+    way at 144 m dipping under the Little Miami (a sunk box), the Ohio sunk boxes, the RER-5 deep bore; values as
     the Rail Profiles page shows them."""
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
@@ -355,11 +355,14 @@ def test_rer_core_profile_matches_page():
     names = [s["name"] for s in r3.stations]
     assert r3.st[names.index("Torrance")] == 144.0
     assert r3.type_at(r3.stations[names.index("Torrance")]["c"]) == "cutcover"
-    assert min(z for c, z in r3.pvi) == pytest.approx(126.584, abs=0.01)  # Little Miami: pool - 3 m bed - 9.1 m
+    lm = next(r for r in r3.data["rivers"] if r["name"] == "Little Miami River")
+    assert float(r3.rail_at((lm["c0"] + lm["c1"]) / 2)) == pytest.approx(132.084, abs=0.01)  # Little Miami sunk box: pool - 3 m bed - 6.6 + 3.0 m
+    assert all(r3.type_at(c) == "sunk" for c in (lm["c0"] + 5, lm["c1"] - 5))
     assert r3.modes[names.index("Asbury")] == "surface"
     r5 = load("RER_5")
     assert r5.summary()["km_by_type"]["deep"] == pytest.approx(3.61, abs=0.05)  # shallower than bore + cover: cut and cover (670 ft platforms, Norwood cut at 185.5 m)
-    assert r3.summary()["shallow_tubes"] == 0
+    # the Little Miami box inside its band; the Ohio range on RER-3 is the shore beside the embanked covered way (no crossing)
+    assert r3.summary()["shallow_tubes"] == 0 and [b["name"] for b in r3.river_tubes()] == ["Little Miami River"]
 
 
 def test_vertical_curves_and_structure_rules():
@@ -390,8 +393,13 @@ def test_vertical_curves_and_structure_rules():
     assert mp.req_cover(mp.struct_for("cutcover", 1000.0), 150.0) == 0.6
     l1 = MetroProfile.load(root / "lines/Line_1.json", None, root / "settings.json")
     r = l1.data["rivers"][0]
-    assert l1.struct_for("cutcover", (r["c0"] + r["c1"]) / 2)["k"] == "tube"
-    assert l1.river_margin((r["c0"] + r["c1"]) / 2) == pytest.approx(1.0 + 2.75 + 4.6)   # scour + half the tube + rail to top
+    # every river crossing in tunnel is a sunk double-track box (Ben, 30 October): roof from 5 m below the bed to 3 m above
+    # it, rail from bed - 10.0 to bed - 2.0 m (the lower limit on the flat bottom only)
+    mid = (r["c0"] + r["c1"]) / 2
+    assert l1.struct_for("cutcover", mid)["k"] == "sunk" and l1.struct_for("sunk", mid)["top"] == 5.0
+    band = l1.river_band(r)
+    assert band["ub"] == pytest.approx(band["low"] - 2.0) and band["lb"] <= band["low"] - 9.0 and band["nav"] is not None
+    assert l1.type_at(mid) == "sunk"
 
 
 def test_sloped_platform_eases_the_bends():

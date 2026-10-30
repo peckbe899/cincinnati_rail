@@ -134,9 +134,12 @@ def min_radius(line_id, c=None):
 
 
 def structure(line_id, t, c=None):
-    """the structure a line has for a Profiles type (the editor's structFor, river crossings aside)"""
+    """the structure a line has for a Profiles type (the editor's structFor)"""
     if t in ('elevated', 'atgrade', 'trough'):
         return dict(OPEN_ST, t=t)
+    if t == 'sunk':   # a river crossing: a sunk double-track box (Ben, 2026-10-30), roof 5.0 m (RER 6.6 m) over the rail
+        rer = line_id.startswith('RER_')
+        return dict(RER_ST['box'] if rer else METRO_ST['box'], top=6.6 if rer else 5.0, sunk=True)
     if line_id.startswith('RER_'):
         return dict(RER_ST['box' if t == 'cutcover' else 'bore'])
     if t == 'cutcover':
@@ -1247,7 +1250,7 @@ def main():
                            'z': enc([s_[3] for s_ in piece], 100), 't': rle([tkey(lid, s_[4], s_[0]) for s_ in piece]), 'sh': rle(sh), 'il': rle(il)})
         snap_lines.append({'id': lid, 'name': l['name'], 'sys': l['sys'], 'color': l['color'], 'saved': l['saved'],
                            'pieces': pieces, 'stations': l['stations']})
-    struct = {lid: {t: structure(lid, t) for t in ('cutcover', 'shield', 'deep', 'elevated', 'atgrade', 'trough')} for lid in L}
+    struct = {lid: {t: structure(lid, t) for t in ('cutcover', 'shield', 'deep', 'sunk', 'elevated', 'atgrade', 'trough')} for lid in L}
     if MS:   # Metro bored stretches by their tube (type A, type C, the double-track bore): 'shield~A' and so on
         for lid in L:
             if L[lid]['sys'] != 'rer':

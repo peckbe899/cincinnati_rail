@@ -39,16 +39,17 @@ from typing import Dict, List, Optional
 import numpy as np
 
 FT = 0.3048
-TYPES = ("elevated", "atgrade", "trough", "cutcover", "shield", "deep")
+TYPES = ("elevated", "atgrade", "trough", "cutcover", "shield", "deep", "sunk")
 # railsim structure names for each analyzer type (all three tunnel kinds use tunnel drag)
 STRUCTURE = {"elevated": "viaduct", "atgrade": "at-grade", "trough": "cut", "cutcover": "cut-and-cover",
-             "shield": "shield", "deep": "deep-tube"}
-TUNNEL_STRUCTURES = {"tunnel", "cut-and-cover", "shield", "deep-tube"}
+             "shield": "shield", "deep": "deep-tube", "sunk": "sunk-box"}
+TUNNEL_STRUCTURES = {"tunnel", "cut-and-cover", "shield", "deep-tube", "sunk-box"}
 
 # Platforms 400 ft (Ben, 23 October 2026: 6 cars of about 67 ft or 8 of about 50 ft; was 500 ft)
 DEFAULTS = dict(maxGrade=50.0, platform=121.92, defDepth=7.62, elevAbove=3.0, coverBelow=3.0,
                 deepBelow=18.29, shallowMax=12.19, poolFt=455.0, deckDepth=1.5,
-                vcRadius=1500.0, vcMinLen=30.5, minCover=2.0, fillTaper=50.0)
+                vcRadius=1500.0, vcMinLen=30.5, minCover=2.0, fillTaper=50.0,
+                riverBoxTop=5.0, riverSink=5.0, riverRise=3.0, riverFlatTol=1.0, riverClearWater=3.66, riverCap=1.0)
 # Metro structures (Ben's rules), from the top of rail: below = rail to underside, top = rail to
 # top, od = outside diameter. Cut-and-cover box (and station box) 1.0 below / 4.6 to top; twin
 # tube (4.4 m inside, 4.76 m outside, rail 0.5 m above invert) 0.68 / 4.08 for deep tube on every
@@ -60,10 +61,12 @@ METRO_ST = {"box": {"k": "box", "below": 1.0, "top": 4.6},
             "tube": {"k": "tube", "below": 0.68, "top": 4.08, "od": 4.76},
             "bore": {"k": "bore", "below": 3.2, "top": 5.8, "od": 9.0}}
 BOX_COVER = 0.6
-# rivers: rail at most bed (ground raster) - margin at every chainage of a river range, in tunnel
-# (Metro twin tube: 1.0 scour + 2.38 half-diameter cover + 4.08 rail to top; RER sunk box section
-# in a dredged trench, Transbay model: 1.0 scour + 1.5 backfill + 6.6 rail to top)
-RIVER_MARGIN = {"metro": 7.5, "rer": 9.1}
+# River crossings (Ben, 30 October; as the editor): every Metro and RER river crossing in tunnel is a sunk double-track
+# box (the CVG Express Ohio bridge aside). Its roof sits from riverSink below the bed to riverRise above it (Metro rail
+# bed - 10.0 to bed - 2.0 m, RER bed - 11.6 to bed - 3.6 m): the upper limit at every point in the river, the lower on the
+# flat bottom only (bed within riverFlatTol of the lowest). A roof above the bed has the bed made up over it (riverCap
+# thick); on a navigable river (canon rivers "navigable": the Ohio) that keeps riverClearWater (12 ft) at normal pool.
+# A short cut-and-cover transition joins it to a bored tunnel at each bank.
 # Platform curvature (Ben): extra platform gap for the 15.56 m car on a curve of radius R, outside
 # face 15.56^2 / 8R, inside face (end doors about 5.4 m from the car centre) 5.4^2 / 2R; R under
 # 600 m (outside gap over 5 cm) is an error unless a named gap-filler exception, under 3,000 m a
@@ -100,7 +103,8 @@ ERA = {**{f"Line_{k}": {"shield": "tube"} for k in ("1", "2", "2b", "3", "4", "5
 RER_DEFAULTS = dict(maxGrade=35.0, platform=204.2, defDepth=12.0, elevAbove=3.0, coverBelow=3.0,
                     deepBelow=25.0, shallowMax=18.0, envelope=6.6, boreCrown=7.5, invertDepth=1.0, poolFt=455.0,
                     surfStep=250.0, tubeCover=3.0, vcRadius=3000.0, vcMinLen=30.5, minCover=8.5, deckDepth=2.0,
-                    fillTaper=50.0)
+                    fillTaper=50.0, riverBoxTop=6.6, riverSink=5.0, riverRise=3.0, riverFlatTol=1.0, riverClearWater=3.66,
+                    riverCap=1.0)
 RER_CANON_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "rer" / "canon.json"
 CONTEXT_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "context" / "lines.json"
 # the shared Metro structure record (Ben, 27-28 October; claude/Metro_Structure_Gauge_Handoff.md), as the editor reads it;
@@ -412,39 +416,54 @@ class MetroProfile:
                 out.append({"name": r["name"], "c0": r["c0"], "c1": r["c1"], "lb": lb, "ub": lb})  # at the clearance level
         return out
 
-    def river_tubes(self, md: Optional[List[str]]) -> List[dict]:
-        """River crossings in tunnel the solver holds: every river on a Metro line (twin tubes);
-        on the RER between two underground stations, inside a canon deep bore, or in the covered
-        way where the canon crosses the river in tunnel (sunk box sections). Rail at most the
-        lowest bed - margin over the river range."""
-        rivers = self._rivers_info()
-        step = float(self.data.get("step_m", 2.0))
-        out = []
-        for r in self.data.get("rivers", []) or []:
-            if self._bridge(r):
-                continue
-            if self.is_rer:
-                if not md:
-                    continue
-                info = rivers.get(r["name"], {})
-                sec = self.canon_at((r["c0"] + r["c1"]) / 2)
-                if sec and sec["m"] == "covered" and not info.get("in_covered_way"):
-                    continue
-                ip, inx = -1, -1
-                for i, st in enumerate(self.stations):
-                    if st["c"] < r["c0"]:
-                        ip = i
-                    if st["c"] > r["c1"] and inx < 0:
-                        inx = i
-                bore = bool(sec) and (sec["m"] == "deep" or (sec["m"] == "covered" and info.get("in_covered_way")))
-                under = ip >= 0 and inx >= 0 and md[ip] != "surface" and md[inx] != "surface"
-                if not (bore or under):
-                    continue
-            beds = [self.bed_at(c) for c in np.arange(r["c0"], r["c1"] + 1e-9, step)]
-            beds = [b for b in beds if math.isfinite(b)]
-            if beds:
-                out.append({"name": r["name"], "c0": r["c0"], "c1": r["c1"], "ub": min(beds) - self.river_margin((r["c0"] + r["c1"]) / 2)})
-        return out
+    def sunk_box(self) -> dict:
+        st = self.settings
+        below = float(st["invertDepth"]) if self.is_rer else float((getattr(self, "ms", None) or {}).get("box", {}).get("below", METRO_ST["box"]["below"]))
+        return {"k": "sunk", "below": below, "top": float(st["riverBoxTop"])}
+
+    def along_shore(self, r: dict) -> bool:
+        """A river range along an RER embanked covered way (the canon's, beside the Ohio) is the shore, not a crossing."""
+        if not self.is_rer:
+            return False
+        sec = self.canon_at((r["c0"] + r["c1"]) / 2)
+        return bool(sec) and sec["m"] == "covered" and not self._rivers_info().get(r["name"], {}).get("in_covered_way")
+
+    def river_band(self, r: dict) -> Optional[dict]:
+        """The band a sunk box keeps under river r, from the points under water (bed below normal pool): ub (rail at most)
+        and lb (rail at least, on the flat bottom), the lowest bed, and on a navigable river the rail under which the
+        made-up bed keeps its clear water (nav). None: not a crossing."""
+        if self.along_shore(r):
+            return None
+        st, step = self.settings, float(self.data.get("step_m", 2.0))
+        beds = np.array([self.bed_at(c) for c in np.arange(r["c0"], r["c1"] + 1e-9, step)])
+        beds = beds[np.isfinite(beds) & (beds < self.pool())]
+        if not len(beds):
+            return None
+        top, low = float(st["riverBoxTop"]), float(beds.min())
+        ub = float((beds - top + st["riverRise"]).min())
+        lb = float((beds[beds <= low + st["riverFlatTol"]] - top - st["riverSink"]).max())
+        nav = self.pool() - st["riverClearWater"] - st["riverCap"] - top if self._rivers_info().get(r["name"], {}).get("navigable") else None
+        # the solver: under the clear-water level, or the roof and its cap under the lowest bed (nothing made up)
+        ub = min(ub, max(nav, low - top - st["riverCap"])) if nav is not None else ub
+        return {"name": r["name"], "c0": r["c0"], "c1": r["c1"], "ub": ub, "lb": lb, "low": low, "nav": nav}
+
+    def river_tubes(self, md: Optional[List[str]] = None) -> List[dict]:
+        """River crossings in tunnel the solver holds: every river but a bridge, a sunk box inside its band (river_band)."""
+        if self.settings.get("legacy_structures"):
+            return []
+        out = [self.river_band(r) for r in self.data.get("rivers", []) or [] if not self._bridge(r)]
+        return [b for b in out if b]
+
+    def made_bed_at(self, c: float, z: Optional[float] = None) -> float:
+        """The made-up bed over a sunk box whose roof stands above the river bed (nan where it does not)."""
+        r = self.river_at(c)
+        if not r or self._bridge(r) or self.along_shore(r):
+            return math.nan
+        z = float(self.rail_at(c)) if z is None else z
+        if self.type_at(c, z) != "sunk":
+            return math.nan
+        b, t = self.bed_at(c), z + float(self.settings["riverBoxTop"]) + float(self.settings["riverCap"])
+        return t if math.isfinite(b) and t > b else math.nan
 
     def default_mode(self, i: int) -> str:
         if i in self.canon_modes:
@@ -847,6 +866,9 @@ class MetroProfile:
             if "cls" not in q:
                 q["stn"] = True
             return q
+        rv = self.river_at(c)
+        if rv and not self.settings.get("legacy_structures") and not self.along_shore(rv):   # a river crossing: a bridge or a sunk box (Ben, 30 October), in a covered way too
+            return {"t": "elevated" if z >= self.pool() + 1 else "sunk"}
         sec0 = self.canon_at(c)
         if sec0 and sec0["m"] == "covered":
             s0 = self.surface_at(c)
@@ -1028,6 +1050,20 @@ class MetroProfile:
                 if abs(sh) >= 0.01:
                     info = {"station": s["name"], "kind": kind, "side": d, "shift": sh, "c": s["c"] + d * half}
                     fix(i0, d, appr_len(sh, P[i0]["c"], info), info)
+        # river banks (Ben, 30 October): the sunk box anchors like a station and joins the land tunnel through a short
+        # cut-and-cover transition at each bank (the tubes' spacing to the box's; at least approach_m)
+        for r in self.data.get("rivers", []) or []:
+            if self._bridge(r):
+                continue
+            for edge, d in ((r["c0"], -1), (r["c1"], 1)):
+                i0 = idx(edge)
+                while 0 <= i0 < n and self.river_at(P[i0]["c"]):   # the first sample on the bank
+                    i0 += d
+                if not (0 <= i0 < n and 0 <= i0 - d < n) or P[i0 - d].get("t") != "sunk" or not is_bored(P[i0]):
+                    continue
+                sh = (tube_sp(P[i0]["c"]) - ms["box"]["spacing"]) / 2
+                info = {"station": None, "kind": "river", "river": r["name"], "side": d, "shift": sh, "c": P[i0 - d]["c"]}
+                fix(i0, d, appr_len(sh, P[i0]["c"], info), info)
         for x, y in runs(0, n - 1, is_bored):
             for i, d in ((x, 1), (y, -1)):
                 nb = P[i - d] if 0 <= i - d < n else None
@@ -1100,6 +1136,19 @@ class MetroProfile:
             P.append({"c": c, "z": z, "t": q.get("t") or (("deep" if q["deep"] else "shield") if q["cls"] == "B" else "cutcover")})
         if not self.settings.get("legacy_structures"):   # the 6 October page (the parity test) had no such rule
             self._absorb_short(P, step)
+            # river banks: a short cut-and-cover transition between the sunk box and a bored tunnel (Ben, 30 October)
+            n, lim = len(P), float((getattr(self, "ms", None) or {}).get("approach_m") or 40.0)
+            for r in self.data.get("rivers", []) or []:
+                for edge, d in ((r["c0"], -1), (r["c1"], 1)):
+                    i = max(0, min(n - 1, int(round(edge / step))))
+                    while 0 <= i < n and self.river_at(P[i]["c"]):
+                        i += d
+                    if not (0 <= i - d < n) or P[i - d]["t"] != "sunk":
+                        continue
+                    c0 = P[i - d]["c"]
+                    while 0 <= i < n and P[i]["t"] in ("shield", "deep") and abs(P[i]["c"] - c0) <= lim:
+                        P[i]["t"] = "cutcover"
+                        i += d
         self._otypes = {"key": key, "step": step, "t": [p["t"] for p in P], "z": [p["z"] for p in P]}
         return self._otypes
 
@@ -1118,7 +1167,10 @@ class MetroProfile:
     def struct_for(self, t: str, c: float) -> dict:
         """The tunnel structure at chainage c for a tunnel type (below / top from the rail)."""
         st = self.settings
-        if self.is_rer:  # river crossings: sunk box sections in a dredged trench
+        rv = self.river_at(c)
+        if t == "sunk" or (rv and t in ("cutcover", "shield", "deep") and not st.get("legacy_structures") and not self.along_shore(rv)):
+            return self.sunk_box()
+        if self.is_rer:
             return ({"k": "box", "below": st["invertDepth"], "top": st["envelope"]}
                     if t == "cutcover" or self.river_at(c) else {"k": "bore", "below": st["invertDepth"], "top": st["boreCrown"]})
         ms = getattr(self, "ms", None)
@@ -1133,15 +1185,10 @@ class MetroProfile:
             return METRO_ST["box"]
         return METRO_ST[(self._era() or {}).get("shield", "tube")]
 
-    def river_margin(self, c: float) -> float:
-        """Rail below the bed under a river: Metro 1.0 scour + half the tube's diameter + rail to its top"""
-        if self.is_rer or not getattr(self, "ms", None):
-            return RIVER_MARGIN["rer" if self.is_rer else "metro"]
-        t = self.struct_for("deep", c)
-        return 1.0 + t["od"] / 2 + t["top"]
-
     def req_cover(self, sc: dict, top_z: float) -> float:
         """Cover a structure needs over its top (top_z = its top level)."""
+        if sc["k"] == "sunk":   # the band sets it (river_band)
+            return 0.0
         if "minCover_override" in self.settings:
             return float(self.settings["minCover_override"])
         if self.is_rer:
@@ -1222,30 +1269,53 @@ class MetroProfile:
         return out
 
     def river_breaks(self) -> List[dict]:
-        """Stretches in tunnel under a river where the rail is above bed - margin (bed = ground raster)."""
+        """River crossings out of their rule: a bridge below its clearance (kind clearance); a crossing on a bridge where it
+        must be a sunk box (bridge); a sunk box above or below its band (high, low) or too high for the navigable channel (nav)."""
         step = float(self.data.get("step_m", 2.0))
         out = []
         for b in self.river_bridges():  # bridges: rail at least the navigation clearance level
             zz = self.rail_at(np.arange(b["c0"], b["c1"] + 1e-9, step))
             if len(zz) and zz.min() < b["lb"] - 0.05:
-                out.append({"name": b["name"], "c0": b["c0"], "c1": b["c1"], "over": float(b["lb"] - zz.min()), "bridge": True})
+                out.append({"name": b["name"], "c0": b["c0"], "c1": b["c1"], "over": float(b["lb"] - zz.min()), "kind": "clearance"})
+        st = self.settings
         for r in self.data.get("rivers", []) or []:
-            if self._bridge(r):
+            if self._bridge(r) or st.get("legacy_structures"):
                 continue
-            run = None
+            B = self.river_band(r)
+            if not B:
+                continue
+            on, mine = {}, []
+            top, ceil = float(st["riverBoxTop"]), self.pool() - float(st["riverClearWater"])
+
+            def hit(k, c, v):
+                o = on.get(k)
+                if o and c - o["c1"] <= step * 1.5:
+                    o["c1"], o["over"] = c, max(o["over"], v)
+                else:
+                    on[k] = {"kind": k, "name": r["name"], "c0": c, "c1": c, "over": v}
+                    mine.append(on[k])
             for i in range(math.ceil(r["c0"] / step), int(math.floor(r["c1"] / step)) + 1):
                 c = i * step
-                bed = self.bed_at(c)
+                b = self.bed_at(c)
+                if not math.isfinite(b) or b >= self.pool():   # under water only
+                    continue
                 z = float(self.rail_at(c))
                 t = self.type_at(c, z)
-                over = z - (bed - self.river_margin(c)) if math.isfinite(bed) and t in ("cutcover", "shield", "deep") else -math.inf
-                if over > 0.005:
-                    if run is None:
-                        run = {"name": r["name"], "c0": c, "c1": c, "over": over}
-                        out.append(run)
-                    run["c1"], run["over"] = c, max(run["over"], over)
-                else:
-                    run = None
+                if t == "elevated":
+                    hit("bridge", c, z - self.pool())
+                    continue
+                hi = b - top + st["riverRise"]
+                if z > hi + 0.005:
+                    hit("high", c, z - hi)
+                lo = b - top - st["riverSink"]
+                if b <= B["low"] + st["riverFlatTol"] and z < lo - 0.005:
+                    hit("low", c, lo - z)
+                mb = z + top + st["riverCap"]
+                if B["nav"] is not None and mb > b and mb > ceil + 0.005:
+                    hit("nav", c, mb - ceil)
+            if "bridge" in on:   # a crossing on a bridge is one issue
+                mine = [dict(on["bridge"], c0=r["c0"], c1=r["c1"])]
+            out.extend(mine)
         return out
 
     def type_at(self, c: float, z: Optional[float] = None) -> str:
@@ -1261,7 +1331,12 @@ class MetroProfile:
                 return o
             if self.override_at(c):
                 return self.auto_type(st["c"], float(self.rail_at(st["c"])))
-        return self.override_at(c) or self.auto_type(c, z)
+        o = self.override_at(c)
+        if o and o != "elevated" and not self.settings.get("legacy_structures"):
+            r = self.river_at(c)
+            if r and not self._bridge(r) and not self.along_shore(r):   # under a river: the sunk box, whatever the paint
+                return self.auto_type(c, z)
+        return o or self.auto_type(c, z)
 
     # ------------------------------------------------------------- context
     def context_blocks(self) -> List[dict]:
@@ -1338,10 +1413,7 @@ class MetroProfile:
             cs = np.arange(max(0.0, vc[k] - W), max(0.0, min(L - W, vc[k + 1])) + 1e-9, 5.0)
             if len(cs) and float(np.max(np.abs(self.rail_at(cs + W) - self.rail_at(cs)) / W * 1000.0)) > self.settings["maxGrade"] + 0.05:
                 over += 1
-        shallow = 0
-        for t in self.river_tubes(self.modes or None):
-            zz = self.rail_at(np.arange(t["c0"], t["c1"] + 1e-9, 5.0))
-            shallow += int(zz.max() > t["ub"] + 0.05)
+        shallow = len([x for x in self.river_breaks() if x.get("kind") != "clearance"])   # river crossings out of their band
         clashes = [x for x in self.context_clearances() if not x["ok"]]
         return {"shallow_tubes": shallow, "river_breaks": len(self.river_breaks()),
                 "context_clashes": len(clashes),
