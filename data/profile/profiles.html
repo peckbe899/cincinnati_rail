@@ -944,6 +944,8 @@ function phaseRules(c) {
   return { ccMax: p.cc_max ?? settings.shallowMax, minDrive: p.min_drive ?? 300, deepFrom: p.deep_from ?? settings.deepBelow };
 }
 function pointType(c, z) {   // one chainage on its own: the type, or for a Metro tunnel stretch its class (C, E, B)
+  // a station is one type, whatever its depth (Ben, 30 October): every point on the platform takes the platform centre's
+  { const st = S.stations && S.stations.find((x) => Math.abs(c - x.c) <= settings.platform / 2); if (st && Math.abs(c - st.c) > 1e-6) { const q = pointType(st.c, railAt(st.c)); return q.cls ? Object.assign({}, q) : Object.assign({}, q, { stn: true }); } }
   const sec0 = canonAt(c);
   if (sec0 && sec0.m === 'covered') { const s0 = surfaceAt(c); return { t: isFinite(s0) && z - s0 >= settings.elevAbove ? 'elevated' : 'cutcover' }; }
   const r = riverAt(c);
@@ -989,6 +991,35 @@ let APX_EXTRA = null;
 const minRadiusAt = (c) => ((MS.phases[phaseAt(c)] || MS.phases.later) || {}).min_radius || MS.min_radius || 40;
 const approachExtra = (info) => { const L = (APX_EXTRA && APX_EXTRA[S.data.id]) || []; const e = L.find((x) => x.side === info.side && (info.station ? x.station === info.station : !x.station && Math.abs(x.c - info.c) < 20)); return e ? e.extra : 0; };
 const approachLen = (shift, c, info) => Math.max(MS.approach_m || 40, Math.sqrt(4 * minRadiusAt(c) * Math.abs(shift))) + (info ? approachExtra(info) : 0);
+// no stretch shorter than MIN_RUN outside a station (Ben, 30 October: no slivers where the ground steps across a threshold):
+// it takes the type of the longer neighbour (both the same: that one); a short too-shallow spot inside a drive is bored
+// through (its flag stays). Drawing value.
+const MIN_RUN = 20;
+function absorbShort(P, step) {
+  const inSt = (c) => S.stations.some((s) => Math.abs(c - s.c) <= settings.platform / 2);
+  for (let pass = 0; pass < 4; pass++) {
+    const R = []; let a = 0;
+    for (let i = 1; i <= P.length; i++) if (i === P.length || P[i].t !== P[a].t) { R.push([a, i - 1]); a = i; }
+    let changed = false;
+    for (let k = 1; k + 1 < R.length; k++) {
+      const [x, y] = R[k], L = (y - x + 1) * step; if (L >= MIN_RUN) continue;
+      if (P.slice(x, y + 1).some((p) => inSt(p.c))) continue;
+      const [px, py] = R[k - 1], [nx, ny] = R[k + 1], prev = P[px].t, next = P[nx].t;
+      const t = prev === next ? prev : (py - px >= ny - nx ? prev : next);
+      for (let i = x; i <= y; i++) P[i].t = t; changed = true;
+    }
+    if (!changed) break;
+  }
+}
+// RER (and any line without the Metro rules): the point types with the short stretches absorbed, cached with the profile
+function openTypes() {
+  const V = VERTS; if (!S.data || !V) return null;
+  if (V._otypes && V._otypes.g === S.ground && V._otypes.L === S.L) return V._otypes;
+  const step = S.step || 2, n = Math.floor(S.L / step) + 1, P = [];
+  for (let i = 0; i < n; i++) { const c = Math.min(i * step, S.L), z = railAt(c), q = pointType(c, z); P.push({ c, z, t: q.t || (q.cls === 'B' ? (q.deep ? 'deep' : 'shield') : 'cutcover') }); }
+  absorbShort(P, step);
+  V._otypes = { g: S.ground, L: S.L, step, t: P.map((p) => p.t), z: P.map((p) => p.z) }; return V._otypes;
+}
 function stretchTypes() {
   const V = VERTS; if (!S.data || isRer() || !MS || !V) return null;
   if (V._types && V._types.g === S.ground && V._types.ms === MS && V._types.chr === CHR && V._types.plat === ST_PLAT && V._types.ax === APX_EXTRA && V._types.L === S.L) return V._types;
@@ -1084,11 +1115,12 @@ function stretchTypes() {
     (p) => { const s = streetAt(p.c), tb = MS.tubes[tubeName(p.c)]; return `twin tubes under ${esc(s[3])} (${fmtZ(s[2], 1)} ${uLbl()}), narrower than their footprint (${fmtZ(tb.spacing + tb.outside, 1)} ${uLbl()}): the single double-track bore would stay under the street (preferred, Ben), else stacked tubes one running spacing apart (proposed, not applied)`; });
   note((p) => p.t === 'cutcover' && p.cls && p.ph === '2' && tubeName(p.c) === 'bore' && p.d >= aFrom,
     () => `Phase 2 cut and cover deep enough for type A twin tubes (${fmtZ(aFrom, 2)} ${uLbl()}) but not the bore (${fmtZ(METRO_ST.bore.top + METRO_ST.bore.od, 2)} ${uLbl()}): twin tubes could bore here (proposed, not applied)`);
+  absorbShort(P, step);
   V._types = { g: S.ground, ms: MS, chr: CHR, plat: ST_PLAT, ax: APX_EXTRA, L: S.L, step, t: P.map((p) => p.t), z: P.map((p) => p.z), flags, approaches };
   return V._types;
 }
 function autoType(c, z) {
-  const T = stretchTypes();
+  const T = stretchTypes() || openTypes();
   if (T) { const i = Math.round(c / T.step); if (i >= 0 && i < T.t.length && Math.abs(T.z[i] - z) < 0.3) return T.t[i]; }
   const p = pointType(c, z);   // off the drawn profile: the point on its own
   return p.t || (p.cls === 'B' ? (p.deep ? 'deep' : 'shield') : 'cutcover');

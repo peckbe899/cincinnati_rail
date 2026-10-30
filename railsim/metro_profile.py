@@ -172,6 +172,8 @@ def load_settings(path: Optional[str | Path], rer: bool = False) -> dict:
     return s
 
 
+MIN_RUN = 20.0   # no stretch shorter than this outside a station (drawing value, as the editor)
+
 @dataclass
 class MetroProfile:
     data: dict
@@ -833,6 +835,14 @@ class MetroProfile:
                 "deep_from": p.get("deep_from", self.settings["deepBelow"])}
 
     def _point_type(self, c: float, z: float) -> dict:
+        # a station is one type, whatever its depth (Ben, 30 October; as the editor): the platform centre's
+        half = self.settings["platform"] / 2
+        st = next((s for s in self.stations if abs(c - s["c"]) <= half), None)
+        if st is not None and abs(c - st["c"]) > 1e-6:
+            q = dict(self._point_type(st["c"], float(self.rail_at(st["c"]))))
+            if "cls" not in q:
+                q["stn"] = True
+            return q
         sec0 = self.canon_at(c)
         if sec0 and sec0["m"] == "covered":
             s0 = self.surface_at(c)
@@ -1032,11 +1042,54 @@ class MetroProfile:
             for x, y in runs(0, n - 1, f):
                 if length(x, y) >= 50:
                     flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": kind, "len": length(x, y), "info": True})
+        self._absorb_short(P, step)
         self._types = {"key": key, "step": step, "t": [p["t"] for p in P], "z": [p["z"] for p in P], "flags": flags, "approaches": approaches}
         return self._types
 
+    def _absorb_short(self, P, step):
+        """no stretch shorter than MIN_RUN outside a station (as the editor): the longer neighbour's type"""
+        half = self.settings["platform"] / 2
+        in_st = lambda c: any(abs(c - s["c"]) <= half for s in self.stations)
+        for _ in range(4):
+            R, a = [], 0
+            for i in range(1, len(P) + 1):
+                if i == len(P) or P[i]["t"] != P[a]["t"]:
+                    R.append((a, i - 1))
+                    a = i
+            changed = False
+            for k in range(1, len(R) - 1):
+                x, y = R[k]
+                if (y - x + 1) * step >= MIN_RUN or any(in_st(p["c"]) for p in P[x:y + 1]):
+                    continue
+                (px, py), (nx, ny) = R[k - 1], R[k + 1]
+                prev, nxt = P[px]["t"], P[nx]["t"]
+                t = prev if prev == nxt or py - px >= ny - nx else nxt
+                for i in range(x, y + 1):
+                    P[i]["t"] = t
+                changed = True
+            if not changed:
+                break
+
+    def open_types(self) -> dict:
+        """lines without the Metro rules (RER): the point types with the short stretches absorbed"""
+        key = (tuple(self.st), tuple((p["c"], p["z"]) if isinstance(p, dict) else tuple(p) for p in self.pvi), id(self._ground), self.length)
+        cached = getattr(self, "_otypes", None)
+        if cached and cached["key"] == key:
+            return cached
+        step = float(self.data.get("step_m", 2.0))
+        P = []
+        for i in range(int(self.length // step) + 1):
+            c = min(i * step, self.length)
+            z = float(self.rail_at(c))
+            q = self._point_type(c, z)
+            P.append({"c": c, "z": z, "t": q.get("t") or (("deep" if q["deep"] else "shield") if q["cls"] == "B" else "cutcover")})
+        if not self.settings.get("legacy_structures"):   # the 6 October page (the parity test) had no such rule
+            self._absorb_short(P, step)
+        self._otypes = {"key": key, "step": step, "t": [p["t"] for p in P], "z": [p["z"] for p in P]}
+        return self._otypes
+
     def auto_type(self, c: float, z: float) -> str:
-        T = self.stretch_types()
+        T = self.stretch_types() or self.open_types()
         if T:
             i = int(round(c / T["step"]))
             if 0 <= i < len(T["t"]) and abs(T["z"][i] - z) < 0.3:
