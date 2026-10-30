@@ -223,6 +223,7 @@ class MetroProfile:
         p._apply_deck()
         p._ground_dem = p._ground.copy()   # surveyed (with any canon deck)
         p._apply_regrade()                 # + the Deck's street re-grades and cuts: the solver's ground
+        p._ground = p._ground.astype(np.float32).astype(float)   # the editor's precision (Float32Array), so ties agree
         p._ground0 = p._ground.copy()
         doc = None
         if alignment_json and Path(alignment_json).exists():
@@ -313,23 +314,26 @@ class MetroProfile:
         """Painted cut and cover (Ben, 26 October): the box keeps its level and the ground is
         regraded over it, at least the box roof plus its cover (Metro 4.6 + 0.6 m above the rail;
         RER the box height), sloping back to the solver's ground at fillTaper per mille past the
-        ends. Fill only. Call again after changing st, pvi or ovr."""
+        ends. Painted Shallow shield and Deep tunnel re-grade the same way, to the tube's top plus its
+        cover (Ben, 30 October). Fill only. Call again after changing st, pvi or ovr."""
         g0 = getattr(self, "_ground0", self._ground)
-        cc = [(a, b) for a, b, t in self.ovr if t == "cutcover"]
+        cc = [(a, b, t) for a, b, t in self.ovr if t in ("cutcover", "shield", "deep")]
         if not cc:
             self._ground = g0.copy()
             return
         step = float(self.data.get("step_m", 2.0))
         n = len(g0)
         t = np.full(n, -np.inf)
-        for a, b in cc:
+        for a, b, kind in cc:
             i0, i1 = max(0, math.ceil(a / step)), min(n - 1, math.floor(b / step))
             for i in range(i0, i1 + 1):
                 c = i * step
                 if self.river_at(c):
                     continue
-                sc = self.struct_for("cutcover", c)
-                t[i] = max(t[i], float(self.rail_at(c)) + sc["top"] + self.req_cover(sc, 0.0))
+                sc = self.struct_for(kind, c)
+                v = float(self.rail_at(c)) + sc["top"] + self.req_cover(sc, 0.0)
+                if not v <= g0[i] + 0.005:   # the taper starts only where the ground is raised
+                    t[i] = max(t[i], v)
         drop = float(self.settings.get("fillTaper", 50.0)) / 1000.0 * step
         for i in range(1, n):
             t[i] = max(t[i], t[i - 1] - drop)
@@ -338,7 +342,7 @@ class MetroProfile:
         river = np.array([bool(self.river_at(i * step)) for i in range(n)]) if self.data.get("rivers") else np.zeros(n, bool)
         g = g0.copy()
         m = np.isfinite(g0) & (t > g0 + 0.005) & ~river
-        g[m] = t[m]
+        g[m] = t[m].astype(np.float32)
         self._ground = g
 
     # ------------------------------------------------------------- canon
@@ -929,47 +933,58 @@ class MetroProfile:
                         s = i
                 for a, b in parts:
                     R = P[a]["R"]
-                    # one drive between two anchors (Ben, 28-29 October: station to station at any length, no switching
-                    # between): every boreable stretch, joined through the low-cover spots (bored through, flagged); the
-                    # station boxes carry on through the shallow ends until the tube has its cover
-                    drives = []
-                    for x, y in runs(a, b, lambda p: p["cls"] != "C"):
-                        if drives:   # one drive between two anchors (Ben, 29 October): joined through the low-cover spots
-                            drives[-1][1] = y
-                            drives[-1][2].append((x, y))
-                        else:
-                            drives.append([x, y, [(x, y)]])
-                    for x, y, pieces in drives:
-                        # one type per gap (Ben, 29 October): a drive only where it is most of the stretch
-                        ends = (length(a, x - 1) if x > a else 0) + (length(y + 1, b) if y < b else 0)
-                        ok = (x == a and y == b) or (len(drives) == 1 and length(x, y) >= ends) or \
-                            (length(x, y) >= R["min_drive"] and length(x, y) >= ends)
-                        for u, v in pieces:
-                            for i in range(u, v + 1):
-                                P[i]["t"] = "bored" if ok else "cutcover"
-                        if not ok and any(p["cls"] == "B" for p in P[x:y + 1]):
-                            fl and flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "short bored", "len": length(x, y)})
+                    # one drive between two anchors (Ben, 28-30 October; as the editor): from the first to the last point
+                    # deep enough to bore; the station boxes carry on through the shallow ends (at a portal: the transition)
                     for i in range(a, b + 1):
-                        P[i].setdefault("t", "cutcover")
-                    for x, y in runs(a, b, lambda p: p["t"] == "cutcover"):
-                        tunnel = lambda i: 0 <= i < n and not P[i].get("stn") and P[i].get("t") in ("shield", "deep")
-                        if (x == a and not tunnel(a - 1)) or (y == b and not tunnel(b + 1)):   # at a box or portal: the box carries on
-                            continue
-                        shallow = any(p["cls"] == "C" for p in P[x:y + 1])
-                        if not shallow:   # inside the drive: bored; too little cover stays cut and cover (Ben, 30 October)
-                            for i in range(x, y + 1):
-                                P[i]["t"] = "bored"
-                        if shallow:
-                            fl and flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "shallow dip in a drive", "len": length(x, y)})
-                    for x, y in runs(a, b, lambda p: p["t"] == "bored"):   # deep only where the rail is deep (Ben, 30 October)
+                        P[i]["t"] = "cutcover"
+                    bor = runs(a, b, lambda p: p["cls"] != "C")
+                    if not bor:
+                        continue
+                    x, y = bor[0][0], bor[-1][1]
+                    tunnel = lambda i: 0 <= i < n and not P[i].get("stn") and P[i].get("t") in ("shield", "deep")
+                    if x > a and tunnel(a - 1):
+                        x = a
+                    if y < b and tunnel(b + 1):
+                        y = b
+                    ends = (length(a, x - 1) if x > a else 0) + (length(y + 1, b) if y < b else 0)
+                    shallow_in = any(p["cls"] == "C" for p in P[x:y + 1])
+                    too_deep = any(p["cls"] == "B" for p in P[x:y + 1])
+                    bored = (x == a and y == b) or length(x, y) >= ends
+                    if bored and shallow_in and not too_deep:   # cut and cover can dig all of it: the whole drive is
+                        bored = False
+                    if bored:
+                        for i in range(x, y + 1):
+                            P[i]["t"] = "bored"
+                        for u, v in runs(x, y, lambda p: p["cls"] == "C"):
+                            fl and flags.append({"c0": P[u]["c"], "c1": P[v]["c"], "kind": "shallow in a drive", "len": length(u, v)})
+                    elif too_deep:
+                        fl and flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "short bored", "len": length(x, y)})
+                    if not bored:
+                        continue
+
+                    def outward(i, d):
+                        while 0 <= i < n and P[i]["t"] == "cutcover" and not P[i].get("stn"):
+                            i += d
+                        return P[i] if 0 <= i < n else None
+                    portal = any(q is not None and not q.get("stn") and q["t"] in ("atgrade", "trough", "elevated")
+                                 for q in (outward(x - 1, -1), outward(y + 1, 1)))
+                    deep_stn = (x > 0 and P[x - 1].get("stn") and P[x - 1]["t"] == "deep") or \
+                               (y < n - 1 and P[y + 1].get("stn") and P[y + 1]["t"] == "deep")
+                    deep_len = sum(1 for p in P[x:y + 1] if p["deep"]) * step
+                    if portal and not deep_stn:   # up to a portal: by depth
                         for i in range(x, y + 1):
                             P[i]["t"] = "shield"
                         for u, v in runs(x, y, lambda p: p["deep"]):
-                            touch = (u == x and x > 0 and P[x - 1].get("stn") and P[x - 1]["t"] == "deep") or \
-                                    (v == y and y < n - 1 and P[y + 1].get("stn") and P[y + 1]["t"] == "deep")
-                            if touch or length(u, v) >= R["min_drive"]:
+                            if length(u, v) >= R["min_drive"]:
                                 for i in range(u, v + 1):
                                     P[i]["t"] = "deep"
+                        continue
+                    t = "deep" if deep_stn or deep_len * 2 >= length(x, y) else "shield"   # one depth type per drive
+                    for i in range(x, y + 1):
+                        P[i]["t"] = t
+                    other = length(x, y) - deep_len if t == "deep" else deep_len
+                    if other >= MIN_RUN:
+                        fl and flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "drive changes depth class", "len": length(x, y)})
 
         resolve(False)
         # station approaches (Ben, 28 October): a cut-and-cover station meeting bored tubes keeps its box through the

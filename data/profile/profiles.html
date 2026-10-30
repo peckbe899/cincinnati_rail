@@ -1033,37 +1033,39 @@ function stretchTypes() {
       const parts = []; let s = a0; for (let i = a0 + 1; i <= b0 + 1; i++) if (i > b0 || P[i].ph !== P[s].ph) { parts.push([s, i - 1]); s = i; }
       for (const [a, b] of parts) {
         const R = P[a].R;
-        // one drive between two anchors (Ben, 28-29 October: station to station at any length, no switching between): every
-        // boreable stretch between them, joined through the spots with too little cover (bored through, flagged below: the
-        // profile should dive there); the station boxes carry on through the shallow ends until the tube has its cover
-        const drives = [];
-        for (const [x, y] of runs(a, b, (p) => p.cls !== 'C')) { const d = drives[drives.length - 1]; if (d) { d.y = y; d.pieces.push([x, y]); } else drives.push({ x, y, pieces: [[x, y]] }); }
-        for (const { x, y, pieces } of drives) {
-          // one type per gap (Ben, 29 October): a drive only where it is most of the stretch; where the shallow ends (too
-          // shallow to bore) are longer than the drive, the whole stretch is cut and cover
-          const ends = (x > a ? len(a, x - 1) : 0) + (y < b ? len(y + 1, b) : 0);
-          const ok = (x === a && y === b) || (drives.length === 1 && len(x, y) >= ends) || len(x, y) >= R.minDrive && len(x, y) >= ends;
-          for (const [u, v] of pieces) for (let i = u; i <= v; i++) P[i].t = ok ? 'bored' : 'cutcover';
-          if (fl && !ok && P.slice(x, y + 1).some((p) => p.cls === 'B')) flags.push({ c0: P[x].c, c1: P[y].c, text: `a bored stretch shorter than a drive (${Math.round(len(x, y))} m, at least ${R.minDrive} m) and deeper than the cut-and-cover limit (${fmtZ(R.ccMax, 2)} ${uLbl()}): the profile has to rise, or the drive be longer` });
-        }
-        for (let i = a; i <= b; i++) if (!P[i].t) P[i].t = 'cutcover';
-        for (const [x, y] of runs(a, b, (p) => p.t === 'cutcover')) {
-          const tunnel = (p) => !!p && !p.stn && (p.t === 'shield' || p.t === 'deep');   // a canon or river tunnel beyond
-          if ((x === a && !tunnel(P[a - 1])) || (y === b && !tunnel(P[b + 1]))) continue;   // at a box or portal: the box carries on
-          const shallow = P.slice(x, y + 1).some((p) => p.cls === 'C');
-          // inside the drive: bored where the cover allows; with less than one diameter of cover it cannot be bored (the
-          // minimum depth, Ben 30 October): cut and cover, flagged, and the drive carries on either side
-          if (!shallow) { for (let i = x; i <= y; i++) P[i].t = 'bored'; continue; }
-          if (fl) flags.push({ c0: P[x].c, c1: P[y].c, text: `a stretch inside a shield drive (${Math.round(len(x, y))} m) with less than one diameter of cover (${fmtZ(P[x].shieldFrom, 2)} ${uLbl()} to the rail): cut and cover; the profile should dive here to stay bored` });
-        }
-        for (const [x, y] of runs(a, b, (p) => p.t === 'bored')) {   // deep only where the rail is deep (Ben, 30 October):
-          // a stretch below deep_from at least a drive long, or reaching a deep station; the rest shallow shield
+        // one drive between two anchors (Ben, 28-30 October): from the first to the last point deep enough to bore; the
+        // station boxes carry on through the shallow ends (a shallow end at a portal is the tunnel's transition, no flag)
+        for (let i = a; i <= b; i++) P[i].t = 'cutcover';
+        const bor = runs(a, b, (p) => p.cls !== 'C'); if (!bor.length) continue;
+        let x = bor[0][0], y = bor[bor.length - 1][1];
+        const tunnel = (p) => !!p && !p.stn && (p.t === 'shield' || p.t === 'deep');   // a canon or river tunnel beyond
+        if (x > a && tunnel(P[a - 1])) x = a; if (y < b && tunnel(P[b + 1])) y = b;   // runs on into it
+        const ends = (x > a ? len(a, x - 1) : 0) + (y < b ? len(y + 1, b) : 0), span = P.slice(x, y + 1);
+        const shallowIn = span.some((p) => p.cls === 'C'), tooDeep = span.some((p) => p.cls === 'B');
+        // a drive only where it is most of the stretch; too shallow partway (Ben, 30 October): if cut and cover can dig
+        // all of it, the whole drive is cut and cover; if not, the whole drive stays bored and is flagged
+        let bored = (x === a && y === b) || len(x, y) >= ends;
+        if (bored && shallowIn && !tooDeep) bored = false;
+        if (bored) {
+          for (let i = x; i <= y; i++) P[i].t = 'bored';
+          if (fl) for (const [u, v] of runs(x, y, (p) => p.cls === 'C')) flags.push({ c0: P[u].c, c1: P[v].c, text: `${Math.round(len(u, v))} m inside a drive with less than one diameter of cover (${fmtZ(P[u].shieldFrom, 2)} ${uLbl()} to the rail), too deep elsewhere for cut and cover: the drive stays bored; the profile has to dive here` });
+        } else if (fl && tooDeep) flags.push({ c0: P[x].c, c1: P[y].c, text: `a bored stretch shorter than its shallow ends (${Math.round(len(x, y))} m) and deeper than the cut-and-cover limit (${fmtZ(R.ccMax, 2)} ${uLbl()}): the profile has to rise, or the drive be longer` });
+        if (!bored) continue;
+        // one depth type per drive (Ben, 30 October): deep if it reaches a deep station or most of it is below deep_from,
+        // else shallow shield, flagged where its depth crosses; a drive running up to a portal may change on the way
+        const outward = (i, dir) => { while (i >= 0 && i < n && P[i].t === 'cutcover' && !P[i].stn) i += dir; return P[i]; };
+        const portal = [outward(x - 1, -1), outward(y + 1, 1)].some((q) => q && !q.stn && (q.t === 'atgrade' || q.t === 'trough' || q.t === 'elevated'));
+        const deepStn = (x > 0 && P[x - 1].stn && P[x - 1].t === 'deep') || (y < n - 1 && P[y + 1].stn && P[y + 1].t === 'deep');
+        const deepLen = P.slice(x, y + 1).filter((p) => p.deep).length * step, all = len(x, y);
+        if (portal && !deepStn) {   // by depth, the old rule: deep where a whole drive's length is deep
           for (let i = x; i <= y; i++) P[i].t = 'shield';
-          for (const [u, v] of runs(x, y, (p) => p.deep)) {
-            const touch = (u === x && x > 0 && P[x - 1].stn && P[x - 1].t === 'deep') || (v === y && y < n - 1 && P[y + 1].stn && P[y + 1].t === 'deep');
-            if (touch || len(u, v) >= R.minDrive) for (let i = u; i <= v; i++) P[i].t = 'deep';
-          }
+          for (const [u, v] of runs(x, y, (p) => p.deep)) if (len(u, v) >= R.minDrive) for (let i = u; i <= v; i++) P[i].t = 'deep';
+          continue;
         }
+        const t = deepStn || deepLen * 2 >= all ? 'deep' : 'shield';
+        for (let i = x; i <= y; i++) P[i].t = t;
+        const other = t === 'deep' ? all - deepLen : deepLen;
+        if (fl && other >= MIN_RUN) flags.push({ c0: P[x].c, c1: P[y].c, text: `the drive changes depth class: ${Math.round(deepLen)} m below ${fmtZ(R.deepFrom, 2)} ${uLbl()}, ${Math.round(all - deepLen)} m above; drawn as ${t === 'deep' ? 'deep tunnel' : 'shallow shield'} throughout${deepStn ? ' (it reaches a deep station)' : ''}` });
       }
     }
   };
@@ -1141,13 +1143,15 @@ function typeAt(c, z = railAt(c)) {
 function applyFill() {
   const g0 = S.ground0; S.ground = g0; S.filled = false;
   if (!g0 || !S.align) return;
-  const ov = (S.align.ovr || []).filter((o) => o[2] === 'cutcover'); if (!ov.length) return;
+  // painted Shallow shield and Deep tunnel re-grade too (Ben, 30 October): the ground over a painted tube is made up to the
+  // tube's top plus its cover (one outside diameter), like a painted box's roof plus its cover
+  const ov = (S.align.ovr || []).filter((o) => o[2] === 'cutcover' || o[2] === 'shield' || o[2] === 'deep'); if (!ov.length) return;
   const n = g0.length, step = S.step, t = new Float32Array(n).fill(-Infinity); let any = false;
-  ov.forEach(([a, b]) => {
+  ov.forEach(([a, b, kind]) => {
     for (let i = Math.max(0, Math.ceil(a / step)); i <= Math.min(n - 1, Math.floor(b / step)); i++) {
       const c = i * step; if (riverAt(c)) continue;
-      const sc = structFor('cutcover', c), v = railAt(c) + sc.top + reqCover(sc, 0);
-      if (v > t[i]) { t[i] = v; any = true; }
+      const sc = structFor(kind, c), v = railAt(c) + sc.top + reqCover(sc, 0);
+      if (v > t[i] && !(v <= g0[i] + 0.005)) { t[i] = v; any = true; }   // the taper starts only where the ground is raised
     }
   });
   if (!any) return;
@@ -2104,7 +2108,7 @@ function updateSelCard() {
   const el = $('#selCard'); const sel = S.sel;
   const ro = S.canWrite === false || !!(sel && ((sel.kind === 'st' && lockedStation(sel.i)) || (sel.kind === 'pvi' && S.align.pvi[sel.j] && lockAt(S.align.pvi[sel.j].c))));   // locked stretches are read only
   if (!sel) {
-    el.innerHTML = `<h2>Editing</h2><p class="hint">Drag a station bar up or down to set its rail level. Double-click the track to add a bend point, then drag it. Choose <b>Paint</b> and a structure to mark a stretch by hand; <b>Auto</b> clears it. Painted <b>Cut &amp; cover</b> keeps the box where it is and regrades the ground over it (filled to the roof plus cover, sloping back past the ends); a station's card can force its whole platform.</p>
+    el.innerHTML = `<h2>Editing</h2><p class="hint">Drag a station bar up or down to set its rail level. Double-click the track to add a bend point, then drag it. Choose <b>Paint</b> and a structure to mark a stretch by hand; <b>Auto</b> clears it. Painted <b>Cut &amp; cover</b>, <b>Shallow shield</b> or <b>Deep tunnel</b> keeps the structure where it is and regrades the ground over it (filled to the box roof plus cover, or the tube top plus one diameter, sloping back past the ends); a station's card can force its whole platform.</p>
       <p class="hint"><kbd>scroll</kbd> zoom · <kbd>drag</kbd> pan · <kbd>↑</kbd><kbd>↓</kbd> nudge 0.1 (<kbd>Shift</kbd> 1) · <kbd>Del</kbd> remove bend · <kbd>Ctrl Z</kbd> undo</p>`;
     return;
   }
