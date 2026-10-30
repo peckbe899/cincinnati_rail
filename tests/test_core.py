@@ -718,7 +718,8 @@ def test_approach_boxes_at_canon_and_tube_stations():
         T = mp.stretch_types()
         ap = T["approaches"]
         inside = lambda c: any(min(a["c"], a["c"] + a["side"] * a["len"]) - 3 <= c <= max(a["c"], a["c"] + a["side"] * a["len"]) + 3 for a in ap)
-        t, step = T["t"], T["step"]
+        step = T["step"]
+        t = [mp.type_at(i * step) for i in range(len(T["t"]))]   # as drawn: paints included
         for i in range(1, len(t)):
             a, b = t[i - 1], t[i]
             if {a, b} & {"shield", "deep"} and "cutcover" in (a, b):

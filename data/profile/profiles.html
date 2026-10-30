@@ -1114,7 +1114,9 @@ function stretchTypes() {
   const n0 = approaches.length;
   for (const s of S.stations) {
     const ic = stIdx(s.c); if (!P[ic] || !P[ic].stn) continue;
-    const tubeStn = P[ic].t === 'shield' || P[ic].t === 'deep'; if (P[ic].t !== 'cutcover' && !tubeStn) continue;
+    // the station's type: its paint, else the rules' (a station painted Shallow shield is a tube station: VA Medical Center
+    // on Line 2 had approach boxes drawn into its tubes, Ben 30 October)
+    const sty = overrideAt(s.c) || P[ic].t, tubeStn = sty === 'shield' || sty === 'deep'; if (sty !== 'cutcover' && !tubeStn) continue;
     const kind = platKind(s.name, 'cutcover'), spS = kind === 'island' ? MS.island_box.spacing : MS.box.spacing;
     for (const dir of [-1, 1]) {
       if (placed.has(`${s.name}|${dir}`)) continue;

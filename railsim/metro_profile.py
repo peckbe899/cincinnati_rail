@@ -1055,8 +1055,9 @@ class MetroProfile:
             ic = idx(s["c"])
             if not P[ic].get("stn"):
                 continue
-            tube_stn = P[ic].get("t") in ("shield", "deep")
-            if P[ic].get("t") != "cutcover" and not tube_stn:
+            sty = self.override_at(s["c"]) or P[ic].get("t")   # the station's paint, else the rules' type (as the editor)
+            tube_stn = sty in ("shield", "deep")
+            if sty != "cutcover" and not tube_stn:
                 continue
             kind = plats.get(s["name"]) or "side"
             sp_s = ms["island_box"]["spacing"] if kind == "island" else ms["box"]["spacing"]
