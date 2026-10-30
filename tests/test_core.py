@@ -616,8 +616,8 @@ def test_tunnel_methods_by_era():
             while b0 + 1 < len(ts) and "cls" in tun[b0 + 1]:
                 b0 += 1
             others = any(bored(i) for i in list(range(a0, k)) + list(range(j + 1, b0 + 1)))
-            if ends_at_cc and others:
-                assert (j - k + 1) * step >= mp.phase_rules(k * step)["min_drive"] - 1e-6, (lid, k * step, j * step)
+            # (between two anchors the bored stretches are one drive at any length, Ben 29 October; a stretch too shallow
+            # to bore inside it is cut and cover, so only the cover is checked below)
             for m in range(k, j + 1, 25):
                 c = m * step
                 sc = mp.struct_for("shield", c)

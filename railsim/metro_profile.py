@@ -804,15 +804,26 @@ class MetroProfile:
         if rec:   # the Chronology record: the phase of the segment (two stations) c is in, set or from its year
             sts = sorted(self.stations, key=lambda s: s["c"])
             if len(sts) > 1:
+                def seg(i):   # (year, phase) of the segment from station i to i + 1
+                    if i < 0 or i + 1 >= len(sts):
+                        return None
+                    a, b = sorted((sts[i]["name"], sts[i + 1]["name"]))
+                    e = (rec.get("segments") or {}).get(f"cvx|{a}|{b}" if self.id == "CVG_Express" else f"metro|{self.id}|{a}|{b}") or {}
+                    y = e.get("year")
+                    ph = e.get("phase") or next((p for y0, y1, p in rec.get("phase_years") or [] if y is not None and y0 <= y <= y1), None)
+                    return (y, ph) if ph else None
+                half = self.settings["platform"] / 2
+                k = next((j for j, s in enumerate(sts) if abs(c - s["c"]) <= half), None)
+                if k is not None:   # a station is one phase: the earlier-opened segment either side (Ben, 30 October)
+                    both = [x for x in (seg(k - 1), seg(k)) if x]
+                    if both:
+                        return min(both, key=lambda x: x[0] if x[0] is not None else 9999)[1]
                 i = 0
                 while i + 2 < len(sts) and c > sts[i + 1]["c"]:
                     i += 1
-                a, b = sorted((sts[i]["name"], sts[i + 1]["name"]))
-                e = (rec.get("segments") or {}).get(f"cvx|{a}|{b}" if self.id == "CVG_Express" else f"metro|{self.id}|{a}|{b}") or {}
-                y = e.get("year")
-                ph = e.get("phase") or next((p for y0, y1, p in rec.get("phase_years") or [] if y is not None and y0 <= y <= y1), None)
-                if ph:
-                    return ph
+                x = seg(i)
+                if x:
+                    return x[1]
         name = next((p["name"] for p in self.data.get("pieces", []) if p["c0"] - 5 <= c <= p["c1"] + 5), None)
         return ((ms.get("piece_phase") or {}).get(self.id) or {}).get(name) or (ms.get("line_phase") or {}).get(self.id) or "later"
 
@@ -935,16 +946,20 @@ class MetroProfile:
                         if (x == a and not tunnel(a - 1)) or (y == b and not tunnel(b + 1)):   # at a box or portal: the box carries on
                             continue
                         shallow = any(p["cls"] == "C" for p in P[x:y + 1])
-                        for i in range(x, y + 1):   # inside the drive: bored through (flagged where the cover is short)
-                            P[i]["t"] = "bored"
+                        if not shallow:   # inside the drive: bored; too little cover stays cut and cover (Ben, 30 October)
+                            for i in range(x, y + 1):
+                                P[i]["t"] = "bored"
                         if shallow:
                             fl and flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "shallow dip in a drive", "len": length(x, y)})
-                    for x, y in runs(a, b, lambda p: p["t"] == "bored"):   # a drive is one type (Ben, 29 October)
-                        touch = (x > 0 and P[x - 1].get("stn") and P[x - 1]["t"] == "deep") or \
-                                (y < n - 1 and P[y + 1].get("stn") and P[y + 1]["t"] == "deep")
-                        deep = touch or any(length(u, v) >= R["min_drive"] for u, v in runs(x, y, lambda p: p["deep"]))
+                    for x, y in runs(a, b, lambda p: p["t"] == "bored"):   # deep only where the rail is deep (Ben, 30 October)
                         for i in range(x, y + 1):
-                            P[i]["t"] = "deep" if deep else "shield"
+                            P[i]["t"] = "shield"
+                        for u, v in runs(x, y, lambda p: p["deep"]):
+                            touch = (u == x and x > 0 and P[x - 1].get("stn") and P[x - 1]["t"] == "deep") or \
+                                    (v == y and y < n - 1 and P[y + 1].get("stn") and P[y + 1]["t"] == "deep")
+                            if touch or length(u, v) >= R["min_drive"]:
+                                for i in range(u, v + 1):
+                                    P[i]["t"] = "deep"
 
         resolve(False)
         # station approaches (Ben, 28 October): a cut-and-cover station meeting bored tubes keeps its box through the

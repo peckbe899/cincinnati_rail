@@ -805,7 +805,18 @@ function chrSegments() {   // this line's segments: [{key, c0, c1, year, phase, 
 }
 function phaseAt(c, id = S.data && S.data.id) {
   if (!MS) return null;
-  if (CHR && id === (S.data && S.data.id)) { const sg = chrSegments().find((s) => c >= s.c0 && c <= s.c1); if (sg && sg.phase) return sg.phase; }
+  // a station is one phase (Ben, 30 October): it was built with its first track, so the earlier-opened of the segments
+  // either side of it decides its phase and tube, for the whole platform
+  if (CHR && id === (S.data && S.data.id)) {
+    const half = settings.platform / 2, st = S.stations.find((x) => Math.abs(c - x.c) <= half);
+    if (st) {
+      const sgs = chrSegments(), at = (q) => sgs.find((x) => q >= x.c0 && q <= x.c1);
+      const A = at(st.c - half - 1), B = at(st.c + half + 1);
+      const pick = [A, B].filter((x) => x && x.phase).sort((u, v) => (u.year ?? 9999) - (v.year ?? 9999))[0];
+      if (pick) return pick.phase;
+    }
+    const sg = chrSegments().find((s) => c >= s.c0 && c <= s.c1); if (sg && sg.phase) return sg.phase;
+  }
   const pc = id === (S.data && S.data.id) ? pieceAt(S.data, c) : '';
   return ((MS.piece_phase || {})[id] || {})[pc] || (MS.line_phase || {})[id] || 'later';
 }
@@ -985,14 +996,18 @@ function stretchTypes() {
           const tunnel = (p) => !!p && !p.stn && (p.t === 'shield' || p.t === 'deep');   // a canon or river tunnel beyond
           if ((x === a && !tunnel(P[a - 1])) || (y === b && !tunnel(P[b + 1]))) continue;   // at a box or portal: the box carries on
           const shallow = P.slice(x, y + 1).some((p) => p.cls === 'C');
-          for (let i = x; i <= y; i++) P[i].t = 'bored';   // inside the drive: bored through
-          if (fl && shallow) flags.push({ c0: P[x].c, c1: P[y].c, text: `a stretch inside a shield drive (${Math.round(len(x, y))} m) with less than one diameter of cover (${fmtZ(P[x].shieldFrom, 2)} ${uLbl()} to the rail): bored through; the profile should dive here` });
+          // inside the drive: bored where the cover allows; with less than one diameter of cover it cannot be bored (the
+          // minimum depth, Ben 30 October): cut and cover, flagged, and the drive carries on either side
+          if (!shallow) { for (let i = x; i <= y; i++) P[i].t = 'bored'; continue; }
+          if (fl) flags.push({ c0: P[x].c, c1: P[y].c, text: `a stretch inside a shield drive (${Math.round(len(x, y))} m) with less than one diameter of cover (${fmtZ(P[x].shieldFrom, 2)} ${uLbl()} to the rail): cut and cover; the profile should dive here to stay bored` });
         }
-        for (const [x, y] of runs(a, b, (p) => p.t === 'bored')) {   // a drive is one type (Ben, 29 October): deep if it
-          // reaches a deep station or runs a whole drive below deep_from, else shallow shield
-          const touch = (x > 0 && P[x - 1].stn && P[x - 1].t === 'deep') || (y < n - 1 && P[y + 1].stn && P[y + 1].t === 'deep');
-          const deep = touch || runs(x, y, (p) => p.deep).some(([u, v]) => len(u, v) >= R.minDrive);
-          for (let i = x; i <= y; i++) P[i].t = deep ? 'deep' : 'shield';
+        for (const [x, y] of runs(a, b, (p) => p.t === 'bored')) {   // deep only where the rail is deep (Ben, 30 October):
+          // a stretch below deep_from at least a drive long, or reaching a deep station; the rest shallow shield
+          for (let i = x; i <= y; i++) P[i].t = 'shield';
+          for (const [u, v] of runs(x, y, (p) => p.deep)) {
+            const touch = (u === x && x > 0 && P[x - 1].stn && P[x - 1].t === 'deep') || (v === y && y < n - 1 && P[y + 1].stn && P[y + 1].t === 'deep');
+            if (touch || len(u, v) >= R.minDrive) for (let i = u; i <= v; i++) P[i].t = 'deep';
+          }
         }
       }
     }
@@ -1054,7 +1069,13 @@ function autoType(c, z) {
   const p = pointType(c, z);   // off the drawn profile: the point on its own
   return p.t || (p.cls === 'B' ? (p.deep ? 'deep' : 'shield') : 'cutcover');
 }
-function typeAt(c, z = railAt(c)) { return overrideAt(c) || autoType(c, z); }
+// a station is one type (Ben, 30 October): a paint over part of a platform applies to the whole platform, by the paint
+// at its centre
+function typeAt(c, z = railAt(c)) {
+  const st = S.stations && S.stations.find((x) => Math.abs(c - x.c) <= settings.platform / 2);
+  if (st) { const o = overrideAt(st.c); if (o) return o; if (overrideAt(c)) return autoType(st.c, railAt(st.c)); }
+  return overrideAt(c) || autoType(c, z);
+}
 // Painted cut and cover (Ben, Oct 26): the box holds its level and the ground is regraded over
 // it, as a cut-and-cover dig is backfilled. Under a painted cut-and-cover stretch the finished
 // ground is at least the box roof plus its cover (Metro 4.6 + 0.6 m above the rail; RER the box
@@ -1426,6 +1447,12 @@ function allIssues(sm) {
   (sm.shallowTubes || []).forEach((t) => out.push(t.bridge ? { kind: 'River', c: t.c, text: `Bridge over the ${esc(t.name)}: rail up to ${fmtZ(t.over, 2)} ${uLbl()} below the navigation clearance level (worst at ${fmtCh(t.c)})` } : { kind: 'River', c: t.c, text: `Under the ${esc(t.name)} from ${fmtCh(t.c0)} to ${fmtCh(t.c1)} the rail is up to ${fmtZ(t.over, 2)} ${uLbl()} above bed − ${RIVER_MARGIN[isRer() ? 'rer' : 'metro']} m (worst at ${fmtCh(t.c)})` }));
   sm.deepShallow.forEach((f) => out.push({ kind: 'Canon', c: f.c, text: `${esc(f.name)} is ${fmtZ(f.d, 0)} ${uLbl()} down in a shallow-canon section` }));
   (sm.checks || []).forEach((x) => out.push(x));
+  // a stretch painted Deep tunnel shallower than deep_from (Ben, 30 October: the minimum depth holds for paints too)
+  if (!isRer()) for (const [a, b, t] of (S.align && S.align.ovr) || []) {
+    if (t !== 'deep') continue;
+    let worst = Infinity, wc = a; for (let c = a; c <= b; c += 5) { const g = groundAt(c), d = g - railAt(c); if (isFinite(d) && !riverAt(c) && d < worst) { worst = d; wc = c; } }
+    const lim = phaseRules(wc).deepFrom; if (worst < lim - 0.05) out.push({ kind: 'Painted', warn: true, c: wc, text: `Painted Deep tunnel from ${fmtCh(a)} to ${fmtCh(b)} is as shallow as ${fmtZ(worst, 1)} ${uLbl()} at ${fmtCh(wc)} (deep from ${fmtZ(lim, 2)} ${uLbl()}): paint it shallow shield, or lower the profile` });
+  }
   const T = stretchTypes(); if (T) T.flags.forEach((f) => out.push({ kind: f.kind || (f.info ? 'Tube choice' : 'Tunnel method'), warn: true, c: (f.c0 + f.c1) / 2, text: `${fmtCh(f.c0)} to ${fmtCh(f.c1)}: ${f.text}` }));
   return out.sort((a, b) => a.c - b.c);
 }
