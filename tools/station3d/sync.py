@@ -137,9 +137,12 @@ def structure(line_id, t, c=None):
     """the structure a line has for a Profiles type (the editor's structFor)"""
     if t in ('elevated', 'atgrade', 'trough'):
         return dict(OPEN_ST, t=t)
-    if t == 'sunk':   # a river crossing: a sunk double-track box (Ben, 2026-10-30), roof 5.0 m (RER 6.6 m) over the rail
-        rer = line_id.startswith('RER_')
-        return dict(RER_ST['box'] if rer else METRO_ST['box'], top=6.6 if rer else 5.0, sunk=True)
+    if t == 'sunk':   # a river crossing: a sunk double-track box (Ben, 2026-10-30), as the editor's sunkBox
+        if line_id.startswith('RER_'):
+            return dict(RER_ST['box'], sunk=True)   # the 6.6 m box
+        bx = (MS or {}).get('box') or {'below': 1.0, 'roof_underside': 4.0}
+        # the canon box section (rail 1.0 m above its underside, 4.0 m to the roof underside) with a 1.0 m roof
+        return dict(METRO_ST['box'], below=bx['below'], top=round(bx['roof_underside'] + 1.0, 3), cover=0.0, sunk=True)
     if line_id.startswith('RER_'):
         return dict(RER_ST['box' if t == 'cutcover' else 'bore'])
     if t == 'cutcover':

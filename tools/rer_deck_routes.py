@@ -77,6 +77,44 @@ def is_metro(rid):
     return rid.startswith('Line_') or rid == 'CVG_Express'
 
 
+def river_ranges(path, old=(), step=2.0):
+    """River ranges along a route from the river outlines (data/profile/network.json `rivers`, the shorelines the
+    terrain's riverbed was cut from): each stretch more than 20 m long where the path is inside an outline. Rivers with
+    no outline (the canon's `centerline` rivers, the Little Miami) keep their ranges as given (old). Recomputed on every
+    rebuild: a range carried over by the chainage map drifts off the riverbed when the path moves (Line 6 by up to 78 m,
+    Ben 30 October)."""
+    from shapely.geometry import Polygon
+    from shapely.prepared import prep
+    rings = jload(os.path.join(SITE, 'network.json'))['rivers']
+    cs = np.arange(0.0, path[-1][0] + 1e-9, step)
+    pc = [p[0] for p in path]
+    lon, lat = np.interp(cs, pc, [p[1] for p in path]), np.interp(cs, pc, [p[2] for p in path])
+    out = []
+    for name, rs in rings.items():
+        polys = [Polygon(r) for r in rs if len(r) >= 3]
+        inside = np.zeros(len(cs), bool)
+        for P in polys:
+            x0, y0, x1, y1 = P.bounds
+            k = np.where((lon >= x0) & (lon <= x1) & (lat >= y0) & (lat <= y1))[0]
+            if len(k):
+                pp = prep(P)
+                from shapely.geometry import Point
+                inside[k] |= np.array([pp.contains(Point(lon[i], lat[i])) for i in k])
+        i = 0
+        while i < len(cs):
+            if inside[i]:
+                j = i
+                while j + 1 < len(cs) and inside[j + 1]:
+                    j += 1
+                if cs[j] - cs[i] > 20:
+                    out.append({'name': name, 'c0': round(float(cs[i]), 1), 'c1': round(float(cs[j]), 1)})
+                i = j + 1
+            else:
+                i += 1
+    out += [r for r in old if r['name'] not in rings]
+    return sorted(out, key=lambda r: r['c0'])
+
+
 def st_keys(route):
     """the page's station keys (name, or name#index where a name repeats)"""
     nm = [s['name'] for s in route['stations']]
@@ -346,8 +384,9 @@ def apply_route(rid, route, xy, segs, files, db_dir, stations_deck, so=None):
         q = at(c)
         lon, lat = TO_LL.transform(q.x, q.y)
         s.update(c=round(c, 1), lon=round(lon, 7), lat=round(lat, 7))
-    for r in new.get('rivers', []):
+    for r in new.get('rivers', []):   # mapped, then the outlined rivers recomputed on the new path
         r['c0'], r['c1'] = round(m(r['c0']), 1), round(m(r['c1']), 1)
+    new['rivers'] = river_ranges(new['path'], new.get('rivers', []), st)
     # crossings with every other line, recomputed. A Metro x RER crossing is kept on the RER route only (the page
     # gives it to the Metro line from there)
     me = LineString(xy)
@@ -421,7 +460,20 @@ def main():
     ap.add_argument('--db', help='a folder of the page database alignments (one JSON per route) to move as well')
     ap.add_argument('--json', help='write the check as JSON here')
     ap.add_argument('--only', help='comma-separated route ids')
+    ap.add_argument('--rivers', action='store_true', help='recompute every route\'s river ranges from the river outlines (no rebuild)')
     a = ap.parse_args()
+    if a.rivers:
+        fns = sorted(glob.glob(os.path.join(SITE, 'lines', '*_*.json')) + glob.glob(os.path.join(SITE, 'rer', 'lines', 'RER_*.json')))
+        for fn in fns:
+            r = jload(fn)
+            if not isinstance(r, dict) or 'path' not in r:
+                continue
+            new = river_ranges(r['path'], r.get('rivers', []), r.get('step_m', 2.0))
+            if new != r.get('rivers', []):
+                print(f"{os.path.basename(fn)[:-5]:22s} " + '; '.join(f"{o['name']} {o['c0']}-{o['c1']} -> {n['c0']}-{n['c1']}" for o, n in zip(r.get('rivers', []), new)) + ('' if len(new) == len(r.get('rivers', [])) else f" (now {len(new)} ranges, was {len(r.get('rivers', []))})"))
+                r['rivers'] = new
+                jsave(fn, r)
+        return
     pieces = deck_pieces(a.context, a.geojson)
     report, drifted = [], []
     platforms = deck_platforms(a.geojson)

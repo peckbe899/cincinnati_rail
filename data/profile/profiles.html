@@ -235,7 +235,7 @@ const TYPE_KEYS = Object.keys(TYPES);
 // thresholds are editable starting values, not canon. deepBelow (60 ft) follows the station
 // list calling Price Hill's 60 ft station a deep bore; shallowMax (40 ft) flags canon-shallow
 // stretches that run well past the doctrine's 20-30 ft.
-const METRO_DEFAULTS = { maxGrade: 50, platform: 121.92, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, deckDepth: 1.5, poolFt: 455.0, vcRadius: 1500, vcMinLen: 30.5, drainMin: 3, curveK: 800, stationMaxGrade: 7.5, fillTaper: 50, sustainedLen: 243.84, riverBoxTop: 5.0, riverSink: 5.0, riverRise: 3.0, riverFlatTol: 1.0, riverClearWater: 3.66, riverCap: 1.0 };
+const METRO_DEFAULTS = { maxGrade: 50, platform: 121.92, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, deckDepth: 1.5, poolFt: 455.0, vcRadius: 1500, vcMinLen: 30.5, drainMin: 3, curveK: 800, stationMaxGrade: 7.5, fillTaper: 50, sustainedLen: 243.84, riverRoof: 1.0, riverSink: 5.0, riverRise: 3.0, riverFlatTol: 1.0, riverClearWater: 3.66, riverCap: 1.0 };
 // Design rules: vertical curves of 1,500 m (Metro) and 3,000 m (RER) at every grade change, kept
 // off platforms by a level transition (canon); bored tunnels need the cover of their era's
 // practice, else they are cut and cover (canon, see ERA); tunnels drain at 3 per mille or
@@ -244,7 +244,7 @@ const METRO_DEFAULTS = { maxGrade: 50, platform: 121.92, defDepth: 7.62, elevAbo
 // RER: 35 per mille, 670 ft (204.2 m) platforms (Ben, 5 October; was 200 m) and 12 m station rail depth are canon; the
 // envelope (25 kV overhead), thresholds, tube cover and surface bend-point spacing are starting
 // values. Surface stations sit at grade on the old railroad and the rail follows the ground.
-const RER_DEFAULTS = { maxGrade: 35, platform: 204.2, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 6.6, boreCrown: 7.5, deckDepth: 2.0, invertDepth: 1.0, poolFt: 455.0, surfStep: 250, tubeCover: 3, vcRadius: 3000, vcMinLen: 30.5, minCover: 8.5, drainMin: 3, curveK: 800, stationMaxGrade: 2.5, fillTaper: 50, sustainedLen: 408.4, riverBoxTop: 6.6, riverSink: 5.0, riverRise: 3.0, riverFlatTol: 1.0, riverClearWater: 3.66, riverCap: 1.0 };
+const RER_DEFAULTS = { maxGrade: 35, platform: 204.2, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 6.6, boreCrown: 7.5, deckDepth: 2.0, invertDepth: 1.0, poolFt: 455.0, surfStep: 250, tubeCover: 3, vcRadius: 3000, vcMinLen: 30.5, minCover: 8.5, drainMin: 3, curveK: 800, stationMaxGrade: 2.5, fillTaper: 50, sustainedLen: 408.4, riverSink: 5.0, riverRise: 3.0, riverFlatTol: 1.0, riverClearWater: 3.66, riverCap: 1.0 };
 let DEFAULTS = METRO_DEFAULTS;
 // Canon structure for the founding sections (Lines 1-6 as first opened).
 // m: 'shallow' = basin method (shallow shield running tunnels, cut-and-cover station boxes);
@@ -401,7 +401,7 @@ const METHOD_LABEL = { shallow: 'Basin method', deep: 'Deep tunnel', canal: 'Can
 const SETTING_ROWS_BASE = [
   ['maxGrade', 'Max grade', '‰', 1],
   ['sustainedLen', 'Sustained grade: averaged over (shorter is a warning)', 'len', 10],
-  ['riverBoxTop', 'Sunk river box: rail to the top of its roof', 'len', 0.1],
+  ['riverRoof', 'Sunk river box roof (Metro; over the box\'s 4.0 m to the roof underside; RER: the envelope)', 'len', 0.1],
   ['riverSink', 'Sunk river box: roof at most this far below the bed', 'len', 0.1],
   ['riverRise', 'Sunk river box: roof at most this far above the bed', 'len', 0.1],
   ['riverFlatTol', 'River bottom: bed within this of the lowest bed', 'len', 0.1],
@@ -743,9 +743,14 @@ function riverBridges() {
 // running deeper under the bank slopes into its transition. Where the roof stands above the bed the bed is made up over it
 // (clay, a concrete canopy and riprap, riverCap thick); on a navigable river (the Ohio) the made-up bed keeps
 // riverClearWater (12 ft) of water at normal pool. The solver holds the box inside the band; saved profiles are flagged.
+// The sunk unit (Metro_River_Crossings): the canon box section (3.90 m track centres, 7.90 m inside, rail 1.0 m above its
+// underside, 4.0 m to the roof underside: the structure record's box) with a 1.0 m roof (assumed): 5.0 m rail to roof
+// top. RER: the 6.6 m box (Relief log 10j.7, the envelope setting), invertDepth below.
 function sunkBox(id = S.data.id) {
   const st = setOf(id);
-  return { k: 'sunk', below: isRerId(id) ? st.invertDepth : METRO_ST.box.below, top: st.riverBoxTop, label: 'sunk box' };
+  if (isRerId(id)) return { k: 'sunk', below: st.invertDepth, top: st.envelope, label: 'sunk box' };
+  const bx = MS ? MS.box : { below: METRO_ST.box.below, roof_underside: 4.0, inside: 7.9, spacing: 3.9 };
+  return { k: 'sunk', below: bx.below, top: bx.roof_underside + (setOf(id).riverRoof ?? 1.0), inside: bx.inside, spacing: bx.spacing, label: 'sunk box' };
 }
 const navigable = (r) => !!(RIVERS[r.name] || {}).navigable;
 // a river range along an RER embanked covered way (the canon's, beside the Ohio) is the shore, not a crossing
@@ -753,7 +758,7 @@ const alongShore = (r) => { if (!isRer()) return false; const sec = canonAt((r.c
 // the band from the points under water (bed below normal pool); none: not a crossing
 function riverBand(r) {
   if (alongShore(r)) return null;
-  const top = settings.riverBoxTop, wet = (b) => isFinite(b) && b < pool(); let low = Infinity, ub = Infinity, lb = -Infinity;
+  const top = sunkBox().top, wet = (b) => isFinite(b) && b < pool(); let low = Infinity, ub = Infinity, lb = -Infinity;
   for (let c = r.c0; c <= r.c1; c += S.step) { const b = bedAt(c); if (wet(b)) low = Math.min(low, b); }
   if (!isFinite(low)) return null;
   for (let c = r.c0; c <= r.c1; c += S.step) {
@@ -768,7 +773,7 @@ function riverBand(r) {
 // the made-up bed over a sunk box whose roof stands above the bed (NaN where it does not)
 function madeBedAt(c, z = railAt(c)) {
   const r = riverAt(c); if (!r || bridgeOf(r) || alongShore(r) || typeAt(c, z) !== 'sunk') return NaN;
-  const b = bedAt(c), t = z + settings.riverBoxTop + settings.riverCap;
+  const b = bedAt(c), t = z + sunkBox().top + settings.riverCap;
   return isFinite(b) && t > b ? t : NaN;
 }
 function riverTubes() { return S.rivers.filter((r) => !bridgeOf(r)).map(riverBand).filter(Boolean); }
@@ -1329,7 +1334,7 @@ function computeSummary() {
   S.rivers.forEach((r) => {
     if (bridgeOf(r)) return;
     const B = riverBand(r); if (!B) return;
-    const on = {}, top = settings.riverBoxTop, n0 = shallowTubes.length;
+    const on = {}, top = sunkBox().top, n0 = shallowTubes.length;
     const hit = (k, c, v) => { const o = on[k]; if (o && c - o.c1 <= S.step * 1.5) { o.c1 = c; if (v > o.over) { o.over = v; o.c = c; } } else { on[k] = { kind: k, name: r.name, c0: c, c1: c, c, over: v }; shallowTubes.push(on[k]); } };
     for (let i = Math.ceil(r.c0 / S.step); i * S.step <= r.c1; i++) {
       const c = i * S.step, b = bedAt(c), z = railAt(c), t = typeAt(c, z); if (!isFinite(b) || b >= pool()) continue;   // under water only
@@ -1552,7 +1557,7 @@ function allIssues(sm) {
     ? `Crosses ${esc(x.with)} at grade at ${fmtCh(x.c)}: needs a grade separation`
     : `${toU(x.clear).toFixed(2)} ${uLbl()} ${x.meUp ? 'over' : 'under'} ${esc(x.with)} at ${fmtCh(x.c)}; needs ${toU(x.need).toFixed(2)} ${uLbl()} (${(x.meUp ? x.t : x.to).label} over ${(x.meUp ? x.to : x.t).label})` }));
   (sm.shallowTubes || []).forEach((t) => {
-    const at = `under the ${esc(t.name)} from ${fmtCh(t.c0)} to ${fmtCh(t.c1)}`, by = `${fmtZ(t.over, 2)} ${uLbl()} (worst at ${fmtCh(t.c)})`, top = settings.riverBoxTop;
+    const at = `under the ${esc(t.name)} from ${fmtCh(t.c0)} to ${fmtCh(t.c1)}`, by = `${fmtZ(t.over, 2)} ${uLbl()} (worst at ${fmtCh(t.c)})`, top = sunkBox().top;
     const text = {
       clearance: `Bridge over the ${esc(t.name)}: rail up to ${by.replace(' (', ' below the navigation clearance level (')}`,
       bridge: `Crosses the ${esc(t.name)} above the water from ${fmtCh(t.c0)} to ${fmtCh(t.c1)}: every river crossing is a sunk box (only the CVG Express bridges the Ohio)`,
@@ -1863,6 +1868,36 @@ function draw(ctx, W, H, view, opt = {}) {
     ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
     k0 = k1 + 1;
   }
+  // the channel over each sunk box (Ben, 30 October): the shallowest water from normal pool to the bed over the box (made
+  // up or natural), dimensioned; on a navigable river the 12 ft navigation depth dashed across the water
+  if (S.show !== 'rail') for (const r of S.rivers) {
+    if (r.c1 < view.c0 || r.c0 > view.c1 || bridgeOf(r) || alongShore(r)) continue;
+    // over the box: where the bed is made up over its roof, else on the flat bottom (the natural shallows at the banks
+    // are not the box's doing)
+    const pl = pool(), B = riverBand(r); if (!B) continue; let best = null;
+    for (let c = Math.ceil(r.c0 / S.step) * S.step; c <= r.c1; c += S.step) {
+      const b = bedAt(c); if (!isFinite(b) || b >= pl) continue;
+      const z = railAt(c); if (typeAt(c, z) !== 'sunk') continue;
+      const mb = madeBedAt(c, z); if (!isFinite(mb) && b > B.low + settings.riverFlatTol) continue;
+      const top = isFinite(mb) ? mb : b, w = pl - top;
+      if (!best || w < best.w) best = { c, w, top, made: isFinite(mb) };
+    }
+    if (!best) continue;
+    const nav = navigable(r), need = settings.riverClearWater, short = nav && best.w < need - 0.005;
+    ctx.save(); ctx.strokeStyle = ctx.fillStyle = short ? colors.warn : colors.water; ctx.lineWidth = 1.25;
+    if (nav) {   // the navigation depth
+      const yn = Y(pl - need); ctx.setLineDash([6, 4]); ctx.globalAlpha = 0.8;
+      ctx.beginPath(); ctx.moveTo(X(r.c0), yn); ctx.lineTo(X(r.c1), yn); ctx.stroke(); ctx.setLineDash([]);
+      ctx.font = `10px ${colors.ui}`; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+      ctx.fillText(`navigation depth ${fmtZ(need, 2)} ${uLbl()} (12 ft)`, X(r.c0) + 4, yn - 2);
+    }
+    const x = X(best.c), y0 = Y(pl), y1 = Y(best.top); ctx.globalAlpha = 1;
+    ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y1); ctx.moveTo(x - 5, y0); ctx.lineTo(x + 5, y0); ctx.moveTo(x - 5, y1); ctx.lineTo(x + 5, y1); ctx.stroke();
+    for (const [y, d] of [[y0, 1], [y1, -1]]) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 3, y + 6 * d); ctx.lineTo(x + 3, y + 6 * d); ctx.closePath(); ctx.fill(); }
+    ctx.font = `600 11px ${colors.ui}`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(`channel over the box ${fmtZ(best.w, 2)} ${uLbl()} (pool to the ${best.made ? 'made-up bed' : 'bed'})${short ? `: under ${fmtZ(need, 2)}` : ''}`, x + 8, (y0 + y1) / 2);
+    ctx.restore();
+  }
   // elevated structure: the deck and girders (or a through truss) by span, and the piers to the ground or river bed
   if (S.show !== 'rail') {
     const col = colors.elevated, sub = Math.max(2, (view.c1 - view.c0) / P.w * 3);
@@ -2144,7 +2179,7 @@ function updatePanels() {
     if (seen.size || S.regraded) cnl.push(`<li><b>Context source</b>: ${esc((CONTEXT.meta || {}).source || '')}, built ${esc((CONTEXT.meta || {}).built || '')}. Heights ${esc((CONTEXT.meta || {}).heights || '')}. ${((CONTEXT.meta || {}).notes || []).map(esc).join('. ')}.</li>`); }
   cnl.push(`<li><b>Vertical curves</b> radius ${fmtZ(settings.vcRadius, 0)} ${uLbl()}, kept off the platforms by a level transition at each end.</li>`);
   if (!isRer()) riverBridges().forEach((b) => cnl.push(`<li><b>Bridge</b> over the ${esc(b.name)} (${fmtCh(b.c0)} to ${fmtCh(b.c1)}): rail at least ${fmtZ(b.lb, 1)} ${uLbl()}. ${esc(b.src)}</li>`));
-  riverTubes().forEach((t) => cnl.push(`<li><b>Sunk box</b> under the ${esc(t.name)} (${fmtCh(t.c0)} to ${fmtCh(t.c1)}): rail from ${fmtZ(t.lb, 1)} to ${fmtZ(t.ub, 1)} ${uLbl()} on the flat bottom (lowest bed ${fmtZ(t.low, 1)}; roof ${fmtZ(settings.riverSink, 1)} below to ${fmtZ(settings.riverRise, 1)} above the bed${t.nav != null ? `, ${fmtZ(settings.riverClearWater, 2)} of water kept over it at normal pool` : ''}); a cut-and-cover transition at each bank. The solver holds it; saved profiles are only flagged.</li>`));
+  riverTubes().forEach((t) => cnl.push(`<li><b>Sunk box</b> under the ${esc(t.name)} (${fmtCh(t.c0)} to ${fmtCh(t.c1)}): ${(() => { const sb = sunkBox(); return isRer() ? `the ${fmtZ(sb.top, 1)} ${uLbl()} box, ${fmtZ(sb.below, 1)} below the rail` : `the canon box section (${fmtZ(sb.spacing, 2)} ${uLbl()} track centres, ${fmtZ(sb.inside, 2)} inside, ${fmtZ(sb.below, 1)} below the rail, ${fmtZ(sb.top - (settings.riverRoof ?? 1), 1)} to the roof underside) with a ${fmtZ(settings.riverRoof ?? 1, 1)} ${uLbl()} roof: ${fmtZ(sb.top, 1)} ${uLbl()} rail to roof top`; })()}; rail from ${fmtZ(t.lb, 1)} to ${fmtZ(t.ub, 1)} ${uLbl()} on the flat bottom (lowest bed ${fmtZ(t.low, 1)}; roof ${fmtZ(settings.riverSink, 1)} below to ${fmtZ(settings.riverRise, 1)} above the bed${t.nav != null ? `, ${fmtZ(settings.riverClearWater, 2)} of water kept over it at normal pool` : ''}); a cut-and-cover transition at each bank. The solver holds it; saved profiles are only flagged.</li>`));
   if (isRer()) {
     Object.entries(S.canonModes).forEach(([i, f]) => cnl.push(`<li><b>${esc(nm(+i))}</b> ${f.mode === 'surface' ? 'at grade' : 'underground'}: ${esc(f.src)}</li>`));
     (S.canonDeck || []).forEach((dk) => cnl.push(`<li><b>Deck</b> ${esc(dk.a)} to ${esc(dk.b)}: ${esc(dk.src)}. Ground shown at yard level.</li>`));

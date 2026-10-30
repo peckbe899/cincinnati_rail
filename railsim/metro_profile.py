@@ -49,7 +49,7 @@ TUNNEL_STRUCTURES = {"tunnel", "cut-and-cover", "shield", "deep-tube", "sunk-box
 DEFAULTS = dict(maxGrade=50.0, platform=121.92, defDepth=7.62, elevAbove=3.0, coverBelow=3.0,
                 deepBelow=18.29, shallowMax=12.19, poolFt=455.0, deckDepth=1.5,
                 vcRadius=1500.0, vcMinLen=30.5, minCover=2.0, fillTaper=50.0,
-                riverBoxTop=5.0, riverSink=5.0, riverRise=3.0, riverFlatTol=1.0, riverClearWater=3.66, riverCap=1.0)
+                riverRoof=1.0, riverSink=5.0, riverRise=3.0, riverFlatTol=1.0, riverClearWater=3.66, riverCap=1.0)
 # Metro structures (Ben's rules), from the top of rail: below = rail to underside, top = rail to
 # top, od = outside diameter. Cut-and-cover box (and station box) 1.0 below / 4.6 to top; twin
 # tube (4.4 m inside, 4.76 m outside, rail 0.5 m above invert) 0.68 / 4.08 for deep tube on every
@@ -103,7 +103,7 @@ ERA = {**{f"Line_{k}": {"shield": "tube"} for k in ("1", "2", "2b", "3", "4", "5
 RER_DEFAULTS = dict(maxGrade=35.0, platform=204.2, defDepth=12.0, elevAbove=3.0, coverBelow=3.0,
                     deepBelow=25.0, shallowMax=18.0, envelope=6.6, boreCrown=7.5, invertDepth=1.0, poolFt=455.0,
                     surfStep=250.0, tubeCover=3.0, vcRadius=3000.0, vcMinLen=30.5, minCover=8.5, deckDepth=2.0,
-                    fillTaper=50.0, riverBoxTop=6.6, riverSink=5.0, riverRise=3.0, riverFlatTol=1.0, riverClearWater=3.66,
+                    fillTaper=50.0, riverSink=5.0, riverRise=3.0, riverFlatTol=1.0, riverClearWater=3.66,
                     riverCap=1.0)
 RER_CANON_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "rer" / "canon.json"
 CONTEXT_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "context" / "lines.json"
@@ -417,9 +417,15 @@ class MetroProfile:
         return out
 
     def sunk_box(self) -> dict:
+        """The sunk unit (as the editor): the canon box section (the structure record's box: rail 1.0 m above its underside,
+        4.0 m to the roof underside, 7.90 m inside, 3.90 m track centres) with a 1.0 m roof (riverRoof): 5.0 m rail to roof
+        top. RER: the 6.6 m box (the envelope), invertDepth below."""
         st = self.settings
-        below = float(st["invertDepth"]) if self.is_rer else float((getattr(self, "ms", None) or {}).get("box", {}).get("below", METRO_ST["box"]["below"]))
-        return {"k": "sunk", "below": below, "top": float(st["riverBoxTop"])}
+        if self.is_rer:
+            return {"k": "sunk", "below": float(st["invertDepth"]), "top": float(st["envelope"])}
+        bx = (getattr(self, "ms", None) or {}).get("box") or {"below": METRO_ST["box"]["below"], "roof_underside": 4.0, "inside": 7.9, "spacing": 3.9}
+        return {"k": "sunk", "below": float(bx["below"]), "top": float(bx["roof_underside"]) + float(st.get("riverRoof", 1.0)),
+                "inside": float(bx["inside"]), "spacing": float(bx["spacing"])}
 
     def along_shore(self, r: dict) -> bool:
         """A river range along an RER embanked covered way (the canon's, beside the Ohio) is the shore, not a crossing."""
@@ -439,7 +445,7 @@ class MetroProfile:
         beds = beds[np.isfinite(beds) & (beds < self.pool())]
         if not len(beds):
             return None
-        top, low = float(st["riverBoxTop"]), float(beds.min())
+        top, low = self.sunk_box()["top"], float(beds.min())
         ub = float((beds - top + st["riverRise"]).min())
         lb = float((beds[beds <= low + st["riverFlatTol"]] - top - st["riverSink"]).max())
         nav = self.pool() - st["riverClearWater"] - st["riverCap"] - top if self._rivers_info().get(r["name"], {}).get("navigable") else None
@@ -462,7 +468,7 @@ class MetroProfile:
         z = float(self.rail_at(c)) if z is None else z
         if self.type_at(c, z) != "sunk":
             return math.nan
-        b, t = self.bed_at(c), z + float(self.settings["riverBoxTop"]) + float(self.settings["riverCap"])
+        b, t = self.bed_at(c), z + self.sunk_box()["top"] + float(self.settings["riverCap"])
         return t if math.isfinite(b) and t > b else math.nan
 
     def default_mode(self, i: int) -> str:
@@ -1285,7 +1291,7 @@ class MetroProfile:
             if not B:
                 continue
             on, mine = {}, []
-            top, ceil = float(st["riverBoxTop"]), self.pool() - float(st["riverClearWater"])
+            top, ceil = self.sunk_box()["top"], self.pool() - float(st["riverClearWater"])
 
             def hit(k, c, v):
                 o = on.get(k)
