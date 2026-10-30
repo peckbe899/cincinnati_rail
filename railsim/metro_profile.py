@@ -934,6 +934,12 @@ class MetroProfile:
             c = min(i * step, self.length)
             z = float(self.rail_at(c))
             P.append(dict(self._point_type(c, z), c=c, z=z))
+        # every platform sample is the station's (a station in a canon section had no mark at its centre; as the editor)
+        hp = self.settings["platform"] / 2
+        for s_ in self.stations:
+            for i in range(max(0, math.ceil((s_["c"] - hp) / step)), min(n - 1, math.floor((s_["c"] + hp) / step)) + 1):
+                if "cls" not in P[i]:
+                    P[i]["stn"] = True
         flags = []
 
         def runs(a, b, f):
@@ -1025,14 +1031,15 @@ class MetroProfile:
             rmin = float((ms["phases"].get(self._phase_at(c)) or ms["phases"]["later"]).get("min_radius") or ms.get("min_radius") or 40)
             e = next((x["extra"] for x in extra_l if x["side"] == info["side"] and (x.get("station") == info["station"] if info["station"] else not x.get("station") and abs(x["c"] - info["c"]) < 20)), 0.0)
             return max(float(ms.get("approach_m") or 40), math.sqrt(4 * rmin * abs(sh))) + e
-        is_bored = lambda p: p is not None and p.get("t") in ("shield", "deep") and "cls" in p
+        # a bored tunnel point: a drive's, or a canon tunnel's (no depth class there; as the editor)
+        is_bored = lambda p: p is not None and p.get("t") in ("shield", "deep") and not p.get("stn")
         idx = lambda c: max(0, min(n - 1, int(round(c / step))))
         approaches = []
 
         def fix(i0, d, lm, info):
             k, i = 0, i0
-            while 0 <= i < n and "cls" in P[i] and (k == 0 or abs(P[i - d]["c"] - info["c"]) < lm - 1e-6):
-                P[i].pop("cls")
+            while 0 <= i < n and ("cls" in P[i] or is_bored(P[i]) or (P[i].get("t") == "cutcover" and not P[i].get("stn"))) and (k == 0 or abs(P[i - d]["c"] - info["c"]) < lm - 1e-6):
+                P[i].pop("cls", None)
                 P[i].update(t="cutcover", stn=True, appr=True)
                 i += d
                 k += 1
@@ -1040,45 +1047,78 @@ class MetroProfile:
                 approaches.append(dict(info, len=round(abs(P[i - d]["c"] - info["c"]), 2)))
         plats = getattr(self, "platforms_kind", None) or {}
         half = self.settings["platform"] / 2
-        for s in self.stations:
+        placed = set()
+
+        def place():   # in passes (as the editor): a later resolve can make a drive beside a box, which needs its approach
+          n0 = len(approaches)
+          for s in self.stations:
             ic = idx(s["c"])
-            if P[ic].get("t") != "cutcover" or not P[ic].get("stn"):
+            if not P[ic].get("stn"):
+                continue
+            tube_stn = P[ic].get("t") in ("shield", "deep")
+            if P[ic].get("t") != "cutcover" and not tube_stn:
                 continue
             kind = plats.get(s["name"]) or "side"
             sp_s = ms["island_box"]["spacing"] if kind == "island" else ms["box"]["spacing"]
             for d in (-1, 1):
+                if (s["name"], d) in placed:
+                    continue
                 i0 = idx(s["c"] + d * half)
                 while 0 <= i0 < n and P[i0].get("stn"):   # the first sample past the platform
                     i0 += d
-                if not (0 <= i0 < n) or not is_bored(P[i0]):
+                if not (0 <= i0 < n):
+                    continue
+                if tube_stn:   # a tube station meeting a box: the spacing changes inside the box, from the platform end
+                    if P[i0].get("t") != "cutcover":
+                        continue
+                    sh = (tube_sp(s["c"]) - ms["box"]["spacing"]) / 2
+                    if abs(sh) < 0.01:
+                        continue
+                    info, k0 = {"station": None, "kind": "box", "side": d, "shift": sh, "c": s["c"] + d * half}, len(approaches)
+                    fix(i0, d, appr_len(sh, P[i0]["c"], info), info)
+                    placed.add((s["name"], d))
+                    if len(approaches) > k0:   # measured from the box end, as a box meeting tubes
+                        a = approaches[k0]
+                        a["c"], a["side"] = a["c"] + d * a["len"], -d
+                    continue
+                if not is_bored(P[i0]):
                     continue
                 sh = (tube_sp(P[i0]["c"]) - sp_s) / 2
                 if abs(sh) >= 0.01:
                     info = {"station": s["name"], "kind": kind, "side": d, "shift": sh, "c": s["c"] + d * half}
                     fix(i0, d, appr_len(sh, P[i0]["c"], info), info)
-        # river banks (Ben, 30 October): the sunk box anchors like a station and joins the land tunnel through a short
-        # cut-and-cover transition at each bank (the tubes' spacing to the box's; at least approach_m)
-        for r in self.data.get("rivers", []) or []:
-            if self._bridge(r):
-                continue
-            for edge, d in ((r["c0"], -1), (r["c1"], 1)):
-                i0 = idx(edge)
-                while 0 <= i0 < n and self.river_at(P[i0]["c"]):   # the first sample on the bank
-                    i0 += d
-                if not (0 <= i0 < n and 0 <= i0 - d < n) or P[i0 - d].get("t") != "sunk" or not is_bored(P[i0]):
-                    continue
-                sh = (tube_sp(P[i0]["c"]) - ms["box"]["spacing"]) / 2
-                info = {"station": None, "kind": "river", "river": r["name"], "side": d, "shift": sh, "c": P[i0 - d]["c"]}
-                fix(i0, d, appr_len(sh, P[i0]["c"], info), info)
-        for x, y in runs(0, n - 1, is_bored):
-            for i, d in ((x, 1), (y, -1)):
-                nb = P[i - d] if 0 <= i - d < n else None
-                if not nb or nb.get("t") != "cutcover" or nb.get("stn"):
-                    continue
-                sh = (tube_sp(P[i]["c"]) - ms["box"]["spacing"]) / 2
-                if abs(sh) >= 0.01:
-                    info = {"station": None, "kind": "box", "side": d, "shift": sh, "c": P[i]["c"]}
-                    fix(i, d, appr_len(sh, P[i]["c"], info), info)
+                    placed.add((s["name"], d))
+          # river banks (Ben, 30 October): the sunk box anchors like a station and joins the land tunnel through a short
+          # cut-and-cover transition at each bank (the tubes' spacing to the box's; at least approach_m)
+          for r in self.data.get("rivers", []) or []:
+              if self._bridge(r):
+                  continue
+              for edge, d in ((r["c0"], -1), (r["c1"], 1)):
+                  i0 = idx(edge)
+                  while 0 <= i0 < n and self.river_at(P[i0]["c"]):   # the first sample on the bank
+                      i0 += d
+                  if ("r", r["name"], d) in placed or not (0 <= i0 < n and 0 <= i0 - d < n) or P[i0 - d].get("t") != "sunk" or not is_bored(P[i0]):
+                      continue
+                  sh = (tube_sp(P[i0]["c"]) - ms["box"]["spacing"]) / 2
+                  info = {"station": None, "kind": "river", "river": r["name"], "side": d, "shift": sh, "c": P[i0 - d]["c"]}
+                  fix(i0, d, appr_len(sh, P[i0]["c"], info), info)
+                  placed.add(("r", r["name"], d))
+          for x, y in runs(0, n - 1, is_bored):
+              for i, d in ((x, 1), (y, -1)):
+                  nb = P[i - d] if 0 <= i - d < n else None
+                  if not nb or nb.get("t") != "cutcover" or nb.get("stn"):
+                      continue
+                  sh = (tube_sp(P[i]["c"]) - ms["box"]["spacing"]) / 2
+                  if abs(sh) >= 0.01:
+                      info = {"station": None, "kind": "box", "side": d, "shift": sh, "c": P[i]["c"]}
+                      fix(i, d, appr_len(sh, P[i]["c"], info), info)
+          return len(approaches) > n0
+        place()
+        resolve(False)
+        for _ in range(3):   # any drive a pass made beside a box gets its approach
+            if not place():
+                break
+            resolve(False)
         resolve(True)
         # twin tubes or one bore (proposed, flagged only): twin tubes under a street narrower than their footprint; Phase 2
         # cut and cover deep enough for type A twin tubes but not the bore

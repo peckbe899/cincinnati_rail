@@ -1053,6 +1053,8 @@ function stretchTypes() {
   if (V._types && V._types.g === S.ground && V._types.ms === MS && V._types.chr === CHR && V._types.plat === ST_PLAT && V._types.ax === APX_EXTRA && V._types.L === S.L) return V._types;
   const step = S.step || 2, n = Math.floor(S.L / step) + 1, P = [], flags = [], approaches = [];
   for (let i = 0; i < n; i++) { const c = Math.min(i * step, S.L), z = railAt(c); P.push(Object.assign({ c, z }, pointType(c, z))); }
+  // every platform sample is the station's (a station in a canon section had no mark at its centre, so it got no approach)
+  for (const s of S.stations) for (let i = Math.max(0, Math.ceil((s.c - settings.platform / 2) / step)); i <= Math.min(n - 1, Math.floor((s.c + settings.platform / 2) / step)); i++) if (!P[i].cls) P[i].stn = true;
   const runs = (a, b, f) => { const out = []; let s = -1; for (let i = a; i <= b + 1; i++) { const on = i <= b && f(P[i]); if (on && s < 0) s = i; if (!on && s >= 0) { out.push([s, i - 1]); s = -1; } } return out; };
   const len = (a, b) => P[b].c - P[a].c + step;
   const resolve = (fl) => {   // the era rules over each stretch between anchors (station boxes and approaches, portals, canon, rivers), in one phase
@@ -1100,18 +1102,34 @@ function stretchTypes() {
   resolve(false);
   // the approaches: box on to where the tracks reach the tubes' spacing
   const tubeSp = (c) => { const tb = MS.tubes[(MS.phases[phaseAt(c)] || MS.phases.later).tube]; return tb ? tb.spacing : MS.box.spacing; };
-  const bored = (p) => p && (p.t === 'shield' || p.t === 'deep') && p.cls;
+  // a bored tunnel point: a drive's, or a canon tunnel's (canon sections carry no depth class: Line 2's deep tube up Mt Auburn
+  // into McMicken had no approach box, Ben 30 October)
+  const bored = (p) => p && (p.t === 'shield' || p.t === 'deep') && !p.stn;
   const stIdx = (c) => Math.max(0, Math.min(n - 1, Math.round(c / step)));
-  const fix = (i0, dir, Lm, info) => { let k = 0, i = i0; for (; i >= 0 && i < n && (k === 0 || Math.abs(P[i - dir].c - info.c) < Lm - 1e-6); i += dir, k++) { if (!P[i].cls) break; delete P[i].cls; P[i].t = 'cutcover'; P[i].stn = true; P[i].appr = true; } if (k) approaches.push(Object.assign({}, info, { len: Math.round(Math.abs(P[i - dir].c - info.c) * 100) / 100 })); };   // from the platform end (or box end) to the last sample boxed
-  const half = settings.platform / 2;
+  const fix = (i0, dir, Lm, info) => { let k = 0, i = i0; for (; i >= 0 && i < n && (k === 0 || Math.abs(P[i - dir].c - info.c) < Lm - 1e-6); i += dir, k++) { if (!P[i].cls && !bored(P[i]) && !(P[i].t === 'cutcover' && !P[i].stn)) break; delete P[i].cls; P[i].t = 'cutcover'; P[i].stn = true; P[i].appr = true; } if (k) approaches.push(Object.assign({}, info, { len: Math.round(Math.abs(P[i - dir].c - info.c) * 100) / 100 })); };   // from the platform end (or box end) to the last sample boxed
+  const half = settings.platform / 2, placed = new Set();
+  // placed in passes: the second resolve can turn a cut-and-cover gap beside a station into a drive, which then needs its
+  // approach too (Lines 3, 5, 7, 11, 12, 14 had tubes running straight into a platform or box)
+  const place = () => {
+  const n0 = approaches.length;
   for (const s of S.stations) {
-    const ic = stIdx(s.c); if (!P[ic] || P[ic].t !== 'cutcover' || !P[ic].stn) continue;
+    const ic = stIdx(s.c); if (!P[ic] || !P[ic].stn) continue;
+    const tubeStn = P[ic].t === 'shield' || P[ic].t === 'deep'; if (P[ic].t !== 'cutcover' && !tubeStn) continue;
     const kind = platKind(s.name, 'cutcover'), spS = kind === 'island' ? MS.island_box.spacing : MS.box.spacing;
     for (const dir of [-1, 1]) {
+      if (placed.has(`${s.name}|${dir}`)) continue;
       let i0 = stIdx(s.c + dir * half); while (P[i0] && P[i0].stn) i0 += dir;   // the first sample past the platform
+      if (tubeStn) {   // a tube station meeting a box: the tracks change spacing inside the box, from the platform end
+        if (!P[i0] || P[i0].t !== 'cutcover') continue;
+        const shift = (tubeSp(s.c) - MS.box.spacing) / 2; if (Math.abs(shift) < 0.01) continue;
+        const info = { station: null, kind: 'box', side: dir, shift, c: s.c + dir * half }, k0 = approaches.length;
+        fix(i0, dir, approachLen(shift, P[i0].c, info), info); placed.add(`${s.name}|${dir}`);
+        if (approaches.length > k0) { const a = approaches[k0]; a.c = a.c + dir * a.len; a.side = -dir; }   // measured from the box end, as a box meeting tubes
+        continue;
+      }
       if (!bored(P[i0])) continue;
       const shift = (tubeSp(P[i0].c) - spS) / 2; if (Math.abs(shift) < 0.01) continue;
-      { const info = { station: s.name, kind, side: dir, shift, c: s.c + dir * half }; fix(i0, dir, approachLen(shift, P[i0].c, info), info); }
+      { const info = { station: s.name, kind, side: dir, shift, c: s.c + dir * half }; fix(i0, dir, approachLen(shift, P[i0].c, info), info); placed.add(`${s.name}|${dir}`); }
     }
   }
   // river banks (Ben, 30 October): the sunk box anchors like a station and joins the land tunnel through a short
@@ -1120,9 +1138,9 @@ function stretchTypes() {
     if (bridgeOf(r)) continue;
     for (const [edge, dir] of [[r.c0, -1], [r.c1, 1]]) {
       let i0 = stIdx(edge); while (P[i0] && riverAt(P[i0].c)) i0 += dir;   // the first sample on the bank
-      if (!P[i0 - dir] || P[i0 - dir].t !== 'sunk' || !bored(P[i0])) continue;
+      if (placed.has(`r|${r.name}|${dir}`) || !P[i0 - dir] || P[i0 - dir].t !== 'sunk' || !bored(P[i0])) continue;
       const shift = (tubeSp(P[i0].c) - MS.box.spacing) / 2, info = { station: null, kind: 'river', river: r.name, side: dir, shift, c: P[i0 - dir].c };
-      fix(i0, dir, approachLen(shift, P[i0].c, info), info);
+      fix(i0, dir, approachLen(shift, P[i0].c, info), info); placed.add(`r|${r.name}|${dir}`);
     }
   }
   for (const [x, y] of runs(0, n - 1, (p) => bored(p))) {   // a box meeting tubes away from a station: the change inside the box
@@ -1132,7 +1150,12 @@ function stretchTypes() {
       { const info = { station: null, kind: 'box', side: dir, shift, c: P[i].c }; fix(i, dir, approachLen(shift, P[i].c, info), info); }
     }
   }
-  resolve(true);   // again with the approaches as anchors (the flags from this pass)
+  return approaches.length > n0;
+  };
+  place();
+  resolve(false);   // again with the approaches as anchors
+  for (let k = 0; k < 3 && place(); k++) resolve(false);   // any drive a pass made beside a box gets its approach
+  resolve(true);   // the flags from the final pass
   // approach boxes under the street (Ben, 28 October: accepted where they leave it, round corners or are wider: the street
   // grid made them necessary; each a warning saying where and by how much). Box outside = track centres + 4.0 m.
   const sts = (S.ctx && S.ctx.streets) || [], wall = MS.box.inside - MS.box.spacing;

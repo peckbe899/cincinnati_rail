@@ -703,3 +703,26 @@ def test_rer_routes_follow_deck():
         if max(d, dseg, abs(dl)) > rdr.TOL or sd:
             bad.append((rid, round(d, 2), round(dl, 2), round(dseg, 2), sd))
     assert n >= 39 and not bad, bad
+
+
+def test_approach_boxes_at_canon_and_tube_stations():
+    """Every place a tube meets a box changes the track spacing inside a box (Ben, 30 October: the deep tube up Mt Auburn
+    ran straight into McMicken): canon tunnels count as bored, stations in canon sections get their approaches, a tube
+    station meeting a box gets one, and a drive made by a later pass gets one too."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent / "data/profile"
+    load = lambda l: MetroProfile.load(root / f"lines/{l}.json", Path(__file__).resolve().parent.parent / f"hub/seed/alignments/{l}.json", root / "settings.json")
+    for lid in ("Line_2", "Line_3", "Line_5", "Line_7"):
+        mp = load(lid)
+        T = mp.stretch_types()
+        ap = T["approaches"]
+        inside = lambda c: any(min(a["c"], a["c"] + a["side"] * a["len"]) - 3 <= c <= max(a["c"], a["c"] + a["side"] * a["len"]) + 3 for a in ap)
+        t, step = T["t"], T["step"]
+        for i in range(1, len(t)):
+            a, b = t[i - 1], t[i]
+            if {a, b} & {"shield", "deep"} and "cutcover" in (a, b):
+                c = i * step if a in ("shield", "deep") else (i - 1) * step
+                if mp.struct_for("shield", c).get("k") == "bore":
+                    continue   # the bore runs at the box's 3.90 m
+                assert inside(c), f"{lid}: tube meets box at {c:.0f} m with no approach"
