@@ -724,6 +724,44 @@ def test_approach_boxes_at_canon_and_tube_stations():
             a, b = t[i - 1], t[i]
             if {a, b} & {"shield", "deep"} and "cutcover" in (a, b):
                 c = i * step if a in ("shield", "deep") else (i - 1) * step
-                if mp.struct_for("shield", c).get("k") == "bore":
+                tc = (i - 1) * step if a in ("shield", "deep") else i * step   # the tube side
+                if mp.struct_for("shield", tc).get("k") == "bore":
                     continue   # the bore runs at the box's 3.90 m
                 assert inside(c), f"{lid}: tube meets box at {c:.0f} m with no approach"
+
+
+def test_tube_form_by_drive_ends_and_paint():
+    """Tube form (Ben, 31 October: never double track to twin tubes for no reason): a drive between two double-track ends
+    with the bore's cover is the double-track bore, with no approach box; a twin end (a Phase 1 deep station) keeps twin
+    tubes; a painted form decides, and a spacing change inside the tunnel is flagged."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent
+    load = lambda l: MetroProfile.load(root / f"data/profile/lines/{l}.json", root / f"hub/seed/alignments/{l}.json", root / "data/profile/settings.json")
+    mp = load("Line_2")   # Phase 1: Holmes to Meinken has double-track ends at its boxes and 15.5 m of cover
+    T = mp.stretch_types()
+    i = int(18200 / T["step"])
+    assert T["t"][i] == "deep" and T["tube"][i] == "bore" and mp.struct_for("deep", 18200)["k"] == "bore"
+    assert not [a for a in T["approaches"] if 17900 < a["c"] < 18600]
+    mp = load("Line_3")   # Henry Clay (side) to Ft Wright (a Phase 1 deep station): twin tubes
+    T = mp.stretch_types()
+    assert T["tube"][int(21800 / T["step"])] == "A"
+    mp.tf = [(21150.0, 22420.0, "bore")]   # painted bore: no approach at Henry Clay; spacing change at Ft Wright flagged
+    mp._types = None
+    T = mp.stretch_types()
+    assert T["tube"][int(21800 / T["step"])] == "bore"
+    assert not [a for a in T["approaches"] if a.get("station") == "Henry Clay"]
+    assert any(f["kind"] == "spacing change in the tunnel" and 22300 < f["c0"] < 22500 for f in T["flags"])
+
+
+def test_low_cover_drive_needs_regrade():
+    """Too shallow partway and too deep elsewhere (Ben, 31 October): cut and cover in the shallow pockets only where the bored
+    pieces left are whole drives; Henry Clay to Ft Wright on Line 3 would leave short pieces, so the profile must be lowered."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent
+    mp = MetroProfile.load(root / "data/profile/lines/Line_3.json", root / "hub/seed/alignments/Line_3.json", root / "data/profile/settings.json")
+    T = mp.stretch_types()
+    rg = [f for f in T["flags"] if f["kind"] == "regrade"]
+    assert any(21100 < f["c0"] < 21300 and 22300 < f["c1"] < 22500 for f in rg), rg
+    assert T["t"][int(21800 / T["step"])] in ("shield", "deep")   # stays bored until it is regraded

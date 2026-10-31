@@ -89,7 +89,7 @@ def main():
         line = LineString(np.c_[E, N])
         dv = np.concatenate([[0], np.cumsum(np.hypot(np.diff(E), np.diff(N)))])
         runs, cur = [], None
-        for c, z, t in H[lid]['samples']:
+        for c, z, t, *_ in H[lid]['samples']:
             if t == 'elevated':
                 if cur and c - cur[1] <= 60:
                     cur[1] = c

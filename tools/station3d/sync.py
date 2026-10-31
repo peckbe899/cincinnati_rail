@@ -123,8 +123,17 @@ def metro_phase(line_id, c=None):
     return ph
 
 
+TUBE_AT = {}      # line id -> (chainages, tube keys) from the editor's samples: the tube form each drive was given
+
+
 def metro_tube(line_id, c=None):
-    """the bored tunnel of a Metro line at chainage c: the tube of the phase the stretch was built in"""
+    """the bored tunnel of a Metro line at chainage c: the editor's tube form for the drive there (twin tubes or the
+    double-track bore by its ends, or painted; Ben, 2026-10-31), else the tube of the phase the stretch was built in"""
+    ta = TUBE_AT.get(line_id)
+    if ta is not None and c is not None and len(ta[0]):
+        k = int(np.argmin(np.abs(ta[0] - c)))
+        if abs(ta[0][k] - c) <= 3 and ta[1][k]:
+            return ta[1][k]
     return (MS['phases'].get(metro_phase(line_id, c)) or MS['phases']['later'])['tube']
 
 
@@ -381,6 +390,10 @@ def main():
         json.dump(job, open(jf, 'w'))
         subprocess.run(['node', os.path.join(HERE, 'harness.js'), a.cache, jf, rf], check=True)
     H = json.load(open(rf))
+    for lid_, h_ in (H.get('profiles') or {}).items():   # the editor's tube form along each Metro line
+        smp_ = h_.get('samples') or []
+        if smp_ and len(smp_[0]) > 3:
+            TUBE_AT[lid_] = (np.array([q[0] for q in smp_], float), [q[3] if q[2] in ('shield', 'deep') else None for q in smp_])
     issues = []
     # every RER route is its Deck pieces (tools/rer_deck_routes.py): checked against the live Deck (Ben's edits)
     sys.path.insert(0, os.path.join(HERE, '..'))
@@ -420,7 +433,7 @@ def main():
         g = np.array([np.nan if v is None else v / 10 for v in d['ground_dm']])
         gc = np.arange(len(g)) * d['step_m']
         S = []
-        for c, z, t in h['samples']:
+        for c, z, t, *_ in h['samples']:
             x, y = float(np.interp(c, p[:, 0], xy[:, 0])), float(np.interp(c, p[:, 0], xy[:, 1]))
             S.append((c, x, y, z, t, float(np.interp(c, gc, g))))
         for k in range(0, len(gc), 5):   # ground every 5 steps for the grid

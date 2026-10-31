@@ -35,6 +35,8 @@ The same editor for the Metro and the RER, published as a claude.ai artifact (sa
 - Profiles now also save `sg`: each station's platform grade in per mille (rising with chainage) about its centre rail level.
 - `gapfill`: keys of Metro stations named as platform-curvature exceptions with gap fillers (radius under 600 m allowed).
 - `so`: platform offset in metres (platform centre = drawn point + so, within half a platform, so the point stays on the platform); `del`: keys of removed stations (left out of the solve, the checks and the run times; the service's terminals stay). Each `stations` entry carries `point_c`, the drawn point.
+- `tf`: painted tube form of Metro bored stretches, `[c0, c1, 'twin' | 'bore']` (Ben, 31 October); unpainted, a drive with double-track ends both sides is the double-track bore where it has its cover, else twin tubes.
+- `ready`: the line's weaving is set; other lines then list their crossings with it as clearance issues (crossings with lines not set are kept apart).
 - Saved RER profiles go to `rer/alignments/RER_*.json` (exported from the page's database); the RER through-service configs pick them up automatically.
 
 ## CUT and Norwood Central context (2026-10-26)

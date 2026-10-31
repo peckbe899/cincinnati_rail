@@ -627,6 +627,7 @@ class MetroProfile:
         self.so = [0.0] * len(self.stations)
         self.gapfill = [k for k in ((doc or {}).get("gapfill") or []) if isinstance(k, str)]
         self.ovr = []
+        self.tf = []   # painted tube form: (c0, c1, 'twin' | 'bore') (Ben, 2026-10-31)
         if not doc:
             self._apply_locks()
             return
@@ -651,6 +652,9 @@ class MetroProfile:
                 t = "shield" if o[2] == "bored" else o[2]
                 if t in TYPES:
                     self.ovr.append((float(o[0]), float(o[1]), t))
+        for o in doc.get("tf") or []:
+            if len(o) >= 3 and o[2] in ("twin", "bore"):
+                self.tf.append((float(o[0]), float(o[1]), o[2]))
         self._apply_locks()
         if any(self.so):
             self.data["stations"] = [dict(s, c=s["c0"] + o) for s, o in zip(self.stations, self.so)]
@@ -814,6 +818,23 @@ class MetroProfile:
                     z = zc
         return z
 
+    def tube_form_at(self, c: float) -> Optional[str]:
+        for a, b, t in reversed(getattr(self, "tf", None) or []):
+            if a <= c <= b:
+                return t
+        return None
+
+    def _tube_key(self, c: float) -> str:
+        """The tube at c before the drives are solved: the painted form, else the phase's tube (as the editor's metroTube)."""
+        ph = self._phase_at(c)
+        t = (self.ms["phases"].get(ph) or self.ms["phases"]["later"])["tube"]
+        f = self.tube_form_at(c)
+        if f == "bore":
+            return "bore"
+        if f == "twin" and t == "bore":
+            return "A" if ph in ("1", "2") else "C"
+        return t
+
     def override_at(self, c: float) -> Optional[str]:
         for a, b, t in reversed(self.ovr):
             if a <= c <= b:
@@ -927,6 +948,13 @@ class MetroProfile:
         cached = getattr(self, "_types", None)
         if cached and cached["key"] == key:
             return cached
+        self._solving = True   # the tube form of the last solve is not read while this one runs
+        try:
+            return self._stretch_types(key)
+        finally:
+            self._solving = False
+
+    def _stretch_types(self, key) -> dict:
         step = float(self.data.get("step_m", 2.0))
         n = int(self.length // step) + 1
         P = []
@@ -986,54 +1014,110 @@ class MetroProfile:
                     bored = (x == a and y == b) or length(x, y) >= ends
                     if bored and shallow_in and not too_deep:   # cut and cover can dig all of it: the whole drive is
                         bored = False
+                    drives = [(x, y)]
+                    if bored and shallow_in:
+                        # too shallow partway, too deep elsewhere (Ben, 31 October; as the editor): the shallow pockets are cut
+                        # and cover where every bored piece left is a whole drive (min_drive); else the profile must be lowered
+                        pieces = runs(x, y, lambda p: p["cls"] != "C")
+                        if all(length(u, v) >= R["min_drive"] for u, v in pieces):
+                            drives = pieces
+                            for u, v in runs(x, y, lambda p: p["cls"] == "C"):
+                                fl and flags.append({"c0": P[u]["c"], "c1": P[v]["c"], "kind": "low cover, cut and cover", "len": length(u, v), "info": True})
+                        else:
+                            fl and flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "regrade", "len": length(x, y), "error": True})
                     if bored:
-                        for i in range(x, y + 1):
-                            P[i]["t"] = "bored"
-                        for u, v in runs(x, y, lambda p: p["cls"] == "C"):
-                            fl and flags.append({"c0": P[u]["c"], "c1": P[v]["c"], "kind": "shallow in a drive", "len": length(u, v)})
+                        for u, v in drives:
+                            for i in range(u, v + 1):
+                                P[i]["t"] = "bored"
                     elif too_deep:
                         fl and flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "short bored", "len": length(x, y)})
                     if not bored:
                         continue
+                    for x, y in drives:
 
-                    def outward(i, d):
-                        while 0 <= i < n and P[i]["t"] == "cutcover" and not P[i].get("stn"):
-                            i += d
-                        return P[i] if 0 <= i < n else None
-                    portal = any(q is not None and not q.get("stn") and q["t"] in ("atgrade", "trough", "elevated")
-                                 for q in (outward(x - 1, -1), outward(y + 1, 1)))
-                    deep_stn = (x > 0 and P[x - 1].get("stn") and P[x - 1]["t"] == "deep") or \
-                               (y < n - 1 and P[y + 1].get("stn") and P[y + 1]["t"] == "deep")
-                    deep_len = sum(1 for p in P[x:y + 1] if p["deep"]) * step
-                    if portal and not deep_stn:   # up to a portal: by depth
+                        def outward(i, d):
+                            while 0 <= i < n and P[i]["t"] == "cutcover" and not P[i].get("stn"):
+                                i += d
+                            return P[i] if 0 <= i < n else None
+                        portal = any(q is not None and not q.get("stn") and q["t"] in ("atgrade", "trough", "elevated")
+                                     for q in (outward(x - 1, -1), outward(y + 1, 1)))
+                        deep_stn = (x > 0 and P[x - 1].get("stn") and P[x - 1]["t"] == "deep") or \
+                                   (y < n - 1 and P[y + 1].get("stn") and P[y + 1]["t"] == "deep")
+                        deep_len = sum(1 for p in P[x:y + 1] if p["deep"]) * step
+                        if portal and not deep_stn:   # up to a portal: by depth
+                            for i in range(x, y + 1):
+                                P[i]["t"] = "shield"
+                            for u, v in runs(x, y, lambda p: p["deep"]):
+                                if length(u, v) >= R["min_drive"]:
+                                    for i in range(u, v + 1):
+                                        P[i]["t"] = "deep"
+                            continue
+                        t = "deep" if deep_stn or deep_len * 2 >= length(x, y) else "shield"   # one depth type per drive
                         for i in range(x, y + 1):
-                            P[i]["t"] = "shield"
-                        for u, v in runs(x, y, lambda p: p["deep"]):
-                            if length(u, v) >= R["min_drive"]:
-                                for i in range(u, v + 1):
-                                    P[i]["t"] = "deep"
-                        continue
-                    t = "deep" if deep_stn or deep_len * 2 >= length(x, y) else "shield"   # one depth type per drive
-                    for i in range(x, y + 1):
-                        P[i]["t"] = t
-                    other = length(x, y) - deep_len if t == "deep" else deep_len
-                    if other >= MIN_RUN:
-                        fl and flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "drive changes depth class", "len": length(x, y)})
+                            P[i]["t"] = t
+                        other = length(x, y) - deep_len if t == "deep" else deep_len
+                        if other >= MIN_RUN:
+                            fl and flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "drive changes depth class", "len": length(x, y)})
 
         resolve(False)
+        ms = self.ms
+        # a bored tunnel point: a drive's, or a canon tunnel's (no depth class there; as the editor)
+        is_bored = lambda p: p is not None and p.get("t") in ("shield", "deep") and not p.get("stn")
+        idx = lambda c: max(0, min(n - 1, int(round(c / step))))
+        plats = getattr(self, "platforms_kind", None) or {}
+        half = self.settings["platform"] / 2
+        # tube form (Ben, 31 October; as the editor): a drive with double-track ends both sides is the double-track bore
+        # where it has the bore's cover (shallow only at its ends: the boxes carry on); else twin tubes; painted decides
+        twin_at = lambda c: (lambda ph, t: ("A" if ph in ("1", "2") else "C") if t == "bore" else t)(self._phase_at(c), (ms["phases"].get(self._phase_at(c)) or ms["phases"]["later"])["tube"])
+        phase_tube = lambda c: (ms["phases"].get(self._phase_at(c)) or ms["phases"]["later"])["tube"]
+
+        def end_kind(i, d):
+            while 0 <= i < n and P[i].get("appr"):
+                i += d
+            if not (0 <= i < n) or not P[i].get("stn"):
+                return "double"
+            s = next((x for x in self.stations if abs(P[i]["c"] - x["c"]) <= half + 1e-6), None)
+            if s is None:
+                return "double"
+            sty = self.override_at(s["c"]) or P[idx(s["c"])].get("t")
+            if sty in ("shield", "deep"):
+                return "double" if phase_tube(s["c"]) == "bore" else "twin"
+            return "twin" if plats.get(s["name"]) == "island" else "double"
+        bore_t = _tube_of(ms["tubes"]["bore"])
+        bore_need = bore_t["top"] + bore_t["od"]
+        bore_cover = lambda p: bool(self.river_at(p["c"])) or float(self.ground_at(p["c"])) - p["z"] >= bore_need - 0.005
+
+        def form_tubes():
+            for p in P:
+                p.pop("tube", None)
+            for x, y in runs(0, n - 1, is_bored):
+                ok = lambda p: bool(self.tube_form_at(p["c"])) or bore_cover(p)
+                u, v = x, y
+                while u <= v and not ok(P[u]):
+                    u += 1
+                while v >= u and not ok(P[v]):
+                    v -= 1
+                bore = end_kind(x - 1, -1) == "double" and end_kind(y + 1, 1) == "double" and u <= v and length(u, v) >= (u - x + y - v) * step and all(ok(P[i]) for i in range(u, v + 1))
+                if bore:
+                    for i in list(range(x, u)) + list(range(v + 1, y + 1)):
+                        P[i]["t"] = "cutcover"
+                for i in range(u if bore else x, (v if bore else y) + 1):
+                    f = self.tube_form_at(P[i]["c"]) or ("bore" if bore else "twin")
+                    P[i]["tube"] = "bore" if f == "bore" else twin_at(P[i]["c"])
+        form_tubes()
+
+        def tube_key(c):
+            p = P[idx(c)]
+            return p["tube"] if p.get("tube") else self._tube_key(c)
         # station approaches (Ben, 28 October): a cut-and-cover station meeting bored tubes keeps its box through the
         # approach, max(approach_m, sqrt(4 x min_radius x shift)); a box meeting tubes away from a station likewise
-        ms = self.ms
-        tube_sp = lambda c: ms["tubes"].get((ms["phases"].get(self._phase_at(c)) or ms["phases"]["later"])["tube"], ms["box"])["spacing"]
+        tube_sp = lambda c: ms["tubes"].get(tube_key(c), ms["box"])["spacing"]
         extra_l = getattr(self, "approach_extra", None) or []
 
         def appr_len(sh, c, info):   # the phase's minimum radius (Ben: 40, 55, 70 m), plus a straight where no arc fits (option A)
             rmin = float((ms["phases"].get(self._phase_at(c)) or ms["phases"]["later"]).get("min_radius") or ms.get("min_radius") or 40)
             e = next((x["extra"] for x in extra_l if x["side"] == info["side"] and (x.get("station") == info["station"] if info["station"] else not x.get("station") and abs(x["c"] - info["c"]) < 20)), 0.0)
             return max(float(ms.get("approach_m") or 40), math.sqrt(4 * rmin * abs(sh))) + e
-        # a bored tunnel point: a drive's, or a canon tunnel's (no depth class there; as the editor)
-        is_bored = lambda p: p is not None and p.get("t") in ("shield", "deep") and not p.get("stn")
-        idx = lambda c: max(0, min(n - 1, int(round(c / step))))
         approaches = []
 
         def fix(i0, d, lm, info):
@@ -1045,8 +1129,6 @@ class MetroProfile:
                 k += 1
             if k:   # from the platform end (or the box end) to the last sample boxed
                 approaches.append(dict(info, len=round(abs(P[i - d]["c"] - info["c"]), 2)))
-        plats = getattr(self, "platforms_kind", None) or {}
-        half = self.settings["platform"] / 2
         placed = set()
 
         def place():   # in passes (as the editor): a later resolve can make a drive beside a box, which needs its approach
@@ -1116,11 +1198,28 @@ class MetroProfile:
           return len(approaches) > n0
         place()
         resolve(False)
+        form_tubes()
         for _ in range(3):   # any drive a pass made beside a box gets its approach
             if not place():
                 break
             resolve(False)
+            form_tubes()
         resolve(True)
+        form_tubes()
+        # a change of track spacing inside the tunnel (a painted bore meeting twin tubes or a twin-tube station)
+        def sp_k(p):
+            if is_bored(p):
+                return p.get("tube")
+            if p.get("stn") and not p.get("appr") and p.get("t") in ("shield", "deep"):
+                return tube_key(p["c"])
+            return None
+        for i in range(1, n):
+            a_, b_ = sp_k(P[i - 1]), sp_k(P[i])
+            if a_ and b_ and abs(ms["tubes"][a_]["spacing"] - ms["tubes"][b_]["spacing"]) > 0.01:
+                flags.append({"c0": P[i - 1]["c"], "c1": P[i]["c"], "kind": "spacing change in the tunnel", "len": step})
+        for x, y in runs(0, n - 1, lambda p: self.tube_form_at(p["c"]) == "bore" and not p.get("stn") and (is_bored(p) or p.get("t") == "cutcover") and not bore_cover(p)):
+            if length(x, y) >= MIN_RUN:
+                flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "painted bore lacks cover", "len": length(x, y)})
         # twin tubes or one bore (proposed, flagged only): twin tubes under a street narrower than their footprint; Phase 2
         # cut and cover deep enough for type A twin tubes but not the bore
         ms = self.ms
@@ -1131,9 +1230,9 @@ class MetroProfile:
         a_from = a_tube["top"] + a_tube["od"]
 
         def narrow(p):
-            if p["t"] not in ("shield", "deep") or p.get("stn") or tube_name(p["c"]) == "bore":
+            if not is_bored(p) or not p.get("tube") or p["tube"] == "bore":
                 return False
-            s, tb = street_at(p["c"]), ms["tubes"][tube_name(p["c"])]
+            s, tb = street_at(p["c"]), ms["tubes"][p["tube"]]
             return bool(s) and s[2] < tb["spacing"] + tb["outside"]
         for f, kind in ((narrow, "twin under a narrow street"),
                         (lambda p: p["t"] == "cutcover" and "cls" in p and p["ph"] == "2" and tube_name(p["c"]) == "bore" and p["d"] >= a_from, "Phase 2 twin tubes could bore")):
@@ -1141,7 +1240,7 @@ class MetroProfile:
                 if length(x, y) >= 50:
                     flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": kind, "len": length(x, y), "info": True})
         self._absorb_short(P, step)
-        self._types = {"key": key, "step": step, "t": [p["t"] for p in P], "z": [p["z"] for p in P], "flags": flags, "approaches": approaches}
+        self._types = {"key": key, "step": step, "t": [p["t"] for p in P], "z": [p["z"] for p in P], "tube": [(p.get("tube") if is_bored(p) else None) for p in P], "flags": flags, "approaches": approaches}
         return self._types
 
     def _absorb_short(self, P, step):
@@ -1224,8 +1323,12 @@ class MetroProfile:
         if ms:   # the record: the box, else the tube of the phase the stretch was built in
             if t == "cutcover" and not self.river_at(c):
                 return {"k": "box", "below": ms["box"]["below"], "top": ms["box"]["top"]}
-            ph = self._phase_at(c)
-            return _tube_of(ms["tubes"][(ms["phases"].get(ph) or ms["phases"]["later"])["tube"]])
+            T = getattr(self, "_types", None)
+            if T and T.get("tube") and not getattr(self, "_solving", False):   # the tube form the drive was given
+                k = T["tube"][max(0, min(len(T["tube"]) - 1, int(round(c / T["step"]))))]
+                if k:
+                    return _tube_of(ms["tubes"][k])
+            return _tube_of(ms["tubes"][self._tube_key(c)])
         if self.river_at(c) or t == "deep":
             return METRO_ST["tube"]
         if t == "cutcover":
