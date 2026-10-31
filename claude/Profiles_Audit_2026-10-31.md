@@ -22,6 +22,11 @@ and faults in whatever it is you're doing, and there has to be a better way of d
 | Stretches painted by hand, overriding the engine | Lines 1, 2, 3, 4, 5, 14, 2b | about 18.2 km |
 | Errors in the issues list | each line | 6 to 58 |
 
+The same check on Ben's export (pushed 31 October, `hub/seed`): tube without cover 5.0 km, box past its limit 3.6 km, "deep"
+under 18.29 m 18.8 km, painted 21.7 km (Lines 1, 2 and 4 about 6 to 7 km each), 4 to 37 errors a line. Benton to Henry Clay
+on his Line 3: the drive (type C tubes) climbs from Benton's approach at about 10.8 m down, close to one diameter of cover
+(10.85 m), drawn as Deep tunnel; the drawing shows the tube, not the cover it needs, so it reads as running at the surface.
+
 ## Root causes
 
 1. **The drawing lies when the profile breaks a rule.** The engine checks a hand-drawn rail after the fact. When no legal
