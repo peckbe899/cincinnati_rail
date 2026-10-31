@@ -68,3 +68,24 @@ E. **One system check before every push.** The measurements above as a hub page 
 
 F. **Work on Ben's data.** Ben runs `python hub/hub.py export` and commits `hub/seed` (or sends the export), so the check runs
    on his current profiles.
+
+## Built (31 October, Ben: "yes"; and "deep-bore is a thing when it's TBM")
+
+- A. Unbuildable stretches (a tube short of one diameter of cover, a box past its phase's limit; the river bank works and
+  canon box sections aside) are hatched red on the profile and the type band, and listed as errors with their fix: Regrade
+  lowers the rail, Raise lifts it, as straight grades within the grade limit, moving a station in the way (not a canon or
+  locked one). "Fix unbuildable" runs every fix on the line.
+- B. Two dashed limits on the profile where the line is underground: the shallowest a tube may run, the deepest a box may go.
+- C. Running tunnels by method, not depth: the shield in Phases 1-2, the deep bore (TBM) from Phase 3 (the record's
+  `phases.tbm`, Phase 3 and later by default); mined stations are built as their drive; 18.29 m only marks lift stations.
+  The end boxes of a drive carry on, within the cut-and-cover limit, through every spot where the tube would lack cover
+  (Benton to Henry Clay is now a box up to Henry Clay, then the TBM drive with its cover).
+- D. Paints card: every paint with what the rules would do there without it; clear one, the ones that repeat the rules, or all.
+- E. "Check all lines" (unbuildable km by kind, errors, paints, per line) and a test that nothing unbuildable is unmarked.
+- F. The Python copy reads the hub's exported records (hub/seed: the Chronology, the structure record, platform kinds,
+  approach straights) and the Chronology's own station list, as the editor does; they agree on every sample of every Metro
+  line on Ben's export except 3 samples on Line 5 (an approach straight the 3D build regenerates).
+- On Ben's export after this: tube without cover 1.7 km (Lines 1 and 7, and small spots), box past its limit 2.4 km; "Fix
+  unbuildable" clears all of it except Line 4 at State (canon-locked) and two 10 m spots on Line 7 where no level meets both
+  limits. Some raises are large (Line 14 Mariemont 9.5 m, Line 2 Fountain Square 6.8 m, Line 2b West Covington 4.7 m): the
+  other fix there is to lower for a whole drive.

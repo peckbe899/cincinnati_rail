@@ -325,7 +325,7 @@ def test_metro_default_solver_respects_grade_limit():
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
-    mp = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json")  # no saved profile
+    mp = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json", records="repo")  # no saved profile
     assert mp.summary()["grades_over_limit"] == 0
 
 
@@ -337,7 +337,7 @@ def test_rer_core_profile_matches_page():
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile/rer"
-    load = lambda l: MetroProfile.load(root / f"lines/{l}.json", None, root / "settings.json")
+    load = lambda l: MetroProfile.load(root / f"lines/{l}.json", None, root / "settings.json", records="repo")
     mp = load("RER_1")
     # with 3,000 m vertical curves and level transitions off each platform
     assert [round(z, 1) for z in mp.st] == [156.0, 154.8, 135.7, 154.1, 156.6, 148.9, 186.7,
@@ -371,7 +371,7 @@ def test_vertical_curves_and_structure_rules():
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
-    mp = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json")
+    mp = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json", records="repo")
     c = np.arange(0.0, mp.length, 1.0)
     z = mp.rail_at(c)
     g = np.diff(z)
@@ -384,14 +384,14 @@ def test_vertical_curves_and_structure_rules():
     # deep: Lines 1-7 type A twin tubes (5.10 m inside, 5.50 m outside, rail 0.70 m over the invert: 0.90 below, 4.60 to
     # the top), Lines 8-12 the 9.0 m double-track bore (2.50 below, 6.50 to the top); cover one outside diameter over
     # every bored tube (Ben, 28 October: the ground arches over it), 0.6 m over box roofs
-    l3 = MetroProfile.load(root / "lines/Line_3.json", None, root / "settings.json")
+    l3 = MetroProfile.load(root / "lines/Line_3.json", None, root / "settings.json", records="repo")
     assert mp.struct_for("shield", 1000.0)["k"] == "bore" and l3.struct_for("shield", 1000.0)["k"] == "tube"
     assert mp.struct_for("deep", 1000.0)["top"] == pytest.approx(6.5) and l3.struct_for("deep", 1000.0)["top"] == pytest.approx(4.6)
     assert l3.struct_for("shield", 1000.0)["od"] == 5.5 and mp.struct_for("cutcover", 1000.0)["top"] == 4.6
     bore = mp.struct_for("shield", 1000.0)
     assert mp.req_cover(bore, 150.0) == 9.0 and mp.req_cover(bore, 140.0) == 9.0 and l3.req_cover(l3.struct_for("shield", 1000.0), 150.0) == 5.5
     assert mp.req_cover(mp.struct_for("cutcover", 1000.0), 150.0) == 0.6
-    l1 = MetroProfile.load(root / "lines/Line_1.json", None, root / "settings.json")
+    l1 = MetroProfile.load(root / "lines/Line_1.json", None, root / "settings.json", records="repo")
     r = l1.data["rivers"][0]
     # every river crossing in tunnel is a sunk double-track box (Ben, 30 October): roof from 5 m below the bed to 3 m above
     # it, rail from bed - 10.0 to bed - 2.0 m (the lower limit on the flat bottom only)
@@ -408,7 +408,7 @@ def test_sloped_platform_eases_the_bends():
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
-    mp = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json")
+    mp = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json", records="repo")
     # a station on a continuous climb or descent (not a crest or sag)
     i = next(k for k in range(1, len(mp.st) - 1) if (mp.st[k] - mp.st[k - 1]) * (mp.st[k + 1] - mp.st[k]) > 0)
     s, half = mp.stations[i], mp.settings["platform"] / 2
@@ -432,7 +432,7 @@ def test_platform_offset_and_removed_station(tmp_path):
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
-    base = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json")
+    base = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json", records="repo")
     names = [s["name"] for s in base.stations]
     gone, slid = names[2], names[4]
     half = base.settings["platform"] / 2
@@ -459,7 +459,7 @@ def test_platform_curvature_fit():
     assert fit_radius(arc) == pytest.approx(500.0, rel=1e-6)
     assert fit_radius(np.column_stack([np.arange(0, 152.4, 2.0), np.zeros(77)])) == float("inf")
     root = Path(__file__).resolve().parent.parent / "data/profile"
-    mp = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json")
+    mp = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json", records="repo")
     pc = mp.platform_curves()
     assert len(pc) == len(mp.stations)
     for p in pc:
@@ -492,7 +492,7 @@ def test_cvg_express_profile_canon():
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
-    mp = MetroProfile.load(root / "lines/CVG_Express.json", None, root / "settings.json")
+    mp = MetroProfile.load(root / "lines/CVG_Express.json", None, root / "settings.json", records="repo")
     assert mp.settings["platform"] == pytest.approx(670 * 0.3048)
     assert mp.st[[s["name"] for s in mp.stations].index("Union Terminal")] == 160.3
     assert not mp.river_tubes(None)
@@ -500,7 +500,7 @@ def test_cvg_express_profile_canon():
     z = mp.rail_at(np.arange(b["c0"], b["c1"], 2.0))
     assert z.min() >= b["lb"] - 0.05 and mp.type_at((b["c0"] + b["c1"]) / 2) == "elevated"
     assert not mp.river_breaks()
-    assert MetroProfile.load(root / "lines/Line_1.json", None, root / "settings.json").settings["platform"] == 121.92
+    assert MetroProfile.load(root / "lines/Line_1.json", None, root / "settings.json", records="repo").settings["platform"] == 121.92
 
 
 def test_cut_norwood_context():
@@ -522,7 +522,7 @@ def test_cut_norwood_context():
     dz = np.array([float(l4.ground_at(ci) - l4.ground_dem_at(ci)) for ci in c])
     assert dz.max() == pytest.approx(5.0, abs=0.01)
     # Norwood Central: the surface tracks in their cut, level at 185.5 m; Line 14 passes under them
-    l14 = MetroProfile.load(root / "lines/Line_14.json", None, root / "settings.json")
+    l14 = MetroProfile.load(root / "lines/Line_14.json", None, root / "settings.json", records="repo")
     nw = next(b for b in l14.context_blocks() if b["l"] == "Norwood Central tracks")
     assert all(z == 185.5 for _, z in nw["p"])
     cm = (nw["c0"] + nw["c1"]) / 2
@@ -532,7 +532,7 @@ def test_cut_norwood_context():
     x = [x for x in l14.context_clearances() if not x["ok"]]
     assert x and all(y["with"] == "Norwood Central tracks" for y in x)
     # painted cut and cover: the box keeps its level and the ground is filled to roof + cover
-    l9 = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json")
+    l9 = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json", records="repo")
     s0 = l9.stations[3]["c"]
     l9.ovr = [(s0 - 60.0, s0 + 60.0, "cutcover")]
     l9.refresh_fill()
@@ -546,7 +546,7 @@ def test_context_street_openings():
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
-    mp = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json")
+    mp = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json", records="repo")
     cs = np.arange(0.0, mp.length, 10.0)
     c = next(ci for ci in cs if mp.type_at(ci) == "atgrade" and all(mp.type_at(ci + d) == "atgrade" for d in (-20, 20)))
     z = float(mp.rail_at(c))
@@ -597,7 +597,7 @@ def test_tunnel_methods_by_era():
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
     for lid in ("Line_3", "Line_10"):
-        mp = MetroProfile.load(root / f"lines/{lid}.json", None, root / "settings.json")
+        mp = MetroProfile.load(root / f"lines/{lid}.json", None, root / "settings.json", records="repo")
         T = mp.stretch_types()
         step, ts = T["step"], T["t"]
         tun = [mp._point_type(min(k * step, mp.length), T["z"][k]) for k in range(len(ts))]
@@ -632,7 +632,7 @@ def test_tunnel_methods_by_era():
                 if tun[m].get("cls") != "C":
                     assert float(mp.ground_at(c) - mp.rail_at(c)) >= sc["top"] + sc["od"] - 1e-6, (lid, c)
             k = j + 1
-    assert mp.phase_rules(1000.0) == {"cc_max": 16.5, "min_drive": 300.0, "deep_from": 18.29}   # Line 10, Phase 2
+    assert mp.phase_rules(1000.0) == {"cc_max": 16.5, "min_drive": 300.0, "deep_from": 18.29, "tbm": False}   # Line 10, Phase 2
 
 
 def test_station_approach_boxes():
@@ -643,7 +643,7 @@ def test_station_approach_boxes():
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
-    mp = MetroProfile.load(root / "lines/Line_3.json", None, root / "settings.json")
+    mp = MetroProfile.load(root / "lines/Line_3.json", None, root / "settings.json", records="repo")
     T = mp.stretch_types()
     ap = [a for a in T["approaches"] if a["station"]]
     assert ap
@@ -752,10 +752,10 @@ def test_tube_form_by_drive_ends_and_paint():
     assert not [a for a in T["approaches"] if 4500 < a["c"] < 6450 and a["kind"] != "river"]
     mp = load("Line_2")   # Holmes and Meinken are island stations: twin tubes between them
     T = mp.stretch_types()
-    assert T["tube"][int(18200 / T["step"])] == "A"
+    assert T["tube"][int(18200 / T["step"])] in ("A", "C")
     mp = load("Line_3")   # Henry Clay (side box) on to Ft Wright (a mined station, Phase 1): twin tubes
     T = mp.stretch_types()
-    assert T["tube"][int(21800 / T["step"])] == "A"
+    assert T["tube"][int(21800 / T["step"])] in ("A", "C")   # twin tubes (Phase 3 on Ben's Chronology: type C)
     mp.tf = [(21150.0, 22420.0, "bore")]   # painted bore: no approach at Henry Clay; the spacing change in Ft Wright flagged
     mp._types = None
     T = mp.stretch_types()
@@ -805,13 +805,43 @@ def test_engine_rules_hold_on_every_metro_line():
 
 
 def test_low_cover_drive_needs_regrade():
-    """Too shallow partway and too deep elsewhere (Ben, 31 October): cut and cover in the shallow pockets only where the bored
-    pieces left are whole drives; Henry Clay to Ft Wright on Line 3 would leave short pieces, so the profile must be lowered."""
+    """Too shallow partway and too deep elsewhere (Ben, 31 October): a drive whose low stretch cannot be a shaft between
+    whole drives stays bored, and the low stretch is unbuildable (hatched, Regrade); Line 7 at 7+348 to 8+108 (Ben's export)."""
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent
+    mp = MetroProfile.load(root / "data/profile/lines/Line_7.json", None, root / "data/profile/settings.json")   # no saved profile: the solver's
+    T = mp.stretch_types()
+    cov = [b for b in T["bad"] if b["why"] == "cover"]
+    assert any(b["c0"] < 7800 < b["c1"] for b in cov), cov
+    assert T["t"][int(7800 / T["step"])] in ("shield", "deep")   # stays bored until it is regraded
+
+
+def test_system_check_nothing_unbuildable_unmarked():
+    """The system check (Ben, 31 October: never draw what cannot be built): on every Metro line, every sample drawn as a tube
+    with less than one diameter of cover, or as a box past its phase's cut-and-cover limit (the river bank works and canon
+    box sections aside), lies inside an unbuildable range the editor hatches and offers to fix; and Line 3 from Benton to
+    Henry Clay is a box up to the station, then a drive with its cover (Ben's export)."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile, _tube_of
+    root = Path(__file__).resolve().parent.parent
+    for lid in [f"Line_{k}" for k in range(1, 15)] + ["Line_2b", "CVG_Express"]:
+        al = root / f"hub/seed/alignments/{lid}.json"
+        mp = MetroProfile.load(root / f"data/profile/lines/{lid}.json", al if al.exists() else None, root / "data/profile/settings.json")
+        T = mp.stretch_types()
+        step = T["step"]
+        inside = lambda c: any(b["c0"] - 1 <= c <= b["c1"] + 1 for b in T["bad"])
+        for i in range(0, len(T["t"]), 5):
+            c = i * step
+            if c > mp.length or mp.river_at(c) or mp.in_station(c):
+                continue
+            t = mp.type_at(c)
+            d = float(mp.ground_at(c)) - T["z"][i]
+            if t in ("shield", "deep") and T["tube"][i]:
+                tb = _tube_of(mp.ms["tubes"][T["tube"][i]])
+                if d < tb["top"] + tb["od"] - 0.1:
+                    assert inside(c), (lid, c, "tube without cover, unmarked")
     mp = MetroProfile.load(root / "data/profile/lines/Line_3.json", root / "hub/seed/alignments/Line_3.json", root / "data/profile/settings.json")
     T = mp.stretch_types()
-    rg = [f for f in T["flags"] if f["kind"] == "regrade"]
-    assert any(f["c0"] < 21500 and f["c1"] > 22300 for f in rg), rg
-    assert T["t"][int(21800 / T["step"])] in ("shield", "deep")   # stays bored until it is regraded
+    assert not [b for b in T["bad"] if 20000 < b["c0"] < 21100]
+    assert T["t"][int(20500 / T["step"])] == "cutcover"

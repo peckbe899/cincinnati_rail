@@ -338,3 +338,11 @@ Published: page version 6 and the snapshot (35 parts), read back at view level.
   5. A leftover drive shorter than min_drive with no mined station: beside the sunk box it is the bank works (the immersed tunnel's land end is cut and cover in a cofferdam; a note); shorter than the boxes round it, an error where that cut and cover is past its limit (raise the profile, or lower it for a whole drive); else one short bored piece (a note). Never box > tube > box inside a stretch.
   6. A tube paint over a box the rules need is a warning (the paint still wins on the drawing).
 - Line 3: Paycor is a mined station; one deep drive from the Fort Washington Way portal through Paycor to the Ohio bank box, and from the far bank through Mutter Gottes and Covington Union. Line 2 Holmes to Meinken: twin tubes (both islands). Check over all Metro lines: no box inside a drive, no short tube between boxes, no slivers except at Ben's paints (Line 1 deep paints over the Ohio bank boxes, Line 4's 13 m shield paint at 20+200), all flagged.
+
+## 2026-10-31: the audit and its fixes (Ben: "audit the whole system"; "deep-bore is a thing when it's TBM")
+
+- Audit in `claude/Profiles_Audit_2026-10-31.md` (measured on Ben's export). Built A to E and F there: unbuildable stretches
+  hatched with Regrade/Raise and "Fix unbuildable"; the two limits drawn; running tunnels by method (shield Phases 1-2, deep
+  bore by TBM from Phase 3, `phases.tbm` in the structure record); end boxes carried through every low-cover spot within the
+  box limit; the Paints card; "Check all lines" and a test; the Python copy on the hub's records and the Chronology's station
+  list. Tests: 64 pass.

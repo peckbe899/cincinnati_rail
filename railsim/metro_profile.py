@@ -109,8 +109,16 @@ RER_CANON_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "
 CONTEXT_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "context" / "lines.json"
 # the shared Metro structure record (Ben, 27-28 October; claude/Metro_Structure_Gauge_Handoff.md), as the editor reads it;
 # settings_override {"legacy_structures": True} keeps the structures of before (the 4.76 m tube, 9.0 m bore)
-MS_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "metro_structure.json"
-CHR_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "chronology.json"   # the Chronology's default record
+# the hub's records as last exported (hub/seed, Ben's own: 31 October, the editor reads the hub, so the port must too), else
+# the repo's defaults
+_ROOT = Path(__file__).resolve().parent.parent
+_SEED = _ROOT / "hub" / "seed"
+_pick = lambda seed, default: seed if seed.exists() else default
+MS_JSON = _pick(_SEED / "params" / "metro_structure.json", _ROOT / "data" / "profile" / "metro_structure.json")
+CHR_JSON = _pick(_SEED / "chronology" / "segments.json", _ROOT / "data" / "profile" / "chronology.json")   # the Chronology record
+PLAT_JSON = _pick(_SEED / "params" / "station_platforms.json", _ROOT / "data" / "profile" / "station_platforms.json")
+_CHR_LINES = None
+APX_JSON = _pick(_SEED / "params" / "approach_extra.json", _ROOT / "data" / "profile" / "approach_extra.json")
 
 
 def _tube_of(t: dict) -> dict:
@@ -196,18 +204,22 @@ class MetroProfile:
     # ------------------------------------------------------------- loading
     @classmethod
     def load(cls, line_json, alignment_json=None, settings_json=None,
-             canon_json=None, settings_override: Optional[dict] = None, context_json=None) -> "MetroProfile":
+             canon_json=None, settings_override: Optional[dict] = None, context_json=None, records: str = "hub") -> "MetroProfile":
+        """records: "hub" reads the hub's exported records (hub/seed, Ben's), "repo" the repo's defaults (data/profile)"""
         data = json.loads(Path(line_json).read_text())
         rer = "RER" in data.get("system", "")
         # per-line settings in the line file (e.g. the CVG Express's 200 m platforms)
         p = cls(data, {**load_settings(settings_json, rer=rer), **(data.get("settings") or {}), **(settings_override or {})})
+        dp = _ROOT / "data" / "profile"
+        ms_j, chr_j, pk, ax = (MS_JSON, CHR_JSON, PLAT_JSON, APX_JSON) if records == "hub" else \
+            (dp / "metro_structure.json", dp / "chronology.json", dp / "station_platforms.json", dp / "approach_extra.json")
         p.ms = None
-        if not rer and not p.settings.get("legacy_structures") and MS_JSON.exists():
-            p.ms = json.loads(MS_JSON.read_text())
-        p.chr = json.loads(CHR_JSON.read_text()) if p.ms and CHR_JSON.exists() else None
-        pk = CHR_JSON.parent / "station_platforms.json"   # island or side at each Metro station (the 3D build's, from the Deck)
+        if not rer and not p.settings.get("legacy_structures") and ms_j.exists():
+            p.ms = json.loads(ms_j.read_text())
+        p.chr = json.loads(chr_j.read_text()) if p.ms and chr_j.exists() else None
+        # island or side at each Metro station (the 3D build's, from the Deck)
         p.platforms_kind = (json.loads(pk.read_text()).get(p.data["id"]) or {}) if p.ms and pk.exists() else {}
-        ax = CHR_JSON.parent / "approach_extra.json"   # straights where no single arc fits (the 3D build's)
+        # straights where no single arc fits (the 3D build's)
         p.approach_extra = (json.loads(ax.read_text()).get(p.data["id"]) or []) if p.ms and ax.exists() else []
         if rer:
             cj = Path(canon_json) if canon_json else RER_CANON_JSON
@@ -850,39 +862,54 @@ class MetroProfile:
     # unless the bored stretch makes a whole drive (box to box, portal or deep station: any length); no short pockets
     # inside a longer stretch; drives end
     # at station boxes and where the phase changes; deep stations are platform tunnels. Canon and painted still decide.
+    def _chr_segments(self) -> list:
+        """this line's Chronology segments [(c0, c1, year, phase)], as the editor's chrSegments: the Chronology's own route
+        (chronology_lines.json) when it has the line, else the profile's stations"""
+        rec = getattr(self, "chr", None)
+        if not rec:
+            return []
+        if getattr(self, "_chr_list", None) is not None and self._chr_list[0] is rec:
+            return self._chr_list[1]
+        global _CHR_LINES
+        if _CHR_LINES is None:
+            f = _ROOT / "data" / "profile" / "chronology_lines.json"
+            _CHR_LINES = json.loads(f.read_text()).get("routes", []) if f.exists() else []
+        cr = next((r for r in _CHR_LINES if r.get("id") == self.id), None)
+        sys_ = cr["sys"] if cr else "cvx" if self.id == "CVG_Express" else "metro"
+        st = cr["stations"] if cr else sorted(self.stations, key=lambda s: s["c"])
+        out = []
+        for i in range(len(st) - 1):
+            x, y = sorted((st[i]["name"], st[i + 1]["name"]))
+            key = cr["segments"][i] if cr else f"metro|{self.id}|{x}|{y}" if sys_ == "metro" else f"{sys_}|{x}|{y}"
+            e = (rec.get("segments") or {}).get(key) or {}
+            yr = None if e.get("year") in (None, "") else float(e["year"])
+            ph = e.get("phase") or next((p for y0, y1, p in rec.get("phase_years") or [] if yr is not None and y0 <= yr <= y1), None)
+            out.append((st[i]["c"] if i else 0.0, st[i + 1]["c"] if i + 2 < len(st) else self.length, yr, ph))
+        self._chr_list = (rec, out)
+        return out
+
     def _phase_at(self, c: float) -> str:
         ms = self.ms
-        rec = getattr(self, "chr", None)
-        if rec:   # the Chronology record: the phase of the segment (two stations) c is in, set or from its year
-            sts = sorted(self.stations, key=lambda s: s["c"])
-            if len(sts) > 1:
-                def seg(i):   # (year, phase) of the segment from station i to i + 1
-                    if i < 0 or i + 1 >= len(sts):
-                        return None
-                    a, b = sorted((sts[i]["name"], sts[i + 1]["name"]))
-                    e = (rec.get("segments") or {}).get(f"cvx|{a}|{b}" if self.id == "CVG_Express" else f"metro|{self.id}|{a}|{b}") or {}
-                    y = e.get("year")
-                    ph = e.get("phase") or next((p for y0, y1, p in rec.get("phase_years") or [] if y is not None and y0 <= y <= y1), None)
-                    return (y, ph) if ph else None
-                half = self.settings["platform"] / 2
-                k = next((j for j, s in enumerate(sts) if abs(c - s["c"]) <= half), None)
-                if k is not None:   # a station is one phase: the earlier-opened segment either side (Ben, 30 October)
-                    both = [x for x in (seg(k - 1), seg(k)) if x]
-                    if both:
-                        return min(both, key=lambda x: x[0] if x[0] is not None else 9999)[1]
-                i = 0
-                while i + 2 < len(sts) and c > sts[i + 1]["c"]:
-                    i += 1
-                x = seg(i)
-                if x:
-                    return x[1]
+        if getattr(self, "chr", None):   # as the editor's phaseAt: a station by the earlier-opened segment either side
+            segs = self._chr_segments()
+            at = lambda q: next((x for x in segs if x[0] <= q <= x[1]), None)
+            half = self.settings["platform"] / 2
+            st = next((x for x in self.stations if abs(c - x["c"]) <= half), None)
+            if st is not None:
+                both = [x for x in (at(st["c"] - half - 1), at(st["c"] + half + 1)) if x and x[3]]
+                if both:
+                    return min(both, key=lambda x: x[2] if x[2] is not None else 9999)[3]
+            sg = at(c)
+            if sg and sg[3]:
+                return sg[3]
         name = next((p["name"] for p in self.data.get("pieces", []) if p["c0"] - 5 <= c <= p["c1"] + 5), None)
         return ((ms.get("piece_phase") or {}).get(self.id) or {}).get(name) or (ms.get("line_phase") or {}).get(self.id) or "later"
 
     def phase_rules(self, c: float) -> dict:
         p = (self.ms["phases"].get(self._phase_at(c)) or self.ms["phases"]["later"]) if getattr(self, "ms", None) else {}
+        ph = self._phase_at(c) if getattr(self, "ms", None) else None
         return {"cc_max": p.get("cc_max", self.settings["shallowMax"]), "min_drive": p.get("min_drive", 300.0),
-                "deep_from": p.get("deep_from", self.settings["deepBelow"])}
+                "deep_from": p.get("deep_from", self.settings["deepBelow"]), "tbm": p.get("tbm", ph in ("3", "later"))}
 
     def _point_type(self, c: float, z: float) -> dict:
         # a station is one type, whatever its depth (Ben, 30 October; as the editor): the platform centre's
@@ -922,7 +949,7 @@ class MetroProfile:
                 st = next(s for s in self.stations if abs(c - s["c"]) <= half)
                 gs = float(self.ground_at(st["c"]))
                 ds = gs - self.rail_at(st["c"]) if math.isfinite(gs) else d
-                return {"t": "cutcover" if ds <= R["cc_max"] else "deep" if ds >= R["deep_from"] else "shield", "stn": True}   # by the cut-and-cover limit (Ben, 31 October)
+                return {"t": "cutcover" if ds <= R["cc_max"] else ("deep" if R["tbm"] else "shield"), "stn": True}   # by the cut-and-cover limit (Ben, 31 October)
             return {"cls": "C" if d < shield_from else "B" if d > R["cc_max"] else "E", "d": d, "deep": d >= R["deep_from"],
                     "ph": self._phase_at(c), "R": R, "shield_from": shield_from}
         m = sec["m"] if sec else ("deep" if d >= self.settings["deepBelow"] else "shallow")
@@ -1006,7 +1033,7 @@ class MetroProfile:
                 return {"t": o, "role": "open"}
             if sec and sec["m"] == "canal":
                 return {"t": "cutcover", "role": "box", "d": d}
-            force = o if o in ("shield", "deep") else "deep" if r else ("deep" if sec["m"] == "deep" else "shield") if sec and sec["m"] in ("shallow", "deep") else None
+            force = o if o in ("shield", "deep") else "bored" if r or (sec and sec["m"] in ("shallow", "deep")) else None   # a paint names its method
             return {"role": "tunnel", "d": d, "force": force}
         P = []
         for i in range(n):
@@ -1023,13 +1050,13 @@ class MetroProfile:
             if o == "cutcover" or o in OPEN:
                 sd = {"t": o, "role": "box" if o == "cutcover" else "open"}
             elif o in ("shield", "deep"):
-                sd = {"t": o, "role": "mined"}
+                sd = {"t": o, "role": "mined", "painted": True}
             elif q["role"] != "tunnel":
                 sd = {"t": q["t"], "role": "open" if q["role"] == "river" else q["role"]}
             elif ds <= R["cc_max"]:
                 sd = {"t": "cutcover", "role": "box"}
             else:
-                sd = {"t": "deep" if ds >= R["deep_from"] else "shield", "role": "mined"}
+                sd = {"t": "deep" if R["tbm"] else "shield", "role": "mined"}   # the drive's method
             sd.update(s=s, ds=ds, island=sd["role"] == "box" and plats.get(s["name"]) == "island")
             ph = self._phase_at(s["c"])
             for i in range(max(0, math.ceil((s["c"] - half) / step)), min(n - 1, math.floor((s["c"] + half) / step)) + 1):
@@ -1075,7 +1102,7 @@ class MetroProfile:
 
         def approach_at(i, d):   # i: the drive's end sample, d: outward
             j = i + d
-            while 0 <= j < n and P[j]["t"] == "cutcover" and is_tun(P[j]) and not P[j].get("shaft"):
+            while 0 <= j < n and P[j].get("t") == "cutcover" and is_tun(P[j]) and not P[j].get("shaft"):
                 j += d
             if not (0 <= j < n) or P[j]["role"] == "mined":
                 return None
@@ -1094,6 +1121,8 @@ class MetroProfile:
             while 0 <= k < n and abs(P[k]["c"] - an["edge"]) < lm + step - 1e-6 and is_tun(P[k]) and not P[k].get("shaft"):
                 P[k]["t"] = "cutcover"
                 P[k]["appr"] = True
+                if an["kind"] == "river":
+                    P[k]["bank"] = True
                 last = k
                 k -= d
             if 0 <= k < n and P[k]["role"] == "mined" and abs(P[k]["c"] - an["edge"]) < lm - 1e-6:
@@ -1139,13 +1168,17 @@ class MetroProfile:
                 f = self.tube_form_at(p["c"]) or form
                 return "bore" if f == "bore" else twin_at(p["c"])
             need = lambda p: (lambda tb: tb["top"] + tb["od"])(tube_t(tkey(p)))
-            u, v = a, b
-            while u <= v and is_tun(P[u]) and P[u]["d"] < need(P[u]) and P[u]["d"] <= P[u]["R"]["cc_max"]:
-                P[u]["t"] = "cutcover"
-                u += 1
-            while v >= u and is_tun(P[v]) and P[v]["d"] < need(P[v]) and P[v]["d"] <= P[v]["R"]["cc_max"]:
-                P[v]["t"] = "cutcover"
-                v -= 1
+            def launch(frm, d, stop):   # the end boxes carry on, within the limit, through every spot short of cover
+                last, i = frm - d, frm
+                while i != stop + d and is_tun(P[i]) and P[i]["d"] <= P[i]["R"]["cc_max"]:
+                    if P[i]["d"] < need(P[i]):
+                        last = i
+                    i += d
+                return last
+            u = launch(a, 1, b) + 1
+            v = launch(b, -1, u) - 1
+            for i in list(range(a, u)) + list(range(v + 1, b + 1)):
+                P[i]["t"] = "cutcover"
             if u > v:
                 continue
             pieces = [(u, v)]
@@ -1159,17 +1192,14 @@ class MetroProfile:
                             P[i]["shaft"] = True
                         flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "low cover, a shaft", "len": length(x, y), "info": True})
                     pieces = rest
-                else:
-                    flags.append({"c0": P[u]["c"], "c1": P[v]["c"], "kind": "regrade", "len": length(u, v), "error": True})
+                # else the drive stays bored; its low stretches are unbuildable (below)
             for x, y in pieces:
                 ps = P[x:y + 1]
                 fd = sum(1 for p in ps if p.get("force") == "deep")
                 fs = sum(1 for p in ps if p.get("force") == "shield")
-                deep_len = sum(1 for p in ps if is_tun(p) and p["d"] >= p["R"]["deep_from"])
-                tl = sum(1 for p in ps if is_tun(p))
-                cls = ("deep" if fd >= fs else "shield") if fd + fs else "deep" if any(p["role"] == "mined" and p["t"] == "deep" for p in ps) or deep_len * 2 >= tl else "shield"
+                cls = ("deep" if fd >= fs else "shield") if fd + fs else ("deep" if P[x]["R"]["tbm"] else "shield")   # one method per drive
                 for p in ps:
-                    if is_tun(p):
+                    if is_tun(p) or (p["role"] == "mined" and not p["stn"].get("painted")):
                         p["t"] = cls
                     p["tube"] = tkey(p)
                 mark = len(approaches)
@@ -1186,11 +1216,12 @@ class MetroProfile:
                             p["t"] = "cutcover"
                             p.pop("appr", None)
                             p.pop("tube", None)
+                            if river:
+                                p["bank"] = True
                     over = max([p["d"] - p["R"]["cc_max"] for p in P[a:b + 1] if is_tun(p)] or [0.0])
                     if river:
                         flags.append({"c0": P[a]["c"], "c1": P[b]["c"], "kind": "bank works", "len": length(a, b), "info": True})
-                    elif over > 0.05:
-                        flags.append({"c0": P[a]["c"], "c1": P[b]["c"], "kind": "too deep for cut and cover, too short for a drive", "len": length(a, b), "error": True, "over": over})
+
                 else:
                     flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "short drive", "len": left, "info": True})
         for p in P:
@@ -1239,7 +1270,38 @@ class MetroProfile:
         for x, y in runs(0, n - 1, lambda p: self.tube_form_at(p["c"]) == "bore" and bored(p) and not self.river_at(p["c"]) and float(self.ground_at(p["c"])) - p["z"] < bore_need - 0.005):
             if length(x, y) >= MIN_RUN:
                 flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "painted bore lacks cover", "len": length(x, y)})
-        self._types = {"key": key, "step": step, "t": [p["t"] for p in P], "z": [p["z"] for p in P],
+        # unbuildable as drawn (paints included; as the editor): a tube short of one diameter of cover, a box past its limit
+        def why(p):
+            if self.river_at(p["c"]):
+                return None
+            st_ = p.get("stn")
+            o = self.override_at(st_["s"]["c"] if st_ else p["c"])
+            t = o or p["t"]
+            d = float(self.ground_at(p["c"])) - p["z"]
+            if not math.isfinite(d):
+                return None
+            if t in ("shield", "deep") and not st_:
+                tb = tube_t(p.get("tube") or self._tube_key(p["c"]))
+                if d < tb["top"] + tb["od"] - 0.05:
+                    return "cover"
+            if t == "cutcover" and not p.get("bank"):
+                sec = self.canon_at(p["c"])
+                if not (sec and sec["m"] in ("canal", "covered")) and d > p["R"]["cc_max"] + 0.05:
+                    return "box"
+            return None
+        for p in P:
+            p["_w"] = why(p)
+        bad = []
+        for w in ("cover", "box"):
+            for x, y in runs(0, n - 1, lambda p, w=w: p["_w"] == w):
+                if bad and bad[-1]["why"] == w and P[x]["c"] - bad[-1]["c1"] <= 10:
+                    bad[-1]["c1"] = P[y]["c"]
+                else:
+                    bad.append({"why": w, "c0": P[x]["c"], "c1": P[y]["c"]})
+        bad.sort(key=lambda b: b["c0"])
+        for b in bad:
+            flags.append({"c0": b["c0"], "c1": b["c1"], "kind": "unbuildable " + b["why"], "len": b["c1"] - b["c0"] + step, "error": True})
+        self._types = {"key": key, "step": step, "bad": bad, "t": [p["t"] for p in P], "z": [p["z"] for p in P],
                        "tube": [(p.get("tube") if p["t"] in ("shield", "deep") else None) for p in P], "flags": flags, "approaches": approaches}
         return self._types
 
