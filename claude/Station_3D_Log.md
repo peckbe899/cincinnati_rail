@@ -424,3 +424,15 @@ Published: page version 6 and the snapshot (35 parts), read back at view level.
   mezzanine 35, street hall 27, end halls 10, mezzanine 10, surface 2. The page and the Python copy agree on every one.
 - Stage 2 to come: the hub page for later stages (proposed from the complexes' years, accepted by Ben), the complex marks
   in the Deck, the report for Ben (counts by phase, rule 4 list, proposed stages, hall clashes, no-year stations).
+- Stage 2 (same day): the hub's Station access page (`/access/`): every Metro station with its year and phase, depth against
+  D_HALL, platform type, the rules' type and Ben's choice, the interchanges at opening, the later stages proposed from the
+  document's triggers (another Metro line opening at the station later, above or below; a TRI line; accessibility at
+  platform-level stations) with accept, remove and add, and the flags; saved in params/station_access. The rules come from
+  `tools/station_access_report.py` (the Python copy), run by the 3D job into params/station_access_rule; it also prints Ben's
+  report. The Deck's station card gained "One station with", a shared label for stations of any name or system that are one
+  complex (Convention Center and Plum); the 3D build turns the labels into params/station_complexes `marked`.
+- Ben's report (his export): 432 stations; Phase 1: 160 (crossunder 85, deep 25, street hall 21, platform level 18, end
+  halls 10, surface 1); Phase 2: 130 (crossunder 52, platform level 45, deep 15, mezzanine 10, full mezzanine 8); Phase 3:
+  94 (platform level 45, full mezzanine 22, crossunder 16, deep 7, street hall 3, surface 1); later: 48. Rule 4 (an island
+  or interchange shallower than D_HALL): 160, most of them the Deck's island platforms on shallow Phase 1 and 2 lines.
+  117 later stages proposed (another Metro line opening at the station later). No station without a year; no errors.

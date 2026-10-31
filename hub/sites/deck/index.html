@@ -2185,6 +2185,13 @@ function renderSel() {
       br.addEventListener('click', () => { setStop(sp, null, true); renderSel(); });
       box.append(lab, rg, ends, br); body.append(box);
     }
+    // one station with others (Ben, 31 October): stations of any system or name that are one complex (Convention Center and
+    // Plum) share a label here; the 3D build groups same-name stations within 150 m on its own, this adds the rest
+    // (hub params/station_complexes 'marked', read by the Rail Profiles for the interchange at opening)
+    { const cx = document.createElement('label'); cx.className = 'notes'; cx.style.display = 'block'; cx.style.marginTop = '8px'; cx.textContent = 'One station with (a shared label, e.g. "Convention Center"):';
+      const inp = document.createElement('input'); inp.type = 'text'; inp.style.width = '100%'; inp.placeholder = 'none'; inp.value = (S.edits.stations[p.id] && S.edits.stations[p.id].complex) || ''; inp.disabled = !S.canWrite;
+      inp.addEventListener('change', () => { const e = Object.assign({}, S.edits.stations[p.id] || {}); const v = inp.value.trim(); if (v) e.complex = v; else delete e.complex; if (Object.keys(e).length) S.edits.stations[p.id] = e; else delete S.edits.stations[p.id]; changed(); renderSel(); });
+      cx.append(inp); body.append(cx); }
     const row2 = document.createElement('div'); row2.className = 'row';
     const bD = document.createElement('button'); bD.className = 'btn'; bD.textContent = del ? 'Restore station' : 'Delete station'; bD.disabled = !S.canWrite;
     bD.addEventListener('click', () => { const e = Object.assign({}, S.edits.stations[p.id] || {}); if (del) delete e.del; else e.del = true; if (Object.keys(e).length) S.edits.stations[p.id] = e; else delete S.edits.stations[p.id]; changed(); renderSel(); });

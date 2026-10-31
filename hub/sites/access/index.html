@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Station access · Cincinnati Rail</title>
+<style>
+  :root { --paper: #fbfaf7; --ink: #1d2126; --muted: #6b7078; --rule: #d9d6cf; --accent: #2fb8a8; --warn: #cf2e2e; --note: #8a8a8a; --caution: #d99420; --font-ui: "Barlow", "Segoe UI", system-ui, sans-serif; --font-num: "IBM Plex Mono", ui-monospace, monospace; }
+  @media (prefers-color-scheme: dark) { :root { --paper: #15191d; --ink: #e8e6e1; --muted: #9aa0a8; --rule: #30363d; --accent: #2fb8a8; --warn: #ff6b5e; } }
+  body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: var(--paper); }
+  header { padding: 14px 20px; border-bottom: 1px solid var(--rule); display: flex; gap: 18px; align-items: baseline; flex-wrap: wrap; }
+  header h1 { font-size: 18px; margin: 0; } header .muted { color: var(--muted); font-size: 13px; }
+  main { padding: 14px 20px 40px; }
+  .bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; font-size: 13px; }
+  .bar select, .bar label { font: inherit; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th { text-align: left; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--rule); padding: 6px 6px; position: sticky; top: 0; background: var(--paper); }
+  td { padding: 6px 6px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  td.num { font-family: var(--font-num); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .line { font-weight: 700; padding-top: 18px; font-size: 14px; }
+  .flag { display: block; font-size: 12px; } .flag.error { color: var(--warn); } .flag.warn { color: var(--caution); } .flag.note { color: var(--note); }
+  .stage { display: block; font-size: 12px; margin: 2px 0; } .stage .muted { color: var(--muted); }
+  .btn { font: inherit; font-size: 12px; padding: 2px 8px; border: 1px solid var(--rule); border-radius: 6px; background: transparent; color: var(--ink); cursor: pointer; }
+  .btn:disabled { opacity: 0.5; cursor: default; }
+  select { font: inherit; font-size: 12px; max-width: 220px; }
+  .ben { color: var(--accent); font-weight: 600; }
+  .summary { font-size: 13px; color: var(--muted); margin: 6px 0 14px; }
+  .status { margin-left: auto; font-size: 12px; color: var(--muted); }
+  input.yr { width: 64px; font: inherit; font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Station access</h1>
+  <span class="muted">Each Metro station's access at opening from the rules (its Chronology year and phase, rail depth against D_HALL, platform type, interchange), or your choice; later stages proposed from the lines opening there, accepted here. Saved as params/station_access; the rules in params/station_access_rule come from the last 3D build.</span>
+  <span class="status" id="status">loading…</span>
+</header>
+<main>
+  <div class="bar">
+    <label>Line <select id="lineSel"><option value="">all</option></select></label>
+    <label><input type="checkbox" id="onlyFlag"> only stations with flags or proposals</label>
+    <label><input type="checkbox" id="onlyBen"> only your choices</label>
+  </div>
+  <div class="summary" id="summary"></div>
+  <table><thead><tr><th>Station</th><th>Opening</th><th>Depth</th><th>Platform</th><th>Rules</th><th>Your choice</th><th>Interchange at opening</th><th>Stages</th><th>Flags</th></tr></thead><tbody id="rows"></tbody></table>
+</main>
+<script>
+(() => {
+'use strict';
+const $ = (s) => document.querySelector(s);
+const LABEL = { surface: 'Surface station', platform_level: 'Platform level', platform_level_xu: 'Platform level, crossunder', end_halls: 'End ticket halls', mezzanine: 'Mezzanine', mezzanine_full: 'Full-length mezzanine', mined_hall: 'Street hall, mined station', deep: 'Deep station' };
+const FLAG = { 'shallower than D_HALL': 'an island or interchange shallower than D_HALL: platform level with a crossunder', 'no year': 'no opening year in the Chronology: the line\'s phase assumed', 'hall needs D_HALL': 'the hall needs the rail at least D_HALL down', 'hall over a mined station': 'a hall over a mined station: no box roof to build it on' };
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const S = { rule: null, ben: {}, db: null, canWrite: true, line: '' };
+const fmt = (v, d = 1) => (v == null || !isFinite(v) ? '–' : (+v).toFixed(d));
+function setStatus(t) { $('#status').textContent = t; }
+function benOf(line, st) { return (S.ben[line] || {})[st] || {}; }
+async function save() {
+  try { if (S.db) await S.db.doc('params/station_access').set(S.ben); else localStorage.setItem('profile:station_access', JSON.stringify(S.ben)); setStatus('saved'); }
+  catch (e) { setStatus('not saved: ' + (e.message || e)); }
+}
+function setBen(line, st, patch) {
+  S.ben[line] = S.ben[line] || {}; const cur = { ...(S.ben[line][st] || {}), ...patch };
+  for (const k of Object.keys(cur)) if (cur[k] == null || (Array.isArray(cur[k]) && !cur[k].length)) delete cur[k];
+  if (Object.keys(cur).length) S.ben[line][st] = cur; else { delete S.ben[line][st]; if (!Object.keys(S.ben[line]).length) delete S.ben[line]; }
+  render(); save();
+}
+function render() {
+  const rule = S.rule || {}; const lines = Object.keys(rule);
+  const sel = $('#lineSel'); if (sel.options.length <= 1) for (const l of lines) { const o = document.createElement('option'); o.value = l; o.textContent = l.replace('_', ' '); sel.append(o); }
+  const onlyFlag = $('#onlyFlag').checked, onlyBen = $('#onlyBen').checked;
+  const rows = [], counts = {}; let nBen = 0, nFlag = 0, nProp = 0;
+  for (const line of lines) {
+    if (S.line && line !== S.line) continue;
+    const sts = Object.entries(rule[line]).sort((a, b) => (a[1].c ?? 0) - (b[1].c ?? 0));
+    const out = [];
+    for (const [st, a] of sts) {
+      const b = benOf(line, st), type = LABEL[b.type] ? b.type : a.type, stages = b.stages || [];
+      const proposals = (a.proposed || []).filter((p) => !stages.some((s) => s.year === p.year && s.trigger === p.trigger));
+      counts[type] = (counts[type] || 0) + 1; if (b.type) nBen++; if (a.flags.length) nFlag++; nProp += proposals.length;
+      if (onlyFlag && !a.flags.length && !proposals.length) continue;
+      if (onlyBen && !b.type && !stages.length) continue;
+      out.push(`<tr><td><b>${esc(st)}</b></td><td class="num">${a.year != null ? `${a.year} · P${a.phase}` : `<span class="flag warn">no year · P${a.phase}</span>`}</td><td class="num">${fmt(a.depth)} / ${fmt(a.d_hall, 2)} m</td><td>${a.island ? 'island' : 'side'}</td><td>${esc(LABEL[a.rule])}</td>
+        <td><select data-line="${esc(line)}" data-st="${esc(st)}" ${S.canWrite ? '' : 'disabled'}><option value="">rules</option>${Object.entries(LABEL).map(([k, v]) => `<option value="${k}" ${b.type === k ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select></td>
+        <td>${(a.at_open || []).map((m) => `${esc(m.station)} (${esc(String(m.line).replace('_', ' '))}, ${m.year})`).join('; ') || '–'}</td>
+        <td>${stages.map((s, i) => `<span class="stage"><span class="ben">${s.year ?? '–'}</span> ${esc(s.type ? LABEL[s.type] || s.type : s.proposed || '')} <span class="muted">${esc(s.trigger || s.note || '')}</span> <button class="btn" data-rm="${i}" data-line="${esc(line)}" data-st="${esc(st)}" ${S.canWrite ? '' : 'disabled'}>remove</button></span>`).join('')}
+            ${proposals.map((p, i) => `<span class="stage"><span class="muted">proposed</span> ${p.year ?? '(year not set)'}: ${esc(p.proposed)} <span class="muted">(${esc(p.trigger)})</span> <button class="btn" data-acc="${i}" data-line="${esc(line)}" data-st="${esc(st)}" ${S.canWrite ? '' : 'disabled'}>accept</button></span>`).join('')}
+            <span class="stage"><button class="btn" data-add="1" data-line="${esc(line)}" data-st="${esc(st)}" ${S.canWrite ? '' : 'disabled'}>add a stage</button></span></td>
+        <td>${a.flags.map((f) => `<span class="flag ${f.sev}">${esc(FLAG[f.kind] || f.kind)}</span>`).join('')}</td></tr>`);
+    }
+    if (out.length) rows.push(`<tr><td class="line" colspan="9">${esc(line.replace('_', ' '))}</td></tr>` + out.join(''));
+  }
+  $('#rows').innerHTML = rows.join('') || '<tr><td colspan="9" class="muted">Nothing to show. The rules come from the last 3D build (Run 3D on the hub page).</td></tr>';
+  const tot = Object.values(counts).reduce((t, v) => t + v, 0);
+  $('#summary').textContent = tot ? `${tot} stations: ` + Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${LABEL[k]} ${v}`).join(', ') + ` · ${nBen} your choice · ${nFlag} flagged · ${nProp} stages proposed` : '';
+}
+$('#rows').addEventListener('change', (e) => { const s = e.target.closest('select[data-st]'); if (s) setBen(s.dataset.line, s.dataset.st, { type: s.value || null, source: s.value ? 'Ben' : null }); });
+$('#rows').addEventListener('click', (e) => {
+  const acc = e.target.closest('[data-acc]'); if (acc) { const { line, st } = acc.dataset, a = S.rule[line][st], b = benOf(line, st), stages = (b.stages || []).slice(), props = (a.proposed || []).filter((p) => !stages.some((s) => s.year === p.year && s.trigger === p.trigger)), p = props[+acc.dataset.acc]; if (p) { stages.push({ year: p.year, proposed: p.proposed, trigger: p.trigger, source: 'Ben' }); setBen(line, st, { stages }); } return; }
+  const rm = e.target.closest('[data-rm]'); if (rm) { const { line, st } = rm.dataset, stages = (benOf(line, st).stages || []).slice(); stages.splice(+rm.dataset.rm, 1); setBen(line, st, { stages }); return; }
+  const add = e.target.closest('[data-add]'); if (add) { const { line, st } = add.dataset; const yr = prompt('Year of the stage (blank for not set):'); if (yr === null) return; const what = prompt('What is added (e.g. "mezzanine", "street elevators", "TRI hall"):'); if (what === null) return; const stages = (benOf(line, st).stages || []).slice(); stages.push({ year: yr.trim() ? +yr : null, proposed: what, trigger: 'Ben', source: 'Ben' }); setBen(line, st, { stages }); }
+});
+$('#lineSel').addEventListener('change', (e) => { S.line = e.target.value; render(); });
+$('#onlyFlag').addEventListener('change', render); $('#onlyBen').addEventListener('change', render);
+async function boot() {
+  const C = window.claude;
+  if (C && typeof C.use === 'function') {
+    S.db = await C.use('db');
+    try { const u = await C.use('user'); if (u && u.canEdit) S.canWrite = await u.canEdit(); } catch {}
+  }
+  if (S.db) {
+    S.db.doc('params/station_access_rule').onSnapshot((d) => { S.rule = d.exists ? d.data() : {}; render(); setStatus(d.exists ? 'rules from the last 3D build' : 'no rules yet: run 3D on the hub page'); }, () => setStatus('live updates stopped'));
+    S.db.doc('params/station_access').onSnapshot((d) => { S.ben = d.exists ? d.data() : {}; render(); }, () => {});
+  } else {
+    try { S.rule = await fetch('station_access_rule.json').then((r) => (r.ok ? r.json() : {})); } catch { S.rule = {}; }
+    try { S.ben = JSON.parse(localStorage.getItem('profile:station_access') || '{}'); } catch {}
+    render(); setStatus('no hub: read only');
+  }
+}
+boot();
+})();
+</script>
+</body>
+</html>

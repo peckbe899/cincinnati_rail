@@ -65,7 +65,7 @@
   // ---- the hub bar ----
   const SITE = location.pathname.split('/')[1] || '';
   let filesChanged = false, offline = false;
-  const VIEWS = [['deck', 'Deck'], ['profiles', 'Profiles'], ['3d', '3D'], ['chronology', 'Chronology']];
+  const VIEWS = [['deck', 'Deck'], ['profiles', 'Profiles'], ['3d', '3D'], ['chronology', 'Chronology'], ['access', 'Access']];
   const HOME = '<a href="/" title="Home: the hub page" style="display:inline-flex;align-items:center;gap:5px;background:#fff;color:#14181c;'
     + 'text-decoration:none;font-weight:700;padding:3px 10px 3px 8px;border-radius:999px;margin-right:4px">'
     + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'

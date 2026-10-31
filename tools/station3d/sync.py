@@ -1002,6 +1002,19 @@ def main():
     # normalised name within 150 m; Ben marks the rest (differently named ones such as Convention Center and Plum) in the
     # Deck, params/station_complexes 'marked' (kept by the pipeline). Each complex: its members {sys, line, station, c}.
     complexes = station_complexes(stations, norm)
+    # Ben's marks: the Deck's station edits with a shared 'complex' label (deck/layout stations[id].complex)
+    marked = {}
+    lay_f = os.path.join(a.cache, 'db', 'deck_db', 'deck', 'layout.json')
+    lay_st = (json.load(open(lay_f)).get('stations') or {}) if os.path.exists(lay_f) else {}
+    for st in stations:
+        lab = (lay_st.get(st['id']) or {}).get('complex')
+        if not lab or st.get('deleted'):
+            continue
+        g = marked.setdefault(lab, {'id': 'marked:' + norm(lab), 'name': lab, 'members': []})
+        for p in st['profiles']:
+            if not any(m['line'] == p['line'] and m['station'] == p['name'] for m in g['members']):
+                g['members'].append({'sys': st['sys'], 'line': p['line'], 'station': p['name'], 'c': p['c'], 'x': p['x'], 'y': p['y']})
+    complexes_marked = list(marked.values())
     only_prof = [s for s in stations if s.get('note')]
     if only_prof:
         issues.append(f"{len(only_prof)} Profiles stations have no Deck station within reach: "
@@ -1460,7 +1473,7 @@ def main():
         'frame_turn_deg': AREA['frame_turn'], 'box': [r1(v) for v in BOX],
         'interline': combos, 'stripe_m': STRIPE_M,
         'platform_m': PLATFORM_M, 'platform_above_rail': PLATFORM_ABOVE_RAIL, 'struct': struct, 'box_margin': BOX_MARGIN,
-        'assumed': ASSUMED, 'deck_rules': dd.get('constants'), 'issues': issues, 'approach': approach, 'track_geometry': geom, 'station_types': station_types, 'tube_points': tube_points, 'station_complexes': complexes,
+        'assumed': ASSUMED, 'deck_rules': dd.get('constants'), 'issues': issues, 'approach': approach, 'track_geometry': geom, 'station_types': station_types, 'tube_points': tube_points, 'station_complexes': complexes, 'station_complexes_marked': complexes_marked,
         'station_platforms': {lid: {st['name']: plat_type.get((lid, norm(st['name']))) or 'side' for st in d['stations']} for lid, d in lines.items() if d['sys'] != 'rer'},
         'rules': ['Levels: the Rail Profiles editor; plan, tracks and platforms: the Mill Creek Deck',
                   'A platform on a shared pair (RER A/D, B C E ...) serves every line on it, at the level of the saved Profiles line (Ben, 2026-10-26: A and D share the Fountain Square platforms)',

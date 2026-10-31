@@ -31,6 +31,7 @@ SITES = {   # url prefix -> (folder, its page)
     'profiles': (os.path.join(ROOT, 'data', 'profile'), 'profiles.html'),
     '3d': (os.path.join(ROOT, 'tools', 'station3d', 'page'), 'index.html'),
     'chronology': (os.path.join(HUB, 'sites', 'chronology'), 'index.html'),
+    'access': (os.path.join(HUB, 'sites', 'access'), 'index.html'),   # station access types and later stages (31 October)
 }
 SHIM = '<script src="/hub/shim.js"></script>'
 VENDOR = {   # the pages' CDN libraries served from hub/static/vendor (the hub works offline)

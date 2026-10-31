@@ -281,10 +281,20 @@ class Pipeline:
         cur = self.store.get('params/approach_extra')
         if ax is not None and (cur is None or cur['data'] != ax):
             self.store.set('params/approach_extra', ax, by='pipeline')
+        # station access at opening for every Metro station (tools/station_access_report.py, the Python copy of the rules)
+        af = os.path.join(WORK, 'station_access_rule.json')
+        self.sh(log, [PY, os.path.join(ROOT, 'tools', 'station_access_report.py'), '--out', af])
+        if os.path.exists(af):
+            ar = json.load(open(af))
+            cur = self.store.get('params/station_access_rule')
+            if cur is None or cur['data'] != ar:
+                self.store.set('params/station_access_rule', ar, by='pipeline')
         cx = snap.get('station_complexes')   # stations of every system that are one station (interchanges), Ben's marks kept
         cur = self.store.get('params/station_complexes')
         if cx is not None:
-            marked = (cur['data'].get('marked') if cur else None) or []
+            marked = snap.get('station_complexes_marked')   # Ben's marks in the Deck, else the record's
+            if marked is None:
+                marked = (cur['data'].get('marked') if cur else None) or []
             new = {'auto': cx, 'marked': marked}
             if cur is None or cur['data'] != new:
                 self.store.set('params/station_complexes', new, by='pipeline')
