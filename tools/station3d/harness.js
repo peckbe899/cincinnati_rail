@@ -47,11 +47,13 @@ async function open(browser, root, docs, url, html = (h) => h) {
     route.fulfill({ status: 200, body: fs.readFileSync(p), contentType: type });
   });
   const page = await ctx.newPage();
-  page.on('pageerror', (e) => console.error('page error:', e.message));
+  // a page error means the samples would come from a half-loaded page: the build fails here, not later with stale data
+  page.on('pageerror', (e) => { console.error(`page error in ${url}: ${e.message}`); process.exitCode = 2; pageErrors.push(e.message); });
   await page.goto(url);
   return { ctx, page };
 }
 
+const pageErrors = [];
 (async () => {
   const browser = await chromium.launch();
   const result = { profiles: {}, deck: null };
@@ -105,5 +107,6 @@ async function open(browser, root, docs, url, html = (h) => h) {
     await ctx.close();
   }
   await browser.close();
+  if (pageErrors.length) { console.error(`${pageErrors.length} page error(s): the samples are not trusted, nothing written`); process.exit(2); }
   fs.writeFileSync(out, JSON.stringify(result));
-})();
+})().catch((e) => { console.error(e && e.stack || e); process.exit(1); });

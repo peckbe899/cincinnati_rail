@@ -475,7 +475,7 @@ const S = {
   index: [], net: null, cache: {}, data: null, L: 0, step: 2, ground: null,
   stations: [], rivers: [], crossings: [], align: null, canonSecs: [], canonFixed: {}, canonLocks: [],
   view: { c0: 0, c1: 1 }, units: 'm', tool: 'move', brush: 'auto', show: 'both',
-  sel: null, hoverC: null, hoverXY: null, drag: null, yFrozen: null,
+  sel: null, hoverC: null, drag: null, yFrozen: null,
   saved: {}, dirty: false, saving: false, hist: [], fut: [], canonModes: {}, rerData: {}, defaultDocs: {}, metroRails: {},
   db: null, user: null, canWrite: null, downloads: null, store: 'none',
 };
@@ -488,7 +488,18 @@ const toU = (m) => (S.units === 'ft' ? m / FT : m);
 const fromU = (u) => (S.units === 'ft' ? u * FT : u);
 const uLbl = () => (S.units === 'ft' ? 'ft' : 'm');
 const fmtZ = (m, d = 1) => (m == null || !isFinite(m) ? '–' : toU(m).toFixed(d));
-const fmtCh = (c) => { const k = Math.floor(c / 1000 + 1e-9); return `${k}+${String(Math.round(c - k * 1000)).padStart(3, '0')}`; };
+const fmtCh = (c) => { let k = Math.floor(c / 1000 + 1e-9), m = Math.round(c - k * 1000); if (m >= 1000) { k += 1; m -= 1000; } return `${k}+${String(m).padStart(3, '0')}`; };   // 1999.6 is 2+000, not 1+1000
+// shared helpers (the 31 October audit: each of these was written three to eight times)
+// the station whose platform covers c (tol: half a platform, as the rules; inPlatform adds 2 m for editing)
+const stationAt = (c, tol = settings.platform / 2) => (S.stations ? S.stations.find((s) => Math.abs(c - s.c) <= tol) : undefined) || null;
+// the ranges [i0, i1] of consecutive indexes in [a, b] where pred(item, i) holds
+const rangesOf = (arr, a, b, pred) => { const out = []; let s = -1; for (let i = a; i <= b + 1; i++) { const on = i <= b && pred(arr[i], i); if (on && s < 0) s = i; if (!on && s >= 0) { out.push([s, i - 1]); s = -1; } } return out; };
+// a list of [c0, c1, kind] with [a, b] cut out of it
+const cutRange = (list, a, b) => { const out = []; for (const o of list || []) { if (o[1] <= a || o[0] >= b) { out.push(o); continue; } if (o[0] < a) out.push([o[0], a, o[2]]); if (o[1] > b) out.push([b, o[1], o[2]]); } return out; };
+// the plan position [lon, lat] at chainage c on a path of [chainage, lon, lat]
+const pathAt = (path, c) => { let j = 1; while (j < path.length - 1 && path[j][0] < c) j++; const a = path[j - 1], b = path[j]; const t = b[0] - a[0] > 0 ? clamp((c - a[0]) / (b[0] - a[0]), 0, 1) : 0; return [a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; };
+// the structure of a tube key ('A', 'C' or 'bore')
+const tubeOfKey = (k) => (k === 'bore' ? METRO_ST.bore : k === 'C' ? METRO_ST.tubeC : METRO_ST.tube);
 const fmtG = (g) => `${g >= 0 ? '+' : '−'}${Math.abs(g).toFixed(1)}‰`;
 const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
 function niceStep(range, target) {
@@ -687,13 +698,7 @@ function applyLocks(al) {
   const before = JSON.stringify([al.pvi, al.st, al.sg, al.ovr, al.so, al.del]);
   for (const lk of locks) {
     al.pvi = al.pvi.filter((p) => p.c < lk.lo || p.c > lk.hi).concat((lk.pvi || []).map(([c, z]) => ({ c: +c, z: +z }))).sort((a, b) => a.c - b.c);
-    const ovr = [];
-    for (const o of al.ovr || []) {
-      if (o[1] <= lk.lo || o[0] >= lk.hi) { ovr.push(o); continue; }
-      if (o[0] < lk.lo) ovr.push([o[0], lk.lo, o[2]]);
-      if (o[1] > lk.hi) ovr.push([lk.hi, o[1], o[2]]);
-    }
-    al.ovr = ovr.concat((lk.ovr || []).map(([a, b, t]) => [+a, +b, t])).sort((a, b) => a[0] - b[0]);
+    al.ovr = cutRange(al.ovr, lk.lo, lk.hi).concat((lk.ovr || []).map(([a, b, t]) => [+a, +b, t])).sort((a, b) => a[0] - b[0]);
     Object.entries(lk.st || {}).forEach(([name, z]) => {
       const i = S.stations.findIndex((s) => s.name === name); if (i < 0) return;
       al.st[i] = z; if (al.sg) al.sg[i] = 0; if (al.so) al.so[i] = 0;
@@ -812,7 +817,7 @@ function riverTubes() { return S.rivers.filter((r) => !bridgeOf(r)).map(riverBan
 function defaultMode(i) { const f = S.canonModes[i]; if (f) return f.mode; return S.stations[i].trunk ? 'under' : 'surface'; }
 function modeOf(i) { return (S.align && S.align.mode && S.align.mode[i]) || defaultMode(i); }
 function canonAt(c) { const a = S.canonSecs; for (let k = a.length - 1; k >= 0; k--) if (c >= a[k].lo && c <= a[k].hi) return a[k]; return null; }
-function inStation(c) { const half = settings.platform / 2; return S.stations.some((s) => Math.abs(c - s.c) <= half); }
+function inStation(c) { return !!stationAt(c); }
 // Metro structures (Ben's rules), from the top of rail: below = rail to underside, top = rail
 // to top, od = outside diameter.
 //  Cut-and-cover box (and station box): 1.0 below, 4.6 to top.
@@ -866,7 +871,7 @@ function phaseAt(c, id = S.data && S.data.id) {
   // a station is one phase (Ben, 30 October): it was built with its first track, so the earlier-opened of the segments
   // either side of it decides its phase and tube, for the whole platform
   if (CHR && id === (S.data && S.data.id)) {
-    const half = settings.platform / 2, st = S.stations.find((x) => Math.abs(c - x.c) <= half);
+    const half = settings.platform / 2, st = stationAt(c);
     if (st) {
       const sgs = chrSegments(), at = (q) => sgs.find((x) => q >= x.c0 && q <= x.c1);
       const A = at(st.c - half - 1), B = at(st.c + half + 1);
@@ -882,8 +887,8 @@ function metroTube(c, id) {
   if (!MS) return METRO_ST[(ERA[id] || {}).shield || 'tube'];
   const ph = phaseAt(c, id), t = (MS.phases[ph] || MS.phases.later).tube, f = id === (S.data && S.data.id) ? tubeFormAt(c) : null;
   if (f === 'bore') return METRO_ST.bore;
-  if (f === 'twin' && t === 'bore') return twinOf(ph) === 'C' ? METRO_ST.tubeC : METRO_ST.tube;
-  return t === 'bore' ? METRO_ST.bore : t === 'C' ? METRO_ST.tubeC : METRO_ST.tube;
+  if (f === 'twin' && t === 'bore') return tubeOfKey(twinOf(ph));
+  return tubeOfKey(t);
 }
 // Tube form (Ben, 31 October): twin single-track tubes or the double-track bore, by the drive's ends, or painted. The twin
 // tubes of a phase whose tube is the bore: type A to Phase 2, type C after.
@@ -899,7 +904,7 @@ function tubeFormAt(c) { const o = (S.align && S.align.tf) || []; for (let k = o
 function drivenTube(c, id) {
   if (SOLVING || !MS || isRerId(id) || !S.data || id !== S.data.id || !VERTS || !VERTS._types || !VERTS._types.tube) return null;
   const T = VERTS._types, i = Math.round(c / T.step); const k = T.tube[i];
-  return k ? (k === 'bore' ? METRO_ST.bore : k === 'C' ? METRO_ST.tubeC : METRO_ST.tube) : null;
+  return k ? tubeOfKey(k) : null;
 }
 // straight (train-averaged radius at least the record's straight radius) and underground (bored or box, not a trough):
 // a Metro grade there may reach the higher limit as a warning (Ben, 28 October)
@@ -915,8 +920,8 @@ function straightUnder(c) {
 function gradeLimitAt(c) {
   const base = settings.maxGrade;
   if (!MS || isRer()) return { lim: base, warn: null, why: '' };
-  const p = (MS.phases[phaseAt(c)] || MS.phases.later) || {}, add = allowanceAt(c), R = add > 0 ? settings.curveK / add : Infinity;
-  const mx = p.grade_max ?? base, st = p.grade_straight ?? MS.grades.straight_underground_max ?? mx, ph = phaseAt(c);
+  const ph = phaseAt(c), p = (MS.phases[ph] || MS.phases.later) || {}, add = allowanceAt(c), R = add > 0 ? settings.curveK / add : Infinity;
+  const mx = p.grade_max ?? base, st = p.grade_straight ?? MS.grades.straight_underground_max ?? mx;
   const pl = ph === 'later' ? 'later' : 'Phase ' + ph;
   if (R >= (MS.grades.straight_radius || 1000)) {
     if (p.straight_warn ?? true) { const u = UNDER_T.has(typeAt(c)); return { lim: mx, warn: u ? st : null, why: u ? `${pl}: straight underground up to ${st}‰ as a warning` : `${pl}: straight but not underground, ${mx}‰` }; }
@@ -1009,8 +1014,8 @@ function sgMaxFor() { const e = eraOf(); return e ? e.sgMax : settings.stationMa
 // cut-and-cover pocket inside a drive is bored through (flagged where the cover is short: the profile should dive), a short
 // deep pocket is shallow shield. Drives run box to box (or to a portal), and end where the phase changes; deep stations
 // are platform tunnels. Canon sections and painted stretches still decide where they apply.
-function phaseRules(c) {
-  const p = (MS && (MS.phases[phaseAt(c)] || MS.phases.later)) || {}, ph = phaseAt(c);
+function phaseRules(c, ph = phaseAt(c)) {
+  const p = (MS && (MS.phases[ph] || MS.phases.later)) || {};
   return { ccMax: p.cc_max ?? settings.shallowMax, minDrive: p.min_drive ?? 300, deepFrom: p.deep_from ?? settings.deepBelow, tbm: p.tbm ?? (ph === '3' || ph === 'later') };
 }
 // a drive's method (Ben, 31 October: "deep-bore is a thing when it's TBM"): the hand shield in Phases 1-2, the tunnel boring
@@ -1018,7 +1023,7 @@ function phaseRules(c) {
 const methodAt = (c) => (phaseRules(c).tbm ? 'deep' : 'shield');
 function pointType(c, z) {   // one chainage on its own: the type, or for a Metro tunnel stretch its class (C, E, B)
   // a station is one type, whatever its depth (Ben, 30 October): every point on the platform takes the platform centre's
-  { const st = S.stations && S.stations.find((x) => Math.abs(c - x.c) <= settings.platform / 2); if (st && Math.abs(c - st.c) > 1e-6) { const q = pointType(st.c, railAt(st.c)); return q.cls ? Object.assign({}, q) : Object.assign({}, q, { stn: true }); } }
+  { const st = stationAt(c); if (st && Math.abs(c - st.c) > 1e-6) { const q = pointType(st.c, railAt(st.c)); return q.cls ? Object.assign({}, q) : Object.assign({}, q, { stn: true }); } }
   const r = riverAt(c);   // a river crossing: a bridge or a sunk box (Ben, 30 October), in a covered way too
   if (r && !alongShore(r)) return { t: z >= pool() + 1 ? 'elevated' : 'sunk' };
   const sec0 = canonAt(c);
@@ -1035,7 +1040,7 @@ function pointType(c, z) {   // one chainage on its own: the type, or for a Metr
   if (!sec && !isRer() && MS) {
     const R = phaseRules(c), tube = metroTube(c, S.data.id), shieldFrom = tube.top + tube.od;
     // a station is one type (Ben, 29 October): by its depth at the platform centre, not point by point
-    if (inStation(c)) { const st = S.stations.find((s) => Math.abs(c - s.c) <= settings.platform / 2), gs = groundAt(st.c), ds = isFinite(gs) ? gs - railAt(st.c) : d;
+    if (inStation(c)) { const st = stationAt(c), gs = groundAt(st.c), ds = isFinite(gs) ? gs - railAt(st.c) : d;
       return { t: ds <= R.ccMax ? 'cutcover' : methodAt(c), stn: true }; }   // by the cut-and-cover limit (Ben, 31 October)
     return { cls: d < shieldFrom ? 'C' : d > R.ccMax ? 'B' : 'E', d, deep: d >= R.deepFrom, ph: phaseAt(c), R, shieldFrom };
   }
@@ -1069,16 +1074,17 @@ const approachLen = (shift, c, info) => Math.max(MS.approach_m || 40, Math.sqrt(
 // it takes the type of the longer neighbour (both the same: that one); a short too-shallow spot inside a drive is bored
 // through (its flag stays). Drawing value.
 const MIN_RUN = 20;
-function absorbShort(P, step) {
-  const inSt = (c) => S.stations.some((s) => Math.abs(c - s.c) <= settings.platform / 2);
+function absorbShort(P, step, free = (p) => !stationAt(p.c), edgeOk = () => true) {
+  // free(p): a sample that may be absorbed; edgeOk(q): a neighbour whose type may be taken
   for (let pass = 0; pass < 4; pass++) {
     const R = []; let a = 0;
     for (let i = 1; i <= P.length; i++) if (i === P.length || P[i].t !== P[a].t) { R.push([a, i - 1]); a = i; }
     let changed = false;
     for (let k = 1; k + 1 < R.length; k++) {
       const [x, y] = R[k], L = (y - x + 1) * step; if (L >= MIN_RUN) continue;
-      if (P.slice(x, y + 1).some((p) => inSt(p.c))) continue;
+      if (!P.slice(x, y + 1).every(free)) continue;
       const [px, py] = R[k - 1], [nx, ny] = R[k + 1], prev = P[px].t, next = P[nx].t;
+      if (!edgeOk(P[py]) || !edgeOk(P[nx])) continue;
       const t = prev === next ? prev : (py - px >= ny - nx ? prev : next);
       for (let i = x; i <= y; i++) P[i].t = t; changed = true;
     }
@@ -1118,7 +1124,7 @@ function stretchTypes() {
 // piece, never box > tube > box. 6. Paint: cut and cover is a box; shallow shield or deep forces boring in its drive.
 function solveTypes(V) {
   const step = S.step || 2, n = Math.floor(S.L / step) + 1, P = [], flags = [], approaches = [], half = settings.platform / 2;
-  const runs = (a, b, f) => { const out = []; let s = -1; for (let i = a; i <= b + 1; i++) { const on = i <= b && f(P[i], i); if (on && s < 0) s = i; if (!on && s >= 0) { out.push([s, i - 1]); s = -1; } } return out; };
+  const runs = (a, b, f) => rangesOf(P, a, b, f);
   const len = (a, b) => P[b].c - P[a].c + step;
   const stIdx = (c) => Math.max(0, Math.min(n - 1, Math.round(c / step)));
   const OPEN = new Set(['atgrade', 'trough', 'elevated']);
@@ -1139,7 +1145,7 @@ function solveTypes(V) {
     const force = o === 'shield' || o === 'deep' ? o : r || (sec && (sec.m === 'shallow' || sec.m === 'deep')) ? 'bored' : null;   // a paint names its method; canon and rivers only say bored
     return { role: 'tunnel', d, force };
   };
-  for (let i = 0; i < n; i++) { const c = Math.min(i * step, S.L), z = railAt(c), ph = phaseAt(c); P.push(Object.assign({ c, z, ph, R: phaseRules(c) }, base(c, z))); }
+  for (let i = 0; i < n; i++) { const c = Math.min(i * step, S.L), z = railAt(c), ph = phaseAt(c); P.push(Object.assign({ c, z, ph, R: phaseRules(c, ph) }, base(c, z))); }
   // stations: one type for the whole platform, by the centre (Ben, 29-30 October), by the cut-and-cover limit
   const stOf = [];
   S.stations.forEach((s) => {
@@ -1162,7 +1168,6 @@ function solveTypes(V) {
   }
   const phaseTube = (c) => (MS.phases[phaseAt(c)] || MS.phases.later).tube;
   const twinAt = (c) => { const t = phaseTube(c); return t === 'bore' ? twinOf(phaseAt(c)) : t; };
-  const tubeOfKey = (k) => (k === 'bore' ? METRO_ST.bore : k === 'C' ? METRO_ST.tubeC : METRO_ST.tube);
   const boreNeed = METRO_ST.bore.top + METRO_ST.bore.od;
   const isTun = (p) => p.role === 'tunnel';
   // an anchor next to a stretch: what it is, its track spacing and the edge where the approach starts (dir: from the anchor
@@ -1256,12 +1261,8 @@ function solveTypes(V) {
   for (const [x, y] of runs(0, n - 1, (p) => { const o = overrideAt(p.c); return (o === 'shield' || o === 'deep') && p.t === 'cutcover' && !p.stn && !riverAt(p.c); })) flags.push({ c0: P[x].c, c1: P[y].c, kind: 'Painted', warn: true, text: `painted ${TYPES[overrideAt(P[x].c)].label} over ${Math.round(len(x, y))} m where the rules need a box (${P[x].appr ? 'the spacing change' : 'less than one tube diameter of cover, or too short for a drive'}): the paint wins on the drawing; clear it with Auto` });
   // no open-track or box sliver shorter than MIN_RUN between open track and boxes (the ground stepping across a threshold at a
   // portal): the longer neighbour's type; tunnels and stations are never touched
-  { const free = (p) => !p.stn && !p.appr && !p.shaft && p.t !== 'shield' && p.t !== 'deep' && p.t !== 'sunk';
-    for (let pass = 0; pass < 4; pass++) { let ch = false; const R2 = []; let a2 = 0; for (let i = 1; i <= n; i++) if (i === n || P[i].t !== P[a2].t) { R2.push([a2, i - 1]); a2 = i; }
-      for (let k = 1; k + 1 < R2.length; k++) { const [x, y] = R2[k]; if (len(x, y) >= MIN_RUN || !P.slice(x, y + 1).every(free)) continue; const [px, py] = R2[k - 1], [nx, ny] = R2[k + 1];
-        const ok2 = (q) => q.t !== 'shield' && q.t !== 'deep' && q.t !== 'sunk'; if (!ok2(P[py]) || !ok2(P[nx])) continue;
-        const t = P[px].t === P[nx].t ? P[px].t : (py - px >= ny - nx ? P[px].t : P[nx].t); for (let i = x; i <= y; i++) P[i].t = t; ch = true; }
-      if (!ch) break; } }
+  { const TUN = new Set(['shield', 'deep', 'sunk']);
+    absorbShort(P, step, (p) => !p.stn && !p.appr && !p.shaft && !TUN.has(p.t), (q) => !TUN.has(q.t)); }
   const bored = (p) => (p.t === 'shield' || p.t === 'deep') && !p.stn;
   // approach boxes under the street (Ben, 28 October: accepted where they leave it, round corners or are wider: the street
   // grid made them necessary; each a note saying where and by how much). Box outside = track centres + 4.0 m.
@@ -1312,7 +1313,7 @@ function autoType(c, z) {
 // a station is one type (Ben, 30 October): a paint over part of a platform applies to the whole platform, by the paint
 // at its centre
 function typeAt(c, z = railAt(c)) {
-  const st = S.stations && S.stations.find((x) => Math.abs(c - x.c) <= settings.platform / 2);
+  const st = stationAt(c);
   if (st) { const o = overrideAt(st.c); if (o) return o; if (overrideAt(c)) return autoType(st.c, railAt(st.c)); }
   const o = overrideAt(c);
   if (o && o !== 'elevated' && riverAt(c) && !bridgeOf(riverAt(c)) && !alongShore(riverAt(c))) return autoType(c, z);   // under a river: the sunk box, whatever the paint
@@ -1360,7 +1361,7 @@ function defaultAlign(modes, extra = []) {
     else if (md && md[i] === 'surface' && isFinite(gr)) { ub[i] = lb[i] = gr; }
     else { ub[i] = isFinite(gr) ? gr - settings.defDepth : Infinity; lb[i] = -Infinity; }
   });
-  const tubes = riverTubes(md).concat(riverBridges());
+  const tubes = riverTubes().concat(riverBridges());
   let st, tubePvi = [];
   if (!tubes.length && !extra.length) {
     const run = (i, j) => Math.max(0, Math.abs(S.stations[j].c - S.stations[i].c) - P * Math.abs(j - i));
@@ -1561,10 +1562,8 @@ function curveGradeRanges() {
 // the car centre) 5.4^2 / 2R; a curved two-track station has one face of each, the outside governs.
 const CAR_LEN = 15.56, END_DOOR = 5.4, PLAT_R_ERR = 600, PLAT_R_WARN = 3000;
 function pathXY(d, c) {
-  const path = d.path, lat0 = path[0][2] * Math.PI / 180, kx = 111320 * Math.cos(lat0), ky = 110540;
-  let j = 1; while (j < path.length - 1 && path[j][0] < c) j++;
-  const a = path[j - 1], b = path[j]; const t = b[0] - a[0] > 0 ? clamp((c - a[0]) / (b[0] - a[0]), 0, 1) : 0;
-  return [(a[1] + (b[1] - a[1]) * t) * kx, (a[2] + (b[2] - a[2]) * t) * ky];
+  const lat0 = d.path[0][2] * Math.PI / 180, [lon, lat] = pathAt(d.path, c);
+  return [lon * 111320 * Math.cos(lat0), lat * 110540];
 }
 function fitRadius(pts) {
   const n = pts.length; if (n < 3) return Infinity;
@@ -1806,7 +1805,7 @@ function sizeCanvas(c) {
   const ctx = c.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   return { ctx, W: r.width, H: r.height };
 }
-function yRangeFor(view, plotW) {
+function yRangeFor(view) {
   let lo = Infinity, hi = -Infinity;
   const i0 = Math.max(0, Math.floor(view.c0 / S.step)), i1 = Math.min(S.ground.length - 1, Math.ceil(view.c1 / S.step));
   const stride = Math.max(1, Math.floor((i1 - i0) / 3000));
@@ -1825,7 +1824,7 @@ function draw(ctx, W, H, view, opt = {}) {
   const narrow = W < 560;
   const M = { l: narrow ? 46 : 60, r: 14, t: opt.title ? 118 : (narrow ? 64 : 84), b: CHR && !opt.title ? 74 : 56 };
   const P = { x: M.l, y: M.t, w: Math.max(10, W - M.l - M.r), h: Math.max(10, H - M.t - M.b) };
-  let yr = opt.yr || yRangeFor(view, P.w);
+  let yr = opt.yr || yRangeFor(view);
   if (!opt.yr && S.yFrozen && S.drag) {
     yr = { ymin: Math.min(S.yFrozen.ymin, yr.ymin), ymax: Math.max(S.yFrozen.ymax, yr.ymax) };
     S.yFrozen = yr;
@@ -1954,7 +1953,7 @@ function draw(ctx, W, H, view, opt = {}) {
   const cl = crossingClearances();
   for (const x of S.crossings) {
     if (x.c < view.c0 || x.c > view.c1) continue;
-    const px = X(x.c); ctx.strokeStyle = x.kind === 'rer' ? colors.gridMajor : colors.gridMajor; ctx.setLineDash([3, 4]); ctx.lineWidth = 1;
+    const px = X(x.c); ctx.strokeStyle = colors.gridMajor; ctx.setLineDash([3, 4]); ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(px, P.y); ctx.lineTo(px, P.y + P.h); ctx.stroke(); ctx.setLineDash([]);
   }
   for (const x of cl) {
@@ -2313,7 +2312,7 @@ function drawPlan() {
   ctx.setLineDash([]);
   ctx.strokeStyle = colors.ink; ctx.lineWidth = 2.2; ctx.beginPath(); path.forEach(([, lo, la], i) => { const [x, y] = P(lo, la); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke();
   // view segment
-  const at = (c) => { let i = 1; while (i < path.length - 1 && path[i][0] < c) i++; const a = path[i - 1], b = path[i]; const t = b[0] - a[0] > 0 ? (c - a[0]) / (b[0] - a[0]) : 0; return [a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; };
+  const at = (c) => pathAt(path, c);
   ctx.strokeStyle = colors.accent; ctx.lineWidth = 4; ctx.beginPath();
   const n = 40; for (let i = 0; i <= n; i++) { const c = S.view.c0 + (S.view.c1 - S.view.c0) * i / n; const [lo, la] = at(clamp(c, 0, S.L)); const [x, y] = P(lo, la); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke();
   ctx.fillStyle = colors.ink; S.stations.forEach((st) => { const [x, y] = P(st.lon, st.lat); ctx.fillRect(x - 1.5, y - 1.5, 3, 3); });
@@ -2399,8 +2398,8 @@ function renderIssues() {
 // D. paint review (Ben, 31 October): every paint with what the rules would do there without it; clear one, the ones that
 // only repeat the rules, or all
 function plainTypes() {
-  const keep = [S.align.ovr, S.align.tf], V = VERTS; S.align.ovr = []; S.align.tf = []; SOLVING = true;
-  try { const o = {}; solveTypes(o); return o._types; } finally { S.align.ovr = keep[0]; S.align.tf = keep[1]; SOLVING = false; VERTS = V; }
+  const keep = [S.align.ovr, S.align.tf]; S.align.ovr = []; S.align.tf = []; SOLVING = true;
+  try { const o = {}; solveTypes(o); return o._types; } finally { S.align.ovr = keep[0]; S.align.tf = keep[1]; SOLVING = false; }
 }
 function paintRows() {
   const T = !isRer() && MS ? plainTypes() : openTypes(); if (!T) return [];
@@ -2461,7 +2460,7 @@ function updateSelCard() {
   const el = $('#selCard'); const sel = S.sel;
   const ro = S.canWrite === false || !!(sel && ((sel.kind === 'st' && lockedStation(sel.i)) || (sel.kind === 'pvi' && S.align.pvi[sel.j] && lockAt(S.align.pvi[sel.j].c))));   // locked stretches are read only
   if (!sel) {
-    el.innerHTML = `<h2>Editing</h2><p class="hint">Drag a station bar up or down to set its rail level. Double-click the track to add a bend point, then drag it. Choose <b>Paint</b> and a structure to mark a stretch by hand; <b>Auto</b> clears it. Painted <b>Cut &amp; cover</b>, <b>Shallow shield</b> or <b>Deep tunnel</b> keeps the structure where it is and regrades the ground over it (filled to the box roof plus cover, or the tube top plus one diameter, sloping back past the ends); a station's card can force its whole platform. <b>Twin tubes</b> or <b>Double-track bore</b> sets the tube form of a bored stretch (<b>Auto tubes</b> clears it: the drive's ends decide).</p>
+    el.innerHTML = `<h2>Editing</h2><p class="hint">Drag a station bar up or down to set its rail level. Double-click the track to add a bend point, then drag it. Choose <b>Paint</b> and a structure to mark a stretch by hand; <b>Auto</b> clears it. Painted <b>Cut &amp; cover</b>, <b>Shield tunnel</b> or <b>Deep bore (TBM)</b> keeps the structure where it is and regrades the ground over it (filled to the box roof plus cover, or the tube top plus one diameter, sloping back past the ends); a station's card can force its whole platform. <b>Twin tubes</b> or <b>Double-track bore</b> sets the tube form of a bored stretch (<b>Auto tubes</b> clears it: the drive's ends decide).</p>
       <p class="hint"><kbd>scroll</kbd> zoom · <kbd>drag</kbd> pan · <kbd>↑</kbd><kbd>↓</kbd> nudge 0.1 (<kbd>Shift</kbd> 1) · <kbd>Del</kbd> remove bend · <kbd>Ctrl Z</kbd> undo</p>`;
     return;
   }
@@ -2566,12 +2565,7 @@ function removeSelectedPvi() { if (!S.sel || S.sel.kind !== 'pvi') return; if (S
 function paintRange(a, b, brush) {
   if (b - a < 1) return; pushHist();
   const tf = brush.startsWith('tf:'), key = tf ? 'tf' : 'ovr'; if (tf) brush = brush === 'tf:auto' ? 'auto' : brush.slice(3);
-  const out = [];
-  for (const o of S.align[key] || []) {           // cut the new range out of existing overrides
-    if (o[1] <= a || o[0] >= b) { out.push(o); continue; }
-    if (o[0] < a) out.push([o[0], a, o[2]]);
-    if (o[1] > b) out.push([b, o[1], o[2]]);
-  }
+  const out = cutRange(S.align[key], a, b);   // the new range cut out of the existing paints
   if (brush !== 'auto') out.push([Math.round(a), Math.round(b), brush]);
   out.sort((x, y) => x[0] - y[0]);
   const merged = [];
@@ -3005,7 +2999,7 @@ $('#solveCross').addEventListener('click', () => {
     return cons.every((x) => { const z = railAt(x.c, v0); return (x.ub == null || z <= x.ub + 0.05) && (x.lb == null || z >= x.lb - 0.05); });
   };
   // river tubes the plain solution already meets must stay met
-  const tubeC = riverTubes(modes).flatMap((t) => [{ c: t.c0, ub: t.ub }, { c: t.c1, ub: t.ub }]).filter((t) => railAt(t.c, vb) <= t.ub + 0.05)
+  const tubeC = riverTubes().flatMap((t) => [{ c: t.c0, ub: t.ub }, { c: t.c1, ub: t.ub }]).filter((t) => railAt(t.c, vb) <= t.ub + 0.05)
     .concat(riverBridges().flatMap((t) => [{ c: t.c0, lb: t.lb }, { c: t.c1, lb: t.lb }]).filter((t) => railAt(t.c, vb) >= t.lb - 0.05));
   let cons = []; let held = 0;
   xs.forEach((x) => {
@@ -3107,11 +3101,7 @@ async function exportJson() {
 }
 // ---------- GeoJSON / KMZ export ----------
 // the line's plan position at chainage c (path: [chainage, lon, lat])
-function lonLatAt(c) {
-  const path = S.data.path; let j = 1; while (j < path.length - 1 && path[j][0] < c) j++;
-  const a = path[j - 1], b = path[j]; const t = b[0] - a[0] > 0 ? clamp((c - a[0]) / (b[0] - a[0]), 0, 1) : 0;
-  return [a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
-}
+function lonLatAt(c) { return pathAt(S.data.path, c); }
 const r2 = (v) => Math.round(v * 100) / 100, r7 = (v) => Math.round(v * 1e7) / 1e7;
 // Export (Ben, Oct 17), after his Loveland-Batavia 3D KMZ: one uniform line in the line's colour
 // from its source KMZ (purple if it has none), width 4, absolute altitude (rail level), extruded to

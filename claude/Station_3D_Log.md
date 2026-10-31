@@ -346,3 +346,23 @@ Published: page version 6 and the snapshot (35 parts), read back at view level.
   bore by TBM from Phase 3, `phases.tbm` in the structure record); end boxes carried through every low-cover spot within the
   box limit; the Paints card; "Check all lines" and a test; the Python copy on the hub's records and the Chronology's station
   list. Tests: 64 pass.
+
+## 2026-10-31: code audit, group 1 (Ben: "yes let's start on them")
+
+- Audit in `claude/Code_Audit_2026-10-31.md`. Done from its first group:
+  - Hub: `Store.update` reads and writes under one lock (two saves at once no longer lose one); the pipeline checks every
+    versioned write and says when a record was saved during a tie; `Store.emit` reports a failed listener instead of hiding
+    it; run logs are kept whole (the page shows the tail); `harness.js` fails the build on any page error and on an unhandled
+    exception, instead of handing over samples from a half-loaded page.
+  - Derived files out of git: the pipeline writes the Deck's live export to `hub/work/rer_routes.geojson` and the viaduct
+    parts to `hub/work/derived/deck/viaducts.json` (the hub serves derived files over a site's folder), and no longer writes
+    `station_platforms.json` and `approach_extra.json` into `data/profile`. `python hub/hub.py export` (and the Export button)
+    refreshes the four repo copies. `rer_deck_routes.py` reads the hub's export when there is one, else the repo's.
+  - Profiles page: shared `stationAt`, `rangesOf`, `cutRange`, `pathAt`, `tubeOfKey`, `absorbShort(free, edgeOk)` replace
+    the copies; `phaseRules(c, ph)` and `gradeLimitAt` look the phase up once; `fmtCh(1999.6)` is 2+000; dead code out
+    (identical branches, unused parameters, `S.hoverXY`); the editing hint names the new tunnel labels.
+  - Python copy: `rail_at` for one chainage is pure Python with a bisect (no numpy per call); `rail_grid()` evaluates the rail
+    over the whole line once per design and the engine, the RER types and the fill read it; the solve went from 9 s to
+    0.7 s per line and the test suite from 280 s to 62 s. The types cache is keyed by value (`_solve_key`: levels, platform
+    grades, bend points, paints, tube forms, a ground version, settings, stations), not by `id()`.
+  - Editor and port still agree on every sample of every Metro line (Ben's export); 64 tests pass.

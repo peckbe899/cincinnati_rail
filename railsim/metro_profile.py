@@ -30,6 +30,7 @@ surface stations), and the canon RER-3 covered way and RER-5 deep bore.
 
 from __future__ import annotations
 
+import bisect
 import json
 import math
 from dataclasses import dataclass, field
@@ -336,6 +337,7 @@ class MetroProfile:
         cc = [(a, b, t) for a, b, t in self.ovr if t in ("cutcover", "shield", "deep")]
         if not cc:
             self._ground = g0.copy()
+            self._ground_v = getattr(self, "_ground_v", 0) + 1
             return
         step = float(self.data.get("step_m", 2.0))
         n = len(g0)
@@ -360,6 +362,7 @@ class MetroProfile:
         m = np.isfinite(g0) & (t > g0 + 0.005) & ~river
         g[m] = t[m].astype(np.float32)
         self._ground = g
+        self._ground_v = getattr(self, "_ground_v", 0) + 1
 
     # ------------------------------------------------------------- canon
     def _build_canon(self):
@@ -802,9 +805,22 @@ class MetroProfile:
                 L[k + 1] = min(L[k + 1], L[k + 1] * f)
         short = [{"c": dv[k]["c"], "need": need[k], "got": L[k]} for k in range(len(dv)) if need[k] - L[k] > 0.5]
         self._design = {"dv": dv, "g": g, "L": L, "short": short,
-                        "vc": np.array([v["c"] for v in dv]), "vz": np.array([v["z"] for v in dv])}
+                        "vc": np.array([v["c"] for v in dv]), "vz": np.array([v["z"] for v in dv]),
+                        # plain lists for the scalar path of rail_at (no numpy per call: the 31 October audit's hot spot)
+                        "lc": [v["c"] for v in dv], "lz": [v["z"] for v in dv],
+                        "curves": [(dv[k]["c"] - Lk / 2, dv[k]["c"] + Lk / 2, k) for k, Lk in enumerate(L) if Lk > 1e-6]}
         self._design_key = key
+        self._grid = None
         return self._design
+
+    def rail_grid(self):
+        """the rail at every step of the line, computed once per design: (chainages, levels)"""
+        d = self.design()
+        if getattr(self, "_grid", None) is None:
+            step = float(self.data.get("step_m", 2.0))
+            cs = np.minimum(np.arange(int(self.length // step) + 1) * step, self.length)
+            self._grid = (cs, np.asarray(self.rail_at(cs), dtype=float))
+        return self._grid
 
     def vertices(self):
         """The straight grades between bends (chainage, rail level)."""
@@ -813,6 +829,24 @@ class MetroProfile:
 
     def rail_at(self, c):
         d = self.design()
+        if np.ndim(c) == 0:   # one chainage: pure Python (bisect), about 100x cheaper than the array path per call
+            c = float(c)
+            lc, lz = d["lc"], d["lz"]
+            if c <= lc[0]:
+                z = lz[0]
+            elif c >= lc[-1]:
+                z = lz[-1]
+            else:
+                j = bisect.bisect_right(lc, c)
+                z = lz[j - 1] + (lz[j] - lz[j - 1]) * (c - lc[j - 1]) / (lc[j] - lc[j - 1]) if lc[j] > lc[j - 1] else lz[j]
+            j = bisect.bisect_right(d["curves"], (c, math.inf, 0)) - 1   # the one curve c may lie on
+            if j >= 0:
+                a, b, k = d["curves"][j]
+                if a < c < b:   # inside it: the parabola
+                    Lk, g1, g2 = d["L"][k], d["g"][k - 1], d["g"][k]
+                    x = c - a
+                    z = d["dv"][k]["z"] - g1 * Lk / 2 + g1 * x + (g2 - g1) * x * x / (2 * Lk)
+            return z
         cc = np.asarray(c, dtype=float)
         z = np.interp(cc, d["vc"], d["vz"])
         for k, Lk in enumerate(d["L"]):
@@ -905,9 +939,10 @@ class MetroProfile:
         name = next((p["name"] for p in self.data.get("pieces", []) if p["c0"] - 5 <= c <= p["c1"] + 5), None)
         return ((ms.get("piece_phase") or {}).get(self.id) or {}).get(name) or (ms.get("line_phase") or {}).get(self.id) or "later"
 
-    def phase_rules(self, c: float) -> dict:
-        p = (self.ms["phases"].get(self._phase_at(c)) or self.ms["phases"]["later"]) if getattr(self, "ms", None) else {}
-        ph = self._phase_at(c) if getattr(self, "ms", None) else None
+    def phase_rules(self, c: float, ph: Optional[str] = None) -> dict:
+        if ph is None and getattr(self, "ms", None):
+            ph = self._phase_at(c)
+        p = (self.ms["phases"].get(ph) or self.ms["phases"]["later"]) if getattr(self, "ms", None) else {}
         return {"cc_max": p.get("cc_max", self.settings["shallowMax"]), "min_drive": p.get("min_drive", 300.0),
                 "deep_from": p.get("deep_from", self.settings["deepBelow"]), "tbm": p.get("tbm", ph in ("3", "later"))}
 
@@ -967,11 +1002,19 @@ class MetroProfile:
             return {"t": "deep"}
         return {"t": "cutcover" if self.in_station(c) else "shield"}
 
+    def _solve_key(self):
+        """what a solve of the types depends on, by value (the 31 October audit: no more id() keys, and the paints, platform
+        grades and settings count): a change to any of these is a new solve"""
+        return (tuple(self.st), tuple(self.sg), tuple((p["c"], p["z"]) if isinstance(p, dict) else tuple(p) for p in self.pvi),
+                tuple(self.ovr), tuple(getattr(self, "tf", None) or []), getattr(self, "_ground_v", 0), self.length,
+                tuple(sorted((k, v) for k, v in self.settings.items() if isinstance(v, (int, float, str, bool)))),
+                tuple(s["c"] for s in self.stations))
+
     def stretch_types(self) -> Optional[dict]:
         """The era rules over the whole line (Metro with the structure record): types per step and the flagged pockets."""
         if self.is_rer or not getattr(self, "ms", None):
             return None
-        key = (tuple(self.st), tuple((p["c"], p["z"]) if isinstance(p, dict) else tuple(p) for p in self.pvi), id(self._ground), self.length, id(getattr(self, "chr", None)))
+        key = self._solve_key()
         cached = getattr(self, "_types", None)
         if cached and cached["key"] == key:
             return cached
@@ -1036,10 +1079,11 @@ class MetroProfile:
             force = o if o in ("shield", "deep") else "bored" if r or (sec and sec["m"] in ("shallow", "deep")) else None   # a paint names its method
             return {"role": "tunnel", "d": d, "force": force}
         P = []
+        gc, gz = self.rail_grid()
         for i in range(n):
-            c = min(i * step, self.length)
-            z = float(self.rail_at(c))
-            P.append(dict(base(c, z), c=c, z=z, ph=self._phase_at(c), R=self.phase_rules(c)))
+            c, z = float(gc[i]), float(gz[i])
+            ph = self._phase_at(c)
+            P.append(dict(base(c, z), c=c, z=z, ph=ph, R=self.phase_rules(c, ph)))
         # stations: one type for the whole platform, by the centre, by the cut-and-cover limit
         plats = getattr(self, "platforms_kind", None) or {}
         for s in self.stations:
@@ -1331,15 +1375,15 @@ class MetroProfile:
 
     def open_types(self) -> dict:
         """lines without the Metro rules (RER): the point types with the short stretches absorbed"""
-        key = (tuple(self.st), tuple((p["c"], p["z"]) if isinstance(p, dict) else tuple(p) for p in self.pvi), id(self._ground), self.length)
+        key = self._solve_key()
         cached = getattr(self, "_otypes", None)
         if cached and cached["key"] == key:
             return cached
         step = float(self.data.get("step_m", 2.0))
         P = []
+        gc, gz = self.rail_grid()
         for i in range(int(self.length // step) + 1):
-            c = min(i * step, self.length)
-            z = float(self.rail_at(c))
+            c, z = float(gc[i]), float(gz[i])
             q = self._point_type(c, z)
             P.append({"c": c, "z": z, "t": q.get("t") or (("deep" if q["deep"] else "shield") if q["cls"] == "B" else "cutcover")})
         if not self.settings.get("legacy_structures"):   # the 6 October page (the parity test) had no such rule

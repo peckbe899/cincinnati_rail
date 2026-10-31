@@ -24,7 +24,7 @@ HUB = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HUB)
 sys.path.insert(0, HUB)
 from store import Store          # noqa: E402
-from pipeline import Pipeline, trigger_for    # noqa: E402
+from pipeline import Pipeline, trigger_for, export_derived, DERIVED    # noqa: E402
 
 SITES = {   # url prefix -> (folder, its page)
     'deck': (os.path.join(HUB, 'sites', 'deck'), 'index.html'),
@@ -193,7 +193,8 @@ def make_handler(hub):
                 rel = parts[1] if len(parts) > 1 and parts[1] else page
                 if rel == 'index.html':
                     rel = page
-                return self.file(os.path.join(folder, rel), inject=rel == page)
+                derived = os.path.join(DERIVED, parts[0], rel)   # a file the pipeline derived (viaducts.json) over the site's copy
+                return self.file(derived if os.path.isfile(derived) else os.path.join(folder, rel), inject=rel == page)
             return self.send(404, b'not found', 'text/plain')
 
         do_HEAD = do_GET
@@ -271,8 +272,9 @@ def make_handler(hub):
                 return self.send(200, {'version': hub.store.restore(q['p'], int(q['v']))})
             if u == '/api/export':
                 n = hub.store.export_dir(os.path.join(HUB, 'seed'))
+                files = export_derived(hub.store)
                 write_timeline()
-                return self.send(200, {'records': n})
+                return self.send(200, {'records': n, 'files': files})
             return self.send(404, None)
     return H
 
@@ -286,8 +288,11 @@ def main():
     ap.add_argument('--no-browser', action='store_true', help='do not open the hub page in the browser')
     a = ap.parse_args()
     if a.command == 'export':
-        n = Store(a.db).export_dir(os.path.join(HUB, 'seed'))
+        store = Store(a.db)
+        n = store.export_dir(os.path.join(HUB, 'seed'))
         print(f'{n} records written to hub/seed')
+        for f in export_derived(store):
+            print(f'{f} refreshed')
         write_timeline()
         return
     hub = Hub(a.db, auto=not a.no_auto)

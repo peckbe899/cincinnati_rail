@@ -51,7 +51,10 @@ def jsave(p, d, indent=None):
         json.dump(d, f, ensure_ascii=False, indent=indent, separators=(',', ':') if indent is None else None)
 
 
-LIVE = os.path.join(ROOT, 'data', 'deck', 'rer_routes.geojson')
+# the Deck's live export: the hub's (hub/work, written by every Deck tie, not in git), else the repo's copy (refreshed by
+# `python hub/hub.py export`; the 31 October audit: derived files no longer dirty git on every run)
+LIVE = next((p for p in (os.path.join(ROOT, 'hub', 'work', 'rer_routes.geojson'), os.path.join(ROOT, 'data', 'deck', 'rer_routes.geojson')) if os.path.exists(p)),
+            os.path.join(ROOT, 'data', 'deck', 'rer_routes.geojson'))
 
 
 def deck_pieces(context=None, geojson=None):

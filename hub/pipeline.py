@@ -2,7 +2,7 @@
 
     alignments/* changed ->  platform_tie: platforms slid in the Profiles written into the Deck layout (tools/platform_tie.py;
                              the more recent side wins where both moved one) -> deck_tie if it moved any, else 3d
-    deck/layout changed  ->  deck_tie: the Deck run headless (its own export) -> data/deck/rer_routes.geojson ->
+    deck/layout changed  ->  deck_tie: the Deck run headless (its own export) -> hub/work/rer_routes.geojson ->
                              tools/rer_deck_routes.py (every RER route and Metro line rebuilt on the Deck's pieces and
                              platforms where they drifted; saved profiles moved in the database) -> metro rails table ->
                              Profiles context  ->  then 3d
@@ -24,6 +24,29 @@ import time
 HUB = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HUB)
 WORK = os.path.join(HUB, 'work')
+DERIVED = os.path.join(WORK, 'derived')   # files the pipeline derives (served over the sites' folders; copied into the repo by export)
+LIVE_GJ = os.path.join(WORK, 'rer_routes.geojson')   # the Deck's live export
+# derived file under hub/work -> its copy in the repo, refreshed by `python hub/hub.py export` (the 31 October audit: the
+# pipeline no longer writes into git-tracked files on every run)
+REPO_COPIES = {LIVE_GJ: os.path.join(ROOT, 'data', 'deck', 'rer_routes.geojson'),
+               os.path.join(DERIVED, 'deck', 'viaducts.json'): os.path.join(ROOT, 'hub', 'sites', 'deck', 'viaducts.json')}
+RECORD_COPIES = {'params/station_platforms': os.path.join(ROOT, 'data', 'profile', 'station_platforms.json'),
+                 'params/approach_extra': os.path.join(ROOT, 'data', 'profile', 'approach_extra.json')}
+
+
+def export_derived(store):
+    """the repo copies of the derived files and records (run by `hub.py export`); returns the names refreshed"""
+    done = []
+    for src, dst in REPO_COPIES.items():
+        if os.path.exists(src):
+            shutil.copy2(src, dst)
+            done.append(os.path.relpath(dst, ROOT))
+    for path, dst in RECORD_COPIES.items():
+        r = store.get(path)
+        if r:
+            json.dump(r['data'], open(dst, 'w'), indent=0, ensure_ascii=False)
+            done.append(os.path.relpath(dst, ROOT))
+    return done
 DEBOUNCE_S = 4.0
 DECK_LAYERS = ('rer_line', 'rer_station', 'rer_platform', 'metro_line', 'metro_station', 'metro_platform')
 PY = sys.executable
@@ -102,8 +125,8 @@ class Pipeline:
         log('$ ' + ' '.join(os.path.relpath(a, ROOT) if os.path.isabs(a) and a.startswith(ROOT) else os.path.basename(a) if a == PY else a for a in args))
         p = subprocess.run(args, cwd=ROOT, capture_output=True, text=True)
         out = (p.stdout + p.stderr).strip()
-        if out:
-            log(out[-6000:])
+        if out:   # the whole log in the run record (the page shows its tail); a traceback is never cut off
+            log(out)
         if p.returncode not in ok:
             raise RuntimeError(f'{os.path.basename(args[1] if len(args) > 1 else args[0])} exited {p.returncode}')
         return p.returncode
@@ -151,7 +174,7 @@ class Pipeline:
         if lay is None:
             self.schedule('3d', 'a saved profile changed', delay=0)
             return
-        gj = os.path.join(ROOT, 'data', 'deck', 'rer_routes.geojson')
+        gj = LIVE_GJ
         fresh = os.path.exists(gj) and os.path.getmtime(gj) >= lay['updated'] and '"pid"' in open(gj, encoding='utf8').read(200000)
         if not fresh:   # the Deck's export older than its layout, or without the platform keys: export it now
             self.deck_export(log)
@@ -169,7 +192,8 @@ class Pipeline:
                       '--layout', os.path.join(WORK, 'db', 'deck_db', 'deck', 'layout.json'), '--times', tf, '--sync', sf, '--out', of])
         out = json.load(open(of))
         if out['layout']:
-            self.store.set('deck/layout', out['layout'], by='pipeline', if_version=lay['version'])
+            if self.store.set('deck/layout', out['layout'], by='pipeline', if_version=lay['version']) is None:
+                raise RuntimeError('the Deck layout changed during the tie: run again')
             # the slides now on the Deck are cleared in the profiles; the Deck tie puts each station at its moved platform
             for rid in {m['route'] for m in out['moves'] if m['done']}:
                 cur = self.store.get('alignments/' + rid)
@@ -179,7 +203,8 @@ class Pipeline:
                 for m in out['moves']:
                     if m['done'] and m['route'] == rid:
                         (doc.get('so') or {}).pop(m['key'], None)
-                self.store.set('alignments/' + rid, doc, by='pipeline', if_version=cur['version'])
+                if self.store.set('alignments/' + rid, doc, by='pipeline', if_version=cur['version']) is None:
+                    log(f'{rid}: saved during the tie, its slides kept; run the tie again')
             log(f"{sum(m['done'] for m in out['moves'])} platforms moved on the Deck; the Deck tie follows")
             self.schedule('deck_tie', 'platforms moved from the Profiles', delay=0)
         else:
@@ -192,13 +217,13 @@ class Pipeline:
         self.store.set('params/platform_sync', json.load(open(sf)), by='pipeline', quiet=True)
 
     def deck_export(self, log):
-        """the Deck run headless on the hub's layout: its routes, stations and platforms -> data/deck/rer_routes.geojson"""
+        """the Deck run headless on the hub's layout: its routes, stations and platforms -> hub/work/rer_routes.geojson"""
         jf, out = os.path.join(WORK, 'deck_job.json'), os.path.join(WORK, 'deck_out.json')
         json.dump({'lines': [], 'deck': True}, open(jf, 'w'))
         self.sh(log, ['node', os.path.join(ROOT, 'tools', 'station3d', 'harness.js'), WORK, jf, out])
         deck = json.load(open(out))['deck']
         fc = {'type': 'FeatureCollection', 'features': [f for f in deck['features'] if f['properties'].get('layer') in DECK_LAYERS]}
-        json.dump(fc, open(os.path.join(ROOT, 'data', 'deck', 'rer_routes.geojson'), 'w'), separators=(',', ':'))
+        json.dump(fc, open(LIVE_GJ, 'w'), separators=(',', ':'))
         log(f"Deck export: {len(fc['features'])} route, station and platform features")
 
     def job_deck_tie(self, log):
@@ -216,7 +241,9 @@ class Pipeline:
             cur = self.store.get(p)
             new = json.load(open(f))
             if cur is None or cur['data'] != new:
-                self.store.set(p, new, by='pipeline', if_version=cur['version'] if cur else None)
+                if self.store.set(p, new, by='pipeline', if_version=cur['version'] if cur else None) is None:
+                    log(f'{p}: saved during the Deck tie, left as saved; run the tie again')
+                    continue
                 moved += 1
         log(f'{moved} saved profiles moved')
         self.sh(log, [PY, '-c', 'import sys, json; sys.path.insert(0, "tools"); import make_rer_profile_lines as m; '
@@ -243,18 +270,16 @@ class Pipeline:
         # the Profiles structure type at each Metro station, for the Deck's island default; a change redraws the Deck's
         # platforms, so the 3D map is built once more with them
         # each viaduct a selection of its own on the Deck (its RER A viaducts from the Profiles' elevated stretches)
-        self.sh(log, [PY, os.path.join(ROOT, 'tools', 'viaduct_parts.py'), os.path.join(WORK, 'harness_out.json')])
+        self.sh(log, [PY, os.path.join(ROOT, 'tools', 'viaduct_parts.py'), os.path.join(WORK, 'harness_out.json'), '--out', os.path.join(DERIVED, 'deck', 'viaducts.json')])
         self.store.emit({'t': 'files', 'site': 'deck'})
         sp = snap.get('station_platforms')   # island or side at each Metro station (the Deck's), for the Profiles' approaches
         cur = self.store.get('params/station_platforms')
         if sp and (cur is None or cur['data'] != sp):
             self.store.set('params/station_platforms', sp, by='pipeline')
-            json.dump(sp, open(os.path.join(ROOT, 'data', 'profile', 'station_platforms.json'), 'w'), indent=0, ensure_ascii=False)
         ax = (snap.get('track_geometry') or {}).get('extra')   # straights before the arc where no single arc fits
         cur = self.store.get('params/approach_extra')
         if ax is not None and (cur is None or cur['data'] != ax):
             self.store.set('params/approach_extra', ax, by='pipeline')
-            json.dump(ax, open(os.path.join(ROOT, 'data', 'profile', 'approach_extra.json'), 'w'), indent=0, ensure_ascii=False)
         tp = snap.get('tube_points')   # the bored tube along each Metro line, for the Deck's track spacing
         cur = self.store.get('params/tube_points')
         if tp and (cur is None or cur['data'] != tp):
@@ -287,7 +312,7 @@ def deck_platform_lengths():
     sys.path.insert(0, os.path.join(ROOT, 'tools'))
     from rer_deck_routes import TO_UTM
     out = {'metro': [], 'rer': []}
-    for f in json.load(open(os.path.join(ROOT, 'data', 'deck', 'rer_routes.geojson')))['features']:
+    for f in json.load(open(LIVE_GJ if os.path.exists(LIVE_GJ) else os.path.join(ROOT, 'data', 'deck', 'rer_routes.geojson')))['features']:
         p, g = f['properties'], f['geometry']
         if p.get('layer') not in ('metro_platform', 'rer_platform') or g['type'] != 'Polygon' or p.get('type') != 'island':
             continue

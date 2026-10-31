@@ -28,7 +28,7 @@ from shapely.ops import unary_union
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.join(ROOT, 'tools'))
-OUT = os.path.join(ROOT, 'hub', 'sites', 'deck', 'viaducts.json')
+OUT = os.path.join(ROOT, 'hub', 'sites', 'deck', 'viaducts.json')   # the repo copy; the hub writes its own with --out
 HALF = 2.25 + 4.2
 ELEV_ROUTES = {'westwood': ('RER_A_westwood', 'RER A Westwood'), 'northgate': ('RER_A_colerain', 'RER A Northgate (Colerain branch)'),
                'northside': ('RER_A_wyoming', 'Northside viaduct (RER A, the Oxford line)'), 'wh_sc': ('RER_A_cumminsville', 'RER A Western Hills to South Cumminsville')}
@@ -109,8 +109,10 @@ def main():
         g = g.simplify(0.3)
         feats.append({'type': 'Feature', 'properties': {'layer': 'viaduct_part', 'sel': k, 'name': NAMES[k], 'area_m2': round(g.area)},
                       'geometry': {'type': g.geom_type, 'coordinates': json.loads(json.dumps(mapping(g)['coordinates'], default=float), parse_float=lambda s: round(float(s), 2))}})
-    json.dump({'type': 'FeatureCollection', 'about': __doc__.split('\n\n')[0], 'features': feats}, open(OUT, 'w'), separators=(',', ':'))
-    print(f'{len(feats)} viaduct parts -> {OUT}: ' + ', '.join(f"{f['properties']['sel']} {f['properties']['area_m2']} m2" for f in feats))
+    out = next((sys.argv[i + 1] for i, a in enumerate(sys.argv) if a == '--out' and i + 1 < len(sys.argv)), OUT)
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    json.dump({'type': 'FeatureCollection', 'about': __doc__.split('\n\n')[0], 'features': feats}, open(out, 'w'), separators=(',', ':'))
+    print(f'{len(feats)} viaduct parts -> {out}: ' + ', '.join(f"{f['properties']['sel']} {f['properties']['area_m2']} m2" for f in feats))
 
 
 if __name__ == '__main__':

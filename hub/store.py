@@ -5,6 +5,7 @@ deck/layout, alignments/Line_1, snapshots/region/parts/lines-0."""
 import json
 import os
 import sqlite3
+import sys
 import threading
 import time
 
@@ -70,14 +71,16 @@ class Store:
         return v
 
     def update(self, path, data, by='page'):
-        cur = self.get(path)
-        merged = dict(cur['data']) if cur else {}
-        for k, val in data.items():
-            if isinstance(val, dict) and val.get('__delete__') is True:
-                merged.pop(k, None)
-            else:
-                merged[k] = val
-        return self.set(path, merged, by)
+        """merge keys into a record; the read and the write under one lock, so two saves at once cannot lose one"""
+        with self.lock:
+            cur = self.get(path)
+            merged = dict(cur['data']) if cur else {}
+            for k, val in data.items():
+                if isinstance(val, dict) and val.get('__delete__') is True:
+                    merged.pop(k, None)
+                else:
+                    merged[k] = val
+            return self.set(path, merged, by)
 
     def delete(self, path, by='page', quiet=False):
         with self.lock:
@@ -133,8 +136,8 @@ class Store:
         for f in list(self.listeners):
             try:
                 f(ev)
-            except Exception:
-                pass
+            except Exception as e:   # a listener's fault is reported, not hidden; the others still hear the event
+                print(f'hub: listener failed on {ev}: {e!r}', file=sys.stderr)
 
     # ---- seed and export (the git-tracked copy of the records) ----
     def load_dir(self, root, by='seed'):
