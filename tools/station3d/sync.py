@@ -10,6 +10,7 @@ integer deltas (see enc) to keep the documents small.
 Usage: python3 sync.py [--cache DIR] [--out snapshot.json]
 """
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -365,11 +366,177 @@ def moved_docs(cache, maps, lines):
     return out
 
 
+def _sha(*parts):
+    h = hashlib.sha1()
+    for q in parts:
+        h.update(q if isinstance(q, bytes) else str(q).encode('utf8'))
+        h.update(b'\0')
+    return h.hexdigest()
+
+
+def _file_bytes(path):
+    return open(path, 'rb').read() if path and os.path.exists(path) else b''
+
+
+def _tree_hash(root):
+    """one hash over every file under root (sorted), for the records the editor reads"""
+    out = []
+    for dp, _, fs in sorted(os.walk(root)):
+        for f in sorted(fs):
+            fp = os.path.join(dp, f)
+            out.append(_sha(os.path.relpath(fp, root), _file_bytes(fp)))
+    return _sha(*out)
+
+
+def sample_lines(a, lines, overlay, maps):
+    """the editors run headless (harness.js): the Profiles page once per line whose inputs changed since the last run,
+    the Deck once. Per line the inputs are its line file, its saved profile and everything the page reads (the page itself,
+    the settings, the structure, Chronology and platform records, the overlay docs); a line whose hash matches its entry in
+    cache/lines_cache is not sampled again (the 31 October audit: unchanged lines cost nothing)."""
+    jf, rf = os.path.join(a.cache, 'job.json'), os.path.join(a.cache, 'harness_out.json')
+    extra, over = repo_docs(a.cache), moved_docs(a.cache, maps, lines)
+    pdir = os.path.join(a.cache, 'profiles')
+    page = os.path.realpath(os.path.join(pdir, 'index.html'))
+    common = _sha(_file_bytes(page), _file_bytes(os.path.join(HERE, 'harness.js')), _tree_hash(os.path.join(a.cache, 'db', 'profiles_db', 'config')),
+                  _tree_hash(os.path.join(a.cache, 'db', 'params_db')), json.dumps(extra, sort_keys=True), json.dumps(over, sort_keys=True),
+                  json.dumps({k: _file_bytes(v).hex()[:0] + _sha(_file_bytes(v)) for k, v in sorted(overlay.items())}),
+                  *(_sha(_file_bytes(os.path.realpath(os.path.join(pdir, n)))) for n in ('metro_structure.json', 'chronology.json', 'chronology_lines.json', 'station_platforms.json', 'approach_extra.json', 'context/lines.json', 'settings.json', 'rer/settings.json', 'rer/canon.json', 'rer/metro_rails.json', 'rer/network.json') if os.path.exists(os.path.join(pdir, n))))
+    cdir = os.path.join(a.cache, 'lines_cache')
+    os.makedirs(cdir, exist_ok=True)
+    todo, cached, hashes = [], {}, {}
+    for lid, d in lines.items():
+        rel = ('rer/lines/' if d['sys'] == 'rer' else 'lines/') + lid + '.json'
+        lf = overlay.get(rel) or os.path.join(pdir, rel)
+        saved = os.path.join(a.cache, 'db', 'profiles_db', 'alignments', lid + '.json')
+        hashes[lid] = h = _sha(common, _file_bytes(os.path.realpath(lf)), _file_bytes(saved))
+        cf = os.path.join(cdir, lid + '.json')
+        if not a.no_line_cache and os.path.exists(cf):
+            try:
+                c = json.load(open(cf))
+                if c.get('hash') == h:
+                    cached[lid] = c['data']
+                    continue
+            except (ValueError, KeyError):
+                pass
+        todo.append(lid)
+    if a.skip_harness:
+        H = json.load(open(rf))
+    else:
+        job = {'lines': [{'id': lid, 'c0': 0.0, 'c1': float(lines[lid]['length_m']), 'step': STEP} for lid in todo], 'deck': True,
+               'extra_docs': extra, 'override_docs': over, 'overlay': {k: os.path.abspath(v) for k, v in overlay.items()}}
+        json.dump(job, open(jf, 'w'))
+        subprocess.run(['node', os.path.join(HERE, 'harness.js'), a.cache, jf, rf], check=True)
+        H = json.load(open(rf))
+        for lid in todo:
+            if lid in H.get('profiles', {}):
+                json.dump({'hash': hashes[lid], 'data': H['profiles'][lid]}, open(os.path.join(cdir, lid + '.json'), 'w'), separators=(',', ':'))
+    H.setdefault('profiles', {})
+    for lid, data in cached.items():
+        H['profiles'].setdefault(lid, data)
+    print(f"Profiles sampled: {len(todo)} line(s) run, {len(cached)} from the cache", file=sys.stderr)
+    return H
+
+
+# the snapshot's shape (the 31 October audit): checked before anything is written, and by the page before it builds
+SNAPSHOT_LISTS = ('lines', 'tracks', 'unlevelled', 'stations', 'platforms', 'streets', 'blocks', 'context', 'gtiles')
+SNAPSHOT_META = {'area': str, 'name': str, 'synced_at': str, 'origin': dict, 'box': list, 'struct': dict, 'issues': list, 'counts': dict, 'ctx': dict}
+
+
+def validate_snapshot(snap):
+    """raises ValueError naming the first thing wrong with the snapshot"""
+    for k, t in SNAPSHOT_META.items():
+        if not isinstance(snap.get(k), t):
+            raise ValueError(f'snapshot.{k}: expected {t.__name__}, got {type(snap.get(k)).__name__}')
+    for k in SNAPSHOT_LISTS:
+        if not isinstance(snap.get(k), list):
+            raise ValueError(f'snapshot.{k}: expected a list')
+    if not isinstance(snap.get('ground'), dict):
+        raise ValueError('snapshot.ground: expected a dict')
+    for i, l in enumerate(snap['lines']):
+        for k, t in (('id', str), ('name', str), ('sys', str), ('pieces', list), ('stations', list)):
+            if not isinstance(l.get(k), t):
+                raise ValueError(f'lines[{i}].{k}: expected {t.__name__}')
+        for j, pc in enumerate(l['pieces']):
+            for k in ('c0', 'step', 'n', 'x', 'y', 'z', 't'):
+                if k not in pc:
+                    raise ValueError(f"lines[{i}].pieces[{j}]: missing {k}")
+    for i, t in enumerate(snap['tracks']):
+        for k in ('line', 'side', 'c', 'off', 'x', 'y'):
+            if k not in t:
+                raise ValueError(f'tracks[{i}]: missing {k}')
+    for i, p in enumerate(snap['platforms']):
+        for k in ('station', 'sys', 'lines', 'rail', 'x', 'y'):
+            if k not in p:
+                raise ValueError(f'platforms[{i}]: missing {k}')
+    for i, c in enumerate(snap['context']):
+        if not isinstance(c.get('type'), str):
+            raise ValueError(f'context[{i}]: missing type')
+
+
+def write_outputs(out, snap, meta):
+    """snapshot.json and the page's database documents (parts of at most ~200 KB of JSON text, the meta document last)"""
+    json.dump(snap, open(out, 'w'), separators=(',', ':'))
+
+    # ---- database documents: parts of at most ~200 KB of JSON text (the limit is 256 KiB a document), the meta document last ----
+    ddir = os.path.join(os.path.dirname(out), 'db_out')
+    os.makedirs(ddir, exist_ok=True)
+    for f in os.listdir(ddir):
+        os.remove(os.path.join(ddir, f))
+    parts = []
+    for key in ('lines', 'tracks', 'unlevelled', 'stations', 'platforms', 'streets', 'blocks', 'context', 'gtiles'):
+        items, chunk, size, n = snap[key], [], 0, 0
+        def flush():
+            nonlocal chunk, size, n
+            if not chunk:
+                return
+            name = f'{key}-{n}'
+            json.dump({'json': json.dumps({'key': key, 'items': chunk}, separators=(',', ':')), 'synced_at': meta['synced_at']},
+                      open(os.path.join(ddir, name + '.json'), 'w'))
+            parts.append(name)
+            chunk, size, n = [], 0, n + 1
+        for it in items:
+            s_ = len(json.dumps(it, separators=(',', ':')))
+            if size + s_ > 200_000:   # a database document holds at most 256 KiB (JSON text escaped inside it)
+                flush()
+            chunk.append(it)
+            size += s_
+        flush()
+    json.dump({'json': json.dumps({'key': 'ground', 'value': snap['ground']}, separators=(',', ':')), 'synced_at': meta['synced_at']},
+              open(os.path.join(ddir, 'ground-0.json'), 'w'))
+    parts.append('ground-0')
+    # the page's summary document (256 KiB at most): tube_points is for the Deck (hub params/tube_points), not the page
+    json.dump({'json': json.dumps({k: v for k, v in meta.items() if k != 'tube_points'}, separators=(',', ':')), 'parts': parts, 'synced_at': meta['synced_at']},
+              open(os.path.join(ddir, 'meta.json'), 'w'))
+
+    return ddir, parts
+
+
+def report(L, stations, plats, meta, issues, ddir, parts):
+    """the run's summary on stderr: the default station's levels and platforms, counts, part sizes, issues"""
+    # ---- report ----
+    fs = [s for s in stations if s['name'] == AREA['default_station']]
+    for s in fs:
+        for p in s['profiles']:
+            print(f"{s['name']:<16} {L[p['line']]['name']:<22} rail {p['rail']} m  ground {p['ground']}  {p['type']}", file=sys.stderr)
+    for pl in plats:
+        if pl['station'] == AREA['default_station']:
+            print(f"  platform {pl['deck_line']:<14} {pl['type']:<7} lines {','.join(pl['lines'])}  rail {pl['rail']}", file=sys.stderr)
+    print(json.dumps(meta['counts']), json.dumps(meta['ctx']['counts']), file=sys.stderr)
+    sizes = {f: os.path.getsize(os.path.join(ddir, f)) for f in os.listdir(ddir)}
+    print(f"{len(parts)} parts, largest {max(sizes.values()) // 1024} KB, total {sum(sizes.values()) // 1024} KB", file=sys.stderr)
+    print(f"{len(issues)} issues", file=sys.stderr)
+    for i in issues:
+        print('  issue:', i, file=sys.stderr)
+
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--cache', default=os.path.join(HERE, 'cache'))
     ap.add_argument('--out', default=os.path.join(HERE, 'cache', 'snapshot.json'))
     ap.add_argument('--skip-harness', action='store_true', help='reuse cache/harness_out.json')
+    ap.add_argument('--no-line-cache', action='store_true', help='sample every line again (ignore cache/lines_cache)')
+    ap.add_argument('--check', action='store_true', help='build and validate the snapshot, print the issues, write nothing')
     a = ap.parse_args()
     E0, N0 = (float(v) for v in ll_to_utm(AREA['lon'], AREA['lat']))
     bx0, by0, bx1, by1 = AREA['box_utm']
@@ -382,14 +549,7 @@ def main():
     PIECES.update({lid: d.get('pieces') or [] for lid, d in lines.items()})
     STATIONS.update({lid: d['stations'] for lid, d in lines.items()})
     sys.path.insert(0, os.path.join(HERE, '..'))
-    jf, rf = os.path.join(a.cache, 'job.json'), os.path.join(a.cache, 'harness_out.json')
-    if not a.skip_harness:
-        job = {'lines': [{'id': lid, 'c0': 0.0, 'c1': float(d['length_m']), 'step': STEP} for lid, d in lines.items()], 'deck': True,
-               'extra_docs': repo_docs(a.cache), 'override_docs': moved_docs(a.cache, maps, lines),
-               'overlay': {k: os.path.abspath(v) for k, v in overlay.items()}}
-        json.dump(job, open(jf, 'w'))
-        subprocess.run(['node', os.path.join(HERE, 'harness.js'), a.cache, jf, rf], check=True)
-    H = json.load(open(rf))
+    H = sample_lines(a, lines, overlay, maps)
     for lid_, h_ in (H.get('profiles') or {}).items():   # the editor's tube form along each Metro line
         smp_ = h_.get('samples') or []
         if smp_ and len(smp_[0]) > 3:
@@ -1304,53 +1464,15 @@ def main():
         meta['sources'].update(json.load(open(vf)))
     snap = dict(meta, lines=snap_lines, tracks=tracks, unlevelled=unlevelled, stations=stations, platforms=plats,
                 streets=streets, blocks=blocks, ground=ground, context=context, gtiles=gtiles)
-    json.dump(snap, open(a.out, 'w'), separators=(',', ':'))
-
-    # ---- database documents: parts of at most ~200 KB of JSON text (the limit is 256 KiB a document), the meta document last ----
-    ddir = os.path.join(os.path.dirname(a.out), 'db_out')
-    os.makedirs(ddir, exist_ok=True)
-    for f in os.listdir(ddir):
-        os.remove(os.path.join(ddir, f))
-    parts = []
-    for key in ('lines', 'tracks', 'unlevelled', 'stations', 'platforms', 'streets', 'blocks', 'context', 'gtiles'):
-        items, chunk, size, n = snap[key], [], 0, 0
-        def flush():
-            nonlocal chunk, size, n
-            if not chunk:
-                return
-            name = f'{key}-{n}'
-            json.dump({'json': json.dumps({'key': key, 'items': chunk}, separators=(',', ':')), 'synced_at': meta['synced_at']},
-                      open(os.path.join(ddir, name + '.json'), 'w'))
-            parts.append(name)
-            chunk, size, n = [], 0, n + 1
-        for it in items:
-            s_ = len(json.dumps(it, separators=(',', ':')))
-            if size + s_ > 200_000:   # a database document holds at most 256 KiB (JSON text escaped inside it)
-                flush()
-            chunk.append(it)
-            size += s_
-        flush()
-    json.dump({'json': json.dumps({'key': 'ground', 'value': ground}, separators=(',', ':')), 'synced_at': meta['synced_at']},
-              open(os.path.join(ddir, 'ground-0.json'), 'w'))
-    parts.append('ground-0')
-    # the page's summary document (256 KiB at most): tube_points is for the Deck (hub params/tube_points), not the page
-    json.dump({'json': json.dumps({k: v for k, v in meta.items() if k != 'tube_points'}, separators=(',', ':')), 'parts': parts, 'synced_at': meta['synced_at']},
-              open(os.path.join(ddir, 'meta.json'), 'w'))
-
-    # ---- report ----
-    fs = [s for s in stations if s['name'] == AREA['default_station']]
-    for s in fs:
-        for p in s['profiles']:
-            print(f"{s['name']:<16} {L[p['line']]['name']:<22} rail {p['rail']} m  ground {p['ground']}  {p['type']}", file=sys.stderr)
-    for pl in plats:
-        if pl['station'] == AREA['default_station']:
-            print(f"  platform {pl['deck_line']:<14} {pl['type']:<7} lines {','.join(pl['lines'])}  rail {pl['rail']}", file=sys.stderr)
-    print(json.dumps(meta['counts']), json.dumps(meta['ctx']['counts']), file=sys.stderr)
-    sizes = {f: os.path.getsize(os.path.join(ddir, f)) for f in os.listdir(ddir)}
-    print(f"{len(parts)} parts, largest {max(sizes.values()) // 1024} KB, total {sum(sizes.values()) // 1024} KB", file=sys.stderr)
-    print(f"{len(issues)} issues", file=sys.stderr)
-    for i in issues:
-        print('  issue:', i, file=sys.stderr)
+    validate_snapshot(snap)
+    if a.check:   # the build checked and reported, nothing written
+        print(json.dumps(meta['counts']), json.dumps(meta['ctx']['counts']), file=sys.stderr)
+        print(f"check only: the snapshot is well formed; {len(issues)} issues", file=sys.stderr)
+        for i in issues:
+            print('  issue:', i, file=sys.stderr)
+        return
+    ddir, parts = write_outputs(a.out, snap, meta)
+    report(L, stations, plats, meta, issues, ddir, parts)
 
 
 if __name__ == '__main__':

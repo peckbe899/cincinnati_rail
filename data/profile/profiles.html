@@ -733,9 +733,8 @@ function bridgeOf(r) { const cn = (!isRer() && S.data && CANON[S.data.id]) || {}
 // equal spans of at most RIVER_SPAN m. A span up to GIRDER_MAX m is a girder under the deck, rail to soffit span/10 +
 // 0.8 m (Ben's girder rule); a longer one is a through truss over the rail, span/8 deep, with the deck (deckDepth) under it.
 const VIA_SPAN = 25, VIA_CLEAR = 7, RIVER_SPAN = 120, GIRDER_MAX = 40;
-function viaductSpans() {
-  const T = (S.data && VERTS) ? VERTS : null; if (!T) return [];
-  if (T._via && T._via.g === S.ground && T._via.x === S.crossings) return T._via.spans;
+function viaductSpansNow() {
+  if (!S.data || !VERTS) return [];
   const step = S.step || 2, runs = []; let a = null;
   for (let c = 0; c <= S.L + step; c += step) { const on = c <= S.L && typeAt(c) === 'elevated'; if (on && a == null) a = c; if (!on && a != null) { runs.push([a, c - step]); a = null; } }
   const spans = [];
@@ -765,7 +764,7 @@ function viaductSpans() {
       spans.push({ c0: ps[i], c1: ps[i + 1], L, truss, below: truss ? settings.deckDepth : L / 10 + 0.8, above: truss ? L / 8 : 0, ends: [i === 0, i + 2 === ps.length] });
     }
   }
-  T._via = { g: S.ground, x: S.crossings, spans }; return spans;
+  return spans;
 }
 const spanAt = (c) => viaductSpans().find((s) => c >= s.c0 && c <= s.c1);
 function riverBridges() {
@@ -1107,10 +1106,12 @@ function openTypes() {
   V._otypes = { g: S.ground, L: S.L, step, t: P.map((p) => p.t), z: P.map((p) => p.z) }; return V._otypes;
 }
 let SOLVING = false;   // the tube form of the last solve is not read while a new one runs
+let LAST_T = null, SOLVE_N = 0;   // the last solve, shown during a drag; the count (for the harness)
 function stretchTypes() {
   const V = VERTS; if (!S.data || isRer() || !MS || !V) return null;
   if (V._types && V._types.g === S.ground && V._types.ms === MS && V._types.chr === CHR && V._types.plat === ST_PLAT && V._types.ax === APX_EXTRA && V._types.L === S.L) return V._types;
-  SOLVING = true; try { return solveTypes(V); } finally { SOLVING = false; }
+  if (S.drag && !MODEL_SWAP && LAST_T && LAST_T.id === S.data.id && LAST_T.L === S.L) return LAST_T;   // a drag shows the last model
+  SOLVING = true; SOLVE_N++; try { const T = solveTypes(V); if (!MODEL_SWAP) LAST_T = Object.assign(T, { id: S.data.id }); return T; } finally { SOLVING = false; }
 }
 // The Metro tunnel engine (Ben, 31 October: "approach it from a real engineering perspective"; one pass, the same rules on
 // every line). 1. Stations by the cut-and-cover limit of their phase (cc_max): at or above it a box station, deeper a mined
@@ -1539,7 +1540,7 @@ function curveAllowance(d = S.data) {
 }
 const allowanceAt = (c) => { const v = curveAllowance(); return v[clamp(Math.round(c / 10), 0, v.length - 1)]; };
 // stretches where grade plus curve allowance is over the limit: [{c0, c1, worst, g, add}] (the check and the diagram)
-function curveGradeRanges() {
+function curveGradeRangesNow() {
   const out = []; let on = null;
   if (!(settings.curveK > 0)) return out;
   for (let c = 5; c < S.L; c += 10) {
@@ -1766,7 +1767,7 @@ const interpP = (pp, c) => { if (c <= pp[0][0]) return pp[0][1]; for (let i = 1;
 // 0.5 m + lower top; a track in the open counts its clear height as its top). Under a viaduct only a line
 // in the open is checked: the arches go to the street and no footing depth is set (Ben, 26 October).
 const OPEN_T = new Set(['atgrade', 'trough', 'elevated']);
-function contextClearances() {
+function contextClearancesNow() {
   const out = []; if (!S.data) return out;
   for (const b of ctxBlocks()) {
     const to = { k: b.k, below: b.b, top: b.t, label: b.l }, viad = b.k === 'viaduct' || b.k === 'fill'; let w = null;
@@ -1782,7 +1783,7 @@ function contextClearances() {
   }
   return out;
 }
-function crossingClearances() {
+function crossingClearancesNow() {
   return S.crossings.filter((x) => x.wid && x.oc != null).map((x) => {
     const zo = otherRail(x); const z = railAt(x.c);
     if (zo == null) return { ...x, zo, z, clear: null };
@@ -1794,6 +1795,19 @@ function crossingClearances() {
     return { ...x, zo, z, clear: Math.abs(z - zo), need, meUp, t, to, level, ok: !level && Math.abs(z - zo) >= need - 0.05 };
   });
 }
+
+// The derived model (the 31 October audit): the checks and spans that every edit needs are computed once per model
+// change (`changed()` bumps MODEL_V), not again on every frame or panel refresh. During a drag the last model is shown
+// (the rail itself is live); the drag's end calls changed(). withLine swaps the whole state for another line, so the memo
+// is bypassed there.
+let MODEL_V = 0, MODEL_SWAP = 0; const MEMO = new Map();
+function memo(key, f) {
+  if (MODEL_SWAP) return f();
+  const k = `${key}|${S.data && S.data.id}`, m = MEMO.get(k); if (m && m.v === MODEL_V) return m.val;
+  const val = f(); MEMO.set(k, { v: MODEL_V, val }); return val;
+}
+const crossingClearances = () => memo('cross', crossingClearancesNow), contextClearances = () => memo('ctx', contextClearancesNow);
+const curveGradeRanges = () => memo('curveG', curveGradeRangesNow), viaductSpans = () => memo('via', viaductSpansNow);
 
 // ---------- drawing ----------
 const cv = $('#cv'), ov = $('#ov'), plan = $('#plan');
@@ -2548,7 +2562,7 @@ function pushHist() { S.hist.push(snapshot()); if (S.hist.length > 200) S.hist.s
 function syncUndo() { $('#undo').disabled = !S.hist.length || S.canWrite === false; $('#redo').disabled = !S.fut.length || S.canWrite === false; $('#solveCross').disabled = S.canWrite === false; $('#easeAll').disabled = S.canWrite === false; }
 function undo() { if (!S.hist.length) return; S.fut.push(snapshot()); S.align = JSON.parse(S.hist.pop()); S.sel = null; changed(); syncUndo(); }
 function redo() { if (!S.fut.length) return; S.hist.push(snapshot()); S.align = JSON.parse(S.fut.pop()); S.sel = null; changed(); syncUndo(); }
-function changed(save = true) { if (S.data) { S.stations = deriveStations(S.align.del || [], S.align.so || []); buildCanon(); ensureJunctionPvis(S.align, S.stations); if (applyLocks(S.align) && save) { S.stations = deriveStations(S.align.del || [], S.align.so || []); flash('Locked stretch: kept as canon'); } } VERTS = vertices(); applyFill(); updatePanels(); schedule(); if (save) markDirty(); }
+function changed(save = true) { MODEL_V++; if (S.data) { S.stations = deriveStations(S.align.del || [], S.align.so || []); buildCanon(); ensureJunctionPvis(S.align, S.stations); if (applyLocks(S.align) && save) { S.stations = deriveStations(S.align.del || [], S.align.so || []); flash('Locked stretch: kept as canon'); } } VERTS = vertices(); applyFill(); updatePanels(); schedule(); if (save) markDirty(); }
 function inPlatform(c) { const half = settings.platform / 2; return S.stations.some((s) => c > s.c - half - 2 && c < s.c + half + 2); }
 function clampPviC(c, j) {
   c = clamp(c, 1, S.L - 1);
@@ -2706,10 +2720,11 @@ function withLine(d, k, fn) {
   const keys = ['data', 'L', 'step', 'ground', 'ground0', 'groundDem', 'ctx', 'regraded', 'filled', 'stations', 'rivers', 'crossings', 'canonSecs', 'canonFixed', 'canonModes', 'canonDeck', 'canonLocks', 'align'];
   const keep = {}; keys.forEach((x) => (keep[x] = S[x])); const ks = sys, kset = settings;
   sys = k; settings = SYS[k].settings;
+  MODEL_SWAP++;
   try {
     S.data = d; S.L = d.length_m; S.step = d.step_m; S.groundDem = groundFor(d); S.ctx = ctxFor(d.id); S.ground0 = S.ground = regradeGround(S.groundDem, S.ctx); S.filled = false; S.stations = baseStations(d); S.rivers = d.rivers; S.crossings = d.crossings || [];
     buildCanon(); return fn();
-  } finally { keys.forEach((x) => (S[x] = keep[x])); sys = ks; settings = kset; }
+  } finally { keys.forEach((x) => (S[x] = keep[x])); sys = ks; settings = kset; MODEL_SWAP--; }
 }
 function refreshDefaultDocs() {
   Object.values(S.rerData).forEach((d) => {
@@ -3198,7 +3213,7 @@ window.addEventListener('beforeunload', () => { if (S.dirty) save(); });
 
 // ---------- boot ----------
 // hooks for checking the page headless
-window.__api = { structAt: (c, t) => structFor(t, c), ccAt: (c) => phaseRules(c).ccMax, riverAt: (c) => riverAt(c), regradeDrive: (a, b, m) => regradeDrive(a, b, m), pointType: (c, z) => pointType(c, z), stretchTypes: () => stretchTypes(), riverBand: (r) => (bridgeOf(r) ? null : riverBand(r)), bedAt: (c) => bedAt(c), pool: () => pool(), inPlatform: (c) => inPlatform(c), selectLine, save, changed, railAt, S, withLine, alignFromDoc, defaultAlign, modeOf, lockAt, deriveStations, docFor, levelAtMember, setAtMember, copyStretch, sharedOf, junctionsOf, ensureJunctionPvis, vertices, applyLocks, buildCanon, writeDoc, refreshDefaultDocs, propagateLinks, get links() { return LINKS; } };
+window.__api = { layout: () => LAYOUT, solves: () => SOLVE_N, structAt: (c, t) => structFor(t, c), ccAt: (c) => phaseRules(c).ccMax, riverAt: (c) => riverAt(c), regradeDrive: (a, b, m) => regradeDrive(a, b, m), pointType: (c, z) => pointType(c, z), stretchTypes: () => stretchTypes(), riverBand: (r) => (bridgeOf(r) ? null : riverBand(r)), bedAt: (c) => bedAt(c), pool: () => pool(), inPlatform: (c) => inPlatform(c), selectLine, save, changed, railAt, S, withLine, alignFromDoc, defaultAlign, modeOf, lockAt, deriveStations, docFor, levelAtMember, setAtMember, copyStretch, sharedOf, junctionsOf, ensureJunctionPvis, vertices, applyLocks, buildCanon, writeDoc, refreshDefaultDocs, propagateLinks, get links() { return LINKS; } };
 (async () => {
   setTool('move'); buildBrushes();
   try { const u = localStorage.getItem('profile:units'); if (u === 'ft') setUnits('ft'); } catch {}

@@ -31,6 +31,8 @@ A page can read only its own database, so the Rail Profiles editor and the Mill 
   - Ground: a 200 m grid averaged from the Profiles ground along every line, filled out to 1.6 km from the lines.
   - Issues: unsaved alignments, Deck track and platforms with no Profiles line, Deck spacing against the Profiles structure, TRI tubes that can't fit the Deck's 4.5 m spacing, Union Terminal cross-platform levels.
   - `--skip-harness` reuses `cache/harness_out.json`.
+  - `--check` builds and validates the snapshot (`validate_snapshot`), prints the issues, writes nothing (31 October).
+  - Lines whose inputs have not changed since the last run (the line file, its saved profile, the page and the records it reads) are not sampled again: their samples come from `cache/lines_cache/<line>.json`, keyed by a hash of those inputs; `--no-line-cache` samples every line (31 October).
   - Repo data the editor does not have yet (both listed as issues):
     - `REPO_PROFILES`: RER-4's profile (`data/profile/rer/alignments/RER_4.json`, the upper deck), served to the editor as if saved while it has no saved RER-4.
     - `REPATH`: RER-2 and RER-4 re-pathed onto the Deck's B/D route (`data/profile/rer/repath_bd_trunk.json`). While the published editor still has the old paths, the sync serves the repo's line files to the harness in their place (`overlay`) and moves the saved profiles made on the old paths with the chainage map (`override_docs`). It stops once the editor is republished with the new paths (done 2026-10-27, editor version 34).

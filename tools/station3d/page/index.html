@@ -1080,6 +1080,11 @@ async function loadParts(meta) {
   const docs = await Promise.all((meta.parts || []).map((p) => S.db.doc(`snapshots/${AREA}/parts/${p}`).get()));
   for (const d of docs) { if (!d.exists) continue; const v = JSON.parse(d.data().json); if (v.key === 'ground') snap.ground = v.value; else snap[v.key] = (snap[v.key] || []).concat(v.items); }
   for (const k of ['lines', 'tracks', 'unlevelled', 'stations', 'platforms', 'streets', 'blocks', 'context', 'gtiles']) snap[k] = snap[k] || [];
+  // the snapshot's shape (sync.py validate_snapshot): a part missing or malformed is said, not drawn as an empty region
+  const missing = (meta.parts || []).filter((p, i) => !docs[i] || !docs[i].exists);
+  if (missing.length) throw new Error(`snapshot parts missing: ${missing.join(', ')} (the build may still be writing; reload)`);
+  for (const k of ['area', 'synced_at', 'origin', 'struct']) if (snap[k] == null) throw new Error(`snapshot without ${k}`);
+  if (!snap.lines.length) throw new Error('snapshot without lines');
   return snap;
 }
 function showEmpty(title, text) { $('emptyTitle').textContent = title; if (text) $('emptyText').textContent = text; $('empty').hidden = false; $('syncedAt').textContent = 'no snapshot'; }

@@ -366,3 +366,20 @@ Published: page version 6 and the snapshot (35 parts), read back at view level.
     0.7 s per line and the test suite from 280 s to 62 s. The types cache is keyed by value (`_solve_key`: levels, platform
     grades, bend points, paints, tube forms, a ground version, settings, stations), not by `id()`.
   - Editor and port still agree on every sample of every Metro line (Ben's export); 64 tests pass.
+
+## 2026-10-31: code audit, group 2 (Ben: "yes let's start the next ones")
+
+- Profiles page: one derived model per edit. `changed()` bumps a model version; the crossing and context clearances, the
+  curve-grade ranges and the viaduct spans are memoised on it (`memo`), so a panel refresh or a frame no longer recomputes
+  them; `withLine` (another line's state swapped in) bypasses the memo. During a drag the last solve is shown and the drag's
+  end solves once (a 30-frame drag: 1.8 s, 4 solves in all, where every frame solved before).
+- Station 3D build: `sample_lines` runs the Profiles page only for lines whose inputs changed (a hash of the line file, its
+  saved profile, the page, the settings, structure, Chronology and platform records, the overlay docs) and keeps the rest in
+  `cache/lines_cache`; `--no-line-cache` samples all. `validate_snapshot` checks the snapshot's shape before anything is
+  written, and the 3D page refuses a snapshot with missing parts or no lines instead of drawing an empty region. `--check`
+  builds, validates and reports without writing. `write_outputs` and `report` out of `main()`. A rebuild with no changed
+  lines: 1m15 instead of 2m30 (the Deck still runs headless every time; the rest of `main()` is still one function).
+- Python engine: `_stretch_types` in five named steps (`step_samples`, `step_stretches`, `step_tidy`, `step_flags`,
+  `step_unbuildable`), same results on every sample of every Metro line; 64 tests pass in 56 s.
+- Left for group 3 (large): the single rules engine (no browser in the build), the full split of `sync.py`'s `main()` into
+  typed steps, precomputed per-step grids in the page, incremental parts and instanced meshes in the 3D page.
