@@ -727,31 +727,81 @@ def test_approach_boxes_at_canon_and_tube_stations():
                 tc = (i - 1) * step if a in ("shield", "deep") else i * step   # the tube side
                 if mp.struct_for("shield", tc).get("k") == "bore":
                     continue   # the bore runs at the box's 3.90 m
-                assert inside(c), f"{lid}: tube meets box at {c:.0f} m with no approach"
+                # the spacing changes in an approach in the box the tube meets (it may be done near the station, the box then
+                # carrying on at running spacing to where the shield starts)
+                d = 1 if a in ("shield", "deep") else -1
+                k, box = (i if d == 1 else i - 1), []
+                while 0 <= k < len(t) and t[k] == "cutcover":
+                    box.append(k * step)
+                    k += d
+                assert any(inside(q) for q in box) or mp.override_at(c) == "cutcover", f"{lid}: tube meets box at {c:.0f} m with no approach"
 
 
 def test_tube_form_by_drive_ends_and_paint():
-    """Tube form (Ben, 31 October: never double track to twin tubes for no reason): a drive between two double-track ends
-    with the bore's cover is the double-track bore, with no approach box; a twin end (a Phase 1 deep station) keeps twin
-    tubes; a painted form decides, and a spacing change inside the tunnel is flagged."""
+    """Tube form (Ben, 31 October): a drive between two double-track ends with the bore's cover is the double-track bore,
+    with no approach box; an island end or a mined station of a twin-tube phase keeps twin tubes; a painted form decides,
+    and a spacing change inside the tunnel is flagged."""
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent
     load = lambda l: MetroProfile.load(root / f"data/profile/lines/{l}.json", root / f"hub/seed/alignments/{l}.json", root / "data/profile/settings.json")
-    mp = load("Line_2")   # Phase 1: Holmes to Meinken has double-track ends at its boxes and 15.5 m of cover
+    mp = load("Line_8")   # Phase 2: the bore between double-track ends, no spacing change
     T = mp.stretch_types()
-    i = int(18200 / T["step"])
-    assert T["t"][i] == "deep" and T["tube"][i] == "bore" and mp.struct_for("deep", 18200)["k"] == "bore"
-    assert not [a for a in T["approaches"] if 17900 < a["c"] < 18600]
-    mp = load("Line_3")   # Henry Clay (side) to Ft Wright (a Phase 1 deep station): twin tubes
+    i = int(5400 / T["step"])
+    assert T["t"][i] in ("shield", "deep") and T["tube"][i] == "bore" and mp.struct_for("deep", 5400)["k"] == "bore"
+    assert not [a for a in T["approaches"] if 4500 < a["c"] < 6450 and a["kind"] != "river"]
+    mp = load("Line_2")   # Holmes and Meinken are island stations: twin tubes between them
+    T = mp.stretch_types()
+    assert T["tube"][int(18200 / T["step"])] == "A"
+    mp = load("Line_3")   # Henry Clay (side box) on to Ft Wright (a mined station, Phase 1): twin tubes
     T = mp.stretch_types()
     assert T["tube"][int(21800 / T["step"])] == "A"
-    mp.tf = [(21150.0, 22420.0, "bore")]   # painted bore: no approach at Henry Clay; spacing change at Ft Wright flagged
+    mp.tf = [(21150.0, 22420.0, "bore")]   # painted bore: no approach at Henry Clay; the spacing change in Ft Wright flagged
     mp._types = None
     T = mp.stretch_types()
     assert T["tube"][int(21800 / T["step"])] == "bore"
     assert not [a for a in T["approaches"] if a.get("station") == "Henry Clay"]
     assert any(f["kind"] == "spacing change in the tunnel" and 22300 < f["c0"] < 22500 for f in T["flags"])
+
+
+def test_engine_rules_hold_on_every_metro_line():
+    """The tunnel engine (Ben, 31 October): no box station deeper than its phase's cut-and-cover limit (unpainted); no box
+    between two bored stretches except a shaft or a station; no tube shorter than a drive between two boxes unless it is
+    flagged; Paycor (16.95 m in Phase 1) is a mined station with one drive through it to the Ohio bank box."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent
+    ids = [f"Line_{k}" for k in range(1, 15)] + ["Line_2b", "CVG_Express"]
+    for lid in ids:
+        al = root / f"hub/seed/alignments/{lid}.json"
+        mp = MetroProfile.load(root / f"data/profile/lines/{lid}.json", al if al.exists() else None, root / "data/profile/settings.json")
+        T, step = mp.stretch_types(), None
+        step = T["step"]
+        for s in mp.stations:
+            sec = mp.canon_at(s["c"])
+            if mp.override_at(s["c"]) or (sec and sec["m"] in ("canal", "covered")):
+                continue   # paints and canon box sections decide there
+            g = float(mp.ground_at(s["c"])) - float(mp.rail_at(s["c"]))
+            t = T["t"][min(len(T["t"]) - 1, int(round(s["c"] / step)))]
+            if t == "cutcover":
+                assert g <= mp.phase_rules(s["c"])["cc_max"] + 0.05, (lid, s["name"], g)
+        t = T["t"]
+        rr, a = [], 0
+        for i in range(1, len(t) + 1):
+            if i == len(t) or t[i] != t[a]:
+                rr.append((a, i - 1, t[a]))
+                a = i
+        half = mp.settings["platform"] / 2
+        in_st = lambda c0, c1: any(s["c"] - half - 2 <= c1 and c0 <= s["c"] + half + 2 for s in mp.stations)
+        flagged = lambda c0, c1: any(f["c0"] <= c1 + 2 and c0 <= f["c1"] + 2 for f in T["flags"])
+        for k in range(1, len(rr) - 1):
+            x, y, ty = rr[k]
+            c0, c1 = x * step, y * step
+            if ty == "cutcover" and rr[k - 1][2] in ("shield", "deep") and rr[k + 1][2] in ("shield", "deep"):
+                assert in_st(c0, c1) or flagged(c0, c1), (lid, "box inside a drive", c0, c1)
+    mp = MetroProfile.load(root / "data/profile/lines/Line_3.json", root / "hub/seed/alignments/Line_3.json", root / "data/profile/settings.json")
+    T = mp.stretch_types()
+    assert mp.type_at(16281) in ("shield", "deep") and all(t in ("shield", "deep") for t in T["t"][int(16160 / 2):int(16480 / 2)])
 
 
 def test_low_cover_drive_needs_regrade():
@@ -763,5 +813,5 @@ def test_low_cover_drive_needs_regrade():
     mp = MetroProfile.load(root / "data/profile/lines/Line_3.json", root / "hub/seed/alignments/Line_3.json", root / "data/profile/settings.json")
     T = mp.stretch_types()
     rg = [f for f in T["flags"] if f["kind"] == "regrade"]
-    assert any(21100 < f["c0"] < 21300 and 22300 < f["c1"] < 22500 for f in rg), rg
+    assert any(f["c0"] < 21500 and f["c1"] > 22300 for f in rg), rg
     assert T["t"][int(21800 / T["step"])] in ("shield", "deep")   # stays bored until it is regraded

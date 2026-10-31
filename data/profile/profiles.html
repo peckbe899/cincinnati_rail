@@ -1022,7 +1022,7 @@ function pointType(c, z) {   // one chainage on its own: the type, or for a Metr
     const R = phaseRules(c), tube = metroTube(c, S.data.id), shieldFrom = tube.top + tube.od;
     // a station is one type (Ben, 29 October): by its depth at the platform centre, not point by point
     if (inStation(c)) { const st = S.stations.find((s) => Math.abs(c - s.c) <= settings.platform / 2), gs = groundAt(st.c), ds = isFinite(gs) ? gs - railAt(st.c) : d;
-      return { t: ds >= R.deepFrom && ds >= shieldFrom ? 'deep' : 'cutcover', stn: true }; }
+      return { t: ds <= R.ccMax ? 'cutcover' : ds >= R.deepFrom ? 'deep' : 'shield', stn: true }; }   // by the cut-and-cover limit (Ben, 31 October)
     return { cls: d < shieldFrom ? 'C' : d > R.ccMax ? 'B' : 'E', d, deep: d >= R.deepFrom, ph: phaseAt(c), R, shieldFrom };
   }
   const m = sec ? sec.m : (d >= settings.deepBelow ? 'deep' : 'shallow');
@@ -1092,160 +1092,165 @@ function stretchTypes() {
   if (V._types && V._types.g === S.ground && V._types.ms === MS && V._types.chr === CHR && V._types.plat === ST_PLAT && V._types.ax === APX_EXTRA && V._types.L === S.L) return V._types;
   SOLVING = true; try { return solveTypes(V); } finally { SOLVING = false; }
 }
+// The Metro tunnel engine (Ben, 31 October: "approach it from a real engineering perspective"; one pass, the same rules on
+// every line). 1. Stations by the cut-and-cover limit of their phase (cc_max): at or above it a box station, deeper a mined
+// station (deep_from only marks deep stations, for lifts and escalators). 2. Boxes are the only break points: box stations,
+// the sunk box, portals (open track), canon box sections and painted cut and cover. 3. Each stretch between two of them (in
+// one building phase) is decided once: cut and cover end to end if it is within cc_max throughout with no mined station
+// and nothing forced bored; otherwise one bored drive through any mined stations, one shield (one tube form, one depth
+// class), the boxes at its ends carrying on until the tube has its cover, the approach boxes (the spacing change) there.
+// 4. Less than one diameter of cover inside a drive: a box (a working shaft) only where the drives either side are still
+// whole (min_drive); else the profile must be lowered (Regrade). 5. A deep stretch shorter than a drive is still one bored
+// piece, never box > tube > box. 6. Paint: cut and cover is a box; shallow shield or deep forces boring in its drive.
 function solveTypes(V) {
-  const step = S.step || 2, n = Math.floor(S.L / step) + 1, P = [], flags = [], approaches = [];
-  for (let i = 0; i < n; i++) { const c = Math.min(i * step, S.L), z = railAt(c); P.push(Object.assign({ c, z }, pointType(c, z))); }
-  // every platform sample is the station's (a station in a canon section had no mark at its centre, so it got no approach)
-  for (const s of S.stations) for (let i = Math.max(0, Math.ceil((s.c - settings.platform / 2) / step)); i <= Math.min(n - 1, Math.floor((s.c + settings.platform / 2) / step)); i++) if (!P[i].cls) P[i].stn = true;
-  const runs = (a, b, f) => { const out = []; let s = -1; for (let i = a; i <= b + 1; i++) { const on = i <= b && f(P[i]); if (on && s < 0) s = i; if (!on && s >= 0) { out.push([s, i - 1]); s = -1; } } return out; };
+  const step = S.step || 2, n = Math.floor(S.L / step) + 1, P = [], flags = [], approaches = [], half = settings.platform / 2;
+  const runs = (a, b, f) => { const out = []; let s = -1; for (let i = a; i <= b + 1; i++) { const on = i <= b && f(P[i], i); if (on && s < 0) s = i; if (!on && s >= 0) { out.push([s, i - 1]); s = -1; } } return out; };
   const len = (a, b) => P[b].c - P[a].c + step;
-  const resolve = (fl) => {   // the era rules over each stretch between anchors (station boxes and approaches, portals, canon, rivers), in one phase
-    for (const p of P) if (p.cls) delete p.t;
-    for (const [a0, b0] of runs(0, n - 1, (p) => !!p.cls)) {
-      const parts = []; let s = a0; for (let i = a0 + 1; i <= b0 + 1; i++) if (i > b0 || P[i].ph !== P[s].ph) { parts.push([s, i - 1]); s = i; }
-      for (const [a, b] of parts) {
-        const R = P[a].R;
-        // one drive between two anchors (Ben, 28-30 October): from the first to the last point deep enough to bore; the
-        // station boxes carry on through the shallow ends (a shallow end at a portal is the tunnel's transition, no flag)
-        for (let i = a; i <= b; i++) P[i].t = 'cutcover';
-        const bor = runs(a, b, (p) => p.cls !== 'C'); if (!bor.length) continue;
-        let x = bor[0][0], y = bor[bor.length - 1][1];
-        const tunnel = (p) => !!p && !p.stn && (p.t === 'shield' || p.t === 'deep');   // a canon or river tunnel beyond
-        if (x > a && tunnel(P[a - 1])) x = a; if (y < b && tunnel(P[b + 1])) y = b;   // runs on into it
-        const ends = (x > a ? len(a, x - 1) : 0) + (y < b ? len(y + 1, b) : 0), span = P.slice(x, y + 1);
-        const shallowIn = span.some((p) => p.cls === 'C'), tooDeep = span.some((p) => p.cls === 'B');
-        // a drive only where it is most of the stretch; too shallow partway (Ben, 30 October): if cut and cover can dig
-        // all of it, the whole drive is cut and cover; if not, the whole drive stays bored and is flagged
-        let bored = (x === a && y === b) || len(x, y) >= ends;
-        if (bored && shallowIn && !tooDeep) bored = false;
-        let drives = [[x, y]];
-        if (bored && shallowIn) {
-          // too shallow partway and too deep elsewhere (Ben, 31 October): the shallow pockets are cut and cover where every
-          // bored piece left is still a whole drive (min_drive); otherwise the drive stays bored and the profile must be
-          // regraded (an error, with Regrade to lower the rail to the tube's cover)
-          const pieces = runs(x, y, (p) => p.cls !== 'C');
-          if (pieces.every(([u, v]) => len(u, v) >= R.minDrive)) {
-            drives = pieces;
-            if (fl) for (const [u, v] of runs(x, y, (p) => p.cls === 'C')) flags.push({ c0: P[u].c, c1: P[v].c, kind: 'Low cover', info: true, text: `${Math.round(len(u, v))} m with less than one diameter of cover (${fmtZ(P[u].shieldFrom, 2)} ${uLbl()} to the rail): cut and cover there, the bored pieces either side are whole drives (at least ${Math.round(R.minDrive)} m)` });
-          } else if (fl) {
-            const C = runs(x, y, (p) => p.cls === 'C'), cl = C.reduce((t, [u, v]) => t + len(u, v), 0), short = pieces.filter(([u, v]) => len(u, v) < R.minDrive);
-            flags.push({ c0: P[x].c, c1: P[y].c, kind: 'Regrade', error: true, regrade: { c0: P[x].c, c1: P[y].c }, text: `the drive has ${Math.round(cl)} m with less than one diameter of cover (${fmtZ(P[C[0][0]].shieldFrom, 2)} ${uLbl()} to the rail, from ${fmtCh(P[C[0][0]].c)}) and cut and cover there would leave ${short.length === 1 ? 'a bored piece' : short.length + ' bored pieces'} shorter than a drive (${short.map(([u, v]) => Math.round(len(u, v)) + ' m').join(', ')}; at least ${Math.round(R.minDrive)} m): the profile must be lowered` });
-          }
-        }
-        if (bored) for (const [u, v] of drives) for (let i = u; i <= v; i++) P[i].t = 'bored';
-        if (!bored && fl && tooDeep) flags.push({ c0: P[x].c, c1: P[y].c, text: `a bored stretch shorter than its shallow ends (${Math.round(len(x, y))} m) and deeper than the cut-and-cover limit (${fmtZ(R.ccMax, 2)} ${uLbl()}): the profile has to rise, or the drive be longer` });
-        if (!bored) continue;
-        for (const [x, y] of drives) {
-        // one depth type per drive (Ben, 30 October): deep if it reaches a deep station or most of it is below deep_from,
-        // else shallow shield, flagged where its depth crosses; a drive running up to a portal may change on the way
-        const outward = (i, dir) => { while (i >= 0 && i < n && P[i].t === 'cutcover' && !P[i].stn) i += dir; return P[i]; };
-        const portal = [outward(x - 1, -1), outward(y + 1, 1)].some((q) => q && !q.stn && (q.t === 'atgrade' || q.t === 'trough' || q.t === 'elevated'));
-        const deepStn = (x > 0 && P[x - 1].stn && P[x - 1].t === 'deep') || (y < n - 1 && P[y + 1].stn && P[y + 1].t === 'deep');
-        const deepLen = P.slice(x, y + 1).filter((p) => p.deep).length * step, all = len(x, y);
-        if (portal && !deepStn) {   // by depth, the old rule: deep where a whole drive's length is deep
-          for (let i = x; i <= y; i++) P[i].t = 'shield';
-          for (const [u, v] of runs(x, y, (p) => p.deep)) if (len(u, v) >= R.minDrive) for (let i = u; i <= v; i++) P[i].t = 'deep';
-          continue;
-        }
-        const t = deepStn || deepLen * 2 >= all ? 'deep' : 'shield';
-        for (let i = x; i <= y; i++) P[i].t = t;
-        const other = t === 'deep' ? all - deepLen : deepLen;
-        if (fl && other >= MIN_RUN) flags.push({ c0: P[x].c, c1: P[y].c, text: `the drive changes depth class: ${Math.round(deepLen)} m below ${fmtZ(R.deepFrom, 2)} ${uLbl()}, ${Math.round(all - deepLen)} m above; drawn as ${t === 'deep' ? 'deep tunnel' : 'shallow shield'} throughout${deepStn ? ' (it reaches a deep station)' : ''}` });
-        }
-      }
-    }
-  };
-  resolve(false);
-  // a bored tunnel point: a drive's, or a canon tunnel's (canon sections carry no depth class: Line 2's deep tube up Mt Auburn
-  // into McMicken had no approach box, Ben 30 October)
-  const bored = (p) => p && (p.t === 'shield' || p.t === 'deep') && !p.stn;
   const stIdx = (c) => Math.max(0, Math.min(n - 1, Math.round(c / step)));
-  const half = settings.platform / 2, placed = new Set();
-  // tube form (Ben, 31 October: never double track to twin tubes for no reason): a drive whose ends are both double track
-  // (a side-platform or plain box, the sunk box, a portal, the line's end) is the double-track bore where it has the bore's
-  // cover all along; twin tubes where an end is an island station or a tube (deep or painted shield) station of a twin-tube
-  // phase, or the bore lacks its cover. A painted tube form (twin or bore) decides where it is painted.
-  const phaseTube = (c) => { const ph = phaseAt(c), t = (MS.phases[ph] || MS.phases.later).tube; return { ph, t }; };
-  const twinAt = (c) => { const { ph, t } = phaseTube(c); return t === 'bore' ? twinOf(ph) : t; };
-  const endKind = (i, dir) => {
-    while (P[i] && P[i].appr) i += dir;   // through an approach box to what it serves
-    const p = P[i]; if (!p || !p.stn) return 'double';
-    const s = S.stations.find((x) => Math.abs(p.c - x.c) <= half + 1e-6); if (!s) return 'double';
-    const sty = overrideAt(s.c) || (P[stIdx(s.c)] || {}).t;
-    if (sty === 'shield' || sty === 'deep') return phaseTube(s.c).t === 'bore' ? 'double' : 'twin';   // a tube station: its phase's tubes
-    return platKind(s.name, 'cutcover') === 'island' ? 'twin' : 'double';
+  const OPEN = new Set(['atgrade', 'trough', 'elevated']);
+  // 1. every sample on its own: an anchor (open, river, box) or a tunnel point with its depth
+  const base = (c, z) => {
+    const r = riverAt(c);
+    if (r && !alongShore(r)) return z >= pool() + 1 ? { t: 'elevated', role: 'open' } : { t: 'sunk', role: 'river' };
+    const sec = canonAt(c);
+    if (sec && sec.m === 'covered') { const s0 = surfaceAt(c); return isFinite(s0) && z - s0 >= settings.elevAbove ? { t: 'elevated', role: 'open' } : { t: 'cutcover', role: 'box' }; }
+    const g = groundAt(c); if (!isFinite(g)) return { t: 'atgrade', role: 'open' };
+    if (z - g >= settings.elevAbove) return { t: 'elevated', role: 'open' };
+    const d = g - z; if (d < settings.coverBelow) return { t: 'atgrade', role: 'open' };
+    if (d < METRO_ST.box.top) return { t: 'trough', role: 'open' };
+    const o = overrideAt(c);
+    if (o === 'cutcover') return { t: 'cutcover', role: 'box', d };
+    if (o && OPEN.has(o)) return { t: o, role: 'open' };
+    if (sec && sec.m === 'canal') return { t: 'cutcover', role: 'box', d };
+    const force = o === 'shield' || o === 'deep' ? o : r ? 'deep' : sec && (sec.m === 'shallow' || sec.m === 'deep') ? (sec.m === 'deep' ? 'deep' : 'shield') : null;
+    return { role: 'tunnel', d, force };
   };
+  for (let i = 0; i < n; i++) { const c = Math.min(i * step, S.L), z = railAt(c), ph = phaseAt(c); P.push(Object.assign({ c, z, ph, R: phaseRules(c) }, base(c, z))); }
+  // stations: one type for the whole platform, by the centre (Ben, 29-30 October), by the cut-and-cover limit
+  const stOf = [];
+  S.stations.forEach((s) => {
+    const zc = railAt(s.c), q = base(s.c, zc), o = overrideAt(s.c), R = phaseRules(s.c), g = groundAt(s.c), ds = isFinite(g) ? g - zc : 0;
+    let st;
+    if (o === 'cutcover' || (o && OPEN.has(o))) st = { t: o, role: o === 'cutcover' ? 'box' : 'open' };
+    else if (o === 'shield' || o === 'deep') st = { t: o, role: 'mined' };
+    else if (q.role !== 'tunnel') st = { t: q.t, role: q.role === 'river' ? 'open' : q.role };
+    else if (ds <= R.ccMax) st = { t: 'cutcover', role: 'box' };
+    else st = { t: ds >= R.deepFrom ? 'deep' : 'shield', role: 'mined' };
+    const sd = { s, ...st, ds, island: st.role === 'box' && platKind(s.name, 'cutcover') === 'island' };
+    stOf.push(sd);
+    for (let i = Math.max(0, Math.ceil((s.c - half) / step)); i <= Math.min(n - 1, Math.floor((s.c + half) / step)); i++) Object.assign(P[i], { t: st.t, role: st.role, stn: sd, ph: phaseAt(s.c), R });
+    if (sd.role === 'box' && ds > R.ccMax + 0.05) flags.push({ c0: s.c - half, c1: s.c + half, kind: 'Tunnel method', text: `${esc(s.name)} painted cut and cover ${fmtZ(ds, 1)} ${uLbl()} down, deeper than the cut-and-cover limit (${fmtZ(R.ccMax, 2)} ${uLbl()}, Phase ${P[stIdx(s.c)].ph})` });
+  });
+  // a sliver of open track inside a tunnel (the ground dipping for a few metres) is not a portal: tunnel, with its depth
+  for (const [x, y] of runs(0, n - 1, (p) => p.role === 'open' && !p.stn)) {
+    if (len(x, y) >= MIN_RUN || x === 0 || y === n - 1) continue;
+    const a = P[x - 1].role, b = P[y + 1].role; if ((a === 'tunnel' || a === 'mined') && (b === 'tunnel' || b === 'mined')) for (let i = x; i <= y; i++) Object.assign(P[i], { role: 'tunnel', t: undefined, d: groundAt(P[i].c) - P[i].z, force: null });
+  }
+  const phaseTube = (c) => (MS.phases[phaseAt(c)] || MS.phases.later).tube;
+  const twinAt = (c) => { const t = phaseTube(c); return t === 'bore' ? twinOf(phaseAt(c)) : t; };
+  const tubeOfKey = (k) => (k === 'bore' ? METRO_ST.bore : k === 'C' ? METRO_ST.tubeC : METRO_ST.tube);
   const boreNeed = METRO_ST.bore.top + METRO_ST.bore.od;
-  const boreCover = (p) => riverAt(p.c) || groundAt(p.c) - p.z >= boreNeed - 0.005;
-  const formTubes = () => {
-    for (const p of P) delete p.tube;
-    for (const [x, y] of runs(0, n - 1, (p) => bored(p))) {
-      // too shallow for the bore only at its ends: the boxes carry on to where it has its cover (double track both, no
-      // spacing change), as long as the bore is most of the drive; too shallow inside it: twin tubes
-      let u = x, v = y; const ok = (p) => tubeFormAt(p.c) || boreCover(p);
-      while (u <= v && !ok(P[u])) u++; while (v >= u && !ok(P[v])) v--;
-      const bore = endKind(x - 1, -1) === 'double' && endKind(y + 1, 1) === 'double' && u <= v && len(u, v) >= (u - x + y - v) * step && P.slice(u, v + 1).every(ok);
-      if (bore) { for (let i = x; i < u; i++) P[i].t = 'cutcover'; for (let i = v + 1; i <= y; i++) P[i].t = 'cutcover'; }
-      for (let i = bore ? u : x; i <= (bore ? v : y); i++) { const f = tubeFormAt(P[i].c) || (bore ? 'bore' : 'twin'); P[i].tube = f === 'bore' ? 'bore' : twinAt(P[i].c); }
-    }
+  const isTun = (p) => p.role === 'tunnel';
+  // an anchor next to a stretch: what it is, its track spacing and the edge where the approach starts (dir: from the anchor
+  // toward the stretch)
+  const anchorAt = (j, dir) => {
+    const p = P[j]; if (!p) return { kind: 'end' };
+    if (p.stn) return p.role === 'box' ? { kind: p.stn.island ? 'island' : 'side', station: p.stn.s.name, sp: p.stn.island ? MS.island_box.spacing : MS.box.spacing, edge: p.stn.s.c + dir * half, double: !p.stn.island }
+      : { kind: 'box', sp: MS.box.spacing, edge: p.c, double: true };   // an open station: a portal
+    if (p.role === 'river') return { kind: 'river', river: (riverAt(p.c) || {}).name, sp: MS.box.spacing, edge: p.c, double: true };
+    return { kind: 'box', sp: MS.box.spacing, edge: p.c, double: true };
   };
-  formTubes();
-  // the approaches: box on to where the tracks reach the tubes' spacing
-  const tubeKey = (c) => { const p = P[stIdx(c)]; if (p && p.tube) return p.tube; const f = tubeFormAt(c); return f === 'bore' ? 'bore' : f === 'twin' ? twinAt(c) : phaseTube(c).t; };
-  const tubeSp = (c) => { const tb = MS.tubes[tubeKey(c)]; return tb ? tb.spacing : MS.box.spacing; };
-  const fix = (i0, dir, Lm, info) => { let k = 0, i = i0; for (; i >= 0 && i < n && (k === 0 || Math.abs(P[i - dir].c - info.c) < Lm - 1e-6); i += dir, k++) { if (!P[i].cls && !bored(P[i]) && !(P[i].t === 'cutcover' && !P[i].stn)) break; delete P[i].cls; P[i].t = 'cutcover'; P[i].stn = true; P[i].appr = true; } if (k) approaches.push(Object.assign({}, info, { len: Math.round(Math.abs(P[i - dir].c - info.c) * 100) / 100 })); };   // from the platform end (or box end) to the last sample boxed
-  // placed in passes: the second resolve can turn a cut-and-cover gap beside a station into a drive, which then needs its
-  // approach too (Lines 3, 5, 7, 11, 12, 14 had tubes running straight into a platform or box)
-  const place = () => {
-  const n0 = approaches.length;
-  for (const s of S.stations) {
-    const ic = stIdx(s.c); if (!P[ic] || !P[ic].stn) continue;
-    // the station's type: its paint, else the rules' (a station painted Shallow shield is a tube station: VA Medical Center
-    // on Line 2 had approach boxes drawn into its tubes, Ben 30 October)
-    const sty = overrideAt(s.c) || P[ic].t, tubeStn = sty === 'shield' || sty === 'deep'; if (sty !== 'cutcover' && !tubeStn) continue;
-    const kind = platKind(s.name, 'cutcover'), spS = kind === 'island' ? MS.island_box.spacing : MS.box.spacing;
-    for (const dir of [-1, 1]) {
-      if (placed.has(`${s.name}|${dir}`)) continue;
-      let i0 = stIdx(s.c + dir * half); while (P[i0] && P[i0].stn) i0 += dir;   // the first sample past the platform
-      if (tubeStn) {   // a tube station meeting a box: the tracks change spacing inside the box, from the platform end
-        if (!P[i0] || P[i0].t !== 'cutcover') continue;
-        const shift = (tubeSp(s.c) - MS.box.spacing) / 2; if (Math.abs(shift) < 0.01) continue;
-        const info = { station: null, kind: 'box', side: dir, shift, c: s.c + dir * half }, k0 = approaches.length;
-        fix(i0, dir, approachLen(shift, P[i0].c, info), info); placed.add(`${s.name}|${dir}`);
-        if (approaches.length > k0) { const a = approaches[k0]; a.c = a.c + dir * a.len; a.side = -dir; }   // measured from the box end, as a box meeting tubes
-        continue;
-      }
-      if (!bored(P[i0])) continue;
-      const shift = (tubeSp(P[i0].c) - spS) / 2; if (Math.abs(shift) < 0.01) continue;
-      { const info = { station: s.name, kind, side: dir, shift, c: s.c + dir * half }; fix(i0, dir, approachLen(shift, P[i0].c, info), info); placed.add(`${s.name}|${dir}`); }
-    }
-  }
-  // river banks (Ben, 30 October): the sunk box anchors like a station and joins the land tunnel through a short
-  // cut-and-cover transition at each bank (the tubes' spacing to the box's; at least approach_m where they are the same)
-  for (const r of S.rivers) {
-    if (bridgeOf(r)) continue;
-    for (const [edge, dir] of [[r.c0, -1], [r.c1, 1]]) {
-      let i0 = stIdx(edge); while (P[i0] && riverAt(P[i0].c)) i0 += dir;   // the first sample on the bank
-      if (placed.has(`r|${r.name}|${dir}`) || !P[i0 - dir] || P[i0 - dir].t !== 'sunk' || !bored(P[i0])) continue;
-      const shift = (tubeSp(P[i0].c) - MS.box.spacing) / 2, info = { station: null, kind: 'river', river: r.name, side: dir, shift, c: P[i0 - dir].c };
-      fix(i0, dir, approachLen(shift, P[i0].c, info), info); placed.add(`r|${r.name}|${dir}`);
-    }
-  }
-  for (const [x, y] of runs(0, n - 1, (p) => bored(p))) {   // a box meeting tubes away from a station: the change inside the box
-    for (const [i, dir] of [[x, 1], [y, -1]]) {
-      const nb = P[i - dir]; if (!nb || nb.t !== 'cutcover' || nb.stn) continue;
-      const shift = (tubeSp(P[i].c) - MS.box.spacing) / 2; if (Math.abs(shift) < 0.01) continue;
-      { const info = { station: null, kind: 'box', side: dir, shift, c: P[i].c }; fix(i, dir, approachLen(shift, P[i].c, info), info); }
-    }
-  }
-  return approaches.length > n0;
+  // the approaches: at each end of a drive that meets a box, the box carries on until the tracks reach the tubes' spacing
+  // (L = max(approach_m, sqrt(4 x min_radius x shift)), from the platform end, the river edge or the box end); at the river
+  // at least approach_m whatever the spacing (Ben, 30 October)
+  const approachAt = (i, dir) => {   // i: the drive's end sample, dir: outward
+    let j = i + dir; while (P[j] && P[j].t === 'cutcover' && isTun(P[j]) && !P[j].shaft) j += dir;   // through the launch box
+    if (!P[j] || P[j].role === 'mined') return null;
+    const an = P[j].shaft ? { kind: 'box', sp: MS.box.spacing, edge: P[j].c } : anchorAt(j, -dir);
+    if (an.kind === 'end') return null;
+    const tb = MS.tubes[P[i].tube], shift = ((tb ? tb.spacing : MS.box.spacing) - an.sp) / 2;
+    if (Math.abs(shift) < 0.01 && an.kind !== 'river') return null;
+    const info = { station: an.station || null, kind: an.kind, ...(an.river ? { river: an.river } : {}), side: -dir, shift, c: an.edge };
+    const Lm = approachLen(shift, P[i].c, info);
+    let k = j - dir, last = null;
+    for (; P[k] && Math.abs(P[k].c - an.edge) < Lm + step - 1e-6 && isTun(P[k]) && !P[k].shaft; k -= dir) { P[k].t = 'cutcover'; P[k].appr = true; last = k; }
+    if (P[k] && P[k].role === 'mined' && Math.abs(P[k].c - an.edge) < Lm - 1e-6) flags.push({ c0: Math.min(an.edge, P[k].c), c1: Math.max(an.edge, P[k].c), kind: 'Approach box', text: `the approach box from ${an.station ? esc(an.station) : 'the box'} runs into ${esc(P[k].stn.s.name)} after ${Math.round(Math.abs(P[k].c - an.edge))} m (needs ${Math.round(Lm)} m): the stations are too close for the spacing change` });
+    if (last == null) return null;
+    approaches.push(Object.assign(info, { len: Math.round(Math.abs(P[last].c - an.edge) * 100) / 100 })); return info;
   };
-  place();
-  resolve(false); formTubes();   // again with the approaches as anchors
-  for (let k = 0; k < 3 && place(); k++) { resolve(false); formTubes(); }   // any drive a pass made beside a box gets its approach
-  resolve(true); formTubes();   // the flags from the final pass
+  const tubeKey = (c) => { const p = P[stIdx(c)]; if (p && p.tube) return p.tube; const f = tubeFormAt(c); return f === 'bore' ? 'bore' : f === 'twin' ? twinAt(c) : phaseTube(c); };
+  // 3. each stretch between anchors, split where the building phase changes
+  const stretches = [];
+  for (const [a0, b0] of runs(0, n - 1, (p) => p.role === 'tunnel' || p.role === 'mined')) { let s = a0; for (let i = a0 + 1; i <= b0 + 1; i++) if (i > b0 || P[i].ph !== P[s].ph) { stretches.push([s, i - 1]); s = i; } }
+  for (const [a, b] of stretches) {
+    const R = P[a].R, span = P.slice(a, b + 1), tun = span.filter(isTun);
+    const mined = span.some((p) => p.role === 'mined'), forced = tun.some((p) => p.force);
+    if (!mined && !forced && tun.every((p) => p.d <= p.R.ccMax + 1e-6)) { for (const p of tun) p.t = 'cutcover'; continue; }
+    // the tube form (Ben, 31 October): the double-track bore between two double-track ends where it has its cover; twin
+    // tubes into an island station, through a mined station of a twin-tube phase, or where the bore lacks cover
+    const L = a > 0 ? anchorAt(a - 1, 1) : { kind: 'end', double: true }, Rt = b < n - 1 ? anchorAt(b + 1, -1) : { kind: 'end', double: true };
+    const pt = phaseTube(P[a].c), ends2 = L.double !== false && Rt.double !== false;
+    let form = (pt === 'bore' ? ends2 : ends2 && !mined) ? 'bore' : 'twin';
+    if (form === 'bore') {   // the bore's cover all along, but for shallow ends the boxes carry on through
+      let u = a, v = b; const ok = (p) => p.role === 'mined' || tubeFormAt(p.c) || p.d >= boreNeed - 0.005;
+      while (u <= v && !ok(P[u]) && P[u].d <= P[u].R.ccMax) u++; while (v >= u && !ok(P[v]) && P[v].d <= P[v].R.ccMax) v--;
+      if (!(u <= v && len(u, v) >= (u - a + b - v) * step && P.slice(u, v + 1).every(ok))) form = 'twin';
+    }
+    const key = (p) => { const f = tubeFormAt(p.c) || form; return f === 'bore' ? 'bore' : twinAt(p.c); };
+    const need = (p) => { const tb = tubeOfKey(key(p)); return tb.top + tb.od; };
+    // the boxes at the ends carry on until the tube has its cover
+    let u = a, v = b;
+    while (u <= v && isTun(P[u]) && P[u].d < need(P[u]) && P[u].d <= P[u].R.ccMax) { P[u].t = 'cutcover'; u++; }
+    while (v >= u && isTun(P[v]) && P[v].d < need(P[v]) && P[v].d <= P[v].R.ccMax) { P[v].t = 'cutcover'; v--; }
+    if (u > v) continue;
+    // 4. too little cover inside the drive
+    let pieces = [[u, v]];
+    const low = runs(u, v, (p) => isTun(p) && p.d < need(p));
+    if (low.length) {
+      const rest = runs(u, v, (p) => !(isTun(p) && p.d < need(p)));
+      const cl = low.reduce((t, [x, y]) => t + len(x, y), 0);
+      if (rest.every(([x, y]) => len(x, y) >= P[x].R.minDrive) && low.every(([x, y]) => P.slice(x, y + 1).every((p) => p.d <= p.R.ccMax))) {
+        for (const [x, y] of low) { for (let i = x; i <= y; i++) { P[i].t = 'cutcover'; P[i].shaft = true; } flags.push({ c0: P[x].c, c1: P[y].c, kind: 'Low cover', info: true, text: `${Math.round(len(x, y))} m with less than one diameter of cover (${fmtZ(need(P[x]), 2)} ${uLbl()} to the rail): a cut-and-cover box (a working shaft) between two whole drives (at least ${Math.round(R.minDrive)} m each)` }); }
+        pieces = rest;
+      } else flags.push({ c0: P[u].c, c1: P[v].c, kind: 'Regrade', error: true, regrade: { c0: P[u].c, c1: P[v].c }, text: `the drive has ${Math.round(cl)} m with less than one diameter of cover (${fmtZ(need(P[low[0][0]]), 2)} ${uLbl()} to the rail, from ${fmtCh(P[low[0][0]].c)}); a box there would leave a drive shorter than ${Math.round(R.minDrive)} m: the profile must be lowered` });
+    }
+    for (const [x, y] of pieces) {
+      // one depth class per drive: deep if it runs through a deep station or most of it is below deep_from; forced by
+      // canon or paint where those say so
+      const ps = P.slice(x, y + 1), fd = ps.filter((p) => p.force === 'deep').length, fs = ps.filter((p) => p.force === 'shield').length;
+      const deepLen = ps.filter((p) => isTun(p) && p.d >= p.R.deepFrom).length, tl = ps.filter(isTun).length;
+      const cls = fd + fs ? (fd >= fs ? 'deep' : 'shield') : ps.some((p) => p.role === 'mined' && p.t === 'deep') || deepLen * 2 >= tl ? 'deep' : 'shield';
+      for (const p of ps) { if (isTun(p)) p.t = cls; p.tube = key(p); }
+      const mark = approaches.length, ap = [approachAt(x, -1), approachAt(y, 1)];
+      // 5. what is left bored, shorter than a drive (no mined station on it): beside the sunk box it is the bank works (the
+      // immersed tunnel's land end is cut and cover in a cofferdam); shorter than the boxes round it, cut and cover past its
+      // limit, an error (raise the profile, or lower it for a whole drive); else one short bored piece
+      const left = runs(x, y, (p) => p.t === 'shield' || p.t === 'deep').reduce((t, [u2, v2]) => t + len(u2, v2), 0);
+      if (left >= R.minDrive || ps.some((p) => p.role === 'mined')) continue;
+      const river = ap.some((q) => q && q.kind === 'river') || [P[a - 1], P[b + 1]].some((q) => q && q.role === 'river');
+      const boxes = len(a, b) - left;
+      if (river || left < boxes) {
+        approaches.length = mark; for (const p of P.slice(a, b + 1)) if (isTun(p)) { p.t = 'cutcover'; delete p.appr; delete p.tube; }
+        const tp = P.slice(a, b + 1).filter(isTun), at = tp.reduce((m, p) => (p.d - p.R.ccMax > m.d - m.R.ccMax ? p : m), tp[0]), over = at ? at.d - at.R.ccMax : 0;
+        if (river) flags.push({ c0: P[a].c, c1: P[b].c, kind: 'Tunnel method', info: true, text: `${Math.round(len(a, b))} m to the river, too short for a drive (${Math.round(R.minDrive)} m): the bank works of the sunk box (cut and cover in a cofferdam)${over > 0.05 ? `, down to ${fmtZ(over, 1)} ${uLbl()} past the street cut-and-cover limit` : ''}` });
+        else if (over > 0.05) flags.push({ c0: P[a].c, c1: P[b].c, kind: 'Tunnel method', error: true, text: `${Math.round(left)} m would be bored between ${Math.round(boxes)} m of boxes, too short for a drive (${Math.round(R.minDrive)} m); cut and cover there is ${fmtZ(over, 1)} ${uLbl()} past its limit (${fmtZ(R.ccMax, 2)} ${uLbl()}) at ${fmtCh(at.c)}: raise the profile, or lower it for a whole drive` });
+      } else flags.push({ c0: P[x].c, c1: P[y].c, kind: 'Tunnel method', info: true, text: `a ${Math.round(left)} m drive (shorter than ${Math.round(R.minDrive)} m) between two boxes: too deep for cut and cover (${fmtZ(R.ccMax, 2)} ${uLbl()}), bored as one piece` });
+    }
+  }
+  for (const p of P) if (!p.t) p.t = 'cutcover';
+  // a tube paint over a box the rules need (an approach, a bank box, a box where the tube lacks its cover)
+  for (const [x, y] of runs(0, n - 1, (p) => { const o = overrideAt(p.c); return (o === 'shield' || o === 'deep') && p.t === 'cutcover' && !p.stn && !riverAt(p.c); })) flags.push({ c0: P[x].c, c1: P[y].c, kind: 'Painted', warn: true, text: `painted ${TYPES[overrideAt(P[x].c)].label} over ${Math.round(len(x, y))} m where the rules need a box (${P[x].appr ? 'the spacing change' : 'less than one tube diameter of cover, or too short for a drive'}): the paint wins on the drawing; clear it with Auto` });
+  // no open-track or box sliver shorter than MIN_RUN between open track and boxes (the ground stepping across a threshold at a
+  // portal): the longer neighbour's type; tunnels and stations are never touched
+  { const free = (p) => !p.stn && !p.appr && !p.shaft && p.t !== 'shield' && p.t !== 'deep' && p.t !== 'sunk';
+    for (let pass = 0; pass < 4; pass++) { let ch = false; const R2 = []; let a2 = 0; for (let i = 1; i <= n; i++) if (i === n || P[i].t !== P[a2].t) { R2.push([a2, i - 1]); a2 = i; }
+      for (let k = 1; k + 1 < R2.length; k++) { const [x, y] = R2[k]; if (len(x, y) >= MIN_RUN || !P.slice(x, y + 1).every(free)) continue; const [px, py] = R2[k - 1], [nx, ny] = R2[k + 1];
+        const ok2 = (q) => q.t !== 'shield' && q.t !== 'deep' && q.t !== 'sunk'; if (!ok2(P[py]) || !ok2(P[nx])) continue;
+        const t = P[px].t === P[nx].t ? P[px].t : (py - px >= ny - nx ? P[px].t : P[nx].t); for (let i = x; i <= y; i++) P[i].t = t; ch = true; }
+      if (!ch) break; } }
+  const bored = (p) => (p.t === 'shield' || p.t === 'deep') && !p.stn;
   // approach boxes under the street (Ben, 28 October: accepted where they leave it, round corners or are wider: the street
-  // grid made them necessary; each a warning saying where and by how much). Box outside = track centres + 4.0 m.
+  // grid made them necessary; each a note saying where and by how much). Box outside = track centres + 4.0 m.
   const sts = (S.ctx && S.ctx.streets) || [], wall = MS.box.inside - MS.box.spacing;
   for (const a of approaches) {
     const c0 = a.c, c1 = a.c + a.side * a.len, lo = Math.min(c0, c1), hi = Math.max(c0, c1);
@@ -1257,22 +1262,14 @@ function solveTypes(V) {
     }
     if (off || wide) flags.push({ c0: lo, c1: hi, info: true, kind: 'Approach box', text: `the ${a.station ? esc(a.station) + ' ' : ''}approach box ${[off ? `leaves the street for about ${off} m (under blocks or round a corner)` : '', wide ? `is ${fmtZ(wide.w, 1)} ${uLbl()} wide under ${esc(wide.st[3])} (${fmtZ(wide.st[2], 1)} ${uLbl()})` : ''].filter(Boolean).join(' and ')}: accepted (Ben)` });
   }
-  // twin tubes or one bore (proposed, flagged only; Ben, 28 October): a twin-tube stretch under a street narrower than the
-  // tubes' footprint (centres + one diameter) could be the single bore or stacked tubes; a Phase 2 stretch built cut and
-  // cover where the bore can't reach 15.5 m but type A twin tubes would have their cover could be twin tubes
-  const tubeName = (c) => (MS.phases[phaseAt(c)] || MS.phases.later).tube, A = METRO_ST.tube, aFrom = A.top + A.od;
-  const streetAt = (c) => ((S.ctx && S.ctx.streets) || []).find((r) => c >= r[0] - 5 && c <= r[1] + 5);
-  const note = (pred, text) => { for (const [x, y] of runs(0, n - 1, pred)) if (len(x, y) >= 50) flags.push({ c0: P[x].c, c1: P[y].c, info: true, text: text(P[x]) }); };
-  note((p) => bored(p) && p.tube && p.tube !== 'bore' && (() => { const s = streetAt(p.c), tb = MS.tubes[p.tube]; return s && s[2] < tb.spacing + tb.outside; })(),
-    (p) => { const s = streetAt(p.c), tb = MS.tubes[p.tube]; return `twin tubes under ${esc(s[3])} (${fmtZ(s[2], 1)} ${uLbl()}), narrower than their footprint (${fmtZ(tb.spacing + tb.outside, 1)} ${uLbl()}): the single double-track bore would stay under the street (preferred, Ben), else stacked tubes one running spacing apart (proposed, not applied)`; });
-  note((p) => p.t === 'cutcover' && p.cls && p.ph === '2' && tubeName(p.c) === 'bore' && p.d >= aFrom,
-    () => `Phase 2 cut and cover deep enough for type A twin tubes (${fmtZ(aFrom, 2)} ${uLbl()}) but not the bore (${fmtZ(METRO_ST.bore.top + METRO_ST.bore.od, 2)} ${uLbl()}): twin tubes could bore here (proposed, not applied)`);
-  // a change of track spacing inside the tunnel (a painted bore meeting twin tubes or a twin-tube station): no box to do it in
-  { const spK = (p) => { if (bored(p)) return p.tube; if (p.stn && !p.appr && (p.t === 'shield' || p.t === 'deep')) return tubeKey(p.c); return null; };
+  // twin tubes under a street narrower than their footprint: the single bore would stay under it (a note)
+  const streetAt = (c) => sts.find((r) => c >= r[0] - 5 && c <= r[1] + 5);
+  for (const [x, y] of runs(0, n - 1, (p) => bored(p) && p.tube && p.tube !== 'bore' && (() => { const s = streetAt(p.c), tb = MS.tubes[p.tube]; return s && s[2] < tb.spacing + tb.outside; })())) if (len(x, y) >= 50) { const s = streetAt(P[x].c), tb = MS.tubes[P[x].tube]; flags.push({ c0: P[x].c, c1: P[y].c, info: true, kind: 'Tube form', text: `twin tubes under ${esc(s[3])} (${fmtZ(s[2], 1)} ${uLbl()}), narrower than their footprint (${fmtZ(tb.spacing + tb.outside, 1)} ${uLbl()}): the double-track bore would stay under the street (paint it), else stacked tubes` }); }
+  // a change of track spacing inside the tunnel (painted tube forms that differ): no box to do it in
+  { const spK = (p) => ((p.t === 'shield' || p.t === 'deep') && !p.appr ? p.tube : null);
     for (let i = 1; i < n; i++) { const a = spK(P[i - 1]), b = spK(P[i]); if (a && b && MS.tubes[a] && MS.tubes[b] && Math.abs(MS.tubes[a].spacing - MS.tubes[b].spacing) > 0.01) flags.push({ c0: P[i - 1].c, c1: P[i].c, kind: 'Tube form', text: `the tracks change spacing inside the tunnel (${MS.tubes[a].label}, ${fmtZ(MS.tubes[a].spacing, 2)} ${uLbl()}, to ${MS.tubes[b].label}, ${fmtZ(MS.tubes[b].spacing, 2)} ${uLbl()}) with no box to do it in: paint the same tube form on both sides, or end the bore at a box` }); } }
-  for (const [x, y] of runs(0, n - 1, (p) => tubeFormAt(p.c) === 'bore' && !p.stn && (bored(p) || p.t === 'cutcover') && !boreCover(p))) if (len(x, y) >= MIN_RUN) flags.push({ c0: P[x].c, c1: P[y].c, kind: 'Tube form', text: `painted double-track bore where it lacks its cover (${fmtZ(boreNeed, 2)} ${uLbl()} to the rail): ${bored(P[x]) ? 'bored anyway' : 'built cut and cover here'}; lower the profile, or paint twin tubes` });
-  absorbShort(P, step);
-  V._types = { g: S.ground, ms: MS, chr: CHR, plat: ST_PLAT, ax: APX_EXTRA, L: S.L, step, t: P.map((p) => p.t), z: P.map((p) => p.z), tube: P.map((p) => (bored(p) && p.tube) || null), flags, approaches };
+  for (const [x, y] of runs(0, n - 1, (p) => tubeFormAt(p.c) === 'bore' && bored(p) && !riverAt(p.c) && groundAt(p.c) - p.z < boreNeed - 0.005)) if (len(x, y) >= MIN_RUN) flags.push({ c0: P[x].c, c1: P[y].c, kind: 'Tube form', text: `painted double-track bore where it lacks its cover (${fmtZ(boreNeed, 2)} ${uLbl()} to the rail): lower the profile, or paint twin tubes` });
+  V._types = { g: S.ground, ms: MS, chr: CHR, plat: ST_PLAT, ax: APX_EXTRA, L: S.L, step, t: P.map((p) => p.t), z: P.map((p) => p.z), tube: P.map((p) => ((p.t === 'shield' || p.t === 'deep') && p.tube) || null), part: P.map((p) => (p.appr ? 'a' : p.shaft ? 's' : p.stn ? 'S' : '')), flags, approaches };
   return V._types;
 }
 function autoType(c, z) {
