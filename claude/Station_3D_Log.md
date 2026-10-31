@@ -400,3 +400,27 @@ Published: page version 6 and the snapshot (35 parts), read back at view level.
 - On Ben's export: no road clashes on Lines 1, 2, 4, 8, 10, 11, 2b; most elsewhere are troughs under streets (Lines 6, 9,
   12) and level crossings where a Metro line runs at grade across a street (Lines 3, 7, 9, 13, 14, CVG Express); the RER at
   grade on the old railroads crosses many streets (RER-1 38, B trunk 21). Test added; 65 pass.
+
+## 2026-10-31: station access types, stage 1 (Ben: Station_Access_and_Mezzanines_by_Phase; "mezzanines ... use this document")
+
+- Agreed changes to the document: a mined station (deeper than its phase's cut-and-cover limit) has no box roof, so it
+  gets a street-level hall with stairs down (mined_hall) or, from deep_from, lifts (deep); D_HALL comes from the structure
+  record per box type (`hall`: clear 2.75, roof 0.6, cover 0.6 over the box's rail-to-roof-top: 8.55 m side, 9.15 m
+  island); the cover and crossing checks run over a hall's roof where there is one. Ben chooses a type per station on its
+  card (saved in params/station_access); the rules decide elsewhere.
+- Inputs: the station's year from the Chronology (its own entry, else the earlier-opened segment either side, on the
+  Chronology's route list), the phase from the year (the line's phase when no year, flagged and drawn dashed), rail depth
+  against the finished ground, the platform type from the Deck, and the interchange from params/station_complexes (the 3D
+  build groups the Deck's stations of every system by name within 150 m; `marked` holds Ben's own groups, for stations
+  named differently such as Convention Center and Plum, to be set in the Deck).
+- Drawn on the profile: halls as a band on the box roof (end halls 25 m each end, a mezzanine the middle 60 %, full
+  length the platform), the crossunder under the floor, a shaft for mined and deep stations, the D_HALL line dashed
+  through the station. The card shows the type (rules or Ben), the opening year and phase, the interchanges at opening and
+  later, and the hall room. Issue kind "Access": a hall on a station shallower than D_HALL or over a mined station (errors),
+  no year (warning), an island or interchange shallower than D_HALL (a note: platform level with a crossunder).
+- Streets built over the subway (Central Parkway, Victory, MLK; `subway_streets` in the record): a solid line and
+  "built over the subway" on the profile and in the station's street.
+- On Ben's export (432 Metro stations): platform level with crossunder 160, platform level 135, deep 53, full-length
+  mezzanine 35, street hall 27, end halls 10, mezzanine 10, surface 2. The page and the Python copy agree on every one.
+- Stage 2 to come: the hub page for later stages (proposed from the complexes' years, accepted by Ben), the complex marks
+  in the Deck, the report for Ben (counts by phase, rule 4 list, proposed stages, hall clashes, no-year stations).

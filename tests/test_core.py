@@ -867,3 +867,32 @@ def test_road_checks_and_station_streets():
     rc = r1.road_checks()
     assert any(x["kind"] == "level crossing" and x["sev"] == "warn" and x["cls"] == "minor" for x in rc)
     assert any(x["kind"] == "level crossing" and x["sev"] == "error" and x["cls"] == "major" for x in rc)
+
+
+def test_station_access_types():
+    """Station access at opening (Station_Access_and_Mezzanines_by_Phase, Ben 31 October): by the Chronology year, the rail
+    depth against D_HALL from the structure record, the platform type and the interchange; Ben's choice wins."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile, ACCESS_TYPES
+    root = Path(__file__).resolve().parent.parent
+    mp = MetroProfile.load(root / "data/profile/lines/Line_1.json", root / "hub/seed/alignments/Line_1.json", root / "data/profile/settings.json")
+    assert abs(mp.d_hall(False) - (mp.ms["box"]["top"] + 2.75 + 0.6 + 0.6)) < 1e-9 and mp.d_hall(True) > mp.d_hall(False)
+    fs = next(s for s in mp.stations if s["name"] == "Fountain Square")
+    a = mp.station_access(fs)
+    assert a["year"] == 1905 and a["phase"] == "1" and a["type"] in ("platform_level", "platform_level_xu", "end_halls")
+    if a["depth"] < a["d_hall"]:
+        assert a["type"].startswith("platform_level")
+    types = [mp.station_access(s)["type"] for s in mp.stations]
+    assert all(t in ACCESS_TYPES for t in types) and len(types) == len(mp.stations)
+    # a mined station is a street hall or, from deep_from, a deep station; never a hall over a box
+    for s in mp.stations:
+        a = mp.station_access(s)
+        t = mp.type_at(s["c"])
+        if t in ("shield", "deep"):
+            assert a["type"] in ("mined_hall", "deep"), (s["name"], a)
+    # Ben's choice wins and a hall on a shallow station is an error
+    mp.access_set = {"Fountain Square": {"type": "mezzanine", "source": "Ben"}}
+    a = mp.station_access(fs)
+    assert a["type"] == "mezzanine" and a["source"] == "Ben"
+    if a["depth"] < a["d_hall"]:
+        assert any(f["sev"] == "error" for f in a["flags"])

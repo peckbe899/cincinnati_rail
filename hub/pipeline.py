@@ -31,6 +31,7 @@ LIVE_GJ = os.path.join(WORK, 'rer_routes.geojson')   # the Deck's live export
 REPO_COPIES = {LIVE_GJ: os.path.join(ROOT, 'data', 'deck', 'rer_routes.geojson'),
                os.path.join(DERIVED, 'deck', 'viaducts.json'): os.path.join(ROOT, 'hub', 'sites', 'deck', 'viaducts.json')}
 RECORD_COPIES = {'params/station_platforms': os.path.join(ROOT, 'data', 'profile', 'station_platforms.json'),
+                 'params/station_complexes': os.path.join(ROOT, 'data', 'profile', 'station_complexes.json'),
                  'params/approach_extra': os.path.join(ROOT, 'data', 'profile', 'approach_extra.json')}
 
 
@@ -280,6 +281,13 @@ class Pipeline:
         cur = self.store.get('params/approach_extra')
         if ax is not None and (cur is None or cur['data'] != ax):
             self.store.set('params/approach_extra', ax, by='pipeline')
+        cx = snap.get('station_complexes')   # stations of every system that are one station (interchanges), Ben's marks kept
+        cur = self.store.get('params/station_complexes')
+        if cx is not None:
+            marked = (cur['data'].get('marked') if cur else None) or []
+            new = {'auto': cx, 'marked': marked}
+            if cur is None or cur['data'] != new:
+                self.store.set('params/station_complexes', new, by='pipeline')
         tp = snap.get('tube_points')   # the bored tube along each Metro line, for the Deck's track spacing
         cur = self.store.get('params/tube_points')
         if tp and (cur is None or cur['data'] != tp):

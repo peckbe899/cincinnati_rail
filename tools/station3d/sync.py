@@ -442,6 +442,22 @@ SNAPSHOT_LISTS = ('lines', 'tracks', 'unlevelled', 'stations', 'platforms', 'str
 SNAPSHOT_META = {'area': str, 'name': str, 'synced_at': str, 'origin': dict, 'box': list, 'struct': dict, 'issues': list, 'counts': dict, 'ctx': dict}
 
 
+def station_complexes(stations, norm):
+    """[{id, name, members: [{sys, line, station, c, x, y}]}]: the stations of every system that are one station"""
+    groups = []
+    for st in stations:
+        if st.get('deleted') or not st['profiles']:
+            continue
+        g = next((g for g in groups if g['norm'] == norm(st['name']) and math.hypot(g['x'] - st['x'], g['y'] - st['y']) < 150), None)
+        if g is None:
+            g = {'id': f"{norm(st['name'])}:{round(st['x'])}:{round(st['y'])}", 'name': st['name'], 'norm': norm(st['name']), 'x': st['x'], 'y': st['y'], 'members': []}
+            groups.append(g)
+        for p in st['profiles']:
+            if not any(m['line'] == p['line'] and m['station'] == p['name'] for m in g['members']):
+                g['members'].append({'sys': st['sys'], 'line': p['line'], 'station': p['name'], 'c': p['c'], 'x': p['x'], 'y': p['y']})
+    return [{k: v for k, v in g.items() if k != 'norm'} for g in groups if len(g['members']) >= 1]
+
+
 def validate_snapshot(snap):
     """raises ValueError naming the first thing wrong with the snapshot"""
     for k, t in SNAPSHOT_META.items():
@@ -982,6 +998,10 @@ def main():
             stations.append({'id': f"profiles:{s['line']}:{s['name']}", 'name': s['name'], 'sys': L[s['line']]['sys'],
                              'x': s['x'], 'y': s['y'], 'deleted': False, 'edited': False, 'stops': [], 'profiles': [dict(s, dist=None)],
                              'note': 'in the Rail Profiles editor only'})
+    # station complexes (Ben, 31 October): the Deck's stations of every system grouped where they are one station, by the same
+    # normalised name within 150 m; Ben marks the rest (differently named ones such as Convention Center and Plum) in the
+    # Deck, params/station_complexes 'marked' (kept by the pipeline). Each complex: its members {sys, line, station, c}.
+    complexes = station_complexes(stations, norm)
     only_prof = [s for s in stations if s.get('note')]
     if only_prof:
         issues.append(f"{len(only_prof)} Profiles stations have no Deck station within reach: "
@@ -1440,7 +1460,7 @@ def main():
         'frame_turn_deg': AREA['frame_turn'], 'box': [r1(v) for v in BOX],
         'interline': combos, 'stripe_m': STRIPE_M,
         'platform_m': PLATFORM_M, 'platform_above_rail': PLATFORM_ABOVE_RAIL, 'struct': struct, 'box_margin': BOX_MARGIN,
-        'assumed': ASSUMED, 'deck_rules': dd.get('constants'), 'issues': issues, 'approach': approach, 'track_geometry': geom, 'station_types': station_types, 'tube_points': tube_points,
+        'assumed': ASSUMED, 'deck_rules': dd.get('constants'), 'issues': issues, 'approach': approach, 'track_geometry': geom, 'station_types': station_types, 'tube_points': tube_points, 'station_complexes': complexes,
         'station_platforms': {lid: {st['name']: plat_type.get((lid, norm(st['name']))) or 'side' for st in d['stations']} for lid, d in lines.items() if d['sys'] != 'rer'},
         'rules': ['Levels: the Rail Profiles editor; plan, tracks and platforms: the Mill Creek Deck',
                   'A platform on a shared pair (RER A/D, B C E ...) serves every line on it, at the level of the saved Profiles line (Ben, 2026-10-26: A and D share the Fountain Square platforms)',

@@ -121,6 +121,10 @@ CHR_JSON = _pick(_SEED / "chronology" / "segments.json", _ROOT / "data" / "profi
 PLAT_JSON = _pick(_SEED / "params" / "station_platforms.json", _ROOT / "data" / "profile" / "station_platforms.json")
 _CHR_LINES = None
 APX_JSON = _pick(_SEED / "params" / "approach_extra.json", _ROOT / "data" / "profile" / "approach_extra.json")
+CPLX_JSON = _pick(_SEED / "params" / "station_complexes.json", _ROOT / "data" / "profile" / "station_complexes.json")
+ACCESS_JSON = _SEED / "params" / "station_access.json"   # Ben's access types per station (none until he sets one)
+# Station access types (Station_Access_and_Mezzanines_by_Phase, Ben 31 October), as the editor's ACCESS
+ACCESS_TYPES = ("surface", "platform_level", "platform_level_xu", "end_halls", "mezzanine", "mezzanine_full", "mined_hall", "deep")
 
 
 def _tube_of(t: dict) -> dict:
@@ -223,6 +227,8 @@ class MetroProfile:
         p.platforms_kind = (json.loads(pk.read_text()).get(p.data["id"]) or {}) if p.ms and pk.exists() else {}
         # straights where no single arc fits (the 3D build's)
         p.approach_extra = (json.loads(ax.read_text()).get(p.data["id"]) or []) if p.ms and ax.exists() else []
+        p.complexes = json.loads(CPLX_JSON.read_text()) if p.ms and CPLX_JSON.exists() else {}
+        p.access_set = (json.loads(ACCESS_JSON.read_text()).get(p.data["id"]) or {}) if p.ms and ACCESS_JSON.exists() else {}
         if rer:
             cj = Path(canon_json) if canon_json else RER_CANON_JSON
             p.rer_canon = json.loads(cj.read_text()) if cj.exists() else {}
@@ -922,6 +928,133 @@ class MetroProfile:
             out.append((st[i]["c"] if i else 0.0, st[i + 1]["c"] if i + 2 < len(st) else self.length, yr, ph))
         self._chr_list = (rec, out)
         return out
+
+    # ---- station access (as the editor's stationAccess) ----
+    def hall_dims(self) -> dict:
+        return (self.ms or {}).get("hall") or {"clear": 2.75, "roof": 0.6, "cover": 0.6}
+
+    def box_top_of(self, island: bool) -> float:
+        ms = self.ms
+        return (ms["island_box"]["roof_underside"] + (ms["box"]["top"] - ms["box"]["roof_underside"])) if island else ms["box"]["top"]
+
+    def d_hall(self, island: bool) -> float:
+        """the least rail depth for a hall over the box: the box's rail-to-roof-top plus the hall's clear height, roof, cover"""
+        h = self.hall_dims()
+        return self.box_top_of(island) + h["clear"] + h["roof"] + h["cover"]
+
+    def chr_station_year(self, line_id: str, name: str):
+        """a station's opening year from the Chronology: its own entry, else the earlier-opened segment either side"""
+        rec = getattr(self, "chr", None)
+        if not rec:
+            return None
+        global _CHR_LINES
+        if _CHR_LINES is None:
+            f = _ROOT / "data" / "profile" / "chronology_lines.json"
+            _CHR_LINES = json.loads(f.read_text()).get("routes", []) if f.exists() else []
+        route = next((r for r in _CHR_LINES if r.get("id") == line_id), None)
+        sys_ = route["sys"] if route else "cvx" if line_id == "CVG_Express" else "tri" if line_id.startswith("RER_") else "metro"
+        own = (rec.get("stations") or {}).get(f"{sys_}|{name}") or {}
+        if own.get("year") not in (None, ""):
+            return float(own["year"])
+        years = []
+        if route:
+            i = next((k for k, st in enumerate(route["stations"]) if st["name"] == name), -1)
+            if i < 0:
+                return None
+            for k in (route["segments"][i - 1] if i > 0 else None, route["segments"][i] if i < len(route["segments"]) else None):
+                e = (rec.get("segments") or {}).get(k) if k else None
+                if e and e.get("year") not in (None, ""):
+                    years.append(float(e["year"]))
+        elif line_id == self.id:
+            st = next((x for x in self.stations if x["name"] == name), None)
+            if st is None:
+                return None
+            half = self.settings["platform"] / 2
+            for c0, c1, yr, ph in self._chr_segments():
+                if yr is not None and (c0 <= st["c"] - half - 1 <= c1 or c0 <= st["c"] + half + 1 <= c1):
+                    years.append(yr)
+        return min(years) if years else None
+
+    def complex_of(self, s: dict) -> List[dict]:
+        """the other stations this one is one station with (params/station_complexes), each with its year"""
+        cx = getattr(self, "complexes", None) or {}
+        mine = lambda m: m.get("line") == self.id and m.get("station") == s["name"]
+        out, seen = [], set()
+        for g in list(cx.get("auto") or []) + list(cx.get("marked") or []):
+            if not any(mine(m) for m in g.get("members") or []):
+                continue
+            for m in g.get("members") or []:
+                k = (m.get("line"), m.get("station"))
+                if mine(m) or k in seen:
+                    continue
+                seen.add(k)
+                out.append(dict(m, year=self.chr_station_year(m["line"], m["station"])))
+        return out
+
+    def station_access(self, s: dict) -> dict:
+        """one access type at opening (surface, platform_level, platform_level_xu, end_halls, mezzanine, mezzanine_full,
+        mined_hall, deep) from the station's year, rail depth, platform type and interchange; Ben's choice wins"""
+        i = self.stations.index(s)
+        z = float(self.st[i])
+        g = float(self.ground_at(s["c"]))
+        d = g - z if math.isfinite(g) else math.nan
+        t = self.type_at(s["c"], z)
+        ov = (getattr(self, "access_set", None) or {}).get(s["name"]) or {}
+        year = self.chr_station_year(self.id, s["name"])
+        ph = None
+        if year is not None:
+            ph = next((p for y0, y1, p in (self.chr or {}).get("phase_years") or [] if y0 <= year <= y1), None)
+        ph = ph or self._phase_at(s["c"])
+        island = (getattr(self, "platforms_kind", None) or {}).get(s["name"]) == "island" or ((getattr(self, "platforms_kind", None) or {}).get(s["name"]) is None and t == "shield")
+        DH = self.d_hall(island)
+        others = self.complex_of(s)
+        at_open = [m for m in others if m["year"] is not None and year is not None and m["year"] <= year]
+        later = [m for m in others if m["year"] is not None and year is not None and m["year"] > year]
+        flags = []
+        if t in ("atgrade", "trough", "elevated"):
+            rule = "surface"
+        elif t in ("shield", "deep", "sunk"):
+            rule = "deep" if d >= self.phase_rules(s["c"])["deep_from"] else "mined_hall"
+        elif not math.isfinite(d):
+            rule = "platform_level"
+        elif d < DH:
+            rule = "platform_level" if (not island and not at_open) else "platform_level_xu"
+        elif ph == "1":
+            rule = "end_halls"
+        elif ph == "2":
+            rule = "mezzanine_full" if at_open else "mezzanine"
+        else:
+            rule = "mezzanine_full"
+        typ = ov["type"] if ov.get("type") in ACCESS_TYPES else rule
+        source = "Ben" if ov.get("type") in ACCESS_TYPES else "rule"
+        if rule == "platform_level_xu" and source == "rule":
+            flags.append({"sev": "note", "kind": "shallower than D_HALL"})
+        if year is None and t not in ("atgrade", "trough", "elevated"):
+            flags.append({"sev": "warn", "kind": "no year"})
+        hall = typ in ("end_halls", "mezzanine", "mezzanine_full")
+        if hall and math.isfinite(d) and d < DH - 0.02:
+            flags.append({"sev": "error", "kind": "hall needs D_HALL"})
+        if hall and t in ("shield", "deep"):
+            flags.append({"sev": "error", "kind": "hall over a mined station"})
+        half, plat = self.settings["platform"] / 2, self.settings["platform"]
+        halls = ([[s["c"] - half, s["c"] - half + 25], [s["c"] + half - 25, s["c"] + half]] if typ == "end_halls" else
+                 [[s["c"] - 0.3 * plat, s["c"] + 0.3 * plat]] if typ == "mezzanine" else [[s["c"] - half, s["c"] + half]] if typ == "mezzanine_full" else [])
+        h = self.hall_dims()
+        bottom = z + self.box_top_of(island)
+        return {"station": s["name"], "type": typ, "rule": rule, "source": source, "year": year, "phase": ph, "depth": round(d, 2) if math.isfinite(d) else None,
+                "d_hall": round(DH, 2), "island": island, "at_open": at_open, "later": later, "halls": halls, "hall_top": bottom + h["clear"] + h["roof"],
+                "stages": ov.get("stages") or [], "flags": flags}
+
+    def hall_at(self, c: float):
+        """the hall over chainage c (its top level), for the cover and crossing checks"""
+        if self.is_rer or not getattr(self, "ms", None):
+            return None
+        half = self.settings["platform"] / 2
+        s = next((x for x in self.stations if abs(c - x["c"]) <= half), None)
+        if s is None:
+            return None
+        a = self.station_access(s)
+        return a if any(c0 <= c <= c1 for c0, c1 in a["halls"]) else None
 
     def _phase_at(self, c: float) -> str:
         ms = self.ms

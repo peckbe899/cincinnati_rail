@@ -437,10 +437,85 @@ const ctxStreets = () => (S.ctx && S.ctx.streets) || [], ctxRoads = () => (S.ctx
 const streetAtC = (c) => ctxStreets().find((r) => c >= r[0] - 5 && c <= r[1] + 5) || null;
 const roadsIn = (c0, c1) => ctxRoads().filter((r) => r[2] >= c0 && r[1] <= c1);
 const roadClear = (cls) => settings[cls === 'highway' ? 'roadClearHighway' : cls === 'major' ? 'roadClearMajor' : 'roadClearMinor'];
+// a street built over the subway (Ben, 31 October: Central Parkway, Victory Parkway, MLK; the record's subway_streets)
+const subwayStreet = (name) => !!(MS && (MS.subway_streets || []).some((k) => String(name).toLowerCase().includes(String(k).toLowerCase())));
 // what a station sits under: its street, the roads crossing its platform, or nothing known
 function stationStreet(s) {
   const st = streetAtC(s.c), half = settings.platform / 2, rd = roadsIn(s.c - half, s.c + half);
-  return { street: st, roads: rd, text: st ? `under ${st[3]}` : rd.length ? `crosses ${rd.map((r) => r[4]).join(', ')}` : (ctxStreets().length || ctxRoads().length ? 'not under a street' : 'no streets known here') };
+  return { street: st, roads: rd, text: st ? `under ${st[3]}${subwayStreet(st[3]) ? ' (built over the subway)' : ''}` : rd.length ? `crosses ${rd.map((r) => r[4]).join(', ')}` : (ctxStreets().length || ctxRoads().length ? 'not under a street' : 'no streets known here') };
+}
+// Station access (Station_Access_and_Mezzanines_by_Phase, Ben 31 October): every Metro station gets one access type at
+// opening from its year, rail depth, platform type and interchange; Ben's choice (params/station_access) wins. A hall sits
+// on the box roof: D_HALL, the least rail depth for one, from the record (the box's rail-to-roof-top plus the hall's
+// clear height, roof and cover). Mined stations (deeper than the cut-and-cover limit) have no box: a street-level hall
+// with stairs down (mined_hall) or, from deep_from, lifts (deep).
+const ACCESS = {
+  surface: { label: 'Surface station', note: 'at grade or elevated: a station house, no underground hall' },
+  platform_level: { label: 'Platform level', note: 'side platforms, fare control at the platform ends, a stair from each end to its sidewalk (Kendall 1912)' },
+  platform_level_xu: { label: 'Platform level, crossunder', note: 'platform level plus a passage under the tracks at one end (Republic 1907)' },
+  end_halls: { label: 'End ticket halls', note: 'a ticket hall over the box at each end, stairs down to the platforms (Fountain Square 1905)' },
+  mezzanine: { label: 'Mezzanine', note: 'one hall over the middle of the box, one fare line (IND 1932)' },
+  mezzanine_full: { label: 'Full-length mezzanine', note: 'a hall over the whole platform (IND 42nd St 1932)' },
+  mined_hall: { label: 'Street hall, mined station', note: 'a ticket hall at street level, stairs (escalators later) down to the platform tunnels' },
+  deep: { label: 'Deep station', note: 'a hall at the street, lift shafts, a passage at platform level' },
+};
+const hallDims = () => (MS && MS.hall) || { clear: 2.75, roof: 0.6, cover: 0.6 };
+const boxTopOf = (island) => (MS ? (island ? MS.island_box.roof_underside + (MS.box.top - MS.box.roof_underside) : MS.box.top) : METRO_ST.box.top);
+function dHall(island) { if (!MS) return null; const h = hallDims(); return boxTopOf(island) + h.clear + h.roof + h.cover; }
+// a station's opening year from the Chronology: its own entry, else the earlier-opened segment either side of it, on the
+// Chronology's own route for the line (any line) or this line's segments
+function chrStationYear(lineId, name) {
+  if (!CHR) return null;
+  const route = CHR_LINES && CHR_LINES.find((r) => r.id === lineId), sysKey = route ? route.sys : lineId === 'CVG_Express' ? 'cvx' : isRerId(lineId) ? 'tri' : 'metro';
+  const own = (CHR.stations || {})[`${sysKey}|${name}`]; if (own && own.year != null && own.year !== '') return +own.year;
+  const years = [];
+  if (route) { const i = route.stations.findIndex((st) => st.name === name); if (i < 0) return null; for (const k of [route.segments[i - 1], route.segments[i]]) { const e = k && (CHR.segments || {})[k]; if (e && e.year != null && e.year !== '') years.push(+e.year); } }
+  else if (S.data && lineId === S.data.id) { const st = S.stations.find((x) => x.name === name); if (!st) return null; const half = settings.platform / 2; for (const sg of chrSegments()) if (sg.year != null && (sg.c0 <= st.c - half - 1 && st.c - half - 1 <= sg.c1 || sg.c0 <= st.c + half + 1 && st.c + half + 1 <= sg.c1)) years.push(sg.year); }
+  return years.length ? Math.min(...years) : null;
+}
+// the other stations this one is one station with (params/station_complexes: the 3D build's same-name groups, plus Ben's
+// marks), each with its line, system and opening year
+function complexOf(s) {
+  if (!ST_CPLX || !S.data) return [];
+  const mine = (m) => m.line === S.data.id && m.station === s.name;
+  const groups = [].concat(ST_CPLX.auto || [], ST_CPLX.marked || []).filter((g) => (g.members || []).some(mine));
+  const seen = new Set(), out = [];
+  for (const g of groups) for (const m of g.members || []) { const k = `${m.line}|${m.station}`; if (mine(m) || seen.has(k)) continue; seen.add(k); out.push({ ...m, sys: m.sys || (isRerId(m.line) ? 'rer' : 'metro'), year: chrStationYear(m.line, m.station), name: routeName ? (S.rerData[m.line] ? routeName(m.line) : m.line.replace('_', ' ')) : m.line }); }
+  return out;
+}
+const OPEN_T2 = new Set(['atgrade', 'trough', 'elevated']);
+function stationAccess(s) {
+  const i = S.stations.indexOf(s), z = S.align.st[i], g = groundAt(s.c), d = isFinite(g) ? g - z : NaN, t = typeAt(s.c, z), half = settings.platform / 2, plat = settings.platform;
+  const ov = ST_ACCESS && ST_ACCESS[S.data.id] && ST_ACCESS[S.data.id][s.name] || null;
+  const year = chrStationYear(S.data.id, s.name), ph = year != null ? (chrPhaseOfYear(year) || phaseAt(s.c)) : phaseAt(s.c);
+  const island = platKind(s.name, t) === 'island', DH = dHall(island), others = complexOf(s);
+  const atOpen = others.filter((m) => m.year != null && year != null && m.year <= year), later = others.filter((m) => m.year != null && year != null && m.year > year);
+  const flags = []; let rule;
+  if (OPEN_T2.has(t)) rule = 'surface';
+  else if (t === 'shield' || t === 'deep' || t === 'sunk') rule = d >= phaseRules(s.c).deepFrom ? 'deep' : 'mined_hall';
+  else if (DH == null || !isFinite(d)) rule = 'platform_level';
+  else if (d < DH) rule = (!island && !atOpen.length) ? 'platform_level' : 'platform_level_xu';
+  else if (ph === '1') rule = 'end_halls';
+  else if (ph === '2') rule = atOpen.length ? 'mezzanine_full' : 'mezzanine';
+  else rule = 'mezzanine_full';
+  const type = ov && ACCESS[ov.type] ? ov.type : rule, source = ov && ACCESS[ov.type] ? 'Ben' : 'rule';
+  if (rule === 'platform_level_xu' && source === 'rule') flags.push({ sev: 'note', text: `${island ? 'an island' : 'an interchange'} shallower than D_HALL (${fmtZ(d, 1)} of ${fmtZ(DH, 2)} ${uLbl()}): platform level with a crossunder; a hall needs the rail ${fmtZ(DH - d, 1)} ${uLbl()} deeper` });
+  if (year == null && !OPEN_T2.has(t)) flags.push({ sev: 'warn', text: `no opening year in the Chronology: the access type falls back to the line's phase (${ph}), drawn dashed` });
+  const hallType = ['end_halls', 'mezzanine', 'mezzanine_full'].includes(type);
+  if (hallType && DH != null && isFinite(d) && d < DH - 0.02) flags.push({ sev: 'error', text: `${ACCESS[type].label} (${source}) needs the rail at least ${fmtZ(DH, 2)} ${uLbl()} down for the hall over the box; it is ${fmtZ(d, 2)}: lower the station, or choose platform level` });
+  if (hallType && (t === 'shield' || t === 'deep')) flags.push({ sev: 'error', text: `${ACCESS[type].label} (${source}) over a mined station: there is no box roof to build the hall on; choose a street hall` });
+  // the halls' chainage ranges, the passage under the tracks, the shaft of a mined or deep station
+  const halls = type === 'end_halls' ? [[s.c - half, s.c - half + 25], [s.c + half - 25, s.c + half]] : type === 'mezzanine' ? [[s.c - 0.3 * plat, s.c + 0.3 * plat]] : type === 'mezzanine_full' ? [[s.c - half, s.c + half]] : [];
+  const passage = type === 'platform_level_xu' ? [s.c - half, s.c - half + 3] : null, shaft = type === 'mined_hall' || type === 'deep' ? [s.c - 3, s.c + 3] : null;
+  const h = hallDims(), hallBottom = z + boxTopOf(island), hallTop = hallBottom + h.clear + h.roof;
+  return { type, rule, source, label: ACCESS[type].label, year, phase: ph, d, dHall: DH, island, others, atOpen, later, halls, passage, shaft, hallBottom, hallTop, stages: (ov && ov.stages) || [], flags };
+}
+// the hall over chainage c (its top level), for the cover and crossing checks
+function hallAt(c) {
+  if (isRer() || !MS) return null;
+  const s = stationAt(c); if (!s) return null;
+  const a = stationAccess(s); for (const [c0, c1] of a.halls) if (c >= c0 && c <= c1) return a;
+  return null;
 }
 const METHOD_LABEL = { shallow: 'Basin method', deep: 'Deep tunnel', canal: 'Canal-bed cut & cover', covered: 'Covered way (cut & cover)' };
 const SETTING_ROWS_BASE = [
@@ -1078,7 +1153,7 @@ function pointType(c, z) {   // one chainage on its own: the type, or for a Metr
 // the minimum radius: L = max(approach_m, sqrt(4 x min_radius x shift per track)). The approach box is a switch point
 // (it does not count toward a drive). Island or side from the 3D build (hub params/station_platforms), else island
 // where the station is shallow shield (the Deck's default).
-let ST_PLAT = null;
+let ST_PLAT = null, ST_CPLX = null, ST_ACCESS = null;   // params/station_platforms, params/station_complexes, params/station_access
 const platKind = (name, t) => { const v = ST_PLAT && ST_PLAT[S.data.id] && ST_PLAT[S.data.id][name]; return v || (t === 'shield' ? 'island' : 'side'); };
 // the minimum radius by building phase (Ben, 28 October: 40, 55, 70 m); where an approach runs into a curve too tight for a
 // single arc at it, a short straight after the platform (or box) end, computed by the 3D build from the plan's curvature
@@ -1691,7 +1766,7 @@ function designChecks() {
   for (let c = 5; c < S.L; c += 10) {
     const z = railAt(c), t = typeAt(c, z);
     if (!riverAt(c)) {
-      const gr = groundAt(c); if (!isFinite(gr) || !TUNNEL.has(t)) continue; const sc = structFor(t, c), top = z + sc.top, cv = gr - top, need = reqCover(sc, top);
+      const gr = groundAt(c); if (!isFinite(gr) || !TUNNEL.has(t)) continue; const sc0 = structFor(t, c), ha = sc0.k === 'box' ? hallAt(c) : null, sc = ha ? { ...sc0, top: ha.hallTop - z, label: 'hall over the box' } : sc0, top = z + sc.top, cv = gr - top, need = reqCover(sc, top);
       // Metro boxes (Ben): roof less than 0.6 m down is the street surface itself, a warning;
       // a roof above ground is an error
       const r = sc.k === 'box' ? (cv < -0.005 ? roof : !isRer() && cv < need - 0.005 ? thin : null) : (cv < need - 0.005 ? cover : null);
@@ -1706,7 +1781,7 @@ function designChecks() {
 }
 // issue kinds (Ben, 31 October: the warnings all looked the same): one colour per kind on its tag; the bar on the left is the
 // severity (error red, warning amber, note grey). A crossing with a line not marked "Profile set" is listed apart.
-const ISS_CAT = { Grade: '#d9822b', 'Curve grade': '#d9822b', Clearance: '#b0479e', Context: '#b0479e', Cover: '#8a6d3b', 'Thin cover': '#8a6d3b', River: '#1f8fa0', 'Tunnel method': '#3f6fb5', 'Low cover': '#3f6fb5', Regrade: '#3f6fb5', 'Tube form': '#6a5acd', 'Tube choice': '#6a5acd', 'Approach box': '#7f8c8d', Canon: '#7a8c2e', Painted: '#7a8c2e', Drawing: '#95a5a6', 'Platform curve': '#a04070', 'Vertical curve': '#b9770e', Drainage: '#2e86c1', Road: '#b03a2e' };
+const ISS_CAT = { Grade: '#d9822b', 'Curve grade': '#d9822b', Clearance: '#b0479e', Context: '#b0479e', Cover: '#8a6d3b', 'Thin cover': '#8a6d3b', River: '#1f8fa0', 'Tunnel method': '#3f6fb5', 'Low cover': '#3f6fb5', Regrade: '#3f6fb5', 'Tube form': '#6a5acd', 'Tube choice': '#6a5acd', 'Approach box': '#7f8c8d', Canon: '#7a8c2e', Painted: '#7a8c2e', Drawing: '#95a5a6', 'Platform curve': '#a04070', 'Vertical curve': '#b9770e', Drainage: '#2e86c1', Road: '#b03a2e', Access: '#2a9d8f' };
 const ISS_HIDE = (() => { try { return new Set(JSON.parse(localStorage.getItem('profile:issHide') || '[]')); } catch { return new Set(); } })();
 const sevOf = (x) => x.sev || (x.warn ? 'warn' : 'error');
 const issShown = (x) => x.grp !== 'pending' && !ISS_HIDE.has('k:' + x.kind) && !ISS_HIDE.has('s:' + sevOf(x));
@@ -1739,6 +1814,7 @@ function allIssues(sm) {
     out.push({ kind: 'River', c: t.c, text });
   });
   roadChecks().forEach((x) => out.push({ kind: 'Road', sev: x.sev, c: x.c, text: x.text }));
+  if (!isRer() && MS) for (const s of S.stations) for (const f of stationAccess(s).flags) out.push({ kind: 'Access', sev: f.sev, c: s.c, text: `${esc(s.name)}: ${f.text}` });
   sm.deepShallow.forEach((f) => out.push({ kind: 'Canon', warn: true, c: f.c, text: `${esc(f.name)} is ${fmtZ(f.d, 0)} ${uLbl()} down in a shallow-canon section` }));
   (sm.checks || []).forEach((x) => out.push(x));
   const T = stretchTypes(); if (T) T.flags.forEach((f) => out.push({ kind: f.kind || (f.info ? 'Tube choice' : 'Tunnel method'), sev: f.error ? 'error' : f.info ? 'note' : 'warn', c: (f.c0 + f.c1) / 2, text: `${fmtCh(f.c0)} to ${fmtCh(f.c1)}: ${f.text}` }));
@@ -1808,7 +1884,7 @@ function crossingClearancesNow() {
     if (zo == null) return { ...x, zo, z, clear: null };
     // the other line's structure from the surveyed ground (regrading here does not rebuild it)
     const gr = surfaceAt0(x.c);
-    const t = structFor(typeAt(x.c, z), x.c), to = kindAt(x.wid, zo, gr, x.c);
+    const t0 = structFor(typeAt(x.c, z), x.c), ha = t0.k === 'box' ? hallAt(x.c) : null, t = ha ? { ...t0, top: ha.hallTop - z, label: 'box and hall' } : t0, to = kindAt(x.wid, zo, gr, x.c);
     const meUp = z >= zo, need = meUp ? needSep(to, t) : needSep(t, to);
     const level = (t.k === 'atgrade' && to.k === 'atgrade');
     return { ...x, zo, z, clear: Math.abs(z - zo), need, meUp, t, to, level, ok: !level && Math.abs(z - zo) >= need - 0.05 };
@@ -2116,6 +2192,28 @@ function draw(ctx, W, H, view, opt = {}) {
       const xa = X(cs[0]) - 200, xb = X(cs[cs.length - 1]); for (let x = xa; x < xb + 200; x += 7) { ctx.moveTo(x, P.y + P.h); ctx.lineTo(x + 200, P.y); } ctx.stroke(); ctx.restore();
     }
   }
+  // station access (halls over the box, the passage under the tracks, the shaft of a mined or deep station, the D_HALL line)
+  if (!opt.title && !isRer() && MS && S.show !== 'rail') {
+    ctx.save(); ctx.font = `600 10px ${colors.ui}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (const s of S.stations) {
+      const half = settings.platform / 2; if (s.c + half < view.c0 || s.c - half > view.c1) continue;
+      const a = stationAccess(s); if (a.type === 'surface') continue;
+      const dashed = a.year == null; ctx.setLineDash(dashed ? [4, 3] : []);
+      for (const [c0, c1] of a.halls) {
+        const x0 = X(c0), x1 = X(c1), y0 = Y(a.hallTop), y1 = Y(a.hallBottom);
+        ctx.fillStyle = colors.cutcover; ctx.globalAlpha = 0.22; ctx.fillRect(x0, y0, x1 - x0, y1 - y0); ctx.globalAlpha = 0.9; ctx.strokeStyle = colors.cutcover; ctx.lineWidth = 1; ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+        if (x1 - x0 > 54) { ctx.fillStyle = colors.ink; ctx.globalAlpha = 1; ctx.fillText(a.type === 'end_halls' ? 'ticket hall' : 'mezzanine', (x0 + x1) / 2, (y0 + y1) / 2); }
+      }
+      if (a.passage) { const z = S.align.st[S.stations.indexOf(s)], x0 = X(a.passage[0]), x1 = X(a.passage[1]), y0 = Y(z - 1.0), y1 = Y(z - 3.75); ctx.fillStyle = colors.cutcover; ctx.globalAlpha = 0.35; ctx.fillRect(x0, y0, Math.max(3, x1 - x0), y1 - y0); ctx.globalAlpha = 1; if (x1 - x0 > 3) { ctx.fillStyle = colors.muted; ctx.textBaseline = 'top'; ctx.fillText('crossunder', (x0 + x1) / 2, y1 + 2); ctx.textBaseline = 'middle'; } }
+      if (a.shaft) { const z = S.align.st[S.stations.indexOf(s)], g = groundAt(s.c); if (isFinite(g)) { const x0 = X(a.shaft[0]), x1 = X(a.shaft[1]), y0 = Y(g), y1 = Y(z + (structFor(typeAt(s.c, z), s.c).top || 4.6)); ctx.fillStyle = colors.muted; ctx.globalAlpha = 0.25; ctx.fillRect(x0, y0, Math.max(3, x1 - x0), y1 - y0); ctx.globalAlpha = 0.9; ctx.strokeStyle = colors.muted; ctx.strokeRect(x0, y0, Math.max(3, x1 - x0), y1 - y0); ctx.globalAlpha = 1; ctx.fillStyle = colors.muted; ctx.save(); ctx.translate((x0 + x1) / 2, (y0 + y1) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(a.type === 'deep' ? 'lifts' : 'stairs', 0, 0); ctx.restore(); } }
+      if (a.dHall != null && (a.type === 'platform_level' || a.type === 'platform_level_xu' || a.halls.length)) {   // the D_HALL line inside the station zone
+        ctx.setLineDash([3, 3]); ctx.strokeStyle = colors.cutcover; ctx.lineWidth = 1; ctx.globalAlpha = 0.7; ctx.beginPath();
+        for (let c = Math.max(s.c - half, view.c0), k = 0; c <= Math.min(s.c + half, view.c1); c += 4, k++) { const g = groundAt(c); if (!isFinite(g)) continue; k ? ctx.lineTo(X(c), Y(g - a.dHall)) : ctx.moveTo(X(c), Y(g - a.dHall)); }
+        ctx.stroke(); ctx.globalAlpha = 1; ctx.setLineDash([]);
+      }
+    }
+    ctx.restore();
+  }
   // roads: each crossing road as a bar on the street surface across its width (class colour), named when there is room;
   // the streets the line runs along as a dotted line just above the ground, named when there is room
   if (!opt.title) {
@@ -2123,10 +2221,11 @@ function draw(ctx, W, H, view, opt = {}) {
     for (const r of ctxStreets()) {
       if (r[1] < view.c0 || r[0] > view.c1) continue;
       const a = Math.max(r[0], view.c0), b = Math.min(r[1], view.c1), sub = Math.max(2, (view.c1 - view.c0) / P.w * 3);
-      ctx.strokeStyle = ROAD_COL[r[4]] || ROAD_COL.minor; ctx.lineWidth = 1.2; ctx.setLineDash([2, 3]); ctx.globalAlpha = 0.9; ctx.beginPath();
+      const over = subwayStreet(r[3]);   // a street built over the subway: a solid line
+      ctx.strokeStyle = ROAD_COL[r[4]] || ROAD_COL.minor; ctx.lineWidth = over ? 2 : 1.2; ctx.setLineDash(over ? [] : [2, 3]); ctx.globalAlpha = 0.9; ctx.beginPath();
       for (let c = a, k = 0; c <= b + 1e-9; c += sub, k++) { const g = groundAt(c); if (!isFinite(g)) continue; const x = X(c), y = Y(g) - 3; k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
       ctx.stroke(); ctx.setLineDash([]);
-      if (X(b) - X(a) > 90) { const gm = groundAt((a + b) / 2); if (isFinite(gm)) { ctx.fillStyle = ROAD_COL[r[4]] || ROAD_COL.minor; ctx.textAlign = 'center'; ctx.fillText(`under ${r[3]}`, (X(a) + X(b)) / 2, Y(gm) - 5); } }
+      if (X(b) - X(a) > 90) { const gm = groundAt((a + b) / 2); if (isFinite(gm)) { ctx.fillStyle = ROAD_COL[r[4]] || ROAD_COL.minor; ctx.textAlign = 'center'; ctx.fillText(`under ${r[3]}${over ? ' (built over the subway)' : ''}`, (X(a) + X(b)) / 2, Y(gm) - 5); } }
     }
     for (const r of ctxRoads()) {
       if (r[2] < view.c0 || r[1] > view.c1) continue;
@@ -2417,6 +2516,7 @@ function updatePanels() {
   const er = eraOf();
   cnl.push(`<li><b>Structures</b> ${er ? `(${er.era}): rail less than ${fmtZ(METRO_ST.box.top, 1)} ${uLbl()} down is an open trough; cut-and-cover and station boxes ${fmtZ(METRO_ST.box.below, 2)} below to ${fmtZ(METRO_ST.box.top, 2)} ${uLbl()} above the rail (roof cover ${fmtZ(BOX_COVER, 1)}, thinner is the street itself, a warning); bored (shield and deep): ${(() => { const t = metroTube(S.L / 2, S.data.id); return `${t.label}, ${fmtZ(t.od, 2)} ${uLbl()} outside, ${fmtZ(t.below, 2)} below to ${fmtZ(t.top, 2)} above the rail`; })()}${MS ? ` (Phase ${phaseAt(S.L / 2)}; per stretch by the phase it was built in, set on the hub page; a drive between two double-track ends, a side-platform or plain box, the sunk box or a portal, is the double-track bore where it has its ${fmtZ(METRO_ST.bore.top + METRO_ST.bore.od, 1)} ${uLbl()} of cover, else twin tubes; painted tube form decides)` : ''}; tubes and bores need one outside diameter of cover (the ground arches over it); shallower is cut and cover where the bored pieces left are whole drives, else the profile must be lowered (Regrade); under rivers a sunk double-track box (below)` : `(RATP RER style, 1985-1996): boxes and station boxes ${fmtZ(settings.envelope, 1)} ${uLbl()} and bored tubes ${fmtZ(settings.boreCrown, 1)} ${uLbl()} above the rail; bored tunnels need ${fmtZ(settings.minCover, 1)} ${uLbl()} of cover, shallower is cut and cover; river crossings are sunk boxes in a dredged trench (below)`}; crossings keep the upper floor + ${SEP_GAP} m above the lower top where a box is involved, ${fmtZ(boredGap(), 2)} ${uLbl()} of ground between two bored tunnels, or above the clear height (${OPEN_CLEAR.metro} m Metro, ${OPEN_CLEAR.rer} m RER) of a line in the open; platforms may slope up to ${sgMaxFor()}‰${er ? (er.sgMax > 5 ? ' (New York 1918 practice)' : ' (1930s-50s, near London 1 in 260)') : ' (main-line station limit)'}.</li>`);
   if (ctxStreets().length || ctxRoads().length) cnl.push(`<li><b>Roads</b> (the Deck's streets and the highways): a bar on the street surface where the line crosses a road (${['highway', 'major', 'minor'].map((k) => `<span style="color:${ROAD_COL[k]}">${k}</span>`).join(', ')}), a dotted line where it runs under a street. Over a road the structure underside keeps ${fmtZ(settings.roadClearHighway, 1)} ${uLbl()} (highway), ${fmtZ(settings.roadClearMajor, 1)} (major) or ${fmtZ(settings.roadClearMinor, 1)} (minor) above the street; at grade across a road is a level crossing (${isRer() ? 'an error on a major road or highway, a warning on a minor street' : 'never, on the Metro'}); viaduct piers stay out of the roads.</li>`);
+  if (!isRer() && MS) cnl.push(`<li><b>Station access</b> (Station_Access_and_Mezzanines_by_Phase, 31 October): each station's type at opening from its Chronology year, rail depth, platform type and interchange, or Ben's choice on its card: halls over the box drawn as a band above the roof (end halls 25 m each end, a mezzanine the middle 60%, full length the platform), the crossunder as a band under the floor, a shaft for mined and deep stations, and the D_HALL line (the least rail depth for a hall: ${fmtZ(dHall(false), 2)} ${uLbl()} side, ${fmtZ(dHall(true), 2)} island; hall ${fmtZ(hallDims().clear, 2)} clear, roof ${fmtZ(hallDims().roof, 1)}, cover ${fmtZ(hallDims().cover, 1)}) dashed through the station. The cover and crossing checks run over the hall roof where there is one. Dashed halls: no opening year set.</li>`);
   if (!isRer() && MS) cnl.push(`<li><b>Limits</b> (dashed): in the tube colour the shallowest a tube may run (one outside diameter of cover over it); in the box colour the deepest a cut-and-cover box may go (its phase's limit). A tube above its line or a box below its line cannot be built: hatched red, with Regrade or Raise in the issues. Running tunnels by their phase's method: the shield in Phases 1-2, the deep bore (TBM) from Phase 3 (the record's phases.tbm); mined stations are built as their drive.</li>`);
   if (S.filled) cnl.push(`<li><b>Regraded ground</b> over painted cut and cover: filled to the box roof plus cover (${isRer() ? `box ${fmtZ(settings.envelope, 1)} ${uLbl()}` : `${fmtZ(METRO_ST.box.top, 1)} + ${fmtZ(BOX_COVER, 1)} ${uLbl()}`} above the rail), sloping back to the surveyed ground (dashed) at ${settings.fillTaper}‰. The level solver works from the ground before the fill.</li>`);
   { const seen = new Map(); ctxBlocks().forEach((b) => { const e = seen.get(b.n); if (e) e.c1 = b.c1; else seen.set(b.n, { b, c0: b.c0, c1: b.c1 }); });
@@ -2525,6 +2625,15 @@ $('#checkAll').addEventListener('click', async () => {
   $('#checkOut').innerHTML = `<table class="chk"><thead><tr><th>Line</th><th title="Tube with less than one diameter of cover, km">No cover</th><th title="Box past its cut-and-cover limit, km">Box too deep</th><th>Errors</th><th title="Painted, km">Paints</th></tr></thead><tbody>${rows.map((r) => `<tr><td><a href="#" data-line="${r.id}">${esc(r.name)}</a></td><td class="${r.cover ? 'bad' : ''}">${f(r.cover)}</td><td class="${r.box ? 'bad' : ''}">${f(r.box)}</td><td>${r.err}</td><td>${f(r.paint)}</td></tr>`).join('')}</tbody></table>`;
 });
 $('#checkOut').addEventListener('click', (e) => { const a = e.target.closest('[data-line]'); if (a) { e.preventDefault(); selectLine(a.dataset.line); } });
+// Ben's access type for a station (params/station_access: {line: {station: {type, source, stages}}}); '' clears it
+async function setStationAccess(s, type) {
+  if (S.canWrite === false) return;
+  const rec = JSON.parse(JSON.stringify(ST_ACCESS || {})); rec[S.data.id] = rec[S.data.id] || {};
+  const cur = rec[S.data.id][s.name] || {};
+  if (type) rec[S.data.id][s.name] = { ...cur, type, source: 'Ben' }; else { delete cur.type; delete cur.source; if (Object.keys(cur).length) rec[S.data.id][s.name] = cur; else delete rec[S.data.id][s.name]; }
+  ST_ACCESS = rec; changed(false);
+  try { if (S.db) await S.db.doc('params/station_access').set(rec); else localStorage.setItem('profile:station_access', JSON.stringify(rec)); flash(type ? `${s.name}: ${ACCESS[type].label} (Ben)` : `${s.name}: back to the rules`); } catch (e) { flash('Could not save the access type'); }
+}
 // the whole platform painted cut and cover
 function ccFull(i) { const s = S.stations[i], half = settings.platform / 2; return (S.align.ovr || []).some((o) => o[2] === 'cutcover' && o[0] <= s.c - half + 1 && o[1] >= s.c + half - 1); }
 function updateSelCard() {
@@ -2545,7 +2654,10 @@ function updateSelCard() {
         <dt><label for="inRail">Rail level (${uLbl()})</label></dt><dd><input id="inRail" type="number" step="0.1" value="${toU(z).toFixed(2)}" ${ro ? 'disabled' : ''}></dd>
         <dt><label for="inDepth">Rail below ground (${uLbl()})</label></dt><dd><input id="inDepth" type="number" step="0.1" value="${toU(d).toFixed(2)}" ${ro ? 'disabled' : ''}></dd>
         <dt>Structure</dt><dd>${TYPES[typeAt(s.c, z)].label}</dd>
-        <dt>Street</dt><dd>${esc(stationStreet(s).text)}</dd>
+        <dt>Street</dt><dd>${esc(stationStreet(s).text)}</dd>${!isRer() && MS ? (() => { const a = stationAccess(s); return `
+        <dt>Access</dt><dd><select id="inAccess" ${ro ? 'disabled' : ''} title="${esc(ACCESS[a.type].note)}"><option value="">Rules: ${esc(ACCESS[a.rule].label)}</option>${Object.entries(ACCESS).map(([k, v]) => `<option value="${k}" ${a.source === 'Ben' && a.type === k ? 'selected' : ''}>${esc(v.label)}</option>`).join('')}</select></dd>
+        <dt>Opening</dt><dd>${a.year != null ? `${a.year} (Phase ${a.phase})` : `no year set (Phase ${a.phase} assumed)`}${a.atOpen.length ? `; interchange with ${a.atOpen.map((m) => `${esc(m.station)} (${esc(m.name)}, ${m.year})`).join(', ')}` : ''}${a.later.length ? `; later: ${a.later.map((m) => `${esc(m.name)} ${m.year}`).join(', ')}` : ''}</dd>
+        <dt>Hall room</dt><dd>${a.dHall != null ? `needs ${fmtZ(a.dHall, 2)} ${uLbl()} of rail depth (${a.island ? 'island' : 'side'} box); ${fmtZ(a.d, 2)} here` : '–'}</dd>`; })() : ''}
         <dt>Grade in / out</dt><dd>${fmtG(gin)} / ${fmtG(gout)}</dd>
         <dt>Platform</dt><dd>${fmtCh(s.c - half)} to ${fmtCh(s.c + half)}</dd>
         <dt><label for="inPos">Point from platform start (m)</label></dt><dd><input id="inPos" type="number" step="0.5" min="0" max="${(2 * half).toFixed(1)}" value="${(half - ((S.align.so && S.align.so[sel.i]) || 0)).toFixed(1)}" ${ro ? 'disabled' : ''}></dd>
@@ -2576,6 +2688,7 @@ ${isRer() ? '' : (() => { const pc = platformCurve(sel.i); return `<dt>Platform 
     if (sgIn) sgIn.addEventListener('change', () => { const v = parseFloat(sgIn.value); if (!isFinite(v)) return; pushHist(); setSg(sel.i, v); changed(); });
     $('#easeSt')?.addEventListener('click', () => { pushHist(); easePlatform(sel.i); changed(); });
     $('#ccSt')?.addEventListener('click', () => paintRange(s.c - half, s.c + half, ccFull(sel.i) ? 'auto' : 'cutcover'));
+    $('#inAccess')?.addEventListener('change', (e) => setStationAccess(s, e.target.value));
     const setPos = (pos) => { if (!isFinite(pos)) return; pushHist(); setSo(sel.i, half - clamp(pos, 0, 2 * half)); changed(); };
     $('#inPos')?.addEventListener('change', (e) => setPos(parseFloat(e.target.value)));
     $('#posA')?.addEventListener('click', () => setPos(0));
@@ -2713,6 +2826,8 @@ async function connect() {
   db.doc('chronology/segments').onSnapshot((d) => { if (d.exists) { CHR = d.data(); if (S.data) changed(false); } }, () => {});
   db.doc('params/station_platforms').onSnapshot((d) => { if (d.exists) { ST_PLAT = d.data(); if (S.data) changed(false); } }, () => {});
   db.doc('params/approach_extra').onSnapshot((d) => { if (d.exists) { APX_EXTRA = d.data(); if (S.data) changed(false); } }, () => {});
+  db.doc('params/station_complexes').onSnapshot((d) => { if (d.exists) { ST_CPLX = d.data(); if (S.data) changed(false); } }, () => {});
+  db.doc('params/station_access').onSnapshot((d) => { if (d.exists) { ST_ACCESS = d.data(); if (S.data) changed(false); } }, () => {});
   db.collection('alignments').onSnapshot((snap) => {
     snap.docs.forEach((d) => { S.saved[d.id] = d.data(); });
     refreshDefaultDocs();
@@ -3272,7 +3387,7 @@ window.addEventListener('beforeunload', () => { if (S.dirty) save(); });
 
 // ---------- boot ----------
 // hooks for checking the page headless
-window.__api = { layout: () => LAYOUT, solves: () => SOLVE_N, stationStreet, roadChecks: () => roadChecks(), structAt: (c, t) => structFor(t, c), ccAt: (c) => phaseRules(c).ccMax, riverAt: (c) => riverAt(c), regradeDrive: (a, b, m) => regradeDrive(a, b, m), pointType: (c, z) => pointType(c, z), stretchTypes: () => stretchTypes(), riverBand: (r) => (bridgeOf(r) ? null : riverBand(r)), bedAt: (c) => bedAt(c), pool: () => pool(), inPlatform: (c) => inPlatform(c), selectLine, save, changed, railAt, S, withLine, alignFromDoc, defaultAlign, modeOf, lockAt, deriveStations, docFor, levelAtMember, setAtMember, copyStretch, sharedOf, junctionsOf, ensureJunctionPvis, vertices, applyLocks, buildCanon, writeDoc, refreshDefaultDocs, propagateLinks, get links() { return LINKS; } };
+window.__api = { layout: () => LAYOUT, solves: () => SOLVE_N, stationStreet, stationAccess, roadChecks: () => roadChecks(), structAt: (c, t) => structFor(t, c), ccAt: (c) => phaseRules(c).ccMax, riverAt: (c) => riverAt(c), regradeDrive: (a, b, m) => regradeDrive(a, b, m), pointType: (c, z) => pointType(c, z), stretchTypes: () => stretchTypes(), riverBand: (r) => (bridgeOf(r) ? null : riverBand(r)), bedAt: (c) => bedAt(c), pool: () => pool(), inPlatform: (c) => inPlatform(c), selectLine, save, changed, railAt, S, withLine, alignFromDoc, defaultAlign, modeOf, lockAt, deriveStations, docFor, levelAtMember, setAtMember, copyStretch, sharedOf, junctionsOf, ensureJunctionPvis, vertices, applyLocks, buildCanon, writeDoc, refreshDefaultDocs, propagateLinks, get links() { return LINKS; } };
 (async () => {
   setTool('move'); buildBrushes();
   try { const u = localStorage.getItem('profile:units'); if (u === 'ft') setUnits('ft'); } catch {}
@@ -3293,6 +3408,7 @@ window.__api = { layout: () => LAYOUT, solves: () => SOLVE_N, stationStreet, roa
     if (!CHR) try { CHR = await loadJSON('chronology.json'); } catch {}
     try { CHR_LINES = (await loadJSON('chronology_lines.json')).routes; } catch {}
     if (!ST_PLAT) try { ST_PLAT = await loadJSON('station_platforms.json'); } catch {}
+    if (!ST_CPLX) try { ST_CPLX = await loadJSON('station_complexes.json'); } catch {}
     if (!APX_EXTRA) try { APX_EXTRA = await loadJSON('approach_extra.json'); } catch {}
     const rer = await Promise.all(rIdx.map((l) => loadJSON(lineUrl(l.id)).catch(() => null)));
     rer.filter(Boolean).forEach((d) => { S.rerData[d.id] = d; S.cache[d.id] = d; });
