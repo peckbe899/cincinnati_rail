@@ -8,7 +8,7 @@
     "deck": 121.92,
     "station3d": 121.92
    },
-   "note": "Deck island platforms: 181 at 122 m, 11 at 121 m, 1 at 72 m",
+   "note": "Deck island platforms: 180 at 122 m, 11 at 121 m, 1 at 72 m",
    "agree": true
   },
   {
@@ -239,8 +239,15 @@
    "agree": null
   }
  ],
- "tie_issues": [],
+ "tie_issues": [
+  "Line 10: 1 platforms off their Deck platform's centre (Bonnie Leslie +2 m); run tools/rer_deck_routes.py --apply"
+ ],
  "checks": [
+  {
+   "line": "Line 1",
+   "station": "Kenard",
+   "text": "side platforms on a bored stretch (shallow shield, A tunnel)"
+  },
   {
    "line": "Line 1",
    "station": "Taft Theater",
@@ -249,6 +256,21 @@
   {
    "line": "Line 1",
    "station": "Pennsylvania Station",
+   "text": "side platforms on a bored stretch (shallow shield, A tunnel)"
+  },
+  {
+   "line": "Line 5",
+   "station": "Courthouse",
+   "text": "side platforms on a bored stretch (shallow shield, A tunnel)"
+  },
+  {
+   "line": "Line 5",
+   "station": "Eggleston",
+   "text": "side platforms on a bored stretch (shallow shield, A tunnel)"
+  },
+  {
+   "line": "Line 6",
+   "station": "Taft Theater",
    "text": "side platforms on a bored stretch (deep tube, A tunnel)"
   },
   {
@@ -274,22 +296,22 @@
   {
    "line": "Line 8",
    "station": "Ludlow",
-   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+   "text": "side platforms on a bored stretch (deep tube, C tunnel)"
   },
   {
    "line": "Line 8",
    "station": "Highwater",
-   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+   "text": "side platforms on a bored stretch (deep tube, C tunnel)"
+  },
+  {
+   "line": "Line 9",
+   "station": "Dixmyth",
+   "text": "side platforms on a bored stretch (deep tube, A tunnel)"
   },
   {
    "line": "Line 10",
    "station": "Cumber",
-   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
-  },
-  {
-   "line": "Line 10",
-   "station": "Elsinore",
-   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+   "text": "side platforms on a bored stretch (deep tube, A tunnel)"
   },
   {
    "line": "Line 10",
@@ -309,39 +331,29 @@
   {
    "line": "Line 10",
    "station": "Prospect",
-   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+   "text": "side platforms on a bored stretch (deep tube, C tunnel)"
   },
   {
    "line": "Line 10",
    "station": "Division",
-   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
-  },
-  {
-   "line": "Line 10",
-   "station": "Grandview",
-   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
-  },
-  {
-   "line": "Line 10",
-   "station": "Bonnie Leslie",
-   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
-  },
-  {
-   "line": "Line 11",
-   "station": "Arsenal",
-   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
-  },
-  {
-   "line": "Line 11",
-   "station": "Park Place",
-   "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+   "text": "side platforms on a bored stretch (deep tube, C tunnel)"
   },
   {
    "line": "Line 12",
    "station": "Stratford/Hughes",
    "text": "side platforms on a bored stretch (deep tube, bore tunnel)"
+  },
+  {
+   "line": "Line 14",
+   "station": "St Xavier",
+   "text": "side platforms on a bored stretch (deep tube, C tunnel)"
+  },
+  {
+   "line": "Line 14",
+   "station": "Norwood Central",
+   "text": "side platforms on a bored stretch (deep tube, C tunnel)"
   }
  ],
- "synced_at": "2026-10-28T18:42:52Z",
+ "synced_at": "2026-10-31T15:55:07Z",
  "note": "Profiles values are its settings (config/settings, config/settings_rer) over its built-in defaults; Deck values are its constants as its own code has them, and platform lengths measured from the platforms it draws; Station 3D values are sync.py constants."
 }

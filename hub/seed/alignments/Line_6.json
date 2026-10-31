@@ -1,420 +1,428 @@
 {
- "del": [],
- "gapfill": [],
- "length_m": 29539.6,
+ "v": 1,
+ "system": "Cincinnati Metro",
  "line": "Line 6",
+ "length_m": 29539.6,
+ "platform_m": 121.92,
+ "st": {
+  "Towne": 157.38,
+  "Bond Hill": 171.48,
+  "Chalet": 167.65,
+  "Greenlee": 185.38,
+  "North Avondale": 184.11,
+  "Forest": 221.15,
+  "UC Medical/Corryville": 240.38,
+  "Oak": 224.57,
+  "Burnet": 212.24,
+  "McGregor": 201.11,
+  "Dorchester": 186.58,
+  "Elsinore": 178.11,
+  "Pendleton": 163.92,
+  "Times": 154.9,
+  "Taft Theater": 145.4,
+  "Public Landing": 130.8,
+  "Taylor": 130.6,
+  "MacArthur": 140.2,
+  "Tibbatts": 146,
+  "Lowell": 125.7,
+  "Eastside": 144.8,
+  "Westside": 144.4,
+  "Bullock": 143.3,
+  "Arlington": 191.1,
+  "Kyles Lane": 243.54,
+  "Fort Mitchell": 233.4,
+  "South Fort Mitchell": 258,
+  "Crestview Hills/Thomas More": 256,
+  "Dudley": 263,
+  "Stevenson": 259,
+  "Brightleaf": 235.1,
+  "Beechgrove": 278.6
+ },
+ "pvi": [
+  [
+   10929,
+   123.3
+  ],
+  [
+   11116,
+   126
+  ],
+  [
+   13173,
+   119.7
+  ],
+  [
+   21528,
+   261
+  ],
+  [
+   24487,
+   254.8
+  ],
+  [
+   25560,
+   253.7
+  ],
+  [
+   26027,
+   238.1
+  ],
+  [
+   26229,
+   236.1
+  ],
+  [
+   27344,
+   232
+  ],
+  [
+   27489,
+   234
+  ],
+  [
+   28007,
+   243.4
+  ],
+  [
+   28667,
+   265.3
+  ],
+  [
+   29003,
+   274.1
+  ],
+  [
+   29264,
+   277.87
+  ]
+ ],
  "ovr": [
+  [
+   10500,
+   11211,
+   "deep"
+  ],
   [
    14930.6,
    15041.6,
    "cutcover"
   ]
  ],
- "platform_m": 121.92,
- "pvi": [
-  [
-   10766,
-   125.85
-  ],
-  [
-   11108,
-   125.85
-  ],
-  [
-   13142.7,
-   128.75
-  ],
-  [
-   13200.7,
-   128.75
-  ],
-  [
-   21722.6,
-   260.8
-  ],
-  [
-   24024.3,
-   265
-  ],
-  [
-   24293.2,
-   257.4
-  ],
-  [
-   25657.4,
-   250
-  ],
-  [
-   26200.5,
-   242.4
-  ],
-  [
-   27345.7,
-   234.3
-  ],
-  [
-   27979.8,
-   244
-  ],
-  [
-   28622.9,
-   267
-  ],
-  [
-   29112.9,
-   279.1
-  ]
- ],
- "sg": {},
- "so": {},
- "st": {
-  "Arlington": 188.91,
-  "Beechgrove": 280.5,
-  "Bond Hill": 171.48,
-  "Brightleaf": 237,
-  "Bullock": 146.4,
-  "Burnet": 212.24,
-  "Chalet": 167.65,
-  "Crestview Hills/Thomas More": 257.5,
-  "Dorchester": 186.58,
-  "Dudley": 265.8,
-  "Eastside": 153.65,
-  "Elsinore": 178.11,
-  "Forest": 221.15,
-  "Fort Mitchell": 245.8,
-  "Greenlee": 185.38,
-  "Kyles Lane": 243.54,
-  "Lowell": 142.98,
-  "Lytle Park": 148.81,
-  "MacArthur": 144.48,
-  "McGregor": 201.11,
-  "North Avondale": 184.11,
-  "Oak": 224.57,
-  "Pendleton": 163.92,
-  "Public Landing": 141.28,
-  "South Fort Mitchell": 260.48,
-  "Stevenson": 257.35,
-  "Taft Theater": 151.74,
-  "Taylor": 141.28,
-  "Tibbatts": 148.38,
-  "Times": 157.58,
-  "Towne": 157.38,
-  "UC Medical/Corryville": 240.38,
-  "Westside": 154.65
+ "sg": {
+  "Taft Theater": -7,
+  "Public Landing": -5,
+  "Taylor": 4,
+  "MacArthur": 5,
+  "Lowell": -5,
+  "Brightleaf": -3
  },
+ "gapfill": [],
+ "so": {},
+ "del": [
+  "Lytle Park"
+ ],
  "stations": [
   {
-   "c": 60,
-   "depth": 7.62,
-   "ground": 165,
    "name": "Towne",
-   "point_c": 60,
+   "c": 60.5,
+   "point_c": 60.5,
    "rail": 157.38,
+   "ground": 165.13,
+   "depth": 7.75,
    "type": "cutcover"
   },
   {
-   "c": 1084.2,
-   "depth": 7.62,
-   "ground": 179.1,
    "name": "Bond Hill",
+   "c": 1084.2,
    "point_c": 1084.2,
    "rail": 171.48,
-   "type": "cutcover"
+   "ground": 174.89,
+   "depth": 3.41,
+   "type": "trough"
   },
   {
-   "c": 2088.5,
-   "depth": 7.62,
-   "ground": 175.27,
    "name": "Chalet",
+   "c": 2088.5,
    "point_c": 2088.5,
    "rail": 167.65,
+   "ground": 175.22,
+   "depth": 7.57,
    "type": "cutcover"
   },
   {
-   "c": 3117.6,
-   "depth": 7.62,
-   "ground": 193,
    "name": "Greenlee",
+   "c": 3117.6,
    "point_c": 3117.6,
    "rail": 185.38,
+   "ground": 192.9,
+   "depth": 7.52,
    "type": "cutcover"
   },
   {
-   "c": 3621.7,
-   "depth": 7.62,
-   "ground": 191.73,
    "name": "North Avondale",
+   "c": 3621.7,
    "point_c": 3621.7,
    "rail": 184.11,
+   "ground": 191.91,
+   "depth": 7.8,
    "type": "cutcover"
   },
   {
-   "c": 4829.8,
-   "depth": 7.62,
-   "ground": 228.77,
    "name": "Forest",
+   "c": 4829.8,
    "point_c": 4829.8,
    "rail": 221.15,
+   "ground": 228.79,
+   "depth": 7.64,
    "type": "cutcover"
   },
   {
-   "c": 5940,
-   "depth": 7.62,
-   "ground": 248,
    "name": "UC Medical/Corryville",
+   "c": 5940,
    "point_c": 5940,
    "rail": 240.38,
+   "ground": 248,
+   "depth": 7.62,
    "type": "cutcover"
   },
   {
-   "c": 6574.1,
-   "depth": 34.03,
-   "ground": 258.6,
    "name": "Oak",
+   "c": 6574.1,
    "point_c": 6574.1,
    "rail": 224.57,
+   "ground": 258.6,
+   "depth": 34.03,
    "type": "cutcover"
   },
   {
-   "c": 7049.1,
-   "depth": 25.9,
-   "ground": 238.14,
    "name": "Burnet",
+   "c": 7049.1,
    "point_c": 7049.1,
    "rail": 212.24,
+   "ground": 238.15,
+   "depth": 25.91,
    "type": "cutcover"
   },
   {
-   "c": 7498.2,
-   "depth": 17.22,
-   "ground": 218.33,
    "name": "McGregor",
+   "c": 7498.2,
    "point_c": 7498.2,
    "rail": 201.11,
+   "ground": 218.39,
+   "depth": 17.28,
    "type": "cutcover"
   },
   {
-   "c": 8018.3,
-   "depth": 7.62,
-   "ground": 194.2,
    "name": "Dorchester",
+   "c": 8018.3,
    "point_c": 8018.3,
    "rail": 186.58,
+   "ground": 194.18,
+   "depth": 7.6,
    "type": "cutcover"
   },
   {
-   "c": 8675.3,
-   "depth": 7.62,
-   "ground": 185.73,
    "name": "Elsinore",
+   "c": 8675.3,
    "point_c": 8675.3,
    "rail": 178.11,
+   "ground": 185.73,
+   "depth": 7.62,
    "type": "cutcover"
   },
   {
-   "c": 9212.4,
-   "depth": 7.62,
-   "ground": 171.54,
    "name": "Pendleton",
+   "c": 9212.4,
    "point_c": 9212.4,
    "rail": 163.92,
+   "ground": 171.58,
+   "depth": 7.66,
    "type": "cutcover"
   },
   {
-   "c": 9617,
-   "depth": 7.62,
-   "ground": 165.2,
    "name": "Times",
+   "c": 9617,
    "point_c": 9617,
-   "rail": 157.58,
+   "rail": 154.9,
+   "ground": 165.3,
+   "depth": 10.4,
    "type": "cutcover"
   },
   {
-   "c": 10040.5,
-   "depth": 14.76,
-   "ground": 166.5,
    "name": "Taft Theater",
+   "c": 10040.5,
    "point_c": 10040.5,
-   "rail": 151.74,
+   "rail": 145.4,
+   "ground": 166.5,
+   "depth": 21.1,
    "type": "cutcover"
   },
   {
-   "c": 10326.8,
-   "depth": 7.62,
-   "ground": 156.43,
-   "name": "Lytle Park",
-   "point_c": 10326.8,
-   "rail": 148.81,
-   "type": "cutcover"
-  },
-  {
-   "c": 10562.8,
-   "depth": 7.62,
-   "ground": 148.9,
    "name": "Public Landing",
-   "point_c": 10562.8,
-   "rail": 141.28,
-   "type": "cutcover"
+   "c": 10605.5,
+   "point_c": 10605.5,
+   "rail": 130.8,
+   "ground": 148.6,
+   "depth": 17.8,
+   "type": "deep"
   },
   {
-   "c": 11375.7,
-   "depth": 7.62,
-   "ground": 148.9,
    "name": "Taylor",
-   "point_c": 11375.7,
-   "rail": 141.28,
-   "type": "cutcover"
+   "c": 11375.6,
+   "point_c": 11375.6,
+   "rail": 130.6,
+   "ground": 148.9,
+   "depth": 18.3,
+   "type": "deep"
   },
   {
-   "c": 11816.9,
-   "depth": 7.62,
-   "ground": 152.1,
    "name": "MacArthur",
-   "point_c": 11816.9,
-   "rail": 144.48,
+   "c": 11817,
+   "point_c": 11817,
+   "rail": 140.2,
+   "ground": 152.1,
+   "depth": 11.9,
    "type": "cutcover"
   },
   {
-   "c": 12312.9,
-   "depth": 7.62,
-   "ground": 156,
    "name": "Tibbatts",
-   "point_c": 12312.9,
-   "rail": 148.38,
+   "c": 12313,
+   "point_c": 12313,
+   "rail": 146,
+   "ground": 156,
+   "depth": 10,
    "type": "cutcover"
   },
   {
-   "c": 12959.1,
-   "depth": 7.62,
-   "ground": 150.6,
    "name": "Lowell",
-   "point_c": 12959.1,
-   "rail": 142.98,
-   "type": "cutcover"
+   "c": 12959.2,
+   "point_c": 12959.2,
+   "rail": 125.7,
+   "ground": 150.64,
+   "depth": 24.94,
+   "type": "deep"
   },
   {
-   "c": 13845.4,
-   "depth": 7.62,
-   "ground": 161.27,
    "name": "Eastside",
+   "c": 13845.4,
    "point_c": 13845.4,
-   "rail": 153.65,
+   "rail": 144.8,
+   "ground": 162.37,
+   "depth": 17.57,
    "type": "cutcover"
   },
   {
-   "c": 14425.5,
-   "depth": 7.62,
-   "ground": 162.27,
    "name": "Westside",
+   "c": 14425.5,
    "point_c": 14425.5,
-   "rail": 154.65,
+   "rail": 144.4,
+   "ground": 162.2,
+   "depth": 17.8,
    "type": "cutcover"
   },
   {
-   "c": 14948.6,
-   "depth": 5.2,
-   "ground": 151.6,
    "name": "Bullock",
-   "point_c": 14948.6,
-   "rail": 146.4,
+   "c": 14948.5,
+   "point_c": 14948.5,
+   "rail": 143.3,
+   "ground": 150.7,
+   "depth": 7.4,
    "type": "cutcover"
   },
   {
-   "c": 16131.7,
-   "depth": 34.72,
-   "ground": 223.63,
    "name": "Arlington",
+   "c": 16131.7,
    "point_c": 16131.7,
-   "rail": 188.91,
+   "rail": 191.1,
+   "ground": 223.59,
+   "depth": 32.49,
    "type": "deep"
   },
   {
-   "c": 17446,
-   "depth": 30.03,
-   "ground": 273.57,
    "name": "Kyles Lane",
-   "point_c": 17446,
+   "c": 17445.9,
+   "point_c": 17445.9,
    "rail": 243.54,
+   "ground": 273.6,
+   "depth": 30.06,
    "type": "deep"
   },
   {
-   "c": 18976,
-   "depth": 4.43,
-   "ground": 250.23,
    "name": "Fort Mitchell",
-   "point_c": 18976,
-   "rail": 245.8,
-   "type": "trough"
+   "c": 18976.1,
+   "point_c": 18976.1,
+   "rail": 233.4,
+   "ground": 250.3,
+   "depth": 16.9,
+   "type": "cutcover"
   },
   {
-   "c": 20984.3,
-   "depth": 7.62,
-   "ground": 268.1,
    "name": "South Fort Mitchell",
-   "point_c": 20984.3,
-   "rail": 260.48,
+   "c": 20984.4,
+   "point_c": 20984.4,
+   "rail": 258,
+   "ground": 268.1,
+   "depth": 10.1,
    "type": "cutcover"
   },
   {
-   "c": 22268.5,
-   "depth": 4.03,
-   "ground": 261.53,
    "name": "Crestview Hills/Thomas More",
-   "point_c": 22268.5,
-   "rail": 257.5,
-   "type": "trough"
+   "c": 22268.6,
+   "point_c": 22268.6,
+   "rail": 256,
+   "ground": 261.6,
+   "depth": 5.6,
+   "type": "cutcover"
   },
   {
-   "c": 23606.6,
-   "depth": 7.13,
-   "ground": 272.93,
    "name": "Dudley",
-   "point_c": 23606.6,
-   "rail": 265.8,
+   "c": 23606.8,
+   "point_c": 23606.8,
+   "rail": 263,
+   "ground": 272.94,
+   "depth": 9.94,
    "type": "cutcover"
   },
   {
-   "c": 25040.9,
-   "depth": 7.62,
-   "ground": 264.97,
    "name": "Stevenson",
+   "c": 25040.9,
    "point_c": 25040.9,
-   "rail": 257.35,
+   "rail": 259,
+   "ground": 264.95,
+   "depth": 5.95,
    "type": "cutcover"
   },
   {
-   "c": 26981.2,
-   "depth": 4.57,
-   "ground": 241.57,
    "name": "Brightleaf",
+   "c": 26981.2,
    "point_c": 26981.2,
-   "rail": 237,
-   "type": "trough"
+   "rail": 235.1,
+   "ground": 241.6,
+   "depth": 6.5,
+   "type": "cutcover"
   },
   {
-   "c": 29521.6,
-   "depth": 3.9,
-   "ground": 284.4,
    "name": "Beechgrove",
+   "c": 29521.6,
    "point_c": 29521.6,
-   "rail": 280.5,
-   "type": "trough"
+   "rail": 278.6,
+   "ground": 284.4,
+   "depth": 5.8,
+   "type": "cutcover"
   }
  ],
  "summary": {
   "km_by_type": {
    "elevated": 0.68,
-   "atgrade": 0.83,
-   "trough": 3.23,
-   "cutcover": 15.74,
-   "shield": 5.45,
-   "deep": 3.18,
+   "atgrade": 0.43,
+   "trough": 0.66,
+   "cutcover": 16.58,
+   "shield": 3.32,
+   "deep": 7.44,
    "sunk": 0.43
   },
-  "max_grade_permille": -232.1,
-  "grades_over_limit": 3
+  "max_grade_permille": 48.3,
+  "grades_over_limit": 0
  },
- "system": "Cincinnati Metro",
- "updated": "2026-10-30T15:06:36.111Z",
- "v": 1
+ "updated": "2026-10-30T21:54:23.366Z"
 }

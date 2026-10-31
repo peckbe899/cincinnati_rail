@@ -1,19 +1,18 @@
 {
- "del": [],
- "gapfill": [],
- "length_m": 3733.2,
+ "v": 1,
+ "system": "Cincinnati RER",
  "line": "RER B Latonia stem",
- "mode": {
-  "15th St": "surface",
-  "Latonia": "surface",
-  "Wallace Woods": "surface"
- },
- "ovr": [],
+ "length_m": 3733.2,
  "platform_m": 204.2,
+ "st": {
+  "15th St": 162.26,
+  "Wallace Woods": 161.5,
+  "Latonia": 159.38
+ },
  "pvi": [
   [
    0,
-   144.56
+   129
   ],
   [
    1372.9,
@@ -40,59 +39,60 @@
    162.1
   ]
  ],
+ "ovr": [],
+ "sg": {},
+ "gapfill": [],
+ "so": {},
+ "del": [],
+ "mode": {
+  "15th St": "surface",
+  "Wallace Woods": "surface",
+  "Latonia": "surface"
+ },
  "route_chainage_m": [
   0,
-  3733.8
+  3733.2
  ],
- "sg": {},
- "so": {},
- "st": {
-  "15th St": 162.26,
-  "Latonia": 159.38,
-  "Wallace Woods": 161.5
- },
  "stations": [
   {
-   "c": 961.1,
-   "depth": 0,
-   "ground": 162.26,
    "name": "15th St",
-   "point_c": 961.1,
+   "c": 959.9,
+   "point_c": 959.9,
    "rail": 162.26,
+   "ground": 162.3,
+   "depth": 0.04,
    "type": "atgrade"
   },
   {
-   "c": 2554.6,
-   "depth": 0,
-   "ground": 161.5,
    "name": "Wallace Woods",
-   "point_c": 2554.6,
+   "c": 2553.9,
+   "point_c": 2553.9,
    "rail": 161.5,
+   "ground": 161.5,
+   "depth": 0,
    "type": "atgrade"
   },
   {
-   "c": 3640.4,
-   "depth": 0,
-   "ground": 159.38,
    "name": "Latonia",
-   "point_c": 3640.4,
+   "c": 3639.9,
+   "point_c": 3639.9,
    "rail": 159.38,
+   "ground": 159.4,
+   "depth": 0.02,
    "type": "atgrade"
   }
  ],
  "summary": {
-  "grades_over_limit": 0,
   "km_by_type": {
-   "atgrade": 2.474,
-   "cutcover": 0.94,
-   "deep": 0,
-   "elevated": 0.24,
-   "shield": 0.08,
-   "trough": 0
+   "elevated": 0.273,
+   "atgrade": 2.41,
+   "trough": 0.17,
+   "cutcover": 0.3,
+   "shield": 0.35,
+   "deep": 0.23
   },
-  "max_grade_permille": 32.1
+  "max_grade_permille": 41.8,
+  "grades_over_limit": 1
  },
- "system": "Cincinnati RER",
- "updated": "2026-10-27T14:54:27.176Z",
- "v": 1
+ "updated": "2026-10-29T13:12:54.236Z"
 }

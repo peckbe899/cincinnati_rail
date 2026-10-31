@@ -1,85 +1,48 @@
 {
- "del": [],
- "gapfill": [],
- "length_m": 13343.8,
+ "v": 1,
+ "system": "Cincinnati RER",
  "line": "RER A Northside to Wyoming branch",
- "mode": {
-  "Elmwood Place": "surface",
-  "Galbraith Rd / HARTWELL": "surface",
-  "N Bend Rd / CARTHAGE": "surface",
-  "Northside": "surface",
-  "Winton Place": "surface",
-  "Wyoming/Lockland": "surface"
- },
- "ovr": [],
+ "length_m": 13343.8,
  "platform_m": 204.2,
+ "st": {
+  "Northside": 167,
+  "Winton Place": 145,
+  "Elmwood Place": 156.1,
+  "N Bend Rd / CARTHAGE": 163,
+  "Galbraith Rd / HARTWELL": 166.9,
+  "Wyoming/Lockland": 175.7
+ },
  "pvi": [
   [
-   0,
-   153.7
+   0.0,
+   167
   ],
   [
-   333,
-   156.72
+   1947.3,
+   144.2
   ],
   [
-   666,
-   151.75
+   2046.4,
+   140.93
   ],
   [
-   1577.9,
-   151.24
+   4287.0,
+   154.2
   ],
   [
-   1842.9,
-   150.39
-  ],
-  [
-   2109,
-   149.9
-  ],
-  [
-   2375,
-   150.09
-  ],
-  [
-   2641,
-   150.83
-  ],
-  [
-   3477,
-   154.47
-  ],
-  [
-   3733.9,
-   154.24
-  ],
-  [
-   3991.9,
-   154.06
-  ],
-  [
-   4248.9,
-   153.55
-  ],
-  [
-   4506.9,
-   153.79
-  ],
-  [
-   4764,
+   4764.0,
    154.51
   ],
   [
-   5022,
+   5022.0,
    155.27
   ],
   [
-   5279,
+   5279.0,
    155.58
   ],
   [
-   5537,
+   5537.0,
    155.81
   ],
   [
@@ -159,89 +122,103 @@
    180.37
   ]
  ],
+ "ovr": [
+  [
+   0.0,
+   1576.4,
+   "elevated"
+  ],
+  [
+   1906.5,
+   2046.4,
+   "cutcover"
+  ]
+ ],
+ "sg": {
+  "Winton Place": 1.5
+ },
+ "gapfill": [],
+ "so": {},
+ "del": [],
+ "mode": {
+  "Northside": "surface",
+  "Winton Place": "surface",
+  "Elmwood Place": "surface",
+  "N Bend Rd / CARTHAGE": "surface",
+  "Galbraith Rd / HARTWELL": "surface",
+  "Wyoming/Lockland": "surface"
+ },
  "route_chainage_m": [
   0,
-  13343
+  13343.8
  ],
- "sg": {},
- "so": {},
- "st": {
-  "Elmwood Place": 156.1,
-  "Galbraith Rd / HARTWELL": 166.9,
-  "N Bend Rd / CARTHAGE": 163,
-  "Northside": 151.5,
-  "Winton Place": 152.94,
-  "Wyoming/Lockland": 175.7
- },
  "stations": [
   {
-   "c": 1155.5,
-   "depth": 0,
-   "ground": 151.5,
    "name": "Northside",
-   "point_c": 1155.5,
-   "rail": 151.5,
-   "type": "atgrade"
+   "c": 1155.4,
+   "point_c": 1155.4,
+   "rail": 167,
+   "ground": 151.5,
+   "depth": -15.5,
+   "type": "elevated"
   },
   {
-   "c": 3062.8,
-   "depth": 0,
-   "ground": 152.94,
    "name": "Winton Place",
-   "point_c": 3062.8,
-   "rail": 152.94,
-   "type": "atgrade"
+   "c": 3164.7,
+   "point_c": 3164.7,
+   "rail": 145,
+   "ground": 154.2,
+   "depth": 9.2,
+   "type": "cutcover"
   },
   {
-   "c": 5950.9,
-   "depth": 0,
-   "ground": 156.1,
    "name": "Elmwood Place",
-   "point_c": 5950.9,
+   "c": 5950.2,
+   "point_c": 5950.2,
    "rail": 156.1,
+   "ground": 156.1,
+   "depth": 0,
    "type": "atgrade"
   },
   {
-   "c": 7704.4,
-   "depth": 0,
-   "ground": 163,
    "name": "N Bend Rd / CARTHAGE",
+   "c": 7704.4,
    "point_c": 7704.4,
    "rail": 163,
+   "ground": 163,
+   "depth": 0,
    "type": "atgrade"
   },
   {
-   "c": 9667.6,
-   "depth": 0,
-   "ground": 166.9,
    "name": "Galbraith Rd / HARTWELL",
-   "point_c": 9667.6,
+   "c": 9668.6,
+   "point_c": 9668.6,
    "rail": 166.9,
+   "ground": 166.9,
+   "depth": 0,
    "type": "atgrade"
   },
   {
-   "c": 11419.9,
-   "depth": 0,
-   "ground": 175.7,
    "name": "Wyoming/Lockland",
-   "point_c": 11419.9,
+   "c": 11420.6,
+   "point_c": 11420.6,
    "rail": 175.7,
+   "ground": 175.7,
+   "depth": 0,
    "type": "atgrade"
   }
  ],
  "summary": {
-  "grades_over_limit": 0,
   "km_by_type": {
-   "atgrade": 12.973,
-   "cutcover": 0.27,
-   "deep": 0,
-   "elevated": 0.1,
+   "elevated": 1.77,
+   "atgrade": 9.504,
+   "trough": 0.45,
+   "cutcover": 1.62,
    "shield": 0,
-   "trough": 0
+   "deep": 0
   },
-  "max_grade_permille": -14.9
+  "max_grade_permille": -35.8,
+  "grades_over_limit": 1
  },
- "system": "Cincinnati RER",
- "updated": "2026-10-27T14:54:27.189Z",
- "v": 1
+ "updated": "2026-10-29T14:50:45.696Z"
 }

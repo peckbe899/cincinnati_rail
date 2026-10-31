@@ -1,22 +1,21 @@
 {
- "del": [],
- "gapfill": [],
- "length_m": 16406.4,
+ "v": 1,
+ "system": "Cincinnati RER",
  "line": "RER B CVG branch",
- "mode": {
-  "CVG Terminal 1": "surface",
-  "CVG Terminal 2/3/4": "surface",
-  "Crescent Springs": "surface",
-  "Fort Mitcehll": "surface",
-  "Fort Wright": "surface",
-  "Mineola": "surface"
- },
- "ovr": [],
+ "length_m": 16406.4,
  "platform_m": 204.2,
+ "st": {
+  "Fort Wright": 246.9,
+  "Fort Mitcehll": 247.1,
+  "Crescent Springs": 251.2,
+  "Mineola": 264.66,
+  "CVG Terminal 2/3/4": 267.5,
+  "CVG Terminal 1": 264.37
+ },
  "pvi": [
   [
    0,
-   144.56
+   129
   ],
   [
    992.2,
@@ -183,91 +182,92 @@
    264.42
   ]
  ],
- "route_chainage_m": [
-  0,
-  16399.7
- ],
+ "ovr": [],
  "sg": {
   "Fort Mitcehll": -2
  },
+ "gapfill": [],
  "so": {},
- "st": {
-  "CVG Terminal 1": 264.37,
-  "CVG Terminal 2/3/4": 267.5,
-  "Crescent Springs": 251.2,
-  "Fort Mitcehll": 247.1,
-  "Fort Wright": 246.9,
-  "Mineola": 264.66
+ "del": [],
+ "mode": {
+  "Fort Wright": "surface",
+  "Fort Mitcehll": "surface",
+  "Crescent Springs": "surface",
+  "Mineola": "surface",
+  "CVG Terminal 2/3/4": "surface",
+  "CVG Terminal 1": "surface"
  },
+ "route_chainage_m": [
+  0,
+  16406.4
+ ],
  "stations": [
   {
-   "c": 3723.1,
-   "depth": 20.35,
-   "ground": 267.25,
    "name": "Fort Wright",
-   "point_c": 3723.1,
+   "c": 3725.3,
+   "point_c": 3725.3,
    "rail": 246.9,
+   "ground": 267.2,
+   "depth": 20.3,
    "type": "cutcover"
   },
   {
-   "c": 5470.5,
-   "depth": 0,
-   "ground": 247.1,
    "name": "Fort Mitcehll",
-   "point_c": 5470.5,
+   "c": 5473.6,
+   "point_c": 5473.6,
    "rail": 247.1,
+   "ground": 247.1,
+   "depth": 0,
    "type": "atgrade"
   },
   {
-   "c": 7474.3,
-   "depth": 0,
-   "ground": 251.2,
    "name": "Crescent Springs",
-   "point_c": 7474.3,
+   "c": 7479,
+   "point_c": 7479,
    "rail": 251.2,
-   "type": "atgrade"
-  },
-  {
-   "c": 11811.9,
-   "depth": -0.05,
-   "ground": 264.61,
-   "name": "Mineola",
-   "point_c": 11811.9,
-   "rail": 264.66,
-   "type": "atgrade"
-  },
-  {
-   "c": 15384.8,
+   "ground": 251.2,
    "depth": 0,
-   "ground": 267.5,
-   "name": "CVG Terminal 2/3/4",
-   "point_c": 15384.8,
-   "rail": 267.5,
    "type": "atgrade"
   },
   {
-   "c": 16266.2,
-   "depth": 0.03,
-   "ground": 264.4,
+   "name": "Mineola",
+   "c": 11816.7,
+   "point_c": 11816.7,
+   "rail": 264.66,
+   "ground": 264.64,
+   "depth": -0.02,
+   "type": "atgrade"
+  },
+  {
+   "name": "CVG Terminal 2/3/4",
+   "c": 15493.7,
+   "point_c": 15493.7,
+   "rail": 267.5,
+   "ground": 267.1,
+   "depth": -0.4,
+   "type": "atgrade"
+  },
+  {
    "name": "CVG Terminal 1",
-   "point_c": 16266.2,
+   "c": 16211.2,
+   "point_c": 16211.2,
    "rail": 264.37,
+   "ground": 264.54,
+   "depth": 0.17,
    "type": "atgrade"
   }
  ],
  "summary": {
-  "grades_over_limit": 0,
   "km_by_type": {
-   "atgrade": 11.66,
-   "cutcover": 3.19,
-   "deep": 0,
-   "elevated": 1.11,
-   "shield": 0.44,
-   "trough": 0
+   "elevated": 1.12,
+   "atgrade": 11.486,
+   "trough": 0.62,
+   "cutcover": 2.19,
+   "shield": 0.67,
+   "deep": 0.32
   },
-  "max_grade_permille": 35
+  "max_grade_permille": 35,
+  "grades_over_limit": 0
  },
- "system": "Cincinnati RER",
- "updated": "2026-10-27T14:54:27.107Z",
- "v": 1
+ "updated": "2026-10-29T13:12:54.228Z"
 }

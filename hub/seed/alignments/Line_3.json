@@ -22,21 +22,20 @@
   "Central Ave": 154.5,
   "Findlay": 159.1,
   "Warner": 160.4,
-  "Music Hall": 160.4,
+  "Music Hall": 158.8,
   "Genesee": 153.7,
-  "Goverment Center": 151.4,
-  "Convention Center": 147.3,
-  "Baltimore": 148.39,
-  "Paycor": 123.7,
-  "Mutter Gottes": 131.7,
+  "Convention Center": 146.4,
+  "Baltimore": 137.2,
+  "Paycor": 129.3,
+  "Mutter Gottes": 133.5,
   "Covington Union": 144.8,
   "Westside": 154.58,
   "Linden Grove": 157.78,
   "Peaselburg": 149.8,
   "Benton": 154.1,
-  "Henry Clay": 197.6,
-  "Ft Wright": 243.7,
-  "Highland": 151.07
+  "Henry Clay": 195.6,
+  "Ft Wright": 228.4,
+  "Highland": 146.7
  },
  "pvi": [
   [
@@ -60,42 +59,68 @@
    158.9
   ],
   [
-   16501.4,
-   117.5
+   16688,
+   120.5
   ],
   [
-   16889.1,
-   117.5
+   16931,
+   123.8
   ],
   [
    19515.7,
    149.3
   ],
   [
-   21531,
-   215.5
+   24174,
+   153.8
   ],
   [
-   21915.1,
-   225.5
-  ]
- ],
- "ovr": [
+   24344,
+   149.61
+  ],
   [
-   19362.7,
-   19973.7,
-   "cutcover"
+   24878,
+   136.15
+  ],
+  [
+   24896,
+   136.15
+  ],
+  [
+   24954,
+   137.35
+  ],
+  [
+   25208,
+   146.7
   ]
  ],
+ "ovr": [],
+ "tf": [
+  [
+   16892,
+   17595,
+   "twin"
+  ]
+ ],
+ "ready": false,
  "sg": {
+  "Convention Center": -6,
+  "Baltimore": -7.5,
+  "Paycor": -7.5,
   "Mutter Gottes": 5,
   "Covington Union": 5,
   "Benton": 5,
   "Henry Clay": 5
  },
  "gapfill": [],
- "so": {},
- "del": [],
+ "so": {
+  "Baltimore": 4.5,
+  "Ft Wright": -60.96
+ },
+ "del": [
+  "Goverment Center"
+ ],
  "stations": [
   {
    "name": "Norwood Central",
@@ -153,11 +178,11 @@
   },
   {
    "name": "Kenard",
-   "c": 6725.2,
-   "point_c": 6725.2,
+   "c": 6725.1,
+   "point_c": 6725.1,
    "rail": 147.79,
-   "ground": 155.46,
-   "depth": 7.67,
+   "ground": 155.45,
+   "depth": 7.66,
    "type": "cutcover"
   },
   {
@@ -254,9 +279,9 @@
    "name": "Music Hall",
    "c": 14609.1,
    "point_c": 14609.1,
-   "rail": 160.4,
+   "rail": 158.8,
    "ground": 165.2,
-   "depth": 4.8,
+   "depth": 6.4,
    "type": "cutcover"
   },
   {
@@ -269,48 +294,39 @@
    "type": "cutcover"
   },
   {
-   "name": "Goverment Center",
-   "c": 15294,
-   "point_c": 15294,
-   "rail": 151.4,
-   "ground": 167.7,
-   "depth": 16.3,
-   "type": "cutcover"
-  },
-  {
    "name": "Convention Center",
-   "c": 15608,
-   "point_c": 15608,
-   "rail": 147.3,
+   "c": 15608.1,
+   "point_c": 15608.1,
+   "rail": 146.4,
    "ground": 167.8,
-   "depth": 20.5,
-   "type": "cutcover"
-  },
-  {
-   "name": "Baltimore",
-   "c": 15965.9,
-   "point_c": 15965.9,
-   "rail": 148.39,
-   "ground": 156.01,
-   "depth": 7.62,
-   "type": "cutcover"
-  },
-  {
-   "name": "Paycor",
-   "c": 16281.1,
-   "point_c": 16281.1,
-   "rail": 123.7,
-   "ground": 146.85,
-   "depth": 23.15,
+   "depth": 21.4,
    "type": "deep"
   },
   {
+   "name": "Baltimore",
+   "c": 15970.4,
+   "point_c": 15965.9,
+   "rail": 137.2,
+   "ground": 155.78,
+   "depth": 18.58,
+   "type": "deep"
+  },
+  {
+   "name": "Paycor",
+   "c": 16317.1,
+   "point_c": 16317.1,
+   "rail": 129.3,
+   "ground": 146.9,
+   "depth": 17.6,
+   "type": "shield"
+  },
+  {
    "name": "Mutter Gottes",
-   "c": 17261.5,
-   "point_c": 17261.5,
-   "rail": 131.7,
-   "ground": 152.08,
-   "depth": 20.38,
+   "c": 17261.4,
+   "point_c": 17261.4,
+   "rail": 133.5,
+   "ground": 152.07,
+   "depth": 18.57,
    "type": "deep"
   },
   {
@@ -362,41 +378,42 @@
    "name": "Henry Clay",
    "c": 21095.1,
    "point_c": 21095.1,
-   "rail": 197.6,
+   "rail": 195.6,
    "ground": 210.95,
-   "depth": 13.35,
-   "type": "cutcover"
+   "depth": 15.35,
+   "type": "shield"
   },
   {
    "name": "Ft Wright",
-   "c": 22475.3,
+   "c": 22414.34,
    "point_c": 22475.3,
-   "rail": 243.7,
-   "ground": 262.86,
-   "depth": 19.16,
+   "rail": 228.4,
+   "ground": 261.32,
+   "depth": 32.92,
    "type": "deep"
   },
   {
    "name": "Highland",
    "c": 25272.8,
    "point_c": 25272.8,
-   "rail": 151.07,
+   "rail": 146.7,
    "ground": 158.24,
-   "depth": 7.17,
+   "depth": 11.54,
    "type": "cutcover"
   }
  ],
  "summary": {
   "km_by_type": {
-   "elevated": 1.53,
-   "atgrade": 0.53,
-   "trough": 1.41,
-   "cutcover": 18.32,
-   "shield": 1.64,
-   "deep": 1.85
+   "elevated": 0,
+   "atgrade": 0.19,
+   "trough": 1.27,
+   "cutcover": 15.43,
+   "shield": 2.22,
+   "deep": 5.85,
+   "sunk": 0.32
   },
-  "max_grade_permille": -255.5,
-  "grades_over_limit": 5
+  "max_grade_permille": -104.4,
+  "grades_over_limit": 0
  },
- "updated": "2026-10-28T18:00:11.984Z"
+ "updated": "2026-10-31T15:50:50.230Z"
 }
