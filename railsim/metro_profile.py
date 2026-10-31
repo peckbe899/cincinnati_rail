@@ -50,7 +50,8 @@ TUNNEL_STRUCTURES = {"tunnel", "cut-and-cover", "shield", "deep-tube", "sunk-box
 DEFAULTS = dict(maxGrade=50.0, platform=121.92, defDepth=7.62, elevAbove=3.0, coverBelow=3.0,
                 deepBelow=18.29, shallowMax=12.19, poolFt=455.0, deckDepth=1.5,
                 vcRadius=1500.0, vcMinLen=30.5, minCover=2.0, fillTaper=50.0,
-                riverRoof=1.0, riverSink=5.0, riverRise=3.0, riverFlatTol=1.0, riverClearWater=3.66, riverCap=1.0)
+                riverRoof=1.0, riverSink=5.0, riverRise=3.0, riverFlatTol=1.0, riverClearWater=3.66, riverCap=1.0,
+                roadClearHighway=4.9, roadClearMajor=4.3, roadClearMinor=4.3)
 # Metro structures (Ben's rules), from the top of rail: below = rail to underside, top = rail to
 # top, od = outside diameter. Cut-and-cover box (and station box) 1.0 below / 4.6 to top; twin
 # tube (4.4 m inside, 4.76 m outside, rail 0.5 m above invert) 0.68 / 4.08 for deep tube on every
@@ -105,7 +106,7 @@ RER_DEFAULTS = dict(maxGrade=35.0, platform=204.2, defDepth=12.0, elevAbove=3.0,
                     deepBelow=25.0, shallowMax=18.0, envelope=6.6, boreCrown=7.5, invertDepth=1.0, poolFt=455.0,
                     surfStep=250.0, tubeCover=3.0, vcRadius=3000.0, vcMinLen=30.5, minCover=8.5, deckDepth=2.0,
                     fillTaper=50.0, riverSink=5.0, riverRise=3.0, riverFlatTol=1.0, riverClearWater=3.66,
-                    riverCap=1.0)
+                    riverCap=1.0, roadClearHighway=4.9, roadClearMajor=4.3, roadClearMinor=4.3)
 RER_CANON_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "rer" / "canon.json"
 CONTEXT_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "context" / "lines.json"
 # the shared Metro structure record (Ben, 27-28 October; claude/Metro_Structure_Gauge_Handoff.md), as the editor reads it;
@@ -1615,6 +1616,53 @@ class MetroProfile:
         [[c0, c1, street], ...] along this line."""
         return list(self.ctx.get("blocks") or [])
 
+    # ---- roads (Ben, 29-31 October; as the editor's roadChecks): the context's streets along the line [c0, c1, width,
+    # name, class] and the roads it crosses [c, c0, c1, width, name, class]; class highway, major or minor
+    def streets(self) -> List[list]:
+        return list(self.ctx.get("streets") or []) if getattr(self, "ctx", None) else []
+
+    def roads(self) -> List[list]:
+        return list(self.ctx.get("roads") or []) if getattr(self, "ctx", None) else []
+
+    def street_at(self, c: float) -> Optional[list]:
+        return next((r for r in self.streets() if r[0] - 5 <= c <= r[1] + 5), None)
+
+    def station_street(self, s: dict) -> dict:
+        """what a station sits under: its street, the roads crossing its platform, or nothing known"""
+        half = self.settings["platform"] / 2
+        st = self.street_at(s["c"])
+        rd = [r for r in self.roads() if r[2] >= s["c"] - half and r[1] <= s["c"] + half]
+        return {"street": st, "roads": rd, "text": f"under {st[3]}" if st else f"crosses {', '.join(r[4] for r in rd)}" if rd
+                else ("not under a street" if self.streets() or self.roads() else "no streets known here")}
+
+    def road_checks(self) -> List[dict]:
+        """The line against the roads it crosses: over a road the structure underside keeps the class's clearance above
+        the street (roadClearHighway / Major / Minor); at grade across a road is a level crossing (the Metro never; the RER
+        only on a minor street, a warning); in a trough under a road its bridge needs the clear height plus a 0.8 m deck.
+        Over a road this copy uses the deck depth; the editor uses the span's girder depth (span / 10 + 0.8 m), so it can
+        flag a shallow girder the copy does not (no viaduct spans here). Viaduct piers in roads are the editor's check."""
+        out = []
+        st = self.settings
+        clear = {"highway": st["roadClearHighway"], "major": st["roadClearMajor"]}
+        for r in self.roads():
+            c, cls, name = r[0], r[5], r[4]
+            z = float(self.rail_at(c))
+            t = self.type_at(c, z)
+            g = float(self.ground_at(c))
+            if not math.isfinite(g):
+                continue
+            if t == "atgrade":
+                out.append({"kind": "level crossing", "sev": "warn" if self.is_rer and cls == "minor" else "error", "c": c, "road": name, "cls": cls})
+            elif t == "trough":
+                need = self.open_struct(t)["top"] + 0.8
+                if g - z < need - 0.02:
+                    out.append({"kind": "road bridge over the trough", "sev": "error", "c": c, "road": name, "cls": cls, "short": need - (g - z)})
+            elif t == "elevated":
+                cl, need = z - float(st["deckDepth"]) - g, clear.get(cls, st["roadClearMinor"])
+                if cl < need - 0.02:
+                    out.append({"kind": "clearance over a road", "sev": "error", "c": c, "road": name, "cls": cls, "clear": cl, "need": need})
+        return sorted(out, key=lambda x: x["c"])
+
     def open_struct(self, t: str) -> dict:
         """This line's structure when it is in the open (rail to underside, clear height above)."""
         top = OPEN_CLEAR["rer"] if self.is_rer else float((getattr(self, "ms", None) or {}).get("open_clear_height") or OPEN_CLEAR["metro"])
@@ -1683,7 +1731,7 @@ class MetroProfile:
         shallow = len([x for x in self.river_breaks() if x.get("kind") != "clearance"])   # river crossings out of their band
         clashes = [x for x in self.context_clearances() if not x["ok"]]
         return {"shallow_tubes": shallow, "river_breaks": len(self.river_breaks()),
-                "context_clashes": len(clashes),
+                "context_clashes": len(clashes), "road_clashes": len([x for x in self.road_checks() if x["sev"] == "error"]),
                 "km_by_type": {k: round(v, 3) for k, v in km.items()},
                 "max_grade_permille": round(float(g[np.argmax(np.abs(g))]) if len(g) else 0.0, 1),
                 "grades_over_limit": over}

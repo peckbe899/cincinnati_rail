@@ -383,3 +383,20 @@ Published: page version 6 and the snapshot (35 parts), read back at view level.
   `step_unbuildable`), same results on every sample of every Metro line; 64 tests pass in 56 s.
 - Left for group 3 (large): the single rules engine (no browser in the build), the full split of `sync.py`'s `main()` into
   typed steps, precomputed per-step grids in the page, incremental parts and instanced meshes in the 3D page.
+
+## 2026-10-31: roads in the Profiles (Ben: roads and station complexes next; "knowing when and where stations are under roads/streets is important")
+
+- From the context (the Deck's live streets, the highways and OSM roads, classed highway / major / minor; the Deck region
+  only): the streets a line runs along and the roads it crosses, drawn on the profile (a bar on the street surface at each
+  crossing, a dotted line and "under X" along a street) and in the readout.
+- Checks (editor `roadChecks`, port `road_checks`; settings roadClearHighway 4.9 m, roadClearMajor 4.3, roadClearMinor
+  4.3): the structure underside over a road keeps the class's clearance above the street (the editor by the span's girder
+  depth, the port by the deck depth); at grade across a road is a level crossing (an error on the Metro always; on the RER
+  an error on a major road or highway, a warning on a minor street); an open trough under a road needs room for the
+  road's bridge (the clear height plus a 0.8 m deck: lower the rail, which makes it a box there, or raise the street);
+  viaduct spans now keep their piers out of the roads, and a pier left in one is a warning. Issue kind "Road".
+- Stations: a Street column in the table and a line on the card ("under Central Parkway", "crosses X, Y", "not under a
+  street", or "no streets known here" outside the Deck region); Regrade and Raise name the streets they pass under.
+- On Ben's export: no road clashes on Lines 1, 2, 4, 8, 10, 11, 2b; most elsewhere are troughs under streets (Lines 6, 9,
+  12) and level crossings where a Metro line runs at grade across a street (Lines 3, 7, 9, 13, 14, CVG Express); the RER at
+  grade on the old railroads crosses many streets (RER-1 38, B trunk 21). Test added; 65 pass.

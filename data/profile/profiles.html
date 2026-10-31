@@ -240,7 +240,7 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
     </div>
     <div class="card">
       <h2>Stations</h2>
-      <table class="st-table"><thead><tr><th>Station</th><th style="text-align:right">km</th><th style="text-align:right" id="thRail">Rail</th><th style="text-align:right">Depth</th></tr></thead><tbody id="stBody"></tbody></table>
+      <table class="st-table"><thead><tr><th>Station</th><th>Street</th><th style="text-align:right">km</th><th style="text-align:right" id="thRail">Rail</th><th style="text-align:right">Depth</th></tr></thead><tbody id="stBody"></tbody></table>
       <div id="stGone" class="st-gone" hidden></div>
     </div>
   </aside>
@@ -266,7 +266,7 @@ const TYPE_KEYS = Object.keys(TYPES);
 // thresholds are editable starting values, not canon. deepBelow (60 ft) follows the station
 // list calling Price Hill's 60 ft station a deep bore; shallowMax (40 ft) flags canon-shallow
 // stretches that run well past the doctrine's 20-30 ft.
-const METRO_DEFAULTS = { maxGrade: 50, platform: 121.92, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, deckDepth: 1.5, poolFt: 455.0, vcRadius: 1500, vcMinLen: 30.5, drainMin: 3, curveK: 800, stationMaxGrade: 7.5, fillTaper: 50, sustainedLen: 243.84, riverRoof: 1.0, riverSink: 5.0, riverRise: 3.0, riverFlatTol: 1.0, riverClearWater: 3.66, riverCap: 1.0 };
+const METRO_DEFAULTS = { maxGrade: 50, platform: 121.92, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, deckDepth: 1.5, poolFt: 455.0, vcRadius: 1500, vcMinLen: 30.5, drainMin: 3, curveK: 800, stationMaxGrade: 7.5, fillTaper: 50, sustainedLen: 243.84, riverRoof: 1.0, riverSink: 5.0, riverRise: 3.0, riverFlatTol: 1.0, riverClearWater: 3.66, riverCap: 1.0, roadClearHighway: 4.9, roadClearMajor: 4.3, roadClearMinor: 4.3 };
 // Design rules: vertical curves of 1,500 m (Metro) and 3,000 m (RER) at every grade change, kept
 // off platforms by a level transition (canon); bored tunnels need the cover of their era's
 // practice, else they are cut and cover (canon, see ERA); tunnels drain at 3 per mille or
@@ -275,7 +275,7 @@ const METRO_DEFAULTS = { maxGrade: 50, platform: 121.92, defDepth: 7.62, elevAbo
 // RER: 35 per mille, 670 ft (204.2 m) platforms (Ben, 5 October; was 200 m) and 12 m station rail depth are canon; the
 // envelope (25 kV overhead), thresholds, tube cover and surface bend-point spacing are starting
 // values. Surface stations sit at grade on the old railroad and the rail follows the ground.
-const RER_DEFAULTS = { maxGrade: 35, platform: 204.2, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 6.6, boreCrown: 7.5, deckDepth: 2.0, invertDepth: 1.0, poolFt: 455.0, surfStep: 250, tubeCover: 3, vcRadius: 3000, vcMinLen: 30.5, minCover: 8.5, drainMin: 3, curveK: 800, stationMaxGrade: 2.5, fillTaper: 50, sustainedLen: 408.4, riverSink: 5.0, riverRise: 3.0, riverFlatTol: 1.0, riverClearWater: 3.66, riverCap: 1.0 };
+const RER_DEFAULTS = { maxGrade: 35, platform: 204.2, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 6.6, boreCrown: 7.5, deckDepth: 2.0, invertDepth: 1.0, poolFt: 455.0, surfStep: 250, tubeCover: 3, vcRadius: 3000, vcMinLen: 30.5, minCover: 8.5, drainMin: 3, curveK: 800, stationMaxGrade: 2.5, fillTaper: 50, sustainedLen: 408.4, riverSink: 5.0, riverRise: 3.0, riverFlatTol: 1.0, riverClearWater: 3.66, riverCap: 1.0, roadClearHighway: 4.9, roadClearMajor: 4.3, roadClearMinor: 4.3 };
 let DEFAULTS = METRO_DEFAULTS;
 // Canon structure for the founding sections (Lines 1-6 as first opened).
 // m: 'shallow' = basin method (shallow shield running tunnels, cut-and-cover station boxes);
@@ -428,6 +428,20 @@ async function propagateLinks() {
   return done;
 }
 const ctxFor = (id) => (CONTEXT.lines || {})[id] || {};
+// Roads (Ben, 29-31 October: "major routes need clearances"; "knowing when and where stations are under roads is important").
+// From the context (tools/make_profile_context.py, the Deck's live streets, the highways and OSM roads): the streets a line
+// runs along, [c0, c1, width, name, class], and the roads it crosses, [c, c0, c1, width, name, class]; class highway, major
+// or minor. Only inside the Deck region: elsewhere nothing is known and nothing is checked.
+const ROAD_COL = { highway: '#b03a2e', major: '#c97c1a', minor: '#8a8a8a' };
+const ctxStreets = () => (S.ctx && S.ctx.streets) || [], ctxRoads = () => (S.ctx && S.ctx.roads) || [];
+const streetAtC = (c) => ctxStreets().find((r) => c >= r[0] - 5 && c <= r[1] + 5) || null;
+const roadsIn = (c0, c1) => ctxRoads().filter((r) => r[2] >= c0 && r[1] <= c1);
+const roadClear = (cls) => settings[cls === 'highway' ? 'roadClearHighway' : cls === 'major' ? 'roadClearMajor' : 'roadClearMinor'];
+// what a station sits under: its street, the roads crossing its platform, or nothing known
+function stationStreet(s) {
+  const st = streetAtC(s.c), half = settings.platform / 2, rd = roadsIn(s.c - half, s.c + half);
+  return { street: st, roads: rd, text: st ? `under ${st[3]}` : rd.length ? `crosses ${rd.map((r) => r[4]).join(', ')}` : (ctxStreets().length || ctxRoads().length ? 'not under a street' : 'no streets known here') };
+}
 const METHOD_LABEL = { shallow: 'Basin method', deep: 'Deep tunnel', canal: 'Canal-bed cut & cover', covered: 'Covered way (cut & cover)' };
 const SETTING_ROWS_BASE = [
   ['maxGrade', 'Max grade', '‰', 1],
@@ -438,6 +452,9 @@ const SETTING_ROWS_BASE = [
   ['riverFlatTol', 'River bottom: bed within this of the lowest bed', 'len', 0.1],
   ['riverClearWater', 'Navigable channel: clear water at normal pool', 'len', 0.01],
   ['riverCap', 'Clay, canopy and riprap over a raised roof', 'len', 0.1],
+  ['roadClearHighway', 'Clearance over a highway (street surface to the structure underside)', 'len', 0.1],
+  ['roadClearMajor', 'Clearance over a major road', 'len', 0.1],
+  ['roadClearMinor', 'Clearance over a minor street', 'len', 0.1],
   ['platform', 'Platform length', 'len', 0.1],
   ['defDepth', 'Default rail depth at stations', 'len', 0.1],
   ['elevAbove', 'Elevated when rail is above ground by', 'len', 0.1],
@@ -743,6 +760,7 @@ function viaductSpansNow() {
     const keep = [];   // stretches with no pier: rivers (their own piers below) and crossing lines
     for (const r of S.rivers) if (r.c1 > c0 && r.c0 < c1) keep.push([Math.max(c0, r.c0), Math.min(c1, r.c1), r]);
     for (const x of S.crossings || []) if (x.c > c0 && x.c < c1) keep.push([x.c - VIA_CLEAR, x.c + VIA_CLEAR, null]);
+    for (const r of ctxRoads()) if (r[2] > c0 && r[1] < c1) keep.push([r[1], r[2], null]);   // piers kept off the roads (Ben)
     keep.sort((u, v) => u[0] - v[0]);
     const piers = [c0]; let c = c0;
     const blocked = (q) => keep.find(([u, v]) => q > u && q < v);
@@ -1688,7 +1706,7 @@ function designChecks() {
 }
 // issue kinds (Ben, 31 October: the warnings all looked the same): one colour per kind on its tag; the bar on the left is the
 // severity (error red, warning amber, note grey). A crossing with a line not marked "Profile set" is listed apart.
-const ISS_CAT = { Grade: '#d9822b', 'Curve grade': '#d9822b', Clearance: '#b0479e', Context: '#b0479e', Cover: '#8a6d3b', 'Thin cover': '#8a6d3b', River: '#1f8fa0', 'Tunnel method': '#3f6fb5', 'Low cover': '#3f6fb5', Regrade: '#3f6fb5', 'Tube form': '#6a5acd', 'Tube choice': '#6a5acd', 'Approach box': '#7f8c8d', Canon: '#7a8c2e', Painted: '#7a8c2e', Drawing: '#95a5a6', 'Platform curve': '#a04070', 'Vertical curve': '#b9770e', Drainage: '#2e86c1' };
+const ISS_CAT = { Grade: '#d9822b', 'Curve grade': '#d9822b', Clearance: '#b0479e', Context: '#b0479e', Cover: '#8a6d3b', 'Thin cover': '#8a6d3b', River: '#1f8fa0', 'Tunnel method': '#3f6fb5', 'Low cover': '#3f6fb5', Regrade: '#3f6fb5', 'Tube form': '#6a5acd', 'Tube choice': '#6a5acd', 'Approach box': '#7f8c8d', Canon: '#7a8c2e', Painted: '#7a8c2e', Drawing: '#95a5a6', 'Platform curve': '#a04070', 'Vertical curve': '#b9770e', Drainage: '#2e86c1', Road: '#b03a2e' };
 const ISS_HIDE = (() => { try { return new Set(JSON.parse(localStorage.getItem('profile:issHide') || '[]')); } catch { return new Set(); } })();
 const sevOf = (x) => x.sev || (x.warn ? 'warn' : 'error');
 const issShown = (x) => x.grp !== 'pending' && !ISS_HIDE.has('k:' + x.kind) && !ISS_HIDE.has('s:' + sevOf(x));
@@ -1720,6 +1738,7 @@ function allIssues(sm) {
     }[t.kind];
     out.push({ kind: 'River', c: t.c, text });
   });
+  roadChecks().forEach((x) => out.push({ kind: 'Road', sev: x.sev, c: x.c, text: x.text }));
   sm.deepShallow.forEach((f) => out.push({ kind: 'Canon', warn: true, c: f.c, text: `${esc(f.name)} is ${fmtZ(f.d, 0)} ${uLbl()} down in a shallow-canon section` }));
   (sm.checks || []).forEach((x) => out.push(x));
   const T = stretchTypes(); if (T) T.flags.forEach((f) => out.push({ kind: f.kind || (f.info ? 'Tube choice' : 'Tunnel method'), sev: f.error ? 'error' : f.info ? 'note' : 'warn', c: (f.c0 + f.c1) / 2, text: `${fmtCh(f.c0)} to ${fmtCh(f.c1)}: ${f.text}` }));
@@ -1807,7 +1826,22 @@ function memo(key, f) {
   const val = f(); MEMO.set(k, { v: MODEL_V, val }); return val;
 }
 const crossingClearances = () => memo('cross', crossingClearancesNow), contextClearances = () => memo('ctx', contextClearancesNow);
-const curveGradeRanges = () => memo('curveG', curveGradeRangesNow), viaductSpans = () => memo('via', viaductSpansNow);
+const curveGradeRanges = () => memo('curveG', curveGradeRangesNow), viaductSpans = () => memo('via', viaductSpansNow), roadChecks = () => memo('roads', roadChecksNow);
+// the line against the roads it crosses: over a road, the structure underside keeps the class's clearance above the
+// street; at grade across a road is a level crossing (the Metro never has one; the RER only on a minor street, as a
+// warning); in a trough under a road the road's bridge needs the open clear height plus its deck; a viaduct pier in a road
+function roadChecksNow() {
+  const out = []; if (!S.data) return out;
+  for (const r of ctxRoads()) {
+    const [c, c0, c1, w, name, cls] = r, t = typeAt(c), z = railAt(c), g = groundAt(c); if (!isFinite(g)) continue;
+    const who = `${esc(name)} (${cls}${w ? `, ${fmtZ(w, 0)} ${uLbl()}` : ''})`;
+    if (t === 'atgrade') out.push({ kind: 'Road', sev: isRer() && cls === 'minor' ? 'warn' : 'error', c, road: r, text: `level crossing with ${who} at ${fmtCh(c)}: ${isRer() ? (cls === 'minor' ? 'a gated crossing, or a grade separation' : 'a grade separation') : 'the Metro never crosses a street at grade: a bridge over it, a trough under it, or a box'}` });
+    else if (t === 'trough') { const d = g - z, need = openTop(S.data.id) + 0.8; if (d < need - 0.02) out.push({ kind: 'Road', sev: 'error', c, road: r, text: `an open trough under ${who} at ${fmtCh(c)}: the street needs a bridge over it, ${fmtZ(need, 2)} ${uLbl()} from the rail to the street (the clear height plus a 0.8 m deck), and the rail is ${fmtZ(d, 2)} down: lower the rail there (the trough becomes a box under the street), or raise the street` }); }
+    else if (t === 'elevated') { const sp = spanAt(c), below = sp ? sp.below : settings.deckDepth, clear = z - below - g, need = roadClear(cls); if (clear < need - 0.02) out.push({ kind: 'Road', sev: 'error', c, road: r, text: `${fmtZ(clear, 2)} ${uLbl()} over ${who} at ${fmtCh(c)} (the ${sp && sp.truss ? 'truss' : 'girder'} underside to the street); needs ${fmtZ(need, 2)}: raise the rail` }); }
+  }
+  for (const sp of viaductSpans()) for (const pc of [sp.c0, sp.c1]) { const r = ctxRoads().find((q) => pc > q[1] + 0.5 && pc < q[2] - 0.5); if (r && !out.some((x) => x.pier === r)) out.push({ kind: 'Road', sev: 'warn', c: pc, road: r, pier: r, text: `a viaduct pier stands in ${esc(r[4])} at ${fmtCh(pc)}: no span pattern keeps it out (the road is wider than a span, or two roads too close); set the spans by hand` }); }
+  return out.sort((a, b) => a.c - b.c);
+}
 
 // ---------- drawing ----------
 const cv = $('#cv'), ov = $('#ov'), plan = $('#plan');
@@ -2081,6 +2115,27 @@ function draw(ctx, W, H, view, opt = {}) {
       ctx.globalAlpha = 0.85; ctx.strokeStyle = colors.warn; ctx.lineWidth = 1.2; ctx.beginPath();
       const xa = X(cs[0]) - 200, xb = X(cs[cs.length - 1]); for (let x = xa; x < xb + 200; x += 7) { ctx.moveTo(x, P.y + P.h); ctx.lineTo(x + 200, P.y); } ctx.stroke(); ctx.restore();
     }
+  }
+  // roads: each crossing road as a bar on the street surface across its width (class colour), named when there is room;
+  // the streets the line runs along as a dotted line just above the ground, named when there is room
+  if (!opt.title) {
+    ctx.save(); ctx.font = `600 10px ${colors.ui}`; ctx.textBaseline = 'bottom';
+    for (const r of ctxStreets()) {
+      if (r[1] < view.c0 || r[0] > view.c1) continue;
+      const a = Math.max(r[0], view.c0), b = Math.min(r[1], view.c1), sub = Math.max(2, (view.c1 - view.c0) / P.w * 3);
+      ctx.strokeStyle = ROAD_COL[r[4]] || ROAD_COL.minor; ctx.lineWidth = 1.2; ctx.setLineDash([2, 3]); ctx.globalAlpha = 0.9; ctx.beginPath();
+      for (let c = a, k = 0; c <= b + 1e-9; c += sub, k++) { const g = groundAt(c); if (!isFinite(g)) continue; const x = X(c), y = Y(g) - 3; k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+      ctx.stroke(); ctx.setLineDash([]);
+      if (X(b) - X(a) > 90) { const gm = groundAt((a + b) / 2); if (isFinite(gm)) { ctx.fillStyle = ROAD_COL[r[4]] || ROAD_COL.minor; ctx.textAlign = 'center'; ctx.fillText(`under ${r[3]}`, (X(a) + X(b)) / 2, Y(gm) - 5); } }
+    }
+    for (const r of ctxRoads()) {
+      if (r[2] < view.c0 || r[1] > view.c1) continue;
+      const g = groundAt(r[0]); if (!isFinite(g)) continue;
+      const x0 = X(Math.max(r[1], view.c0)), x1 = X(Math.min(r[2], view.c1)), y = Y(g);
+      ctx.globalAlpha = 1; ctx.fillStyle = ROAD_COL[r[5]] || ROAD_COL.minor; ctx.fillRect(x0, y - 2.5, Math.max(2, x1 - x0), 4);
+      if (r[5] !== 'minor' || x1 - x0 > 24) { ctx.textAlign = 'center'; ctx.fillText(r[4], (x0 + x1) / 2, y - 5); }
+    }
+    ctx.restore();
   }
   // elevated structure: the deck and girders (or a through truss) by span, and the piers to the ground or river bed
   if (S.show !== 'rail') {
@@ -2361,6 +2416,7 @@ function updatePanels() {
     .concat(Object.entries(S.canonFixed).map(([i, f]) => `<li><b>${esc(nm(+i))}</b> rail ${f.abs != null ? `at ${fmtZ(f.abs, 1)} ${uLbl()}` : `${f.off >= 0 ? '+' : '−'}${fmtZ(Math.abs(f.off), 0)} ${uLbl()}`}: ${esc(f.src)}</li>`));
   const er = eraOf();
   cnl.push(`<li><b>Structures</b> ${er ? `(${er.era}): rail less than ${fmtZ(METRO_ST.box.top, 1)} ${uLbl()} down is an open trough; cut-and-cover and station boxes ${fmtZ(METRO_ST.box.below, 2)} below to ${fmtZ(METRO_ST.box.top, 2)} ${uLbl()} above the rail (roof cover ${fmtZ(BOX_COVER, 1)}, thinner is the street itself, a warning); bored (shield and deep): ${(() => { const t = metroTube(S.L / 2, S.data.id); return `${t.label}, ${fmtZ(t.od, 2)} ${uLbl()} outside, ${fmtZ(t.below, 2)} below to ${fmtZ(t.top, 2)} above the rail`; })()}${MS ? ` (Phase ${phaseAt(S.L / 2)}; per stretch by the phase it was built in, set on the hub page; a drive between two double-track ends, a side-platform or plain box, the sunk box or a portal, is the double-track bore where it has its ${fmtZ(METRO_ST.bore.top + METRO_ST.bore.od, 1)} ${uLbl()} of cover, else twin tubes; painted tube form decides)` : ''}; tubes and bores need one outside diameter of cover (the ground arches over it); shallower is cut and cover where the bored pieces left are whole drives, else the profile must be lowered (Regrade); under rivers a sunk double-track box (below)` : `(RATP RER style, 1985-1996): boxes and station boxes ${fmtZ(settings.envelope, 1)} ${uLbl()} and bored tubes ${fmtZ(settings.boreCrown, 1)} ${uLbl()} above the rail; bored tunnels need ${fmtZ(settings.minCover, 1)} ${uLbl()} of cover, shallower is cut and cover; river crossings are sunk boxes in a dredged trench (below)`}; crossings keep the upper floor + ${SEP_GAP} m above the lower top where a box is involved, ${fmtZ(boredGap(), 2)} ${uLbl()} of ground between two bored tunnels, or above the clear height (${OPEN_CLEAR.metro} m Metro, ${OPEN_CLEAR.rer} m RER) of a line in the open; platforms may slope up to ${sgMaxFor()}‰${er ? (er.sgMax > 5 ? ' (New York 1918 practice)' : ' (1930s-50s, near London 1 in 260)') : ' (main-line station limit)'}.</li>`);
+  if (ctxStreets().length || ctxRoads().length) cnl.push(`<li><b>Roads</b> (the Deck's streets and the highways): a bar on the street surface where the line crosses a road (${['highway', 'major', 'minor'].map((k) => `<span style="color:${ROAD_COL[k]}">${k}</span>`).join(', ')}), a dotted line where it runs under a street. Over a road the structure underside keeps ${fmtZ(settings.roadClearHighway, 1)} ${uLbl()} (highway), ${fmtZ(settings.roadClearMajor, 1)} (major) or ${fmtZ(settings.roadClearMinor, 1)} (minor) above the street; at grade across a road is a level crossing (${isRer() ? 'an error on a major road or highway, a warning on a minor street' : 'never, on the Metro'}); viaduct piers stay out of the roads.</li>`);
   if (!isRer() && MS) cnl.push(`<li><b>Limits</b> (dashed): in the tube colour the shallowest a tube may run (one outside diameter of cover over it); in the box colour the deepest a cut-and-cover box may go (its phase's limit). A tube above its line or a box below its line cannot be built: hatched red, with Regrade or Raise in the issues. Running tunnels by their phase's method: the shield in Phases 1-2, the deep bore (TBM) from Phase 3 (the record's phases.tbm); mined stations are built as their drive.</li>`);
   if (S.filled) cnl.push(`<li><b>Regraded ground</b> over painted cut and cover: filled to the box roof plus cover (${isRer() ? `box ${fmtZ(settings.envelope, 1)} ${uLbl()}` : `${fmtZ(METRO_ST.box.top, 1)} + ${fmtZ(BOX_COVER, 1)} ${uLbl()}`} above the rail), sloping back to the surveyed ground (dashed) at ${settings.fillTaper}‰. The level solver works from the ground before the fill.</li>`);
   { const seen = new Map(); ctxBlocks().forEach((b) => { const e = seen.get(b.n); if (e) e.c1 = b.c1; else seen.set(b.n, { b, c0: b.c0, c1: b.c1 }); });
@@ -2383,7 +2439,8 @@ function updatePanels() {
   $('#stBody').innerHTML = S.stations.map((s, i) => {
     const z = S.align.st[i]; const sf = refAt(i); const d = sf - z; const t = typeAt(s.c, z);
     const on = S.sel && S.sel.kind === 'st' && S.sel.i === i;
-    return `<tr data-i="${i}" class="${on ? 'on' : ''}"><td>${typeChip(t)}${esc(s.name)}</td><td class="num">${(s.c / 1000).toFixed(2)}</td><td class="num">${fmtZ(z)}</td><td class="num">${d >= 0 ? fmtZ(d) : '+' + fmtZ(-d)}</td></tr>`;
+    const ss = stationStreet(s);
+    return `<tr data-i="${i}" class="${on ? 'on' : ''}"><td>${typeChip(t)}${esc(s.name)}</td><td style="color:var(--muted);font-size:12px" title="${esc(ss.text)}">${ss.street ? esc(ss.street[3]) : ss.roads.length ? esc(ss.roads.map((r) => r[4]).join(', ')) : '–'}</td><td class="num">${(s.c / 1000).toFixed(2)}</td><td class="num">${fmtZ(z)}</td><td class="num">${d >= 0 ? fmtZ(d) : '+' + fmtZ(-d)}</td></tr>`;
   }).join('');
   const gone = (S.align.del || []);
   $('#stGone').hidden = !gone.length;
@@ -2488,6 +2545,7 @@ function updateSelCard() {
         <dt><label for="inRail">Rail level (${uLbl()})</label></dt><dd><input id="inRail" type="number" step="0.1" value="${toU(z).toFixed(2)}" ${ro ? 'disabled' : ''}></dd>
         <dt><label for="inDepth">Rail below ground (${uLbl()})</label></dt><dd><input id="inDepth" type="number" step="0.1" value="${toU(d).toFixed(2)}" ${ro ? 'disabled' : ''}></dd>
         <dt>Structure</dt><dd>${TYPES[typeAt(s.c, z)].label}</dd>
+        <dt>Street</dt><dd>${esc(stationStreet(s).text)}</dd>
         <dt>Grade in / out</dt><dd>${fmtG(gin)} / ${fmtG(gout)}</dd>
         <dt>Platform</dt><dd>${fmtCh(s.c - half)} to ${fmtCh(s.c + half)}</dd>
         <dt><label for="inPos">Point from platform start (m)</label></dt><dd><input id="inPos" type="number" step="0.5" min="0" max="${(2 * half).toFixed(1)}" value="${(half - ((S.align.so && S.align.so[sel.i]) || 0)).toFixed(1)}" ${ro ? 'disabled' : ''}></dd>
@@ -2834,7 +2892,7 @@ function updateReadout(x, y) {
   ro.innerHTML = `<div class="t">${fmtCh(c)}${r ? ' · ' + esc(r.name) : ''}</div>
     ${r ? `Water ${fmtZ(sf, 2)} ${uLbl()} · bed ${fmtZ(bedAt(c), 2)}` : `Ground ${fmtZ(g, 2)} ${uLbl()}${Math.abs(g - groundDemAt(c)) > 0.02 ? `<br>${g > groundDemAt(c) ? 'Fill&nbsp;&nbsp;' : 'Cut&nbsp;&nbsp;&nbsp;'} ${fmtZ(Math.abs(g - groundDemAt(c)), 2)} ${uLbl()} from surveyed ${fmtZ(groundDemAt(c), 2)}` : ''}`}<br>Rail&nbsp;&nbsp; ${fmtZ(z, 2)} ${uLbl()}<br>
     ${d >= 0 ? `Below&nbsp; ${fmtZ(d, 2)} ${uLbl()}` : `Above&nbsp; ${fmtZ(-d, 2)} ${uLbl()}`}<br>${TUNNEL.has(t) ? (() => { const sc = structFor(t, c); if (t === 'sunk' && r) { const b = bedAt(c), mb = madeBedAt(c, z); return `Roof&nbsp;&nbsp; ${fmtZ(z + sc.top, 2)} ${uLbl()} · ${z + sc.top >= b ? `${fmtZ(z + sc.top - b, 1)} above` : `${fmtZ(b - z - sc.top, 1)} below`} the bed (${fmtZ(b, 1)})${isFinite(mb) ? `<br>Made-up bed ${fmtZ(mb, 2)} ${uLbl()} · water ${fmtZ(pool() - mb, 1)}` : ''}<br>Bottom ${fmtZ(z - sc.below, 2)} ${uLbl()} · ${sc.label}<br>`; } return `Top&nbsp;&nbsp;&nbsp; ${fmtZ(z + sc.top, 2)} ${uLbl()} · cover ${fmtZ(sf - z - sc.top, 1)}<br>Bottom ${fmtZ(z - sc.below, 2)} ${uLbl()} · ${sc.label}<br>`; })() : ''}${t === 'elevated' && spanAt(c) ? (() => { const sp = spanAt(c); return `Soffit ${fmtZ(z - sp.below, 2)} ${uLbl()} · ${fmtZ(sp.L, 1)} ${uLbl()} span, ${sp.truss ? `through truss ${fmtZ(sp.above, 1)} ${uLbl()} over the rail` : `girder ${fmtZ(sp.below, 2)} ${uLbl()} rail to soffit`}<br>`; })() : ''}Grade&nbsp; ${fmtG(gradeAt(c))}${allowanceAt(c) > 0.5 ? ` · ${fmtG(Math.abs(gradeAt(c)) + allowanceAt(c))} with curve` : ''}<br>
-    <span style="color:var(${TYPES[t].css});font-family:var(--font-ui);font-weight:600">${TYPES[t].label}${overrideAt(c) ? ' (painted)' : ''}</span>${ctxBlocks().filter((b) => c >= b.c0 && c <= b.c1).map((b) => `<br><span style="font-family:var(--font-ui);color:var(--muted)">${esc(b.l)} · rail ${fmtZ(interpP(b.p, c), 2)} ${uLbl()}</span>`).join('')}`;
+    <span style="color:var(${TYPES[t].css});font-family:var(--font-ui);font-weight:600">${TYPES[t].label}${overrideAt(c) ? ' (painted)' : ''}</span>${(() => { const st = streetAtC(c), rd = roadsIn(c - 3, c + 3); return (st ? `<br><span style="font-family:var(--font-ui);color:${ROAD_COL[st[4]] || ROAD_COL.minor}">under ${esc(st[3])} (${st[4]}, ${fmtZ(st[2], 0)} ${uLbl()})</span>` : '') + rd.map((r) => `<br><span style="font-family:var(--font-ui);color:${ROAD_COL[r[5]] || ROAD_COL.minor}">crosses ${esc(r[4])} (${r[5]}, ${fmtZ(r[3], 0)} ${uLbl()})</span>`).join(''); })()}${ctxBlocks().filter((b) => c >= b.c0 && c <= b.c1).map((b) => `<br><span style="font-family:var(--font-ui);color:var(--muted)">${esc(b.l)} · rail ${fmtZ(interpP(b.p, c), 2)} ${uLbl()}</span>`).join('')}`;
   ro.hidden = false;
   const wr = $('#wrap').getBoundingClientRect(); const rw = ro.offsetWidth, rh = ro.offsetHeight;
   let lx = x + 14, ly = y + 14; if (lx + rw > wr.width - 6) lx = x - rw - 14; if (ly + rh > wr.height - 6) ly = y - rh - 14;
@@ -2980,7 +3038,8 @@ function regradeDrive(c0, c1, mode = 'lower') {   // mode 'raise': lift the rail
     S.align.pvi = S.align.pvi.filter((p) => p.c < a * step - 1 || p.c > b * step + 1).concat(pts).sort((x, y) => x.c - y.c);
     VERTS = vertices();
     const short = shortOf();
-    msg = `${verb} the rail by up to ${fmtZ(worst, 1)} ${uLbl()} from ${fmtCh(i0 * step)} to ${fmtCh(i1 * step)}${lowered.length ? `, with ${lowered.join(', ')} ${uLbl()} ${mv}` : ''}`;
+    const under = [...new Set(ctxStreets().filter((r) => r[1] >= i0 * step && r[0] <= i1 * step).map((r) => r[3]).concat(roadsIn(i0 * step, i1 * step).map((r) => r[4])))];
+    msg = `${verb} the rail by up to ${fmtZ(worst, 1)} ${uLbl()} from ${fmtCh(i0 * step)} to ${fmtCh(i1 * step)}${lowered.length ? `, with ${lowered.join(', ')} ${uLbl()} ${mv}` : ''}${under.length ? `; under ${under.slice(0, 6).join(', ')}${under.length > 6 ? ` and ${under.length - 6} more` : ''}` : ''}`;
     if (short <= 0.01) break;
     margin += short + 0.1; msg += ` (still ${fmtZ(short, 2)} ${uLbl()} short at ${fmtCh(shortOf.at)})`;
   }
@@ -3213,7 +3272,7 @@ window.addEventListener('beforeunload', () => { if (S.dirty) save(); });
 
 // ---------- boot ----------
 // hooks for checking the page headless
-window.__api = { layout: () => LAYOUT, solves: () => SOLVE_N, structAt: (c, t) => structFor(t, c), ccAt: (c) => phaseRules(c).ccMax, riverAt: (c) => riverAt(c), regradeDrive: (a, b, m) => regradeDrive(a, b, m), pointType: (c, z) => pointType(c, z), stretchTypes: () => stretchTypes(), riverBand: (r) => (bridgeOf(r) ? null : riverBand(r)), bedAt: (c) => bedAt(c), pool: () => pool(), inPlatform: (c) => inPlatform(c), selectLine, save, changed, railAt, S, withLine, alignFromDoc, defaultAlign, modeOf, lockAt, deriveStations, docFor, levelAtMember, setAtMember, copyStretch, sharedOf, junctionsOf, ensureJunctionPvis, vertices, applyLocks, buildCanon, writeDoc, refreshDefaultDocs, propagateLinks, get links() { return LINKS; } };
+window.__api = { layout: () => LAYOUT, solves: () => SOLVE_N, stationStreet, roadChecks: () => roadChecks(), structAt: (c, t) => structFor(t, c), ccAt: (c) => phaseRules(c).ccMax, riverAt: (c) => riverAt(c), regradeDrive: (a, b, m) => regradeDrive(a, b, m), pointType: (c, z) => pointType(c, z), stretchTypes: () => stretchTypes(), riverBand: (r) => (bridgeOf(r) ? null : riverBand(r)), bedAt: (c) => bedAt(c), pool: () => pool(), inPlatform: (c) => inPlatform(c), selectLine, save, changed, railAt, S, withLine, alignFromDoc, defaultAlign, modeOf, lockAt, deriveStations, docFor, levelAtMember, setAtMember, copyStretch, sharedOf, junctionsOf, ensureJunctionPvis, vertices, applyLocks, buildCanon, writeDoc, refreshDefaultDocs, propagateLinks, get links() { return LINKS; } };
 (async () => {
   setTool('move'); buildBrushes();
   try { const u = localStorage.getItem('profile:units'); if (u === 'ft') setUnits('ft'); } catch {}

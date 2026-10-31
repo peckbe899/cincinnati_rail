@@ -845,3 +845,25 @@ def test_system_check_nothing_unbuildable_unmarked():
     T = mp.stretch_types()
     assert not [b for b in T["bad"] if 20000 < b["c0"] < 21100]
     assert T["t"][int(20500 / T["step"])] == "cutcover"
+
+
+def test_road_checks_and_station_streets():
+    """Roads (Ben, 29-31 October): from the context's streets and roads, a level crossing where the line runs at grade
+    across a road (the Metro never), a trough under a road without room for the road's bridge, and what each station sits
+    under (its street, the roads across its platform, or nothing known)."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent
+    mp = MetroProfile.load(root / "data/profile/lines/Line_3.json", root / "hub/seed/alignments/Line_3.json", root / "data/profile/settings.json")
+    assert mp.roads() and mp.streets()
+    rc = mp.road_checks()
+    assert any(x["kind"] == "level crossing" and x["sev"] == "error" and 6000 < x["c"] < 6030 for x in rc), rc   # West Mitchell Avenue
+    assert all(x["sev"] in ("error", "warn") for x in rc)
+    assert mp.summary()["road_clashes"] == len([x for x in rc if x["sev"] == "error"])
+    texts = [mp.station_street(s)["text"] for s in mp.stations]
+    assert any(t.startswith("under ") for t in texts) and any(t.startswith("crosses ") for t in texts)
+    # the RER at grade: a minor street is a warning, a major road an error
+    r1 = MetroProfile.load(root / "data/profile/rer/lines/RER_1.json", None, root / "data/profile/rer/settings.json")
+    rc = r1.road_checks()
+    assert any(x["kind"] == "level crossing" and x["sev"] == "warn" and x["cls"] == "minor" for x in rc)
+    assert any(x["kind"] == "level crossing" and x["sev"] == "error" and x["cls"] == "major" for x in rc)
