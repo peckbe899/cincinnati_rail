@@ -52,10 +52,15 @@ def deck_export(geojson):
     return lines, out
 
 
-def snapshot(geojson):
+def snapshot(geojson, docs=None):
     _, plats = deck_export(geojson)
-    return {'about': 'Each Deck platform offset when the Deck and the Profiles last agreed (tools/platform_tie.py)',
-            'offsets': {f"{q['station_id']}|{q['pid']}": q['offset_m'] for q in plats}}
+    out = {'about': 'Each Deck platform offset, and each Profiles slide, when the Deck and the Profiles last agreed (tools/platform_tie.py)',
+           'offsets': {f"{q['station_id']}|{q['pid']}": q['offset_m'] for q in plats}, 'slides': {}}
+    for f in sorted(glob.glob(os.path.join(docs, '*.json'))) if docs else []:
+        so = {k: float(v) for k, v in (jload(f).get('so') or {}).items() if abs(float(v or 0)) > 0.01}
+        if so:
+            out['slides'][os.path.basename(f)[:-5]] = so
+    return out
 
 
 def route_file(rid):
@@ -73,6 +78,7 @@ def label_ok(rid, route, label):
 def tie(docs, layout, times, sync, geojson):
     lines, plats = deck_export(geojson)
     last = (sync or {}).get('offsets')
+    last_so = (sync or {}).get('slides')   # the Profiles slides at the last agreement: only a slide changed since is pushed
     t_deck = float(times.get('deck/layout') or 0)
     lay = json.loads(json.dumps(layout))
     lay.setdefault('stations', {})
@@ -115,9 +121,13 @@ def tie(docs, layout, times, sync, geojson):
                 continue
             key = f"{q['station_id']}|{q['pid']}"
             deck_moved = last is not None and key in last and abs(float(last[key]) - float(q['offset_m'])) > MOVED_M
+            prof_moved = last_so is None or abs(float((last_so.get(rid) or {}).get(k) or 0) - v) > MOVED_M
             profile_newer = t_doc >= t_deck
+            if not prof_moved:   # the slide is as it was at the last agreement: nothing to push (the Deck's own move, if any, is the Deck tie's)
+                continue
             if (deck_moved or last is None) and not profile_newer:
-                moves.append({'route': rid, 'station': s['name'], 'slide': v, 'done': False, 'why': 'moved on the Deck more recently: the Deck wins (the slide is reset)'})
+                moves.append({'route': rid, 'station': s['name'], 'slide': v, 'done': False, 'conflict': deck_moved,
+                              'why': 'moved on the Deck and in the Profiles since the last tie; the Deck is more recent: the Deck wins (the slide is reset)' if deck_moved else 'no record of the last agreement and the Deck is more recent: the Deck wins'})
                 continue
             new = at(s['c'] + v)
             o_new = float(q['offset_m']) + D.project(new) - D.project(q['centre'])
@@ -129,7 +139,7 @@ def tie(docs, layout, times, sync, geojson):
             e = lay['stations'].setdefault(q['station_id'], {})
             e.setdefault('s', {}).setdefault(q['pid'], {})['o'] = round(o_new, 1)
             moves.append({'route': rid, 'station': s['name'], 'key': k, 'slide': v, 'done': True, 'deck_station': q['station_id'], 'pid': q['pid'],
-                          'from_o': q['offset_m'], 'to_o': round(o_new, 1), 'why': ('both moved; the profile is more recent' if deck_moved else 'moved in the Profiles') + note})
+                          'from_o': q['offset_m'], 'to_o': round(o_new, 1), 'conflict': deck_moved, 'why': ('moved on the Deck and in the Profiles since the last tie; the profile is more recent' if deck_moved else 'moved in the Profiles') + note})
     changed = any(m['done'] for m in moves)
     if changed:
         import datetime
@@ -148,7 +158,7 @@ def main():
     ap.add_argument('--out', required=True)
     a = ap.parse_args()
     if a.snapshot:
-        json.dump(snapshot(a.geojson), open(a.out, 'w'), indent=1)
+        json.dump(snapshot(a.geojson, a.docs), open(a.out, 'w'), indent=1)
         return
     sync = jload(a.sync) if a.sync and os.path.exists(a.sync) else None
     r = tie(a.docs, jload(a.layout), jload(a.times), sync, a.geojson)

@@ -455,12 +455,49 @@ def label_ok_route(route, label):
     return bool(me) and (label or '').startswith('RER') and me in letters(label)
 
 
+def reframe_doc(doc, route):
+    """the saved profile in the route's current frame. A profile saved against an older route (the page held the old
+    route while a tie moved it; a profile saved during a tie) carries the station points it was saved against
+    (stations[].point_c): where they differ from the route's, its chainages are mapped station by station onto the
+    current points and every platform centre is kept, so a slide is never read against the wrong point (1 November)."""
+    sts = doc.get('stations') if doc else None
+    if not sts or not isinstance(sts, list):
+        return doc
+    dels = set(doc.get('del') or [])
+    live = [s for s, k in zip(route['stations'], st_keys(route)) if k not in dels]
+    keys = [k for k in st_keys(route) if k not in dels]
+    pairs = [(float(x['point_c']), float(s['c'])) for x, s in zip(sts, live) if isinstance(x, dict) and x.get('name') == s['name'] and isinstance(x.get('point_c'), (int, float))]
+    if not pairs or not any(abs(a - b) > 0.05 for a, b in pairs):
+        return doc
+    pairs.sort()
+    L0 = float(doc.get('length_m') or route['length_m'])
+    xs, ys = [0.0] + [p[0] for p in pairs] + [L0], [0.0] + [p[1] for p in pairs] + [float(route['length_m'])]
+    m = lambda c: float(np.interp(c, xs, ys))
+    doc = move_doc(doc, m, route['length_m'])
+    so_old = doc.get('so') or {}
+    so = {}
+    for x, s, k in zip(sts, live, keys):
+        if not isinstance(x, dict) or x.get('name') != s['name']:
+            continue
+        if not isinstance(x.get('point_c'), (int, float)):
+            continue
+        centre = m(float(x['point_c']) + float(so_old.get(k) or 0))   # the point plus the slide, as saved (stations[].c is a summary)
+        v = round((centre - float(s['c'])) * 2) / 2
+        if abs(v) > 0.05:
+            so[k] = v
+    doc['so'] = so
+    doc['reframed'] = True
+    return doc
+
+
 def move_doc(doc, m, length):
     if not doc:
         return doc
     doc = dict(doc)
     doc['pvi'] = [[round(m(c), 1), z] for c, z in doc.get('pvi', [])]
     doc['ovr'] = [[round(m(a), 1), round(m(b), 1), *r] for a, b, *r in doc.get('ovr', [])]
+    if doc.get('tf'):   # the tube-form paints move too (1 November)
+        doc['tf'] = [[round(m(a), 1), round(m(b), 1), *r] for a, b, *r in doc['tf']]
     if 'length_m' in doc:
         doc['length_m'] = length
     return doc
@@ -476,11 +513,12 @@ def routes():
     return out
 
 
-def saved_doc(rid, al, db):
-    """the saved profile: the page database's export (--db) if it has one, else the repo copy"""
+def saved_doc(rid, al, db, route=None):
+    """the saved profile: the page database's export (--db) if it has one, else the repo copy; in the route's frame"""
     for p in ([os.path.join(db, rid + '.json')] if db else []) + [al]:
         if os.path.exists(p):
-            return jload(p)
+            d = jload(p)
+            return reframe_doc(d, route) if route else d
     return None
 
 
@@ -518,7 +556,7 @@ def main():
         if not r.get('segs'):
             report.append({'id': rid, 'status': 'no segs'})
             continue
-        so = slides(r, saved_doc(rid, al, a.db))
+        so = slides(r, saved_doc(rid, al, a.db, r))
         xy, segs, notes = rebuild(r, pieces)
         d, dl = drift(r, xy)
         dseg = max(abs((n['c1'] - n['c0']) - (o['c1'] - o['c0'])) for o, n in zip(r['segs'], segs))
@@ -576,7 +614,7 @@ def main():
         targets = [al] + ([os.path.join(a.db, rid + '.json')] if a.db else [])
         for p in targets:
             if os.path.exists(p):
-                doc = move_doc(jload(p), m, new['length_m'])
+                doc = move_doc(reframe_doc(jload(p), r), m, new['length_m'])
                 so_d = {k: v for k, v in slides_new.items() if abs(v) > 0.01}   # Ben's platform centres kept (apply_route)
                 if so_d or doc.get('so'):
                     doc['so'] = so_d

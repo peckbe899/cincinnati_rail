@@ -80,7 +80,7 @@ function render() {
       counts[type] = (counts[type] || 0) + 1; if (b.type) nBen++; if (a.flags.length) nFlag++; nProp += proposals.length;
       if (onlyFlag && !a.flags.length && !proposals.length) continue;
       if (onlyBen && !b.type && !stages.length) continue;
-      out.push(`<tr><td><b>${esc(st)}</b></td><td class="num">${a.year != null ? `${a.year} · P${a.phase}` : `<span class="flag warn">no year · P${a.phase}</span>`}</td><td class="num">${fmt(a.depth)} / ${fmt(a.d_hall, 2)} m</td><td>${a.island ? 'island' : 'side'}</td><td>${esc(LABEL[a.rule])}</td>
+      out.push(`<tr><td><b>${esc(a.station || st)}</b></td><td class="num">${a.year != null ? `${a.year} · P${a.phase}` : `<span class="flag warn">no year · P${a.phase}</span>`}</td><td class="num">${fmt(a.depth)} / ${fmt(a.d_hall, 2)} m</td><td>${a.island ? 'island' : 'side'}</td><td>${esc(LABEL[a.rule])}</td>
         <td><select data-line="${esc(line)}" data-st="${esc(st)}" ${S.canWrite ? '' : 'disabled'}><option value="">rules</option>${Object.entries(LABEL).map(([k, v]) => `<option value="${k}" ${b.type === k ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select></td>
         <td>${(a.at_open || []).map((m) => `${esc(m.station)} (${esc(String(m.line).replace('_', ' '))}, ${m.year})`).join('; ') || '–'}</td>
         <td>${stages.map((s, i) => `<span class="stage"><span class="ben">${s.year ?? '–'}</span> ${esc(s.type ? LABEL[s.type] || s.type : s.proposed || '')} <span class="muted">${esc(s.trigger || s.note || '')}</span> <button class="btn" data-rm="${i}" data-line="${esc(line)}" data-st="${esc(st)}" ${S.canWrite ? '' : 'disabled'}>remove</button></span>`).join('')}

@@ -161,6 +161,7 @@ class Pipeline:
         os.makedirs(js, exist_ok=True)
         if not os.path.exists(os.path.join(js, 'jsts.min.js')):
             shutil.copy(os.path.join(HUB, 'static', 'vendor', 'jsts.min.js'), js)
+        versions = {}
         for sub, colls in (('profiles_db', ('alignments', 'config')), ('deck_db', ('deck',)), ('params_db', ('params', 'chronology'))):
             for c in colls:
                 d = os.path.join(WORK, 'db', sub, c)
@@ -168,6 +169,8 @@ class Pipeline:
                 os.makedirs(d)
                 for r in self.store.list(c):
                     json.dump(r['data'], open(os.path.join(d, r['path'].split('/')[-1] + '.json'), 'w'), ensure_ascii=False)
+                    versions[r['path']] = r['version']
+        json.dump(versions, open(os.path.join(WORK, 'db', 'versions.json'), 'w'))   # what a job started from: a record saved meanwhile is kept
 
     def job_platform_tie(self, log):
         """platforms slid in the Profiles to the Deck (the more recent side wins); then the Deck tie, else the 3D map"""
@@ -198,6 +201,9 @@ class Pipeline:
             # the slides stay in the profiles (31 October, Ben: the tie kept undoing his moves): the Deck tie that follows
             # puts each station point at its Deck platform's centre and the slide takes up whatever is left
             log(f"{sum(m['done'] for m in out['moves'])} platforms moved on the Deck; the Deck tie follows")
+            for m in out['moves']:
+                if m.get('conflict'):
+                    log(f"BOTH MOVED {m['route']} {m['station']}: {m['why']}")
             self.schedule('deck_tie', 'platforms moved from the Profiles', delay=0)
         else:
             self.schedule('3d', 'a saved profile changed', delay=0)
@@ -205,7 +211,7 @@ class Pipeline:
     def record_platform_sync(self, log):
         """the Deck's platform offsets as the point where the Deck and the Profiles agree (after each Deck tie)"""
         sf = os.path.join(WORK, 'platform_sync_new.json')
-        self.sh(log, [PY, os.path.join(ROOT, 'tools', 'platform_tie.py'), '--snapshot', '--out', sf])
+        self.sh(log, [PY, os.path.join(ROOT, 'tools', 'platform_tie.py'), '--snapshot', '--out', sf, '--docs', os.path.join(WORK, 'db', 'profiles_db', 'alignments')])
         self.store.set('params/platform_sync', json.load(open(sf)), by='pipeline', quiet=True)
 
     def deck_export(self, log):
@@ -233,17 +239,22 @@ class Pipeline:
             self.record_platform_sync(log)
             return
         self.sh(log, [PY, tool, '--apply', '--db', db, '--sync', sf])
-        moved = 0
+        moved, kept = 0, []
+        started = json.load(open(os.path.join(WORK, 'db', 'versions.json')))   # the versions the tie worked from
         for f in glob.glob(os.path.join(db, '*.json')):
             p = 'alignments/' + os.path.basename(f)[:-5]
             cur = self.store.get(p)
             new = json.load(open(f))
             if cur is None or cur['data'] != new:
-                if self.store.set(p, new, by='pipeline', if_version=cur['version'] if cur else None) is None:
-                    log(f'{p}: saved during the Deck tie, left as saved; run the tie again')
+                # a profile saved since the tie started is Ben's: kept as he saved it, and the tie runs again for it
+                if self.store.set(p, new, by='pipeline', if_version=started.get(p, cur['version'] if cur else None)) is None:
+                    kept.append(p.split('/')[1])
                     continue
                 moved += 1
         log(f'{moved} saved profiles moved')
+        if kept:
+            log(f"saved while the tie ran, kept as saved: {', '.join(kept)}; the tie runs once more")
+            self.schedule('deck_tie', 'profiles saved during the tie', delay=0)
         self.sh(log, [PY, '-c', 'import sys, json; sys.path.insert(0, "tools"); import make_rer_profile_lines as m; '
                       'open("data/profile/rer/metro_rails.json", "w").write(json.dumps(m.metro_rails(), separators=(",", ":")))'])
         self.sh(log, [PY, os.path.join(ROOT, 'tools', 'make_profile_context.py')])

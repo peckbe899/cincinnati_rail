@@ -87,6 +87,11 @@ CHR = None        # the Chronology record (hub chronology/segments): each segmen
 STATIONS = {}     # Metro line -> its stations (for the Chronology's segments)
 
 
+def st_key(stations, i):
+    """the Profiles page's station key: the name, or name#idx where the name repeats on the line (records keyed by it)"""
+    nm = stations[i]['name']
+    return nm if sum(1 for s in stations if s['name'] == nm) == 1 else f"{nm}#{i}"
+
 def load_ms(cache):
     global MS, CHR
     for f in (os.path.join(cache, 'db/params_db/params/metro_structure.json'), os.path.join(HERE, '..', '..', 'data/profile/metro_structure.json')):
@@ -1205,7 +1210,7 @@ def main():
         for i, st in enumerate(d['stations']):
             c = st['c'] + (so[i] if i < len(so) and so[i] else 0)
             if len(sc):
-                out_t[st['name']] = h['samples'][int(np.argmin(np.abs(sc - c)))][2]
+                out_t[st_key(d['stations'], i)] = h['samples'][int(np.argmin(np.abs(sc - c)))][2]
         station_types[lid] = out_t
 
     # along each Metro line every 10 m (Deck UTM): the tube of the stretch's phase (the Chronology, else the structure record)
@@ -1474,7 +1479,7 @@ def main():
         'interline': combos, 'stripe_m': STRIPE_M,
         'platform_m': PLATFORM_M, 'platform_above_rail': PLATFORM_ABOVE_RAIL, 'struct': struct, 'box_margin': BOX_MARGIN,
         'assumed': ASSUMED, 'deck_rules': dd.get('constants'), 'issues': issues, 'approach': approach, 'track_geometry': geom, 'station_types': station_types, 'tube_points': tube_points, 'station_complexes': complexes, 'station_complexes_marked': complexes_marked,
-        'station_platforms': {lid: {st['name']: plat_type.get((lid, norm(st['name']))) or 'side' for st in d['stations']} for lid, d in lines.items() if d['sys'] != 'rer'},
+        'station_platforms': {lid: {st_key(d['stations'], i): plat_type.get((lid, norm(st['name']))) or 'side' for i, st in enumerate(d['stations'])} for lid, d in lines.items() if d['sys'] != 'rer'},
         'rules': ['Levels: the Rail Profiles editor; plan, tracks and platforms: the Mill Creek Deck',
                   'A platform on a shared pair (RER A/D, B C E ...) serves every line on it, at the level of the saved Profiles line (Ben, 2026-10-26: A and D share the Fountain Square platforms)',
                   'An interlined pair (RER A/D, B/D, B C E ...) is one pair of tracks, drawn once at the level of the line most of it follows and striped in every line\'s colour (Ben, 2026-10-27)',

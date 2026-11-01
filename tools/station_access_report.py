@@ -58,7 +58,7 @@ def main():
             x['proposed'] = proposed_stages(x, mp)
             x['line'] = lid
             x['c'] = round(float(s['c']), 1)
-            rec[lid][s['name']] = x
+            rec[lid][mp.key_of(s)] = x   # by station key (name#idx where a name repeats on the line)
             rows.append(x)
     if a.out:
         os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)

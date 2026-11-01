@@ -443,7 +443,7 @@ def test_platform_offset_and_removed_station(tmp_path):
     k = [s["name"] for s in mp.stations].index(slid)
     assert mp.stations[k]["c"] == pytest.approx(base.stations[4]["c"] + 50.0)
     assert mp.stations[k]["c0"] == base.stations[4]["c"]
-    assert mp.so[k + 1] == half  # clamped: the point is at the platform's end
+    assert mp.so[k + 1] == 9999.0  # kept as saved, never clamped (1 November): the page flags a slide past the Deck's 150 m
     cc = np.arange(mp.stations[k]["c"] - half + 1, mp.stations[k]["c"] + half - 1, 2.0)
     assert np.allclose(mp.rail_at(cc), mp.st[k], atol=1e-6)  # the slid platform is level
     assert len(mp.st) == len(names) - 1

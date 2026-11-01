@@ -244,7 +244,13 @@ def make_handler(hub):
         def do_PUT(self):
             u = urlparse(self.path).path
             if u == '/api/doc':
-                v = hub.store.set(self.q()['p'], self.body(), by=self.headers.get('X-By', 'page'))
+                # If-Match: the version the page last saw; a save against an older one is refused (409) so a record
+                # changed by the pipeline or another view is never overwritten blind (1 November, the realism audit A3)
+                im = self.headers.get('If-Match')
+                v = hub.store.set(self.q()['p'], self.body(), by=self.headers.get('X-By', 'page'), if_version=int(im) if im not in (None, '', '*') else None)
+                if v is None:
+                    cur = hub.store.get(self.q()['p'])
+                    return self.send(409, {'error': 'conflict', 'version': cur['version'] if cur else 0, 'by': cur['by'] if cur else None})
                 return self.send(200, {'version': v})
             return self.send(404, None)
 

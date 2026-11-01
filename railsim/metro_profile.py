@@ -283,6 +283,38 @@ class MetroProfile:
     def st_key(self, i: int) -> str:
         return self.key_of(self.stations[i])
 
+    def _reframe(self, doc: dict) -> dict:
+        """the saved profile in this route's frame (as the page's reframeDoc and the tie's reframe_doc, 1 November): where
+        its stations[].point_c differ from the route's station points, its bends, paints and tube forms are mapped station
+        by station onto the current points and each platform centre is kept as point plus slide"""
+        sts = doc.get("stations") if doc else None
+        if not sts or not isinstance(sts, list):
+            return doc
+        pairs = [(float(x["point_c"]), float(s["c"])) for x, s in zip(sts, self.stations)
+                 if isinstance(x, dict) and x.get("name") == s["name"] and isinstance(x.get("point_c"), (int, float))]
+        if not pairs or not any(abs(a - b) > 0.05 for a, b in pairs):
+            return doc
+        pairs.sort()
+        L0 = float(doc.get("length_m") or self.length)
+        xs = [0.0] + [p[0] for p in pairs] + [L0]
+        ys = [0.0] + [p[1] for p in pairs] + [float(self.length)]
+        m = lambda c: float(np.interp(c, xs, ys))
+        out = dict(doc)
+        out["pvi"] = [[round(m(float(c)), 1), z] for c, z in doc.get("pvi", [])]
+        out["ovr"] = [[round(m(float(a)), 1), round(m(float(b)), 1), *r] for a, b, *r in doc.get("ovr", [])]
+        if doc.get("tf"):
+            out["tf"] = [[round(m(float(a)), 1), round(m(float(b)), 1), *r] for a, b, *r in doc["tf"]]
+        so_old, so = doc.get("so") or {}, {}
+        for x, s in zip(sts, self.stations):
+            if not isinstance(x, dict) or x.get("name") != s["name"] or not isinstance(x.get("point_c"), (int, float)):
+                continue
+            k = self.key_of(s)
+            v = round((m(float(x["point_c"]) + float(so_old.get(k) or 0)) - float(s["c"])) * 2) / 2
+            if abs(v) > 0.05:
+                so[k] = v
+        out["so"] = so
+        return out
+
     # ------------------------------------------------------------- ground
     def ground_at(self, c):
         """Finished ground: surveyed + Deck re-grades + fill over painted cut and cover."""
@@ -653,11 +685,11 @@ class MetroProfile:
         if not doc:
             self._apply_locks()
             return
-        # platform slid along its drawn point: centre = point + so, the point stays on it
-        half = self.settings["platform"] / 2
+        doc = self._reframe(doc)
+        # platform slid along its drawn point: centre = point + so (up to the Deck's 150 m; a larger saved slide is kept
+        # as saved and flagged by the page, never clamped: 1 November)
         sod = doc.get("so") or {}
-        self.so = [min(half, max(-half, float(sod.get(self.st_key(i)) or 0.0)))
-                   if isinstance(sod.get(self.st_key(i)), (int, float)) else 0.0
+        self.so = [float(sod.get(self.st_key(i))) if isinstance(sod.get(self.st_key(i)), (int, float)) else 0.0
                    for i in range(len(self.stations))]
         sgd = doc.get("sg") or {}
         self.sg = [float(sgd[self.st_key(i)]) if isinstance(sgd.get(self.st_key(i)), (int, float)) else 0.0
@@ -999,13 +1031,16 @@ class MetroProfile:
         g = float(self.ground_at(s["c"]))
         d = g - z if math.isfinite(g) else math.nan
         t = self.type_at(s["c"], z)
-        ov = (getattr(self, "access_set", None) or {}).get(s["name"]) or {}
+        acc = getattr(self, "access_set", None) or {}
+        ov = acc.get(self.key_of(s)) or acc.get(s["name"]) or {}
         year = self.chr_station_year(self.id, s["name"])
         ph = None
         if year is not None:
             ph = next((p for y0, y1, p in (self.chr or {}).get("phase_years") or [] if y0 <= year <= y1), None)
         ph = ph or self._phase_at(s["c"])
-        island = (getattr(self, "platforms_kind", None) or {}).get(s["name"]) == "island" or ((getattr(self, "platforms_kind", None) or {}).get(s["name"]) is None and t == "shield")
+        pk = getattr(self, "platforms_kind", None) or {}
+        kind = pk.get(self.key_of(s), pk.get(s["name"]))
+        island = kind == "island" or (kind is None and t == "shield")
         DH = self.d_hall(island)
         others = self.complex_of(s)
         at_open = [m for m in others if m["year"] is not None and year is not None and m["year"] <= year]
@@ -1236,7 +1271,7 @@ class MetroProfile:
                     sd = {"t": "cutcover", "role": "box"}
                 else:
                     sd = {"t": "deep" if R["tbm"] else "shield", "role": "mined"}   # the drive's method
-                sd.update(s=s, ds=ds, island=sd["role"] == "box" and plats.get(s["name"]) == "island")
+                sd.update(s=s, ds=ds, island=sd["role"] == "box" and plats.get(self.key_of(s), plats.get(s["name"])) == "island")
                 ph = self._phase_at(s["c"])
                 for i in range(max(0, math.ceil((s["c"] - half) / step)), min(n - 1, math.floor((s["c"] + half) / step)) + 1):
                     P[i].update(t=sd["t"], role=sd["role"], stn=sd, ph=ph, R=R)

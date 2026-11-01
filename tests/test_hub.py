@@ -108,3 +108,35 @@ def test_pipeline_runs_the_platform_tie_on_a_profile_save():
     from pipeline import trigger_for
     assert trigger_for('alignments/Line_5') == 'platform_tie' and trigger_for('deck/layout') == 'deck_tie'
     assert trigger_for('params/metro_structure') == '3d'
+
+
+def test_seed_merge_keeps_a_profile_whole(tmp_path):
+    """a profile changed here and in the seed is kept as saved here, not mixed key by key (realism audit A7)"""
+    from store import Store
+    def write(root, path, data):
+        f = root / (path + '.json'); f.parent.mkdir(parents=True, exist_ok=True); f.write_text(json.dumps(data))
+    old, new = tmp_path / 'old', tmp_path / 'new'
+    write(old, 'alignments/L9', {'pvi': [[0, 1]], 'st': {'A': 5}})
+    st = Store(str(tmp_path / 'db.sqlite'))
+    st.load_dir(str(old))
+    st.set('alignments/L9', {'pvi': [[0, 2]], 'st': {'A': 5}}, 'page')          # Ben moved a bend
+    write(new, 'alignments/L9', {'pvi': [[0, 1]], 'st': {'A': 8}})            # the seed moved the station
+    rep = st.merge_dir(str(new))
+    assert st.get('alignments/L9')['data'] == {'pvi': [[0, 2]], 'st': {'A': 5}}
+    assert 'alignments/L9' in rep['kept'] and any(c['path'] == 'alignments/L9' for c in rep['conflicts'])
+
+
+def test_saved_profile_read_in_its_own_frame():
+    """a profile saved against older station points is mapped onto the current ones, platform centres kept (A1)"""
+    import importlib.util, os
+    spec = importlib.util.spec_from_file_location('rdr', os.path.join(str(Path(__file__).resolve().parent.parent), 'tools', 'rer_deck_routes.py'))
+    rdr = importlib.util.module_from_spec(spec); spec.loader.exec_module(rdr)
+    route = {'length_m': 1020.0, 'stations': [{'name': 'A', 'c': 120.0}, {'name': 'B', 'c': 620.0}]}
+    doc = {'length_m': 1000.0, 'so': {'B': 30.0}, 'pvi': [[0, 1], [100, 2], [600, 3], [1000, 4]], 'ovr': [[90, 130, 'cutcover']], 'tf': [[200, 500, 'twin']],
+           'stations': [{'name': 'A', 'point_c': 100.0, 'c': 100.0}, {'name': 'B', 'point_c': 600.0, 'c': 630.0}]}
+    out = rdr.reframe_doc(dict(doc), route)
+    assert out['reframed'] and out['length_m'] == 1020.0
+    assert out['so'] == {'B': 30.0}                      # the slide follows its point: the centre stays 30 m past it
+    assert [p[0] for p in out['pvi']] == [0, 120.0, 620.0, 1020.0] and out['ovr'][0][:2] == [108.0, 150.0] and out['tf'][0][:2] == [220.0, 520.0]
+    same = rdr.reframe_doc(dict(doc, stations=[{'name': 'A', 'point_c': 120.0, 'c': 120.0}, {'name': 'B', 'point_c': 620.0, 'c': 650.0}]), route)
+    assert 'reframed' not in same                         # already in the route's frame: untouched

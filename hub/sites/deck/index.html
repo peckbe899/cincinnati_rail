@@ -709,7 +709,8 @@ function defaultType(stop) {
   const lf = S.tfById.get(stop.pid), g = geomOf(lf), sp = projectOn(g.c, g.cs, stop.st.geometry.coordinates)[0], e = stopEdit(stop);
   const q = frameAt(g.c, g.cs, sp + (e && typeof e.o === 'number' ? e.o : stop.o0));
   // shallow shield only: the Profiles type at the station (hub params/station_types); with no types, the Deck's bored flag
-  const ty = ((ST_TYPES || {})[String(lf.properties.name || '').replace(' ', '_')] || {})[stop.st.properties.name];
+  const TY = (ST_TYPES || {})[String(lf.properties.name || '').replace(' ', '_')] || {}, nm = stop.st.properties.name;
+  const ty = TY[nm] ?? TY[Object.keys(TY).find((k) => k.startsWith(nm + '#'))];   // a name that repeats on the line is keyed name#idx
   stop._dt = (ST_TYPES ? ty === 'shield' : boredAt(lf.properties, q[0], q[1])) ? 'island' : stop.type0; stop._dtv = S.ver; return stop._dt;
 }
 const SLIDE_M = 150;   // a platform may slide up to 150 m either way from its station point (Ben, 24 October; was half a platform)
@@ -2479,9 +2480,38 @@ function changed(rec = true) { if (rec) record(); S.ver++; schedulePlots(); rend
 async function flush() {
   if (!S.dirty || S.saving || !S.docRef) return; S.saving = true; S.dirty = false; setStatus('saving', 'Saving');
   const body = { streets: S.edits.streets, blocks: S.edits.blocks, transit: S.edits.transit, stations: S.edits.stations, plots: S.edits.plots, plotOps: S.edits.plotOps || [], updated: new Date().toISOString(), layout: 'deck.json' };
-  try { await S.docRef.set(JSON.parse(JSON.stringify(body))); setStatus('saved', 'Saved'); }
-  catch (e) { if (e && e.code === 'invalid_argument') { S.canWrite = false; setStatus('readonly', 'Read only'); renderSel(); renderEdits(); } else { setStatus('error', 'Not saved, will retry'); S.dirty = true; setTimeout(flush, 2500 + Math.random() * 1500); } }
+  try { const out = await S.docRef.set(JSON.parse(JSON.stringify(body)), { ifVersion: S.docVer }); if (out && out.version != null) S.docVer = out.version; S.base = JSON.parse(JSON.stringify(body)); setStatus('saved', 'Saved'); }
+  catch (e) {
+    if (e && e.code === 'invalid_argument') { S.canWrite = false; setStatus('readonly', 'Read only'); renderSel(); renderEdits(); }
+    else if (e && e.code === 'conflict') {   // saved elsewhere meanwhile (the hub's platform tie, another view): theirs, with the entries changed here on top
+      try { const snap = await S.docRef.get(); const theirs = snap.exists ? snap.data() : {}; S.edits = mergeEdits(S.base, S.edits, theirs); S.base = JSON.parse(JSON.stringify(theirs)); S.docVer = snap.version; S.dirty = true; S.ver++; S.live = null; renderEdits(); renderSel(); redraw(); setStatus('saving', 'Merged with a save made elsewhere'); setTimeout(flush, 200); }
+      catch (e2) { setStatus('error', 'Not saved: changed elsewhere, will retry'); S.dirty = true; setTimeout(flush, 4000); }
+    }
+    else { setStatus('error', 'Not saved, will retry'); S.dirty = true; setTimeout(flush, 2500 + Math.random() * 1500); } }
   finally { S.saving = false; if (S.dirty) flush(); }
+}
+// theirs, with every entry this page changed since the layout it loaded (base) put on top: streets, blocks, transit,
+// plots by id; stations by id, then by key, then per platform (s.<pid>), so the platform tie's offset on one platform
+// and an edit here on another of the same station both survive (1 November, the realism audit A3)
+function mergeEdits(base, mine, theirs) {
+  const J = (x) => JSON.stringify(x === undefined ? null : x), cp = (x) => JSON.parse(JSON.stringify(x === undefined ? null : x));
+  const out = { streets: cp(theirs.streets || {}), blocks: cp(theirs.blocks || {}), transit: cp(theirs.transit || {}), stations: cp(theirs.stations || {}), plots: cp(theirs.plots || {}), plotOps: cp(theirs.plotOps || []) };
+  const over = (b, m, t, depth) => {   // keys changed here win; unchanged here take theirs
+    const r = cp(t || {});
+    for (const k of new Set([...Object.keys(b || {}), ...Object.keys(m || {})])) {
+      const bv = (b || {})[k], mv = (m || {})[k];
+      if (J(bv) === J(mv)) continue;
+      if (mv === undefined) { delete r[k]; continue; }
+      const tv = r[k];
+      r[k] = depth > 0 && mv && typeof mv === 'object' && !Array.isArray(mv) && tv && typeof tv === 'object' && !Array.isArray(tv) ? over(bv && typeof bv === 'object' ? bv : {}, mv, tv, depth - 1) : cp(mv);
+    }
+    return r;
+  };
+  base = base || {}; mine = mine || {};
+  for (const c of ['streets', 'blocks', 'transit', 'plots']) out[c] = over(base[c], mine[c], out[c], 0);
+  out.stations = over(base.stations, mine.stations, out.stations, 2);
+  if (J(base.plotOps || []) !== J(mine.plotOps || [])) out.plotOps = cp(mine.plotOps || []);
+  return out;
 }
 function renderTracks() {
   const dl = $('trkSummary'); if (!dl) return; dl.textContent = '';
@@ -2760,7 +2790,7 @@ async function boot() {
   try { S.nw = await fetch('norwood.json').then(r => r.json()); for (const f of S.nw.features) f._bb = structBB(f.geometry); } catch (e) { S.nw = null; }
   try { S.airport = await fetch('airport.json').then(r => r.json()); for (const f of S.airport.features) f._bb = featBB(f); } catch (e) { S.airport = null; }
   try { const we = await fetch('basin.json').then(r => r.json()); S.we = we; for (const f of we.features) S.deck.features.push(f); } catch (e) { S.we = null; }
-  indexLayers(); if (/[?&]debug\b/.test(location.search)) { window.__S = S; window.__kml = kml; window.__fn = { fit, redraw, jOf, ov, partsJ, uunion, applyOps, pushOp, joInfo, streetRuns, mergeStreets, touching, dupScan, streetRun, stName, stLabel, deleteStreets, select, feats, streetCoords, lenOf, sameCourse }; }
+  indexLayers(); if (/[?&]debug\b/.test(location.search)) { window.__S = S; window.__kml = kml; window.__fn = { fit, redraw, flush, mergeEdits, jOf, ov, partsJ, uunion, applyOps, pushOp, joInfo, streetRuns, mergeStreets, touching, dupScan, streetRun, stName, stLabel, deleteStreets, select, feats, streetCoords, lenOf, sameCourse }; }
   fetch('plots.json').then(r => r.json()).then(D => { S.plots0 = decodePlots(D); setPlotNote(fmt(S.plots0.length) + ' plots loaded'); schedulePlots(0); }).catch(e => { console.error(e); setPlotNote('Plots could not be loaded'); });
   try { S.t12 = await fetch('tiles12/index.json').then(r => r.json()); } catch (e) { S.t12 = null; }
   try { S.t22 = await fetch('tiles_22/index.json').then(r => r.json()); S.t22OvMeta = await fetch('tiles_22/overview.json').then(r => r.json()); } catch (e) { S.t22 = null; }
@@ -2790,6 +2820,7 @@ async function connect() {
     const d = snap.exists ? snap.data() : null;
     const cp = x => JSON.parse(JSON.stringify(x || {}));
     S.edits = d ? { streets: cp(d.streets), blocks: cp(d.blocks), transit: cp(d.transit), stations: cp(d.stations), plots: cp(d.plots), plotOps: Array.isArray(d.plotOps) ? JSON.parse(JSON.stringify(d.plotOps)) : [] } : { streets: {}, blocks: {}, transit: {}, stations: {}, plots: {}, plotOps: [] };
+    S.base = JSON.parse(JSON.stringify(S.edits)); S.docVer = snap.version;   // what this page's edits are measured from (mergeEdits) and the version a save carries
     S.ver++; hist.last = snapEdits(); schedulePlots(0); renderEdits(); renderSummary(); renderSel(); redraw();
   }, () => setStatus('error', 'Live sync stopped; reload to reconnect'));
   renderEdits(); renderSel(); renderHist();

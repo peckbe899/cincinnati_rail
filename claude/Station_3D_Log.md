@@ -459,3 +459,43 @@ Published: page version 6 and the snapshot (35 parts), read back at view level.
 - Ben's export: unbuildable tube without cover 1.7 km to 0.5 km (Line 1 0.15, Line 7 0.33, Line 9 0.03).
 - Checked on a test hub: Findlay (Line 3) slid 30 m in the Profiles; the platform tie moved the Deck platform; the Deck tie
   found every platform matching and left the profile as set (point 13+840, slide 30). Before the fix the slide was cleared.
+
+## 2026-11-01: realism audit, group 1: a record never changes without Ben (A1 to A9)
+
+Ben: "the deck tie keeps undoing my changes ... find a better way"; then the realism audit (`claude/Realism_Audit_2026-11-01.md`),
+group 1 approved. The ways the system could still change what he saved, and what each became:
+
+- A1, the page kept the old route while the tie moved the profile under it (the real ping-pong). Two rules. The hub's
+  `files` event for the Profiles now makes the page refetch the route files, links, context and indexes and rebuild the
+  current line on them (`refetchRoutes`: unsaved edits saved first, undo cleared, view kept, the shim's "New data" button
+  cleared). And a saved profile is read in its own frame: it carries the station points it was saved against
+  (`stations[].point_c`); where they differ from the route's, `reframeDoc` (page) and `reframe_doc` (the tie) map its
+  bends, paints and tube forms station by station onto the current points and keep every platform centre as point plus
+  slide, so a slide is never read against the wrong point whichever order a save and a tie happen in.
+- A2, the Deck tie's version check read the version after the run. `prepare()` now records every record's version
+  (`hub/work/db/versions.json`) and the tie writes a profile only against the version it started from; a profile Ben saved
+  during the tie is kept as he saved it and the tie runs once more (reframed, A1).
+- A3, saves carried no version. `PUT /api/doc` honours `If-Match` (409 on a mismatch); the shim sends the version the
+  page applied (`set(data, {ifVersion})`, else the last seen). The Profiles page keeps `S.docVer` per profile (set only
+  when it applies a doc, so a doc that arrives while it holds edits does not advance it) and on a conflict shows a banner:
+  Keep mine (save over) or Take theirs (refetch and reload). The Deck page keeps the layout it loaded (`S.base`) and on a
+  conflict takes the saved record and puts the entries it changed back on top (`mergeEdits`: streets, blocks, transit
+  and plots by id; stations by id, then key, then per platform, so the platform tie's offset on one platform and an edit
+  on another survive together), then saves again. The shared stretches copied to linked routes carry versions too.
+- A4, `move_doc` now moves the tube-form paints (`tf`) with the route.
+- A5, one slide limit: the Deck's 150 m (`SLIDE_M`) in the Profiles too; a saved slide is never clamped on load, one past
+  the limit is a Platform slide issue.
+- A6, the platform tie pushes a slide only where it changed since the last agreement (`params/platform_sync` now records
+  the Profiles slides beside the Deck offsets); a platform moved on both sides since is logged as BOTH MOVED with which
+  side won (the more recent, as before).
+- A7, the seed merge keeps a profile changed on both sides whole as Ben's (a profile is one design); the Deck layout still
+  merges entry by entry.
+- A8, a canon lock fixes the level only (it no longer zeroes the slide or un-deletes a station on every load);
+  `copyStretch` carries the platform centre to the other route instead of a signed slide.
+- A9, station-keyed records use the page's station key (`name#idx` where a name repeats: Line 8 Cincinnati State) in
+  the 3D build (`station_types`, `station_platforms`), the access report, the Python copy and the pages (read with a
+  fallback to the bare name; the Deck's island default too).
+- Checked on the test hub (Playwright): a Line 3 profile whose points sit 20 m earlier is read back at the same slides
+  and bends; the files event rebuilds the line with the view kept and undo cleared; a save after a pipeline write while
+  editing is refused and the banner's Keep mine writes the next version; the Deck merges a tie's platform offset with an
+  edit of its own. Tests: `test_seed_merge_keeps_a_profile_whole`, `test_saved_profile_read_in_its_own_frame`.

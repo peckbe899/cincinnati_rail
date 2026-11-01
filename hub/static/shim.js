@@ -5,7 +5,8 @@
   const api = (u, o) => fetch(u, o).then((r) => { if (!r.ok) throw Object.assign(new Error(r.status + ' ' + u), { code: r.status }); return r.status === 204 ? null : r.json(); });
   const enc = encodeURIComponent;
   const docL = new Map(), collL = new Map();   // path -> Set(cb), collection -> Set(cb)
-  const snapDoc = (p, r) => ({ id: p.split('/').pop(), ref: { path: p }, exists: !!r, data: () => (r ? JSON.parse(JSON.stringify(r.data)) : undefined), metadata: { hasPendingWrites: false, fromCache: false } });
+  const VER = new Map();   // path -> the version last seen (sent as If-Match on a set, so a stale save is refused, not applied)
+  const snapDoc = (p, r) => { if (r && r.version != null) VER.set(p, r.version); return { id: p.split('/').pop(), ref: { path: p }, exists: !!r, version: r ? r.version : 0, data: () => (r ? JSON.parse(JSON.stringify(r.data)) : undefined), metadata: { hasPendingWrites: false, fromCache: false } }; };
   const fireDoc = async (p) => { const cbs = docL.get(p); if (!cbs || !cbs.size) return; const r = await api('/api/doc?p=' + enc(p)); cbs.forEach((cb) => { try { cb(snapDoc(p, r)); } catch (e) { console.error(e); } }); };
   const fireColl = async (c) => {
     const cbs = collL.get(c); if (!cbs || !cbs.size) return;
@@ -18,7 +19,15 @@
   const doc = (p) => ({
     id: p.split('/').pop(), path: p,
     get: async () => snapDoc(p, await api('/api/doc?p=' + enc(p))),
-    set: (data) => api('/api/doc?p=' + enc(p), { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) }),
+    set: async (data, opts) => {
+      const h = { 'content-type': 'application/json' }; const v = opts && opts.ifVersion != null ? opts.ifVersion : VER.get(p);   // the version the page applied, else the last seen
+      if (v != null && !(opts && opts.force)) h['If-Match'] = String(v);
+      const r = await fetch('/api/doc?p=' + enc(p), { method: 'PUT', headers: h, body: JSON.stringify(data) });
+      if (r.status === 409) { const j = await r.json(); fireDoc(p).catch(console.error); throw Object.assign(new Error('conflict: ' + p + ' is at version ' + j.version + ' (saved by ' + (j.by || 'another view') + ')'), { code: 'conflict', version: j.version, by: j.by }); }
+      if (!r.ok) throw Object.assign(new Error(r.status + ' ' + p), { code: r.status });
+      const out = await r.json(); if (out && out.version != null) VER.set(p, out.version); return out;
+    },
+    version: () => VER.get(p),
     update: (data) => api('/api/doc?p=' + enc(p), { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) }),
     delete: () => api('/api/doc?p=' + enc(p), { method: 'DELETE' }),
     onSnapshot: (cb) => listen(docL, p, cb, fireDoc),
@@ -49,7 +58,7 @@
       const c = ev.p.includes('/') ? ev.p.slice(0, ev.p.lastIndexOf('/')) : '';
       fireColl(c).catch(console.error);
     } else if (ev.t === 'run') { bar.runs[ev.job] = ev.state; drawBar(); }
-    else if (ev.t === 'files' && ev.site === SITE) { filesChanged = true; drawBar(); }
+    else if (ev.t === 'files' && ev.site === SITE) { filesChanged = true; drawBar(); }   // a page that reloads its files itself says so with a 'hub-files-handled' event
     window.dispatchEvent(new CustomEvent('hub-event', { detail: ev }));
   };
   const onOpen = () => { offline = false; drawBar(); }, onErr = () => { offline = true; drawBar(); };
@@ -65,6 +74,7 @@
   // ---- the hub bar ----
   const SITE = location.pathname.split('/')[1] || '';
   let filesChanged = false, offline = false;
+  window.addEventListener('hub-files-handled', () => { filesChanged = false; drawBar(); });
   const VIEWS = [['deck', 'Deck'], ['profiles', 'Profiles'], ['3d', '3D'], ['chronology', 'Chronology'], ['access', 'Access']];
   const HOME = '<a href="/" title="Home: the hub page" style="display:inline-flex;align-items:center;gap:5px;background:#fff;color:#14181c;'
     + 'text-decoration:none;font-weight:700;padding:3px 10px 3px 8px;border-radius:999px;margin-right:4px">'

@@ -385,7 +385,7 @@ function copyStretch(me, t, sh) {
     const k = t.sts.findIndex((q) => q.name === s.name && Math.abs(q.c - map(s.c)) < 150); if (k < 0) return;
     t.al.st[k] = me.al.st[i];
     if (t.al.sg) t.al.sg[k] = sh.sign * ((me.al.sg && me.al.sg[i]) || 0);
-    if (t.al.so) t.al.so[k] = sh.sign * ((me.al.so && me.al.so[i]) || 0);
+    if (t.al.so) { const q = t.sts[k]; const v = Math.round((map(s.c) - q.c0) * 2) / 2; t.al.so[k] = Math.abs(v) > 0.05 ? v : 0; }   // the same platform centre on the other route (1 November)
     if (t.al.mode && me.al.mode) t.al.mode[k] = me.al.mode[i];
   });
   return key() !== before;
@@ -398,7 +398,7 @@ function docFor(t) {
   try { return serialize(); } finally { VERTS = keepV; S.summary = keepSum; }
 }
 async function writeDoc(id, body) {
-  if (S.db) { await S.db.doc(`alignments/${id}`).set(body); S.saved[id] = body; }
+  if (S.db) { const out = await S.db.doc(`alignments/${id}`).set(body, { ifVersion: S.docVer[id] }); if (out && out.version != null) S.docVer[id] = out.version; S.saved[id] = body; }
   else { try { localStorage.setItem(`profile:${id}`, JSON.stringify(body)); } catch {} S.saved[id] = body; }
 }
 function linkedRoute(pid, touched) {
@@ -422,7 +422,8 @@ async function propagateLinks() {
     if (!t.changed) continue;
     const body = withLine(t.d, 'rer', () => docFor(t));
     if (sig(body) === sig(S.saved[pid])) continue;      // nothing changed once its own canon is applied
-    await writeDoc(pid, body); done.push(pid);
+    try { await writeDoc(pid, body); done.push(pid); }
+    catch (e) { if (e && e.code === 'conflict') { flash(`${routeName(pid)}: saved elsewhere meanwhile, the shared stretch was not copied; it will be on your next save`); continue; } throw e; }
   }
   if (done.length) refreshDefaultDocs();
   return done;
@@ -486,9 +487,9 @@ function complexOf(s) {
 const OPEN_T2 = new Set(['atgrade', 'trough', 'elevated']);
 function stationAccess(s) {
   const i = S.stations.indexOf(s), z = S.align.st[i], g = groundAt(s.c), d = isFinite(g) ? g - z : NaN, t = typeAt(s.c, z), half = settings.platform / 2, plat = settings.platform;
-  const ov = ST_ACCESS && ST_ACCESS[S.data.id] && ST_ACCESS[S.data.id][s.name] || null;
+  const ov = ST_ACCESS && ST_ACCESS[S.data.id] && (ST_ACCESS[S.data.id][keyOf(s)] || ST_ACCESS[S.data.id][s.name]) || null;
   const year = chrStationYear(S.data.id, s.name), ph = year != null ? (chrPhaseOfYear(year) || phaseAt(s.c)) : phaseAt(s.c);
-  const island = platKind(s.name, t) === 'island', DH = dHall(island), others = complexOf(s);
+  const island = platKind(s, t) === 'island', DH = dHall(island), others = complexOf(s);
   const atOpen = others.filter((m) => m.year != null && year != null && m.year <= year), later = others.filter((m) => m.year != null && year != null && m.year > year);
   const flags = []; let rule;
   if (OPEN_T2.has(t)) rule = 'surface';
@@ -568,7 +569,7 @@ const S = {
   stations: [], rivers: [], crossings: [], align: null, canonSecs: [], canonFixed: {}, canonLocks: [],
   view: { c0: 0, c1: 1 }, units: 'm', tool: 'move', brush: 'auto', show: 'both',
   sel: null, hoverC: null, drag: null, yFrozen: null,
-  saved: {}, dirty: false, saving: false, hist: [], fut: [], canonModes: {}, rerData: {}, defaultDocs: {}, metroRails: {},
+  saved: {}, docVer: {}, dirty: false, saving: false, hist: [], fut: [], canonModes: {}, rerData: {}, defaultDocs: {}, metroRails: {},
   db: null, user: null, canWrite: null, downloads: null, store: 'none',
 };
 let colors = {};
@@ -793,8 +794,7 @@ function applyLocks(al) {
     al.ovr = cutRange(al.ovr, lk.lo, lk.hi).concat((lk.ovr || []).map(([a, b, t]) => [+a, +b, t])).sort((a, b) => a[0] - b[0]);
     Object.entries(lk.st || {}).forEach(([name, z]) => {
       const i = S.stations.findIndex((s) => s.name === name); if (i < 0) return;
-      al.st[i] = z; if (al.sg) al.sg[i] = 0; if (al.so) al.so[i] = 0;
-      if (al.del) al.del = al.del.filter((k) => k !== keyOf(S.stations[i]));
+      al.st[i] = z; if (al.sg) al.sg[i] = 0;   // the level is canon's; the slide and a removal stay Ben's (1 November)
     });
   }
   return JSON.stringify([al.pvi, al.st, al.sg, al.ovr, al.so, al.del]) !== before;
@@ -1154,7 +1154,7 @@ function pointType(c, z) {   // one chainage on its own: the type, or for a Metr
 // (it does not count toward a drive). Island or side from the 3D build (hub params/station_platforms), else island
 // where the station is shallow shield (the Deck's default).
 let ST_PLAT = null, ST_CPLX = null, ST_ACCESS = null;   // params/station_platforms, params/station_complexes, params/station_access
-const platKind = (name, t) => { const v = ST_PLAT && ST_PLAT[S.data.id] && ST_PLAT[S.data.id][name]; return v || (t === 'shield' ? 'island' : 'side'); };
+const platKind = (s, t) => { const R = ST_PLAT && ST_PLAT[S.data.id]; const v = R && (R[keyOf(s)] ?? R[s.name]); return v || (t === 'shield' ? 'island' : 'side'); };   // by station key (name#idx where a name repeats)
 // the minimum radius by building phase (Ben, 28 October: 40, 55, 70 m); where an approach runs into a curve too tight for a
 // single arc at it, a short straight after the platform (or box) end, computed by the 3D build from the plan's curvature
 // (hub params/approach_extra; Ben: option A), lengthens the box
@@ -1250,7 +1250,7 @@ function solveTypes(V) {
     else if (q.role !== 'tunnel') st = { t: q.t, role: q.role === 'river' ? 'open' : q.role };
     else if (ds <= R.ccMax) st = { t: 'cutcover', role: 'box' };
     else st = { t: methodAt(s.c), role: 'mined' };   // the drive's method, set again with the drive
-    const sd = { s, ...st, ds, island: st.role === 'box' && platKind(s.name, 'cutcover') === 'island' };
+    const sd = { s, ...st, ds, island: st.role === 'box' && platKind(s, 'cutcover') === 'island' };
     stOf.push(sd);
     for (let i = Math.max(0, Math.ceil((s.c - half) / step)); i <= Math.min(n - 1, Math.floor((s.c + half) / step)); i++) Object.assign(P[i], { t: st.t, role: st.role, stn: sd, ph: phaseAt(s.c), R });
     if (sd.role === 'box' && ds > R.ccMax + 0.05) flags.push({ c0: s.c - half, c1: s.c + half, kind: 'Tunnel method', text: `${esc(s.name)} painted cut and cover ${fmtZ(ds, 1)} ${uLbl()} down, deeper than the cut-and-cover limit (${fmtZ(R.ccMax, 2)} ${uLbl()}, Phase ${P[stIdx(s.c)].ph})` });
@@ -1536,6 +1536,39 @@ function surfacePvis(st, md) {
   }
   return out.sort((x, y) => x.c - y.c);
 }
+// A saved profile carries the station points it was saved against (stations[].point_c). When the route under it has
+// since moved (a Deck tie while the page held the old route, or a profile saved during the tie), its chainages are in
+// the old frame: map them to the current points station by station, keeping every platform centre, so a slide is
+// never read against the wrong point (1 November, the realism audit A1; the tie does the same in rer_deck_routes.py)
+const SLIDE_M = 150;   // a platform may slide up to 150 m either way from its station point (the Deck's limit, Ben 24 October)
+function reframeDoc(doc) {
+  if (!doc || !Array.isArray(doc.stations) || !doc.stations.length) return false;
+  const base = baseStations(S.data), byKey = {};
+  base.forEach((st) => { byKey[keyOf(st)] = st; });
+  const del = Array.isArray(doc.del) ? doc.del : [], live = base.filter((st) => !del.includes(keyOf(st)));
+  const pairs = [];
+  doc.stations.forEach((x, i) => {
+    const st = (i < live.length && live[i].name === x.name) ? live[i] : null;
+    if (st && typeof x.point_c === 'number') pairs.push([x.point_c, st.c0]);
+  });
+  if (!pairs.length || !pairs.some(([a, b]) => Math.abs(a - b) > 0.05)) return false;
+  pairs.sort((a, b) => a[0] - b[0]);
+  const L0 = typeof doc.length_m === 'number' ? doc.length_m : S.L, xs = [0, ...pairs.map((p) => p[0]), L0], ys = [0, ...pairs.map((p) => p[1]), S.L];
+  const m = (c) => { let i = 1; while (i < xs.length - 1 && xs[i] < c) i++; const t = xs[i] === xs[i - 1] ? 0 : (c - xs[i - 1]) / (xs[i] - xs[i - 1]); return ys[i - 1] + t * (ys[i] - ys[i - 1]); };
+  const r1 = (v) => Math.round(v * 10) / 10;
+  if (Array.isArray(doc.pvi)) doc.pvi = doc.pvi.map(([c, z]) => [r1(m(+c)), z]);
+  if (Array.isArray(doc.ovr)) doc.ovr = doc.ovr.map(([a, b, ...r]) => [r1(m(+a)), r1(m(+b)), ...r]);
+  if (Array.isArray(doc.tf)) doc.tf = doc.tf.map(([a, b, ...r]) => [r1(m(+a)), r1(m(+b)), ...r]);
+  const so = {};
+  doc.stations.forEach((x, i) => {
+    const st = (i < live.length && live[i].name === x.name) ? live[i] : null; if (!st) return;
+    const k = keyOf(st); if (typeof x.point_c !== 'number') return;
+    const centre = m(x.point_c + (+(doc.so || {})[k] || 0));   // the point plus the slide, as saved (stations[].c is a summary)
+    const v = Math.round((centre - st.c0) * 2) / 2; if (Math.abs(v) > 0.05) so[k] = v;
+  });
+  doc.so = so; doc.length_m = S.L; doc.reframed = true;
+  return true;
+}
 function alignFromDoc(doc) {
   const del = doc && Array.isArray(doc.del) ? doc.del.filter((k) => typeof k === 'string') : [];
   S.stations = deriveStations(del, []); buildCanon();
@@ -1544,8 +1577,9 @@ function alignFromDoc(doc) {
   const al = defaultAlign(modes);
   al.del = del; al.so = S.stations.map(() => 0);
   if (!doc) { ensureJunctionPvis(al, S.stations); return al; }
-  const half = settings.platform / 2, soKey = doc.so || {};
-  al.so = S.stations.map((_, i) => clamp(+soKey[stKey(i)] || 0, -half, half));
+  reframeDoc(doc);
+  const soKey = doc.so || {};
+  al.so = S.stations.map((_, i) => +soKey[stKey(i)] || 0);   // not clamped: a slide past the limit is flagged (Platform slide), never moved
   const byKey = doc.st || {};
   S.stations.forEach((s, i) => { const k = stKey(i); if (typeof byKey[k] === 'number') al.st[i] = byKey[k]; });
   al.gapfill = Array.isArray(doc.gapfill) ? doc.gapfill.filter((k) => typeof k === 'string') : [];
@@ -1761,6 +1795,7 @@ function designChecks() {
     else issues.push({ kind: 'Platform curve', warn: true, c: st.c, text: pc.level === 'error' ? `${what}: named exception with gap fillers` : what });
   });
   if (!isRer() && S.data.path) drawingFlags(S.data).forEach((x) => issues.push(x));
+  S.stations.forEach((s, i) => { const v = (S.align.so && S.align.so[i]) || 0; if (Math.abs(v) > SLIDE_M + 0.05) issues.push({ kind: 'Platform slide', c: s.c, text: `${esc(s.name)} platform slid ${v.toFixed(0)} m from its point (the Deck allows ${SLIDE_M} m); slide it back or move the station point on the Deck` }); });
   for (let i = 1; i < S.stations.length; i++) { const A = S.stations[i - 1], B = S.stations[i]; if (Math.abs(B.c - A.c) < settings.platform - 0.5 && A.c0 !== B.c0) issues.push({ kind: 'Platform overlap', c: (A.c + B.c) / 2, text: `${esc(A.name)} and ${esc(B.name)} platforms overlap (centres ${Math.abs(B.c - A.c).toFixed(0)} m apart); slide one or remove a station` }); }
   // drainage: tunnel grades flatter than drainMin outside platforms; low points need sumps
   let sumps = 0, lastSign = 0, lastC = 0;
@@ -1796,7 +1831,7 @@ function designChecks() {
 }
 // issue kinds (Ben, 31 October: the warnings all looked the same): one colour per kind on its tag; the bar on the left is the
 // severity (error red, warning amber, note grey). A crossing with a line not marked "Profile set" is listed apart.
-const ISS_CAT = { Grade: '#d9822b', 'Curve grade': '#d9822b', Clearance: '#b0479e', Context: '#b0479e', Cover: '#8a6d3b', 'Thin cover': '#8a6d3b', River: '#1f8fa0', 'Tunnel method': '#3f6fb5', 'Low cover': '#3f6fb5', Regrade: '#3f6fb5', 'Tube form': '#6a5acd', 'Tube choice': '#6a5acd', 'Approach box': '#7f8c8d', Canon: '#7a8c2e', Painted: '#7a8c2e', Drawing: '#95a5a6', 'Platform curve': '#a04070', 'Vertical curve': '#b9770e', Drainage: '#2e86c1', Road: '#b03a2e', Access: '#2a9d8f' };
+const ISS_CAT = { Grade: '#d9822b', 'Curve grade': '#d9822b', Clearance: '#b0479e', Context: '#b0479e', Cover: '#8a6d3b', 'Thin cover': '#8a6d3b', River: '#1f8fa0', 'Tunnel method': '#3f6fb5', 'Low cover': '#3f6fb5', Regrade: '#3f6fb5', 'Tube form': '#6a5acd', 'Tube choice': '#6a5acd', 'Approach box': '#7f8c8d', Canon: '#7a8c2e', Painted: '#7a8c2e', Drawing: '#95a5a6', 'Platform curve': '#a04070', 'Platform slide': '#a04070', 'Vertical curve': '#b9770e', Drainage: '#2e86c1', Road: '#b03a2e', Access: '#2a9d8f' };
 const ISS_HIDE = (() => { try { return new Set(JSON.parse(localStorage.getItem('profile:issHide') || '[]')); } catch { return new Set(); } })();
 const sevOf = (x) => x.sev || (x.warn ? 'warn' : 'error');
 const issShown = (x) => x.grp !== 'pending' && !ISS_HIDE.has('k:' + x.kind) && !ISS_HIDE.has('s:' + sevOf(x));
@@ -2644,8 +2679,8 @@ $('#checkOut').addEventListener('click', (e) => { const a = e.target.closest('[d
 async function setStationAccess(s, type) {
   if (S.canWrite === false) return;
   const rec = JSON.parse(JSON.stringify(ST_ACCESS || {})); rec[S.data.id] = rec[S.data.id] || {};
-  const cur = rec[S.data.id][s.name] || {};
-  if (type) rec[S.data.id][s.name] = { ...cur, type, source: 'Ben' }; else { delete cur.type; delete cur.source; if (Object.keys(cur).length) rec[S.data.id][s.name] = cur; else delete rec[S.data.id][s.name]; }
+  const k = keyOf(s), cur = rec[S.data.id][k] || rec[S.data.id][s.name] || {}; if (k !== s.name) delete rec[S.data.id][s.name];
+  if (type) rec[S.data.id][k] = { ...cur, type, source: 'Ben' }; else { delete cur.type; delete cur.source; if (Object.keys(cur).length) rec[S.data.id][k] = cur; else delete rec[S.data.id][k]; }
   ST_ACCESS = rec; changed(false);
   try { if (S.db) await S.db.doc('params/station_access').set(rec); else localStorage.setItem('profile:station_access', JSON.stringify(rec)); flash(type ? `${s.name}: ${ACCESS[type].label} (Ben)` : `${s.name}: back to the rules`); } catch (e) { flash('Could not save the access type'); }
 }
@@ -2675,7 +2710,7 @@ function updateSelCard() {
         <dt>Hall room</dt><dd>${a.dHall != null ? `needs ${fmtZ(a.dHall, 2)} ${uLbl()} of rail depth (${a.island ? 'island' : 'side'} box); ${fmtZ(a.d, 2)} here` : '–'}</dd>`; })() : ''}
         <dt>Grade in / out</dt><dd>${fmtG(gin)} / ${fmtG(gout)}</dd>
         <dt>Platform</dt><dd>${fmtCh(s.c - half)} to ${fmtCh(s.c + half)}</dd>
-        <dt><label for="inPos">Point from platform start (m)</label></dt><dd><input id="inPos" type="number" step="0.5" min="0" max="${(2 * half).toFixed(1)}" value="${(half - ((S.align.so && S.align.so[sel.i]) || 0)).toFixed(1)}" ${ro ? 'disabled' : ''}></dd>
+        <dt><label for="inPos">Point from platform start (m)</label></dt><dd><input id="inPos" type="number" step="0.5" min="${(half - SLIDE_M).toFixed(1)}" max="${(half + SLIDE_M).toFixed(1)}" value="${(half - ((S.align.so && S.align.so[sel.i]) || 0)).toFixed(1)}" ${ro ? 'disabled' : ''}></dd>
 ${isRer() ? '' : (() => { const pc = platformCurve(sel.i); return `<dt>Platform curve</dt><dd>${fmtR(pc.R)}${pc.level ? ` · <span style="color:var(${pc.level === 'error' && !pc.gapfill ? '--warn' : '--muted'})">${pc.level === 'error' ? (pc.gapfill ? 'exception, gap fillers' : 'ERROR') : 'WARNING'}</span>` : ''}</dd>
         <dt>Extra gap out / in</dt><dd>${fmtGap(pc.out)} / ${fmtGap(pc.inn)}</dd>${pc.turns.s ? `
         <dt>Drawing</dt><dd><span style="color:var(${pc.turns.s === 'error' ? '--warn' : '--muted'})">S-curve (${pc.turns.pos.toFixed(0)}° / ${(-pc.turns.neg).toFixed(0)}°)</span></dd>` : ''}`; })()}
@@ -2814,13 +2849,14 @@ async function save() {
   if (S.saving) { clearTimeout(saveTimer); saveTimer = setTimeout(save, 600); return; }
   S.saving = true; const body = serialize(); const id = S.data.id; S.dirty = false;
   try {
-    if (S.db) { setStatus('saving', 'Saving…'); syncSaveBtn(); await S.db.doc(`alignments/${id}`).set(body); S.saved[id] = body; S.lastSaved = new Date();
+    if (S.db) { setStatus('saving', 'Saving…'); syncSaveBtn(); const out = await S.db.doc(`alignments/${id}`).set(body, { ifVersion: S.docVer[id] }); if (out && out.version != null) S.docVer[id] = out.version; S.saved[id] = body; S.lastSaved = new Date();
       const linked = await propagateLinks();
       if (S.dirty) setStatus('saving', 'Unsaved changes'); else setStatus('saved', linked.length ? `Saved, with ${linked.map(routeName).join(', ')}` : 'Saved'); }
     else { try { localStorage.setItem(`profile:${id}`, JSON.stringify(body)); S.saved[id] = body; S.lastSaved = new Date(); await propagateLinks(); setStatus('saved', 'Saved in this browser'); } catch { setStatus('error', 'Not saved'); } }
   } catch (e) {
     S.dirty = true;
     if (e && e.code === 'invalid_argument' && S.canWrite == null) { S.canWrite = false; setStatus('readonly', 'View only'); syncUndo(); }
+    else if (e && e.code === 'conflict') { setStatus('error', 'Not saved: changed elsewhere'); conflictBanner(id, e); }
     else { setStatus('error', 'Save failed, retrying'); clearTimeout(saveTimer); saveTimer = setTimeout(save, 5000); }
   } finally { S.saving = false; syncSaveBtn(); }
 }
@@ -2844,14 +2880,20 @@ async function connect() {
   db.doc('params/station_complexes').onSnapshot((d) => { if (d.exists) { ST_CPLX = d.data(); if (S.data) changed(false); } }, () => {});
   db.doc('params/station_access').onSnapshot((d) => { if (d.exists) { ST_ACCESS = d.data(); if (S.data) changed(false); } }, () => {});
   db.collection('alignments').onSnapshot((snap) => {
-    snap.docs.forEach((d) => { S.saved[d.id] = d.data(); });
+    snap.docs.forEach((d) => { S.saved[d.id] = d.data(); if (!S.data || d.id !== S.data.id) S.docVer[d.id] = d.version; });
     refreshDefaultDocs();
     if (S.data && !S.dirty && !S.drag && !S.saving && S.saved[S.data.id] && !snap.metadata.hasPendingWrites) {
-      const incoming = alignFromDoc(S.saved[S.data.id]);
+      const doc = S.saved[S.data.id], cur = snap.docs.find((d) => d.id === S.data.id);
+      if (typeof doc.length_m === 'number' && Math.abs(doc.length_m - S.L) > 0.5 && !S.refetching) { refetchRoutes(); return; }   // the route under it moved: its file first
+      const incoming = alignFromDoc(doc);
       if (JSON.stringify(incoming) !== JSON.stringify(S.align)) { S.align = incoming; }
+      if (cur) S.docVer[S.data.id] = cur.version;
+      hideBanner('conflict');
     }
     if (S.data) changed(false);
   }, () => setStatus('error', 'Live sync stopped; reload to reconnect'));
+  // the hub's pipeline moved the route files (a Deck tie): the page must not keep the old route under a moved profile
+  window.addEventListener('hub-event', (ev) => { const e = ev.detail || {}; if (e.t === 'files' && e.site === 'profiles') refetchRoutes(); });
   ['metro', 'rer'].forEach((k) => db.doc(SYS[k].doc).onSnapshot((d) => {
     if (!d.exists) return;
     SYS[k].settings = { ...(k === 'rer' ? RER_DEFAULTS : METRO_DEFAULTS), ...d.data() };
@@ -2865,7 +2907,43 @@ async function saveSettings() {
   if (S.db && S.canWrite !== false) { try { await S.db.doc(SYS[sys].doc).set({ ...settings }); } catch { flash('Settings not saved'); } }
   else { try { localStorage.setItem(SYS[sys].key, JSON.stringify(settings)); } catch {} }
 }
-function showBanner(t) { const b = $('#banner'); b.textContent = t; b.hidden = false; }
+function showBanner(t) { const b = $('#banner'); b.textContent = t; b.hidden = false; delete b.dataset.kind; }
+function hideBanner(kind) { const b = $('#banner'); if (!kind || b.dataset.kind === kind) { b.hidden = true; b.textContent = ''; delete b.dataset.kind; } }
+// the record was saved elsewhere (the pipeline's tie, another view) while this page held unsaved edits: Ben decides
+function conflictBanner(id, e) {
+  const b = $('#banner'); b.textContent = ''; b.dataset.kind = 'conflict'; b.hidden = false;
+  const who = e.by === 'pipeline' ? 'the hub\'s tie' : (e.by || 'another view');
+  b.append(`${routeName(id)} was saved by ${who} while you were editing; your changes are not saved. `);
+  const mk = (label, fn) => { const x = document.createElement('button'); x.type = 'button'; x.textContent = label; x.style.cssText = 'font:inherit;margin-left:6px;padding:2px 8px;border-radius:999px;border:0;cursor:pointer'; x.onclick = fn; b.append(x); };
+  mk('Keep mine', () => { S.docVer[id] = e.version; S.dirty = true; hideBanner('conflict'); save(); });
+  mk('Take theirs', () => { S.dirty = false; S.hist = []; S.fut = []; hideBanner('conflict'); refetchRoutes(true); });
+}
+// the route files, links and context fetched again (a Deck tie moved them) and the current line rebuilt on them; the
+// saved profile is applied in its own frame (reframeDoc), the undo stack cleared, the view kept (1 November)
+async function refetchRoutes(force) {
+  if (!S.data) return;
+  if (S.refetching) { S.refetchAgain = true; return; }
+  S.refetching = true;
+  try {
+    if (S.dirty && !force) { clearTimeout(saveTimer); await save(); }   // Ben's edits first; the hub keeps them over the tie's copy and runs the tie again
+    if (S.dirty && !force) return;   // not saved (a conflict): the banner asks; nothing is replaced under him
+    const id = S.data.id, view = S.view, selI = S.sel && S.sel.i;
+    const [mIdx, rIdx] = await Promise.all([loadJSON('lines/index.json'), loadJSON('rer/lines/index.json').catch(() => [])]);
+    const [net, rails, ctx] = await Promise.all([loadJSON('rer/network.json').catch(() => loadJSON('network.json').catch(() => S.net)), loadJSON('rer/metro_rails.json').catch(() => S.metroRails), loadJSON('context/lines.json').catch(() => CONTEXT)]);
+    S.net = net; S.metroRails = rails; CONTEXT = ctx; S.index = mIdx.concat(rIdx);
+    try { LINKS = await loadJSON('rer/links.json'); } catch {}
+    const rer = await Promise.all(rIdx.map((l) => loadJSON(lineUrl(l.id)).catch(() => null)));
+    S.cache = {}; S.rerData = {}; rer.filter(Boolean).forEach((d) => { S.rerData[d.id] = d; S.cache[d.id] = d; });
+    buildLineSel(mIdx, rIdx);
+    refreshDefaultDocs();
+    await selectLine(id);
+    S.view = { c0: Math.min(view.c0, S.L), c1: Math.min(view.c1, S.L) };
+    if (selI != null && S.stations[selI]) S.sel = { kind: 'station', i: selI };
+    changed(false);
+    flash('Route files reloaded after the tie'); window.dispatchEvent(new Event('hub-files-handled'));
+  } catch (e) { showBanner(`The moved route did not load (${e.message}); reload the page.`); }
+  finally { S.refetching = false; if (S.refetchAgain) { S.refetchAgain = false; refetchRoutes(); } }
+}
 let flashT = 0; function flash(t) { const prev = $('#statusText').textContent; $('#statusText').textContent = t; clearTimeout(flashT); flashT = setTimeout(() => { $('#statusText').textContent = prev; }, 1800); }
 
 // ---------- loading ----------
@@ -2881,6 +2959,13 @@ function setSystem(k) {
   buildSettings();
 }
 const lineUrl = (id) => (id.startsWith('RER_') ? `rer/lines/${id}.json` : `lines/${id}.json`);
+function buildLineSel(mIdx, rIdx) {
+  const opt = (l) => `<option value="${l.id}">${esc(l.line)} · ${(l.length_m / 1000).toFixed(1)} km</option>`;
+  const ropt = (l) => `<option value="${l.id}">${esc(l.kind === 'trunk' ? 'Trunk' : l.line.replace(/^RER [A-E] /, ''))} · ${(l.length_m / 1000).toFixed(1)} km</option>`;
+  const v = $('#lineSel').value;
+  $('#lineSel').innerHTML = `<optgroup label="Metro">${mIdx.map(opt).join('')}</optgroup>` + [...new Set(rIdx.map((l) => l.letter))].map((k) => `<optgroup label="RER ${k}">${rIdx.filter((l) => l.letter === k).map(ropt).join('')}</optgroup>`).join('');
+  if (v) $('#lineSel').value = v;
+}
 async function selectLine(id) {
   await flush();
   if (!S.cache[id]) S.cache[id] = await loadJSON(lineUrl(id));
@@ -3061,7 +3146,7 @@ cv.addEventListener('keydown', (e) => {
 
 // platform grades: tilt about the platform centre, up to the station limit
 // platform offset: centre = drawn point + so, so the point stays on the platform
-function setSo(i, v) { const half = settings.platform / 2; if (!S.align.so) S.align.so = S.stations.map(() => 0); v = clamp(v, -half, half); S.align.so[i] = Math.abs(v) >= half - 0.25 ? Math.sign(v) * half : Math.round(v * 2) / 2; }
+function setSo(i, v) { if (!S.align.so) S.align.so = S.stations.map(() => 0); v = clamp(v, -SLIDE_M, SLIDE_M); S.align.so[i] = Math.round(v * 2) / 2; }   // the Deck's limit (SLIDE_M), not half a platform
 function removeStation(i) {
   pushHist(); const k = stKey(i); const al = S.align;
   ['st', 'sg', 'so'].forEach((f) => { if (Array.isArray(al[f])) al[f].splice(i, 1); });
@@ -3428,9 +3513,7 @@ window.__api = { layout: () => LAYOUT, solves: () => SOLVE_N, stationStreet, sta
     const rer = await Promise.all(rIdx.map((l) => loadJSON(lineUrl(l.id)).catch(() => null)));
     rer.filter(Boolean).forEach((d) => { S.rerData[d.id] = d; S.cache[d.id] = d; });
     refreshDefaultDocs();
-    const opt = (l) => `<option value="${l.id}">${esc(l.line)} · ${(l.length_m / 1000).toFixed(1)} km</option>`;
-    const ropt = (l) => `<option value="${l.id}">${esc(l.kind === 'trunk' ? 'Trunk' : l.line.replace(/^RER [A-E] /, ''))} · ${(l.length_m / 1000).toFixed(1)} km</option>`;
-    $('#lineSel').innerHTML = `<optgroup label="Metro">${mIdx.map(opt).join('')}</optgroup>` + [...new Set(rIdx.map((l) => l.letter))].map((k) => `<optgroup label="RER ${k}">${rIdx.filter((l) => l.letter === k).map(ropt).join('')}</optgroup>`).join('');
+    buildLineSel(mIdx, rIdx);
     let want = location.hash.slice(1); if (!S.index.some((l) => l.id === want)) { try { want = localStorage.getItem('profile:last'); } catch { want = null; } }
     if (!S.index.some((l) => l.id === want)) want = 'Line_6';
     await selectLine(want);

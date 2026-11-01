@@ -232,6 +232,11 @@ class Store:
                     rep['updated'].append(path)
                 elif same(seed, base):
                     rep['kept'].append(path)
+                elif path.startswith('alignments/'):
+                    # changed on both sides: a profile is one design (its bends, levels and paints belong together), never
+                    # mixed key by key; the layout's streets, blocks and stations still merge entry by entry (1 November)
+                    rep['kept'].append(path)
+                    rep['conflicts'].append({'path': path, 'keys': ['changed here and in the seed: yours kept whole']})
                 else:
                     out = []
                     m = {}
