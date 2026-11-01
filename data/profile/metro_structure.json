@@ -228,5 +228,14 @@
   "Victory",
   "Martin Luther King"
  ],
- "subway_streets_about": "Streets built over the subway (Ben, 31 October): Central Parkway, Victory Parkway and MLK were laid out over the cut-and-cover box, so a box under them is built with the street. Matched by name (any part); marked on the profile as 'built over the subway'."
+ "subway_streets_about": "Streets built over the subway (Ben, 31 October): Central Parkway, Victory Parkway and MLK were laid out over the cut-and-cover box, so a box under them is built with the street. Matched by name (any part); marked on the profile as 'built over the subway'.",
+ "cost": {
+  "bore_m": 1.0,
+  "box_m": 1.2,
+  "box_depth_m": 0.08,
+  "switch": 180.0,
+  "low_cover_m_per_m": 2.0,
+  "cover_hard": 0.5
+ },
+ "cost_about": "Method choice by cost (Ben, 1 November: 'there needs to be a cost logic'), in bore-metre units, drawing values: bore_m a metre of bored tube; box_m + box_depth_m x rail depth a metre of cut-and-cover box; switch a change of method inside a stretch (the shaft or box end with its approaches), charged once per end; low_cover_m_per_m the extra per metre of tube for each metre of cover short of one diameter (ground treatment, a canopy); cover_hard the fraction of a diameter below which a tube cannot be bored at all (then a box, or the profile must be lowered). Between two anchors the cheapest of: cut and cover end to end (within cc_max), one bored drive with its low-cover penalties, or that drive with box pockets where a long shallow stretch is cheaper boxed than treated."
 }

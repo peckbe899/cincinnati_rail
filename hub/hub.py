@@ -264,7 +264,7 @@ def make_handler(hub):
             u = urlparse(self.path).path
             if u == '/api/run':
                 job = self.q()['job']
-                if job not in ('deck_tie', '3d'):
+                if job not in ('platform_tie', 'deck_tie', '3d'):
                     return self.send(400, {'error': 'unknown job'})
                 hub.pipeline.schedule(job, 'run from the hub page', delay=0)
                 return self.send(200, {'scheduled': job})

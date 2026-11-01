@@ -327,7 +327,24 @@ def chain_of(path_ll):
     return L, (lambda pt: float(np.interp(L.project(Point(pt)), dv, cv))), (lambda c: L.interpolate(float(np.interp(c, cv, dv))))
 
 
-def apply_route(rid, route, xy, segs, files, db_dir, stations_deck, so=None):
+def deck_moved_platforms(geojson, sync):
+    """{(station name, Deck line label)} of the Deck platforms moved since the Deck and the Profiles last agreed
+    (params/platform_sync, by tools/platform_tie.py); with no sync record, none"""
+    if not sync or not sync.get('offsets'):
+        return set()
+    import platform_tie as pt
+    _, plats = pt.deck_export(geojson or LIVE)
+    last = sync['offsets']
+    return {(q['station'], q.get('line') or '') for q in plats
+            if f"{q['station_id']}|{q['pid']}" in last and abs(float(last[f"{q['station_id']}|{q['pid']}"]) - float(q['offset_m'])) > pt.MOVED_M}
+
+
+def apply_route(rid, route, xy, segs, files, db_dir, stations_deck, so=None, deck_moved=frozenset()):
+    """the route rebuilt on the Deck's pieces; returns (new route, chainage map, old length, slides): the saved profile's
+    platform slides after the move. The platform centre Ben set in the Profiles (station point + slide) is kept exactly
+    (31 October, Ben: the tie kept undoing his moves): the station point goes to the Deck platform's centre and the
+    slide takes up the difference; only a platform Ben moved on the Deck since the last sync (deck_moved) puts the
+    station at the Deck's centre with no slide."""
     sys.path.insert(0, os.path.join(ROOT, 'tools'))
     import make_profile_context as mpc
     m = cmap(route['segs'], segs)
@@ -365,16 +382,16 @@ def apply_route(rid, route, xy, segs, files, db_dir, stations_deck, so=None):
     # station point of the same name, else mapped
     platforms = deck_platforms()
     so = so or [0.0] * len(new['stations'])
-    placed = set()
+    slides_new = {}
     for s, o, k in zip(new['stations'], so, st_keys(new)):
         s0 = dict(s, c=m(s['c']) + o)
         t = station_target(new, L, chain, s0, platforms)
+        centre_old = m(s['c']) + o   # the platform centre as saved in the Profiles, on the new chainage
 
         hit = [(math.dist(p, at(m(s['c'])).coords[0]), p) for nm, p, _ in stations_deck if nm == s['name']]
         hit = [h for h in hit if h[0] < STATION_REACH]
         if t is not None:
-            c = t   # the station point at the platform centre: its slide in the saved profile is reset (main)
-            placed.add(k)
+            c = t   # the station point at the Deck platform's centre
             pc = at(c)
             near = [p for nm, lab, p in platforms if nm == s['name'] and math.dist(p, pc.coords[0]) < PLAT_REACH + 60]
             s['offset'] = round(min((L.distance(Point(p)) for p in near), default=0.0), 1)
@@ -384,6 +401,10 @@ def apply_route(rid, route, xy, segs, files, db_dir, stations_deck, so=None):
             s['offset'] = round(L.distance(Point(p)), 1)
         else:
             c = m(s['c'])
+        # the slide after the move: the Deck's centre where Ben moved the platform on the Deck, else his Profiles centre
+        moved_here = any(nm == s['name'] and (label_ok_route(route, lab)) for nm, lab in deck_moved)
+        v = 0.0 if (t is not None and moved_here) else centre_old - c
+        slides_new[k] = round(v, 1) if abs(v) > 0.05 else 0.0
         q = at(c)
         lon, lat = TO_LL.transform(q.x, q.y)
         s.update(c=round(c, 1), lon=round(lon, 7), lat=round(lat, 7))
@@ -423,7 +444,15 @@ def apply_route(rid, route, xy, segs, files, db_dir, stations_deck, so=None):
             files[fn] = d
             jsave(fn, d)
     new['crossings'] = sorted(xs, key=lambda x: x['c'])
-    return new, m, old_L, placed
+    return new, m, old_L, slides_new
+
+
+def label_ok_route(route, label):
+    """a Deck platform's line label names this route (Metro: 'Metro Line 7'; RER: the letter)"""
+    if is_metro(route['id']):
+        return (label or '').replace('Metro ', '') == route.get('line', '')
+    me = route.get('letter')
+    return bool(me) and (label or '').startswith('RER') and me in letters(label)
 
 
 def move_doc(doc, m, length):
@@ -464,6 +493,7 @@ def main():
     ap.add_argument('--json', help='write the check as JSON here')
     ap.add_argument('--only', help='comma-separated route ids')
     ap.add_argument('--rivers', action='store_true', help='recompute every route\'s river ranges from the river outlines (no rebuild)')
+    ap.add_argument('--sync', help='params/platform_sync as JSON: Deck platforms moved since it put their station at the Deck centre with no slide')
     a = ap.parse_args()
     if a.rivers:
         fns = sorted(glob.glob(os.path.join(SITE, 'lines', '*_*.json')) + glob.glob(os.path.join(SITE, 'rer', 'lines', 'RER_*.json')))
@@ -513,8 +543,9 @@ def main():
     ridx_f, midx_f = os.path.join(SITE, 'rer', 'lines', 'index.json'), os.path.join(SITE, 'lines', 'index.json')
     ridx, midx = jload(ridx_f), jload(midx_f)
     sdeck = deck_stations(a.context, a.geojson)
+    deck_moved = deck_moved_platforms(a.geojson, jload(a.sync) if a.sync and os.path.exists(a.sync) else None)
     for rid, fn, al, r, xy, segs, so in drifted:
-        new, m, old_L, placed = apply_route(rid, r, xy, segs, files, a.db, sdeck, so)
+        new, m, old_L, slides_new = apply_route(rid, r, xy, segs, files, a.db, sdeck, so, deck_moved)
         jsave(fn, new)
         files[fn] = new
         metro = is_metro(rid)
@@ -546,10 +577,9 @@ def main():
         for p in targets:
             if os.path.exists(p):
                 doc = move_doc(jload(p), m, new['length_m'])
-                so_d = doc.get('so') or {}
-                if so_d:   # a platform placed from the Deck is at its station point: no slide
-                    doc['so'] = {k: v for k, v in so_d.items() if k not in placed}
-                    so_d = doc['so']
+                so_d = {k: v for k, v in slides_new.items() if abs(v) > 0.01}   # Ben's platform centres kept (apply_route)
+                if so_d or doc.get('so'):
+                    doc['so'] = so_d
                 if doc.get('stations'):   # the saved summary of stations: at their new points and platform centres
                     for x, k in zip(doc['stations'], [k for k in st_keys(new) if k not in (doc.get('del') or [])]):
                         if k in sts and sts[k]['name'] == x.get('name'):

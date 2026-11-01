@@ -1298,7 +1298,11 @@ function solveTypes(V) {
   for (const [a, b] of stretches) {
     const R = P[a].R, span = P.slice(a, b + 1), tun = span.filter(isTun);
     const mined = span.some((p) => p.role === 'mined'), forced = tun.some((p) => p.force);
-    if (!mined && !forced && tun.every((p) => p.d <= p.R.ccMax + 1e-6)) { for (const p of tun) p.t = 'cutcover'; continue; }
+    // the method by cost (Ben, 1 November: "there needs to be a cost logic"; the record's cost, bore-metre units): cut
+    // and cover end to end where it is within the limit throughout, against one bored drive with its low-cover penalties
+    // (and box pockets where a long shallow stretch is cheaper boxed than treated); the cheaper wins. A short dip under
+    // the cover line inside a drive is bored through with ground treatment, never a box.
+    const allBoxOk = !mined && !forced && tun.every((p) => p.d <= p.R.ccMax + 1e-6);
     // the tube form (Ben, 31 October): the double-track bore between two double-track ends where it has its cover; twin
     // tubes into an island station, through a mined station of a twin-tube phase, or where the bore lacks cover
     const L = a > 0 ? anchorAt(a - 1, 1) : { kind: 'end', double: true }, Rt = b < n - 1 ? anchorAt(b + 1, -1) : { kind: 'end', double: true };
@@ -1311,22 +1315,33 @@ function solveTypes(V) {
     }
     const key = (p) => { const f = tubeFormAt(p.c) || form; return f === 'bore' ? 'bore' : twinAt(p.c); };
     const need = (p) => { const tb = tubeOfKey(key(p)); return tb.top + tb.od; };
-    // the boxes at the ends carry on, while they are within the cut-and-cover limit, through every spot where the tube would
-    // lack its cover: the drive starts after the last of them (or where it must go deeper than a box can)
-    const launch = (from, dir, stop) => { let last = from - dir; for (let i = from; i !== stop + dir && isTun(P[i]) && P[i].d <= P[i].R.ccMax; i += dir) if (P[i].d < need(P[i])) last = i; return last; };
+    const CO = MS.cost || { bore_m: 1.0, box_m: 1.2, box_depth_m: 0.08, switch: 180, low_cover_m_per_m: 2.0, cover_hard: 0.5 };
+    const hard = (p) => { const tb = tubeOfKey(key(p)); return tb.top + tb.od * CO.cover_hard; };   // below this the tube cannot be bored
+    const boxCost = (p) => CO.box_m + CO.box_depth_m * p.d, boreCost = (p) => CO.bore_m + CO.low_cover_m_per_m * Math.max(0, need(p) - p.d);
+    const sum = (x, y, f) => { let t = 0; for (let i = x; i <= y; i++) if (isTun(P[i])) t += f(P[i]) * step; return t; };
+    // the boxes at the ends carry on, within the cut-and-cover limit, through what cannot be bored at all (less than
+    // cover_hard of a diameter): the drive starts after the last of them
+    const launch = (from, dir, stop) => { let last = from - dir; for (let i = from; i !== stop + dir && isTun(P[i]) && P[i].d <= P[i].R.ccMax; i += dir) if (P[i].d < hard(P[i])) last = i; return last; };
     let u = launch(a, 1, b) + 1, v = launch(b, -1, u) - 1;
+    if (allBoxOk && (u > v || sum(a, b, boxCost) <= sum(a, u - 1, boxCost) + sum(v + 1, b, boxCost) + sum(u, v, boreCost))) { for (const p of tun) p.t = 'cutcover'; continue; }
     for (let i = a; i < u; i++) P[i].t = 'cutcover'; for (let i = v + 1; i <= b; i++) P[i].t = 'cutcover';
     if (u > v) continue;
     // 4. too little cover inside the drive
     let pieces = [[u, v]];
-    const low = runs(u, v, (p) => isTun(p) && p.d < need(p));
-    if (low.length) {
-      const rest = runs(u, v, (p) => !(isTun(p) && p.d < need(p)));
-      const cl = low.reduce((t, [x, y]) => t + len(x, y), 0);
-      if (rest.every(([x, y]) => len(x, y) >= P[x].R.minDrive) && low.every(([x, y]) => P.slice(x, y + 1).every((p) => p.d <= p.R.ccMax))) {
-        for (const [x, y] of low) { for (let i = x; i <= y; i++) { P[i].t = 'cutcover'; P[i].shaft = true; } flags.push({ c0: P[x].c, c1: P[y].c, kind: 'Low cover', info: true, text: `${Math.round(len(x, y))} m with less than one diameter of cover (${fmtZ(need(P[x]), 2)} ${uLbl()} to the rail): a cut-and-cover box (a working shaft) between two whole drives (at least ${Math.round(R.minDrive)} m each)` }); }
-        pieces = rest;
-      }   // else the drive stays bored and its low stretches are unbuildable (marked below, with Regrade)
+    // each low run inside the drive: bored with treatment (its penalty), or a box pocket (its box metres plus a method
+    // change at each end), whichever is cheaper; a pocket only where it is within the limit and leaves whole drives either
+    // side; a run too shallow to bore at all with no pocket possible stays bored and is unbuildable (hatched, Regrade)
+    const low = runs(u, v, (p) => isTun(p) && p.d < need(p)), pockets = [];
+    for (const [x, y] of low) {
+      const bore = P.slice(x, y + 1).some((p) => isTun(p) && p.d < hard(p)) ? Infinity : sum(x, y, boreCost);
+      const boxOk = P.slice(x, y + 1).every((p) => !isTun(p) || p.d <= p.R.ccMax), box = boxOk ? sum(x, y, boxCost) + 2 * CO.switch : Infinity;
+      const left = pockets.length ? pockets[pockets.length - 1][1] + 1 : u, whole = (x - left) * step >= R.minDrive && (v - y) * step >= R.minDrive;
+      if (boxOk && whole && box < bore) pockets.push([x, y]);
+      else if (bore < Infinity) flags.push({ c0: P[x].c, c1: P[y].c, kind: 'Low cover', info: true, text: `${Math.round(len(x, y))} m inside the drive with up to ${fmtZ(Math.max(...P.slice(x, y + 1).filter(isTun).map((p) => need(p) - p.d)), 2)} ${uLbl()} less than one diameter of cover: bored through with ground treatment (cost ${Math.round(bore)} against ${box < Infinity ? Math.round(box) + ' for a box pocket' : 'no pocket possible'})` });
+    }
+    if (pockets.length) {
+      for (const [x, y] of pockets) { for (let i = x; i <= y; i++) { P[i].t = 'cutcover'; P[i].shaft = true; } flags.push({ c0: P[x].c, c1: P[y].c, kind: 'Low cover', info: true, text: `${Math.round(len(x, y))} m with less than one diameter of cover (${fmtZ(need(P[x]), 2)} ${uLbl()} to the rail): a cut-and-cover pocket between two whole drives, cheaper than treating the tube over that length` }); }
+      pieces = runs(u, v, (p) => !p.shaft);
     }
     for (const [x, y] of pieces) {
       // one method per drive (Ben, 31 October): the phase's (shield, or the TBM from Phase 3), a paint's where painted;
@@ -1385,7 +1400,7 @@ function solveTypes(V) {
   { const why = P.map((p) => {
       if (riverAt(p.c)) return null;
       const st = p.stn && p.stn.s, o = overrideAt(st ? st.c : p.c), t = o || p.t, d = groundAt(p.c) - p.z; if (!isFinite(d)) return null;
-      if ((t === 'shield' || t === 'deep') && !st) { const tb = tubeOfKey(p.tube || tubeKey(p.c)); if (d < tb.top + tb.od - 0.05) return 'cover'; }
+      if ((t === 'shield' || t === 'deep') && !st) { const tb = tubeOfKey(p.tube || tubeKey(p.c)), CO2 = MS.cost || { cover_hard: 0.5 }; if (d < tb.top + tb.od * CO2.cover_hard - 0.05) return 'cover'; }
       if (t === 'cutcover' && !p.bank) { const sec = canonAt(p.c); if (!(sec && (sec.m === 'canal' || sec.m === 'covered')) && d > p.R.ccMax + 0.05) return 'box'; }
       return null; });
     for (const w of ['cover', 'box']) for (const [x, y] of runs(0, n - 1, (p, i) => why[i] === w)) {
@@ -1819,7 +1834,7 @@ function allIssues(sm) {
   (sm.checks || []).forEach((x) => out.push(x));
   const T = stretchTypes(); if (T) T.flags.forEach((f) => out.push({ kind: f.kind || (f.info ? 'Tube choice' : 'Tunnel method'), sev: f.error ? 'error' : f.info ? 'note' : 'warn', c: (f.c0 + f.c1) / 2, text: `${fmtCh(f.c0)} to ${fmtCh(f.c1)}: ${f.text}` }));
   if (T && T.bad) T.bad.forEach((b) => out.push({ kind: 'Unbuildable', sev: 'error', fix: { mode: b.why === 'cover' ? 'lower' : 'raise', c0: b.c0, c1: b.c1 }, c: (b.c0 + b.c1) / 2,
-    text: `${fmtCh(b.c0)} to ${fmtCh(b.c1)}: ${b.why === 'cover' ? `a tube with less than one diameter of cover (short by up to ${fmtZ(b.worst, 1)} ${uLbl()}): lower the rail (Regrade)` : `a box deeper than the cut-and-cover limit (by up to ${fmtZ(b.worst, 1)} ${uLbl()}): raise the rail to within it (Raise), or lower it for a whole drive`}` }));
+    text: `${fmtCh(b.c0)} to ${fmtCh(b.c1)}: ${b.why === 'cover' ? `a tube with less than ${((MS.cost || { cover_hard: 0.5 }).cover_hard)} of a diameter of cover, too little to bore even with ground treatment (short of a full diameter by up to ${fmtZ(b.worst, 1)} ${uLbl()}): lower the rail (Regrade)` : `a box deeper than the cut-and-cover limit (by up to ${fmtZ(b.worst, 1)} ${uLbl()}): raise the rail to within it (Raise), or lower it for a whole drive`}` }));
   return out.sort((a, b) => a.c - b.c);
 }
 

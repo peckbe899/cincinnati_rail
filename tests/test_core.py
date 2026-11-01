@@ -813,8 +813,10 @@ def test_low_cover_drive_needs_regrade():
     mp = MetroProfile.load(root / "data/profile/lines/Line_7.json", None, root / "data/profile/settings.json")   # no saved profile: the solver's
     T = mp.stretch_types()
     cov = [b for b in T["bad"] if b["why"] == "cover"]
-    assert any(b["c0"] < 7800 < b["c1"] for b in cov), cov
-    assert T["t"][int(7800 / T["step"])] in ("shield", "deep")   # stays bored until it is regraded
+    assert any(7300 < b["c0"] and b["c1"] < 8200 for b in cov), cov   # below cover_hard of a diameter: not even treatment bores it
+    assert T["t"][int(7700 / T["step"])] in ("shield", "deep")   # stays bored until it is regraded
+    # a short dip under the full cover line inside a drive is bored through with treatment (a note), never a box (Ben, 1 November)
+    assert any(f["kind"] == "low cover, treated" for f in T["flags"]) or not any(f["kind"] == "low cover, a shaft" and f["len"] < 100 for f in T["flags"])
 
 
 def test_system_check_nothing_unbuildable_unmarked():
@@ -839,7 +841,8 @@ def test_system_check_nothing_unbuildable_unmarked():
             d = float(mp.ground_at(c)) - T["z"][i]
             if t in ("shield", "deep") and T["tube"][i]:
                 tb = _tube_of(mp.ms["tubes"][T["tube"][i]])
-                if d < tb["top"] + tb["od"] - 0.1:
+                hard = (mp.ms.get("cost") or {}).get("cover_hard", 0.5)
+                if d < tb["top"] + tb["od"] * hard - 0.1:   # below this not even ground treatment bores it
                     assert inside(c), (lid, c, "tube without cover, unmarked")
     mp = MetroProfile.load(root / "data/profile/lines/Line_3.json", root / "hub/seed/alignments/Line_3.json", root / "data/profile/settings.json")
     T = mp.stretch_types()

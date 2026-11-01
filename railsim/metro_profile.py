@@ -1325,10 +1325,7 @@ class MetroProfile:
                 tun = [p for p in span if is_tun(p)]
                 mined = any(p["role"] == "mined" for p in span)
                 forced = any(p.get("force") for p in tun)
-                if not mined and not forced and all(p["d"] <= p["R"]["cc_max"] + 1e-6 for p in tun):
-                    for p in tun:
-                        p["t"] = "cutcover"
-                    continue
+                all_box_ok = not mined and not forced and all(p["d"] <= p["R"]["cc_max"] + 1e-6 for p in tun)
                 Lf = anchor_at(a - 1, 1) if a > 0 else {"kind": "end", "double": True}
                 Rf = anchor_at(b + 1, -1) if b < n - 1 else {"kind": "end", "double": True}
                 pt = phase_tube(P[a]["c"])
@@ -1348,31 +1345,52 @@ class MetroProfile:
                     f = self.tube_form_at(p["c"]) or form
                     return "bore" if f == "bore" else twin_at(p["c"])
                 need = lambda p: (lambda tb: tb["top"] + tb["od"])(tube_t(tkey(p)))
-                def launch(frm, d, stop):   # the end boxes carry on, within the limit, through every spot short of cover
+                # the method by cost (Ben, 1 November; the record's cost, bore-metre units; as the editor): cut and cover end to
+                # end against one bored drive with its low-cover penalties and box pockets where cheaper; a short dip under the
+                # cover line inside a drive is bored through with treatment, never a box
+                CO = ms.get("cost") or {"bore_m": 1.0, "box_m": 1.2, "box_depth_m": 0.08, "switch": 180.0, "low_cover_m_per_m": 2.0, "cover_hard": 0.5}
+                hard = lambda p: (lambda tb: tb["top"] + tb["od"] * CO["cover_hard"])(tube_t(tkey(p)))
+                box_cost = lambda p: CO["box_m"] + CO["box_depth_m"] * p["d"]
+                bore_cost = lambda p: CO["bore_m"] + CO["low_cover_m_per_m"] * max(0.0, need(p) - p["d"])
+                ssum = lambda x, y, f: sum(f(P[i]) * step for i in range(x, y + 1) if is_tun(P[i]))
+
+                def launch(frm, d, stop):   # the end boxes carry on, within the limit, through what cannot be bored at all
                     last, i = frm - d, frm
                     while i != stop + d and is_tun(P[i]) and P[i]["d"] <= P[i]["R"]["cc_max"]:
-                        if P[i]["d"] < need(P[i]):
+                        if P[i]["d"] < hard(P[i]):
                             last = i
                         i += d
                     return last
                 u = launch(a, 1, b) + 1
                 v = launch(b, -1, u) - 1
+                if all_box_ok and (u > v or ssum(a, b, box_cost) <= ssum(a, u - 1, box_cost) + ssum(v + 1, b, box_cost) + ssum(u, v, bore_cost)):
+                    for p in tun:
+                        p["t"] = "cutcover"
+                    continue
                 for i in list(range(a, u)) + list(range(v + 1, b + 1)):
                     P[i]["t"] = "cutcover"
                 if u > v:
                     continue
                 pieces = [(u, v)]
                 low = runs(u, v, lambda p: is_tun(p) and p["d"] < need(p))
-                if low:
-                    rest = runs(u, v, lambda p: not (is_tun(p) and p["d"] < need(p)))
-                    if all(length(x, y) >= P[x]["R"]["min_drive"] for x, y in rest) and all(p["d"] <= p["R"]["cc_max"] for x, y in low for p in P[x:y + 1]):
-                        for x, y in low:
-                            for i in range(x, y + 1):
-                                P[i]["t"] = "cutcover"
-                                P[i]["shaft"] = True
-                            flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "low cover, a shaft", "len": length(x, y), "info": True})
-                        pieces = rest
-                    # else the drive stays bored; its low stretches are unbuildable (below)
+                pockets = []
+                for x, y in low:
+                    bore = math.inf if any(is_tun(p) and p["d"] < hard(p) for p in P[x:y + 1]) else ssum(x, y, bore_cost)
+                    box_ok = all(not is_tun(p) or p["d"] <= p["R"]["cc_max"] for p in P[x:y + 1])
+                    box = ssum(x, y, box_cost) + 2 * CO["switch"] if box_ok else math.inf
+                    left = pockets[-1][1] + 1 if pockets else u
+                    whole = (x - left) * step >= R["min_drive"] and (v - y) * step >= R["min_drive"]
+                    if box_ok and whole and box < bore:
+                        pockets.append((x, y))
+                    elif bore < math.inf:
+                        flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "low cover, treated", "len": length(x, y), "info": True})
+                if pockets:
+                    for x, y in pockets:
+                        for i in range(x, y + 1):
+                            P[i]["t"] = "cutcover"
+                            P[i]["shaft"] = True
+                        flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "low cover, a shaft", "len": length(x, y), "info": True})
+                    pieces = runs(u, v, lambda p: not p.get("shaft"))
                 for x, y in pieces:
                     ps = P[x:y + 1]
                     fd = sum(1 for p in ps if p.get("force") == "deep")
@@ -1465,7 +1483,7 @@ class MetroProfile:
                     return None
                 if t in ("shield", "deep") and not st_:
                     tb = tube_t(p.get("tube") or self._tube_key(p["c"]))
-                    if d < tb["top"] + tb["od"] - 0.05:
+                    if d < tb["top"] + tb["od"] * (ms.get("cost") or {}).get("cover_hard", 0.5) - 0.05:   # below this not even treatment bores it
                         return "cover"
                 if t == "cutcover" and not p.get("bank"):
                     sec = self.canon_at(p["c"])

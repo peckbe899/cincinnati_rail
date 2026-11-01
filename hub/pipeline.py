@@ -195,17 +195,8 @@ class Pipeline:
         if out['layout']:
             if self.store.set('deck/layout', out['layout'], by='pipeline', if_version=lay['version']) is None:
                 raise RuntimeError('the Deck layout changed during the tie: run again')
-            # the slides now on the Deck are cleared in the profiles; the Deck tie puts each station at its moved platform
-            for rid in {m['route'] for m in out['moves'] if m['done']}:
-                cur = self.store.get('alignments/' + rid)
-                if not cur:
-                    continue
-                doc = json.loads(json.dumps(cur['data']))
-                for m in out['moves']:
-                    if m['done'] and m['route'] == rid:
-                        (doc.get('so') or {}).pop(m['key'], None)
-                if self.store.set('alignments/' + rid, doc, by='pipeline', if_version=cur['version']) is None:
-                    log(f'{rid}: saved during the tie, its slides kept; run the tie again')
+            # the slides stay in the profiles (31 October, Ben: the tie kept undoing his moves): the Deck tie that follows
+            # puts each station point at its Deck platform's centre and the slide takes up whatever is left
             log(f"{sum(m['done'] for m in out['moves'])} platforms moved on the Deck; the Deck tie follows")
             self.schedule('deck_tie', 'platforms moved from the Profiles', delay=0)
         else:
@@ -231,11 +222,17 @@ class Pipeline:
         self.deck_export(log)
         db = os.path.join(WORK, 'db', 'profiles_db', 'alignments')
         tool = os.path.join(ROOT, 'tools', 'rer_deck_routes.py')
-        if self.sh(log, [PY, tool, '--db', db], ok=(0, 1)) == 0:
+        sf = os.path.join(WORK, 'platform_sync.json')   # where the Deck and the Profiles last agreed: a platform moved on the Deck since wins
+        sync = self.store.get('params/platform_sync')
+        if sync:
+            json.dump(sync['data'], open(sf, 'w'))
+        elif os.path.exists(sf):
+            os.remove(sf)
+        if self.sh(log, [PY, tool, '--db', db, '--sync', sf], ok=(0, 1)) == 0:
             log('Every route and platform matches the Deck: nothing to move')
             self.record_platform_sync(log)
             return
-        self.sh(log, [PY, tool, '--apply', '--db', db])
+        self.sh(log, [PY, tool, '--apply', '--db', db, '--sync', sf])
         moved = 0
         for f in glob.glob(os.path.join(db, '*.json')):
             p = 'alignments/' + os.path.basename(f)[:-5]

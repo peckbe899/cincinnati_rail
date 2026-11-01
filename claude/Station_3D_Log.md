@@ -436,3 +436,26 @@ Published: page version 6 and the snapshot (35 parts), read back at view level.
   94 (platform level 45, full mezzanine 22, crossunder 16, deep 7, street hall 3, surface 1); later: 48. Rule 4 (an island
   or interchange shallower than D_HALL): 160, most of them the Deck's island platforms on shallow Phase 1 and 2 lines.
   117 later stages proposed (another Metro line opening at the station later). No station without a year; no errors.
+
+## 2026-11-01: the tie keeps Ben's platform positions; the drive method by cost (Ben: "the deck tie keeps undoing my changes"; "there needs to be a cost logic")
+
+- The tie: the platform tie (Profiles to Deck) cleared a slide from the profile the moment it pushed it to the Deck, and
+  the Deck tie deleted every slide of a station it placed from the Deck, whether or not the Deck had taken the move (the
+  150 m slide limit, "the Deck wins" by timestamp, no platform drawn): Ben's position was gone from both for minutes and
+  often for good. Now: the platform tie leaves the slide in the profile; `apply_route` keeps the platform centre Ben set
+  in the Profiles exactly (the station point goes to the Deck platform's centre and the slide takes up the difference,
+  0 when they agree); only a platform Ben moved on the Deck since the last agreement (params/platform_sync, now passed to
+  the Deck tie as --sync) puts the station at the Deck's centre with no slide. A platform the Deck could not take as far
+  (the slide limit) keeps its Profiles centre and is reported as drifted each tie, not silently moved. /api/run now
+  accepts platform_tie too.
+- The drive method by cost (the record's `cost`, bore-metre units, drawing values on the hub page): a metre of bored
+  tube 1.0; a metre of box 1.2 plus 0.08 per metre of depth; a change of method 180 per end; a tube short of a full
+  diameter of cover costs 2.0 per metre per metre short (ground treatment); below half a diameter (cover_hard) it cannot
+  be bored. Between two anchors the engine takes the cheaper of cut and cover end to end (where within the limit
+  throughout) and one bored drive with its treatment penalties, with a box pocket only where a long shallow stretch is
+  cheaper boxed than treated and leaves whole drives either side. The launch boxes at the anchors now carry on only
+  through what cannot be bored at all. A 25 m dip under the cover line inside a drive is bored through with a note; the
+  red hatching is for less than half a diameter only. Both engines; they agree on every sample but two ties on Line 3.
+- Ben's export: unbuildable tube without cover 1.7 km to 0.5 km (Line 1 0.15, Line 7 0.33, Line 9 0.03).
+- Checked on a test hub: Findlay (Line 3) slid 30 m in the Profiles; the platform tie moved the Deck platform; the Deck tie
+  found every platform matching and left the profile as set (point 13+840, slide 30). Before the fix the slide was cleared.
