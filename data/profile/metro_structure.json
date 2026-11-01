@@ -237,5 +237,11 @@
   "low_cover_m_per_m": 2.0,
   "cover_hard": 0.5
  },
- "cost_about": "Method choice by cost (Ben, 1 November: 'there needs to be a cost logic'), in bore-metre units, drawing values: bore_m a metre of bored tube; box_m + box_depth_m x rail depth a metre of cut-and-cover box; switch a change of method inside a stretch (the shaft or box end with its approaches), charged once per end; low_cover_m_per_m the extra per metre of tube for each metre of cover short of one diameter (ground treatment, a canopy); cover_hard the fraction of a diameter below which a tube cannot be bored at all (then a box, or the profile must be lowered). Between two anchors the cheapest of: cut and cover end to end (within cc_max), one bored drive with its low-cover penalties, or that drive with box pockets where a long shallow stretch is cheaper boxed than treated."
+ "cost_about": "Method choice by cost (Ben, 1 November: 'there needs to be a cost logic'), in bore-metre units, drawing values: bore_m a metre of bored tube; box_m + box_depth_m x rail depth a metre of cut-and-cover box; switch a change of method inside a stretch (the shaft or box end with its approaches), charged once per end; low_cover_m_per_m the extra per metre of tube for each metre of cover short of one diameter (ground treatment, a canopy); cover_hard the fraction of a diameter below which a tube cannot be bored at all (then a box, or the profile must be lowered). Between two anchors the cheapest of: cut and cover end to end (within cc_max), one bored drive with its low-cover penalties, or that drive with box pockets where a long shallow stretch is cheaper boxed than treated.",
+ "portal_min_m": 100.0,
+ "portal_min_about": "An open run inside a tunnel shorter than this is tunnelled through, not a portal: a train cannot surface and go back under in less (the ramps at the grade limit), 1 November.",
+ "dead_band_m": 0.25,
+ "dead_band_about": "Inside this band of a threshold (the cut-and-cover limit, at grade / trough / box, elevated) the last solve's decision stands while editing, so a centimetre does not flip a stretch, 1 November.",
+ "fill_max_m": 3.0,
+ "fill_max_about": "The most a painted box or tube may raise the finished ground (a street regrade), except on subway_streets, which were built over the subway and may be raised any amount, 1 November."
 }

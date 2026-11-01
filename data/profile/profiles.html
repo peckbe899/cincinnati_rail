@@ -1222,16 +1222,24 @@ function solveTypes(V) {
   const len = (a, b) => P[b].c - P[a].c + step;
   const stIdx = (c) => Math.max(0, Math.min(n - 1, Math.round(c / step)));
   const OPEN = new Set(['atgrade', 'trough', 'elevated']);
-  // 1. every sample on its own: an anchor (open, river, box) or a tunnel point with its depth
+  // the dead band (1 November): inside dead_band_m of a threshold the last solve's decision stands, so a centimetre of
+  // drag does not flip a stretch between box and bore, at grade and trough, or embankment and viaduct
+  const BAND = MS.dead_band_m ?? 0.25, prevT = LAST_T && LAST_T.id === S.data.id && LAST_T.L === S.L && LAST_T.step === step ? LAST_T : null;
+  const prevAt = (c) => (prevT ? prevT.t[Math.max(0, Math.min(n - 1, Math.round(c / step)))] || null : null);
+  const inBand = (val, thr, c) => prevT && Math.abs(val - thr) < BAND && prevAt(c);
+  const ccOk = (p) => p.d <= p.R.ccMax + (inBand(p.d, p.R.ccMax, p.c) && prevAt(p.c) === 'cutcover' ? BAND : 1e-6);   // within the cut-and-cover limit (the band holds a box)
+  // 1. every sample on its own: an anchor (open, river, box) or a tunnel point with its depth. Elevated is decided by the
+  // soffit (the deck under the rail clearing the ground by elevAbove), so an embankment is not drawn as a viaduct
   const base = (c, z) => {
     const r = riverAt(c);
     if (r && !alongShore(r)) return z >= pool() + 1 ? { t: 'elevated', role: 'open' } : { t: 'sunk', role: 'river' };
     const sec = canonAt(c);
-    if (sec && sec.m === 'covered') { const s0 = surfaceAt(c); return isFinite(s0) && z - s0 >= settings.elevAbove ? { t: 'elevated', role: 'open' } : { t: 'cutcover', role: 'box' }; }
+    if (sec && sec.m === 'covered') { const s0 = surfaceAt(c), h = z - settings.deckDepth - s0; return isFinite(s0) && (inBand(h, settings.elevAbove, c) ? prevAt(c) === 'elevated' : h >= settings.elevAbove) ? { t: 'elevated', role: 'open' } : { t: 'cutcover', role: 'box' }; }
     const g = groundAt(c); if (!isFinite(g)) return { t: 'atgrade', role: 'open' };
-    if (z - g >= settings.elevAbove) return { t: 'elevated', role: 'open' };
-    const d = g - z; if (d < settings.coverBelow) return { t: 'atgrade', role: 'open' };
-    if (d < METRO_ST.box.top) return { t: 'trough', role: 'open' };
+    const h = z - settings.deckDepth - g;
+    if (inBand(h, settings.elevAbove, c) ? prevAt(c) === 'elevated' : h >= settings.elevAbove) return { t: 'elevated', role: 'open' };
+    const d = g - z; if (inBand(d, settings.coverBelow, c) ? prevAt(c) === 'atgrade' : d < settings.coverBelow) return { t: 'atgrade', role: 'open' };
+    if (inBand(d, METRO_ST.box.top, c) ? prevAt(c) === 'trough' : d < METRO_ST.box.top) return { t: 'trough', role: 'open' };
     const o = overrideAt(c);
     if (o === 'cutcover') return { t: 'cutcover', role: 'box', d };
     if (o && OPEN.has(o)) return { t: o, role: 'open' };
@@ -1248,17 +1256,23 @@ function solveTypes(V) {
     if (o === 'cutcover' || (o && OPEN.has(o))) st = { t: o, role: o === 'cutcover' ? 'box' : 'open' };
     else if (o === 'shield' || o === 'deep') st = { t: o, role: 'mined', painted: true };
     else if (q.role !== 'tunnel') st = { t: q.t, role: q.role === 'river' ? 'open' : q.role };
-    else if (ds <= R.ccMax) st = { t: 'cutcover', role: 'box' };
+    else if (prevT && prevT.stRole && prevT.stRole[keyOf(s)] && Math.abs(ds - R.ccMax) < BAND ? prevT.stRole[keyOf(s)] === 'box' : ds <= R.ccMax) st = { t: 'cutcover', role: 'box' };
     else st = { t: methodAt(s.c), role: 'mined' };   // the drive's method, set again with the drive
     const sd = { s, ...st, ds, island: st.role === 'box' && platKind(s, 'cutcover') === 'island' };
     stOf.push(sd);
     for (let i = Math.max(0, Math.ceil((s.c - half) / step)); i <= Math.min(n - 1, Math.floor((s.c + half) / step)); i++) Object.assign(P[i], { t: st.t, role: st.role, stn: sd, ph: phaseAt(s.c), R });
-    if (sd.role === 'box' && ds > R.ccMax + 0.05) flags.push({ c0: s.c - half, c1: s.c + half, kind: 'Tunnel method', text: `${esc(s.name)} painted cut and cover ${fmtZ(ds, 1)} ${uLbl()} down, deeper than the cut-and-cover limit (${fmtZ(R.ccMax, 2)} ${uLbl()}, Phase ${P[stIdx(s.c)].ph})` });
+    if (sd.role === 'box' && ds > R.ccMax + BAND) flags.push({ c0: s.c - half, c1: s.c + half, kind: 'Tunnel method', text: `${esc(s.name)} painted cut and cover ${fmtZ(ds, 1)} ${uLbl()} down, deeper than the cut-and-cover limit (${fmtZ(R.ccMax, 2)} ${uLbl()}, Phase ${P[stIdx(s.c)].ph})` });
   });
-  // a sliver of open track inside a tunnel (the ground dipping for a few metres) is not a portal: tunnel, with its depth
+  // an open run inside a tunnel shorter than portal_min_m (a gully over the tube) is not a portal: a train cannot surface
+  // and go back under in less than the ramps need; tunnel, with its depth (the cost logic makes it a box or a treated tube)
+  const portalMin = MS.portal_min_m ?? 100;
   for (const [x, y] of runs(0, n - 1, (p) => p.role === 'open' && !p.stn)) {
-    if (len(x, y) >= MIN_RUN || x === 0 || y === n - 1) continue;
-    const a = P[x - 1].role, b = P[y + 1].role; if ((a === 'tunnel' || a === 'mined') && (b === 'tunnel' || b === 'mined')) for (let i = x; i <= y; i++) Object.assign(P[i], { role: 'tunnel', t: undefined, d: groundAt(P[i].c) - P[i].z, force: null });
+    if (len(x, y) >= portalMin || x === 0 || y === n - 1) continue;
+    const a = P[x - 1].role, b = P[y + 1].role;
+    if ((a === 'tunnel' || a === 'mined') && (b === 'tunnel' || b === 'mined')) {
+      for (let i = x; i <= y; i++) Object.assign(P[i], { role: 'tunnel', t: undefined, d: groundAt(P[i].c) - P[i].z, force: null });
+      if (len(x, y) >= MIN_RUN) flags.push({ c0: P[x].c, c1: P[y].c, kind: 'Tunnel method', info: true, text: `${Math.round(len(x, y))} m where the ground comes down to the rail inside the tunnel: too short for a portal (${Math.round(portalMin)} m for the ramps), tunnelled through` });
+    }
   }
   const phaseTube = (c) => (MS.phases[phaseAt(c)] || MS.phases.later).tube;
   const twinAt = (c) => { const t = phaseTube(c); return t === 'bore' ? twinOf(phaseAt(c)) : t; };
@@ -1278,8 +1292,8 @@ function solveTypes(V) {
   // at least approach_m whatever the spacing (Ben, 30 October)
   const approachAt = (i, dir) => {   // i: the drive's end sample, dir: outward
     let j = i + dir; while (P[j] && P[j].t === 'cutcover' && isTun(P[j]) && !P[j].shaft) j += dir;   // through the launch box
-    if (!P[j] || P[j].role === 'mined') return null;
-    const an = P[j].shaft ? { kind: 'box', sp: MS.box.spacing, edge: P[j].c } : anchorAt(j, -dir);
+    if (!P[j] || P[j].role === 'mined' || P[j].shaft) return null;   // a mined station or a box pocket keeps the tube spacing: no approach
+    const an = anchorAt(j, -dir);
     if (an.kind === 'end') return null;
     const tb = MS.tubes[P[i].tube], shift = ((tb ? tb.spacing : MS.box.spacing) - an.sp) / 2;
     if (Math.abs(shift) < 0.01 && an.kind !== 'river') return null;
@@ -1302,12 +1316,15 @@ function solveTypes(V) {
     // and cover end to end where it is within the limit throughout, against one bored drive with its low-cover penalties
     // (and box pockets where a long shallow stretch is cheaper boxed than treated); the cheaper wins. A short dip under
     // the cover line inside a drive is bored through with ground treatment, never a box.
-    const allBoxOk = !mined && !forced && tun.every((p) => p.d <= p.R.ccMax + 1e-6);
+    const allBoxOk = !mined && !forced && tun.every(ccOk);
     // the tube form (Ben, 31 October): the double-track bore between two double-track ends where it has its cover; twin
     // tubes into an island station, through a mined station of a twin-tube phase, or where the bore lacks cover
     const L = a > 0 ? anchorAt(a - 1, 1) : { kind: 'end', double: true }, Rt = b < n - 1 ? anchorAt(b + 1, -1) : { kind: 'end', double: true };
     const pt = phaseTube(P[a].c), ends2 = L.double !== false && Rt.double !== false;
-    let form = (pt === 'bore' ? ends2 : ends2 && !mined) ? 'bore' : 'twin';
+    // a mined station is two platform tunnels (side platforms), so a drive through one is twin tubes end to end in every
+    // phase: the double-track bore has no room for platforms (1 November)
+    let form = ends2 && !mined ? 'bore' : 'twin';
+    for (const p of span) if (p.role === 'mined' && p.stn && tubeFormAt(p.c) === 'bore' && p.c >= p.stn.s.c - 1 && p.c < p.stn.s.c + 1) flags.push({ c0: p.stn.s.c - half, c1: p.stn.s.c + half, kind: 'Tube form', text: `painted double-track bore through ${esc(p.stn.s.name)}, a mined station: no platforms fit in the running bore; the station is two platform tunnels (twin tubes), clear the paint` });
     if (form === 'bore') {   // the bore's cover all along, but for shallow ends the boxes carry on through
       let u = a, v = b; const ok = (p) => p.role === 'mined' || tubeFormAt(p.c) || p.d >= boreNeed - 0.005;
       while (u <= v && !ok(P[u]) && P[u].d <= P[u].R.ccMax) u++; while (v >= u && !ok(P[v]) && P[v].d <= P[v].R.ccMax) v--;
@@ -1319,11 +1336,32 @@ function solveTypes(V) {
     const hard = (p) => { const tb = tubeOfKey(key(p)); return tb.top + tb.od * CO.cover_hard; };   // below this the tube cannot be bored
     const boxCost = (p) => CO.box_m + CO.box_depth_m * p.d, boreCost = (p) => CO.bore_m + CO.low_cover_m_per_m * Math.max(0, need(p) - p.d);
     const sum = (x, y, f) => { let t = 0; for (let i = x; i <= y; i++) if (isTun(P[i])) t += f(P[i]) * step; return t; };
-    // the boxes at the ends carry on, within the cut-and-cover limit, through what cannot be bored at all (less than
-    // cover_hard of a diameter): the drive starts after the last of them
-    const launch = (from, dir, stop) => { let last = from - dir; for (let i = from; i !== stop + dir && isTun(P[i]) && P[i].d <= P[i].R.ccMax; i += dir) if (P[i].d < hard(P[i])) last = i; return last; };
-    let u = launch(a, 1, b) + 1, v = launch(b, -1, u) - 1;
-    if (allBoxOk && (u > v || sum(a, b, boxCost) <= sum(a, u - 1, boxCost) + sum(v + 1, b, boxCost) + sum(u, v, boreCost))) { for (const p of tun) p.t = 'cutcover'; continue; }
+    // the boxes at the ends (1 November): from its anchor a box may end at the start of any boreable run (cover_hard of a
+    // diameter or more) up to the last ground that cannot be bored at all; the cheapest end wins, box metres against bored
+    // metres with their treatment, an unboreable spot left beyond the end costing a pocket (its box and two method
+    // changes) where a whole drive fits before it, and ruling that end out where none does
+    const farthest = (from, dir, stop) => { let last = from - dir; for (let i = from; i !== stop + dir && isTun(P[i]) && ccOk(P[i]); i += dir) if (P[i].d < hard(P[i])) last = i; return last; };
+    const launchEnd = (from, dir, stop) => {   // the first sample of the drive from this end
+      const far = farthest(from, dir, stop); if (far === from - dir) return from;
+      const idx = []; for (let i = from; i !== far + dir; i += dir) idx.push(i);
+      let best = far + dir, bestCost = idx.reduce((t, i) => t + (isTun(P[i]) ? boxCost(P[i]) * step : 0), 0);   // the box through all of it
+      for (let k = 0; k < idx.length; k++) {
+        const i = idx[k], q = k ? P[idx[k - 1]] : null; if (!isTun(P[i]) || P[i].d < hard(P[i]) || (q && isTun(q) && q.d >= hard(q))) continue;   // the start of a boreable run
+        let cost = 0, ok = true, drv = k, inPocket = false;
+        for (let m = 0; m < k; m++) if (isTun(P[idx[m]])) cost += boxCost(P[idx[m]]) * step;
+        for (let m = k; m < idx.length && ok; m++) { const p = P[idx[m]]; if (!isTun(p)) continue;
+          if (p.d < hard(p)) { if (!inPocket) { inPocket = true; if ((m - drv) * step < R.minDrive || Math.abs(stop - idx[m]) * step < R.minDrive) ok = false; cost += 2 * CO.switch; } cost += boxCost(p) * step; }
+          else { if (inPocket) { inPocket = false; drv = m; } cost += boreCost(p) * step; } }
+        if (ok && cost < bestCost - 1e-9) { bestCost = cost; best = i; }
+      }
+      return best;
+    };
+    let u = launchEnd(a, 1, b), v = launchEnd(b, -1, u);
+    if (allBoxOk) {   // both are possible: the cheaper wins, the bored drive paying a method change at each end that meets a box
+      const boxTot = sum(a, b, boxCost), boreTot = u > v ? Infinity : sum(a, u - 1, boxCost) + sum(v + 1, b, boxCost) + sum(u, v, boreCost) + CO.switch * ((a > 0 ? 1 : 0) + (b < n - 1 ? 1 : 0));
+      if (u <= v) flags.push({ c0: P[a].c, c1: P[b].c, kind: 'Tube choice', info: true, text: `${Math.round(len(a, b))} m between boxes, within the cut-and-cover limit throughout: ${boxTot <= boreTot ? 'cut and cover end to end' : 'one bored drive'} (box ${Math.round(boxTot)} against bored ${Math.round(boreTot)} with its two ends, bore-metre units)` });
+      if (boxTot <= boreTot) { for (const p of tun) p.t = 'cutcover'; continue; }
+    }
     for (let i = a; i < u; i++) P[i].t = 'cutcover'; for (let i = v + 1; i <= b; i++) P[i].t = 'cutcover';
     if (u > v) continue;
     // 4. too little cover inside the drive
@@ -1334,7 +1372,7 @@ function solveTypes(V) {
     const low = runs(u, v, (p) => isTun(p) && p.d < need(p)), pockets = [];
     for (const [x, y] of low) {
       const bore = P.slice(x, y + 1).some((p) => isTun(p) && p.d < hard(p)) ? Infinity : sum(x, y, boreCost);
-      const boxOk = P.slice(x, y + 1).every((p) => !isTun(p) || p.d <= p.R.ccMax), box = boxOk ? sum(x, y, boxCost) + 2 * CO.switch : Infinity;
+      const boxOk = P.slice(x, y + 1).every((p) => !isTun(p) || ccOk(p)), box = boxOk ? sum(x, y, boxCost) + 2 * CO.switch : Infinity;
       const left = pockets.length ? pockets[pockets.length - 1][1] + 1 : u, whole = (x - left) * step >= R.minDrive && (v - y) * step >= R.minDrive;
       if (boxOk && whole && box < bore) pockets.push([x, y]);
       else if (bore < Infinity) flags.push({ c0: P[x].c, c1: P[y].c, kind: 'Low cover', info: true, text: `${Math.round(len(x, y))} m inside the drive with up to ${fmtZ(Math.max(...P.slice(x, y + 1).filter(isTun).map((p) => need(p) - p.d)), 2)} ${uLbl()} less than one diameter of cover: bored through with ground treatment (cost ${Math.round(bore)} against ${box < Infinity ? Math.round(box) + ' for a box pocket' : 'no pocket possible'})` });
@@ -1356,10 +1394,13 @@ function solveTypes(V) {
       const left = runs(x, y, (p) => p.t === 'shield' || p.t === 'deep').reduce((t, [u2, v2]) => t + len(u2, v2), 0);
       if (left >= R.minDrive || ps.some((p) => p.role === 'mined')) continue;
       const river = ap.some((q) => q && q.kind === 'river') || [P[a - 1], P[b + 1]].some((q) => q && q.role === 'river');
-      const boxes = len(a, b) - left;
+      // the boxes round this piece: its approaches, and the launch boxes where it reaches the stretch's ends (not the
+      // other pieces or the pockets between, which stay as decided: 1 November)
+      const boxes = (len(x, y) - left) + (x === u ? (u - a) * step : 0) + (y === v ? (b - v) * step : 0);
       if (river || left < boxes) {
-        approaches.length = mark; for (const p of P.slice(a, b + 1)) if (isTun(p)) { p.t = 'cutcover'; delete p.appr; delete p.tube; if (river) p.bank = true; }
-        const tp = P.slice(a, b + 1).filter(isTun), at = tp.reduce((m, p) => (p.d - p.R.ccMax > m.d - m.R.ccMax ? p : m), tp[0]), over = at ? at.d - at.R.ccMax : 0;
+        const x0 = river ? a : (x === u ? a : x), y0 = river ? b : (y === v ? b : y);
+        approaches.length = mark; for (const p of P.slice(x0, y0 + 1)) if (isTun(p) && !p.shaft) { p.t = 'cutcover'; delete p.appr; delete p.tube; if (river) p.bank = true; }
+        const tp = P.slice(x0, y0 + 1).filter(isTun), at = tp.reduce((m, p) => (p.d - p.R.ccMax > m.d - m.R.ccMax ? p : m), tp[0]), over = at ? at.d - at.R.ccMax : 0;
         if (river) flags.push({ c0: P[a].c, c1: P[b].c, kind: 'Tunnel method', info: true, text: `${Math.round(len(a, b))} m to the river, too short for a drive (${Math.round(R.minDrive)} m): the bank works of the sunk box (cut and cover in a cofferdam)${over > 0.05 ? `, down to ${fmtZ(over, 1)} ${uLbl()} past the street cut-and-cover limit` : ''}` });
         // else: boxes past their limit, marked unbuildable below (raise the profile, or lower it for a whole drive)
       } else flags.push({ c0: P[x].c, c1: P[y].c, kind: 'Tunnel method', info: true, text: `a ${Math.round(left)} m drive (shorter than ${Math.round(R.minDrive)} m) between two boxes: too deep for cut and cover (${fmtZ(R.ccMax, 2)} ${uLbl()}), bored as one piece` });
@@ -1401,7 +1442,7 @@ function solveTypes(V) {
       if (riverAt(p.c)) return null;
       const st = p.stn && p.stn.s, o = overrideAt(st ? st.c : p.c), t = o || p.t, d = groundAt(p.c) - p.z; if (!isFinite(d)) return null;
       if ((t === 'shield' || t === 'deep') && !st) { const tb = tubeOfKey(p.tube || tubeKey(p.c)), CO2 = MS.cost || { cover_hard: 0.5 }; if (d < tb.top + tb.od * CO2.cover_hard - 0.05) return 'cover'; }
-      if (t === 'cutcover' && !p.bank) { const sec = canonAt(p.c); if (!(sec && (sec.m === 'canal' || sec.m === 'covered')) && d > p.R.ccMax + 0.05) return 'box'; }
+      if (t === 'cutcover' && !p.bank) { const sec = canonAt(p.c); if (!(sec && (sec.m === 'canal' || sec.m === 'covered')) && d > p.R.ccMax + BAND) return 'box'; }
       return null; });
     for (const w of ['cover', 'box']) for (const [x, y] of runs(0, n - 1, (p, i) => why[i] === w)) {
       const prev = bad[bad.length - 1];
@@ -1410,7 +1451,8 @@ function solveTypes(V) {
       bad.push({ why: w, c0: P[x].c, c1: P[y].c, worst });
     }
     bad.sort((a, b) => a.c0 - b.c0); }
-  V._types = { g: S.ground, ms: MS, chr: CHR, plat: ST_PLAT, ax: APX_EXTRA, L: S.L, step, bad, t: P.map((p) => p.t), z: P.map((p) => p.z), tube: P.map((p) => ((p.t === 'shield' || p.t === 'deep') && p.tube) || null), part: P.map((p) => (p.appr ? 'a' : p.shaft ? 's' : p.stn ? 'S' : '')), flags, approaches };
+  for (const [c0, c1, short] of S.fillCapped || []) flags.push({ c0, c1, kind: 'Painted', warn: true, text: `the fill over the paint is held at ${fmtZ(MS.fill_max_m ?? 3, 1)} ${uLbl()} over ${Math.round(c1 - c0 + step)} m (a street cannot be raised more; ${fmtZ(short, 1)} ${uLbl()} short of the cover): lower the rail, or Regrade` });
+  V._types = { g: S.ground, ms: MS, chr: CHR, plat: ST_PLAT, ax: APX_EXTRA, L: S.L, step, bad, stRole: Object.fromEntries(stOf.map((sd) => [keyOf(sd.s), sd.role])), t: P.map((p) => p.t), z: P.map((p) => p.z), tube: P.map((p) => ((p.t === 'shield' || p.t === 'deep') && p.tube) || null), part: P.map((p) => (p.appr ? 'a' : p.shaft ? 's' : p.stn ? 'S' : '')), flags, approaches };
   return V._types;
 }
 function autoType(c, z) {
@@ -1435,19 +1477,24 @@ function typeAt(c, z = railAt(c)) {
 // the fill slopes back down to the surveyed ground at fillTaper. Fill only: ground already higher
 // stays. Checks, structure and depths use the finished ground; the level solver keeps the surveyed.
 function applyFill() {
-  const g0 = S.ground0; S.ground = g0; S.filled = false;
+  const g0 = S.ground0; S.ground = g0; S.filled = false; S.fillCapped = [];
   if (!g0 || !S.align) return;
   // painted Shallow shield and Deep tunnel re-grade too (Ben, 30 October): the ground over a painted tube is made up to the
   // tube's top plus its cover (one outside diameter), like a painted box's roof plus its cover
-  const ov = (S.align.ovr || []).filter((o) => o[2] === 'cutcover' || o[2] === 'shield' || o[2] === 'deep'); if (!ov.length) return;
+  const ov = (S.align.ovr || []).filter((o) => o[2] === 'cutcover' || o[2] === 'shield' || o[2] === 'deep'); S.fillCapped = []; if (!ov.length) return;
   const n = g0.length, step = S.step, t = new Float32Array(n).fill(-Infinity); let any = false;
+  // the fill is at most fill_max_m (a street regrade), except on the subway streets, built over the subway (1 November)
+  const cap = MS && MS.fill_max_m != null ? MS.fill_max_m : Infinity, capped = [];
   ov.forEach(([a, b, kind]) => {
     for (let i = Math.max(0, Math.ceil(a / step)); i <= Math.min(n - 1, Math.floor(b / step)); i++) {
       const c = i * step; if (riverAt(c)) continue;
-      const sc = structFor(kind, c), v = railAt(c) + sc.top + reqCover(sc, 0);
+      const sc = structFor(kind, c), v0 = railAt(c) + sc.top + reqCover(sc, 0), st = streetAtC(c);
+      const v = st && subwayStreet(st[3]) ? v0 : Math.min(v0, g0[i] + cap);
+      if (v0 > v + 0.005) capped.push([i, v0 - v]);
       if (v > t[i] && !(v <= g0[i] + 0.005)) { t[i] = v; any = true; }   // the taper starts only where the ground is raised
     }
   });
+  for (const [i, short] of capped) { const last = S.fillCapped[S.fillCapped.length - 1]; if (last && i * step - last[1] <= 2 * step) { last[1] = i * step; last[2] = Math.max(last[2], short); } else S.fillCapped.push([i * step, i * step, short]); }
   if (!any) return;
   const drop = (settings.fillTaper || 50) / 1000 * step;
   for (let i = 1; i < n; i++) t[i] = Math.max(t[i], t[i - 1] - drop);

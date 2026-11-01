@@ -381,6 +381,8 @@ class MetroProfile:
         step = float(self.data.get("step_m", 2.0))
         n = len(g0)
         t = np.full(n, -np.inf)
+        cap = float((self.ms or {}).get("fill_max_m") or math.inf) if getattr(self, "ms", None) else math.inf
+        st_at = self.street_at if getattr(self, "ctx", None) else (lambda c: None)
         for a, b, kind in cc:
             i0, i1 = max(0, math.ceil(a / step)), min(n - 1, math.floor(b / step))
             for i in range(i0, i1 + 1):
@@ -389,6 +391,8 @@ class MetroProfile:
                     continue
                 sc = self.struct_for(kind, c)
                 v = float(self.rail_at(c)) + sc["top"] + self.req_cover(sc, 0.0)
+                if not (st_at(c) and self.subway_street(st_at(c)[3])):   # at most fill_max_m, except on the subway streets (1 November)
+                    v = min(v, float(g0[i]) + cap)
                 if not v <= g0[i] + 0.005:   # the taper starts only where the ground is raised
                     t[i] = max(t[i], v)
         drop = float(self.settings.get("fillTaper", 50.0)) / 1000.0 * step
@@ -1219,19 +1223,21 @@ class MetroProfile:
             return out
         length = lambda a, b: P[b]["c"] - P[a]["c"] + step
         idx = lambda c: max(0, min(n - 1, int(round(c / step))))
+        band = float(ms.get("dead_band_m") or 0.25)   # the editor's dead band: a box this far past its limit is still a box
 
         def base(c, z):
             r = self.river_at(c)
             if r and not self.along_shore(r):
                 return {"t": "elevated", "role": "open"} if z >= self.pool() + 1 else {"t": "sunk", "role": "river"}
             sec = self.canon_at(c)
+            deck = float(st.get("deckDepth", 1.5))   # elevated by the soffit: the deck under the rail clearing the ground (1 November)
             if sec and sec["m"] == "covered":
                 s0 = self.surface_at(c)
-                return {"t": "elevated", "role": "open"} if math.isfinite(s0) and z - s0 >= st["elevAbove"] else {"t": "cutcover", "role": "box"}
+                return {"t": "elevated", "role": "open"} if math.isfinite(s0) and z - deck - s0 >= st["elevAbove"] else {"t": "cutcover", "role": "box"}
             g = float(self.ground_at(c))
             if not math.isfinite(g):
                 return {"t": "atgrade", "role": "open"}
-            if z - g >= st["elevAbove"]:
+            if z - deck - g >= st["elevAbove"]:
                 return {"t": "elevated", "role": "open"}
             d = g - z
             if d < st["coverBelow"]:
@@ -1275,15 +1281,19 @@ class MetroProfile:
                 ph = self._phase_at(s["c"])
                 for i in range(max(0, math.ceil((s["c"] - half) / step)), min(n - 1, math.floor((s["c"] + half) / step)) + 1):
                     P[i].update(t=sd["t"], role=sd["role"], stn=sd, ph=ph, R=R)
-                if sd["role"] == "box" and ds > R["cc_max"] + 0.05:
+                if sd["role"] == "box" and ds > R["cc_max"] + band:
                     flags.append({"c0": s["c"] - half, "c1": s["c"] + half, "kind": "painted box station past the limit", "len": 2 * half})
-            # an open sliver inside a tunnel is not a portal
+            # an open run inside a tunnel shorter than portal_min_m is not a portal (a train cannot surface and go back under
+            # in less than the ramps need): tunnel, with its depth (1 November)
+            portal_min = float(ms.get("portal_min_m") or 100.0)
             for x, y in runs(0, n - 1, lambda p: p["role"] == "open" and not p.get("stn")):
-                if length(x, y) >= MIN_RUN or x == 0 or y == n - 1:
+                if length(x, y) >= portal_min or x == 0 or y == n - 1:
                     continue
                 if P[x - 1]["role"] in ("tunnel", "mined") and P[y + 1]["role"] in ("tunnel", "mined"):
                     for i in range(x, y + 1):
                         P[i].update(role="tunnel", t=None, d=float(self.ground_at(P[i]["c"])) - P[i]["z"], force=None)
+                    if length(x, y) >= MIN_RUN:
+                        flags.append({"c0": P[x]["c"], "c1": P[y]["c"], "kind": "dip tunnelled through", "len": length(x, y), "info": True})
         phase_tube = lambda c: (ms["phases"].get(self._phase_at(c)) or ms["phases"]["later"])["tube"]
 
         def twin_at(c):
@@ -1318,9 +1328,9 @@ class MetroProfile:
             j = i + d
             while 0 <= j < n and P[j].get("t") == "cutcover" and is_tun(P[j]) and not P[j].get("shaft"):
                 j += d
-            if not (0 <= j < n) or P[j]["role"] == "mined":
+            if not (0 <= j < n) or P[j]["role"] == "mined" or P[j].get("shaft"):   # a mined station or a pocket keeps the tube spacing
                 return None
-            an = {"kind": "box", "sp": ms["box"]["spacing"], "edge": P[j]["c"]} if P[j].get("shaft") else anchor_at(j, -d)
+            an = anchor_at(j, -d)
             if an["kind"] == "end":
                 return None
             tb = ms["tubes"].get(P[i].get("tube"))
@@ -1360,12 +1370,16 @@ class MetroProfile:
                 tun = [p for p in span if is_tun(p)]
                 mined = any(p["role"] == "mined" for p in span)
                 forced = any(p.get("force") for p in tun)
-                all_box_ok = not mined and not forced and all(p["d"] <= p["R"]["cc_max"] + 1e-6 for p in tun)
+                cc_ok = lambda p: p["d"] <= p["R"]["cc_max"] + 1e-6
+                all_box_ok = not mined and not forced and all(cc_ok(p) for p in tun)
                 Lf = anchor_at(a - 1, 1) if a > 0 else {"kind": "end", "double": True}
                 Rf = anchor_at(b + 1, -1) if b < n - 1 else {"kind": "end", "double": True}
                 pt = phase_tube(P[a]["c"])
                 ends2 = Lf.get("double", True) and Rf.get("double", True)
-                form = "bore" if (ends2 if pt == "bore" else ends2 and not mined) else "twin"
+                form = "bore" if ends2 and not mined else "twin"   # a mined station is two platform tunnels: twin tubes through it (1 November)
+                for p in span:
+                    if p["role"] == "mined" and p.get("stn") and self.tube_form_at(p["c"]) == "bore" and p["stn"]["s"]["c"] - 1 <= p["c"] < p["stn"]["s"]["c"] + 1:
+                        flags.append({"c0": p["stn"]["s"]["c"] - half, "c1": p["stn"]["s"]["c"] + half, "kind": "bore painted through a mined station", "len": 2 * half})
                 if form == "bore":
                     ok = lambda p: p["role"] == "mined" or bool(self.tube_form_at(p["c"])) or p["d"] >= bore_need - 0.005
                     u, v = a, b
@@ -1389,19 +1403,58 @@ class MetroProfile:
                 bore_cost = lambda p: CO["bore_m"] + CO["low_cover_m_per_m"] * max(0.0, need(p) - p["d"])
                 ssum = lambda x, y, f: sum(f(P[i]) * step for i in range(x, y + 1) if is_tun(P[i]))
 
-                def launch(frm, d, stop):   # the end boxes carry on, within the limit, through what cannot be bored at all
+                def farthest(frm, d, stop):   # the last sample from this end that cannot be bored at all (within the limit)
                     last, i = frm - d, frm
-                    while i != stop + d and is_tun(P[i]) and P[i]["d"] <= P[i]["R"]["cc_max"]:
+                    while i != stop + d and is_tun(P[i]) and cc_ok(P[i]):
                         if P[i]["d"] < hard(P[i]):
                             last = i
                         i += d
                     return last
-                u = launch(a, 1, b) + 1
-                v = launch(b, -1, u) - 1
-                if all_box_ok and (u > v or ssum(a, b, box_cost) <= ssum(a, u - 1, box_cost) + ssum(v + 1, b, box_cost) + ssum(u, v, bore_cost)):
-                    for p in tun:
-                        p["t"] = "cutcover"
-                    continue
+
+                def launch_end(frm, d, stop):   # the first sample of the drive from this end (as the editor, 1 November): the
+                    # box may end at the start of any boreable run up to the last unboreable ground; the cheapest end wins, an
+                    # unboreable spot left beyond it costing a pocket where a whole drive fits before it, impossible where none does
+                    far = farthest(frm, d, stop)
+                    if far == frm - d:
+                        return frm
+                    idx = list(range(frm, far + d, d))
+                    best, best_cost = far + d, sum(box_cost(P[i]) * step for i in idx if is_tun(P[i]))
+                    for k, i in enumerate(idx):
+                        q = P[idx[k - 1]] if k else None
+                        if not is_tun(P[i]) or P[i]["d"] < hard(P[i]) or (q is not None and is_tun(q) and q["d"] >= hard(q)):
+                            continue
+                        cost = sum(box_cost(P[idx[m]]) * step for m in range(k) if is_tun(P[idx[m]]))
+                        ok, drv, in_pocket = True, k, False
+                        for m in range(k, len(idx)):
+                            p = P[idx[m]]
+                            if not is_tun(p):
+                                continue
+                            if p["d"] < hard(p):
+                                if not in_pocket:
+                                    in_pocket = True
+                                    if (m - drv) * step < R["min_drive"] or abs(stop - idx[m]) * step < R["min_drive"]:
+                                        ok = False
+                                        break
+                                    cost += 2 * CO["switch"]
+                                cost += box_cost(p) * step
+                            else:
+                                if in_pocket:
+                                    in_pocket, drv = False, m
+                                cost += bore_cost(p) * step
+                        if ok and cost < best_cost - 1e-9:
+                            best, best_cost = i, cost
+                    return best
+                u = launch_end(a, 1, b)
+                v = launch_end(b, -1, u)
+                if all_box_ok:   # both possible: the cheaper, the bored drive paying a method change at each end that meets a box
+                    box_tot = ssum(a, b, box_cost)
+                    bore_tot = math.inf if u > v else ssum(a, u - 1, box_cost) + ssum(v + 1, b, box_cost) + ssum(u, v, bore_cost) + CO["switch"] * ((1 if a > 0 else 0) + (1 if b < n - 1 else 0))
+                    if u <= v:
+                        flags.append({"c0": P[a]["c"], "c1": P[b]["c"], "kind": "method by cost", "len": length(a, b), "info": True, "box": round(box_tot), "bore": round(bore_tot)})
+                    if box_tot <= bore_tot:
+                        for p in tun:
+                            p["t"] = "cutcover"
+                        continue
                 for i in list(range(a, u)) + list(range(v + 1, b + 1)):
                     P[i]["t"] = "cutcover"
                 if u > v:
@@ -1411,7 +1464,7 @@ class MetroProfile:
                 pockets = []
                 for x, y in low:
                     bore = math.inf if any(is_tun(p) and p["d"] < hard(p) for p in P[x:y + 1]) else ssum(x, y, bore_cost)
-                    box_ok = all(not is_tun(p) or p["d"] <= p["R"]["cc_max"] for p in P[x:y + 1])
+                    box_ok = all(not is_tun(p) or cc_ok(p) for p in P[x:y + 1])
                     box = ssum(x, y, box_cost) + 2 * CO["switch"] if box_ok else math.inf
                     left = pockets[-1][1] + 1 if pockets else u
                     whole = (x - left) * step >= R["min_drive"] and (v - y) * step >= R["min_drive"]
@@ -1441,17 +1494,18 @@ class MetroProfile:
                     if left >= R["min_drive"] or any(p["role"] == "mined" for p in ps):
                         continue
                     river = any(q and q["kind"] == "river" for q in ap) or any(0 <= j < n and P[j]["role"] == "river" for j in (a - 1, b + 1))
-                    boxes = length(a, b) - left
+                    boxes = (length(x, y) - left) + ((u - a) * step if x == u else 0) + ((b - v) * step if y == v else 0)   # the boxes round this piece
                     if river or left < boxes:
+                        x0, y0 = (a, b) if river else ((a if x == u else x), (b if y == v else y))
                         del approaches[mark:]
-                        for p in P[a:b + 1]:
-                            if is_tun(p):
+                        for p in P[x0:y0 + 1]:
+                            if is_tun(p) and not p.get("shaft"):
                                 p["t"] = "cutcover"
                                 p.pop("appr", None)
                                 p.pop("tube", None)
                                 if river:
                                     p["bank"] = True
-                        over = max([p["d"] - p["R"]["cc_max"] for p in P[a:b + 1] if is_tun(p)] or [0.0])
+                        over = max([p["d"] - p["R"]["cc_max"] for p in P[x0:y0 + 1] if is_tun(p)] or [0.0])
                         if river:
                             flags.append({"c0": P[a]["c"], "c1": P[b]["c"], "kind": "bank works", "len": length(a, b), "info": True})
 
@@ -1522,7 +1576,7 @@ class MetroProfile:
                         return "cover"
                 if t == "cutcover" and not p.get("bank"):
                     sec = self.canon_at(p["c"])
-                    if not (sec and sec["m"] in ("canal", "covered")) and d > p["R"]["cc_max"] + 0.05:
+                    if not (sec and sec["m"] in ("canal", "covered")) and d > p["R"]["cc_max"] + band:
                         return "box"
                 return None
             for p in P:
@@ -1544,7 +1598,8 @@ class MetroProfile:
         step_flags()
         bad = step_unbuildable()
         self._types = {"key": key, "step": step, "bad": bad, "t": [p["t"] for p in P], "z": [p["z"] for p in P],
-                       "tube": [(p.get("tube") if p["t"] in ("shield", "deep") else None) for p in P], "flags": flags, "approaches": approaches}
+                       "tube": [(p.get("tube") if p["t"] in ("shield", "deep") else None) for p in P], "flags": flags, "approaches": approaches,
+                       "part": [("a" if p.get("appr") else "s" if p.get("shaft") else "S" if p.get("stn") else "") for p in P]}   # as the editor's part
         return self._types
 
     def _absorb_short(self, P, step):
@@ -1809,6 +1864,10 @@ class MetroProfile:
 
     def roads(self) -> List[list]:
         return list(self.ctx.get("roads") or []) if getattr(self, "ctx", None) else []
+
+    def subway_street(self, name) -> bool:
+        ''' a street built over the subway (the record's subway_streets: Central Parkway, Victory, MLK) '''
+        return any(str(k).lower() in str(name or "").lower() for k in ((self.ms or {}).get("subway_streets") or [])) if getattr(self, "ms", None) else False
 
     def street_at(self, c: float) -> Optional[list]:
         return next((r for r in self.streets() if r[0] - 5 <= c <= r[1] + 5), None)

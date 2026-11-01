@@ -734,6 +734,8 @@ def test_approach_boxes_at_canon_and_tube_stations():
                 while 0 <= k < len(t) and t[k] == "cutcover":
                     box.append(k * step)
                     k += d
+                if box and all(T["part"][int(round(q / step))] == "s" for q in box):
+                    continue   # a box pocket inside a drive keeps the tube spacing: no approach (1 November)
                 assert any(inside(q) for q in box) or mp.override_at(c) == "cutcover", f"{lid}: tube meets box at {c:.0f} m with no approach"
 
 
@@ -745,11 +747,14 @@ def test_tube_form_by_drive_ends_and_paint():
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent
     load = lambda l: MetroProfile.load(root / f"data/profile/lines/{l}.json", root / f"hub/seed/alignments/{l}.json", root / "data/profile/settings.json")
-    mp = load("Line_8")   # Phase 2: the bore between double-track ends, no spacing change
+    mp = load("Line_12")   # Phase 2: the bore between double-track ends with no mined station, no spacing change
     T = mp.stretch_types()
-    i = int(5400 / T["step"])
-    assert T["t"][i] in ("shield", "deep") and T["tube"][i] == "bore" and mp.struct_for("deep", 5400)["k"] == "bore"
-    assert not [a for a in T["approaches"] if 4500 < a["c"] < 6450 and a["kind"] != "river"]
+    i = int(7900 / T["step"])
+    assert T["t"][i] in ("shield", "deep") and T["tube"][i] == "bore" and mp.struct_for("deep", 7900)["k"] == "bore"
+    assert not [a for a in T["approaches"] if 7620 < a["c"] < 8200 and a["kind"] != "river"]
+    mp = load("Line_8")   # Phase 2 too, but Jefferson and Mt Auburn are mined stations: two platform tunnels, so twin tubes
+    T = mp.stretch_types()   # through the drive (1 November, the realism audit B3), never the double-track bore
+    assert T["t"][int(5400 / T["step"])] in ("shield", "deep") and T["tube"][int(5400 / T["step"])] == "A"
     mp = load("Line_2")   # Holmes and Meinken are island stations: twin tubes between them
     T = mp.stretch_types()
     assert T["tube"][int(18200 / T["step"])] in ("A", "C")

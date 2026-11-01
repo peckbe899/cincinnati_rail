@@ -499,3 +499,38 @@ group 1 approved. The ways the system could still change what he saved, and what
   and bends; the files event rebuilds the line with the view kept and undo cleared; a save after a pipeline write while
   editing is refused and the banner's Keep mine writes the next version; the Deck merges a tie's platform offset with an
   edit of its own. Tests: `test_seed_merge_keeps_a_profile_whole`, `test_saved_profile_read_in_its_own_frame`.
+
+## 2026-11-01: realism audit, group 2: results a designer would call wrong on sight (B1, B3, B4, C1, C2, C3, C6, D)
+
+Ben: "yes, start group 2". Each rule in both engines (the page's `solveTypes`, the copy's `_stretch_types`); three new
+drawing values in the structure record (`portal_min_m` 100, `dead_band_m` 0.25, `fill_max_m` 3.0, on the hub page):
+
+- B1, the launch box swallowed boreable ground (a station box carried 800 m to one shallow spot). Now the box from an
+  anchor may end at the start of any boreable run up to the last ground that cannot be bored at all, and the cheapest end
+  wins with the same cost sums as the rest of the engine: box metres against bored metres with their treatment, an
+  unboreable spot left beyond the end costing a pocket (its box and two method changes) where a whole drive fits before
+  it, and that end ruled out where none does.
+- C2, the cost compared unequal things. The bored option now pays a method change at each end that meets a box, and the
+  note on every stretch within the limit throughout shows both totals (box against bored, bore-metre units).
+- B3, a Phase 2 mined station sat inside the 9.0 m running bore with no platforms. A mined station is two platform
+  tunnels, so a drive through one is twin tubes end to end in every phase; a painted double-track bore through a mined
+  station is an error. (A cavern with an island is a ruling for later, with the 3D build's bored island, B6.) On Line 8
+  this turns the Jefferson and Mt Auburn drive from the bore to type A tubes; Line 12 keeps a bore between its boxes.
+- B4, a 20 m gully over a tube became a portal with launch and approach boxes both sides. An open run inside a tunnel is
+  a portal only if at least `portal_min_m` (the ramps); shorter, it is tunnelled through at its depth and the cost logic
+  makes it a box pocket or a treated tube, with a note from MIN_RUN up.
+- C3, a pocket got station approaches: a working shaft is built at the tube spacing, no approach box.
+- C6, a short leftover converted the whole stretch to cut and cover, pockets and the other pieces included: now only its
+  own piece (with the launch box it reaches), the river case unchanged.
+- C1, fill made anything buildable: the ground over a painted box or tube is raised at most `fill_max_m` (a street
+  regrade), any amount on the record's `subway_streets` (Central Parkway, Victory, MLK, built over the subway); a capped
+  stretch gets a Painted warning with the shortfall, and the cover and unbuildable checks then say the rest.
+- D, no hysteresis: inside `dead_band_m` of a threshold (the cut-and-cover limit for a station or a sample, at grade,
+  trough, elevated) the last solve's decision stands while editing (the page keeps the station roles of its last solve;
+  the copy, with no last solve, decides fresh, which is what the page does on load). Elevated is now decided by the
+  soffit: the deck under the rail (`deckDepth`) clearing the ground by elevAbove, so a 3 m embankment is not a viaduct
+  with its girder in the ground. The unbuildable box check and the painted-box-station flag use the same band.
+- Parity: the page and the copy agree on every sample of every line but the two known ties (Line 3 at a float tie,
+  Line 5 at 30026, a stale approach extra); the scratch hub's record needed the three new values first, which showed the
+  page reads them from the hub record, as it should. Tests updated: a pocket needs no approach; Line 8's bore drive is now
+  twin tubes through its mined stations, the bore asserted on Line 12.
