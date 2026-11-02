@@ -582,3 +582,10 @@ Line 1 over the L&N bridge:
   3.3 m girder against 4.3 m (a shallower deck there, or the street lowered); low cover at the portal east of Taft
   Theater (bored with treatment by the cost logic); Newport Central's type is a judgment from East 10th Street.
 - Page and copy agree on every line (Line 5's known approach extra aside); the 3D build runs with no errors.
+- Follow-up (Ben: "the 3D bridge did not take"; "why not save the profile with the data I gave instead, like we did with
+  the sunken tubes?"): the deck levels were in the saved profile, but Station 3D drew every elevated stretch as a bare
+  deck slab. As with the sunk box, the bridge is now its own structure in the 3D build: the Profiles page hands over its
+  canon bridges (`railProfile.bridges()`: stretch and piers), the build keys the samples on them `elevated~truss`
+  (`tkey`, like the tube keys) and puts the bridge in the snapshot line; the 3D page draws the deck between two through
+  trusses, span / 8 deep on each span between Ben's piers (the editor's truss rule; chords and posts in steel, a Warren
+  web), and the piers from the ground to the deck. Other elevated stretches are still slabs (no piers yet).

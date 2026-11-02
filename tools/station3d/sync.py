@@ -658,7 +658,9 @@ def main():
             issues.append(f"{d['line']}: no saved alignment in the Profiles editor; drawn from its built-in defaults")
         name = d['line'] if d['sys'] != 'rer' or d.get('letter') else f"{d['line']} (TRI {RER_LETTER.get(lid, '?')})"
         L[lid] = {'id': lid, 'name': name, 'sys': d['sys'], 'color': d.get('color'), 'saved': h['saved'],
-                  'S': pieces, 'stations': sts, 'deleted': sorted(dels)}
+                  'S': pieces, 'stations': sts, 'deleted': sorted(dels),
+                  # fixed bridges from the Profiles canon (Line 1's L&N truss spans, 2 November): their stretch and piers
+                  'bridges': [{'name': b['name'], 'c0': r1(b['c0']), 'c1': r1(b['c1']), 'piers': [r1(v) for v in b['piers']]} for b in h.get('bridges') or []]}
 
     near_line = {lid: Near() for lid in L}
     for lid, l in L.items():
@@ -1450,6 +1452,8 @@ def main():
                     o['track_offsets'], o['tracks_from'] = [r2(h), r2(-h)], 'centred on the line'
 
     def tkey(lid, t, c):
+        if t == 'elevated' and any(b['c0'] - 0.5 <= c <= b['c1'] + 0.5 for b in L[lid].get('bridges') or []):
+            return 'elevated~truss'   # on a fixed bridge (the sunk box's counterpart: its own structure in the 3D)
         return f'{t}~{metro_tube(lid, c)}' if MS and t in ('shield', 'deep') and L[lid]['sys'] != 'rer' else t
 
     # ---- the snapshot ----
@@ -1463,7 +1467,7 @@ def main():
                            'x': enc([s_[1] for s_ in piece], 10), 'y': enc([s_[2] for s_ in piece], 10),
                            'z': enc([s_[3] for s_ in piece], 100), 't': rle([tkey(lid, s_[4], s_[0]) for s_ in piece]), 'sh': rle(sh), 'il': rle(il)})
         snap_lines.append({'id': lid, 'name': l['name'], 'sys': l['sys'], 'color': l['color'], 'saved': l['saved'],
-                           'pieces': pieces, 'stations': l['stations']})
+                           'pieces': pieces, 'stations': l['stations'], **({'bridges': l['bridges']} if l.get('bridges') else {})})
     struct = {lid: {t: structure(lid, t) for t in ('cutcover', 'shield', 'deep', 'sunk', 'elevated', 'atgrade', 'trough')} for lid in L}
     if MS:   # Metro bored stretches by their tube (type A, type C, the double-track bore): 'shield~A' and so on
         for lid in L:
@@ -1471,6 +1475,9 @@ def main():
                 for t in ('shield', 'deep'):
                     for name in MS['tubes']:
                         struct[lid][f'{t}~{name}'] = tube_struct(name)
+    for lid in L:   # a fixed bridge: the deck (deckDepth under the rail) between two through trusses, span / 8 deep (the
+        if L[lid].get('bridges'):   # editor's truss rule), on the bridge's own piers
+            struct[lid]['elevated~truss'] = dict(OPEN_ST, k='truss', t='elevated', below=1.5, top=0.0, truss_depth_per_span=1 / 8, pier_m=3.0)
     meta = {
         'area': AREA['id'], 'name': AREA['name'], 'default_station': AREA['default_station'],
         'synced_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),

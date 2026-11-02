@@ -276,7 +276,7 @@ function polylines(list, mat) {   // many point lists [[x, y, z]...] into one Li
 const rect = (u0, u1, v0, v1) => [[u0, v0], [u1, v0], [u1, v1], [u0, v1]];
 const circle = (cu, cv, r, k = 10) => Array.from({ length: k }, (_, i) => [cu + r * Math.cos(2 * Math.PI * i / k), cv + r * Math.sin(2 * Math.PI * i / k)]);
 function profilesFor(st) {
-  if (st.k === 'box' || st.k === 'open') return [rect(-st.width / 2, st.width / 2, -st.below, Math.max(st.top, 0.05))];
+  if (st.k === 'box' || st.k === 'open' || st.k === 'truss') return [rect(-st.width / 2, st.width / 2, -st.below, Math.max(st.top, 0.05))];
   const r = st.od / 2, cv = st.top - r;
   return st.spacing ? [circle(-st.spacing / 2, cv, r), circle(st.spacing / 2, cv, r)] : [circle(0, cv, r)];
 }
@@ -301,6 +301,59 @@ function label(text, opts = {}) {
   return sp;
 }
 function place(sp, x, y, z) { sp.userData.at = [x, y, z]; sp.position.set(X(x), Yp(x, y, z), Z(y)); }
+
+// ---------- fixed bridges (the sunk box's counterpart over the water): Line 1's L&N truss spans (Ben, 2 November) ----------
+// The snapshot's line carries the bridge's stretch and its own piers (from the Profiles canon); its samples are the
+// 'elevated~truss' structure: the deck under the rail between two through trusses, each span / 8 deep (the editor's truss
+// rule), chords and posts in steel, a Warren web of lines; piers from the ground (the riverbed in the water) to the deck.
+const STEEL = new THREE.MeshStandardMaterial({ color: 0x6d7378, roughness: 0.6, metalness: 0.3, side: THREE.DoubleSide, clippingPlanes: clips });
+const STEEL_L = new THREE.LineBasicMaterial({ color: 0x6d7378, clippingPlanes: clips });
+const PIER_M = new THREE.MeshStandardMaterial({ color: 0xb9b2a4, roughness: 0.9, side: THREE.DoubleSide, clippingPlanes: clips });
+function lineAt(l, c) {   // point, level and unit tangent of a line at chainage c (null off its pieces)
+  for (const p of l.P) {
+    if (p.length < 2 || c < p[0].c - 0.5 || c > p[p.length - 1].c + 0.5) continue;
+    let lo = 0, hi = p.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (p[m].c <= c) lo = m; else hi = m; }
+    const a = p[lo], b = p[hi], u = b.c > a.c ? Math.max(0, Math.min(1, (c - a.c) / (b.c - a.c))) : 0, L = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+    return { x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u, z: a.z + (b.z - a.z) * u, tx: (b.x - a.x) / L, ty: (b.y - a.y) / L };
+  }
+  return null;
+}
+function bridgeParts(l, stt, grp) {
+  const st = stt && stt['elevated~truss']; if (!st || !(l.bridges || []).length) return;
+  const W = (q, u, v) => [X(q.x - q.ty * u), Yp(q.x, q.y, q.z) + v, Z(q.y + q.tx * u)];   // u: metres left of the line, v: over the rail
+  const solids = [], piers = [], web = [], half = st.width / 2;
+  const box = (out, q0, q1, u0, u1, lo, hi) => {   // a box from chainage point q0 to q1, u0..u1 across, lo..hi (functions of the point)
+    const c = [[q0, u0], [q0, u1], [q1, u1], [q1, u0]], B = c.map(([q, u]) => lo(q, u)), T = c.map(([q, u]) => hi(q, u));
+    const pos = new Float32Array([...B.flat(), ...T.flat()]);
+    out.push({ pos, idx: [0, 2, 1, 0, 3, 2, 4, 5, 6, 4, 6, 7, 0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6, 3, 0, 4, 3, 4, 7] });
+  };
+  for (const b of l.bridges) {
+    const ps = b.piers.slice().sort((x, y) => x - y);
+    for (let k = 0; k + 1 < ps.length; k++) {
+      const c0 = ps[k], c1 = ps[k + 1], Ls = c1 - c0, H = Ls * (st.truss_depth_per_span || 0.125), n = Math.max(2, Math.round(Ls / 12));
+      for (const side of [-1, 1]) {
+        const u = side * (half + 0.4), pts = [];
+        for (let i = 0; i <= n; i++) { const q = lineAt(l, c0 + Ls * i / n); if (q) pts.push(q); }
+        if (pts.length < 2) continue;
+        for (let i = 0; i + 1 < pts.length; i++) {   // chords: top at H, bottom at the deck
+          box(solids, pts[i], pts[i + 1], u - 0.4, u + 0.4, (q, uu) => W(q, uu, H - 0.9), (q, uu) => W(q, uu, H));
+          box(solids, pts[i], pts[i + 1], u - 0.4, u + 0.4, (q, uu) => W(q, uu, -st.below), (q, uu) => W(q, uu, -st.below + 0.9));
+          const a = pts[i], z = pts[i + 1];
+          web.push([W(a, u, -st.below + 0.9), W(a, u, H - 0.9)], i % 2 ? [W(a, u, H - 0.9), W(z, u, -st.below + 0.9)] : [W(a, u, -st.below + 0.9), W(z, u, H - 0.9)]);
+        }
+        const e = pts[pts.length - 1]; web.push([W(e, u, -st.below + 0.9), W(e, u, H - 0.9)]);
+      }
+      for (let i = 0; i <= n; i++) { const q = lineAt(l, c0 + Ls * i / n); if (q) web.push([W(q, -half - 0.4, H - 0.45), W(q, half + 0.4, H - 0.45)]); }   // top bracing
+    }
+    for (const c of ps) {   // piers: the ground (the riverbed in the water) to the deck underside, the trusses' width plus a metre
+      const q = lineAt(l, c); if (!q) continue;
+      const a = { ...q, x: q.x - q.tx * 1.5, y: q.y - q.ty * 1.5 }, z = { ...q, x: q.x + q.tx * 1.5, y: q.y + q.ty * 1.5 };
+      box(piers, a, z, -half - 1.5, half + 1.5, (p, u) => { const x = p.x - p.ty * u, y = p.y + p.tx * u; return [X(x), Yp(x, y, groundAt(x, y)) - 1, Z(y)]; }, (p, u) => W(p, u, -st.below));
+    }
+  }
+  const m1 = merged(solids, STEEL), m2 = merged(piers, PIER_M), m3 = polylines(web, STEEL_L);
+  for (const m of [m1, m2, m3]) if (m) grp.add(m);
+}
 
 // ---------- the snapshot, decoded ----------
 function prepare(snap) {
@@ -468,6 +521,7 @@ function build(snap) {
       parts.push(sweepData(seg, rect(u0, u1, -st.below, Math.max(st.top, 0.05))));
     }
     for (const [id, ps] of partsBy) { const ms = merged(ps, id === l.id ? mat : structMat((S.byId.get(id) || l).col, sop)); if (ms) grp.add(ms); }
+    bridgeParts(l, stt, grp);
     // rails: each Deck track at its rail level (interlined pairs striped), else the line's centre where not shared
     const railsBy = new Map([[l.id, []]]), railsOf = (id) => { if (!railsBy.has(id)) railsBy.set(id, []); return railsBy.get(id); };
     const v3 = (t) => t.map((p) => [X(p.x), Yp(p.x, p.y, p.z), Z(p.y)]);
