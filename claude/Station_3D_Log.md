@@ -589,3 +589,31 @@ Line 1 over the L&N bridge:
   (`tkey`, like the tube keys) and puts the bridge in the snapshot line; the 3D page draws the deck between two through
   trusses, span / 8 deep on each span between Ben's piers (the editor's truss rule; chords and posts in steel, a Warren
   web), and the piers from the ground to the deck. Other elevated stretches are still slabs (no piers yet).
+
+## 2026-11-02: paints must make sense (Ben: "the painting has to make sense")
+
+- Ben, on Line 7 between Boudinot and Quebec: "I don't understand this regrading nonsense". The cause was the fill over
+  paints (his 26 October rule, extended to tubes on 30 October and capped by `fill_max_m` on 1 November): a painted box
+  or tube with too little ground over it raised the ground to its roof plus cover, here Queen City Avenue by up to 3 m
+  over about 300 m. Measured on the saved profiles: fill on Lines 1, 2, 2b, 4 and 14 (up to 8.3 m) and on RER 3, 4, A, C
+  and D (30 m under the RER 4 / D viaduct, the taper of a deep paint past a portal).
+- The fill is gone (page `applyFill`, port `refresh_fill`, `fillTaper`, the record's `fill_max_m`, the hub field). The
+  finished ground is the surveyed ground with the Deck's street re-grades; a paint never raises it. The subway streets
+  stay marked (no misfit falls on one).
+- A paint, or a station's type selection, holds only where its structure can be built at the drawn rail (`paintMisfits`,
+  port `paint_misfits`): a box's roof under the ground; an open trough's rail under the ground, no deeper than a dig;
+  at grade within a box's height below and a viaduct's height above the ground; elevated with the deck's underside over
+  the ground; a bored tube its cover (RER the minimum cover; Metro a mined station half a diameter; the running tubes and
+  boxes past their limit are the unbuildable check, A). Rivers, the canon's boxes (canal, covered way) and locks are the
+  canon's; a canon method section (shallow, deep) is only a hint, so a paint inside one is checked.
+- A misfit (20 m or longer, or a station by its centre) is hatched as unbuildable and listed under Painted with Lower or
+  Raise (the existing regrade fix, now given the level the structure needs, platforms included) and Clear (the paint
+  over that stretch, or the station's selection). The paint review marks the paints that do not fit; the system check
+  has a Paint misfit column. The fix button once called Regrade is Lower (it moves the rail, never the ground).
+- Saved paints are not changed (records change only through Ben). Misfits on the seed's saved profiles: Line 1 (painted
+  boxes from Central Ave to 6th along Linn Street and West 5th, up to 5.1 m short, and two short ones in Newport), Line 2
+  (66 m), Line 2b (two stretches and Bullock), Line 4 (W 8th), Line 14 (Daly), RER A trunk (Times and its approach,
+  bored with too little cover). Line 7's paints are only in Ben's hub. Painted tubes the fill had covered now show in the
+  unbuildable check (Line 4, 36 m).
+- Page and copy agree on every Metro line (types, unbuildable, misfits; Line 5's old approach-extra difference is gone);
+  72 tests pass; the 3D build checks with no new issues.

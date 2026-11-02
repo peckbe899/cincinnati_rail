@@ -532,13 +532,12 @@ def test_cut_norwood_context():
     # (no saved profile) holds the station 4.7 m over the tracks' level, short of the 7.8 m a line under them needs
     x = [x for x in l14.context_clearances() if not x["ok"]]
     assert x and all(y["with"] == "Norwood Central tracks" for y in x)
-    # painted cut and cover: the box keeps its level and the ground is filled to roof + cover
+    # a paint never raises the ground (Ben, 2 November: "the painting has to make sense")
     l9 = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json", records="repo")
     s0 = l9.stations[3]["c"]
-    l9.ovr = [(s0 - 60.0, s0 + 60.0, "cutcover")]
-    l9.refresh_fill()
-    for ci in np.arange(s0 - 50.0, s0 + 50.0, 10.0):
-        assert float(l9.ground_at(ci)) >= float(l9.rail_at(ci)) + 4.6 + 0.6 - 0.01
+    g0 = [float(l9.ground_at(ci)) for ci in np.arange(s0 - 200.0, s0 + 200.0, 10.0)]
+    l9.ovr = [(s0 - 200.0, s0 + 200.0, "cutcover")]
+    assert [float(l9.ground_at(ci)) for ci in np.arange(s0 - 200.0, s0 + 200.0, 10.0)] == g0
 
 
 def test_context_street_openings():
@@ -1011,3 +1010,39 @@ def test_tie_chainage_map_follows_the_track():
     assert abs(m(3000.0) - pn[-1][0]) < 0.5
     seg = rdr.cmap(segs_o, segs_n)
     assert abs(seg(500.0) - 500.0) > 5   # the old map stretched the unchanged track
+
+
+def test_paints_must_make_sense():
+    """A paint or a station's type holds only where its structure can be built at the drawn rail (Ben, 2 November:
+    "the painting has to make sense"); else it is a misfit with the fix's direction, and the ground stays as it is."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent / "data/profile"
+    mp = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json", records="repo")
+    half = mp.settings["platform"] / 2
+    cs = np.arange(0.0, mp.length, 2.0)
+    d = np.array([float(mp.ground_at(c) - mp.rail_at(c)) for c in cs])
+    near = lambda c: any(abs(c - s["c"]) <= half + 30 for s in mp.stations) or mp.river_at(c) or mp.canon_at(c)
+    # 100 m of open track with the rail near the ground, away from stations
+    i = next(i for i in range(len(cs) - 60) if all(-1.0 < d[j] < 2.0 and not near(cs[j]) for j in range(i, i + 60)))
+    a, b = float(cs[i]), float(cs[i + 50])
+    mp.ovr = [(a, b, "cutcover")]           # a box with its roof in the air: lower the rail
+    m = mp.paint_misfits()
+    assert len(m) == 1 and m[0]["why"] == "roof" and m[0]["mode"] == "lower" and m[0]["c1"] - m[0]["c0"] >= 90
+    assert m[0]["worst"] > 2.5
+    mp.ovr = [(a, b, "atgrade")]            # at grade where the rail is at the ground: fits
+    assert mp.paint_misfits() == []
+    mp.ovr = [(a, b, "elevated")]           # a deck on the ground: raise the rail
+    m = mp.paint_misfits()
+    assert m and m[0]["why"] == "buried" and m[0]["mode"] == "raise"
+    mp.ovr = [(a, a + 10.0, "cutcover")]    # shorter than MIN_RUN: a paint edge, not flagged
+    assert mp.paint_misfits() == []
+    # a deep box station (the rules' own box) fits; selected elevated while it is underground does not
+    k = next(k for k, s in enumerate(mp.stations) if float(mp.ground_at(s["c"]) - mp.rail_at(s["c"])) > 6.0 and not mp.canon_at(s["c"]))
+    mp.ovr = []
+    mp.stt = [""] * len(mp.stations)
+    mp.stt[k] = "cutcover"
+    assert mp.paint_misfits() == []
+    mp.stt[k] = "elevated"
+    m = mp.paint_misfits()
+    assert len(m) == 1 and m[0]["station"] == mp.stations[k]["name"] and m[0]["why"] == "buried"

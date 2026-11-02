@@ -15,8 +15,9 @@ Model (as in the page):
     the canon sections for the founding Lines 1-6.
   * ground, in three layers as on the page: the surveyed raster; the Mill Creek Deck's street
     re-grades and open cuts at CUT and Norwood Central on top (data/profile/context/lines.json,
-    the ground the solver uses); and over painted cut and cover the ground filled to the box
-    roof plus cover, sloping back past the ends (the ground structure and cover are judged on).
+    the ground the solver uses, and the ground structure and cover are judged on). A paint never
+    raises the ground (Ben, 2 November: "the painting has to make sense"): a paint or a station's
+    type that cannot be built at the drawn rail is a misfit (paint_misfits).
   * context (data/profile/context/lines.json): the other systems' structures at CUT and Norwood
     Central (the lower level and its pairs, the intercity and C&O pairs, the APEx arch viaducts,
     the Norwood surface tracks and trench) as chainage blocks with their rail level, checked
@@ -49,7 +50,7 @@ TUNNEL_STRUCTURES = {"tunnel", "cut-and-cover", "shield", "deep-tube", "sunk-box
 # Platforms 400 ft (Ben, 23 October 2026: 6 cars of about 67 ft or 8 of about 50 ft; was 500 ft)
 DEFAULTS = dict(maxGrade=50.0, platform=121.92, defDepth=7.62, elevAbove=3.0, coverBelow=3.0,
                 deepBelow=18.29, shallowMax=12.19, poolFt=455.0, deckDepth=1.5,
-                vcRadius=1500.0, vcMinLen=30.5, minCover=2.0, fillTaper=50.0,
+                vcRadius=1500.0, vcMinLen=30.5, minCover=2.0,
                 riverRoof=1.0, riverSink=5.0, riverRise=3.0, riverFlatTol=1.0, riverClearWater=3.66, riverCap=1.0,
                 roadClearHighway=4.9, roadClearMajor=4.3, roadClearMinor=4.3)
 # Metro structures (Ben's rules), from the top of rail: below = rail to underside, top = rail to
@@ -105,7 +106,7 @@ ERA = {**{f"Line_{k}": {"shield": "tube"} for k in ("1", "2", "2b", "3", "4", "5
 RER_DEFAULTS = dict(maxGrade=35.0, platform=204.2, defDepth=12.0, elevAbove=3.0, coverBelow=3.0,
                     deepBelow=25.0, shallowMax=18.0, envelope=6.6, boreCrown=7.5, invertDepth=1.0, poolFt=455.0,
                     surfStep=250.0, tubeCover=3.0, vcRadius=3000.0, vcMinLen=30.5, minCover=8.5, deckDepth=2.0,
-                    fillTaper=50.0, riverSink=5.0, riverRise=3.0, riverFlatTol=1.0, riverClearWater=3.66,
+                    riverSink=5.0, riverRise=3.0, riverFlatTol=1.0, riverClearWater=3.66,
                     riverCap=1.0, roadClearHighway=4.9, roadClearMajor=4.3, roadClearMinor=4.3)
 RER_CANON_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "rer" / "canon.json"
 CONTEXT_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "context" / "lines.json"
@@ -263,7 +264,6 @@ class MetroProfile:
         if alignment_json and Path(alignment_json).exists():
             doc = json.loads(Path(alignment_json).read_text())
         p._align_from_doc(doc)
-        p.refresh_fill()
         return p
 
     @property
@@ -327,11 +327,11 @@ class MetroProfile:
 
     # ------------------------------------------------------------- ground
     def ground_at(self, c):
-        """Finished ground: surveyed + Deck re-grades + fill over painted cut and cover."""
+        """Finished ground: surveyed + Deck re-grades (a paint never raises it)."""
         return self._sample(self._ground, c)
 
     def ground0_at(self, c):
-        """The ground the level solver uses: surveyed + Deck re-grades (no painted fill)."""
+        """The ground the level solver uses: the finished ground (surveyed + Deck re-grades)."""
         return self._sample(getattr(self, "_ground0", self._ground), c)
 
     def ground_dem_at(self, c):
@@ -375,47 +375,6 @@ class MetroProfile:
                 i = r["i0"] + k
                 if i < len(g) and np.isfinite(g[i]) and v < g[i]:
                     g[i] = v
-
-    def refresh_fill(self):
-        """Painted cut and cover (Ben, 26 October): the box keeps its level and the ground is
-        regraded over it, at least the box roof plus its cover (Metro 4.6 + 0.6 m above the rail;
-        RER the box height), sloping back to the solver's ground at fillTaper per mille past the
-        ends. Painted Shallow shield and Deep tunnel re-grade the same way, to the tube's top plus its
-        cover (Ben, 30 October). Fill only. Call again after changing st, pvi or ovr."""
-        g0 = getattr(self, "_ground0", self._ground)
-        cc = [(a, b, t) for a, b, t in self.ovr if t in ("cutcover", "shield", "deep")]
-        if not cc:
-            self._ground = g0.copy()
-            self._ground_v = getattr(self, "_ground_v", 0) + 1
-            return
-        step = float(self.data.get("step_m", 2.0))
-        n = len(g0)
-        t = np.full(n, -np.inf)
-        cap = float((self.ms or {}).get("fill_max_m") or math.inf) if getattr(self, "ms", None) else math.inf
-        st_at = self.street_at if getattr(self, "ctx", None) else (lambda c: None)
-        for a, b, kind in cc:
-            i0, i1 = max(0, math.ceil(a / step)), min(n - 1, math.floor(b / step))
-            for i in range(i0, i1 + 1):
-                c = i * step
-                if self.river_at(c):
-                    continue
-                sc = self.struct_for(kind, c)
-                v = float(self.rail_at(c)) + sc["top"] + self.req_cover(sc, 0.0)
-                if not (st_at(c) and self.subway_street(st_at(c)[3])):   # at most fill_max_m, except on the subway streets (1 November)
-                    v = min(v, float(g0[i]) + cap)
-                if not v <= g0[i] + 0.005:   # the taper starts only where the ground is raised
-                    t[i] = max(t[i], v)
-        drop = float(self.settings.get("fillTaper", 50.0)) / 1000.0 * step
-        for i in range(1, n):
-            t[i] = max(t[i], t[i - 1] - drop)
-        for i in range(n - 2, -1, -1):
-            t[i] = max(t[i], t[i + 1] - drop)
-        river = np.array([bool(self.river_at(i * step)) for i in range(n)]) if self.data.get("rivers") else np.zeros(n, bool)
-        g = g0.copy()
-        m = np.isfinite(g0) & (t > g0 + 0.005) & ~river
-        g[m] = t[m].astype(np.float32)
-        self._ground = g
-        self._ground_v = getattr(self, "_ground_v", 0) + 1
 
     # ------------------------------------------------------------- canon
     def _build_canon(self):
@@ -786,7 +745,7 @@ class MetroProfile:
         return out
 
     def _effective_ovr(self):
-        """the paints as the solver and the fill read them (the page's effOvr): on the Metro, inside each platform only the
+        """the paints as the solver reads them (the page's effOvr): on the Metro, inside each platform only the
         station's selection; a locked station keeps the lock's paint. The saved paints stay in self.paints."""
         self.paints = list(self.ovr)
         if self.is_rer:
@@ -1950,6 +1909,118 @@ class MetroProfile:
             if r and not self._bridge(r) and not self.along_shore(r):   # under a river: the sunk box, whatever the paint
                 return self.auto_type(c, z)
         return o or self.auto_type(c, z)
+
+    # ------------------------------------------------------------- paints must make sense
+    # (Ben, 2 November 2026: "the painting has to make sense"; as the page's paintMisfits). A paint, or a station's type
+    # selection, holds only where its structure can be built at the drawn rail on the finished ground: a box's roof under
+    # the ground; an open trough's rail under the ground and no deeper than a dig (the cut-and-cover limit); at grade within
+    # a box's height below the ground and a viaduct's height above; elevated, the deck's underside over the ground; a bored
+    # tube its cover (RER the minimum cover; Metro a mined station the hard cover of its tube: a running tube and a box past
+    # its limit are the unbuildable check). Rivers, the canon's boxes (canal, covered way) and locks are the canon's. A running misfit
+    # counts from MIN_RUN; a station by its centre, the whole platform.
+    FIT_MODE = {"roof": "lower", "above": "lower", "high": "lower", "cover": "lower", "dig": "raise", "buried": "raise"}
+
+    def _fit_box_top(self) -> float:
+        if self.is_rer:
+            return float(self.settings["envelope"])
+        ms = getattr(self, "ms", None)
+        return float(ms["box"]["top"] if ms else METRO_ST["box"]["top"])
+
+    def _fit_dig(self, c: float) -> float:
+        return float(self.settings["shallowMax"]) if self.is_rer else float(self.phase_rules(c)["cc_max"])
+
+    def _fit_tube(self, c: float, t: str) -> float:
+        st = self.settings
+        if self.is_rer:
+            return float(st["boreCrown"]) + float(st["minCover"])
+        tb = self.struct_for(t, c)
+        hard = ((getattr(self, "ms", None) or {}).get("cost") or {}).get("cover_hard", 0.5)
+        return float(tb["top"]) + float(tb.get("od", 0.0)) * hard
+
+    def fit_lim(self, t: str, why: str, c: float) -> float:
+        """the rail level a paint's fix moves to (lower: the rail at most this; raise: at least)"""
+        g, st = float(self.ground_at(c)), self.settings
+        if why == "roof":
+            return g - self._fit_box_top()
+        if why == "above":
+            return g
+        if why == "high":
+            return g + st["elevAbove"] + st["deckDepth"]
+        if why == "cover":
+            return g - self._fit_tube(c, t)
+        if why == "buried":
+            return g + st["deckDepth"]
+        return g - (self._fit_dig(c) if t == "trough" else self._fit_box_top())
+
+    def fit_of(self, t: str, c: float, z: float, stn: bool = False) -> Optional[dict]:
+        g = float(self.ground_at(c))
+        if not math.isfinite(g):
+            return None
+        d, st, why = g - z, self.settings, None
+        if t == "cutcover":
+            why = "roof" if d < self._fit_box_top() - 0.05 else None
+        elif t == "trough":
+            why = "above" if d < -0.05 else "dig" if d > self._fit_dig(c) + 0.05 else None
+        elif t == "atgrade":
+            why = "dig" if d > self._fit_box_top() + 0.05 else "high" if -d > st["elevAbove"] + st["deckDepth"] + 0.05 else None
+        elif t == "elevated":
+            why = "buried" if z - st["deckDepth"] < g - 0.05 else None
+        elif t in ("shield", "deep") and (self.is_rer or stn):
+            why = "cover" if d < self._fit_tube(c, t) - 0.05 else None
+        if not why:
+            return None
+        return {"why": why, "by": abs(z - self.fit_lim(t, why, c))}
+
+    def paint_misfits(self) -> List[dict]:
+        """Paints and station types that cannot be built where they are: [{c0, c1, t, why, worst, mode, station?}]."""
+        if self.settings.get("legacy_structures"):
+            return []
+        step, half, L = float(self.data.get("step_m", 2.0)), self.settings["platform"] / 2, self.length
+        n = int(math.floor(L / step)) + 1
+        cn = ((self.rer_canon.get("lines") or {}) if self.is_rer else CANON).get(self.id, {})
+        locks = [(float(lk["c0"]), float(lk["c1"])) for lk in (cn.get("locked") or []) + self._deck_locks(cn)]
+        locked = {nm for lk in cn.get("locked") or [] for nm in (lk.get("st") or {})}
+
+        def canon(c):
+            r, sec = self.river_at(c), self.canon_at(c)   # a canon box (canal, covered way) or a lock is the canon's; a method section a hint
+            return bool((r and not self.along_shore(r)) or (sec and sec["m"] in ("canal", "covered")) or any(lo - 0.5 <= c <= hi + 0.5 for lo, hi in locks))
+
+        out, run = [], None
+
+        def flush():
+            nonlocal run
+            if run and run["c1"] - run["c0"] + step >= MIN_RUN:
+                out.append(run)
+            run = None
+
+        for i in range(n):
+            c = min(i * step, L)
+            if any(abs(c - s["c"]) <= half for s in self.stations) or canon(c):
+                flush()
+                continue
+            o = self.override_at(c)
+            f = self.fit_of(o, c, float(self.rail_at(c))) if o else None
+            if not f:
+                flush()
+                continue
+            if run and run["t"] == o and run["why"] == f["why"] and c - run["c1"] <= step + 1e-6:
+                run["c1"], run["worst"] = c, max(run["worst"], f["by"])
+                continue
+            flush()
+            run = {"c0": c, "c1": c, "t": o, "why": f["why"], "worst": f["by"]}
+        flush()
+        for i, s in enumerate(self.stations):
+            if s["name"] in locked or canon(s["c"]):
+                continue
+            t = self.override_at(s["c"]) if self.is_rer else (self.stt[i] if i < len(getattr(self, "stt", []) or []) else "")
+            if not t:
+                continue
+            f = self.fit_of(t, s["c"], float(self.rail_at(s["c"])), True)
+            if f:
+                out.append({"c0": s["c"] - half, "c1": s["c"] + half, "t": t, "why": f["why"], "worst": f["by"], "si": i, "station": s["name"]})
+        for m in out:
+            m["mode"] = self.FIT_MODE[m["why"]]
+        return sorted(out, key=lambda m: m["c0"])
 
     # ------------------------------------------------------------- context
     def context_blocks(self) -> List[dict]:
