@@ -124,7 +124,10 @@ APX_JSON = _pick(_SEED / "params" / "approach_extra.json", _ROOT / "data" / "pro
 CPLX_JSON = _pick(_SEED / "params" / "station_complexes.json", _ROOT / "data" / "profile" / "station_complexes.json")
 ACCESS_JSON = _SEED / "params" / "station_access.json"   # Ben's access types per station (none until he sets one)
 # Station access types (Station_Access_and_Mezzanines_by_Phase, Ben 31 October), as the editor's ACCESS
-ACCESS_TYPES = ("surface", "platform_level", "platform_level_xu", "end_halls", "mezzanine", "mezzanine_full", "mined_hall", "deep")
+ACCESS_TYPES = ("surface", "platform_level", "platform_level_xu", "end_halls", "mezzanine", "mezzanine_full", "mined_hall", "deep",
+                "elevated_mezzanine")
+# a Metro station's structure is a selection, not a paint (Ben, 2 November 2026): saved as `stt` by station key
+STT = ("cutcover", "shield", "deep", "elevated")
 
 
 def _tube_of(t: dict) -> dict:
@@ -158,9 +161,16 @@ SETTINGS_KEYS = {"surfaceBendPointSpacing_m": "surfStep", "tubeCover_m": "tubeCo
 # tube; canal = cut-and-cover in the canal bed. aIn/bIn False leaves that end station out.
 # fixed: station rail level relative to ground (m, + above).
 CANON = {
+    # the Ohio on the L&N bridge (Ben, 2 November 2026): the truss spans fixed, a locked stretch on the deck's level (bend
+    # points fitted to the lidar deck heights, data/kmz/LN_Bridge_Truss_Deck_Elevations.kmz); no clearance band
     "Line_1": {"sections": [
         {"a": "University", "b": "Pennsylvania Station", "m": "shallow"},
-        {"a": "Central Ave", "aIn": False, "b": "University", "m": "deep"}]},
+        {"a": "Central Ave", "aIn": False, "b": "University", "m": "deep"}],
+        "bridges": {"Ohio River": {"fixed": True}},
+        "decks": [{"name": "L&N bridge truss spans",
+                   "pvi": [[-84.4987493, 39.0990852, 162.72], [-84.4982056, 39.0985192, 164.19], [-84.4960136, 39.0962373, 157.64]],
+                   "piers": [[-84.4987493, 39.0990852], [-84.4976896, 39.0979821], [-84.4972671, 39.0975423],
+                             [-84.4968308, 39.0970880], [-84.4964083, 39.0966482], [-84.4960067, 39.0962301]]}]},
     "Line_2": {"sections": [
         {"a": "Zoo", "b": "Roebling", "m": "shallow"},
         {"a": "McMicken", "aIn": False, "b": "VA Medical Center", "bIn": False, "m": "deep"}]},
@@ -469,7 +479,7 @@ class MetroProfile:
         """River crossings on a bridge: rail at least pool + navigation clearance + deck."""
         out = []
         for r in self.data.get("rivers", []) or []:
-            if self._bridge(r):
+            if self._bridge(r) and not self._bridge(r).get("fixed"):   # a fixed deck (the L&N) is a locked stretch instead
                 lb = self.pool() + self._bridge(r)["clear"] + self.settings.get("deckDepth", 1.5)
                 out.append({"name": r["name"], "c0": r["c0"], "c1": r["c1"], "lb": lb, "ub": lb})  # at the clearance level
         return out
@@ -541,7 +551,12 @@ class MetroProfile:
         return None
 
     # ------------------------------------------------------------- alignment
-    def default_align(self, modes: Optional[List[str]] = None) -> List[float]:
+    def elev_need(self) -> float:
+        """rail over the ground at an elevated station: the platform deck plus the mezzanine's clear height under it"""
+        es = (getattr(self, "ms", None) or {}).get("elevated_station") or {}
+        return float(self.settings.get("deckDepth", 1.5)) + float(es.get("mezzanine_clear_m", 3.5))
+
+    def default_align(self, modes: Optional[List[str]] = None, stt: Optional[List[str]] = None) -> List[float]:
         """Each station as shallow as the grade limit allows (<= defDepth under ground),
         canon levels held, solved both ways so steep descents go deeper. RER surface stations
         sit at ground."""
@@ -559,6 +574,9 @@ class MetroProfile:
                 z0 = f["abs"] if f.get("abs") is not None else gr + f["off"]
                 ub.append(z0)
                 lb.append(z0)
+            elif stt and stt[i] == "elevated" and math.isfinite(gr):   # the mezzanine's height over the street
+                ub.append(gr + self.elev_need())
+                lb.append(gr + self.elev_need())
             elif md and md[i] == "surface" and math.isfinite(gr):
                 ub.append(gr)
                 lb.append(gr)
@@ -680,7 +698,12 @@ class MetroProfile:
             dm = doc["mode"]
             modes = [dm.get(self.st_key(i)) if dm.get(self.st_key(i)) in ("surface", "under")
                      else self.default_mode(i) for i in range(len(self.stations))]
-        self.st = self.default_align(modes)
+        if doc:
+            doc = self._reframe(doc)
+        so0 = [float((doc or {}).get("so", {}).get(self.st_key(i)) or 0.0) if isinstance((doc or {}).get("so", {}).get(self.st_key(i)), (int, float)) else 0.0
+               for i in range(len(self.stations))]
+        self.stt = self._stt_from_doc(doc, [dict(s, c=s["c0"] + o) for s, o in zip(self.stations, so0)])
+        self.st = self.default_align(modes, self.stt)
         self.sg = [0.0] * len(self.stations)
         self.so = [0.0] * len(self.stations)
         self.gapfill = [k for k in ((doc or {}).get("gapfill") or []) if isinstance(k, str)]
@@ -688,8 +711,8 @@ class MetroProfile:
         self.tf = []   # painted tube form: (c0, c1, 'twin' | 'bore') (Ben, 2026-10-31)
         if not doc:
             self._apply_locks()
+            self._effective_ovr()
             return
-        doc = self._reframe(doc)
         # platform slid along its drawn point: centre = point + so (up to the Deck's 150 m; a larger saved slide is kept
         # as saved and flagged by the page, never clamped: 1 November)
         sod = doc.get("so") or {}
@@ -717,12 +740,85 @@ class MetroProfile:
         if any(self.so):
             self.data["stations"] = [dict(s, c=s["c0"] + o) for s, o in zip(self.stations, self.so)]
             self._build_canon()
+        self._effective_ovr()
+
+    def chain_ll(self, lon: float, lat: float, tol: float = 30.0) -> Optional[float]:
+        """the chainage of a lon/lat on the route (nearest point of its path), or None more than tol m off it"""
+        P = self.data.get("path") or []
+        if len(P) < 2:
+            return None
+        kx, ky = 111320 * math.cos(math.radians(P[0][2])), 110540
+        best = None
+        for i in range(1, len(P)):
+            ax, ay, bx, by = (P[i - 1][1] - lon) * kx, (P[i - 1][2] - lat) * ky, (P[i][1] - lon) * kx, (P[i][2] - lat) * ky
+            dx, dy = bx - ax, by - ay
+            t = max(0.0, min(1.0, -(ax * dx + ay * dy) / ((dx * dx + dy * dy) or 1e-9)))
+            d = math.hypot(ax + dx * t, ay + dy * t)
+            if best is None or d < best[0]:
+                best = (d, P[i - 1][0] + (P[i][0] - P[i - 1][0]) * t)
+        return best[1] if best and best[0] <= tol else None
+
+    def _deck_locks(self, cn: dict) -> List[dict]:
+        """a fixed bridge deck (Metro canon `decks`) as a locked stretch, first pier to last (the page's buildCanon)"""
+        out = []
+        for dk in [] if self.is_rer else cn.get("decks") or []:
+            ps = [self.chain_ll(lo, la, 5.0) for lo, la in dk.get("piers") or []]   # only a line on the bridge: every pier within 5 m
+            if len(ps) < 2 or any(c is None for c in ps):
+                continue
+            ps.sort()
+            pv = [[round(c, 1), z] for c, z in ((self.chain_ll(lo, la, 5.0), z) for lo, la, z in dk.get("pvi") or []) if c is not None]
+            out.append({"c0": ps[0], "c1": ps[-1], "pvi": pv, "ovr": [[ps[0], ps[-1], "elevated"]], "st": {}})
+        return out
+
+    def _stt_from_doc(self, doc: Optional[dict], stations: List[dict]) -> List[str]:
+        """each station's structure selection; a profile saved before 2 November has none: the paint at the station's
+        centre becomes its selection (as the page reads it)"""
+        if self.is_rer:
+            return [""] * len(stations)
+        by = (doc or {}).get("stt")
+        if isinstance(by, dict):
+            return [by.get(self.key_of(s)) if by.get(self.key_of(s)) in STT else "" for s in stations]
+        ovr = [o for o in ((doc or {}).get("ovr") or []) if len(o) >= 3]
+        out = []
+        for s in stations:
+            t = next((o[2] for o in reversed(ovr) if float(o[0]) <= s["c"] <= float(o[1])), None)
+            out.append(t if t in STT else "")
+        return out
+
+    def _effective_ovr(self):
+        """the paints as the solver and the fill read them (the page's effOvr): on the Metro, inside each platform only the
+        station's selection; a locked station keeps the lock's paint. The saved paints stay in self.paints."""
+        self.paints = list(self.ovr)
+        if self.is_rer:
+            return
+        half = self.settings["platform"] / 2
+        cn = CANON.get(self.id, {})
+        locked = {n for lk in cn.get("locked") or [] for n in (lk.get("st") or {})}
+        ovr = list(self.ovr)
+        for i, s in enumerate(self.stations):
+            if s["name"] in locked:
+                continue
+            lo, hi = s["c"] - half, s["c"] + half
+            cut = []
+            for o in ovr:
+                if o[1] <= lo or o[0] >= hi:
+                    cut.append(o)
+                    continue
+                if o[0] < lo:
+                    cut.append((o[0], lo, o[2]))
+                if o[1] > hi:
+                    cut.append((hi, o[1], o[2]))
+            ovr = cut
+            t = (getattr(self, "stt", None) or [""] * len(self.stations))[i]
+            if t in STT:
+                ovr.append((lo, hi, t))
+        self.ovr = sorted(ovr)
 
     def _apply_locks(self):
         """Locked stretches of the canon (Ben, 27 October 2026), as the page holds them: their bend points, station
         levels (level platforms, not slid) and painted structure replace whatever the saved profile has there."""
         cn = ((self.rer_canon.get("lines") or {}) if self.is_rer else CANON).get(self.id, {})
-        for lk in cn.get("locked") or []:
+        for lk in (cn.get("locked") or []) + self._deck_locks(cn):
             lo, hi = float(lk["c0"]), float(lk["c1"])
             self.pvi = sorted([p for p in self.pvi if p[0] < lo or p[0] > hi] + [(float(c), float(z)) for c, z in lk.get("pvi") or []])
             ovr = []
@@ -1050,7 +1146,9 @@ class MetroProfile:
         at_open = [m for m in others if m["year"] is not None and year is not None and m["year"] <= year]
         later = [m for m in others if m["year"] is not None and year is not None and m["year"] > year]
         flags = []
-        if t in ("atgrade", "trough", "elevated"):
+        if t == "elevated":
+            rule = "elevated_mezzanine"
+        elif t in ("atgrade", "trough"):
             rule = "surface"
         elif t in ("shield", "deep", "sunk"):
             rule = "deep" if d >= self.phase_rules(s["c"])["deep_from"] else "mined_hall"
@@ -1075,6 +1173,10 @@ class MetroProfile:
             flags.append({"sev": "error", "kind": "hall needs D_HALL"})
         if hall and t in ("shield", "deep"):
             flags.append({"sev": "error", "kind": "hall over a mined station"})
+        under = z - float(self.settings.get("deckDepth", 1.5)) - g if math.isfinite(g) else math.nan
+        need = self.elev_need() - float(self.settings.get("deckDepth", 1.5))
+        if typ == "elevated_mezzanine" and (t != "elevated" or not under >= need - 0.02):
+            flags.append({"sev": "error", "kind": "mezzanine under needs the height"})
         half, plat = self.settings["platform"] / 2, self.settings["platform"]
         halls = ([[s["c"] - half, s["c"] - half + 25], [s["c"] + half - 25, s["c"] + half]] if typ == "end_halls" else
                  [[s["c"] - 0.3 * plat, s["c"] + 0.3 * plat]] if typ == "mezzanine" else [[s["c"] - half, s["c"] + half]] if typ == "mezzanine_full" else [])
@@ -1281,6 +1383,8 @@ class MetroProfile:
                 ph = self._phase_at(s["c"])
                 for i in range(max(0, math.ceil((s["c"] - half) / step)), min(n - 1, math.floor((s["c"] + half) / step)) + 1):
                     P[i].update(t=sd["t"], role=sd["role"], stn=sd, ph=ph, R=R)
+                if o == "deep" and not R["tbm"]:
+                    flags.append({"c0": s["c"] - half, "c1": s["c"] + half, "kind": "TBM station before the TBM", "len": 2 * half})
                 if sd["role"] == "box" and ds > R["cc_max"] + band:
                     flags.append({"c0": s["c"] - half, "c1": s["c"] + half, "kind": "painted box station past the limit", "len": 2 * half})
             # an open run inside a tunnel shorter than portal_min_m is not a portal (a train cannot surface and go back under

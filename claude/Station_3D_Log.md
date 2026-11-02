@@ -534,3 +534,51 @@ drawing values in the structure record (`portal_min_m` 100, `dead_band_m` 0.25, 
   Line 5 at 30026, a stale approach extra); the scratch hub's record needed the three new values first, which showed the
   page reads them from the hub record, as it should. Tests updated: a pocket needs no approach; Line 8's bore drive is now
   twin tubes through its mined stations, the bore asserted on Line 12.
+
+## 2026-11-02: station type selection, the elevated station, Line 1 on the L&N bridge
+
+Ben: "stations need a selection, instead of paint for cut-and-cover, shield, or bore. also, there needs to be an elevated
+station type, that has a mezzanine/passthrough under it." And: "I have changed Line 1 to be elevated using the L&N bridge"
+(New_Line_1.kmz, joining the old line at both ends; both Newport stations move east to meet it; the truss deck heights
+in LN_Bridge_Truss_Deck_Elevations.kmz, "the fixed parts of the bridge, the approaches would have been reworked").
+
+Station type (page and copy alike):
+- A Metro station's card has a Station type selection: Rules, Cut & cover (box), Shield (mined), Bore (TBM, mined),
+  Elevated with a mezzanine under. Saved as `stt` by station key. A paint across a station now paints only the running
+  line (inside each platform only the selection counts, for the types, the fill and the checks); a locked station keeps
+  its lock. A profile saved before has its station paints read as selections, so nothing moves.
+- Bore (TBM) selected before Phase 3 is flagged (Tunnel method).
+- Elevated: the rail at least the platform deck (deckDepth) plus the mezzanine's clear height over the ground
+  (`metro_structure.json` `elevated_station.mezzanine_clear_m`, 3.5 m, a starting value); choosing it lifts a lower rail
+  to that, and an unsaved level defaults to it. Its access type is "Elevated, mezzanine under": a mezzanine at street
+  level under the middle of the platforms (fare control, stairs up), open across the line as a passthrough, drawn under
+  the station; too little height under the deck is an Access error. Every elevated station gets it by rule.
+
+Line 1 over the L&N bridge:
+- `tools/repath_line1_ln_bridge.py` puts Ben's path into the Mill Creek Deck: both Line 1 pieces in his layout edits and
+  in the Deck's generated lines, cut again at E 716,800; Pennsylvania Station, Levee, Newport-6th, Newport-9th and Newport
+  Central at his points (0.1 to 1.7 m off the path), their platforms redrawn there; the Pennsylvania Station side-platform
+  edit moved to its new key. Levee is also Line 11's: its Line 11 platform does not move.
+- The Deck tie rebuilt Line 1 on it (20,560.5 to 20,513.6 m). Found: the tie mapped old chainages to new linearly over
+  each whole Deck piece, so a re-path in one part of a 13 km piece moved every station on it and gave each a slide (up to
+  260 m). `cmap_geo` maps by the geometry: track that did not move keeps its exact place, the re-pathed stretch is mapped
+  linearly. Every station off the re-path is now where it was; the 6th platform (drawn 76 m off Line 1 on the Deck, so
+  never matched) no longer jumps 163 m.
+- Canon (`CANON.Line_1`): the Ohio on a fixed bridge (no clearance band, no sunk box) and `decks`: the five truss spans as
+  a locked stretch from the first pier to the last, Elevated, on three bend points fitted to the lidar deck heights
+  (162.72 m, crest 164.19 m, 157.64 m; within 0.11 m with the 1500 m vertical curve), placed by position so a re-path
+  carries them; the bridge's own piers for the spans. Only a line with every pier within 5 m of it gets the lock (the old
+  Line 1 tunnel passed 25 m from them).
+- The saved profile (edited through the page): the old tunnel design between Taft Theater and Newport Central cleared
+  (its river bend points and paints); the moved platforms on Ben's points (no slide); Pennsylvania Station, Levee,
+  Newport-6th, Newport-9th and Newport Central Elevated. Levels from the streets they must clear (4.3 m under a girder):
+  Pennsylvania Station 163.4 m (East 3rd and East Pearl Streets; a bend point at 163.4 m where the climb tops out), Levee
+  158.45 m (as high as the 50 m from the fixed truss end allows), Newport-6th 163.8, Newport-9th 166.4 (East 10th
+  Street), Newport Central 171.0 m. East 10th Street keeps the line up through Newport Central, so it is elevated too,
+  then into the hill to Carothers Center (Ben's 162.07 m). Taft Theater raised from 148.9 to 154.1 m: its depth was the
+  dive to the old river tunnel; at 148.9 the climb to the bridge was 59 per mille and the line passed 3.8 m over Line 6
+  (8.74 m needed). Ben's platform grades kept (Levee's 7.5 per mille is what lets the line off the truss fit).
+- Left for Ben: East 3rd Street in Newport is 20 m past Levee's platform and 190 m past the fixed truss end: 2.9 m under a
+  3.3 m girder against 4.3 m (a shallower deck there, or the street lowered); low cover at the portal east of Taft
+  Theater (bored with treatment by the cost logic); Newport Central's type is a judgment from East 10th Street.
+- Page and copy agree on every line (Line 5's known approach extra aside); the 3D build runs with no errors.

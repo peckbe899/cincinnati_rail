@@ -245,5 +245,9 @@
  "dead_band_m": 0.25,
  "dead_band_about": "Inside this band of a threshold (the cut-and-cover limit, at grade / trough / box, elevated) the last solve's decision stands while editing, so a centimetre does not flip a stretch, 1 November.",
  "fill_max_m": 3.0,
- "fill_max_about": "The most a painted box or tube may raise the finished ground (a street regrade), except on subway_streets, which were built over the subway and may be raised any amount, 1 November."
+ "fill_max_about": "The most a painted box or tube may raise the finished ground (a street regrade), except on subway_streets, which were built over the subway and may be raised any amount, 1 November.",
+ "elevated_station": {
+  "mezzanine_clear_m": 3.5
+ },
+ "elevated_station_about": "Ben, 2 November 2026: an elevated station type with a mezzanine / passthrough under it. The mezzanine is at street level under the middle of the platforms (fare control, stairs up to each platform) and open across the line as a public passage. mezzanine_clear_m is its clear height to the underside of the platform deck (deckDepth under the rail): the rail stands at least deckDepth + mezzanine_clear_m over the ground. A starting value, not a ruling."
 }

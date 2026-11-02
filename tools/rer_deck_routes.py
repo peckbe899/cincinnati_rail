@@ -306,6 +306,38 @@ def cmap(old_segs, new_segs):
     return lambda c: float(np.interp(c, xo, xn))
 
 
+MATCH_M = 1.0   # the new path within this of the old: the same track, its chainage carried over exactly
+
+
+def cmap_geo(old_path, new_path, old_segs, new_segs, step=5.0):
+    """old chainage -> new chainage by the geometry (2 November: Line 1 re-pathed over the L&N bridge). Where the new path
+    runs on the old one (within MATCH_M), a point keeps its place: its chainage on the new path. Between those stretches
+    (a re-pathed stretch) the map is linear. Seg by seg (cmap) moved every station on a long Deck piece when only part of
+    the piece was redrawn, so the tie gave each one a slide; with no stretch in common it is the fallback."""
+    seg = cmap(old_segs, new_segs)
+    OL, _, at_old = chain_of(old_path)
+    NL, chain_new, _ = chain_of(new_path)
+    L0, L1 = float(old_path[-1][0]), float(new_path[-1][0])
+    pairs, last = [], -1e9
+    for c in np.arange(0.0, L0 + 1e-9, step):
+        p = at_old(c)
+        if NL.distance(p) > MATCH_M:
+            continue
+        cn = chain_new((p.x, p.y))
+        if cn < last - 0.01 or abs(cn - seg(c)) > max(500.0, abs(L1 - L0) + 200.0):   # out of order, or another pass
+            continue
+        pairs.append((float(c), cn))
+        last = cn
+    if len(pairs) < 2:
+        return seg
+    xo, xn = [0.0] + [a for a, _ in pairs] + [L0], [0.0] + [b for _, b in pairs] + [L1]
+    if xo[1] < 1e-6:
+        xo, xn = xo[1:], xn[1:]
+    if L0 - xo[-2] < 1e-6:
+        xo, xn = xo[:-1], xn[:-1]
+    return lambda c: float(np.interp(c, xo, xn))
+
+
 def resample(xy):
     """the route path as the page stores it, [c, lon, lat], on the Deck's own vertices"""
     L = LineString(xy).simplify(SIMPLIFY)
@@ -347,10 +379,10 @@ def apply_route(rid, route, xy, segs, files, db_dir, stations_deck, so=None, dec
     station at the Deck's centre with no slide."""
     sys.path.insert(0, os.path.join(ROOT, 'tools'))
     import make_profile_context as mpc
-    m = cmap(route['segs'], segs)
     old_L = route['length_m']
     new = dict(route)
     new['path'] = resample(xy)
+    m = cmap_geo(route['path'], new['path'], route['segs'], segs)
     new['length_m'] = round(new['path'][-1][0], 1)
     new['route_chainage_m'] = [0.0, new['length_m']]
     new['segs'] = segs

@@ -20,7 +20,7 @@ from railsim.metro_profile import MetroProfile, ACCESS_TYPES   # noqa: E402
 
 LABEL = {'surface': 'Surface station', 'platform_level': 'Platform level', 'platform_level_xu': 'Platform level, crossunder',
          'end_halls': 'End ticket halls', 'mezzanine': 'Mezzanine', 'mezzanine_full': 'Full-length mezzanine',
-         'mined_hall': 'Street hall, mined station', 'deep': 'Deep station'}
+         'mined_hall': 'Street hall, mined station', 'deep': 'Deep station', 'elevated_mezzanine': 'Elevated, mezzanine under'}
 
 
 def proposed_stages(a, mp):

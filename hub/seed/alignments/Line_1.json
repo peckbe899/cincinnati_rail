@@ -2,7 +2,7 @@
  "v": 1,
  "system": "Cincinnati Metro",
  "line": "Line 1",
- "length_m": 20560.5,
+ "length_m": 20513.6,
  "platform_m": 121.92,
  "st": {
   "Finneytown": 259.3,
@@ -26,12 +26,12 @@
   "Holy Trinity": 159.8,
   "Plum": 161.1,
   "Fountain Square": 159.4,
-  "Taft Theater": 148.9,
-  "Pennsylvania Station": 133.6,
-  "Levee": 130.3,
-  "Newport-6th": 141.8,
-  "Newport-9th": 151.7,
-  "Newport Central": 157.3,
+  "Taft Theater": 154.1,
+  "Pennsylvania Station": 163.4,
+  "Levee": 158.45,
+  "Newport-6th": 163.8,
+  "Newport-9th": 166.4,
+  "Newport Central": 171,
   "Carothers Center": 162.07,
   "Bluegrass": 181.8,
   "Southgate-Highland": 208
@@ -50,34 +50,38 @@
    159
   ],
   [
-   13746.5,
+   13756.1,
    155.2
   ],
   [
-   16430,
-   124.4
+   15955,
+   163.4
   ],
   [
-   16554,
-   122.4
+   16396.7,
+   162.72
   ],
   [
-   16804,
-   126.5
+   16475.2,
+   164.19
   ],
   [
-   19145.9,
+   16791.7,
+   157.64
+  ],
+  [
+   19052.1,
    162.2
   ],
   [
-   19319.9,
+   19226.1,
    165.32
   ]
  ],
  "ovr": [
   [
    5433,
-   6293,
+   6257.5,
    "shield"
   ],
   [
@@ -107,16 +111,16 @@
   ],
   [
    12362.6,
-   13149.8,
+   13150.9,
    "cutcover"
   ],
   [
-   13477,
-   14030,
+   13494.4,
+   14031.5,
    "cutcover"
   ],
   [
-   14058.4,
+   14059.1,
    14191.8,
    "cutcover"
   ],
@@ -127,60 +131,52 @@
   ],
   [
    15458.4,
-   15562.661460908916,
+   15562.7,
    "shield"
   ],
   [
-   15568.757966722576,
-   15594.8,
+   15568.8,
+   15595.1,
    "shield"
   ],
   [
-   15604,
-   15751,
+   15605.2,
+   15652.66,
    "shield"
   ],
   [
-   16013,
-   16334,
-   "shield"
+   16396.66673143136,
+   16792.660727942137,
+   "elevated"
   ],
   [
-   16364,
-   16397.1,
-   "deep"
-  ],
-  [
-   16703.9,
-   16726,
-   "deep"
-  ],
-  [
-   18912.9,
-   19306.6,
+   18819.1,
+   19212.8,
    "cutcover"
   ],
   [
-   19308.9,
-   19688.9,
+   19215.1,
+   19595.1,
    "cutcover"
   ],
   [
-   19777.8,
-   19783.8,
+   19684,
+   19690,
    "cutcover"
   ],
   [
-   19800.8,
-   20116.8,
+   19707,
+   20023,
    "cutcover"
   ],
   [
-   20378.8,
-   20509.8,
+   20285,
+   20423.6,
    "cutcover"
   ]
  ],
+ "tf": [],
+ "ready": false,
  "sg": {
   "Finneytown": -5,
   "Center Hill": -5,
@@ -204,6 +200,23 @@
   "Southgate-Highland": 4
  },
  "gapfill": [],
+ "stt": {
+  "Winton Place": "shield",
+  "Kenard": "shield",
+  "Dixmyth": "shield",
+  "Central Ave": "cutcover",
+  "Liberty": "cutcover",
+  "Laurel Park": "cutcover",
+  "Lincoln Court": "cutcover",
+  "8th": "cutcover",
+  "Holy Trinity": "cutcover",
+  "Taft Theater": "shield",
+  "Pennsylvania Station": "elevated",
+  "Levee": "elevated",
+  "Newport-6th": "elevated",
+  "Newport-9th": "elevated",
+  "Newport Central": "elevated"
+ },
  "so": {},
  "del": [
   "Ravine",
@@ -244,7 +257,7 @@
    "rail": 156.5,
    "ground": 181.9,
    "depth": 25.4,
-   "type": "deep"
+   "type": "shield"
   },
   {
    "name": "Winton Place",
@@ -257,11 +270,11 @@
   },
   {
    "name": "Kenard",
-   "c": 6189.1,
-   "point_c": 6189.1,
+   "c": 6148.4,
+   "point_c": 6148.4,
    "rail": 132.9,
-   "ground": 146.9,
-   "depth": 14,
+   "ground": 151.4,
+   "depth": 18.5,
    "type": "shield"
   },
   {
@@ -271,7 +284,7 @@
    "rail": 158.6,
    "ground": 216.34,
    "depth": 57.74,
-   "type": "deep"
+   "type": "shield"
   },
   {
    "name": "McAlpin",
@@ -280,7 +293,7 @@
    "rail": 183.3,
    "ground": 210.05,
    "depth": 26.75,
-   "type": "deep"
+   "type": "shield"
   },
   {
    "name": "Burnet North",
@@ -307,7 +320,7 @@
    "rail": 217.6,
    "ground": 243.9,
    "depth": 26.3,
-   "type": "deep"
+   "type": "shield"
   },
   {
    "name": "Stratford",
@@ -316,15 +329,15 @@
    "rail": 209.3,
    "ground": 251,
    "depth": 41.7,
-   "type": "deep"
+   "type": "shield"
   },
   {
    "name": "Central Ave",
    "c": 11256.8,
    "point_c": 11256.8,
    "rail": 160.3,
-   "ground": 165.5,
-   "depth": 5.2,
+   "ground": 164.8,
+   "depth": 4.5,
    "type": "cutcover"
   },
   {
@@ -347,8 +360,8 @@
   },
   {
    "name": "Lincoln Court",
-   "c": 12869,
-   "point_c": 12869,
+   "c": 12832.5,
+   "point_c": 12832.5,
    "rail": 150.5,
    "ground": 155.7,
    "depth": 5.2,
@@ -365,11 +378,11 @@
   },
   {
    "name": "6th",
-   "c": 13476.5,
-   "point_c": 13476.5,
+   "c": 13493.9,
+   "point_c": 13493.9,
    "rail": 152.5,
-   "ground": 157.78,
-   "depth": 5.28,
+   "ground": 157.31,
+   "depth": 4.81,
    "type": "cutcover"
   },
   {
@@ -403,96 +416,96 @@
    "name": "Taft Theater",
    "c": 15591.7,
    "point_c": 15591.7,
-   "rail": 148.9,
+   "rail": 154.1,
    "ground": 166.1,
-   "depth": 17.2,
+   "depth": 12,
    "type": "shield"
   },
   {
    "name": "Pennsylvania Station",
-   "c": 16124.1,
-   "point_c": 16124.1,
-   "rail": 133.6,
-   "ground": 152.3,
-   "depth": 18.7,
-   "type": "shield"
+   "c": 16177.4,
+   "point_c": 16177.4,
+   "rail": 163.4,
+   "ground": 150.33,
+   "depth": -13.07,
+   "type": "elevated"
   },
   {
    "name": "Levee",
-   "c": 16964.2,
-   "point_c": 16964.2,
-   "rail": 130.3,
-   "ground": 153.1,
-   "depth": 22.8,
-   "type": "deep"
+   "c": 16903.7,
+   "point_c": 16903.7,
+   "rail": 158.45,
+   "ground": 151.38,
+   "depth": -7.07,
+   "type": "elevated"
   },
   {
    "name": "Newport-6th",
-   "c": 17372.1,
-   "point_c": 17372.1,
-   "rail": 141.8,
-   "ground": 156.4,
-   "depth": 14.6,
-   "type": "cutcover"
+   "c": 17344.5,
+   "point_c": 17344.5,
+   "rail": 163.8,
+   "ground": 156.2,
+   "depth": -7.6,
+   "type": "elevated"
   },
   {
    "name": "Newport-9th",
-   "c": 17851.5,
-   "point_c": 17851.5,
-   "rail": 151.7,
-   "ground": 156.7,
-   "depth": 5,
-   "type": "cutcover"
+   "c": 17802.4,
+   "point_c": 17802.4,
+   "rail": 166.4,
+   "ground": 157.7,
+   "depth": -8.7,
+   "type": "elevated"
   },
   {
    "name": "Newport Central",
-   "c": 18287.7,
-   "point_c": 18287.7,
-   "rail": 157.3,
-   "ground": 164.68,
-   "depth": 7.38,
-   "type": "cutcover"
+   "c": 18171.6,
+   "point_c": 18171.6,
+   "rail": 171,
+   "ground": 163.38,
+   "depth": -7.62,
+   "type": "elevated"
   },
   {
    "name": "Carothers Center",
-   "c": 18855.9,
-   "point_c": 18855.9,
+   "c": 18809,
+   "point_c": 18809,
    "rail": 162.07,
-   "ground": 170.81,
-   "depth": 8.74,
+   "ground": 170.85,
+   "depth": 8.78,
    "type": "cutcover"
   },
   {
    "name": "Bluegrass",
-   "c": 19740.1,
-   "point_c": 19740.1,
+   "c": 19693.2,
+   "point_c": 19693.2,
    "rail": 181.8,
-   "ground": 190.01,
-   "depth": 8.21,
+   "ground": 189.96,
+   "depth": 8.16,
    "type": "cutcover"
   },
   {
    "name": "Southgate-Highland",
-   "c": 20500,
-   "point_c": 20500,
+   "c": 20453.1,
+   "point_c": 20453.1,
    "rail": 208,
-   "ground": 217.5,
-   "depth": 9.5,
+   "ground": 217.56,
+   "depth": 9.56,
    "type": "cutcover"
   }
  ],
  "summary": {
   "km_by_type": {
-   "elevated": 0,
-   "atgrade": 0,
+   "elevated": 2.37,
+   "atgrade": 0.16,
    "trough": 0,
-   "cutcover": 7.961,
-   "shield": 2.76,
-   "deep": 9.5,
-   "sunk": 0.34
+   "cutcover": 7.024,
+   "shield": 6.97,
+   "deep": 3.99,
+   "sunk": 0
   },
-  "max_grade_permille": 49.1,
+  "max_grade_permille": -46.2,
   "grades_over_limit": 0
  },
- "updated": "2026-10-30T21:54:00.955Z"
+ "updated": "2026-11-02T15:34:21.861Z"
 }

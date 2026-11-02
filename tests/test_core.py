@@ -391,7 +391,8 @@ def test_vertical_curves_and_structure_rules():
     bore = mp.struct_for("shield", 1000.0)
     assert mp.req_cover(bore, 150.0) == 9.0 and mp.req_cover(bore, 140.0) == 9.0 and l3.req_cover(l3.struct_for("shield", 1000.0), 150.0) == 5.5
     assert mp.req_cover(mp.struct_for("cutcover", 1000.0), 150.0) == 0.6
-    l1 = MetroProfile.load(root / "lines/Line_1.json", None, root / "settings.json", records="repo")
+    # Line 2 (Line 1 crosses on the L&N bridge since 2 November)
+    l1 = MetroProfile.load(root / "lines/Line_2.json", None, root / "settings.json", records="repo")
     r = l1.data["rivers"][0]
     # every river crossing in tunnel is a sunk double-track box (Ben, 30 October): roof from 5 m below the bed to 3 m above
     # it, rail from bed - 10.0 to bed - 2.0 m (the lower limit on the flat bottom only)
@@ -904,3 +905,109 @@ def test_station_access_types():
     assert a["type"] == "mezzanine" and a["source"] == "Ben"
     if a["depth"] < a["d_hall"]:
         assert any(f["sev"] == "error" for f in a["flags"])
+
+
+def test_station_type_selection_and_elevated_station():
+    """A Metro station's structure is a selection, not a paint (Ben, 2 November): a profile saved before has its station
+    paints read as selections; a paint across a station no longer decides it; Elevated holds the rail at the mezzanine's
+    height over the ground (deck plus mezzanine_clear_m) and gets the elevated access type (a mezzanine / passthrough under
+    the platforms); Bore (TBM) before the tunnel boring machine is flagged."""
+    import json
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent
+    line, sets = root / "data/profile/lines/Line_1.json", root / "data/profile/settings.json"
+    base = json.loads((root / "hub/seed/alignments/Line_1.json").read_text())
+    # a profile from before: paints only; the paint at a station's centre is its selection
+    old = {k: v for k, v in base.items() if k != "stt"}
+    mp = MetroProfile.load(line, None, sets)
+    gr = {s["name"]: s for s in mp.stations}
+    fs = gr["Fountain Square"]
+    half = mp.settings["platform"] / 2
+    old["ovr"] = [o for o in old["ovr"] if o[1] < fs["c"] - half or o[0] > fs["c"] + half] + [[fs["c"] - 200, fs["c"] + 200, "shield"]]
+    p = Path(__file__).resolve().parent / "_stt_old.json"
+    p.write_text(json.dumps(old))
+    try:
+        mp = MetroProfile.load(line, p, sets)
+        i = [s["name"] for s in mp.stations].index("Fountain Square")
+        assert mp.stt[i] == "shield" and mp.type_at(fs["c"]) == "shield"
+        # with a selection saved, the paint across the station is the running line's only
+        new = dict(old, stt={})
+        p.write_text(json.dumps(new))
+        mp = MetroProfile.load(line, p, sets)
+        assert mp.stt[i] == "" and mp.override_at(fs["c"]) is None and mp.override_at(fs["c"] - 150) == "shield"
+        # Elevated, no level saved: the rail at deck + mezzanine over the ground; the elevated access type
+        st = {k: v for k, v in new["st"].items() if k != "Fountain Square"}
+        clear = [o for o in new["ovr"] if o[1] < fs["c"] - 400 or o[0] > fs["c"] + 400]   # no fill sloping off painted boxes nearby
+        p.write_text(json.dumps(dict(new, stt={"Fountain Square": "elevated"}, st=st, ovr=clear)))
+        mp = MetroProfile.load(line, p, sets)
+        s = mp.stations[i]
+        g = float(mp.ground0_at(s["c"]))
+        assert abs(mp.st[i] - (g + mp.elev_need())) < 0.02 and mp.elev_need() == mp.settings["deckDepth"] + mp.ms["elevated_station"]["mezzanine_clear_m"]
+        assert mp.type_at(s["c"]) == "elevated"
+        a = mp.station_access(s)
+        assert a["type"] == "elevated_mezzanine" and not [f for f in a["flags"] if f["sev"] == "error"]
+        mp.st[i] = g + 2.0   # too low for the mezzanine under it
+        assert any(f["kind"] == "mezzanine under needs the height" for f in mp.station_access(s)["flags"])
+        # Bore (TBM) in Phase 1: flagged
+        p.write_text(json.dumps(dict(new, stt={"Fountain Square": "deep"})))
+        mp = MetroProfile.load(line, p, sets)
+        T = mp.stretch_types()
+        assert any(f.get("kind") == "TBM station before the TBM" for f in T["flags"])
+    finally:
+        p.unlink()
+
+
+def test_line1_on_the_ln_bridge():
+    """Line 1 crosses the Ohio on the L&N bridge (Ben, 2 November): the truss spans are a locked stretch on the deck's
+    level (bend points fitted to the lidar deck heights within 0.11 m), elevated, no sunk box and no clearance band; the
+    Newport stations elevated with a mezzanine under them."""
+    import json
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile, CANON
+    root = Path(__file__).resolve().parent.parent
+    mp = MetroProfile.load(root / "data/profile/lines/Line_1.json", root / "hub/seed/alignments/Line_1.json", root / "data/profile/settings.json")
+    dk = CANON["Line_1"]["decks"][0]
+    ps = [mp.chain_ll(lo, la, 5.0) for lo, la in dk["piers"]]
+    assert all(c is not None for c in ps) and ps == sorted(ps) and 390 < ps[-1] - ps[0] < 400
+    for (lo, la, z) in dk["pvi"]:
+        assert abs(float(mp.rail_at(mp.chain_ll(lo, la))) - z) < 0.5
+    r = mp.data["rivers"][0]
+    assert ps[0] - 50 <= r["c0"] and r["c1"] <= ps[-1]   # the Ohio bank pier stands 22 m into the outline, under the approach span
+    assert all(mp.type_at(c) == "elevated" for c in np.arange(r["c0"], r["c1"], 10.0))
+    assert mp.river_bridges() == [] and not mp.river_tubes()
+    for n in ("Pennsylvania Station", "Levee", "Newport-6th", "Newport-9th", "Newport Central"):
+        s = next(x for x in mp.stations if x["name"] == n)
+        assert mp.type_at(s["c"]) == "elevated" and mp.station_access(s)["type"] == "elevated_mezzanine", n
+    # the old path, 25 m from the piers, is not on the bridge
+    old = MetroProfile.load(Path(__file__).resolve().parent / "data/Line_1_line_2026-10-06.json", None, root / "data/profile/settings.json")
+    assert old._deck_locks(CANON["Line_1"]) == []
+
+
+def test_tie_chainage_map_follows_the_track():
+    """The Deck tie maps a route's old chainages to the new by the geometry (2 November): track that did not move keeps its
+    place exactly, a re-pathed stretch in between is mapped linearly; a whole piece is no longer stretched evenly."""
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
+    import rer_deck_routes as rdr
+    x0, y0 = 715000.0, 4330000.0
+    old_xy = [(x0 + d, y0) for d in range(0, 3001, 10)]
+    new_xy = [(x0 + d, y0) for d in range(0, 1001, 10)] + [(x0 + 1000 + d, y0 + 0.3 * d) for d in range(10, 501, 10)] + \
+             [(x0 + 1500 + d, y0 + 150 - 0.3 * d) for d in range(10, 501, 10)] + [(x0 + d, y0) for d in range(2010, 3001, 10)]
+    def path(xy):
+        out, c = [], 0.0
+        for i, q in enumerate(xy):
+            if i:
+                c += ((q[0] - xy[i - 1][0]) ** 2 + (q[1] - xy[i - 1][1]) ** 2) ** 0.5
+            lon, lat = rdr.TO_LL.transform(*q)
+            out.append([c, lon, lat])
+        return out
+    po, pn = path(old_xy), path(new_xy)
+    segs_o, segs_n = [{"c0": 0.0, "c1": po[-1][0]}], [{"c0": 0.0, "c1": pn[-1][0]}]
+    m = rdr.cmap_geo(po, pn, segs_o, segs_n)
+    extra = pn[-1][0] - po[-1][0]
+    assert abs(m(500.0) - 500.0) < 0.5 and abs(m(2500.0) - (2500.0 + extra)) < 0.5
+    assert abs(m(3000.0) - pn[-1][0]) < 0.5
+    seg = rdr.cmap(segs_o, segs_n)
+    assert abs(seg(500.0) - 500.0) > 5   # the old map stretched the unchanged track
