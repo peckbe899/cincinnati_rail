@@ -273,7 +273,7 @@ const elevNeed = () => settings.deckDepth + ((MS && MS.elevated_station && MS.el
 // thresholds are editable starting values, not canon. deepBelow (60 ft) follows the station
 // list calling Price Hill's 60 ft station a deep bore; shallowMax (40 ft) flags canon-shallow
 // stretches that run well past the doctrine's 20-30 ft.
-const METRO_DEFAULTS = { maxGrade: 50, platform: 121.92, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, deckDepth: 1.5, poolFt: 455.0, vcRadius: 1500, vcMinLen: 30.5, drainMin: 3, curveK: 800, stationMaxGrade: 7.5, sustainedLen: 243.84, riverRoof: 1.0, riverSink: 5.0, riverRise: 3.0, riverFlatTol: 1.0, riverClearWater: 3.66, riverCap: 1.0, roadClearHighway: 4.9, roadClearMajor: 4.3, roadClearMinor: 4.3 };
+const METRO_DEFAULTS = { maxGrade: 50, platform: 121.92, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, deckDepth: 1.5, poolFt: 455.0, vcRadius: 1500, vcMinLen: 30.5, drainMin: 3, curveK: 800, stationMaxGrade: 7.5, fillTaper: 50, sustainedLen: 243.84, riverRoof: 1.0, riverSink: 5.0, riverRise: 3.0, riverFlatTol: 1.0, riverClearWater: 3.66, riverCap: 1.0, roadClearHighway: 4.9, roadClearMajor: 4.3, roadClearMinor: 4.3 };
 // Design rules: vertical curves of 1,500 m (Metro) and 3,000 m (RER) at every grade change, kept
 // off platforms by a level transition (canon); bored tunnels need the cover of their era's
 // practice, else they are cut and cover (canon, see ERA); tunnels drain at 3 per mille or
@@ -282,7 +282,7 @@ const METRO_DEFAULTS = { maxGrade: 50, platform: 121.92, defDepth: 7.62, elevAbo
 // RER: 35 per mille, 670 ft (204.2 m) platforms (Ben, 5 October; was 200 m) and 12 m station rail depth are canon; the
 // envelope (25 kV overhead), thresholds, tube cover and surface bend-point spacing are starting
 // values. Surface stations sit at grade on the old railroad and the rail follows the ground.
-const RER_DEFAULTS = { maxGrade: 35, platform: 204.2, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 6.6, boreCrown: 7.5, deckDepth: 2.0, invertDepth: 1.0, poolFt: 455.0, surfStep: 250, tubeCover: 3, vcRadius: 3000, vcMinLen: 30.5, minCover: 8.5, drainMin: 3, curveK: 800, stationMaxGrade: 2.5, sustainedLen: 408.4, riverSink: 5.0, riverRise: 3.0, riverFlatTol: 1.0, riverClearWater: 3.66, riverCap: 1.0, roadClearHighway: 4.9, roadClearMajor: 4.3, roadClearMinor: 4.3 };
+const RER_DEFAULTS = { maxGrade: 35, platform: 204.2, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 6.6, boreCrown: 7.5, deckDepth: 2.0, invertDepth: 1.0, poolFt: 455.0, surfStep: 250, tubeCover: 3, vcRadius: 3000, vcMinLen: 30.5, minCover: 8.5, drainMin: 3, curveK: 800, stationMaxGrade: 2.5, fillTaper: 50, sustainedLen: 408.4, riverSink: 5.0, riverRise: 3.0, riverFlatTol: 1.0, riverClearWater: 3.66, riverCap: 1.0, roadClearHighway: 4.9, roadClearMajor: 4.3, roadClearMinor: 4.3 };
 let DEFAULTS = METRO_DEFAULTS;
 // Canon structure for the founding sections (Lines 1-6 as first opened).
 // m: 'shallow' = basin method (shallow shield running tunnels, cut-and-cover station boxes);
@@ -568,6 +568,7 @@ const SETTING_ROWS_BASE = [
   ['drainMin', 'Min tunnel grade for drainage', '‰', 0.5],
   ['stationMaxGrade', 'Max platform grade (RER; Metro by era)', '‰', 0.5],
   ['curveK', 'Curve compensation, k in k / R per mille', 'k', 50],
+  ['fillTaper', 'Regraded ground slope inside a painted box or tube, back to the surveyed ground at its ends', '‰', 5],
 ];
 // Metro structure heights, cover and crossing rules are fixed by Ben's rules (see the canon notes)
 const METRO_FIXED = new Set(['envelope', 'boreCrown', 'invertDepth', 'minCover']);
@@ -635,8 +636,8 @@ function sampleGround(g, c) {
   if (isNaN(a)) return b; if (isNaN(b)) return a;
   return a + (b - a) * t;
 }
-// the finished ground: the surveyed ground with the Deck's street re-grades and open cuts (a paint never raises it: Ben,
-// 2 November, "the painting has to make sense"; see paintMisfits); groundAt0 is the same ground, kept for the solver
+// the finished ground (the Deck's street re-grades, then regraded over painted boxes and tubes, see applyFill) and the
+// ground the level solver works from (the re-grades only)
 function groundAt(c) { return sampleGround(S.ground, c); }
 function groundAt0(c) { return sampleGround(S.ground0 || S.ground, c); }
 function groundDemAt(c) { return sampleGround(S.groundDem || S.ground0 || S.ground, c); }
@@ -1535,9 +1536,9 @@ function autoType(c, z) {
   return p.t || (p.cls === 'B' ? methodAt(c) : 'cutcover');
 }
 // Paints must make sense (Ben, 2 November 2026: "the painting has to make sense"). A paint, or a station's type selection,
-// names a structure; it holds only where that structure can be built at the drawn rail on the finished ground (the
-// surveyed ground with the Deck's street re-grades: a paint never raises the ground, so a box is never buried by a made-up
-// street). A box needs its roof under the ground; an open trough a rail under the ground and no deeper than a dig (the
+// names a structure; it holds only where that structure can be built at the drawn rail on the finished ground (the Deck's
+// street re-grades and the fill over painted boxes and tubes, applyFill: so a box or tube the fill covers fits, and what is
+// left is what fill cannot fix, such as a box sticking out where its paint's fill slopes back at an end). A box needs its roof under the ground; an open trough a rail under the ground and no deeper than a dig (the
 // cut-and-cover limit); at grade the rail within a box's height below the ground and a viaduct's height above it; elevated
 // the deck's underside over the ground; a bored tube its cover (RER the minimum cover; Metro a mined station the hard cover
 // of its tube: a running tube and a box past its limit are the unbuildable check, A). Rivers, the canon's own boxes (the
@@ -1600,6 +1601,43 @@ function typeAt(c, z = railAt(c)) {
   if (o && o !== 'elevated' && riverAt(c) && !bridgeOf(riverAt(c)) && !alongShore(riverAt(c))) return autoType(c, z);   // under a river: the sunk box, whatever the paint
   return o || autoType(c, z);
 }
+// Painted boxes and tubes (Ben, 26 October; tubes 30 October; 2 November: "any tube that is below the minimum should
+// regrade the land above it. that goes for cut-and-cover and boxes/tubes"): the structure holds its level and the ground
+// over it is made up to its minimum, a box's roof plus its cover (Metro 4.6 + 0.6 m above the rail; RER the box height),
+// a tube's top plus one outside diameter, with no limit on the height. The slope back to the surveyed ground (fillTaper)
+// stays inside the paint (2 November): each painted stretch of one structure is regraded on its own and meets the
+// surveyed ground at its ends, so its fill never runs over the stretch beside it (a shield's fill over the boxes either
+// side). Fill only: ground already higher stays. Checks, structure and depths use the finished ground; the level solver
+// keeps the ground before the fill.
+const FILL_KINDS = new Set(['cutcover', 'shield', 'deep']);
+function applyFill() {
+  const g0 = S.ground0; S.ground = g0; S.filled = false;
+  if (!g0 || !S.align || !effOvr().some((o) => FILL_KINDS.has(o[2]))) return;
+  const n = g0.length, step = S.step, drop = (settings.fillTaper || 50) / 1000 * step, g = Float32Array.from(g0);
+  const K = new Array(n); for (let i = 0; i < n; i++) { const c = i * step, o = overrideAt(c); K[i] = o && FILL_KINDS.has(o) && !riverAt(c) ? o : null; }
+  let raised = false;
+  for (let i0 = 0; i0 < n;) {
+    if (!K[i0]) { i0++; continue; }
+    let i1 = i0; while (i1 + 1 < n && K[i1 + 1] === K[i0]) i1++;
+    const t = new Float64Array(i1 - i0 + 1).fill(-Infinity);
+    for (let i = i0; i <= i1; i++) {
+      if (isNaN(g0[i])) continue; const c = i * step, sc = structFor(K[i], c), v = railAt(c) + sc.top + reqCover(sc, 0);
+      if (v > g0[i] + 0.005) t[i - i0] = v;   // the slope starts only where the ground is raised
+    }
+    for (let k = 1; k < t.length; k++) t[k] = Math.max(t[k], t[k - 1] - drop);
+    for (let k = t.length - 2; k >= 0; k--) t[k] = Math.max(t[k], t[k + 1] - drop);
+    // back to the surveyed ground at the paint's ends, inside the paint
+    const e0 = g0[i0], e1 = g0[i1];
+    for (let i = i0; i <= i1; i++) {
+      if (isNaN(g0[i])) continue;
+      const lim = Math.min(isNaN(e0) ? Infinity : e0 + drop * (i - i0), isNaN(e1) ? Infinity : e1 + drop * (i1 - i)), v = Math.min(t[i - i0], lim);
+      if (v > g0[i] + 0.005) { g[i] = v; raised = true; }
+    }
+    i0 = i1 + 1;
+  }
+  if (raised) { S.ground = g; S.filled = true; }
+}
+
 // Each station as shallow as the grade limit allows: at most defDepth under ground, canon levels
 // held fixed, solved in both directions so steep descents go deeper instead of popping out.
 function defaultAlign(modes, extra = [], stt = null) {
@@ -2213,9 +2251,9 @@ function draw(ctx, W, H, view, opt = {}) {
   };
   for (let k = 0; k <= cols; k++) { if (isNaN(top[k])) flush(); else run.push([P.x + k, Y(top[k])]); }
   flush();
-  // finished ground against the surveyed ground: the Deck's street re-grades shaded (REGRADED), open cuts
+  // finished ground against the surveyed ground: fill and street re-grades shaded (REGRADED), open cuts
   // shaded (CUT), the surveyed ground dashed
-  if (S.regraded) {
+  if (S.filled || S.regraded) {
     let seg = [];
     // fill solid, cuts hatched (the ground there is gone)
     const hatch = (() => { const hc = document.createElement('canvas'); hc.width = hc.height = 8; const hx = hc.getContext('2d'); hx.strokeStyle = colors.earth; hx.globalAlpha = 0.6; hx.lineWidth = 1; hx.beginPath(); hx.moveTo(0, 8); hx.lineTo(8, 0); hx.stroke(); return ctx.createPattern(hc, 'repeat'); })();
@@ -2719,7 +2757,8 @@ function updatePanels() {
   if (ctxStreets().length || ctxRoads().length) cnl.push(`<li><b>Roads</b> (the Deck's streets and the highways): a bar on the street surface where the line crosses a road (${['highway', 'major', 'minor'].map((k) => `<span style="color:${ROAD_COL[k]}">${k}</span>`).join(', ')}), a dotted line where it runs under a street. Over a road the structure underside keeps ${fmtZ(settings.roadClearHighway, 1)} ${uLbl()} (highway), ${fmtZ(settings.roadClearMajor, 1)} (major) or ${fmtZ(settings.roadClearMinor, 1)} (minor) above the street; at grade across a road is a level crossing (${isRer() ? 'an error on a major road or highway, a warning on a minor street' : 'never, on the Metro'}); viaduct piers stay out of the roads.</li>`);
   if (!isRer() && MS) cnl.push(`<li><b>Station access</b> (Station_Access_and_Mezzanines_by_Phase, 31 October): each station's type at opening from its Chronology year, rail depth, platform type and interchange, or Ben's choice on its card: halls over the box drawn as a band above the roof (end halls 25 m each end, a mezzanine the middle 60%, full length the platform), the crossunder as a band under the floor, a shaft for mined and deep stations, and the D_HALL line (the least rail depth for a hall: ${fmtZ(dHall(false), 2)} ${uLbl()} side, ${fmtZ(dHall(true), 2)} island; hall ${fmtZ(hallDims().clear, 2)} clear, roof ${fmtZ(hallDims().roof, 1)}, cover ${fmtZ(hallDims().cover, 1)}) dashed through the station. The cover and crossing checks run over the hall roof where there is one. Dashed halls: no opening year set.</li>`);
   if (!isRer() && MS) cnl.push(`<li><b>Limits</b> (dashed): in the tube colour the shallowest a tube may run (one outside diameter of cover over it); in the box colour the deepest a cut-and-cover box may go (its phase's limit). A tube above its line or a box below its line cannot be built: hatched red, with Lower or Raise in the issues. Running tunnels by their phase's method: the shield in Phases 1-2, the deep bore (TBM) from Phase 3 (the record's phases.tbm); mined stations are built as their drive.</li>`);
-  cnl.push(`<li><b>Paints must make sense</b> (Ben, 2 November): a paint or a station's type holds only where its structure can be built at the drawn rail; a paint never raises the ground. A box needs its roof under the ground (${fmtZ(isRer() ? settings.envelope : METRO_ST.box.top, 1)} ${uLbl()} to the rail); an open trough a rail under the ground, no deeper than a dig; at grade the rail within a box's height below the ground and a viaduct's above; elevated the deck's underside over the ground; a bored tube its cover${isRer() ? '' : ' (a mined station too)'}. Elsewhere the stretch is hatched as unbuildable, with Lower or Raise and Clear.</li>`);
+  if (S.filled) cnl.push(`<li><b>Regraded ground</b> over painted boxes and tubes below their minimum: made up to the box roof plus cover (${isRer() ? `box ${fmtZ(settings.envelope, 1)} ${uLbl()}` : `${fmtZ(METRO_ST.box.top, 1)} + ${fmtZ(BOX_COVER, 1)} ${uLbl()}`} above the rail) or the tube top plus one diameter, any height, sloping back to the surveyed ground (dashed) at ${settings.fillTaper}‰ inside the paint, so it never runs over the stretch beside it. The level solver works from the ground before the fill.</li>`);
+  cnl.push(`<li><b>Paints must make sense</b> (Ben, 2 November): a paint or a station's type holds only where its structure can be built at the drawn rail on the finished ground (fill included). A box needs its roof under the ground (${fmtZ(isRer() ? settings.envelope : METRO_ST.box.top, 1)} ${uLbl()} to the rail); an open trough a rail under the ground, no deeper than a dig; at grade the rail within a box's height below the ground and a viaduct's above; elevated the deck's underside over the ground; a bored tube its cover${isRer() ? '' : ' (a mined station too)'}. Elsewhere the stretch is hatched as unbuildable, with Lower or Raise and Clear.</li>`);
   { const seen = new Map(); ctxBlocks().forEach((b) => { const e = seen.get(b.n); if (e) e.c1 = b.c1; else seen.set(b.n, { b, c0: b.c0, c1: b.c1 }); });
     seen.forEach(({ b, c0, c1 }) => cnl.push(`<li><b>${esc(b.n)}</b> (${fmtCh(c0)} to ${fmtCh(c1)}): ${esc(b.s)}. Drawn grey and checked for clearance; not editable here.</li>`));
     if (S.regraded) cnl.push(`<li><b>Finished ground</b> takes in the Deck's street re-grades and open cuts (surveyed ground dashed)${(S.ctx.add_src || []).length ? `: ${S.ctx.add_src.map(esc).join('; ')}` : ''}. The level solver uses it.</li>`);
@@ -2845,7 +2884,7 @@ function updateSelCard() {
   const el = $('#selCard'); const sel = S.sel;
   const ro = S.canWrite === false || !!(sel && ((sel.kind === 'st' && lockedStation(sel.i)) || (sel.kind === 'pvi' && S.align.pvi[sel.j] && lockAt(S.align.pvi[sel.j].c))));   // locked stretches are read only
   if (!sel) {
-    el.innerHTML = `<h2>Editing</h2><p class="hint">Drag a station bar up or down to set its rail level. Double-click the track to add a bend point, then drag it. Choose <b>Paint</b> and a structure to mark a stretch by hand; <b>Auto</b> clears it. Painted <b>Cut &amp; cover</b>, <b>Shield tunnel</b> or <b>Deep bore (TBM)</b> keeps the structure where it is; a paint must make sense there (a box's roof under the ground, a tube's cover, an elevated deck over the ground), else it is hatched as unbuildable with Lower, Raise or Clear in the issues, and it never raises the ground; a station's type (cut and cover, shield, bore by TBM, elevated with a mezzanine under it) is a selection on its card, not a paint: a paint across a station paints only the running line. <b>Twin tubes</b> or <b>Double-track bore</b> sets the tube form of a bored stretch (<b>Auto tubes</b> clears it: the drive's ends decide).</p>
+    el.innerHTML = `<h2>Editing</h2><p class="hint">Drag a station bar up or down to set its rail level. Double-click the track to add a bend point, then drag it. Choose <b>Paint</b> and a structure to mark a stretch by hand; <b>Auto</b> clears it. Painted <b>Cut &amp; cover</b>, <b>Shield tunnel</b> or <b>Deep bore (TBM)</b> keeps the structure where it is and regrades the ground over it where it is below its minimum (the box roof plus cover, or the tube top plus one diameter, any height, sloping back inside the paint); a paint must make sense there (an elevated deck over the ground, a trough under it, a box not sticking out at a paint's end), else it is hatched as unbuildable with Lower, Raise or Clear in the issues; a station's type (cut and cover, shield, bore by TBM, elevated with a mezzanine under it) is a selection on its card, not a paint: a paint across a station paints only the running line. <b>Twin tubes</b> or <b>Double-track bore</b> sets the tube form of a bored stretch (<b>Auto tubes</b> clears it: the drive's ends decide).</p>
       <p class="hint"><kbd>scroll</kbd> zoom · <kbd>drag</kbd> pan · <kbd>↑</kbd><kbd>↓</kbd> nudge 0.1 (<kbd>Shift</kbd> 1) · <kbd>Del</kbd> remove bend · <kbd>Ctrl Z</kbd> undo</p>`;
     return;
   }
@@ -2874,8 +2913,8 @@ ${isRer() ? '' : (() => { const pc = platformCurve(sel.i); return `<dt>Platform 
       <div class="group" role="group" aria-label="Platform position"><button class="btn" id="posA" ${ro ? 'disabled' : ''} title="The drawn point at the platform start (low chainage end)">Point at start</button><button class="btn" id="posC" ${ro ? 'disabled' : ''}>Centred</button><button class="btn" id="posB" ${ro ? 'disabled' : ''} title="The drawn point at the platform end (high chainage end)">Point at end</button></div>
       <p class="hint">The drawn point (tick on the bar) stays put; the platform slides along it. <kbd>Alt</kbd> + drag the bar to slide it.</p>
       <div class="group"><button class="btn" id="easeSt" ${ro ? 'disabled' : ''} title="Slope this platform toward the grades on either side, up to the station limit">Ease the bends</button><button class="btn" id="delSt" ${ro ? 'disabled' : ''} title="Leave this station out of the profile and the run times; restore it from the Stations list">Remove station</button></div>
-      ${isRer() ? `<div class="group"><button class="btn" id="ccSt" aria-pressed="${ccFull(sel.i)}" ${ro ? 'disabled' : ''} title="Paint the whole platform cut and cover: the box keeps its level, and it must fit (its roof under the ground)">${ccFull(sel.i) ? 'Whole station cut &amp; cover' : 'Force whole station cut &amp; cover'}</button></div>` : (() => { const cur = (S.align.stt || [])[sel.i] || ''; return `
-      <dl class="kv"><dt><label for="inStt">Station type</label></dt><dd><select id="inStt" ${ro ? 'disabled' : ''} title="The station's structure, whole platform. Rules: a box within the phase's cut-and-cover limit, mined deeper, open by level. A selected box or mined station keeps its level and must fit there (a box\'s roof under the ground, a tube\'s cover), else it is flagged; Elevated sets the rail at the mezzanine's height over the ground if it is lower"><option value="">Rules${cur ? '' : `: ${esc(TYPES[typeAt(s.c, z)].label)}`}</option>${Object.entries(STT).map(([k, v]) => `<option value="${k}" ${cur === k ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select></dd></dl>`; })()}${!isRer() && platformCurve(sel.i).level === 'error' ? `
+      ${isRer() ? `<div class="group"><button class="btn" id="ccSt" aria-pressed="${ccFull(sel.i)}" ${ro ? 'disabled' : ''} title="Paint the whole platform cut and cover: the box keeps its level and the ground is regraded over it where it is below its minimum">${ccFull(sel.i) ? 'Whole station cut &amp; cover' : 'Force whole station cut &amp; cover'}</button></div>` : (() => { const cur = (S.align.stt || [])[sel.i] || ''; return `
+      <dl class="kv"><dt><label for="inStt">Station type</label></dt><dd><select id="inStt" ${ro ? 'disabled' : ''} title="The station's structure, whole platform. Rules: a box within the phase's cut-and-cover limit, mined deeper, open by level. A selected box or mined station keeps its level and the ground is regraded over it where it is below its minimum; Elevated sets the rail at the mezzanine's height over the ground if it is lower"><option value="">Rules${cur ? '' : `: ${esc(TYPES[typeAt(s.c, z)].label)}`}</option>${Object.entries(STT).map(([k, v]) => `<option value="${k}" ${cur === k ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select></dd></dl>`; })()}${!isRer() && platformCurve(sel.i).level === 'error' ? `
       <div class="group"><button class="btn" id="gapFill" aria-pressed="${platformCurve(sel.i).gapfill}" ${ro ? 'disabled' : ''} title="Allow this curved platform as a named exception with gap fillers">Gap fillers (named exception)</button></div>` : ''}${isRer() ? `<div class="group" role="group" aria-label="Station setting">
         <button class="btn" id="modeSurf" aria-pressed="${modeOf(sel.i) === 'surface'}" ${ro ? 'disabled' : ''}>At grade, old railroad</button>
         <button class="btn" id="modeUnder" aria-pressed="${modeOf(sel.i) === 'under'}" ${ro ? 'disabled' : ''}>Underground</button></div>
@@ -2940,7 +2979,7 @@ function pushHist() { S.hist.push(snapshot()); if (S.hist.length > 200) S.hist.s
 function syncUndo() { $('#undo').disabled = !S.hist.length || S.canWrite === false; $('#redo').disabled = !S.fut.length || S.canWrite === false; $('#solveCross').disabled = S.canWrite === false; $('#easeAll').disabled = S.canWrite === false; }
 function undo() { if (!S.hist.length) return; S.fut.push(snapshot()); S.align = JSON.parse(S.hist.pop()); S.sel = null; changed(); syncUndo(); }
 function redo() { if (!S.fut.length) return; S.hist.push(snapshot()); S.align = JSON.parse(S.fut.pop()); S.sel = null; changed(); syncUndo(); }
-function changed(save = true) { MODEL_V++; if (S.data) { S.stations = deriveStations(S.align.del || [], S.align.so || []); buildCanon(); ensureJunctionPvis(S.align, S.stations); if (applyLocks(S.align) && save) { S.stations = deriveStations(S.align.del || [], S.align.so || []); flash('Locked stretch: kept as canon'); } } VERTS = vertices(); updatePanels(); schedule(); if (save) markDirty(); }
+function changed(save = true) { MODEL_V++; if (S.data) { S.stations = deriveStations(S.align.del || [], S.align.so || []); buildCanon(); ensureJunctionPvis(S.align, S.stations); if (applyLocks(S.align) && save) { S.stations = deriveStations(S.align.del || [], S.align.so || []); flash('Locked stretch: kept as canon'); } } VERTS = vertices(); applyFill(); updatePanels(); schedule(); if (save) markDirty(); }
 function inPlatform(c) { const half = settings.platform / 2; return S.stations.some((s) => c > s.c - half - 2 && c < s.c + half + 2); }
 function clampPviC(c, j) {
   c = clamp(c, 1, S.L - 1);
@@ -3148,12 +3187,12 @@ async function selectLine(id) {
 function groundOf(d) { if (!d._g) d._g = Float32Array.from(d.ground_dm, (v) => (v == null ? NaN : v / 10)); return d._g; }
 // run fn with another line loaded in place of the current one (for its default rail)
 function withLine(d, k, fn) {
-  const keys = ['data', 'L', 'step', 'ground', 'ground0', 'groundDem', 'ctx', 'regraded', 'stations', 'rivers', 'crossings', 'canonSecs', 'canonFixed', 'canonModes', 'canonDeck', 'canonLocks', 'align'];
+  const keys = ['data', 'L', 'step', 'ground', 'ground0', 'groundDem', 'ctx', 'regraded', 'filled', 'stations', 'rivers', 'crossings', 'canonSecs', 'canonFixed', 'canonModes', 'canonDeck', 'canonLocks', 'align'];
   const keep = {}; keys.forEach((x) => (keep[x] = S[x])); const ks = sys, kset = settings;
   sys = k; settings = SYS[k].settings;
   MODEL_SWAP++;
   try {
-    S.data = d; S.L = d.length_m; S.step = d.step_m; S.groundDem = groundFor(d); S.ctx = ctxFor(d.id); S.ground0 = S.ground = regradeGround(S.groundDem, S.ctx); S.stations = baseStations(d); S.rivers = d.rivers; S.crossings = d.crossings || [];
+    S.data = d; S.L = d.length_m; S.step = d.step_m; S.groundDem = groundFor(d); S.ctx = ctxFor(d.id); S.ground0 = S.ground = regradeGround(S.groundDem, S.ctx); S.filled = false; S.stations = baseStations(d); S.rivers = d.rivers; S.crossings = d.crossings || [];
     buildCanon(); return fn();
   } finally { keys.forEach((x) => (S[x] = keep[x])); sys = ks; settings = kset; MODEL_SWAP--; }
 }
@@ -3220,12 +3259,12 @@ cv.addEventListener('pointermove', (e) => {
   }
   const dr = S.drag;
   if (dr) {
-    if (dr.kind === 'st') { const dz = LAYOUT.Z(y) - LAYOUT.Z(dr.y0); let z = dr.z0 + dz; z = e.shiftKey ? Math.round(z) : Math.round(z * 10) / 10; S.align.st[dr.i] = z; VERTS = vertices(); updateReadout(x, y); schedule(); }
-    else if (dr.kind === 'stx') { setSo(dr.i, dr.so0 + LAYOUT.C(x) - LAYOUT.C(dr.x0)); S.stations = deriveStations(S.align.del || [], S.align.so); VERTS = vertices(); updateReadout(x, y); schedule(); }
+    if (dr.kind === 'st') { const dz = LAYOUT.Z(y) - LAYOUT.Z(dr.y0); let z = dr.z0 + dz; z = e.shiftKey ? Math.round(z) : Math.round(z * 10) / 10; S.align.st[dr.i] = z; VERTS = vertices(); applyFill(); updateReadout(x, y); schedule(); }
+    else if (dr.kind === 'stx') { setSo(dr.i, dr.so0 + LAYOUT.C(x) - LAYOUT.C(dr.x0)); S.stations = deriveStations(S.align.del || [], S.align.so); VERTS = vertices(); applyFill(); updateReadout(x, y); schedule(); }
     else if (dr.kind === 'pvi') {
       const p = S.align.pvi[dr.j]; let c = dr.c0 + (LAYOUT.C(x) - LAYOUT.C(dr.x0)); let z = dr.z0 + (LAYOUT.Z(y) - LAYOUT.Z(dr.y0));
       p.c = junctionAt(dr.c0) ? dr.c0 : clampPviC(Math.round(c), dr.j); p.z = e.shiftKey ? Math.round(z) : Math.round(z * 10) / 10;
-      S.align.pvi.sort((a, b) => a.c - b.c); dr.j = S.align.pvi.indexOf(p); S.sel = { kind: 'pvi', j: dr.j }; VERTS = vertices(); updateReadout(x, y); schedule();
+      S.align.pvi.sort((a, b) => a.c - b.c); dr.j = S.align.pvi.indexOf(p); S.sel = { kind: 'pvi', j: dr.j }; VERTS = vertices(); applyFill(); updateReadout(x, y); schedule();
     } else if (dr.kind === 'paint') { dr.c1 = clamp(LAYOUT.C(x), 0, S.L); schedule(); }
     else if (dr.kind === 'pan') {
       const dx = x - dr.x0; if (Math.abs(dx) > 3) dr.moved = true;

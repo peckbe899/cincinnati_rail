@@ -617,3 +617,18 @@ Line 1 over the L&N bridge:
   unbuildable check (Line 4, 36 m).
 - Page and copy agree on every Metro line (types, unbuildable, misfits; Line 5's old approach-extra difference is gone);
   72 tests pass; the 3D build checks with no new issues.
+- Follow-up, the same day. Ben: "the filling should be unlimited. there's no reason for it not to. but that kind of
+  filling that I showed is not realistic, and it doesn't make sense because it's overriding the cut-and-cover"; asked,
+  the override is the tube's fill spilling over the boxes beside it; "any tube that is below the minimum should regrade
+  the land above it. that goes for cut-and-cover and boxes/tubes"; the slope back to the surveyed ground stays inside
+  the paint; the misfit check stays for what fill cannot fix. (He also asked that questions come before work when a
+  request is unclear.)
+- The fill is back (page `applyFill`, port `refresh_fill`, `fillTaper` 50 per mille), with no height limit (no
+  `fill_max_m`) and regraded per painted stretch of one structure: each run of one paint kind (boxes, shield, deep) is
+  made up to its own minimum and capped by the slope rising from the surveyed ground at its two ends, so it meets the
+  surveyed ground at the paint's ends and never runs over the stretch beside it. The 30 m fill under the RER 4 / D
+  viaduct (a deep paint's slope past its portal) is gone.
+- The misfit check runs on the filled ground, so it now lists only what fill cannot fix. On the seed's profiles that is
+  four boxes sticking out where their paint's fill slopes back at an end (Line 1 at West 5th, Line 2, Line 2b, Line 4 on
+  West 8th). Largest fill: 13.9 m on Line 4 at Rapid Run, a 16 m cut over a painted shield tube.
+- Page and copy agree on every line, fill included; 73 tests pass.

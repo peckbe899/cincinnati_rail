@@ -532,12 +532,13 @@ def test_cut_norwood_context():
     # (no saved profile) holds the station 4.7 m over the tracks' level, short of the 7.8 m a line under them needs
     x = [x for x in l14.context_clearances() if not x["ok"]]
     assert x and all(y["with"] == "Norwood Central tracks" for y in x)
-    # a paint never raises the ground (Ben, 2 November: "the painting has to make sense")
+    # painted cut and cover: the box keeps its level and the ground is filled to roof + cover
     l9 = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json", records="repo")
     s0 = l9.stations[3]["c"]
-    g0 = [float(l9.ground_at(ci)) for ci in np.arange(s0 - 200.0, s0 + 200.0, 10.0)]
     l9.ovr = [(s0 - 200.0, s0 + 200.0, "cutcover")]
-    assert [float(l9.ground_at(ci)) for ci in np.arange(s0 - 200.0, s0 + 200.0, 10.0)] == g0
+    l9.refresh_fill()
+    for ci in np.arange(s0 - 50.0, s0 + 50.0, 10.0):
+        assert float(l9.ground_at(ci)) >= float(l9.rail_at(ci)) + 4.6 + 0.6 - 0.01
 
 
 def test_context_street_openings():
@@ -1046,3 +1047,33 @@ def test_paints_must_make_sense():
     mp.stt[k] = "elevated"
     m = mp.paint_misfits()
     assert len(m) == 1 and m[0]["station"] == mp.stations[k]["name"] and m[0]["why"] == "buried"
+
+
+
+def test_fill_any_height_inside_its_paint():
+    """Ben, 2 November: a painted box or tube below its minimum regrades the land above it, any height, and the slope
+    back to the surveyed ground stays inside the paint (a shield's fill never runs over the boxes beside it)."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile
+    root = Path(__file__).resolve().parent.parent / "data/profile"
+    mp = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json", records="repo")
+    half, step = mp.settings["platform"] / 2, 2.0
+    cs = np.arange(0.0, mp.length, step)
+    d = np.array([float(mp.ground_at(c) - mp.rail_at(c)) for c in cs])
+    near = lambda c: any(abs(c - s["c"]) <= half + 30 for s in mp.stations) or mp.river_at(c) or mp.canon_at(c)
+    i = next(i for i in range(len(cs) - 500) if abs(d[i + 250]) < 2.0 and all(np.isfinite(d[j]) and not near(cs[j]) for j in range(i, i + 501, 5)))
+    a, m, b = float(cs[i]), float(cs[i + 250]), float(cs[i + 500])   # 1 km clear of stations, the rail near the ground in the middle
+    g0 = lambda c: float(mp.ground0_at(c))
+    # a deep paint in the middle (a tube: top plus one diameter, far more than 3 m), boxes either side
+    mp.ovr = [(a, m - 340.0, "cutcover"), (m - 340.0, m + 340.0, "deep"), (m + 340.0, b, "cutcover")]
+    mp.refresh_fill()
+    sc = mp.struct_for("deep", m)
+    need = float(mp.rail_at(m)) + sc["top"] + sc["od"]
+    assert need - g0(m) > 8.0 and float(mp.ground_at(m)) == pytest.approx(need, abs=0.05)   # no height limit
+    drop = mp.settings["fillTaper"] / 1000.0
+    for c in (m - 340.0, m + 340.0):   # the tube's fill comes back to the surveyed ground at its ends
+        assert float(mp.ground_at(c)) <= g0(c) + 2 * step * drop + 0.05
+    for c in np.arange(m - 340.0, m + 340.0, 10.0):   # at most the slope from either end
+        assert float(mp.ground_at(c)) <= min(g0(m - 340.0) + drop * (c - m + 340.0), g0(m + 340.0) + drop * (m + 340.0 - c)) + 0.05
+    for c in (a - 20.0, b + 20.0):   # nothing past the paints
+        assert float(mp.ground_at(c)) == pytest.approx(g0(c), abs=0.01)

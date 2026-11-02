@@ -15,9 +15,10 @@ Model (as in the page):
     the canon sections for the founding Lines 1-6.
   * ground, in three layers as on the page: the surveyed raster; the Mill Creek Deck's street
     re-grades and open cuts at CUT and Norwood Central on top (data/profile/context/lines.json,
-    the ground the solver uses, and the ground structure and cover are judged on). A paint never
-    raises the ground (Ben, 2 November: "the painting has to make sense"): a paint or a station's
-    type that cannot be built at the drawn rail is a misfit (paint_misfits).
+    the ground the solver uses); and over a painted box or tube below its minimum the ground made
+    up to it, any height, sloping back inside the paint (the ground structure and cover are judged
+    on). A paint or a station's type that cannot be built at the drawn rail is a misfit
+    (paint_misfits).
   * context (data/profile/context/lines.json): the other systems' structures at CUT and Norwood
     Central (the lower level and its pairs, the intercity and C&O pairs, the APEx arch viaducts,
     the Norwood surface tracks and trench) as chainage blocks with their rail level, checked
@@ -50,7 +51,7 @@ TUNNEL_STRUCTURES = {"tunnel", "cut-and-cover", "shield", "deep-tube", "sunk-box
 # Platforms 400 ft (Ben, 23 October 2026: 6 cars of about 67 ft or 8 of about 50 ft; was 500 ft)
 DEFAULTS = dict(maxGrade=50.0, platform=121.92, defDepth=7.62, elevAbove=3.0, coverBelow=3.0,
                 deepBelow=18.29, shallowMax=12.19, poolFt=455.0, deckDepth=1.5,
-                vcRadius=1500.0, vcMinLen=30.5, minCover=2.0,
+                vcRadius=1500.0, vcMinLen=30.5, minCover=2.0, fillTaper=50.0,
                 riverRoof=1.0, riverSink=5.0, riverRise=3.0, riverFlatTol=1.0, riverClearWater=3.66, riverCap=1.0,
                 roadClearHighway=4.9, roadClearMajor=4.3, roadClearMinor=4.3)
 # Metro structures (Ben's rules), from the top of rail: below = rail to underside, top = rail to
@@ -106,7 +107,7 @@ ERA = {**{f"Line_{k}": {"shield": "tube"} for k in ("1", "2", "2b", "3", "4", "5
 RER_DEFAULTS = dict(maxGrade=35.0, platform=204.2, defDepth=12.0, elevAbove=3.0, coverBelow=3.0,
                     deepBelow=25.0, shallowMax=18.0, envelope=6.6, boreCrown=7.5, invertDepth=1.0, poolFt=455.0,
                     surfStep=250.0, tubeCover=3.0, vcRadius=3000.0, vcMinLen=30.5, minCover=8.5, deckDepth=2.0,
-                    riverSink=5.0, riverRise=3.0, riverFlatTol=1.0, riverClearWater=3.66,
+                    fillTaper=50.0, riverSink=5.0, riverRise=3.0, riverFlatTol=1.0, riverClearWater=3.66,
                     riverCap=1.0, roadClearHighway=4.9, roadClearMajor=4.3, roadClearMinor=4.3)
 RER_CANON_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "rer" / "canon.json"
 CONTEXT_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "context" / "lines.json"
@@ -264,6 +265,7 @@ class MetroProfile:
         if alignment_json and Path(alignment_json).exists():
             doc = json.loads(Path(alignment_json).read_text())
         p._align_from_doc(doc)
+        p.refresh_fill()
         return p
 
     @property
@@ -327,11 +329,11 @@ class MetroProfile:
 
     # ------------------------------------------------------------- ground
     def ground_at(self, c):
-        """Finished ground: surveyed + Deck re-grades (a paint never raises it)."""
+        """Finished ground: surveyed + Deck re-grades + fill over painted boxes and tubes."""
         return self._sample(self._ground, c)
 
     def ground0_at(self, c):
-        """The ground the level solver uses: the finished ground (surveyed + Deck re-grades)."""
+        """The ground the level solver uses: surveyed + Deck re-grades (no fill)."""
         return self._sample(getattr(self, "_ground0", self._ground), c)
 
     def ground_dem_at(self, c):
@@ -375,6 +377,60 @@ class MetroProfile:
                 i = r["i0"] + k
                 if i < len(g) and np.isfinite(g[i]) and v < g[i]:
                     g[i] = v
+
+    def refresh_fill(self):
+        """Painted boxes and tubes (Ben, 26 and 30 October; 2 November: "any tube that is below the minimum should regrade
+        the land above it. that goes for cut-and-cover and boxes/tubes"; as the page's applyFill): the structure keeps its
+        level and the ground over it is made up to its minimum (a box's roof plus its cover, a tube's top plus one outside
+        diameter), any height. The slope back to the surveyed ground (fillTaper) stays inside the paint: each painted
+        stretch of one structure is regraded on its own and meets the surveyed ground at its ends, so it never runs over
+        the stretch beside it. Fill only. Call again after changing st, pvi or ovr."""
+        g0 = getattr(self, "_ground0", self._ground)
+        kinds = ("cutcover", "shield", "deep")
+        self._ground_v = getattr(self, "_ground_v", 0) + 1
+        if not any(t in kinds for _, _, t in self.ovr):
+            self._ground = g0.copy()
+            return
+        step = float(self.data.get("step_m", 2.0))
+        n = len(g0)
+        drop = float(self.settings.get("fillTaper", 50.0)) / 1000.0 * step
+        K = []
+        for i in range(n):
+            c = i * step
+            o = self.override_at(c)
+            K.append(o if o in kinds and not self.river_at(c) else None)
+        g = g0.copy()
+        i0 = 0
+        while i0 < n:
+            if not K[i0]:
+                i0 += 1
+                continue
+            i1 = i0
+            while i1 + 1 < n and K[i1 + 1] == K[i0]:
+                i1 += 1
+            t = np.full(i1 - i0 + 1, -np.inf)
+            for i in range(i0, i1 + 1):
+                if not np.isfinite(g0[i]):
+                    continue
+                c = i * step
+                sc = self.struct_for(K[i], c)
+                v = float(self.rail_at(c)) + sc["top"] + self.req_cover(sc, 0.0)
+                if v > g0[i] + 0.005:   # the slope starts only where the ground is raised
+                    t[i - i0] = v
+            for k in range(1, len(t)):
+                t[k] = max(t[k], t[k - 1] - drop)
+            for k in range(len(t) - 2, -1, -1):
+                t[k] = max(t[k], t[k + 1] - drop)
+            e0, e1 = float(g0[i0]), float(g0[i1])   # back to the surveyed ground at the paint's ends, inside the paint
+            for i in range(i0, i1 + 1):
+                if not np.isfinite(g0[i]):
+                    continue
+                lim = min(e0 + drop * (i - i0) if math.isfinite(e0) else math.inf, e1 + drop * (i1 - i) if math.isfinite(e1) else math.inf)
+                v = min(t[i - i0], lim)
+                if v > g0[i] + 0.005:
+                    g[i] = np.float32(v)
+            i0 = i1 + 1
+        self._ground = g
 
     # ------------------------------------------------------------- canon
     def _build_canon(self):
@@ -745,7 +801,7 @@ class MetroProfile:
         return out
 
     def _effective_ovr(self):
-        """the paints as the solver reads them (the page's effOvr): on the Metro, inside each platform only the
+        """the paints as the solver and the fill read them (the page's effOvr): on the Metro, inside each platform only the
         station's selection; a locked station keeps the lock's paint. The saved paints stay in self.paints."""
         self.paints = list(self.ovr)
         if self.is_rer:
@@ -1912,7 +1968,8 @@ class MetroProfile:
 
     # ------------------------------------------------------------- paints must make sense
     # (Ben, 2 November 2026: "the painting has to make sense"; as the page's paintMisfits). A paint, or a station's type
-    # selection, holds only where its structure can be built at the drawn rail on the finished ground: a box's roof under
+    # selection, holds only where its structure can be built at the drawn rail on the finished ground (fill included, so
+    # what is left is what fill cannot fix): a box's roof under
     # the ground; an open trough's rail under the ground and no deeper than a dig (the cut-and-cover limit); at grade within
     # a box's height below the ground and a viaduct's height above; elevated, the deck's underside over the ground; a bored
     # tube its cover (RER the minimum cover; Metro a mined station the hard cover of its tube: a running tube and a box past
