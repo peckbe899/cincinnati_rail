@@ -15,10 +15,9 @@ Model (as in the page):
     the canon sections for the founding Lines 1-6.
   * ground, in three layers as on the page: the surveyed raster; the Mill Creek Deck's street
     re-grades and open cuts at CUT and Norwood Central on top (data/profile/context/lines.json,
-    the ground the solver uses); and over a painted box or tube below its minimum the ground made
-    up to it, any height, sloping back inside the paint (the ground structure and cover are judged
-    on). A paint or a station's type that cannot be built at the drawn rail is a misfit
-    (paint_misfits).
+    the ground the solver uses); and Ben's drawn ground lines (gnd in the saved profile, and the
+    crossing lines' drawn ground across their street), the finished ground everything is judged on.
+    A paint or a station's type that cannot be built at the drawn rail is a misfit (paint_misfits).
   * context (data/profile/context/lines.json): the other systems' structures at CUT and Norwood
     Central (the lower level and its pairs, the intercity and C&O pairs, the APEx arch viaducts,
     the Norwood surface tracks and trench) as chainage blocks with their rail level, checked
@@ -51,7 +50,7 @@ TUNNEL_STRUCTURES = {"tunnel", "cut-and-cover", "shield", "deep-tube", "sunk-box
 # Platforms 400 ft (Ben, 23 October 2026: 6 cars of about 67 ft or 8 of about 50 ft; was 500 ft)
 DEFAULTS = dict(maxGrade=50.0, platform=121.92, defDepth=7.62, elevAbove=3.0, coverBelow=3.0,
                 deepBelow=18.29, shallowMax=12.19, poolFt=455.0, deckDepth=1.5,
-                vcRadius=1500.0, vcMinLen=30.5, minCover=2.0, fillTaper=50.0,
+                vcRadius=1500.0, vcMinLen=30.5, minCover=2.0, fillSlope=500.0, groundWarn=100.0, groundSustain=100.0, groundMax=150.0,
                 riverRoof=1.0, riverSink=5.0, riverRise=3.0, riverFlatTol=1.0, riverClearWater=3.66, riverCap=1.0,
                 roadClearHighway=4.9, roadClearMajor=4.3, roadClearMinor=4.3)
 # Metro structures (Ben's rules), from the top of rail: below = rail to underside, top = rail to
@@ -107,7 +106,7 @@ ERA = {**{f"Line_{k}": {"shield": "tube"} for k in ("1", "2", "2b", "3", "4", "5
 RER_DEFAULTS = dict(maxGrade=35.0, platform=204.2, defDepth=12.0, elevAbove=3.0, coverBelow=3.0,
                     deepBelow=25.0, shallowMax=18.0, envelope=6.6, boreCrown=7.5, invertDepth=1.0, poolFt=455.0,
                     surfStep=250.0, tubeCover=3.0, vcRadius=3000.0, vcMinLen=30.5, minCover=8.5, deckDepth=2.0,
-                    fillTaper=50.0, riverSink=5.0, riverRise=3.0, riverFlatTol=1.0, riverClearWater=3.66,
+                    fillSlope=500.0, groundWarn=100.0, groundSustain=100.0, groundMax=150.0, riverSink=5.0, riverRise=3.0, riverFlatTol=1.0, riverClearWater=3.66,
                     riverCap=1.0, roadClearHighway=4.9, roadClearMajor=4.3, roadClearMinor=4.3)
 RER_CANON_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "rer" / "canon.json"
 CONTEXT_JSON = Path(__file__).resolve().parent.parent / "data" / "profile" / "context" / "lines.json"
@@ -203,6 +202,41 @@ def load_settings(path: Optional[str | Path], rer: bool = False) -> dict:
 
 
 MIN_RUN = 20.0   # no stretch shorter than this outside a station (drawing value, as the editor)
+GND_W = 15.0     # the drawn ground's width at a crossing where the other line has no Deck street (as the editor)
+
+
+def _parse_gnd(raw) -> List[list]:
+    """the saved drawn ground: lines of [c, z], each sorted, at least two points over more than a metre"""
+    out = []
+    for L in raw if isinstance(raw, list) else []:
+        if not isinstance(L, list):
+            continue
+        P = sorted([[float(p[0]), float(p[1])] for p in L if isinstance(p, list) and len(p) >= 2
+                    and all(isinstance(v, (int, float)) and math.isfinite(v) for v in p[:2])], key=lambda p: p[0])
+        if len(P) >= 2 and P[-1][0] - P[0][0] > 1:
+            out.append(P)
+    return sorted(out, key=lambda P: P[0][0])
+
+
+def _gnd_level(P, c) -> float:
+    for k in range(1, len(P)):
+        if c <= P[k][0]:
+            a, b = P[k - 1], P[k]
+            return b[1] if b[0] - a[0] < 1e-6 else a[1] + (b[1] - a[1]) * (c - a[0]) / (b[0] - a[0])
+    return P[-1][1]
+
+
+_CTX_LINES = {}
+
+
+def _context_lines() -> dict:
+    """every line's context (streets) from the context file, read once"""
+    if "lines" not in _CTX_LINES:
+        try:
+            _CTX_LINES["lines"] = json.loads(CONTEXT_JSON.read_text()).get("lines") or {} if CONTEXT_JSON.exists() else {}
+        except ValueError:
+            _CTX_LINES["lines"] = {}
+    return _CTX_LINES["lines"]
 
 @dataclass
 class MetroProfile:
@@ -261,11 +295,12 @@ class MetroProfile:
         p._apply_regrade()                 # + the Deck's street re-grades and cuts: the solver's ground
         p._ground = p._ground.astype(np.float32).astype(float)   # the editor's precision (Float32Array), so ties agree
         p._ground0 = p._ground.copy()
+        p._ground_reg = p._ground.copy()   # surveyed + Deck re-grades: under the drawn ground
+        p._docs_dir = Path(alignment_json).parent if alignment_json else (_ROOT / "hub" / "seed" / "alignments" if records == "hub" else dp / "alignments")
         doc = None
         if alignment_json and Path(alignment_json).exists():
             doc = json.loads(Path(alignment_json).read_text())
         p._align_from_doc(doc)
-        p.refresh_fill()
         return p
 
     @property
@@ -316,6 +351,8 @@ class MetroProfile:
         out["ovr"] = [[round(m(float(a)), 1), round(m(float(b)), 1), *r] for a, b, *r in doc.get("ovr", [])]
         if doc.get("tf"):
             out["tf"] = [[round(m(float(a)), 1), round(m(float(b)), 1), *r] for a, b, *r in doc["tf"]]
+        if isinstance(doc.get("gnd"), list):   # the drawn ground (3 November)
+            out["gnd"] = [[[round(m(float(p[0])), 1), p[1]] if isinstance(p, list) and p else p for p in L] if isinstance(L, list) else L for L in doc["gnd"]]
         so_old, so = doc.get("so") or {}, {}
         for x, s in zip(sts, self.stations):
             if not isinstance(x, dict) or x.get("name") != s["name"] or not isinstance(x.get("point_c"), (int, float)):
@@ -329,11 +366,11 @@ class MetroProfile:
 
     # ------------------------------------------------------------- ground
     def ground_at(self, c):
-        """Finished ground: surveyed + Deck re-grades + fill over painted boxes and tubes."""
+        """Finished ground: surveyed + Deck re-grades + the drawn ground."""
         return self._sample(self._ground, c)
 
     def ground0_at(self, c):
-        """The ground the level solver uses: surveyed + Deck re-grades (no fill)."""
+        """The ground the level solver uses: the finished ground."""
         return self._sample(getattr(self, "_ground0", self._ground), c)
 
     def ground_dem_at(self, c):
@@ -378,59 +415,51 @@ class MetroProfile:
                 if i < len(g) and np.isfinite(g[i]) and v < g[i]:
                     g[i] = v
 
-    def refresh_fill(self):
-        """Painted boxes and tubes (Ben, 26 and 30 October; 2 November: "any tube that is below the minimum should regrade
-        the land above it. that goes for cut-and-cover and boxes/tubes"; as the page's applyFill): the structure keeps its
-        level and the ground over it is made up to its minimum (a box's roof plus its cover, a tube's top plus one outside
-        diameter), any height. The slope back to the surveyed ground (fillTaper) stays inside the paint: each painted
-        stretch of one structure is regraded on its own and meets the surveyed ground at its ends, so it never runs over
-        the stretch beside it. Fill only. Call again after changing st, pvi or ovr."""
-        g0 = getattr(self, "_ground0", self._ground)
-        kinds = ("cutcover", "shield", "deep")
-        self._ground_v = getattr(self, "_ground_v", 0) + 1
-        if not any(t in kinds for _, _, t in self.ovr):
-            self._ground = g0.copy()
-            return
-        step = float(self.data.get("step_m", 2.0))
-        n = len(g0)
-        drop = float(self.settings.get("fillTaper", 50.0)) / 1000.0 * step
-        K = []
-        for i in range(n):
-            c = i * step
-            o = self.override_at(c)
-            K.append(o if o in kinds and not self.river_at(c) else None)
-        g = g0.copy()
-        i0 = 0
-        while i0 < n:
-            if not K[i0]:
-                i0 += 1
+    # ---- drawn ground (Ben, 3 November; as the page's drawnGround): lines of points [c, z] joined by straight grades, their
+    # ends on the ground below (surveyed + Deck re-grades); another line's drawn ground across its street where it crosses
+    def _cross_ground(self) -> List[dict]:
+        out = []
+        for cr in self.data.get("crossings") or []:
+            wid, oc = cr.get("wid"), cr.get("oc")
+            if not wid or oc is None or wid == self.id:
                 continue
-            i1 = i0
-            while i1 + 1 < n and K[i1 + 1] == K[i0]:
-                i1 += 1
-            t = np.full(i1 - i0 + 1, -np.inf)
-            for i in range(i0, i1 + 1):
-                if not np.isfinite(g0[i]):
+            f = Path(getattr(self, "_docs_dir", "")) / f"{wid}.json"
+            try:
+                doc = json.loads(f.read_text()) if f.is_file() else None
+            except ValueError:
+                doc = None
+            if not doc or not isinstance(doc.get("gnd"), list):
+                continue
+            for P in _parse_gnd(doc["gnd"]):
+                if not (P[0][0] <= oc <= P[-1][0]):
                     continue
-                c = i * step
-                sc = self.struct_for(K[i], c)
-                v = float(self.rail_at(c)) + sc["top"] + self.req_cover(sc, 0.0)
-                if v > g0[i] + 0.005:   # the slope starts only where the ground is raised
-                    t[i - i0] = v
-            for k in range(1, len(t)):
-                t[k] = max(t[k], t[k - 1] - drop)
-            for k in range(len(t) - 2, -1, -1):
-                t[k] = max(t[k], t[k + 1] - drop)
-            e0, e1 = float(g0[i0]), float(g0[i1])   # back to the surveyed ground at the paint's ends, inside the paint
-            for i in range(i0, i1 + 1):
-                if not np.isfinite(g0[i]):
-                    continue
-                lim = min(e0 + drop * (i - i0) if math.isfinite(e0) else math.inf, e1 + drop * (i1 - i) if math.isfinite(e1) else math.inf)
-                v = min(t[i - i0], lim)
-                if v > g0[i] + 0.005:
-                    g[i] = np.float32(v)
-            i0 = i1 + 1
-        self._ground = g
+                st = next((r for r in (_context_lines().get(wid) or {}).get("streets") or [] if r[0] - 5 <= oc <= r[1] + 5), None)
+                w = float(st[2]) if st else GND_W
+                out.append({"c0": float(cr["c"]) - w / 2, "c1": float(cr["c"]) + w / 2, "z": _gnd_level(P, oc), "wid": wid, "street": st[3] if st else None, "w": w})
+        return out
+
+    def _apply_drawn(self, raw) -> None:
+        base, step = self._ground_reg, float(self.data.get("step_m", 2.0))
+        lines = _parse_gnd(raw)
+        for P in lines:   # the ends on the ground below
+            for p in (P[0], P[-1]):
+                b = float(self._sample(base, p[0]))
+                if math.isfinite(b):
+                    p[1] = round(b * 100) / 100
+        xs = self._cross_ground()
+        self.gnd, self.gnd_cross = lines, xs
+        g, n = base.copy(), len(base)
+        own = lambda c: any(P[0][0] <= c <= P[-1][0] for P in lines)
+        for x in xs:
+            for i in range(math.ceil(x["c0"] / step), math.floor(x["c1"] / step) + 1):
+                if 0 <= i < n and np.isfinite(g[i]) and not own(i * step):
+                    g[i] = np.float32(x["z"])
+        for P in lines:
+            for i in range(math.ceil(P[0][0] / step), math.floor(P[-1][0] / step) + 1):
+                if 0 <= i < n and np.isfinite(g[i]):
+                    g[i] = np.float32(_gnd_level(P, i * step))
+        self._ground, self._ground0 = g, g.copy()
+        self._ground_v = getattr(self, "_ground_v", 0) + 1
 
     # ------------------------------------------------------------- canon
     def _build_canon(self):
@@ -715,6 +744,7 @@ class MetroProfile:
                      else self.default_mode(i) for i in range(len(self.stations))]
         if doc:
             doc = self._reframe(doc)
+        self._apply_drawn((doc or {}).get("gnd"))   # the drawn ground first: the level solver works on it
         so0 = [float((doc or {}).get("so", {}).get(self.st_key(i)) or 0.0) if isinstance((doc or {}).get("so", {}).get(self.st_key(i)), (int, float)) else 0.0
                for i in range(len(self.stations))]
         self.stt = self._stt_from_doc(doc, [dict(s, c=s["c0"] + o) for s, o in zip(self.stations, so0)])

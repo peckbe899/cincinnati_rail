@@ -165,6 +165,7 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
   <div class="group" role="group" aria-label="Tool">
     <button class="btn" id="toolMove" aria-pressed="true" title="Drag stations and bend points (M)">Move</button>
     <button class="btn" id="toolPaint" aria-pressed="false" title="Paint structure type along the line (P)">Paint</button>
+    <button class="btn" id="toolGround" aria-pressed="false" title="Draw the ground: double-click to start a line or add a point to one, drag the points, Del removes one (G)">Ground</button>
   </div>
   <div class="group" id="brushes" role="group" aria-label="Structure brush"></div>
   <div class="group">
@@ -273,7 +274,7 @@ const elevNeed = () => settings.deckDepth + ((MS && MS.elevated_station && MS.el
 // thresholds are editable starting values, not canon. deepBelow (60 ft) follows the station
 // list calling Price Hill's 60 ft station a deep bore; shallowMax (40 ft) flags canon-shallow
 // stretches that run well past the doctrine's 20-30 ft.
-const METRO_DEFAULTS = { maxGrade: 50, platform: 121.92, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, deckDepth: 1.5, poolFt: 455.0, vcRadius: 1500, vcMinLen: 30.5, drainMin: 3, curveK: 800, stationMaxGrade: 7.5, fillTaper: 50, sustainedLen: 243.84, riverRoof: 1.0, riverSink: 5.0, riverRise: 3.0, riverFlatTol: 1.0, riverClearWater: 3.66, riverCap: 1.0, roadClearHighway: 4.9, roadClearMajor: 4.3, roadClearMinor: 4.3 };
+const METRO_DEFAULTS = { maxGrade: 50, platform: 121.92, defDepth: 7.62, elevAbove: 3, coverBelow: 3, deepBelow: 18.29, shallowMax: 12.19, deckDepth: 1.5, poolFt: 455.0, vcRadius: 1500, vcMinLen: 30.5, drainMin: 3, curveK: 800, stationMaxGrade: 7.5, fillSlope: 500, groundWarn: 100, groundSustain: 100, groundMax: 150, sustainedLen: 243.84, riverRoof: 1.0, riverSink: 5.0, riverRise: 3.0, riverFlatTol: 1.0, riverClearWater: 3.66, riverCap: 1.0, roadClearHighway: 4.9, roadClearMajor: 4.3, roadClearMinor: 4.3 };
 // Design rules: vertical curves of 1,500 m (Metro) and 3,000 m (RER) at every grade change, kept
 // off platforms by a level transition (canon); bored tunnels need the cover of their era's
 // practice, else they are cut and cover (canon, see ERA); tunnels drain at 3 per mille or
@@ -282,7 +283,7 @@ const METRO_DEFAULTS = { maxGrade: 50, platform: 121.92, defDepth: 7.62, elevAbo
 // RER: 35 per mille, 670 ft (204.2 m) platforms (Ben, 5 October; was 200 m) and 12 m station rail depth are canon; the
 // envelope (25 kV overhead), thresholds, tube cover and surface bend-point spacing are starting
 // values. Surface stations sit at grade on the old railroad and the rail follows the ground.
-const RER_DEFAULTS = { maxGrade: 35, platform: 204.2, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 6.6, boreCrown: 7.5, deckDepth: 2.0, invertDepth: 1.0, poolFt: 455.0, surfStep: 250, tubeCover: 3, vcRadius: 3000, vcMinLen: 30.5, minCover: 8.5, drainMin: 3, curveK: 800, stationMaxGrade: 2.5, fillTaper: 50, sustainedLen: 408.4, riverSink: 5.0, riverRise: 3.0, riverFlatTol: 1.0, riverClearWater: 3.66, riverCap: 1.0, roadClearHighway: 4.9, roadClearMajor: 4.3, roadClearMinor: 4.3 };
+const RER_DEFAULTS = { maxGrade: 35, platform: 204.2, defDepth: 12, elevAbove: 3, coverBelow: 3, deepBelow: 25, shallowMax: 18, envelope: 6.6, boreCrown: 7.5, deckDepth: 2.0, invertDepth: 1.0, poolFt: 455.0, surfStep: 250, tubeCover: 3, vcRadius: 3000, vcMinLen: 30.5, minCover: 8.5, drainMin: 3, curveK: 800, stationMaxGrade: 2.5, fillSlope: 500, groundWarn: 100, groundSustain: 100, groundMax: 150, sustainedLen: 408.4, riverSink: 5.0, riverRise: 3.0, riverFlatTol: 1.0, riverClearWater: 3.66, riverCap: 1.0, roadClearHighway: 4.9, roadClearMajor: 4.3, roadClearMinor: 4.3 };
 let DEFAULTS = METRO_DEFAULTS;
 // Canon structure for the founding sections (Lines 1-6 as first opened).
 // m: 'shallow' = basin method (shallow shield running tunnels, cut-and-cover station boxes);
@@ -568,7 +569,10 @@ const SETTING_ROWS_BASE = [
   ['drainMin', 'Min tunnel grade for drainage', '‰', 0.5],
   ['stationMaxGrade', 'Max platform grade (RER; Metro by era)', '‰', 0.5],
   ['curveK', 'Curve compensation, k in k / R per mille', 'k', 50],
-  ['fillTaper', 'Regraded ground slope inside a painted box or tube, back to the surveyed ground at its ends', '‰', 5],
+  ['groundMax', 'Drawn ground: steepest grade (a street)', '‰', 5],
+  ['groundWarn', 'Drawn ground: sustained grade warning past', '‰', 5],
+  ['groundSustain', 'Drawn ground: sustained over', 'len', 10],
+  ['fillSlope', 'Drawn ground: steepest side slope at a line\'s ends, back to the ground (an embankment; 1 in 2 is 500)', '‰', 50],
 ];
 // Metro structure heights, cover and crossing rules are fixed by Ben's rules (see the canon notes)
 const METRO_FIXED = new Set(['envelope', 'boreCrown', 'invertDepth', 'minCover']);
@@ -636,8 +640,8 @@ function sampleGround(g, c) {
   if (isNaN(a)) return b; if (isNaN(b)) return a;
   return a + (b - a) * t;
 }
-// the finished ground (the Deck's street re-grades, then regraded over painted boxes and tubes, see applyFill) and the
-// ground the level solver works from (the re-grades only)
+// the finished ground: the surveyed ground with the Deck's street re-grades and the drawn ground (drawnGround); the
+// level solver, the structure and every check use it (groundAt0 is the same ground)
 function groundAt(c) { return sampleGround(S.ground, c); }
 function groundAt0(c) { return sampleGround(S.ground0 || S.ground, c); }
 function groundDemAt(c) { return sampleGround(S.groundDem || S.ground0 || S.ground, c); }
@@ -649,6 +653,53 @@ function regradeGround(g, cx) {
   (cx.add || []).forEach((r) => r.v.forEach((v, k) => { const i = r.i0 + k; if (i < out.length && !isNaN(out[i])) out[i] += v; }));
   (cx.cap || []).forEach((r) => r.v.forEach((v, k) => { const i = r.i0 + k; if (i < out.length && !isNaN(out[i]) && v < out[i]) out[i] = v; }));
   S.regraded = true; return out;
+}
+// Drawn ground (Ben, 3 November: "give control to a painting tool, where lines can be drawn by the user instead"; "make it
+// the same kind of drawing as a rail profile. addable fill points, maximum sustained gradients"). Each line is saved as
+// gnd, points [c, z] joined by straight grades, its two ends on the ground below it (the surveyed ground with the Deck's
+// re-grades); between its ends it is the ground, raised or lowered. Limits (gndChecks): groundMax at most on a grade,
+// groundWarn sustained over groundSustain a warning, the end slopes at most fillSlope (an embankment). Where another
+// line's drawn ground crosses this line, this line has that level across that line's street (the Deck's width, GND_W
+// where there is none), unless its own drawn line is there. Station 3D draws it across the street too.
+const GND_W = 15;
+const gnds = () => (S.align && S.align.gnd) || [];
+const baseAt = (c) => sampleGround(S.groundReg || S.ground0, c);
+function gndLevel(P, c) { for (let k = 1; k < P.length; k++) if (c <= P[k].c) { const a = P[k - 1], b = P[k]; return b.c - a.c < 1e-6 ? b.z : a.z + (b.z - a.z) * (c - a.c) / (b.c - a.c); } return P[P.length - 1].z; }
+function parseGnd(raw) {
+  return (Array.isArray(raw) ? raw : []).filter((L) => Array.isArray(L)).map((L) => L.filter((p) => Array.isArray(p) && p.length >= 2 && isFinite(+p[0]) && isFinite(+p[1])).map(([c, z]) => ({ c: +c, z: +z })).sort((a, b) => a.c - b.c))
+    .filter((P) => P.length >= 2 && P[P.length - 1].c - P[0].c > 1).sort((a, b) => a[0].c - b[0].c);
+}
+function normGnd(lines) { for (const P of lines) { P.sort((a, b) => a.c - b.c); for (const p of [P[0], P[P.length - 1]]) { const b = baseAt(p.c); if (isFinite(b)) p.z = Math.round(b * 100) / 100; } } }
+// other lines' drawn ground at the crossings: [{c0, c1, z, wid, with, street}]
+function crossGround() {
+  const out = [];
+  for (const cr of S.crossings || []) {
+    if (!cr.wid || cr.oc == null || cr.wid === (S.data && S.data.id)) continue; const doc = S.saved[cr.wid]; if (!doc || !Array.isArray(doc.gnd)) continue;
+    for (const P of parseGnd(doc.gnd)) {
+      if (cr.oc < P[0].c || cr.oc > P[P.length - 1].c) continue;
+      const st = (ctxFor(cr.wid).streets || []).find((r) => cr.oc >= r[0] - 5 && cr.oc <= r[1] + 5), w = st ? st[2] : GND_W;
+      out.push({ c0: cr.c - w / 2, c1: cr.c + w / 2, z: gndLevel(P, cr.oc), wid: cr.wid, with: cr.with, street: st ? st[3] : null, w });
+    }
+  }
+  return out;
+}
+function drawnGround(base, lines) {
+  const xs = crossGround(); S.gndCross = xs;
+  if (!base || (!lines.length && !xs.length)) return base;
+  const out = Float32Array.from(base), step = S.step, n = out.length;
+  const set = (i, z) => { if (i >= 0 && i < n && !isNaN(out[i])) out[i] = z; };
+  const own = (c) => lines.some((P) => c >= P[0].c && c <= P[P.length - 1].c);
+  for (const x of xs) for (let i = Math.ceil(x.c0 / step); i <= Math.floor(x.c1 / step); i++) if (!own(i * step)) set(i, x.z);
+  for (const P of lines) for (let i = Math.ceil(P[0].c / step); i <= Math.floor(P[P.length - 1].c / step); i++) set(i, gndLevel(P, i * step));
+  return out;
+}
+// the finished ground from the drawn lines (after an edit; cached on the lines and the crossing lines' ground)
+function rebuildGround() {
+  if (!S.groundReg) return;
+  const lines = gnds(); normGnd(lines);
+  const sig = JSON.stringify(lines) + '|' + JSON.stringify((S.crossings || []).map((cr) => (cr.wid && S.saved[cr.wid] && S.saved[cr.wid].gnd) || 0));
+  if (S.gndSig === sig && S.ground) return; S.gndSig = sig;
+  S.ground0 = S.ground = drawnGround(S.groundReg, lines); S.drawn = lines.length + (S.gndCross || []).length;
 }
 function surfaceAt0(c) { return riverAt(c) ? pool() : groundAt0(c); }
 function riverAt(c) { for (const r of S.rivers) if (c >= r.c0 && c <= r.c1) return r; return null; }
@@ -775,7 +826,10 @@ function gradeAt(c, verts = VERTS) {
 }
 // the straight grades between bends (for limits, labels and the overview)
 const chords = (verts = VERTS) => design(verts).dv;
-window.railProfile = { bridges: () => (S.canonLocks || []).filter((lk) => lk.name && (S.canonPiers || []).length).map((lk) => ({ name: lk.name, c0: lk.lo, c1: lk.hi, piers: S.canonPiers.filter((v) => v >= lk.lo - 0.5 && v <= lk.hi + 0.5) })), railAt: (c) => railAt(c), typeAt: (c) => typeAt(c), tubeAt: (c) => tubeKeyAt(c), approaches: () => (stretchTypes() || {}).approaches || [], phaseAt: (c) => phaseAt(c), chrSegments: () => chrSegments(), curveAt: (c) => ({ grade: gradeAt(c), allowance: allowanceAt(c), radius: radiusAt(c) }), line: () => S.data && S.data.id, issues: () => S.issues || [], view: (c0, c1) => { S.view = { c0, c1 }; schedule(); }, align: () => JSON.parse(JSON.stringify(S.align)), exportGeo: () => { const m = exportModel(); return { runs: m.runs.length, pts: m.runs.reduce((a, r) => a + r.pts.length, 0), stations: m.stations.length }; }, kml: () => buildKml(), platforms: () => (isRer() ? [] : S.stations.map((s, i) => ({ name: s.name, c: s.c, ...platformCurve(i), R: isFinite(platformCurve(i).R) ? platformCurve(i).R : null }))), drawing: () => (isRer() ? [] : drawingFlags(S.data)), saved: () => !!(S.data && S.saved[S.data.id]) };
+window.railProfile = { drawn: () => {   // the drawn ground for Station 3D: this line's lines with their street width, and every 2 m sample it changes
+    const lines = gnds().map((P) => { const st = streetAtC((P[0].c + P[P.length - 1].c) / 2); return { w: st ? st[2] : GND_W, pts: P.map((p) => [p.c, Math.round(p.z * 100) / 100]) }; });
+    const runs = []; const g = S.ground, r = S.groundReg; if (g && r && g !== r) { let cur = null; for (let i = 0; i < g.length; i++) { if (Math.abs(g[i] - r[i]) > 0.005) { if (!cur) { cur = [i, []]; runs.push(cur); } cur[1].push(Math.round(g[i] * 100) / 100); } else cur = null; } }
+    return { lines, runs }; }, bridges: () => (S.canonLocks || []).filter((lk) => lk.name && (S.canonPiers || []).length).map((lk) => ({ name: lk.name, c0: lk.lo, c1: lk.hi, piers: S.canonPiers.filter((v) => v >= lk.lo - 0.5 && v <= lk.hi + 0.5) })), railAt: (c) => railAt(c), typeAt: (c) => typeAt(c), tubeAt: (c) => tubeKeyAt(c), approaches: () => (stretchTypes() || {}).approaches || [], phaseAt: (c) => phaseAt(c), chrSegments: () => chrSegments(), curveAt: (c) => ({ grade: gradeAt(c), allowance: allowanceAt(c), radius: radiusAt(c) }), line: () => S.data && S.data.id, issues: () => S.issues || [], view: (c0, c1) => { S.view = { c0, c1 }; schedule(); }, align: () => JSON.parse(JSON.stringify(S.align)), exportGeo: () => { const m = exportModel(); return { runs: m.runs.length, pts: m.runs.reduce((a, r) => a + r.pts.length, 0), stations: m.stations.length }; }, kml: () => buildKml(), platforms: () => (isRer() ? [] : S.stations.map((s, i) => ({ name: s.name, c: s.c, ...platformCurve(i), R: isFinite(platformCurve(i).R) ? platformCurve(i).R : null }))), drawing: () => (isRer() ? [] : drawingFlags(S.data)), saved: () => !!(S.data && S.saved[S.data.id]) };
 function overrideAt(c) { const o = effOvr(); for (let k = o.length - 1; k >= 0; k--) if (c >= o[k][0] && c <= o[k][1]) return o[k][2]; return null; }
 // the paints as the solver and the fill read them: on the Metro, inside each platform only the station's selection (a paint
 // across a station paints the running line, never the station); a locked station keeps the lock's paint
@@ -1450,7 +1504,7 @@ function solveTypes(V) {
       const boxOk = P.slice(x, y + 1).every((p) => !isTun(p) || ccOk(p)), box = boxOk ? sum(x, y, boxCost) + 2 * CO.switch : Infinity;
       const left = pockets.length ? pockets[pockets.length - 1][1] + 1 : u, whole = (x - left) * step >= R.minDrive && (v - y) * step >= R.minDrive;
       if (boxOk && whole && box < bore) pockets.push([x, y]);
-      else if (bore < Infinity) flags.push({ c0: P[x].c, c1: P[y].c, kind: 'Low cover', info: true, text: `${Math.round(len(x, y))} m inside the drive with up to ${fmtZ(Math.max(...P.slice(x, y + 1).filter(isTun).map((p) => need(p) - p.d)), 2)} ${uLbl()} less than one diameter of cover: bored through with ground treatment (cost ${Math.round(bore)} against ${box < Infinity ? Math.round(box) + ' for a box pocket' : 'no pocket possible'})` });
+      else if (bore < Infinity) flags.push({ c0: P[x].c, c1: P[y].c, kind: 'Low cover', propose: true, text: `${Math.round(len(x, y))} m inside the drive with up to ${fmtZ(Math.max(...P.slice(x, y + 1).filter(isTun).map((p) => need(p) - p.d)), 2)} ${uLbl()} less than one diameter of cover: bored through with ground treatment (cost ${Math.round(bore)} against ${box < Infinity ? Math.round(box) + ' for a box pocket' : 'no pocket possible'})` });
     }
     if (pockets.length) {
       for (const [x, y] of pockets) { for (let i = x; i <= y; i++) { P[i].t = 'cutcover'; P[i].shaft = true; } flags.push({ c0: P[x].c, c1: P[y].c, kind: 'Low cover', info: true, text: `${Math.round(len(x, y))} m with less than one diameter of cover (${fmtZ(need(P[x]), 2)} ${uLbl()} to the rail): a cut-and-cover pocket between two whole drives, cheaper than treating the tube over that length` }); }
@@ -1489,6 +1543,12 @@ function solveTypes(V) {
   { const TUN = new Set(['shield', 'deep', 'sunk']);
     absorbShort(P, step, (p) => !p.stn && !p.appr && !p.shaft && !TUN.has(p.t), (q) => !TUN.has(q.t)); }
   const bored = (p) => (p.t === 'shield' || p.t === 'deep') && !p.stn;
+  // the low-cover warnings (Ben, 3 November: "warnings should be given when tubes are not deep enough"), on what is still
+  // bored once the approaches, pockets and the tidying took their boxes: each run of tube with less than one diameter of
+  // cover, down to cover_hard (below that it is unbuildable, A); painted tubes too
+  for (let k = flags.length - 1; k >= 0; k--) if (flags[k].propose) flags.splice(k, 1);
+  { const hardF = (MS.cost || { cover_hard: 0.5 }).cover_hard, short = (p) => { if (!bored(p) || riverAt(p.c)) return 0; const tb = tubeOfKey(p.tube || tubeKey(p.c)), d = groundAt(p.c) - p.z; return d < tb.top + tb.od * hardF - 0.05 ? 0 : tb.top + tb.od - d; };
+    for (const [x, y] of runs(0, n - 1, (p) => short(p) > 0.005)) flags.push({ c0: P[x].c, c1: P[y].c, kind: 'Low cover', warn: true, propose: true, text: `${Math.round(len(x, y))} m of tube with up to ${fmtZ(Math.max(...P.slice(x, y + 1).map(short)), 2)} ${uLbl()} less than one diameter of cover (bored with ground treatment): Propose fill, or lower the rail` }); }
   // approach boxes under the street (Ben, 28 October: accepted where they leave it, round corners or are wider: the street
   // grid made them necessary; each a note saying where and by how much). Box outside = track centres + 4.0 m.
   const sts = (S.ctx && S.ctx.streets) || [], wall = MS.box.inside - MS.box.spacing;
@@ -1537,8 +1597,7 @@ function autoType(c, z) {
 }
 // Paints must make sense (Ben, 2 November 2026: "the painting has to make sense"). A paint, or a station's type selection,
 // names a structure; it holds only where that structure can be built at the drawn rail on the finished ground (the Deck's
-// street re-grades and the fill over painted boxes and tubes, applyFill: so a box or tube the fill covers fits, and what is
-// left is what fill cannot fix, such as a box sticking out where its paint's fill slopes back at an end). A box needs its roof under the ground; an open trough a rail under the ground and no deeper than a dig (the
+// street re-grades and the drawn ground: a box or tube the drawn fill covers fits). A box needs its roof under the ground; an open trough a rail under the ground and no deeper than a dig (the
 // cut-and-cover limit); at grade the rail within a box's height below the ground and a viaduct's height above it; elevated
 // the deck's underside over the ground; a bored tube its cover (RER the minimum cover; Metro a mined station the hard cover
 // of its tube: a running tube and a box past its limit are the unbuildable check, A). Rivers, the canon's own boxes (the
@@ -1601,41 +1660,81 @@ function typeAt(c, z = railAt(c)) {
   if (o && o !== 'elevated' && riverAt(c) && !bridgeOf(riverAt(c)) && !alongShore(riverAt(c))) return autoType(c, z);   // under a river: the sunk box, whatever the paint
   return o || autoType(c, z);
 }
-// Painted boxes and tubes (Ben, 26 October; tubes 30 October; 2 November: "any tube that is below the minimum should
-// regrade the land above it. that goes for cut-and-cover and boxes/tubes"): the structure holds its level and the ground
-// over it is made up to its minimum, a box's roof plus its cover (Metro 4.6 + 0.6 m above the rail; RER the box height),
-// a tube's top plus one outside diameter, with no limit on the height. The slope back to the surveyed ground (fillTaper)
-// stays inside the paint (2 November): each painted stretch of one structure is regraded on its own and meets the
-// surveyed ground at its ends, so its fill never runs over the stretch beside it (a shield's fill over the boxes either
-// side). Fill only: ground already higher stays. Checks, structure and depths use the finished ground; the level solver
-// keeps the ground before the fill.
+// Propose fill (Ben, 3 November: the automatic fill "as a start", on a button). Over a painted box or tube (the run of
+// that paint) or a tube short of cover (the stretch flagged), the ground is made up to the structure's minimum (a box's
+// roof plus its cover, Metro 4.6 + 0.6 m above the rail, RER the box height; a tube's top plus one outside diameter),
+// any height, sloping back to the ground at fillSlope inside the stretch (Ben, 2 November: never over the stretch
+// beside it). It is drawn as a ground line, points within 0.3 m above it with its ends on the ground, replacing any of
+// this line's drawn ground there; from then on it is Ben's line to edit. Returns a message.
 const FILL_KINDS = new Set(['cutcover', 'shield', 'deep']);
-function applyFill() {
-  const g0 = S.ground0; S.ground = g0; S.filled = false;
-  if (!g0 || !S.align || !effOvr().some((o) => FILL_KINDS.has(o[2]))) return;
-  const n = g0.length, step = S.step, drop = (settings.fillTaper || 50) / 1000 * step, g = Float32Array.from(g0);
-  const K = new Array(n); for (let i = 0; i < n; i++) { const c = i * step, o = overrideAt(c); K[i] = o && FILL_KINDS.has(o) && !riverAt(c) ? o : null; }
-  let raised = false;
-  for (let i0 = 0; i0 < n;) {
-    if (!K[i0]) { i0++; continue; }
-    let i1 = i0; while (i1 + 1 < n && K[i1 + 1] === K[i0]) i1++;
-    const t = new Float64Array(i1 - i0 + 1).fill(-Infinity);
-    for (let i = i0; i <= i1; i++) {
-      if (isNaN(g0[i])) continue; const c = i * step, sc = structFor(K[i], c), v = railAt(c) + sc.top + reqCover(sc, 0);
-      if (v > g0[i] + 0.005) t[i - i0] = v;   // the slope starts only where the ground is raised
-    }
-    for (let k = 1; k < t.length; k++) t[k] = Math.max(t[k], t[k - 1] - drop);
-    for (let k = t.length - 2; k >= 0; k--) t[k] = Math.max(t[k], t[k + 1] - drop);
-    // back to the surveyed ground at the paint's ends, inside the paint
-    const e0 = g0[i0], e1 = g0[i1];
-    for (let i = i0; i <= i1; i++) {
-      if (isNaN(g0[i])) continue;
-      const lim = Math.min(isNaN(e0) ? Infinity : e0 + drop * (i - i0), isNaN(e1) ? Infinity : e1 + drop * (i1 - i)), v = Math.min(t[i - i0], lim);
-      if (v > g0[i] + 0.005) { g[i] = v; raised = true; }
-    }
-    i0 = i1 + 1;
+function proposeFill(c0, c1) {
+  if (S.canWrite === false) return 'View only';
+  if (!S.groundReg) return 'No ground';
+  const step = S.step, n = S.groundReg.length, base = drawnGround(S.groundReg, []);   // without this line's own drawn lines
+  const o = overrideAt((c0 + c1) / 2), painted = o && FILL_KINDS.has(o), drop = (settings.fillSlope || 500) / 1000 * step;
+  const kindAt = (c) => { const t = painted ? o : typeAt(c); return FILL_KINDS.has(t) ? t : null; };
+  const needAt = (i) => { const c = i * step, k = kindAt(c); if (!k || isNaN(base[i]) || riverAt(c)) return -Infinity; const sc = structFor(k, c); return railAt(c) + sc.top + reqCover(sc, 0) + 0.02; };   // 2 cm over the minimum (rounding)
+  let i0 = Math.max(0, Math.floor(c0 / step)), i1 = Math.min(n - 1, Math.ceil(c1 / step));
+  if (painted) { while (i0 > 0 && overrideAt((i0 - 1) * step) === o) i0--; while (i1 < n - 1 && overrideAt((i1 + 1) * step) === o) i1++; }   // the slope inside the paint (Ben, 2 November)
+  else {   // a stretch the rules decided: its side slopes beyond it, so the whole stretch has its cover
+    let top = 0; for (let i = i0; i <= i1; i++) top = Math.max(top, needAt(i) - base[i]);
+    const ext = Math.ceil(Math.max(0, top) / drop) + 2; i0 = Math.max(0, i0 - ext); i1 = Math.min(n - 1, i1 + ext);
   }
-  if (raised) { S.ground = g; S.filled = true; }
+  const m = i1 - i0 + 1, t = new Float64Array(m);
+  for (let k = 0; k < m; k++) { const v = needAt(i0 + k); t[k] = v > base[i0 + k] + 0.005 ? v : -Infinity; }   // the slope starts only where the ground is raised
+  if (!painted) { const k0 = Math.floor(c0 / step) - i0, k1 = Math.ceil(c1 / step) - i0; for (let k = 0; k < m; k++) if (k < k0 || k > k1) t[k] = -Infinity; }   // the fill for the stretch flagged
+  const tRaw = Float64Array.from(t);   // the structure's own minimum, before the slopes
+  for (let k = 1; k < m; k++) t[k] = Math.max(t[k], t[k - 1] - drop);
+  for (let k = m - 2; k >= 0; k--) t[k] = Math.max(t[k], t[k + 1] - drop);
+  const e0 = base[i0], e1 = base[i1], T = new Float64Array(m);
+  for (let k = 0; k < m; k++) { const g = base[i0 + k]; const lim = Math.min(isNaN(e0) ? Infinity : e0 + drop * k, isNaN(e1) ? Infinity : e1 + drop * (m - 1 - k)); T[k] = isNaN(g) ? NaN : Math.max(g, Math.min(t[k], lim)); }
+  const need = (k) => isFinite(tRaw[k]) && T[k] >= tRaw[k] - 0.005;   // the fill at the structure's minimum (not a side slope)
+  let r0 = -1, r1 = -1, q0 = -1, q1 = -1, top = 0;
+  for (let k = 0; k < m; k++) { if (T[k] > base[i0 + k] + 0.005) { if (r0 < 0) r0 = k; r1 = k; top = Math.max(top, T[k] - base[i0 + k]); } if (need(k) && T[k] > base[i0 + k] + 0.005) { if (q0 < 0) q0 = k; q1 = k; } }
+  if (r0 < 0) return `Nothing to fill from ${fmtCh(i0 * step)} to ${fmtCh(i1 * step)}: the structure has its cover`;
+  if (q0 < 0) { q0 = r0; q1 = r1; }
+  // the side slopes: one straight grade from the end on the ground up to the full fill, at most fillSlope
+  const slope = drop / step, endFrom = (q, dir, lim) => { let e = q; for (let k = q + dir; dir < 0 ? k >= lim : k <= lim; k += dir) { const ok = isFinite(base[i0 + k]) && Math.abs(T[q] - base[i0 + k]) / (Math.abs(q - k) * step) <= slope + 1e-6; e = k; if (ok && (k <= r0 - 1 || dir > 0) && (k >= r1 + 1 || dir < 0)) break; } return e; };
+  const a = endFrom(q0, -1, 0), b = endFrom(q1, 1, m - 1);
+  // between them as few points as keep the line within 0.3 m above the fill where the structure needs it, and between the
+  // ground (0.5 m under it at most) and 0.3 m above the fill where the ground is already high
+  const lo = (k) => (need(k) ? T[k] - 0.005 : Math.min(T[k], base[i0 + k]) - 0.5), hi = (k) => T[k] + 0.3;
+  const idx = [q0]; for (let s0 = q0; s0 < q1;) {
+    let best = s0 + 1;
+    for (let e = s0 + 1; e <= q1; e++) {
+      let ok = !isNaN(T[e]); for (let k = s0 + 1; k < e && ok; k++) { if (isNaN(T[k])) continue; const z = T[s0] + (T[e] - T[s0]) * (k - s0) / (e - s0); if (z < lo(k) || z > hi(k)) ok = false; }
+      if (ok) best = e; else if (e - best > 60) break;
+    }
+    idx.push(best); s0 = best;
+  }
+  const P = [a, ...idx, b].filter((k, j, arr) => j === 0 || k !== arr[j - 1]).map((k) => ({ c: Math.round((i0 + k) * step * 10) / 10, z: k === a || k === b ? Math.round(base[i0 + k] * 100) / 100 : Math.ceil(T[k] * 100) / 100 }));
+  pushHist();
+  const L = (S.align.gnd = gnds().filter((Q) => Q[Q.length - 1].c < P[0].c || Q[0].c > P[P.length - 1].c));
+  L.push(P); L.sort((p, q) => p[0].c - q[0].c); S.sel = { kind: 'gp', l: L.indexOf(P), k: Math.min(1, P.length - 1) }; setTool('ground'); changed();
+  return `Fill drawn from ${fmtCh(P[0].c)} to ${fmtCh(P[P.length - 1].c)}, up to ${fmtZ(top, 1)} ${uLbl()} high, ${P.length} points: edit it in Ground (Ctrl Z undoes it)`;
+}
+// the drawn ground against its limits; and the crossing lines' ground on this line (notes)
+function gndChecks() {
+  const out = [], step = S.step || 2, slope = settings.fillSlope || 500;
+  gnds().forEach((P) => {
+    for (let k = 1; k < P.length; k++) {
+      const a = P[k - 1], b = P[k], L = b.c - a.c; if (L < 1e-6) continue;
+      const g = (b.z - a.z) / L * 1000, end = k === 1 || k === P.length - 1;
+      if (end && Math.abs(g) > slope + 0.5) out.push({ sev: 'error', c: (a.c + b.c) / 2, text: `${fmtCh(a.c)} to ${fmtCh(b.c)}: the drawn ground's side slope at its end is ${fmtG(g)}, steeper than ${slope}‰ (1 in ${(1000 / slope).toFixed(1)}): move the end point out` });
+      else if (!end && Math.abs(g) > settings.groundMax + 0.05) out.push({ sev: 'error', c: (a.c + b.c) / 2, text: `${fmtCh(a.c)} to ${fmtCh(b.c)}: the drawn ground at ${fmtG(g)}, steeper than ${settings.groundMax}‰ (a street)` });
+    }
+    // sustained: between the end slopes, averaged over groundSustain
+    if (P.length < 4) return;
+    const c0 = P[1].c, c1 = P[P.length - 2].c, Ls = settings.groundSustain || 100; if (c1 - c0 < Ls) return;
+    let run = null; const flush = () => { if (run) out.push({ sev: 'warn', c: (run.a + run.b) / 2, text: `${fmtCh(run.a)} to ${fmtCh(run.b)}: the drawn ground averages up to ${fmtG(run.g)} over ${Math.round(Ls)} m, past ${settings.groundWarn}‰ sustained` }); run = null; };
+    for (let c = c0; c + Ls <= c1 + 1e-6; c += step) {
+      const g = (gndLevel(P, c + Ls) - gndLevel(P, c)) / Ls * 1000;
+      if (Math.abs(g) > settings.groundWarn + 0.05) { if (run && c <= run.b) { run.b = c + Ls; if (Math.abs(g) > Math.abs(run.g)) run.g = g; } else { flush(); run = { a: c, b: c + Ls, g }; } }
+    }
+    flush();
+  });
+  for (const x of S.gndCross || []) out.push({ sev: 'note', c: (x.c0 + x.c1) / 2, text: `${fmtCh(x.c0)} to ${fmtCh(x.c1)}: the ground is ${esc(x.with || x.wid)}'s drawn ground (${fmtZ(x.z, 2)} ${uLbl()}) across ${x.street ? esc(x.street) : 'its line'} (${fmtZ(x.w, 1)} ${uLbl()})` });
+  return out;
 }
 
 // Each station as shallow as the grade limit allows: at most defDepth under ground, canon levels
@@ -1741,6 +1840,7 @@ function reframeDoc(doc) {
   if (Array.isArray(doc.pvi)) doc.pvi = doc.pvi.map(([c, z]) => [r1(m(+c)), z]);
   if (Array.isArray(doc.ovr)) doc.ovr = doc.ovr.map(([a, b, ...r]) => [r1(m(+a)), r1(m(+b)), ...r]);
   if (Array.isArray(doc.tf)) doc.tf = doc.tf.map(([a, b, ...r]) => [r1(m(+a)), r1(m(+b)), ...r]);
+  if (Array.isArray(doc.gnd)) doc.gnd = doc.gnd.map((L) => (Array.isArray(L) ? L.map((p) => (Array.isArray(p) ? [r1(m(+p[0])), p[1]] : p)) : L));
   const so = {};
   doc.stations.forEach((x, i) => {
     const st = (i < live.length && live[i].name === x.name) ? live[i] : null; if (!st) return;
@@ -1757,10 +1857,12 @@ function alignFromDoc(doc) {
   let modes = null;
   if (doc && doc.mode && isRer()) modes = S.stations.map((_, i) => (doc.mode[stKey(i)] === 'surface' || doc.mode[stKey(i)] === 'under') ? doc.mode[stKey(i)] : defaultMode(i));
   if (doc) reframeDoc(doc);
+  // the drawn ground first: the level solver works on it
+  const gnd = parseGnd(doc && doc.gnd); normGnd(gnd); S.ground0 = S.ground = drawnGround(S.groundReg || S.ground0, gnd); S.gndSig = null;
   const so0 = S.stations.map((_, i) => +((doc && doc.so) || {})[stKey(i)] || 0);
   const stt = sttFromDoc(doc, deriveStations(del, so0), (doc && doc.ovr || []).map(([a, b, t]) => [+a, +b, t]));
   const al = defaultAlign(modes, [], stt);
-  al.del = del; al.so = S.stations.map(() => 0);
+  al.del = del; al.so = S.stations.map(() => 0); al.gnd = gnd;
   if (!doc) { ensureJunctionPvis(al, S.stations); return al; }
   al.so = so0;   // not clamped: a slide past the limit is flagged (Platform slide), never moved
   const byKey = doc.st || {};
@@ -2014,7 +2116,7 @@ function designChecks() {
 }
 // issue kinds (Ben, 31 October: the warnings all looked the same): one colour per kind on its tag; the bar on the left is the
 // severity (error red, warning amber, note grey). A crossing with a line not marked "Profile set" is listed apart.
-const ISS_CAT = { Grade: '#d9822b', 'Curve grade': '#d9822b', Clearance: '#b0479e', Context: '#b0479e', Cover: '#8a6d3b', 'Thin cover': '#8a6d3b', River: '#1f8fa0', 'Tunnel method': '#3f6fb5', 'Low cover': '#3f6fb5', Regrade: '#3f6fb5', 'Tube form': '#6a5acd', 'Tube choice': '#6a5acd', 'Approach box': '#7f8c8d', Canon: '#7a8c2e', Painted: '#7a8c2e', Drawing: '#95a5a6', 'Platform curve': '#a04070', 'Platform slide': '#a04070', 'Vertical curve': '#b9770e', Drainage: '#2e86c1', Road: '#b03a2e', Access: '#2a9d8f' };
+const ISS_CAT = { Grade: '#d9822b', 'Curve grade': '#d9822b', Clearance: '#b0479e', Context: '#b0479e', Cover: '#8a6d3b', 'Thin cover': '#8a6d3b', River: '#1f8fa0', 'Tunnel method': '#3f6fb5', 'Low cover': '#3f6fb5', Ground: '#8a6d3b', Regrade: '#3f6fb5', 'Tube form': '#6a5acd', 'Tube choice': '#6a5acd', 'Approach box': '#7f8c8d', Canon: '#7a8c2e', Painted: '#7a8c2e', Drawing: '#95a5a6', 'Platform curve': '#a04070', 'Platform slide': '#a04070', 'Vertical curve': '#b9770e', Drainage: '#2e86c1', Road: '#b03a2e', Access: '#2a9d8f' };
 const ISS_HIDE = (() => { try { return new Set(JSON.parse(localStorage.getItem('profile:issHide') || '[]')); } catch { return new Set(); } })();
 const sevOf = (x) => x.sev || (x.warn ? 'warn' : 'error');
 const issShown = (x) => x.grp !== 'pending' && !ISS_HIDE.has('k:' + x.kind) && !ISS_HIDE.has('s:' + sevOf(x));
@@ -2050,9 +2152,10 @@ function allIssues(sm) {
   if (!isRer() && MS) for (const s of S.stations) for (const f of stationAccess(s).flags) out.push({ kind: 'Access', sev: f.sev, c: s.c, text: `${esc(s.name)}: ${f.text}` });
   sm.deepShallow.forEach((f) => out.push({ kind: 'Canon', warn: true, c: f.c, text: `${esc(f.name)} is ${fmtZ(f.d, 0)} ${uLbl()} down in a shallow-canon section` }));
   (sm.checks || []).forEach((x) => out.push(x));
-  const T = stretchTypes(); if (T) T.flags.forEach((f) => out.push({ kind: f.kind || (f.info ? 'Tube choice' : 'Tunnel method'), sev: f.error ? 'error' : f.info ? 'note' : 'warn', c: (f.c0 + f.c1) / 2, text: `${fmtCh(f.c0)} to ${fmtCh(f.c1)}: ${f.text}` }));
-  paintMisfits().forEach((m) => out.push({ kind: 'Painted', sev: 'error', fix: { mode: FIT_WHY[m.why], c0: m.c0, c1: m.c1, t: m.t, why: m.why }, clear: { c0: m.c0, c1: m.c1, si: m.si }, c: (m.c0 + m.c1) / 2, text: `${fmtCh(m.c0)} to ${fmtCh(m.c1)}: ${misfitText(m)}` }));
-  if (T && T.bad) T.bad.forEach((b) => out.push({ kind: 'Unbuildable', sev: 'error', fix: { mode: b.why === 'cover' ? 'lower' : 'raise', c0: b.c0, c1: b.c1 }, c: (b.c0 + b.c1) / 2,
+  gndChecks().forEach((x) => out.push({ kind: 'Ground', ...x }));
+  const T = stretchTypes(); if (T) T.flags.forEach((f) => out.push({ kind: f.kind || (f.info ? 'Tube choice' : 'Tunnel method'), sev: f.error ? 'error' : f.info ? 'note' : 'warn', ...(f.propose ? { propose: { c0: f.c0, c1: f.c1 } } : {}), c: (f.c0 + f.c1) / 2, text: `${fmtCh(f.c0)} to ${fmtCh(f.c1)}: ${f.text}` }));
+  paintMisfits().forEach((m) => out.push({ kind: 'Painted', sev: 'error', fix: { mode: FIT_WHY[m.why], c0: m.c0, c1: m.c1, t: m.t, why: m.why }, clear: { c0: m.c0, c1: m.c1, si: m.si }, ...(m.why === 'roof' || m.why === 'cover' ? { propose: { c0: m.c0, c1: m.c1 } } : {}), c: (m.c0 + m.c1) / 2, text: `${fmtCh(m.c0)} to ${fmtCh(m.c1)}: ${misfitText(m)}` }));
+  if (T && T.bad) T.bad.forEach((b) => out.push({ kind: 'Unbuildable', sev: 'error', fix: { mode: b.why === 'cover' ? 'lower' : 'raise', c0: b.c0, c1: b.c1 }, ...(b.why === 'cover' ? { propose: { c0: b.c0, c1: b.c1 } } : {}), c: (b.c0 + b.c1) / 2,
     text: `${fmtCh(b.c0)} to ${fmtCh(b.c1)}: ${b.why === 'cover' ? `a tube with less than ${((MS.cost || { cover_hard: 0.5 }).cover_hard)} of a diameter of cover, too little to bore even with ground treatment (short of a full diameter by up to ${fmtZ(b.worst, 1)} ${uLbl()}): lower the rail (Lower)` : `a box deeper than the cut-and-cover limit (by up to ${fmtZ(b.worst, 1)} ${uLbl()}): raise the rail to within it (Raise), or lower it for a whole drive`}` }));
   return out.sort((a, b) => a.c - b.c);
 }
@@ -2251,9 +2354,9 @@ function draw(ctx, W, H, view, opt = {}) {
   };
   for (let k = 0; k <= cols; k++) { if (isNaN(top[k])) flush(); else run.push([P.x + k, Y(top[k])]); }
   flush();
-  // finished ground against the surveyed ground: fill and street re-grades shaded (REGRADED), open cuts
+  // finished ground against the surveyed ground: drawn ground and street re-grades shaded (REGRADED), open cuts
   // shaded (CUT), the surveyed ground dashed
-  if (S.filled || S.regraded) {
+  if (S.regraded || S.drawn) {
     let seg = [];
     // fill solid, cuts hatched (the ground there is gone)
     const hatch = (() => { const hc = document.createElement('canvas'); hc.width = hc.height = 8; const hx = hc.getContext('2d'); hx.strokeStyle = colors.earth; hx.globalAlpha = 0.6; hx.lineWidth = 1; hx.beginPath(); hx.moveTo(0, 8); hx.lineTo(8, 0); hx.stroke(); return ctx.createPattern(hc, 'repeat'); })();
@@ -2579,6 +2682,17 @@ function draw(ctx, W, H, view, opt = {}) {
     if (on) { ctx.fillStyle = colors.accent; ctx.fill(); } ctx.lineWidth = 1.5; ctx.strokeStyle = colors.accent; ctx.stroke();
   });
 
+  // drawn ground: its points (and in Ground its grades)
+  gnds().forEach((P, l) => {
+    ctx.strokeStyle = colors.earth; ctx.lineWidth = S.tool === 'ground' ? 2 : 1.2; ctx.beginPath();
+    P.forEach((p, k) => (k ? ctx.lineTo(X(p.c), Y(p.z)) : ctx.moveTo(X(p.c), Y(p.z)))); ctx.stroke();
+    P.forEach((p, k) => {
+      if (p.c < view.c0 || p.c > view.c1) return; const on = S.sel && S.sel.kind === 'gp' && S.sel.l === l && S.sel.k === k, r = on ? 5 : S.tool === 'ground' ? 4 : 3;
+      ctx.beginPath(); ctx.rect(X(p.c) - r, Y(p.z) - r, 2 * r, 2 * r); if (on || k === 0 || k === P.length - 1) { ctx.fillStyle = colors.earth; ctx.fill(); } ctx.lineWidth = 1.5; ctx.strokeStyle = colors.earth; ctx.stroke();
+      if (S.tool === 'ground' && k > 0) { const q = P[k - 1], xa = X(q.c), xb = X(p.c); if (xb - xa > 56 && p.c - q.c > 1e-6) { ctx.font = `600 10px ${colors.ui}`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillStyle = colors.earth; ctx.fillText(fmtG((p.z - q.z) / (p.c - q.c) * 1000), (xa + xb) / 2, Math.min(Y(q.z), Y(p.z)) - 6); } }
+    });
+  });
+
   // paint preview
   if (S.drag && S.drag.kind === 'paint') {
     const a = Math.min(S.drag.c0, S.drag.c1), b = Math.max(S.drag.c0, S.drag.c1);
@@ -2757,8 +2871,8 @@ function updatePanels() {
   if (ctxStreets().length || ctxRoads().length) cnl.push(`<li><b>Roads</b> (the Deck's streets and the highways): a bar on the street surface where the line crosses a road (${['highway', 'major', 'minor'].map((k) => `<span style="color:${ROAD_COL[k]}">${k}</span>`).join(', ')}), a dotted line where it runs under a street. Over a road the structure underside keeps ${fmtZ(settings.roadClearHighway, 1)} ${uLbl()} (highway), ${fmtZ(settings.roadClearMajor, 1)} (major) or ${fmtZ(settings.roadClearMinor, 1)} (minor) above the street; at grade across a road is a level crossing (${isRer() ? 'an error on a major road or highway, a warning on a minor street' : 'never, on the Metro'}); viaduct piers stay out of the roads.</li>`);
   if (!isRer() && MS) cnl.push(`<li><b>Station access</b> (Station_Access_and_Mezzanines_by_Phase, 31 October): each station's type at opening from its Chronology year, rail depth, platform type and interchange, or Ben's choice on its card: halls over the box drawn as a band above the roof (end halls 25 m each end, a mezzanine the middle 60%, full length the platform), the crossunder as a band under the floor, a shaft for mined and deep stations, and the D_HALL line (the least rail depth for a hall: ${fmtZ(dHall(false), 2)} ${uLbl()} side, ${fmtZ(dHall(true), 2)} island; hall ${fmtZ(hallDims().clear, 2)} clear, roof ${fmtZ(hallDims().roof, 1)}, cover ${fmtZ(hallDims().cover, 1)}) dashed through the station. The cover and crossing checks run over the hall roof where there is one. Dashed halls: no opening year set.</li>`);
   if (!isRer() && MS) cnl.push(`<li><b>Limits</b> (dashed): in the tube colour the shallowest a tube may run (one outside diameter of cover over it); in the box colour the deepest a cut-and-cover box may go (its phase's limit). A tube above its line or a box below its line cannot be built: hatched red, with Lower or Raise in the issues. Running tunnels by their phase's method: the shield in Phases 1-2, the deep bore (TBM) from Phase 3 (the record's phases.tbm); mined stations are built as their drive.</li>`);
-  if (S.filled) cnl.push(`<li><b>Regraded ground</b> over painted boxes and tubes below their minimum: made up to the box roof plus cover (${isRer() ? `box ${fmtZ(settings.envelope, 1)} ${uLbl()}` : `${fmtZ(METRO_ST.box.top, 1)} + ${fmtZ(BOX_COVER, 1)} ${uLbl()}`} above the rail) or the tube top plus one diameter, any height, sloping back to the surveyed ground (dashed) at ${settings.fillTaper}‰ inside the paint, so it never runs over the stretch beside it. The level solver works from the ground before the fill.</li>`);
-  cnl.push(`<li><b>Paints must make sense</b> (Ben, 2 November): a paint or a station's type holds only where its structure can be built at the drawn rail on the finished ground (fill included). A box needs its roof under the ground (${fmtZ(isRer() ? settings.envelope : METRO_ST.box.top, 1)} ${uLbl()} to the rail); an open trough a rail under the ground, no deeper than a dig; at grade the rail within a box's height below the ground and a viaduct's above; elevated the deck's underside over the ground; a bored tube its cover${isRer() ? '' : ' (a mined station too)'}. Elsewhere the stretch is hatched as unbuildable, with Lower or Raise and Clear.</li>`);
+  if (S.drawn) cnl.push(`<li><b>Drawn ground</b> (Ground): lines of points joined by straight grades, their ends on the ground, the ground between them (fill or cut; the surveyed ground dashed); at most ${settings.groundMax}‰, a warning past ${settings.groundWarn}‰ over ${Math.round(settings.groundSustain)} m, end slopes at most ${settings.fillSlope}‰. Another line's drawn ground counts across its street where it crosses. Propose fill draws the fill a painted box or tube needs (its roof plus cover, a tube's top plus one diameter) as a line to edit.</li>`);
+  cnl.push(`<li><b>Paints must make sense</b> (Ben, 2 November): a paint or a station's type holds only where its structure can be built at the drawn rail on the finished ground (drawn ground included). A box needs its roof under the ground (${fmtZ(isRer() ? settings.envelope : METRO_ST.box.top, 1)} ${uLbl()} to the rail); an open trough a rail under the ground, no deeper than a dig; at grade the rail within a box's height below the ground and a viaduct's above; elevated the deck's underside over the ground; a bored tube its cover${isRer() ? '' : ' (a mined station too)'}. Elsewhere the stretch is hatched as unbuildable, with Lower or Raise and Clear.</li>`);
   { const seen = new Map(); ctxBlocks().forEach((b) => { const e = seen.get(b.n); if (e) e.c1 = b.c1; else seen.set(b.n, { b, c0: b.c0, c1: b.c1 }); });
     seen.forEach(({ b, c0, c1 }) => cnl.push(`<li><b>${esc(b.n)}</b> (${fmtCh(c0)} to ${fmtCh(c1)}): ${esc(b.s)}. Drawn grey and checked for clearance; not editable here.</li>`));
     if (S.regraded) cnl.push(`<li><b>Finished ground</b> takes in the Deck's street re-grades and open cuts (surveyed ground dashed)${(S.ctx.add_src || []).length ? `: ${S.ctx.add_src.map(esc).join('; ')}` : ''}. The level solver uses it.</li>`);
@@ -2795,7 +2909,7 @@ function renderIssues() {
   const kinds = {}; mine.forEach((x) => { kinds[x.kind] = (kinds[x.kind] || 0) + 1; });
   const chip = (f, label, n, dot, cls = '') => `<button class="iss-chip ${cls}" data-f="${esc(f)}" aria-pressed="${!ISS_HIDE.has(f)}" title="Show or hide">${dot}${esc(label)} <span class="n">${n}</span></button>`;
   const item = (x) => { const j = all.indexOf(x), col = ISS_CAT[x.kind] || 'var(--muted)';
-    return `<li class="iss sev-${sevOf(x)}"><button class="ch" data-j="${j}" title="Show on the profile">${fmtCh(x.c)}</button><span class="tx"><span class="tag" style="color:${col}">${esc(x.kind)}</span>${x.text}</span>${x.fix && S.canWrite !== false ? `<button class="btn act" data-rg="${j}" title="${x.fix.why ? `${x.fix.mode === 'lower' ? 'Lower' : 'Raise'} the rail here until the ${esc(TYPES[x.fix.t] ? TYPES[x.fix.t].label : x.fix.t)} fits` : x.fix.mode === 'lower' ? 'Lower the rail here to one tube diameter of cover' : 'Raise the rail here to within the cut-and-cover limit'}, as straight grades within the grade limit; a station in the way moves too, unless canon or locked (undo with Ctrl Z)">${x.fix.mode === 'lower' ? 'Lower' : 'Raise'}</button>` : ''}${x.clear && S.canWrite !== false ? `<button class="btn act" data-cl="${j}" title="Clear the ${x.clear.si != null && !isRer() ? 'station type selection (back to the rules)' : 'paint over this stretch (the rules decide)'} (undo with Ctrl Z)">Clear</button>` : ''}</li>`; };
+    return `<li class="iss sev-${sevOf(x)}"><button class="ch" data-j="${j}" title="Show on the profile">${fmtCh(x.c)}</button><span class="tx"><span class="tag" style="color:${col}">${esc(x.kind)}</span>${x.text}</span>${x.fix && S.canWrite !== false ? `<button class="btn act" data-rg="${j}" title="${x.fix.why ? `${x.fix.mode === 'lower' ? 'Lower' : 'Raise'} the rail here until the ${esc(TYPES[x.fix.t] ? TYPES[x.fix.t].label : x.fix.t)} fits` : x.fix.mode === 'lower' ? 'Lower the rail here to one tube diameter of cover' : 'Raise the rail here to within the cut-and-cover limit'}, as straight grades within the grade limit; a station in the way moves too, unless canon or locked (undo with Ctrl Z)">${x.fix.mode === 'lower' ? 'Lower' : 'Raise'}</button>` : ''}${x.propose && S.canWrite !== false ? `<button class="btn act" data-pf="${j}" title="Draw the fill this needs as a ground line you can edit (Ground)">Propose fill</button>` : ''}${x.clear && S.canWrite !== false ? `<button class="btn act" data-cl="${j}" title="Clear the ${x.clear.si != null && !isRer() ? 'station type selection (back to the rules)' : 'paint over this stretch (the rules decide)'} (undo with Ctrl Z)">Clear</button>` : ''}</li>`; };
   const order = { error: 0, warn: 1, note: 2 }, byC = (a, b) => order[sevOf(a)] - order[sevOf(b)] || a.c - b.c;
   const list = (xs) => `<ul class="iss-list">${xs.slice().sort(byC).map(item).join('')}</ul>`;
   const shown = mine.filter(issShown), cross = shown.filter((x) => x.grp === 'cross'), own = shown.filter((x) => x.grp !== 'cross');
@@ -2817,7 +2931,7 @@ function paintRows() {
   const T = !isRer() && MS ? plainTypes() : openTypes(); if (!T) return [];
   const major = (a, b, f) => { const n = {}; for (let i = Math.max(0, Math.ceil(a / T.step)); i <= Math.min(T.t.length - 1, Math.floor(b / T.step)); i++) { const k = f(i); if (k) n[k] = (n[k] || 0) + 1; } const e = Object.entries(n).sort((x, y) => y[1] - x[1]); const tot = e.reduce((t, x) => t + x[1], 0); return e.length ? { k: e[0][0], share: e[0][1] / tot } : { k: null, share: 0 }; };
   const rows = [];
-  (S.align.ovr || []).forEach((o, j) => { const m = major(o[0], o[1], (i) => T.t[i]); rows.push({ list: 'ovr', j, a: o[0], b: o[1], paint: TYPES[o[2]] ? TYPES[o[2]].label : o[2], rules: m.k ? TYPES[m.k].label : '–', same: m.k === o[2] && m.share > 0.95, misfit: misfitIn(o[0], o[1], o[2]) }); });
+  (S.align.ovr || []).forEach((o, j) => { const m = major(o[0], o[1], (i) => T.t[i]); rows.push({ list: 'ovr', j, a: o[0], b: o[1], paint: TYPES[o[2]] ? TYPES[o[2]].label : o[2], rules: m.k ? TYPES[m.k].label : '–', same: m.k === o[2] && m.share > 0.95, misfit: misfitIn(o[0], o[1], o[2]), fill: FILL_KINDS.has(o[2]) }); });
   (S.align.tf || []).forEach((o, j) => { const m = major(o[0], o[1], (i) => T.tube && T.tube[i] && (T.tube[i] === 'bore' ? 'bore' : 'twin')); rows.push({ list: 'tf', j, a: o[0], b: o[1], paint: o[2] === 'bore' ? 'Double-track bore' : 'Twin tubes', rules: m.k ? (m.k === 'bore' ? 'Double-track bore' : 'Twin tubes') : 'not bored', same: m.k === o[2] && m.share > 0.95 }); });
   return rows.sort((x, y) => x.a - y.a);
 }
@@ -2828,12 +2942,13 @@ function renderPaints() {
   const rows = paintRows(), same = rows.filter((r) => r.same).length, ro = S.canWrite === false ? 'disabled' : '';
   $('#paintList').innerHTML = !rows.length ? '<p class="hint">No paints: the rules decide everywhere.</p>' : `<p class="hint">Each paint overrides the rules on its stretch. "Rules" is what the line would be without it.</p>
     <div class="group"><button class="btn" data-pc="same" ${ro || (same ? '' : 'disabled')}>Clear the ${same} that repeat the rules</button><button class="btn" data-pc="all" ${ro}>Clear all paints</button></div>
-    ${rows.map((r) => `<div class="paint-row"><div><b>${fmtCh(r.a)} to ${fmtCh(r.b)}</b> ${esc(r.paint)}<br><span class="muted">rules: ${esc(r.rules)}${r.same ? ' (the same)' : ''}</span>${r.misfit ? `<br><span class="bad">does not fit over ${Math.round(r.misfit)} m (see the issues)</span>` : ''}</div><div><button class="btn" data-go="${r.a}">Show</button> <button class="btn" data-pl="${r.list}" data-pj="${r.j}" ${ro}>Clear</button></div></div>`).join('')}`;
+    ${rows.map((r) => `<div class="paint-row"><div><b>${fmtCh(r.a)} to ${fmtCh(r.b)}</b> ${esc(r.paint)}<br><span class="muted">rules: ${esc(r.rules)}${r.same ? ' (the same)' : ''}</span>${r.misfit ? `<br><span class="bad">does not fit over ${Math.round(r.misfit)} m (see the issues)</span>` : ''}</div><div><button class="btn" data-go="${r.a}">Show</button> ${r.fill ? `<button class="btn" data-pfa="${r.a}" data-pfb="${r.b}" ${ro}>Propose fill</button> ` : ''}<button class="btn" data-pl="${r.list}" data-pj="${r.j}" ${ro}>Clear</button></div></div>`).join('')}`;
 }
 $('#paintDet').addEventListener('toggle', renderPaints);
 $('#paintList').addEventListener('click', (e) => {
   const g = e.target.closest('[data-go]'); if (g) { centerOn(+g.dataset.go, Math.min(S.view.c1 - S.view.c0, 1500)); return; }
   if (S.canWrite === false) return;
+  const pfa = e.target.closest('[data-pfa]'); if (pfa) { flash(proposeFill(+pfa.dataset.pfa, +pfa.dataset.pfb)); renderPaints(); return; }
   const one = e.target.closest('[data-pl]'); if (one) { pushHist(); S.align[one.dataset.pl].splice(+one.dataset.pj, 1); changed(); renderPaints(); return; }
   const pc = e.target.closest('[data-pc]'); if (!pc) return;
   pushHist();
@@ -2884,7 +2999,7 @@ function updateSelCard() {
   const el = $('#selCard'); const sel = S.sel;
   const ro = S.canWrite === false || !!(sel && ((sel.kind === 'st' && lockedStation(sel.i)) || (sel.kind === 'pvi' && S.align.pvi[sel.j] && lockAt(S.align.pvi[sel.j].c))));   // locked stretches are read only
   if (!sel) {
-    el.innerHTML = `<h2>Editing</h2><p class="hint">Drag a station bar up or down to set its rail level. Double-click the track to add a bend point, then drag it. Choose <b>Paint</b> and a structure to mark a stretch by hand; <b>Auto</b> clears it. Painted <b>Cut &amp; cover</b>, <b>Shield tunnel</b> or <b>Deep bore (TBM)</b> keeps the structure where it is and regrades the ground over it where it is below its minimum (the box roof plus cover, or the tube top plus one diameter, any height, sloping back inside the paint); a paint must make sense there (an elevated deck over the ground, a trough under it, a box not sticking out at a paint's end), else it is hatched as unbuildable with Lower, Raise or Clear in the issues; a station's type (cut and cover, shield, bore by TBM, elevated with a mezzanine under it) is a selection on its card, not a paint: a paint across a station paints only the running line. <b>Twin tubes</b> or <b>Double-track bore</b> sets the tube form of a bored stretch (<b>Auto tubes</b> clears it: the drive's ends decide).</p>
+    el.innerHTML = `<h2>Editing</h2><p class="hint">Drag a station bar up or down to set its rail level. Double-click the track to add a bend point, then drag it. Choose <b>Paint</b> and a structure to mark a stretch by hand; <b>Auto</b> clears it. <b>Ground</b> draws the regraded ground like the rail: double-click to start a line (its ends on the ground) or add a point to it, drag the points, <kbd>Del</kbd> removes one; <b>Propose fill</b> (on a cover issue or a painted box or tube in the paint review) draws the fill a structure needs as a line to edit. Painted <b>Cut &amp; cover</b>, <b>Shield tunnel</b> or <b>Deep bore (TBM)</b> keeps the structure where it is (a tube or box short of its cover is a warning, with Propose fill); a paint must make sense there (an elevated deck over the ground, a trough under it, a box not sticking out at a paint's end), else it is hatched as unbuildable with Lower, Raise or Clear in the issues; a station's type (cut and cover, shield, bore by TBM, elevated with a mezzanine under it) is a selection on its card, not a paint: a paint across a station paints only the running line. <b>Twin tubes</b> or <b>Double-track bore</b> sets the tube form of a bored stretch (<b>Auto tubes</b> clears it: the drive's ends decide).</p>
       <p class="hint"><kbd>scroll</kbd> zoom · <kbd>drag</kbd> pan · <kbd>↑</kbd><kbd>↓</kbd> nudge 0.1 (<kbd>Shift</kbd> 1) · <kbd>Del</kbd> remove bend · <kbd>Ctrl Z</kbd> undo</p>`;
     return;
   }
@@ -2913,8 +3028,8 @@ ${isRer() ? '' : (() => { const pc = platformCurve(sel.i); return `<dt>Platform 
       <div class="group" role="group" aria-label="Platform position"><button class="btn" id="posA" ${ro ? 'disabled' : ''} title="The drawn point at the platform start (low chainage end)">Point at start</button><button class="btn" id="posC" ${ro ? 'disabled' : ''}>Centred</button><button class="btn" id="posB" ${ro ? 'disabled' : ''} title="The drawn point at the platform end (high chainage end)">Point at end</button></div>
       <p class="hint">The drawn point (tick on the bar) stays put; the platform slides along it. <kbd>Alt</kbd> + drag the bar to slide it.</p>
       <div class="group"><button class="btn" id="easeSt" ${ro ? 'disabled' : ''} title="Slope this platform toward the grades on either side, up to the station limit">Ease the bends</button><button class="btn" id="delSt" ${ro ? 'disabled' : ''} title="Leave this station out of the profile and the run times; restore it from the Stations list">Remove station</button></div>
-      ${isRer() ? `<div class="group"><button class="btn" id="ccSt" aria-pressed="${ccFull(sel.i)}" ${ro ? 'disabled' : ''} title="Paint the whole platform cut and cover: the box keeps its level and the ground is regraded over it where it is below its minimum">${ccFull(sel.i) ? 'Whole station cut &amp; cover' : 'Force whole station cut &amp; cover'}</button></div>` : (() => { const cur = (S.align.stt || [])[sel.i] || ''; return `
-      <dl class="kv"><dt><label for="inStt">Station type</label></dt><dd><select id="inStt" ${ro ? 'disabled' : ''} title="The station's structure, whole platform. Rules: a box within the phase's cut-and-cover limit, mined deeper, open by level. A selected box or mined station keeps its level and the ground is regraded over it where it is below its minimum; Elevated sets the rail at the mezzanine's height over the ground if it is lower"><option value="">Rules${cur ? '' : `: ${esc(TYPES[typeAt(s.c, z)].label)}`}</option>${Object.entries(STT).map(([k, v]) => `<option value="${k}" ${cur === k ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select></dd></dl>`; })()}${!isRer() && platformCurve(sel.i).level === 'error' ? `
+      ${isRer() ? `<div class="group"><button class="btn" id="ccSt" aria-pressed="${ccFull(sel.i)}" ${ro ? 'disabled' : ''} title="Paint the whole platform cut and cover: the box keeps its level (short of cover: Propose fill)">${ccFull(sel.i) ? 'Whole station cut &amp; cover' : 'Force whole station cut &amp; cover'}</button></div>` : (() => { const cur = (S.align.stt || [])[sel.i] || ''; return `
+      <dl class="kv"><dt><label for="inStt">Station type</label></dt><dd><select id="inStt" ${ro ? 'disabled' : ''} title="The station's structure, whole platform. Rules: a box within the phase's cut-and-cover limit, mined deeper, open by level. A selected box or mined station keeps its level (short of cover: Propose fill in the issues); Elevated sets the rail at the mezzanine's height over the ground if it is lower"><option value="">Rules${cur ? '' : `: ${esc(TYPES[typeAt(s.c, z)].label)}`}</option>${Object.entries(STT).map(([k, v]) => `<option value="${k}" ${cur === k ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select></dd></dl>`; })()}${!isRer() && platformCurve(sel.i).level === 'error' ? `
       <div class="group"><button class="btn" id="gapFill" aria-pressed="${platformCurve(sel.i).gapfill}" ${ro ? 'disabled' : ''} title="Allow this curved platform as a named exception with gap fillers">Gap fillers (named exception)</button></div>` : ''}${isRer() ? `<div class="group" role="group" aria-label="Station setting">
         <button class="btn" id="modeSurf" aria-pressed="${modeOf(sel.i) === 'surface'}" ${ro ? 'disabled' : ''}>At grade, old railroad</button>
         <button class="btn" id="modeUnder" aria-pressed="${modeOf(sel.i) === 'under'}" ${ro ? 'disabled' : ''}>Underground</button></div>
@@ -2949,6 +3064,25 @@ ${isRer() ? '' : (() => { const pc = platformCurve(sel.i); return `<dt>Platform 
     const r = $('#inRail'), dp = $('#inDepth');
     if (r) r.addEventListener('change', () => apply(fromU(parseFloat(r.value))));
     if (dp) dp.addEventListener('change', () => apply(sf - fromU(parseFloat(dp.value))));
+  } else if (sel.kind === 'gp') {
+    const P = gnds()[sel.l], p = P && P[sel.k]; if (!p) { S.sel = null; return updateSelCard(); }
+    const end = sel.k === 0 || sel.k === P.length - 1, b0 = baseAt(p.c);
+    const gr = (q, r) => (r.c - q.c > 1e-6 ? fmtG((r.z - q.z) / (r.c - q.c) * 1000) : '—');
+    el.innerHTML = `<h2>Ground point</h2><div class="sel-title">${fmtCh(p.c)}</div>
+      <dl class="kv">
+        <dt><label for="inGC">Chainage (m)</label></dt><dd><input id="inGC" type="number" step="1" value="${p.c.toFixed(0)}" ${S.canWrite === false ? 'disabled' : ''}></dd>
+        <dt><label for="inGZ">Ground level (${uLbl()})</label></dt><dd><input id="inGZ" type="number" step="0.1" value="${toU(p.z).toFixed(2)}" ${S.canWrite === false || end ? 'disabled' : ''}></dd>
+        <dt>Over the ground below</dt><dd>${fmtZ(p.z - b0, 2)} ${uLbl()}${Math.abs(p.z - b0) > 0.005 ? (p.z > b0 ? ' (fill)' : ' (cut)') : ''}</dd>
+        <dt>Grades meeting</dt><dd>${sel.k > 0 ? gr(P[sel.k - 1], p) : '—'} / ${sel.k < P.length - 1 ? gr(p, P[sel.k + 1]) : '—'}</dd>
+        <dt>Rail under it</dt><dd>${fmtZ(p.z - railAt(p.c), 2)} ${uLbl()} down</dd>
+        <dt>The line</dt><dd>${fmtCh(P[0].c)} to ${fmtCh(P[P.length - 1].c)}, ${P.length} points</dd>
+      </dl>${end ? `<p class="hint">An end point stays on the ground below (the surveyed ground with the Deck's re-grades); move it along the line.</p>` : ''}
+      <div class="group"><button class="btn" id="delGp" ${S.canWrite === false ? 'disabled' : ''}>Remove point</button><button class="btn" id="delGl" ${S.canWrite === false ? 'disabled' : ''}>Remove ground line</button></div>`;
+    const setG = (c, z) => { pushHist(); p.c = clampGpC(sel.l, sel.k, Math.round(c)); if (!end && isFinite(z)) p.z = Math.round(z * 100) / 100; changed(); };
+    $('#inGC')?.addEventListener('change', (e) => setG(parseFloat(e.target.value), p.z));
+    $('#inGZ')?.addEventListener('change', (e) => setG(p.c, fromU(parseFloat(e.target.value))));
+    $('#delGp')?.addEventListener('click', () => removeGroundPoint());
+    $('#delGl')?.addEventListener('click', () => removeGroundPoint(true));
   } else {
     const p = S.align.pvi[sel.j]; if (!p) { S.sel = null; return updateSelCard(); }
     const g = surfaceAt(p.c), d = g - p.z;
@@ -2979,12 +3113,37 @@ function pushHist() { S.hist.push(snapshot()); if (S.hist.length > 200) S.hist.s
 function syncUndo() { $('#undo').disabled = !S.hist.length || S.canWrite === false; $('#redo').disabled = !S.fut.length || S.canWrite === false; $('#solveCross').disabled = S.canWrite === false; $('#easeAll').disabled = S.canWrite === false; }
 function undo() { if (!S.hist.length) return; S.fut.push(snapshot()); S.align = JSON.parse(S.hist.pop()); S.sel = null; changed(); syncUndo(); }
 function redo() { if (!S.fut.length) return; S.hist.push(snapshot()); S.align = JSON.parse(S.fut.pop()); S.sel = null; changed(); syncUndo(); }
-function changed(save = true) { MODEL_V++; if (S.data) { S.stations = deriveStations(S.align.del || [], S.align.so || []); buildCanon(); ensureJunctionPvis(S.align, S.stations); if (applyLocks(S.align) && save) { S.stations = deriveStations(S.align.del || [], S.align.so || []); flash('Locked stretch: kept as canon'); } } VERTS = vertices(); applyFill(); updatePanels(); schedule(); if (save) markDirty(); }
+function changed(save = true) { MODEL_V++; if (S.data) { S.stations = deriveStations(S.align.del || [], S.align.so || []); buildCanon(); ensureJunctionPvis(S.align, S.stations); if (applyLocks(S.align) && save) { S.stations = deriveStations(S.align.del || [], S.align.so || []); flash('Locked stretch: kept as canon'); } } VERTS = vertices(); rebuildGround(); updatePanels(); schedule(); if (save) markDirty(); }
 function inPlatform(c) { const half = settings.platform / 2; return S.stations.some((s) => c > s.c - half - 2 && c < s.c + half + 2); }
 function clampPviC(c, j) {
   c = clamp(c, 1, S.L - 1);
   if (inPlatform(c)) { const half = settings.platform / 2; const s = S.stations.find((s) => c > s.c - half - 2 && c < s.c + half + 2); c = c < s.c ? s.c - half - 3 : s.c + half + 3; }
   return c;
+}
+// a ground point's chainage between its neighbours (and the lines either side)
+function clampGpC(l, k, c) {
+  const L = gnds(), P = L[l];
+  const lo = k > 0 ? P[k - 1].c + 1 : l > 0 ? L[l - 1][L[l - 1].length - 1].c + 1 : 0;
+  const hi = k < P.length - 1 ? P[k + 1].c - 1 : l < L.length - 1 ? L[l + 1][0].c - 1 : S.L;
+  return clamp(c, lo, hi);
+}
+// double-click in Ground: a point on the line there (at its level), else a new line of three points, its ends on the ground
+function addGroundAt(c, z) {
+  if (S.canWrite === false) return; c = Math.round(c);
+  const L = gnds(), l = L.findIndex((P) => c > P[0].c && c < P[P.length - 1].c);
+  if (l >= 0) { const P = L[l]; if (P.some((p) => Math.abs(p.c - c) < 1)) return; pushHist(); P.push({ c, z: Math.round(gndLevel(P, c) * 100) / 100 }); P.sort((a, b) => a.c - b.c); S.sel = { kind: 'gp', l, k: P.findIndex((p) => p.c === c) }; changed(); return; }
+  let a = Math.max(0, c - 25), b = Math.min(S.L, c + 25);
+  for (const P of L) { if (P[P.length - 1].c < c) a = Math.max(a, P[P.length - 1].c + 1); if (P[0].c > c) b = Math.min(b, P[0].c - 1); }
+  if (b - c < 2 || c - a < 2) { flash('No room for a ground line here'); return; }
+  pushHist();
+  const P = [{ c: a, z: baseAt(a) }, { c, z: Math.round(z * 10) / 10 }, { c: b, z: baseAt(b) }];
+  S.align.gnd = L; L.push(P); L.sort((p, q) => p[0].c - q[0].c); S.sel = { kind: 'gp', l: L.indexOf(P), k: 1 }; changed();
+  flash('Ground line started: drag its points, double-click on it to add more, Del removes one');
+}
+function removeGroundPoint(all = false) {
+  if (!S.sel || S.sel.kind !== 'gp' || S.canWrite === false) return; const L = gnds(), P = L[S.sel.l]; if (!P) return;
+  pushHist(); if (all || P.length <= 2) L.splice(S.sel.l, 1); else P.splice(S.sel.k, 1);
+  S.sel = null; changed();
 }
 function addPviAt(c) {
   if (S.canWrite === false) return;
@@ -3029,7 +3188,7 @@ function serialize() {
   const sm = S.summary || computeSummary();
   return {
     v: 1, system: S.data.system, line: S.data.line, length_m: S.L, platform_m: settings.platform,
-    st, pvi: S.align.pvi.map((p) => [Math.round(p.c * 10) / 10, p.z]), ovr: S.align.ovr, ...(isRer() ? {} : { tf: S.align.tf || [] }), ready: !!S.align.ready,
+    st, pvi: S.align.pvi.map((p) => [Math.round(p.c * 10) / 10, p.z]), ovr: S.align.ovr, gnd: gnds().map((P) => P.map((p) => [Math.round(p.c * 10) / 10, Math.round(p.z * 100) / 100])), ...(isRer() ? {} : { tf: S.align.tf || [] }), ready: !!S.align.ready,
     sg: Object.fromEntries(S.stations.map((_, i) => [stKey(i), (S.align.sg && S.align.sg[i]) || 0]).filter(([, g]) => g)),
     gapfill: (S.align.gapfill || []).slice(),
     ...(isRer() ? {} : { stt: Object.fromEntries(S.stations.map((_, i) => [stKey(i), (S.align.stt && S.align.stt[i]) || '']).filter(([, t]) => t)) }),
@@ -3171,7 +3330,7 @@ async function selectLine(id) {
   if (!isRer()) linkRerCrossings(d);
   S.data = d; S.L = d.length_m; S.step = d.step_m;
   settings = withOverlay(SYS[sys].settings); buildSettings();
-  S.groundDem = groundFor(d); S.ctx = ctxFor(id); S.ground0 = S.ground = regradeGround(S.groundDem, S.ctx);
+  S.groundDem = groundFor(d); S.ctx = ctxFor(id); S.groundReg = S.ground0 = S.ground = regradeGround(S.groundDem, S.ctx); S.gndSig = null;
   S.stations = baseStations(d); S.rivers = d.rivers; S.crossings = d.crossings || [];
   buildCanon();
   const doc = S.saved[id] || (S.store !== 'db' ? localDoc(id) : null);
@@ -3187,12 +3346,12 @@ async function selectLine(id) {
 function groundOf(d) { if (!d._g) d._g = Float32Array.from(d.ground_dm, (v) => (v == null ? NaN : v / 10)); return d._g; }
 // run fn with another line loaded in place of the current one (for its default rail)
 function withLine(d, k, fn) {
-  const keys = ['data', 'L', 'step', 'ground', 'ground0', 'groundDem', 'ctx', 'regraded', 'filled', 'stations', 'rivers', 'crossings', 'canonSecs', 'canonFixed', 'canonModes', 'canonDeck', 'canonLocks', 'align'];
+  const keys = ['data', 'L', 'step', 'ground', 'ground0', 'groundDem', 'groundReg', 'gndSig', 'gndCross', 'drawn', 'ctx', 'regraded', 'stations', 'rivers', 'crossings', 'canonSecs', 'canonFixed', 'canonModes', 'canonDeck', 'canonLocks', 'align'];
   const keep = {}; keys.forEach((x) => (keep[x] = S[x])); const ks = sys, kset = settings;
   sys = k; settings = SYS[k].settings;
   MODEL_SWAP++;
   try {
-    S.data = d; S.L = d.length_m; S.step = d.step_m; S.groundDem = groundFor(d); S.ctx = ctxFor(d.id); S.ground0 = S.ground = regradeGround(S.groundDem, S.ctx); S.filled = false; S.stations = baseStations(d); S.rivers = d.rivers; S.crossings = d.crossings || [];
+    S.data = d; S.L = d.length_m; S.step = d.step_m; S.groundDem = groundFor(d); S.ctx = ctxFor(d.id); S.groundReg = S.ground0 = S.ground = regradeGround(S.groundDem, S.ctx); S.gndSig = null; S.stations = baseStations(d); S.rivers = d.rivers; S.crossings = d.crossings || [];
     buildCanon(); return fn();
   } finally { keys.forEach((x) => (S[x] = keep[x])); sys = ks; settings = kset; MODEL_SWAP--; }
 }
@@ -3220,6 +3379,7 @@ function linkRerCrossings(d) {
 function evPos(e, el) { const r = el.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
 function hitTest(x, y) {
   if (!LAYOUT) return null; const { X, Y } = LAYOUT; const half = settings.platform / 2;
+  if (S.tool === 'ground') { const L = gnds(); for (let l = L.length - 1; l >= 0; l--) for (let k = L[l].length - 1; k >= 0; k--) { const p = L[l][k]; if (Math.hypot(X(p.c) - x, Y(p.z) - y) <= 8) return { kind: 'gp', l, k }; } return null; }
   for (let j = S.align.pvi.length - 1; j >= 0; j--) { const p = S.align.pvi[j]; if (Math.hypot(X(p.c) - x, Y(p.z) - y) <= 9) return { kind: 'pvi', j }; }
   for (let i = 0; i < S.stations.length; i++) { const s = S.stations[i]; const xa = X(s.c - half), xb = X(s.c + half); if (x >= Math.min(xa, X(s.c) - 6) - 3 && x <= Math.max(xb, X(s.c) + 6) + 3 && Math.abs(Y(S.align.st[i]) - y) <= 9) return { kind: 'st', i }; }
   return null;
@@ -3242,6 +3402,10 @@ cv.addEventListener('pointerdown', (e) => {
   cv.setPointerCapture(e.pointerId);
   let hit = S.canWrite === false ? null : hitTest(x, y);
   if (hit && ((hit.kind === 'st' && lockedStation(hit.i)) || (hit.kind === 'pvi' && lockAt(S.align.pvi[hit.j].c)))) { S.sel = hit; updatePanels(); schedule(); flash('Locked stretch: ' + ((hit.kind === 'st' ? lockedStation(hit.i) : lockAt(S.align.pvi[hit.j].c)).src || 'canon')); hit = null; S.drag = { kind: 'pan', x0: x, view: { ...S.view }, moved: false }; return; }
+  if (S.tool === 'ground' && hit && hit.kind === 'gp') {
+    const p = gnds()[hit.l][hit.k]; pushHist(); S.sel = hit; S.yFrozen = LAYOUT.yr;
+    S.drag = { kind: 'gp', l: hit.l, k: hit.k, x0: x, y0: y, c0: p.c, z0: p.z }; updatePanels(); schedule(); return;
+  }
   if (S.tool === 'move' && hit) {
     pushHist(); S.sel = hit; S.yFrozen = LAYOUT.yr;
     S.drag = hit.kind === 'st' && e.altKey ? { kind: 'stx', i: hit.i, x0: x, so0: (S.align.so && S.align.so[hit.i]) || 0 } : hit.kind === 'st' ? { kind: 'st', i: hit.i, y0: y, z0: S.align.st[hit.i] } : { kind: 'pvi', j: hit.j, x0: x, y0: y, c0: S.align.pvi[hit.j].c, z0: S.align.pvi[hit.j].z };
@@ -3259,12 +3423,17 @@ cv.addEventListener('pointermove', (e) => {
   }
   const dr = S.drag;
   if (dr) {
-    if (dr.kind === 'st') { const dz = LAYOUT.Z(y) - LAYOUT.Z(dr.y0); let z = dr.z0 + dz; z = e.shiftKey ? Math.round(z) : Math.round(z * 10) / 10; S.align.st[dr.i] = z; VERTS = vertices(); applyFill(); updateReadout(x, y); schedule(); }
-    else if (dr.kind === 'stx') { setSo(dr.i, dr.so0 + LAYOUT.C(x) - LAYOUT.C(dr.x0)); S.stations = deriveStations(S.align.del || [], S.align.so); VERTS = vertices(); applyFill(); updateReadout(x, y); schedule(); }
+    if (dr.kind === 'st') { const dz = LAYOUT.Z(y) - LAYOUT.Z(dr.y0); let z = dr.z0 + dz; z = e.shiftKey ? Math.round(z) : Math.round(z * 10) / 10; S.align.st[dr.i] = z; VERTS = vertices(); updateReadout(x, y); schedule(); }
+    else if (dr.kind === 'stx') { setSo(dr.i, dr.so0 + LAYOUT.C(x) - LAYOUT.C(dr.x0)); S.stations = deriveStations(S.align.del || [], S.align.so); VERTS = vertices(); updateReadout(x, y); schedule(); }
     else if (dr.kind === 'pvi') {
       const p = S.align.pvi[dr.j]; let c = dr.c0 + (LAYOUT.C(x) - LAYOUT.C(dr.x0)); let z = dr.z0 + (LAYOUT.Z(y) - LAYOUT.Z(dr.y0));
       p.c = junctionAt(dr.c0) ? dr.c0 : clampPviC(Math.round(c), dr.j); p.z = e.shiftKey ? Math.round(z) : Math.round(z * 10) / 10;
-      S.align.pvi.sort((a, b) => a.c - b.c); dr.j = S.align.pvi.indexOf(p); S.sel = { kind: 'pvi', j: dr.j }; VERTS = vertices(); applyFill(); updateReadout(x, y); schedule();
+      S.align.pvi.sort((a, b) => a.c - b.c); dr.j = S.align.pvi.indexOf(p); S.sel = { kind: 'pvi', j: dr.j }; VERTS = vertices(); updateReadout(x, y); schedule();
+    } else if (dr.kind === 'gp') {
+      const p = gnds()[dr.l][dr.k], P = gnds()[dr.l];
+      p.c = clampGpC(dr.l, dr.k, Math.round(dr.c0 + LAYOUT.C(x) - LAYOUT.C(dr.x0)));
+      if (dr.k > 0 && dr.k < P.length - 1) { const z = dr.z0 + LAYOUT.Z(y) - LAYOUT.Z(dr.y0); p.z = e.shiftKey ? Math.round(z) : Math.round(z * 10) / 10; }
+      rebuildGround(); updateReadout(x, y); schedule();
     } else if (dr.kind === 'paint') { dr.c1 = clamp(LAYOUT.C(x), 0, S.L); schedule(); }
     else if (dr.kind === 'pan') {
       const dx = x - dr.x0; if (Math.abs(dx) > 3) dr.moved = true;
@@ -3273,14 +3442,14 @@ cv.addEventListener('pointermove', (e) => {
     return;
   }
   const hit = S.canWrite === false ? null : hitTest(x, y);
-  cv.style.cursor = hit ? (hit.kind === 'st' ? (e.altKey ? 'ew-resize' : 'ns-resize') : 'move') : (S.tool === 'paint' ? 'cell' : 'crosshair');
+  cv.style.cursor = hit ? (hit.kind === 'st' ? (e.altKey ? 'ew-resize' : 'ns-resize') : 'move') : (S.tool === 'paint' ? 'cell' : S.tool === 'ground' ? 'copy' : 'crosshair');
   updateReadout(x, y);
 });
 function endPointer(e) {
   pointers.delete(e.pointerId); if (pinch && pointers.size < 2) { pinch = null; return; }
   const dr = S.drag; S.drag = null; S.yFrozen = null;
   if (!dr) return;
-  if (dr.kind === 'st' || dr.kind === 'stx' || dr.kind === 'pvi') {
+  if (dr.kind === 'st' || dr.kind === 'stx' || dr.kind === 'pvi' || dr.kind === 'gp') {
     const before = S.hist[S.hist.length - 1];
     if (before === snapshot()) { S.hist.pop(); syncUndo(); updatePanels(); schedule(); return; }
     changed();
@@ -3289,7 +3458,7 @@ function endPointer(e) {
 }
 cv.addEventListener('pointerup', endPointer); cv.addEventListener('pointercancel', endPointer);
 cv.addEventListener('pointerleave', () => { if (!S.drag) { S.hoverC = null; $('#readout').hidden = true; schedule(); } });
-cv.addEventListener('dblclick', (e) => { if (!LAYOUT || S.tool !== 'move') return; const { x, y } = evPos(e, cv); if (!inPlot(x, y) || hitTest(x, y)) return; addPviAt(clamp(LAYOUT.C(x), 1, S.L - 1)); });
+cv.addEventListener('dblclick', (e) => { if (!LAYOUT || (S.tool !== 'move' && S.tool !== 'ground')) return; const { x, y } = evPos(e, cv); if (!inPlot(x, y) || hitTest(x, y)) return; if (S.tool === 'ground') { addGroundAt(clamp(LAYOUT.C(x), 0, S.L), LAYOUT.Z(y)); return; } addPviAt(clamp(LAYOUT.C(x), 1, S.L - 1)); });
 cv.addEventListener('wheel', (e) => {
   if (!LAYOUT) return; e.preventDefault(); const { x } = evPos(e, cv);
   if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) { const span = S.view.c1 - S.view.c0; const d = (e.shiftKey ? e.deltaY : e.deltaX) / LAYOUT.P.w * span; const c0 = clamp(S.view.c0 + d, 0, S.L - span); S.view = { c0, c1: c0 + span }; schedule(); return; }
@@ -3328,16 +3497,19 @@ cv.addEventListener('keydown', (e) => {
   if (e.key === 'f' || e.key === 'F') { S.view = { c0: 0, c1: S.L }; schedule(); return; }
   if (e.key === 'm' || e.key === 'M') { setTool('move'); return; }
   if (e.key === 'p' || e.key === 'P') { setTool('paint'); return; }
+  if (e.key === 'g' || e.key === 'G') { setTool('ground'); return; }
   if (e.key === 'Escape') { S.sel = null; updatePanels(); schedule(); return; }
   if (!S.sel || S.canWrite === false) return;
   const selLocked = (S.sel.kind === 'st' && lockedStation(S.sel.i)) || (S.sel.kind === 'pvi' && S.align.pvi[S.sel.j] && lockAt(S.align.pvi[S.sel.j].c));
   if (selLocked && ['Delete', 'Backspace', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) { e.preventDefault(); flash('Locked stretch: ' + (selLocked.src || 'canon')); return; }
   if ((e.key === 'Delete' || e.key === 'Backspace') && S.sel.kind === 'pvi') { e.preventDefault(); removeSelectedPvi(); return; }
+  if ((e.key === 'Delete' || e.key === 'Backspace') && S.sel.kind === 'gp') { e.preventDefault(); removeGroundPoint(); return; }
   const dz = e.key === 'ArrowUp' ? 1 : e.key === 'ArrowDown' ? -1 : 0; const dc = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
   if (!dz && !dc) return; e.preventDefault(); const amt = e.shiftKey ? 1 : 0.1;
   pushHist();
   if (S.sel.kind === 'st' && dz) S.align.st[S.sel.i] = Math.round((S.align.st[S.sel.i] + dz * fromU(amt)) * 100) / 100;
   if (S.sel.kind === 'pvi') { const p = S.align.pvi[S.sel.j]; if (dz) p.z = Math.round((p.z + dz * fromU(amt)) * 100) / 100; if (dc && !junctionAt(p.c)) p.c = clampPviC(p.c + dc * (e.shiftKey ? 10 : 2), S.sel.j); }
+  if (S.sel.kind === 'gp') { const P = gnds()[S.sel.l], p = P && P[S.sel.k]; if (p) { if (dz && S.sel.k > 0 && S.sel.k < P.length - 1) p.z = Math.round((p.z + dz * fromU(amt)) * 100) / 100; if (dc) p.c = clampGpC(S.sel.l, S.sel.k, p.c + dc * (e.shiftKey ? 10 : 2)); } }
   changed();
 });
 
@@ -3483,6 +3655,7 @@ $('#easeAll').addEventListener('click', () => {
 $('#issues').addEventListener('click', (e) => {
   const f = e.target.closest('[data-f]'); if (f) { const k = f.dataset.f; ISS_HIDE.has(k) ? ISS_HIDE.delete(k) : ISS_HIDE.add(k); try { localStorage.setItem('profile:issHide', JSON.stringify([...ISS_HIDE])); } catch {} renderIssues(); schedule(); return; }
   const rg = e.target.closest('[data-rg]'); if (rg) { const x = S.issues[+rg.dataset.rg]; if (x && x.fix) flash(regradeDrive(x.fix.c0, x.fix.c1, x.fix.mode, x.fix.why ? fitLim(x.fix.t, x.fix.why) : null)); return; }
+  const pf = e.target.closest('[data-pf]'); if (pf) { const x = S.issues[+pf.dataset.pf]; if (x && x.propose) flash(proposeFill(x.propose.c0, x.propose.c1)); return; }
   const cl = e.target.closest('[data-cl]'); if (cl) { const x = S.issues[+cl.dataset.cl]; if (x && x.clear) flash(clearMisfit(x.clear)); return; }
   const b = e.target.closest('.ch'); if (!b) return; const x = S.issues[+b.dataset.j]; if (x) { S.hoverC = x.c; centerOn(x.c, Math.min(S.view.c1 - S.view.c0, 1500)); }
 });
@@ -3525,7 +3698,7 @@ $('#stGone').addEventListener('click', (e) => { const b = e.target.closest('butt
 $('#stBody').addEventListener('click', (e) => { const tr = e.target.closest('tr'); if (!tr) return; const i = +tr.dataset.i; S.sel = { kind: 'st', i }; centerOn(S.stations[i].c, Math.min(S.view.c1 - S.view.c0, 2500)); updatePanels(); });
 
 // ---------- toolbar ----------
-function setTool(t) { S.tool = t; $('#toolMove').setAttribute('aria-pressed', t === 'move'); $('#toolPaint').setAttribute('aria-pressed', t === 'paint'); $('#brushes').style.opacity = t === 'paint' ? 1 : 0.55; }
+function setTool(t) { S.tool = t; $('#toolMove').setAttribute('aria-pressed', t === 'move'); $('#toolPaint').setAttribute('aria-pressed', t === 'paint'); $('#toolGround').setAttribute('aria-pressed', t === 'ground'); schedule(); $('#brushes').style.opacity = t === 'paint' ? 1 : 0.55; }
 const TF_BRUSH = [['tf:twin', 'Twin tubes', 'Paint a bored stretch as twin single-track tubes'], ['tf:bore', 'Double-track bore', 'Paint a bored stretch as the double-track bore (3.90 m centres, no spacing change at a double-track box)'], ['tf:auto', 'Auto tubes', 'Clear the tube form: chosen by the drive\'s ends']];
 function buildBrushes() {
   const b = $('#brushes');
@@ -3554,6 +3727,7 @@ function buildSettings() {
 }
 $('#toolMove').addEventListener('click', () => setTool('move'));
 $('#toolPaint').addEventListener('click', () => setTool('paint'));
+$('#toolGround').addEventListener('click', () => setTool('ground'));
 $('#undo').addEventListener('click', undo); $('#redo').addEventListener('click', redo);
 $('#zoomIn').addEventListener('click', () => zoomAt((S.view.c0 + S.view.c1) / 2, 0.6));
 $('#zoomOut').addEventListener('click', () => zoomAt((S.view.c0 + S.view.c1) / 2, 1 / 0.6));
@@ -3702,7 +3876,7 @@ window.addEventListener('beforeunload', () => { if (S.dirty) save(); });
 
 // ---------- boot ----------
 // hooks for checking the page headless
-window.__api = { layout: () => LAYOUT, solves: () => SOLVE_N, paintMisfits: () => paintMisfits(), fitLim, clearMisfit, stationStreet, stationAccess, roadChecks: () => roadChecks(), structAt: (c, t) => structFor(t, c), ccAt: (c) => phaseRules(c).ccMax, riverAt: (c) => riverAt(c), regradeDrive: (a, b, m, lim) => regradeDrive(a, b, m, lim), pointType: (c, z) => pointType(c, z), stretchTypes: () => stretchTypes(), riverBand: (r) => (bridgeOf(r) ? null : riverBand(r)), bedAt: (c) => bedAt(c), pool: () => pool(), inPlatform: (c) => inPlatform(c), selectLine, save, changed, railAt, S, withLine, alignFromDoc, defaultAlign, modeOf, lockAt, deriveStations, docFor, levelAtMember, setAtMember, copyStretch, sharedOf, junctionsOf, ensureJunctionPvis, vertices, applyLocks, buildCanon, writeDoc, refreshDefaultDocs, propagateLinks, get links() { return LINKS; } };
+window.__api = { layout: () => LAYOUT, solves: () => SOLVE_N, paintMisfits: () => paintMisfits(), fitLim, clearMisfit, proposeFill, gndChecks, addGroundAt, rebuildGround, gnds, stationStreet, stationAccess, roadChecks: () => roadChecks(), structAt: (c, t) => structFor(t, c), ccAt: (c) => phaseRules(c).ccMax, riverAt: (c) => riverAt(c), regradeDrive: (a, b, m, lim) => regradeDrive(a, b, m, lim), pointType: (c, z) => pointType(c, z), stretchTypes: () => stretchTypes(), riverBand: (r) => (bridgeOf(r) ? null : riverBand(r)), bedAt: (c) => bedAt(c), pool: () => pool(), inPlatform: (c) => inPlatform(c), selectLine, save, changed, railAt, S, withLine, alignFromDoc, defaultAlign, modeOf, lockAt, deriveStations, docFor, levelAtMember, setAtMember, copyStretch, sharedOf, junctionsOf, ensureJunctionPvis, vertices, applyLocks, buildCanon, writeDoc, refreshDefaultDocs, propagateLinks, get links() { return LINKS; } };
 (async () => {
   setTool('move'); buildBrushes();
   try { const u = localStorage.getItem('profile:units'); if (u === 'ft') setUnits('ft'); } catch {}

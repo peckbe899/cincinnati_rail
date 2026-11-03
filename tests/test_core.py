@@ -532,13 +532,12 @@ def test_cut_norwood_context():
     # (no saved profile) holds the station 4.7 m over the tracks' level, short of the 7.8 m a line under them needs
     x = [x for x in l14.context_clearances() if not x["ok"]]
     assert x and all(y["with"] == "Norwood Central tracks" for y in x)
-    # painted cut and cover: the box keeps its level and the ground is filled to roof + cover
+    # a paint never raises the ground by itself (Ben, 3 November: the ground is drawn, Propose fill draws a start)
     l9 = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json", records="repo")
     s0 = l9.stations[3]["c"]
+    g0 = [float(l9.ground_at(ci)) for ci in np.arange(s0 - 200.0, s0 + 200.0, 10.0)]
     l9.ovr = [(s0 - 200.0, s0 + 200.0, "cutcover")]
-    l9.refresh_fill()
-    for ci in np.arange(s0 - 50.0, s0 + 50.0, 10.0):
-        assert float(l9.ground_at(ci)) >= float(l9.rail_at(ci)) + 4.6 + 0.6 - 0.01
+    assert [float(l9.ground_at(ci)) for ci in np.arange(s0 - 200.0, s0 + 200.0, 10.0)] == g0
 
 
 def test_context_street_openings():
@@ -1050,30 +1049,41 @@ def test_paints_must_make_sense():
 
 
 
-def test_fill_any_height_inside_its_paint():
-    """Ben, 2 November: a painted box or tube below its minimum regrades the land above it, any height, and the slope
-    back to the surveyed ground stays inside the paint (a shield's fill never runs over the boxes beside it)."""
+def test_drawn_ground():
+    """Ben, 3 November: the regraded ground is drawn like a rail profile (gnd: points joined by straight grades, the ends
+    on the ground below); it is the finished ground for everything; another line crossing it has that level across the
+    drawn line's street; a re-path carries it with the stations."""
+    import json, tempfile
     from pathlib import Path
     from railsim.metro_profile import MetroProfile
     root = Path(__file__).resolve().parent.parent / "data/profile"
-    mp = MetroProfile.load(root / "lines/Line_9.json", None, root / "settings.json", records="repo")
-    half, step = mp.settings["platform"] / 2, 2.0
-    cs = np.arange(0.0, mp.length, step)
-    d = np.array([float(mp.ground_at(c) - mp.rail_at(c)) for c in cs])
-    near = lambda c: any(abs(c - s["c"]) <= half + 30 for s in mp.stations) or mp.river_at(c) or mp.canon_at(c)
-    i = next(i for i in range(len(cs) - 500) if abs(d[i + 250]) < 2.0 and all(np.isfinite(d[j]) and not near(cs[j]) for j in range(i, i + 501, 5)))
-    a, m, b = float(cs[i]), float(cs[i + 250]), float(cs[i + 500])   # 1 km clear of stations, the rail near the ground in the middle
-    g0 = lambda c: float(mp.ground0_at(c))
-    # a deep paint in the middle (a tube: top plus one diameter, far more than 3 m), boxes either side
-    mp.ovr = [(a, m - 340.0, "cutcover"), (m - 340.0, m + 340.0, "deep"), (m + 340.0, b, "cutcover")]
-    mp.refresh_fill()
-    sc = mp.struct_for("deep", m)
-    need = float(mp.rail_at(m)) + sc["top"] + sc["od"]
-    assert need - g0(m) > 8.0 and float(mp.ground_at(m)) == pytest.approx(need, abs=0.05)   # no height limit
-    drop = mp.settings["fillTaper"] / 1000.0
-    for c in (m - 340.0, m + 340.0):   # the tube's fill comes back to the surveyed ground at its ends
-        assert float(mp.ground_at(c)) <= g0(c) + 2 * step * drop + 0.05
-    for c in np.arange(m - 340.0, m + 340.0, 10.0):   # at most the slope from either end
-        assert float(mp.ground_at(c)) <= min(g0(m - 340.0) + drop * (c - m + 340.0), g0(m + 340.0) + drop * (m + 340.0 - c)) + 0.05
-    for c in (a - 20.0, b + 20.0):   # nothing past the paints
-        assert float(mp.ground_at(c)) == pytest.approx(g0(c), abs=0.01)
+    lf = root / "lines/Line_7.json"
+    line = json.loads(lf.read_text())
+    cr = next(x for x in line["crossings"] if x.get("wid") and x["wid"].startswith("Line_") and (root / f"lines/{x['wid']}.json").exists())
+    c = round(float(cr["c"]) / 2.0) * 2.0   # on the 2 m ground samples
+    plain = MetroProfile.load(lf, None, records="repo")
+    g = lambda mp, x: float(mp.ground_at(x))
+    with tempfile.TemporaryDirectory() as td:
+        doc = {"gnd": [[[c - 60.0, 0.0], [c - 20.0, g(plain, c) + 6.0], [c + 20.0, g(plain, c) + 6.0], [c + 60.0, 999.0]]]}
+        Path(td, "Line_7.json").write_text(json.dumps(doc))
+        mp = MetroProfile.load(lf, Path(td, "Line_7.json"), records="repo")
+        assert g(mp, c) == pytest.approx(g(plain, c) + 6.0, abs=0.01)                      # the drawn level
+        assert g(mp, c - 60.0) == pytest.approx(g(plain, c - 60.0), abs=0.02)             # the ends on the ground, whatever was saved
+        assert g(mp, c + 60.0) == pytest.approx(g(plain, c + 60.0), abs=0.02)
+        assert g(mp, c - 100.0) == g(plain, c - 100.0) and g(mp, c + 100.0) == g(plain, c + 100.0)
+        assert float(mp.ground0_at(c)) == g(mp, c)                                         # the solver's ground too
+        # the crossing line, its saved profile beside this one: this line's drawn level across the street at the crossing
+        other = MetroProfile.load(root / f"lines/{cr['wid']}.json", None, records="repo")
+        Path(td, f"{cr['wid']}.json").write_text(json.dumps({}))
+        ox = MetroProfile.load(root / f"lines/{cr['wid']}.json", Path(td, f"{cr['wid']}.json"), records="repo")
+        oc = float(cr["oc"])
+        assert g(ox, oc) == pytest.approx(g(mp, c), abs=0.02) and g(ox, oc + 40.0) == g(other, oc + 40.0)
+        assert ox.gnd_cross and ox.gnd_cross[0]["wid"] == "Line_7" and 0 < ox.gnd_cross[0]["w"] <= 60
+    # a re-path moves the drawn ground with the stations (reframe)
+    mp2 = MetroProfile.load(lf, None, records="repo")
+    s1 = mp2.stations[1]
+    doc = {"stations": [{"name": s["name"], "point_c": s["c"] - 30.0} for s in mp2.stations], "length_m": mp2.length,
+           "gnd": [[[s1["c"] - 70.0, 0.0], [s1["c"] - 30.0, 200.0], [s1["c"] + 10.0, 0.0]]]}
+    out = mp2._reframe(doc)
+    assert out["gnd"][0][1][0] == pytest.approx(s1["c"], abs=0.2)
+

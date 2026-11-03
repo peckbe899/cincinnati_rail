@@ -257,9 +257,11 @@ def arcade(st, finished, blocks, apex_dir, widths, E0, N0):
     return items, carve
 
 
-def build(E0, N0, ut_islands=None, deck_live=None):
+def build(E0, N0, ut_islands=None, deck_live=None, drawn=None):
     """ut_islands: [(ring [[x, y] local], rail)] for the Union Terminal TRI box islands (sync.py's platforms);
-    deck_live: the live Deck export (blocks with their arcade switch)"""
+    deck_live: the live Deck export (blocks with their arcade switch); drawn: the Profiles page's drawn ground lines
+    (Ben, 3 November) [{xy: UTM centreline every 2 m, c0, w: street width, pts: [(c, z)]}], each the ground across its
+    street at its level"""
     import make_profile_context as mpc
     B = mpc.build()
     S, REG, T, NW, stru, streets = B['S'], B['REG'], B['T'], B['NW'], B['stru'], B['streets']
@@ -273,8 +275,14 @@ def build(E0, N0, ut_islands=None, deck_live=None):
                           open=True, plats=[], src=src, excl=set(), cut=False, fam=fam))
     loc = lambda x, y: (x - E0, y - N0)
 
-    # finished ground at Deck UTM points: map 3 ground, + street re-grades (the larger where two cross), capped at cut floors
+    # finished ground at Deck UTM points: map 3 ground, + street re-grades (the larger where two cross), capped at cut floors;
+    # the drawn ground across its street sets the level there (Ben's lines, over the re-grades)
     cuts = [st for st in S if st['cut']]
+    DRAWN = []
+    for dl in drawn or []:
+        cl = LineString(dl['xy'])
+        lev = (lambda P: lambda c: float(np.interp(c, [q[0] for q in P], [q[1] for q in P])))(dl['pts'])
+        DRAWN.append({'band': cl.buffer(dl['w'] / 2, cap_style=2), 'z': (lambda cl, c0, lev: lambda x, y: lev(c0 + cl.project(Point(x, y))))(cl, dl['c0'], lev)})
 
     def finished(xy):
         xy = np.asarray(xy, float)
@@ -287,6 +295,10 @@ def build(E0, N0, ut_islands=None, deck_live=None):
                 if abs(v) > abs(dz[i]):
                     dz[i] = v
         z = z + dz
+        for dg in DRAWN:
+            m = shapely.contains_xy(dg['band'], xy[:, 0], xy[:, 1])
+            for i in np.where(m)[0]:
+                z[i] = dg['z'](*xy[i])
         for st in cuts:
             m = shapely.contains_xy(st['geom'], xy[:, 0], xy[:, 1])
             for i in np.where(m)[0]:
@@ -547,7 +559,7 @@ def build(E0, N0, ut_islands=None, deck_live=None):
                 npier += 1
 
     # ---- finished-ground tiles round every structure and re-grade, aligned to the snapshot's 200 m grid ----
-    return dict(items=items, unlevelled=unlev, finished=finished, region=unary_union([st['geom'] for st in S] + [rg['band'] for rg in REG]),
+    return dict(items=items, unlevelled=unlev, finished=finished, region=unary_union([st['geom'] for st in S] + [rg['band'] for rg in REG] + [dg['band'] for dg in DRAWN]),
                 counts={'structures': sum(1 for i in items if i['type'] == 'struct'), 'rails': nlev, 'extended': nest, 'unlevelled': len(unlev),
                         'platforms': sum(1 for i in items if i['type'] == 'plat'), 'piers': npier, 'spans': nspan, 'blind_arches': nblind, 'masts': nmast},
                 sources=['Mill Creek Deck tracks.json, structures.json, deck.json, norwood.json (data/deck)', 'Rail Profiles context definitions (tools/make_profile_context.py)',

@@ -530,6 +530,8 @@ def move_doc(doc, m, length):
     doc['ovr'] = [[round(m(a), 1), round(m(b), 1), *r] for a, b, *r in doc.get('ovr', [])]
     if doc.get('tf'):   # the tube-form paints move too (1 November)
         doc['tf'] = [[round(m(a), 1), round(m(b), 1), *r] for a, b, *r in doc['tf']]
+    if isinstance(doc.get('gnd'), list):   # the drawn ground lines move too (3 November)
+        doc['gnd'] = [[[round(m(p[0]), 1), p[1]] for p in L if isinstance(p, list) and len(p) >= 2] for L in doc['gnd'] if isinstance(L, list)]
     if 'length_m' in doc:
         doc['length_m'] = length
     return doc

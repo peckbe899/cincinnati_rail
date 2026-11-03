@@ -632,3 +632,38 @@ Line 1 over the L&N bridge:
   four boxes sticking out where their paint's fill slopes back at an end (Line 1 at West 5th, Line 2, Line 2b, Line 4 on
   West 8th). Largest fill: 13.9 m on Line 4 at Rapid Run, a 16 m cut over a painted shield tube.
 - Page and copy agree on every line, fill included; 73 tests pass.
+
+## 2026-11-03: drawn ground (Ben: "give control to a painting tool, where lines can be drawn by the user instead")
+
+- Ben, on Line 7 (a painted shield from 8+564 to 8+712, the ground falling away at 8+660): "this is supposed to have the
+  minimum depth necessary for a shield tube"; asked, he chose fill to the paint's end with a steeper side slope inside
+  the paint (an embankment, 1 in 2), then: "actually, give control to a painting tool, where lines can be drawn by the
+  user instead" and "warnings should be given when tubes are not deep enough". Asked again: the automatic fill stays as a
+  start (a Propose fill button); the line is "the same kind of drawing as a rail profile. addable fill points, maximum
+  sustained gradients, etc."; short of a full diameter warns, below half stays hatched; the drawn ground counts
+  everywhere (3D, the crossing lines' checks) across the street's width; street-grade limits.
+- The automatic fill over paints is gone as a live layer. The finished ground is the surveyed ground, the Deck's
+  re-grades and the drawn ground (`gnd` in the saved profile; page `drawnGround`, port `_apply_drawn`, the same to the
+  centimetre); the level solver uses it too (it no longer depends on the rail). Another line's drawn ground counts
+  across that line's Deck street (15 m where none) where it crosses, unless this line's own drawn line is there (a
+  note in the issues). The tie (`move_doc`) and both reframes carry it with the stations.
+- The Ground tool (G): double-click starts a three-point line (the ends on the ground) or adds a point on one, drag the
+  points (the ends slide along the ground), arrows nudge, Del removes a point; the card shows level, fill or cut,
+  grades and the rail under it; grades are labelled in Ground. Checks (Ground): steeper than `groundMax` 150 per mille
+  an error, more than `groundWarn` 100 per mille sustained over `groundSustain` 100 m a warning, the end slopes past
+  `fillSlope` 500 per mille an error (the settings `fillSlope` replaces `fillTaper`, so a saved 50 does not carry over).
+- Propose fill (on a Low cover warning, an unbuildable tube, a box out of the ground, a painted box or tube in the paint
+  review): the fill the structure needs (a box's roof plus cover, a tube's top plus one diameter, 2 cm over) as a line
+  within 0.3 m above it, each side slope one straight grade at most 1 in 2 from an end on the ground; on a painted
+  stretch inside the paint (Ben, 2 November), so a few metres at each end stay short; on a stretch the rules decided,
+  beyond it, so the whole stretch has its cover. It replaces this line's drawn ground there and opens Ground.
+- Low cover: a tube with less than one diameter of cover is a warning, recomputed after the approaches, pockets and
+  tidying (before, the treatment note was made before the approach boxes took their samples and could describe boxes:
+  Line 2 at 17+954); down to half a diameter, below which it stays unbuildable (hatched).
+- Station 3D: the harness hands over each line's drawn ground (its lines with their street width, and the 2 m samples
+  it changes); the build uses the drawn samples for the line's ground and puts each drawn line in the finished-ground
+  tiles as a band across its street at its level (context3d `DRAWN`, over the re-grades).
+- Checked on the scratch hub: Propose fill on every cover issue of Lines 1, 2, 2b, 4, 7, 14 and RER A trunk: the
+  proposals pass their own checks; what stays is the painted shield's ends on Line 4 (inside the paint, as ruled) and
+  one stretch on Line 14 where the fill moves the tube's end (propose again). Ben's Line 7 case: unbuildable 8+660 to
+  8+710 becomes 2 m at the paint's end. Page and copy agree on every line.

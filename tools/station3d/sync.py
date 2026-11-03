@@ -606,6 +606,7 @@ def main():
     # ---- Profiles lines: every sample inside the region, in pieces where a line leaves and re-enters it ----
     L = {}
     ground_pts = []
+    drawn = []   # the drawn ground lines (Ben, 3 November): bands across their street for the finished-ground tiles
     for lid, d in lines.items():
         h = H['profiles'][lid]
         p = np.array(d['path'], float)
@@ -613,6 +614,15 @@ def main():
         xy = np.c_[E - E0, N - N0]
         g = np.array([np.nan if v is None else v / 10 for v in d['ground_dm']])
         gc = np.arange(len(g)) * d['step_m']
+        dr = h.get('drawn') or {}
+        for i0, zs in dr.get('runs') or []:   # the Profiles page's drawn ground (and the crossing lines' across their street)
+            k = max(0, min(len(zs), len(g) - int(i0)))
+            g[int(i0):int(i0) + k] = zs[:k]
+        for ln in dr.get('lines') or []:
+            pts = [(float(a), float(b)) for a, b in ln['pts']]
+            cs = np.arange(pts[0][0], pts[-1][0] + 1e-6, 2.0)
+            if len(cs) >= 2:
+                drawn.append({'xy': np.c_[np.interp(cs, p[:, 0], E), np.interp(cs, p[:, 0], N)], 'c0': float(cs[0]), 'w': float(ln['w']), 'pts': pts, 'line': lid})
         S = []
         for c, z, t, *_ in h['samples']:
             x, y = float(np.interp(c, p[:, 0], xy[:, 0])), float(np.interp(c, p[:, 0], xy[:, 1]))
@@ -1050,7 +1060,7 @@ def main():
     # ---- the other systems at CUT and Norwood Central: structures, tracks, platforms, piers, finished ground ----
     import context3d
     ut_isl = [([list(q) for q in zip(dec(pl['x'], 100), dec(pl['y'], 100))], pl['rail']) for pl in ut] if len(ut) == 3 and all(pl['rail'] is not None for pl in ut) else None
-    ctx = context3d.build(E0, N0, ut_isl, live)
+    ctx = context3d.build(E0, N0, ut_isl, live, drawn=drawn)
     unlevelled += ctx['unlevelled']
     gtiles = context3d.tiles(ctx, E0, N0, gx0, gy0)
     context = ctx['items']
