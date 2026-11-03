@@ -667,3 +667,24 @@ Line 1 over the L&N bridge:
   proposals pass their own checks; what stays is the painted shield's ends on Line 4 (inside the paint, as ruled) and
   one stretch on Line 14 where the fill moves the tube's end (propose again). Ben's Line 7 case: unbuildable 8+660 to
   8+710 becomes 2 m at the paint's end. Page and copy agree on every line.
+
+## 2026-11-03: the depth check (Ben: "The depth check needs to be fixed. it needs to work.")
+
+- Ben's Line 7 at Aloysius: the drive from the box west of Aloysius started at 26+088 with 2.9 m of cover over a type A
+  tube (5.5 m needed), drawn as shield tunnel and only noted as treated low cover. The cause was mine: with the cost
+  logic (1 November) the launch box at an anchor carried on only through ground that could not be bored at all (half a
+  diameter), so drives started short of their cover with "ground treatment", against Ben's 29 October rule ("the boxes
+  carry on until the tube has its cover").
+- The launch box now carries on through every sample short of one full diameter of cover (within the cut-and-cover
+  limit), so a drive the rules make starts only where the tube has its cover; the cost logic still picks a later start
+  where that is cheaper, and still decides box pockets inside a drive. A short bored piece left between two boxes
+  becomes cut and cover only where those boxes stay within their limit; otherwise it stays a short drive (a box past
+  its limit cannot be built, a drive under min_drive can). Both engines.
+- The cover check now runs along the whole platform of a mined station (before: its centre only, so a station on a
+  cliff was never checked): less than one diameter a warning, less than half unbuildable. New on the seed profiles:
+  Rapid Run (Line 4), a mined station whose platform crosses a 16 m cut, with no cover over part of it.
+- On the seed's saved profiles: 7.5 km of tube short of its cover became cut and cover (Line 5 1.7 km, Line 14 1.1 km,
+  Line 4 0.9 km, ...); tube short of a full diameter made by the rules from 7.2 km to 0.9 km, all inside drives where a
+  box pocket would leave a drive short (warned, hatched below half: the profile should dive); unbuildable 1.42 km to
+  1.46 km (Rapid Run). Warnings under 5 cm short are not shown.
+- Page and copy agree on every line (Line 5's known approach-extra tie aside); 74 tests pass.

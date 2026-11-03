@@ -1552,10 +1552,11 @@ class MetroProfile:
                 bore_cost = lambda p: CO["bore_m"] + CO["low_cover_m_per_m"] * max(0.0, need(p) - p["d"])
                 ssum = lambda x, y, f: sum(f(P[i]) * step for i in range(x, y + 1) if is_tun(P[i]))
 
-                def farthest(frm, d, stop):   # the last sample from this end that cannot be bored at all (within the limit)
+                def farthest(frm, d, stop):   # the last sample from this end short of one diameter of cover (within the limit):
+                    # the box carries on until the tube has its cover (Ben, 29 October; 3 November)
                     last, i = frm - d, frm
                     while i != stop + d and is_tun(P[i]) and cc_ok(P[i]):
-                        if P[i]["d"] < hard(P[i]):
+                        if P[i]["d"] < need(P[i]) - 0.005:
                             last = i
                         i += d
                     return last
@@ -1570,7 +1571,7 @@ class MetroProfile:
                     best, best_cost = far + d, sum(box_cost(P[i]) * step for i in idx if is_tun(P[i]))
                     for k, i in enumerate(idx):
                         q = P[idx[k - 1]] if k else None
-                        if not is_tun(P[i]) or P[i]["d"] < hard(P[i]) or (q is not None and is_tun(q) and q["d"] >= hard(q)):
+                        if not is_tun(P[i]) or P[i]["d"] < need(P[i]) - 0.005 or (q is not None and is_tun(q) and q["d"] >= need(q) - 0.005):
                             continue
                         cost = sum(box_cost(P[idx[m]]) * step for m in range(k) if is_tun(P[idx[m]]))
                         ok, drv, in_pocket = True, k, False
@@ -1644,7 +1645,9 @@ class MetroProfile:
                         continue
                     river = any(q and q["kind"] == "river" for q in ap) or any(0 <= j < n and P[j]["role"] == "river" for j in (a - 1, b + 1))
                     boxes = (length(x, y) - left) + ((u - a) * step if x == u else 0) + ((b - v) * step if y == v else 0)   # the boxes round this piece
-                    if river or left < boxes:
+                    # the short piece becomes cut and cover only where the boxes stay within their limit (3 November)
+                    boxable = all(not is_tun(p) or cc_ok(p) for p in P[(a if x == u else x):(b if y == v else y) + 1])
+                    if river or (left < boxes and boxable):
                         x0, y0 = (a, b) if river else ((a if x == u else x), (b if y == v else y))
                         del approaches[mark:]
                         for p in P[x0:y0 + 1]:
@@ -1719,7 +1722,7 @@ class MetroProfile:
                 d = float(self.ground_at(p["c"])) - p["z"]
                 if not math.isfinite(d):
                     return None
-                if t in ("shield", "deep") and not st_:
+                if t in ("shield", "deep"):   # a mined station along its whole platform too (3 November)
                     tb = tube_t(p.get("tube") or self._tube_key(p["c"]))
                     if d < tb["top"] + tb["od"] * (ms.get("cost") or {}).get("cover_hard", 0.5) - 0.05:   # below this not even treatment bores it
                         return "cover"
@@ -2052,7 +2055,7 @@ class MetroProfile:
             why = "dig" if d > self._fit_box_top() + 0.05 else "high" if -d > st["elevAbove"] + st["deckDepth"] + 0.05 else None
         elif t == "elevated":
             why = "buried" if z - st["deckDepth"] < g - 0.05 else None
-        elif t in ("shield", "deep") and (self.is_rer or stn):
+        elif t in ("shield", "deep") and self.is_rer:   # a Metro tube, running or a mined station, is the cover check
             why = "cover" if d < self._fit_tube(c, t) - 0.05 else None
         if not why:
             return None

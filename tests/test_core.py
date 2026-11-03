@@ -1087,3 +1087,33 @@ def test_drawn_ground():
     out = mp2._reframe(doc)
     assert out["gnd"][0][1][0] == pytest.approx(s1["c"], abs=0.2)
 
+
+
+def test_drive_starts_with_full_cover():
+    """Ben, 29 October ("the boxes carry on until the tube has its cover") and 3 November ("the depth check needs to work"):
+    where the rules decide, a drive leaving a box starts only where the tube has one full diameter of cover; and a mined
+    station is checked for cover along its whole platform."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile, _tube_of
+    root = Path(__file__).resolve().parent.parent
+    seen = 0
+    for lid in ("Line_1", "Line_3", "Line_5", "Line_6", "Line_8", "Line_12", "Line_14"):
+        al = root / f"hub/seed/alignments/{lid}.json"
+        mp = MetroProfile.load(root / f"data/profile/lines/{lid}.json", al if al.exists() else None, records="hub")
+        T = mp.stretch_types()
+        t, k, step = T["t"], T["tube"], T["step"]
+        for i in range(1, len(t)):
+            for j, b in ((i, i - 1), (i - 1, i)):   # j a tube sample, b the box beside it
+                if t[j] in ("shield", "deep") and t[b] == "cutcover" and k[j] and T["part"][j] != "S":
+                    c = j * step
+                    if mp.override_at(c) or mp.river_at(c) or mp.canon_at(c):
+                        continue
+                    tb = _tube_of(mp.ms["tubes"][k[j]])
+                    assert float(mp.ground_at(c) - mp.rail_at(c)) >= tb["top"] + tb["od"] - 0.06, (lid, c)
+                    seen += 1
+    assert seen > 20
+    # Rapid Run on Line 4: a mined station whose platform crosses a 16 m cut has no cover over part of it: unbuildable
+    mp = MetroProfile.load(root / "data/profile/lines/Line_4.json", root / "hub/seed/alignments/Line_4.json", records="hub")
+    s = next(s for s in mp.stations if s["name"] == "Rapid Run")
+    half = mp.settings["platform"] / 2
+    assert any(b["why"] == "cover" and b["c0"] < s["c"] + half and b["c1"] > s["c"] - half for b in mp.stretch_types()["bad"])

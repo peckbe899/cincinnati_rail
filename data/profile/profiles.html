@@ -1465,17 +1465,19 @@ function solveTypes(V) {
     const hard = (p) => { const tb = tubeOfKey(key(p)); return tb.top + tb.od * CO.cover_hard; };   // below this the tube cannot be bored
     const boxCost = (p) => CO.box_m + CO.box_depth_m * p.d, boreCost = (p) => CO.bore_m + CO.low_cover_m_per_m * Math.max(0, need(p) - p.d);
     const sum = (x, y, f) => { let t = 0; for (let i = x; i <= y; i++) if (isTun(P[i])) t += f(P[i]) * step; return t; };
-    // the boxes at the ends (1 November): from its anchor a box may end at the start of any boreable run (cover_hard of a
-    // diameter or more) up to the last ground that cannot be bored at all; the cheapest end wins, box metres against bored
-    // metres with their treatment, an unboreable spot left beyond the end costing a pocket (its box and two method
-    // changes) where a whole drive fits before it, and ruling that end out where none does
-    const farthest = (from, dir, stop) => { let last = from - dir; for (let i = from; i !== stop + dir && isTun(P[i]) && ccOk(P[i]); i += dir) if (P[i].d < hard(P[i])) last = i; return last; };
+    // the boxes at the ends (Ben, 29 October: "the boxes carry on until the tube has its cover"; 3 November: "the depth
+    // check needs to work"): from its anchor a box carries on through every sample short of one diameter of cover (within
+    // the cut-and-cover limit), so a drive starts only where the tube has its full cover; past that the cheapest start
+    // wins (1 November), box metres against bored metres with their treatment, an unboreable spot left beyond the end
+    // costing a pocket (its box and two method changes) where a whole drive fits before it, and ruling that end out where
+    // none does
+    const farthest = (from, dir, stop) => { let last = from - dir; for (let i = from; i !== stop + dir && isTun(P[i]) && ccOk(P[i]); i += dir) if (P[i].d < need(P[i]) - 0.005) last = i; return last; };
     const launchEnd = (from, dir, stop) => {   // the first sample of the drive from this end
       const far = farthest(from, dir, stop); if (far === from - dir) return from;
       const idx = []; for (let i = from; i !== far + dir; i += dir) idx.push(i);
       let best = far + dir, bestCost = idx.reduce((t, i) => t + (isTun(P[i]) ? boxCost(P[i]) * step : 0), 0);   // the box through all of it
       for (let k = 0; k < idx.length; k++) {
-        const i = idx[k], q = k ? P[idx[k - 1]] : null; if (!isTun(P[i]) || P[i].d < hard(P[i]) || (q && isTun(q) && q.d >= hard(q))) continue;   // the start of a boreable run
+        const i = idx[k], q = k ? P[idx[k - 1]] : null; if (!isTun(P[i]) || P[i].d < need(P[i]) - 0.005 || (q && isTun(q) && q.d >= need(q) - 0.005)) continue;   // the start of a run with the tube's full cover
         let cost = 0, ok = true, drv = k, inPocket = false;
         for (let m = 0; m < k; m++) if (isTun(P[idx[m]])) cost += boxCost(P[idx[m]]) * step;
         for (let m = k; m < idx.length && ok; m++) { const p = P[idx[m]]; if (!isTun(p)) continue;
@@ -1526,7 +1528,10 @@ function solveTypes(V) {
       // the boxes round this piece: its approaches, and the launch boxes where it reaches the stretch's ends (not the
       // other pieces or the pockets between, which stay as decided: 1 November)
       const boxes = (len(x, y) - left) + (x === u ? (u - a) * step : 0) + (y === v ? (b - v) * step : 0);
-      if (river || left < boxes) {
+      // the short piece becomes cut and cover only where the boxes stay within their limit (3 November: never draw what
+      // cannot be built when a short drive can be: a box past its limit cannot, a drive shorter than min_drive can)
+      const boxable = P.slice(x === u ? a : x, (y === v ? b : y) + 1).every((p) => !isTun(p) || ccOk(p));
+      if (river || (left < boxes && boxable)) {
         const x0 = river ? a : (x === u ? a : x), y0 = river ? b : (y === v ? b : y);
         approaches.length = mark; for (const p of P.slice(x0, y0 + 1)) if (isTun(p) && !p.shaft) { p.t = 'cutcover'; delete p.appr; delete p.tube; if (river) p.bank = true; }
         const tp = P.slice(x0, y0 + 1).filter(isTun), at = tp.reduce((m, p) => (p.d - p.R.ccMax > m.d - m.R.ccMax ? p : m), tp[0]), over = at ? at.d - at.R.ccMax : 0;
@@ -1545,10 +1550,10 @@ function solveTypes(V) {
   const bored = (p) => (p.t === 'shield' || p.t === 'deep') && !p.stn;
   // the low-cover warnings (Ben, 3 November: "warnings should be given when tubes are not deep enough"), on what is still
   // bored once the approaches, pockets and the tidying took their boxes: each run of tube with less than one diameter of
-  // cover, down to cover_hard (below that it is unbuildable, A); painted tubes too
+  // cover, down to cover_hard (below that it is unbuildable, A); painted tubes and mined stations too
   for (let k = flags.length - 1; k >= 0; k--) if (flags[k].propose) flags.splice(k, 1);
-  { const hardF = (MS.cost || { cover_hard: 0.5 }).cover_hard, short = (p) => { if (!bored(p) || riverAt(p.c)) return 0; const tb = tubeOfKey(p.tube || tubeKey(p.c)), d = groundAt(p.c) - p.z; return d < tb.top + tb.od * hardF - 0.05 ? 0 : tb.top + tb.od - d; };
-    for (const [x, y] of runs(0, n - 1, (p) => short(p) > 0.005)) flags.push({ c0: P[x].c, c1: P[y].c, kind: 'Low cover', warn: true, propose: true, text: `${Math.round(len(x, y))} m of tube with up to ${fmtZ(Math.max(...P.slice(x, y + 1).map(short)), 2)} ${uLbl()} less than one diameter of cover (bored with ground treatment): Propose fill, or lower the rail` }); }
+  { const hardF = (MS.cost || { cover_hard: 0.5 }).cover_hard, short = (p) => { if (!(p.t === 'shield' || p.t === 'deep') || riverAt(p.c)) return 0; const tb = tubeOfKey(p.tube || tubeKey(p.c)), d = groundAt(p.c) - p.z; return d < tb.top + tb.od * hardF - 0.05 ? 0 : tb.top + tb.od - d; };
+    for (const [x, y] of runs(0, n - 1, (p) => short(p) > 0.05)) flags.push({ c0: P[x].c, c1: P[y].c, kind: 'Low cover', warn: true, propose: true, text: `${Math.round(len(x, y))} m of tube with up to ${fmtZ(Math.max(...P.slice(x, y + 1).map(short)), 2)} ${uLbl()} less than one diameter of cover (bored with ground treatment): Propose fill, or lower the rail` }); }
   // approach boxes under the street (Ben, 28 October: accepted where they leave it, round corners or are wider: the street
   // grid made them necessary; each a note saying where and by how much). Box outside = track centres + 4.0 m.
   const sts = (S.ctx && S.ctx.streets) || [], wall = MS.box.inside - MS.box.spacing;
@@ -1576,7 +1581,7 @@ function solveTypes(V) {
   { const why = P.map((p) => {
       if (riverAt(p.c)) return null;
       const st = p.stn && p.stn.s, o = overrideAt(st ? st.c : p.c), t = o || p.t, d = groundAt(p.c) - p.z; if (!isFinite(d)) return null;
-      if ((t === 'shield' || t === 'deep') && !st) { const tb = tubeOfKey(p.tube || tubeKey(p.c)), CO2 = MS.cost || { cover_hard: 0.5 }; if (d < tb.top + tb.od * CO2.cover_hard - 0.05) return 'cover'; }
+      if (t === 'shield' || t === 'deep') { const tb = tubeOfKey(p.tube || tubeKey(p.c)), CO2 = MS.cost || { cover_hard: 0.5 }; if (d < tb.top + tb.od * CO2.cover_hard - 0.05) return 'cover'; }   // a mined station along its whole platform too (3 November)
       if (t === 'cutcover' && !p.bank) { const sec = canonAt(p.c); if (!(sec && (sec.m === 'canal' || sec.m === 'covered')) && d > p.R.ccMax + BAND) return 'box'; }
       return null; });
     for (const w of ['cover', 'box']) for (const [x, y] of runs(0, n - 1, (p, i) => why[i] === w)) {
@@ -1617,7 +1622,7 @@ function fitOf(t, c, z, stn) {
     : t === 'trough' ? (d < -0.05 ? 'above' : d > fitDig(c) + 0.05 ? 'dig' : null)
     : t === 'atgrade' ? (d > fitBoxTop() + 0.05 ? 'dig' : -d > settings.elevAbove + settings.deckDepth + 0.05 ? 'high' : null)
     : t === 'elevated' ? (z - settings.deckDepth < g - 0.05 ? 'buried' : null)
-    : (t === 'shield' || t === 'deep') && (isRer() || stn) ? (d < fitTube(c, t) - 0.05 ? 'cover' : null) : null;
+    : (t === 'shield' || t === 'deep') && isRer() ? (d < fitTube(c, t) - 0.05 ? 'cover' : null) : null;   // a Metro tube, running or a mined station, is the cover check (A)
   if (!why) return null;
   const lim = fitLim(t, why)(c); return { why, by: Math.abs(z - lim) };
 }
