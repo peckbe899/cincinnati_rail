@@ -1224,6 +1224,9 @@ def main():
             if len(sc):
                 out_t[st_key(d['stations'], i)] = h['samples'][int(np.argmin(np.abs(sc - c)))][2]
         station_types[lid] = out_t
+    # the default platform type at each Metro station, from the Profiles engine (Ben, 4 November: side at a box, an island
+    # at a transfer or where a tube runs into the box, side at a mined station); the Deck takes it where Ben has not set one
+    platform_default = {lid: dict(H['profiles'][lid].get('platDefaults') or {}) for lid, d in lines.items() if d['sys'] != 'rer'}
 
     # along each Metro line every 10 m (Deck UTM): the tube of the stretch's phase (the Chronology, else the structure record)
     # and each track's offset from the centreline; the Deck draws its Metro tracks from them (params/tube_points)
@@ -1252,10 +1255,14 @@ def main():
             hv = np.interp(cs, cs2, hh)
             tube_points[lid] = [[round(float(e), 1), round(float(n), 1), metro_tube(lid, float(c)), round(float(v), 2)] for e, n, c, v in zip(E, N, cs, hv)]
 
-    # ---- station approaches (Ben, 28 October): islands by default on bored stretches; tubes ease out to the island
-    # before it; tracks closer than the tube spacing only inside a box. Reported for Ben: side platforms on bored
-    # stretches, the boxes the double-track bore needs round its islands, and approaches that do not fit.
-    approach = {'side_bored': [], 'boxes': [], 'misfit': []}
+    # ---- station approaches (Ben, 28 October): tubes ease out to an island before it; tracks closer than the tube
+    # spacing only inside a box. Reported for Ben: the stations whose platforms differ from the default rule (4 November:
+    # side at a box, an island at a transfer or where a tube runs into the box, side at a mined station), the boxes the
+    # double-track bore needs round its islands, and approaches that do not fit.
+    approach = {'off_default': [], 'boxes': [], 'misfit': []}
+    def pdef(lid, name):
+        P_ = platform_default.get(lid) or {}
+        return P_.get(name) or next((v for k, v in P_.items() if k.startswith(name + '#')), None)
     if MS:
         A = float(MS.get('approach_m') or 40.0)
         for lid, l in L.items():
@@ -1267,8 +1274,9 @@ def main():
                 ty = plat_type.get((lid, norm(st['name'])))
                 bored = st['type'] in ('shield', 'deep')
                 tube = metro_tube(lid, st['c'])
-                if ty == 'side' and bored and lid != 'CVG_Express':   # a Metro note (the CVG Express is its own system)
-                    approach['side_bored'].append({'line': l['name'], 'station': st['name'], 'c': st['c'], 'type': st['type'], 'tube': tube})
+                dft = pdef(lid, st['name'])
+                if ty and dft and ty != dft and lid != 'CVG_Express':   # a Metro note (the CVG Express is its own system)
+                    approach['off_default'].append({'line': l['name'], 'station': st['name'], 'c': st['c'], 'type': st['type'], 'tube': tube, 'kind': ty, 'default': dft})
                 if ty != 'island':
                     continue
                 a0, a1 = st['from_c'] - A, st['to_c'] + A
@@ -1285,11 +1293,11 @@ def main():
                         why.append('deep: the bore cannot spread to the island, and a box this deep is not cut and cover (a mined station and approaches)')
                 if why:
                     approach['misfit'].append({'line': l['name'], 'station': st['name'], 'c': st['c'], 'why': why})
-        if approach['side_bored']:
-            # a note to check, not an error (Ben, 28 October: "they aren't necessarily wrong, but should be noted")
-            issues.append(f"To check (not necessarily wrong): {len(approach['side_bored'])} Metro stations have side platforms on a bored stretch: "
-                          + ', '.join(f"{x['station']} ({x['line']}, {'deep' if x['type'] == 'deep' else 'shallow shield'})" for x in approach['side_bored'][:10])
-                          + (' ...' if len(approach['side_bored']) > 10 else ''))
+        if approach['off_default']:
+            # a note to check, not an error (Ben's settings win; 28 October: "they aren't necessarily wrong, but should be noted")
+            issues.append(f"To check (not necessarily wrong): {len(approach['off_default'])} Metro stations have other platforms than the default rule: "
+                          + ', '.join(f"{x['station']} ({x['line']}, {x['kind']}, the rule {x['default']})" for x in approach['off_default'][:10])
+                          + (' ...' if len(approach['off_default']) > 10 else ''))
         if approach['boxes']:
             issues.append(f"{len(approach['boxes'])} islands on the double-track bore need a box over the platform and {A:.0f} m either side for the tracks to spread: "
                           + ', '.join(f"{x['station']} ({x['line']}, c {x['from_c']:.0f} to {x['to_c']:.0f})" for x in approach['boxes'][:8]) + (' ...' if len(approach['boxes']) > 8 else ''))
@@ -1495,7 +1503,7 @@ def main():
         'frame_turn_deg': AREA['frame_turn'], 'box': [r1(v) for v in BOX],
         'interline': combos, 'stripe_m': STRIPE_M,
         'platform_m': PLATFORM_M, 'platform_above_rail': PLATFORM_ABOVE_RAIL, 'struct': struct, 'box_margin': BOX_MARGIN,
-        'assumed': ASSUMED, 'deck_rules': dd.get('constants'), 'issues': issues, 'approach': approach, 'track_geometry': geom, 'station_types': station_types, 'tube_points': tube_points, 'station_complexes': complexes, 'station_complexes_marked': complexes_marked,
+        'assumed': ASSUMED, 'deck_rules': dd.get('constants'), 'issues': issues, 'approach': approach, 'track_geometry': geom, 'station_types': station_types, 'station_platform_default': platform_default, 'tube_points': tube_points, 'station_complexes': complexes, 'station_complexes_marked': complexes_marked,
         'station_platforms': {lid: {st_key(d['stations'], i): plat_type.get((lid, norm(st['name']))) or 'side' for i, st in enumerate(d['stations'])} for lid, d in lines.items() if d['sys'] != 'rer'},
         'rules': ['Levels: the Rail Profiles editor; plan, tracks and platforms: the Mill Creek Deck',
                   'A platform on a shared pair (RER A/D, B C E ...) serves every line on it, at the level of the saved Profiles line (Ben, 2026-10-26: A and D share the Fountain Square platforms)',

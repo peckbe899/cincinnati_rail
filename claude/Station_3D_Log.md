@@ -688,3 +688,56 @@ Line 1 over the L&N bridge:
   box pocket would leave a drive short (warned, hatched below half: the profile should dive); unbuildable 1.42 km to
   1.46 km (Rapid Run). Warnings under 5 cm short are not shown.
 - Page and copy agree on every line (Line 5's known approach-extra tie aside); 74 tests pass.
+
+## 2026-11-04: platform type by default (Ben: "island platforms would have been really uncommon in cut-and-cover, especially in phase 1")
+
+- Why so many islands: the Deck's generator (9 October, log 10j.4) made every Line 1-7 station an island and every
+  Line 8-14 station side, on the reasoning of founding-era twin tubes, applied whatever the station's structure; the
+  28 October handoff added an island wherever a station is on shallow shield. Only Ben's 29 settings (28 side, 1
+  island) differed. Lines 1-7 had 163 island boxes against 37 side.
+- Ben: "cut-and-cover phase 1 should be almost exclusively [side] (like most of MBTA OL and RL, unless there's a
+  transfer (like Park St). If it's bored, then it's probably an island because that's an easier box to dig and if it's
+  side, it needs a mezzanine (unless your research says differently for either)"; mined stations: "check the
+  research"; his settings kept; a transfer counts if the other line is open when the station opens.
+- Research: the 1904 IRT's local stations had side platforms and its express stops islands (cut and cover); Park
+  Street's islands were a four-track transfer; Chicago's State Street subway (1943), each track in its own shield-driven
+  tube, has one continuous island; London's intermediate deep-tube stations put each track in its own platform tunnel
+  (the single-tunnel islands at Clapham and Euston's Bank branch were exceptions, Euston's overcrowded); Washington's
+  deepest stations are twin tubes with side platforms.
+- The rule (Profiles engine `platDef`, published by the 3D build as hub `params/station_platform_default`, the Deck's
+  default where Ben has set nothing): a box station side; an island at a transfer with another Metro line already open
+  when it opens, or where a tube runs straight into the box (a drive within approach_m + 20 m of a platform end); a
+  mined station side (a platform tunnel per track); an open station keeps the Deck's generated type. Page and copy fall
+  back to side before the first build. The 3D issues and the hub's checks now list stations set otherwise than the
+  rule (replacing the "side platforms on a bored stretch" note, which the rule makes the default for mined stations);
+  the Deck's station card shows the default and why.
+- On the seed's profiles: 340 box stations, 117 islands (66 a tube runs into, the rest transfers at opening), 223 side;
+  78 mined stations side.
+
+## 2026-11-04: the tunnel engine rewritten, one method per stretch (Ben: "rethink how the logic needs to work")
+
+- Ben, on Line 1 at Carothers Center: a cut-and-cover paint ignored and three methods in 600 m of cut-and-cover
+  territory; "pore over the history and logic ... come back with the root causes" (`claude/Drive_Selection_Root_Causes_2026-11-04.md`:
+  rules from three sources never ratified, Ben's inputs overridden by later passes, a stack of about fifteen patches
+  deciding per 2 m sample, stations decided apart from their line, parity-only verification, the migrated selections).
+  Then: "rethink how the logic needs to work ... the kind of logic that a transit engineer would use", "make the changes".
+  His choices on the three open points: phase preference where both methods fit (Phase 1 cut and cover, later bored);
+  a paint snapped to the anchors, with a Shaft brush for a change partway; the 2 November migrated selections cleared.
+- The engine now: anchors (box stations, portals, the river box, canon boxes, phase changes, painted shafts); one
+  method per stretch between them, in rank order: Ben's paint; the bank works beside the river; a canon bored section;
+  a mined station forces a drive; both feasible, the phase's `prefer`; one feasible, that one; neither, the nearer,
+  flagged. Feasibility: a box within the limit throughout; a drive whose launch boxes reach full cover held over the
+  approach length (not a blip of cover), stay within the limit and leave at least min_drive, nothing below half a
+  diameter. Inside a stretch a shortfall is a flag, never a method change. Stations: the selection, else by the limit;
+  a mined station in a box stretch and a selected box past the limit are flagged, never overridden; a box station with
+  its roof out of the ground (Rapid Run, across a cut) is unbuildable too. The drawn band is the engine's result, so
+  the drawing, the checks and 3D agree. Every stretch has a note: what it is and why. Removed: cost sums, pockets,
+  leftover conversion, the dead band; `cost` keeps `cover_hard`, `phases.prefer` is new (hub page).
+- Effects on the seed's profiles: Henry Clay (Line 3) is 0.35 m past Phase 3's limit, so by the rule it is mined and
+  Benton to Ft Wright one drive (the launch box 908 m); selecting Cut & cover at Henry Clay gives Benton to Henry Clay
+  as cut and cover with the station flagged 0.35 m past the limit. Holmes to Meinken (Line 2) is a box: a 41 m
+  cut-and-cover paint from October snaps the stretch (flagged); painted shield, twin tubes. Old sliver paints show up
+  as "two paints in one stretch" (Line 1 at 8+801, Line 4): to be cleared or split with a Shaft.
+- Page and copy agree on every line but three one-sample float ties (Lines 5, 9, 11); Line 12's one difference is the
+  scratch hub's rebuilt platform record (Jefferson an island there, side in the repo copy), not the engine. 74 tests pass
+  (test_rer_routes_follow_deck reads `hub/work/rer_routes.geojson` when a scratch hub has written one: moved aside).
