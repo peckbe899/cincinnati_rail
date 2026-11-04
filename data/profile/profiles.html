@@ -826,7 +826,7 @@ function gradeAt(c, verts = VERTS) {
 }
 // the straight grades between bends (for limits, labels and the overview)
 const chords = (verts = VERTS) => design(verts).dv;
-window.railProfile = { drawn: () => {   // the drawn ground for Station 3D: this line's lines with their street width, and every 2 m sample it changes
+window.railProfile = { platDefaults: () => ((stretchTypes() || {}).platDef || {}), drawn: () => {   // the drawn ground for Station 3D: this line's lines with their street width, and every 2 m sample it changes
     const lines = gnds().map((P) => { const st = streetAtC((P[0].c + P[P.length - 1].c) / 2); return { w: st ? st[2] : GND_W, pts: P.map((p) => [p.c, Math.round(p.z * 100) / 100]) }; });
     const runs = []; const g = S.ground, r = S.groundReg; if (g && r && g !== r) { let cur = null; for (let i = 0; i < g.length; i++) { if (Math.abs(g[i] - r[i]) > 0.005) { if (!cur) { cur = [i, []]; runs.push(cur); } cur[1].push(Math.round(g[i] * 100) / 100); } else cur = null; } }
     return { lines, runs }; }, bridges: () => (S.canonLocks || []).filter((lk) => lk.name && (S.canonPiers || []).length).map((lk) => ({ name: lk.name, c0: lk.lo, c1: lk.hi, piers: S.canonPiers.filter((v) => v >= lk.lo - 0.5 && v <= lk.hi + 0.5) })), railAt: (c) => railAt(c), typeAt: (c) => typeAt(c), tubeAt: (c) => tubeKeyAt(c), approaches: () => (stretchTypes() || {}).approaches || [], phaseAt: (c) => phaseAt(c), chrSegments: () => chrSegments(), curveAt: (c) => ({ grade: gradeAt(c), allowance: allowanceAt(c), radius: radiusAt(c) }), line: () => S.data && S.data.id, issues: () => S.issues || [], view: (c0, c1) => { S.view = { c0, c1 }; schedule(); }, align: () => JSON.parse(JSON.stringify(S.align)), exportGeo: () => { const m = exportModel(); return { runs: m.runs.length, pts: m.runs.reduce((a, r) => a + r.pts.length, 0), stations: m.stations.length }; }, kml: () => buildKml(), platforms: () => (isRer() ? [] : S.stations.map((s, i) => ({ name: s.name, c: s.c, ...platformCurve(i), R: isFinite(platformCurve(i).R) ? platformCurve(i).R : null }))), drawing: () => (isRer() ? [] : drawingFlags(S.data)), saved: () => !!(S.data && S.saved[S.data.id]) };
@@ -1282,7 +1282,7 @@ function pointType(c, z) {   // one chainage on its own: the type, or for a Metr
 // (it does not count toward a drive). Island or side from the 3D build (hub params/station_platforms), else island
 // where the station is shallow shield (the Deck's default).
 let ST_PLAT = null, ST_CPLX = null, ST_ACCESS = null;   // params/station_platforms, params/station_complexes, params/station_access
-const platKind = (s, t) => { const R = ST_PLAT && ST_PLAT[S.data.id]; const v = R && (R[keyOf(s)] ?? R[s.name]); return v || (t === 'shield' ? 'island' : 'side'); };   // by station key (name#idx where a name repeats)
+const platKind = (s, t) => { const R = ST_PLAT && ST_PLAT[S.data.id]; const v = R && (R[keyOf(s)] ?? R[s.name]); return v || 'side'; };   // by station key (name#idx where a name repeats); before the 3D build has the Deck's, side (platDef)
 // the minimum radius by building phase (Ben, 28 October: 40, 55, 70 m); where an approach runs into a curve too tight for a
 // single arc at it, a short straight after the platform (or box) end, computed by the 3D build from the plan's curvature
 // (hub params/approach_extra; Ben: option A), lengthens the box
@@ -1330,7 +1330,7 @@ let SOLVING = false;   // the tube form of the last solve is not read while a ne
 let LAST_T = null, SOLVE_N = 0;   // the last solve, shown during a drag; the count (for the harness)
 function stretchTypes() {
   const V = VERTS; if (!S.data || isRer() || !MS || !V) return null;
-  if (V._types && V._types.g === S.ground && V._types.ms === MS && V._types.chr === CHR && V._types.plat === ST_PLAT && V._types.ax === APX_EXTRA && V._types.L === S.L) return V._types;
+  if (V._types && V._types.g === S.ground && V._types.ms === MS && V._types.chr === CHR && V._types.cx === ST_CPLX && V._types.plat === ST_PLAT && V._types.ax === APX_EXTRA && V._types.L === S.L) return V._types;
   if (S.drag && !MODEL_SWAP && LAST_T && LAST_T.id === S.data.id && LAST_T.L === S.L) return LAST_T;   // a drag shows the last model
   SOLVING = true; SOLVE_N++; try { const T = solveTypes(V); if (!MODEL_SWAP) LAST_T = Object.assign(T, { id: S.data.id }); return T; } finally { SOLVING = false; }
 }
@@ -1591,7 +1591,35 @@ function solveTypes(V) {
       bad.push({ why: w, c0: P[x].c, c1: P[y].c, worst });
     }
     bad.sort((a, b) => a.c0 - b.c0); }
-  V._types = { g: S.ground, ms: MS, chr: CHR, plat: ST_PLAT, ax: APX_EXTRA, L: S.L, step, bad, stRole: Object.fromEntries(stOf.map((sd) => [keyOf(sd.s), sd.role])), t: P.map((p) => p.t), z: P.map((p) => p.z), tube: P.map((p) => ((p.t === 'shield' || p.t === 'deep') && p.tube) || null), part: P.map((p) => (p.appr ? 'a' : p.shaft ? 's' : p.stn ? 'S' : '')), flags, approaches };
+  // The default platform type (Ben, 4 November: "island platforms would have been really uncommon in cut-and-cover,
+  // especially in phase 1"; "cut-and-cover phase 1 should be almost exclusively [side] (like most of MBTA OL and RL),
+  // unless there's a transfer (like Park St). If it's bored, then it's probably an island because that's an easier box to
+  // dig and if it's side, it needs a mezzanine"; for mined stations, "check the research"). A box station: side, an
+  // island where it is a transfer with another Metro line already open when it opens (the station complexes and the
+  // Chronology; Ben chose "transfer at opening") or where a tube runs straight into it
+  // (a drive within approach_m + MIN_RUN of a platform end, through the approach box: the tubes arrive apart and an island
+  // box fits between them, as the State Street subway's twin tubes, 1943). A mined station: side, each track in its own
+  // platform tunnel (the London tubes' usual intermediate station; the single-tunnel islands at Clapham and Euston were
+  // the exception). An open station: no default (the Deck's generated one). Ben's setting on the Deck wins over all of
+  // these; the 3D build publishes them (params/station_platform_default) for the Deck.
+  const platDef = {};
+  for (const sd of stOf) {
+    const s = sd.s, k = keyOf(s);
+    if (sd.role === 'mined') { platDef[k] = 'side'; continue; }
+    if (sd.role !== 'box') continue;
+    const yr = chrStationYear(S.data.id, s.name), reach = (MS.approach_m || 40) + MIN_RUN;
+    const transfer = yr != null && complexOf(s).some((m) => m.sys === 'metro' && m.line !== S.data.id && m.year != null && m.year <= yr);   // a transfer when it opens (Ben, 4 November)
+    let tube = false;
+    for (const dir of [-1, 1]) {
+      for (let i = stIdx(s.c + dir * half), m = 0; P[i] && m * step <= reach; i += dir, m++) {
+        const p = P[i]; if (p.stn && p.stn.s === s) { m = -1; continue; }
+        if ((p.t === 'shield' || p.t === 'deep') && !p.stn) { tube = true; break; }
+        if (p.t !== 'cutcover' || p.stn) break;
+      }
+    }
+    platDef[k] = transfer || tube ? 'island' : 'side';
+  }
+  V._types = { g: S.ground, ms: MS, chr: CHR, cx: ST_CPLX, plat: ST_PLAT, ax: APX_EXTRA, L: S.L, step, bad, platDef, stRole: Object.fromEntries(stOf.map((sd) => [keyOf(sd.s), sd.role])), t: P.map((p) => p.t), z: P.map((p) => p.z), tube: P.map((p) => ((p.t === 'shield' || p.t === 'deep') && p.tube) || null), part: P.map((p) => (p.appr ? 'a' : p.shaft ? 's' : p.stn ? 'S' : '')), flags, approaches };
   return V._types;
 }
 function autoType(c, z) {

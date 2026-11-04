@@ -310,10 +310,14 @@ class Pipeline:
         cur = self.store.get('params/tube_points')
         if tp and (cur is None or cur['data'] != tp):
             self.store.set('params/tube_points', tp, by='pipeline')
-        st = snap.get('station_types')
-        cur = self.store.get('params/station_types')
-        if st and (cur is None or cur['data'] != st):
-            self.store.set('params/station_types', st, by='pipeline')
+        st, pd = snap.get('station_types'), snap.get('station_platform_default')
+        cur, cpd = self.store.get('params/station_types'), self.store.get('params/station_platform_default')
+        changed_pd = bool(pd) and (cpd is None or cpd['data'] != pd)
+        if changed_pd:   # the default platform type at each Metro station (4 November): the Deck redraws its platforms
+            self.store.set('params/station_platform_default', pd, by='pipeline')
+        if (st and (cur is None or cur['data'] != st)) or changed_pd:
+            if st and (cur is None or cur['data'] != st):
+                self.store.set('params/station_types', st, by='pipeline')
             if not getattr(self, '_types_rerun', False):
                 self._types_rerun = True
                 self.schedule('3d', 'station types changed: the Deck redraws its platforms', delay=0)
@@ -390,8 +394,8 @@ def registry(snap, store):
         row('Metro clear height under structures in the open', 'm', note='the structure record', profiles=ms['open_clear_height'])
     row('Platform slide limit (Deck)', 'm', deck=dr.get('SLIDE_M'))
     tie = [i for i in snap.get('issues', []) if "off the Deck's pieces" in i or "off their Deck platform" in i]
-    # notes to check, not errors: side platforms on bored stretches (Ben, 28 October)
-    checks = [{'line': x['line'], 'station': x['station'], 'text': f"side platforms on a bored stretch ({'deep tube' if x['type'] == 'deep' else 'shallow shield'}, {x['tube']} tunnel)"}
-              for x in (snap.get('approach') or {}).get('side_bored', [])]
+    # notes to check, not errors: platforms other than the default rule (Ben's settings; 4 November)
+    checks = [{'line': x['line'], 'station': x['station'], 'text': f"{x['kind']} platforms where the rule gives {x['default']} ({'box' if x['type'] == 'cutcover' else 'mined' if x['type'] in ('shield', 'deep') else x['type']})"}
+              for x in (snap.get('approach') or {}).get('off_default', [])]
     return {'rows': rows, 'tie_issues': tie, 'checks': checks, 'synced_at': snap.get('synced_at'),
             'note': 'Profiles values are its settings (config/settings, config/settings_rer) over its built-in defaults; Deck values are its constants as its own code has them, and platform lengths measured from the platforms it draws; Station 3D values are sync.py constants.'}

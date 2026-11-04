@@ -98,7 +98,7 @@ The Deck snapshot in `data/deck` is version 1793028977-4bc6 (layout 2461). When 
 ## Metro structure and tunnel equipment (2026-10-28)
 
 - Structures and rail spacing come from the shared Metro structure record (hub `params/metro_structure`, else `data/profile/metro_structure.json`): bored stretches take the tube of the phase their drawn piece was built in (type A, the 9.0 m double-track bore, type C; snapshot types `shield~A` and so on); boxes 9.1 m outside. Spacing narrows only inside a box, never in a tube.
-- The snapshot's `approach` lists side platforms on bored stretches, the boxes islands on the bore need, and approaches that do not fit; `station_types` gives the Profiles type at each Metro station (the Deck's island default).
+- The snapshot's `approach` lists the stations whose platforms differ from the default rule (`off_default`), the boxes islands on the bore need, and approaches that do not fit; `station_types` gives the Profiles type at each Metro station and `station_platform_default` the default platform type from the Profiles engine (2026-11-04: side at a box, an island at a transfer open when it opens or where a tube runs into the box, side at a mined station), which the pipeline writes to the hub for the Deck.
 - Tunnel equipment is drawn by the page within about 500 m of the view's centre when zoomed in, on five switches under Show, at the positions of Ben's box and tube cutaways (claude/Metro_Structure_Gauge_Handoff.md section 3.5).
 
 

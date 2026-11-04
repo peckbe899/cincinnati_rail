@@ -618,6 +618,7 @@ const H_TUBE = 4.0, H_BOX = 1.95;
 // spacing inside a box, so a change of spacing between a bored stretch and a box is eased inside the box. Every Metro line is drawn
 // from these settings, and an island is the default where the platform centre is on a bored stretch (Ben's per-station type wins).
 let ST_TYPES = null;   // {Metro line id: {station: Profiles type}} from the hub
+let ST_PD = null;   // {Metro line id: {station: 'island' | 'side'}}: the default platform type from the Profiles engine (hub params/station_platform_default)
 let MSR = { box: { spacing: 3.9 }, island_box: { island: 8.0, edge: 1.45 }, approach_m: 40,
   tubes: { A: { spacing: 8.74 }, C: { spacing: 9.14 }, bore: { spacing: 3.9 } },
   phases: { 1: { tube: 'A' }, 2: { tube: 'bore' }, 3: { tube: 'C' }, later: { tube: 'C' } },
@@ -702,7 +703,9 @@ function buildStations() {
 const stDeleted = st => !!(S.edits.stations[st.properties.id] && S.edits.stations[st.properties.id].del);
 function stopEdit(stop) { const e = S.edits.stations[stop.key]; return (e && e.s && stop.pid && e.s[stop.pid]) || null; }
 function stopType(stop) { const e = stopEdit(stop); return (e && e.t) || defaultType(stop); }
-// the default: an island where a Metro platform's centre is on a bored stretch (Ben, 28 October), else as generated
+// the default (Ben, 4 November): the Profiles engine's, from the station's structure (params/station_platform_default):
+// side at a box, an island at a transfer or where a tube runs into the box, side at a mined station. Without it (no 3D
+// build yet), the old rule: an island where a Metro platform's centre is on shallow shield (28 October), else as generated
 function defaultType(stop) {
   if (stop.sys !== 'metro' || !stop.pid) return stop.type0;
   if (stop._dtv === S.ver) return stop._dt;
@@ -711,6 +714,8 @@ function defaultType(stop) {
   // shallow shield only: the Profiles type at the station (hub params/station_types); with no types, the Deck's bored flag
   const TY = (ST_TYPES || {})[String(lf.properties.name || '').replace(' ', '_')] || {}, nm = stop.st.properties.name;
   const ty = TY[nm] ?? TY[Object.keys(TY).find((k) => k.startsWith(nm + '#'))];   // a name that repeats on the line is keyed name#idx
+  const PD = (ST_PD || {})[String(lf.properties.name || '').replace(' ', '_')] || {}, pd = PD[nm] ?? PD[Object.keys(PD).find((k) => k.startsWith(nm + '#'))];
+  if (pd === 'island' || pd === 'side') { stop._dt = pd; stop._dtv = S.ver; return pd; }
   stop._dt = (ST_TYPES ? ty === 'shield' : boredAt(lf.properties, q[0], q[1])) ? 'island' : stop.type0; stop._dtv = S.ver; return stop._dt;
 }
 const SLIDE_M = 150;   // a platform may slide up to 150 m either way from its station point (Ben, 24 October; was half a platform)
@@ -2157,12 +2162,13 @@ function renderSel() {
     h.textContent = p.name; sub.textContent = (p.sys === 'metro' ? 'Metro station · ' + p.line.replace(/ Line /g, ', Line ') : p.sys === 'cvx' ? 'CVG Express station (airside) · deep-bored, GoA3, platform screen doors' : 'RER station · ' + p.line) + (del ? ' · deleted' : '');
     kv('Platforms', stops.length ? stops.map(sp => sp.pid ? featLabel(S.tfById.get(sp.pid)) + ': ' + (del ? 'none' : stopType(sp)) : 'Union Terminal box: ' + (del ? 'none' : sp.n + ' islands, fixed')).join('; ') : 'none drawn');
     if (p.sys === 'cvx') { const q = CVX().stations.find(s => s.name === p.name); if (q) { kv('Rail', fmt(q.z, 1) + ' m, ' + fmt(q.depth, 1) + ' m under the ground (' + fmt(q.ground, 1) + ' m)'); kv('From CUT', fmt(q.km, 2) + ' km from the south end of platform M (station point)'); } }
-    // side platforms on a bored stretch: a note to check, not an error (Ben, 28 October)
+    // the default platform type and why (Ben, 4 November); a platform set otherwise is a note to check, not an error
     if (!del && p.sys === 'metro') for (const sp of stops) {
-      if (!sp.pid || stopType(sp) !== 'side') continue;
-      const lf = S.tfById.get(sp.pid), ty = ((ST_TYPES || {})[String(lf.properties.name || '').replace(' ', '_')] || {})[p.name];
-      const bored = ST_TYPES ? (ty === 'shield' || ty === 'deep') : (() => { const [, sc, g] = stopFrame(sp), q = frameAt(g.c, g.cs, sc); return boredAt(lf.properties, q[0], q[1]); })();
-      if (bored) kv('To check', featLabel(lf) + ': side platforms on a bored stretch' + (ty ? ' (' + (ty === 'deep' ? 'deep tunnel' : 'shallow shield') + ')' : '') + '. Not necessarily wrong; the default on shallow shield is an island.');
+      if (!sp.pid) continue;
+      const lf = S.tfById.get(sp.pid), ln = String(lf.properties.name || '').replace(' ', '_'), ty = ((ST_TYPES || {})[ln] || {})[p.name], dt = defaultType(sp);
+      const why = ty === 'cutcover' ? (dt === 'island' ? 'a box at a transfer or with a tube running into it' : 'a cut-and-cover box') : ty === 'shield' || ty === 'deep' ? 'a mined station: each track in its own platform tunnel' : 'as generated';
+      kv('Default', featLabel(lf) + ': ' + dt + ' (' + why + ')');
+      if (stopType(sp) !== dt) kv('To check', featLabel(lf) + ': set to ' + stopType(sp) + ', the rule gives ' + dt + '. Not necessarily wrong.');
     }
     kv('Edited', S.edits.stations[p.id] ? 'yes' : 'no'); body.append(h, sub, dl);
     if (del) { const n = document.createElement('p'); n.className = 'notes'; n.textContent = 'Deleted: its platforms are gone and the tracks run straight through. It shows as a dashed ring while editing.'; body.append(n); }
@@ -2804,7 +2810,7 @@ async function boot() {
 }
 // the hub's records as files beside the page (published copies; tube_points is too large for one database document):
 // used until the database holds the record
-const RECS = { metro_structure: (d) => { applyMSR(d); }, station_types: (d) => { ST_TYPES = d; }, tube_points: (d) => { TUBE_PTS = d; for (const f of S.tf || []) delete f.properties._hsg; } };
+const RECS = { metro_structure: (d) => { applyMSR(d); }, station_types: (d) => { ST_TYPES = d; }, station_platform_default: (d) => { ST_PD = d; }, tube_points: (d) => { TUBE_PTS = d; for (const f of S.tf || []) delete f.properties._hsg; } };
 const recFile = (k) => fetch(k + '.json').then(r => (r.ok ? r.json() : null)).then(d => { if (d && !S.recDb?.[k]) { RECS[k](d); S.ver++; S.live = null; redraw(); } }).catch(() => {});
 async function connect() {
   if (!location.pathname.startsWith('/deck/')) Object.keys(RECS).forEach(recFile);

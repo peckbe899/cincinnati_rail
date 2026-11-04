@@ -688,3 +688,28 @@ Line 1 over the L&N bridge:
   box pocket would leave a drive short (warned, hatched below half: the profile should dive); unbuildable 1.42 km to
   1.46 km (Rapid Run). Warnings under 5 cm short are not shown.
 - Page and copy agree on every line (Line 5's known approach-extra tie aside); 74 tests pass.
+
+## 2026-11-04: platform type by default (Ben: "island platforms would have been really uncommon in cut-and-cover, especially in phase 1")
+
+- Why so many islands: the Deck's generator (9 October, log 10j.4) made every Line 1-7 station an island and every
+  Line 8-14 station side, on the reasoning of founding-era twin tubes, applied whatever the station's structure; the
+  28 October handoff added an island wherever a station is on shallow shield. Only Ben's 29 settings (28 side, 1
+  island) differed. Lines 1-7 had 163 island boxes against 37 side.
+- Ben: "cut-and-cover phase 1 should be almost exclusively [side] (like most of MBTA OL and RL, unless there's a
+  transfer (like Park St). If it's bored, then it's probably an island because that's an easier box to dig and if it's
+  side, it needs a mezzanine (unless your research says differently for either)"; mined stations: "check the
+  research"; his settings kept; a transfer counts if the other line is open when the station opens.
+- Research: the 1904 IRT's local stations had side platforms and its express stops islands (cut and cover); Park
+  Street's islands were a four-track transfer; Chicago's State Street subway (1943), each track in its own shield-driven
+  tube, has one continuous island; London's intermediate deep-tube stations put each track in its own platform tunnel
+  (the single-tunnel islands at Clapham and Euston's Bank branch were exceptions, Euston's overcrowded); Washington's
+  deepest stations are twin tubes with side platforms.
+- The rule (Profiles engine `platDef`, published by the 3D build as hub `params/station_platform_default`, the Deck's
+  default where Ben has set nothing): a box station side; an island at a transfer with another Metro line already open
+  when it opens, or where a tube runs straight into the box (a drive within approach_m + 20 m of a platform end); a
+  mined station side (a platform tunnel per track); an open station keeps the Deck's generated type. Page and copy fall
+  back to side before the first build. The 3D issues and the hub's checks now list stations set otherwise than the
+  rule (replacing the "side platforms on a bored stretch" note, which the rule makes the default for mined stations);
+  the Deck's station card shows the default and why.
+- On the seed's profiles: 340 box stations, 117 islands (66 a tube runs into, the rest transfers at opening), 223 side;
+  78 mined stations side.

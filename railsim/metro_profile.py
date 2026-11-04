@@ -1185,7 +1185,7 @@ class MetroProfile:
         ph = ph or self._phase_at(s["c"])
         pk = getattr(self, "platforms_kind", None) or {}
         kind = pk.get(self.key_of(s), pk.get(s["name"]))
-        island = kind == "island" or (kind is None and t == "shield")
+        island = kind == "island"   # before the 3D build has the Deck's: side (the page's platKind, 4 November)
         DH = self.d_hall(island)
         others = self.complex_of(s)
         at_open = [m for m in others if m["year"] is not None and year is not None and m["year"] <= year]
