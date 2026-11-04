@@ -755,10 +755,14 @@ def test_tube_form_by_drive_ends_and_paint():
     mp = load("Line_8")   # Phase 2 too, but Jefferson and Mt Auburn are mined stations: two platform tunnels, so twin tubes
     T = mp.stretch_types()   # through the drive (1 November, the realism audit B3), never the double-track bore
     assert T["t"][int(5400 / T["step"])] in ("shield", "deep") and T["tube"][int(5400 / T["step"])] == "A"
-    mp = load("Line_2")   # Holmes and Meinken are island stations: twin tubes between them
+    mp = load("Line_2")   # Holmes and Meinken are island stations: twin tubes between them when the stretch is bored (a 41 m
+    T = mp.stretch_types()   # cut-and-cover paint at 18+546 snaps the whole stretch to a box, flagged, 4 November: paint it shield)
+    assert T["t"][int(18200 / T["step"])] == "cutcover" and any(f["kind"] == "paint snapped to the anchors" and f["c0"] < 18200 < f["c1"] for f in T["flags"])
+    mp.ovr = [o for o in mp.ovr if o[1] < 17900 or o[0] > 18620] + [(17960.0, 18560.0, "shield")]
+    mp._types = None
     T = mp.stretch_types()
-    assert T["tube"][int(18200 / T["step"])] in ("A", "C")
-    mp = load("Line_3")   # Henry Clay (side box) on to Ft Wright (a mined station, Phase 1): twin tubes
+    assert T["t"][int(18200 / T["step"])] == "shield" and T["tube"][int(18200 / T["step"])] in ("A", "C")
+    mp = load("Line_3")   # Henry Clay (15.35 m, past Phase 3's 15 m limit: mined by the rule) on to Ft Wright (mined): twin tubes
     T = mp.stretch_types()
     assert T["tube"][int(21800 / T["step"])] in ("A", "C")   # twin tubes (Phase 3 on Ben's Chronology: type C)
     mp.tf = [(21150.0, 22420.0, "bore")]   # painted bore: no approach at Henry Clay; the spacing change in Ft Wright flagged
@@ -851,8 +855,18 @@ def test_system_check_nothing_unbuildable_unmarked():
                     assert inside(c), (lid, c, "tube without cover, unmarked")
     mp = MetroProfile.load(root / "data/profile/lines/Line_3.json", root / "hub/seed/alignments/Line_3.json", root / "data/profile/settings.json")
     T = mp.stretch_types()
-    assert not [b for b in T["bad"] if 20000 < b["c0"] < 21100]
-    assert T["t"][int(20500 / T["step"])] == "cutcover"
+    # Henry Clay is 0.35 m past Phase 3's cut-and-cover limit, so by the rule it is mined and Benton to Ft Wright is one
+    # drive (the launch box from Benton carrying on to Henry Clay); selecting Cut & cover at Henry Clay (rule 2) makes
+    # Benton to Henry Clay its own stretch, cut and cover throughout (4 November)
+    i = [s["name"] for s in mp.stations].index("Henry Clay")
+    assert T["t"][int(21095 / T["step"])] in ("shield", "deep") and any(f["kind"] == "stretch method" and f["why"] == "mined station" and f["c0"] < 21095 < f["c1"] for f in T["flags"])
+    mp.stt[i] = "cutcover"
+    mp._effective_ovr()
+    mp._types = None
+    T = mp.stretch_types()
+    assert not [b for b in T["bad"] if 20000 < b["c0"] < 21000]
+    assert [b["why"] for b in T["bad"] if 21000 < b["c0"] < 21200] == ["box"]   # the selected box, 0.35 m past the limit: flagged, never overridden
+    assert T["t"][int(20500 / T["step"])] == "cutcover" and T["t"][int(21095 / T["step"])] == "cutcover"
 
 
 def test_road_checks_and_station_streets():
@@ -917,7 +931,8 @@ def test_station_type_selection_and_elevated_station():
     root = Path(__file__).resolve().parent.parent
     line, sets = root / "data/profile/lines/Line_1.json", root / "data/profile/settings.json"
     base = json.loads((root / "hub/seed/alignments/Line_1.json").read_text())
-    # a profile from before: paints only; the paint at a station's centre is its selection
+    # a profile from before: paints only; a paint across a station paints the running line (its stretches, snapped to the
+    # anchors), never the station (4 November: no migration of paints into selections)
     old = {k: v for k, v in base.items() if k != "stt"}
     mp = MetroProfile.load(line, None, sets)
     gr = {s["name"]: s for s in mp.stations}
@@ -929,8 +944,14 @@ def test_station_type_selection_and_elevated_station():
     try:
         mp = MetroProfile.load(line, p, sets)
         i = [s["name"] for s in mp.stations].index("Fountain Square")
-        assert mp.stt[i] == "shield" and mp.type_at(fs["c"]) == "shield"
-        # with a selection saved, the paint across the station is the running line's only
+        assert mp.stt[i] == "" and mp.override_at(fs["c"]) is None and mp.override_at(fs["c"] - 150) == "shield"
+        assert mp.type_at(fs["c"]) == "cutcover" and mp.type_at(fs["c"] - 150) == "shield"   # the station by depth, its stretches painted
+        # a selection equal to the paint at the centre was the 2 November migration's: dropped; one that differs is Ben's
+        mig = dict(old, stt={"Fountain Square": "shield"})
+        p.write_text(json.dumps(mig))
+        assert MetroProfile.load(line, p, sets).stt[i] == ""
+        p.write_text(json.dumps(dict(old, stt={"Fountain Square": "deep"})))
+        assert MetroProfile.load(line, p, sets).stt[i] == "deep"
         new = dict(old, stt={})
         p.write_text(json.dumps(new))
         mp = MetroProfile.load(line, p, sets)
@@ -1112,8 +1133,9 @@ def test_drive_starts_with_full_cover():
                     assert float(mp.ground_at(c) - mp.rail_at(c)) >= tb["top"] + tb["od"] - 0.06, (lid, c)
                     seen += 1
     assert seen > 20
-    # Rapid Run on Line 4: a mined station whose platform crosses a 16 m cut has no cover over part of it: unbuildable
+    # Rapid Run on Line 4: a station whose platform crosses a 16 m cut (a box with its roof in the air, or a mined station
+    # with no cover): unbuildable either way
     mp = MetroProfile.load(root / "data/profile/lines/Line_4.json", root / "hub/seed/alignments/Line_4.json", records="hub")
     s = next(s for s in mp.stations if s["name"] == "Rapid Run")
     half = mp.settings["platform"] / 2
-    assert any(b["why"] == "cover" and b["c0"] < s["c"] + half and b["c1"] > s["c"] - half for b in mp.stretch_types()["bad"])
+    assert any(b["why"] in ("cover", "roof") and b["c0"] < s["c"] + half and b["c1"] > s["c"] - half for b in mp.stretch_types()["bad"])

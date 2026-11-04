@@ -74,7 +74,8 @@
    "straight_warn": true,
    "grade_curve": null,
    "curve_radius": 500.0,
-   "tbm": false
+   "tbm": false,
+   "prefer": "cutcover"
   },
   "2": {
    "label": "Phase 2, New Deal (1934-41)",
@@ -88,7 +89,8 @@
    "straight_warn": true,
    "grade_curve": null,
    "curve_radius": 500.0,
-   "tbm": false
+   "tbm": false,
+   "prefer": "bored"
   },
   "3": {
    "label": "Phase 3, final lines (1950s-70s)",
@@ -102,7 +104,8 @@
    "straight_warn": false,
    "grade_curve": null,
    "curve_radius": 500.0,
-   "tbm": true
+   "tbm": true,
+   "prefer": "bored"
   },
   "later": {
    "label": "Later extensions and infill",
@@ -116,7 +119,8 @@
    "straight_warn": false,
    "grade_curve": 60,
    "curve_radius": 500.0,
-   "tbm": true
+   "tbm": true,
+   "prefer": "bored"
   }
  },
  "line_phase": {
@@ -232,21 +236,15 @@
  ],
  "subway_streets_about": "Streets built over the subway (Ben, 31 October): Central Parkway, Victory Parkway and MLK were laid out over the cut-and-cover box, so a box under them is built with the street. Matched by name (any part); marked on the profile as 'built over the subway'.",
  "cost": {
-  "bore_m": 1.0,
-  "box_m": 1.2,
-  "box_depth_m": 0.08,
-  "switch": 180.0,
-  "low_cover_m_per_m": 2.0,
   "cover_hard": 0.5
  },
- "cost_about": "Method choice by cost (Ben, 1 November: 'there needs to be a cost logic'), in bore-metre units, drawing values: bore_m a metre of bored tube; box_m + box_depth_m x rail depth a metre of cut-and-cover box; switch a change of method inside a stretch (the shaft or box end with its approaches), charged once per end; low_cover_m_per_m the extra per metre of tube for each metre of cover short of one diameter (ground treatment, a canopy); cover_hard the fraction of a diameter below which a tube cannot be bored at all (then a box, or the profile must be lowered). Between two anchors the cheapest of: cut and cover end to end (within cc_max), one bored drive with its low-cover penalties, or that drive with box pockets where a long shallow stretch is cheaper boxed than treated.",
+ "cost_about": "cost.cover_hard: the fraction of a diameter of cover below which a tube cannot be bored at all (unbuildable); between that and a full diameter it is bored with ground treatment (a warning). The cost sums of 1 November (box, bore, switch, treatment per metre) are gone with the per-stretch engine (4 November): the method is a decision by rule, not a cost comparison.",
  "portal_min_m": 100.0,
  "portal_min_about": "An open run inside a tunnel shorter than this is tunnelled through, not a portal: a train cannot surface and go back under in less (the ramps at the grade limit), 1 November.",
- "dead_band_m": 0.25,
- "dead_band_about": "Inside this band of a threshold (the cut-and-cover limit, at grade / trough / box, elevated) the last solve's decision stands while editing, so a centimetre does not flip a stretch, 1 November.",
  "paint_fit_about": "A paint or a station's type holds only where its structure can be built at the drawn rail on the finished ground (Ben, 2 November: the painting has to make sense): a box's roof under the ground, an open trough's rail under the ground and no deeper than cc_max, at grade within the box's height below and a viaduct's height above the ground, elevated with the deck's underside over the ground, a mined station with the hard cover of its tube. Elsewhere it is unbuildable (hatched), with Lower, Raise or Clear. A paint does not raise the ground (Ben, 3 November): the regraded ground is drawn on the Profiles page (Ground, like a rail profile: points, straight grades, the ends on the ground), and Propose fill draws the fill a box or tube needs as a line to edit; a tube short of one diameter of cover is a warning.",
  "elevated_station": {
   "mezzanine_clear_m": 3.5
  },
- "elevated_station_about": "Ben, 2 November 2026: an elevated station type with a mezzanine / passthrough under it. The mezzanine is at street level under the middle of the platforms (fare control, stairs up to each platform) and open across the line as a public passage. mezzanine_clear_m is its clear height to the underside of the platform deck (deckDepth under the rail): the rail stands at least deckDepth + mezzanine_clear_m over the ground. A starting value, not a ruling."
+ "elevated_station_about": "Ben, 2 November 2026: an elevated station type with a mezzanine / passthrough under it. The mezzanine is at street level under the middle of the platforms (fare control, stairs up to each platform) and open across the line as a public passage. mezzanine_clear_m is its clear height to the underside of the platform deck (deckDepth under the rail): the rail stands at least deckDepth + mezzanine_clear_m over the ground. A starting value, not a ruling.",
+ "prefer_about": "phases.prefer (Ben, 4 November): the method of an unpainted stretch between anchors where both cut and cover (within cc_max throughout) and a bored drive (full cover between its launch boxes, at least min_drive) can be built: cutcover or bored. Phase 1 cut and cover, as American practice was (tunnelling only where digging was blocked); Phases 2 and 3 bored (Chicago 1943: shield between cut-and-cover stations). Set on the hub page."
 }

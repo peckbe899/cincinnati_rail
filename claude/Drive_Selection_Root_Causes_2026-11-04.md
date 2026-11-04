@@ -67,3 +67,7 @@ Ben's current Line 1 is only in his hub, so this is read from the engine's code 
    Station 3D alike.
 3. Turn each rule into a test run over every saved line, and over Ben's own hub profiles (a hub export pushed to
    `hub/seed`).
+
+## Done the same day
+
+Ben: "go back and rethink how the logic needs to work", then "make the changes". The rewrite is in `data/profile/profiles.html` (`solveTypes`) and `railsim/metro_profile.py` (`_stretch_types`), described in `data/profile/README.md` ("Tunnel engine rewritten") and the Station 3D log for 4 November. Ben's choices: phase preference (Phase 1 cut and cover, later bored), paints snapped to the anchors with a Shaft brush for a change partway, the migrated selections cleared.
