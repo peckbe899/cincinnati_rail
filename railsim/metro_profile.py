@@ -749,8 +749,14 @@ class MetroProfile:
         self._apply_drawn((doc or {}).get("gnd"))   # the drawn ground first: the level solver works on it
         so0 = [float((doc or {}).get("so", {}).get(self.st_key(i)) or 0.0) if isinstance((doc or {}).get("so", {}).get(self.st_key(i)), (int, float)) else 0.0
                for i in range(len(self.stations))]
-        self.stt = self._stt_from_doc(doc, [dict(s, c=s["c0"] + o) for s, o in zip(self.stations, so0)])
-        self.st = self.default_align(modes, self.stt)
+        slid = [dict(s, c=s["c0"] + o) for s, o in zip(self.stations, so0)]
+        self.stt = self._stt_from_doc(doc, slid)
+        keep = self.data["stations"]
+        self.data["stations"] = slid   # the default levels on the platform centres as slid (4 November)
+        try:
+            self.st = self.default_align(modes, self.stt)
+        finally:
+            self.data["stations"] = keep
         self.sg = [0.0] * len(self.stations)
         self.so = [0.0] * len(self.stations)
         self.gapfill = [k for k in ((doc or {}).get("gapfill") or []) if isinstance(k, str)]
@@ -1678,9 +1684,7 @@ class MetroProfile:
             def why(p):
                 if self.river_at(p["c"]):
                     return None
-                st_ = p.get("stn")
-                o = self.override_at(st_["s"]["c"] if st_ else p["c"])
-                t = o or p["t"]
+                t = p["t"]   # as drawn: the engine's type (paints at stretch level, selections at stations)
                 d = float(self.ground_at(p["c"])) - p["z"]
                 if not math.isfinite(d):
                     return None
@@ -1946,6 +1950,8 @@ class MetroProfile:
     def type_at(self, c: float, z: Optional[float] = None) -> str:
         if z is None:
             z = float(self.rail_at(c))
+        if not self.is_rer and getattr(self, "ms", None) and not self.settings.get("legacy_structures"):
+            return self.auto_type(c, z)   # the engine honours paints at stretch level and selections at stations (4 November): one answer
         # a station is one type (Ben, 30 October; as the editor): a paint over part of a platform applies to the whole
         # platform, by the paint at its centre
         half = self.settings["platform"] / 2

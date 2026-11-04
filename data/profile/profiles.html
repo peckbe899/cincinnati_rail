@@ -1554,7 +1554,7 @@ function solveTypes(V) {
   const bad = [];
   { const why = P.map((p) => {
       if (riverAt(p.c)) return null;
-      const st = p.stn && p.stn.s, o = overrideAt(st ? st.c : p.c), t = o || p.t, d = groundAt(p.c) - p.z; if (!isFinite(d)) return null;
+      const t = p.t, d = groundAt(p.c) - p.z; if (!isFinite(d)) return null;   // as drawn: the engine's type (paints at stretch level, selections at stations)
       if (t === 'shield' || t === 'deep') { const tb = tubeOfKey(p.tube || tubeKey(p.c)), CO2 = MS.cost || { cover_hard: 0.5 }; if (d < tb.top + tb.od * CO2.cover_hard - 0.05) return 'cover'; }   // a mined station along its whole platform too (3 November)
       if (t === 'cutcover' && !p.bank) { const sec = canonAt(p.c); if (!(sec && (sec.m === 'canal' || sec.m === 'covered')) && d > p.R.ccMax + 0.05) return 'box'; if (p.stn && d < METRO_ST.box.top - 0.05) return 'roof'; }   // a box station with its roof out of the ground (a station across a cut)
       return null; });
@@ -1871,7 +1871,8 @@ function alignFromDoc(doc) {
   const gnd = parseGnd(doc && doc.gnd); normGnd(gnd); S.ground0 = S.ground = drawnGround(S.groundReg || S.ground0, gnd); S.gndSig = null;
   const so0 = S.stations.map((_, i) => +((doc && doc.so) || {})[stKey(i)] || 0);
   const stt = sttFromDoc(doc, deriveStations(del, so0), (doc && doc.ovr || []).map(([a, b, t]) => [+a, +b, t]));
-  const al = defaultAlign(modes, [], stt);
+  const unslid = S.stations; S.stations = deriveStations(del, so0);   // the default levels on the platform centres as slid (4 November)
+  let al; try { al = defaultAlign(modes, [], stt); } finally { S.stations = unslid; }
   al.del = del; al.so = S.stations.map(() => 0); al.gnd = gnd;
   if (!doc) { ensureJunctionPvis(al, S.stations); return al; }
   al.so = so0;   // not clamped: a slide past the limit is flagged (Platform slide), never moved
