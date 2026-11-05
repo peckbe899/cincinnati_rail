@@ -1147,3 +1147,32 @@ def test_drive_starts_with_full_cover():
     s = next(s for s in mp.stations if s["name"] == "Rapid Run")
     half = mp.settings["platform"] / 2
     assert any(b["why"] in ("cover", "roof") and b["c0"] < s["c"] + half and b["c1"] > s["c"] - half for b in mp.stretch_types()["bad"])
+
+
+def test_box_needs_roof_and_cover_and_a_trough_before_it():
+    """Ben, 5 November: a box roof above the ground, with no trough from at grade into the box. Everywhere: the trough runs
+    until the rail is a box's roof plus its cover under the ground (the roof alone on a subway street), and a short trough
+    beside a box is never absorbed into the box."""
+    from pathlib import Path
+    from railsim.metro_profile import MetroProfile, BOX_COVER, METRO_ST
+    root = Path(__file__).resolve().parent.parent
+    need = METRO_ST["box"]["top"] + BOX_COVER
+    seen = 0
+    for lid in ("Line_1", "Line_3", "Line_5", "Line_6", "Line_7", "Line_9", "Line_14"):
+        al = root / f"hub/seed/alignments/{lid}.json"
+        mp = MetroProfile.load(root / f"data/profile/lines/{lid}.json", al if al.exists() else None, records="hub")
+        T = mp.stretch_types()
+        t, step, half = T["t"], T["step"], mp.settings["platform"] / 2
+        in_st = lambda c: any(abs(c - s["c"]) <= half + 2 for s in mp.stations)
+        for i in range(1, len(t)):
+            # every box sample next to open track (the start of a box from a trough or at grade), outside stations and paints
+            if t[i] == "cutcover" and t[i - 1] in ("atgrade", "trough") or t[i - 1] == "cutcover" and t[i] in ("atgrade", "trough"):
+                j = i if t[i] == "cutcover" else i - 1
+                c = j * step
+                if in_st(c) or mp.override_at(c) or mp.river_at(c) or mp.canon_at(c):
+                    continue
+                s_ = mp.street_at(c)
+                nd = METRO_ST["box"]["top"] + (0.0 if s_ and mp.subway_street(s_[3]) else BOX_COVER)
+                assert float(mp.ground_at(c)) - float(mp.rail_at(c)) >= nd - 0.06, (lid, c, "a box starts without its roof and cover under the ground")
+                seen += 1
+    assert seen > 10

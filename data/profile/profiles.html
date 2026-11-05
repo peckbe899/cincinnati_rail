@@ -1296,8 +1296,9 @@ const approachLen = (shift, c, info) => Math.max(MS.approach_m || 40, Math.sqrt(
 // it takes the type of the longer neighbour (both the same: that one); a short too-shallow spot inside a drive is bored
 // through (its flag stays). Drawing value.
 const MIN_RUN = 20;
-function absorbShort(P, step, free = (p) => !stationAt(p.c), edgeOk = () => true) {
-  // free(p): a sample that may be absorbed; edgeOk(q): a neighbour whose type may be taken
+function absorbShort(P, step, free = (p) => !stationAt(p.c), edgeOk = () => true, canTake = () => true) {
+  // free(p): a sample that may be absorbed; edgeOk(q): a neighbour whose type may be taken; canTake(p, t): that type can be
+  // built at this sample (a box never swallows a sliver too shallow for its roof and cover: Ben, 5 November)
   for (let pass = 0; pass < 4; pass++) {
     const R = []; let a = 0;
     for (let i = 1; i <= P.length; i++) if (i === P.length || P[i].t !== P[a].t) { R.push([a, i - 1]); a = i; }
@@ -1307,7 +1308,8 @@ function absorbShort(P, step, free = (p) => !stationAt(p.c), edgeOk = () => true
       if (!P.slice(x, y + 1).every(free)) continue;
       const [px, py] = R[k - 1], [nx, ny] = R[k + 1], prev = P[px].t, next = P[nx].t;
       if (!edgeOk(P[py]) || !edgeOk(P[nx])) continue;
-      const t = prev === next ? prev : (py - px >= ny - nx ? prev : next);
+      let t = prev === next ? prev : (py - px >= ny - nx ? prev : next);
+      if (!P.slice(x, y + 1).every((p) => canTake(p, t))) { t = t === prev ? next : prev; if (prev === next || !P.slice(x, y + 1).every((p) => canTake(p, t))) continue; }
       for (let i = x; i <= y; i++) P[i].t = t; changed = true;
     }
     if (!changed) break;
@@ -1362,6 +1364,9 @@ function solveTypes(V) {
   const stIdx = (c) => Math.max(0, Math.min(n - 1, Math.round(c / step)));
   const OPEN = new Set(['atgrade', 'trough', 'elevated']);
   const ccOk = (p) => p.d <= p.R.ccMax + 1e-6;   // within the cut-and-cover limit
+  // the least depth for a box: its roof plus its cover (Ben, 5 November: "the minimum tunnel height there's supposed to be over it"),
+  // the roof alone on the subway streets, built over the subway (Ben, 31 October)
+  const boxNeed = (c) => { const st = streetAtC(c); return METRO_ST.box.top + (st && subwayStreet(st[3]) ? 0 : BOX_COVER); };
   // 1. every sample on its own: an anchor (open, river, canon box) or a tunnel point with its depth and any paint. Elevated is
   // decided by the soffit (the deck under the rail clearing the ground by elevAbove), so an embankment is not drawn as a viaduct
   const base = (c, z) => {
@@ -1372,7 +1377,7 @@ function solveTypes(V) {
     const g = groundAt(c); if (!isFinite(g)) return { t: 'atgrade', role: 'open' };
     if (z - settings.deckDepth - g >= settings.elevAbove) return { t: 'elevated', role: 'open' };
     const d = g - z; if (d < settings.coverBelow) return { t: 'atgrade', role: 'open' };
-    if (d < METRO_ST.box.top) return { t: 'trough', role: 'open' };
+    if (d < boxNeed(c)) return { t: 'trough', role: 'open' };   // the trough runs until a box has its roof and its cover under the ground (Ben, 5 November)
     const o = overrideAt(c);
     if (o && OPEN.has(o)) return { t: o, role: 'open' };
     if (sec && sec.m === 'canal') return { t: 'cutcover', role: 'box', d };
@@ -1520,7 +1525,7 @@ function solveTypes(V) {
   // no open-track or box sliver shorter than MIN_RUN between open track and boxes (the ground stepping across a threshold at a
   // portal): the longer neighbour's type; tunnels and stations are never touched
   { const TUN = new Set(['shield', 'deep', 'sunk']);
-    absorbShort(P, step, (p) => !p.stn && !p.appr && !TUN.has(p.t), (q) => !TUN.has(q.t)); }
+    absorbShort(P, step, (p) => !p.stn && !p.appr && !TUN.has(p.t), (q) => !TUN.has(q.t), (p, t) => t !== 'cutcover' || groundAt(p.c) - p.z >= boxNeed(p.c) - 1e-6); }
   const bored = (p) => (p.t === 'shield' || p.t === 'deep') && !p.stn;
   // the low-cover warnings (Ben, 3 November: "warnings should be given when tubes are not deep enough"), on what is still
   // bored once the approaches, pockets and the tidying took their boxes: each run of tube with less than one diameter of

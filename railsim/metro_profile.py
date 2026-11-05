@@ -1368,6 +1368,11 @@ class MetroProfile:
         OPEN = ("atgrade", "trough", "elevated")
         box_top = st.get("trough_override", METRO_ST["box"]["top"])
         flags, approaches = [], []
+        box_cover = 0.0 if st.get("legacy_structures") else BOX_COVER
+
+        def box_need(c):   # the least depth for a box: its roof plus its cover; the roof alone on the subway streets
+            s_ = self.street_at(c) if getattr(self, "ctx", None) else None
+            return box_top + (0.0 if s_ and self.subway_street(s_[3]) else box_cover)
 
         def runs(a, b, f):
             out, s = [], -1
@@ -1400,7 +1405,7 @@ class MetroProfile:
             d = g - z
             if d < st["coverBelow"]:
                 return {"t": "atgrade", "role": "open"}
-            if d < box_top:
+            if d < box_need(c):   # the trough runs until a box has its roof and its cover under the ground (Ben, 5 November)
                 return {"t": "trough", "role": "open"}
             o = self.override_at(c)
             if o in OPEN:
@@ -1653,6 +1658,11 @@ class MetroProfile:
                     if P[py]["t"] in ("shield", "deep", "sunk") or P[nx]["t"] in ("shield", "deep", "sunk"):
                         continue
                     t = P[px]["t"] if P[px]["t"] == P[nx]["t"] or py - px >= ny - nx else P[nx]["t"]
+                    can = lambda t_: t_ != "cutcover" or all(float(self.ground_at(p["c"])) - p["z"] >= box_need(p["c"]) - 1e-6 for p in P[x:y + 1])
+                    if not can(t):   # a box never swallows a sliver too shallow for its roof and cover (5 November)
+                        t = P[nx]["t"] if t == P[px]["t"] else P[px]["t"]
+                        if P[px]["t"] == P[nx]["t"] or not can(t):
+                            continue
                     for i in range(x, y + 1):
                         P[i]["t"] = t
                     ch = True

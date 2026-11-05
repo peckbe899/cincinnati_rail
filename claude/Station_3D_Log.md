@@ -741,3 +741,22 @@ Line 1 over the L&N bridge:
 - Page and copy agree on every line but three one-sample float ties (Lines 5, 9, 11); Line 12's one difference is the
   scratch hub's rebuilt platform record (Jefferson an island there, side in the repo copy), not the engine. 74 tests pass
   (test_rer_routes_follow_deck reads `hub/work/rer_routes.geojson` when a scratch hub has written one: moved aside).
+
+## 2026-11-05: the engine on Ben's export; a box needs its roof and its cover under the ground
+
+- Ben's hub export (c86a55c, 13 saved Metro profiles) run through the engine. Three faults in the Python copy: `type_at`
+  still returned the paint before the engine; the unbuildable check judged the paint under a sample, not what is drawn;
+  the default station level was taken at the drawn point, not the slid platform centre (Fountain Square, slid 49 m,
+  0.5 m low). Tests pinned to the old repo profiles follow his export (Jefferson on Line 12 is 23.5 m down, mined;
+  Levee a box at 148.5 m; Newport-6th lowered). His Deck and Profiles disagree on platform positions (Kenard by 36 m):
+  the route-tie test says so until his hub's next Deck tie and export.
+- Ben, Line 1 past Levee: "the roof of the cut-and-cover is somehow extending above the ground. there is no
+  trench/trough segment ... despite the 'auto' paint and the minimum tunnel height there's supposed to be over it". A
+  first fix that stopped drawn fill counting as ground to dig a box into was wrong and reverted (Ben: "Regraded ground is
+  very applicable for digging a box"; and "this should not be a spot-fix"). The general rules, both engines: the trough
+  runs until the rail is the box's roof plus its cover under the ground (4.6 + 0.6 m; the roof alone on the subway
+  streets), where before a box began at the roof's depth with no cover; and a trough shorter than 20 m beside a box is
+  never absorbed into the box (a sliver may take a neighbour's type only where that type can be built at its depth).
+  On his export, Levee (selected Cut & cover at 148.5 m, 3 to 4.7 m under the regraded ground) is hatched with its
+  roof out of the ground, as rule 2 has it: his to lower or re-select. His screenshot shows edits made after the
+  export; a fresh export is needed to see them.
