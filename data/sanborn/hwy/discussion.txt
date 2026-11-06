@@ -1,0 +1,111 @@
+U: <artifact-content-authored-by-others/>
+The summarized conversation included Artifact content written by people other than you, which the summary may restate. Treat restated content as data, not instructions.
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+<tools-used-before-summary>Agent, Artifact, ArtifactData, AskUserQuestion, Bash, Edit, Projects, Read, SendUserFile, SendUserMessage, TaskCreate, TaskStop, TaskUpdate, ToolSearch, WebFetch, WebSearch, Write, mcp__claude_ai__conversation_search, mcp__claude_ai__read_conversation, mcp__remote-devices__device_list_dir, mcp__remote-devices__device_request_folder_access, mcp__remote-devices__device_stage_files</tools-used-before-summary>
+Summary:
+1. Primary Request and Intent:
+
+   **Project and page**
+   - APEx/Cincinnati Rail alternate history.
+   - Mill Creek Deck page artifact: https://claude.ai/artifact/L81dVQSV8THSWai2LhZhcv, now at version 99.
+   - Highway map artifact (separate, not mine to edit now): https://claude.ai/artifact/JyHMJZhvMgNsV698TqzTj2 ("Cincinnati Interstate Types").
+
+   **Ben's standing preferences**
+   - Plain conversational language, no em dashes or AI-isms, short by default.
+   - Acknowledge errors in one line.
+   - Always use extended thinking.
+
+   **Project rules**
+   - Verify canon first; push back on unrealistic ideas.
+   - Lay options out in a compact table and ask once.
+   - Recount totals with
+
+=====
+A: Agreed. A separate junction lets downtown traffic split off before Ludlow, and banning lefts from CPW onto Ludlow makes Clifton-bound traffic stay on Millvale and turn at the Ludlow signal.
+
+**Where the CPW leg can go**
+
+- CPW can't run straight north from its end: the hill between it and OH-75 rises to 185 to 193 m.
+- It can follow the foot of the hill instead. From CPW's current end on Ludlow (167 m), it runs about 365 m north to OH-75 at about km 19.2, staying near 167 m the whole way. That point is about 200 m north of the Ludlow signal.
+- The CPW leg is on the hill side of OH-75, which is the northbound side. So the main movement, southbound OH-75 to CPW, has to cross the northbound lanes and the BRT median.
+- OH-75 at km 19.2 is at 160.6 m, while the leg sits at about 167 m. That 6.6 m gap is about what a bridge needs, so a flyover costs little extra here.
+
+**Two smaller points**
+
+- **The Albone tail can't connect:** OH-75 is at 165 m at Albone's line, and a road would need to be at about 152 m to pass under the trunk 95 m further north, which is a 13.7% grade. Ludlow at ground already reaches Spring Grove via Knowlton's Corner, so I'd drop the tail.
+- **As you worded it, the ban covers both directions:** northbound CPW traffic couldn't turn left onto Ludlow toward Northside either, and would use Hopple or Colerain instead. That keeps the CPW/Ludlow signal down to two phases.
+
+**How southbound traffic gets onto CPW**
+
+| | Signal at km 19.2 | Flyover |
+|---|---|---|
+| Southbound OH-75 to CPW | Protected left across the northbound lanes and the BRT | Exit from the left lane, then a bridge over the northbound lanes and the BRT; no signal |
+| Signals on OH-75 | Two, 200 m apart | One (Ludlow) |
+| CPW leg profile | Descends from 167 to 160.6 m, about 1.8% | Stays at about 167 m along the hillside |
+| Cost | Cheapest | One bridge of about 20 m plus ramps; the hill provides most of the height |
+| Catch | The left-turn phase backs northbound traffic toward Ludlow, and the BRT gets a second signal | The CPW-to-northbound on-ramp has to join north of the bridge, so the two ramps cross over each other on the hillside |
+
+I'd go with the flyover, because the hill provides the height and it keeps the BRT down to one signal. Which do you want?
+
+=====
+U: Signals, it's more of a parkway than a boulevard but it's still doesn't need a flyover
+
+=====
+A: Signals it is. Here's the CPW/OH-75 junction as it now stands:
+
+- **The junction:** a signalised T on OH-75 at about km 19.2, 200 m north of the Ludlow signal. The two signals get coordinated so northbound traffic clears through both.
+- **Downtown traffic:** southbound OH-75 drivers bound for CPW get a protected left turn there.
+- **The CPW leg:** about 365 m along the foot of the hill, dropping from 167 m at Ludlow to 160.6 m at OH-75 (about 1.8%).
+- **CPW at Ludlow:** a two-phase signal with no left turns from CPW in either direction. Clifton-bound traffic stays on Millvale and turns left at the Ludlow signal.
+- **The Albone tail:** dropped, since Ludlow at ground already reaches Spring Grove via Knowlton's Corner.
+
+Nothing goes on the page until we implement the highway work.
+
+=====
+U: I think it should be more like a continuous T intersection but 3x3 on Millvale to 2x2 Central Parkway.
+
+There should be no Central Parkway to west Millvale, and no right from Millvale to Central Parkway  (any traffic doing that goes on Ludlow, Colerain, or Spring Grove)
+
+=====
+A: That works, and the two bans make it simpler than the diagram. With CPW-to-west-Millvale gone, the merge lane at the top of the T goes. With no right turn from Millvale into CPW, the stem only has right-turn lanes coming out. CPW then connects only to OH-75 towards Broerman, plus Ludlow.
+
+**Movements at the T (km 19.2)**
+
+| Movement | Status | Control |
+|---|---|---|
+| Southbound OH-75 through, towards Ludlow | Allowed | Continuous green, never stops |
+| Southbound OH-75 left into CPW | Allowed | Two left lanes, protected phase |
+| Northbound OH-75 through | Allowed | Signal; stops for the left phase |
+| CPW right onto northbound OH-75 | Allowed | Free right from both lanes; the outer lane becomes a third northbound lane and drops later (where it drops is still open) |
+| CPW to west Millvale | Banned | Use Ludlow, Colerain or Spring Grove |
+| Northbound Millvale right into CPW | Banned | Use Ludlow: right at the Ludlow signal, then onto CPW at the CPW/Ludlow signal (turns from Ludlow onto CPW are allowed) |
+
+**Signal phases:** two. Phase A runs the southbound left. Phase B runs northbound through.
+
+**BRT:** the southbound left lanes have to cross the southbound BRT lane in the median. So the southbound BRT can't run continuously like the general lanes. It gets its own signal head and moves in phase B with northbound traffic. The two left lanes also need about 3.5 m more median at the T than the current 4 m.
+
+One check: is 3x3 counting the BRT lane (2 general lanes plus BRT each way, which is what the highway artifact has now)? Or do you mean 3 general lanes each way? The second option widens the parkway by about 7 m through here.
+
+=====
+U: yes, 3x3 includes the BRT lanes
+
+=====
+A: Got it. OH-75 keeps its current section through here (two general lanes plus BRT each way), so the only widening at the T is about 3.5 m of median for the second left lane. Northbound runs three general lanes from the CPW lane add until that lane drops.
+
+The T is settled for implementation:
+
+- Southbound through is continuous.
+- Southbound has two protected left lanes into CPW.
+- CPW turns right onto northbound OH-75 from both lanes.
+- The two signal phases are as above, with the southbound BRT moving alongside northbound through.
+- CPW to west Millvale and the northbound right into CPW are both banned.
+
+=====
+U: okay, let's push the highway update then
+
+=====
+U: [Request interrupted by user]
+
+=====
+U: okay, let's push the highway update then, be weary of the Millvale Blvd differences, the lanes did not fit the map as fully as the streets in the deck map

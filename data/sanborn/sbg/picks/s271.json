@@ -1,0 +1,33 @@
+{
+  "sheet": 271,
+  "intersections": [
+    {"a": "Carthage Pike", "b": "Bear Avenue", "x": 1000, "y": 2418, "kind": "T"},
+    {"a": "Marmet Avenue", "b": "Bear Avenue", "x": 2385, "y": 2418, "kind": "T"},
+    {"a": "Bear Avenue", "b": "West Erkenbrecher Avenue", "x": 4440, "y": 1305, "kind": "T"},
+    {"a": "Vine Street", "b": "West Erkenbrecher Avenue", "x": 6122, "y": 2785, "kind": "T"},
+    {"a": "Carthage Pike", "b": "West Shields Street", "x": 1494, "y": 6980, "kind": "T"},
+    {"a": "Vine Street", "b": "West Shields Street", "x": 6112, "y": 6962, "kind": "cross"}
+  ],
+  "widths": [
+    {"street": "Carthage Pike", "ft": 60},
+    {"street": "Bear Avenue", "ft": 40},
+    {"street": "West Erkenbrecher Avenue", "ft": 60},
+    {"street": "Vine Street", "ft": 60},
+    {"street": "West Shields Street", "ft": 60}
+  ],
+  "alleys": [
+    {"name": "", "x1": 3990, "y1": 3900, "x2": 3990, "y2": 5340, "ft": 20},
+    {"name": "", "x1": 4905, "y1": 3900, "x2": 4905, "y2": 5340, "ft": 20},
+    {"name": "", "x1": 3787, "y1": 5340, "x2": 3787, "y2": 6962, "ft": null}
+  ],
+  "bends": [
+    {"street": "Bear Avenue", "x": 3385, "y": 2418, "note": "angle point: E-W from Carthage Pike, then NE (dx/dy ~ -0.95) to Erkenbrecher"},
+    {"street": "Carthage Pike", "x": 1708, "y": 5555, "note": "angle point (both kerbs break at y~5555): SSE (dx/dy ~0.23) to the north, SSW (dx/dy ~ -0.15) to the south"},
+    {"street": "Carthage Pike", "x": 1440, "y": 7440, "note": "angle point at the bottom edge (west kerb breaks at 1290,7410): turns SW toward Jefferson (continues on 270); approximate"},
+    {"street": "West Erkenbrecher Avenue", "x": 5480, "y": 2380, "note": "start of curve: straight NW-SE above, curving to E-W"},
+    {"street": "West Erkenbrecher Avenue", "x": 5680, "y": 2610, "note": "on curve"},
+    {"street": "West Erkenbrecher Avenue", "x": 5880, "y": 2740, "note": "end of curve; E-W from here past Vine"}
+  ],
+  "ends": [],
+  "notes": "Printed names: 'CARTHAGE PIKE', 'BEAR ... AV.', 'MARMET AV.', 'W. ERKENBRECHER AV.', 'VINE', 'W. SHIELDS'. The north half is mostly 'See Volume Six'. Marmet Av is only a stub north of Bear (no width printed, ~28 ft between kerbs). Bear runs E from the Pike then angles NE and ends on the SW side of Erkenbrecher (T; centre computed from the kerb lines, the 6-inch main in Erkenbrecher runs ~110 px SW of the centreline so it was not used). Erkenbrecher continues NW off the sheet (Volume Six) and E past Vine (Volume Five); Vine starts at Erkenbrecher (north kerb of Erkenbrecher continuous), so that is a T. Shields: Vine crossing opens east into 'See Volume Five'. Alleys: two 20 ft paper alleys run N-S inside block between a lot line at y~3900 and y~5340 (neither reaches a street); a narrow (~11 ft, no width printed) passage runs from y~5340 south to Shields at x~3787 - not aligned with Moffett (which ends at Shields from the south at x~3262 on this sheet's coordinates). Carthage/Shields and Vine/Shields are also on 270; Carthage/Bear is also on 269 (6130,905)."
+}

@@ -1,0 +1,17 @@
+(async () => { const S=window.__S, F=window.__fn, out={};
+  // plot merge: two touching plots in a block
+  let a=null,b=null; for (const p of S.pl.byId.values()) { if (p.properties.block!=='SBB0361' && !a) {} }
+  const blk=[...S.pl.byId.values()].filter(p=>p.properties.layer==='plot' && p.properties.block===[...S.pl.byId.values()].find(q=>q.properties.id.startsWith('SBB0352')).properties.block);
+  for (let i=0;i<blk.length && !b;i++) for (let j=i+1;j<blk.length;j++) if (F.touching(blk[i],blk[j])) { a=blk[i]; b=blk[j]; break; }
+  out.pair=[a.properties.id,b.properties.id, Math.round(a.area), Math.round(b.area)];
+  F.pushOp({t:'m', ids:[a.properties.id,b.properties.id]});
+  await new Promise(r=>setTimeout(r,25000));
+  const m=S.pl.byId.get(a.properties.id); out.merged = m ? Math.round(m.area) : 'gone'; out.bGone = !S.pl.byId.has(b.properties.id);
+  out.note=document.getElementById('plotNote').textContent;
+  // joint slider on a one-width street
+  const st=S.deck.features.find(f=>f.properties.layer==='street' && f.properties.id==='SM0080');
+  const jn=F.joInfo(st,1); out.jo=jn && {same:jn.same, room:jn.room};
+  S.edits.streets['SM0080']=Object.assign({}, S.edits.streets['SM0080']||{}, {jo:{1:4}});
+  const rr=F.streetRuns(st); out.runs = rr && rr.map(r=>[r.w, r.c.length, r.c[0].map(Math.round), r.c[r.c.length-1].map(Math.round)]);
+  out.verts = st.geometry.coordinates.map(c=>c.map(Math.round));
+  return out; })()

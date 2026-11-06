@@ -1,0 +1,1333 @@
+<title>Mill Creek Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a drafting-room plan sheet, same family as the Metro profile page.
+   Toolbar on top, the plan fills the width, a side panel for the selection, summary and legend. */
+:root {
+  --bg: #e9eeec;
+  --paper: #f7f9f8;
+  --panel: #ffffff;
+  --ink: #16252a;
+  --muted: #5a6b70;
+  --rule: #c7d2cf;
+  --accent: #0d7f74;
+  --accent-ink: #ffffff;
+  --warn: #cf2e2e;
+  --thru: #b23a2e;
+  --tee: #1f4f7a;
+  --blvd: #efe7d2;
+  --blvd-edge: #3b3a33;
+  --bldg: #c99f74;
+  --square: #92bd7c;
+  --park: #4e8f47;
+  --plant: #b4cfa5;
+  --civic: #6f4689;
+  --precinct: #b9b8cc;
+  --metro: #5b5f97;
+  --rer: #d07a1c;
+  --apex: #16252a;
+  --apex-plat: #9fb0b3;
+  --lower: #b0207a;
+  --we: #35607e;
+  --bst: #fbf7ee;
+  --tower: #8a6447; --landmark: #c9a227; --worship: #a0607e; --school: #5f8fb4; --hospital: #c45a5a; --industrial: #8b9297;
+  --font-ui: "Barlow Semi Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1719; --paper: #142023; --panel: #182629; --ink: #dce6e4; --muted: #8ea1a3; --rule: #2a3b3f;
+    --accent: #2fb8a8; --accent-ink: #062320; --warn: #ff6b5e;
+    --thru: #e0675a; --tee: #6fa6dc; --blvd: #3a382f; --blvd-edge: #d8d2bf;
+    --bldg: #8c6c4c; --square: #5f8a4e; --park: #3f7a3a; --plant: #6f8a62; --civic: #b18bd0; --precinct: #545468;
+    --metro: #9da2e0; --rer: #f0a14a; --apex: #e4ecea; --apex-plat: #4b5c60; --lower: #f06bbf; --we: #8fb4d4; --bst: #2b3c40;
+    --tower: #6e4f37; --landmark: #b8952a; --worship: #8f5a75; --school: #4f7899; --hospital: #a84c4c; --industrial: #5f666b;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1719; --paper: #142023; --panel: #182629; --ink: #dce6e4; --muted: #8ea1a3; --rule: #2a3b3f;
+  --accent: #2fb8a8; --accent-ink: #062320; --warn: #ff6b5e;
+  --thru: #e0675a; --tee: #6fa6dc; --blvd: #3a382f; --blvd-edge: #d8d2bf;
+  --bldg: #8c6c4c; --square: #5f8a4e; --park: #3f7a3a; --plant: #6f8a62; --civic: #b18bd0; --precinct: #545468;
+  --metro: #9da2e0; --rer: #f0a14a; --apex: #e4ecea; --apex-plat: #4b5c60; --lower: #f06bbf; --we: #8fb4d4; --bst: #2b3c40;
+  --tower: #6e4f37; --landmark: #b8952a; --worship: #8f5a75; --school: #4f7899; --hospital: #a84c4c; --industrial: #5f666b;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 15px; display: flex; flex-direction: column; }
+button, select, input { font: inherit; color: inherit; }
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 16px; border-bottom: 1px solid var(--rule); background: var(--panel); }
+.brand { display: flex; flex-direction: column; line-height: 1.05; margin-right: 4px; }
+.brand b { font-weight: 700; font-size: 17px; letter-spacing: 0.01em; }
+.brand span { font-size: 12px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+.group { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.group + .group { padding-left: 12px; border-left: 1px solid var(--rule); }
+.btn, select, input[type="number"] { background: var(--paper); border: 1px solid var(--rule); border-radius: var(--r); padding: 4px 9px; min-height: 32px; }
+.btn { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.btn:hover { border-color: var(--muted); }
+.btn[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; flex: none; }
+.status { margin-left: auto; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.status[data-s="saved"] .dot { background: var(--park); }
+.status[data-s="saving"] .dot { background: var(--rer); }
+.status[data-s="error"] .dot, .status[data-s="readonly"] .dot { background: var(--warn); }
+main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 340px; }
+.sheet { position: relative; min-width: 0; min-height: 0; background: var(--paper); border-right: 1px solid var(--rule); }
+#cv { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+#cv.dragging { cursor: grabbing; }
+#cv.edit { cursor: crosshair; }
+.readout { position: absolute; left: 10px; bottom: 10px; pointer-events: none; background: var(--panel); border: 1px solid var(--rule); border-radius: var(--r); padding: 4px 8px; font-family: var(--font-num); font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.hint { position: absolute; right: 10px; top: 10px; max-width: 290px; pointer-events: none; background: var(--panel); border: 1px solid var(--rule); border-radius: var(--r); padding: 6px 9px; font-size: 13px; color: var(--muted); }
+aside { overflow-y: auto; background: var(--panel); padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+aside h2 { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; font-weight: 600; }
+aside section { min-width: 0; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 14px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; font-family: var(--font-num); font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; }
+.sel-name { font-size: 18px; font-weight: 700; margin: 0 0 4px; text-wrap: balance; }
+.sel-sub { font-size: 13px; color: var(--muted); margin: 0 0 8px; }
+.seg { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.also { margin-top: 8px; font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.also .btn { min-height: 26px; padding: 2px 7px; font-size: 13px; }
+.namein { width: 100%; min-height: 32px; background: var(--paper); border: 1px solid var(--rule); border-radius: var(--r); padding: 4px 9px; box-sizing: border-box; }
+.stop { margin-top: 10px; padding: 8px 10px; border: 1px solid var(--rule); border-radius: var(--r); }
+.stop-h { margin: 0 0 6px; font-weight: 600; font-size: 13px; }
+.offrange { width: 100%; margin: 4px 0 0; accent-color: var(--accent); }
+.rangeends { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+.row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 10px; font-size: 13px; }
+.legend div { display: flex; align-items: center; gap: 6px; }
+.ln { width: 18px; height: 0; border-top: 3px solid; display: inline-block; flex: none; }
+.notes { font-size: 13px; color: var(--muted); line-height: 1.45; }
+.notes p { margin: 0 0 6px; }
+.layers { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; font-size: 14px; }
+.layers label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.op { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-top: 6px; }
+.op input { flex: 1; min-width: 0; }
+.confirm { margin-top: 8px; padding: 8px; border: 1px solid var(--warn); border-radius: var(--r); font-size: 13px; }
+.empty { color: var(--muted); font-size: 14px; }
+@media (max-width: 860px) {
+  main { grid-template-columns: 1fr; grid-template-rows: 62vh auto; }
+  .sheet { border-right: 0; border-bottom: 1px solid var(--rule); }
+  aside { overflow: visible; }
+  .status { margin-left: 0; }
+  .hint { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="bar">
+  <div class="brand"><b>Mill Creek Deck</b><span>Deck and basin on the 1904 Sanborn</span></div>
+  <div class="group" role="group" aria-label="Tool">
+    <button class="btn" id="tSel" aria-pressed="true">Select</button>
+    <button class="btn" id="tEdit" aria-pressed="false">Edit</button>
+  </div>
+  <div class="group" role="group" aria-label="History">
+    <button class="btn" id="uUndo" disabled title="Undo (Ctrl+Z)">Undo</button>
+    <button class="btn" id="uRedo" disabled title="Redo (Ctrl+Shift+Z)">Redo</button>
+  </div>
+  <div class="group" role="group" aria-label="Zoom">
+    <button class="btn" id="zIn" aria-label="Zoom in">+</button>
+    <button class="btn" id="zOut" aria-label="Zoom out">&minus;</button>
+    <button class="btn" id="zFit">Whole deck</button>
+    <button class="btn" id="zCut">CUT</button>
+    <button class="btn" id="zTrk">Approaches</button>
+    <button class="btn" id="zRb">Roundabout</button>
+    <button class="btn" id="zWe">Basin</button>
+    <button class="btn" id="zNo">North</button>
+    <button class="btn" id="zWv">West side</button>
+  </div>
+  <div class="group" role="group" aria-label="Export">
+    <button class="btn" id="xGeo">GeoJSON</button>
+    <button class="btn" id="xKmz">KMZ</button>
+  </div>
+  <div class="status" id="status" data-s="local"><span class="dot"></span><span id="statusText">Loading</span></div>
+</div>
+<main>
+  <div class="sheet">
+    <canvas id="cv"></canvas>
+    <div class="readout" id="readout">E — N —</div>
+    <div class="hint" id="hint">Drag to pan, scroll or pinch to zoom. Click a street or block to see it.</div>
+  </div>
+  <aside>
+    <section id="selBox">
+      <h2>Selection</h2>
+      <p class="empty" id="selEmpty">Nothing selected. Click a street, a block or a civic space on the plan.</p>
+      <div id="selBody" hidden></div>
+    </section>
+    <section>
+      <h2>Layers</h2>
+      <div class="layers">
+        <label><input type="checkbox" id="lSan" checked> Sanborn 1904</label>
+        <label><input type="checkbox" id="lRel"> Map 3 relief</label>
+        <label><input type="checkbox" id="l12"> 1912 survey</label>
+        <label><input type="checkbox" id="lWe" checked> Basin streets</label>
+        <label><input type="checkbox" id="lBlk" checked> Blocks</label>
+        <label><input type="checkbox" id="lStr" checked> Streets</label>
+        <label><input type="checkbox" id="lMet" checked> Metro</label>
+        <label><input type="checkbox" id="lRer" checked> RER</label>
+        <label><input type="checkbox" id="lTrk" checked> CUT tracks</label>
+        <label><input type="checkbox" id="lLab" checked> Labels</label>
+        <label><input type="checkbox" id="lIdx"> Sheet index</label>
+      </div>
+      <div class="op"><label for="opSan">Sanborn</label><input type="range" id="opSan" min="0" max="100" value="80"></div>
+      <div class="op"><label for="op12">1912</label><input type="range" id="op12" min="0" max="100" value="70"></div>
+      <div class="op"><label for="opBlk">Blocks</label><input type="range" id="opBlk" min="0" max="100" value="70"></div>
+    </section>
+    <section>
+      <h2>Plan summary</h2>
+      <dl class="kv" id="summary"></dl>
+    </section>
+    <section>
+      <h2>Legend</h2>
+      <div class="legend">
+        <div><span class="ln" style="border-color:var(--thru)"></span>Through street</div>
+        <div><span class="ln" style="border-color:var(--tee)"></span>T street / deck street</div>
+        <div><span class="ln" style="border-color:var(--bst);border-top-width:6px;box-shadow:0 0 0 1px var(--ink)"></span>Basin street (1904)</div>
+        <div><span class="ln" style="border-color:var(--bst);border-top-width:3px;box-shadow:0 0 0 1px var(--muted)"></span>Basin alley (1904)</div>
+        <div><span class="sw" style="background:var(--blvd);outline:1px solid var(--blvd-edge)"></span>Exposition Boulevard</div>
+        <div><span class="sw" style="background:var(--bldg)"></span>Building block</div>
+        <div><span class="sw" style="background:var(--square)"></span>Square with vents</div>
+        <div><span class="sw" style="background:var(--park)"></span>Park</div>
+        <div><span class="sw" style="background:var(--plant)"></span>Planting</div>
+        <div><span class="sw" style="background:var(--tower);outline:1.5px solid var(--ink)"></span>Tower</div>
+        <div><span class="sw" style="background:var(--landmark);outline:1.5px solid var(--ink)"></span>Landmark</div>
+        <div><span class="sw" style="background:var(--civic)"></span>Civic building</div>
+        <div><span class="sw" style="background:var(--worship)"></span>Place of worship</div>
+        <div><span class="sw" style="background:var(--school)"></span>School or college</div>
+        <div><span class="sw" style="background:var(--hospital)"></span>Hospital</div>
+        <div><span class="sw" style="background:var(--industrial)"></span>Industrial</div>
+        <div><span class="sw" style="background:var(--civic)"></span>Palace / terminal</div>
+        <div><span class="sw" style="background:var(--precinct)"></span>CUT platforms</div>
+        <div><span class="ln" style="border-color:var(--metro);border-top-style:dashed"></span>Metro</div>
+        <div><span class="ln" style="border-color:var(--rer)"></span>RER</div>
+        <div><span class="ln" style="border-color:var(--apex);border-top-width:2px"></span>APEx track, level 0</div>
+        <div><span class="ln" style="border-color:var(--lower)"></span>ORR / Transvalley pair on the viaduct</div>
+        <div><span class="ln" style="border-color:var(--lower);border-top-style:dashed"></span>Lower pair under the deck</div>
+        <div><span class="sw" style="background:var(--lower);opacity:.3;outline:1px dashed var(--lower)"></span>Open cut (lower pairs dive)</div>
+        <div><span class="sw" style="background:var(--rer);border-radius:50%"></span>RER station</div>
+        <div><span class="ln" style="border-color:var(--rer);border-top-width:4px;box-shadow:0 -4px 0 -2.5px var(--ink),0 4px 0 -2.5px var(--ink)"></span>RER on a viaduct (A, B/D)</div>
+        <div><span class="ln" style="border-color:var(--rer);border-top-width:4px;outline:1px solid var(--ink)"></span>RER ramp, trough or at ground</div>
+        <div><span class="ln" style="border-color:var(--rer);border-top-style:dotted;border-top-width:4px"></span>RER under the deck or in a box</div>
+        <div><span class="sw" style="background:var(--lower);opacity:.25;outline:1px dashed var(--lower)"></span>Rail near street level: streets end</div>
+        <div><span style="color:var(--warn);font-weight:700;width:18px;text-align:center">&times;</span>Street cut by a rail line</div>
+        <div><span style="color:var(--lower);font-weight:700;width:18px;text-align:center">&#9671;</span>Street re-graded at a rail line</div>
+        <div><span class="sw" style="background:var(--metro);opacity:.5;outline:1px solid var(--metro)"></span>Metro platform (zoomed in)</div>
+        <div><span class="sw" style="background:var(--rer);opacity:.5;outline:1px solid var(--rer)"></span>RER platform (zoomed in)</div>
+        <div><span class="ln" style="border-color:var(--apex);border-top-style:dashed;border-top-width:3px"></span>Freight passing track</div>
+        <div><span class="sw" style="background:var(--apex-plat)"></span>APEx platform</div>
+        <div><span class="sw" style="background:var(--lower);opacity:.45"></span>Lower platform</div>
+      </div>
+    </section>
+    <section>
+      <h2>CUT approaches</h2>
+      <dl class="kv" id="trkSummary"></dl>
+      <div class="notes" style="margin-top:8px">
+        <p>Arch viaduct (Ben): the six APEx tracks run a set height (6.5 m) above the deck cross streets from Marshall to W 6th, so every street passes under. CUT's upper platforms rise to about 160.3 m. The four lower-level tracks ride the viaduct from Ludlow to Bank, then dive between Bank and Findlay and pass under Findlay into the deck, about 550 m from the lower platforms. Bank is lowered and Findlay raised 2 m to keep both open; Dayton, Exeter and York end at the dive.</p>
+        <p>North trunk (14 October, Ben: every path on one viaduct, Ludlow to CUT): west to east, Transvalley/R5, APEx Dayton/Norwood (4), APEx Indianapolis (2), TRI B/D and ORR/intercity E-H. Rails reach the ground at Ludlow (155.5 m), whose 1922 viaduct goes over them, and climb 0.79% to 166.6 m at the deck tip, then hold 6.5 m over the lobe streets. Hopple comes down to deck level and passes under. TRI B/D ride the viaduct from Ludlow: Arlington (B) on the east side at 164.6 m, centred on the KMZ point; D leaves B north of Camp Washington by a flyover (southbound D on the west of B, northbound D on the east, crossing over B as it climbs); Camp Washington (B, D) on the viaduct at about 165.2 m; then 3.3% down south of it into a box under the deck to Straight (151.6 m), bored from Straight. Peak service on the shared pair: B every 4 min, D every 8 min (22.5 trains an hour each way). The Indianapolis pair and D climb 2.5% on one deck from s 3,644 to 174.3 m and turn west on the KMZ curve over the Dayton/Norwood and Transvalley/R5 tracks, then over RER A (167.0 m) as ruled. R5 leaves the west pair for the Cumminsville Spur (its levels west of the trunk are not set). ORR E moves 22 m east from Camp Washington to Arlington to make room for B/D. At the dive Garrard line is raised 1.8 m onto the box roof, Rawson lowered 1.2 m and Township 2.8 m to pass under the ramp; Meeker and New street N end at it. North of Ludlow the at-grade layout is not set and B is drawn on its KMZ line.</p>
+        <p>All eight lower platforms are 305 m, centred under the APEx field. The APEx crosses the Ohio on its own bridge just east of the CS bridge, where the APEx Routes KMZ puts it. A-D feed the CS pair, which merges with the CVG Express pair at the CS bridge; E-H feed the C&amp;O pair, which stays at -2 under W 6th and then climbs onto the TRIMET C&amp;O viaduct. A freight passing track bypasses the platforms on the west side, as in 1955.</p>
+        <p>TRI A passes under the lower level at or below 135.9 m (Ben: accepted); TRI B/D can share its level at the Union Terminal TRI box, or sit above it. Open: Lines 7, 8 and 10 not profiled; Line 4 between Garrard and Chinatown against the CS pair.</p>
+      </div>
+    </section>
+    <section>
+      <h2>Edits</h2>
+      <p class="notes" id="editNote">No edits yet.</p>
+      <div class="row">
+        <button class="btn" id="resetAll" disabled>Reset all edits</button>
+      </div>
+      <div class="confirm" id="resetConfirm" hidden>Put every street, block, Metro and RER line and station back to the generated layout? <div class="row"><button class="btn" id="resetYes">Reset</button><button class="btn" id="resetNo">Keep edits</button></div></div>
+    </section>
+    <section class="notes">
+      <h2>Sources</h2>
+      <p>Deck base: Sanborn 1904 Cincinnati, vol. 1 sheets 33-35, 47, 57-58, 67-69, 77; vol. 3 sheets 201-202, 211-212, 221-222, 233-234, 245-246, 253-254; vol. 5 sheets 460 (upper panel), 461-464, 466-468, 491-496, 504-505, 511-514, 519-520, 522. Since 13 October the deck sheets are fitted by the basin method: the street crossings on every sheet, tied to the neighbouring sheets, to surviving OSM corners and to the 1912 city survey, in one adjustment with the north sheets (ties median 0.8 m, OSM 1.7 m, 1912 survey 2.1 m). The first deck fit had hung sheets 33-35 and 47 on very few points and placed them 13-20 m too far west (57 by 8-10 m); the 1922 atlas, the 1912 survey and the surviving piece of Horne Street agree on the new positions, and Garrard and Horne moved east with them. Lower Price Hill block (State Ave to Western Ave, Gest St to the river): the 1904 sheets are bent onto the 1922 atlas, vol. 1 plates 3, 6, 26 and 29, with a thin-plate spline through the crossings both atlases print (held within 0.3 m), easing back to the plain fit over the last 80 m before Gest and Western Ave; the creek seam between the vol. 5 and vol. 1 sheets is gone. One corner is left as fitted: at the creek mouth by W 6th, sheet 34 and 1922 plate 3 draw the creek bend about 35 m east of where the 1912 survey has it, with no crossing within 150 m to settle it. Deck streets that carry a West End street across the yards start where that street's basin centreline meets the deck edge and keep its line as far as the Garrard line. The Garrard line, fitted to the 1904 sheets, is moved 9 m west as a whole (13 October), as Garrard was never a set street across the yards: it now runs into Camp Washington's Garrard Avenue at Township (0.9 m off its line; the 1904 sheets put the avenue 8.7 to 9.4 m west of the old fit). There each bends, by up to about 1.2 degrees, onto the boulevard's square (93.64 degrees), so every street west of Garrard meets the boulevard at a right angle; the two grids meet along Garrard, as the downtown grids meet along Market Street in San Francisco. Gest bends onto the grid too and meets State Avenue 11 m north of its 1904 corner, since the upper part of Lower Price Hill is cleared for the Exposition. W 8th (the viaduct line) fronts surviving 1904 blocks, so it is straightened only part way, as a long-lived street would be: one straight run from Garrard to State on a bearing halfway between its old line and the grid (93.94 degrees), moving its south side 1.5 to 2.5 m and its corner at State 4.8 m south. Its crossings west of Garrard are 0.3 degrees off square, and Line 4 stays under it (at most 5.7 m off the centreline; State station 14.3 m, inside the 33.5 m street). North of Bank the deck streets continue Dolph, McRoberts and Western Avenue, and Harrison's re-aligned avenue meets Harrison at the deck edge. Dayton, Exeter and York stop at the outer wall on both sides of the lower pairs' open cut.</p>
+      <p>North (13 October): Camp Washington, Northside and South Cumminsville, vol. 3 sheets 235-236, 247, 255, 272-275, 279-282, 287-289, 293-295, 301-305 and vol. 6 sheets 601-635 (605, with no crossings, is not placed), fitted in the same adjustment. North of OSM's extract the control is 420 street corners read off the 1912 survey; 19 streets the 1904 sheets name differently from the 1912 survey (Zwick, which the survey prints Zinck; Dorman, now Powers) are matched by hand. Streets and blocks are built as in the basin. Basin sheets 223 and 224 (Brighton) were refitted with them: they had sat 5-17 m south at Harrison Avenue.</p>
+      <p>1922 additions (13 October): where no 1904 sheet reaches, the 1922 atlas (vol. 1, plate halves 16R, 34L, 34R, 37L and 37R) is laid under the 1904 sheets: the west bank between sheets 522 and 607-608, the creek and railroads north of Hopple, and Camp Washington's strip east of the old canal bed. The plates are fitted on crossings shared with the 1904 sheets, OSM corners and the 1912 survey (medians 2.8-3.2 m at the controls). Streets drawn from them: the strip between the canal bed and West McMicken south of Marshall (Halstead, both pieces of Klottman, West McMillan, Hukill, Eliza, Rush, McMicken itself, and Straight and Marshall carried on to McMicken), Gene Alley, Meeker, Burlington and Ledlie; and two crossings to the west side: Hopple Street, a viaduct over the deck's north lobe and Mill Creek to Beekman on the line of the 1904 "Hopple (Bridge Av.)", and Ludlow Avenue from Knowlton's Corner (Dodsworth Av on the 1904 sheet) across Mill Creek, the B&amp;O and the canal bed to Lafayette Avenue. Central Parkway now follows OSM north through Camp Washington to Ludlow Avenue, 90 ft wide on the old canal bed (150 ft in the basin).</p>
+      <p>Lower Price Hill (13 October, option C as Ben ruled): north of W 8th the blocks are cleared for the deck and the Exposition, so the basin's W 9th, Richmond, Court, Oehler, Clark and Hopkins now cross the boulevard and run west to Depot (Hopkins to Summer), against Lower Price Hill's north-south streets Depot, Summer, Berlin and Evans. Those four are drawn straight and parallel to the boulevard (best fit through the 1904 centres, moved 1.0 to 3.4 m), so the crossings north of W 8th are right angles. W 9th and Richmond meet Depot 8.4 m and 6.2 m south of Dutton and South, which go on to State: the strip between State and Depot keeps its 1904 streets, and the new grid meets it with a jog. Gest runs straight on the grid from State Avenue to Garrard, then on the West End's Gest. South of W 8th, Lower Price Hill's own 1904 grid (State, Depot, Burns, Neave, Hatmaker, Staebler, Storrs, St. Michael, German, Price, Evans and W 6th to Burns) is drawn from the vol. 5 sheets like the basin, with Hatmaker, Staebler, Storrs, St. Michael, Price, Dutton and South set straight on the boulevard's square and Burns (W 6th to Hatmaker) and Depot parallel to the boulevard; no crossing moves more than 2.5 m, inside the sheets' fitting error (Evans' corner at W 8th moves 3.7 m with the straight Evans north of it), and State, Neave, German, Evans and W 6th keep their surveyed bends; the covered C.H.&amp;D. curve stays one long deck block, with Perin the only street across to the boulevard. Between Evans and the boulevard the new blocks run about 290 m, as the 1904 marsh had no street there. Crossing levels (LiDAR ground, the draft deck and APEx levels, TRIMET_Lines.kmz): Hopple has to stand at 165.3 m or more over the APEx ramp (158.5 m); it is drawn as a viaduct from Meeker over Spring Grove (4.4% down to the landing) and climbs 1.0% from Beekman. The TRIMET trunk (RER B and D) is at 151.3 m under the deck at Hopple, and RER D's viaduct, which falls about 1.8% from Westwood, reaches the trunk 250 m north of Hopple, so it sets neither crossing. Ludlow crosses the TRIMET north trunk at 155.5 m, at grade, so it rises about 3.5% from Knowlton's Corner to 162.3 m or more and is a viaduct for its first 400 m.</p>
+      <p>Exposition Boulevard (13 October): the boulevard on the culverted creek line is named for the 1913 Exposition, for which Mill Creek was decked over.</p>
+      <p>West side of the valley (13 October): the land between Exposition Boulevard and State Avenue and Beekman Street, from Hopkins to Ralston Avenue, is laid out in three parts. Exposition grounds, Hopkins to Harrison: the West End streets from Kenner to McRoberts cross the boulevard on its square and run to State Avenue or, north of Liberty, to Wallace Street, the 1904 Wallace carried north along the foot of the hill to State at Ernst; Hopkins runs on from Summer to State and W Liberty to State; Summer, Berlin and Evans are carried north to Wallace, and New street W runs midway between Evans and the boulevard. Harrison to Hopple: Queen City and Harrison's re-aligned avenue run on to their 1904 corners on Beekman, and Tremont, Waverly and Knox are carried east from Beekman to Johnson Street. North of the Palace grounds the streets are Camp Washington's own: Alfred, Straight and Marshall on their 1904 bearings from Garrard to Beekman (Alfred meets Beekman at Fairmount), Township and Willow Lane carried west from their 1922 ends (41 m apart, so the blocks between are one lot deep, as east of Garrard), one new street midway between Marshall and Township, and Johnson, Rawson and Meeker carried south on Garrard's bearing (Johnson from Harrison, passing under RER A's viaduct just south of Alfred), with New streets J1 to J3 parallel to Johnson every 100 m toward Beekman. Hopple to Ralston (Millvale bottoms): Camp Washington's streets from Stock to Whiteley are carried west on 93.6 degrees to Beekman, and Follett, Roll, Dawson and Borden south on their own bearings. State Avenue (Gest to Harrison), the 1904 Harrison (State to Beekman), Beekman (1904 line, OSM north of Hopple), Cummings Street and the Vinton and Denham stubs are drawn in the basin layer from the picked 1904 crossings. Rail lines cut streets where they cross at or near street level (5.8 m clear plus 1.0 m structure; 6.5 m under the APEx viaduct, as ruled for it; the portal rule over RER boxes): RER A's ramp cuts Dayton, Bank and Dolph west of the boulevard (Dayton and Bank keep stubs from Wallace; Dolph and the narrow strip north of it end at the boulevard), while Exeter rides the box roof (rail 5.2 m down). Since 14 October the north trunk is a viaduct from Ludlow to CUT; since 15 October it runs straight from Ethan to Brashears, centred between New streets J1 and J2 as extended on the page (2.3 m from each street to the structure edge, ORR E moving in only north of Brashears), with curves of about 435 m radius to Camp Washington's platforms and 740 m toward Ludlow. So the lobe streets (Township, Willow Lane, Johnson, Stock, Ethan, Bates, Alabama, Monmouth) and the Millvale streets north of the tip pass under it; only TRI B/D's dive between Camp Washington and Straight cuts streets: New street N and Meeker end at it, Garrard line is raised 1.8 m over the box, Rawson lowered 1.2 m and Township 2.8 m under the ramp. Off the deck, blocks are building blocks; the open rail corridors carry no blocks.</p>
+      <p>RER A (13 October, Ben: N2, 3.3%, Westwood at ground): 135.9 m under CUT's lower level, 147.5 m at Evans under W Liberty and 148.4 m where it leaves the deck north of York; boxed under Exeter, then a walled ramp at 3.3% beside the boulevard to the fork at 159.3 m. The Westwood branch turns 62.6 degrees on a 200 m curve, crosses the foot of State Avenue at 162.5 m (8.8 m clear) and climbs 3.26% to its platform at ground, 168.9 m. The Northside branch stays on a viaduct: Western Hills elevated, 165.2 m over Harrison's avenue, 168.2 m over the Hopple viaduct (6.8 m), easing to 167.0 m under RER D (174.3 m) and holding 167.0 m through South Cumminsville and Northside, both elevated; every street from Queen City to Mad Anthony passes under. From the Northside platform end it drops at 3.3%: Chambers, Lingo and Dane end at its walls, Linden crosses over the box (rail 144.2 m, 5.9 m down), and the line goes into the tunnel under Spring Grove Cemetery (not profiled beyond).</p>
+      <p>Basin: streets and blocks of the West End, Over-the-Rhine, the CBD and the riverfront, by the deck method. 154 Sanborn sheets (vol. 1 sheets 1-83, vol. 2 sheets 101-156, vol. 3 sheets 201-227) are fitted in one least-squares adjustment on 2,640 street intersections read off the sheets: ties between sheets (median 0.6 m), surviving OSM corners (median 1.0 m; streets widened since, such as Linn, Liberty and Eggleston, left out) and the 1912 survey for demolished corners at low weight, with the deck sheets held fixed. Each street is drawn as straight runs between its intersections at the width printed on the sheets (10 ft for unmarked alleys, 40 ft for the few unmarked streets), and the blocks are the spaces left between the streets. Neighbouring runs that agree within 3 m are drawn as one straight line, a street that jogs at a crossing steps inside that crossing, and a width printed for one side of a crossing changes there. Central Parkway, Eggleston Avenue and Reading Road follow today's OSM centrelines. Names and spellings are as printed. Checked against OpenStreetMap: on streets that survive unwidened, the centrelines sit a median 0.7 m from today's (85% within 2 m, 94% within 3 m). The check re-registered sheet 18, fixed 11 misplaced streets, removed 9 links that ran through 1904 buildings, and added 35 streets and alleys that the sheets show and OSM still has, drawn on the OSM line. The strip east of CUT between Kenner and Hopkins is left open for a ruling on the forecourt.</p>
+      <p>Metro and RER: Metro alignments and stations from the Metro line files (Ben's KMZ), RER from Cincinnati Rail.kmz (RER A's Westwood branch as designed on 13 October), Fountain Square RER platforms from Ben's platform KMZs. Zoomed in, each line shows its tracks and platforms: platforms 500 ft for the Metro and 670 ft for the RER; Lines 1-7 as twin tubes about 8 m apart with island platforms, Lines 8-14 as one double-track bore with side platforms; RER with island platforms. Track spacing and platform widths are drawing values. Union Terminal (TRI A, B and D) is set by direction as at Châtelet-Les Halles, with two tracks per island: westbound on the north side (A and B on one island, D westbound on the centre island), eastbound on the south (D eastbound, then B and A on one island), so A and B change cross-platform in the same direction. B and D arrive together from Western and split in the station; east of it D's tracks join A's to City Hall and B leaves on its own pair. B/D run at grade under the deck to Camp Washington, in a dug tunnel on the KMZ line through Straight, and bored from there: one curve into Straight (450 m radius, as the KMZ), then a 2.0 km straight to a 250 m radius bend onto the station axis 330 m west of the station centre, so A westbound crosses them about 280 m beyond the platforms. The bore drops the old freight-yard trace past Western and its S-bend; Western now sits on the straight between Dolph and Western. The layout needs crossings at separate levels west of the station (A westbound across B/D) and east of it (three, all B against A/D); they are marked, and direction labels show when zoomed in. Editing (14 October): in Edit mode the Metro and RER centre lines move and bend like streets; a line edited, or with a station changed, has its platforms drawn along it (canon length, island or side, slid along the line but always reaching the station point) and its tracks redrawn as a pair. Stations can be deleted. Edits are saved with the layout and applied when Claude regenerates the layers.</p>
+      <p>CUT tracks: APEx lines from the APEx Routes KMZ; CS bridge clearance 78.9 ft (Waterway Guide), rail taken as about 164-166 m.</p>
+      <p>Deck outline from map 3 (2.32 km²). Axis fitted to the 1904 creek, parallel to Garrard Ave. Blocks redraw when Claude regenerates the layer from saved edits.</p>
+    </section>
+  </aside>
+</main>
+
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const cv = $('cv'), ctx = cv.getContext('2d');
+const S = {
+  deck: null, ctx: null, tracks: null, sheets: null, tiles: null, relief: null, reliefImg: null, tileImg: new Map(), t12: null, t12Img: new Map(), tb: null, tbImg: new Map(), tbOv: false, tbOvMeta: null, tbOvImg: null,
+  view: { cx: 712400, cy: 4332300, s: 0.25 }, tool: 'select', sel: null,
+  layers: { san: true, rel: false, blk: true, str: true, met: true, rer: true, trk: true, lab: true, idx: false, we: true, s12: false },
+  op: { san: 0.8, blk: 0.7, s12: 0.7 },
+  edits: { streets: {}, blocks: {}, transit: {}, stations: {} }, tf: [], pf: [], sf: [], tfById: new Map(), ver: 0, gcache: new Map(), live: null, lastPick: null, db: null, docRef: null, canWrite: false, pending: false, saving: false, dirty: false,
+};
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+let C = {};
+function readColors() { for (const k of ['paper','ink','muted','rule','accent','thru','tee','we','bst','blvd','blvd-edge','bldg','square','park','plant','civic','precinct','metro','rer','panel','warn','apex','apex-plat','lower','tower','landmark','worship','school','hospital','industrial']) C[k] = css('--' + k); }
+
+// ---------------------------------------------------------------- geometry helpers
+const W2S = (x, y) => { const v = S.view, r = cv.getBoundingClientRect(); return [(x - v.cx) * v.s + r.width / 2, (v.cy - y) * v.s + r.height / 2]; };
+const S2W = (px, py) => { const v = S.view, r = cv.getBoundingClientRect(); return [(px - r.width / 2) / v.s + v.cx, v.cy - (py - r.height / 2) / v.s]; };
+function segDist(p, a, b) { const dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy; let t = L ? ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L : 0; t = Math.max(0, Math.min(1, t)); const qx = a[0] + t * dx - p[0], qy = a[1] + t * dy - p[1]; return Math.hypot(qx, qy); }
+function lineDist(p, c) { let d = 1e18; for (let i = 1; i < c.length; i++) d = Math.min(d, segDist(p, c[i - 1], c[i])); return d; }
+function inRing(p, r) { let ins = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) { const a = r[i], b = r[j]; if ((a[1] > p[1]) !== (b[1] > p[1]) && p[0] < (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]) + a[0]) ins = !ins; } return ins; }
+function inPoly(p, rings) { if (!inRing(p, rings[0])) return false; for (let k = 1; k < rings.length; k++) if (inRing(p, rings[k])) return false; return true; }
+function polysOf(g) { return g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : []; }
+function ringArea(r) { let a = 0; for (let i = 0, j = r.length - 1; i < r.length; j = i++) a += (r[j][0] + r[i][0]) * (r[j][1] - r[i][1]); return Math.abs(a / 2); }
+function polyArea(g) { let a = 0; for (const p of polysOf(g)) { a += ringArea(p[0]); for (let k = 1; k < p.length; k++) a -= ringArea(p[k]); } return a; }
+function lenOf(c) { let L = 0; for (let i = 1; i < c.length; i++) L += Math.hypot(c[i][0] - c[i - 1][0], c[i][1] - c[i - 1][1]); return L; }
+const fmt = (n, d = 0) => n.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+// UTM 16N (NAD83 ~ WGS84 here) to lon/lat
+function utmToLL(E, N) {
+  const a = 6378137, f = 1 / 298.257223563, k0 = 0.9996, e2 = f * (2 - f), ep2 = e2 / (1 - e2), lon0 = -87 * Math.PI / 180;
+  const x = E - 500000, y = N, M = y / k0, mu = M / (a * (1 - e2 / 4 - 3 * e2 * e2 / 64 - 5 * e2 ** 3 / 256));
+  const e1 = (1 - Math.sqrt(1 - e2)) / (1 + Math.sqrt(1 - e2));
+  const p1 = mu + (3 * e1 / 2 - 27 * e1 ** 3 / 32) * Math.sin(2 * mu) + (21 * e1 * e1 / 16 - 55 * e1 ** 4 / 32) * Math.sin(4 * mu) + (151 * e1 ** 3 / 96) * Math.sin(6 * mu) + (1097 * e1 ** 4 / 512) * Math.sin(8 * mu);
+  const C1 = ep2 * Math.cos(p1) ** 2, T1 = Math.tan(p1) ** 2, N1 = a / Math.sqrt(1 - e2 * Math.sin(p1) ** 2), R1 = a * (1 - e2) / (1 - e2 * Math.sin(p1) ** 2) ** 1.5, D = x / (N1 * k0);
+  const lat = p1 - (N1 * Math.tan(p1) / R1) * (D * D / 2 - (5 + 3 * T1 + 10 * C1 - 4 * C1 * C1 - 9 * ep2) * D ** 4 / 24 + (61 + 90 * T1 + 298 * C1 + 45 * T1 * T1 - 252 * ep2 - 3 * C1 * C1) * D ** 6 / 720);
+  const lon = lon0 + (D - (1 + 2 * T1 + C1) * D ** 3 / 6 + (5 - 2 * C1 + 28 * T1 - 3 * C1 * C1 + 8 * ep2 + 24 * T1 * T1) * D ** 5 / 120) / Math.cos(p1);
+  return [+(lon * 180 / Math.PI).toFixed(7), +(lat * 180 / Math.PI).toFixed(7)];
+}
+
+// ---------------------------------------------------------------- data access with edits applied
+function offsetLine(c, d) { const out = []; for (let i = 0; i < c.length; i++) { const a = c[Math.max(0, i - 1)], b = c[Math.min(c.length - 1, i + 1)]; let dx = b[0] - a[0], dy = b[1] - a[1]; const n = Math.hypot(dx, dy) || 1; out.push([c[i][0] - dy / n * d, c[i][1] + dx / n * d]); } return out; }
+// Editable lines (streets, Metro and RER centre lines) keep their points in edits[kind][id].c and, for curved segments,
+// a quadratic control point per segment in .k (keyed by segment index). Stations keep {del} or per-line platform settings in
+// edits.stations[key].s[lineId] = {t: 'island' | 'side', o: metres along the line from the station point}.
+const r1 = x => Math.round(x * 10) / 10;
+function editKind(f) { const L = f.properties.layer; return L === 'street' ? 'streets' : L === 'transit' ? 'transit' : null; }
+function editOf(f) { const k = editKind(f); return k ? (S.edits[k][f.properties.id] || null) : null; }
+function ringOpen(r) { const n = r.length; return n > 1 && r[0][0] === r[n - 1][0] && r[0][1] === r[n - 1][1] ? r.slice(0, -1) : r; }
+function vertsOf(f) { if (f.properties.layer === 'plat') return ringOpen(f.geometry.coordinates[0]); const e = editOf(f); return e && e.c ? e.c : f.geometry.coordinates; }
+function ctrlOf(f) { const e = editOf(f); if (e) return e.k && Object.keys(e.k).length ? e.k : null; const k = f.properties.k; return k && Object.keys(k).length ? k : null; }   // generated lines carry their own curves
+function seedEdit(f) { return f.properties.k ? { k: JSON.parse(JSON.stringify(f.properties.k)) } : {}; }
+function qpt(a, k, b, t) { const u = 1 - t; return [u * u * a[0] + 2 * u * t * k[0] + t * t * b[0], u * u * a[1] + 2 * u * t * k[1] + t * t * b[1]]; }
+function curveCoords(v, K) { const out = [v[0]]; for (let i = 0; i < v.length - 1; i++) { const a = v[i], b = v[i + 1], k = K[i]; if (k) { const n = Math.max(6, Math.min(48, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 3))); for (let j = 1; j <= n; j++) out.push(qpt(a, k, b, j / n)); } else out.push(b); } return out; }
+function lineCoords(f) { const v = vertsOf(f), K = ctrlOf(f); return K ? curveCoords(v, K) : v; }
+function midHandle(v, K, i) { const a = v[i], b = v[i + 1], k = K && K[i]; return k ? qpt(a, k, b, 0.5) : [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; }
+function streetCoords(f) { return lineCoords(f); }
+function streetWidth(f) { const e = S.edits.streets[f.properties.id]; return e && e.w ? e.w : f.properties.width_m; }
+function blockEdit(f) { return S.edits.blocks[f.properties.id]; }
+function blockType(f) { const e = blockEdit(f); return (typeof e === 'string' ? e : e && e.t) || f.properties.type; }
+function blockName(f) { const e = blockEdit(f); return e && typeof e === 'object' ? (e.n || '') : ''; }
+const BLOCK_TYPES = [['building', 'Building'], ['tower', 'Tower'], ['landmark', 'Landmark'], ['civic', 'Civic'], ['worship', 'Worship'], ['school', 'School'], ['hospital', 'Hospital'], ['industrial', 'Industrial'], ['square', 'Square'], ['park', 'Park'], ['planting', 'Planting']];
+const visT = f => f.properties.sys === 'metro' ? S.layers.met : S.layers.rer;
+// ---------------------------------------------------------------- constant-radius curves from a line's own points (arcs/fitarcs.py, same rules)
+// Corner points that turn the same way make one curve: three or more give its circle (least squares); one or two give the curve
+// between the straights either side (radius fitted to the two points, or the largest that fits). The straights adapt as the common
+// tangents of their curves; a curve that cannot join, sweeps the wrong way or strays from the drawn line falls back and shrinks.
+const FA = (() => {
+  const D_MIN = 0.3, CHORD = 150, rad = Math.PI / 180;
+  const sub = (a, b) => [a[0] - b[0], a[1] - b[1]], add = (a, b) => [a[0] + b[0], a[1] + b[1]], mul = (a, s) => [a[0] * s, a[1] * s];
+  const dot = (a, b) => a[0] * b[0] + a[1] * b[1], cr = (a, b) => a[0] * b[1] - a[1] * b[0], len = a => Math.hypot(a[0], a[1]);
+  const unit = a => { const n = len(a); return n > 1e-12 ? [a[0] / n, a[1] / n] : [0, 0]; };
+  function clean(V) {
+    V = V.map(p => [p[0], p[1]]); let ch = true;
+    while (ch && V.length > 3) {
+      ch = false; const L = []; for (let i = 0; i < V.length - 1; i++) L.push(len(sub(V[i + 1], V[i])));
+      for (let i = 0; i < L.length; i++) { const nb = [L[i - 1], L[i + 1]].filter(x => x !== undefined);
+        if (L[i] < 12 && nb.length && L[i] < 0.3 * Math.min(...nb)) { if (i === 0) V.splice(1, 1); else if (i === L.length - 1) V.splice(V.length - 2, 1); else { V[i] = mul(add(V[i], V[i + 1]), 0.5); V.splice(i + 1, 1); } ch = true; break; } }
+    }
+    return V;
+  }
+  function defl(V) { const d = [0]; for (let i = 1; i < V.length - 1; i++) { const a = unit(sub(V[i], V[i - 1])), b = unit(sub(V[i + 1], V[i])); d.push(Math.atan2(cr(a, b), dot(a, b)) / rad); } d.push(0); return d; }
+  function runsOf(V, d) {
+    const out = []; let cur = [];
+    for (let i = 1; i < V.length - 1; i++) {
+      if (Math.abs(d[i]) < D_MIN) { if (cur.length) { out.push(cur); cur = []; } continue; }
+      if (cur.length && (Math.sign(d[i]) !== Math.sign(d[cur[cur.length - 1]]) || len(sub(V[i], V[cur[cur.length - 1]])) > CHORD)) { out.push(cur); cur = []; }
+      cur.push(i);
+    }
+    if (cur.length) out.push(cur); return out;
+  }
+  function solve(M, v) {   // small dense solve (Gauss-Jordan with pivoting)
+    const n = v.length, A = M.map((r, i) => [...r, v[i]]);
+    for (let c = 0; c < n; c++) { let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r; [A[c], A[p]] = [A[p], A[c]];
+      if (Math.abs(A[c][c]) < 1e-12) return null; for (let r = 0; r < n; r++) if (r !== c) { const f = A[r][c] / A[c][c]; for (let k = c; k <= n; k++) A[r][k] -= f * A[c][k]; } }
+    return A.map((r, i) => r[n] / r[i]);
+  }
+  function circleFit(P) {
+    const n = P.length, mx = P.reduce((s, p) => s + p[0], 0) / n, my = P.reduce((s, p) => s + p[1], 0) / n;
+    let sxx = 0, sxy = 0, syy = 0, sxz = 0, syz = 0, sz = 0;
+    for (const p of P) { const x = p[0] - mx, y = p[1] - my, z = x * x + y * y; sxx += x * x; sxy += x * y; syy += y * y; sxz += x * z; syz += y * z; sz += z; }
+    const s = solve([[sxx, sxy, 0], [sxy, syy, 0], [0, 0, n]], [sxz, syz, sz]); if (!s) return null;
+    let O = [s[0] / 2 + mx, s[1] / 2 + my];
+    for (let it = 0; it < 30; it++) {
+      const r = P.map(p => len(sub(p, O))), rm = r.reduce((a, b) => a + b, 0) / n, J = P.map((p, i) => [-(p[0] - O[0]) / r[i], -(p[1] - O[1]) / r[i]]);
+      const jm = [J.reduce((a, j) => a + j[0], 0) / n, J.reduce((a, j) => a + j[1], 0) / n], Jc = J.map(j => [j[0] - jm[0], j[1] - jm[1]]);
+      let a = 0, b = 0, c = 0, g0 = 0, g1 = 0; Jc.forEach((j, i) => { const res = r[i] - rm; a += j[0] * j[0]; b += j[0] * j[1]; c += j[1] * j[1]; g0 -= j[0] * res; g1 -= j[1] * res; });
+      const det = a * c - b * b; if (Math.abs(det) < 1e-12) break; const st = [(c * g0 - b * g1) / det, (a * g1 - b * g0) / det]; O = add(O, st); if (len(st) < 1e-4) break;
+    }
+    const r = P.map(p => len(sub(p, O))), rm = r.reduce((a, b) => a + b, 0) / n; return { O, R: rm, dev: Math.max(...r.map(x => Math.abs(x - rm))) };
+  }
+  function inter(p, d, q, e) { const det = d[0] * -e[1] - (-e[0]) * d[1]; if (Math.abs(det) < 1e-9) return null; const w = sub(q, p), t = (w[0] * -e[1] - (-e[0]) * w[1]) / det; return add(p, mul(d, t)); }
+  function fillet(V, d, r) {
+    const a = r[0], b = r[r.length - 1], s = {}; s.din = unit(sub(V[a], V[a - 1])); s.dout = unit(sub(V[b + 1], V[b])); s.delta = Math.atan2(cr(s.din, s.dout), dot(s.din, s.dout));
+    s.PI = a === b ? V[a] : inter(V[a - 1], s.din, V[b], s.dout); s.ok = !!s.PI && Math.abs(s.delta) > 0.05 * rad; if (!s.ok) return s;
+    s.tn = Math.tan(Math.abs(s.delta) / 2); s.h = Math.cos(Math.abs(s.delta) / 2); s.bis = unit(add(mul(s.din, -1), s.dout)); s.sg = s.delta > 0 ? 1 : -1;
+    s.centre = R => add(s.PI, mul(s.bis, R / s.h));
+    const rl = dot(sub(s.PI, V[a - 1]), s.din) - (Math.abs(d[a - 1]) >= D_MIN ? 0.5 * len(sub(V[a], V[a - 1])) : 1);
+    const rr = dot(sub(V[b + 1], s.PI), s.dout) - (Math.abs(d[b + 1]) >= D_MIN ? 0.5 * len(sub(V[b + 1], V[b])) : 1);
+    s.Rmax = Math.max(Math.min(rl, rr), 0.5) / s.tn; s.R = s.Rmax; const pts = r.map(i => V[i]);
+    if (pts.length >= 2) { let best = 1e18, bR = s.Rmax; const l0 = Math.log(3), l1 = Math.log(Math.max(s.Rmax, 4));
+      for (let q = 0; q < 300; q++) { const R = Math.exp(l0 + (l1 - l0) * q / 299), O = s.centre(R); let c = 0; for (const p of pts) { const e = len(sub(p, O)) - R; c += e * e; } if (c < best) { best = c; bR = R; } }
+      s.R = Math.min(bR, s.Rmax); }
+    s.far = pts.length >= 2 && len(sub(s.PI, mul(add(V[a], V[b]), 0.5))) > Math.max(3 * len(sub(V[b], V[a])), 120);
+    return s;
+  }
+  function segdist(p, c) { let best = 1e18; for (let i = 0; i < c.length - 1; i++) { const a = c[i], ab = sub(c[i + 1], a), L2 = dot(ab, ab); const u = L2 < 1e-12 ? 0 : Math.max(0, Math.min(1, dot(sub(p, a), ab) / L2)); best = Math.min(best, len(sub(add(a, mul(ab, u)), p))); } return best; }
+  function tangent(A, B) {
+    const D = sub(B.O, A.O), L = len(D), k = B.s * B.R - A.s * A.R;
+    if (L > 1e-9 && Math.abs(k) >= L - 1e-6 && A.s === B.s && A.R > 0 && B.R > 0 && Math.abs(k) - L <= Math.max(3, 0.03 * Math.max(A.R, B.R))) {
+      const big = A.R > B.R ? A : B, small = big === A ? B : A, u = unit(sub(small.O, big.O)), P = mul(add(add(big.O, mul(u, big.R)), add(small.O, mul(u, small.R))), 0.5);
+      const w = sub(P, A.O); return [P, P, mul(unit([-w[1], w[0]]), A.s)];
+    }
+    for (const [P, Cc, first] of [[A, B, true], [B, A, false]]) {   // a line end on (or just inside) the curve starts on it
+      if (P.R === 0 && Cc.R > 0 && Math.abs(len(sub(P.O, Cc.O)) - Cc.R) <= Math.max(2, 0.01 * Cc.R)) {
+        const w = sub(P.O, Cc.O), tt = mul(unit([-w[1], w[0]]), Cc.s), q = add(Cc.O, mul(unit(w), Cc.R)); return first ? [P.O, q, tt] : [q, P.O, tt]; }
+    }
+    if (L < 1e-9 || Math.abs(k) >= L) return null;
+    const ang = Math.atan2(D[1], D[0]), phi = Math.asin(k / L);
+    for (const th of [ang + (Math.PI / 2 - phi), ang - (Math.PI / 2 - phi)]) { const n = [Math.cos(th), Math.sin(th)], t = [n[1], -n[0]]; if (dot(D, t) > 0) return [sub(A.O, mul(n, A.s * A.R)), sub(B.O, mul(n, B.s * B.R)), t]; }
+    return null;
+  }
+  function circles(V, d, r, depth) {   // one circle if the points sit on it within 0.6% (1 m at least), else the split that does, else one within 2.5%
+    const f = circleFit(r.map(i => V[i])), net = r.reduce((s, i) => s + d[i], 0), one = f ? [{ run: r, net, fil: null, kind: 'circle', O: f.O, R: f.R, s: net > 0 ? 1 : -1, dev: f.dev }] : null;
+    if (f && f.R < 5e4 && f.dev < Math.max(1, 0.006 * f.R)) return one;
+    let best = null;
+    if (depth < 2 && r.length >= 6) for (let c = 3; c < r.length - 2; c++) { const a = circles(V, d, r.slice(0, c), depth + 1), b = a && circles(V, d, r.slice(c), depth + 1);
+      if (a && b) { const cand = a.concat(b), key = [cand.length, Math.max(...cand.map(x => x.dev))]; if (!best || key[0] < best.key[0] || (key[0] === best.key[0] && key[1] < best.key[1])) best = { key, cand }; } }
+    if (best) return best.cand;
+    if (f && f.R < 5e4 && f.dev < Math.max(2, 0.025 * f.R)) return one;
+    return null;
+  }
+  function fit(V0) {
+    const V = clean(V0), d = V.length >= 3 ? defl(V) : [];
+    if (V.length < 3 || Math.max(...d.map(Math.abs)) > 120) return { verts: V, k: {}, curves: [], skipped: true };
+    let els = [];
+    for (const r of runsOf(V, d)) {
+      const f = fillet(V, d, r), e = { run: r, net: r.reduce((s, i) => s + d[i], 0), fil: f.ok ? f : null, kind: null };
+      if (r.length >= 3) { const parts = circles(V, d, r, 0); if (parts && parts.length === 1) Object.assign(e, parts[0]); else if (parts) { els.push(...parts); continue; } }
+      if (!e.kind) {
+        if (f.ok && f.far && r.length >= 2) { for (const i of r) { const g = fillet(V, d, [i]); if (g.ok) els.push({ run: [i], net: d[i], fil: g, kind: 'fillet', O: g.centre(g.R), R: g.R, s: g.sg }); } continue; }
+        if (!f.ok) continue; Object.assign(e, { kind: 'fillet', O: f.centre(f.R), R: f.R, s: f.sg });
+      }
+      els.push(e);
+    }
+    const ends = [{ O: V[0], R: 0, s: 1, run: [0], kind: 'end' }, { O: V[V.length - 1], R: 0, s: 1, run: [V.length - 1], kind: 'end' }];
+    const ang = (p, O) => Math.atan2(p[1] - O[1], p[0] - O[0]), mod = x => ((x % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+    function check(i, T) {
+      const e = els[i]; if (e.kind === 'point') return true; const ta = T[i], tb = T[i + 1], pin = ta[1], pout = tb[0];
+      const a0 = ang(pin, e.O), sw = mod((ang(pout, e.O) - a0) * e.s); e.a0 = a0; e.sw = sw;
+      if (sw / rad > Math.abs(e.net) * 1.6 + 20 || sw / rad > 179) return false;
+      const r0 = e.run[0], r1 = e.run[e.run.length - 1];
+      for (const [t, ref] of [[ta[2], sub(V[r0], V[r0 - 1])], [tb[2], sub(V[r1 + 1], V[r1])]]) if (dot(t, unit(ref)) < Math.cos(25 * rad)) return false;
+      const span = Math.max(len(sub(V[r1], V[r0])), 30); if (len(sub(pin, V[r0])) > 2.5 * span + 60 || len(sub(pout, V[r1])) > 2.5 * span + 60) return false;
+      const loc = [ta[0], ta[1]]; for (let q = 1; q < 12; q++) { const t = a0 + e.s * sw * q / 12; loc.push(add(e.O, [e.R * Math.cos(t), e.R * Math.sin(t)])); } loc.push(tb[0], tb[1]);
+      const allow = e.run.length === 1 ? 20 : 8; for (let j = r0; j <= r1; j++) if (segdist(V[j], loc) > allow) return false;
+      for (let j = r0; j < r1; j++) if (segdist(mul(add(V[j], V[j + 1]), 0.5), loc) > 12) return false;
+      for (const [jo, vi, tp] of [[r0 - 1, V[r0], pin], [r1 + 1, V[r1], pout]]) {
+        if (Math.abs(d[jo]) >= D_MIN && jo > 0 && jo < V.length - 1) continue; const vo = V[jo];
+        if (segdist(vo, loc) > 8) return false; const sg = sub(vi, vo), L2 = dot(sg, sg);
+        if (L2 > 1 && dot(sub(tp, vo), sg) / L2 > 0.5 && segdist(mul(add(vo, vi), 0.5), loc) > 8) return false;
+      }
+      return true;
+    }
+    const singles = run => run.map(i => { const g = fillet(V, d, [i]); return g.ok ? { run: [i], net: d[i], fil: g, kind: 'fillet', O: g.centre(g.R), R: g.R, s: g.sg } : { run: [i], net: 0, fil: null, kind: 'point', O: V[i], R: 0, s: 1 }; });
+    function demote(e) {
+      const f = e.fil;
+      if (e.kind === 'circle') { if (f && f.ok && !f.far) return [Object.assign(e, { kind: 'fillet', O: f.centre(f.R), R: f.R, s: f.sg })]; return singles(e.run); }
+      if (e.kind === 'fillet' && e.R > 2) { e.R *= 0.8; e.O = f.centre(e.R); return [e]; }
+      if (e.run.length > 1) return singles(e.run);
+      return [{ run: e.run, net: e.net, fil: null, kind: 'point', O: V[e.run[0]], R: 0, s: 1 }];
+    }
+    function straightBad(seq, T) {
+      for (let j = 0; j < T.length; j++) { const tj = T[j], ia = seq[j].run[seq[j].run.length - 1], ib = seq[j + 1].run[0], pts = [];
+        for (let i = ia + 1; i < ib; i++) pts.push(V[i]); for (let i = ia; i < ib; i++) pts.push(mul(add(V[i], V[i + 1]), 0.5));
+        const seg = [sub(tj[0], mul(tj[2], 5)), add(tj[1], mul(tj[2], 5))];
+        if (pts.some(p => segdist(p, seg) > 8)) { const cand = [j - 1, j].filter(x => x >= 0 && x < els.length && els[x].kind !== 'point'); if (cand.length) return cand.reduce((a, b) => els[a].R >= els[b].R ? a : b); } }
+      return null;
+    }
+    function snap() { for (let i = 0; i < els.length - 1; i++) { const A = els[i], B = els[i + 1]; if (A.kind !== 'circle' || B.kind !== 'circle' || A.s !== B.s) continue;
+      const big = A.R >= B.R ? A : B, small = big === A ? B : A, D = sub(small.O, big.O), L = len(D), k = big.R - small.R; if (k - Math.max(3, 0.03 * big.R) <= L && L < k && L > 1e-6) small.O = add(big.O, mul(D, k / L)); } }
+    let T;
+    for (let it = 0; it < 6000; it++) {
+      snap(); const seq = [ends[0], ...els, ends[1]]; T = []; for (let j = 0; j < seq.length - 1; j++) T.push(tangent(seq[j], seq[j + 1]));
+      let bad = null; for (let j = 0; j < T.length; j++) if (!T[j]) { const cand = [j - 1, j].filter(x => x >= 0 && x < els.length && els[x].kind !== 'point'); bad = cand.length ? cand.reduce((a, b) => els[a].R >= els[b].R ? a : b) : null; break; }
+      if (bad === null) { for (let i = 0; i < els.length; i++) if (!check(i, T)) { bad = i; break; } }
+      if (bad === null) bad = straightBad(seq, T);
+      if (bad === null) break;
+      els.splice(bad, 1, ...demote(els[bad]));
+    }
+    { const seq = [ends[0], ...els, ends[1]]; T = []; for (let j = 0; j < seq.length - 1; j++) T.push(tangent(seq[j], seq[j + 1])); }
+    const verts = [V[0]], k = {}, curves = [], push = p => { if (len(sub(p, verts[verts.length - 1])) > 0.5) verts.push(p); };
+    els.forEach((e, i) => {
+      if (e.kind === 'point') { push(e.O); return; }
+      check(i, T); push(T[i][1]); const m = Math.max(1, Math.ceil(e.sw / rad / 15));
+      for (let j = 0; j < m; j++) { const t1 = e.a0 + e.s * e.sw * (j + 1) / m, tm = e.a0 + e.s * e.sw * (j + 0.5) / m, th = e.sw / m;
+        k[verts.length - 1] = add(e.O, [e.R / Math.cos(th / 2) * Math.cos(tm), e.R / Math.cos(th / 2) * Math.sin(tm)]); verts.push(add(e.O, [e.R * Math.cos(t1), e.R * Math.sin(t1)])); }
+      const tmid = e.a0 + e.s * e.sw / 2; curves.push({ R: e.R, sweep: e.sw / rad, mid: add(e.O, [e.R * Math.cos(tmid), e.R * Math.sin(tmid)]) });
+    });
+    push(V[V.length - 1]);
+    const r1 = x => Math.round(x * 10) / 10, rp = p => [r1(p[0]), r1(p[1])];
+    const kk = {}; for (const [i, q] of Object.entries(k)) kk[i] = rp(q);
+    return { verts: verts.map(rp), k: kk, curves };
+  }
+  return { fit };
+})();
+function fitSource(f) {   // the line's own points, plus a few along any piece bent more than 5 m off straight (about every 60 m, two to four pieces)
+  const v = vertsOf(f), K = ctrlOf(f) || {}, out = [v[0]];
+  for (let i = 0; i < v.length - 1; i++) { const k = K[i]; if (k && Math.hypot(k[0] - (v[i][0] + v[i + 1][0]) / 2, k[1] - (v[i][1] + v[i + 1][1]) / 2) / 2 > 5) { const n = Math.min(4, Math.max(2, Math.round(Math.hypot(v[i + 1][0] - v[i][0], v[i + 1][1] - v[i][1]) / 60))); for (let j = 1; j < n; j++) out.push(qpt(v[i], k, v[i + 1], j / n)); } out.push(v[i + 1]); }
+  return out;
+}
+function circR(a, b, c) { const A = Math.hypot(b[0] - a[0], b[1] - a[1]), B = Math.hypot(c[0] - b[0], c[1] - b[1]), Cc = Math.hypot(c[0] - a[0], c[1] - a[1]), x = Math.abs((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])); return x > 1e-9 ? A * B * Cc / (2 * x) : Infinity; }
+function curveGroups(f) {   // each run of curved pieces at one radius (within 4%) and turning one way: [{R, mid}]
+  const v = vertsOf(f), K = ctrlOf(f); if (!K) return [];
+  const out = []; let cur = null;
+  for (let i = 0; i < v.length - 1; i++) {
+    const k = K[i]; if (!k) { cur = null; continue; }
+    const a = v[i], b = v[i + 1], m = qpt(a, k, b, 0.5), R = circR(a, m, b), s = Math.sign((m[0] - a[0]) * (b[1] - a[1]) - (m[1] - a[1]) * (b[0] - a[0]));
+    if (cur && cur.last === i - 1 && cur.s === s && Math.abs(R - cur.R) / Math.max(R, cur.R) < 0.04) { cur.Rs.push(R); cur.ms.push(m); cur.last = i; cur.R = cur.Rs.reduce((x, y) => x + y, 0) / cur.Rs.length; }
+    else { cur = { R, s, Rs: [R], ms: [m], last: i }; out.push(cur); }
+  }
+  return out.map(g => ({ R: g.R, mid: g.ms[Math.floor(g.ms.length / 2)] }));
+}
+function buildTransitFeats() {
+  S.tf = []; S.pf = []; S.tfById = new Map(); if (!S.ctx) return;
+  S.ctx.metro.forEach((m, i) => S.tf.push({ type: 'Feature', properties: { layer: 'transit', sys: 'metro', id: m.id || 'M' + i, name: m.name, era: m.era, k: m.k || null }, geometry: { type: 'LineString', coordinates: m.c } }));
+  S.ctx.rer.forEach((m, i) => S.tf.push({ type: 'Feature', properties: { layer: 'transit', sys: 'rer', id: m.id || 'R' + i, name: m.name, sub: m.sub, lines: m.lines, k: m.k || null }, geometry: { type: 'LineString', coordinates: m.c } }));
+  for (const f of S.tf) S.tfById.set(f.properties.id, f);
+  S.ctx.plats.forEach((q, i) => S.pf.push({ type: 'Feature', properties: { layer: 'plat', sys: q.sys, line: q.line, id: q.id || 'P' + i, pid: q.pid || null, st: q.st || '', name: q.name || '' }, geometry: { type: 'Polygon', coordinates: [q.c] } }));
+  buildStations();
+}
+// ---------------------------------------------------------------- stations and platforms
+// A station is one point on the plan; a stop is its platforms on one Metro or RER centre line. While a line and its stations are
+// untouched the generated platforms and tracks are drawn. Once the line, or a station on it, is edited, every platform on that line
+// is drawn from settings along the line (the canon length, the generated sideways position, island or side, and its centre o metres
+// from the station point, never more than half a platform, so it always reaches the point) and the line's tracks are redrawn as a pair.
+const PW = { metro: { island: 8.0, side: 4.0 }, rer: { island: 11.0, side: 6.0 } };   // platform widths: drawing values
+const H0 = (sys, era) => sys === 'rer' ? 2.25 : era === 'twin' ? 4.0 : 1.95, EDGE = sys => sys === 'rer' ? 1.75 : 1.45, TAPER = 40;
+const stKey = (sys, name, q) => sys + ':' + name + ':' + Math.round(q[0]) + ':' + Math.round(q[1]);
+function chainOf(c) { const cs = [0]; for (let i = 1; i < c.length; i++) cs.push(cs[i - 1] + Math.hypot(c[i][0] - c[i - 1][0], c[i][1] - c[i - 1][1])); return cs; }
+function frameAt(c, cs, s) {   // point and unit tangent at chainage s
+  const n = c.length; s = Math.max(0, Math.min(cs[n - 1], s)); let lo = 1, hi = n - 1; while (lo < hi) { const m = (lo + hi) >> 1; if (cs[m] < s) lo = m + 1; else hi = m; }
+  const a = c[lo - 1], b = c[lo], L = cs[lo] - cs[lo - 1] || 1e-9, u = (s - cs[lo - 1]) / L; return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u, (b[0] - a[0]) / L, (b[1] - a[1]) / L];
+}
+function compass(dx, dy) { const a = (Math.atan2(dx, dy) * 180 / Math.PI + 360) % 360; return ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'][Math.round(a / 45) % 8]; }
+function geomOf(f) {   // current centre line, resampled every 2 m, cached per edit version
+  const id = f.properties.id, g = S.gcache.get(id); if (g && g.ver === S.ver) return g;
+  const c = resampleLine(lineCoords(f), 2), ng = { ver: S.ver, c, cs: chainOf(c) }; S.gcache.set(id, ng); return ng;
+}
+function buildStations() {
+  S.sf = []; const add = (sys, name, line, q) => { const f = { type: 'Feature', properties: { layer: 'station', sys, id: stKey(sys, name, q), name, line, stops: [] }, geometry: { type: 'Point', coordinates: q } }; S.sf.push(f); };
+  for (const s of S.ctx.stations) add('metro', s.name, s.line, s.p);
+  for (const s of (S.ctx.rer_stations || [])) add('rer', s.name, 'RER ' + s.lines.join(' '), s.p);
+  const groups = new Map();
+  for (const pf of S.pf) { const q = pf.properties, k = q.sys + '|' + (q.pid || 'fixed') + '|' + q.st; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(pf); }
+  for (const plats of groups.values()) {
+    const q0 = plats[0].properties, pts = plats.flatMap(pf => vertsOf(pf)), cx = pts.reduce((a, q) => a + q[0], 0) / pts.length, cy = pts.reduce((a, q) => a + q[1], 0) / pts.length;
+    let st = null, bd = 1e18; for (const f of S.sf) { const p = f.properties; if (p.sys !== q0.sys || p.name !== q0.st) continue; const d = Math.hypot(f.geometry.coordinates[0] - cx, f.geometry.coordinates[1] - cy); if (d < bd) { bd = d; st = f; } }
+    if (!st) continue;
+    const lf = q0.pid ? S.tfById.get(q0.pid) : null, sys = q0.sys, L = sys === 'rer' ? (S.ctx.meta.rer_platform_m || 204.2) : (S.ctx.meta.metro_platform_m || 152.4);
+    const stop = { key: st.properties.id, st, pid: lf ? q0.pid : null, sys, era: lf ? lf.properties.era : null, plats, n: plats.length, type0: plats.length >= 2 ? 'side' : 'island', L, o0: 0, lat0: 0, w0: PW[sys].island };
+    if (lf) {   // measure the generated platforms on the generated line
+      const c = resampleLine(lf.properties.k ? curveCoords(lf.geometry.coordinates, lf.properties.k) : lf.geometry.coordinates, 2), cs = chainOf(c), pr = pts.map(q => projectOn(c, cs, q)), ss = pr.map(x => x[0]), os = pr.map(x => x[1]);
+      const sp = projectOn(c, cs, st.geometry.coordinates)[0], smin = Math.min(...ss), smax = Math.max(...ss), lat = os.reduce((x, y) => x + y, 0) / os.length;
+      stop.o0 = (smin + smax) / 2 - sp; stop.lat0 = Math.abs(lat) < 1 ? 0 : lat;   // generated platforms are straight chords: their corners sit on the line
+      if (stop.type0 === 'island') { const w = ringArea(vertsOf(plats[0])) / Math.max(1, smax - smin); if (w > 3 && w < 20) stop.w0 = w; }
+    }
+    st.properties.stops.push(stop);
+  }
+  for (const f of S.sf) f.properties.stops.sort((a, b) => (a.pid ? featLabel(S.tfById.get(a.pid)) : '').localeCompare(b.pid ? featLabel(S.tfById.get(b.pid)) : ''));
+}
+const stDeleted = st => !!(S.edits.stations[st.properties.id] && S.edits.stations[st.properties.id].del);
+function stopEdit(stop) { const e = S.edits.stations[stop.key]; return (e && e.s && stop.pid && e.s[stop.pid]) || null; }
+function stopType(stop) { const e = stopEdit(stop); return (e && e.t) || stop.type0; }
+function stopOff(stop) { const e = stopEdit(stop); return e && typeof e.o === 'number' ? Math.max(-stop.L / 2, Math.min(stop.L / 2, e.o)) : stop.o0; }
+function liveLines() {   // lines drawn from settings: edited, or with an edited or deleted station
+  if (S.live && S.live.ver === S.ver) return S.live.set;
+  const set = new Set(Object.keys(S.edits.transit));
+  for (const st of S.sf) { const e = S.edits.stations[st.properties.id]; if (!e) continue; for (const sp of st.properties.stops) if (sp.pid && (e.del || (e.s && e.s[sp.pid]))) set.add(sp.pid); }
+  S.live = { ver: S.ver, set }; return set;
+}
+const stopLive = stop => !!stop.pid && liveLines().has(stop.pid);
+function stopFrame(stop) {   // [sp, sc, line geometry]: station point and platform centre chainages on the current line
+  if (stop._fv === S.ver) return stop._f;
+  const g = geomOf(S.tfById.get(stop.pid)), sp = projectOn(g.c, g.cs, stop.st.geometry.coordinates)[0]; stop._f = [sp, sp + stopOff(stop), g]; stop._fv = S.ver; return stop._f;
+}
+function stopBands(stop) {   // sideways extents of the platforms, metres left of the line
+  const t = stopType(stop), lat = stop.lat0, h0 = H0(stop.sys, stop.era), e = EDGE(stop.sys);
+  if (t === 'island') { const w = stop.type0 === 'island' ? stop.w0 : PW[stop.sys].island; return [[lat - w / 2, lat + w / 2]]; }
+  const sw = PW[stop.sys].side; return [[lat + h0 + e, lat + h0 + e + sw], [lat - h0 - e - sw, lat - h0 - e]];
+}
+function stopRings(stop) {
+  if (stop._rv === S.ver) return stop._r; stop._r = stopRings0(stop); stop._rv = S.ver; return stop._r;
+}
+function stopRings0(stop) {
+  if (stDeleted(stop.st)) return [];
+  if (!stopLive(stop)) return stop.plats.map(pf => vertsOf(pf));
+  const [, sc, g] = stopFrame(stop), s0 = sc - stop.L / 2, s1 = sc + stop.L / 2, n = Math.max(2, Math.ceil((s1 - s0) / 4)), fr = [];
+  for (let i = 0; i <= n; i++) fr.push(frameAt(g.c, g.cs, s0 + (s1 - s0) * i / n));
+  return stopBands(stop).map(([a, b]) => fr.map(q => [q[0] - q[3] * b, q[1] + q[2] * b]).concat(fr.slice().reverse().map(q => [q[0] - q[3] * a, q[1] + q[2] * a])));
+}
+// tracks of a line drawn from settings: the generated pair spacing, opened out round island platforms (40 m tapers)
+function resampleLine(c, step) { const out = [c[0]]; for (let i = 1; i < c.length; i++) { const a = c[i - 1], b = c[i], L = Math.hypot(b[0] - a[0], b[1] - a[1]), n = Math.max(1, Math.ceil(L / step)); for (let j = 1; j <= n; j++) out.push([a[0] + (b[0] - a[0]) * j / n, a[1] + (b[1] - a[1]) * j / n]); } return out; }
+function projectOn(c, cs, q) { let best = 1e18, bs = 0, bo = 0; for (let i = 1; i < c.length; i++) { const a = c[i - 1], b = c[i], dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy || 1e-9; let t = ((q[0] - a[0]) * dx + (q[1] - a[1]) * dy) / L2; t = Math.max(0, Math.min(1, t)); const px = a[0] + t * dx, py = a[1] + t * dy, d = Math.hypot(q[0] - px, q[1] - py); if (d < best) { best = d; bs = cs[i - 1] + t * Math.sqrt(L2); bo = Math.sign(dx * (q[1] - a[1]) - dy * (q[0] - a[0])) * d; } } return [bs, bo, best]; }
+function trackPair(f) {
+  const p = f.properties, g = geomOf(f); if (g.pair && g.pver === S.ver) return g.pair;
+  const h0 = H0(p.sys, p.era), edge = EDGE(p.sys), c = g.c, cs = g.cs, n = c.length, hL = new Array(n).fill(h0), hR = new Array(n).fill(h0), W = new Array(n).fill(0);
+  for (const st of S.sf) { if (stDeleted(st)) continue; for (const sp of st.properties.stops) { if (sp.pid !== p.id) continue;
+    const [, sc] = stopFrame(sp), s0 = sc - sp.L / 2, s1 = sc + sp.L / 2, lat = sp.lat0, b = stopBands(sp)[0];
+    const tL = stopType(sp) === 'island' ? b[1] + edge : lat + h0, tR = stopType(sp) === 'island' ? edge - b[0] : h0 - lat;
+    for (let i = 0; i < n; i++) { const dd = Math.max(s0 - cs[i], cs[i] - s1, 0); if (dd >= TAPER) continue; const w = 1 - dd / TAPER; if (w > W[i]) { W[i] = w; hL[i] = h0 + (tL - h0) * w; hR[i] = h0 + (tR - h0) * w; } } } }
+  const nx = [], ny = []; for (let i = 0; i < n; i++) { const a = c[Math.max(0, i - 1)], b = c[Math.min(n - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1; nx.push(-dy / L); ny.push(dx / L); }
+  g.pair = [c.map((q, i) => [q[0] + nx[i] * hL[i], q[1] + ny[i] * hL[i]]), c.map((q, i) => [q[0] - nx[i] * hR[i], q[1] - ny[i] * hR[i]])]; g.pver = S.ver; return g.pair;
+}
+function featLabel(f) { const p = f.properties; return p.layer === 'street' ? p.name : p.layer === 'transit' ? (p.sys === 'metro' ? 'Metro ' + p.name : p.name.replace('RER B D', 'RER B/D').replace('RER A D', 'RER A/D')) : p.layer === 'station' ? p.name + ' (' + (p.sys === 'metro' ? 'Metro ' + p.line.replace(/Line /g, 'L') : p.line) + ')' : p.layer === 'block' ? (blockName(f) || 'Block ' + p.id) : (LNAME[p.layer] || p.name || p.layer); }
+const isWE = f => f.properties.src === '1912 survey' || f.properties.src === 'Sanborn 1904' || f.properties.src === 'Sanborn 1922' || f.properties.set === 'wv';
+const feats = layer => S.deck.features.filter(f => f.properties.layer === layer && (S.layers.we || !isWE(f)));
+
+// ---------------------------------------------------------------- drawing
+function sizeCanvas() { const r = cv.getBoundingClientRect(), d = window.devicePixelRatio || 1; cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); ctx.setTransform(d, 0, 0, d, 0, 0); }
+function pathPoly(g) { for (const p of polysOf(g)) for (const ring of p) { ring.forEach((q, i) => { const [x, y] = W2S(q[0], q[1]); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.closePath(); } }
+function pathLine(c) { c.forEach((q, i) => { const [x, y] = W2S(q[0], q[1]); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); }
+function fillPoly(g, fill, stroke, lw = 1, alpha = 1) { ctx.save(); ctx.globalAlpha = alpha; ctx.beginPath(); pathPoly(g); if (fill) { ctx.fillStyle = fill; ctx.fill('evenodd'); } if (stroke) { ctx.globalAlpha = Math.min(1, alpha + 0.2); ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); } ctx.restore(); }
+const BT = { building: 'bldg', tower: 'tower', landmark: 'landmark', civic: 'civic', worship: 'worship', school: 'school', hospital: 'hospital', industrial: 'industrial', square: 'square', park: 'park', planting: 'plant' };
+
+function draw() {
+  if (!S.deck) return;
+  const r = cv.getBoundingClientRect(), v = S.view;
+  ctx.clearRect(0, 0, r.width, r.height);
+  ctx.fillStyle = C.paper; ctx.fillRect(0, 0, r.width, r.height);
+  const [wx0, wy1] = S2W(0, 0), [wx1, wy0] = S2W(r.width, r.height);
+  // relief
+  if (S.layers.rel && S.reliefImg && S.relief) {
+    const R = S.relief, [x, y] = W2S(R.E0, R.N1);
+    ctx.drawImage(S.reliefImg, x, y, (R.E1 - R.E0) * v.s, (R.N1 - R.N0) * v.s);
+  }
+  // 1912 survey tiles (West End)
+  if (S.layers.s12 && S.layers.we && S.t12) {
+    ctx.save(); ctx.globalAlpha = S.op.s12;
+    const T = S.t12.size;
+    for (const [tx, ty] of S.t12.tiles) {
+      if (tx > wx1 || tx + T < wx0 || ty > wy1 || ty + T < wy0) continue;
+      const img = S.t12Img.get(tx + '_' + ty);
+      if (!img) { const key = tx + '_' + ty, im = new Image(); im.onload = redraw; im.onerror = () => setTimeout(() => { S.t12Img.delete(key); redraw(); }, 1200 + Math.random() * 1500); im.src = `tiles12/${tx}_${ty}.webp`; S.t12Img.set(key, im); continue; }
+      if (img.complete && img.naturalWidth) { const [x, y] = W2S(tx, ty + T); ctx.drawImage(img, x, y, T * v.s + 0.5, T * v.s + 0.5); }
+    }
+    ctx.restore();
+  }
+  // sanborn tiles
+  if (S.layers.san && S.tiles) {
+    ctx.save(); ctx.globalAlpha = S.op.san;
+    if (v.s < 1.2 && S.tnOvMeta) {
+      const O = S.tnOvMeta; if (!S.tnOvImg) { const im = new Image(); im.onload = redraw; im.src = 'tiles_n/overview.webp'; S.tnOvImg = im; }
+      const im = S.tnOvImg; if (im.complete && im.naturalWidth) { const [x, y] = W2S(O.E0, O.N1); ctx.drawImage(im, x, y, (O.E1 - O.E0) * v.s, (O.N1 - O.N0) * v.s); }
+    } else {
+      const T = S.tiles.size;
+      for (const [tx, ty] of S.tiles.tiles) {
+        if (tx > wx1 || tx + T < wx0 || ty > wy1 || ty + T < wy0) continue;
+        const key = tx + '_' + ty; let img = S.tileImg.get(key);
+        if (!img) { img = new Image(); img.onload = redraw; img.onerror = () => setTimeout(() => { S.tileImg.delete(key); redraw(); }, 1200 + Math.random() * 1500); img.src = `tiles_n/${key}.webp`; S.tileImg.set(key, img); continue; }
+        if (img.complete && img.naturalWidth) { const [x, y] = W2S(tx, ty + T); ctx.drawImage(img, x, y, T * v.s + 0.5, T * v.s + 0.5); }
+      }
+    }
+    ctx.restore();
+  }
+  if (S.layers.san && S.layers.we && S.tb) {
+    ctx.save(); ctx.globalAlpha = S.op.san;
+    if (v.s < 1.2 && S.tbOv) {
+      const O = S.tbOvMeta; if (!S.tbOvImg) { const im = new Image(); im.onload = redraw; im.src = 'tiles_b/overview.webp'; S.tbOvImg = im; }
+      const im = S.tbOvImg; if (im.complete && im.naturalWidth) { const [x, y] = W2S(O.E0, O.N1); ctx.drawImage(im, x, y, (O.E1 - O.E0) * v.s, (O.N1 - O.N0) * v.s); }
+    } else {
+      const T = S.tb.size;
+      for (const [tx, ty] of S.tb.tiles) {
+        if (tx > wx1 || tx + T < wx0 || ty > wy1 || ty + T < wy0) continue;
+        const key = tx + '_' + ty; let img = S.tbImg.get(key);
+        if (!img) { img = new Image(); img.onload = redraw; img.onerror = () => setTimeout(() => { S.tbImg.delete(key); redraw(); }, 1200 + Math.random() * 1500); img.src = `tiles_b/${key}.webp`; S.tbImg.set(key, img); continue; }
+        if (img.complete && img.naturalWidth) { const [x, y] = W2S(tx, ty + T); ctx.drawImage(img, x, y, T * v.s + 0.5, T * v.s + 0.5); }
+      }
+    }
+    ctx.restore();
+  }
+  if (S.layers.idx && S.sheets) {
+    ctx.save(); ctx.strokeStyle = C.accent; ctx.lineWidth = 1; ctx.setLineDash([4, 3]); ctx.font = '600 12px ' + css('--font-ui'); ctx.fillStyle = C.accent;
+    for (const sh of S.sheets) { ctx.globalAlpha = sh.basin ? 0.55 : 1; ctx.beginPath(); pathLine(sh.poly.concat([sh.poly[0]])); ctx.stroke(); const cx = sh.poly.reduce((a, q) => a + q[0], 0) / 4, cy = sh.poly.reduce((a, q) => a + q[1], 0) / 4; const [x, y] = W2S(cx, cy); ctx.fillText(sh.sheet, x - 10, y); }
+    ctx.restore();
+  }
+  // deck outline
+  for (const f of feats('deck')) { ctx.save(); ctx.setLineDash([6, 4]); fillPoly(f.geometry, null, C.ink, 1.2, 0.8); ctx.restore(); }
+  // blocks
+  if (S.layers.blk) for (const f of feats('block')) { const t = blockType(f), big = t === 'tower' || t === 'landmark'; fillPoly(f.geometry, C[BT[t]] || C.bldg, C.ink, big ? 1.6 : 0.6, big ? Math.min(1, S.op.blk + 0.15) : S.op.blk); }
+  for (const f of feats('we_forecourt')) { ctx.save(); ctx.setLineDash([5, 4]); fillPoly(f.geometry, null, C.civic, 1.4, 0.9); ctx.restore(); }
+  // the lower pairs' open cut between Bank and Findlay: nothing crosses it
+  for (const f of feats('dive_cut')) { ctx.save(); ctx.setLineDash([6, 3]); fillPoly(f.geometry, C.lower, C.lower, 1.4, 0.16); ctx.restore(); }
+  for (const f of feats('rail_open')) { ctx.save(); ctx.setLineDash([5, 3]); fillPoly(f.geometry, C.lower, C.lower, 1, 0.14); ctx.restore(); }
+  // civic spaces
+  for (const f of feats('cut_precinct')) fillPoly(f.geometry, C.precinct, C.ink, 0.8, 0.75);
+  for (const f of feats('boulevard')) fillPoly(f.geometry, C.blvd, C['blvd-edge'], 1.2, 0.95);
+  for (const f of feats('roundabout')) fillPoly(f.geometry, C.blvd, C['blvd-edge'], 1.2, 0.95);
+  for (const L of ['cut_square', 'forecourt']) for (const f of feats(L)) fillPoly(f.geometry, C.blvd, C['blvd-edge'], 1, 0.95);
+  for (const f of feats('cut_park')) fillPoly(f.geometry, C.park, C.ink, 0.8, 0.9);
+  for (const L of ['palace', 'cut_headhouse', 'cut_building']) for (const f of feats(L)) fillPoly(f.geometry, C.civic, C.ink, 1, 0.95);
+  // roundabout island
+  for (const f of feats('roundabout')) { const c = S.deck.axis.N, [x, y] = W2S(c[0], c[1]); ctx.save(); ctx.globalAlpha = 0.9; ctx.fillStyle = C.park; ctx.beginPath(); ctx.arc(x, y, (f.properties.radius_m - 22) * v.s, 0, 7); ctx.fill(); ctx.restore(); }
+  // axis
+  for (const f of feats('axis')) { ctx.save(); ctx.setLineDash([2, 4]); ctx.strokeStyle = C.ink; ctx.globalAlpha = 0.5; ctx.lineWidth = 1; ctx.beginPath(); pathLine(f.geometry.coordinates); ctx.stroke(); ctx.restore(); }
+  // streets
+  if (S.layers.str) {
+    // basin streets: every casing first, then every fill, so crossings and joins read as one paved network
+    const we = feats('street').filter(f => f.properties.kind === 'we_street' || f.properties.kind === 'we_alley');
+    const ord = we.slice().sort((a, b) => (a.properties.kind === 'we_alley' ? 0 : 1) - (b.properties.kind === 'we_alley' ? 0 : 1));
+    ctx.save(); ctx.lineCap = 'butt'; ctx.lineJoin = 'round';
+    for (const pass of [0, 1]) for (const f of ord) {
+      const al = f.properties.kind === 'we_alley', wb = Math.max(al ? 0.8 : 1.2, streetWidth(f) * v.s), c = streetCoords(f);
+      if (pass === 0) { ctx.strokeStyle = C.ink; ctx.globalAlpha = al ? 0.35 : 0.55; ctx.lineWidth = wb + (al ? 1 : 1.5); }
+      else { ctx.globalAlpha = 1; ctx.strokeStyle = C.bst; ctx.lineWidth = wb; }
+      ctx.beginPath(); pathLine(c); ctx.stroke();
+    }
+    // viaducts: dashed edges
+    for (const f of ord) { if (f.properties.structure !== 'viaduct') continue; const c = streetCoords(f), wb = Math.max(1.2, streetWidth(f) * v.s);
+      ctx.globalAlpha = 0.8; ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
+      for (const sgn of [-1, 1]) { ctx.beginPath(); pathLine(offsetLine(c, sgn * (wb / 2 + 1.5) / v.s)); ctx.stroke(); }
+      ctx.setLineDash([]); }
+    ctx.restore();
+  }
+  if (S.layers.str) for (const f of feats('street')) {
+    const c = streetCoords(f), w = Math.max(1.2, streetWidth(f) * v.s), k = f.properties.kind;
+    if (k === 'we_street' || k === 'we_alley') continue;
+    ctx.save(); ctx.lineCap = 'butt'; ctx.lineJoin = 'round';
+    ctx.strokeStyle = C.ink; ctx.globalAlpha = 0.55; ctx.lineWidth = w + 1.5; ctx.beginPath(); pathLine(c); ctx.stroke();
+    ctx.globalAlpha = 1; ctx.strokeStyle = (k === 'through' || k === 'radial') ? C.thru : C.tee; ctx.lineWidth = w; ctx.beginPath(); pathLine(c); ctx.stroke();
+    if (w > 6) { ctx.strokeStyle = C.paper; ctx.globalAlpha = 0.55; ctx.lineWidth = 1; ctx.setLineDash([5, 5]); ctx.beginPath(); pathLine(c); ctx.stroke(); }
+    ctx.restore();
+  }
+  // transit
+  if (S.ctx) {
+    const showT = v.s >= 0.8 && S.ctx.tracks;
+    if (showT) {
+      // tracks and platforms (zoomed in): Metro dashed (tunnel), RER solid
+      ctx.save();
+      const live = liveLines();
+      for (const st of S.sf) { if (!visT(st)) continue; const col = st.properties.sys === 'metro' ? C.metro : C.rer;
+        for (const sp of st.properties.stops) for (const r of stopRings(sp)) { ctx.beginPath(); pathLine(r); ctx.closePath(); ctx.globalAlpha = 0.42; ctx.fillStyle = col; ctx.fill(); ctx.globalAlpha = 0.9; ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.stroke(); } }
+      const tw = Math.max(1, Math.min(2.4, 0.9 * v.s));
+      for (const t of S.ctx.tracks) { if ((t.sys === 'metro' && !S.layers.met) || (t.sys === 'rer' && !S.layers.rer)) continue; if (t.pid && live.has(t.pid)) continue;
+        ctx.globalAlpha = 1; ctx.strokeStyle = t.sys === 'metro' ? C.metro : C.rer; ctx.lineWidth = tw; ctx.setLineDash(t.sys === 'metro' ? [6, 3] : []); ctx.beginPath(); pathLine(t.c); ctx.stroke(); }
+      for (const f of S.tf) { if (!visT(f) || !live.has(f.properties.id)) continue;   // lines drawn from settings: tracks redrawn along them
+        ctx.globalAlpha = 1; ctx.strokeStyle = f.properties.sys === 'metro' ? C.metro : C.rer; ctx.lineWidth = tw; ctx.setLineDash(f.properties.sys === 'metro' ? [6, 3] : []);
+        for (const c of trackPair(f)) { ctx.beginPath(); pathLine(c); ctx.stroke(); } }
+      // grade-separated crossings (Union Terminal box)
+      if (S.layers.rer && v.s >= 1.6) for (const m of (S.ctx.marks || [])) { if (m.kind !== 'dir') continue; const [x, y] = W2S(m.p[0], m.p[1]); ctx.setLineDash([]);
+        ctx.font = '600 10px system-ui, sans-serif'; const tw = ctx.measureText(m.label).width; ctx.lineWidth = 3; ctx.strokeStyle = C.panel; ctx.strokeText(m.label, x - tw / 2, y + 3.5); ctx.fillStyle = C.ink; ctx.fillText(m.label, x - tw / 2, y + 3.5); }
+      if (S.layers.rer && v.s >= 1.2) for (const m of (S.ctx.marks || [])) { if (m.kind === 'dir') continue; const [x, y] = W2S(m.p[0], m.p[1]); ctx.setLineDash([]); ctx.fillStyle = C.warn; ctx.strokeStyle = C.panel; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(x, y - 6); ctx.lineTo(x + 6, y); ctx.lineTo(x, y + 6); ctx.lineTo(x - 6, y); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.font = '600 11px system-ui, sans-serif'; const tw = ctx.measureText(m.label).width, lx = x - tw / 2, ly = y - 12;
+        ctx.lineWidth = 3; ctx.strokeStyle = C.panel; ctx.strokeText(m.label, lx, ly); ctx.fillStyle = C.warn; ctx.fillText(m.label, lx, ly); }
+      ctx.restore();
+    }
+    if (S.layers.met) { if (!showT) { ctx.save(); ctx.strokeStyle = C.metro; ctx.lineWidth = 2.5; ctx.setLineDash([7, 4]); for (const f of S.tf) { if (f.properties.sys !== 'metro') continue; ctx.beginPath(); pathLine(lineCoords(f)); ctx.stroke(); } ctx.restore(); }
+      ctx.save(); for (const f of S.sf) { if (f.properties.sys !== 'metro') continue; const st = f.properties, [x, y] = W2S(...f.geometry.coordinates); if (stDeleted(f)) { drawGhost(x, y, C.metro); continue; }
+        ctx.fillStyle = C.panel; ctx.strokeStyle = C.metro; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 4.5, 0, 7); ctx.fill(); ctx.stroke(); if (S.layers.lab && v.s > 0.35) { ctx.font = '600 12px ' + css('--font-ui'); ctx.fillStyle = C.metro; ctx.fillText(st.name + ' (' + st.line.replace(/Line /g, 'L') + ')', x + 7, y - 6); } } ctx.restore(); }
+    if (S.layers.rer) { if (!showT) { ctx.save(); ctx.strokeStyle = C.rer; ctx.lineWidth = 2.5; for (const f of S.tf) { if (f.properties.sys !== 'rer') continue; ctx.beginPath(); pathLine(lineCoords(f)); ctx.stroke(); } ctx.restore(); }
+      ctx.save(); for (const f of S.sf) { if (f.properties.sys !== 'rer') continue; const st = f.properties, [x, y] = W2S(...f.geometry.coordinates); if (stDeleted(f)) { drawGhost(x, y, C.rer); continue; }
+        ctx.fillStyle = C.rer; ctx.strokeStyle = C.panel; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 6, 0, 7); ctx.fill(); ctx.stroke();
+        if (S.layers.lab && v.s > 0.2) { ctx.font = '700 12px ' + css('--font-ui'); const t = st.name + ' (' + st.line + ')', tw = ctx.measureText(t).width; ctx.fillStyle = C.panel; ctx.globalAlpha = 0.88; ctx.fillRect(x + 7, y - 21, tw + 6, 16); ctx.globalAlpha = 1; ctx.fillStyle = C.rer; ctx.textBaseline = 'middle'; ctx.fillText(t, x + 10, y - 13); } } ctx.restore(); }
+  }
+  if (S.ctx && S.layers.rer && S.ctx.rer_struct) drawRerStruct(v);
+  if (S.layers.trk && S.tracks) drawTracks(v);
+  // streets cut by a rail line at or near street level
+  if (S.layers.str && v.s >= 0.5) { ctx.save(); for (const f of feats('wv_cut')) { const [x, y] = W2S(f.geometry.coordinates[0], f.geometry.coordinates[1]); ctx.strokeStyle = C.panel; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x - 5, y - 5); ctx.lineTo(x + 5, y + 5); ctx.moveTo(x + 5, y - 5); ctx.lineTo(x - 5, y + 5); ctx.stroke(); ctx.strokeStyle = C.warn; ctx.lineWidth = 2; ctx.stroke();
+      if (S.layers.lab && v.s >= 1.4) { ctx.font = '600 11px ' + css('--font-ui'); const t = f.properties.label, tw = ctx.measureText(t).width; ctx.lineWidth = 3; ctx.strokeStyle = C.panel; ctx.strokeText(t, x + 8, y + 4); ctx.fillStyle = C.warn; ctx.fillText(t, x + 8, y + 4); } } ctx.restore(); }
+  // streets re-graded over or under TRI B/D's dive (2026-10-14)
+  if (S.layers.str && v.s >= 0.5) { ctx.save(); for (const f of feats('wv_regrade')) { const [x, y] = W2S(f.geometry.coordinates[0], f.geometry.coordinates[1]); ctx.fillStyle = C.panel; ctx.strokeStyle = C.lower; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y - 6); ctx.lineTo(x + 6, y); ctx.lineTo(x, y + 6); ctx.lineTo(x - 6, y); ctx.closePath(); ctx.fill(); ctx.stroke();
+      if (S.layers.lab && v.s >= 1.0) { ctx.font = '600 11px ' + css('--font-ui'); const t = f.properties.label; ctx.lineWidth = 3; ctx.strokeStyle = C.panel; ctx.strokeText(t, x + 9, y + 4); ctx.fillStyle = C.ink; ctx.fillText(t, x + 9, y + 4); } } ctx.restore(); }
+  // labels
+  if (S.layers.lab && v.s > 0.22) {
+    ctx.save(); ctx.font = '600 12px ' + css('--font-ui'); ctx.textBaseline = 'middle';
+    const seen = new Set();
+    for (const f of feats('street')) {
+      const nm = f.properties.name; if (nm === 'Alley' || nm === 'Unnamed') continue; if (isWE(f) && v.s < 0.45) continue;
+      const key = isWE(f) ? nm + '|' + Math.round(f.geometry.coordinates[0][0] / 400) + '|' + Math.round(f.geometry.coordinates[0][1] / 400) : nm + f.properties.side;
+      if (seen.has(key) && f.properties.kind !== 'through') continue; seen.add(key);
+      const c = streetCoords(f); if (lenOf(c) * v.s < 70) continue;
+      let i = 0, best = 0; for (let k = 1; k < c.length; k++) { const L = Math.hypot(c[k][0] - c[k - 1][0], c[k][1] - c[k - 1][1]); if (L > best) { best = L; i = k; } }
+      const a = W2S(c[i - 1][0], c[i - 1][1]), b = W2S(c[i][0], c[i][1]); let ang = Math.atan2(b[1] - a[1], b[0] - a[0]); if (ang > Math.PI / 2) ang -= Math.PI; if (ang < -Math.PI / 2) ang += Math.PI;
+      ctx.save(); ctx.translate((a[0] + b[0]) / 2, (a[1] + b[1]) / 2); ctx.rotate(ang);
+      const t = nm.replace(' (viaduct line)', ''), tw = ctx.measureText(t).width;
+      ctx.fillStyle = C.panel; ctx.globalAlpha = 0.85; ctx.fillRect(-tw / 2 - 3, -8, tw + 6, 16); ctx.globalAlpha = 1; ctx.fillStyle = C.ink; ctx.fillText(t, -tw / 2, 0); ctx.restore();
+    }
+    if (S.layers.blk) for (const f of feats('block')) { const nm = blockName(f); if (!nm) continue; const t = blockType(f); if (v.s < ((t === 'tower' || t === 'landmark') ? 0.3 : 0.6)) continue;
+      const r0 = polysOf(f.geometry)[0][0], cx = r0.reduce((s, q) => s + q[0], 0) / r0.length, cy = r0.reduce((s, q) => s + q[1], 0) / r0.length, [x, y] = W2S(cx, cy);
+      ctx.font = '700 12px ' + css('--font-ui'); const tw = ctx.measureText(nm).width; ctx.fillStyle = C.panel; ctx.globalAlpha = 0.88; ctx.fillRect(x - tw / 2 - 3, y - 9, tw + 6, 18); ctx.globalAlpha = 1; ctx.fillStyle = C.ink; ctx.fillText(nm, x - tw / 2, y); }
+    for (const [L, nm] of [['palace', 'Cincinnati Palace'], ['cut_headhouse', 'West headhouse'], ['cut_square', 'Terminal square'], ['cut_building', 'Union Terminal']]) for (const f of feats(L)) {
+      const r0 = polysOf(f.geometry)[0][0], cx = r0.reduce((s, q) => s + q[0], 0) / r0.length, cy = r0.reduce((s, q) => s + q[1], 0) / r0.length, [x, y] = W2S(cx, cy);
+      ctx.font = '700 13px ' + css('--font-ui'); const tw = ctx.measureText(nm).width; ctx.fillStyle = C.panel; ctx.globalAlpha = 0.85; ctx.fillRect(x - tw / 2 - 3, y - 9, tw + 6, 18); ctx.globalAlpha = 1; ctx.fillStyle = C.ink; ctx.fillText(nm, x - tw / 2, y);
+    }
+    ctx.restore();
+  }
+  drawSelection();
+  drawScale(r);
+}
+function drawRerStruct(v) {
+  // RER A long section (Ben, 2026-10-13): viaduct = dashed edges, open ramp or at ground = solid walls, under the deck or boxed = dotted
+  const hw = Math.max(3, 6 * v.s);
+  ctx.save(); ctx.lineCap = 'butt'; ctx.lineJoin = 'round';
+  for (const r of S.ctx.rer_struct) {
+    const c = r.c;
+    if (r.state === 'viaduct' || r.state === 'ramp') {
+      ctx.globalAlpha = 0.85; ctx.strokeStyle = C.ink; ctx.lineWidth = r.state === 'ramp' ? 1.3 : 1; ctx.setLineDash(r.state === 'ramp' ? [] : [5, 3]);
+      for (const sg of [-1, 1]) { ctx.beginPath(); pathLine(offsetLine(c, sg * hw / v.s)); ctx.stroke(); }
+    } else { ctx.globalAlpha = 0.9; ctx.strokeStyle = C.paper; ctx.lineWidth = v.s >= 0.8 ? 1.2 : 1.6; ctx.setLineDash([3, 5]); ctx.beginPath(); pathLine(c); ctx.stroke(); }
+  }
+  ctx.setLineDash([]); ctx.globalAlpha = 1;
+  if (S.layers.lab && v.s >= 0.45) for (const m of (S.ctx.rer_marks || [])) {
+    const [x, y] = W2S(m.p[0], m.p[1]); ctx.fillStyle = C.rer; ctx.strokeStyle = C.panel; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.rect(x - 3.5, y - 3.5, 7, 7); ctx.fill(); ctx.stroke();
+    ctx.font = '600 11px ' + css('--font-ui'); const tw = ctx.measureText(m.label).width, lx = m.anchor === 'left' ? x - 9 - tw : x + 9;
+    ctx.fillStyle = C.panel; ctx.globalAlpha = 0.88; ctx.fillRect(lx - 3, y - 8, tw + 6, 16); ctx.globalAlpha = 1; ctx.fillStyle = C.ink; ctx.textBaseline = 'middle'; ctx.fillText(m.label, lx, y);
+  }
+  ctx.restore();
+}
+function drawTracks(v) {
+  const TF = S.tracks.features, lw = Math.max(0.7, Math.min(2.2, 1.3 * v.s));
+  ctx.save();
+  for (const f of TF) { const p = f.properties;
+    if (p.layer === 'apex_plat') fillPoly(f.geometry, C['apex-plat'], null, 0, 0.75);
+    if (p.layer === 'lower_plat') fillPoly(f.geometry, C.lower, C.lower, 1, 0.38);
+  }
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const f of TF) { const p = f.properties; if (f.geometry.type !== 'LineString') continue;
+    if (p.layer === 'apex') { ctx.strokeStyle = C.apex; ctx.lineWidth = lw; ctx.setLineDash([]); ctx.globalAlpha = 0.95; }
+    else if (p.layer === 'lower') { ctx.strokeStyle = C.lower; ctx.lineWidth = lw * 1.25; ctx.setLineDash(p.state === 'surface' ? [] : p.state === 'ramp' ? [16, 5] : [7, 4]); ctx.globalAlpha = 1; }
+    else if (p.layer === 'tri_prop') { ctx.strokeStyle = C.rer; ctx.lineWidth = lw * 1.4; ctx.setLineDash([2, 4]); ctx.globalAlpha = 1; }
+    else if (p.layer === 'passing') { ctx.strokeStyle = C.apex; ctx.lineWidth = lw * 1.6; ctx.setLineDash([12, 3, 2, 3]); ctx.globalAlpha = 1; }
+    else if (p.layer === 'bridge') { ctx.strokeStyle = C.apex; ctx.lineWidth = Math.max(4, 10 * v.s); ctx.setLineDash([]); ctx.globalAlpha = 0.9; ctx.beginPath(); pathLine(f.geometry.coordinates); ctx.stroke(); ctx.strokeStyle = C.paper; ctx.lineWidth = Math.max(1.5, 5 * v.s); }
+    else continue;
+    ctx.beginPath(); pathLine(f.geometry.coordinates); ctx.stroke();
+  }
+  ctx.setLineDash([]); ctx.globalAlpha = 1;
+  const show = S.layers.lab && v.s > 0.3;
+  if (S.layers.lab && v.s > 0.9) {   // platform letters and track numbers when zoomed in
+    ctx.font = '700 12px ' + css('--font-ui'); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (const f of TF) { const p = f.properties;
+      if (p.layer === 'lower_plat') { const r = f.geometry.coordinates[0], cx = (r[0][0] + r[1][0]) / 2, top = Math.max(...r.map(q => q[1])); const [x, y] = W2S(cx, top - 18); ctx.fillStyle = C.panel; ctx.fillRect(x - 11, y - 8, 22, 16); ctx.fillStyle = C.lower; ctx.fillText(p.label, x, y); }
+      if (p.layer === 'apex' && p.kind === 'platform') { const c = f.geometry.coordinates, q = c[c.length - 1]; const [x, y] = W2S(q[0], q[1] + 12); ctx.fillStyle = C.panel; ctx.fillRect(x - 8, y - 7, 16, 14); ctx.fillStyle = C.apex; ctx.fillText(p.name.replace('APEx track ', ''), x, y); }
+    }
+    ctx.textAlign = 'start';
+  }
+  ctx.font = '600 12px ' + css('--font-ui'); ctx.textBaseline = 'middle';
+  for (const f of TF) { const p = f.properties; if (f.geometry.type !== 'Point') continue;
+    const [x, y] = W2S(f.geometry.coordinates[0], f.geometry.coordinates[1]);
+    if (p.layer === 'marker') {
+      ctx.fillStyle = p.kind === 'flag' ? C.warn : p.kind === 'portal' ? C.lower : C.panel; ctx.strokeStyle = p.kind === 'flag' ? C.warn : C.lower; ctx.lineWidth = 2;
+      ctx.beginPath(); if (p.kind === 'portal') ctx.rect(x - 4, y - 4, 8, 8); else if (p.kind === 'flag') { ctx.moveTo(x, y - 6); ctx.lineTo(x + 6, y); ctx.lineTo(x, y + 6); ctx.lineTo(x - 6, y); ctx.closePath(); } else ctx.arc(x, y, 4, 0, 7);
+      ctx.fill(); ctx.stroke();
+    }
+    const t = p.layer === 'label' ? p.text : p.label; if (!show || !t) continue;
+    const big = p.kind === 'big'; ctx.font = (big ? '700 13px ' : '600 12px ') + css('--font-ui');
+    const tw = ctx.measureText(t).width, lx = p.layer === 'label' ? x - tw / 2 : p.anchor === 'left' ? x - 9 - tw : x + 9;
+    const ly = y + (p.dy || 0);
+    ctx.fillStyle = C.panel; ctx.globalAlpha = 0.88; ctx.fillRect(lx - 3, ly - 9, tw + 6, 18); ctx.globalAlpha = 1;
+    ctx.fillStyle = p.kind === 'flag' ? C.warn : (p.layer === 'label' && p.kind !== 'lower') ? C.ink : C.lower; ctx.fillText(t, lx, ly);
+  }
+  ctx.restore();
+}
+function drawSelection() {
+  const s = S.sel; if (!s) return; const f = s.f, v = S.view;
+  ctx.save(); ctx.strokeStyle = C.accent; ctx.lineWidth = 3;
+  const L = f.properties.layer;
+  if (L === 'street' || L === 'transit') {
+    const c = lineCoords(f), wpx = L === 'street' ? streetWidth(f) * v.s + 4 : (f.properties.sys === 'rer' ? 9 : 10) * v.s + 4;
+    ctx.globalAlpha = 0.35; ctx.lineWidth = Math.max(4, wpx); ctx.beginPath(); pathLine(c); ctx.stroke();
+    if (L === 'transit') { ctx.globalAlpha = 1; ctx.lineWidth = 1.6; ctx.beginPath(); pathLine(c); ctx.stroke(); }
+    if (S.tool === 'edit') { drawHandles(f); drawLock(); }
+    if (v.s >= 0.2) { ctx.save(); ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.font = '600 11px ' + css('--font-ui');
+      for (const g of curveGroups(f)) { if (g.R >= 20000) continue; const [x, y] = W2S(g.mid[0], g.mid[1]), t = 'R ' + fmt(g.R) + ' m'; ctx.lineWidth = 3; ctx.strokeStyle = C.panel; ctx.strokeText(t, x + 8, y - 8); ctx.fillStyle = C.accent; ctx.fillText(t, x + 8, y - 8); }
+      ctx.restore(); }
+  } else if (L === 'station') {
+    const [x, y] = W2S(...f.geometry.coordinates); ctx.globalAlpha = 1; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, 10, 0, 7); ctx.stroke();
+    ctx.lineWidth = 2.5; for (const sp of f.properties.stops) { for (const r of stopRings(sp)) { ctx.beginPath(); pathLine(r); ctx.closePath(); ctx.stroke(); }
+      if (sp.pid && S.tool === 'edit' && !stDeleted(f)) { const [s0, , g] = stopFrame(sp), q = frameAt(g.c, g.cs, s0), [a, b] = W2S(q[0], q[1]); ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(x, y); ctx.stroke(); ctx.setLineDash([]);
+        const n = 12 / Math.max(S.view.s, 0.05); ctx.lineWidth = 2.5; ctx.beginPath(); pathLine([[q[0] - q[3] * n, q[1] + q[2] * n], [q[0] + q[3] * n, q[1] - q[2] * n]]); ctx.stroke(); } }
+  } else { ctx.beginPath(); pathPoly(f.geometry); ctx.stroke(); }
+  ctx.restore();
+}
+function drawLock() {   // guide while a point slides on its line's direction (Ctrl or Cmd held)
+  const d = S.drag; if (!d || d.mode !== 'v' || !d.lock) return; const u = d.lock.u, R = 20000, p = d.p0;
+  ctx.save(); ctx.globalAlpha = 0.9; ctx.strokeStyle = C.accent; ctx.lineWidth = 1.2; ctx.setLineDash([8, 5]); ctx.beginPath(); pathLine([[p[0] - u[0] * R, p[1] - u[1] * R], [p[0] + u[0] * R, p[1] + u[1] * R]]); ctx.stroke();
+  const v = vertsOf(S.sel.f)[d.vi], [x, y] = W2S(v[0], v[1]), s = d.lock.s || 0, t = (s >= 0 ? '+' : '\u2212') + fmt(Math.abs(s), 1) + ' m';
+  ctx.setLineDash([]); ctx.font = '600 12px ' + css('--font-ui'); ctx.lineWidth = 3; ctx.strokeStyle = C.panel; ctx.strokeText(t, x + 10, y - 10); ctx.fillStyle = C.accent; ctx.fillText(t, x + 10, y - 10); ctx.restore();
+}
+function drawGhost(x, y, col) { if (S.tool !== 'edit') return; ctx.save(); ctx.strokeStyle = col; ctx.globalAlpha = 0.7; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(x, y, 5.5, 0, 7); ctx.stroke(); ctx.restore(); }
+function drawHandles(f) {
+  const v = vertsOf(f), K = ctrlOf(f), d = S.drag;
+  ctx.save(); ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.lineWidth = 2; ctx.strokeStyle = C.accent;
+  for (let i = 0; i < v.length - 1; i++) {     // segment handles: drag to bend into a curve
+    const [x, y] = W2S(...midHandle(v, K, i)), on = K && K[i];
+    ctx.fillStyle = (d && d.mode === 'k' && d.si === i) || on ? C.accent : C.panel; ctx.beginPath(); ctx.arc(x, y, 4.5, 0, 7); ctx.fill(); ctx.stroke(); }
+  v.forEach((q, i) => { const [x, y] = W2S(q[0], q[1]); ctx.fillStyle = (d && d.mode === 'v' && d.vi === i) ? C.accent : C.panel; ctx.beginPath(); ctx.rect(x - 5, y - 5, 10, 10); ctx.fill(); ctx.stroke(); });
+  ctx.restore();
+}
+function drawScale(r) {
+  const v = S.view, target = 120 / v.s, p = 10 ** Math.floor(Math.log10(target)), m = [1, 2, 5, 10].map(k => k * p).filter(x => x <= target).pop() || p, w = m * v.s;
+  const x = r.width - w - 20, y = r.height - 22;
+  ctx.save(); ctx.fillStyle = C.panel; ctx.globalAlpha = 0.85; ctx.fillRect(x - 8, y - 18, w + 16, 30); ctx.globalAlpha = 1; ctx.strokeStyle = C.ink; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + w, y); ctx.moveTo(x, y - 5); ctx.lineTo(x, y + 4); ctx.moveTo(x + w, y - 5); ctx.lineTo(x + w, y + 4); ctx.stroke();
+  ctx.font = '500 11px ' + css('--font-num'); ctx.fillStyle = C.ink; ctx.fillText(fmt(m) + ' m', x, y - 7); ctx.fillText('N ↑', x + w - 22, y - 7); ctx.restore();
+}
+let raf = 0; const redraw = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; draw(); }); };
+
+// ---------------------------------------------------------------- picking
+// everything under the click, nearest first: stations (their dot or platforms), then street and Metro/RER centre lines by distance,
+// then areas and blocks. Clicking again at the same spot steps to the next one.
+function pickAll(wx, wy) {
+  const tol = 7 / S.view.s, p = [wx, wy], showT = S.view.s >= 0.8, out = [], lines = [];
+  if (S.ctx) { const near = [];
+    for (const f of S.sf) { if (!visT(f) || (stDeleted(f) && S.tool !== 'edit')) continue; const q = f.geometry.coordinates, d = Math.hypot(q[0] - wx, q[1] - wy) * S.view.s; if (d < 9) near.push([d, f]); }
+    near.sort((a, b) => a[0] - b[0]); for (const x of near) out.push(x[1]);
+    if (showT) for (const f of S.sf) { if (!visT(f) || out.includes(f)) continue; if (f.properties.stops.some(sp => stopRings(sp).some(r => inRing(p, r)))) out.push(f); } }
+  if (S.layers.str) for (const f of feats('street')) { const d = lineDist(p, streetCoords(f)); if (d - streetWidth(f) / 2 < tol) lines.push([d, f]); }
+  if (S.ctx) for (const f of S.tf) { if (!visT(f)) continue; const d = lineDist(p, lineCoords(f)); if (d < tol + (showT ? 8 : 2)) lines.push([d, f]); }
+  lines.sort((a, b) => a[0] - b[0]); for (const x of lines) out.push(x[1]);
+  let area = null;
+  for (const L of ['palace', 'cut_headhouse', 'cut_building', 'cut_square', 'cut_park', 'forecourt', 'roundabout', 'boulevard', 'cut_precinct']) { for (const f of feats(L)) if (polysOf(f.geometry).some(q => inPoly(p, q))) { area = f; break; } if (area) break; }
+  if (!area) for (const f of feats('rail_open')) if (polysOf(f.geometry).some(q => inPoly(p, q))) { area = f; break; }
+  if (area) out.push(area);
+  if (S.layers.blk) for (const f of feats('block')) if (polysOf(f.geometry).some(q => inPoly(p, q))) { out.push(f); break; }
+  return out;
+}
+
+// ---------------------------------------------------------------- selection panel
+const KIND = { through: 'Through street (continuous across the valley)', radial: 'Roundabout avenue', T: 'T street into the boulevard', NS: 'Deck street on a 1904 line', WV: 'West side of the valley: new or carried street', we_street: 'Basin street, from the 1904 Sanborn (straight runs between intersections, printed width)', we_alley: 'Basin alley, from the 1904 Sanborn' };
+const LNAME = { rail_open: 'Rail at or near street level', boulevard: 'Exposition Boulevard', roundabout: 'Palace roundabout', palace: 'Cincinnati Palace (1913 Exposition)', forecourt: 'Palace forecourt', cut_square: 'Terminal square', cut_park: 'CUT west park', cut_headhouse: 'CUT west headhouse', cut_precinct: 'CUT platforms and terminal', cut_building: 'Union Terminal' };
+function select(f) { S.sel = f ? { f } : null; renderSel(); redraw(); }
+function renderSel() {
+  const body = $('selBody'), empty = $('selEmpty');
+  if (!S.sel) { body.hidden = true; empty.hidden = false; body.textContent = ''; return; }
+  empty.hidden = true; body.hidden = false; body.textContent = '';
+  const f = S.sel.f, p = f.properties, L = p.layer;
+  const h = document.createElement('p'); h.className = 'sel-name'; const sub = document.createElement('p'); sub.className = 'sel-sub';
+  const dl = document.createElement('dl'); dl.className = 'kv';
+  const kv = (k, val) => { const dt = document.createElement('dt'); dt.textContent = k; const dd = document.createElement('dd'); dd.textContent = val; dl.append(dt, dd); };
+  if (L === 'street') {
+    const c = streetCoords(f), e = S.edits.streets[p.id];
+    const ZN = { '1': 'Exposition grounds, Hopkins to Harrison', '2': 'Harrison to Hopple', '3': 'Millvale bottoms, Hopple to Ralston' };
+    h.textContent = p.name; sub.textContent = (p.src === 'Sanborn 1922' ? (p.structure === 'viaduct' ? 'Viaduct, from the 1922 Sanborn' : p.kind === 'we_alley' ? 'Alley, from the 1922 Sanborn' : 'Street, from the 1922 Sanborn (where no 1904 sheet reaches)') : p.set === 'wv' ? (p.src === 'OSM' ? 'Boundary street of the west side, on its surviving line (OSM)' : 'Boundary street of the west side, from the 1904 Sanborn (crossings picked)') : KIND[p.kind]) + (p.area ? ' · ' + p.area : '') + (p.zone ? ' · west side, ' + ZN[p.zone] : p.side ? (p.side === 'E' ? ' · from the West End side' : p.side === 'W' ? ' · from the Lower Price Hill side' : p.side === 'LPH' ? ' · Lower Price Hill grid north of W 8th' : p.side === 'WV' ? ' · west side of the valley' : ' · north of Queen City') : '');
+    kv('Width', fmt(streetWidth(f), 1) + ' m (' + fmt(streetWidth(f) / 0.3048) + ' ft)' + (p.width_src === 'default' ? ', not printed' : '')); if (p.sheets) kv('Sanborn sheets', p.sheets); if (p.geom_src && p.geom_src !== 'Sanborn intersections') kv('Drawn from', p.geom_src); if (p.note) kv('Note', p.note); if (p.cut) kv('Cut', p.cut === 'RER A' ? 'by RER A (ends at its walls)' : p.cut === 'dive' ? 'at the lower pairs\u2019 dive' : 'by a rail line at or near street level'); kv('Length', fmt(lenOf(c)) + ' m'); kv('Points', String(vertsOf(f).length) + (ctrlOf(f) ? ' (' + Object.keys(ctrlOf(f)).length + ' curved segments)' : '')); radiiKv(f, kv); kv('Edited', e ? 'yes' : 'no');
+    body.append(h, sub, dl);
+    const row = document.createElement('div'); row.className = 'row';
+    const lab = document.createElement('label'); lab.htmlFor = 'wIn'; lab.textContent = 'Width (m)';
+    const inp = document.createElement('input'); inp.type = 'number'; inp.id = 'wIn'; inp.min = '2'; inp.max = '80'; inp.step = '0.5'; inp.value = streetWidth(f).toFixed(1); inp.disabled = !S.canWrite; inp.style.width = '80px';
+    inp.addEventListener('change', () => { const w = parseFloat(inp.value); if (!(w >= 2 && w <= 80)) return; setStreet(p.id, { w }); });
+    row.append(lab, inp); body.append(row);
+    const row2 = document.createElement('div'); row2.className = 'row';
+    const bE = document.createElement('button'); bE.className = 'btn'; bE.textContent = S.tool === 'edit' ? 'Stop editing' : 'Edit points'; bE.disabled = !S.canWrite; bE.addEventListener('click', () => setTool(S.tool === 'edit' ? 'select' : 'edit'));
+    const bR = document.createElement('button'); bR.className = 'btn'; bR.textContent = 'Reset this street'; bR.disabled = !e || !S.canWrite; bR.addEventListener('click', () => { delete S.edits.streets[p.id]; changed(); renderSel(); });
+    row2.append(bE, bR); body.append(row2); curveRow(f, body); alsoHere(f, body);
+  } else if (L === 'block') {
+    const t = blockType(f), nm = blockName(f); h.textContent = nm || p.name || 'Block ' + p.id; sub.textContent = (isWE(f) ? 'Basin · 1904 Sanborn · ' : p.side === 'WV' ? 'West side of the valley, off the deck · ' : 'On the deck · ') + (t === 'square' ? 'square with vents' : t);
+    kv('Area', fmt(p.area_m2) + ' m²'); kv('Generated as', p.type); kv('Now', t); body.append(h, sub, dl);
+    const seg = document.createElement('div'); seg.className = 'seg';
+    for (const [k, lab] of BLOCK_TYPES) { const b = document.createElement('button'); b.className = 'btn'; b.setAttribute('aria-pressed', String(t === k)); b.disabled = !S.canWrite; const sw = document.createElement('span'); sw.className = 'sw'; sw.style.background = C[BT[k]]; b.append(sw, document.createTextNode(lab)); b.addEventListener('click', () => { setBlock(f, k, blockName(f)); renderSel(); }); seg.append(b); }
+    body.append(seg);
+    const nl = document.createElement('label'); nl.className = 'notes'; nl.htmlFor = 'bName'; nl.textContent = 'Name on the plan (e.g. Carew Tower, Music Hall)'; nl.style.display = 'block'; nl.style.marginTop = '10px';
+    const ni = document.createElement('input'); ni.type = 'text'; ni.id = 'bName'; ni.className = 'namein'; ni.maxLength = 80; ni.value = nm; ni.disabled = !S.canWrite; ni.placeholder = 'No name';
+    ni.addEventListener('change', () => { setBlock(f, blockType(f), ni.value.trim()); renderSel(); });
+    body.append(nl, ni); alsoHere(f, body);
+  } else if (L === 'transit') {
+    const c = lineCoords(f), e = editOf(f);
+    h.textContent = featLabel(f); sub.textContent = 'Centre line' + (p.sys === 'metro' ? (p.era === 'twin' ? ' · twin tubes (Lines 1-7)' : ' · one double-track bore (Lines 8-14)') : '') + (p.sub ? ' · ' + p.sub : '');
+    kv('Length', fmt(lenOf(c)) + ' m'); kv('Points', String(vertsOf(f).length) + (ctrlOf(f) ? ' (' + Object.keys(ctrlOf(f)).length + ' curved segments)' : '')); radiiKv(f, kv); kv('Edited', e ? 'yes' : 'no'); body.append(h, sub, dl);
+    const row2 = document.createElement('div'); row2.className = 'row';
+    const bE = document.createElement('button'); bE.className = 'btn'; bE.textContent = S.tool === 'edit' ? 'Stop editing' : 'Edit points'; bE.disabled = !S.canWrite; bE.addEventListener('click', () => setTool(S.tool === 'edit' ? 'select' : 'edit'));
+    const bR = document.createElement('button'); bR.className = 'btn'; bR.textContent = 'Reset this line'; bR.disabled = !e || !S.canWrite; bR.addEventListener('click', () => { delete S.edits.transit[p.id]; changed(); renderSel(); });
+    row2.append(bE, bR); body.append(row2); curveRow(f, body);
+    const n = document.createElement('p'); n.className = 'notes'; n.style.marginTop = '8px'; n.textContent = 'Once edited, the tracks are redrawn as a pair along your line (Metro twin tubes 8 m apart, bores 3.9 m, RER 4.5 m) and open out round the island platforms on it. The platforms follow the line, keeping their length and their place against the station point; station dots and the RER structure marks stay where they were generated. Select a station to change its platforms.'; body.append(n);
+    alsoHere(f, body);
+  } else if (L === 'station') {
+    const del = stDeleted(f), stops = p.stops;
+    h.textContent = p.name; sub.textContent = (p.sys === 'metro' ? 'Metro station · ' + p.line.replace(/ Line /g, ', Line ') : 'RER station · ' + p.line) + (del ? ' · deleted' : '');
+    kv('Platforms', stops.length ? stops.map(sp => sp.pid ? featLabel(S.tfById.get(sp.pid)) + ': ' + (del ? 'none' : stopType(sp)) : 'Union Terminal box: ' + (del ? 'none' : sp.n + ' islands, fixed')).join('; ') : 'none drawn');
+    kv('Edited', S.edits.stations[p.id] ? 'yes' : 'no'); body.append(h, sub, dl);
+    if (del) { const n = document.createElement('p'); n.className = 'notes'; n.textContent = 'Deleted: its platforms are gone and the tracks run straight through. It shows as a dashed ring while editing.'; body.append(n); }
+    else for (const sp of stops) {
+      const box = document.createElement('div'); box.className = 'stop';
+      const hh = document.createElement('p'); hh.className = 'stop-h'; hh.textContent = sp.pid ? featLabel(S.tfById.get(sp.pid)) : 'RER, Union Terminal box'; box.append(hh);
+      if (!sp.pid) { const n = document.createElement('p'); n.className = 'notes'; n.textContent = 'Fixed: the three islands of the Union Terminal box are set with its tracks.'; box.append(n); body.append(box); continue; }
+      const seg = document.createElement('div'); seg.className = 'seg';
+      for (const [k, lab] of [['island', 'Island'], ['side', 'Side']]) { const b = document.createElement('button'); b.className = 'btn'; b.textContent = lab; b.setAttribute('aria-pressed', String(stopType(sp) === k)); b.disabled = !S.canWrite;
+        b.addEventListener('click', () => { setStop(sp, { t: k === sp.type0 ? undefined : k }, true); renderSel(); }); seg.append(b); }
+      box.append(seg);
+      const [spc, , g] = stopFrame(sp), fr = frameAt(g.c, g.cs, spc), fwd = compass(fr[2], fr[3]), back = compass(-fr[2], -fr[3]);
+      const say = o => Math.abs(o) < 0.5 ? 'Centred on the station' : 'Centre ' + fmt(Math.abs(o)) + ' m ' + (o > 0 ? fwd : back) + ' of the station';
+      const lab = document.createElement('label'); lab.className = 'notes'; lab.style.display = 'block'; lab.style.marginTop = '8px'; const rid = 'off_' + sp.pid.replace(/[^A-Za-z0-9]/g, ''); lab.htmlFor = rid; lab.textContent = say(stopOff(sp));
+      const rg = document.createElement('input'); rg.type = 'range'; rg.id = rid; rg.className = 'offrange'; rg.min = String(-Math.floor(sp.L / 2)); rg.max = String(Math.floor(sp.L / 2)); rg.step = '1'; rg.value = String(Math.round(stopOff(sp))); rg.disabled = !S.canWrite;
+      rg.setAttribute('aria-label', 'Platform position along ' + featLabel(S.tfById.get(sp.pid)));
+      rg.addEventListener('input', () => { const o = +rg.value; lab.textContent = say(o); setStop(sp, { o }, false); });
+      rg.addEventListener('change', () => { setStop(sp, { o: +rg.value }, true); renderSel(); });
+      const ends = document.createElement('div'); ends.className = 'rangeends'; const e1 = document.createElement('span'); e1.textContent = back; const e2 = document.createElement('span'); e2.textContent = fwd; ends.append(e1, e2);
+      const br = document.createElement('button'); br.className = 'btn'; br.textContent = 'Reset'; br.disabled = !S.canWrite || !stopEdit(sp); br.style.marginTop = '6px';
+      br.addEventListener('click', () => { setStop(sp, null, true); renderSel(); });
+      box.append(lab, rg, ends, br); body.append(box);
+    }
+    const row2 = document.createElement('div'); row2.className = 'row';
+    const bD = document.createElement('button'); bD.className = 'btn'; bD.textContent = del ? 'Restore station' : 'Delete station'; bD.disabled = !S.canWrite;
+    bD.addEventListener('click', () => { const e = Object.assign({}, S.edits.stations[p.id] || {}); if (del) delete e.del; else e.del = true; if (Object.keys(e).length) S.edits.stations[p.id] = e; else delete S.edits.stations[p.id]; changed(); renderSel(); });
+    const bR = document.createElement('button'); bR.className = 'btn'; bR.textContent = 'Reset station'; bR.disabled = !S.canWrite || !S.edits.stations[p.id]; bR.addEventListener('click', () => { delete S.edits.stations[p.id]; changed(); renderSel(); });
+    row2.append(bD, bR); body.append(row2);
+    const n = document.createElement('p'); n.className = 'notes'; n.style.marginTop = '8px';
+    n.textContent = (S.tool === 'edit' ? 'Drag a platform along its line to move it; it stops when its end reaches the station point (the dashed tie). ' : 'In Edit mode you can drag a platform along its line. ') + 'Platforms are ' + (p.sys === 'rer' ? '670 ft (RER)' : '500 ft (Metro)') + ', as ruled; widths are drawing values (island ' + PW[p.sys].island + ' m, side ' + PW[p.sys].side + ' m). Changing a station redraws the tracks of its line as a pair.';
+    body.append(n); alsoHere(f, body);
+  } else {
+    h.textContent = LNAME[L] || p.name; body.append(h);
+    const a = polyArea(f.geometry); kv('Area', fmt(a) + ' m²');
+    if (L === 'boulevard') { kv('Width', fmt(p.width_m) + ' m'); kv('Length', fmt(S.deck.axis.length_m) + ' m'); kv('Bearing', fmt(S.deck.axis.bearing_deg, 1) + '°'); sub.textContent = 'On the culverted creek line, W 6th to the roundabout: the Mill Creek deck was laid for the 1913 Exposition'; }
+    if (L === 'roundabout') { kv('Radius', fmt(p.radius_m) + ' m'); sub.textContent = 'Queen City Ave passes through; Harrison Ave re-aligned to meet it (draft)'; }
+    if (L === 'cut_park') { kv('Length', fmt(S.deck.cut.park_len_m) + ' m'); sub.textContent = 'On the terminal axis, from the west headhouse to the boulevard'; }
+    if (L === 'cut_precinct') sub.textContent = 'APEx platforms 1-16 under the concourse, Hopkins St to Kenner St';
+    if (L === 'palace') sub.textContent = 'Northern terminus of the boulevard';
+    if (L === 'rail_open') sub.textContent = 'RER A where it is open (ramp, trough or at ground) and TRI B/D\u2019s ramp and open trough between Camp Washington and Straight: no blocks, and streets end at the walls (the north trunk itself is a viaduct, so its streets pass under)';
+    body.insertBefore(sub, h.nextSibling); body.append(dl); alsoHere(f, body);
+  }
+}
+// curve controls for a selected line, and the other things under the last click
+function radiiKv(f, kv) {
+  const g = curveGroups(f).filter(x => x.R < 20000); if (!g.length) return;
+  kv('Curves', g.length + ', tightest ' + fmt(Math.min(...g.map(x => x.R))) + ' m radius');
+  kv('Radii along it', g.slice(0, 24).map(x => fmt(x.R)).join(', ') + (g.length > 24 ? ' \u2026' : '') + ' m');
+}
+function curveRow(f, body) {
+  const row = document.createElement('div'); row.className = 'row';
+  const bS = document.createElement('button'); bS.className = 'btn'; bS.textContent = 'Fit curves'; bS.disabled = !S.canWrite || (vertsOf(f).length < 3 && !ctrlOf(f));
+  bS.title = 'Each bend becomes one constant-radius curve: its points give the radius and the straights adapt to it';
+  bS.addEventListener('click', () => { const r = FA.fit(fitSource(f)); if (r.skipped) return; setEdit(f, { c: r.verts, k: r.k }); renderSel(); });
+  const bT = document.createElement('button'); bT.className = 'btn'; bT.textContent = 'Straighten'; bT.disabled = !S.canWrite || !ctrlOf(f); bT.title = 'Make every segment straight again';
+  bT.addEventListener('click', () => { setEdit(f, { c: vertsOf(f).map(q => q.slice()), k: undefined }); renderSel(); });
+  row.append(bS, bT); body.append(row);
+  if (S.tool === 'edit') { const n = document.createElement('p'); n.className = 'notes'; n.style.marginTop = '8px'; n.textContent = 'Drag a square to move a point; hold Ctrl (Cmd on a Mac) while dragging to keep it on the line\u2019s own direction, so the line only gets longer or shorter. Drag a round handle to bend that segment into a curve; double-click a filled handle to straighten it. Double-click the line to add a point; double-click a point to remove it. Fit curves turns each bend into one constant-radius curve from its own points, the straights adapting to it.'; body.append(n); }
+}
+function alsoHere(f, body) {
+  const lp = S.lastPick; if (!lp || lp.list.length < 2 || !lp.list.includes(f)) return;
+  const d = document.createElement('div'); d.className = 'also'; d.append(document.createTextNode('Also here:'));
+  for (const g of lp.list) { if (g === f) continue; const b = document.createElement('button'); b.className = 'btn'; b.textContent = featLabel(g); b.addEventListener('click', () => select(g)); d.append(b); }
+  body.append(d);
+}
+function smoothCtrl(v) {   // one smooth curve through the points: each segment bends to meet the bisecting tangents at its ends, scaled by its own length
+  const n = v.length, unit = (x, y) => { const L = Math.hypot(x, y) || 1; return [x / L, y / L]; }, T = [];
+  for (let i = 0; i < n; i++) { const a = unit(v[i][0] - v[Math.max(0, i - 1)][0], v[i][1] - v[Math.max(0, i - 1)][1]), b = unit(v[Math.min(n - 1, i + 1)][0] - v[i][0], v[Math.min(n - 1, i + 1)][1] - v[i][1]);
+    T.push(i === 0 ? b : i === n - 1 ? a : unit(a[0] + b[0], a[1] + b[1])); }
+  const K = {}; for (let i = 0; i < n - 1; i++) { const a = v[i], b = v[i + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    const k = [r1((a[0] + b[0]) / 2 + (T[i][0] - T[i + 1][0]) * L / 4), r1((a[1] + b[1]) / 2 + (T[i][1] - T[i + 1][1]) * L / 4)];
+    if (Math.abs((b[0] - a[0]) * (k[1] - a[1]) - (b[1] - a[1]) * (k[0] - a[0])) > 0.05 * L) K[i] = k; }
+  return K;
+}
+
+
+// ---------------------------------------------------------------- summary
+function renderSummary() {
+  const dl = $('summary'); dl.textContent = '';
+  const kv = (k, val) => { const dt = document.createElement('dt'); dt.textContent = k; const dd = document.createElement('dd'); dd.textContent = val; dl.append(dt, dd); };
+  const A = S.deck.axis; kv('Boulevard', fmt(A.length_m) + ' m × ' + fmt(S.deck.params.blvd_w) + ' m');
+  kv('Bearing', fmt(A.bearing_deg, 1) + '° (Garrard Ave 3.6°)');
+  const st = feats('street'); const n = k => st.filter(f => f.properties.kind === k).length;
+  kv('Through streets', String(n('through'))); kv('T streets', String(n('T'))); kv('Deck streets on old lines', String(n('NS'))); kv('Roundabout avenues', String(n('radial'))); kv('West-side streets', String(n('WV')));
+  const by = {}, cnt = {}; for (const [k] of BLOCK_TYPES) { by[k] = 0; cnt[k] = 0; }
+  for (const f of feats('block')) { if (isWE(f) || f.properties.side === 'WV') continue; const t = blockType(f); by[t] = (by[t] || 0) + f.properties.area_m2; cnt[t] = (cnt[t] || 0) + 1; }
+  for (const [t, lab] of BLOCK_TYPES) { if (!cnt[t] && !['building', 'square', 'park', 'planting'].includes(t)) continue; kv('Deck ' + lab.toLowerCase() + (t === 'industrial' || t === 'planting' ? '' : 's').replace('worships', 'places of worship'), cnt[t] + ' · ' + fmt(by[t] / 10000, 1) + ' ha'); }
+  { const named = feats('block').filter(f => blockName(f)).length; if (named) kv('Named blocks', String(named)); }
+  { const wb = feats('block').filter(f => f.properties.side === 'WV'); kv('West-side blocks, off the deck', wb.length + ' · ' + fmt(wb.reduce((a, f) => a + f.properties.area_m2, 0) / 10000, 1) + ' ha'); }
+  const deck = feats('deck')[0]; kv('Deck area', fmt(polyArea(deck.geometry) / 1e6, 2) + ' km²');
+  if (S.we) { const ws = S.deck.features.filter(f => isWE(f) && f.properties.layer === 'street'), wb = S.deck.features.filter(f => isWE(f) && f.properties.layer === 'block');
+    const nm = new Set(ws.filter(f => !['Alley', 'Unnamed'].includes(f.properties.name)).map(f => f.properties.name));
+    kv('Basin streets (1904)', nm.size + ' named · ' + fmt(ws.reduce((a, f) => a + lenOf(streetCoords(f)), 0) / 1000, 1) + ' km');
+    kv('Basin blocks (1904)', wb.length + ' · ' + fmt(wb.reduce((a, f) => a + f.properties.area_m2, 0) / 1e6, 2) + ' km²'); }
+}
+function renderEdits() {
+  const ns = Object.keys(S.edits.streets).length, nb = Object.keys(S.edits.blocks).length, nt = Object.keys(S.edits.transit).length, np = Object.keys(S.edits.stations).length;
+  const parts = [[ns, 'street'], [nb, 'block'], [nt, 'Metro/RER line'], [np, 'station']].filter(x => x[0]).map(([n, w]) => n + ' ' + w + (n === 1 ? '' : 's'));
+  $('editNote').textContent = parts.length ? parts.join(', ').replace(/, ([^,]*)$/, ' and $1') + ' changed from the generated layout.' + (S.db ? '' : ' Saving is off in this view, so edits last until you close the page.') : 'No edits yet.' + (S.canWrite ? '' : ' This view is read only.');
+  $('resetAll').disabled = !parts.length || !S.canWrite;
+}
+
+// ---------------------------------------------------------------- edits + saving
+function setEdit(f, patch) {
+  const kind = editKind(f), id = f.properties.id; if (!kind) return;
+  const nx = Object.assign({}, S.edits[kind][id] || seedEdit(f), patch);
+  for (const k of Object.keys(nx)) if (nx[k] === undefined || nx[k] === null) delete nx[k];
+  if (nx.k && !Object.keys(nx.k).length) delete nx.k;
+  if (Object.keys(nx).length) S.edits[kind][id] = JSON.parse(JSON.stringify(nx)); else delete S.edits[kind][id];
+  changed();
+}
+function setStreet(id, patch) { const f = S.deck.features.find(q => q.properties.id === id); if (f) setEdit(f, patch); }
+function setStop(sp, patch, final) {   // patch null resets this line's platforms at the station
+  const e = Object.assign({}, S.edits.stations[sp.key] || {}), s = Object.assign({}, e.s || {});
+  if (patch === null) delete s[sp.pid]; else { const x = Object.assign({}, s[sp.pid] || {}, patch); for (const k of Object.keys(x)) if (x[k] === undefined) delete x[k]; if (Object.keys(x).length) s[sp.pid] = x; else delete s[sp.pid]; }
+  if (Object.keys(s).length) e.s = s; else delete e.s;
+  if (Object.keys(e).length) S.edits.stations[sp.key] = e; else delete S.edits.stations[sp.key];
+  if (final) changed(); else { S.ver++; redraw(); }
+}
+function setBlock(f, t, n) {
+  const id = f.properties.id;
+  if (t === f.properties.type && !n) delete S.edits.blocks[id]; else S.edits.blocks[id] = n ? { t, n } : t;
+  changed();
+}
+let saveTimer = 0;
+// undo and redo: one step per finished change (a drag, a click, a field), kept for this visit only
+const HMAX = 200, hist = { undo: [], redo: [], last: null };
+const snapEdits = () => JSON.stringify(S.edits);
+function renderHist() { $('uUndo').disabled = !hist.undo.length || !S.canWrite; $('uRedo').disabled = !hist.redo.length || !S.canWrite; }
+function record() { const now = snapEdits(); if (hist.last !== null && now !== hist.last) { hist.undo.push(hist.last); if (hist.undo.length > HMAX) hist.undo.shift(); hist.redo = []; } hist.last = now; renderHist(); }
+function stepHist(from, to) {
+  if (!from.length || !S.canWrite || S.drag) return; to.push(snapEdits()); const s = from.pop(); S.edits = JSON.parse(s); hist.last = s;
+  if (S.sel && S.sel.f.properties.layer === 'station' && !S.sf.includes(S.sel.f)) S.sel = null;
+  changed(false); renderSel(); renderHist();
+}
+$('uUndo').onclick = () => stepHist(hist.undo, hist.redo);
+$('uRedo').onclick = () => stepHist(hist.redo, hist.undo);
+function changed(rec = true) { if (rec) record(); S.ver++; renderEdits(); renderSummary(); redraw(); if (!S.db || !S.canWrite) return; S.dirty = true; setStatus('saving', 'Unsaved changes'); clearTimeout(saveTimer); saveTimer = setTimeout(flush, 800); }
+async function flush() {
+  if (!S.dirty || S.saving || !S.docRef) return; S.saving = true; S.dirty = false; setStatus('saving', 'Saving');
+  const body = { streets: S.edits.streets, blocks: S.edits.blocks, transit: S.edits.transit, stations: S.edits.stations, updated: new Date().toISOString(), layout: 'deck.json' };
+  try { await S.docRef.set(JSON.parse(JSON.stringify(body))); setStatus('saved', 'Saved'); }
+  catch (e) { if (e && e.code === 'invalid_argument') { S.canWrite = false; setStatus('readonly', 'Read only'); renderSel(); renderEdits(); } else { setStatus('error', 'Not saved, will retry'); S.dirty = true; setTimeout(flush, 2500 + Math.random() * 1500); } }
+  finally { S.saving = false; if (S.dirty) flush(); }
+}
+function renderTracks() {
+  const dl = $('trkSummary'); if (!dl) return; dl.textContent = '';
+  if (!S.tracks) { dl.textContent = 'Track layer not loaded.'; return; }
+  const T = S.tracks.summary, kv = (k, val) => { const dt = document.createElement('dt'); dt.textContent = k; const dd = document.createElement('dd'); dd.textContent = val; dl.append(dt, dd); };
+  const L = T.apex_levels || {};
+  kv('APEx rail at CUT', fmt(T.apex_cut, 1) + ' m (+' + fmt(T.apex_raise, 1) + ' on the 1933 platforms)');
+  kv('Viaduct over Marshall / Liberty', fmt(L['Marshall'], 1) + ' / ' + fmt(L['W Liberty'], 1) + ' m');
+  kv('Viaduct over Gest / 8th / 6th', fmt(L['Gest'], 1) + ' / ' + fmt(L['W 8th'], 1) + ' / ' + fmt(L['W 6th'], 1) + ' m');
+  if (T.north) { const N = T.north; kv('North trunk viaduct', 'Ludlow (' + fmt(N.z_ludlow, 1) + ' m, at ground) to CUT; ' + fmt(N.g_band, 2) + '% up to ' + fmt(N.z_tip, 1) + ' m at the deck tip');
+    kv('Indianapolis + TRI D', fmt(N.g_indy, 1) + '% up from s ' + fmt(N.s_indy) + ' to ' + fmt(N.z_indy, 1) + ' m; west on the KMZ curve (about ' + fmt(N.r_curve) + ' m) from s ' + fmt(N.s_curve)); }
+  kv('Lower rail, level -2', fmt(T.lower_rail, 1) + ' m');
+  kv('Lower A-H, 305 m', 'N ' + fmt(T.eh[1]) + '-' + fmt(T.eh[0]));
+  kv('APEx bridge', fmt(T.apb_off, 0) + ' m east of the CS bridge, ' + fmt(T.apb_g, 2) + '% up from W 8th');
+  if (T.dive) { kv('Lower pairs dive', fmt(T.dive.g, 2) + '% over ' + fmt(T.dive.L) + ' m, Bank to Findlay'); kv('Tunnel to the platforms', fmt(T.dive.L_cover) + ' m: ' + fmt(T.dive.g, 2) + '% to Sherman, then ' + fmt(T.dive.g_tun, 2) + '%');
+    const ends = T.dive.streets.filter(x => !x.keep).map(x => x.name), regr = T.dive.streets.filter(x => x.keep).map(x => x.name + (x.how === 'dip' ? ' -' : ' +') + fmt(x.need, 1));
+    kv('Streets ending at the dive', ends.join(', ')); kv('Streets re-graded (m)', regr.join(', ')); }
+  kv('CS climb', fmt(T.cs_g, 2) + '% (W 8th humped ' + fmt(T.cs_hump, 0) + ' m)');
+  kv('CS at Gest / 8th / 6th', fmt(T.cs_zG, 1) + ' / ' + fmt(T.cs_z8, 1) + ' / ' + fmt(T.cs_z6, 1) + ' m');
+  kv('C&O climb', 'level to W 6th, then ' + fmt(T.co_g, 2) + '%');
+}
+function setStatus(s, t) { $('status').dataset.s = s; $('statusText').textContent = t; }
+
+// ---------------------------------------------------------------- tools and interaction
+function setTool(t) { S.tool = t; $('tSel').setAttribute('aria-pressed', String(t === 'select')); $('tEdit').setAttribute('aria-pressed', String(t === 'edit')); cv.classList.toggle('edit', t === 'edit'); $('hint').textContent = t === 'edit' ? 'Edit: select a street or a Metro or RER line and drag its squares (points) or round handles (curves); hold Ctrl (Cmd on a Mac) to slide a point along the line. Double-click to add or remove a point. Select a station to drag its platforms along the line.' : 'Drag to pan, scroll or pinch to zoom. Click a street, line, station or block to see it; click again to step through what is under it.'; renderSel(); redraw(); }
+const pts = new Map(); let pinch = null, down = null;
+function local(e) { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+function lineSel() { const s = S.sel; return s && S.tool === 'edit' && (s.f.properties.layer === 'street' || s.f.properties.layer === 'transit') ? s.f : null; }
+function vertexAt(px, py) { const f = lineSel(); if (!f) return -1; const v = vertsOf(f); for (let i = 0; i < v.length; i++) { const [x, y] = W2S(v[i][0], v[i][1]); if (Math.abs(x - px) < 9 && Math.abs(y - py) < 9) return i; } return -1; }
+function handleAt(px, py) { const f = lineSel(); if (!f) return -1; const v = vertsOf(f), K = ctrlOf(f); for (let i = 0; i < v.length - 1; i++) { const [x, y] = W2S(...midHandle(v, K, i)); if (Math.hypot(x - px, y - py) < 8) return i; } return -1; }
+function stopAt(px, py) {   // a platform of the selected station under the pointer, in edit mode
+  const s = S.sel; if (!s || S.tool !== 'edit' || s.f.properties.layer !== 'station' || stDeleted(s.f)) return null; const q = S2W(px, py);
+  for (const sp of s.f.properties.stops) if (sp.pid && stopRings(sp).some(r => inRing(q, r))) return sp; return null;
+}
+function lockAxes(f, vi) {   // directions a point may slide along: the tangents of the segments that meet at it
+  const v = vertsOf(f), K = ctrlOf(f) || {}, n = v.length, out = [], unit = (x, y) => { const L = Math.hypot(x, y); return L > 1e-6 ? [x / L, y / L] : null; };
+  if (vi > 0) { const a = K[vi - 1] || v[vi - 1], u = unit(v[vi][0] - a[0], v[vi][1] - a[1]); if (u) out.push(u); }
+  if (vi < n - 1) { const b = K[vi] || v[vi + 1], u = unit(b[0] - v[vi][0], b[1] - v[vi][1]); if (u && !out.some(q => Math.abs(q[0] * u[1] - q[1] * u[0]) < 0.01)) out.push(u); }
+  return out;
+}
+function putEdit(f, patch) { const kind = editKind(f), id = f.properties.id; S.edits[kind][id] = Object.assign({}, S.edits[kind][id] || seedEdit(f), patch); S.ver++; }
+cv.addEventListener('pointerdown', e => {
+  cv.setPointerCapture(e.pointerId); pts.set(e.pointerId, local(e));
+  if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), s: S.view.s, mid: S2W((a[0] + b[0]) / 2, (a[1] + b[1]) / 2) }; down = null; S.drag = null; return; }
+  const [px, py] = local(e);
+  if (S.canWrite) {
+    const vi = vertexAt(px, py); if (vi >= 0) { S.drag = { mode: 'v', vi, p0: vertsOf(S.sel.f)[vi].slice(), axes: lockAxes(S.sel.f, vi), lock: null }; down = null; redraw(); return; }
+    const si = handleAt(px, py); if (si >= 0) { S.drag = { mode: 'k', si }; down = null; redraw(); return; }
+    const sp = stopAt(px, py); if (sp) { const [, , g] = stopFrame(sp); S.drag = { mode: 'slide', sp, s0: projectOn(g.c, g.cs, S2W(px, py))[0], o0: stopOff(sp), g }; down = null; cv.classList.add('dragging'); return; }
+  }
+  down = { px, py, cx: S.view.cx, cy: S.view.cy, moved: false };
+});
+cv.addEventListener('pointermove', e => {
+  const [px, py] = local(e); const [wx, wy] = S2W(px, py); $('readout').textContent = `E ${fmt(wx)}  N ${fmt(wy)}`;
+  if (pts.has(e.pointerId)) pts.set(e.pointerId, [px, py]);
+  if (pinch && pts.size === 2) { const [a, b] = [...pts.values()]; const d = Math.hypot(a[0] - b[0], a[1] - b[1]); S.view.s = clampS(pinch.s * d / pinch.d); const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; const [mx, my] = S2W(m[0], m[1]); S.view.cx += pinch.mid[0] - mx; S.view.cy += pinch.mid[1] - my; redraw(); return; }
+  const d = S.drag;
+  if (d && S.sel) {
+    if (d.mode === 'v') { const f = S.sel.f, v = vertsOf(f).map(q => q.slice()); let w = [wx, wy];
+      if ((e.ctrlKey || e.metaKey) && d.axes.length) {   // Ctrl (Cmd on a Mac): slide along the line's own direction, longer or shorter
+        const dx = wx - d.p0[0], dy = wy - d.p0[1];
+        if (!d.lock || (d.axes.length > 1 && !d.lock.fixed)) { let best = d.axes[0]; for (const u of d.axes) if (Math.abs(dx * u[0] + dy * u[1]) > Math.abs(dx * best[0] + dy * best[1])) best = u; d.lock = { u: best, fixed: Math.hypot(dx, dy) * S.view.s > 8 }; }
+        const u = d.lock.u, s = dx * u[0] + dy * u[1]; d.lock.s = s; w = [d.p0[0] + u[0] * s, d.p0[1] + u[1] * s];
+      } else d.lock = null;
+      v[d.vi] = [r1(w[0]), r1(w[1])]; putEdit(f, { c: v }); }
+    else if (d.mode === 'k') { const f = S.sel.f, v = vertsOf(f).map(q => q.slice()), a = v[d.si], b = v[d.si + 1], K = Object.assign({}, ctrlOf(f) || {}); K[d.si] = [r1(2 * wx - (a[0] + b[0]) / 2), r1(2 * wy - (a[1] + b[1]) / 2)]; putEdit(f, { c: v, k: K }); }
+    else if (d.mode === 'slide') { const s = projectOn(d.g.c, d.g.cs, [wx, wy])[0], o = Math.max(-d.sp.L / 2, Math.min(d.sp.L / 2, d.o0 + s - d.s0)); setStop(d.sp, { o: Math.round(o) }, false); }
+    redraw(); return;
+  }
+  if (down) { const dx = px - down.px, dy = py - down.py; if (Math.hypot(dx, dy) > 3) { down.moved = true; cv.classList.add('dragging'); } if (down.moved) { S.view.cx = down.cx - dx / S.view.s; S.view.cy = down.cy + dy / S.view.s; redraw(); } }
+});
+function endPtr(e) {
+  pts.delete(e.pointerId); if (pts.size < 2) pinch = null;
+  if (S.drag) { S.drag = null; cv.classList.remove('dragging'); changed(); renderSel(); return; }
+  if (down && !down.moved) {
+    const [wx, wy] = S2W(down.px, down.py), list = pickAll(wx, wy), lp = S.lastPick, now = e.timeStamp || performance.now();
+    const same = lp && Math.hypot(lp.px - down.px, lp.py - down.py) < 6;
+    if (same && now - lp.t < 400) lp.t = now;   // second click of a double-click: keep the selection
+    else {
+      let f = list[0] || null; const cur = S.sel && list.includes(S.sel.f) ? S.sel.f : null;
+      const dot = f && f.properties.layer === 'station' && Math.hypot(...(([x, y]) => [x - down.px, y - down.py])(W2S(...f.geometry.coordinates))) < 9;
+      if (S.tool === 'edit') { if (cur && !dot) f = cur; } else if (cur && same) f = list[(list.indexOf(cur) + 1) % list.length];
+      S.lastPick = { px: down.px, py: down.py, t: now, list }; select(f);
+    }
+  }
+  down = null; cv.classList.remove('dragging');
+}
+cv.addEventListener('pointerup', endPtr); cv.addEventListener('pointercancel', endPtr); cv.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+  if (e.key === 'Escape' && S.sel) select(null);
+  const k = e.key.toLowerCase(); if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+  if (k === 'z' && !e.shiftKey) { e.preventDefault(); stepHist(hist.undo, hist.redo); }
+  else if ((k === 'z' && e.shiftKey) || k === 'y') { e.preventDefault(); stepHist(hist.redo, hist.undo); }
+});
+cv.addEventListener('dblclick', e => {
+  const f = lineSel(); if (!f || !S.canWrite) return;
+  const [px, py] = local(e), v = vertsOf(f).map(q => q.slice()), K = Object.assign({}, ctrlOf(f) || {}), vi = vertexAt(px, py);
+  if (vi >= 0) { if (v.length > 2) { const q = v[vi], bent = vi > 0 && vi < v.length - 1 && (K[vi - 1] || K[vi]); v.splice(vi, 1); const nk = {};
+      for (const [i, k] of Object.entries(K)) { const j = +i; if (j < vi - 1) nk[j] = k; else if (j > vi) nk[j - 1] = k; }
+      if (bent) { const a = v[vi - 1], b = v[vi]; nk[vi - 1] = [r1(2 * q[0] - (a[0] + b[0]) / 2), r1(2 * q[1] - (a[1] + b[1]) / 2)]; }   // the merged segment still bends through the removed point
+      setEdit(f, { c: v, k: nk }); renderSel(); } return; }
+  const hi = handleAt(px, py); if (hi >= 0) { if (K[hi]) { delete K[hi]; setEdit(f, { c: v, k: K }); renderSel(); } return; }
+  const p = S2W(px, py); let bi = -1, bd = 1e18, bt = 0;
+  for (let i = 0; i < v.length - 1; i++) {
+    if (K[i]) { for (let j = 0; j <= 40; j++) { const q = qpt(v[i], K[i], v[i + 1], j / 40), dd = Math.hypot(q[0] - p[0], q[1] - p[1]); if (dd < bd) { bd = dd; bi = i; bt = j / 40; } } }
+    else { const dd = segDist(p, v[i], v[i + 1]); if (dd < bd) { bd = dd; bi = i; } }
+  }
+  if (bi < 0 || bd * S.view.s > 14) return;
+  const nk = {}; for (const [i, k] of Object.entries(K)) { const j = +i; if (j < bi) nk[j] = k; else if (j > bi) nk[j + 1] = k; }
+  if (K[bi]) { const a = v[bi], k = K[bi], b = v[bi + 1], lerp = (x, y, u) => [x[0] + (y[0] - x[0]) * u, x[1] + (y[1] - x[1]) * u], q0 = lerp(a, k, bt), q1 = lerp(k, b, bt), r = lerp(q0, q1, bt);
+    v.splice(bi + 1, 0, [r1(r[0]), r1(r[1])]); nk[bi] = [r1(q0[0]), r1(q0[1])]; nk[bi + 1] = [r1(q1[0]), r1(q1[1])]; }
+  else v.splice(bi + 1, 0, [r1(p[0]), r1(p[1])]);
+  setEdit(f, { c: v, k: nk }); renderSel();
+});
+const clampS = s => Math.max(0.05, Math.min(6, s));
+function zoomAt(px, py, k) { const [wx, wy] = S2W(px, py); S.view.s = clampS(S.view.s * k); const [nx, ny] = S2W(px, py); S.view.cx += wx - nx; S.view.cy += wy - ny; redraw(); }
+cv.addEventListener('wheel', e => { e.preventDefault(); const [px, py] = local(e); zoomAt(px, py, Math.exp(-e.deltaY * 0.0015)); }, { passive: false });
+function fit(x0, y0, x1, y1) { const r = cv.getBoundingClientRect(); S.view.cx = (x0 + x1) / 2; S.view.cy = (y0 + y1) / 2; S.view.s = clampS(Math.min(r.width / (x1 - x0), r.height / (y1 - y0)) * 0.92); redraw(); }
+$('zIn').onclick = () => { const r = cv.getBoundingClientRect(); zoomAt(r.width / 2, r.height / 2, 1.5); };
+$('zOut').onclick = () => { const r = cv.getBoundingClientRect(); zoomAt(r.width / 2, r.height / 2, 1 / 1.5); };
+$('zFit').onclick = () => fit(711700, 4330700, 713050, 4334700);
+$('zNo').onclick = () => fit(710900, 4333300, 714300, 4339300);
+$('zCut').onclick = () => { const c = S.deck.cut.square_centre; fit(c[0] - 120, c[1] - 330, c[0] + 700, c[1] + 330); };
+$('zTrk').onclick = () => fit(712380, 4330280, 713620, 4332880);
+$('zRb').onclick = () => { const c = S.deck.axis.N; fit(c[0] - 420, c[1] - 380, c[0] + 420, c[1] + 420); };
+$('zWe').onclick = () => fit(712650, 4329750, 716600, 4333450);
+$('zWv').onclick = () => fit(711450, 4331650, 712850, 4336550);
+$('tSel').onclick = () => setTool('select'); $('tEdit').onclick = () => setTool('edit');
+for (const [id, key] of [['lSan', 'san'], ['lRel', 'rel'], ['lBlk', 'blk'], ['lStr', 'str'], ['lMet', 'met'], ['lRer', 'rer'], ['lTrk', 'trk'], ['lLab', 'lab'], ['lIdx', 'idx'], ['lWe', 'we'], ['l12', 's12']]) $(id).addEventListener('change', e => { S.layers[key] = e.target.checked; redraw(); });
+$('opSan').addEventListener('input', e => { S.op.san = e.target.value / 100; redraw(); });
+$('opBlk').addEventListener('input', e => { S.op.blk = e.target.value / 100; redraw(); });
+$('op12').addEventListener('input', e => { S.op.s12 = e.target.value / 100; redraw(); });
+$('resetAll').onclick = () => { $('resetConfirm').hidden = false; };
+$('resetNo').onclick = () => { $('resetConfirm').hidden = true; };
+$('resetYes').onclick = () => { S.edits = { streets: {}, blocks: {}, transit: {}, stations: {} }; $('resetConfirm').hidden = true; changed(); renderSel(); };
+
+// ---------------------------------------------------------------- export
+function currentFeatures(ll) {
+  const tr = c => ll ? utmToLL(c[0], c[1]) : [c[0], c[1]];
+  const mapG = g => { if (g.type === 'LineString') return { type: g.type, coordinates: g.coordinates.map(tr) }; if (g.type === 'Polygon') return { type: g.type, coordinates: g.coordinates.map(r => r.map(tr)) }; if (g.type === 'MultiPolygon') return { type: g.type, coordinates: g.coordinates.map(p => p.map(r => r.map(tr))) }; if (g.type === 'Point') return { type: g.type, coordinates: tr(g.coordinates) }; return g; };
+  const extra = (S.tracks ? S.tracks.features : []).map(f => ({ type: 'Feature', properties: Object.assign({ group: 'cut_tracks' }, f.properties), geometry: mapG(f.geometry) }));
+  return S.deck.features.map(f => { const p = Object.assign({}, f.properties); let g = f.geometry;
+    if (p.layer === 'street') { g = { type: 'LineString', coordinates: streetCoords(f) }; p.width_m = streetWidth(f); p.edited = !!S.edits.streets[p.id]; }
+    if (p.layer === 'block') { p.type = blockType(f); if (blockName(f)) p.block_name = blockName(f); p.edited = !!S.edits.blocks[p.id]; }
+    return { type: 'Feature', properties: p, geometry: mapG(g) }; }).concat(transitFeatures(mapG), extra);
+}
+function transitFeatures(mapG) {
+  const out = [];
+  for (const f of S.tf) { const p = f.properties; out.push({ type: 'Feature', properties: { layer: p.sys === 'metro' ? 'metro_line' : 'rer_line', id: p.id, name: featLabel(f), edited: !!S.edits.transit[p.id] }, geometry: mapG({ type: 'LineString', coordinates: lineCoords(f) }) }); }
+  for (const st of S.sf) { const p = st.properties, del = stDeleted(st);
+    out.push({ type: 'Feature', properties: { layer: p.sys === 'metro' ? 'metro_station' : 'rer_station', id: p.id, name: p.name, lines: p.line, deleted: del, edited: !!S.edits.stations[p.id] }, geometry: mapG(st.geometry) });
+    for (const sp of p.stops) stopRings(sp).forEach((r, i) => out.push({ type: 'Feature', properties: { layer: p.sys === 'metro' ? 'metro_platform' : 'rer_platform', station: p.name, line: sp.pid ? featLabel(S.tfById.get(sp.pid)) : 'Union Terminal box', type: stopType(sp), n: i + 1, centre_from_station_m: Math.round(stopOff(sp)), drawn_from_settings: stopLive(sp) }, geometry: mapG({ type: 'Polygon', coordinates: [r.concat([r[0]])] }) })); }
+  return out;
+}
+async function offer(filename, data) {
+  const dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null;
+  if (!dl) { setStatus('error', 'Downloads are off in this view'); return; }
+  try { await dl.save({ filename, data }); } catch (e) { if (e && e.code !== 'declined') setStatus('error', 'Download failed: ' + (e.message || e.code)); }
+}
+$('xGeo').onclick = () => { const fc = { type: 'FeatureCollection', name: 'mill_creek_deck_and_basin', crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:OGC:1.3:CRS84' } }, features: currentFeatures(true) }; offer('mill_creek_deck.json', JSON.stringify(fc)); };
+function kml() {
+  const esc = s => String(s).replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+  const col = { building: 'ff74a0c9', tower: 'ff47648a', landmark: 'ff27a2c9', civic: 'ff6f4689', worship: 'ff7e60a0', school: 'ffb48f5f', hospital: 'ff5a5ac4', industrial: 'ff97928b', square: 'ff7cbd92', park: 'ff478f4e', planting: 'ffa5cfb4' };
+  const st = Object.entries(col).map(([k, c]) => `<Style id="b_${k}"><LineStyle><color>ff333333</color><width>1</width></LineStyle><PolyStyle><color>${'b3' + c.slice(2)}</color></PolyStyle></Style>`).join('') +
+    '<Style id="thru"><LineStyle><color>ff2e3ab2</color><width>4</width></LineStyle></Style><Style id="tee"><LineStyle><color>ff7a4f1f</color><width>3</width></LineStyle></Style><Style id="civic"><LineStyle><color>ff222222</color><width>1.5</width></LineStyle><PolyStyle><color>cc89466f</color></PolyStyle></Style><Style id="open"><LineStyle><color>ff333333</color><width>1.5</width></LineStyle><PolyStyle><color>99d2e7ef</color></PolyStyle></Style><Style id="apex"><LineStyle><color>ff2a2516</color><width>1.5</width></LineStyle><PolyStyle><color>99b3b09f</color></PolyStyle></Style><Style id="lower"><LineStyle><color>ff7a20b0</color><width>2</width></LineStyle><PolyStyle><color>997a20b0</color></PolyStyle></Style><Style id="tri"><LineStyle><color>ff1c7ad0</color><width>2</width></LineStyle></Style>';
+  const coords = c => c.map(q => q[0] + ',' + q[1] + ',0').join(' ');
+  const polyK = g => (g.type === 'Polygon' ? [g.coordinates] : g.coordinates).map(p => `<Polygon><outerBoundaryIs><LinearRing><coordinates>${coords(p[0])}</coordinates></LinearRing></outerBoundaryIs>${p.slice(1).map(r => `<innerBoundaryIs><LinearRing><coordinates>${coords(r)}</coordinates></LinearRing></innerBoundaryIs>`).join('')}</Polygon>`).join('');
+  const folders = {};
+  for (const f of currentFeatures(true)) { const p = f.properties, L = p.layer; let style = 'open', name = p.name || p.id || L;
+    if (L === 'street') style = (p.kind === 'through' || p.kind === 'radial') ? 'thru' : 'tee'; else if (L === 'block') style = 'b_' + p.type; else if (['palace', 'cut_headhouse', 'cut_building'].includes(L)) style = 'civic'; else if (['apex', 'apex_plat', 'bridge', 'passing'].includes(L)) style = 'apex'; else if (['lower', 'lower_plat', 'marker'].includes(L)) style = 'lower'; else if (L === 'tri_prop' || L === 'rer_line' || L === 'rer_platform' || L === 'rer_station') style = 'tri'; else if (L === 'metro_line' || L === 'metro_platform' || L === 'metro_station') style = 'lower';
+    if (p.group === 'cut_tracks') name = p.name || p.label || p.text || L;
+    const geom = f.geometry.type === 'Point' ? `<Point><coordinates>${f.geometry.coordinates[0]},${f.geometry.coordinates[1]},0</coordinates></Point>` : f.geometry.type === 'LineString' ? `<LineString><tessellate>1</tessellate><coordinates>${coords(f.geometry.coordinates)}</coordinates></LineString>` : (f.geometry.type.includes('Polygon') ? (f.geometry.type === 'MultiPolygon' ? `<MultiGeometry>${polyK(f.geometry)}</MultiGeometry>` : polyK(f.geometry)) : '');
+    const desc = Object.entries(p).map(([k, v]) => `${k}: ${v}`).join('<br>');
+    const FL = p.group === 'cut_tracks' ? 'CUT tracks: ' + L : L;
+    (folders[FL] = folders[FL] || []).push(`<Placemark><name>${esc(name)}</name><description><![CDATA[${desc}]]></description><styleUrl>#${style}</styleUrl>${geom}</Placemark>`); }
+  return `<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Mill Creek Deck</name>${st}${Object.entries(folders).map(([k, v]) => `<Folder><name>${esc(k)}</name>${v.join('')}</Folder>`).join('')}</Document></kml>`;
+}
+function crc32(b) { let c, t = crc32.t || (crc32.t = Array.from({ length: 256 }, (_, n) => { c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; })); let x = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) x = t[(x ^ b[i]) & 255] ^ (x >>> 8); return (x ^ 0xFFFFFFFF) >>> 0; }
+function zipOne(name, text) {
+  const data = new TextEncoder().encode(text), nm = new TextEncoder().encode(name), crc = crc32(data), n = data.length;
+  const lh = new DataView(new ArrayBuffer(30)); lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint32(14, crc, true); lh.setUint32(18, n, true); lh.setUint32(22, n, true); lh.setUint16(26, nm.length, true);
+  const ch = new DataView(new ArrayBuffer(46)); ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint32(16, crc, true); ch.setUint32(20, n, true); ch.setUint32(24, n, true); ch.setUint16(28, nm.length, true);
+  const off = 30 + nm.length + n, cdl = 46 + nm.length;
+  const end = new DataView(new ArrayBuffer(22)); end.setUint32(0, 0x06054b50, true); end.setUint16(8, 1, true); end.setUint16(10, 1, true); end.setUint32(12, cdl, true); end.setUint32(16, off, true);
+  return new Blob([lh.buffer, nm, data, ch.buffer, nm, end.buffer], { type: 'application/zip' });
+}
+$('xKmz').onclick = () => offer('mill_creek_deck_kmz.zip', zipOne('doc.kml', kml()));
+
+// ---------------------------------------------------------------- boot
+async function boot() {
+  readColors(); sizeCanvas();
+  const [deck, cx, sheets, tiles, relief] = await Promise.all(['deck.json', 'context.json', 'sheets.json', 'tiles_n/index.json', 'relief.json'].map(u => fetch(u).then(r => r.json())));
+  try { S.tnOvMeta = await fetch('tiles_n/overview.json').then(r => r.json()); } catch (e) { S.tnOvMeta = null; }
+  Object.assign(S, { deck, ctx: cx, sheets, tiles, relief }); buildTransitFeats();
+  try { S.tracks = await fetch('tracks.json').then(r => r.json()); } catch (e) { S.tracks = null; }
+  try { const we = await fetch('basin.json').then(r => r.json()); S.we = we; for (const f of we.features) S.deck.features.push(f); } catch (e) { S.we = null; }
+  try { S.t12 = await fetch('tiles12/index.json').then(r => r.json()); } catch (e) { S.t12 = null; }
+  try { S.tb = await fetch('tiles_b/index.json').then(r => r.json()); S.tbOvMeta = await fetch('tiles_b/overview.json').then(r => r.json()); S.tbOv = true; } catch (e) { S.tb = S.tb || null; }
+  renderTracks();
+  const ri = new Image(); ri.onload = redraw; ri.src = 'relief.webp'; S.reliefImg = ri;
+  renderSummary(); renderEdits(); $('zFit').onclick();
+  { const m = /^#(\d+(?:\.\d+)?),(\d+(?:\.\d+)?),(\d+(?:\.\d+)?)$/.exec(location.hash || ''); if (m) { S.view.cx = +m[1]; S.view.cy = +m[2]; S.view.s = clampS(+m[3]); redraw(); } }
+  setStatus('local', 'Not saving in this view'); S.canWrite = true; renderEdits(); hist.last = snapEdits(); renderHist();
+  connect();
+}
+async function connect() {
+  const db = window.claude && window.claude.use ? await window.claude.use('db') : null;
+  if (!db) { setStatus('local', 'Not saving in this view'); return; }
+  const user = await window.claude.use('user'); const cw = user ? await user.can('data.write') : null;
+  S.db = db; S.docRef = db.doc('deck/layout'); S.canWrite = cw !== false;
+  setStatus(S.canWrite ? 'saved' : 'readonly', S.canWrite ? 'Saved' : 'Read only');
+  S.docRef.onSnapshot(snap => {
+    if (snap.metadata.hasPendingWrites || S.dirty || S.saving || S.drag) return;
+    const d = snap.exists ? snap.data() : null;
+    const cp = x => JSON.parse(JSON.stringify(x || {}));
+    S.edits = d ? { streets: cp(d.streets), blocks: cp(d.blocks), transit: cp(d.transit), stations: cp(d.stations) } : { streets: {}, blocks: {}, transit: {}, stations: {} };
+    S.ver++; hist.last = snapEdits(); renderEdits(); renderSummary(); renderSel(); redraw();
+  }, () => setStatus('error', 'Live sync stopped; reload to reconnect'));
+  renderEdits(); renderSel(); renderHist();
+}
+window.addEventListener('resize', () => { sizeCanvas(); redraw(); });
+const mq = matchMedia('(prefers-color-scheme: dark)'); mq.addEventListener('change', () => { readColors(); redraw(); });
+new MutationObserver(() => { readColors(); redraw(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+boot().catch(err => { setStatus('error', 'Could not load the plan data'); console.error(err); });
+})();
+</script>
