@@ -38,6 +38,7 @@ class Work:
     source: str = ""
     note: str = ""
     code: int = 0
+    part_value: int | None = None
 
     @property
     def year(self) -> int | None:
@@ -45,37 +46,19 @@ class Work:
         return self.built_by if self.built_by is not None else self.built_from
 
 
-# How each ledger work is applied. 'target_mode': the work's own target and mode rasters. 'map3_footprint': the 2026
-# canon ground inside the non-zero cells of a delta raster (the delta was made against today's LiDAR, which the repo
-# does not hold). 'map3_zones': the 2026 canon ground inside polygons. 'raster': a surface that replaces the ground
-# where it has values. 'model': generated from the hub model, not here. Order is the order of application.
-LAYERS = {
-    "ohio_embankment_1912": dict(kind="target_mode", target="works/riverworks_1912_target_dm.tif", mode="works/riverworks_1912_mode.tif"),
-    "ohio_embankment_rest": dict(kind="target_mode", target="works/riverworks_2026_target_dm.tif", mode="works/riverworks_2026_mode.tif"),
-    "mill_creek_deck": dict(kind="target_mode", target="works/riverworks_2026_target_dm.tif", mode="works/riverworks_2026_mode.tif", shared="ohio_embankment_rest"),
-    "lunken_levees": dict(kind="target_mode", target="works/riverworks_2026_target_dm.tif", mode="works/riverworks_2026_mode.tif", shared="ohio_embankment_rest"),
-    "lunken_airfield_lift": dict(kind="target_mode", target="works/riverworks_2026_target_dm.tif", mode="works/riverworks_2026_mode.tif", shared="ohio_embankment_rest"),
-    "ky_terraces": dict(kind="target_mode", target="works/ky_terraces_target_dm.tif", mode="works/ky_terraces_mode.tif"),
-    "canon_interstates": dict(kind="map3_footprint", delta="works/canon_interstates_delta_dm.tif"),
-    # Ben, 6 November: the bed the Rail Profiles use (map 3's) is canon; the 4 m bed raster only gives the footprint
-    "ohio_bed_canon": dict(kind="map3_footprint", delta="works/ohio_bed_canon_dm.tif"),
-    "real_works_removed": dict(kind="none", note="never built in canon; the 1912 base has none of them"),
-    "real_works_kept": dict(kind="map3_zones", zones="zones/zones_post1912_works.geojson", minus="zones/zones_real_works_canon_removes.geojson"),
-    "metro_tri_line_works": dict(kind="model"),
-}
+FILE_KEYS = ("target", "mode", "delta", "raster", "zones", "minus", "part", "years")
 
 
 def load_ledger(path: Path = GROUND / "works_ledger.json") -> list[Work]:
+    """The works as the ledger has them. The ledger's `apply` block says how each is applied; nothing here is hard-coded."""
     d = json.loads(path.read_text())
     out = []
     for i, w in enumerate(d["works"]):
-        lay = dict(LAYERS.get(w["id"], {"kind": "none"}))
-        kind = lay.pop("kind")
-        files = {k: GROUND / v for k, v in lay.items() if k in ("target", "mode", "delta", "raster", "zones", "minus")}
-        extra = {k: v for k, v in lay.items() if k not in files}
-        out.append(Work(id=w["id"], name=w["name"], built_from=w.get("built_from"), built_by=w.get("built_by"), kind=kind,
-                        files=files, timeline="canon" if w["id"] != "real_works_kept" else "both", source=w.get("source", ""),
-                        note=(w.get("note") or "") + (" " + json.dumps(extra) if extra else ""), code=10 + i))
+        lay = dict(w.get("apply") or {"kind": "none"})
+        files = {k: GROUND / v for k, v in lay.items() if k in FILE_KEYS}
+        out.append(Work(id=w["id"], name=w["name"], built_from=w.get("built_from"), built_by=w.get("built_by"), kind=lay.get("kind", "none"),
+                        files=files, timeline=w.get("timeline", "canon"), source=w.get("source", ""), note=w.get("note") or "",
+                        code=10 + i, part_value=lay.get("part_value")))
     return out
 
 

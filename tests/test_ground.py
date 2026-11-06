@@ -26,8 +26,9 @@ def test_real_1912_differs_only_on_the_riverworks():
 
 def test_works_by_year():
     p30, s30 = works_for_year(1930)
-    assert {w.id for w in p30} == {"ohio_embankment_1912", "ohio_embankment_rest", "ky_terraces"}
-    assert ("mill_creek_deck", "built 1933") in s30 and ("real_works_kept", "undated") in s30
+    # the deck by 1913 (Ben, 6 November); the fluid zones are always offered and compose picks the dated ones
+    assert {w.id for w in p30} == {"ohio_embankment_1912", "ohio_embankment_rest", "mill_creek_deck", "ky_terraces", "real_works_kept"}
+    assert ("lunken_levees", "built 1941") in s30 and ("canon_interstates", "built 1965") in s30
     p26, _ = works_for_year(2026)
     assert "real_works_kept" in {w.id for w in p26} and "canon_interstates" in {w.id for w in p26}
 
@@ -80,3 +81,29 @@ def test_extra_works_compose_on_the_year():
     g = compose(1930, EMB, extra_works=[pad])
     assert sample(1930, [(712450, 4331050)])[0] < 160 and sample_grid(g, [(712450, 4331050)])[0] == pytest.approx(170.0)
     assert (g.src == pad.code).sum() > 2500 and pad.stats["fill_m3"] > 0
+
+
+def test_a_date_change_is_one_record_edit(tmp_path):
+    """Dates, layers and zones live in the ledger and the zone files, never in code."""
+    import json
+    from region.ground import layers as L
+    led = json.loads((L.GROUND / "works_ledger.json").read_text())
+    deck = next(w for w in led["works"] if w["id"] == "mill_creek_deck")
+    assert deck["built_by"] == 1913 and deck["apply"]["kind"] == "target_mode" and deck["apply"]["part_value"] == 2
+    deck["built_by"] = 1950
+    p = tmp_path / "ledger.json"; p.write_text(json.dumps(led))
+    present, _ = works_for_year(1930, ledger=L.load_ledger(p))
+    assert "mill_creek_deck" not in {w.id for w in present}
+    g13, g30 = compose(1913, EMB), compose(1930, EMB)
+    assert (g13.src == next(w.code for w in L.load_ledger() if w.id == "mill_creek_deck")).sum() > 100000   # the deck is there in 1913
+
+
+def test_zone_years_are_per_zone(tmp_path):
+    import json
+    import region.ground.compose as C
+    from region.ground import layers as L
+    zones = L.GROUND / "zones/zones_post1912_works.geojson"
+    ids = [zid for zid, _ in C._load_zones(zones)]
+    yrs = tmp_path / "years.json"; yrs.write_text(json.dumps({"zones": {ids[0]: {"built_by": 1925}}}))
+    g_early = C._zones_geom(zones, None, yrs, 1930); g_none = C._zones_geom(zones, None, yrs, 1920); g_all = C._zones_geom(zones, None, yrs, 2026)
+    assert g_none.is_empty and 0 < g_early.area < g_all.area

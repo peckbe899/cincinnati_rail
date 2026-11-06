@@ -1,7 +1,8 @@
 {
-  "about": "Canon ground works between 1912 and 2026, with the raster or zone layer that holds each one. Dates come from the cited source. null means no date has been ruled. Ben rules missing dates; the hub reads this file to compose ground for any year.",
+  "about": "Canon ground works after 1912. Everything the compositor needs is in this file: each work's years (built_from, built_by; null = undated), its timeline (canon, real or both), and its 'apply' block: kind target_mode (target and mode rasters, optionally one part of a shared raster), map3_footprint (the 2026 canon ground inside a raster's non-zero cells), map3_zones (the 2026 canon ground inside polygons, each zone with its own years in a years file), raster (a surface that replaces the ground), model (generated from the hub model), none. Order of application is the order of this list. Change a date, a file or a kind here and every composed year follows; the code holds no dates, layers or geometry.",
   "conflicts": [
-    "Embankment dates: the 7 October 2026 relief plan, citing tracker 2J, gives the Embankment 1925-1930 and keeps it off map 2. Ben ruled on 8 October 2026 (Relief_Maps_Log 10d) that the Embankment is 1903-1925 and that map 2 gets the Mill Creek mouth to Sawyer Point stretch. This ledger uses the 8 October ruling. The tracker needs updating."
+    "Embankment dates: the 7 October 2026 relief plan, citing tracker 2J, gives the Embankment 1925-1930 and keeps it off map 2. Ben ruled on 8 October 2026 (Relief_Maps_Log 10d) that the Embankment is 1903-1925 and that map 2 gets the Mill Creek mouth to Sawyer Point stretch. This ledger uses the 8 October ruling. The tracker needs updating.",
+    "Mill Creek deck dates: the 7 October plan (tracker 2J) has the deck after 1933; Ben ruled on 6 November 2026 that the full decking from Albone to the Ohio is done by 1913. The ledger follows the 6 November ruling; the tracker needs updating."
   ],
   "works": [
     {
@@ -10,43 +11,77 @@
       "built_from": 1903,
       "built_by": 1912,
       "note": "Culvert 1903-1908. The Embankment stretch is complete by 1912 (map 2).",
-      "layer": "works/riverworks_1912_target_dm.tif + works/riverworks_1912_mode.tif",
-      "source": "Relief_Maps_Log 10d (Ben 8 Oct 2026), 10d.10; Canon_Riverworks README"
+      "source": "Relief_Maps_Log 10d (Ben 8 Oct 2026), 10d.10; Canon_Riverworks README",
+      "timeline": "canon",
+      "apply": {
+        "kind": "target_mode",
+        "target": "works/riverworks_1912_target_dm.tif",
+        "mode": "works/riverworks_1912_mode.tif"
+      }
     },
     {
       "id": "ohio_embankment_rest",
       "name": "Ohio Embankment, Sedamsville to the Mill Creek mouth and Sawyer Point to Belterra (gap at the Little Miami)",
       "built_from": 1912,
       "built_by": 1925,
-      "note": "Phase dates within 1912-1925 not ruled. Shares the 2026 riverworks raster with the deck and Lunken.",
-      "layer": "works/riverworks_2026_target_dm.tif + works/riverworks_2026_mode.tif (shared)",
-      "source": "Relief_Maps_Log 10d (Ben 8 Oct 2026: Embankment 1903-1925)"
+      "note": "Phase dates within 1912-1925 not ruled. Shares the 2026 riverworks raster with the deck and Lunken. Part 1 of riverworks_2026_part.tif.",
+      "source": "Relief_Maps_Log 10d (Ben 8 Oct 2026: Embankment 1903-1925)",
+      "timeline": "canon",
+      "apply": {
+        "kind": "target_mode",
+        "target": "works/riverworks_2026_target_dm.tif",
+        "mode": "works/riverworks_2026_mode.tif",
+        "part": "works/riverworks_2026_part.tif",
+        "part_value": 1
+      }
     },
     {
       "id": "mill_creek_deck",
       "name": "Mill Creek deck, 151.8 m at the Embankment rising to 160 m at Camp Washington north, yards cut 8.5 m below it",
-      "built_from": 1933,
-      "built_by": null,
-      "note": "After 1933 per the 7 October plan citing tracker 2J. Shares the 2026 riverworks raster.",
-      "layer": "works/riverworks_2026_target_dm.tif + works/riverworks_2026_mode.tif (shared)",
-      "source": "Relief_Maps_Plan (7 Oct 2026); Relief_Maps_Log 10d.4"
+      "built_from": null,
+      "built_by": 1913,
+      "note": "Ben, 6 November 2026: the full decking from Albone to the Ohio River is done by 1913. (The 7 October plan, citing tracker 2J, had it after 1933.) Its own part of the shared 2026 riverworks raster (riverworks_2026_part.tif = 2).",
+      "source": "Ben, 6 November 2026 (this session); Relief_Maps_Log 10d.4 for the geometry",
+      "timeline": "canon",
+      "apply": {
+        "kind": "target_mode",
+        "target": "works/riverworks_2026_target_dm.tif",
+        "mode": "works/riverworks_2026_mode.tif",
+        "part": "works/riverworks_2026_part.tif",
+        "part_value": 2
+      }
     },
     {
       "id": "lunken_levees",
       "name": "Lunken levee ring raised to 83 ft (155.8 m); new levee along the Little Miami east bank",
       "built_from": 1937,
-      "built_by": null,
-      "note": "Raised after the 1937 flood.",
-      "layer": "works/riverworks_2026_target_dm.tif + works/riverworks_2026_mode.tif (shared)",
-      "source": "Canon_Riverworks README; Relief_Maps_Log 10d.7"
+      "built_by": 1941,
+      "note": "Raised after the 1937 flood. Ben, 6 November 2026: Lunken 1937-1941. Part 3 of riverworks_2026_part.tif.",
+      "source": "Canon_Riverworks README; Relief_Maps_Log 10d.7; Ben, 6 November 2026",
+      "timeline": "canon",
+      "apply": {
+        "kind": "target_mode",
+        "target": "works/riverworks_2026_target_dm.tif",
+        "mode": "works/riverworks_2026_mode.tif",
+        "part": "works/riverworks_2026_part.tif",
+        "part_value": 3
+      }
     },
     {
       "id": "lunken_airfield_lift",
       "name": "Lunken airfield lifted 1 m on Metro spoil (1.9 km2)",
-      "built_from": null,
-      "built_by": null,
-      "layer": "works/riverworks_2026_target_dm.tif + works/riverworks_2026_mode.tif (shared)",
-      "source": "Relief_Maps_Log 10d.9"
+      "built_from": 1937,
+      "built_by": 1941,
+      "source": "Relief_Maps_Log 10d.9; Ben, 6 November 2026",
+      "note": " Ben, 6 November 2026: Lunken 1937-1941. Part 3 of riverworks_2026_part.tif.",
+      "timeline": "canon",
+      "apply": {
+        "kind": "target_mode",
+        "target": "works/riverworks_2026_target_dm.tif",
+        "mode": "works/riverworks_2026_mode.tif",
+        "part": "works/riverworks_2026_part.tif",
+        "part_value": 3
+      }
     },
     {
       "id": "ky_terraces",
@@ -54,17 +89,26 @@
       "built_from": 1912,
       "built_by": 1930,
       "note": "Per-town dates as named; Ludlow-Bromley and the Licking walls have no date. Map 3 only.",
-      "layer": "works/ky_terraces_target_dm.tif + works/ky_terraces_mode.tif",
-      "source": "Relief_Maps_Log 10d notes, 10f"
+      "source": "Relief_Maps_Log 10d notes, 10f",
+      "timeline": "canon",
+      "apply": {
+        "kind": "target_mode",
+        "target": "works/ky_terraces_target_dm.tif",
+        "mode": "works/ky_terraces_mode.tif"
+      }
     },
     {
       "id": "canon_interstates",
       "name": "Canon interstates: I-75 Alignment, I-71 Reroute, I-275 Loop, Middle Ring (new-build stretches only)",
-      "built_from": null,
-      "built_by": null,
-      "note": "Dates belong to the tracker's highway sections (4A-4D). Delta is against today's LiDAR.",
-      "layer": "works/canon_interstates_delta_dm.tif",
-      "source": "Canon_Interstates README; Relief_Maps_Log 5"
+      "built_from": 1940,
+      "built_by": 1965,
+      "note": "Dates belong to the tracker's highway sections (4A-4D). Delta is against today's LiDAR. Ben, 6 November 2026: roughly 1940-1965; the tracker's highway sections (4A-4D) may refine each stretch.",
+      "source": "Canon_Interstates README; Relief_Maps_Log 5; Ben, 6 November 2026",
+      "timeline": "canon",
+      "apply": {
+        "kind": "map3_footprint",
+        "delta": "works/canon_interstates_delta_dm.tif"
+      }
     },
     {
       "id": "ohio_bed_canon",
@@ -72,8 +116,12 @@
       "built_from": null,
       "built_by": null,
       "note": "Follows the Embankment narrowing; no date ruled. Real 2022 bed kept for comparison.",
-      "layer": "works/ohio_bed_canon_dm.tif (vs works/ohio_bed_real_2022_dm.tif)",
-      "source": "Relief_Maps_Log 10i"
+      "source": "Relief_Maps_Log 10i",
+      "timeline": "canon",
+      "apply": {
+        "kind": "map3_footprint",
+        "delta": "works/ohio_bed_canon_dm.tif"
+      }
     },
     {
       "id": "real_works_removed",
@@ -81,17 +129,26 @@
       "built_from": null,
       "built_by": null,
       "note": "Never built in canon. The delta takes them out of today's LiDAR.",
-      "layer": "works/real_works_removed_delta_dm.tif; zones/zones_real_works_canon_removes.geojson",
-      "source": "Map3_Base README; Relief_Maps_Log 10g"
+      "source": "Map3_Base README; Relief_Maps_Log 10g",
+      "timeline": "canon",
+      "apply": {
+        "kind": "none"
+      }
     },
     {
       "id": "real_works_kept",
       "name": "Real post-1912 works canon keeps (every zone in zones_post1912_works not in the removed set)",
       "built_from": null,
       "built_by": null,
-      "note": "Real build years not recorded. Ben or a dating pass sets them.",
-      "layer": "zones/zones_post1912_works.geojson",
-      "source": "Relief_Maps_Plan, change zones v1 and v2"
+      "note": "Real build years not recorded. Ben or a dating pass sets them. Ben, 6 November 2026: the zones are fluid, not set in stone: each zone carries its own years in zones/zone_years.json (by zone id) and can be redrawn; a zone without years follows the undated rule.",
+      "source": "Relief_Maps_Plan, change zones v1 and v2",
+      "timeline": "both",
+      "apply": {
+        "kind": "map3_zones",
+        "zones": "zones/zones_post1912_works.geojson",
+        "minus": "zones/zones_real_works_canon_removes.geojson",
+        "years": "zones/zone_years.json"
+      }
     },
     {
       "id": "metro_tri_line_works",
@@ -99,8 +156,11 @@
       "built_from": null,
       "built_by": null,
       "note": "Not a raster. Generated from the hub model's structures by phase, so it follows the design.",
-      "layer": null,
-      "source": "Relief_Maps_Plan (map 2 definition)"
+      "source": "Relief_Maps_Plan (map 2 definition)",
+      "timeline": "canon",
+      "apply": {
+        "kind": "model"
+      }
     }
   ]
 }

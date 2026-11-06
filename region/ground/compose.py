@@ -50,6 +50,9 @@ def works_for_year(year: int, timeline: str = "canon", ledger=None):
         if w.kind in ("model", "none"):
             skipped.append((w.id, w.kind)); continue
         y = w.year
+        if w.kind == "map3_zones" and "years" in w.files:
+            present.append(w)                 # fluid zones: each zone has its own years (compose picks them)
+            continue
         if y is None:
             if year >= L.PRESENT:
                 present.append(w)             # undated works are in the 2026 canon ground
@@ -65,23 +68,47 @@ def works_for_year(year: int, timeline: str = "canon", ledger=None):
 _ZONES = {}
 
 
-def _zones_geom(zones_path, minus_path=None):
-    """The zone polygons in EPSG:26916 (made valid), minus the removed ones; cached per path pair."""
-    key = (str(zones_path), str(minus_path))
+def _load_zones(path):
+    """[(id, geometry in EPSG:26916, made valid)] from a lon/lat GeoJSON; cached."""
+    key = ("features", str(path))
     if key not in _ZONES:
         tr = Transformer.from_crs("EPSG:4326", "EPSG:26916", always_xy=True)
-        def load(p):
-            fc = json.loads(open(p).read())
-            return unary_union([make_valid(shapely.transform(shape(f["geometry"]), lambda a: np.column_stack(tr.transform(a[:, 0], a[:, 1])))) for f in fc["features"]])
-        g = load(zones_path)
-        if minus_path:
-            g = g.difference(load(minus_path))
+        fc = json.loads(open(path).read())
+        _ZONES[key] = [(f["properties"].get("id", "z%03d" % (i + 1)),
+                        make_valid(shapely.transform(shape(f["geometry"]), lambda a: np.column_stack(tr.transform(a[:, 0], a[:, 1])))))
+                       for i, f in enumerate(fc["features"])]
+    return _ZONES[key]
+
+
+def zone_years(years_path):
+    """{zone id: year it counts from} from zones/zone_years.json (built_by, else built_from)."""
+    if not years_path:
+        return {}
+    d = json.loads(open(years_path).read()).get("zones", {})
+    out = {}
+    for zid, y in d.items():
+        yy = y.get("built_by") if isinstance(y, dict) else y
+        yy = yy if yy is not None else (y.get("built_from") if isinstance(y, dict) else None)
+        if yy is not None:
+            out[zid] = int(yy)
+    return out
+
+
+def _zones_geom(zones_path, minus_path=None, years_path=None, year=L.PRESENT):
+    """The zones present at `year` (dated ones by their year, undated ones only at 2026 on), minus the removed ones."""
+    yrs = zone_years(years_path)
+    keep = [g for zid, g in _load_zones(zones_path) if (yrs[zid] <= year if zid in yrs else year >= L.PRESENT)]
+    key = (str(zones_path), str(minus_path), tuple(sorted(zid for zid, _ in _load_zones(zones_path) if (yrs[zid] <= year if zid in yrs else year >= L.PRESENT))))
+    if key not in _ZONES:
+        g = unary_union(keep) if keep else shapely.Polygon()
+        if minus_path and not g.is_empty:
+            g = g.difference(unary_union([m for _, m in _load_zones(minus_path)]))
         _ZONES[key] = g
     return _ZONES[key]
 
 
-def _zones_mask(tgt: Target, zones_path, minus_path=None) -> np.ndarray:
-    g = _zones_geom(zones_path, minus_path)
+def _zones_mask(tgt: Target, zones_path, minus_path=None, years_path=None, year=L.PRESENT) -> np.ndarray:
+    g = _zones_geom(zones_path, minus_path, years_path, year)
     if g.is_empty:
         return np.zeros(tgt.shape, bool)
     return rasterize([(g, 1)], out_shape=tgt.shape, transform=tgt.transform, fill=0, dtype="uint8").astype(bool)
@@ -122,13 +149,15 @@ def compose(year: int, bbox, timeline: str = "canon", step: float = L.STEP, extr
     skipped.extend(skipped_w)
     done = set()
     for w in present:
-        key = w.files.get("target") or w.files.get("delta") or w.files.get("raster") or w.files.get("zones")
+        key = (w.files.get("target") or w.files.get("delta") or w.files.get("raster") or w.files.get("zones"), w.part_value)
         if key in done:
             applied.append((w.id, "shares a layer already applied")); continue
         done.add(key)
         if w.kind == "target_mode":
             t = read(w.files["target"], tgt).astype(np.float32); mode = read(w.files["mode"], tgt, nodata=0, dtype=np.uint8)
             ok = t != L.ND
+            if "part" in w.files:
+                ok &= read(w.files["part"], tgt, nodata=0, dtype=np.uint8) == w.part_value
             force = ok & (mode == 1); fill = ok & (mode == 2) & ~np.isnan(z)
             z[force] = t[force]; src[force] = w.code
             raised = fill & (t > z); z[raised] = t[raised]; src[raised] = w.code
@@ -139,10 +168,13 @@ def compose(year: int, bbox, timeline: str = "canon", step: float = L.STEP, extr
             z[m] = m3[m]; src[m] = w.code
             applied.append((w.id, "2026 canon ground inside the delta footprint: %d cells" % m.sum()))
         elif w.kind == "map3_zones":
-            m = _zones_mask(tgt, w.files["zones"], w.files.get("minus")) & ~np.isnan(m3)
+            m = _zones_mask(tgt, w.files["zones"], w.files.get("minus"), w.files.get("years"), year) & ~np.isnan(m3)
             wgt = _feather(m, step, FEATHER_M)
             z = np.where(m & ~np.isnan(z), z * (1 - wgt) + m3 * wgt, np.where(m, m3, z)); src[m] = w.code
-            applied.append((w.id, "2026 canon ground inside %d zone cells, feathered %g m" % (m.sum(), FEATHER_M)))
+            if m.any():
+                applied.append((w.id, "2026 canon ground inside %d zone cells, feathered %g m" % (m.sum(), FEATHER_M)))
+            else:
+                skipped.append((w.id, "no zone dated by %d" % year))
         elif w.kind == "raster":
             r = read(w.files["raster"], tgt).astype(np.float32)
             m = r != L.ND
