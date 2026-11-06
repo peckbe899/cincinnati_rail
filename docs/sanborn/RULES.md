@@ -25,3 +25,9 @@ From Ben and `claude/Sanborn_1922_Plate_Process.md`; Claude Code can't read the 
 10. Export the hub (`python hub/hub.py export`) before a build, so the build sees Ben's latest edits.
 
 11. The claude.ai artifacts are retired. Repo and hub changes go through Claude Code; chat sessions write prompts and logs.
+
+12. Every 1922 plate is fitted by thin-plate spline on every control available: the complete set of OSM crossings of
+    two named, unchanged streets on the plate (rule 3's lists apply), each read by hand off the scan (two independent
+    reads, kept when they agree within 60 px). The smoothing is chosen by held-out error. The hand picks are the
+    controls, not seeds. An automatic locator was tried and does not read Sanborn plates well enough
+    (`docs/sanborn/dense_locator_2026-11-06.md`). (Ben, 6 November 2026.)
