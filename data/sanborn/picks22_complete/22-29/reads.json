@@ -1,0 +1,654 @@
+[
+ {
+  "job": "29_000",
+  "osm": [
+   711650.1,
+   4331772.4
+  ],
+  "osm_names": [
+   "State Avenue",
+   "Wilder Avenue"
+  ],
+  "predicted": [
+   5855.3,
+   3321.4
+  ],
+  "reads": [
+   {
+    "job": "29_000",
+    "found": true,
+    "x": 5830,
+    "y": 3317,
+    "kind": "T",
+    "printed": [
+     "State (street with streetcar tracks; 'STATE' printed further south, no label at this spot)",
+     "unlabelled E-W street (18\" sewer) - continuation of the diagonal 'Wilder Avenue'"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "The diagonal printed 'WILDER AVE.' comes up from the SW, reaches a small triangular block (lots 64/65) at about 5480,3450, and a short unlabelled E-W street (y 3275-3360, 18-inch sewer) runs east from there to State. State has streetcar tracks and bends NE here. I picked where that E-W centreline (y about 3317) meets State's centreline. I took the E-W piece to be today's Wilder because it lines up with the expected point.",
+    "group": "A04"
+   },
+   {
+    "job": "29_000",
+    "found": true,
+    "x": 5835,
+    "y": 3317,
+    "kind": "T",
+    "printed": [
+     "(State, name not printed in this region; tracked street)",
+     "(unnamed connector from the Wilder Avenue/Denver junction)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "An unnamed E-W street (y~3273-3361, 18-inch sewer) leads from the junction where WILDER AVE becomes DENVER (about 5450, 3470) east to the tracked State Avenue. It meets State in a T where State bends from N-S to NNE. If only the printed WILDER AVE counts, see the 29_001 junction.",
+    "group": "B04"
+   }
+  ],
+  "spread_px": 5.0,
+  "osm_off_m": 4.7,
+  "x": 5832.5,
+  "y": 3317.0,
+  "outcome": "picked",
+  "why": "reads 5 px apart"
+ },
+ {
+  "job": "29_001",
+  "osm": [
+   711574.1,
+   4331726.2
+  ],
+  "osm_names": [
+   "Neff Avenue",
+   "Wilder Avenue"
+  ],
+  "predicted": [
+   5485.5,
+   3564.1
+  ],
+  "reads": [
+   {
+    "job": "29_001",
+    "found": true,
+    "x": 5462,
+    "y": 3545,
+    "kind": "T",
+    "printed": [
+     "Denver (printed 'DENVER' on the NNE-running street)",
+     "Wilder Avenue"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Wilder Ave comes up diagonally from the SW (centre about 5450 at y 3607) and forks at the triangular block of lots 64/65. The NNE fork, printed DENVER (house numbers 1100-1200), is taken as today's Neff. The NE fork goes on to the E-W piece that meets State. The pick is the middle of the open fork just south of the island. The geometry is irregular, so precision is about 20-30 px.",
+    "group": "A04"
+   },
+   {
+    "job": "29_001",
+    "found": true,
+    "x": 5452,
+    "y": 3470,
+    "kind": "T",
+    "printed": [
+     "Denver",
+     "Wilder Avenue"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "WILDER AVE comes up from the SSW and splits around a small triangular island (lots 64-65). DENVER (today's Neff) continues north on the west side, at x~5415-5450. On the east side a branch leads to the E-W connector to State (y~3317). The pick is the open fork just south of the island.",
+    "group": "B04"
+   }
+  ],
+  "spread_px": 75.7,
+  "outcome": "disagree",
+  "why": "the reads are 76 px apart"
+ },
+ {
+  "job": "29_002",
+  "osm": [
+   711763.0,
+   4331297.6
+  ],
+  "osm_names": [
+   "Burns Street",
+   "West 8th Street"
+  ],
+  "predicted": [
+   6518.7,
+   5608.8
+  ],
+  "reads": [
+   {
+    "job": "29_002",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     null,
+     "W. Eighth"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "No street near the expected point. A railroad corridor with about 6 tracks (no lots or house numbers fronting it, x about 6500-6620) crosses W. Eighth at about 6560,5600. Factory Street runs just east of the tracks (x about 6620-6680) but only between Boston and Whateley; south of Whateley, block 63 runs west to the tracks, so Factory does not reach W. Eighth. W. Eighth's south edge is at the plate's bottom edge.",
+    "group": "A04"
+   },
+   {
+    "job": "29_002",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "W. Eighth"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "No Burns Street. Near the expected point, a railroad corridor (x~6510-6620) crosses W. Eighth at about (6560, 5610). FACTORY ST. (x~6620-6670) runs only from Boston (y~5020) to Whateley (y~5380) and does not reach Eighth; blocks 64-104 lie between them. Depot is the nearest street meeting Eighth, at x~6165.",
+    "group": "B04"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "29_003",
+  "osm": [
+   710515.1,
+   4331815.5
+  ],
+  "osm_names": [
+   "Del Monte Place",
+   "Warsaw Avenue"
+  ],
+  "predicted": [
+   307.8,
+   3440.6
+  ],
+  "reads": [
+   {
+    "job": "29_003",
+    "found": true,
+    "x": 252,
+    "y": 3436,
+    "kind": "cross",
+    "printed": [
+     "Avenue (south leg, printed '...AVE.', name beyond region) / Elberon (north leg)",
+     "Warsaw"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [],
+    "note": "Warsaw runs E-W (y 3390-3480, centre about 3436) and has tracks. North of it is Elberon Ave, whose west half is cut by the plate's west edge (white west of x about 258); its east edge is x 300. South of it a street printed '...AVE.' runs from x about 205 to 285, with a 12-inch sewer near x 245; letters '...VER' appear further south at about 225,4320. I took this south leg to be today's Del Monte, but no 'Del Monte' is printed. The crossing sits against the plate's west edge.",
+    "group": "A04"
+   },
+   {
+    "job": "29_003",
+    "found": true,
+    "x": 255,
+    "y": 3437,
+    "kind": "T",
+    "printed": [
+     "...ER Avenue (probably Elberon continued)",
+     "Warsaw"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [],
+    "note": "South of Warsaw (centre y~3437), an avenue runs south at x~215-285. Only AVE. and ...ER are printed on it; its house numbers 984-940 continue those of ELBERON north of Warsaw, which runs at about x 257-300. This south piece is presumably today's Del Monte Place. Its west side is cut by the plate edge/splice at x~205-220. North of Warsaw, Elberon makes a near-cross at about x 280.",
+    "group": "B04"
+   }
+  ],
+  "spread_px": 3.2,
+  "osm_off_m": 11.3,
+  "x": 253.5,
+  "y": 3436.5,
+  "outcome": "already picked",
+  "why": "21 px from the current control at (274, 3436)"
+ },
+ {
+  "job": "29_004",
+  "osm": [
+   711925.2,
+   4331451.5
+  ],
+  "osm_names": [
+   "Berlin Street",
+   "South Street"
+  ],
+  "predicted": [
+   7274.6,
+   4806.9
+  ],
+  "reads": [
+   {
+    "job": "29_004",
+    "found": true,
+    "x": 7290,
+    "y": 4811,
+    "kind": "T",
+    "printed": [
+     "Woodrow",
+     "South"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Woodrow St (printed WOODROW; the old Berlin St), x 7252-7327, runs south from Gest and ends at South St (y about 4772-4850; the blue boundary band runs along its north side).",
+    "group": "A04"
+   },
+   {
+    "job": "29_004",
+    "found": true,
+    "x": 7292,
+    "y": 4808,
+    "kind": "T",
+    "printed": [
+     "Woodrow",
+     "South"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Berlin Street is printed WOODROW (WWI rename), a N-S street at x~7255-7330 from the street at y~4140 down to the E-W street at y~4765-4845, where it ends in a T (block 61 lies south). The E-W street is unnamed near the crossing; SOUTH is printed on it farther west (x~6300). Summer, Evans, Boston and Whateley streets are nearby.",
+    "group": "B04"
+   }
+  ],
+  "spread_px": 3.6,
+  "osm_off_m": 3.4,
+  "x": 7291.0,
+  "y": 4809.5,
+  "outcome": "picked",
+  "why": "reads 4 px apart"
+ },
+ {
+  "job": "29_005",
+  "osm": [
+   711140.8,
+   4332266.6
+  ],
+  "osm_names": [
+   "Claypole Avenue",
+   "Wing Street"
+  ],
+  "predicted": [
+   3223.4,
+   1056.1
+  ],
+  "reads": [
+   {
+    "job": "29_005",
+    "found": true,
+    "x": 3220,
+    "y": 1057,
+    "kind": "cross",
+    "printed": [
+     "Claypool",
+     "Wing Street"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Claypool is 60 ft (y 1012-1102). Wing St runs x 3185-3255. The line at x 3225 south of Claypool is a boundary line, not a street edge.",
+    "group": "A04"
+   },
+   {
+    "job": "29_005",
+    "found": true,
+    "x": 3221,
+    "y": 1057,
+    "kind": "cross",
+    "printed": [
+     "Claypool",
+     "Wing Street"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Claypole is printed CLAYPOOL (no suffix next to the name). Wing is at x 3185-3257 and Claypool at y 1014-1100. A 6-inch pipe runs inside Wing at x~3228.",
+    "group": "B04"
+   }
+  ],
+  "spread_px": 1.0,
+  "osm_off_m": 0.6,
+  "x": 3220.5,
+  "y": 1057.0,
+  "outcome": "picked",
+  "why": "reads 1 px apart"
+ },
+ {
+  "job": "29_006",
+  "osm": [
+   711629.1,
+   4331965.6
+  ],
+  "osm_names": [
+   "Lockwood Place",
+   "Neff Avenue"
+  ],
+  "predicted": [
+   5706.9,
+   2404.3
+  ],
+  "reads": [
+   {
+    "job": "29_006",
+    "found": true,
+    "x": 5684,
+    "y": 2400,
+    "kind": "T",
+    "printed": [
+     "Denver (street unlabelled here; printed 'DENVER' south of the boundary band)",
+     "Lockwood Place"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Lockwood Pl (y about 2372-2432 at its west end) runs west from Bowman and ends at the N-S street x about 5652-5718 (house numbers 1251-1263). That street continues south as the street printed DENVER, which I take to be today's Neff.",
+    "group": "A04"
+   },
+   {
+    "job": "29_006",
+    "found": true,
+    "x": 5684,
+    "y": 2402,
+    "kind": "T",
+    "printed": [
+     "Lockwood Place",
+     "Denver"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Neff Avenue is printed DENVER (no suffix seen), a narrow NNE-running street at x~5667-5700 here. Lockwood Place runs east from it to Bowman at about (5950, 2450). The T is at Lockwood's west end.",
+    "group": "B04"
+   }
+  ],
+  "spread_px": 2.0,
+  "osm_off_m": 4.6,
+  "x": 5684.0,
+  "y": 2401.0,
+  "outcome": "picked",
+  "why": "reads 2 px apart"
+ },
+ {
+  "job": "29_007",
+  "osm": [
+   711531.7,
+   4331318.0
+  ],
+  "osm_names": [
+   "Glenway Avenue",
+   "West 8th Street"
+  ],
+  "predicted": [
+   5386.3,
+   5592.2
+  ],
+  "reads": [
+   {
+    "job": "29_007",
+    "found": true,
+    "x": 5262,
+    "y": 5600,
+    "kind": "bend",
+    "printed": [
+     "unlabelled street with streetcar tracks (house numbers 2300-2348)",
+     "W. Eighth"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "A street with streetcar tracks (x about 5215-5310) comes down from the junction at about 5120,4420 and curves east into W. Eighth (y about 5545-5658, centre 5600). Nothing continues west of the bend. I picked where the leg's centreline meets W. Eighth's centreline. The leg is unlabelled and carries 2300-series numbers like W. Eighth, so taking it as today's Glenway is an inference. W. Eighth's south edge and the SW part of the bend are at the plate's bottom edge. State (with tracks) also crosses W. Eighth at about 5590,5600, which is a different street.",
+    "group": "A04"
+   },
+   {
+    "job": "29_007",
+    "found": true,
+    "x": 5280,
+    "y": 5588,
+    "kind": "bend",
+    "printed": [
+     "(unnamed curving street, numbered 2308-2348 as a continuation of W. Eighth)",
+     "W. Eighth"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [],
+    "note": "W. Eighth (centre y~5590) runs west from State Avenue and curves north at x~5215-5320 into an unnamed street running up the west side of block 52, carrying a streetcar track. The curve was taken to be Glenway's foot. The bottom edge of the plate is at about y 5645. Alternative: State Avenue (tracked diagonal) meets W. Eighth at about (5560, 5600).",
+    "group": "B04"
+   }
+  ],
+  "spread_px": 21.6,
+  "osm_off_m": 23.7,
+  "x": 5271.0,
+  "y": 5594.0,
+  "outcome": "picked",
+  "why": "reads 22 px apart"
+ },
+ {
+  "job": "29_008",
+  "osm": [
+   711695.2,
+   4331383.5
+  ],
+  "osm_names": [
+   "Depot Street",
+   "Dutton Street"
+  ],
+  "predicted": [
+   6168.5,
+   5216.8
+  ],
+  "reads": [
+   {
+    "job": "29_008",
+    "found": true,
+    "x": 6164,
+    "y": 5219,
+    "kind": "T",
+    "printed": [
+     "Depot",
+     "Dutten Avenue"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Dutten Ave (y 5181-5257) runs east from State and ends at Depot St (x 6125-6202).",
+    "group": "A04"
+   },
+   {
+    "job": "29_008",
+    "found": true,
+    "x": 6165,
+    "y": 5218,
+    "kind": "T",
+    "printed": [
+     "Depot",
+     "Dutten Avenue"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "DEPOT (no suffix seen; x 6125-6205) and DUTTEN AVE. (y 5179-5257). Dutten ends at Depot; block 57 is on the east side.",
+    "group": "B04"
+   }
+  ],
+  "spread_px": 1.4,
+  "osm_off_m": 0.9,
+  "x": 6164.5,
+  "y": 5218.5,
+  "outcome": "picked",
+  "why": "reads 1 px apart"
+ },
+ {
+  "job": "29_009",
+  "osm": [
+   711585.8,
+   4331391.0
+  ],
+  "osm_names": [
+   "Dutton Street",
+   "State Avenue"
+  ],
+  "predicted": [
+   5633.4,
+   5213.8
+  ],
+  "reads": [
+   {
+    "job": "29_009",
+    "found": true,
+    "x": 5625,
+    "y": 5218,
+    "kind": "T",
+    "printed": [
+     "Dutten Avenue",
+     "State"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Dutten Ave (y 5180-5255) ends on the east side of State. State, which has streetcar tracks, runs x about 5578-5670 at this point.",
+    "group": "A04"
+   },
+   {
+    "job": "29_009",
+    "found": true,
+    "x": 5628,
+    "y": 5217,
+    "kind": "T",
+    "printed": [
+     "Dutten Avenue",
+     "State"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Dutton is printed DUTTEN AVE. (y 5179-5257). It meets the tracked State (x~5585-5670 here; STATE is printed farther north at about 5640, 4560) in a T.",
+    "group": "B04"
+   }
+  ],
+  "spread_px": 3.2,
+  "osm_off_m": 1.6,
+  "x": 5626.5,
+  "y": 5217.5,
+  "outcome": "picked",
+  "why": "reads 3 px apart"
+ },
+ {
+  "job": "29_010",
+  "osm": [
+   711910.8,
+   4332404.6
+  ],
+  "osm_names": [
+   "Fitzpatrick Street",
+   "West Liberty Street"
+  ],
+  "predicted": [
+   6953.4,
+   130.2
+  ],
+  "reads": [
+   {
+    "job": "29_010",
+    "found": true,
+    "x": 6962,
+    "y": 122,
+    "kind": "T",
+    "printed": [
+     "... Street (printed only '...ST.' near 6915,380; '...ACE' further down the same street at about 6745,950)",
+     "W. Liberty"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "A narrow N-S street (about 42 px wide, slanting SSW, house numbers 1064-1090) ends at W. Liberty (y about 82-160, centre 121). The street's name is not legible in the region. W. Liberty's north edge is the plate's top edge (white above y about 80).",
+    "group": "A04"
+   },
+   {
+    "job": "29_010",
+    "found": true,
+    "x": 6980,
+    "y": 120,
+    "kind": "T",
+    "printed": [
+     "... Street (name not legible)",
+     "W. Liberty"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "The side street at x~6950-6995 (slanting NNE, with only ST. legible) meets W. Liberty in a T. Liberty's south edge is at y~162; its north side is cut by the top edge of the plate at about y 80, so the centre was estimated at about y 120. Detroit Street is the next street east, at x~7150-7200.",
+    "group": "B04"
+   }
+  ],
+  "spread_px": 18.1,
+  "osm_off_m": 4.0,
+  "x": 6971.0,
+  "y": 121.0,
+  "outcome": "picked",
+  "why": "reads 18 px apart"
+ },
+ {
+  "job": "29_011",
+  "osm": [
+   711430.2,
+   4331406.1
+  ],
+  "osm_names": [
+   "Warsaw Avenue",
+   "Wilder Avenue"
+  ],
+  "predicted": [
+   4868.7,
+   5183.3
+  ],
+  "reads": [
+   {
+    "job": "29_011",
+    "found": true,
+    "x": 4945,
+    "y": 5160,
+    "kind": "bend",
+    "printed": [
+     "unlabelled leg running SW from the junction where 'WILDER AVE.' ends (about 5120,4420)",
+     "Warsaw (printed 'AVE.' on this leg; 'WARSAW' further NW)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Switchback: Warsaw (with tracks) comes SE down the leg printed 'AVE.' to a hairpin at about 4930,5150 and turns back NE up the unlabelled leg to the junction circle at about 5120,4420, where WILDER AVE. comes in from the NE. A third leg runs south from the hairpin (centre about 4962 at y 5250) down to the Price Hill Inclined Plane. The pick is the hairpin turn, where Warsaw's centreline meets the NE leg I take to be today's Wilder. The junction at 5120,4420 is another place where today's Wilder and this road system meet.",
+    "group": "A04"
+   },
+   {
+    "job": "29_011",
+    "found": true,
+    "x": 4945,
+    "y": 5195,
+    "kind": "T",
+    "printed": [
+     "Avenue (west leg, name not printed in region)",
+     "(unnamed through street)"
+    ],
+    "plate_edge": false,
+    "confidence": "low",
+    "same_names_elsewhere": [],
+    "note": "Switchback junction. An avenue (printed only AVE.) comes down from the NNW and joins a street that runs from the NNE (x~5000-5050) down to the incline plane at the bottom. A triangular island with a streetcar loop has its south tip at (4945, 5130); the pick is the open junction just south of it. Another avenue (AVENUE, x~4450-4560) runs parallel to the west and does not meet these streets in the region.",
+    "group": "B04"
+   }
+  ],
+  "spread_px": 35.0,
+  "osm_off_m": 15.7,
+  "x": 4945.0,
+  "y": 5177.5,
+  "outcome": "picked",
+  "why": "reads 35 px apart"
+ }
+]

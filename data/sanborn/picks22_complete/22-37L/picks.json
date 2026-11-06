@@ -1,0 +1,143 @@
+{
+ "sheet": "22-37L",
+ "made": "2026-11-06T16:33:54",
+ "by": "tools/sanborn/complete/collect.py",
+ "rule": "two independent reads, kept when they agree within 60 px (their mean) and lie within 45 m of the OSM crossing under the current model",
+ "intersections": [
+  {
+   "a": "Agnes Street",
+   "b": "Borden Street",
+   "x": 3578.0,
+   "y": 2148.5,
+   "kind": "T",
+   "osm": [
+    711830.6,
+    4336750.2
+   ],
+   "osm_names": [
+    "Agnes Street",
+    "Borden Street"
+   ],
+   "printed": [
+    [
+     "(N-S street, no name printed in region; house numbers 3699-3765, 12 in. sewer)",
+     "(short E-W street, no name printed; house numbers 1784-1798)"
+    ],
+    [
+     "unnamed on region (N-S street, house nos. 3723-3751)",
+     "unnamed on region (E-W street, house nos. 1784-1798)"
+    ]
+   ],
+   "spread_px": 5.0,
+   "osm_off_m": 3.1,
+   "job": "37L_001",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "A short E-W street (about 74 px wide) runs east from the N-S street between x 3610 and 3930 and dead-ends at block 33. It T's into the N-S street (centre x ~3578) at y ~2146. Neither name is printed in the region. Weber St T's into the same N-S street further north at about y 1735, and Dreman at about y 2590. | E-W street (edges y 2112-2190) ends at the N-S street (edges x 3542-3614, 12in sewer, grey band along its east side) between blocks 31 and 33; no names printed near the crossing, identified by position (~20 px from expected)."
+  },
+  {
+   "a": "Fricke Road",
+   "b": "Llewellyn Avenue",
+   "x": 3215.0,
+   "y": 6348.5,
+   "kind": "T",
+   "osm": [
+    711715.0,
+    4335944.5
+   ],
+   "osm_names": [
+    "Fricke Road",
+    "Llewellyn Avenue",
+    "Millcreek Road"
+   ],
+   "printed": [
+    [
+     "ROAD (name before 'ROAD' not in region)",
+     "(Llewellyn: diagonal street merging into the railroad corridor, no name printed)",
+     "(street east of the railroad, no name printed)"
+    ],
+    [
+     "'...ROAD' (name not legible in region; probably Fricke Road)",
+     "unnamed street east of railroad",
+     "Llewellyn (printed further north)"
+    ]
+   ],
+   "spread_px": 12.2,
+   "osm_off_m": 13.8,
+   "job": "37L_008",
+   "confidence": [
+    "low",
+    "low"
+   ],
+   "note": "A complex junction. The E-W '... ROAD' (centre y ~6352) ends against the west line of the railroad corridor at x ~3140; its dashed centreline continues across the tracks. The street east of the railroad (presumably Millcreek Road) bends there at about (3285, 6350). Llewellyn comes down from the NNW and merges into the railroad corridor near y 6150-6400. The chosen point is the middle of the open waist where they all meet, inside the railroad tracks. | The east-west road from Beekman (centre y~6352) ends at the 80 ft railroad right-of-way at x~3150; directly across the tracks the street east of the railroad (probably Millcreek Road) bends at (3285,6352). Llewellyn (50 ft) merges into the railroad corridor's west side at ~(3230,5880). Pick = middle of the grade crossing between the two; ~65 px from expected."
+  },
+  {
+   "a": "Dreman Avenue",
+   "b": "Herron Avenue",
+   "x": 1380.5,
+   "y": 2073.0,
+   "kind": "T",
+   "osm": [
+    711406.9,
+    4336782.7
+   ],
+   "osm_names": [
+    "Dreman Avenue",
+    "Herron Avenue"
+   ],
+   "printed": [
+    [
+     "(E-W street, no name printed here; house number 2006, 42/45/48 in. sewer)",
+     "Herron Avenue"
+    ],
+    [
+     "unnamed in region (house no. 2006; 45in/48in sewer)",
+     "Herron Avenue"
+    ]
+   ],
+   "spread_px": 1.0,
+   "osm_off_m": 4.9,
+   "job": "37L_009",
+   "confidence": [
+    "high",
+    "medium"
+   ],
+   "note": "Herron Avenue (60 ft, x 1331-1429) T's into the E-W street (y 2039-2107). The E-W street runs from Cass east to about x 1700. | Herron Avenue (60 ft, edges x 1333-1429) ends at the E-W street (edges y 2039-2107); Dreman name not printed in the region."
+  },
+  {
+   "a": "Cass Avenue",
+   "b": "Dreman Avenue",
+   "x": 941.0,
+   "y": 2071.5,
+   "kind": "T",
+   "osm": [
+    711330.9,
+    4336787.4
+   ],
+   "osm_names": [
+    "Cass Avenue",
+    "Dreman Avenue"
+   ],
+   "printed": [
+    [
+     "Cass (suffix not legible)",
+     "(E-W street, no name printed here; house number 2006)"
+    ],
+    [
+     "Cass (suffix not legible)",
+     "unnamed in region (house no. 2006; 42in/45in sewer)"
+    ]
+   ],
+   "spread_px": 3.0,
+   "osm_off_m": 5.1,
+   "job": "37L_010",
+   "confidence": [
+    "high",
+    "medium"
+   ],
+   "note": "The E-W street from the east (the same one as at Herron) ends in a T at Cass (x 902-980). There is no street west of Cass at this y, only a block edge and a green boundary line. | E-W street (edges y 2039-2107, yellow and green bands along it) begins at Cass (edges x 900-983); Cass continues south to 'ROAD'. Dreman name not printed in the region (DREMAN printed further east on the plate)."
+  }
+ ]
+}

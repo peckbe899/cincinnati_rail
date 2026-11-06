@@ -1,0 +1,604 @@
+[
+ {
+  "job": "83A_000",
+  "osm": [
+   721330.6,
+   4337980.3
+  ],
+  "osm_names": [
+   "Harris Avenue",
+   "Harris Place"
+  ],
+  "predicted": [
+   5292.2,
+   2394.0
+  ],
+  "reads": [
+   {
+    "job": "83A_000",
+    "found": true,
+    "x": 5236,
+    "y": 2364,
+    "kind": "T",
+    "printed": [
+     "(no name printed; curving street running from the diagonal Avenue east then bending south-southeast)",
+     "(no name printed; dead-end street with cul-de-sac labelled 'City of Norwood Dedicated')"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Neither name is printed. A curving street leaves the diagonal avenue near x 4950, runs east past lots 2810-2818, then bends south-southeast. An east-running dead-end street with a turning circle at about x 5850 ('City of Norwood Dedicated') branches off its east side. I picked the T where the cul-de-sac centreline (y about 2364, edges at 2324 and 2404) meets the curving street's centreline. Which street is Harris Avenue and which is Harris Place is assumed.",
+    "group": "A38"
+   },
+   {
+    "job": "83A_000",
+    "found": true,
+    "x": 5220,
+    "y": 2360,
+    "kind": "T",
+    "printed": [
+     "(curving street, continuation of a diagonal AVE; name not printed in region)",
+     "City of Norwood Dedicated (cul-de-sac, no name)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "A diagonal AVE comes from the SW, bends at x~5000-5200 and curves south-east (6\" water pipe and 10\" sewer down it). At the bend a cul-de-sac labelled 'CITY OF NORWOOD DEDICATED' runs east from x~5240 to a turning circle at x~5370. The T is where the cul-de-sac centreline (y~2360) meets the curving street's centreline. Which leg is Harris Ave and which is Harris Pl is not printed. Addresses 2806-2818 run along the north side into the cul-de-sac.",
+    "group": "B38"
+   }
+  ],
+  "spread_px": 16.5,
+  "osm_off_m": 14.8,
+  "x": 5228.0,
+  "y": 2362.0,
+  "outcome": "picked",
+  "why": "reads 16 px apart"
+ },
+ {
+  "job": "83A_001",
+  "osm": [
+   721300.0,
+   4338396.9
+  ],
+  "osm_names": [
+   "Highland Avenue",
+   "Orchard Street"
+  ],
+  "predicted": [
+   5027.4,
+   362.0
+  ],
+  "reads": [
+   {
+    "job": "83A_001",
+    "found": true,
+    "x": 5102,
+    "y": 378,
+    "kind": "T",
+    "printed": [
+     "(no name printed; east-west street along the City Limits line at the top edge)",
+     "Or... (label cut off, presumably Orchard)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "The east-west street at the top runs along the CITY LIMITS line. Its south edge is at y about 417; its north side is cut by the plate's top edge at y about 315, so the centre is estimated for a 50 ft width. Orchard shows only as a tab (x 5065-5140) sticking up above the plate edge with 'OR' printed in it, so the street runs north off the plate. No street continues south at that x (lot 5 is there). A proposed street ('PROP ST.') runs south at x about 5350.",
+    "group": "A38"
+   },
+   {
+    "job": "83A_001",
+    "found": true,
+    "x": 5101,
+    "y": 362,
+    "kind": "T",
+    "printed": [
+     "(through street not named in region; band carries 'CITY LIMITS')",
+     "OR... (stub, presumably Orchard Street)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "The east-west street along the plate's top edge, y~315-417 with the City Limits dashed line in it, is taken as Highland Avenue. A short stub of a street labelled 'OR' sticks north out of the plate edge at x~5065-5138. The T is at the stub's centreline on the through street's centreline. The crossing is at the plate edge: the street north of y~315 is off the plate. A dashed 'PROP. ST.' at x~5320-5395 is a proposed street, not Orchard.",
+    "group": "B38"
+   }
+  ],
+  "spread_px": 16.0,
+  "osm_off_m": 14.9,
+  "x": 5101.5,
+  "y": 370.0,
+  "outcome": "picked",
+  "why": "reads 16 px apart"
+ },
+ {
+  "job": "83A_002",
+  "osm": [
+   721057.0,
+   4338146.6
+  ],
+  "osm_names": [
+   "Oak Street",
+   "Shepherd Lane"
+  ],
+  "predicted": [
+   3898.5,
+   1664.9
+  ],
+  "reads": [
+   {
+    "job": "83A_002",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Oak Street",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Oak Street is printed, with its centre at x about 3907, but no street crosses or meets it near y 1665: there are lots on both sides (42-46, 52-54, 177-181). Oak dead-ends at y about 1510, at the green boundary line against the Dalton Adding Machine Co. property. The nearest street crossing Oak is the Avenue at y about 2000. Shepherd Lane is not on the plate.",
+    "group": "A38"
+   },
+   {
+    "job": "83A_002",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Oak Street",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 3905,
+      "y": 1990,
+      "note": "Oak St crosses the east-west AVENUE (name not printed in region) here; only cross street on Oak in region, ~325 px south of the expected point"
+     }
+    ],
+    "note": "Oak St runs N-S at x~3870-3941 and dead-ends at y~1500 against the Dalton Adding Machine Co. / Dana Mfg Co. factory land. Near the expected point (3898,1665) there is no crossing street or lane: residential lots 42-46 and 177-182 front directly on Oak St. Shepherd Lane is not on the plate.",
+    "group": "B38"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "83A_003",
+  "osm": [
+   720947.2,
+   4338112.3
+  ],
+  "osm_names": [
+   "Beech Street",
+   "Shepherd Lane"
+  ],
+  "predicted": [
+   3356.6,
+   1862.2
+  ],
+  "reads": [
+   {
+    "job": "83A_003",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Street (the north-south street at x about 3365; Beech Street further south on this plate)",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "The north-south street at x about 3365 is printed only as 'STREET' here; the same line is printed 'BEECH' further south. Near y 1862 there are lots on both sides (46, 61, 183 and others) and nothing crosses it. The nearest crossing street is the Avenue at y about 2000. Shepherd Lane is not on the plate.",
+    "group": "A38"
+   },
+   {
+    "job": "83A_003",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Street (N-S street at x~3337, labelled 'STREET'; Beech)",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 3337,
+      "y": 1990,
+      "note": "this N-S street crosses the east-west AVENUE (name not printed in region) here, ~130 px south of expected; nearest crossing, no evidence it is Shepherd Lane"
+     }
+    ],
+    "note": "Near the expected point (3357,1862) the N-S street has only residential lots fronting it on both sides (lots 39-46, 61, 166, 183). There is no lane, so Shepherd Lane is not on the plate.",
+    "group": "B38"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "83A_004",
+  "osm": [
+   720401.1,
+   4338497.2
+  ],
+  "osm_names": [
+   "Buxton Avenue",
+   "Grandview Place"
+  ],
+  "predicted": [
+   549.0,
+   66.4
+  ],
+  "reads": [
+   {
+    "job": "83A_004",
+    "found": true,
+    "x": 589,
+    "y": 52,
+    "kind": "cross",
+    "printed": [
+     "Buxton Avenue",
+     "Turrill (Avenue; 'TURRILL ... AVE.' printed along the street)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Buxton Avenue runs east-west at the top. Its south edge is at y about 90 and its north side is cut by the plate's top edge, so the centre is estimated for a 50 ft width. The diagonal Turrill Avenue comes up from the southeast and meets Buxton here; a plate tab at x 500-580 suggests it continues north. Its east side near the top is cut by the plate edge. It is the only street meeting Buxton near the expected point, so I take it to be today's Grandview Place.",
+    "group": "A38"
+   },
+   {
+    "job": "83A_004",
+    "found": true,
+    "x": 550,
+    "y": 57,
+    "kind": "cross",
+    "printed": [
+     "Buxton Avenue",
+     "Turrill (diagonal street, probably Turrill Avenue)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Buxton Ave runs along the plate's top edge (south edge y~92, plate edge y~37). The diagonal TURRILL street (8\" sewer, 4\" W. pipe) comes up from the SE, with its east side at the plate edge. North of Buxton the plate extends in a stub at x~500-582. The crossing is cut by the plate edge. Grandview Place is taken to be the Turrill / north-stub street, since it is the only street meeting Buxton near the expected point. The plate does not print 'Grandview'.",
+    "group": "B38"
+   }
+  ],
+  "spread_px": 39.3,
+  "osm_off_m": 4.8,
+  "x": 569.5,
+  "y": 54.5,
+  "outcome": "picked",
+  "why": "reads 39 px apart"
+ },
+ {
+  "job": "83A_005",
+  "osm": [
+   721180.6,
+   4337553.7
+  ],
+  "osm_names": [
+   "Bicycle Boulevard",
+   "Park Avenue"
+  ],
+  "predicted": [
+   4582.4,
+   4540.6
+  ],
+  "reads": [
+   {
+    "job": "83A_005",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     null,
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "No streets here. The area is the U.S. Playing Card Co. plant (lot 33): buildings, railroad sidings and open ground. Bicycle Boulevard and Park Avenue did not exist in 1922. The nearest streets are Beech Street to the west (x about 3360) and an Avenue at y about 5258 that ends at Beech.",
+    "group": "A38"
+   },
+   {
+    "job": "83A_005",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     null,
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [
+     {
+      "x": 3365,
+      "y": 4680,
+      "note": "the east-west '...S AVENUE' west of Beech St ends at Beech here; it does not continue east into the Playing Card Co. grounds"
+     }
+    ],
+    "note": "At the expected point (4582,4541) the plate shows the open grounds of the U.S. Playing Card Co. (lot 33) next to buildings at x~4440-4640. No streets. Bicycle Boulevard is not on the plate, and Park Avenue (if it is the AVENUE at y~4680) does not reach this far east.",
+    "group": "B38"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "83A_006",
+  "osm": [
+   720935.8,
+   4337480.2
+  ],
+  "osm_names": [
+   "Beech Street",
+   "Morgan Way"
+  ],
+  "predicted": [
+   3369.4,
+   4974.4
+  ],
+  "reads": [
+   {
+    "job": "83A_006",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Beech Street",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Beech Street runs north-south at x about 3362. At y about 4974, the U.S. Playing Card Co. buildings lie to the east and block 23 lots to the west; nothing meets Beech here. Morgan Way is not on the plate. Avenues meet Beech from the west at y about 4700 (printed '...S AVENUE') and y about 5258 ('AVE').",
+    "group": "A38"
+   },
+   {
+    "job": "83A_006",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Beech Street",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 3365,
+      "y": 4680,
+      "note": "Beech St T with the east-west '...S AVENUE' from the west (ends at Beech)"
+     },
+     {
+      "x": 3365,
+      "y": 5240,
+      "note": "Beech St T with the east-west 'AVE' from the west (name not printed in region)"
+     }
+    ],
+    "note": "Beech St runs N-S at x~3330-3400. At y~4974, west of Beech, are lots 151/163-173 of block 23. East of Beech are U.S. Playing Card Co. buildings. There is no cross street, so Morgan Way is not on the plate.",
+    "group": "B38"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "83A_007",
+  "osm": [
+   721178.3,
+   4337482.2
+  ],
+  "osm_names": [
+   "Bicycle Boulevard",
+   "Morgan Way"
+  ],
+  "predicted": [
+   4578.5,
+   4884.6
+  ],
+  "reads": [
+   {
+    "job": "83A_007",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     null,
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "No streets here: this is open ground of the U.S. Playing Card Co. property (lot 33). Bicycle Boulevard and Morgan Way did not exist in 1922.",
+    "group": "A38"
+   },
+   {
+    "job": "83A_007",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     null,
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "At the expected point (4578,4885) the plate shows the open grounds of the U.S. Playing Card Co. (lot 33) between scattered buildings. No streets. Neither Bicycle Boulevard nor Morgan Way is on the plate.",
+    "group": "B38"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "83A_008",
+  "osm": [
+   721182.0,
+   4337610.2
+  ],
+  "osm_names": [
+   "Bicycle Boulevard",
+   "Maverick Drive"
+  ],
+  "predicted": [
+   4585.1,
+   4266.8
+  ],
+  "reads": [
+   {
+    "job": "83A_008",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     null,
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "No streets here: this is U.S. Playing Card Co. property, near the railroad right of way (lot 27) and the sidings. Bicycle Boulevard and Maverick Drive did not exist in 1922.",
+    "group": "A38"
+   },
+   {
+    "job": "83A_008",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     null,
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "At the expected point (4585,4267) the plate shows lot 27, the strip south of the B&O S.W. R.R. tracks next to U.S. Playing Card Co. land, with the railroad and the property line '1386.85' crossing diagonally. No streets. Neither Bicycle Boulevard nor Maverick Drive is on the plate.",
+    "group": "B38"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "83A_009",
+  "osm": [
+   721175.4,
+   4337401.4
+  ],
+  "osm_names": [
+   "Bicycle Boulevard",
+   "Kenilworth Avenue"
+  ],
+  "predicted": [
+   4575.5,
+   5270.8
+  ],
+  "reads": [
+   {
+    "job": "83A_009",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     null,
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "No streets here: this is factory ground of the U.S. Playing Card Co. and U.S. Printing Co. The line at y about 5250 is a property line (1193.78 ft), not a street. Bicycle Boulevard and Kenilworth Avenue are not on the plate here. The nearest street is Road at y about 5790.",
+    "group": "A38"
+   },
+   {
+    "job": "83A_009",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     null,
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "At the expected point (4576,5271) the plate shows open grounds of the U.S. Playing Card Co. and the U.S. Printing Co., with a property line '1193.78' at y~5205 and a siding at x~4010. No streets. The only roads in region are a ROAD along the bottom at y~5785 and Duck Creek Road on the east. Neither Bicycle Boulevard nor Kenilworth Avenue is on the plate.",
+    "group": "B38"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "83A_010",
+  "osm": [
+   720945.9,
+   4337625.8
+  ],
+  "osm_names": [
+   "Beech Street",
+   "Maverick Drive"
+  ],
+  "predicted": [
+   3403.5,
+   4282.3
+  ],
+  "reads": [
+   {
+    "job": "83A_010",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Beech Street",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Beech Street runs north-south at x about 3365. At y about 4282 it has the open ground of the U.S. Playing Card Co. (lot 32) to the east and sidings and ground of a manufacturing company printed '...MERS MFG. CO.' to the west; nothing meets it. Maverick Drive is not on the plate.",
+    "group": "A38"
+   },
+   {
+    "job": "83A_010",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Beech Street",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Beech St (x~3330-3400) runs north to the B&O S.W. R.R. Near y~4282 it passes between factory land (MFG Co. sidings) on the west and the U.S. Playing Card Co. on the east. There is no cross street, so Maverick Drive is not on the plate.",
+    "group": "B38"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ }
+]

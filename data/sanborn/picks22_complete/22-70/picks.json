@@ -1,0 +1,605 @@
+{
+ "sheet": "22-70",
+ "made": "2026-11-06T16:33:54",
+ "by": "tools/sanborn/complete/collect.py",
+ "rule": "two independent reads, kept when they agree within 60 px (their mean) and lie within 45 m of the OSM crossing under the current model",
+ "intersections": [
+  {
+   "a": "Montgomery Road",
+   "b": "Ruth Avenue",
+   "x": 2438.5,
+   "y": 73.5,
+   "kind": "T",
+   "osm": [
+    718267.9,
+    4335229.2
+   ],
+   "osm_names": [
+    "Montgomery Road",
+    "Ruth Avenue"
+   ],
+   "printed": [
+    [
+     "Montgomery",
+     "(no name printed; street opening north)"
+    ],
+    [
+     "(unnamed stub)",
+     "Montgomery"
+    ]
+   ],
+   "spread_px": 13.0,
+   "osm_off_m": 4.7,
+   "job": "70_000",
+   "confidence": [
+    "medium",
+    "low"
+   ],
+   "note": "Montgomery runs along the top plate edge (north edge = plate cut ~y 25, south edge ~y 120). A side street opens north as a notch in the plate edge at x 2385-2475; Ruth is taken to be this unnamed stub. Holloway Avenue meets Montgomery from the south at ~x 2650, not used. | An unnamed stub leaves the north side of Montgomery Road at x about 2395-2495 (dot at about 2440,25), cut off by the plate edge. I took it as Ruth Avenue; no name is printed. Holloway St. meets Montgomery from the south at x about 2620. Montgomery centre y is about 73."
+  },
+  {
+   "a": "Blair Avenue",
+   "b": "Montgomery Road",
+   "x": 3035.0,
+   "y": 74.0,
+   "kind": "T",
+   "osm": [
+    718332.0,
+    4335326.0
+   ],
+   "osm_names": [
+    "Blair Avenue",
+    "Montgomery Road"
+   ],
+   "printed": [
+    [
+     "Montgomery",
+     "...Avenue (name cut by plate edge)"
+    ],
+    [
+     "... Avenue (first word cut by plate edge, 'AVE.')",
+     "Montgomery"
+    ]
+   ],
+   "spread_px": 2.0,
+   "osm_off_m": 2.4,
+   "job": "70_001",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Side street opens north as a notch in the top plate edge at x 2985-3090, label 'AVE.' with first word cut off; Montgomery centre ~y 75 (north edge at plate cut ~y 23, south edge ~y 127). | A stub labelled '...AVE.' (first word cut off) leaves the north side of Montgomery Road at x about 2990-3085, cut by the plate edge. I took it as Blair. Montgomery centre y is about 73 (N edge about 22 at the plate edge, S edge about 125)."
+  },
+  {
+   "a": "Dauner Avenue",
+   "b": "Montgomery Road",
+   "x": 3798.5,
+   "y": 74.0,
+   "kind": "T",
+   "osm": [
+    718419.4,
+    4335460.4
+   ],
+   "osm_names": [
+    "Dauner Avenue",
+    "Montgomery Road"
+   ],
+   "printed": [
+    [
+     "Montgomery",
+     "(no name printed)"
+    ],
+    [
+     "(unnamed stub)",
+     "Montgomery"
+    ]
+   ],
+   "spread_px": 3.6,
+   "osm_off_m": 2.3,
+   "job": "70_002",
+   "confidence": [
+    "medium",
+    "low"
+   ],
+   "note": "Unlabelled side street opens north as a notch in the top plate edge at x 3748-3852; Montgomery centre ~y 75. South side is Jewish Cemetery. | Montgomery Road runs E-W along the top (N edge y about 22 at the plate edge, S edge y about 125). An unnamed street stub leaves its north side at x about 3745-3850, cut off by the plate edge. I took it as Dauner; no name is printed. South side here is the United Jewish Cemetery (no street)."
+  },
+  {
+   "a": "O\u2019Bryon Street",
+   "b": "Pogue Avenue",
+   "x": 3990.0,
+   "y": 6088.0,
+   "kind": "T",
+   "osm": [
+    719442.3,
+    4334790.8
+   ],
+   "osm_names": [
+    "O\u2019Bryon Street",
+    "Pogue Avenue"
+   ],
+   "printed": [
+    [
+     "O'Bryon Street",
+     "Pogue Avenue"
+    ],
+    [
+     "O'Bryon Street",
+     "Pogue"
+    ]
+   ],
+   "spread_px": 18.9,
+   "osm_off_m": 1.2,
+   "job": "70_004",
+   "confidence": [
+    "high",
+    "high"
+   ],
+   "note": "O'Bryon St. (12in sewer, 6in W.P.) comes from SW and meets the south side of Pogue (Pogue edges ~y 6040 / 6122 here) at a hydrant. Pogue also crosses a diagonal '...Street' further west at ~(3550,5960). | O'Bryon St. (O'BRYON printed SW near 3200,6640, ST. near the junction) runs SW-NE and ends at the Pogue (Avenue) eastern stretch, by a hydrant. POGUE is printed further west near 3250,5900. An AVE. leaves Pogue going S about 130 px east."
+  },
+  {
+   "a": "Clayton Street",
+   "b": "Lilac Avenue",
+   "x": 8707.5,
+   "y": 4314.0,
+   "kind": "bend",
+   "osm": [
+    719689.6,
+    4335780.8
+   ],
+   "osm_names": [
+    "Clayton Street",
+    "Lilac Avenue"
+   ],
+   "printed": [
+    [
+     "Clayton Street (lettering partly obscured)",
+     "Lilac Avenue"
+    ],
+    [
+     "Clayton Street",
+     "Lilac Avenue"
+    ]
+   ],
+   "spread_px": 13.0,
+   "osm_off_m": 7.0,
+   "job": "70_005",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Lilac Ave ends at x ~8700 where the narrow Clayton St turns SSE (Lilac's north edge becomes Clayton's east edge). Bradley Av branches east off Clayton at ~(8780,4420). | Lilac Ave. comes from the SW and ends at the head of Clayton St. (printed 'CLAYTON ST.', a 30-ft street). Clayton runs SSE from there to the Potomac block, and Bradley Av. leaves Clayton eastward. Nothing continues north or east of the meeting, so it is effectively a bend/T."
+  },
+  {
+   "a": "Clayton Street",
+   "b": "Potomac Avenue",
+   "x": 8862.0,
+   "y": 4630.5,
+   "kind": "T",
+   "osm": [
+    719756.0,
+    4335788.8
+   ],
+   "osm_names": [
+    "Clayton Street",
+    "Potomac Avenue"
+   ],
+   "printed": [
+    [
+     "Clayton Street (lettering partly obscured)",
+     "Potomac Avenue"
+    ],
+    [
+     "Clayland Street",
+     "Potomac Avenue"
+    ]
+   ],
+   "spread_px": 5.0,
+   "osm_off_m": 13.0,
+   "job": "70_006",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Narrow Clayton St. ends at the north side of Potomac (Potomac edges ~y 4605 / 4665 at x 8850); no continuation south of Potomac in 1922. | The narrow Clayland St. (read CLAYLAN[D] ST.; possibly Clayton) comes from the NW and ends at Potomac Avenue in a T. Its edges are hard to tell from the lot lines, so it is not certain exactly how wide it is."
+  },
+  {
+   "a": "Annwood Lane",
+   "b": "Dexter Avenue",
+   "x": 1926.5,
+   "y": 4355.0,
+   "kind": "T",
+   "osm": [
+    718911.8,
+    4334643.2
+   ],
+   "osm_names": [
+    "Annwood Lane",
+    "Annwood Street",
+    "Dexter Avenue"
+   ],
+   "printed": [
+    [
+     "Anwood Street",
+     "Dexter Avenue"
+    ],
+    [
+     "Anwood Street",
+     "Dexter Avenue"
+    ]
+   ],
+   "spread_px": 3.0,
+   "osm_off_m": 2.1,
+   "job": "70_008",
+   "confidence": [
+    "high",
+    "high"
+   ],
+   "note": "Anwood St. (printed 'ANWOOD ST.', one n) comes from SW and ends at the west side of Dexter Ave at a hydrant. | Anwood St. (name printed further SW near 700,5050; only ST. near the junction) ends in a T at Dexter Avenue. On the plate Anwood Lane is a separate cul-de-sac further SE on Dexter, not at this junction."
+  },
+  {
+   "a": "Grandin Road",
+   "b": "Madison Road",
+   "x": 3030.0,
+   "y": 6911.0,
+   "kind": "T",
+   "osm": [
+    719475.4,
+    4334527.2
+   ],
+   "osm_names": [
+    "Grandin Road",
+    "Madison Road",
+    "Torrence Parkway"
+   ],
+   "printed": [
+    [
+     "Madison Road (name not visible here)",
+     "...e Road / ...Road (two stubs, lettering cut and illegible)"
+    ],
+    [
+     "...ge Road (truncated)",
+     "Madison",
+     "Grandin? Road (vertical, partly legible)"
+    ]
+   ],
+   "spread_px": 58.0,
+   "osm_off_m": 8.6,
+   "job": "70_011",
+   "confidence": [
+    "low",
+    "medium"
+   ],
+   "note": "Two street stubs leave Madison's SW side, cut by the plate edge: one heading W-SW (label ends '...E RD.') at x 2905-2995, and one heading S at x 3000-3065 ('...ROAD'). They join at Madison's SW edge (~y 6950); pick is on Madison centreline above the S stub's centre. O'Bryon meets the NE side just west at ~(2930,6832). | Two stubs leave the SW side of Madison Road at its bend: one going W, labelled ...GE RD., and one going S, with a vertical label that looks like GRANDIN RD. Both are cut by the plate edge. O'Bryon Street meets Madison from the NE at the same bend. The pick is the middle of the open junction: the S stub's axis is at x about 3033, Madison's centreline at about y 6885, and the two stub axes meet at about y 6990."
+  },
+  {
+   "a": "Vista Avenue",
+   "b": "Vista Place",
+   "x": 7317.5,
+   "y": 5926.0,
+   "kind": "T",
+   "osm": [
+    719796.2,
+    4335368.5
+   ],
+   "osm_names": [
+    "Vista Avenue",
+    "Vista Place"
+   ],
+   "printed": [
+    [
+     "Vista Avenue",
+     "Pl... (stub, label cut: 'PAL'/'PL')"
+    ],
+    [
+     "Vista Avenue",
+     "Pl.? (truncated stub label)"
+    ]
+   ],
+   "spread_px": 15.0,
+   "osm_off_m": 6.7,
+   "job": "70_013",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Short street stub (12in sewer, 6in W.P.) leaves the SE side of Vista Ave heading SE, cut by the plate edge; Vista ~90 px wide here. | A short stub (12-in sewer, 6-in W.P.; label partly reads PL or PA) leaves the S side of Vista Avenue and is cut off at the plate edge."
+  },
+  {
+   "a": "Easthill Avenue",
+   "b": "Pogue Avenue",
+   "x": 5283.0,
+   "y": 6517.5,
+   "kind": "cross",
+   "osm": [
+    719666.2,
+    4334959.3
+   ],
+   "osm_names": [
+    "Easthill Avenue",
+    "Pogue Avenue"
+   ],
+   "printed": [
+    [
+     "Easthill Avenue",
+     "Avenue (name not printed in region)"
+    ],
+    [
+     "Easthill Avenue",
+     "Avenue (only 'AVE.' printed in region; name not shown)"
+    ]
+   ],
+   "spread_px": 6.4,
+   "osm_off_m": 4.0,
+   "job": "70_014",
+   "confidence": [
+    "high",
+    "medium"
+   ],
+   "note": "Easthill (printed EASTHILL ... AVE., 2153-2205 addresses) runs NNE-SSW; the ENE street with 18-inch sewer (only 'AVE.' printed in region) crosses it; east of Easthill it continues narrower with 12-inch sewer. Centre read from block corners. | Easthill (printed 'EASTHILL' along the street, 'AVE.' further north) runs NNE from Madison Road. The cross street is an E-W 'AVE.' with an 18-inch sewer (addresses 2120-2140 to the west). It ends at Easthill's west side. East of Easthill there is only a narrow sewer strip (12-inch and 18-inch sewers), so I read it as a T. Street name assumed to be Pogue; not legible here."
+  },
+  {
+   "a": "Vista Avenue",
+   "b": "Vista Terrace",
+   "x": 7754.0,
+   "y": 5697.5,
+   "kind": "T",
+   "osm": [
+    719808.0,
+    4335463.7
+   ],
+   "osm_names": [
+    "Vista Avenue",
+    "Vista Terrace"
+   ],
+   "printed": [
+    [
+     "Vista Avenue",
+     "Vista ... (cut by plate edge)"
+    ],
+    [
+     "Vista Avenue",
+     "Vist... (truncated)"
+    ]
+   ],
+   "spread_px": 23.4,
+   "osm_off_m": 10.2,
+   "job": "70_015",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Narrow side street (about 45 px wide, 6-inch sewer, label begins 'VIST...') leaves the south side of Vista Avenue and is cut off by the plate edge after about 60 px. Holly Avenue joins Vista about 170 px west. Other stubs off Vista further SW (e.g. one labelled '...PL.' near 7330,5980) are different streets. | A short stub (6-in sewer, label begins VIST...) leaves the S side of Vista Avenue and is cut off by the plate edge. Holly Avenue meets Vista about 190 px west, near 7575,5725."
+  },
+  {
+   "a": "Beechcrest Lane",
+   "b": "Madison Road",
+   "x": 954.0,
+   "y": 5578.5,
+   "kind": "T",
+   "osm": [
+    719008.3,
+    4334332.4
+   ],
+   "osm_names": [
+    "Beechcrest Lane",
+    "Madison Road"
+   ],
+   "printed": [
+    [
+     "(name not legible, stub at plate edge)",
+     "Madison Road"
+    ],
+    [
+     "(unnamed stub, marked 'PIPE')",
+     "Madison Road"
+    ]
+   ],
+   "spread_px": 48.5,
+   "osm_off_m": 4.1,
+   "job": "70_018",
+   "confidence": [
+    "medium",
+    "low"
+   ],
+   "note": "Narrow stub (about 30 px wide, only 'PIPE' legible) leaves the south side of Madison Road heading SSW and is cut by the plate edge right away. Other stubs south of Madison: '...R PL.' (Baker Place) at about (739,5398), and '...ST AVE.' near (1400,6000). | Beechcrest Lane is not named. A short unnamed stub (only 'PIPE' printed) leaves the SW side of Madison Road at x about 920-960, y about 5610-5650, and is cut off by the plate edge. I picked the point where its centreline meets Madison's centreline. Madison's SW side here is at the plate edge."
+  },
+  {
+   "a": "Elsmere Avenue",
+   "b": "Lexington Avenue",
+   "x": 9812.5,
+   "y": 3130.0,
+   "kind": "T",
+   "osm": [
+    719611.4,
+    4336123.1
+   ],
+   "osm_names": [
+    "Elsmere Avenue",
+    "Lexington Avenue"
+   ],
+   "printed": [
+    [
+     "(no name printed)",
+     "(no name printed)"
+    ],
+    [
+     null,
+     null
+    ]
+   ],
+   "spread_px": 53.2,
+   "osm_off_m": 17.8,
+   "job": "70_019",
+   "confidence": [
+    "low",
+    "low"
+   ],
+   "note": "East of the railroad, an ENE street stub (8-inch sewer, 4-inch W.P.) and a second stub heading ESE leave the strip along the railroad's east side and are cut by the plate edge. No names printed. The pick is where the ENE stub's centreline meets the strip. Another stub (label '4... SA...') leaves the same strip further north at about (9530,2650). | East of the railroad, only the edge of a street junction is on the plate. It is a street running along the east side of the tracks, mostly off-plate. A stub goes NE (8-in sewer, 4-in W.P.) and another opening goes ESE, with block corners at about 9860,3130 and 9850,3245. No names are printed. The pick is the middle of the open junction, which is cut by the plate edge."
+  },
+  {
+   "a": "Easthill Avenue",
+   "b": "Madison Road",
+   "x": 5092.5,
+   "y": 7050.0,
+   "kind": "T",
+   "osm": [
+    719731.6,
+    4334869.9
+   ],
+   "osm_names": [
+    "Easthill Avenue",
+    "Madison Road"
+   ],
+   "printed": [
+    [
+     "Easthill Avenue",
+     "Madison Road"
+    ],
+    [
+     "Easthill Avenue",
+     "Madison Road"
+    ]
+   ],
+   "spread_px": 11.2,
+   "osm_off_m": 2.5,
+   "job": "70_020",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Easthill (printed EASTHILL) comes from the north and meets Madison Road (centre at the car track, about y 7045). On the south side a stub (label fragment 'HIL'/'ER') leaves offset about 90 px west, centred at about (5007,7105), and is cut by the plate edge. The pick uses the north leg. | Easthill (printed 'EASTHILL') meets the north side of Madison Road. Directly opposite, a clipped stub printed 'EA...'/'...HIL...' continues south beyond the plate edge at x about 4965-5075. Madison's south side is at the plate edge."
+  },
+  {
+   "a": "Annwood Street",
+   "b": "Madison Road",
+   "x": 520.0,
+   "y": 5223.5,
+   "kind": "T",
+   "osm": [
+    718893.9,
+    4334295.8
+   ],
+   "osm_names": [
+    "Annwood Street",
+    "Madison Road"
+   ],
+   "printed": [
+    [
+     "Anwood Street (printed 'ANWOOD', no suffix seen)",
+     "Madison Road"
+    ],
+    [
+     "Anwood Street",
+     "Madison Road"
+    ]
+   ],
+   "spread_px": 40.1,
+   "osm_off_m": 3.6,
+   "job": "70_021",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Anwood (4-inch W.P., 15-inch sewer) comes from the ENE and meets Madison Road from the north; block corners at about (530,5157) and (597,5207). Madison centre is taken at the car track. | Anwood St. ends at the NE side of Madison Road. Madison runs NW-SE with a streetcar track. The SW half of Madison is at or cut by the plate edge (white beyond), so the Madison centreline was estimated from the NE edge plus about half the street width."
+  },
+  {
+   "a": "Dana Avenue",
+   "b": "Realistic Avenue",
+   "x": 8987.5,
+   "y": 2825.0,
+   "kind": "T",
+   "osm": [
+    719466.4,
+    4336013.3
+   ],
+   "osm_names": [
+    "Dana Avenue",
+    "Realistic Avenue"
+   ],
+   "printed": [
+    [
+     "Oesper Avenue (printed 'OESPER' ... 'AVE.')",
+     "Avenue (NNW-SSE avenue, only 'AVE.' printed in region)"
+    ],
+    [
+     "...eter Avenue (12-inch sewer; start of name cut: '...ETER', 'AVE.')",
+     "(main NNW-SSE avenue, name not printed in region; addresses 2102-2165)"
+    ]
+   ],
+   "spread_px": 11.2,
+   "osm_off_m": 5.8,
+   "job": "70_022",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "L-shaped Oesper Avenue (12-inch sewer) runs SSE and then turns ENE to meet, from the west, the wide NNW-SSE avenue with car tracks (2111-2132 addresses). Block corners at about (8920,2812) and (8970,2880). Nothing joins from the east here. | A 50-ft avenue labelled '...ETER' / 'AVE.' with a 12-inch sewer runs ENE and ends at the west side of the wide NNW-SSE avenue (pink water main, railroad just east). Block corners are lot 8 at (8920,2815) and lot 10 at (8970,2880). Neither printed name matches Dana or Realistic."
+  },
+  {
+   "a": "Jonathan Avenue",
+   "b": "Montgomery Road",
+   "x": 4833.0,
+   "y": 90.0,
+   "kind": "T",
+   "osm": [
+    718531.0,
+    4335637.4
+   ],
+   "osm_names": [
+    "Jonathan Avenue",
+    "Montgomery Road"
+   ],
+   "printed": [
+    [
+     "(no name printed; stub cut by plate edge)",
+     "Montgomery Road (no name printed in region; car track, 3500-3542 addresses)"
+    ],
+    [
+     null,
+     null
+    ]
+   ],
+   "spread_px": 4.0,
+   "osm_off_m": 9.7,
+   "job": "70_024",
+   "confidence": [
+    "low",
+    "medium"
+   ],
+   "note": "A street stub about 110 px wide (x 4775-4890) shows only as a bump above Montgomery's north edge at the very top plate edge. Montgomery centre is taken at y about 88 (north edge about 48, south frontage about 135). Duck Creek Road leaves Montgomery at about (4440,90). | The road along the top edge of the plate (streetcar track, house numbers 3500-3542, name not printed) has a stub heading north off the plate (x 4778-4888). The pick is the stub's axis on the road centreline. The north half of the junction is beyond the plate edge."
+  },
+  {
+   "a": "Baker Place",
+   "b": "Madison Road",
+   "x": 727.0,
+   "y": 5384.0,
+   "kind": "T",
+   "osm": [
+    718952.4,
+    4334314.2
+   ],
+   "osm_names": [
+    "Baker Place",
+    "Madison Road"
+   ],
+   "printed": [
+    [
+     "Baker Place (printed '...R PL.', cut)",
+     "Madison Road"
+    ],
+    [
+     "...r Place (truncated)",
+     "Madison"
+    ]
+   ],
+   "spread_px": 36.9,
+   "osm_off_m": 7.5,
+   "job": "70_025",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "A 50-ft stub labelled '...R PL.' (with a pipe) leaves the south side of Madison Road heading SW; mouth corners at about (672,5422) and (735,5465). It is cut by the plate edge. Madison centre is taken midway between the edges, near the car track. | A short stub labelled ...R PL. (with a W. PIPE) leaves the SW side of Madison Road (streetcar track) and is cut by the plate edge. The pick is on the Madison centreline at the stub's axis."
+  }
+ ]
+}

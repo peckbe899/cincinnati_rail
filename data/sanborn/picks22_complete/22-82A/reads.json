@@ -1,0 +1,1887 @@
+[
+ {
+  "job": "82A_000",
+  "osm": [
+   719102.6,
+   4337274.9
+  ],
+  "osm_names": [
+   "Ivanhoe Avenue",
+   "Weyer Avenue"
+  ],
+  "predicted": [
+   4411.3,
+   6075.8
+  ],
+  "reads": [
+   {
+    "job": "82A_000",
+    "found": true,
+    "x": 4420,
+    "y": 6076,
+    "kind": "T",
+    "printed": [
+     "Ivanhoe",
+     "Avenue (name not visible in region)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "E-W 50 ft street printed only 'AVE' (name outside region) meets N-S street printed 'IVANHOE' at the plate's east edge; Ivanhoe west line ~x4380, its east half is cut off by the plate edge (~x4455), centre estimated from 50 ft width. E-W street between block lines y~6036 and ~6117. Lines at x~4413 and the dashed line ~4435 are the 4in W pipe and 8in sewer.",
+    "group": "A36"
+   },
+   {
+    "job": "82A_000",
+    "found": true,
+    "x": 4414,
+    "y": 6070,
+    "kind": "T",
+    "printed": [
+     "Ivanhoe",
+     "Avenue (name not printed in region)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 4420,
+      "y": 5575,
+      "note": "another unnamed E-W avenue (no. 1833) meets Ivanhoe ~500 px north"
+     }
+    ],
+    "note": "An unnamed 50 ft 'AVE' (nos. 1809-1837, 6in W pipe) ends at Ivanhoe. Ivanhoe (45 ft) runs N-S with its east side on the plate's right edge (~4460).",
+    "group": "B37"
+   }
+  ],
+  "spread_px": 8.5,
+  "osm_off_m": 1.3,
+  "x": 4417.0,
+  "y": 6073.0,
+  "outcome": "picked",
+  "why": "reads 8 px apart"
+ },
+ {
+  "job": "82A_001",
+  "osm": [
+   718731.2,
+   4337647.5
+  ],
+  "osm_names": [
+   "Cleveland Avenue",
+   "Lincoln Avenue"
+  ],
+  "predicted": [
+   2592.9,
+   4202.2
+  ],
+  "reads": [
+   {
+    "job": "82A_001",
+    "found": true,
+    "x": 2596,
+    "y": 4227,
+    "kind": "bend",
+    "printed": [
+     "Cleveland",
+     "unnamed 40 ft street (Lincoln not printed here)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Cleveland (40 ft, printed 'CLEVELAND') runs west to the city-limits line at x~2565 where an unnamed 40 ft N-S street (between the city-limits line ~2565 and block line ~2625, width label '40') turns south toward Mills; nothing continues north or west, so it is an L. 'LINCOLN' is printed further south on the road near y~5030, x~3100-3250, which this N-S street feeds via the diagonal south of Mills.",
+    "group": "A36"
+   },
+   {
+    "job": "82A_001",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Cleveland",
+     "Lincoln"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 2610,
+      "y": 4665,
+      "note": "a curving 50 ft street from the west end of Mills runs SE to join Lincoln at ~(2850,5000), probably part of Lincoln; it meets Mills, not Cleveland"
+     }
+    ],
+    "note": "Cleveland (E-W, ~y 4228) dead-ends at the Cincinnati/Norwood city limits at x~2570, which is the expected point. Lincoln is printed as a parallel E-W street ~800 px south (y~5020). No N-S street along the city limits joins them; the strip there holds only a 15in sewer and lot lines.",
+    "group": "B37"
+   }
+  ],
+  "outcome": "disagree",
+  "why": "read 1 found it, read 2 did not"
+ },
+ {
+  "job": "82A_002",
+  "osm": [
+   718733.4,
+   4337563.0
+  ],
+  "osm_names": [
+   "Lincoln Avenue",
+   "Mills Avenue"
+  ],
+  "predicted": [
+   2597.8,
+   4628.5
+  ],
+  "reads": [
+   {
+    "job": "82A_002",
+    "found": true,
+    "x": 2582,
+    "y": 4642,
+    "kind": "T",
+    "printed": [
+     "unnamed 40 ft street (Lincoln not printed here)",
+     "Mills"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Mills (50 ft, printed 'MILLS', block lines y~4600 and ~4683) ends at the west at the 40 ft N-S street along the city limits (lines ~2550/2607); at the same spot a diagonal street (8in sewer) leaves SE toward the road printed 'LINCOLN' near (3150,5030). Point = Mills centreline on the N-S street centreline. Grey band west of the block is a boundary band.",
+    "group": "A36"
+   },
+   {
+    "job": "82A_002",
+    "found": true,
+    "x": 2622,
+    "y": 4645,
+    "kind": "bend",
+    "printed": [
+     "unnamed diagonal street (leads SE to LINCOLN, printed as Lincoln east of x 2900)",
+     "Mills (printed MILLS)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 2895,
+      "y": 5012,
+      "note": "lower end of the same unnamed diagonal, where it joins the west end of LINCOLN"
+     }
+    ],
+    "note": "Mills (y about 4602-4683) ends on the west at the city-limits band (x about 2550-2600). There a diagonal street, unnamed on the plate, turns off SE and runs to the west end of Lincoln at about (2895,5012). The pick is the junction of the Mills centreline with the diagonal centreline at the upper end, which is nearest the expected point.",
+    "group": "B36"
+   }
+  ],
+  "spread_px": 40.1,
+  "osm_off_m": 3.1,
+  "x": 2602.0,
+  "y": 4643.5,
+  "outcome": "picked",
+  "why": "reads 40 px apart"
+ },
+ {
+  "job": "82A_003",
+  "osm": [
+   719682.5,
+   4338478.1
+  ],
+  "osm_names": [
+   "Hunter Avenue",
+   "Ross Avenue"
+  ],
+  "predicted": [
+   7329.7,
+   150.7
+  ],
+  "reads": [
+   {
+    "job": "82A_003",
+    "found": true,
+    "x": 7347,
+    "y": 152,
+    "kind": "T",
+    "printed": [
+     "side-street stub (no name printed)",
+     "Avenue (Ross not printed in region)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "E-W street along the plate's top edge (north line = plate border ~y105, south block line ~y200; dashed sewer and a solid 10in W pipe line inside). Side street shows only as a stub in the plate border, x 7312-7382, with its pipe line at x~7338. Other stubs along the same street at x~6966, ~7770, ~8184; narrow stub ~6580.",
+    "group": "A36"
+   },
+   {
+    "job": "82A_003",
+    "found": true,
+    "x": 7340,
+    "y": 165,
+    "kind": "T",
+    "printed": [
+     "side street not drawn (pipe stub only)",
+     "Avenue along top edge (name not printed)"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [],
+    "note": "Ross runs along the top plate edge with its north half cut off. A notch above the edge at x~7312-7382, with a pipe branch and hydrant going north, is the mouth of a side street drawn on the next sheet. Picked where the branch meets the Ross water main.",
+    "group": "B37"
+   }
+  ],
+  "spread_px": 14.8,
+  "osm_off_m": 3.2,
+  "x": 7343.5,
+  "y": 158.5,
+  "outcome": "picked",
+  "why": "reads 15 px apart"
+ },
+ {
+  "job": "82A_004",
+  "osm": [
+   719850.0,
+   4338470.2
+  ],
+  "osm_names": [
+   "Ross Avenue",
+   "Silver Street"
+  ],
+  "predicted": [
+   8157.8,
+   195.0
+  ],
+  "reads": [
+   {
+    "job": "82A_004",
+    "found": true,
+    "x": 8184,
+    "y": 195,
+    "kind": "T",
+    "printed": [
+     "side-street stub (only an '8' pipe label)",
+     "Avenue (only 'AVENUE' printed further east at x~8900)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Stub in the top plate border x 8151-8217 with an 8in pipe line down its middle meets the E-W street (north line = plate border ~y148, south block line ~y241; line at ~y205-225 is the 10in W pipe). Silver name not printed.",
+    "group": "A36"
+   },
+   {
+    "job": "82A_004",
+    "found": true,
+    "x": 8186,
+    "y": 210,
+    "kind": "T",
+    "printed": [
+     "side street not drawn (pipe stub only)",
+     "Avenue along top edge (name not printed; 'AVENUE' printed east of the N-S AVE at 8720)"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 8722,
+      "y": 225,
+      "note": "unnamed N-S 'AVE' (60 ft) crosses the top-edge street"
+     }
+    ],
+    "note": "Ross runs along the top plate edge with its north half cut off. A notch above the edge at x~8150-8220, with a pipe branch and hydrant going north, is the mouth of a side street drawn on the next sheet. Picked where the branch meets the Ross water main.",
+    "group": "B37"
+   }
+  ],
+  "spread_px": 15.1,
+  "osm_off_m": 5.7,
+  "x": 8185.0,
+  "y": 202.5,
+  "outcome": "picked",
+  "why": "reads 15 px apart"
+ },
+ {
+  "job": "82A_005",
+  "osm": [
+   719606.8,
+   4338482.4
+  ],
+  "osm_names": [
+   "Rolston Avenue",
+   "Ross Avenue"
+  ],
+  "predicted": [
+   6956.5,
+   128.8
+  ],
+  "reads": [
+   {
+    "job": "82A_005",
+    "found": true,
+    "x": 6966,
+    "y": 134,
+    "kind": "T",
+    "printed": [
+     "side-street stub (no name printed)",
+     "Avenue (Ross not printed in region)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Stub in the top plate border x 6930-7002 (pipe line at x~6953) meets the E-W street (north line = plate border ~y88, south block line ~y181). A narrower stub at x~6565-6600 and the full N-S 'AVE' at x~6190 are other side streets; chose the stub nearest the expected point.",
+    "group": "A36"
+   },
+   {
+    "job": "82A_005",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "",
+     ""
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "The only street near the expected point is the E-W street along the top plate edge (y about 40-125; continuation of the street printed ROSS AVE farther west). Its north side is cut by the plate edge. No side street leaves it here: the small notches in the top edge near x 6560-6600 and 6930-6990 hold hydrant symbols only. Rolston Avenue is not on the plate; if it ran north from Ross, the crossing is off the plate past the top edge.",
+    "group": "B36"
+   }
+  ],
+  "outcome": "disagree",
+  "why": "read 1 found it, read 2 did not"
+ },
+ {
+  "job": "82A_006",
+  "osm": [
+   718925.7,
+   4338404.1
+  ],
+  "osm_names": [
+   "Ross Avenue",
+   "Tennessee Avenue"
+  ],
+  "predicted": [
+   3584.9,
+   474.4
+  ],
+  "reads": [
+   {
+    "job": "82A_006",
+    "found": true,
+    "x": 3600,
+    "y": 365,
+    "kind": "bend",
+    "printed": [
+     "Ross Avenue",
+     "(Tennessee not printed)"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 3335,
+      "y": 540,
+      "note": "west bend where the diagonal of Ross Ave meets its western horizontal segment (y~537)"
+     }
+    ],
+    "note": "No street named Tennessee on the plate. Plate shows one continuous road printed 'ROSS' (east horizontal part) and 'AVE.' (diagonal part) along the plate's top edge, bending at (3600,365) and again at (3335,540); railroad tracks cross just south of the east bend, pink boundary band at x~3535. Point is the east bend (centre of the dashed sewer bend), nearest the expected point; candidate only.",
+    "group": "A36"
+   },
+   {
+    "job": "82A_006",
+    "found": true,
+    "x": 3598,
+    "y": 366,
+    "kind": "bend",
+    "printed": [
+     "Ross Avenue (ROSS on the east part, AVE. on the diagonal)",
+     "Tennessee not printed"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 3340,
+      "y": 542,
+      "note": "lower bend, where the west segment (y about 500-572, unnamed, address 1562) turns into the diagonal"
+     }
+    ],
+    "note": "Ross Ave runs along the top plate edge. Its north side is the plate cut throughout. It jogs: a west segment at y about 536, a diagonal from (3340,542) to (3598,366), then an east part at y about 365. AVE. is printed on the diagonal and ROSS on the east part, so the west/diagonal part may carry a different name. Tennessee is not printed anywhere in the region. The pick is the upper bend, nearest the expected point. Tennessee may join here from off-plate to the north/west, or the lower bend may be the junction if Tennessee is the west segment.",
+    "group": "B36"
+   }
+  ],
+  "spread_px": 2.2,
+  "osm_off_m": 22.6,
+  "x": 3599.0,
+  "y": 365.5,
+  "outcome": "duplicate",
+  "why": "the same plate crossing as 82A_007 (nearer its OSM point)"
+ },
+ {
+  "job": "82A_007",
+  "osm": [
+   718925.5,
+   4338414.8
+  ],
+  "osm_names": [
+   "Ross Avenue",
+   "Tennessee Avenue"
+  ],
+  "predicted": [
+   3584.5,
+   422.5
+  ],
+  "reads": [
+   {
+    "job": "82A_007",
+    "found": true,
+    "x": 3600,
+    "y": 365,
+    "kind": "bend",
+    "printed": [
+     "Ross Avenue",
+     "(Tennessee not printed)"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 3335,
+      "y": 540,
+      "note": "west bend where the diagonal of Ross Ave meets its western horizontal segment (y~537)"
+     }
+    ],
+    "note": "Same as 82A_006: no Tennessee on the plate; one continuous 'ROSS AVE.' with bends at (3600,365) and (3335,540). Point is the east bend nearest the expected point; candidate only.",
+    "group": "A36"
+   },
+   {
+    "job": "82A_007",
+    "found": true,
+    "x": 3598,
+    "y": 366,
+    "kind": "bend",
+    "printed": [
+     "Ross Avenue (ROSS on the east part, AVE. on the diagonal)",
+     "Tennessee not printed"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 3340,
+      "y": 542,
+      "note": "lower bend, where the west segment (unnamed, address 1562) turns into the diagonal"
+     }
+    ],
+    "note": "Same place as 82A_006. Ross Ave jogs along the top plate edge, which cuts its north side. Tennessee is not printed. The pick is the upper bend nearest the expected point; the lower bend is the alternative.",
+    "group": "B36"
+   }
+  ],
+  "spread_px": 2.2,
+  "osm_off_m": 12.1,
+  "x": 3599.0,
+  "y": 365.5,
+  "outcome": "picked",
+  "why": "reads 2 px apart"
+ },
+ {
+  "job": "82A_008",
+  "osm": [
+   718594.6,
+   4337919.2
+  ],
+  "osm_names": [
+   "Baker Circle",
+   "Baker Street"
+  ],
+  "predicted": [
+   1936.8,
+   2840.4
+  ],
+  "reads": [
+   {
+    "job": "82A_008",
+    "found": true,
+    "x": 1944,
+    "y": 2838,
+    "kind": "T",
+    "printed": [
+     "Street-No Name",
+     "Baker Street"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "'BAKER ST.' (lines x~1905/1983) runs north from Sherman and ends at the E-W street printed 'STREET-NO NAME' (lines y~2805/2870), which with the N-S 'STREET NO NAME' at x~1470 forms the loop presumably now Baker Circle.",
+    "group": "A36"
+   },
+   {
+    "job": "82A_008",
+    "found": true,
+    "x": 1943,
+    "y": 2836,
+    "kind": "bend",
+    "printed": [
+     "Street - No Name",
+     "Baker Street"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "The unnamed loop street (STREET - NO NAME) runs east along y~2836 and turns south as Baker St. It is an L-corner; neither street continues past it. The loop's west leg (Street No Name, x~1460) runs south to Sherman and does not meet Baker again.",
+    "group": "B37"
+   }
+  ],
+  "spread_px": 2.2,
+  "osm_off_m": 1.5,
+  "x": 1943.5,
+  "y": 2837.0,
+  "outcome": "picked",
+  "why": "reads 2 px apart"
+ },
+ {
+  "job": "82A_009",
+  "osm": [
+   718304.4,
+   4337756.9
+  ],
+  "osm_names": [
+   "Sherman Avenue",
+   "Victory Parkway"
+  ],
+  "predicted": [
+   515.5,
+   3645.3
+  ],
+  "reads": [
+   {
+    "job": "82A_009",
+    "found": true,
+    "x": 318,
+    "y": 3622,
+    "kind": "cross",
+    "printed": [
+     "Sherman (printed 'SHERMAN' further east on the same street)",
+     "unnamed diagonal road"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [],
+    "note": "Sherman (50 ft, lines y~3585/3660, 15in sewer) ends west at an unnamed NE-SW diagonal road along the plate's west edge (about 45-57 ft wide with a centre dash-dot line, no fronting lots); a stub printed '..YARR? AVE' (partly under a tape patch) continues west across it. Victory Parkway not printed; the diagonal may be its predecessor/alignment. A 12in culvert crosses Sherman at x~480 near the expected point - not a street.",
+    "group": "A36"
+   },
+   {
+    "job": "82A_009",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "",
+     ""
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Victory Parkway is not here in 1922 (the plate prints only a VICTORY BLVD. stub at the bottom edge, at about x 990, y 6150). Near the expected point, a 50-ft E-W street with no name printed in this region (y about 3588-3660; probably Sherman) ends on the east side of the diagonal west-edge road (also unnamed here, probably Reading Road) at about (330,3622). Opposite it, AYRES AVE leaves to the NW. A 12-inch culvert crosses the E-W street at x about 490. No street follows the line of Victory.",
+    "group": "B36"
+   }
+  ],
+  "outcome": "disagree",
+  "why": "read 1 found it, read 2 did not"
+ },
+ {
+  "job": "82A_010",
+  "osm": [
+   720345.6,
+   4337445.7
+  ],
+  "osm_names": [
+   "Floral Avenue",
+   "Kenilworth Avenue"
+  ],
+  "predicted": [
+   10451.6,
+   5220.2
+  ],
+  "reads": [
+   {
+    "job": "82A_010",
+    "found": true,
+    "x": 10531,
+    "y": 5232,
+    "kind": "T",
+    "printed": [
+     "Avenue (boulevard, name not printed here; 'FLORAL' printed on its diagonal continuation SW)",
+     "Kenilworth Avenue"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Kenilworth (block lines ~5185/5262) meets the N-S boulevard with planted islands (west line ~x10435, islands ~10495-10567, east side cut by plate edge ~10600); Kenilworth continues east into a plate-border jut. Point = gap between the islands on the boulevard centre.",
+    "group": "A36"
+   },
+   {
+    "job": "82A_010",
+    "found": true,
+    "x": 10530,
+    "y": 5225,
+    "kind": "cross",
+    "printed": [
+     "Kenilworth Avenue",
+     "unnamed 110-ft boulevard with median islands (FLORAL printed on its SW diagonal continuation)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 10490,
+      "y": 5720,
+      "note": "south end of the boulevard, where it meets the FLORAL diagonal and Smith Road"
+     }
+    ],
+    "note": "Kenilworth Ave (y about 5170-5252) crosses a N-S boulevard: x about 10435-10605, 110 ft, with oval median islands, name not printed. A short east stub of Kenilworth is cut by the plate edge at x about 10660. Floral Ave is printed on the diagonal that comes from the SW and joins the south end of this boulevard, so the boulevard is taken to be Floral.",
+    "group": "B36"
+   }
+  ],
+  "spread_px": 7.1,
+  "osm_off_m": 15.9,
+  "x": 10530.5,
+  "y": 5228.5,
+  "outcome": "duplicate",
+  "why": "the same plate crossing as 82A_011 (nearer its OSM point)"
+ },
+ {
+  "job": "82A_011",
+  "osm": [
+   720367.3,
+   4337444.6
+  ],
+  "osm_names": [
+   "Floral Avenue",
+   "Kenilworth Avenue"
+  ],
+  "predicted": [
+   10559.6,
+   5227.1
+  ],
+  "reads": [
+   {
+    "job": "82A_011",
+    "found": true,
+    "x": 10531,
+    "y": 5232,
+    "kind": "T",
+    "printed": [
+     "Avenue (boulevard, name not printed here; 'FLORAL' printed on its diagonal continuation SW)",
+     "Kenilworth Avenue"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Same crossing as 82A_010.",
+    "group": "A36"
+   },
+   {
+    "job": "82A_011",
+    "found": true,
+    "x": 10530,
+    "y": 5225,
+    "kind": "cross",
+    "printed": [
+     "Kenilworth Avenue",
+     "unnamed 110-ft boulevard with median islands (FLORAL printed on its SW diagonal continuation)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 10490,
+      "y": 5720,
+      "note": "south end of the boulevard, where it meets the FLORAL diagonal and Smith Road"
+     }
+    ],
+    "note": "Same crossing as 82A_010: Kenilworth Ave crosses the N-S median boulevard, taken to be Floral. A short east stub of Kenilworth is cut by the plate edge.",
+    "group": "B36"
+   }
+  ],
+  "spread_px": 7.1,
+  "osm_off_m": 5.8,
+  "x": 10530.5,
+  "y": 5228.5,
+  "outcome": "picked",
+  "why": "reads 7 px apart"
+ },
+ {
+  "job": "82A_012",
+  "osm": [
+   718859.5,
+   4338395.6
+  ],
+  "osm_names": [
+   "Tennessee Avenue",
+   "Transpark Drive"
+  ],
+  "predicted": [
+   3257.6,
+   512.6
+  ],
+  "reads": [
+   {
+    "job": "82A_012",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Transpark Drive is not on the 1922 plate. Near the expected point is only the western horizontal segment of the road printed 'ROSS AVE.' along the plate's top edge (centre y~537, 12in W pipe) with open land south; a 36in W pipe line curves off it SE from x~3000 (pipe, not a street). No Tennessee name printed either.",
+    "group": "A36"
+   },
+   {
+    "job": "82A_012",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Ross Avenue",
+     ""
+    ],
+    "plate_edge": true,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "The expected point is on Ross Ave. at its bend along the top plate edge. South of it only a 36in water pipe curves off across the Sisters of Charity land; there is no street. Transpark Drive did not exist in 1922.",
+    "group": "B37"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "82A_013",
+  "osm": [
+   720373.4,
+   4337549.7
+  ],
+  "osm_names": [
+   "Floral Avenue",
+   "Park Avenue"
+  ],
+  "predicted": [
+   10605.1,
+   4708.3
+  ],
+  "reads": [
+   {
+    "job": "82A_013",
+    "found": true,
+    "x": 10560,
+    "y": 4642,
+    "kind": "cross",
+    "printed": [
+     "Avenue (boulevard, only 'AVE' printed)",
+     "Park Avenue"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Park Ave (block lines ~4558/4718, inner lines ~4605/4660 with a circled 'PARK' between them) crosses the N-S boulevard (60 ft north of Park, west line ~10522; 110 ft with islands south of it, west line ~10497); east side cut by the plate edge, Park continues east into a plate-border jut.",
+    "group": "A36"
+   },
+   {
+    "job": "82A_013",
+    "found": true,
+    "x": 10590,
+    "y": 4645,
+    "kind": "cross",
+    "printed": [
+     "Avenue (N-S boulevard, name not printed in region)",
+     "Avenue (E-W boulevard, name not printed; circled PARK in its median at the crossing)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Same crossing as 82A_016; the east half is cut by the plate's right edge.",
+    "group": "B37"
+   }
+  ],
+  "spread_px": 30.1,
+  "osm_off_m": 14.7,
+  "x": 10575.0,
+  "y": 4643.5,
+  "outcome": "duplicate",
+  "why": "the same plate crossing as 82A_014 (nearer its OSM point)"
+ },
+ {
+  "job": "82A_014",
+  "osm": [
+   720374.5,
+   4337572.5
+  ],
+  "osm_names": [
+   "Floral Avenue",
+   "Park Avenue"
+  ],
+  "predicted": [
+   10615.0,
+   4596.7
+  ],
+  "reads": [
+   {
+    "job": "82A_014",
+    "found": true,
+    "x": 10560,
+    "y": 4642,
+    "kind": "cross",
+    "printed": [
+     "Avenue (boulevard, only 'AVE' printed)",
+     "Park Avenue"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Same crossing as 82A_013.",
+    "group": "A36"
+   },
+   {
+    "job": "82A_014",
+    "found": true,
+    "x": 10590,
+    "y": 4645,
+    "kind": "cross",
+    "printed": [
+     "Avenue (N-S boulevard, name not printed in region)",
+     "Avenue (E-W boulevard, name not printed; circled PARK in its median at the crossing)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Same crossing as 82A_016: the E-W boulevard (nos. 2205-2265) meets the N-S avenue (60 ft north, 110 ft boulevard south). The east half is cut by the plate's right edge. The region does not print which is Floral and which is Park.",
+    "group": "B37"
+   }
+  ],
+  "spread_px": 30.1,
+  "osm_off_m": 12.3,
+  "x": 10575.0,
+  "y": 4643.5,
+  "outcome": "picked",
+  "why": "reads 30 px apart"
+ },
+ {
+  "job": "82A_015",
+  "osm": [
+   720351.2,
+   4337574.0
+  ],
+  "osm_names": [
+   "Floral Avenue",
+   "Park Avenue"
+  ],
+  "predicted": [
+   10499.5,
+   4587.6
+  ],
+  "reads": [
+   {
+    "job": "82A_015",
+    "found": true,
+    "x": 10560,
+    "y": 4642,
+    "kind": "cross",
+    "printed": [
+     "Avenue (boulevard, only 'AVE' printed)",
+     "Park Avenue"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Same crossing as 82A_013.",
+    "group": "A36"
+   },
+   {
+    "job": "82A_015",
+    "found": true,
+    "x": 10590,
+    "y": 4645,
+    "kind": "cross",
+    "printed": [
+     "Avenue (N-S boulevard, name not printed in region)",
+     "Avenue (E-W boulevard, name not printed; circled PARK in its median at the crossing)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Same crossing as 82A_016; the east half is cut by the plate's right edge.",
+    "group": "B37"
+   }
+  ],
+  "spread_px": 30.1,
+  "osm_off_m": 19.2,
+  "x": 10575.0,
+  "y": 4643.5,
+  "outcome": "duplicate",
+  "why": "the same plate crossing as 82A_014 (nearer its OSM point)"
+ },
+ {
+  "job": "82A_016",
+  "osm": [
+   720350.3,
+   4337550.8
+  ],
+  "osm_names": [
+   "Floral Avenue",
+   "Park Avenue"
+  ],
+  "predicted": [
+   10490.3,
+   4701.2
+  ],
+  "reads": [
+   {
+    "job": "82A_016",
+    "found": true,
+    "x": 10560,
+    "y": 4642,
+    "kind": "cross",
+    "printed": [
+     "Avenue (boulevard, only 'AVE' printed)",
+     "Park Avenue"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Same crossing as 82A_013.",
+    "group": "A36"
+   },
+   {
+    "job": "82A_016",
+    "found": true,
+    "x": 10590,
+    "y": 4645,
+    "kind": "cross",
+    "printed": [
+     "Avenue (N-S boulevard, name not printed in region)",
+     "Avenue (E-W boulevard, name not printed; circled PARK in its median at the crossing)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "E-W boulevard (house nos. 2205-2265, median labelled AVE. and a circled PARK at its east end) meets the N-S avenue (60 ft north of the crossing; 28/54/28 ft boulevard with an oval median '110' south of it). The east half of the N-S street is cut by the plate's right edge (~10650). The region does not print which is Floral and which is Park; 82A_021 shows the plate's FLORAL label on a SW diagonal that runs into the south end of this N-S boulevard.",
+    "group": "B37"
+   }
+  ],
+  "spread_px": 30.1,
+  "osm_off_m": 20.4,
+  "x": 10575.0,
+  "y": 4643.5,
+  "outcome": "duplicate",
+  "why": "the same plate crossing as 82A_014 (nearer its OSM point)"
+ },
+ {
+  "job": "82A_017",
+  "osm": [
+   720219.3,
+   4338490.0
+  ],
+  "osm_names": [
+   "Buxton Avenue",
+   "Wesley Avenue"
+  ],
+  "predicted": [
+   9980.1,
+   107.0
+  ],
+  "reads": [
+   {
+    "job": "82A_017",
+    "found": true,
+    "x": 9978,
+    "y": 76,
+    "kind": "T",
+    "printed": [
+     "Buxton Avenue",
+     "Avenue (only 'AVE' printed; name not legible in region)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "50 ft N-S avenue between x~9945 and ~10010 runs south from Buxton Ave to Highland Ave. Buxton's south edge at y~112; its north edge is cut by the top plate edge (~y 60-70), so centre y is estimated from a ~76 px width. Large spaced letters nearby are the Wilberforce and Arnold subdivision names.",
+    "group": "A37"
+   },
+   {
+    "job": "82A_017",
+    "found": true,
+    "x": 9996,
+    "y": 88,
+    "kind": "T",
+    "printed": [
+     "Buxton Avenue",
+     "Avenue (only AVE legible; the name is obscured by the ATLAS OF CINCINNATI title and the plate number)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Buxton Ave runs E-W along the top plate edge (north line at y about 65, south line at about 110). The N-S avenue (x about 9975-10020, sewer down the middle) ends at it from the south. Buxton's north side is at or near the plate edge.",
+    "group": "B36"
+   }
+  ],
+  "spread_px": 21.6,
+  "osm_off_m": 5.3,
+  "x": 9987.0,
+  "y": 82.0,
+  "outcome": "picked",
+  "why": "reads 22 px apart"
+ },
+ {
+  "job": "82A_018",
+  "osm": [
+   718450.1,
+   4338094.1
+  ],
+  "osm_names": [
+   "Avon Drive",
+   "Reading Road"
+  ],
+  "predicted": [
+   1237.0,
+   1975.7
+  ],
+  "reads": [
+   {
+    "job": "82A_018",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Reading Road is the diagonal road along the west plate edge (here x~1200-1300 at y~1950, mostly cut off by the plate edge). No Avon Drive: east of it is undivided estate land (large spaced lettering) with lot and dimension lines (538'/498.82' line at y~1960 is a lot line). A railroad/curve crosses farther east. The nearest street is 'STREET - NO NAME' at about y 2830, x 1500-1900.",
+    "group": "A37"
+   },
+   {
+    "job": "82A_018",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "",
+     ""
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "At the expected point there is only the diagonal west-edge road, no name printed in the region (probably Reading Road; a pink boundary runs along its east side and the plate edge along its west side). No street branches off: the line at y about 1960-2000 is a lot line with dimension arrows (538 / 498.82). Avon Drive is not on the plate. The large spaced letters V, A, N are a subdivision name. A STREET-NO NAME lies about 850 px SE, at y about 2840.",
+    "group": "B36"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "82A_019",
+  "osm": [
+   718332.0,
+   4337269.6
+  ],
+  "osm_names": [
+   "Asmann Avenue",
+   "Ledgewood Drive"
+  ],
+  "predicted": [
+   631.4,
+   6096.8
+  ],
+  "reads": [
+   {
+    "job": "82A_019",
+    "found": true,
+    "x": 640,
+    "y": 6086,
+    "kind": "cross",
+    "printed": [
+     "Hopkins Avenue",
+     "Woodburn Avenue"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Plate prints WOODBURN AVE (60 ft, x~596-687) crossing HOPKINS AVE (edges y~6041 and ~6130 at this x). Woodburn's south leg is a short stub cut by the bottom plate edge. Hopkins Ave is today's Asmann Ave, and Woodburn Ave appears to be today's Ledgewood Dr.",
+    "group": "A37"
+   },
+   {
+    "job": "82A_019",
+    "found": true,
+    "x": 640,
+    "y": 6083,
+    "kind": "cross",
+    "printed": [
+     "Hopkins Avenue",
+     "Woodburn Avenue"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Hopkins (today Asmann) runs E-W along the bottom of the plate, y about 6040-6125. Woodburn Ave (60 ft, x about 600-690) comes in from the north, and a short stub continues south (x about 590-678) that the plate's bottom edge cuts off at y about 6210. Woodburn is taken to be today's Ledgewood Drive: the name differs, but the position matches the expected point.",
+    "group": "B36"
+   }
+  ],
+  "spread_px": 3.0,
+  "osm_off_m": 3.0,
+  "x": 640.0,
+  "y": 6084.5,
+  "outcome": "picked",
+  "why": "reads 3 px apart"
+ },
+ {
+  "job": "82A_020",
+  "osm": [
+   718419.5,
+   4337265.2
+  ],
+  "osm_names": [
+   "Asmann Avenue",
+   "Victory Parkway"
+  ],
+  "predicted": [
+   1057.6,
+   6121.9
+  ],
+  "reads": [
+   {
+    "job": "82A_020",
+    "found": true,
+    "x": 993,
+    "y": 6115,
+    "kind": "T",
+    "printed": [
+     "Hopkins Avenue",
+     "Victor Boulevard"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Plate prints 'VICTOR BLVD.' on a short slanted stub south of Hopkins Ave, cut by the bottom plate edge (stub x~960-1060 at y 6156). The T is where the stub's centreline, extended, meets Hopkins (edges y~6070 and 6159 at this x). Hopkins Ave is today's Asmann Ave.",
+    "group": "A37"
+   },
+   {
+    "job": "82A_020",
+    "found": true,
+    "x": 988,
+    "y": 6110,
+    "kind": "T",
+    "printed": [
+     "Hopkins Avenue",
+     "Victory Boulevard"
+    ],
+    "plate_edge": true,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Hopkins (today Asmann; y about 6065-6155) is met from the south by a short VICTORY BLVD. stub (x about 960-1095, running SSE). The plate's bottom edge cuts the stub at y about 6230. The pick is the stub's centreline extended to Hopkins' centreline.",
+    "group": "B36"
+   }
+  ],
+  "spread_px": 7.1,
+  "osm_off_m": 13.9,
+  "x": 990.5,
+  "y": 6112.5,
+  "outcome": "picked",
+  "why": "reads 7 px apart"
+ },
+ {
+  "job": "82A_021",
+  "osm": [
+   720371.6,
+   4337333.2
+  ],
+  "osm_names": [
+   "Robertson Avenue",
+   "Smith Road"
+  ],
+  "predicted": [
+   10572.0,
+   5783.0
+  ],
+  "reads": [
+   {
+    "job": "82A_021",
+    "found": true,
+    "x": 10545,
+    "y": 5755,
+    "kind": "cross",
+    "printed": [
+     "Road (only 'RD.' printed)",
+     "unlabelled boulevard with median islands / unlabelled street running east"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [],
+    "note": "Multi-way junction at the east plate edge. The diagonal 'RD.' (Smith Road) runs NW-SE. An unlabelled N-S boulevard with oval islands (x~10440-10605) comes from the north and ends here. An unlabelled street runs east off the plate (centre dashes at y~5758). Floral Ave ends from the SW at ~(10525,5790). Pick is the middle of the junction. None of the side streets is named in the region, so which one is Robertson is uncertain.",
+    "group": "A37"
+   },
+   {
+    "job": "82A_021",
+    "found": true,
+    "x": 10537,
+    "y": 5703,
+    "kind": "cross",
+    "printed": [
+     "Floral",
+     "Road (Rd., name not printed in region)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "A multi-way junction cut by the plate edge: the NW-SE 'RD.' (nos. 4515-4539), the SW diagonal printed FLORAL, the N-S boulevard coming down from the north, and a street going east. Picked where the RD. and FLORAL centrelines meet. Today's Robertson appears to be the leg the plate prints as Floral.",
+    "group": "B37"
+   }
+  ],
+  "spread_px": 52.6,
+  "osm_off_m": 12.6,
+  "x": 10541.0,
+  "y": 5729.0,
+  "outcome": "already picked",
+  "why": "49 px from the current control at (10495, 5711)"
+ },
+ {
+  "job": "82A_022",
+  "osm": [
+   720228.2,
+   4337849.2
+  ],
+  "osm_names": [
+   "Wall Street",
+   "Wesley Avenue"
+  ],
+  "predicted": [
+   9977.8,
+   3251.7
+  ],
+  "reads": [
+   {
+    "job": "82A_022",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Expected point is inside the open Chevrolet Motor Co. / Langdon Realty Co. tract (lot 31), with no streets. A 50 ft N-S street runs along the east plate edge at x~10330-10400 (y 2600-3550), and a railroad runs across the top. Neither Wall Street nor Wesley Avenue is shown here.",
+    "group": "A37"
+   },
+   {
+    "job": "82A_022",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "",
+     ""
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "The expected point lies inside the open Chevrolet Motor Co. / Langdon Realty Co. tract. Wall Street does not exist here. The nearest street feature is an unnamed 50-ft N-S strip at x about 10330-10400 (its east side is the plate edge). It turns east at y about 3530-3600, with the corner at about (10365,3565).",
+    "group": "B36"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "82A_023",
+  "osm": [
+   719530.6,
+   4338485.7
+  ],
+  "osm_names": [
+   "Ross Avenue",
+   "Warren Avenue"
+  ],
+  "predicted": [
+   6581.0,
+   112.2
+  ],
+  "reads": [
+   {
+    "job": "82A_023",
+    "found": true,
+    "x": 6597,
+    "y": 110,
+    "kind": "T",
+    "printed": [
+     "(top street, name not printed in region)",
+     "(stub, not named)"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 6170,
+      "y": 100,
+      "note": "Section Ave ('AVE', 60 ft) meets the top street at x~6170, 400 px west"
+     }
+    ],
+    "note": "Top E-W street (Ross Ave), south edge y~150; north edge cut by the top plate edge (~y 70). A ~70 px stub of plate (x 6562-6632) shows a side street running north off the plate: hydrant at its NW corner, a vertical line at x~6583. Centre is estimated.",
+    "group": "A37"
+   },
+   {
+    "job": "82A_023",
+    "found": true,
+    "x": 6585,
+    "y": 122,
+    "kind": "T",
+    "printed": [
+     "side street not drawn (pipe stub only)",
+     "Avenue along top edge (name not printed)"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 6205,
+      "y": 100,
+      "note": "unnamed N-S 'AVE' (60 ft) crossing the top-edge street, ~380 px west"
+     },
+     {
+      "x": 6957,
+      "y": 146,
+      "note": "another pipe/hydrant stub going north from the top-edge street"
+     }
+    ],
+    "note": "Ross runs along the top plate edge with its north half cut off. At x ~6582 a small notch above the plate edge shows a water-pipe branch and hydrant leading north: the mouth of a side street that is drawn on the next sheet. Picked where that branch meets the Ross main (about Ross's centre). The side street's name is not printed.",
+    "group": "B37"
+   }
+  ],
+  "spread_px": 17.0,
+  "osm_off_m": 2.2,
+  "x": 6591.0,
+  "y": 116.0,
+  "outcome": "picked",
+  "why": "reads 17 px apart"
+ },
+ {
+  "job": "82A_024",
+  "osm": [
+   719444.2,
+   4338298.6
+  ],
+  "osm_names": [
+   "Joseph E. Sanker Boulevard",
+   "Section Avenue"
+  ],
+  "predicted": [
+   6148.7,
+   1003.7
+  ],
+  "reads": [
+   {
+    "job": "82A_024",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Section Avenue (printed 'AVE', x~6100-6200) runs south from Ross Ave across railroad tracks at y~900 and on to the B.&O.S.W. railroad at y~1250. At the expected point it passes between factory lots; a 15-inch sewer crosses diagonally. No Joseph E. Sanker Blvd (no E-W street) on the 1922 plate.",
+    "group": "A37"
+   },
+   {
+    "job": "82A_024",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "",
+     ""
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Joseph E. Sanker Blvd is not on the plate. At the expected point, the N-S AVE (x about 6105-6200, probably Section Ave; only AVE printed here) is crossed at grade by the diagonal railroad corridor (B. & O. S. W., tracks at y about 900-1400 near x 6150). The boulevard was presumably built later on that corridor.",
+    "group": "B36"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "82A_025",
+  "osm": [
+   719766.4,
+   4338474.0
+  ],
+  "osm_names": [
+   "Globe Avenue",
+   "Ross Avenue"
+  ],
+  "predicted": [
+   7744.0,
+   173.0
+  ],
+  "reads": [
+   {
+    "job": "82A_025",
+    "found": true,
+    "x": 7766,
+    "y": 170,
+    "kind": "T",
+    "printed": [
+     "(top street, name not printed in region)",
+     "(stub, not named)"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [],
+    "note": "Top E-W street (Ross Ave): south lot line at y~215, north edge cut by the top plate edge (~y 125). A ~77 px plate stub (x 7728-7805) shows a side street running north off the plate, with a sewer manhole where the sewer changes 10 to 8 inch at x~7755. 'GLOBE' near y 960 is spaced lettering on the railroad/company strip, not this street.",
+    "group": "A37"
+   },
+   {
+    "job": "82A_025",
+    "found": true,
+    "x": 7762,
+    "y": 185,
+    "kind": "T",
+    "printed": [
+     "side street not drawn (pipe stub only)",
+     "Avenue along top edge (name not printed)"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [],
+    "note": "Ross runs along the top plate edge with its north half cut off. A notch above the edge at x~7727-7803, with a pipe branch, valve and hydrant going north, is the mouth of a side street drawn on the next sheet. Picked where the branch meets the Ross water main.",
+    "group": "B37"
+   }
+  ],
+  "spread_px": 15.5,
+  "osm_off_m": 4.1,
+  "x": 7764.0,
+  "y": 177.5,
+  "outcome": "picked",
+  "why": "reads 16 px apart"
+ },
+ {
+  "job": "82A_026",
+  "osm": [
+   720025.5,
+   4337627.9
+  ],
+  "osm_names": [
+   "Sherman Avenue",
+   "Smith Road"
+  ],
+  "predicted": [
+   8908.3,
+   4313.3
+  ],
+  "reads": [
+   {
+    "job": "82A_026",
+    "found": true,
+    "x": 8860,
+    "y": 3932,
+    "kind": "T",
+    "printed": [
+     "Smith Road",
+     "Sherman Avenue"
+    ],
+    "plate_edge": false,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 9030,
+      "y": 4510,
+      "note": "'PARK' Ave runs east from Smith Road just south of the railroad crossing, ~230 px from the expected point"
+     }
+    ],
+    "note": "The plate's SHERMAN AVE meets Smith Road ('ROAD', 'SMITH') from the west as a T, about 400 px north of the expected point. Nothing meets Smith Road at the expected point (E.I. McJoynt lot and railroad). The same T is also my pick for Wall St (82A_027), whose expected point is only ~95 px away, so the 1922 Sherman may be today's Wall St and today's Sherman a later alignment.",
+    "group": "A37"
+   },
+   {
+    "job": "82A_026",
+    "found": true,
+    "x": 8860,
+    "y": 3932,
+    "kind": "T",
+    "printed": [
+     "Sherman Avenue",
+     "Road (Smith Road: ROAD printed on this N-S part, SMITH on its continuation SE of the railroad)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Sherman Avenue (y about 3895-3968) ends from the west at the NNW-SSE road labelled ROAD (centre about x 8862 at this latitude). This is about 380 px north of the expected point. South of here, at the expected y about 4313, only lot lines and the E. I. McJoynt strip lie east of the road, then the railroad crossing at about (8840,4450).",
+    "group": "B36"
+   }
+  ],
+  "spread_px": 0.0,
+  "osm_off_m": 79.6,
+  "x": 8860.0,
+  "y": 3932.0,
+  "outcome": "far from OSM",
+  "why": "80 m from its OSM crossing under the current model"
+ },
+ {
+  "job": "82A_027",
+  "osm": [
+   719993.8,
+   4337721.2
+  ],
+  "osm_names": [
+   "Smith Road",
+   "Wall Street"
+  ],
+  "predicted": [
+   8799.3,
+   3855.0
+  ],
+  "reads": [
+   {
+    "job": "82A_027",
+    "found": true,
+    "x": 8860,
+    "y": 3932,
+    "kind": "T",
+    "printed": [
+     "Smith Road",
+     "Sherman Avenue"
+    ],
+    "plate_edge": false,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 8700,
+      "y": 3335,
+      "note": "unnamed 'AVE' (2109-2217 numbers) meets Smith Road from the west at a T"
+     }
+    ],
+    "note": "No 'Wall' is printed. The nearest crossing (~95 px) is where the plate's SHERMAN AVE meets Smith Road as a T. Sherman's edges are y~3895 and ~3970; Smith Road runs from x~8807 to ~8912. The name on the plate differs, and this is the same point as 82A_026.",
+    "group": "A37"
+   },
+   {
+    "job": "82A_027",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "",
+     ""
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "No Wall Street. East of ROAD (Smith Road) at the expected point lies only the C. L. & N. R.R. / Langdon Realty tract. The only street meeting Smith Road nearby is Sherman Avenue, a T from the west at about (8860,3932) (see 82A_026). An E-W street printed only as AVE meets Smith Road at about (8640,3290).",
+    "group": "B36"
+   }
+  ],
+  "outcome": "disagree",
+  "why": "read 1 found it, read 2 did not"
+ },
+ {
+  "job": "82A_028",
+  "osm": [
+   719937.6,
+   4337888.2
+  ],
+  "osm_names": [
+   "Maple Avenue",
+   "Smith Road"
+  ],
+  "predicted": [
+   8590.9,
+   3034.6
+  ],
+  "reads": [
+   {
+    "job": "82A_028",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 8240,
+      "y": 2865,
+      "note": "unnamed E-W 'AVE' (2110-2121 numbers) ends at the big diagonal 'AVE' to the west; its straight extension would reach Smith Road at about y 2990"
+     }
+    ],
+    "note": "Smith Road (printed 'SMITH', N-S at x~8590-8660) bends SSE at ~(8620,3000). Only lot lines meet it there (y~2985-2998), with no street. The E-W 'AVE' in line with it stops at the diagonal avenue. The nearest real side street on Smith is the unnamed 'AVE' at y~3335 (~320 px away).",
+    "group": "A37"
+   },
+   {
+    "job": "82A_028",
+    "found": true,
+    "x": 8688,
+    "y": 3342,
+    "kind": "T",
+    "printed": [
+     "Avenue (name not printed in region)",
+     "Smith"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 8230,
+      "y": 2950,
+      "note": "west segment of the same unnamed Avenue (house nos. 2110-2127) meets the diagonal avenue (nos. 4701-4739) here, jogged ~350 px north of the east segment; it does not reach Smith"
+     }
+    ],
+    "note": "Unnamed 'AVE' (nos. 2137, 2217, 8in sewer, 4in W pipe) runs east from the diagonal avenue and ends in a T on the west side of Smith (Road). Smith is ~95 px wide here, with a grey boundary band on its east side. No street meets Smith at the expected point (8591,3035), which is at Smith's bend beside a closed block; this T is ~300 px south. That this street is Maple is a guess; the name is not printed.",
+    "group": "B37"
+   }
+  ],
+  "outcome": "disagree",
+  "why": "read 2 found it, read 1 did not"
+ },
+ {
+  "job": "82A_029",
+  "osm": [
+   719280.6,
+   4338490.7
+  ],
+  "osm_names": [
+   "Mercy Health Place",
+   "Ross Avenue;Tennessee Avenue"
+  ],
+  "predicted": [
+   5346.1,
+   76.7
+  ],
+  "reads": [
+   {
+    "job": "82A_029",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "At the expected point the top street (Ross Ave, south edge y~160, north edge at the plate edge) is crossed only by the page gutter/fold at x~5345-5370. No side street (Mercy Health Place) on the 1922 plate.",
+    "group": "A37"
+   },
+   {
+    "job": "82A_029",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "",
+     "Avenue along top edge (name not printed here)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 6205,
+      "y": 100,
+      "note": "an unnamed N-S 'AVE' (60 ft) crosses the top-edge street here"
+     }
+    ],
+    "note": "The expected point lies on the street strip along the top plate edge (Ross/Tennessee, mostly cut off by the edge), right at the page gutter (~x 5355). South of it is the Norwood Sash & Door Mfg. Co. yard with its sidings; no street comes in from the south or the north. Mercy Health Place did not exist in 1922.",
+    "group": "B37"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "82A_030",
+  "osm": [
+   718274.2,
+   4337783.0
+  ],
+  "osm_names": [
+   "Reading Road",
+   "Victory Parkway"
+  ],
+  "predicted": [
+   368.9,
+   3515.4
+  ],
+  "reads": [
+   {
+    "job": "82A_030",
+    "found": true,
+    "x": 305,
+    "y": 3622,
+    "kind": "cross",
+    "printed": [
+     "(diagonal road along west plate edge, not named here)",
+     "unnamed 50 ft street / '...YARR(?) AVE' stub"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [],
+    "note": "The diagonal road (Reading Road, ~115 px wide) runs along the west plate edge. An unnamed 50 ft street runs east from it (edges y~3585 and 3660; a 15-inch sewer runs in it and a 12-inch culvert crosses it). Opposite, a short stub runs west, labelled '...YARR(?) AVE' and partly covered by a tape patch. No 'Victory' label here.",
+    "group": "A37"
+   },
+   {
+    "job": "82A_030",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "",
+     ""
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Victory Parkway is not here in 1922. At the expected point is the diagonal west-edge road, unnamed in this region (probably Reading Road; its west side is the plate edge). There AYRES AVE leaves to the west/NW on a pasted patch, and an unnamed 50-ft E-W street (probably Sherman) leaves to the east. The centre of that crossing is about (330,3615).",
+    "group": "B36"
+   }
+  ],
+  "outcome": "disagree",
+  "why": "read 1 found it, read 2 did not"
+ },
+ {
+  "job": "82A_031",
+  "osm": [
+   718493.1,
+   4337261.3
+  ],
+  "osm_names": [
+   "Asmann Avenue",
+   "Hopkins Avenue"
+  ],
+  "predicted": [
+   1415.8,
+   6144.3
+  ],
+  "reads": [
+   {
+    "job": "82A_031",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 1290,
+      "y": 6140,
+      "note": "Cincinnati/Norwood city-limit line crosses Hopkins Ave here; possible name-change point"
+     },
+     {
+      "x": 1630,
+      "y": 6145,
+      "note": "Webster Avenue stub T south off Hopkins"
+     }
+    ],
+    "note": "The plate prints one continuous HOPKINS AVE along the bottom plate edge. Nothing crosses it near x 1416; only lot lines and the city-limit line at x~1290.",
+    "group": "A37"
+   },
+   {
+    "job": "82A_031",
+    "found": true,
+    "x": 1610,
+    "y": 6148,
+    "kind": "T",
+    "printed": [
+     "Webster",
+     "Avenue (name not printed in region)"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 1905,
+      "y": 6180,
+      "note": "the same unnamed AVE bends into the diagonal printed HOPKINS where Dudley Street comes in from the north"
+     },
+     {
+      "x": 1120,
+      "y": 6160,
+      "note": "Victor Blvd. stub meets the unnamed AVE from the south"
+     }
+    ],
+    "note": "An unnamed E-W 'AVE' runs along the bottom plate edge (south side cut off) and continues SE as the street printed HOPKINS. Nothing is printed as Asmann. The nearest street meeting it near the expected point is Webster (a stub going south through the plate edge, 15in sewer, 4in W pipe), ~190 px east of the expected point. Asmann = Webster is a guess; the alternative is the Dudley/Hopkins junction at (1905,6180).",
+    "group": "B37"
+   }
+  ],
+  "outcome": "disagree",
+  "why": "read 2 found it, read 1 did not"
+ },
+ {
+  "job": "82A_032",
+  "osm": [
+   719207.1,
+   4338487.8
+  ],
+  "osm_names": [
+   "Ross Avenue",
+   "Ross Avenue;Tennessee Avenue"
+  ],
+  "predicted": [
+   4982.2,
+   85.8
+  ],
+  "reads": [
+   {
+    "job": "82A_032",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 4560,
+      "y": 140,
+      "note": "top street bends from E-W to SW here (~420 px west)"
+     }
+    ],
+    "note": "At x~4982 the top street (Ross Ave, south edge y~163, north edge at the plate edge, with a sewer and a pipe) runs straight with no side street. The only feature nearby is the bend at x~4560, where the street turns SW toward (4250,330).",
+    "group": "A37"
+   },
+   {
+    "job": "82A_032",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "",
+     ""
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 3598,
+      "y": 366,
+      "note": "upper bend of Ross Ave (picked for 82A_006/007)"
+     },
+     {
+      "x": 4510,
+      "y": 115,
+      "note": "bend where Ross Ave turns from its NE diagonal to E-W"
+     }
+    ],
+    "note": "At the expected point, Ross Ave runs straight E-W along the top plate edge (y about 70-140) with no side street. Its north side is cut by the plate. A fold or gutter crosses it at x about 5340. Tennessee Avenue is not printed. The only junction-like features are the bends of Ross Ave farther west.",
+    "group": "B36"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ }
+]

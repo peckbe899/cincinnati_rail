@@ -1,0 +1,899 @@
+{
+ "sheet": "22-69",
+ "made": "2026-11-06T16:33:54",
+ "by": "tools/sanborn/complete/collect.py",
+ "rule": "two independent reads, kept when they agree within 60 px (their mean) and lie within 45 m of the OSM crossing under the current model",
+ "intersections": [
+  {
+   "a": "Prospect Place",
+   "b": "Reading Road",
+   "x": 1635.0,
+   "y": 2500.0,
+   "kind": "T",
+   "osm": [
+    716757.2,
+    4335618.0
+   ],
+   "osm_names": [
+    "Prospect Place",
+    "Reading Road"
+   ],
+   "printed": [
+    [
+     "(side street name not printed; short stub west of the road with cut-off 'SEWER'/'PIPE' labels)",
+     "(Reading Road, name not printed in this region)"
+    ],
+    [
+     "Reading Road (name not printed in this region)",
+     "(name cut off at plate edge)"
+    ]
+   ],
+   "spread_px": 0.0,
+   "osm_off_m": 3.3,
+   "job": "69_000",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Side street is only a short stub (y 2462-2540) beyond the plate's diagonal west edge; meets the wide diagonal Reading Road (west line ~1583, east line ~1690 at this y). A 15in sewer continues east through the lots on the same line, but no street east of the road. | Reading Road runs along the plate's west cut edge. A stub street from the west (only ...WER / ...PIPE legible) ends in a T on Reading Road at the expected point. The Reading centreline is taken on the car tracks, between the plate cut (~1578) and the east line (~1690). No street continues east."
+  },
+  {
+   "a": "Carplin Place",
+   "b": "Reading Road",
+   "x": 542.5,
+   "y": 4782.5,
+   "kind": "T",
+   "osm": [
+    716508.0,
+    4335156.8
+   ],
+   "osm_names": [
+    "Carplin Place",
+    "Reading Road"
+   ],
+   "printed": [
+    [
+     "(stub, name cut off at plate edge; only 'SEWER'/'PIPE' fragments)",
+     "Reading"
+    ],
+    [
+     "Reading Road",
+     "(name cut off at plate edge)"
+    ]
+   ],
+   "spread_px": 5.1,
+   "osm_off_m": 2.2,
+   "job": "69_001",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Stub west of Reading Road at y ~4752-4812 cut by the plate edge; Reading Road between plate edge ~490 and east line ~590. Other stubs on the same side: Stewart Pl. (...RT PL.) at y ~4477, and one at y ~5090 ('...NAY'). | A stub street from the west (only SEWER / ...PE legible) ends in a T on Reading Road at the expected point. Its name is cut off at the plate's west edge."
+  },
+  {
+   "a": "Van Buren Avenue",
+   "b": "Whittier Street",
+   "x": 1097.5,
+   "y": 5661.0,
+   "kind": "T",
+   "osm": [
+    716608.7,
+    4334972.0
+   ],
+   "osm_names": [
+    "Van Buren Avenue",
+    "Whittier Street"
+   ],
+   "printed": [
+    [
+     "...REN (cut off, Van Buren)",
+     "Whittier"
+    ],
+    [
+     "Whittier (suffix not seen)",
+     "...ren (Van Buren, cut off)"
+    ]
+   ],
+   "spread_px": 5.4,
+   "osm_off_m": 3.8,
+   "job": "69_002",
+   "confidence": [
+    "high",
+    "medium"
+   ],
+   "note": "Van Buren is a short stub south of Whittier (x ~1065-1130) cut by the plate's bottom edge; Whittier lines y ~5622 and ~5697. | A stub printed ...REN goes south from Whittier, cut by the plate's south edge. Whittier's south side runs along the plate edge, so its centreline is estimated about 38 px south of the north line (~5622)."
+  },
+  {
+   "a": "Reading Road",
+   "b": "Stewart Place",
+   "x": 726.0,
+   "y": 4476.0,
+   "kind": "T",
+   "osm": [
+    716552.2,
+    4335218.8
+   ],
+   "osm_names": [
+    "Reading Road",
+    "Stewart Place"
+   ],
+   "printed": [
+    [
+     "...RT Place (cut off, Stewart Pl.)",
+     "Reading"
+    ],
+    [
+     "...t Place (tab shows '..T PL.')",
+     "Reading Road"
+    ]
+   ],
+   "spread_px": 8.2,
+   "osm_off_m": 1.0,
+   "job": "69_004",
+   "confidence": [
+    "high",
+    "medium"
+   ],
+   "note": "Stewart Pl. is a stub west of Reading Road (y ~4447-4507) cut by the plate edge; Reading Road between plate edge ~675 and east line ~770. | A tab off the plate's west edge (y ~4445-4505) labelled 'SEWER' / '..T PL.' (Stewart Place) meets Reading Road from the west. Reading Road edges are x ~670 to ~785 here. Other west tabs: y ~3990 ('AVE.'), ~4800 and ~5150."
+  },
+  {
+   "a": "Hickman Avenue",
+   "b": "Reading Road",
+   "x": 145.0,
+   "y": 5497.5,
+   "kind": "T",
+   "osm": [
+    716415.0,
+    4335014.7
+   ],
+   "osm_names": [
+    "Hickman Avenue",
+    "Reading Road"
+   ],
+   "printed": [
+    [
+     "...MAN Street (cut off, Hickman St.)",
+     "Reading"
+    ],
+    [
+     "..man Street (tab reads '..MAN ST.')",
+     "Reading Road"
+    ]
+   ],
+   "spread_px": 20.0,
+   "osm_off_m": 5.2,
+   "job": "69_005",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Hickman stub west of Reading Road (y ~5462-5535) at the plate's west edge; Reading Road east line ~205. Whittier meets Reading just south at ~(60,5640). | A tab off the west plate edge (y ~5460-5535) labelled '..MAN ST.' (Hickman) meets Reading Road (70 ft; edges x ~85 to ~185) from the west."
+  },
+  {
+   "a": "Hale Avenue",
+   "b": "Reading Road",
+   "x": 1044.0,
+   "y": 3971.0,
+   "kind": "T",
+   "osm": [
+    716618.8,
+    4335324.9
+   ],
+   "osm_names": [
+    "Hale Avenue",
+    "Reading Road"
+   ],
+   "printed": [
+    [
+     "...Avenue (cut off, 'AVE.')",
+     "Reading"
+    ],
+    [
+     "Reading Road",
+     "...Avenue (name cut off)"
+    ]
+   ],
+   "spread_px": 8.2,
+   "osm_off_m": 6.0,
+   "job": "69_006",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Stub west of Reading Road (y ~3937-4005) with '...EVE./AVE.' fragment, cut by the plate edge; Reading Road between plate edge ~990 and east line ~1105. | A stub from the west printed ...AVE. / ...PIPE (name cut off at the plate edge) ends in a T on Reading Road. READING is printed further SW. The Reading centreline is on the tracks, between the plate cut (~990) and the east line (~1085)."
+  },
+  {
+   "a": "Brewster Avenue",
+   "b": "Newton Avenue",
+   "x": 10018.0,
+   "y": 931.5,
+   "kind": "T",
+   "osm": [
+    718504.2,
+    4335795.7
+   ],
+   "osm_names": [
+    "Brewster Avenue",
+    "Newton Avenue"
+   ],
+   "printed": [
+    [
+     "(stub, unnamed)",
+     "Avenue ('AVE.', Brewster; name printed further west)"
+    ],
+    [
+     "Avenue (only 'AVE.' printed)",
+     "unnamed stub (cut by plate edge)"
+    ]
+   ],
+   "spread_px": 13.6,
+   "osm_off_m": 11.0,
+   "job": "69_011",
+   "confidence": [
+    "low",
+    "medium"
+   ],
+   "note": "Short unnamed stub north of the avenue (x ~9980-10052, y 830-912) at the plate's top edge, taken as Newton Ave. The avenue's north line (y ~912) is drawn continuous across the stub, so it may just be a cut-out of the next block; avenue between y ~912 and ~965. | A stub (Newton) leaves the top-edge 'AVE.' (Brewster) northward, edges x ~9995-10052 (outer cut line at 9980). Avenue north line y ~877, lot fronts y ~970. The stub is cut by the plate edge and its name is not printed. Another stub at x 9435-9527 is the 69_012 crossing."
+  },
+  {
+   "a": "Brewster Avenue",
+   "b": "Idlewild Avenue",
+   "x": 9480.5,
+   "y": 943.0,
+   "kind": "T",
+   "osm": [
+    718395.9,
+    4335802.3
+   ],
+   "osm_names": [
+    "Brewster Avenue",
+    "Idlewild Avenue"
+   ],
+   "printed": [
+    [
+     "(stub, unnamed)",
+     "Avenue ('AVE.', Brewster)"
+    ],
+    [
+     "Avenue (only 'AVE.' printed; name not in region)",
+     "unnamed stub (cut by plate edge)"
+    ]
+   ],
+   "spread_px": 16.0,
+   "osm_off_m": 6.8,
+   "job": "69_012",
+   "confidence": [
+    "low",
+    "medium"
+   ],
+   "note": "Short unnamed stub north of the avenue (x ~9435-9525, y 845-925) at the plate's top edge, taken as Idlewild Ave. Same doubt as 69_011: the avenue north line (y ~925) runs continuous across it. Woodburn Ave meets the avenue at ~(8770,970). | The E-W 'AVE.' (Brewster) runs along the top edge of the plate, north line y ~888, lot fronts y ~980. A short stub leaves it northward between x 9435 and 9527 (Idlewild); the stub is cut almost at once by the plate edge and its name is not printed. A second stub at x ~9980-10052 is the 69_011 crossing."
+  },
+  {
+   "a": "Lee Place",
+   "b": "Reading Road",
+   "x": 2301.5,
+   "y": 627.0,
+   "kind": "T",
+   "osm": [
+    716923.2,
+    4336000.1
+   ],
+   "osm_names": [
+    "Lee Place",
+    "Reading Road"
+   ],
+   "printed": [
+    [
+     "...Court ('CT.', cut off)",
+     "Road (Reading)"
+    ],
+    [
+     "... Court (only 'CT.' visible on stub)",
+     "... Road (Reading Road; only 'ROAD' visible)"
+    ]
+   ],
+   "spread_px": 12.2,
+   "osm_off_m": 3.6,
+   "job": "69_014",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Narrow stub labelled '...CT.' west of Reading Road (y ~600-645) cut by the plate edge; Reading Road between ~2255 and ~2360 here. Lexington meets Reading on the east side just south at ~(2310,720). | Reading Road runs NNE with the plate edge along its west side. A small stub of plate at y~590-665 west of the road shows a street printed '...CT.' with a water pipe. That court is taken to be Lee Place. Lexington Avenue meets the road from the east about 85 px south, at about (2320,715)."
+  },
+  {
+   "a": "Saint Leger Place",
+   "b": "Woodburn Avenue",
+   "x": 8656.5,
+   "y": 4279.0,
+   "kind": "T",
+   "osm": [
+    718168.2,
+    4335133.8
+   ],
+   "osm_names": [
+    "Saint Leger Place",
+    "Woodburn Avenue"
+   ],
+   "printed": [
+    [
+     "Saint Leger Place",
+     "Woodburn Avenue"
+    ],
+    [
+     "St. Leger Place",
+     "Woodburn Avenue"
+    ]
+   ],
+   "spread_px": 7.3,
+   "osm_off_m": 3.2,
+   "job": "69_018",
+   "confidence": [
+    "high",
+    "high"
+   ],
+   "note": "ST. LEGER PL. runs E-W (edges y~4240/4318) and ends at Woodburn Ave (edges x~8618/8700, 60 ft). | PL. here, with ST. LEGER printed further west on the same street. It ends in a T on the west side of Woodburn Ave."
+  },
+  {
+   "a": "Durrell Avenue",
+   "b": "Gilbert Avenue",
+   "x": 7717.0,
+   "y": 5112.5,
+   "kind": "T",
+   "osm": [
+    717956.8,
+    4334981.8
+   ],
+   "osm_names": [
+    "Durrell Avenue",
+    "Gilbert Avenue"
+   ],
+   "printed": [
+    [
+     "Durrell Avenue (partly legible '...LL AVE')",
+     "Gilbert"
+    ],
+    [
+     "..ll Avenue (stub reads 'PIPE', '..LL AVE', 'SEWER'; Durrell, beside Wm. Durrell's Homestead)",
+     "Gilbert Avenue"
+    ]
+   ],
+   "spread_px": 15.0,
+   "osm_off_m": 3.5,
+   "job": "69_020",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Short stub (x 7667-7767) runs south from Gilbert and is cut by the plate edge at y~5250; Gilbert north frontage y~5065, south side = plate edge ~5147. 'WM. DURRELL'S HOMESTEAD' above is a subdivision name. | The stub south of Gilbert (edges x ~7667-7767) is cut by the plate edge. Gilbert's north lot line is at y ~5080 and its south edge at y ~5155, with the tracks at ~5100-5150."
+  },
+  {
+   "a": "Blair Avenue",
+   "b": "Mathers Street",
+   "x": 4572.5,
+   "y": 5220.0,
+   "kind": "T",
+   "osm": [
+    717351.6,
+    4335035.0
+   ],
+   "osm_names": [
+    "Blair Avenue",
+    "Mathers Street"
+   ],
+   "printed": [
+    [
+     "Melbourne Street",
+     "Mathers (street printed 'ST.' only)"
+    ],
+    [
+     "(unnamed) Street",
+     "Mathers (suffix not seen)"
+    ]
+   ],
+   "spread_px": 11.2,
+   "osm_off_m": 27.2,
+   "job": "69_021",
+   "confidence": [
+    "low",
+    "low"
+   ],
+   "note": "No 'Blair' on the plate here. Took Melbourne St (runs NW-SE, ends here) where it meets the bend of Mathers (Mathers comes from the NE segment and turns SSW, printed '...THERS' further south). This is ~110 px SW of the expected point; the other junction on this Mathers segment is Rammelsberg St at ~4800,5082 (job 69_022). If today's Blair is not former Melbourne St, treat as not found. | This is a multi-street junction: the NE-SW street (printed only ST., 40 ft, running NE to Beresford Ave), Melbourne St from the NW, and the street printed ...THERS / MATHERS running SSW toward Altoona/Walters all meet here. No BLAIR label nearby; the plate's Blair Ave runs E-W much further north. I picked the head of the printed Mathers street. Which old street is today's Blair Ave is uncertain."
+  },
+  {
+   "a": "Mathers Street",
+   "b": "Rammelsburg Street",
+   "x": 4802.5,
+   "y": 5082.0,
+   "kind": "T",
+   "osm": [
+    717372.6,
+    4335043.9
+   ],
+   "osm_names": [
+    "Mathers Street",
+    "Rammelsburg Street"
+   ],
+   "printed": [
+    [
+     "Mathers (printed 'ST.' only)",
+     "Rammelsberg Street"
+    ],
+    [
+     "Street (the NE-SW street prints only 'ST.'; no name in the region)",
+     "Rammelsberg Street"
+    ]
+   ],
+   "spread_px": 5.0,
+   "osm_off_m": 4.6,
+   "job": "69_022",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "RAMMELSBERG ST. (NW-SE) ends on the NE-running Mathers segment; hydrant at the NW corner (~4790,5070). | Rammelsberg Street runs NW-SE and ends at a NE-SW street (only 'ST.', with a 4\" W. pipe) running from Melbourne Street's end (~4590,5200) NE to the avenue at ~5230,4840. Taken as Mathers Street; GEO. MATHER'S PER M.C. estate is nearby."
+  },
+  {
+   "a": "Beresford Avenue",
+   "b": "Mathers Street",
+   "x": 5224.0,
+   "y": 4845.0,
+   "kind": "T",
+   "osm": [
+    717466.1,
+    4335085.3
+   ],
+   "osm_names": [
+    "Beresford Avenue",
+    "Mathers Street"
+   ],
+   "printed": [
+    [
+     "Avenue (name not printed nearby; 'AVE' only)",
+     "Mathers (printed 'ST.' only)"
+    ],
+    [
+     "Beresford Avenue",
+     "(unnamed) Street"
+    ]
+   ],
+   "spread_px": 34.4,
+   "osm_off_m": 1.2,
+   "job": "69_023",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Mathers 'ST.' runs NE and ends at the N-S 'AVE' (frontages x~5190/5290 at this y, sewer and pink/yellow bands inside); hydrant at SW corner of block 72 (~5190,4864). 'SAM BERESFORD'S SUBDIV'N' lettering nearby is a subdivision name. | The NE-SW street (printed only ST. and 4 in. W.PIPE) ends in a T on the west side of Beresford Ave. Its SW end meets the street printed MATHERS, so it is probably today's Mathers St."
+  },
+  {
+   "a": "Gilbert Avenue",
+   "b": "Sulsar Street",
+   "x": 6465.0,
+   "y": 4705.0,
+   "kind": "T",
+   "osm": [
+    717716.3,
+    4335088.3
+   ],
+   "osm_names": [
+    "Gilbert Avenue",
+    "Sulsar Street"
+   ],
+   "printed": [
+    [
+     "Gilbert",
+     "Sulsar (printed 'SUL...' at y~3800)"
+    ],
+    [
+     "Gilbert Avenue",
+     "Sul.. Street (only 'SUL' visible; probably Sulser's Street)"
+    ]
+   ],
+   "spread_px": 17.2,
+   "osm_off_m": 3.2,
+   "job": "69_025",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Same crossing as 69_024. Gilbert's south side is cut by the plate edge. | Same crossing as 69_024. Sulser's Street ends at Gilbert Avenue's north side. The south half of Gilbert is beyond the plate edge, so y is taken at the tracks."
+  },
+  {
+   "a": "Blair Avenue",
+   "b": "Fernside Place",
+   "x": 8000.0,
+   "y": 3256.5,
+   "kind": "T",
+   "osm": [
+    718056.6,
+    4335355.3
+   ],
+   "osm_names": [
+    "Blair Avenue",
+    "Fernside Place"
+   ],
+   "printed": [
+    [
+     "Blair",
+     "Harlem"
+    ],
+    [
+     "Blair (Avenue)",
+     "Harlem (suffix not seen)"
+    ]
+   ],
+   "spread_px": 3.0,
+   "osm_off_m": 1.0,
+   "job": "69_026",
+   "confidence": [
+    "high",
+    "medium"
+   ],
+   "note": "Plate prints HARLEM (Harlem Pl. further north) for today's Fernside; Harlem (60 ft, x 7955-8045) ends at Blair (edges y~3213/3302). | The plate prints BLAIR on the E-W street (house numbers 1500-1557). HARLEM, a N-S street about 60 ft wide between x~7955 and ~8045, comes down from the north and ends on Blair. Fernside appears to be the present name of Harlem."
+  },
+  {
+   "a": "Fernside Place",
+   "b": "Jonathan Avenue",
+   "x": 7945.5,
+   "y": 1747.0,
+   "kind": "T",
+   "osm": [
+    718072.1,
+    4335664.8
+   ],
+   "osm_names": [
+    "Fernside Place",
+    "Jonathan Avenue"
+   ],
+   "printed": [
+    [
+     "Harlem Place (printed 'PL.' here, 'HARLEM' further south)",
+     "Jonathan (street name not printed in this stretch)"
+    ],
+    [
+     "(unnamed) Avenue",
+     "...Place (PL., name not seen)"
+    ]
+   ],
+   "spread_px": 6.1,
+   "osm_off_m": 3.0,
+   "job": "69_027",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Harlem Pl. (60 ft, x~7900-7992) ends at the E-W street (edges y~1706/1782) that runs Corning to Woodburn; large spaced 'JONATHAN LYON'S EST.' is an estate name, the street itself carries only house numbers here. | An unnamed E-W street (6 in. W.PIPE, Corning to Woodburn Ave) runs at the south edge of Jonathan W. Lyon's Est. A N-S 50 ft street printed PL. goes south from it in a T. JONATHAN on the plate is large spaced estate lettering, not a street label."
+  },
+  {
+   "a": "Buena Vista Place",
+   "b": "Walter Avenue",
+   "x": 4022.0,
+   "y": 6761.5,
+   "kind": "T",
+   "osm": [
+    717196.3,
+    4334713.8
+   ],
+   "osm_names": [
+    "Buena Vista Place",
+    "Walter Avenue"
+   ],
+   "printed": [
+    [
+     "Buena Vista Place",
+     "Walters Avenue"
+    ],
+    [
+     "Buena Vista Place",
+     "Walters Avenue"
+    ]
+   ],
+   "spread_px": 7.0,
+   "osm_off_m": 6.2,
+   "job": "69_028",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "BUENA VISTA PL. (40 ft) runs ESE and ends on WALTERS (AVE.) just above where Walters reaches Gilbert's bend (~4000,6852). | Buena Vista Place (about 40 ft wide, running E-W and dipping slightly to the east) ends on the west side of Walters, just north of where Walters meets Gilbert Avenue (about 85 px south, at (4015,6848)). A grey boundary band runs down the middle of Walters and was used as its centreline. The plate prints WALTERS."
+  },
+  {
+   "a": "Gilbert Avenue",
+   "b": "Harvard Avenue",
+   "x": 8238.0,
+   "y": 5037.5,
+   "kind": "T",
+   "osm": [
+    718064.3,
+    4334985.2
+   ],
+   "osm_names": [
+    "Gilbert Avenue",
+    "Harvard Avenue"
+   ],
+   "printed": [
+    [
+     "Gilbert",
+     "stub, name illegible"
+    ],
+    [
+     "Ha.. (stub reads 'HA..' / '..ER'; Harvard)",
+     "Gilbert Avenue"
+    ]
+   ],
+   "spread_px": 5.0,
+   "osm_off_m": 1.0,
+   "job": "69_030",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Short stub (x~8205-8272) runs south off Gilbert's curve and is cut by the plate edge at once; the label in it cannot be read. Gilbert north frontage ~4995, south side = plate edge. | The stub south of Gilbert (edges x ~8210-8267) is cut by the plate edge at the curve where Gilbert turns NE. Gilbert's north lot line is at y ~4968 and its south edge at y ~5090, with the tracks at ~5030-5070."
+  },
+  {
+   "a": "Potter Place",
+   "b": "Woodburn Avenue",
+   "x": 8748.0,
+   "y": 455.5,
+   "kind": "T",
+   "osm": [
+    718255.8,
+    4335912.3
+   ],
+   "osm_names": [
+    "Potter Place",
+    "Woodburn Avenue"
+   ],
+   "printed": [
+    [
+     "Woodburn Avenue",
+     "stub, only 'P...' legible"
+    ],
+    [
+     "(not printed; street stub at plate edge)",
+     "Woodburn Avenue"
+    ]
+   ],
+   "spread_px": 1.0,
+   "osm_off_m": 2.7,
+   "job": "69_031",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Woodburn (x~8700-8797) runs along the plate's east edge; a stub (y~420-490) leaves east and is cut by the plate edge at x~8843 after ~45 px. | Woodburn Avenue runs N-S (west edge x~8700, east edge at the plate edge x~8796). A small stub of plate at y~420-495 shows a street leaving Woodburn to the east, with a 6-inch pipe along y~460. Its name is not printed. It is taken to be Potter Place."
+  },
+  {
+   "a": "Gilbert Avenue",
+   "b": "Walter Avenue",
+   "x": 4007.5,
+   "y": 6850.0,
+   "kind": "T",
+   "osm": [
+    717204.9,
+    4334697.9
+   ],
+   "osm_names": [
+    "Gilbert Avenue",
+    "Walter Avenue"
+   ],
+   "printed": [
+    [
+     "Gilbert",
+     "Walters Avenue"
+    ],
+    [
+     "Gilbert Avenue",
+     "Walters Avenue"
+    ]
+   ],
+   "spread_px": 15.5,
+   "osm_off_m": 17.6,
+   "job": "69_032",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Gilbert bends here (NE leg toward 4250,6760; SSW leg with 29xx numbers between block 21 and the plate edge); Walters runs SSW into the bend. Gilbert's SE side is cut by the plate edge right at the crossing. Buena Vista Pl. meets Walters just north (~4022,6758). | Walters (its centre marked by a grey boundary band) ends on Gilbert where Gilbert bends from running SSW to running NE. Only the NW part of Gilbert is on the plate, so its centre is estimated at the track lines. Buena Vista Place joins Walters about 85 px north, at (4022,6765)."
+  },
+  {
+   "a": "Beresford Avenue",
+   "b": "Braxton Campbell Court",
+   "x": 4962.0,
+   "y": 4123.0,
+   "kind": "T",
+   "osm": [
+    717426.4,
+    4335238.6
+   ],
+   "osm_names": [
+    "Beresford Avenue",
+    "Braxton Campbell Court"
+   ],
+   "printed": [
+    [
+     "Beresford Avenue",
+     "Tunnell Street"
+    ],
+    [
+     "Beresford Avenue",
+     "Tunnell Street"
+    ]
+   ],
+   "spread_px": 10.0,
+   "osm_off_m": 2.1,
+   "job": "69_035",
+   "confidence": [
+    "high",
+    "high"
+   ],
+   "note": "Tunnell St runs ESE from the subdivision boundary at about x 4215 and ends in a T at Beresford Ave. Its position matches the expected point, so it is taken to be today's Braxton Campbell Court. | Braxton Campbell Court is not named. TUNNELL ST. comes in from the west and ends in a T on Beresford Ave exactly at the expected point, so it is probably the old name."
+  },
+  {
+   "a": "Blair Avenue",
+   "b": "Gilbert Avenue",
+   "x": 5441.0,
+   "y": 5496.0,
+   "kind": "T",
+   "osm": [
+    717483.2,
+    4334937.8
+   ],
+   "osm_names": [
+    "Blair Avenue",
+    "Gilbert Avenue"
+   ],
+   "printed": [
+    [
+     "Beresford Avenue",
+     "Gilbert Avenue"
+    ],
+    [
+     "... Avenue (only 'AVE.' visible in region)",
+     "Gilbert Avenue"
+    ]
+   ],
+   "spread_px": 11.3,
+   "osm_off_m": 19.1,
+   "job": "69_037",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Only 'AVE.' is printed on this stretch of the N-S avenue. Its 3200 house numbers continue from Beresford Ave further north, so it is the plate's Beresford Ave, taken as today's Blair Ave. It ends in a T at Gilbert Ave. Gilbert's south half is cut off by the plate edge, so the Gilbert centreline is estimated (about at the car tracks). | An NNW-SSE avenue (house numbers 3204-3279; the name is printed outside the region, only 'AVE.' shows) ends on Gilbert Avenue, which runs along the plate's SE edge. Only the NW part of Gilbert is on the plate, so its centreline is estimated from the NW edge, the track lines and the plate cut. The avenue is about 60 ft wide. This is the same crossing as 69_038."
+  },
+  {
+   "a": "Gilbert Avenue",
+   "b": "Victory Parkway",
+   "x": 6121.5,
+   "y": 4726.5,
+   "kind": "cross",
+   "osm": [
+    717643.0,
+    4335089.8
+   ],
+   "osm_names": [
+    "Gilbert Avenue",
+    "Victory Parkway"
+   ],
+   "printed": [
+    [
+     "Billings (suffix not seen)",
+     "Gilbert Avenue"
+    ],
+    [
+     "Billings (suffix not seen)",
+     "Gilbert Avenue"
+    ]
+   ],
+   "spread_px": 17.3,
+   "osm_off_m": 7.3,
+   "job": "69_041",
+   "confidence": [
+    "low",
+    "medium"
+   ],
+   "note": "Same as 69_039: the street labelled 'BILLINGS' crosses Gilbert Ave at the plate edge. No Victory Parkway is printed (match by position only). | Billings (a 50-ft N-S street, centre x~6113) ends on Gilbert Avenue. Gilbert's north edge is at about y 4688 here; its south half lies off the plate (only a small stub of plate shows below). The centre is taken at the track lines, about y 4728. Just west of Billings is a diagonal strip and a parcel marked 'City of Cincinnati', probably the future Victory Parkway corridor. Same crossing as 69_039 and 69_040."
+  },
+  {
+   "a": "Duck Creek Road",
+   "b": "Montgomery Road",
+   "x": 10062.5,
+   "y": 2050.0,
+   "kind": "T",
+   "osm": [
+    718493.2,
+    4335563.1
+   ],
+   "osm_names": [
+    "Duck Creek Road",
+    "Montgomery Road"
+   ],
+   "printed": [
+    [
+     "Montgomery Road",
+     "Du... (rest cut by plate edge)"
+    ],
+    [
+     "Du... (Duck Creek, mostly off plate)",
+     "... Road (only 'ROAD' visible)"
+    ]
+   ],
+   "spread_px": 5.0,
+   "osm_off_m": 8.2,
+   "job": "69_044",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Same as 69_043: Duck Creek Rd shows only as a plate-edge tab on the east side of Montgomery Road. | Montgomery Road is printed only as 'ROAD' (SW-NE, house numbers 3400-3500, 60 ft wide, with tracks). Its SE side is the plate edge. A small stub of plate at x 10070-10160, y 2025-2125 shows a street leaving to the east, its south edge at about y 2093 and the letters 'DU'. That street is Duck Creek; the rest of it is off the plate. Same crossing as 69_045."
+  },
+  {
+   "a": "Maple Avenue",
+   "b": "Reading Road",
+   "x": 1441.5,
+   "y": 3006.5,
+   "kind": "T",
+   "osm": [
+    716709.8,
+    4335516.0
+   ],
+   "osm_names": [
+    "Maple Avenue",
+    "Reading Road"
+   ],
+   "printed": [
+    [
+     "(no name printed; Reading Road by position, 3400 numbers)",
+     "(no name printed; plate-edge tab)"
+    ],
+    [
+     "unnamed stub (only '...WER' / '...PIPE' on tab)",
+     "Reading Road"
+    ]
+   ],
+   "spread_px": 4.2,
+   "osm_off_m": 4.3,
+   "job": "69_047",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "The diagonal road along the plate's west edge carries car tracks and 3400 numbers; it is Reading Rd by position, but its name is not printed in the region. Maple Ave shows only as a plate-edge tab to the west, at y 2978-3035, with a sewer branch and a water pipe; no name is visible. The west half of Reading Rd is at the plate edge, so the centre is estimated at the tracks. | A short tab off the plate's west edge (y ~2980-3035) shows a street (Maple) leaving Reading Road westward, with sewer and pipe labels. Reading Road edges are x ~1395 to ~1495 at this y, with the tracks inside. Other west-side tabs: y ~2510 (sewer/pipe) and y ~3500 ('...AVE.')."
+  },
+  {
+   "a": "Altoona Street",
+   "b": "Walter Avenue",
+   "x": 4306.0,
+   "y": 6321.0,
+   "kind": "T",
+   "osm": [
+    717254.8,
+    4334800.1
+   ],
+   "osm_names": [
+    "Altoona Street",
+    "Walter Avenue"
+   ],
+   "printed": [
+    [
+     "Altoona Street",
+     "Walters Avenue"
+    ],
+    [
+     "Altoona Street",
+     "Walters Avenue"
+    ]
+   ],
+   "spread_px": 12.2,
+   "osm_off_m": 4.9,
+   "job": "69_048",
+   "confidence": [
+    "high",
+    "high"
+   ],
+   "note": "Altoona St is a narrow street that runs ESE and ends in a T at the NW side of Walters Ave. Walters Ave runs NE from Buena Vista Pl and Gilbert Ave toward Mathers St. | Altoona St ends in a T on the west side of Walters Ave. The Mathers street joins Walters just to the north."
+  }
+ ]
+}

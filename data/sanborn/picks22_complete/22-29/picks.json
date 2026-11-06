@@ -1,0 +1,305 @@
+{
+ "sheet": "22-29",
+ "made": "2026-11-06T16:33:54",
+ "by": "tools/sanborn/complete/collect.py",
+ "rule": "two independent reads, kept when they agree within 60 px (their mean) and lie within 45 m of the OSM crossing under the current model",
+ "intersections": [
+  {
+   "a": "State Avenue",
+   "b": "Wilder Avenue",
+   "x": 5832.5,
+   "y": 3317.0,
+   "kind": "T",
+   "osm": [
+    711650.1,
+    4331772.4
+   ],
+   "osm_names": [
+    "State Avenue",
+    "Wilder Avenue"
+   ],
+   "printed": [
+    [
+     "State (street with streetcar tracks; 'STATE' printed further south, no label at this spot)",
+     "unlabelled E-W street (18\" sewer) - continuation of the diagonal 'Wilder Avenue'"
+    ],
+    [
+     "(State, name not printed in this region; tracked street)",
+     "(unnamed connector from the Wilder Avenue/Denver junction)"
+    ]
+   ],
+   "spread_px": 5.0,
+   "osm_off_m": 4.7,
+   "job": "29_000",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "The diagonal printed 'WILDER AVE.' comes up from the SW, reaches a small triangular block (lots 64/65) at about 5480,3450, and a short unlabelled E-W street (y 3275-3360, 18-inch sewer) runs east from there to State. State has streetcar tracks and bends NE here. I picked where that E-W centreline (y about 3317) meets State's centreline. I took the E-W piece to be today's Wilder because it lines up with the expected point. | An unnamed E-W street (y~3273-3361, 18-inch sewer) leads from the junction where WILDER AVE becomes DENVER (about 5450, 3470) east to the tracked State Avenue. It meets State in a T where State bends from N-S to NNE. If only the printed WILDER AVE counts, see the 29_001 junction."
+  },
+  {
+   "a": "Berlin Street",
+   "b": "South Street",
+   "x": 7291.0,
+   "y": 4809.5,
+   "kind": "T",
+   "osm": [
+    711925.2,
+    4331451.5
+   ],
+   "osm_names": [
+    "Berlin Street",
+    "South Street"
+   ],
+   "printed": [
+    [
+     "Woodrow",
+     "South"
+    ],
+    [
+     "Woodrow",
+     "South"
+    ]
+   ],
+   "spread_px": 3.6,
+   "osm_off_m": 3.4,
+   "job": "29_004",
+   "confidence": [
+    "high",
+    "medium"
+   ],
+   "note": "Woodrow St (printed WOODROW; the old Berlin St), x 7252-7327, runs south from Gest and ends at South St (y about 4772-4850; the blue boundary band runs along its north side). | Berlin Street is printed WOODROW (WWI rename), a N-S street at x~7255-7330 from the street at y~4140 down to the E-W street at y~4765-4845, where it ends in a T (block 61 lies south). The E-W street is unnamed near the crossing; SOUTH is printed on it farther west (x~6300). Summer, Evans, Boston and Whateley streets are nearby."
+  },
+  {
+   "a": "Claypole Avenue",
+   "b": "Wing Street",
+   "x": 3220.5,
+   "y": 1057.0,
+   "kind": "cross",
+   "osm": [
+    711140.8,
+    4332266.6
+   ],
+   "osm_names": [
+    "Claypole Avenue",
+    "Wing Street"
+   ],
+   "printed": [
+    [
+     "Claypool",
+     "Wing Street"
+    ],
+    [
+     "Claypool",
+     "Wing Street"
+    ]
+   ],
+   "spread_px": 1.0,
+   "osm_off_m": 0.6,
+   "job": "29_005",
+   "confidence": [
+    "high",
+    "high"
+   ],
+   "note": "Claypool is 60 ft (y 1012-1102). Wing St runs x 3185-3255. The line at x 3225 south of Claypool is a boundary line, not a street edge. | Claypole is printed CLAYPOOL (no suffix next to the name). Wing is at x 3185-3257 and Claypool at y 1014-1100. A 6-inch pipe runs inside Wing at x~3228."
+  },
+  {
+   "a": "Lockwood Place",
+   "b": "Neff Avenue",
+   "x": 5684.0,
+   "y": 2401.0,
+   "kind": "T",
+   "osm": [
+    711629.1,
+    4331965.6
+   ],
+   "osm_names": [
+    "Lockwood Place",
+    "Neff Avenue"
+   ],
+   "printed": [
+    [
+     "Denver (street unlabelled here; printed 'DENVER' south of the boundary band)",
+     "Lockwood Place"
+    ],
+    [
+     "Lockwood Place",
+     "Denver"
+    ]
+   ],
+   "spread_px": 2.0,
+   "osm_off_m": 4.6,
+   "job": "29_006",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Lockwood Pl (y about 2372-2432 at its west end) runs west from Bowman and ends at the N-S street x about 5652-5718 (house numbers 1251-1263). That street continues south as the street printed DENVER, which I take to be today's Neff. | Neff Avenue is printed DENVER (no suffix seen), a narrow NNE-running street at x~5667-5700 here. Lockwood Place runs east from it to Bowman at about (5950, 2450). The T is at Lockwood's west end."
+  },
+  {
+   "a": "Glenway Avenue",
+   "b": "West 8th Street",
+   "x": 5271.0,
+   "y": 5594.0,
+   "kind": "bend",
+   "osm": [
+    711531.7,
+    4331318.0
+   ],
+   "osm_names": [
+    "Glenway Avenue",
+    "West 8th Street"
+   ],
+   "printed": [
+    [
+     "unlabelled street with streetcar tracks (house numbers 2300-2348)",
+     "W. Eighth"
+    ],
+    [
+     "(unnamed curving street, numbered 2308-2348 as a continuation of W. Eighth)",
+     "W. Eighth"
+    ]
+   ],
+   "spread_px": 21.6,
+   "osm_off_m": 23.7,
+   "job": "29_007",
+   "confidence": [
+    "medium",
+    "low"
+   ],
+   "note": "A street with streetcar tracks (x about 5215-5310) comes down from the junction at about 5120,4420 and curves east into W. Eighth (y about 5545-5658, centre 5600). Nothing continues west of the bend. I picked where the leg's centreline meets W. Eighth's centreline. The leg is unlabelled and carries 2300-series numbers like W. Eighth, so taking it as today's Glenway is an inference. W. Eighth's south edge and the SW part of the bend are at the plate's bottom edge. State (with tracks) also crosses W. Eighth at about 5590,5600, which is a different street. | W. Eighth (centre y~5590) runs west from State Avenue and curves north at x~5215-5320 into an unnamed street running up the west side of block 52, carrying a streetcar track. The curve was taken to be Glenway's foot. The bottom edge of the plate is at about y 5645. Alternative: State Avenue (tracked diagonal) meets W. Eighth at about (5560, 5600)."
+  },
+  {
+   "a": "Depot Street",
+   "b": "Dutton Street",
+   "x": 6164.5,
+   "y": 5218.5,
+   "kind": "T",
+   "osm": [
+    711695.2,
+    4331383.5
+   ],
+   "osm_names": [
+    "Depot Street",
+    "Dutton Street"
+   ],
+   "printed": [
+    [
+     "Depot",
+     "Dutten Avenue"
+    ],
+    [
+     "Depot",
+     "Dutten Avenue"
+    ]
+   ],
+   "spread_px": 1.4,
+   "osm_off_m": 0.9,
+   "job": "29_008",
+   "confidence": [
+    "high",
+    "high"
+   ],
+   "note": "Dutten Ave (y 5181-5257) runs east from State and ends at Depot St (x 6125-6202). | DEPOT (no suffix seen; x 6125-6205) and DUTTEN AVE. (y 5179-5257). Dutten ends at Depot; block 57 is on the east side."
+  },
+  {
+   "a": "Dutton Street",
+   "b": "State Avenue",
+   "x": 5626.5,
+   "y": 5217.5,
+   "kind": "T",
+   "osm": [
+    711585.8,
+    4331391.0
+   ],
+   "osm_names": [
+    "Dutton Street",
+    "State Avenue"
+   ],
+   "printed": [
+    [
+     "Dutten Avenue",
+     "State"
+    ],
+    [
+     "Dutten Avenue",
+     "State"
+    ]
+   ],
+   "spread_px": 3.2,
+   "osm_off_m": 1.6,
+   "job": "29_009",
+   "confidence": [
+    "high",
+    "high"
+   ],
+   "note": "Dutten Ave (y 5180-5255) ends on the east side of State. State, which has streetcar tracks, runs x about 5578-5670 at this point. | Dutton is printed DUTTEN AVE. (y 5179-5257). It meets the tracked State (x~5585-5670 here; STATE is printed farther north at about 5640, 4560) in a T."
+  },
+  {
+   "a": "Fitzpatrick Street",
+   "b": "West Liberty Street",
+   "x": 6971.0,
+   "y": 121.0,
+   "kind": "T",
+   "osm": [
+    711910.8,
+    4332404.6
+   ],
+   "osm_names": [
+    "Fitzpatrick Street",
+    "West Liberty Street"
+   ],
+   "printed": [
+    [
+     "... Street (printed only '...ST.' near 6915,380; '...ACE' further down the same street at about 6745,950)",
+     "W. Liberty"
+    ],
+    [
+     "... Street (name not legible)",
+     "W. Liberty"
+    ]
+   ],
+   "spread_px": 18.1,
+   "osm_off_m": 4.0,
+   "job": "29_010",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "A narrow N-S street (about 42 px wide, slanting SSW, house numbers 1064-1090) ends at W. Liberty (y about 82-160, centre 121). The street's name is not legible in the region. W. Liberty's north edge is the plate's top edge (white above y about 80). | The side street at x~6950-6995 (slanting NNE, with only ST. legible) meets W. Liberty in a T. Liberty's south edge is at y~162; its north side is cut by the top edge of the plate at about y 80, so the centre was estimated at about y 120. Detroit Street is the next street east, at x~7150-7200."
+  },
+  {
+   "a": "Warsaw Avenue",
+   "b": "Wilder Avenue",
+   "x": 4945.0,
+   "y": 5177.5,
+   "kind": "bend",
+   "osm": [
+    711430.2,
+    4331406.1
+   ],
+   "osm_names": [
+    "Warsaw Avenue",
+    "Wilder Avenue"
+   ],
+   "printed": [
+    [
+     "unlabelled leg running SW from the junction where 'WILDER AVE.' ends (about 5120,4420)",
+     "Warsaw (printed 'AVE.' on this leg; 'WARSAW' further NW)"
+    ],
+    [
+     "Avenue (west leg, name not printed in region)",
+     "(unnamed through street)"
+    ]
+   ],
+   "spread_px": 35.0,
+   "osm_off_m": 15.7,
+   "job": "29_011",
+   "confidence": [
+    "medium",
+    "low"
+   ],
+   "note": "Switchback: Warsaw (with tracks) comes SE down the leg printed 'AVE.' to a hairpin at about 4930,5150 and turns back NE up the unlabelled leg to the junction circle at about 5120,4420, where WILDER AVE. comes in from the NE. A third leg runs south from the hairpin (centre about 4962 at y 5250) down to the Price Hill Inclined Plane. The pick is the hairpin turn, where Warsaw's centreline meets the NE leg I take to be today's Wilder. The junction at 5120,4420 is another place where today's Wilder and this road system meet. | Switchback junction. An avenue (printed only AVE.) comes down from the NNW and joins a street that runs from the NNE (x~5000-5050) down to the incline plane at the bottom. A triangular island with a streetcar loop has its south tip at (4945, 5130); the pick is the open junction just south of it. Another avenue (AVENUE, x~4450-4560) runs parallel to the west and does not meet these streets in the region."
+  }
+ ]
+}

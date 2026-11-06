@@ -1,0 +1,531 @@
+[
+ {
+  "job": "16R_000",
+  "osm": [
+   713312.4,
+   4333881.8
+  ],
+  "osm_names": [
+   "Addison Street",
+   "Halstead Street"
+  ],
+  "predicted": [
+   3166.5,
+   4780.7
+  ],
+  "reads": [
+   {
+    "job": "16R_000",
+    "found": true,
+    "x": 3155,
+    "y": 4808,
+    "kind": "T",
+    "printed": [
+     "Addison Street",
+     "(Halstead: unlabelled in region)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 2685,
+      "y": 4808,
+      "note": "bend where the labelled N-S leg of Addison St. turns east into the short E-W leg that runs to the T"
+     }
+    ],
+    "note": "Addison St. is labelled on a N-S leg (x~2600-2750) that bends east at y~4808 into a short E-W leg (edges y 4770/4845); that leg ends in a T on the wide NNE-running street (edges x~3080/3230 at this y) which continues the street labelled HALSTEAD further south and STREET further north. Picked the T at Halstead's centreline.",
+    "group": "A00"
+   },
+   {
+    "job": "16R_000",
+    "found": true,
+    "x": 3162,
+    "y": 4808,
+    "kind": "T",
+    "printed": [
+     "unlabelled E-W leg (ADDISON ST. printed on the N-S leg at x ~2680)",
+     "Halstead (not labelled here)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Addison St. runs N-S at x ~2630-2725 and at its north end (bend at ~2680, 4808) turns east as an unlabelled ~75 px street (edges y 4772/4845, 12in sewer) to Halstead, which it meets at a T. Halstead edges ~3088 and ~3240 here. Addison does not otherwise meet Halstead in the region.",
+    "group": "B00"
+   }
+  ],
+  "spread_px": 7.0,
+  "osm_off_m": 2.7,
+  "x": 3158.5,
+  "y": 4808.0,
+  "outcome": "picked",
+  "why": "reads 7 px apart"
+ },
+ {
+  "job": "16R_001",
+  "osm": [
+   713357.8,
+   4333702.2
+  ],
+  "osm_names": [
+   "West McMicken Avenue",
+   "West McMillan Avenue"
+  ],
+  "predicted": [
+   3711.2,
+   6585.1
+  ],
+  "reads": [
+   {
+    "job": "16R_001",
+    "found": true,
+    "x": 3775,
+    "y": 6612,
+    "kind": "T",
+    "printed": [
+     "W. McMicken",
+     "Street (name not printed inside region, only 'ST.')"
+    ],
+    "plate_edge": false,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 4128,
+      "y": 4080,
+      "note": "the street the plate actually prints as 'W. McMillan St.' (y~4082, today apparently McNally St.) meets McMicken here, far from the expected point"
+     }
+    ],
+    "note": "E-W street (edges y~6570/6652, label only 'ST.', name off region to the west) ends in a T on W. McMicken (west block edge x~3665, east line x~3885, street-car track inside). Matches expected point well; the plate's labelled W. McMillan St. is the street at y~4082, so this one probably had another 1922 name. Plate edge (white) begins ~x 3990, not cutting the crossing.",
+    "group": "A00"
+   },
+   {
+    "job": "16R_001",
+    "found": true,
+    "x": 3793,
+    "y": 6625,
+    "kind": "T",
+    "printed": [
+     "Street (only 'ST.' printed in region; name lies west of the region)",
+     "W. McMicken"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "E-W street (edges y 6570/6685, 3in W.P. inside) ends at W. McMicken from the west; McMicken centre between lot edge ~3700 and east edge ~3856 (street-car tracks ~3790). Caution: this plate prints 'W. McMILLAN ST.' for a different street at y ~4083 meeting McMicken at about (4140, 4083), outside this region (that one matches today's McNally St expected point in job 16R_007). The street read here is the one at the expected point.",
+    "group": "B00"
+   }
+  ],
+  "spread_px": 22.2,
+  "osm_off_m": 7.7,
+  "x": 3784.0,
+  "y": 6618.5,
+  "outcome": "picked",
+  "why": "reads 22 px apart"
+ },
+ {
+  "job": "16R_002",
+  "osm": [
+   713349.15,
+   4334047.2
+  ],
+  "osm_names": [
+   "Halstead Street",
+   "Kottmann Street"
+  ],
+  "predicted": [
+   3465.0,
+   3071.2
+  ],
+  "reads": [
+   {
+    "job": "16R_002",
+    "found": true,
+    "x": 3455,
+    "y": 3056,
+    "kind": "T",
+    "printed": [
+     "Street (Halstead; only 'STREET' printed nearby, HALSTEAD printed further south)",
+     "Klottman Street"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [
+     {
+      "x": 3383,
+      "y": 3491,
+      "note": "second Klottman St. leg leaves Halstead eastward ~435 px further south (offset T)"
+     }
+    ],
+    "note": "Klottman St. west leg (edges y 3010/3102) meets Halstead from the west; Halstead edges x~3390/3520 here. Vertical lines inside Halstead are water pipes.",
+    "group": "A00"
+   },
+   {
+    "job": "16R_002",
+    "found": true,
+    "x": 3475,
+    "y": 3058,
+    "kind": "T",
+    "printed": [
+     "Halstead Street",
+     "Klottman Street"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [
+     {
+      "x": 3400,
+      "y": 3492,
+      "note": "eastern leg of KLOTTMAN ST. meets Halstead from the east at a T (runs on to McMicken)"
+     }
+    ],
+    "note": "Western Klottman St. (edges y ~3020/3101, 4in W.P.) ends at Halstead from the west; Halstead edges ~3440 and ~3511 at this y.",
+    "group": "B00"
+   }
+  ],
+  "spread_px": 20.1,
+  "osm_off_m": 1.4,
+  "x": 3465.0,
+  "y": 3057.0,
+  "outcome": "picked",
+  "why": "reads 20 px apart"
+ },
+ {
+  "job": "16R_003",
+  "osm": [
+   713341.7,
+   4334007.9
+  ],
+  "osm_names": [
+   "Halstead Street",
+   "Kottmann Street"
+  ],
+  "predicted": [
+   3409.1,
+   3475.5
+  ],
+  "reads": [
+   {
+    "job": "16R_003",
+    "found": true,
+    "x": 3383,
+    "y": 3491,
+    "kind": "T",
+    "printed": [
+     "Street (Halstead; only 'STREET' printed nearby)",
+     "Klottman Street"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [
+     {
+      "x": 3455,
+      "y": 3056,
+      "note": "west Klottman St. leg meets Halstead from the west ~435 px further north (offset T)"
+     }
+    ],
+    "note": "Klottman St. east leg (edges y 3450/3532) leaves Halstead eastward; Halstead edges x~3317 (green band) / 3448 (pink band). The short line at y 3491 is the 6\" water pipe turning into Klottman.",
+    "group": "A00"
+   },
+   {
+    "job": "16R_003",
+    "found": true,
+    "x": 3400,
+    "y": 3492,
+    "kind": "T",
+    "printed": [
+     "Halstead Street",
+     "Klottman Street"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [
+     {
+      "x": 3475,
+      "y": 3058,
+      "note": "western leg of KLOTTMAN ST. (from x ~2700) meets Halstead from the west at a T; Klottman is jogged across Halstead"
+     }
+    ],
+    "note": "Eastern Klottman St. (edges y 3455/3533) meets Halstead from the east; Halstead edges ~3360 (inner line; green-banded lot line at ~3339) and ~3447 at this y.",
+    "group": "B00"
+   }
+  ],
+  "spread_px": 17.0,
+  "osm_off_m": 2.3,
+  "x": 3391.5,
+  "y": 3491.5,
+  "outcome": "picked",
+  "why": "reads 17 px apart"
+ },
+ {
+  "job": "16R_004",
+  "osm": [
+   713420.9,
+   4334003.1
+  ],
+  "osm_names": [
+   "Kottmann Street",
+   "West McMicken Avenue"
+  ],
+  "predicted": [
+   4247.4,
+   3473.5
+  ],
+  "reads": [
+   {
+    "job": "16R_004",
+    "found": true,
+    "x": 4222,
+    "y": 3495,
+    "kind": "T",
+    "printed": [
+     "Klottman Street",
+     "(McMicken: unlabelled in region)"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Klottman St. (edges y 3455/3535) ends in a T on McMicken (west block edge x~4130, east line x~4313, street-car track inside). East of McMicken is blank beige to the plate edge (~x 4510).",
+    "group": "A00"
+   },
+   {
+    "job": "16R_004",
+    "found": true,
+    "x": 4235,
+    "y": 3495,
+    "kind": "T",
+    "printed": [
+     "Klottman Street",
+     "McMicken (not labelled near here; 'W. McMicken' elsewhere on plate)"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Plate spells KLOTTMAN ST. Klottman edges y 3455/3535 ends at McMicken from the west. McMicken corridor from lot line ~4135 to east edge ~4318 with a thin inner line at ~4185 and street-car tracks ~4245; centre taken ~4235.",
+    "group": "B00"
+   }
+  ],
+  "spread_px": 13.0,
+  "osm_off_m": 2.8,
+  "x": 4228.5,
+  "y": 3495.0,
+  "outcome": "picked",
+  "why": "reads 13 px apart"
+ },
+ {
+  "job": "16R_005",
+  "osm": [
+   713133.8,
+   4334348.4
+  ],
+  "osm_names": [
+   "Marshall Avenue",
+   "Sidney Avenue"
+  ],
+  "predicted": [
+   1035.0,
+   104.3
+  ],
+  "reads": [
+   {
+    "job": "16R_005",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "(top street unlabelled here; labelled '... AVENUE' further east)",
+     null
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 1835,
+      "y": 150,
+      "note": "only street meeting the top street in region: Massachusetts (Avenue) T from the south"
+     }
+    ],
+    "note": "Near the expected point the top street (presumably Marshall Avenue; south block line y~225, 67\" sewer y~150) runs along the page top edge (~y 45) with its north side cut off; no street meets it near x 1035 from the south (continuous block of lots 1071-1045, Herz Jesu Church). Sidney Avenue would lie north of the page edge. Book gutter at x~315 on the left.",
+    "group": "A00"
+   },
+   {
+    "job": "16R_005",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Avenue (top street, unnamed in region; addresses 1071-1045, 67in sewer)",
+     null
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Sidney Avenue not on the plate here. At the expected point only the top street (Marshall Ave, south edge ~y 220, north side cut by the top plate edge ~y 50; centreline ~y 160-170) runs E-W; nothing branches north before the edge, so the crossing is probably on the adjoining sheet. Other streets in region: Massachusetts Avenue (x ~1800), Heywood Street (y ~880), and an unlabelled N-S street with street-car tracks at the left (x ~150-300) meeting the top street near (210, 155).",
+    "group": "B00"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "16R_006",
+  "osm": [
+   713328.6,
+   4333952.3
+  ],
+  "osm_names": [
+   "Halstead Street",
+   "McNally Street"
+  ],
+  "predicted": [
+   3301.8,
+   4050.4
+  ],
+  "reads": [
+   {
+    "job": "16R_006",
+    "found": true,
+    "x": 3256,
+    "y": 4084,
+    "kind": "cross",
+    "printed": [
+     "(Halstead: unlabelled in region)",
+     "W. McMillan Street"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Plate prints W. McMillan St. (edges y 4020/4148) on the street that today is McNally; Halstead block corners x~3180/3340 north and 3172/3330 south. Dashed line at x~3290 is a pipe.",
+    "group": "A00"
+   },
+   {
+    "job": "16R_006",
+    "found": true,
+    "x": 3255,
+    "y": 4083,
+    "kind": "cross",
+    "printed": [
+     "Halstead Street",
+     "W. McMillan Street"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Plate prints 'W. McMILLAN ST.' for the street at the expected McNally point (edges y 4020/4145). Halstead edges ~3176/3335 (wide here; sewer dashed line at ~3300 is off-centre). Both streets continue through.",
+    "group": "B00"
+   }
+  ],
+  "spread_px": 1.4,
+  "osm_off_m": 5.4,
+  "x": 3255.5,
+  "y": 4083.5,
+  "outcome": "picked",
+  "why": "reads 1 px apart"
+ },
+ {
+  "job": "16R_007",
+  "osm": [
+   713407.7,
+   4333943.0
+  ],
+  "osm_names": [
+   "McNally Street",
+   "West McMicken Avenue"
+  ],
+  "predicted": [
+   4140.8,
+   4089.8
+  ],
+  "reads": [
+   {
+    "job": "16R_007",
+    "found": true,
+    "x": 4128,
+    "y": 4080,
+    "kind": "T",
+    "printed": [
+     "W. McMillan Street",
+     "(McMicken: unlabelled in region)"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Plate's W. McMillan St. (today McNally; edges y 4013/4148) ends at McMicken (west block corners x~4030, east line x~4227, street-car track and sewer inside).",
+    "group": "A00"
+   },
+   {
+    "job": "16R_007",
+    "found": true,
+    "x": 4140,
+    "y": 4083,
+    "kind": "T",
+    "printed": [
+     "W. McMillan Street",
+     "McMicken (not labelled near here)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "The street at the expected point is printed 'W. McMILLAN ST.' (today's McNally St presumably). Edges y 4015/4150 (green ward band at 4110 is not an edge). Ends at McMicken from the west; McMicken from lot line ~4027 to east edge ~4222, thin inner line ~4092, tracks ~4130.",
+    "group": "B00"
+   }
+  ],
+  "spread_px": 12.4,
+  "osm_off_m": 1.0,
+  "x": 4134.0,
+  "y": 4081.5,
+  "outcome": "picked",
+  "why": "reads 12 px apart"
+ },
+ {
+  "job": "16R_008",
+  "osm": [
+   713360.2,
+   4334338.2
+  ],
+  "osm_names": [
+   "Central Parkway",
+   "Marshall Avenue"
+  ],
+  "predicted": [
+   3382.4,
+   126.4
+  ],
+  "reads": [
+   {
+    "job": "16R_008",
+    "found": true,
+    "x": 3455,
+    "y": 160,
+    "kind": "T",
+    "printed": [
+     "(wide curved way, unlabelled)",
+     "Avenue (name off region; presumably Marshall)"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [],
+    "note": "Central Parkway did not exist in 1922; at the expected point a wide (~220 px) unlabelled curved strip between a blue band (west, from 3380,225) and a pink band (east, from 3595,228) runs SSE from the top street. It is probably the canal bed / right of way later used for Central Parkway, which by the rules may not count as a street. Top street ('AVENUE', south block line y~225) has its north side cut off by the page edge (~y 50), so the y is estimated from the label line.",
+    "group": "A00"
+   },
+   {
+    "job": "16R_008",
+    "found": true,
+    "x": 3450,
+    "y": 165,
+    "kind": "T",
+    "printed": [
+     "Avenue (only 'AVENUE' printed in region; addresses 1021-1005 on its south side)",
+     "unlabelled wide diagonal corridor (former canal bed, sewers along it)"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [],
+    "note": "Top street (Marshall Ave, south edge ~y 212, north side cut by the top plate edge at ~y 60, centreline estimated from label/sewer ~y 165). Central Parkway taken as the unlabelled ~110 ft corridor between the blue-edged lots (x 3378 at y 225) and the pink-edged A.J. Riddle's Subd lots (x 3595 at y 230), running SSE; its centreline extended to the Marshall centreline gives the point. Crossing is at the top plate edge; whether it continues north is not visible.",
+    "group": "B00"
+   }
+  ],
+  "outcome": "not a 1922 street",
+  "why": "Central Parkway: the canal bed in 1922 (not a street)"
+ }
+]

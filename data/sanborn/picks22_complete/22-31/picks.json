@@ -1,0 +1,536 @@
+{
+ "sheet": "22-31",
+ "made": "2026-11-06T16:33:54",
+ "by": "tools/sanborn/complete/collect.py",
+ "rule": "two independent reads, kept when they agree within 60 px (their mean) and lie within 45 m of the OSM crossing under the current model",
+ "intersections": [
+  {
+   "a": "Fitzpatrick Street",
+   "b": "West Liberty Street",
+   "x": 7049.0,
+   "y": 6362.0,
+   "kind": "T",
+   "osm": [
+    711910.8,
+    4332404.6
+   ],
+   "osm_names": [
+    "Fitzpatrick Street",
+    "West Liberty Street"
+   ],
+   "printed": [
+    [
+     "(no name printed; unnamed stub street)",
+     "W. Liberty"
+    ],
+    [
+     "(unlabelled street, cut by plate edge)",
+     "West Liberty"
+    ]
+   ],
+   "spread_px": 2.0,
+   "osm_off_m": 4.8,
+   "job": "31_001",
+   "confidence": [
+    "low",
+    "low"
+   ],
+   "note": "W. Liberty runs E-W along the bottom of the plate (north edge about y 6330, plate cut / south edge about y 6395). A roughly 40 ft street stub leaves its south side at x 7010-7060 and slants SSW off the plate. This is taken as Fitzpatrick Street, but no name is printed. Wall Street ('WALL') meets the north side at about x 7140. | W. Liberty runs E-W along the bottom plate edge (centre y ~6362). Fitzpatrick is not labelled; picked the narrow unlabelled street stub entering Liberty from the south (plate edge cuts it right below Liberty), nearest the expected point. Another unlabelled stub ('...ST') enters from the south at x ~7200 with railroad tracks."
+  },
+  {
+   "a": "Lierman Street",
+   "b": "Quebec Road",
+   "x": 640.0,
+   "y": 1681.5,
+   "kind": "T",
+   "osm": [
+    710666.5,
+    4333433.1
+   ],
+   "osm_names": [
+    "Lierman Street",
+    "Quebec Road"
+   ],
+   "printed": [
+    [
+     "Lierman Street",
+     "Quebec"
+    ],
+    [
+     "Lierman Street",
+     "Quebec"
+    ]
+   ],
+   "spread_px": 21.2,
+   "osm_off_m": 3.1,
+   "job": "31_002",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Lierman Street (printed 39.65 ft wide) runs ESE from the east lot line of Quebec at about x 685, y 1670-1725. Quebec is a wide diagonal street (pipes, sewer and double track lines) whose west side is cut off by the plate edge, so its centreline (about 60 px west of the lot line) is estimated. | Lierman St (38.65') runs ESE from the east side of Quebec (wide diagonal with sewer, pipe and tracks; its west edge borders the white outside the plate). Circle symbol in Quebec at about (635,1700)."
+  },
+  {
+   "a": "Grand Avenue",
+   "b": "Northside Avenue",
+   "x": 4745.5,
+   "y": 1978.0,
+   "kind": "cross",
+   "osm": [
+    711494.2,
+    4333329.5
+   ],
+   "osm_names": [
+    "Grand Avenue",
+    "Northside Avenue"
+   ],
+   "printed": [
+    [
+     "Street (name not printed in region)",
+     "Avenue (only 'AVE.' printed)"
+    ],
+    [
+     "Street (only 'ST.' printed)",
+     "Avenue (only 'AVE.' printed)"
+    ]
+   ],
+   "spread_px": 5.0,
+   "osm_off_m": 2.1,
+   "job": "31_005",
+   "confidence": [
+    "high",
+    "medium"
+   ],
+   "note": "N-S street (today Grand Avenue): edges x 4695 and 4790, centreline sewer at about 4745. E-W 'AVE.' on the west side, edges y 1930 and 2022, continuing east (y 1933-2030, house numbers 1701 west and 1693 east). This is a clean 4-way crossing. | E-W street printed only 'AVE.' (west side at x ~4500; edges ~1931/2028) crosses the N-S 'ST.' street (Grand by position). Esmonde Street crosses the same N-S street at y ~1650."
+  },
+  {
+   "a": "Esmonde Street",
+   "b": "Grand Avenue",
+   "x": 4748.0,
+   "y": 1674.0,
+   "kind": "T",
+   "osm": [
+    711499.0,
+    4333419.4
+   ],
+   "osm_names": [
+    "Esmonde Street",
+    "Grand Avenue"
+   ],
+   "printed": [
+    [
+     "Esmonde Street",
+     "Street (name not printed in region)"
+    ],
+    [
+     "Esmonde Street",
+     "Street (N-S street, only 'ST.' printed in region; name off region to north)"
+    ]
+   ],
+   "spread_px": 2.0,
+   "osm_off_m": 26.4,
+   "job": "31_006",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "ESMONDE ST. (60 ft, edges y 1632-1718, a railroad track running along it) leaves the east side of the N-S street (today Grand Avenue, edges x 4700-4795). It does not continue west at the same position. | N-S street (x 4700-4795, pipes and sewers inside) is taken as Grand Ave. Esmonde St (y 1630-1717) runs east from it. Centre of the Esmonde mouth at the N-S centreline."
+  },
+  {
+   "a": "Grand Avenue",
+   "b": "Westwood Avenue",
+   "x": 4746.0,
+   "y": 1139.0,
+   "kind": "cross",
+   "osm": [
+    711502.5,
+    4333502.8
+   ],
+   "osm_names": [
+    "Grand Avenue",
+    "Westwood Avenue"
+   ],
+   "printed": [
+    [
+     "Street ('ST.' only)",
+     "(no name printed in region)"
+    ],
+    [
+     "Street (only 'ST.' printed)",
+     "(unlabelled street)"
+    ]
+   ],
+   "spread_px": 4.5,
+   "osm_off_m": 1.9,
+   "job": "31_007",
+   "confidence": [
+    "high",
+    "medium"
+   ],
+   "note": "E-W street with a 12 in sewer and street-railway track: edges y 1092-1188, houses 1701-1742 on the west and 1691-1699 on the east. The N-S street (today Grand Avenue) has edges x 4700-4790. 'KEBLER'S SUBDIV.' and 'BARRSVILLE' are subdivision names. Clean 4-way crossing. | E-W street (unlabelled; edges ~1092/1185, track-like double line at ~1142) crosses the N-S 'ST.' street (Grand by position). No names printed for either in the region."
+  },
+  {
+   "a": "Lehman Road",
+   "b": "Radcliff Drive",
+   "x": 7384.5,
+   "y": 4606.5,
+   "kind": "T",
+   "osm": [
+    711991.9,
+    4332759.7
+   ],
+   "osm_names": [
+    "Lehman Road",
+    "Radcliff Drive"
+   ],
+   "printed": [
+    [
+     "Street (name cut; ends '...Y STREET')",
+     "Road (only 'ROAD' visible)"
+    ],
+    [
+     "Road (only 'ROAD' printed)",
+     "Jean Street / '...Y Street'"
+    ]
+   ],
+   "spread_px": 8.6,
+   "osm_off_m": 11.6,
+   "job": "31_008",
+   "confidence": [
+    "low",
+    "medium"
+   ],
+   "note": "Lehman Road ('ROAD', 1653-1682 numbers) runs SW-NE. A 40 ft street ending in '...Y STREET' (subdivision lettering 'EDWARD DODSON'S EST.') meets it from the SSW. Jean Street meets it from the NNE about 40 px further east. Picked the south street as nearest to the expected point. | Diagonal 'ROAD' (Lehman by position) is crossed by Jean Street (40 ft, from the NNE, meets at ~7395,4595) and an unlabelled-name 40 ft 'STREET' from the SSW (meets at ~7380,4612); the two are nearly aligned, picked the shared crossing. Unsure which (if either) is Radcliff."
+  },
+  {
+   "a": "Lierman Street",
+   "b": "Schoedinger Avenue",
+   "x": 957.5,
+   "y": 1742.5,
+   "kind": "T",
+   "osm": [
+    710719.7,
+    4333414.7
+   ],
+   "osm_names": [
+    "Lierman Street",
+    "Schoedinger Avenue"
+   ],
+   "printed": [
+    [
+     "Lierman Street",
+     "Avenue ('AVE.' printed; 'JACOB SCHOEDINGERS' is subdivision lettering)"
+    ],
+    [
+     "Lierman Street",
+     "Schoedinger Avenue"
+    ]
+   ],
+   "spread_px": 5.1,
+   "osm_off_m": 8.0,
+   "job": "31_010",
+   "confidence": [
+    "medium",
+    "high"
+   ],
+   "note": "Lierman Street (38.65 ft at its east end, edges about y 1710-1770) ends at the NNE-running avenue whose west edge is about x 915 and east edge about 1005 at this latitude. The avenue's centre is estimated; there is a narrow strip continuing north past Lierman. | Lierman St runs ESE from Quebec Road and ends at the west side of diagonal Schoedinger Ave."
+  },
+  {
+   "a": "Hiawatha Avenue",
+   "b": "Meader Street",
+   "x": 8099.0,
+   "y": 1645.0,
+   "kind": "T",
+   "osm": [
+    712174.6,
+    4333350.2
+   ],
+   "osm_names": [
+    "Hiawatha Avenue",
+    "Meader Street"
+   ],
+   "printed": [
+    [
+     "Street (only 'STREET' printed)",
+     "Meader / Mary Street (label reads 'MEADER' above 'MARY ST.')"
+    ],
+    [
+     "Street (only 'STREET' printed)",
+     "Meader"
+    ]
+   ],
+   "spread_px": 10.8,
+   "osm_off_m": 7.7,
+   "job": "31_011",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "A 60 ft diagonal street (today Hiawatha Avenue) runs WSW-ENE; its north edge is about (7915,1690)-(8300,1510) and its south edge about (7905,1780)-(8290,1600). Meader (30 ft) leaves its south side and runs SSE, with its centre about x 8120 at y 1760. | 30 ft Meader (printed MEADER) runs NNW and ends at the diagonal SW-NE street printed only 'STREET' (Hiawatha by position; it bends south at ~7900,1720)."
+  },
+  {
+   "a": "Ernst Street",
+   "b": "Hiawatha Avenue",
+   "x": 8312.5,
+   "y": 1530.0,
+   "kind": "T",
+   "osm": [
+    712220.4,
+    4333371.0
+   ],
+   "osm_names": [
+    "Ernst Street",
+    "Hiawatha Avenue"
+   ],
+   "printed": [
+    [
+     "Ernst Street",
+     "Street (only 'STREET' printed)"
+    ],
+    [
+     "Ernst Street",
+     "Street (name not printed in region, only 'STREET')"
+    ]
+   ],
+   "spread_px": 20.6,
+   "osm_off_m": 6.7,
+   "job": "31_012",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Ernst Street (with a 12 in sewer and 6 in water pipe) runs SSE from where the 60 ft diagonal street (today Hiawatha Avenue) bends ENE toward the big avenue. Ernst's west edge runs from about (8285,1525) to (8330,1750) and its east edge from about (8350,1540) to (8390,1750). | Ernst St (narrow, x~8295-8345, with 12\" sewer and 7\" W.P.) runs SSE from the south side of the ENE-running 'STREET' (60'), taken as Hiawatha Ave."
+  },
+  {
+   "a": "Lionel Avenue",
+   "b": "Osterfeld Street",
+   "x": 6050.5,
+   "y": 3747.0,
+   "kind": "T",
+   "osm": [
+    711747.0,
+    4332946.1
+   ],
+   "osm_names": [
+    "Lionel Avenue",
+    "Osterfeld Street"
+   ],
+   "printed": [
+    [
+     "Lionel Avenue",
+     "Mohawk"
+    ],
+    [
+     "Lionel Avenue",
+     "Mohawk"
+    ]
+   ],
+   "spread_px": 4.1,
+   "osm_off_m": 3.8,
+   "job": "31_014",
+   "confidence": [
+    "high",
+    "medium"
+   ],
+   "note": "MOHAWK (40 ft, edges x 6022-6080) runs N-S and ends at the north side of LIONEL AVE. (edges about y 3728-3770). It does not continue south (lots 42-45 of the subdivision). The plate prints Mohawk where today's name is Osterfeld Street. | Osterfeld not printed; the 40 ft N-S street printed MOHAWK (edges x 6020/6080) ends at Lionel Avenue (edges y ~3718/3770) at the expected point. Taken as Osterfeld by position."
+  },
+  {
+   "a": "Ekardt Street",
+   "b": "Queen City Avenue",
+   "x": 812.5,
+   "y": 522.0,
+   "kind": "T",
+   "osm": [
+    710700.1,
+    4333671.8
+   ],
+   "osm_names": [
+    "Ekardt Street",
+    "Queen City Avenue"
+   ],
+   "printed": [
+    [
+     "(name cut off by plate clip; stub label ends 'St.')",
+     "Queen City (Avenue; label 'QUEEN CITY' further east on same street)"
+    ],
+    [
+     "Street (stub, only 'ST' visible, name off plate)",
+     "unnamed in region (Queen City band)"
+    ]
+   ],
+   "spread_px": 1.0,
+   "osm_off_m": 10.2,
+   "job": "31_017",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "The region is mostly white, because the plate is clipped. The street running west-northwest with an 8\" water pipe is Queen City. A short stub street, labelled only '...ST.', leaves it to the north at x~795-835 and is cut off by the plate edge at y~440. I took this stub as Ekardt Street. The T is the stub's centre on the Queen City centreline. A second stub at x~1203 is the alternative. | Only a strip of the WNW-ESE street (Queen City) is on the plate, with a short stub (x 790-840) going north off the plate edge, marked 'ST'. Taken as Ekardt St; T at stub centre on the strip centreline."
+  },
+  {
+   "a": "Merton Street",
+   "b": "Queen City Avenue",
+   "x": 2571.5,
+   "y": 800.5,
+   "kind": "T",
+   "osm": [
+    711062.9,
+    4333591.0
+   ],
+   "osm_names": [
+    "Merton Street",
+    "Queen City Avenue"
+   ],
+   "printed": [
+    [
+     "(stub street, name illegible/cut off)",
+     "Queen City (Avenue)"
+    ],
+    [
+     "unnamed stub (name off plate)",
+     "Queen"
+    ]
+   ],
+   "spread_px": 1.4,
+   "osm_off_m": 4.1,
+   "job": "31_018",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "The label 'QUEEN CITY' is printed on the street at y~757-840. A narrow street stub (x~2557-2585) runs north from it and is clipped by the plate edge at y~700. Its label is illegible. I took this stub as Merton Street because it is closest to the expected point. Hart St. runs south from Queen City at x~2330, which does not match. | Narrow stub (x 2558-2585) goes north off the plate edge from Queen City Ave (QUEEN CITY printed; band y~757-845, north edge at plate edge). Taken as Merton St."
+  },
+  {
+   "a": "Lane Avenue",
+   "b": "Osterfeld Street",
+   "x": 6048.5,
+   "y": 3457.5,
+   "kind": "T",
+   "osm": [
+    711744.5,
+    4333004.4
+   ],
+   "osm_names": [
+    "Lane Avenue",
+    "Osterfeld Street"
+   ],
+   "printed": [
+    [
+     "Lane Street",
+     "Mohawk"
+    ],
+    [
+     "Lane Street",
+     "Mohawk"
+    ]
+   ],
+   "spread_px": 1.4,
+   "osm_off_m": 3.1,
+   "job": "31_019",
+   "confidence": [
+    "medium",
+    "high"
+   ],
+   "note": "'LANE ST.' is a 50 ft street (y~3420-3495). Its east end meets the north-south street labelled 'MOHAWK' (x~6018-6078, with green and pink boundary bands along it). I took Mohawk as today's Osterfeld Street; the plate does not print that name. The east side of Mohawk is the large Henry Grote estate. | Lane St (50', y 3420-3495) ends at Mohawk (x 6020-6078, green/pink boundary bands inside). Mohawk taken as Osterfeld St; east of it is Henry Grove acreage."
+  },
+  {
+   "a": "Kebler Avenue",
+   "b": "Westwood Avenue",
+   "x": 3393.5,
+   "y": 1136.0,
+   "kind": "T",
+   "osm": [
+    711224.4,
+    4333518.5
+   ],
+   "osm_names": [
+    "Kebler Avenue",
+    "Westwood Avenue"
+   ],
+   "printed": [
+    [
+     "Seegar Street",
+     "Westwood"
+    ],
+    [
+     "Seegar Street",
+     "Westwood"
+    ]
+   ],
+   "spread_px": 1.0,
+   "osm_off_m": 2.5,
+   "job": "31_020",
+   "confidence": [
+    "medium",
+    "high"
+   ],
+   "note": "Kebler Avenue is not printed. The plate's 'SEEGAR ST.' runs from Queen City south to 'WESTWOOD' exactly at the expected x, so I took it as today's Kebler Ave. 'KEBLER'S SUBDIVN' is a subdivision name nearby. Westwood runs y~1095-1178, and the T is on its centreline. South of Westwood only a lot line continues. | Kebler Ave is printed SEEGAR ST. (x 3365-3422) north of Westwood; south of Westwood only a narrow alley continues at x~3400. Westwood band y 1092-1180 with car tracks."
+  },
+  {
+   "a": "Grand Avenue",
+   "b": "Queen City Avenue",
+   "x": 4746.5,
+   "y": 574.5,
+   "kind": "T",
+   "osm": [
+    711508.4,
+    4333615.0
+   ],
+   "osm_names": [
+    "Grand Avenue",
+    "Queen City Avenue"
+   ],
+   "printed": [
+    [
+     "(name not visible; label only 'ST.')",
+     "Queen City (Avenue; name printed further west)"
+    ],
+    [
+     "Street (name not printed in region; only 'ST.')",
+     "(unlabelled street along plate top edge)"
+    ]
+   ],
+   "spread_px": 4.2,
+   "osm_off_m": 0.7,
+   "job": "31_027",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "A north-south street labelled only 'ST.' (x~4700-4789, with 18\" sewer and 12\" water pipe) runs south from Queen City (y~537-615) to Westwood. It sits exactly at the expected x, so I took it as Grand Avenue, but its name is not printed in the region. The plate edge clips Queen City's north side just above the street. | N-S 60 ft street (labelled only 'ST.', Grand Ave by position) ends at the slanting E-W street running along the cut top edge of the plate (Queen City by position, unlabelled; north edge ~535, block fronts ~612). A different street continues north from it offset west at x ~4560. N-S street has a line at x ~4737 inside it plus pink boundary band at ~4705; centre taken across 4700-4795."
+  },
+  {
+   "a": "Kebler Avenue",
+   "b": "Queen City Avenue",
+   "x": 3392.5,
+   "y": 765.0,
+   "kind": "T",
+   "osm": [
+    711229.6,
+    4333590.9
+   ],
+   "osm_names": [
+    "Kebler Avenue",
+    "Queen City Avenue"
+   ],
+   "printed": [
+    [
+     "Seegar Street",
+     "Queen City (Avenue)"
+    ],
+    [
+     "Seegar Street",
+     "Queen City"
+    ]
+   ],
+   "spread_px": 4.1,
+   "osm_off_m": 1.0,
+   "job": "31_028",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Kebler Avenue is not printed. 'SEEGAR ST.' (40 ft, x~3365-3420) runs south from 'QUEEN CITY' at the expected x, so I took it as today's Kebler Ave. 'KEBLER'S SUBDIVN' to the east is a subdivision name. Queen City runs y~727-800; its north side is near the clipped plate edge. | Kebler Ave is printed SEEGAR ST. (40'), running south from Queen City to Westwood. Queen City's north edge is the plate edge (white beyond), so its centre (y~767) assumes the band 738-798 is the full width."
+  }
+ ]
+}

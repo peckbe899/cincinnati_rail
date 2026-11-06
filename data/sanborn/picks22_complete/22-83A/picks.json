@@ -1,0 +1,107 @@
+{
+ "sheet": "22-83A",
+ "made": "2026-11-06T16:33:54",
+ "by": "tools/sanborn/complete/collect.py",
+ "rule": "two independent reads, kept when they agree within 60 px (their mean) and lie within 45 m of the OSM crossing under the current model",
+ "intersections": [
+  {
+   "a": "Harris Avenue",
+   "b": "Harris Place",
+   "x": 5228.0,
+   "y": 2362.0,
+   "kind": "T",
+   "osm": [
+    721330.6,
+    4337980.3
+   ],
+   "osm_names": [
+    "Harris Avenue",
+    "Harris Place"
+   ],
+   "printed": [
+    [
+     "(no name printed; curving street running from the diagonal Avenue east then bending south-southeast)",
+     "(no name printed; dead-end street with cul-de-sac labelled 'City of Norwood Dedicated')"
+    ],
+    [
+     "(curving street, continuation of a diagonal AVE; name not printed in region)",
+     "City of Norwood Dedicated (cul-de-sac, no name)"
+    ]
+   ],
+   "spread_px": 16.5,
+   "osm_off_m": 14.8,
+   "job": "83A_000",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Neither name is printed. A curving street leaves the diagonal avenue near x 4950, runs east past lots 2810-2818, then bends south-southeast. An east-running dead-end street with a turning circle at about x 5850 ('City of Norwood Dedicated') branches off its east side. I picked the T where the cul-de-sac centreline (y about 2364, edges at 2324 and 2404) meets the curving street's centreline. Which street is Harris Avenue and which is Harris Place is assumed. | A diagonal AVE comes from the SW, bends at x~5000-5200 and curves south-east (6\" water pipe and 10\" sewer down it). At the bend a cul-de-sac labelled 'CITY OF NORWOOD DEDICATED' runs east from x~5240 to a turning circle at x~5370. The T is where the cul-de-sac centreline (y~2360) meets the curving street's centreline. Which leg is Harris Ave and which is Harris Pl is not printed. Addresses 2806-2818 run along the north side into the cul-de-sac."
+  },
+  {
+   "a": "Highland Avenue",
+   "b": "Orchard Street",
+   "x": 5101.5,
+   "y": 370.0,
+   "kind": "T",
+   "osm": [
+    721300.0,
+    4338396.9
+   ],
+   "osm_names": [
+    "Highland Avenue",
+    "Orchard Street"
+   ],
+   "printed": [
+    [
+     "(no name printed; east-west street along the City Limits line at the top edge)",
+     "Or... (label cut off, presumably Orchard)"
+    ],
+    [
+     "(through street not named in region; band carries 'CITY LIMITS')",
+     "OR... (stub, presumably Orchard Street)"
+    ]
+   ],
+   "spread_px": 16.0,
+   "osm_off_m": 14.9,
+   "job": "83A_001",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "The east-west street at the top runs along the CITY LIMITS line. Its south edge is at y about 417; its north side is cut by the plate's top edge at y about 315, so the centre is estimated for a 50 ft width. Orchard shows only as a tab (x 5065-5140) sticking up above the plate edge with 'OR' printed in it, so the street runs north off the plate. No street continues south at that x (lot 5 is there). A proposed street ('PROP ST.') runs south at x about 5350. | The east-west street along the plate's top edge, y~315-417 with the City Limits dashed line in it, is taken as Highland Avenue. A short stub of a street labelled 'OR' sticks north out of the plate edge at x~5065-5138. The T is at the stub's centreline on the through street's centreline. The crossing is at the plate edge: the street north of y~315 is off the plate. A dashed 'PROP. ST.' at x~5320-5395 is a proposed street, not Orchard."
+  },
+  {
+   "a": "Buxton Avenue",
+   "b": "Grandview Place",
+   "x": 569.5,
+   "y": 54.5,
+   "kind": "cross",
+   "osm": [
+    720401.1,
+    4338497.2
+   ],
+   "osm_names": [
+    "Buxton Avenue",
+    "Grandview Place"
+   ],
+   "printed": [
+    [
+     "Buxton Avenue",
+     "Turrill (Avenue; 'TURRILL ... AVE.' printed along the street)"
+    ],
+    [
+     "Buxton Avenue",
+     "Turrill (diagonal street, probably Turrill Avenue)"
+    ]
+   ],
+   "spread_px": 39.3,
+   "osm_off_m": 4.8,
+   "job": "83A_004",
+   "confidence": [
+    "medium",
+    "medium"
+   ],
+   "note": "Buxton Avenue runs east-west at the top. Its south edge is at y about 90 and its north side is cut by the plate's top edge, so the centre is estimated for a 50 ft width. The diagonal Turrill Avenue comes up from the southeast and meets Buxton here; a plate tab at x 500-580 suggests it continues north. Its east side near the top is cut by the plate edge. It is the only street meeting Buxton near the expected point, so I take it to be today's Grandview Place. | Buxton Ave runs along the plate's top edge (south edge y~92, plate edge y~37). The diagonal TURRILL street (8\" sewer, 4\" W. pipe) comes up from the SE, with its east side at the plate edge. North of Buxton the plate extends in a stub at x~500-582. The crossing is cut by the plate edge. Grandview Place is taken to be the Turrill / north-stub street, since it is the only street meeting Buxton near the expected point. The plate does not print 'Grandview'."
+  }
+ ]
+}

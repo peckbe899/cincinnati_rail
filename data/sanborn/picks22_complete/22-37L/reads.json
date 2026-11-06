@@ -1,0 +1,784 @@
+[
+ {
+  "job": "37L_000",
+  "osm": [
+   711927.6,
+   4337121.9
+  ],
+  "osm_names": [
+   "King Place",
+   "Powers Street"
+  ],
+  "predicted": [
+   3961.9,
+   204.4
+  ],
+  "reads": [
+   {
+    "job": "37L_000",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Expected point falls in the blank key box marked '43' (adjoining plate 43) north of the plate's top street; no streets are drawn there. The nearest drawn streets are the top E-W street (its name is not printed in the region, only the suffix 'STREET' near x 4560; house numbers 1741-1789; centreline about y 380) and an unnamed N-S street printed 'ST.' that T's into it at about (4250, 385). That T is about 290 px east and 180 px south of the expected point. The street stubs at x ~3150 and ~3585 run north into the undrawn area. The King Place / Powers Street crossing is probably on plate 43.",
+    "group": "A13"
+   },
+   {
+    "job": "37L_000",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     null,
+     null
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Expected point lies in a blank area at the plate's top edge marked with a large '43' (block shown on another sheet). Nearest streets: E-W '...STREET' at y~382 and a N-S street at x~3575; neither name is legible in the region. King Place not on this plate.",
+    "group": "B13"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "37L_001",
+  "osm": [
+   711830.6,
+   4336750.2
+  ],
+  "osm_names": [
+   "Agnes Street",
+   "Borden Street"
+  ],
+  "predicted": [
+   3565.2,
+   2138.6
+  ],
+  "reads": [
+   {
+    "job": "37L_001",
+    "found": true,
+    "x": 3578,
+    "y": 2146,
+    "kind": "T",
+    "printed": [
+     "(N-S street, no name printed in region; house numbers 3699-3765, 12 in. sewer)",
+     "(short E-W street, no name printed; house numbers 1784-1798)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "A short E-W street (about 74 px wide) runs east from the N-S street between x 3610 and 3930 and dead-ends at block 33. It T's into the N-S street (centre x ~3578) at y ~2146. Neither name is printed in the region. Weber St T's into the same N-S street further north at about y 1735, and Dreman at about y 2590.",
+    "group": "A13"
+   },
+   {
+    "job": "37L_001",
+    "found": true,
+    "x": 3578,
+    "y": 2151,
+    "kind": "T",
+    "printed": [
+     "unnamed on region (N-S street, house nos. 3723-3751)",
+     "unnamed on region (E-W street, house nos. 1784-1798)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "E-W street (edges y 2112-2190) ends at the N-S street (edges x 3542-3614, 12in sewer, grey band along its east side) between blocks 31 and 33; no names printed near the crossing, identified by position (~20 px from expected).",
+    "group": "B13"
+   }
+  ],
+  "spread_px": 5.0,
+  "osm_off_m": 3.1,
+  "x": 3578.0,
+  "y": 2148.5,
+  "outcome": "picked",
+  "why": "reads 5 px apart"
+ },
+ {
+  "job": "37L_002",
+  "osm": [
+   711701.5,
+   4336171.2
+  ],
+  "osm_names": [
+   "Fox Lane",
+   "Llewellyn Avenue"
+  ],
+  "predicted": [
+   3047.3,
+   5134.0
+  ],
+  "reads": [
+   {
+    "job": "37L_002",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "(diagonal street with 6 in. W. Pipe, no name printed; presumably Llewellyn)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "No Fox Lane on the plate. At the expected point a grey/pink boundary band runs E-W at y ~5150; the diagonal street (Llewellyn) crosses it at about (3050, 5150). Nothing else is drawn there except estate lots (Williams Jr. Estate, A. Lillie, F. Fricke).",
+    "group": "A13"
+   },
+   {
+    "job": "37L_002",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Llewellyn (angled street with 6in W. pipe)",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 3140,
+      "y": 5720,
+      "note": "unnamed narrow lane from Beekman ends at Llewellyn, 590 px south"
+     }
+    ],
+    "note": "Llewellyn runs SSE through x~3050 at y 5134, but only the pink/grey boundary band crosses there (A. Lillie / Williams Jr. estate land). Fox Lane not on the plate.",
+    "group": "B13"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "37L_003",
+  "osm": [
+   711609.8,
+   4336176.2
+  ],
+  "osm_names": [
+   "Beekman Street",
+   "Fox Lane"
+  ],
+  "predicted": [
+   2571.2,
+   5127.0
+  ],
+  "reads": [
+   {
+    "job": "37L_003",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Beekman (printed BEEKMAN AV... farther north)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "No Fox Lane on the plate. At the expected point only the grey/pink boundary band crosses Beekman, at about (2570, 5150). Beekman centre is x ~2570 (18 in. sewer).",
+    "group": "A13"
+   },
+   {
+    "job": "37L_003",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Beekman Avenue",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "At y~5110-5127 only the pink/grey boundary band crosses Beekman; no street. Fox Lane not on the plate.",
+    "group": "B13"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "37L_004",
+  "osm": [
+   711613.2,
+   4336276.6
+  ],
+  "osm_names": [
+   "Beekman Street",
+   "Emma Place"
+  ],
+  "predicted": [
+   2563.2,
+   4613.0
+  ],
+  "reads": [
+   {
+    "job": "37L_004",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Beekman"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Nothing crosses Beekman near y 4613; the land is G. Lillie / Williams Jr. estate lots. The nearest feature is an unnamed narrow lane (~25 px, about 16 ft, with tick marks) that crosses Beekman at about (2563, 4345), 270 px north. It curves away west and joins Llewellyn to the east at about (2960, 4365). It looks like a private lane, not a street.",
+    "group": "A13"
+   },
+   {
+    "job": "37L_004",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Beekman Avenue",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 2561,
+      "y": 4340,
+      "note": "unnamed narrow lanes (tick-marked) meeting Beekman from both sides, 273 px north"
+     }
+    ],
+    "note": "Nothing crosses Beekman near y 4613: G. Lillie and Davis Welding acreage, Williams Jr. estate lettering. Emma Place not on the plate.",
+    "group": "B13"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "37L_005",
+  "osm": [
+   711606.9,
+   4336093.6
+  ],
+  "osm_names": [
+   "Beekman Street",
+   "Millvale Court"
+  ],
+  "predicted": [
+   2577.2,
+   5549.6
+  ],
+  "reads": [
+   {
+    "job": "37L_005",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Beekman"
+    ],
+    "plate_edge": false,
+    "confidence": "low",
+    "same_names_elsewhere": [],
+    "note": "No street named or drawn at y ~5550. An unnamed very narrow double-line lane (~18 px, with tick marks, between V.K. Ketler and Galena Signal Oil Co. lots) crosses Beekman at about (2582, 5720), 170 px south of the expected point. It looks like a private lane or right-of-way, not a street.",
+    "group": "A13"
+   },
+   {
+    "job": "37L_005",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Beekman Avenue",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 2580,
+      "y": 5720,
+      "note": "unnamed narrow (~15 ft) tick-marked lane crossing Beekman (west side to x<1700, east side to Llewellyn), 170 px south of expected - possibly a private lane"
+     }
+    ],
+    "note": "No named street crosses Beekman near y 5550 (Ketler / Seyfried acreage). Millvale Court not on the plate unless it is the unnamed lane at y 5720.",
+    "group": "B13"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "37L_006",
+  "osm": [
+   711610.8,
+   4336203.4
+  ],
+  "osm_names": [
+   "Beekman Street",
+   "Lillie Place"
+  ],
+  "predicted": [
+   2569.4,
+   4987.8
+  ],
+  "reads": [
+   {
+    "job": "37L_006",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Beekman"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Nothing crosses Beekman near y 4988; the land is Williams Jr. estate lots (G. Lillie). The grey/pink boundary band crosses at y ~5150, and an unnamed narrow lane crosses at y ~4345.",
+    "group": "A13"
+   },
+   {
+    "job": "37L_006",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Beekman Avenue",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Nothing crosses Beekman near y 4988 (G. Lillie land; pink/grey boundary band at y~5110). Lillie Place not on the plate.",
+    "group": "B13"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "37L_007",
+  "osm": [
+   711601.0,
+   4335868.4
+  ],
+  "osm_names": [
+   "Beekman Street",
+   "Neyer Avenue"
+  ],
+  "predicted": [
+   2604.4,
+   6701.9
+  ],
+  "reads": [
+   {
+    "job": "37L_007",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Beekman"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Nothing crosses Beekman near y 6702; the land is acreage lots (Wm. Krohn, J.H. Fricke, Wm. Lang). The nearest street is the one printed '... ROAD' (presumably Fricke Road). It crosses Beekman at about (2595, 6380), 320 px north. A lot line, not a street, crosses at y ~6880.",
+    "group": "A13"
+   },
+   {
+    "job": "37L_007",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Beekman Avenue",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 2596,
+      "y": 6378,
+      "note": "only street crossing Beekman in the region: an east-west road printed '...ROAD' (name not legible inside the region; likely Fricke Road, J.H. Fricke owns the land), 324 px north of the expected point"
+     }
+    ],
+    "note": "Beekman Avenue runs N-S at x~2590; no street crosses it near y 6702 (estate acreage lots, pink boundary band at y~7190). Neyer Avenue not on the plate.",
+    "group": "B13"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "37L_008",
+  "osm": [
+   711715.0,
+   4335944.5
+  ],
+  "osm_names": [
+   "Fricke Road",
+   "Llewellyn Avenue",
+   "Millcreek Road"
+  ],
+  "predicted": [
+   3174.9,
+   6289.5
+  ],
+  "reads": [
+   {
+    "job": "37L_008",
+    "found": true,
+    "x": 3210,
+    "y": 6345,
+    "kind": "T",
+    "printed": [
+     "ROAD (name before 'ROAD' not in region)",
+     "(Llewellyn: diagonal street merging into the railroad corridor, no name printed)",
+     "(street east of the railroad, no name printed)"
+    ],
+    "plate_edge": false,
+    "confidence": "low",
+    "same_names_elsewhere": [],
+    "note": "A complex junction. The E-W '... ROAD' (centre y ~6352) ends against the west line of the railroad corridor at x ~3140; its dashed centreline continues across the tracks. The street east of the railroad (presumably Millcreek Road) bends there at about (3285, 6350). Llewellyn comes down from the NNW and merges into the railroad corridor near y 6150-6400. The chosen point is the middle of the open waist where they all meet, inside the railroad tracks.",
+    "group": "A13"
+   },
+   {
+    "job": "37L_008",
+    "found": true,
+    "x": 3220,
+    "y": 6352,
+    "kind": "T",
+    "printed": [
+     "'...ROAD' (name not legible in region; probably Fricke Road)",
+     "unnamed street east of railroad",
+     "Llewellyn (printed further north)"
+    ],
+    "plate_edge": false,
+    "confidence": "low",
+    "same_names_elsewhere": [],
+    "note": "The east-west road from Beekman (centre y~6352) ends at the 80 ft railroad right-of-way at x~3150; directly across the tracks the street east of the railroad (probably Millcreek Road) bends at (3285,6352). Llewellyn (50 ft) merges into the railroad corridor's west side at ~(3230,5880). Pick = middle of the grade crossing between the two; ~65 px from expected.",
+    "group": "B13"
+   }
+  ],
+  "spread_px": 12.2,
+  "osm_off_m": 13.8,
+  "x": 3215.0,
+  "y": 6348.5,
+  "outcome": "picked",
+  "why": "reads 12 px apart"
+ },
+ {
+  "job": "37L_009",
+  "osm": [
+   711406.9,
+   4336782.7
+  ],
+  "osm_names": [
+   "Dreman Avenue",
+   "Herron Avenue"
+  ],
+  "predicted": [
+   1357.6,
+   2061.8
+  ],
+  "reads": [
+   {
+    "job": "37L_009",
+    "found": true,
+    "x": 1380,
+    "y": 2073,
+    "kind": "T",
+    "printed": [
+     "(E-W street, no name printed here; house number 2006, 42/45/48 in. sewer)",
+     "Herron Avenue"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Herron Avenue (60 ft, x 1331-1429) T's into the E-W street (y 2039-2107). The E-W street runs from Cass east to about x 1700.",
+    "group": "A13"
+   },
+   {
+    "job": "37L_009",
+    "found": true,
+    "x": 1381,
+    "y": 2073,
+    "kind": "T",
+    "printed": [
+     "unnamed in region (house no. 2006; 45in/48in sewer)",
+     "Herron Avenue"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Herron Avenue (60 ft, edges x 1333-1429) ends at the E-W street (edges y 2039-2107); Dreman name not printed in the region.",
+    "group": "B13"
+   }
+  ],
+  "spread_px": 1.0,
+  "osm_off_m": 4.9,
+  "x": 1380.5,
+  "y": 2073.0,
+  "outcome": "picked",
+  "why": "reads 1 px apart"
+ },
+ {
+  "job": "37L_010",
+  "osm": [
+   711330.9,
+   4336787.4
+  ],
+  "osm_names": [
+   "Cass Avenue",
+   "Dreman Avenue"
+  ],
+  "predicted": [
+   961.0,
+   2054.2
+  ],
+  "reads": [
+   {
+    "job": "37L_010",
+    "found": true,
+    "x": 941,
+    "y": 2070,
+    "kind": "T",
+    "printed": [
+     "Cass (suffix not legible)",
+     "(E-W street, no name printed here; house number 2006)"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [
+     {
+      "x": 941,
+      "y": 2240,
+      "note": "FARADAY ROAD (house number 2021) T's into Cass from the west at about y 2240; it may be the same numbered street, jogged."
+     }
+    ],
+    "note": "The E-W street from the east (the same one as at Herron) ends in a T at Cass (x 902-980). There is no street west of Cass at this y, only a block edge and a green boundary line.",
+    "group": "A13"
+   },
+   {
+    "job": "37L_010",
+    "found": true,
+    "x": 941,
+    "y": 2073,
+    "kind": "T",
+    "printed": [
+     "Cass (suffix not legible)",
+     "unnamed in region (house no. 2006; 42in/45in sewer)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "E-W street (edges y 2039-2107, yellow and green bands along it) begins at Cass (edges x 900-983); Cass continues south to 'ROAD'. Dreman name not printed in the region (DREMAN printed further east on the plate).",
+    "group": "B13"
+   }
+  ],
+  "spread_px": 3.0,
+  "osm_off_m": 5.1,
+  "x": 941.0,
+  "y": 2071.5,
+  "outcome": "picked",
+  "why": "reads 3 px apart"
+ },
+ {
+  "job": "37L_011",
+  "osm": [
+   711619.3,
+   4336417.5
+  ],
+  "osm_names": [
+   "Beekman Street",
+   "Webman Court"
+  ],
+  "predicted": [
+   2558.8,
+   3890.4
+  ],
+  "reads": [
+   {
+    "job": "37L_011",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Beekman Avenue"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Nothing crosses Beekman near y 3890; the land is acreage (H.F. Weber 3.22 Ac., L.L. Lanman). The nearest crossing feature is the unnamed narrow lane at about (2563, 4345).",
+    "group": "A13"
+   },
+   {
+    "job": "37L_011",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Beekman Avenue",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 2561,
+      "y": 4340,
+      "note": "nearest side ways: unnamed narrow (~15 ft) lanes with tick marks, curving lane on the west and straight lane on the east meeting Beekman at y~4330-4350, 450 px south of expected"
+     }
+    ],
+    "note": "Beekman Avenue printed (x~2561). Nothing crosses it near y 3890: acreage lots (H.F. Weber, L.L. Lanman). Webman Court not on the plate.",
+    "group": "B13"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "37L_012",
+  "osm": [
+   712174.5,
+   4336998.2
+  ],
+  "osm_names": [
+   "Prang Street",
+   "Townsend Place"
+  ],
+  "predicted": [
+   5269.6,
+   786.2
+  ],
+  "reads": [
+   {
+    "job": "37L_012",
+    "found": true,
+    "x": 5478,
+    "y": 697,
+    "kind": "T",
+    "printed": [
+     "Prang",
+     "Sullivan (east continuation of Townsend Street)"
+    ],
+    "plate_edge": false,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 5245,
+      "y": 772,
+      "note": "TOWNSEND ST. ends at the N-S 'ALLEY'/'TOZZER' at this point (an orange boundary line runs down the alley), and SULLIVAN continues ENE from here. This spot is about 25 px from the expected point; it is the right pick if today's Prang/Townsend Place follow the old Tozzer Alley/Townsend."
+     }
+    ],
+    "note": "The street printed PRANG is a narrow diagonal between blocks 15 and 16. Its centreline meets SULLIVAN, the ENE continuation of Townsend St east of Tozzer Alley, at about (5478, 697). A street printed '... ST.' continues SSE from there. Prang never meets the section printed TOWNSEND.",
+    "group": "A13"
+   },
+   {
+    "job": "37L_012",
+    "found": true,
+    "x": 5252,
+    "y": 776,
+    "kind": "cross",
+    "printed": [
+     "Tozzer Alley",
+     "Townsend Street (west part, 'ST.'; continues east of the alley as Sullivan Street)"
+    ],
+    "plate_edge": false,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 5492,
+      "y": 696,
+      "note": "Sullivan Street meets the street printed 'PRANG ST.' (diagonal NNW-SSE between blocks 15/16 and 18/19) - alternative if today's Prang St follows 1922 Prang St; 240 px from expected"
+     }
+    ],
+    "note": "Pick is where Townsend Street (y~768, 'TOWNSEND' printed further west at x~3800) reaches Tozzer Alley and continues ENE as Sullivan; matches expected within ~20 px. 1922 plate's PRANG ST. is a different street ~240 px east.",
+    "group": "B13"
+   }
+  ],
+  "spread_px": 239.4,
+  "outcome": "disagree",
+  "why": "the reads are 239 px apart"
+ },
+ {
+  "job": "37L_013",
+  "osm": [
+   712251.1,
+   4336411.8
+  ],
+  "osm_names": [
+   "Geringer Street",
+   "Millcreek Road"
+  ],
+  "predicted": [
+   5822.3,
+   3784.9
+  ],
+  "reads": [
+   {
+    "job": "37L_013",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Geringer"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Geringer (diagonal, centre x ~5680 at y 3785) is present. No Millcreek Road: the expected point is inside block 70 (lots 26/101), which runs unbroken from Geringer to Groub St. Geringer ends at the blue/green boundary band at about (5560, 4030); south of that is the Clifton Farm acreage.",
+    "group": "A13"
+   },
+   {
+    "job": "37L_013",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Geringer Street",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 5880,
+      "y": 3410,
+      "note": "NE end of Geringer: open junction with Ralston Street and an unnamed diagonal '...ST.' running NE - 380 px from expected"
+     },
+     {
+      "x": 5560,
+      "y": 4030,
+      "note": "SW end of Geringer: dead end at the boundary band, Clifton Farm beyond"
+     }
+    ],
+    "note": "Geringer Street printed (diagonal, centre ~x 5625 at y 3785, ~200 px west of expected). No street that could be Millcreek Road crosses it; expected point is inside block 70 lots.",
+    "group": "B13"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ }
+]

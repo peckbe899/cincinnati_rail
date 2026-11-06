@@ -1,0 +1,1682 @@
+[
+ {
+  "job": "31_000",
+  "osm": [
+   711145.3,
+   4332376.1
+  ],
+  "osm_names": [
+   "Lehman Road",
+   "Wing Street"
+  ],
+  "predicted": [
+   3299.9,
+   6734.7
+  ],
+  "reads": [
+   {
+    "job": "31_000",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Lehman",
+     null
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Lehman runs E-W along the bottom edge of the plate (north edge about y 6683; the plate is cut inside the street at about y 6765). No side street meets it anywhere in the region: the south side is off the plate and on the north side there are only lot lines (lots 13-20, houses 2828 and 2846). Wing Street is not shown here; it may be on the adjoining plate to the south.",
+    "group": "A05"
+   },
+   {
+    "job": "31_000",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Lehman",
+     null
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Lehman (printed LEHMAN, 12\" sewer) runs E-W along the bottom cut edge of the plate (~y 6700-6755); its south side is continuous and no street leaves it to the south or north near x 3300. Wing Street not on this plate (presumably on the adjoining plate to the south).",
+    "group": "B06"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "31_001",
+  "osm": [
+   711910.8,
+   4332404.6
+  ],
+  "osm_names": [
+   "Fitzpatrick Street",
+   "West Liberty Street"
+  ],
+  "predicted": [
+   7033.5,
+   6379.8
+  ],
+  "reads": [
+   {
+    "job": "31_001",
+    "found": true,
+    "x": 7050,
+    "y": 6362,
+    "kind": "T",
+    "printed": [
+     "(no name printed; unnamed stub street)",
+     "W. Liberty"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 7265,
+      "y": 6362,
+      "note": "another stub street going south from W. Liberty, only 'ST' visible, cut by the plate edge"
+     }
+    ],
+    "note": "W. Liberty runs E-W along the bottom of the plate (north edge about y 6330, plate cut / south edge about y 6395). A roughly 40 ft street stub leaves its south side at x 7010-7060 and slants SSW off the plate. This is taken as Fitzpatrick Street, but no name is printed. Wall Street ('WALL') meets the north side at about x 7140.",
+    "group": "A05"
+   },
+   {
+    "job": "31_001",
+    "found": true,
+    "x": 7048,
+    "y": 6362,
+    "kind": "T",
+    "printed": [
+     "(unlabelled street, cut by plate edge)",
+     "West Liberty"
+    ],
+    "plate_edge": true,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 7128,
+      "y": 6362,
+      "note": "Wall Street (printed WALL) meets West Liberty from the north here, ~80 px east; not aligned with the south stub"
+     }
+    ],
+    "note": "W. Liberty runs E-W along the bottom plate edge (centre y ~6362). Fitzpatrick is not labelled; picked the narrow unlabelled street stub entering Liberty from the south (plate edge cuts it right below Liberty), nearest the expected point. Another unlabelled stub ('...ST') enters from the south at x ~7200 with railroad tracks.",
+    "group": "B06"
+   }
+  ],
+  "spread_px": 2.0,
+  "osm_off_m": 4.8,
+  "x": 7049.0,
+  "y": 6362.0,
+  "outcome": "picked",
+  "why": "reads 2 px apart"
+ },
+ {
+  "job": "31_002",
+  "osm": [
+   710666.5,
+   4333433.1
+  ],
+  "osm_names": [
+   "Lierman Street",
+   "Quebec Road"
+  ],
+  "predicted": [
+   654.9,
+   1684.4
+  ],
+  "reads": [
+   {
+    "job": "31_002",
+    "found": true,
+    "x": 630,
+    "y": 1685,
+    "kind": "T",
+    "printed": [
+     "Lierman Street",
+     "Quebec"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Lierman Street (printed 39.65 ft wide) runs ESE from the east lot line of Quebec at about x 685, y 1670-1725. Quebec is a wide diagonal street (pipes, sewer and double track lines) whose west side is cut off by the plate edge, so its centreline (about 60 px west of the lot line) is estimated.",
+    "group": "A05"
+   },
+   {
+    "job": "31_002",
+    "found": true,
+    "x": 650,
+    "y": 1678,
+    "kind": "T",
+    "printed": [
+     "Lierman Street",
+     "Quebec"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Lierman St (38.65') runs ESE from the east side of Quebec (wide diagonal with sewer, pipe and tracks; its west edge borders the white outside the plate). Circle symbol in Quebec at about (635,1700).",
+    "group": "B05"
+   }
+  ],
+  "spread_px": 21.2,
+  "osm_off_m": 3.1,
+  "x": 640.0,
+  "y": 1681.5,
+  "outcome": "picked",
+  "why": "reads 21 px apart"
+ },
+ {
+  "job": "31_003",
+  "osm": [
+   710964.2,
+   4332667.9
+  ],
+  "osm_names": [
+   "Grand Avenue",
+   "Mickey Avenue"
+  ],
+  "predicted": [
+   2328.1,
+   5361.7
+  ],
+  "reads": [
+   {
+    "job": "31_003",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Tomlinson Avenue",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 2282,
+      "y": 5671,
+      "note": "Theresa Street (labelled 'THERESA' ... 'ST.', 30 ft) meets Tomlinson Avenue from the west here, about 310 px south of the expected point; it might be the forerunner of Mickey Avenue but there is no name evidence"
+     }
+    ],
+    "note": "Grand Avenue is Tomlinson Avenue on the plate (N-S here at x about 2282, bending NE above y 5230). Near the expected point (y 5362) there is no street on either side, only large lots 13 and 7. Patrick Drive is also absent (job 31_013), so Mickey Avenue looks like a post-1922 street.",
+    "group": "A05"
+   },
+   {
+    "job": "31_003",
+    "found": true,
+    "x": 2282,
+    "y": 5265,
+    "kind": "bend",
+    "printed": [
+     "Tomlinson Avenue",
+     "Tomlinson Avenue"
+    ],
+    "plate_edge": false,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 2282,
+      "y": 5677,
+      "note": "30 ft E-W street printed only 'ST.' tees into Tomlinson Avenue from the west here (~315 px from the expected point); could be Mickey if Grand = Tomlinson"
+     }
+    ],
+    "note": "Neither Grand nor Mickey is printed. Tomlinson Avenue comes SW diagonally and bends to run due south at this point (N-S part centre x ~2282, edges 2245/2318). Picked the bend as nearest the expected point, assuming the two modern names split Tomlinson Ave here; the alternative is the T with the 'ST.' below.",
+    "group": "B06"
+   }
+  ],
+  "outcome": "disagree",
+  "why": "read 2 found it, read 1 did not"
+ },
+ {
+  "job": "31_004",
+  "osm": [
+   711058.4,
+   4332830.6
+  ],
+  "osm_names": [
+   "Grand Avenue",
+   "Utah Avenue"
+  ],
+  "predicted": [
+   2740.8,
+   4544.7
+  ],
+  "reads": [
+   {
+    "job": "31_004",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Tomlinson Avenue",
+     "Utah Street"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Utah Street (40 ft, N-S, x about 2775) runs from about y 3820 and dead-ends at a lot line at about (2775, 4207). Lot 57 lies between its end and Tomlinson Avenue (Grand Avenue), so the two streets do not meet on the plate. Extended south, Utah would meet the Tomlinson centreline at about (2758, 4474), near the expected point.",
+    "group": "A05"
+   },
+   {
+    "job": "31_004",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Tomlinson",
+     "Utah Street"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Grand Ave is printed TOMLINSON (diagonal). Utah St is a short 40' street from y~3830 to a block line at y~4205 (x~2775-2836) and does not reach Tomlinson; lot 57 and open acreage lie between. Extended, Utah's centreline would meet Tomlinson's at about (2719,4551), matching the expected point.",
+    "group": "B05"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "31_005",
+  "osm": [
+   711494.2,
+   4333329.5
+  ],
+  "osm_names": [
+   "Grand Avenue",
+   "Northside Avenue"
+  ],
+  "predicted": [
+   4737.0,
+   1983.9
+  ],
+  "reads": [
+   {
+    "job": "31_005",
+    "found": true,
+    "x": 4743,
+    "y": 1978,
+    "kind": "cross",
+    "printed": [
+     "Street (name not printed in region)",
+     "Avenue (only 'AVE.' printed)"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "N-S street (today Grand Avenue): edges x 4695 and 4790, centreline sewer at about 4745. E-W 'AVE.' on the west side, edges y 1930 and 2022, continuing east (y 1933-2030, house numbers 1701 west and 1693 east). This is a clean 4-way crossing.",
+    "group": "A05"
+   },
+   {
+    "job": "31_005",
+    "found": true,
+    "x": 4748,
+    "y": 1978,
+    "kind": "cross",
+    "printed": [
+     "Street (only 'ST.' printed)",
+     "Avenue (only 'AVE.' printed)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "E-W street printed only 'AVE.' (west side at x ~4500; edges ~1931/2028) crosses the N-S 'ST.' street (Grand by position). Esmonde Street crosses the same N-S street at y ~1650.",
+    "group": "B06"
+   }
+  ],
+  "spread_px": 5.0,
+  "osm_off_m": 2.1,
+  "x": 4745.5,
+  "y": 1978.0,
+  "outcome": "picked",
+  "why": "reads 5 px apart"
+ },
+ {
+  "job": "31_006",
+  "osm": [
+   711499.0,
+   4333419.4
+  ],
+  "osm_names": [
+   "Esmonde Street",
+   "Grand Avenue"
+  ],
+  "predicted": [
+   4739.5,
+   1545.0
+  ],
+  "reads": [
+   {
+    "job": "31_006",
+    "found": true,
+    "x": 4748,
+    "y": 1675,
+    "kind": "T",
+    "printed": [
+     "Esmonde Street",
+     "Street (name not printed in region)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 4746,
+      "y": 1563,
+      "note": "a narrower E-W 'ST.' (houses 1703-1723) meets the west side of the same N-S street about 110 px further north, offset from Esmonde. It is nearer the expected point (y 1545) and may be the west part of the same street, but no name is printed for it in the region"
+     }
+    ],
+    "note": "ESMONDE ST. (60 ft, edges y 1632-1718, a railroad track running along it) leaves the east side of the N-S street (today Grand Avenue, edges x 4700-4795). It does not continue west at the same position.",
+    "group": "A05"
+   },
+   {
+    "job": "31_006",
+    "found": true,
+    "x": 4748,
+    "y": 1673,
+    "kind": "T",
+    "printed": [
+     "Esmonde Street",
+     "Street (N-S street, only 'ST.' printed in region; name off region to north)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 4748,
+      "y": 1566,
+      "note": "narrow street labelled 'ST.' (name not in region) meets the N-S street from the west here, offset ~110 px north of Esmonde - a jog; expected point (1545) lies near this one"
+     }
+    ],
+    "note": "N-S street (x 4700-4795, pipes and sewers inside) is taken as Grand Ave. Esmonde St (y 1630-1717) runs east from it. Centre of the Esmonde mouth at the N-S centreline.",
+    "group": "B05"
+   }
+  ],
+  "spread_px": 2.0,
+  "osm_off_m": 26.4,
+  "x": 4748.0,
+  "y": 1674.0,
+  "outcome": "picked",
+  "why": "reads 2 px apart"
+ },
+ {
+  "job": "31_007",
+  "osm": [
+   711502.5,
+   4333502.8
+  ],
+  "osm_names": [
+   "Grand Avenue",
+   "Westwood Avenue"
+  ],
+  "predicted": [
+   4738.3,
+   1134.2
+  ],
+  "reads": [
+   {
+    "job": "31_007",
+    "found": true,
+    "x": 4744,
+    "y": 1140,
+    "kind": "cross",
+    "printed": [
+     "Street ('ST.' only)",
+     "(no name printed in region)"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "E-W street with a 12 in sewer and street-railway track: edges y 1092-1188, houses 1701-1742 on the west and 1691-1699 on the east. The N-S street (today Grand Avenue) has edges x 4700-4790. 'KEBLER'S SUBDIV.' and 'BARRSVILLE' are subdivision names. Clean 4-way crossing.",
+    "group": "A05"
+   },
+   {
+    "job": "31_007",
+    "found": true,
+    "x": 4748,
+    "y": 1138,
+    "kind": "cross",
+    "printed": [
+     "Street (only 'ST.' printed)",
+     "(unlabelled street)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "E-W street (unlabelled; edges ~1092/1185, track-like double line at ~1142) crosses the N-S 'ST.' street (Grand by position). No names printed for either in the region.",
+    "group": "B06"
+   }
+  ],
+  "spread_px": 4.5,
+  "osm_off_m": 1.9,
+  "x": 4746.0,
+  "y": 1139.0,
+  "outcome": "picked",
+  "why": "reads 4 px apart"
+ },
+ {
+  "job": "31_008",
+  "osm": [
+   711991.9,
+   4332759.7
+  ],
+  "osm_names": [
+   "Lehman Road",
+   "Radcliff Drive"
+  ],
+  "predicted": [
+   7328.6,
+   4594.3
+  ],
+  "reads": [
+   {
+    "job": "31_008",
+    "found": true,
+    "x": 7382,
+    "y": 4610,
+    "kind": "T",
+    "printed": [
+     "Street (name cut; ends '...Y STREET')",
+     "Road (only 'ROAD' visible)"
+    ],
+    "plate_edge": false,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 7412,
+      "y": 4585,
+      "note": "Jean Street (40 ft) meets the north side of the Road here, almost opposite the picked street (offset cross). Either could be today's Radcliff Drive"
+     }
+    ],
+    "note": "Lehman Road ('ROAD', 1653-1682 numbers) runs SW-NE. A 40 ft street ending in '...Y STREET' (subdivision lettering 'EDWARD DODSON'S EST.') meets it from the SSW. Jean Street meets it from the NNE about 40 px further east. Picked the south street as nearest to the expected point.",
+    "group": "A05"
+   },
+   {
+    "job": "31_008",
+    "found": true,
+    "x": 7387,
+    "y": 4603,
+    "kind": "cross",
+    "printed": [
+     "Road (only 'ROAD' printed)",
+     "Jean Street / '...Y Street'"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Diagonal 'ROAD' (Lehman by position) is crossed by Jean Street (40 ft, from the NNE, meets at ~7395,4595) and an unlabelled-name 40 ft 'STREET' from the SSW (meets at ~7380,4612); the two are nearly aligned, picked the shared crossing. Unsure which (if either) is Radcliff.",
+    "group": "B06"
+   }
+  ],
+  "spread_px": 8.6,
+  "osm_off_m": 11.6,
+  "x": 7384.5,
+  "y": 4606.5,
+  "outcome": "picked",
+  "why": "reads 9 px apart"
+ },
+ {
+  "job": "31_009",
+  "osm": [
+   710683.8,
+   4332566.8
+  ],
+  "osm_names": [
+   "Freddie Drive",
+   "Purcell Avenue"
+  ],
+  "predicted": [
+   977.6,
+   5899.0
+  ],
+  "reads": [
+   {
+    "job": "31_009",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     null,
+     "Street (only 'STREET' printed)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 988,
+      "y": 5665,
+      "note": "Theresa Street meets the N-S 'STREET' (presumably Purcell Avenue) from the east here, about 235 px north of the expected point"
+     }
+    ],
+    "note": "The N-S 'STREET' (edges x 960-1015) runs from about y 5200 south to W. Liberty at about y 6260. Between Theresa Street (y 5665) and W. Liberty, nothing meets it from either side; west of it is off the plate (white). Near y 5899 there are only lots 32/33 (MT. HARRISON subdivision). Freddie Drive is not on the plate.",
+    "group": "A05"
+   },
+   {
+    "job": "31_009",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Street (N-S, name not in region)",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Expected point is on a N-S street (x 955-1017, printed only 'STREET', presumably Purcell) with outside-of-plate white to the west and Mt. Harrison parcels 32/24 to the east; no cross street near y 5900. Nearest cross street is Theresa St at y~5660. Freddie Drive not on plate.",
+    "group": "B05"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "31_010",
+  "osm": [
+   710719.7,
+   4333414.7
+  ],
+  "osm_names": [
+   "Lierman Street",
+   "Schoedinger Avenue"
+  ],
+  "predicted": [
+   923.8,
+   1763.8
+  ],
+  "reads": [
+   {
+    "job": "31_010",
+    "found": true,
+    "x": 958,
+    "y": 1745,
+    "kind": "T",
+    "printed": [
+     "Lierman Street",
+     "Avenue ('AVE.' printed; 'JACOB SCHOEDINGERS' is subdivision lettering)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 630,
+      "y": 1685,
+      "note": "other end of Lierman Street at Quebec"
+     }
+    ],
+    "note": "Lierman Street (38.65 ft at its east end, edges about y 1710-1770) ends at the NNE-running avenue whose west edge is about x 915 and east edge about 1005 at this latitude. The avenue's centre is estimated; there is a narrow strip continuing north past Lierman.",
+    "group": "A05"
+   },
+   {
+    "job": "31_010",
+    "found": true,
+    "x": 957,
+    "y": 1740,
+    "kind": "T",
+    "printed": [
+     "Lierman Street",
+     "Schoedinger Avenue"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Lierman St runs ESE from Quebec Road and ends at the west side of diagonal Schoedinger Ave.",
+    "group": "B06"
+   }
+  ],
+  "spread_px": 5.1,
+  "osm_off_m": 8.0,
+  "x": 957.5,
+  "y": 1742.5,
+  "outcome": "picked",
+  "why": "reads 5 px apart"
+ },
+ {
+  "job": "31_011",
+  "osm": [
+   712174.6,
+   4333350.2
+  ],
+  "osm_names": [
+   "Hiawatha Avenue",
+   "Meader Street"
+  ],
+  "predicted": [
+   8071.9,
+   1671.6
+  ],
+  "reads": [
+   {
+    "job": "31_011",
+    "found": true,
+    "x": 8097,
+    "y": 1650,
+    "kind": "T",
+    "printed": [
+     "Street (only 'STREET' printed)",
+     "Meader / Mary Street (label reads 'MEADER' above 'MARY ST.')"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "A 60 ft diagonal street (today Hiawatha Avenue) runs WSW-ENE; its north edge is about (7915,1690)-(8300,1510) and its south edge about (7905,1780)-(8290,1600). Meader (30 ft) leaves its south side and runs SSE, with its centre about x 8120 at y 1760.",
+    "group": "A05"
+   },
+   {
+    "job": "31_011",
+    "found": true,
+    "x": 8101,
+    "y": 1640,
+    "kind": "T",
+    "printed": [
+     "Street (only 'STREET' printed)",
+     "Meader"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "30 ft Meader (printed MEADER) runs NNW and ends at the diagonal SW-NE street printed only 'STREET' (Hiawatha by position; it bends south at ~7900,1720).",
+    "group": "B06"
+   }
+  ],
+  "spread_px": 10.8,
+  "osm_off_m": 7.7,
+  "x": 8099.0,
+  "y": 1645.0,
+  "outcome": "picked",
+  "why": "reads 11 px apart"
+ },
+ {
+  "job": "31_012",
+  "osm": [
+   712220.4,
+   4333371.0
+  ],
+  "osm_names": [
+   "Ernst Street",
+   "Hiawatha Avenue"
+  ],
+  "predicted": [
+   8293.6,
+   1556.9
+  ],
+  "reads": [
+   {
+    "job": "31_012",
+    "found": true,
+    "x": 8310,
+    "y": 1520,
+    "kind": "T",
+    "printed": [
+     "Ernst Street",
+     "Street (only 'STREET' printed)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Ernst Street (with a 12 in sewer and 6 in water pipe) runs SSE from where the 60 ft diagonal street (today Hiawatha Avenue) bends ENE toward the big avenue. Ernst's west edge runs from about (8285,1525) to (8330,1750) and its east edge from about (8350,1540) to (8390,1750).",
+    "group": "A05"
+   },
+   {
+    "job": "31_012",
+    "found": true,
+    "x": 8315,
+    "y": 1540,
+    "kind": "T",
+    "printed": [
+     "Ernst Street",
+     "Street (name not printed in region, only 'STREET')"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Ernst St (narrow, x~8295-8345, with 12\" sewer and 7\" W.P.) runs SSE from the south side of the ENE-running 'STREET' (60'), taken as Hiawatha Ave.",
+    "group": "B05"
+   }
+  ],
+  "spread_px": 20.6,
+  "osm_off_m": 6.7,
+  "x": 8312.5,
+  "y": 1530.0,
+  "outcome": "picked",
+  "why": "reads 21 px apart"
+ },
+ {
+  "job": "31_013",
+  "osm": [
+   710900.0,
+   4332671.7
+  ],
+  "osm_names": [
+   "Mickey Avenue",
+   "Patrick Drive"
+  ],
+  "predicted": [
+   2011.7,
+   5356.3
+  ],
+  "reads": [
+   {
+    "job": "31_013",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     null,
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 2282,
+      "y": 5671,
+      "note": "Theresa Street meets Tomlinson Avenue (Grand Avenue) here, the only E-W street nearby"
+     }
+    ],
+    "note": "Neither Mickey Avenue nor Patrick Drive is on the plate. Around the expected point (2012, 5356) there are only large lots 38 and 13, with lot lines at y 5240 and Theresa Street at y 5665. No N-S street exists near x 2012; the nearest is a 10 ft alley at x about 1170.",
+    "group": "A05"
+   },
+   {
+    "job": "31_013",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     null,
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Expected point lies inside open Mt. Harrison parcels 13/[38]; no streets there. Nearest streets are Theresa St (y~5660) and Tomlinson Ave (x~2280). Mickey Ave and Patrick Drive not on plate.",
+    "group": "B05"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "31_014",
+  "osm": [
+   711747.0,
+   4332946.1
+  ],
+  "osm_names": [
+   "Lionel Avenue",
+   "Osterfeld Street"
+  ],
+  "predicted": [
+   6068.6,
+   3752.5
+  ],
+  "reads": [
+   {
+    "job": "31_014",
+    "found": true,
+    "x": 6051,
+    "y": 3749,
+    "kind": "T",
+    "printed": [
+     "Lionel Avenue",
+     "Mohawk"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "MOHAWK (40 ft, edges x 6022-6080) runs N-S and ends at the north side of LIONEL AVE. (edges about y 3728-3770). It does not continue south (lots 42-45 of the subdivision). The plate prints Mohawk where today's name is Osterfeld Street.",
+    "group": "A05"
+   },
+   {
+    "job": "31_014",
+    "found": true,
+    "x": 6050,
+    "y": 3745,
+    "kind": "T",
+    "printed": [
+     "Lionel Avenue",
+     "Mohawk"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Osterfeld not printed; the 40 ft N-S street printed MOHAWK (edges x 6020/6080) ends at Lionel Avenue (edges y ~3718/3770) at the expected point. Taken as Osterfeld by position.",
+    "group": "B06"
+   }
+  ],
+  "spread_px": 4.1,
+  "osm_off_m": 3.8,
+  "x": 6050.5,
+  "y": 3747.0,
+  "outcome": "picked",
+  "why": "reads 4 px apart"
+ },
+ {
+  "job": "31_015",
+  "osm": [
+   710717.3,
+   4333157.2
+  ],
+  "osm_names": [
+   "Lorna Lane",
+   "Margaret Street"
+  ],
+  "predicted": [
+   970.0,
+   3041.1
+  ],
+  "reads": [
+   {
+    "job": "31_015",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Neither Lorna Lane nor Margaret Street is in this region. Near the expected point the plate shows the south ends of Graebe Ave. (centreline x~718) and Northside Ave., both dead-ending at a 430 ft subdivision line around y~3105. South of that line there are only large undeveloped tracts (parcels [21], [27], [22], [28], spaced letters 'M T') crossed by a 22\" water pipe. No street matches Lorna or Margaret. A 'MARGARET' street label shows elsewhere on plate 31, around x~1450, y~1300, far outside this region.",
+    "group": "A06"
+   },
+   {
+    "job": "31_015",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     null,
+     "Margaret Street"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "No Lorna Lane on the plate: south of the block line at y~3110 is undivided acreage. Margaret St (printed) runs SSW to Jonte Ave near (1000,2600); south of Jonte the diagonal NORTHSIDE street (x~1000 at y 3041) ends at y~3110 at the same property line.",
+    "group": "B05"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "31_016",
+  "osm": [
+   710668.6,
+   4333161.0
+  ],
+  "osm_names": [
+   "Graebe Avenue",
+   "Lorna Lane"
+  ],
+  "predicted": [
+   727.0,
+   3035.0
+  ],
+  "reads": [
+   {
+    "job": "31_016",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Graebe Avenue"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Graebe Ave. is printed: a 40 ft street with centreline x~718, running from Jonte Ave. (y~2610) south to a dead end at the 430 ft subdivision line (y~3105). There is no Lorna Lane. South of the dead end there are only undeveloped tracts ([21], [27]) and a dashed 22\" water pipe.",
+    "group": "A06"
+   },
+   {
+    "job": "31_016",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Graebe Avenue",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Graebe Ave (x 683-750) ends at a property line at y~3110; south of it is undivided acreage (Mt. Harrison parcels). No Lorna Lane on the plate.",
+    "group": "B05"
+   }
+  ],
+  "outcome": "not found",
+  "why": "neither read found the two streets meeting"
+ },
+ {
+  "job": "31_017",
+  "osm": [
+   710700.1,
+   4333671.8
+  ],
+  "osm_names": [
+   "Ekardt Street",
+   "Queen City Avenue"
+  ],
+  "predicted": [
+   778.1,
+   485.2
+  ],
+  "reads": [
+   {
+    "job": "31_017",
+    "found": true,
+    "x": 813,
+    "y": 522,
+    "kind": "T",
+    "printed": [
+     "(name cut off by plate clip; stub label ends 'St.')",
+     "Queen City (Avenue; label 'QUEEN CITY' further east on same street)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 1203,
+      "y": 590,
+      "note": "another short unnamed stub going north from the same street; label cut off"
+     }
+    ],
+    "note": "The region is mostly white, because the plate is clipped. The street running west-northwest with an 8\" water pipe is Queen City. A short stub street, labelled only '...ST.', leaves it to the north at x~795-835 and is cut off by the plate edge at y~440. I took this stub as Ekardt Street. The T is the stub's centre on the Queen City centreline. A second stub at x~1203 is the alternative.",
+    "group": "A06"
+   },
+   {
+    "job": "31_017",
+    "found": true,
+    "x": 812,
+    "y": 522,
+    "kind": "T",
+    "printed": [
+     "Street (stub, only 'ST' visible, name off plate)",
+     "unnamed in region (Queen City band)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 1205,
+      "y": 545,
+      "note": "another short stub going north off the plate edge from the same band"
+     }
+    ],
+    "note": "Only a strip of the WNW-ESE street (Queen City) is on the plate, with a short stub (x 790-840) going north off the plate edge, marked 'ST'. Taken as Ekardt St; T at stub centre on the strip centreline.",
+    "group": "B05"
+   }
+  ],
+  "spread_px": 1.0,
+  "osm_off_m": 10.2,
+  "x": 812.5,
+  "y": 522.0,
+  "outcome": "picked",
+  "why": "reads 1 px apart"
+ },
+ {
+  "job": "31_018",
+  "osm": [
+   711062.9,
+   4333591.0
+  ],
+  "osm_names": [
+   "Merton Street",
+   "Queen City Avenue"
+  ],
+  "predicted": [
+   2588.9,
+   810.1
+  ],
+  "reads": [
+   {
+    "job": "31_018",
+    "found": true,
+    "x": 2571,
+    "y": 800,
+    "kind": "T",
+    "printed": [
+     "(stub street, name illegible/cut off)",
+     "Queen City (Avenue)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 3140,
+      "y": 760,
+      "note": "second short stub north of Queen City, unnamed, also cut by the plate edge"
+     }
+    ],
+    "note": "The label 'QUEEN CITY' is printed on the street at y~757-840. A narrow street stub (x~2557-2585) runs north from it and is clipped by the plate edge at y~700. Its label is illegible. I took this stub as Merton Street because it is closest to the expected point. Hart St. runs south from Queen City at x~2330, which does not match.",
+    "group": "A06"
+   },
+   {
+    "job": "31_018",
+    "found": true,
+    "x": 2572,
+    "y": 801,
+    "kind": "T",
+    "printed": [
+     "unnamed stub (name off plate)",
+     "Queen"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 2330,
+      "y": 810,
+      "note": "Hart Street meets Queen City from the south (not Merton)"
+     }
+    ],
+    "note": "Narrow stub (x 2558-2585) goes north off the plate edge from Queen City Ave (QUEEN CITY printed; band y~757-845, north edge at plate edge). Taken as Merton St.",
+    "group": "B05"
+   }
+  ],
+  "spread_px": 1.4,
+  "osm_off_m": 4.1,
+  "x": 2571.5,
+  "y": 800.5,
+  "outcome": "picked",
+  "why": "reads 1 px apart"
+ },
+ {
+  "job": "31_019",
+  "osm": [
+   711744.5,
+   4333004.4
+  ],
+  "osm_names": [
+   "Lane Avenue",
+   "Osterfeld Street"
+  ],
+  "predicted": [
+   6040.4,
+   3470.3
+  ],
+  "reads": [
+   {
+    "job": "31_019",
+    "found": true,
+    "x": 6048,
+    "y": 3457,
+    "kind": "T",
+    "printed": [
+     "Lane Street",
+     "Mohawk"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "'LANE ST.' is a 50 ft street (y~3420-3495). Its east end meets the north-south street labelled 'MOHAWK' (x~6018-6078, with green and pink boundary bands along it). I took Mohawk as today's Osterfeld Street; the plate does not print that name. The east side of Mohawk is the large Henry Grote estate.",
+    "group": "A06"
+   },
+   {
+    "job": "31_019",
+    "found": true,
+    "x": 6049,
+    "y": 3458,
+    "kind": "T",
+    "printed": [
+     "Lane Street",
+     "Mohawk"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Lane St (50', y 3420-3495) ends at Mohawk (x 6020-6078, green/pink boundary bands inside). Mohawk taken as Osterfeld St; east of it is Henry Grove acreage.",
+    "group": "B05"
+   }
+  ],
+  "spread_px": 1.4,
+  "osm_off_m": 3.1,
+  "x": 6048.5,
+  "y": 3457.5,
+  "outcome": "picked",
+  "why": "reads 1 px apart"
+ },
+ {
+  "job": "31_020",
+  "osm": [
+   711224.4,
+   4333518.5
+  ],
+  "osm_names": [
+   "Kebler Avenue",
+   "Westwood Avenue"
+  ],
+  "predicted": [
+   3386.5,
+   1126.3
+  ],
+  "reads": [
+   {
+    "job": "31_020",
+    "found": true,
+    "x": 3394,
+    "y": 1136,
+    "kind": "T",
+    "printed": [
+     "Seegar Street",
+     "Westwood"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 3393,
+      "y": 763,
+      "note": "north end of Seegar St. at Queen City Ave."
+     }
+    ],
+    "note": "Kebler Avenue is not printed. The plate's 'SEEGAR ST.' runs from Queen City south to 'WESTWOOD' exactly at the expected x, so I took it as today's Kebler Ave. 'KEBLER'S SUBDIVN' is a subdivision name nearby. Westwood runs y~1095-1178, and the T is on its centreline. South of Westwood only a lot line continues.",
+    "group": "A06"
+   },
+   {
+    "job": "31_020",
+    "found": true,
+    "x": 3393,
+    "y": 1136,
+    "kind": "T",
+    "printed": [
+     "Seegar Street",
+     "Westwood"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [
+     {
+      "x": 3392,
+      "y": 767,
+      "note": "Seegar St north end at Queen City"
+     }
+    ],
+    "note": "Kebler Ave is printed SEEGAR ST. (x 3365-3422) north of Westwood; south of Westwood only a narrow alley continues at x~3400. Westwood band y 1092-1180 with car tracks.",
+    "group": "B05"
+   }
+  ],
+  "spread_px": 1.0,
+  "osm_off_m": 2.5,
+  "x": 3393.5,
+  "y": 1136.0,
+  "outcome": "picked",
+  "why": "reads 1 px apart"
+ },
+ {
+  "job": "31_021",
+  "osm": [
+   712154.6,
+   4333454.2
+  ],
+  "osm_names": [
+   "Harrison Avenue",
+   "Western Hills Viaduct"
+  ],
+  "predicted": [
+   7946.3,
+   1179.5
+  ],
+  "reads": [
+   {
+    "job": "31_021",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Harrison Avenue"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "The 1922 plate has no Western Hills Viaduct; it opened in the 1930s. Harrison Ave. runs west-northwest to east-southeast through the region with street-railway tracks. Near the expected point the only junction is Beekman St. meeting Harrison from the north, a T at about (7660, 1030). Nothing is drawn or labelled as a viaduct.",
+    "group": "A06"
+   },
+   {
+    "job": "31_021",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Harrison",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Western Hills Viaduct not on the 1922 plate. Expected point is on Harrison Avenue mid-block (lots 1450s); no street crosses there. Beekman Street tees in at ~(7640, 960).",
+    "group": "B06"
+   }
+  ],
+  "outcome": "not a 1922 street",
+  "why": "a viaduct: a name change along the street, not a crossing"
+ },
+ {
+  "job": "31_022",
+  "osm": [
+   712019.5,
+   4333531.6
+  ],
+  "osm_names": [
+   "Harrison Avenue",
+   "Western Hills Viaduct"
+  ],
+  "predicted": [
+   7264.6,
+   850.1
+  ],
+  "reads": [
+   {
+    "job": "31_022",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Harrison Avenue"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "No Western Hills Viaduct exists on the 1922 plate. The expected point falls on Harrison Ave. itself, near its 'HARRISON' label. Nearby features: the Harrison/Westwood fork at about (7090, 862), the Beekman St. T at about (7660, 1030), and railroad tracks south of Harrison.",
+    "group": "A06"
+   },
+   {
+    "job": "31_022",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Harrison",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Western Hills Viaduct not on the 1922 plate. Harrison Avenue (printed HARRISON) runs diagonally through the expected point with houses either side; Beekman Street tees into Harrison at ~(7640, 960); nothing else crosses near the expected point.",
+    "group": "B06"
+   }
+  ],
+  "outcome": "not a 1922 street",
+  "why": "a viaduct: a name change along the street, not a crossing"
+ },
+ {
+  "job": "31_023",
+  "osm": [
+   712036.5,
+   4333516.6
+  ],
+  "osm_names": [
+   "Harrison Avenue",
+   "Western Hills Viaduct (Lower Deck)"
+  ],
+  "predicted": [
+   7350.5,
+   917.2
+  ],
+  "reads": [
+   {
+    "job": "31_023",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Harrison Avenue"
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "No Western Hills Viaduct and no lower deck exist on the 1922 plate. The expected point is on Harrison Ave. between its fork with Westwood (about 7090, 862) and Beekman St. (about 7660, 1030). Nothing is drawn as a viaduct.",
+    "group": "A06"
+   },
+   {
+    "job": "31_023",
+    "found": false,
+    "x": null,
+    "y": null,
+    "kind": null,
+    "printed": [
+     "Harrison",
+     null
+    ],
+    "plate_edge": false,
+    "confidence": "high",
+    "same_names_elsewhere": [],
+    "note": "Western Hills Viaduct (lower deck) not on the 1922 plate. Expected point lies on Harrison Avenue near lots 1520s/74-75; Beekman Street meets Harrison at ~(7640, 960).",
+    "group": "B06"
+   }
+  ],
+  "outcome": "not a 1922 street",
+  "why": "a viaduct: a name change along the street, not a crossing"
+ },
+ {
+  "job": "31_024",
+  "osm": [
+   712345.3,
+   4333314.3
+  ],
+  "osm_names": [
+   "Harrison Avenue",
+   "State Avenue"
+  ],
+  "predicted": [
+   8928.9,
+   1788.7
+  ],
+  "reads": [
+   {
+    "job": "31_024",
+    "found": true,
+    "x": 8968,
+    "y": 2068,
+    "kind": "bend",
+    "printed": [
+     "Avenue (Harrison; label 'AVE.' here, 'HARRISON' upstream)",
+     "Avenue (south-going street, name not visible in region; only 'AVE')"
+    ],
+    "plate_edge": false,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 8885,
+      "y": 2500,
+      "note": "a second road labelled 'HARRISON' (heading east-northeast over the creek, labelled 'AVE' further east) crosses the same south-going 'AVE' here"
+     }
+    ],
+    "note": "Harrison Ave. comes down from the northwest; addresses 1389-1374 continue the Harrison numbering. At about (8968, 2068) it bends: a 30 ft road labelled 'HARRISON' continues east over Mill Creek, and an avenue labelled only 'AVE' curves south. I took that south-going avenue as State Ave., but the name 'State' is not visible in the region. The expected point (8929, 1789) falls on lots east of Harrison, about 280 px north of this junction. A lower 'HARRISON' road crossing the south-going avenue at about (8885, 2500) is the alternative.",
+    "group": "A06"
+   },
+   {
+    "job": "31_024",
+    "found": true,
+    "x": 8955,
+    "y": 2068,
+    "kind": "T",
+    "printed": [
+     "Harrison",
+     "Avenue (curving street with car tracks; full name not printed in region)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 8870,
+      "y": 2475,
+      "note": "second band labelled 'HARRISON AVE' (WSW-ENE, crossing railroad) meets the south-running part of the same curving AVE here"
+     }
+    ],
+    "note": "Curving avenue with street-car tracks comes from NW (labelled AVE at 8720,1820), bends south (labelled AVE at 8780,2500). Upper 'HARRISON' band (10\" W. Pipe, 48\" Sewer) leaves the outside of the bend eastward across the creek; pick is where its centreline meets the bend. Expected point lies ~280 px north on the NW leg.",
+    "group": "B05"
+   }
+  ],
+  "spread_px": 13.0,
+  "osm_off_m": 58.5,
+  "x": 8961.5,
+  "y": 2068.0,
+  "outcome": "far from OSM",
+  "why": "59 m from its OSM crossing under the current model"
+ },
+ {
+  "job": "31_025",
+  "osm": [
+   712346.8,
+   4333303.9
+  ],
+  "osm_names": [
+   "Harrison Avenue",
+   "State Avenue"
+  ],
+  "predicted": [
+   8939.2,
+   1838.1
+  ],
+  "reads": [
+   {
+    "job": "31_025",
+    "found": true,
+    "x": 8968,
+    "y": 2068,
+    "kind": "bend",
+    "printed": [
+     "Avenue (Harrison; label 'AVE.' here, 'HARRISON' upstream)",
+     "Avenue (south-going street, name not visible in region; only 'AVE')"
+    ],
+    "plate_edge": false,
+    "confidence": "low",
+    "same_names_elsewhere": [
+     {
+      "x": 8885,
+      "y": 2500,
+      "note": "second road labelled 'HARRISON' crossing the same south-going 'AVE'"
+     }
+    ],
+    "note": "This is the same junction as 31_024. Harrison Ave. comes from the northwest and bends here: the 'HARRISON' road continues east across Mill Creek, and an 'AVE' (taken as State Ave.; its name is not visible) runs south. The expected point is about 230 px north of the junction.",
+    "group": "A06"
+   },
+   {
+    "job": "31_025",
+    "found": true,
+    "x": 8940,
+    "y": 2072,
+    "kind": "T",
+    "printed": [
+     "Avenue (Harrison, only 'AVE.' near the junction)",
+     "Avenue (only 'AVE' printed)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 8878,
+      "y": 2510,
+      "note": "a second road printed 'HARRISON AVE.' runs SW-NE across the railroad and meets the same south-running avenue here"
+     }
+    ],
+    "note": "Harrison Ave (tracks, numbers 1373-1389) comes SE and curves due south into an avenue numbered 1973-1999 (State by position); a narrow street (10\" W pipe, 48\" sewer, printed HARRISON further east) leaves the curve eastward. Picked the junction at the curve, ~230 px south of the expected point.",
+    "group": "B06"
+   }
+  ],
+  "spread_px": 28.3,
+  "osm_off_m": 48.4,
+  "x": 8954.0,
+  "y": 2070.0,
+  "outcome": "far from OSM",
+  "why": "48 m from its OSM crossing under the current model"
+ },
+ {
+  "job": "31_026",
+  "osm": [
+   712053.7,
+   4333501.3
+  ],
+  "osm_names": [
+   "Harrison Avenue",
+   "Westwood Avenue"
+  ],
+  "predicted": [
+   7438.0,
+   985.6
+  ],
+  "reads": [
+   {
+    "job": "31_026",
+    "found": true,
+    "x": 7090,
+    "y": 862,
+    "kind": "T",
+    "printed": [
+     "Harrison Avenue",
+     "Avenue (west-southwest branch labelled 'AVE.'; this is the east end of the street printed 'WESTWOOD' further west)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "At about (7090, 862) Harrison Ave. (label 'HARRISON' just east) forks. One branch curves northwest, with tracks and a 24\" sewer, and climbs to cross Queen City. The other runs west-southwest, labelled 'AVE.', and continues west as the street printed 'WESTWOOD' on the same plate. The point is the meeting of the centrelines where the street-railway tracks converge. The expected point (7438, 986) is about 360 px east-southeast, on the south lots of Harrison.",
+    "group": "A06"
+   },
+   {
+    "job": "31_026",
+    "found": true,
+    "x": 7085,
+    "y": 867,
+    "kind": "T",
+    "printed": [
+     "Harrison",
+     "Avenue (Westwood name not printed in region, house nos. 1620-1603)"
+    ],
+    "plate_edge": false,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Westwood (AVE.) comes from the west and merges into Harrison (from NW, with tracks and 24\" sewer) at a narrow gore ending ~ (6880,855); pick where the two centrelines converge. Expected point (7438,986) is further ESE on Harrison, where only Beekman St (north side, ~7590) joins.",
+    "group": "B05"
+   }
+  ],
+  "spread_px": 7.1,
+  "osm_off_m": 76.5,
+  "x": 7087.5,
+  "y": 864.5,
+  "outcome": "far from OSM",
+  "why": "77 m from its OSM crossing under the current model"
+ },
+ {
+  "job": "31_027",
+  "osm": [
+   711508.4,
+   4333615.0
+  ],
+  "osm_names": [
+   "Grand Avenue",
+   "Queen City Avenue"
+  ],
+  "predicted": [
+   4745.4,
+   578.0
+  ],
+  "reads": [
+   {
+    "job": "31_027",
+    "found": true,
+    "x": 4745,
+    "y": 576,
+    "kind": "T",
+    "printed": [
+     "(name not visible; label only 'ST.')",
+     "Queen City (Avenue; name printed further west)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 4565,
+      "y": 560,
+      "note": "short stub street going north from Queen City, cut by plate edge; label has '36\" S...' and 'R...'"
+     }
+    ],
+    "note": "A north-south street labelled only 'ST.' (x~4700-4789, with 18\" sewer and 12\" water pipe) runs south from Queen City (y~537-615) to Westwood. It sits exactly at the expected x, so I took it as Grand Avenue, but its name is not printed in the region. The plate edge clips Queen City's north side just above the street.",
+    "group": "A06"
+   },
+   {
+    "job": "31_027",
+    "found": true,
+    "x": 4748,
+    "y": 573,
+    "kind": "T",
+    "printed": [
+     "Street (name not printed in region; only 'ST.')",
+     "(unlabelled street along plate top edge)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "N-S 60 ft street (labelled only 'ST.', Grand Ave by position) ends at the slanting E-W street running along the cut top edge of the plate (Queen City by position, unlabelled; north edge ~535, block fronts ~612). A different street continues north from it offset west at x ~4560. N-S street has a line at x ~4737 inside it plus pink boundary band at ~4705; centre taken across 4700-4795.",
+    "group": "B06"
+   }
+  ],
+  "spread_px": 4.2,
+  "osm_off_m": 0.7,
+  "x": 4746.5,
+  "y": 574.5,
+  "outcome": "picked",
+  "why": "reads 4 px apart"
+ },
+ {
+  "job": "31_028",
+  "osm": [
+   711229.6,
+   4333590.9
+  ],
+  "osm_names": [
+   "Kebler Avenue",
+   "Queen City Avenue"
+  ],
+  "predicted": [
+   3397.0,
+   766.3
+  ],
+  "reads": [
+   {
+    "job": "31_028",
+    "found": true,
+    "x": 3393,
+    "y": 763,
+    "kind": "T",
+    "printed": [
+     "Seegar Street",
+     "Queen City (Avenue)"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [
+     {
+      "x": 3394,
+      "y": 1136,
+      "note": "south end of Seegar St. at Westwood"
+     }
+    ],
+    "note": "Kebler Avenue is not printed. 'SEEGAR ST.' (40 ft, x~3365-3420) runs south from 'QUEEN CITY' at the expected x, so I took it as today's Kebler Ave. 'KEBLER'S SUBDIVN' to the east is a subdivision name. Queen City runs y~727-800; its north side is near the clipped plate edge.",
+    "group": "A06"
+   },
+   {
+    "job": "31_028",
+    "found": true,
+    "x": 3392,
+    "y": 767,
+    "kind": "T",
+    "printed": [
+     "Seegar Street",
+     "Queen City"
+    ],
+    "plate_edge": true,
+    "confidence": "medium",
+    "same_names_elsewhere": [],
+    "note": "Kebler Ave is printed SEEGAR ST. (40'), running south from Queen City to Westwood. Queen City's north edge is the plate edge (white beyond), so its centre (y~767) assumes the band 738-798 is the full width.",
+    "group": "B05"
+   }
+  ],
+  "spread_px": 4.1,
+  "osm_off_m": 1.0,
+  "x": 3392.5,
+  "y": 765.0,
+  "outcome": "picked",
+  "why": "reads 4 px apart"
+ }
+]
