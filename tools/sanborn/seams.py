@@ -36,6 +36,7 @@ from load import load, frame_of, DECK, YSPLIT  # noqa: E402
 from shapely.geometry import Point, Polygon  # noqa: E402
 
 MATCH, FAR, DUP_PX = 45.0, 150.0, 60.0
+JOINT = False   # --joint: plates placed by the joint refit's models (tools/sanborn/joint/jointlib.py) instead of their own
 READ = []   # files read, for the report's checksums
 
 
@@ -68,6 +69,11 @@ def plate_ids():
 
 def plate_world(pid):
     n = pid[3:]
+    if JOINT:
+        sys.path.insert(0, _ws.CODE + 'joint')
+        import jointlib
+        READ.extend([jointlib.joint_path(pid), jointlib.base_path(pid)])
+        return lambda x, y: jointlib.world(pid, x, y)
     if pid == '22-35N':
         READ.append('cuf/ben_georef.json')
         return lambda x, y: tuple(float(v) for v in C.px2ben(x, y))
@@ -214,8 +220,12 @@ def stats(ds, vs):
                 mean_dE=round(float(vs[:, 0].mean()), 2), mean_dN=round(float(vs[:, 1].mean()), 2))
 
 
-def main():
-    out_dir = sys.argv[1] if len(sys.argv) > 1 else SP + f'reports/{datetime.date.today().isoformat()}_seams'
+def main(argv=None):
+    global JOINT
+    argv = sys.argv[1:] if argv is None else argv
+    JOINT = '--joint' in argv
+    args = [a for a in argv if a != '--joint']
+    out_dir = args[0] if args else SP + f"reports/{datetime.date.today().isoformat()}_seams{'_joint' if JOINT else ''}"
     os.makedirs(out_dir, exist_ok=True)
     recs, plate_info = [], {}
     for pid in plate_ids():
@@ -251,17 +261,18 @@ def main():
                           same_names_45_150m=sum(1 for r in rows if not r['within_45m'] and r['seam'] == s))
     reads = sorted(set(READ))
     import scipy, pyproj, shapely
-    meta = dict(made=datetime.datetime.now().isoformat(timespec='seconds'), by='tools/sanborn/seams.py (read only)',
+    meta = dict(made=datetime.datetime.now().isoformat(timespec='seconds'), by='tools/sanborn/seams.py (read only)' + (' --joint' if JOINT else ''),
+                plate_models='joint refit (fwd_joint.pkl)' if JOINT else "each plate's own (fwd.pkl, Ben georeference for 35N)",
                 match_m=MATCH, far_m=FAR, reader_merge_px=DUP_PX,
                 plates=plate_info, frames=dict(deck_north=len({r['src'] for r in dr}), basin=len({r['src'] for r in br})),
                 crossings=dict(plates=sum(r['kind'] == 'plate' for r in recs), frames_deck_north=len(dr), frames_basin=len(br)),
                 versions=dict(python=sys.version.split()[0], numpy=np.__version__, scipy=scipy.__version__, pyproj=pyproj.__version__, shapely=shapely.__version__),
                 inputs={f: hashlib.sha256(open(SP + f, 'rb').read()).hexdigest() for f in reads})
-    json.dump(dict(meta=meta, summary=summary, per_pair=per_pair, seams=rows), open(os.path.join(out_dir, 'seams.json'), 'w', encoding='utf8'), indent=1)
+    json.dump(dict(meta=meta, summary=summary, per_pair=per_pair, seams=rows), open(os.path.join(out_dir, 'seams.json'), 'w', encoding='utf8', newline='\n'), indent=1)
     with open(os.path.join(out_dir, 'seams.csv'), 'w', newline='', encoding='utf8') as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
+        w = csv.DictWriter(f, fieldnames=list(rows[0]), lineterminator='\n'); w.writeheader(); w.writerows(rows)
     with open(os.path.join(out_dir, 'per_pair.csv'), 'w', newline='', encoding='utf8') as f:
-        w = csv.DictWriter(f, fieldnames=list(per_pair[0])); w.writeheader(); w.writerows(per_pair)
+        w = csv.DictWriter(f, fieldnames=list(per_pair[0]), lineterminator='\n'); w.writeheader(); w.writerows(per_pair)
     write_md(out_dir, meta, summary, per_pair, rows)
     print(json.dumps(dict(summary=summary, plates=len(plate_info), crossings=meta['crossings'], frames=meta['frames']), indent=1))
     return out_dir
@@ -270,7 +281,8 @@ def main():
 def write_md(out_dir, meta, summary, per_pair, rows):
     near = [r for r in rows if r['within_45m']]
     pf = [r for r in near if r['seam'] == 'plate-1904']
-    L = [f"# Seam report, {meta['made'][:10]}", '',
+    L = [f"# Seam report, {meta['made'][:10]}" + (' (plates on the joint refit)' if JOINT else ''), '',
+         f"Plate models: {meta['plate_models']}.", '',
          'Read only: every street crossing that two 1922 plates, or a 1922 plate and a 1904 frame, both show, and how far apart the '
          'two copies sit on the page. Nothing was fitted, rebuilt or changed. Method: `tools/sanborn/seams.py` (its docstring); '
          f"matched by street names within {meta['match_m']:.0f} m. Files: `seams.csv` (every pair), `per_pair.csv` (by plate and "
@@ -318,7 +330,7 @@ def write_md(out_dir, meta, summary, per_pair, rows):
           '830 frame crossings and 360 plate crossings.',
           f"- Computed with Python {meta['versions']['python']}, numpy {meta['versions']['numpy']}, scipy {meta['versions']['scipy']}, "
           f"pyproj {meta['versions']['pyproj']} (the workspace's versions are not recorded).", '']
-    open(os.path.join(out_dir, 'README.md'), 'w', encoding='utf8').write('\n'.join(L))
+    open(os.path.join(out_dir, 'README.md'), 'w', encoding='utf8', newline='\n').write('\n'.join(L))
 
 
 if __name__ == '__main__':

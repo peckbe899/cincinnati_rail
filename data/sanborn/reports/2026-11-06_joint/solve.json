@@ -1,0 +1,1765 @@
+{
+ "meta": {
+  "made": "2026-11-06T10:23:07",
+  "by": "tools/sanborn/joint/solve.py",
+  "scale_m": 1000.0,
+  "huber_m": 6.0,
+  "choice_trail": [],
+  "versions": {
+   "numpy": "2.4.2",
+   "scipy": "1.18.1"
+  },
+  "bases": {
+   "22-34L": {
+    "path": "cuf_cw/34L/fwd.pkl",
+    "sha256": "3659bb9993d50bcf6431a3e72d7548111285814717ca4cda9667dd0407a6d3da"
+   },
+   "22-37L": {
+    "path": "cuf_cw/37L/fwd.pkl",
+    "sha256": "099d14e2f92bb87635607a18b4b7d2038f1a6919ee00f904530dd115388903b8"
+   },
+   "22-37R": {
+    "path": "cuf_cw/37R/fwd.pkl",
+    "sha256": "1e302e844fc9251db7fb336378d8a117f57861bee7ebe43f28688e2a0a833489"
+   },
+   "22-34R": {
+    "path": "cuf_cw/34R/fwd.pkl",
+    "sha256": "e2213b5ade70efaf98a70d31b44a723461d635b89976544f9eb9bc170d1fe116"
+   },
+   "22-16R": {
+    "path": "cuf_cw/16R/fwd.pkl",
+    "sha256": "a4bd8c7889ce921fe2175a771dea27e30520d4624d429efe7e578ec45506a1f5"
+   },
+   "22-35N": {
+    "path": "cuf/ben_georef.json",
+    "sha256": "5c3923873c9435146f8f4ab629d62c27107b080bc22a3c7c619d8ca147bfa082"
+   },
+   "22-38": {
+    "path": "cuf38/fwd38.pkl",
+    "sha256": "139901baefc82c2c99b7da3ec431b54f1dcdf534bc90cd42f41c1d26beaa87f0"
+   },
+   "22-66": {
+    "path": "cufp/66/fwd.pkl",
+    "sha256": "7aa5a14a7bfa665d41173d4a60d638014fa9f696b19ef8f872cc35efc0208f85"
+   },
+   "22-67": {
+    "path": "cufp/67/fwd.pkl",
+    "sha256": "9bdd26a8ff02f1f9d70c6dffe8c47f0abbc7f57b0e1aa841502d31742f7859d7"
+   },
+   "22-68": {
+    "path": "cufp/68/fwd.pkl",
+    "sha256": "ccdcce7d03e3798d227e33027617abed71c818064a021b4d7e1eff9e72ff686a"
+   },
+   "22-69": {
+    "path": "cufp/69/fwd.pkl",
+    "sha256": "cd78b30c4ed672bf6f50e3a051ac5cdb92ef152b49592b95144ef573dd90d0a2"
+   },
+   "22-70": {
+    "path": "cufp/70/fwd.pkl",
+    "sha256": "8091a67248682aa921d14b029e1e6edd7548e2585190849c37d9cf9c6c4f2821"
+   },
+   "22-82A": {
+    "path": "cufp/82A/fwd.pkl",
+    "sha256": "d934e6819f2965338aaca62af01c646690d7c971d321751c4bf60717a924d870"
+   },
+   "22-83A": {
+    "path": "cufp/83A/fwd.pkl",
+    "sha256": "ddcb6eb81e3e63585772d0ef26160a875cdc566ed98dc8ea15e2bfd385ea6ece"
+   },
+   "22-75": {
+    "path": "cufp/75/fwd.pkl",
+    "sha256": "f3ceda5a4a798d046ec588c43431bbed59c99081be674b7199e6cd85251b3a6c"
+   },
+   "22-76": {
+    "path": "cufp/76/fwd.pkl",
+    "sha256": "341c2ed53f5963bfbd80b6e7f4be8ccaf14478c2a9d9aeac79f4c3724fcd0855"
+   },
+   "22-26A": {
+    "path": "cufp/26A/fwd.pkl",
+    "sha256": "5391878067af26fb0f3b7ab785a5a8b674d575c72dbfc2dfe51a129ff02b492a"
+   },
+   "22-26B": {
+    "path": "cufp/26B/fwd.pkl",
+    "sha256": "5bf9035a7fc477b956a8b421c8b99b3a2b429db8cb45a162299c1aa1ae974c3d"
+   },
+   "22-29": {
+    "path": "cufp/29/fwd.pkl",
+    "sha256": "692d93e474cddf60912ef46685f2c6ddadadcdd27cf45f2dc849cd212826851a"
+   },
+   "22-31": {
+    "path": "cufp/31/fwd.pkl",
+    "sha256": "5d4d762837a5df8f4ecaad41ffc8b3145bd6cae0aa8411d27bc7b6dd632f9d15"
+   },
+   "22-33": {
+    "path": "cufp/33/fwd.pkl",
+    "sha256": "502a074d93e0d37331faed439823dda6b55df017d9191dfc56a58cadcafd3ad0"
+   }
+  }
+ },
+ "summary": {
+  "plates": 21,
+  "controls": 1082,
+  "ties": 146,
+  "ties_before": {
+   "median": 2.88,
+   "p90": 12.75,
+   "max": 30.01
+  },
+  "ties_after": {
+   "median": 2.45,
+   "p90": 11.79,
+   "max": 28.79
+  },
+  "quadratic": [],
+  "worse_by_more_than_0_3m": [
+   "22-34L",
+   "22-37L",
+   "22-37R",
+   "22-69"
+  ],
+  "part3_check": {
+   "worse_plates": [
+    "22-34L",
+    "22-37L",
+    "22-37R",
+    "22-69"
+   ],
+   "seam_median_falls": true,
+   "seam_p90_falls": true,
+   "redraw_imagery": false
+  }
+ },
+ "plates": [
+  {
+   "plate": "22-34L",
+   "base_model": "tps3",
+   "correction": "affine",
+   "controls": 16,
+   "rms_before": 2.65,
+   "rms_after": 3.11,
+   "heldout_before": 4.49,
+   "heldout_after": 5.3,
+   "max_corner_move_m": 6.02,
+   "median_control_move_m": 1.22,
+   "ties": 7,
+   "image_px": "6175x7795",
+   "rms_change": 0.46
+  },
+  {
+   "plate": "22-37L",
+   "base_model": "tps30",
+   "correction": "affine",
+   "controls": 20,
+   "rms_before": 2.97,
+   "rms_after": 3.42,
+   "heldout_before": 4.67,
+   "heldout_after": 5.24,
+   "max_corner_move_m": 6.93,
+   "median_control_move_m": 1.41,
+   "ties": 12,
+   "image_px": "6272x7795",
+   "rms_change": 0.45
+  },
+  {
+   "plate": "22-37R",
+   "base_model": "tps0.3",
+   "correction": "affine",
+   "controls": 15,
+   "rms_before": 1.02,
+   "rms_after": 1.96,
+   "heldout_before": 5.9,
+   "heldout_after": 6.5,
+   "max_corner_move_m": 4.68,
+   "median_control_move_m": 1.43,
+   "ties": 16,
+   "image_px": "6009x7795",
+   "rms_change": 0.94
+  },
+  {
+   "plate": "22-34R",
+   "base_model": "tps0.3",
+   "correction": "affine",
+   "controls": 49,
+   "rms_before": 1.44,
+   "rms_after": 1.56,
+   "heldout_before": 3.91,
+   "heldout_after": 4.04,
+   "max_corner_move_m": 2.7,
+   "median_control_move_m": 0.49,
+   "ties": 13,
+   "image_px": "6009x7795",
+   "rms_change": 0.12
+  },
+  {
+   "plate": "22-16R",
+   "base_model": "tps3",
+   "correction": "affine",
+   "controls": 15,
+   "rms_before": 2.23,
+   "rms_after": 2.26,
+   "heldout_before": 6.09,
+   "heldout_after": 6.53,
+   "max_corner_move_m": 1.11,
+   "median_control_move_m": 0.25,
+   "ties": 5,
+   "image_px": "6092x7796",
+   "rms_change": 0.03
+  },
+  {
+   "plate": "22-35N",
+   "base_model": "Ben georeference (nothing fitted)",
+   "correction": "affine",
+   "controls": 30,
+   "rms_before": 3.07,
+   "rms_after": 2.92,
+   "heldout_before": 3.07,
+   "heldout_after": 3.12,
+   "max_corner_move_m": 3.29,
+   "median_control_move_m": 0.87,
+   "ties": 12,
+   "image_px": "8830x7674",
+   "rms_change": -0.15
+  },
+  {
+   "plate": "22-38",
+   "base_model": "tps1",
+   "correction": "affine",
+   "controls": 63,
+   "rms_before": 2.29,
+   "rms_after": 2.44,
+   "heldout_before": 4.75,
+   "heldout_after": 4.96,
+   "max_corner_move_m": 2.8,
+   "median_control_move_m": 0.57,
+   "ties": 12,
+   "image_px": "10748x6719",
+   "rms_change": 0.15
+  },
+  {
+   "plate": "22-66",
+   "base_model": "tps3",
+   "correction": "affine",
+   "controls": 96,
+   "rms_before": 1.79,
+   "rms_after": 1.85,
+   "heldout_before": 2.98,
+   "heldout_after": 3.09,
+   "max_corner_move_m": 1.42,
+   "median_control_move_m": 0.32,
+   "ties": 19,
+   "image_px": "10068x7114",
+   "rms_change": 0.06
+  },
+  {
+   "plate": "22-67",
+   "base_model": "tps3",
+   "correction": "affine",
+   "controls": 70,
+   "rms_before": 2.35,
+   "rms_after": 2.36,
+   "heldout_before": 3.56,
+   "heldout_after": 3.67,
+   "max_corner_move_m": 0.45,
+   "median_control_move_m": 0.2,
+   "ties": 14,
+   "image_px": "9909x7135",
+   "rms_change": 0.01
+  },
+  {
+   "plate": "22-68",
+   "base_model": "tps3",
+   "correction": "affine",
+   "controls": 68,
+   "rms_before": 2.14,
+   "rms_after": 2.17,
+   "heldout_before": 3.34,
+   "heldout_after": 3.43,
+   "max_corner_move_m": 0.87,
+   "median_control_move_m": 0.33,
+   "ties": 17,
+   "image_px": "10542x7181",
+   "rms_change": 0.03
+  },
+  {
+   "plate": "22-69",
+   "base_model": "tps0.3",
+   "correction": "affine",
+   "controls": 43,
+   "rms_before": 1.13,
+   "rms_after": 1.74,
+   "heldout_before": 4.41,
+   "heldout_after": 4.73,
+   "max_corner_move_m": 3.91,
+   "median_control_move_m": 0.98,
+   "ties": 19,
+   "image_px": "10746x7115",
+   "rms_change": 0.61
+  },
+  {
+   "plate": "22-70",
+   "base_model": "tps3",
+   "correction": "affine",
+   "controls": 74,
+   "rms_before": 2.03,
+   "rms_after": 2.04,
+   "heldout_before": 3.76,
+   "heldout_after": 3.86,
+   "max_corner_move_m": 0.39,
+   "median_control_move_m": 0.17,
+   "ties": 14,
+   "image_px": "10479x7181",
+   "rms_change": 0.01
+  },
+  {
+   "plate": "22-82A",
+   "base_model": "tps1",
+   "correction": "affine",
+   "controls": 94,
+   "rms_before": 2.16,
+   "rms_after": 2.17,
+   "heldout_before": 3.78,
+   "heldout_after": 3.83,
+   "max_corner_move_m": 0.36,
+   "median_control_move_m": 0.13,
+   "ties": 21,
+   "image_px": "10713x7097",
+   "rms_change": 0.01
+  },
+  {
+   "plate": "22-83A",
+   "base_model": "tps1",
+   "correction": "affine",
+   "controls": 40,
+   "rms_before": 1.95,
+   "rms_after": 1.96,
+   "heldout_before": 3.97,
+   "heldout_after": 4.1,
+   "max_corner_move_m": 0.52,
+   "median_control_move_m": 0.22,
+   "ties": 9,
+   "image_px": "6769x6134",
+   "rms_change": 0.01
+  },
+  {
+   "plate": "22-75",
+   "base_model": "tps10",
+   "correction": "affine",
+   "controls": 47,
+   "rms_before": 3.07,
+   "rms_after": 3.11,
+   "heldout_before": 4.18,
+   "heldout_after": 4.36,
+   "max_corner_move_m": 1.27,
+   "median_control_move_m": 0.44,
+   "ties": 17,
+   "image_px": "10596x7170",
+   "rms_change": 0.04
+  },
+  {
+   "plate": "22-76",
+   "base_model": "tps1",
+   "correction": "affine",
+   "controls": 117,
+   "rms_before": 1.81,
+   "rms_after": 1.82,
+   "heldout_before": 3.15,
+   "heldout_after": 3.19,
+   "max_corner_move_m": 0.3,
+   "median_control_move_m": 0.15,
+   "ties": 17,
+   "image_px": "10441x7106",
+   "rms_change": 0.01
+  },
+  {
+   "plate": "22-26A",
+   "base_model": "tps3",
+   "correction": "affine",
+   "controls": 49,
+   "rms_before": 1.84,
+   "rms_after": 1.85,
+   "heldout_before": 2.95,
+   "heldout_after": 3.06,
+   "max_corner_move_m": 0.37,
+   "median_control_move_m": 0.12,
+   "ties": 13,
+   "image_px": "10516x7088",
+   "rms_change": 0.01
+  },
+  {
+   "plate": "22-26B",
+   "base_model": "tps0.3",
+   "correction": "affine",
+   "controls": 11,
+   "rms_before": 0.34,
+   "rms_after": 0.34,
+   "heldout_before": 3.5,
+   "heldout_after": 3.62,
+   "max_corner_move_m": 0.01,
+   "median_control_move_m": 0.0,
+   "ties": 0,
+   "image_px": "7180x3043",
+   "rms_change": 0.0
+  },
+  {
+   "plate": "22-29",
+   "base_model": "tps0.3",
+   "correction": "affine",
+   "controls": 72,
+   "rms_before": 1.02,
+   "rms_after": 1.06,
+   "heldout_before": 2.78,
+   "heldout_after": 2.84,
+   "max_corner_move_m": 1.09,
+   "median_control_move_m": 0.19,
+   "ties": 24,
+   "image_px": "10225x6028",
+   "rms_change": 0.04
+  },
+  {
+   "plate": "22-31",
+   "base_model": "tps1",
+   "correction": "affine",
+   "controls": 31,
+   "rms_before": 1.78,
+   "rms_after": 1.85,
+   "heldout_before": 4.0,
+   "heldout_after": 4.16,
+   "max_corner_move_m": 1.33,
+   "median_control_move_m": 0.48,
+   "ties": 17,
+   "image_px": "10224x6866",
+   "rms_change": 0.07
+  },
+  {
+   "plate": "22-33",
+   "base_model": "tps0.3",
+   "correction": "affine",
+   "controls": 62,
+   "rms_before": 1.44,
+   "rms_after": 1.51,
+   "heldout_before": 3.67,
+   "heldout_after": 3.75,
+   "max_corner_move_m": 1.26,
+   "median_control_move_m": 0.31,
+   "ties": 14,
+   "image_px": "10651x6178",
+   "rms_change": 0.07
+  }
+ ],
+ "ties": [
+  {
+   "a": "22-34R",
+   "b": "22-37R",
+   "street_1": "Comfort Street",
+   "street_2": "Sassafras Street",
+   "before_m": 0.19,
+   "after_m": 1.65,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-67",
+   "b": "22-70",
+   "street_1": "Hewitt Avenue",
+   "street_2": "Wold Avenue",
+   "before_m": 0.21,
+   "after_m": 0.07,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-67",
+   "b": "22-70",
+   "street_1": "Hackberry Street",
+   "street_2": "Hewitt Avenue",
+   "before_m": 0.4,
+   "after_m": 0.36,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Colerain Avenue",
+   "street_2": "Elmore Street",
+   "before_m": 0.43,
+   "after_m": 2.76,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-75",
+   "b": "22-76",
+   "street_1": "Ivanhoe Avenue",
+   "street_2": "Williams Avenue",
+   "before_m": 0.52,
+   "after_m": 1.04,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-26A",
+   "b": "22-29",
+   "street_1": "West 8th Street",
+   "street_2": "Elberon Avenue",
+   "before_m": 0.59,
+   "after_m": 0.34,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-26A",
+   "b": "22-29",
+   "street_1": "Mt. Hope Road",
+   "street_2": "West 8th Street",
+   "before_m": 0.63,
+   "after_m": 0.48,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-76",
+   "b": "22-82A",
+   "street_1": "Courtland Avenue",
+   "street_2": "Ivanhoe Avenue",
+   "before_m": 0.65,
+   "after_m": 0.27,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-82A",
+   "b": "22-83A",
+   "street_1": "Highland Avenue",
+   "street_2": "Marion Avenue",
+   "before_m": 0.67,
+   "after_m": 0.81,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-26A",
+   "b": "22-29",
+   "street_1": "West 8th Street",
+   "street_2": "Purcell Avenue",
+   "before_m": 0.7,
+   "after_m": 0.82,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-82A",
+   "b": "22-83A",
+   "street_1": "Harper Avenue",
+   "street_2": "Marion Avenue",
+   "before_m": 0.76,
+   "after_m": 0.72,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-29",
+   "b": "22-31",
+   "street_1": "State Avenue",
+   "street_2": "West Liberty Street",
+   "before_m": 0.8,
+   "after_m": 1.51,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-67",
+   "b": "22-70",
+   "street_1": "Kinney Avenue",
+   "street_2": "Wold Avenue",
+   "before_m": 0.82,
+   "after_m": 0.81,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-33",
+   "b": "22-34L",
+   "street_1": "Linden Street",
+   "street_2": "Carll Street",
+   "before_m": 0.83,
+   "after_m": 1.13,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-67",
+   "b": "22-70",
+   "street_1": "Fairfax Avenue",
+   "street_2": "Wold Avenue",
+   "before_m": 0.84,
+   "after_m": 0.83,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Cherry Street",
+   "street_2": "Burgoyne Street",
+   "before_m": 0.85,
+   "after_m": 2.37,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-29",
+   "b": "22-31",
+   "street_1": "Grand Avenue",
+   "street_2": "Lehman Road",
+   "before_m": 0.87,
+   "after_m": 1.62,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-69",
+   "b": "22-70",
+   "street_1": "Woodburn Avenue",
+   "street_2": "Montgomery Road",
+   "before_m": 0.95,
+   "after_m": 2.1,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-76",
+   "b": "22-82A",
+   "street_1": "Hopkins Avenue",
+   "street_2": "Ivanhoe Avenue",
+   "before_m": 0.96,
+   "after_m": 0.47,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-76",
+   "b": "22-82A",
+   "street_1": "Courtland Avenue",
+   "street_2": "Franklin Avenue",
+   "before_m": 1.01,
+   "after_m": 1.04,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-76",
+   "b": "22-83A",
+   "street_1": "Robertson Avenue",
+   "street_2": "Forest Avenue",
+   "before_m": 1.06,
+   "after_m": 1.13,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-34R",
+   "b": "22-35N",
+   "street_1": "Massachusetts Avenue",
+   "street_2": "Marshall Avenue",
+   "before_m": 1.06,
+   "after_m": 1.05,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Colerain Avenue",
+   "street_2": "Dhonau Street",
+   "before_m": 1.08,
+   "after_m": 2.35,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-26A",
+   "b": "22-29",
+   "street_1": "West 8th Street",
+   "street_2": "Depot Street",
+   "before_m": 1.17,
+   "after_m": 1.05,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-82A",
+   "b": "22-83A",
+   "street_1": "Buxton Avenue",
+   "street_2": "Marion Avenue",
+   "before_m": 1.21,
+   "after_m": 1.3,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-82A",
+   "b": "22-83A",
+   "street_1": "Norwood Avenue",
+   "street_2": "Marion Avenue",
+   "before_m": 1.22,
+   "after_m": 0.95,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-29",
+   "b": "22-31",
+   "street_1": "Considine Avenue",
+   "street_2": "West Liberty Street",
+   "before_m": 1.24,
+   "after_m": 0.89,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-67",
+   "b": "22-70",
+   "street_1": "Madison Road",
+   "street_2": "Wold Avenue",
+   "before_m": 1.26,
+   "after_m": 1.41,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-34R",
+   "b": "22-37R",
+   "street_1": "Colerain Avenue",
+   "street_2": "Sassafras Street",
+   "before_m": 1.28,
+   "after_m": 1.02,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-26A",
+   "b": "22-29",
+   "street_1": "West 8th Street",
+   "street_2": "State Avenue",
+   "before_m": 1.28,
+   "after_m": 0.93,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-26A",
+   "b": "22-29",
+   "street_1": "Summit Avenue",
+   "street_2": "West 8th Street",
+   "before_m": 1.35,
+   "after_m": 1.44,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-76",
+   "b": "22-82A",
+   "street_1": "Courtland Avenue",
+   "street_2": "Allison Avenue",
+   "before_m": 1.35,
+   "after_m": 1.21,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-29",
+   "b": "22-31",
+   "street_1": "Purcell Avenue",
+   "street_2": "West Liberty Street",
+   "before_m": 1.42,
+   "after_m": 1.46,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Cherry Street",
+   "street_2": "Powers Street",
+   "before_m": 1.43,
+   "after_m": 1.24,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-75",
+   "b": "22-82A",
+   "street_1": "Ivanhoe Avenue",
+   "street_2": "Hopkins Avenue",
+   "before_m": 1.53,
+   "after_m": 1.53,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-69",
+   "b": "22-75",
+   "street_1": "Brewster Avenue",
+   "street_2": "Woodburn Avenue",
+   "before_m": 1.56,
+   "after_m": 1.48,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-26A",
+   "b": "22-29",
+   "street_1": "West 8th Street",
+   "street_2": "Considine Avenue",
+   "before_m": 1.57,
+   "after_m": 1.72,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-69",
+   "b": "22-75",
+   "street_1": "Reading Road",
+   "street_2": "Lexington Avenue",
+   "before_m": 1.57,
+   "after_m": 1.56,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-38",
+   "b": "22-66",
+   "street_1": "West Nixon Street",
+   "street_2": "Vine Street",
+   "before_m": 1.6,
+   "after_m": 1.2,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-29",
+   "b": "22-31",
+   "street_1": "Grand Avenue",
+   "street_2": "West Liberty Street",
+   "before_m": 1.61,
+   "after_m": 0.96,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-26A",
+   "b": "22-29",
+   "street_1": "West 8th Street",
+   "street_2": "Evans Street",
+   "before_m": 1.66,
+   "after_m": 1.17,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-67",
+   "b": "22-70",
+   "street_1": "Hewitt Avenue",
+   "street_2": "Fairfield Avenue",
+   "before_m": 1.72,
+   "after_m": 1.48,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-66",
+   "b": "22-67",
+   "street_1": "Gilbert Avenue",
+   "street_2": "McMillan Street",
+   "before_m": 1.78,
+   "after_m": 1.27,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-76",
+   "b": "22-82A",
+   "street_1": "Washington",
+   "street_2": "Ashland Avenue",
+   "before_m": 1.82,
+   "after_m": 1.42,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-26A",
+   "b": "22-29",
+   "street_1": "Grand Avenue",
+   "street_2": "West 8th Street",
+   "before_m": 1.89,
+   "after_m": 1.98,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-76",
+   "b": "22-83A",
+   "street_1": "Robertson Avenue",
+   "street_2": "Smith Road",
+   "before_m": 1.9,
+   "after_m": 2.18,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-67",
+   "b": "22-70",
+   "street_1": "Dexter Avenue",
+   "street_2": "Wold Avenue",
+   "before_m": 1.9,
+   "after_m": 1.83,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-82A",
+   "b": "22-83A",
+   "street_1": "Floral Avenue",
+   "street_2": "Smith Road",
+   "before_m": 1.95,
+   "after_m": 2.06,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-35N",
+   "b": "22-38",
+   "street_1": "Clifton Avenue",
+   "street_2": "Dixmyth Avenue",
+   "before_m": 2.03,
+   "after_m": 1.83,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-26A",
+   "b": "22-29",
+   "street_1": "Chateau Avenue",
+   "street_2": "West 8th Street",
+   "before_m": 2.05,
+   "after_m": 2.15,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-75",
+   "b": "22-76",
+   "street_1": "Ivanhoe Avenue",
+   "street_2": "Mentor Avenue",
+   "before_m": 2.1,
+   "after_m": 1.33,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-70",
+   "b": "22-75",
+   "street_1": "Montgomery Road",
+   "street_2": "Dana Avenue",
+   "before_m": 2.15,
+   "after_m": 2.26,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-66",
+   "b": "22-68",
+   "street_1": "Ridgeway Avenue",
+   "street_2": "Harvey Avenue",
+   "before_m": 2.19,
+   "after_m": 1.12,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-26A",
+   "b": "22-29",
+   "street_1": "Matson Place",
+   "street_2": "West 8th Street",
+   "before_m": 2.27,
+   "after_m": 2.29,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-76",
+   "b": "22-82A",
+   "street_1": "Courtland Avenue",
+   "street_2": "Allison Avenue",
+   "before_m": 2.28,
+   "after_m": 2.58,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-16R",
+   "b": "22-35N",
+   "street_1": "West McMicken Avenue",
+   "street_2": "Marshall Avenue",
+   "before_m": 2.28,
+   "after_m": 2.19,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-75",
+   "b": "22-76",
+   "street_1": "Ivanhoe Avenue",
+   "street_2": "Hopkins Avenue",
+   "before_m": 2.29,
+   "after_m": 1.91,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-31",
+   "b": "22-33",
+   "street_1": "Beekman Street",
+   "street_2": "Queen City Avenue",
+   "before_m": 2.3,
+   "after_m": 1.89,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-29",
+   "b": "22-31",
+   "street_1": "Elberon Avenue",
+   "street_2": "West Liberty Street",
+   "before_m": 2.33,
+   "after_m": 2.37,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-26A",
+   "b": "22-29",
+   "street_1": "West 8th Street",
+   "street_2": "Elberon Avenue",
+   "before_m": 2.36,
+   "after_m": 2.43,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-29",
+   "b": "22-31",
+   "street_1": "Hawthorne Avenue",
+   "street_2": "West Liberty Street",
+   "before_m": 2.46,
+   "after_m": 2.01,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-34R",
+   "b": "22-35N",
+   "street_1": "Cormany Avenue",
+   "street_2": "Township Street",
+   "before_m": 2.52,
+   "after_m": 3.58,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-66",
+   "b": "22-68",
+   "street_1": "Ridgeway Avenue",
+   "street_2": "Reading Road",
+   "before_m": 2.56,
+   "after_m": 3.63,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-31",
+   "b": "22-33",
+   "street_1": "Sperber Street",
+   "street_2": "Queen City Avenue",
+   "before_m": 2.56,
+   "after_m": 2.93,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-76",
+   "b": "22-82A",
+   "street_1": "Adams Avenue",
+   "street_2": "Ashland Avenue",
+   "before_m": 2.6,
+   "after_m": 2.19,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-68",
+   "b": "22-69",
+   "street_1": "Lexington Avenue",
+   "street_2": "Reading Road",
+   "before_m": 2.6,
+   "after_m": 2.41,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-76",
+   "b": "22-82A",
+   "street_1": "Madison",
+   "street_2": "Lafayette Avenue",
+   "before_m": 2.63,
+   "after_m": 2.21,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-75",
+   "b": "22-82A",
+   "street_1": "Carter Street",
+   "street_2": "Hopkins Avenue",
+   "before_m": 2.64,
+   "after_m": 2.29,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-68",
+   "b": "22-75",
+   "street_1": "Glenwood Avenue",
+   "street_2": "Reading Road",
+   "before_m": 2.68,
+   "after_m": 2.47,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-35N",
+   "b": "22-38",
+   "street_1": "Dixmyth Avenue",
+   "street_2": "Morrison Avenue",
+   "before_m": 2.7,
+   "after_m": 3.85,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-31",
+   "b": "22-33",
+   "street_1": "Clifford Street",
+   "street_2": "Queen City Avenue",
+   "before_m": 2.72,
+   "after_m": 2.36,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-68",
+   "b": "22-75",
+   "street_1": "Lexington Avenue",
+   "street_2": "Reading Road",
+   "before_m": 2.78,
+   "after_m": 2.89,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-75",
+   "b": "22-82A",
+   "street_1": "Webster Avenue",
+   "street_2": "Hopkins Avenue",
+   "before_m": 2.85,
+   "after_m": 2.86,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-31",
+   "b": "22-33",
+   "street_1": "Shadwell Street",
+   "street_2": "Queen City Avenue",
+   "before_m": 2.9,
+   "after_m": 3.03,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-66",
+   "b": "22-68",
+   "street_1": "Ridgeway Avenue",
+   "street_2": "Burnet Avenue",
+   "before_m": 3.02,
+   "after_m": 2.0,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-68",
+   "b": "22-69",
+   "street_1": "Rockdale Avenue",
+   "street_2": "Reading Road",
+   "before_m": 3.03,
+   "after_m": 2.58,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-38",
+   "b": "22-68",
+   "street_1": "Shields Street",
+   "street_2": "Vine Street",
+   "before_m": 3.05,
+   "after_m": 2.47,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-34R",
+   "b": "22-35N",
+   "street_1": "Cormany Avenue",
+   "street_2": "Rachel Street",
+   "before_m": 3.09,
+   "after_m": 1.51,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-66",
+   "b": "22-69",
+   "street_1": "Whittier Street",
+   "street_2": "Reading Road",
+   "before_m": 3.14,
+   "after_m": 2.7,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-66",
+   "b": "22-67",
+   "street_1": "Gilbert Avenue",
+   "street_2": "Locust Street",
+   "before_m": 3.28,
+   "after_m": 2.77,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-75",
+   "b": "22-82A",
+   "street_1": "Bell Street",
+   "street_2": "Hopkins Avenue",
+   "before_m": 3.37,
+   "after_m": 2.97,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-33",
+   "b": "22-34L",
+   "street_1": "Carll Street",
+   "street_2": "Cummings Street",
+   "before_m": 3.4,
+   "after_m": 1.96,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-34R",
+   "b": "22-35N",
+   "street_1": "Massachusetts Avenue",
+   "street_2": "Township Street",
+   "before_m": 3.53,
+   "after_m": 2.08,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-29",
+   "b": "22-31",
+   "street_1": "Garrard Avenue",
+   "street_2": "West Liberty Street",
+   "before_m": 3.56,
+   "after_m": 1.8,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-66",
+   "b": "22-68",
+   "street_1": "French Street",
+   "street_2": "Eden Avenue",
+   "before_m": 3.65,
+   "after_m": 4.2,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-34R",
+   "b": "22-35N",
+   "street_1": "Massachusetts Avenue",
+   "street_2": "Bader Street",
+   "before_m": 3.67,
+   "after_m": 4.0,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Turrill Street",
+   "street_2": "Powers Street",
+   "before_m": 3.76,
+   "after_m": 4.68,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-76",
+   "b": "22-82A",
+   "street_1": "Floral Avenue",
+   "street_2": "Smith Road",
+   "before_m": 3.77,
+   "after_m": 3.54,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-29",
+   "b": "22-31",
+   "street_1": "Evans Street",
+   "street_2": "West Liberty Street",
+   "before_m": 3.85,
+   "after_m": 2.11,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-16R",
+   "b": "22-34R",
+   "street_1": "Massachusetts Avenue",
+   "street_2": "Marshall Avenue",
+   "before_m": 3.88,
+   "after_m": 4.01,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-66",
+   "b": "22-67",
+   "street_1": "Gilbert Avenue",
+   "street_2": "Lincoln Avenue",
+   "before_m": 3.94,
+   "after_m": 3.3,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-16R",
+   "b": "22-35N",
+   "street_1": "West McMicken Avenue",
+   "street_2": "Tafel Street",
+   "before_m": 3.97,
+   "after_m": 3.67,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-76",
+   "b": "22-82A",
+   "street_1": "Washington",
+   "street_2": "Floral Avenue",
+   "before_m": 4.06,
+   "after_m": 4.15,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-26A",
+   "b": "22-29",
+   "street_1": "West 8th Street",
+   "street_2": "Hawthorne Avenue",
+   "before_m": 4.16,
+   "after_m": 4.01,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-29",
+   "b": "22-31",
+   "street_1": "Wallace Street",
+   "street_2": "West Liberty Street",
+   "before_m": 4.37,
+   "after_m": 3.03,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-68",
+   "b": "22-69",
+   "street_1": "Blair Avenue",
+   "street_2": "Reading Road",
+   "before_m": 4.39,
+   "after_m": 2.76,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-31",
+   "b": "22-33",
+   "street_1": "Engel Alley",
+   "street_2": "Queen City Avenue",
+   "before_m": 4.44,
+   "after_m": 4.59,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-66",
+   "b": "22-68",
+   "street_1": "French Street",
+   "street_2": "Euclid Avenue",
+   "before_m": 4.47,
+   "after_m": 3.23,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-35N",
+   "b": "22-38",
+   "street_1": "Dixmyth Avenue",
+   "street_2": "Whitfield Avenue",
+   "before_m": 4.64,
+   "after_m": 5.19,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-69",
+   "b": "22-70",
+   "street_1": "Brewster Avenue",
+   "street_2": "Montgomery Road",
+   "before_m": 4.81,
+   "after_m": 3.02,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-16R",
+   "b": "22-35N",
+   "street_1": "Massachusetts Avenue",
+   "street_2": "Marshall Avenue",
+   "before_m": 4.91,
+   "after_m": 3.71,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-33",
+   "b": "22-34L",
+   "street_1": "Casper Street",
+   "street_2": "Denham Street",
+   "before_m": 4.94,
+   "after_m": 1.71,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-66",
+   "b": "22-68",
+   "street_1": "French Street",
+   "street_2": "Vine Street",
+   "before_m": 4.95,
+   "after_m": 3.73,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-66",
+   "b": "22-69",
+   "street_1": "Wehrman Street",
+   "street_2": "Kerper Avenue",
+   "before_m": 5.04,
+   "after_m": 1.95,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-67",
+   "b": "22-70",
+   "street_1": "Montgomery Road",
+   "street_2": "Hewitt Avenue",
+   "before_m": 5.33,
+   "after_m": 5.7,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-38",
+   "b": "22-68",
+   "street_1": "Woolper Street",
+   "street_2": "Vine Street",
+   "before_m": 5.35,
+   "after_m": 5.06,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-76",
+   "b": "22-83A",
+   "street_1": "Floral Avenue",
+   "street_2": "Smith Road",
+   "before_m": 5.36,
+   "after_m": 4.91,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-67",
+   "b": "22-70",
+   "street_1": "Woodburn Avenue",
+   "street_2": "Hewitt Avenue",
+   "before_m": 5.49,
+   "after_m": 5.14,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Colerain Avenue",
+   "street_2": "Burgoyne Street",
+   "before_m": 5.67,
+   "after_m": 4.87,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-66",
+   "b": "22-69",
+   "street_1": "Whittier Street",
+   "street_2": "Wehrman Street",
+   "before_m": 5.68,
+   "after_m": 1.86,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-16R",
+   "b": "22-34R",
+   "street_1": "Colerain Avenue",
+   "street_2": "Marshall Avenue",
+   "before_m": 5.76,
+   "after_m": 5.58,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-66",
+   "b": "22-68",
+   "street_1": "Bethesda Avenue",
+   "street_2": "Eden Avenue",
+   "before_m": 5.78,
+   "after_m": 4.48,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-82A",
+   "b": "22-83A",
+   "street_1": "Harris Avenue",
+   "street_2": "Marion Avenue",
+   "before_m": 6.05,
+   "after_m": 5.73,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-66",
+   "b": "22-69",
+   "street_1": "Whittier Street",
+   "street_2": "Whittier Street",
+   "before_m": 6.24,
+   "after_m": 4.12,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-29",
+   "b": "22-31",
+   "street_1": "Detroit Street",
+   "street_2": "West Liberty Street",
+   "before_m": 6.26,
+   "after_m": 4.75,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Colerain Avenue",
+   "street_2": "Sullivan Street",
+   "before_m": 6.33,
+   "after_m": 5.16,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-33",
+   "b": "22-34L",
+   "street_1": "Casper Street",
+   "street_2": "Carll Street",
+   "before_m": 6.8,
+   "after_m": 3.73,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-38",
+   "b": "22-68",
+   "street_1": "Glenmary Avenue",
+   "street_2": "Vine Street",
+   "before_m": 6.82,
+   "after_m": 5.7,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-66",
+   "b": "22-69",
+   "street_1": "Wehrman Street",
+   "street_2": "Fredonia Avenue",
+   "before_m": 7.17,
+   "after_m": 3.49,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Colerain Avenue",
+   "street_2": "Powers Street",
+   "before_m": 7.47,
+   "after_m": 5.31,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-67",
+   "b": "22-69",
+   "street_1": "Gilbert Avenue",
+   "street_2": "Dixmont Avenue",
+   "before_m": 8.12,
+   "after_m": 6.54,
+   "huber_weight": 0.918
+  },
+  {
+   "a": "22-38",
+   "b": "22-68",
+   "street_1": "Ruther Avenue",
+   "street_2": "Vine Street",
+   "before_m": 8.27,
+   "after_m": 9.45,
+   "huber_weight": 0.635
+  },
+  {
+   "a": "22-33",
+   "b": "22-34L",
+   "street_1": "Seegar Avenue",
+   "street_2": "Carll Street",
+   "before_m": 8.35,
+   "after_m": 9.36,
+   "huber_weight": 0.641
+  },
+  {
+   "a": "22-33",
+   "b": "22-34L",
+   "street_1": "Casper Street",
+   "street_2": "Pulte Street",
+   "before_m": 8.44,
+   "after_m": 4.57,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-66",
+   "b": "22-69",
+   "street_1": "Wehrman Street",
+   "street_2": "Syracuse Street",
+   "before_m": 8.69,
+   "after_m": 4.91,
+   "huber_weight": 1.0
+  },
+  {
+   "a": "22-75",
+   "b": "22-82A",
+   "street_1": "Woodburn Avenue",
+   "street_2": "Hopkins Avenue",
+   "before_m": 9.83,
+   "after_m": 9.33,
+   "huber_weight": 0.643
+  },
+  {
+   "a": "22-31",
+   "b": "22-33",
+   "street_1": "Queen City Avenue",
+   "street_2": "Garrard Avenue",
+   "before_m": 10.0,
+   "after_m": 9.51,
+   "huber_weight": 0.631
+  },
+  {
+   "a": "22-33",
+   "b": "22-34L",
+   "street_1": "Casper Street",
+   "street_2": "Baltimore Avenue",
+   "before_m": 10.02,
+   "after_m": 6.61,
+   "huber_weight": 0.908
+  },
+  {
+   "a": "22-34R",
+   "b": "22-37R",
+   "street_1": "Spring Grove Avenue",
+   "street_2": "Sassafras Street",
+   "before_m": 11.39,
+   "after_m": 10.3,
+   "huber_weight": 0.582
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Spaeth Street",
+   "street_2": "Dreman Avenue",
+   "before_m": 11.9,
+   "after_m": 8.48,
+   "huber_weight": 0.707
+  },
+  {
+   "a": "22-70",
+   "b": "22-75",
+   "street_1": "Montgomery Road",
+   "street_2": "Brewster Avenue",
+   "before_m": 12.12,
+   "after_m": 11.16,
+   "huber_weight": 0.538
+  },
+  {
+   "a": "22-66",
+   "b": "22-69",
+   "street_1": "Wehrman Street",
+   "street_2": "Gilbert Avenue",
+   "before_m": 13.39,
+   "after_m": 15.09,
+   "huber_weight": 0.398
+  },
+  {
+   "a": "22-75",
+   "b": "22-76",
+   "street_1": "Ivanhoe Avenue",
+   "street_2": "Montgomery Road",
+   "before_m": 14.24,
+   "after_m": 13.22,
+   "huber_weight": 0.454
+  },
+  {
+   "a": "22-70",
+   "b": "22-75",
+   "street_1": "Montgomery Road",
+   "street_2": "Clarion Avenue",
+   "before_m": 14.25,
+   "after_m": 15.0,
+   "huber_weight": 0.4
+  },
+  {
+   "a": "22-35N",
+   "b": "22-38",
+   "street_1": "West McMicken Avenue",
+   "street_2": "Dixmyth Avenue",
+   "before_m": 14.52,
+   "after_m": 12.41,
+   "huber_weight": 0.484
+  },
+  {
+   "a": "22-69",
+   "b": "22-75",
+   "street_1": "Brewster Avenue",
+   "street_2": "Montgomery Road",
+   "before_m": 16.33,
+   "after_m": 13.61,
+   "huber_weight": 0.441
+  },
+  {
+   "a": "22-37R",
+   "b": "22-38",
+   "street_1": "Ludlow Avenue",
+   "street_2": "Lafayette Avenue",
+   "before_m": 19.81,
+   "after_m": 15.5,
+   "huber_weight": 0.387
+  },
+  {
+   "a": "22-34R",
+   "b": "22-38",
+   "street_1": "Vermont Avenue",
+   "street_2": "Bates Alley",
+   "before_m": 20.54,
+   "after_m": 16.5,
+   "huber_weight": 0.364
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Geringer Street",
+   "street_2": "Groub Street",
+   "before_m": 21.78,
+   "after_m": 17.79,
+   "huber_weight": 0.337
+  },
+  {
+   "a": "22-34R",
+   "b": "22-38",
+   "street_1": "Vermont Avenue",
+   "street_2": "Stock Avenue",
+   "before_m": 21.84,
+   "after_m": 17.91,
+   "huber_weight": 0.335
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Geringer Street",
+   "street_2": "Ralston Avenue",
+   "before_m": 23.28,
+   "after_m": 19.21,
+   "huber_weight": 0.312
+  },
+  {
+   "a": "22-33",
+   "b": "22-34R",
+   "street_1": "Marshall Avenue",
+   "street_2": "Garrard Avenue",
+   "before_m": 25.58,
+   "after_m": 25.05,
+   "huber_weight": 0.24
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Groub Street",
+   "street_2": "Ralston Avenue",
+   "before_m": 27.44,
+   "after_m": 23.33,
+   "huber_weight": 0.257
+  },
+  {
+   "a": "22-66",
+   "b": "22-69",
+   "street_1": "Ridgeway Avenue",
+   "street_2": "Reading Road",
+   "before_m": 27.77,
+   "after_m": 24.66,
+   "huber_weight": 0.243
+  },
+  {
+   "a": "22-68",
+   "b": "22-69",
+   "street_1": "Ridgeway Avenue",
+   "street_2": "Reading Road",
+   "before_m": 29.87,
+   "after_m": 27.13,
+   "huber_weight": 0.221
+  },
+  {
+   "a": "22-67",
+   "b": "22-69",
+   "street_1": "Gilbert Avenue",
+   "street_2": "Woodburn Avenue",
+   "before_m": 30.01,
+   "after_m": 28.79,
+   "huber_weight": 0.208
+  }
+ ]
+}
