@@ -100,7 +100,7 @@ def test_a_date_change_is_one_record_edit(tmp_path):
 
 def test_zone_years_are_per_zone(tmp_path):
     import json
-    import region.ground.compose as C
+    import importlib; C = importlib.import_module("region.ground.compose")
     from region.ground import layers as L
     zones = L.GROUND / "zones/zones_post1912_works.geojson"
     ids = [zid for zid, _ in C._load_zones(zones)]
