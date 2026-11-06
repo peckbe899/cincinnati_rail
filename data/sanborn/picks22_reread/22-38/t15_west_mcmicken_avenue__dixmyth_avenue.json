@@ -1,0 +1,80 @@
+{
+ "crossing": "West McMicken Avenue & Dixmyth Avenue",
+ "plate": "22-38",
+ "tie": 15,
+ "tie_plates": "22-35N / 22-38",
+ "job": "t15_38",
+ "reads": [
+  {
+   "job": "t15_38",
+   "found": true,
+   "x": 1130,
+   "y": 6074,
+   "kind": "T",
+   "printed": [
+    "Avenue (printed 'AVE.' only)",
+    "Dixmyth Avenue (printed 'DIXMYTH')"
+   ],
+   "plate_edge": false,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "N-S avenue labelled 'AVE.' (taken as West McMicken Avenue) west face ~1083 at the junction, east face = block 48 west face ~1175; Dixmyth (55') from block 48 south face ~6032 to the mask edge ~6115, 6in pipe line along ~6077 turning south at ~1128. Dixmyth ends at the avenue (T). South/east of the junction is masked white.",
+   "reader": "G4r1"
+  },
+  {
+   "job": "t15_38",
+   "found": true,
+   "x": 1132,
+   "y": 6077,
+   "kind": "T",
+   "printed": [
+    "Avenue (West McMicken; only 'AVE.' printed inside the region, 'McMICKEN' label lies just north of it)",
+    "Dixmyth"
+   ],
+   "plate_edge": false,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "McMicken runs N-S between a printed west line (x~1090-1100, along the masked canal side) and the block of lots 16-18 (east corner ~1170); dashed sewer at x~1148. Dixmyth runs east from it between the block line (y~6035) and the south edge of mapped area (y~6115, matches 55 ft). The thin Gamma-shaped line at y~6077 / x~1135 is the 6-inch water pipe, not a street line. McMicken continues south a little before the mask (~6180), so T with Dixmyth as side street. Map is cut just south of the crossing.",
+   "reader": "G4r2"
+  }
+ ],
+ "two_reads_spread_px": 3.6,
+ "new_pick": {
+  "x": 1131.0,
+  "y": 6075.5,
+  "E": 713297.73,
+  "N": 4335245.37,
+  "moved_px": 0.5,
+  "moved_m": 0.1
+ },
+ "old_pick": {
+  "x": 1131.0,
+  "y": 6076.0,
+  "E": 713297.73,
+  "N": 4335245.27,
+  "names": [
+   "Dixmyth Avenue",
+   "West McMicken Avenue"
+  ],
+  "reads": [
+   {
+    "file": "sbg/picks22/s22-38_a.json",
+    "a": "Dixmyth Avenue",
+    "b": "West McMicken Avenue",
+    "x": 1131,
+    "y": 6076,
+    "kind": "T"
+   }
+  ]
+ },
+ "osm_match": {
+  "osm": null,
+  "why": "no OSM crossing within 45 m of the seed",
+  "names": [
+   "Dixmyth Avenue",
+   "West McMicken Avenue"
+  ]
+ },
+ "note": null,
+ "osm_crossings_of_these_names": []
+}

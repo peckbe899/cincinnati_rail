@@ -1,0 +1,95 @@
+{
+ "crossing": "Ludlow Avenue & Lafayette Avenue",
+ "plate": "22-37R",
+ "tie": 10,
+ "tie_plates": "22-37R / 22-38",
+ "job": "t10_37R",
+ "reads": [
+  {
+   "job": "t10_37R",
+   "found": true,
+   "x": 4925,
+   "y": 3850,
+   "kind": "T",
+   "printed": [
+    "Ludlow Avenue",
+    "Lafayette Avenue"
+   ],
+   "plate_edge": false,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Ludlow Ave is the through street, bending here from a NW-SE leg to a SSE leg; Lafayette Ave starts here and runs ENE. A 50' unnamed street also leaves N from the same open crossing (between block 50 and the C.O. Bowdle lot), so the open area is 4-way; I took the middle of the open crossing (hydrant at ~(4915,3810) on its N side). Separately, a dash-dot 'PROPOSED LUDLOW' line (City of Cincinnati) runs SSE W of the existing street; it does not meet Lafayette.",
+   "reader": "G3r1"
+  },
+  {
+   "job": "t10_37R",
+   "found": true,
+   "x": 4937,
+   "y": 3849,
+   "kind": "T",
+   "printed": [
+    "Ludlow Avenue",
+    "Lafayette Avenue"
+   ],
+   "plate_edge": false,
+   "confidence": "high",
+   "same_names_elsewhere": [],
+   "note": "Lafayette Ave. (north edge from block corner ~(4945,3797), south edge from block corner ~(4995,3875)) runs ENE and ends on Ludlow Ave., which bends here from its NW leg to its SSE leg. Point = Lafayette centreline meeting the Ludlow centreline at the bend. The dash-dot 'Proposed Ludlow / City of Cincinnati' line to the SW is not a street.",
+   "reader": "G3r2"
+  }
+ ],
+ "two_reads_spread_px": 12.0,
+ "new_pick": {
+  "x": 4931.0,
+  "y": 3849.5,
+  "E": 713160.77,
+  "N": 4336362.79,
+  "moved_px": 6.5,
+  "moved_m": 1.24
+ },
+ "old_pick": {
+  "x": 4925.5,
+  "y": 3853.0,
+  "E": 713159.73,
+  "N": 4336362.12,
+  "names": [
+   "Ludlow Avenue",
+   "Lafayette Avenue"
+  ],
+  "reads": [
+   {
+    "file": "sbg/picks22/s22-37R.json",
+    "a": "Ludlow Avenue",
+    "b": "Lafayette Avenue",
+    "x": 4935,
+    "y": 3842,
+    "kind": "T"
+   },
+   {
+    "file": "sbg/picks22/s22-37R_c.json",
+    "a": "Ludlow Avenue",
+    "b": "Lafayette Avenue",
+    "x": 4916,
+    "y": 3864,
+    "kind": "T"
+   }
+  ]
+ },
+ "osm_match": {
+  "osm": null,
+  "why": "no OSM crossing within 30 m of the seed",
+  "names": [
+   "Ludlow Avenue",
+   "Lafayette Avenue"
+  ]
+ },
+ "note": null,
+ "osm_crossings_of_these_names": [
+  {
+   "E": 713111.2,
+   "N": 4336366.8,
+   "from_old_m": 48.8,
+   "from_new_m": 49.7
+  }
+ ]
+}

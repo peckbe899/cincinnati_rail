@@ -1,0 +1,90 @@
+{
+ "crossing": "Brewster Avenue & Montgomery Road",
+ "plate": "22-75",
+ "tie": 13,
+ "tie_plates": "22-69 / 22-75",
+ "job": "t13_75",
+ "reads": [
+  {
+   "job": "t13_75",
+   "found": true,
+   "x": 8580,
+   "y": 7140,
+   "kind": "cross",
+   "printed": [
+    "AVE (name not printed inside region; house nos. 1700-1730)",
+    "MONTGOMERY"
+   ],
+   "plate_edge": true,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "The avenue runs along the bottom edge of the plate. The west leg's north lot line is y~7075 and its south half is cut by the plate bottom (y~7170; '60' ft written). East of Montgomery the leg's north edge is y~7148 (jogged south) and the rest is off the plate. Montgomery edges at this y are ~8518 and ~8642. Point is on Montgomery's centreline, midway between the leg centrelines. West leg alone: ~(8590, 7120). Brewster is identified by its 1700-1730 house numbers, which match 22-69.",
+   "reader": "G2r1"
+  },
+  {
+   "job": "t13_75",
+   "found": true,
+   "x": 8590,
+   "y": 7130,
+   "kind": "cross",
+   "printed": [
+    "MONTGOMERY",
+    "AVE (Brewster name not printed in region)"
+   ],
+   "plate_edge": true,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Bottom 'AVE' (60 ft, north line y~7088, 12in sewer y~7123, addresses 1700-1730) meets Montgomery (~70 ft, lines ~8532/8649 at y 7130); south half of the avenue is cut by the plate bottom edge at y~7170. A short stub continues east of Montgomery (top ~7122). Point estimated with avenue centre ~7130.",
+   "reader": "G2r2"
+  }
+ ],
+ "two_reads_spread_px": 14.1,
+ "new_pick": {
+  "x": 8585.0,
+  "y": 7135.0,
+  "E": 718637.17,
+  "N": 4335786.9,
+  "moved_px": 9.0,
+  "moved_m": 1.83
+ },
+ "old_pick": {
+  "x": 8585.0,
+  "y": 7126.0,
+  "E": 718637.29,
+  "N": 4335788.73,
+  "names": [
+   "Brewster Avenue",
+   "Montgomery Road"
+  ],
+  "reads": [
+   {
+    "file": "sbg/picks22/s22-75_f.json",
+    "a": "Brewster Avenue",
+    "b": "Montgomery Road",
+    "x": 8585,
+    "y": 7126,
+    "kind": "T"
+   }
+  ]
+ },
+ "osm_match": {
+  "osm": [
+   718630.38,
+   4335773.09
+  ],
+  "why": null,
+  "names": [
+   "Brewster Avenue",
+   "Montgomery Road"
+  ]
+ },
+ "note": "Both reads took the middle of the Brewster jog. The old pick is the image-west leg.",
+ "osm_crossings_of_these_names": [
+  {
+   "E": 718630.4,
+   "N": 4335773.1,
+   "from_old_m": 17.1,
+   "from_new_m": 15.4
+  }
+ ]
+}

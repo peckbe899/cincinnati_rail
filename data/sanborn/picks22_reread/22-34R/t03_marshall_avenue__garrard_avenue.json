@@ -1,0 +1,80 @@
+{
+ "crossing": "Marshall Avenue & Garrard Avenue",
+ "plate": "22-34R",
+ "tie": 3,
+ "tie_plates": "22-33 / 22-34R",
+ "job": "t03_34R",
+ "reads": [
+  {
+   "job": "t03_34R",
+   "found": true,
+   "x": 2780,
+   "y": 7428,
+   "kind": "cross",
+   "printed": [
+    "MARSHALL",
+    "GARRARD"
+   ],
+   "plate_edge": false,
+   "confidence": "high",
+   "same_names_elsewhere": [],
+   "note": "Garrard edges x~2732/2828 ('60' written) and it continues south of Marshall. Marshall's lot lines are y~7378 (north) and ~7478 (south). A ticked railroad line at y~7395 and a sewer at ~7430 run along Marshall. Centre taken between the lot lines. 'STREET' crosses Marshall further east, at x~3100.",
+   "reader": "G2r1"
+  },
+  {
+   "job": "t03_34R",
+   "found": true,
+   "x": 2780,
+   "y": 7430,
+   "kind": "cross",
+   "printed": [
+    "MARSHALL",
+    "GARRARD"
+   ],
+   "plate_edge": false,
+   "confidence": "high",
+   "same_names_elsewhere": [],
+   "note": "Garrard (60 ft, lines x~2733/2825) crosses Marshall (60 ft, block lines y~7378/7480, 96in sewer dashed ~7432); Garrard continues south of Marshall. Point is middle of the open crossing.",
+   "reader": "G2r2"
+  }
+ ],
+ "two_reads_spread_px": 2.0,
+ "new_pick": {
+  "x": 2780.0,
+  "y": 7429.0,
+  "E": 712657.38,
+  "N": 4334362.57,
+  "moved_px": 1.0,
+  "moved_m": 0.19
+ },
+ "old_pick": {
+  "x": 2780.0,
+  "y": 7428.0,
+  "E": 712657.39,
+  "N": 4334362.76,
+  "names": [
+   "Garrard Avenue",
+   "Marshall Avenue"
+  ],
+  "reads": [
+   {
+    "file": "sbg/picks22/s22-34R.json",
+    "a": "Garrard Avenue",
+    "b": "Marshall Avenue",
+    "x": 2780,
+    "y": 7428,
+    "kind": "cross"
+   }
+  ]
+ },
+ "osm_match": {
+  "osm": null,
+  "why": "no OSM crossing within 30 m of the seed",
+  "names": [
+   "Garrard Avenue",
+   "Marshall Avenue"
+  ]
+ },
+ "note": null,
+ "osm_crossings_of_these_names": []
+}

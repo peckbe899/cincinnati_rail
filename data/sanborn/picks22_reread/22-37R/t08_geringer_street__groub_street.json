@@ -1,0 +1,88 @@
+{
+ "crossing": "Geringer Street & Groub Street",
+ "plate": "22-37R",
+ "tie": 8,
+ "tie_plates": "22-37L / 22-37R",
+ "job": "t08_37R",
+ "reads": [
+  {
+   "job": "t08_37R",
+   "found": false,
+   "x": null,
+   "y": null,
+   "kind": null,
+   "printed": [
+    "Geringer Street",
+    "Groub Street"
+   ],
+   "plate_edge": false,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Same as t08_37L: no Geringer/Groub crossing. Nearest points: Groub/Ralston T at ~(382,3410) and Geringer/Ralston at ~(210,3458), joined by a ~170 px stretch of Ralston. South ends of both streets stop at the S property line (~y 4010).",
+   "reader": "G3r1"
+  },
+  {
+   "job": "t08_37R",
+   "found": true,
+   "x": 330,
+   "y": 3230,
+   "kind": "T",
+   "printed": [
+    "Geringer Street",
+    "Groub Street"
+   ],
+   "plate_edge": false,
+   "confidence": "low",
+   "same_names_elsewhere": [],
+   "note": "Groub St. runs N-S between blocks 70 and 71 and reaches Ralston at ~(378,3411). Its line continues north past Ralston only as a narrow open gap (~7 m) between a small triangular lot (dims 40', 47.45', 44.21', apex ~(318,3305)) and the west face of block 67, opening into Geringer St.; '3620' is written in that gap. I took where the Groub centreline extended through that gap meets the Geringer centreline (Geringer is a straight NE-SW street, centre through ~(335,3218) and ~(191,3497)). Alternative reading: Groub ends at Ralston (T at ~(378,3411)) and only reaches Geringer via Ralston, whose junction with Geringer is ~(215,3451) at the north tip of block 70.",
+   "reader": "G3r2"
+  }
+ ],
+ "two_reads_spread_px": null,
+ "new_pick": {
+  "x": 330.0,
+  "y": 3230.0,
+  "E": 712304.52,
+  "N": 4336506.25,
+  "moved_px": 33.4,
+  "moved_m": 6.63
+ },
+ "old_pick": {
+  "x": 337.5,
+  "y": 3197.5,
+  "E": 712306.07,
+  "N": 4336512.7,
+  "names": [
+   "Geringer Street",
+   "Groub Street"
+  ],
+  "reads": [
+   {
+    "file": "sbg/picks22/s22-37R.json",
+    "a": "Geringer Street",
+    "b": "Groub Street",
+    "x": 330,
+    "y": 3212,
+    "kind": "T"
+   },
+   {
+    "file": "sbg/picks22/s22-37R_a.json",
+    "a": "Geringer Street",
+    "b": "Groub Street",
+    "x": 345,
+    "y": 3183,
+    "kind": "T"
+   }
+  ]
+ },
+ "osm_match": {
+  "osm": null,
+  "why": "no OSM crossing within 30 m of the seed",
+  "names": [
+   "Geringer Street",
+   "Groub Street"
+  ]
+ },
+ "note": "G3r1: Geringer and Groub do not meet (Groub ends at Ralston). G3r2 (low): through a 7 m gap north of Ralston. New pick = G3r2's read.",
+ "osm_crossings_of_these_names": []
+}

@@ -1,0 +1,90 @@
+{
+ "crossing": "Gilbert Avenue & Woodburn Avenue",
+ "plate": "22-69",
+ "tie": 1,
+ "tie_plates": "22-67 / 22-69",
+ "job": "t01_69",
+ "reads": [
+  {
+   "job": "t01_69",
+   "found": true,
+   "x": 8685,
+   "y": 4530,
+   "kind": "T",
+   "printed": [
+    "WOODBURN",
+    "AVE (diagonal from SW, name not printed in region; presumably Gilbert)"
+   ],
+   "plate_edge": true,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "WOODBURN (lots 3301-3315) runs N-S. A short southern stub of it (x 8650-8740) is cut by the plate edge. The diagonal 'AVE' comes from the SW (lots 3251-3267) and carries tracks NE into MONTGOMERY. Woodburn, the diagonal and Montgomery all meet at one point. The diagonal's SE side lies beyond the plate edge, so its centreline is estimated from the NW curb and the track.",
+   "reader": "G1r1"
+  },
+  {
+   "job": "t01_69",
+   "found": true,
+   "x": 8665,
+   "y": 4558,
+   "kind": "cross",
+   "printed": [
+    "Woodburn",
+    "Ave. (Gilbert not printed in region; continues NE as Montgomery)"
+   ],
+   "plate_edge": true,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Woodburn (printed WOODBURN) runs N-S and meets an avenue with a car track, printed only 'AVE.', coming from the SW. Through the junction that avenue continues straight NE as Montgomery (printed MONTGOMERY). This is a 5-way junction: a short strip continues south (Woodburn south, about x 8685-8735) and a stub goes east at y about 4530; both are cut by the plate edge. I took Woodburn's north centreline (x about 8665) where it crosses the Gilbert-Montgomery track centreline.",
+   "reader": "G1r2"
+  }
+ ],
+ "two_reads_spread_px": 34.4,
+ "new_pick": {
+  "x": 8675.0,
+  "y": 4544.0,
+  "E": 718162.46,
+  "N": 4335081.43,
+  "moved_px": 23.3,
+  "moved_m": 4.82
+ },
+ "old_pick": {
+  "x": 8692.0,
+  "y": 4528.0,
+  "E": 718166.22,
+  "N": 4335084.45,
+  "names": [
+   "Woodburn Avenue",
+   "Gilbert Avenue"
+  ],
+  "reads": [
+   {
+    "file": "sbg/picks22/s22-69_f.json",
+    "a": "Woodburn Avenue",
+    "b": "Gilbert Avenue",
+    "x": 8692,
+    "y": 4528,
+    "kind": "cross"
+   }
+  ]
+ },
+ "osm_match": {
+  "osm": [
+   718166.16,
+   4335085.0
+  ],
+  "why": null,
+  "names": [
+   "Woodburn Avenue",
+   "Gilbert Avenue"
+  ]
+ },
+ "note": null,
+ "osm_crossings_of_these_names": [
+  {
+   "E": 718166.2,
+   "N": 4335085.0,
+   "from_old_m": 0.6,
+   "from_new_m": 5.2
+  }
+ ]
+}

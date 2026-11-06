@@ -1,0 +1,80 @@
+{
+ "crossing": "Vermont Avenue & Stock Avenue",
+ "plate": "22-34R",
+ "tie": 7,
+ "tie_plates": "22-34R / 22-38",
+ "job": "t07_34R",
+ "reads": [
+  {
+   "job": "t07_34R",
+   "found": true,
+   "x": 5310,
+   "y": 3203,
+   "kind": "T",
+   "printed": [
+    "Vermont Avenue",
+    "Avenue (name not printed in region; 'AVE.' only)"
+   ],
+   "plate_edge": false,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Vermont Ave (50', west face ~5270, east face ~5350, 6in pipe line ~5297) ends at its south end on an E-W avenue labelled only 'AVE.' (60' marked; north face = block line ~3157, south line ~3250, 6in pipe line at ~3200). Taken as Stock Avenue by position (matches plate 22-38). Stock Ave ends just east at the old canal bed, so it is effectively an L/T corner. Name 'Stock' not printed within region.",
+   "reader": "G4r1"
+  },
+  {
+   "job": "t07_34R",
+   "found": true,
+   "x": 5305,
+   "y": 3209,
+   "kind": "T",
+   "printed": [
+    "Vermont",
+    "Ave. (Stock; only 'AVE.' printed)"
+   ],
+   "plate_edge": false,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "L-shaped junction like on plate 38: Vermont (x~5265 block line to ~5345 east line, which turns NE along the canal bed) meets the avenue south of the block (block line y~3160, south line y~3258, labelled 60'). Gamma line x~5295 / y~3200 is the 6-inch W. Pipe. Name 'Stock' not printed in region; identified by position (south end of Vermont, two blocks below the alley).",
+   "reader": "G4r2"
+  }
+ ],
+ "two_reads_spread_px": 7.8,
+ "new_pick": {
+  "x": 5307.5,
+  "y": 3206.0,
+  "E": 713179.76,
+  "N": 4335173.38,
+  "moved_px": 3.9,
+  "moved_m": 0.75
+ },
+ "old_pick": {
+  "x": 5310.0,
+  "y": 3209.0,
+  "E": 713180.2,
+  "N": 4335172.78,
+  "names": [
+   "Vermont Avenue",
+   "Stock Avenue"
+  ],
+  "reads": [
+   {
+    "file": "sbg/picks22/s22-34R.json",
+    "a": "Vermont Avenue",
+    "b": "Stock Avenue",
+    "x": 5310,
+    "y": 3209,
+    "kind": "T"
+   }
+  ]
+ },
+ "osm_match": {
+  "osm": null,
+  "why": "not in OSM: vermont",
+  "names": [
+   "Vermont Avenue",
+   "Stock Avenue"
+  ]
+ },
+ "note": null,
+ "osm_crossings_of_these_names": []
+}

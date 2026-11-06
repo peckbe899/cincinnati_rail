@@ -1,0 +1,80 @@
+{
+ "crossing": "Vermont Avenue & Bates Alley",
+ "plate": "22-34R",
+ "tie": 9,
+ "tie_plates": "22-34R / 22-38",
+ "job": "t09_34R",
+ "reads": [
+  {
+   "job": "t09_34R",
+   "found": true,
+   "x": 5312,
+   "y": 2385,
+   "kind": "T",
+   "printed": [
+    "Vermont Avenue",
+    "Alley (printed 'ALLEY', no name)"
+   ],
+   "plate_edge": false,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Vermont Ave (west face ~5275, east ~5350) ends at its north end on a narrow E-W alley (north line ~2372, south line ~2398) printed only 'ALLEY'; taken as Bates Alley by position (matches plate 22-38). Alley continues east toward the canal. A second unnamed alley at y~2800 inside the Cormany-Vermont block is not Bates.",
+   "reader": "G4r1"
+  },
+  {
+   "job": "t09_34R",
+   "found": true,
+   "x": 5312,
+   "y": 2385,
+   "kind": "T",
+   "printed": [
+    "Vermont Ave. (label 'VERMONT' lower down, 'AVE.' here)",
+    "Alley (unnamed here; 'ALLEY')"
+   ],
+   "plate_edge": false,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Alley runs E-W between y~2372 (blue City of Cincinnati boundary) and block line y~2398. Vermont (50', x~5275-5350) ends at it from the south; a dashed (sewer/property) line at x~5333 continues north into the City of Cincinnati land, not a street. Identified as Bates Alley by position (north end of Vermont, one block above the middle avenue), the name is not printed.",
+   "reader": "G4r2"
+  }
+ ],
+ "two_reads_spread_px": 0.0,
+ "new_pick": {
+  "x": 5312.0,
+  "y": 2385.0,
+  "E": 713189.66,
+  "N": 4335333.01,
+  "moved_px": 2.2,
+  "moved_m": 0.43
+ },
+ "old_pick": {
+  "x": 5313.0,
+  "y": 2387.0,
+  "E": 713189.83,
+  "N": 4335332.62,
+  "names": [
+   "Vermont Avenue",
+   "Bates Alley"
+  ],
+  "reads": [
+   {
+    "file": "sbg/picks22/s22-34R.json",
+    "a": "Vermont Avenue",
+    "b": "Bates Alley",
+    "x": 5313,
+    "y": 2387,
+    "kind": "T"
+   }
+  ]
+ },
+ "osm_match": {
+  "osm": null,
+  "why": "not in OSM: vermont",
+  "names": [
+   "Vermont Avenue",
+   "Bates Alley"
+  ]
+ },
+ "note": null,
+ "osm_crossings_of_these_names": []
+}

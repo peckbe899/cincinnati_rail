@@ -1,0 +1,80 @@
+{
+ "crossing": "Marshall Avenue & Garrard Avenue",
+ "plate": "22-33",
+ "tie": 3,
+ "tie_plates": "22-33 / 22-34R",
+ "job": "t03_33",
+ "reads": [
+  {
+   "job": "t03_33",
+   "found": true,
+   "x": 10537,
+   "y": 1777,
+   "kind": "cross",
+   "printed": [
+    "MARSHALL AVE.",
+    "AVENUE (only 'AVENUE' printed in region; no Garrard name visible)"
+   ],
+   "plate_edge": true,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Marshall Ave edges y~1733/1820, with a railroad track down its middle at y~1756. The vertical 60 ft avenue's edges are x~10488/10586. The avenue continues south, and a short stub runs north to the plate edge at y~1668. Marshall continues east only to the plate edge at x~10640. The street name Garrard is not printed in the region. Its position matches Garrard on 22-34R: a 60 ft avenue crossing Marshall, with the railroad to the west.",
+   "reader": "G2r1"
+  },
+  {
+   "job": "t03_33",
+   "found": true,
+   "x": 10530,
+   "y": 1777,
+   "kind": "cross",
+   "printed": [
+    "MARSHALL AVE.",
+    "AVENUE (first word of name not printed inside the region)"
+   ],
+   "plate_edge": false,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Marshall Ave (lines y~1733/1820, track on it) crosses the only N-S avenue at x~10488-10573 (60 ft). Only 'AVENUE' is printed on it within the region, so Garrard identified by position. The north arm is a short stub ending at the printed map boundary ~y 1670; crossing itself fully visible.",
+   "reader": "G2r2"
+  }
+ ],
+ "two_reads_spread_px": 7.0,
+ "new_pick": {
+  "x": 10533.5,
+  "y": 1777.0,
+  "E": 712639.51,
+  "N": 4334381.37,
+  "moved_px": 2.7,
+  "moved_m": 0.54
+ },
+ "old_pick": {
+  "x": 10536.0,
+  "y": 1776.0,
+  "E": 712640.02,
+  "N": 4334381.54,
+  "names": [
+   "Marshall Avenue",
+   "Garrard Avenue"
+  ],
+  "reads": [
+   {
+    "file": "sbg/picks22/s22-33_f.json",
+    "a": "Marshall Avenue",
+    "b": "Garrard Avenue",
+    "x": 10536,
+    "y": 1776,
+    "kind": "cross"
+   }
+  ]
+ },
+ "osm_match": {
+  "osm": null,
+  "why": "no OSM crossing within 30 m of the seed",
+  "names": [
+   "Marshall Avenue",
+   "Garrard Avenue"
+  ]
+ },
+ "note": null,
+ "osm_crossings_of_these_names": []
+}

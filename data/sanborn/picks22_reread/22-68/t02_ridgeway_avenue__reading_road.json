@@ -1,0 +1,109 @@
+{
+ "crossing": "Ridgeway Avenue & Reading Road",
+ "plate": "22-68",
+ "tie": 2,
+ "tie_plates": "22-68 / 22-69",
+ "job": "t02_68",
+ "reads": [
+  {
+   "job": "t02_68",
+   "found": true,
+   "x": 7990,
+   "y": 6672,
+   "kind": "T",
+   "printed": [
+    "AVE. (name not printed in region; lots 510-548)",
+    "READING"
+   ],
+   "plate_edge": true,
+   "confidence": "medium",
+   "same_names_elsewhere": [
+    {
+     "x": 8060,
+     "y": 6562,
+     "note": "An unlabelled street stub leaves the east side of Reading about 100 px further up and is cut by the plate edge. It is probably the east part of Ridgeway, which crosses Reading with a jog."
+    }
+   ],
+   "note": "Ridgeway (west part) comes in from the west, labelled only 'AVE.'. Its south side is cut by the plate edge at y~6700, so its centreline is estimated about 40 px inside its north lot line (6632). Reading lots 3301/3303 lie just north of it. Reading's east side is also near the plate edge.",
+   "reader": "G1r1"
+  },
+  {
+   "job": "t02_68",
+   "found": true,
+   "x": 8042,
+   "y": 6550,
+   "kind": "T",
+   "printed": [
+    "(unnamed stub)",
+    "Reading"
+   ],
+   "plate_edge": true,
+   "confidence": "low",
+   "same_names_elsewhere": [
+    {
+     "x": 8010,
+     "y": 6662,
+     "note": "Unnamed 'AVE.' (nos. 510-548) meets Reading from the west, about 110 px south of the east stub; it could be the west continuation"
+    }
+   ],
+   "note": "Reading (printed READING) runs NE along the plate's east edge. A short stub cut by the plate edge comes in from the east at about (8090-8180, 6525-6605), with a hydrant and no name. I took it as Ridgeway because it matches the stub on 22-66 and the position of Ridgeway on 22-69. Ridgeway is not printed in the region. I put the point where the stub's centreline meets Reading's centreline (track); Reading's east side is close to the plate edge.",
+   "reader": "G1r2"
+  }
+ ],
+ "two_reads_spread_px": 132.6,
+ "new_pick": null,
+ "old_pick": {
+  "x": 7996.0,
+  "y": 6666.0,
+  "E": 716468.06,
+  "N": 4335098.82,
+  "names": [
+   "Ridgeway Avenue",
+   "Reading Road"
+  ],
+  "reads": [
+   {
+    "file": "sbg/picks22/s22-68_e.json",
+    "a": "Ridgeway Avenue",
+    "b": "Reading Road",
+    "x": 7997,
+    "y": 6665,
+    "kind": "T"
+   },
+   {
+    "file": "sbg/picks22/s22-68_f.json",
+    "a": "Ridgeway Avenue",
+    "b": "Reading Road",
+    "x": 7995,
+    "y": 6667,
+    "kind": "T"
+   }
+  ]
+ },
+ "osm_match": {
+  "osm": [
+   716470.1,
+   4335100.75
+  ],
+  "why": null,
+  "names": [
+   "Ridgeway Avenue",
+   "Reading Road"
+  ]
+ },
+ "note": "The two reads took different legs of the Ridgeway jog: G1r1 the west leg (printed 'AVE.', the old pick's leg), G1r2 the east stub cut by the plate edge. No single new pick.",
+ "osm_crossings_of_these_names": [
+  {
+   "E": 716470.1,
+   "N": 4335100.8,
+   "from_old_m": 2.8,
+   "from_new_m": null
+  },
+  {
+   "E": 716486.0,
+   "N": 4335122.2,
+   "from_old_m": 29.5,
+   "from_new_m": null
+  }
+ ]
+}

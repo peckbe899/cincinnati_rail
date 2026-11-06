@@ -1,0 +1,104 @@
+{
+ "crossing": "Montgomery Road & Clarion Avenue",
+ "plate": "22-75",
+ "tie": 12,
+ "tie_plates": "22-70 / 22-75",
+ "job": "t12_75",
+ "reads": [
+  {
+   "job": "t12_75",
+   "found": true,
+   "x": 8846,
+   "y": 6684,
+   "kind": "cross",
+   "printed": [
+    "CLARION ... AVE.",
+    "MONTGOMERY"
+   ],
+   "plate_edge": false,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Clarion curves down from the top (label CLARION at ~8200,6150) and turns south-east as 'AVE.' (nos. 3613-3639) to meet Montgomery. The west-leg centreline meets Montgomery's centreline at ~(8824, 6725): its north edge corner is (8795,6667) and it is ~75 px wide. On the east side a short horizontal stub labelled 'CL' (edges y~6607/6680, centre ~6643) meets Montgomery's centreline at ~(8869, 6643), then runs off the plate. So the crossing is jogged. I reported the midpoint. Montgomery is ~105 px wide here (west edge ~8770, east edge ~8890 near y 6700). East of Montgomery the plate is blank below the stub.",
+   "reader": "G2r1"
+  },
+  {
+   "job": "t12_75",
+   "found": true,
+   "x": 8858,
+   "y": 6672,
+   "kind": "cross",
+   "printed": [
+    "MONTGOMERY",
+    "AVE. (west arm) / CL... (east stub)"
+   ],
+   "plate_edge": false,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Jogged crossing: west arm 'AVE.' (50 ft, slanting WNW, centreline would hit Montgomery centreline ~8831,6719) and east stub 'CL..' (horizontal, centre y~6640, meets road centre ~8876,6640) are offset ~70 px along Montgomery. Took middle of the open area on Montgomery centreline between the two mouths. The curved street labelled CLARION further west (x~8230) is the same avenue's continuation and does not meet Montgomery again.",
+   "reader": "G2r2"
+  }
+ ],
+ "two_reads_spread_px": 17.0,
+ "new_pick": {
+  "x": 8852.0,
+  "y": 6678.0,
+  "E": 718697.93,
+  "N": 4335877.12,
+  "moved_px": 54.1,
+  "moved_m": 11.13
+ },
+ "old_pick": {
+  "x": 8820.5,
+  "y": 6722.0,
+  "E": 718690.91,
+  "N": 4335868.48,
+  "names": [
+   "Clarion Avenue",
+   "Montgomery Road"
+  ],
+  "reads": [
+   {
+    "file": "sbg/picks22/s22-75_e.json",
+    "a": "Clarion Avenue",
+    "b": "Montgomery Road",
+    "x": 8822,
+    "y": 6720,
+    "kind": "T"
+   },
+   {
+    "file": "sbg/picks22/s22-75_f.json",
+    "a": "Clarion Avenue",
+    "b": "Montgomery Road",
+    "x": 8819,
+    "y": 6724,
+    "kind": "T"
+   }
+  ]
+ },
+ "osm_match": {
+  "osm": [
+   718693.82,
+   4335867.84
+  ],
+  "why": null,
+  "names": [
+   "Clarion Avenue",
+   "Montgomery Road"
+  ]
+ },
+ "note": "Both reads took the middle of the Clarion jog (west arm and east stub meet Montgomery about 70-80 px apart). The old pick is the west arm.",
+ "osm_crossings_of_these_names": [
+  {
+   "E": 718693.8,
+   "N": 4335867.8,
+   "from_old_m": 3.0,
+   "from_new_m": 10.2
+  },
+  {
+   "E": 718700.4,
+   "N": 4335878.9,
+   "from_old_m": 14.1,
+   "from_new_m": 3.0
+  }
+ ]
+}

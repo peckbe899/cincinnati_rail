@@ -1,0 +1,88 @@
+{
+ "crossing": "Wehrman Street & Gilbert Avenue",
+ "plate": "22-69",
+ "tie": 11,
+ "tie_plates": "22-66 / 22-69",
+ "job": "t11_69",
+ "reads": [
+  {
+   "job": "t11_69",
+   "found": true,
+   "x": 3905,
+   "y": 7050,
+   "kind": "T",
+   "printed": [
+    "AVE. (name not printed in region; lots 862-876)",
+    "GILBERT"
+   ],
+   "plate_edge": true,
+   "confidence": "low",
+   "same_names_elsewhere": [],
+   "note": "GILBERT runs NE, turns SSW at the Walters Avenue junction (4000,6870) and runs to the region's bottom edge. A long curving street labelled only 'AVE.' comes from the west and meets Gilbert near the bottom. Its south side and the SW corner are cut by the plate edge. Its shape (bend at the west end, ESE run of about 950 px) matches the 'ST.' on 22-66, but here the suffix printed is 'AVE.' and the name 'Wehrman' is not printed, so the identity is uncertain. Other streets meeting Gilbert here are WALTERS AVE (from the north at 4000,6870) and an 'SP...' stub to the south at about (4430,6730).",
+   "reader": "G1r1"
+  },
+  {
+   "job": "t11_69",
+   "found": false,
+   "x": null,
+   "y": null,
+   "kind": null,
+   "printed": [
+    "Gilbert (Avenue)",
+    null
+   ],
+   "plate_edge": true,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "No street labelled Wehrman anywhere in the region. Gilbert (printed GILBERT) runs from the upper right corner down-left along the plate's SE edge and narrows into a plate-edge-cut strip (car track, 10in sewer) at about (3950, 6950). Streets meeting it here: Walters Ave (printed WALTERS) about (4000, 6870); also Altoona St, Buena Vista Pl and an unnamed 'AVE.' along the bottom-left edge. The Wehrman crossing may lie outside this region.",
+   "reader": "G1r2"
+  }
+ ],
+ "two_reads_spread_px": null,
+ "new_pick": {
+  "x": 3905.0,
+  "y": 7050.0,
+  "E": 717164.16,
+  "N": 4334659.45,
+  "moved_px": 16.5,
+  "moved_m": 3.43
+ },
+ "old_pick": {
+  "x": 3906.0,
+  "y": 7033.5,
+  "E": 717164.61,
+  "N": 4334662.85,
+  "names": [
+   "Wehrman Avenue",
+   "Gilbert Avenue"
+  ],
+  "reads": [
+   {
+    "file": "sbg/picks22/s22-69_b.json",
+    "a": "Wehrman Avenue",
+    "b": "Gilbert Avenue",
+    "x": 3912,
+    "y": 7032,
+    "kind": "T"
+   },
+   {
+    "file": "sbg/picks22/s22-69_c.json",
+    "a": "Wehrman Avenue",
+    "b": "Gilbert Avenue",
+    "x": 3900,
+    "y": 7035,
+    "kind": "T"
+   }
+  ]
+ },
+ "osm_match": {
+  "osm": null,
+  "why": "no OSM crossing within 30 m of the seed",
+  "names": [
+   "Wehrman Avenue",
+   "Gilbert Avenue"
+  ]
+ },
+ "note": "G1r2: no street labelled Wehrman in the region. G1r1 (low): a street printed 'AVE.' meeting Gilbert. New pick = G1r1's read.",
+ "osm_crossings_of_these_names": []
+}

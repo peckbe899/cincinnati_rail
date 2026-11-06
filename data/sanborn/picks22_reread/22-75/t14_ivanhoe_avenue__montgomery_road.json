@@ -1,0 +1,90 @@
+{
+ "crossing": "Ivanhoe Avenue & Montgomery Road",
+ "plate": "22-75",
+ "tie": 14,
+ "tie_plates": "22-75 / 22-76",
+ "job": "t14_75",
+ "reads": [
+  {
+   "job": "t14_75",
+   "found": true,
+   "x": 10474,
+   "y": 3975,
+   "kind": "T",
+   "printed": [
+    "IVA... (label cut at top of region, ~10450,3050)",
+    "ROAD"
+   ],
+   "plate_edge": true,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Ivanhoe runs down the plate's right edge: west lot line x~10432, plate boundary/east line x~10515, '50' ft written. There is also an inner line at x~10467 that ends at a curb-like line parallel to Montgomery; I took the full width 10432-10515, centre ~10474. Montgomery's west edge runs ~x=10468-0.6(y-3880) and its east edge ~x=10595-0.61(y-3880), so the road is ~105 px wide. Point is where Ivanhoe's centre meets Montgomery's centreline. If the street were only 10432-10467, the point would shift to ~(10450, 4015).",
+   "reader": "G2r1"
+  },
+  {
+   "job": "t14_75",
+   "found": true,
+   "x": 10475,
+   "y": 3980,
+   "kind": "T",
+   "printed": [
+    "IVA... (cut, Ivanhoe)",
+    "ROAD"
+   ],
+   "plate_edge": true,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Ivanhoe N-S at x~10435-10515 (50 ft, east side = map edge) ends at diagonal Montgomery Road whose SE line is the map edge (~70 ft wide, track in middle). Point where Ivanhoe centre x~10475 meets road centreline. Only 'IVA' and 'ROAD' printed in region.",
+   "reader": "G2r2"
+  }
+ ],
+ "two_reads_spread_px": 5.1,
+ "new_pick": {
+  "x": 10474.5,
+  "y": 3977.5,
+  "E": 719061.14,
+  "N": 4336412.45,
+  "moved_px": 2.9,
+  "moved_m": 0.59
+ },
+ "old_pick": {
+  "x": 10476.0,
+  "y": 3975.0,
+  "E": 719061.48,
+  "N": 4336412.94,
+  "names": [
+   "Ivanhoe Avenue",
+   "Montgomery Road"
+  ],
+  "reads": [
+   {
+    "file": "sbg/picks22/s22-75_f.json",
+    "a": "Ivanhoe Avenue",
+    "b": "Montgomery Road",
+    "x": 10476,
+    "y": 3975,
+    "kind": "T"
+   }
+  ]
+ },
+ "osm_match": {
+  "osm": [
+   719063.22,
+   4336420.24
+  ],
+  "why": null,
+  "names": [
+   "Ivanhoe Avenue",
+   "Montgomery Road"
+  ]
+ },
+ "note": null,
+ "osm_crossings_of_these_names": [
+  {
+   "E": 719063.2,
+   "N": 4336420.2,
+   "from_old_m": 7.5,
+   "from_new_m": 8.0
+  }
+ ]
+}

@@ -1,0 +1,80 @@
+{
+ "crossing": "Vermont Avenue & Bates Alley",
+ "plate": "22-38",
+ "tie": 9,
+ "tie_plates": "22-34R / 22-38",
+ "job": "t09_38",
+ "reads": [
+  {
+   "job": "t09_38",
+   "found": true,
+   "x": 570,
+   "y": 5594,
+   "kind": "T",
+   "printed": [
+    "Vermont Avenue",
+    "Bates Alley"
+   ],
+   "plate_edge": false,
+   "confidence": "high",
+   "same_names_elsewhere": [],
+   "note": "Bates Alley (~15 px wide, north line ~5586, south ~5601, slight slope) runs E-W; Vermont Ave (531-610) ends at it from the south. Area north of the alley is masked white.",
+   "reader": "G4r1"
+  },
+  {
+   "job": "t09_38",
+   "found": true,
+   "x": 572,
+   "y": 5592,
+   "kind": "T",
+   "printed": [
+    "Vermont Ave.",
+    "Bates Alley"
+   ],
+   "plate_edge": false,
+   "confidence": "high",
+   "same_names_elsewhere": [],
+   "note": "Bates Alley is a narrow E-W strip (y~5582-5602) running the full width; Vermont Ave (50', x~532-610, sewer dashed at ~585, pipe line ~565) ends at it from the south. North of the alley is unmapped white.",
+   "reader": "G4r2"
+  }
+ ],
+ "two_reads_spread_px": 2.8,
+ "new_pick": {
+  "x": 571.0,
+  "y": 5593.0,
+  "E": 713188.74,
+  "N": 4335353.58,
+  "moved_px": 2.8,
+  "moved_m": 0.59
+ },
+ "old_pick": {
+  "x": 573.0,
+  "y": 5595.0,
+  "E": 713189.13,
+  "N": 4335353.14,
+  "names": [
+   "Vermont Avenue",
+   "Bates Alley"
+  ],
+  "reads": [
+   {
+    "file": "sbg/picks22/s22-38_a.json",
+    "a": "Vermont Avenue",
+    "b": "Bates Alley",
+    "x": 573,
+    "y": 5595,
+    "kind": "T"
+   }
+  ]
+ },
+ "osm_match": {
+  "osm": null,
+  "why": "not in OSM: vermont",
+  "names": [
+   "Vermont Avenue",
+   "Bates Alley"
+  ]
+ },
+ "note": null,
+ "osm_crossings_of_these_names": []
+}

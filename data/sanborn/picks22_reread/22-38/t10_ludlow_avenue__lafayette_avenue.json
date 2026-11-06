@@ -1,0 +1,90 @@
+{
+ "crossing": "Ludlow Avenue & Lafayette Avenue",
+ "plate": "22-38",
+ "tie": 10,
+ "tie_plates": "22-37R / 22-38",
+ "job": "t10_38",
+ "reads": [
+  {
+   "job": "t10_38",
+   "found": true,
+   "x": 90,
+   "y": 600,
+   "kind": "T",
+   "printed": [
+    "Ludlow Avenue",
+    "Lafayette Avenue"
+   ],
+   "plate_edge": false,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Same junction as t10_37R, at the top-left corner of plate 22-38's mapped area. Lafayette runs ENE (60'), Ludlow runs SSE along the W side; the NW leg of Ludlow and the 50' street stub to the N (hydrant at ~(67,557)) are cut off by the mapped-area boundary close to the crossing, but the crossing itself is inside the plate.",
+   "reader": "G3r1"
+  },
+  {
+   "job": "t10_38",
+   "found": true,
+   "x": 75,
+   "y": 605,
+   "kind": "T",
+   "printed": [
+    "Ludlow",
+    "Lafayette"
+   ],
+   "plate_edge": false,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Lafayette (60-ft strip with 20in W.P. and 12in sewer) comes in from the NE and ends on Ludlow, which bends here: one leg runs S/SSE (street railway, 8in W.P.), the other runs W/NW off the left edge of the drawn area at x=0. Centre taken where Lafayette's centreline (between north edge ~(100,557)-(400,440) and lot-40 block edge ~(145,622)-(400,540)) meets Ludlow's centreline (west edge ~(40,665)-(75,750), east edge ~(140,620)-(185,750)); pipe lines cross at ~(55,607). Junction itself is visible, but the NW leg of Ludlow is cut by the plate/map edge only ~40-75 px west of the centre. Hydrant at ~(65,560), valve dot ~(60,640).",
+   "reader": "G3r2"
+  }
+ ],
+ "two_reads_spread_px": 15.8,
+ "new_pick": {
+  "x": 82.5,
+  "y": 602.5,
+  "E": 713152.56,
+  "N": 4336382.42,
+  "moved_px": 14.9,
+  "moved_m": 3.09
+ },
+ "old_pick": {
+  "x": 97.0,
+  "y": 606.0,
+  "E": 713155.5,
+  "N": 4336381.48,
+  "names": [
+   "Lafayette Avenue",
+   "Ludlow Avenue"
+  ],
+  "reads": [
+   {
+    "file": "sbg/picks22/s22-38_a.json",
+    "a": "Lafayette Avenue",
+    "b": "Ludlow Avenue",
+    "x": 97,
+    "y": 606,
+    "kind": "T"
+   }
+  ]
+ },
+ "osm_match": {
+  "osm": [
+   713111.16,
+   4336366.76
+  ],
+  "why": null,
+  "names": [
+   "Lafayette Avenue",
+   "Ludlow Avenue"
+  ]
+ },
+ "note": null,
+ "osm_crossings_of_these_names": [
+  {
+   "E": 713111.2,
+   "N": 4336366.8,
+   "from_old_m": 46.7,
+   "from_new_m": 44.2
+  }
+ ]
+}

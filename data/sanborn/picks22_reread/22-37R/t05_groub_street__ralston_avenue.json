@@ -1,0 +1,95 @@
+{
+ "crossing": "Groub Street & Ralston Avenue",
+ "plate": "22-37R",
+ "tie": 5,
+ "tie_plates": "22-37L / 22-37R",
+ "job": "t05_37R",
+ "reads": [
+  {
+   "job": "t05_37R",
+   "found": true,
+   "x": 382,
+   "y": 3410,
+   "kind": "T",
+   "printed": [
+    "Groub Street",
+    "Ralston Avenue"
+   ],
+   "plate_edge": false,
+   "confidence": "high",
+   "same_names_elsewhere": [],
+   "note": "Same crossing as t05_37L (37R ~ 37L - 5632 in x, same y). Groub St T's into the S side of Ralston; Groub ~75 px wide, Ralston ~95 px wide and rising slightly to the east.",
+   "reader": "G3r1"
+  },
+  {
+   "job": "t05_37R",
+   "found": true,
+   "x": 378,
+   "y": 3411,
+   "kind": "T",
+   "printed": [
+    "Groub Street",
+    "Ralston"
+   ],
+   "plate_edge": false,
+   "confidence": "high",
+   "same_names_elsewhere": [],
+   "note": "Groub St. (between block 70 east line and block 71 west line, centre ~(402,3500)) ends on Ralston (north edge = block 67 south line, south edge = block 71 north line, centre ~(357,3416)). North of the point is open plaza/the narrow gap toward Geringer, not a continuation of Groub at full width. Ralston's own printed suffix is not next to the label here.",
+   "reader": "G3r2"
+  }
+ ],
+ "two_reads_spread_px": 4.1,
+ "new_pick": {
+  "x": 380.0,
+  "y": 3410.5,
+  "E": 712313.88,
+  "N": 4336469.72,
+  "moved_px": 9.3,
+  "moved_m": 1.84
+ },
+ "old_pick": {
+  "x": 389.0,
+  "y": 3408.0,
+  "E": 712315.67,
+  "N": 4336470.15,
+  "names": [
+   "Groub Street",
+   "Ralston Avenue"
+  ],
+  "reads": [
+   {
+    "file": "sbg/picks22/s22-37R.json",
+    "a": "Groub Street",
+    "b": "Ralston Avenue",
+    "x": 392,
+    "y": 3405,
+    "kind": "cross"
+   },
+   {
+    "file": "sbg/picks22/s22-37R_a.json",
+    "a": "Groub Street",
+    "b": "Ralston Avenue",
+    "x": 386,
+    "y": 3411,
+    "kind": "cross"
+   }
+  ]
+ },
+ "osm_match": {
+  "osm": null,
+  "why": "no OSM crossing within 30 m of the seed",
+  "names": [
+   "Groub Street",
+   "Ralston Avenue"
+  ]
+ },
+ "note": null,
+ "osm_crossings_of_these_names": [
+  {
+   "E": 712351.9,
+   "N": 4336475.3,
+   "from_old_m": 36.6,
+   "from_new_m": 38.4
+  }
+ ]
+}

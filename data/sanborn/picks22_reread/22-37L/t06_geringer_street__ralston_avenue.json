@@ -1,0 +1,88 @@
+{
+ "crossing": "Geringer Street & Ralston Avenue",
+ "plate": "22-37L",
+ "tie": 6,
+ "tie_plates": "22-37L / 22-37R",
+ "job": "t06_37L",
+ "reads": [
+  {
+   "job": "t06_37L",
+   "found": true,
+   "x": 5842,
+   "y": 3458,
+   "kind": "T",
+   "printed": [
+    "Geringer Street",
+    "Ralston Avenue"
+   ],
+   "plate_edge": false,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Geringer St is a continuous SW-NE diagonal: 'GERINGER' printed on the SW segment (between blocks 66 and 70) and 'ST.' on the NE segment (between blocks 65 and 67); the two segments' centrelines line up. Ralston comes in from the E and meets Geringer in a widened open plaza (a small triangular lot '40'/3620 stands in it, NE of the point). An unnamed 60' strip continues W/NW from the same spot between lot 10/114 (block 65) and lot 113 (block 66) to the canal bank, so it could be read as a cross with a slight bend; I took the point where Ralston's centreline, the stub's centreline and Geringer's centreline meet.",
+   "reader": "G3r1"
+  },
+  {
+   "job": "t06_37L",
+   "found": true,
+   "x": 5848,
+   "y": 3451,
+   "kind": "cross",
+   "printed": [
+    "Geringer",
+    "Ralston"
+   ],
+   "plate_edge": false,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Same junction as on 37R (overlap; 37L x is about 37R x + 5633). Ralston centreline meets Geringer centreline at the north tip of block 70 (block corner ~(5860,3500)); an unnamed 60' street leaves westward/NW opposite, between blocks 65 and 66 (60' label at ~(5711,3400)).",
+   "reader": "G3r2"
+  }
+ ],
+ "two_reads_spread_px": 9.2,
+ "new_pick": {
+  "x": 5845.0,
+  "y": 3454.5,
+  "E": 712258.86,
+  "N": 4336475.82,
+  "moved_px": 3.2,
+  "moved_m": 0.62
+ },
+ "old_pick": {
+  "x": 5847.0,
+  "y": 3457.0,
+  "E": 712259.22,
+  "N": 4336475.32,
+  "names": [
+   "Geringer Street",
+   "Ralston Avenue"
+  ],
+  "reads": [
+   {
+    "file": "sbg/picks22/s22-37L.json",
+    "a": "Geringer Street",
+    "b": "Ralston Avenue",
+    "x": 5843,
+    "y": 3458,
+    "kind": "T"
+   },
+   {
+    "file": "sbg/picks22/s22-37L_c.json",
+    "a": "Geringer Street",
+    "b": "Ralston Avenue",
+    "x": 5851,
+    "y": 3456,
+    "kind": "T"
+   }
+  ]
+ },
+ "osm_match": {
+  "osm": null,
+  "why": "no OSM crossing within 30 m of the seed",
+  "names": [
+   "Geringer Street",
+   "Ralston Avenue"
+  ]
+ },
+ "note": null,
+ "osm_crossings_of_these_names": []
+}
