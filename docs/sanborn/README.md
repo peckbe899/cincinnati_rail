@@ -19,6 +19,15 @@ Code and data keep the workspace's relative paths, so the scripts find everythin
 
 The inverse grids (`model.npz`, `model38.npz`, 95 MB) are on disk under `data/sanborn` but not in git (`data/sanborn/.gitignore`; the plan has them rebuilt by the fit). The copies are in `Maps/Topography_Export/1922_inverse_01..05.zip`.
 
+## Gaps in the export
+
+Three modules the scripts import were not exported (found by checking every script's imports against `export/TREE.txt`):
+
+- `sbg/names.py` (street-name keys `key`, `base`, `key2`; imported by 33 scripts, among them `cuf/x1904.py`, `sbg/fit/add_ext.py`, the plate builds): added from `Maps/Basin_Street_Map/sanborn1904_scripts.zip`, whose copy has the size and time the workspace tree lists (1743 bytes, 11 October 21:42).
+- `arcs/fitarcs.py` (14820 bytes, 15 October; imported by `rer1023/apply.py` and `transit/build_transit.py`) and `deck/xs.py` (749 bytes, 10 October; imported by `lph/solve_all.py`): no copy on Ben's machine. They have to come from the Topography conversation's workspace if it still exists.
+
+`cvg/_gp_C.json` and `cvg/_gp_c.json` differ only in case, which Windows cannot hold side by side: the first is `cvg/_gp_C_upper.json` (no script names either).
+
 ## How the paths were repointed
 
 - The workspace root (`SP` / `S` = `/tmp/claude-0/-home-claude/9669db83-.../scratchpad/`) is now `_ws.DATA` (`data/sanborn/`). Where the scripts used it for another script (`sys.path.insert(0, SP + 'cuf')`, `exec(open(SP + 'trunk2/lud6.py')...)`, `runpy`, `spec_from_file_location`), it is `_ws.CODE` (`tools/sanborn/`). The sbg scripts that found data beside themselves (`HERE`) take `_ws.data_dir(...)` and keep their code folders on `sys.path`.
