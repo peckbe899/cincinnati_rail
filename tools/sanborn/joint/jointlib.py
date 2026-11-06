@@ -7,6 +7,9 @@ cuf/joint35N.pkl). The old files are never changed.
 
 A model may also carry a page curl (tools/sanborn/joint/curl.py; local3.py): then new(px) = Q + d(Q), Q = F(px + c(px)),
 c the curl's pixel displacement across the plate's gutter.
+
+A model of kind 'tps_px' (tools/sanborn/joint/complete.py, rule 12) keeps nothing of the old model: world is a
+thin-plate spline of the plate pixel, fitted on the plate's complete control set (tps_px_many below).
 """
 import os, pickle, sys
 
@@ -127,8 +130,21 @@ def curl_disp(pid, q, tag):
     return curl.disp(c['side'], c['a'], c['k'], q)
 
 
+def tps_px_many(j, q):
+    """a 'tps_px' model: world = affine . [1, (x - center) / scale] + sum_j w_j phi(|x - c_j| / scale), phi = r2 log r"""
+    q = np.asarray(q, float); sc = j['scale_px']; c = np.asarray(j['center_px'], float)
+    B = np.c_[np.ones(len(q)), (q - c) / sc]
+    Cc = np.asarray(j['centers_px'], float)
+    d = np.hypot(q[:, None, 0] - Cc[None, :, 0], q[:, None, 1] - Cc[None, :, 1]) / sc
+    with np.errstate(divide='ignore', invalid='ignore'):
+        K = np.where(d > 0, d * d * np.log(d), 0.0)
+    return B @ np.asarray(j['affine'], float) + K @ np.asarray(j['w'], float)
+
+
 def world_many(pid, q, tag='joint'):
     q = np.asarray(q, float)
+    if load(pid, tag).get('kind') == 'tps_px':
+        return tps_px_many(load(pid, tag), q)
     P = base_for(pid, tag)(q + curl_disp(pid, q, tag)); return P + corr(pid, P, tag)
 
 
@@ -140,6 +156,21 @@ def inv(pid, E, N, it=8, tag='joint'):
     """world -> plate pixel for the new position: undo the correction (fixed point, it is small and smooth), then the
     old inverse"""
     W = np.c_[np.ravel(E), np.ravel(N)].astype(float); P = W.copy()
+    if load(pid, tag).get('kind') == 'tps_px':      # Newton from the old inverse
+        px, py = base_inv(pid, W[:, 0], W[:, 1])
+        q = np.c_[np.ravel(px), np.ravel(py)].astype(float)
+        ok = np.all(np.abs(q) < 1e5, 1) & np.all(np.isfinite(q), 1)
+        j = load(pid, tag)
+        for _ in range(it):
+            if not ok.any():
+                break
+            Q = q[ok]; h = 2.0
+            ex = (tps_px_many(j, Q + [h, 0]) - tps_px_many(j, Q - [h, 0])) / (2 * h)
+            ey = (tps_px_many(j, Q + [0, h]) - tps_px_many(j, Q - [0, h])) / (2 * h)
+            Jm = np.stack([ex, ey], 2)
+            q[ok] = Q + np.linalg.solve(Jm, (W[ok] - tps_px_many(j, Q))[:, :, None])[:, :, 0]
+        q[~ok] = -1e6
+        return q[:, 0].reshape(np.shape(E)), q[:, 1].reshape(np.shape(N))
     for _ in range(it):
         P = W - corr(pid, P, tag)
     px, py = base_inv(pid, P[:, 0].reshape(np.shape(E)), P[:, 1].reshape(np.shape(N)))
