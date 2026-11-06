@@ -37,6 +37,7 @@ from shapely.geometry import Point, Polygon  # noqa: E402
 
 MATCH, FAR, DUP_PX = 45.0, 150.0, 60.0
 JOINT = False   # --joint: plates placed by the joint refit's models (tools/sanborn/joint/jointlib.py) instead of their own
+MODELS = None   # --models TAG: plates that have a fwd_<TAG>.pkl (jointlib.joint_path) placed by it, the others by their own
 READ = []   # files read, for the report's checksums
 
 
@@ -69,11 +70,13 @@ def plate_ids():
 
 def plate_world(pid):
     n = pid[3:]
-    if JOINT:
+    if JOINT or MODELS:
         sys.path.insert(0, _ws.CODE + 'joint')
         import jointlib
-        READ.extend([jointlib.joint_path(pid), jointlib.base_path(pid)])
-        return lambda x, y: jointlib.world(pid, x, y)
+        tag = 'joint' if JOINT else MODELS
+        if JOINT or jointlib.has(pid, tag):
+            READ.extend([jointlib.joint_path(pid, tag), jointlib.base_path(pid)])
+            return lambda x, y: jointlib.world(pid, x, y, tag)
     if pid == '22-35N':
         READ.append('cuf/ben_georef.json')
         return lambda x, y: tuple(float(v) for v in C.px2ben(x, y))
@@ -221,11 +224,14 @@ def stats(ds, vs):
 
 
 def main(argv=None):
-    global JOINT
-    argv = sys.argv[1:] if argv is None else argv
+    global JOINT, MODELS
+    argv = list(sys.argv[1:] if argv is None else argv)
     JOINT = '--joint' in argv
+    if '--models' in argv:
+        i = argv.index('--models'); MODELS = argv[i + 1]; del argv[i:i + 2]
     args = [a for a in argv if a != '--joint']
-    out_dir = args[0] if args else SP + f"reports/{datetime.date.today().isoformat()}_seams{'_joint' if JOINT else ''}"
+    suffix = '_joint' if JOINT else (f'_{MODELS}' if MODELS else '')
+    out_dir = args[0] if args else SP + f"reports/{datetime.date.today().isoformat()}_seams{suffix}"
     os.makedirs(out_dir, exist_ok=True)
     recs, plate_info = [], {}
     for pid in plate_ids():
@@ -262,7 +268,7 @@ def main(argv=None):
     reads = sorted(set(READ))
     import scipy, pyproj, shapely
     meta = dict(made=datetime.datetime.now().isoformat(timespec='seconds'), by='tools/sanborn/seams.py (read only)' + (' --joint' if JOINT else ''),
-                plate_models='joint refit (fwd_joint.pkl)' if JOINT else "each plate's own (fwd.pkl, Ben georeference for 35N)",
+                plate_models='joint refit (fwd_joint.pkl)' if JOINT else (f"fwd_{MODELS}.pkl where a plate has one, else its own" if MODELS else "each plate's own (fwd.pkl, Ben georeference for 35N)"),
                 match_m=MATCH, far_m=FAR, reader_merge_px=DUP_PX,
                 plates=plate_info, frames=dict(deck_north=len({r['src'] for r in dr}), basin=len({r['src'] for r in br})),
                 crossings=dict(plates=sum(r['kind'] == 'plate' for r in recs), frames_deck_north=len(dr), frames_basin=len(br)),
@@ -281,7 +287,7 @@ def main(argv=None):
 def write_md(out_dir, meta, summary, per_pair, rows):
     near = [r for r in rows if r['within_45m']]
     pf = [r for r in near if r['seam'] == 'plate-1904']
-    L = [f"# Seam report, {meta['made'][:10]}" + (' (plates on the joint refit)' if JOINT else ''), '',
+    L = [f"# Seam report, {meta['made'][:10]}" + (' (plates on the joint refit)' if JOINT else (f' (models: {MODELS})' if MODELS else '')), '',
          f"Plate models: {meta['plate_models']}.", '',
          'Read only: every street crossing that two 1922 plates, or a 1922 plate and a 1904 frame, both show, and how far apart the '
          'two copies sit on the page. Nothing was fitted, rebuilt or changed. Method: `tools/sanborn/seams.py` (its docstring); '

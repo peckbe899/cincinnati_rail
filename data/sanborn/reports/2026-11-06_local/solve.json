@@ -1,0 +1,720 @@
+{
+ "meta": {
+  "made": "2026-11-06T11:21:16",
+  "by": "tools/sanborn/joint/local.py",
+  "U_m": 100.0,
+  "scale_m": 1000.0,
+  "huber_m": 6.0,
+  "sheet_weight": 25.0,
+  "kinds_tried": [
+   "affine",
+   "tps0.3",
+   "tps1",
+   "tps3",
+   "tps10",
+   "tps30",
+   "tps100"
+  ],
+  "choice_trail": [
+   {
+    "pass_": 1,
+    "plate": "22-37L",
+    "frm": "affine",
+    "to": "tps10",
+    "heldout": 5.406
+   }
+  ],
+  "versions": {
+   "numpy": "2.4.2",
+   "scipy": "1.18.1"
+  },
+  "bases": {
+   "22-33": {
+    "path": "cufp/33/fwd.pkl",
+    "sha256": "502a074d93e0d37331faed439823dda6b55df017d9191dfc56a58cadcafd3ad0"
+   },
+   "22-34R": {
+    "path": "cuf_cw/34R/fwd.pkl",
+    "sha256": "e2213b5ade70efaf98a70d31b44a723461d635b89976544f9eb9bc170d1fe116"
+   },
+   "22-37L": {
+    "path": "cuf_cw/37L/fwd.pkl",
+    "sha256": "099d14e2f92bb87635607a18b4b7d2038f1a6919ee00f904530dd115388903b8"
+   },
+   "22-37R": {
+    "path": "cuf_cw/37R/fwd.pkl",
+    "sha256": "1e302e844fc9251db7fb336378d8a117f57861bee7ebe43f28688e2a0a833489"
+   },
+   "22-38": {
+    "path": "cuf38/fwd38.pkl",
+    "sha256": "139901baefc82c2c99b7da3ec431b54f1dcdf534bc90cd42f41c1d26beaa87f0"
+   }
+  },
+  "overlap": "cuf_cw/overlap_37L_37R.json"
+ },
+ "summary": {
+  "plates": [
+   "22-33",
+   "22-34R",
+   "22-37L",
+   "22-37R",
+   "22-38"
+  ],
+  "kinds": {
+   "22-33": "affine",
+   "22-34R": "affine",
+   "22-37L": "tps10",
+   "22-37R": "affine",
+   "22-38": "affine"
+  },
+  "ties": 48,
+  "gutter_pairs": 206,
+  "gutter_gap_before": {
+   "median": 27.59,
+   "max": 32.17
+  },
+  "gutter_gap_after": {
+   "median": 0.14,
+   "max": 1.31
+  },
+  "worse_by_more_than_0_3m": [
+   "22-37R"
+  ],
+  "seams_before": {
+   "touching": {
+    "n": 48,
+    "median": 4.54,
+    "p90": 20.91,
+    "max": 27.44,
+    "over_10m": 11,
+    "over_20m": 6
+   },
+   "within": {
+    "n": 19,
+    "median": 7.47,
+    "p90": 23.74,
+    "max": 27.44,
+    "over_10m": 9,
+    "over_20m": 6
+   },
+   "all": {
+    "n": 143,
+    "median": 2.78,
+    "p90": 11.12,
+    "max": 30.01,
+    "over_10m": 16,
+    "over_20m": 7
+   },
+   "plate_1904_touching": {
+    "n": 304,
+    "median": 0.23,
+    "p90": 4.34,
+    "max": 35.09,
+    "over_10m": 15,
+    "over_20m": 7
+   }
+  },
+  "seams_after": {
+   "touching": {
+    "n": 48,
+    "median": 3.2,
+    "p90": 10.76,
+    "max": 25.17,
+    "over_10m": 6,
+    "over_20m": 1
+   },
+   "within": {
+    "n": 19,
+    "median": 1.36,
+    "p90": 18.11,
+    "max": 25.17,
+    "over_10m": 4,
+    "over_20m": 1
+   },
+   "all": {
+    "n": 143,
+    "median": 2.6,
+    "p90": 8.78,
+    "max": 30.01,
+    "over_10m": 11,
+    "over_20m": 2
+   },
+   "plate_1904_touching": {
+    "n": 304,
+    "median": 1.31,
+    "p90": 6.01,
+    "max": 35.01,
+    "over_10m": 13,
+    "over_20m": 4
+   }
+  },
+  "part3_check": {
+   "worse_plates": [
+    "22-37R"
+   ],
+   "median_falls": true,
+   "p90_falls": true,
+   "apply": false
+  },
+  "seam_report": "reports/2026-11-06_seams_local"
+ },
+ "plates": [
+  {
+   "plate": "22-33",
+   "base_model": "tps0.3",
+   "correction": "affine",
+   "controls": 62,
+   "rms_before": 1.44,
+   "rms_after": 1.54,
+   "heldout_before": 3.67,
+   "heldout_after": 3.76,
+   "max_corner_move_m": 1.26,
+   "median_control_move_m": 0.36,
+   "ties": 14,
+   "image_px": "10651x6178",
+   "rms_change": 0.1
+  },
+  {
+   "plate": "22-34R",
+   "base_model": "tps0.3",
+   "correction": "affine",
+   "controls": 49,
+   "rms_before": 1.44,
+   "rms_after": 1.57,
+   "heldout_before": 3.91,
+   "heldout_after": 4.04,
+   "max_corner_move_m": 2.89,
+   "median_control_move_m": 0.51,
+   "ties": 13,
+   "image_px": "6009x7795",
+   "rms_change": 0.13
+  },
+  {
+   "plate": "22-37L",
+   "base_model": "tps30",
+   "correction": "tps10",
+   "controls": 20,
+   "rms_before": 2.97,
+   "rms_after": 2.67,
+   "heldout_before": 4.67,
+   "heldout_after": 5.41,
+   "max_corner_move_m": 25.03,
+   "median_control_move_m": 1.93,
+   "ties": 12,
+   "image_px": "6272x7795",
+   "rms_change": -0.3
+  },
+  {
+   "plate": "22-37R",
+   "base_model": "tps0.3",
+   "correction": "affine",
+   "controls": 15,
+   "rms_before": 1.02,
+   "rms_after": 2.18,
+   "heldout_before": 5.9,
+   "heldout_after": 7.02,
+   "max_corner_move_m": 5.41,
+   "median_control_move_m": 1.86,
+   "ties": 16,
+   "image_px": "6009x7795",
+   "rms_change": 1.16
+  },
+  {
+   "plate": "22-38",
+   "base_model": "tps1",
+   "correction": "affine",
+   "controls": 63,
+   "rms_before": 2.29,
+   "rms_after": 2.43,
+   "heldout_before": 4.75,
+   "heldout_after": 4.95,
+   "max_corner_move_m": 2.69,
+   "median_control_move_m": 0.59,
+   "ties": 12,
+   "image_px": "10748x6719",
+   "rms_change": 0.14
+  }
+ ],
+ "ties": [
+  {
+   "a": "22-34R",
+   "b": "22-37R",
+   "street_1": "Comfort Street",
+   "street_2": "Sassafras Street",
+   "before_m": 0.19,
+   "after_m": 1.36,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Colerain Avenue",
+   "street_2": "Elmore Street",
+   "before_m": 0.43,
+   "after_m": 1.64,
+   "weight": 25.0,
+   "sheet": true
+  },
+  {
+   "a": "22-33",
+   "b": "22-34L",
+   "street_1": "Linden Street",
+   "street_2": "Carll Street",
+   "before_m": 0.83,
+   "after_m": 1.4,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Cherry Street",
+   "street_2": "Burgoyne Street",
+   "before_m": 0.85,
+   "after_m": 1.05,
+   "weight": 25.0,
+   "sheet": true
+  },
+  {
+   "a": "22-34R",
+   "b": "22-35N",
+   "street_1": "Massachusetts Avenue",
+   "street_2": "Marshall Avenue",
+   "before_m": 1.06,
+   "after_m": 1.3,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Colerain Avenue",
+   "street_2": "Dhonau Street",
+   "before_m": 1.08,
+   "after_m": 0.26,
+   "weight": 25.0,
+   "sheet": true
+  },
+  {
+   "a": "22-34R",
+   "b": "22-37R",
+   "street_1": "Colerain Avenue",
+   "street_2": "Sassafras Street",
+   "before_m": 1.28,
+   "after_m": 0.88,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Cherry Street",
+   "street_2": "Powers Street",
+   "before_m": 1.43,
+   "after_m": 0.62,
+   "weight": 25.0,
+   "sheet": true
+  },
+  {
+   "a": "22-38",
+   "b": "22-66",
+   "street_1": "West Nixon Street",
+   "street_2": "Vine Street",
+   "before_m": 1.6,
+   "after_m": 0.71,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-35N",
+   "b": "22-38",
+   "street_1": "Clifton Avenue",
+   "street_2": "Dixmyth Avenue",
+   "before_m": 2.03,
+   "after_m": 1.94,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-31",
+   "b": "22-33",
+   "street_1": "Beekman Street",
+   "street_2": "Queen City Avenue",
+   "before_m": 2.3,
+   "after_m": 2.36,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-34R",
+   "b": "22-35N",
+   "street_1": "Cormany Avenue",
+   "street_2": "Township Street",
+   "before_m": 2.52,
+   "after_m": 3.6,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-31",
+   "b": "22-33",
+   "street_1": "Sperber Street",
+   "street_2": "Queen City Avenue",
+   "before_m": 2.56,
+   "after_m": 2.65,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-35N",
+   "b": "22-38",
+   "street_1": "Dixmyth Avenue",
+   "street_2": "Morrison Avenue",
+   "before_m": 2.7,
+   "after_m": 4.19,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-31",
+   "b": "22-33",
+   "street_1": "Clifford Street",
+   "street_2": "Queen City Avenue",
+   "before_m": 2.72,
+   "after_m": 2.84,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-31",
+   "b": "22-33",
+   "street_1": "Shadwell Street",
+   "street_2": "Queen City Avenue",
+   "before_m": 2.9,
+   "after_m": 2.72,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-38",
+   "b": "22-68",
+   "street_1": "Shields Street",
+   "street_2": "Vine Street",
+   "before_m": 3.05,
+   "after_m": 2.59,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-34R",
+   "b": "22-35N",
+   "street_1": "Cormany Avenue",
+   "street_2": "Rachel Street",
+   "before_m": 3.09,
+   "after_m": 1.77,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-33",
+   "b": "22-34L",
+   "street_1": "Carll Street",
+   "street_2": "Cummings Street",
+   "before_m": 3.4,
+   "after_m": 4.34,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-34R",
+   "b": "22-35N",
+   "street_1": "Massachusetts Avenue",
+   "street_2": "Township Street",
+   "before_m": 3.53,
+   "after_m": 2.83,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-34R",
+   "b": "22-35N",
+   "street_1": "Massachusetts Avenue",
+   "street_2": "Bader Street",
+   "before_m": 3.67,
+   "after_m": 3.31,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Turrill Street",
+   "street_2": "Powers Street",
+   "before_m": 3.76,
+   "after_m": 0.22,
+   "weight": 25.0,
+   "sheet": true
+  },
+  {
+   "a": "22-16R",
+   "b": "22-34R",
+   "street_1": "Massachusetts Avenue",
+   "street_2": "Marshall Avenue",
+   "before_m": 3.88,
+   "after_m": 4.41,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-31",
+   "b": "22-33",
+   "street_1": "Engel Alley",
+   "street_2": "Queen City Avenue",
+   "before_m": 4.44,
+   "after_m": 4.29,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-35N",
+   "b": "22-38",
+   "street_1": "Dixmyth Avenue",
+   "street_2": "Whitfield Avenue",
+   "before_m": 4.64,
+   "after_m": 5.5,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-33",
+   "b": "22-34L",
+   "street_1": "Casper Street",
+   "street_2": "Denham Street",
+   "before_m": 4.94,
+   "after_m": 3.94,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-38",
+   "b": "22-68",
+   "street_1": "Woolper Street",
+   "street_2": "Vine Street",
+   "before_m": 5.35,
+   "after_m": 4.89,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Colerain Avenue",
+   "street_2": "Burgoyne Street",
+   "before_m": 5.67,
+   "after_m": 0.73,
+   "weight": 25.0,
+   "sheet": true
+  },
+  {
+   "a": "22-16R",
+   "b": "22-34R",
+   "street_1": "Colerain Avenue",
+   "street_2": "Marshall Avenue",
+   "before_m": 5.76,
+   "after_m": 5.62,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Colerain Avenue",
+   "street_2": "Sullivan Street",
+   "before_m": 6.33,
+   "after_m": 0.77,
+   "weight": 25.0,
+   "sheet": true
+  },
+  {
+   "a": "22-33",
+   "b": "22-34L",
+   "street_1": "Casper Street",
+   "street_2": "Carll Street",
+   "before_m": 6.8,
+   "after_m": 5.9,
+   "weight": 1.0,
+   "sheet": false
+  },
+  {
+   "a": "22-38",
+   "b": "22-68",
+   "street_1": "Glenmary Avenue",
+   "street_2": "Vine Street",
+   "before_m": 6.82,
+   "after_m": 6.18,
+   "weight": 0.972,
+   "sheet": false
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Colerain Avenue",
+   "street_2": "Powers Street",
+   "before_m": 7.47,
+   "after_m": 0.86,
+   "weight": 25.0,
+   "sheet": true
+  },
+  {
+   "a": "22-38",
+   "b": "22-68",
+   "street_1": "Ruther Avenue",
+   "street_2": "Vine Street",
+   "before_m": 8.27,
+   "after_m": 9.04,
+   "weight": 0.664,
+   "sheet": false
+  },
+  {
+   "a": "22-33",
+   "b": "22-34L",
+   "street_1": "Seegar Avenue",
+   "street_2": "Carll Street",
+   "before_m": 8.35,
+   "after_m": 8.8,
+   "weight": 0.682,
+   "sheet": false
+  },
+  {
+   "a": "22-33",
+   "b": "22-34L",
+   "street_1": "Casper Street",
+   "street_2": "Pulte Street",
+   "before_m": 8.44,
+   "after_m": 7.24,
+   "weight": 0.829,
+   "sheet": false
+  },
+  {
+   "a": "22-31",
+   "b": "22-33",
+   "street_1": "Queen City Avenue",
+   "street_2": "Garrard Avenue",
+   "before_m": 10.0,
+   "after_m": 10.09,
+   "weight": 0.595,
+   "sheet": false
+  },
+  {
+   "a": "22-33",
+   "b": "22-34L",
+   "street_1": "Casper Street",
+   "street_2": "Baltimore Avenue",
+   "before_m": 10.02,
+   "after_m": 9.05,
+   "weight": 0.663,
+   "sheet": false
+  },
+  {
+   "a": "22-34R",
+   "b": "22-37R",
+   "street_1": "Spring Grove Avenue",
+   "street_2": "Sassafras Street",
+   "before_m": 11.39,
+   "after_m": 8.46,
+   "weight": 0.709,
+   "sheet": false
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Spaeth Street",
+   "street_2": "Dreman Avenue",
+   "before_m": 11.9,
+   "after_m": 7.72,
+   "weight": 25.0,
+   "sheet": true
+  },
+  {
+   "a": "22-35N",
+   "b": "22-38",
+   "street_1": "West McMicken Avenue",
+   "street_2": "Dixmyth Avenue",
+   "before_m": 14.52,
+   "after_m": 12.33,
+   "weight": 0.487,
+   "sheet": false
+  },
+  {
+   "a": "22-37R",
+   "b": "22-38",
+   "street_1": "Ludlow Avenue",
+   "street_2": "Lafayette Avenue",
+   "before_m": 19.81,
+   "after_m": 18.81,
+   "weight": 0.319,
+   "sheet": false
+  },
+  {
+   "a": "22-34R",
+   "b": "22-38",
+   "street_1": "Vermont Avenue",
+   "street_2": "Bates Alley",
+   "before_m": 20.54,
+   "after_m": 16.54,
+   "weight": 0.363,
+   "sheet": false
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Geringer Street",
+   "street_2": "Groub Street",
+   "before_m": 21.78,
+   "after_m": 3.08,
+   "weight": 25.0,
+   "sheet": true
+  },
+  {
+   "a": "22-34R",
+   "b": "22-38",
+   "street_1": "Vermont Avenue",
+   "street_2": "Stock Avenue",
+   "before_m": 21.84,
+   "after_m": 17.94,
+   "weight": 0.334,
+   "sheet": false
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Geringer Street",
+   "street_2": "Ralston Avenue",
+   "before_m": 23.28,
+   "after_m": 1.3,
+   "weight": 25.0,
+   "sheet": true
+  },
+  {
+   "a": "22-33",
+   "b": "22-34R",
+   "street_1": "Marshall Avenue",
+   "street_2": "Garrard Avenue",
+   "before_m": 25.58,
+   "after_m": 25.17,
+   "weight": 0.238,
+   "sheet": false
+  },
+  {
+   "a": "22-37L",
+   "b": "22-37R",
+   "street_1": "Groub Street",
+   "street_2": "Ralston Avenue",
+   "before_m": 27.44,
+   "after_m": 1.83,
+   "weight": 25.0,
+   "sheet": true
+  }
+ ]
+}

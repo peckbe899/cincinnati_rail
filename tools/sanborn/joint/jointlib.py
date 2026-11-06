@@ -26,12 +26,17 @@ def base_path(pid):
     return f'cufp/{n}/fwd.pkl' if os.path.exists(SP + f'cufp/{n}/fwd.pkl') else f'cuf_cw/{n}/fwd.pkl'
 
 
-def joint_path(pid):
+def joint_path(pid, tag='joint'):
+    """the new model's file, beside the old one: fwd_<tag>.pkl (cuf38/fwd38_<tag>.pkl, cuf/<tag>35N.pkl)"""
     if pid == '22-35N':
-        return 'cuf/joint35N.pkl'
+        return f'cuf/{tag}35N.pkl'
     if pid == '22-38':
-        return 'cuf38/fwd38_joint.pkl'
-    return os.path.dirname(base_path(pid)) + '/fwd_joint.pkl'
+        return f'cuf38/fwd38_{tag}.pkl'
+    return os.path.dirname(base_path(pid)) + f'/fwd_{tag}.pkl'
+
+
+def has(pid, tag):
+    return os.path.exists(SP + joint_path(pid, tag))
 
 
 def base_many(pid, q):
@@ -65,30 +70,46 @@ def basis(P, center, scale, kind):
 _J = {}
 
 
-def load(pid):
-    if pid not in _J:
-        _J[pid] = pickle.load(open(SP + joint_path(pid), 'rb'))
-    return _J[pid]
+def load(pid, tag='joint'):
+    if (pid, tag) not in _J:
+        _J[(pid, tag)] = pickle.load(open(SP + joint_path(pid, tag), 'rb'))
+    return _J[(pid, tag)]
 
 
-def corr(pid, P):
-    j = load(pid); B = basis(np.asarray(P, float), j['center'], j['scale'], j['basis'])
+def tps_kernel(P, centers, U):
+    """thin-plate kernel r2 log r between points and centres, distances in units of U metres"""
+    d = np.hypot(P[:, None, 0] - centers[None, :, 0], P[:, None, 1] - centers[None, :, 1]) / U
+    with np.errstate(divide='ignore', invalid='ignore'):
+        k = np.where(d > 0, d * d * np.log(d), 0.0)
+    return k
+
+
+def corr(pid, P, tag='joint'):
+    j = load(pid, tag); P = np.asarray(P, float)
+    if j.get('kind', '').startswith('tps') or j.get('kind') == 'affine':     # the local fit (tools/sanborn/joint/local.py)
+        B = basis(P, j['center'], j['scale'], 'affine')
+        d = np.c_[B @ np.asarray(j['coefE']), B @ np.asarray(j['coefN'])]
+        if j.get('centers'):
+            K = tps_kernel(P, np.asarray(j['centers'], float), j['U'])
+            d = d + np.c_[K @ np.asarray(j['wE']), K @ np.asarray(j['wN'])]
+        return d
+    B = basis(P, j['center'], j['scale'], j['basis'])
     return np.c_[B @ np.asarray(j['coefE']), B @ np.asarray(j['coefN'])]
 
 
-def world_many(pid, q):
-    P = base_many(pid, q); return P + corr(pid, P)
+def world_many(pid, q, tag='joint'):
+    P = base_many(pid, q); return P + corr(pid, P, tag)
 
 
-def world(pid, x, y):
-    r = world_many(pid, [[x, y]])[0]; return float(r[0]), float(r[1])
+def world(pid, x, y, tag='joint'):
+    r = world_many(pid, [[x, y]], tag)[0]; return float(r[0]), float(r[1])
 
 
-def inv(pid, E, N, it=8):
+def inv(pid, E, N, it=8, tag='joint'):
     """world -> plate pixel for the new position: undo the correction (fixed point, it is small and smooth), then the
     old inverse"""
     W = np.c_[np.ravel(E), np.ravel(N)].astype(float); P = W.copy()
     for _ in range(it):
-        P = W - corr(pid, P)
+        P = W - corr(pid, P, tag)
     px, py = base_inv(pid, P[:, 0].reshape(np.shape(E)), P[:, 1].reshape(np.shape(N)))
     return px, py
