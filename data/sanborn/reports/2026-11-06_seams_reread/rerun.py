@@ -16,17 +16,26 @@ SP = _ws.DATA
 V = json.load(open(os.path.join(HERE, 'verdicts.json'), encoding='utf8'))
 REC = {}
 for f in glob.glob(SP + 'picks22_reread/*/*.json'):
-    r = json.load(open(f, encoding='utf8')); REC[(r['tie'], r['plate'])] = (r, os.path.relpath(f, SP).replace('\\', '/'))
+    r = json.load(open(f, encoding='utf8'))
+    if r.get('round', 1) == 1:      # round-2 records (targeted reads) are reached through their verdict's 'record'
+        REC[(r['tie'], r['plate'])] = (r, os.path.relpath(f, SP).replace('\\', '/'))
 
+LATEST = {}
+for v in V:                      # verdicts are appended (round 2: the targeted reads); the last one for a tie counts
+    LATEST[v['n']] = v
 REPLACE, DROP = {}, set()
-for v in V:
+for v in LATEST.values():
     if v['verdict'] == 'a':
-        r, f = REC[(v['n'], v['mispick_plate'])]
+        if v.get('record'):
+            f = v['record']; r = json.load(open(SP + f, encoding='utf8'))
+        else:
+            r, f = REC[(v['n'], v['mispick_plate'])]
         REPLACE[(r['plate'], round(r['old_pick']['x'], 1), round(r['old_pick']['y'], 1))] = (r['new_pick'], f)
     elif v['verdict'] == 'b':
         a, b = v['tie'].split(' / ')
         r, _ = REC[(v['n'], a)]
         DROP.add((a, b, S.k2(*r['old_pick']['names'])))
+        DROP.add((a, b, S.k2(*v['crossing'].split(' & '))))
 
 _pc = S.plate_crossings
 
@@ -52,6 +61,10 @@ def pairs(recs):
 
 S.plate_crossings, S.pairs = plate_crossings, pairs
 if __name__ == '__main__':
+    readme = os.path.join(HERE, 'README.md')
+    saved = open(readme, encoding='utf8').read() if os.path.exists(readme) else None   # seams.py writes its own README.md here
     S.main([HERE])
-    os.replace(os.path.join(HERE, 'README.md'), os.path.join(HERE, 'seams_detail.md'))
+    os.replace(readme, os.path.join(HERE, 'seams_detail.md'))
+    if saved is not None:
+        open(readme, 'w', encoding='utf8', newline='\n').write(saved)
     print('replaced', len(REPLACE), 'dropped', len(DROP))

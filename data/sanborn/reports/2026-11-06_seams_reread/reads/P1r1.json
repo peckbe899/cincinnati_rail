@@ -1,0 +1,22 @@
+[{"job": "t01b_67",
+  "points": {
+    "junction": {"x": 5835, "y": 175, "streets": ["north-south avenue (labelled only 'AVENUE', lots 3201-3236)", "Hewitt", "Montgomery (printed 'MONT.')"], "kind": "three-way junction at plate top edge: Hewitt leaves east, MONT. branch leaves NE from the same open area"},
+    "hewitt": null,
+    "merge": {"x": 5824, "y": 350, "streets": ["north-south avenue ('AVENUE')", "Gilbert Avenue (diagonal from SW, printed 'GILBERT ... AVE.')"], "kind": "Y-merge, diagonal joins from SW; gore at block corner (5777,460); car tracks join near (5820,315)"}
+  },
+  "names_found": [
+    {"name": "GILBERT", "x": 4480, "y": 610, "street": "the diagonal avenue with car tracks (same street that is labelled 'AVE.' at about (5640,470) and merges into the north-south avenue)"},
+    {"name": "WOODBURN", "x": null, "y": null, "street": "not printed anywhere in the region; the north-south avenue carries only the word 'AVENUE' at about (5820,880) (its name word must be printed outside the region)"}
+  ],
+  "gilbert_woodburn": {"x": 5824, "y": 350, "which": "merge"},
+  "confidence": "medium",
+  "note": "N-S avenue: west line x~5778-5783 (plate trimmed beyond it), east line (block corner) x~5870, centreline x~5825 (car track on it). Hewitt: north line drawn at y~122 (x 6000) - plate trimmed along it - south line (block front) y~220; centreline y~170, sloping ~+3 px per 100 px east; Hewitt centreline meets avenue centreline at ~(5827,168), so Hewitt is the same open junction as MONT. MONT. branch ~95 px wide, centreline through ~(5937,20) heading SW, meets avenue centreline ~(5827,200). Diagonal (Gilbert) ~95-100 px wide, centreline through ~(5700,466), slope ~-0.94, meets avenue centreline ~(5824,350). Gilbert/Woodburn = merge only if the north-south avenue is Woodburn, which is not printed in this region; Gilbert is certain for the diagonal. Also seen: 'MONT.' at ~(5920,75), 'HEWITT' ~(6100,170), '...RMONT AV' cut at left edge ~(4350,355), 'KINNEY', 'FAIRFAX', '...E STREET' (vertical street x~6580)."},
+ {"job": "t13b_75",
+  "points": {
+    "east_leg": {"x": 8563, "y": 7166, "note": "East leg present: short stub east of Montgomery at the bottom edge. North line y~7121 from the block corner (8652,7120) east to the plate's trimmed edge at x~8750. Only ~49 px (y 7121-7170) of its width is on the plate/region; the bottom edge cuts it, so the south line is not visible. Centre assumed at north line + 45 px (60 ft like the west leg) = y~7166, i.e. essentially on the plate edge; centre y is an estimate."},
+    "west_leg": {"x": 8586, "y": 7125}
+  },
+  "offset_px": 47,
+  "plate_edge": true,
+  "confidence": "medium",
+  "note": "Montgomery Road: west line (lot fronts) through ~(8550,7080) and ~(8594,7000); east line coincides with the plate trim through ~(8719,7000) and (8652,7120); ~110 px wide; centreline x = 8656 - 0.56*(y-7000). West leg ('AVE.', lots 1700-1730): north line y~7080, '60' ft width printed in the street, south line below the region/plate edge, centreline y~7125. East leg north line is jogged ~41 px south of the west leg's north line (7121 vs 7080); along Montgomery the two centreline meets are ~47 px apart (east leg further SW/down). Lines at y~7110 and ~7140 crossing both legs and Montgomery are pipes/sewers, not street edges."}]

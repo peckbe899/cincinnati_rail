@@ -1,0 +1,193 @@
+{
+ "crossing": "Gilbert Avenue & Woodburn Avenue",
+ "plate": "22-67",
+ "tie": 1,
+ "tie_plates": "22-67 / 22-69",
+ "job": "t01b_67",
+ "round": 2,
+ "reads": [
+  {
+   "job": "t01b_67",
+   "points": {
+    "junction": {
+     "x": 5835,
+     "y": 175,
+     "streets": [
+      "north-south avenue (labelled only 'AVENUE', lots 3201-3236)",
+      "Hewitt",
+      "Montgomery (printed 'MONT.')"
+     ],
+     "kind": "three-way junction at plate top edge: Hewitt leaves east, MONT. branch leaves NE from the same open area"
+    },
+    "hewitt": null,
+    "merge": {
+     "x": 5824,
+     "y": 350,
+     "streets": [
+      "north-south avenue ('AVENUE')",
+      "Gilbert Avenue (diagonal from SW, printed 'GILBERT ... AVE.')"
+     ],
+     "kind": "Y-merge, diagonal joins from SW; gore at block corner (5777,460); car tracks join near (5820,315)"
+    }
+   },
+   "names_found": [
+    {
+     "name": "GILBERT",
+     "x": 4480,
+     "y": 610,
+     "street": "the diagonal avenue with car tracks (same street that is labelled 'AVE.' at about (5640,470) and merges into the north-south avenue)"
+    },
+    {
+     "name": "WOODBURN",
+     "x": null,
+     "y": null,
+     "street": "not printed anywhere in the region; the north-south avenue carries only the word 'AVENUE' at about (5820,880) (its name word must be printed outside the region)"
+    }
+   ],
+   "gilbert_woodburn": {
+    "x": 5824,
+    "y": 350,
+    "which": "merge"
+   },
+   "confidence": "medium",
+   "note": "N-S avenue: west line x~5778-5783 (plate trimmed beyond it), east line (block corner) x~5870, centreline x~5825 (car track on it). Hewitt: north line drawn at y~122 (x 6000) - plate trimmed along it - south line (block front) y~220; centreline y~170, sloping ~+3 px per 100 px east; Hewitt centreline meets avenue centreline at ~(5827,168), so Hewitt is the same open junction as MONT. MONT. branch ~95 px wide, centreline through ~(5937,20) heading SW, meets avenue centreline ~(5827,200). Diagonal (Gilbert) ~95-100 px wide, centreline through ~(5700,466), slope ~-0.94, meets avenue centreline ~(5824,350). Gilbert/Woodburn = merge only if the north-south avenue is Woodburn, which is not printed in this region; Gilbert is certain for the diagonal. Also seen: 'MONT.' at ~(5920,75), 'HEWITT' ~(6100,170), '...RMONT AV' cut at left edge ~(4350,355), 'KINNEY', 'FAIRFAX', '...E STREET' (vertical street x~6580).",
+   "reader": "P1r1"
+  },
+  {
+   "job": "t01b_67",
+   "points": {
+    "junction": {
+     "x": 5830,
+     "y": 172,
+     "streets": [
+      "north-south avenue (printed only 'AVENUE')",
+      "Montgomery (MONT.)",
+      "Hewitt"
+     ],
+     "kind": "one open junction: avenue continues north to the plate's top edge (west side cut by plate edge at x~5770-5782); Hewitt leaves east (north line y~120, south block line y~205-218, centre y~165); MONT. leaves NE between them (centreline meets avenue centreline at ~(5826,180)); car tracks curve from the avenue into MONT. at y~170-300"
+    },
+    "hewitt": null,
+    "merge": {
+     "x": 5823,
+     "y": 345,
+     "streets": [
+      "Gilbert Avenue (diagonal from SW, with car tracks)",
+      "north-south avenue"
+     ],
+     "kind": "Y merge; diagonal's SE line ends at acute block corner (5777,460); its NW side is the plate cut; avenue lines x~5772/5862"
+    }
+   },
+   "names_found": [
+    {
+     "name": "GILBERT",
+     "x": 4490,
+     "y": 610,
+     "street": "the diagonal avenue (runs ESE from the region's west edge, bends at ~(5150,830), then NE as the diagonal 'AVE.' into the north-south avenue)"
+    },
+    {
+     "name": "AVE. (end of Gilbert label)",
+     "x": 5680,
+     "y": 495,
+     "street": "diagonal avenue near the merge"
+    },
+    {
+     "name": "AVENUE",
+     "x": 5820,
+     "y": 900,
+     "street": "north-south avenue (no proper name printed in region)"
+    },
+    {
+     "name": "MONT.",
+     "x": 5935,
+     "y": 90,
+     "street": "NE branch at top"
+    },
+    {
+     "name": "HEWITT",
+     "x": 6150,
+     "y": 170,
+     "street": "east street at top"
+    },
+    {
+     "name": "...MONT AV. (first letters cut)",
+     "x": 4390,
+     "y": 365,
+     "street": "detached plate fragment at top-left, not connected"
+    },
+    {
+     "name": "WOODBURN",
+     "x": null,
+     "y": null,
+     "street": "NOT printed anywhere in the region"
+    }
+   ],
+   "gilbert_woodburn": {
+    "x": 5823,
+    "y": 345,
+    "which": "merge"
+   },
+   "confidence": "medium",
+   "note": "Points high-ish confidence (~10 px). Gilbert is printed on the diagonal, so Gilbert meets the north-south avenue at the merge. WOODBURN is not printed in the region; the N-S avenue is labelled only 'AVENUE' (lots 3200-3241), so 'merge' as Gilbert x Woodburn assumes the N-S avenue is Woodburn - inference, not read. Other labels: KINNEY, FAIRFAX, STREET, 'AVE.' on two other N-S streets at x~4850 and ~5390, MEYERS (subdivision, big letters at x~4450-4700).",
+   "reader": "P1r2"
+  }
+ ],
+ "two_reads_spread_px": 5.8,
+ "new_pick": {
+  "x": 5832.5,
+  "y": 173.5,
+  "E": 718163.38,
+  "N": 4335086.74,
+  "which": "junction",
+  "moved_px": 156.6,
+  "moved_m": 31.94
+ },
+ "other_point": {
+  "which": "merge",
+  "x": 5823.5,
+  "y": 347.5,
+  "E": 718160.51,
+  "N": 4335051.35,
+  "two_reads_spread_px": 5.1
+ },
+ "old_pick": {
+  "x": 5826.0,
+  "y": 330.0,
+  "E": 718161.13,
+  "N": 4335054.88,
+  "names": [
+   "Gilbert Avenue",
+   "Woodburn Avenue"
+  ],
+  "reads": [
+   {
+    "file": "sbg/picks22/s22-67_d.json",
+    "a": "Gilbert Avenue",
+    "b": "Woodburn Avenue",
+    "x": 5826,
+    "y": 330,
+    "kind": "T"
+   }
+  ]
+ },
+ "osm_match": {
+  "osm": null,
+  "why": "no OSM crossing within 30 m of the seed",
+  "names": [
+   "Gilbert Avenue",
+   "Woodburn Avenue"
+  ]
+ },
+ "osm_crossings_of_these_names": [
+  {
+   "E": 718166.2,
+   "N": 4335085.0,
+   "from_new_m": 3.3,
+   "from_old_m": 30.5
+  }
+ ],
+ "distance_to_other_plate_m": {
+  "new": 3.65,
+  "other_point": 33.59,
+  "old": 30.0
+ }
+}

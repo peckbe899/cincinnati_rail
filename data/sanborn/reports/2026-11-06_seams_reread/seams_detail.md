@@ -10,7 +10,7 @@ Read: 21 plates on the 1922 layer (1986 crossings), 235 1904 deck and north fram
 
 | Seam | Source pairs | Shared crossings | Median m | RMS m | 90% m | Max m | > 5 m | > 10 m | > 20 m | Same names 45-150 m |
 |---|---|---|---|---|---|---|---|---|---|---|
-| plate-plate | 30 | 143 | 2.78 | 7.41 | 11.12 | 30.01 | 40 | 16 | 7 | 1 |
+| plate-plate | 30 | 142 | 2.75 | 6.87 | 9.98 | 27.44 | 38 | 14 | 6 | 1 |
 | plate-1904 | 156 | 556 | 0.4 | 6.73 | 7.75 | 35.09 | 87 | 51 | 25 | 0 |
 
 Plate against 1904, by how the frame is drawn:
@@ -43,12 +43,12 @@ Plate against 1904, by how the frame is drawn:
 | 22-66 | 22-67 | 3 | 3.28 | 3.94 | -1.8, +1.4 |
 | 22-66 | 22-68 | 7 | 3.65 | 5.78 | -0.8, +2.1 |
 | 22-66 | 22-69 | 7 | 6.24 | 13.39 | -0.9, +4.3 |
-| 22-67 | 22-69 | 2 | 19.07 | 30.01 | +4.7, +18.2 |
+| 22-67 | 22-69 | 2 | 5.88 | 8.12 | +3.6, +2.3 |
 | 22-67 | 22-70 | 9 | 1.26 | 5.49 | +0.4, -0.6 |
 | 22-68 | 22-69 | 3 | 3.03 | 4.39 | +1.4, +1.0 |
 | 22-68 | 22-75 | 2 | 2.73 | 2.78 | +0.3, +0.1 |
 | 22-69 | 22-70 | 2 | 2.88 | 4.81 | +2.0, +2.0 |
-| 22-69 | 22-75 | 3 | 1.57 | 16.33 | +3.4, +5.1 |
+| 22-69 | 22-75 | 2 | 1.56 | 1.57 | +1.5, +0.2 |
 | 22-70 | 22-75 | 2 | 7.13 | 12.12 | +0.6, +6.0 |
 | 22-75 | 22-76 | 4 | 2.2 | 14.24 | -3.2, -3.4 |
 | 22-75 | 22-82A | 5 | 2.85 | 9.83 | +2.0, -0.4 |
@@ -79,7 +79,6 @@ Plate against 1904, by how the frame is drawn:
 
 | m | Plate | Other | Crossing | dE, dN m |
 |---|---|---|---|---|
-| 30.0 | 22-67 | 22-69 | Gilbert Avenue & Woodburn Avenue | +5.1, +29.6 |
 | 27.4 | 22-37L | 22-37R | Groub Street & Ralston Avenue | +24.3, -12.7 |
 | 25.6 | 22-33 | 22-34R | Marshall Avenue & Garrard Avenue | +17.4, -18.8 |
 | 23.3 | 22-37L | 22-37R | Geringer Street & Ralston Avenue | +20.3, -11.5 |
@@ -87,7 +86,6 @@ Plate against 1904, by how the frame is drawn:
 | 21.8 | 22-37L | 22-37R | Geringer Street & Groub Street | +20.2, -8.1 |
 | 20.5 | 22-34R | 22-38 | Vermont Avenue & Bates Alley | -0.7, +20.5 |
 | 19.8 | 22-37R | 22-38 | Ludlow Avenue & Lafayette Avenue | -4.2, +19.4 |
-| 16.3 | 22-69 | 22-75 | Brewster Avenue & Montgomery Road | +7.1, +14.7 |
 | 14.5 | 22-35N | 22-38 | West McMicken Avenue & Dixmyth Avenue | -3.0, +14.2 |
 | 14.2 | 22-75 | 22-76 | Ivanhoe Avenue & Montgomery Road | -9.0, -11.1 |
 | 13.4 | 22-66 | 22-69 | Wehrman Street & Gilbert Avenue | -13.2, -1.9 |
@@ -99,6 +97,8 @@ Plate against 1904, by how the frame is drawn:
 | 9.8 | 22-75 | 22-82A | Woodburn Avenue & Hopkins Avenue | +9.7, +1.8 |
 | 8.7 | 22-66 | 22-69 | Wehrman Street & Syracuse Street | +3.1, +8.1 |
 | 8.4 | 22-33 | 22-34L | Casper Street & Pulte Street | +1.3, -8.3 |
+| 8.3 | 22-33 | 22-34L | Seegar Avenue & Carll Street | -8.3, +1.1 |
+| 8.3 | 22-38 | 22-68 | Ruther Avenue & Vine Street | +6.2, -5.5 |
 
 ## Widest 20, plate against 1904
 

@@ -1,0 +1,110 @@
+{
+ "crossing": "Brewster Avenue & Montgomery Road",
+ "plate": "22-75",
+ "tie": 13,
+ "tie_plates": "22-69 / 22-75",
+ "job": "t13b_75",
+ "round": 2,
+ "reads": [
+  {
+   "job": "t13b_75",
+   "points": {
+    "east_leg": {
+     "x": 8563,
+     "y": 7166,
+     "note": "East leg present: short stub east of Montgomery at the bottom edge. North line y~7121 from the block corner (8652,7120) east to the plate's trimmed edge at x~8750. Only ~49 px (y 7121-7170) of its width is on the plate/region; the bottom edge cuts it, so the south line is not visible. Centre assumed at north line + 45 px (60 ft like the west leg) = y~7166, i.e. essentially on the plate edge; centre y is an estimate."
+    },
+    "west_leg": {
+     "x": 8586,
+     "y": 7125
+    }
+   },
+   "offset_px": 47,
+   "plate_edge": true,
+   "confidence": "medium",
+   "note": "Montgomery Road: west line (lot fronts) through ~(8550,7080) and ~(8594,7000); east line coincides with the plate trim through ~(8719,7000) and (8652,7120); ~110 px wide; centreline x = 8656 - 0.56*(y-7000). West leg ('AVE.', lots 1700-1730): north line y~7080, '60' ft width printed in the street, south line below the region/plate edge, centreline y~7125. East leg north line is jogged ~41 px south of the west leg's north line (7121 vs 7080); along Montgomery the two centreline meets are ~47 px apart (east leg further SW/down). Lines at y~7110 and ~7140 crossing both legs and Montgomery are pipes/sewers, not street edges.",
+   "reader": "P1r1"
+  },
+  {
+   "job": "t13b_75",
+   "points": {
+    "east_leg": {
+     "x": 8570,
+     "y": 7165,
+     "note": "Present. Strip of street east of Montgomery from its north line y~7120 (where the plate cut steps from Montgomery's diagonal east line to horizontal at x~8652) down to the plate bottom edge y~7170, and east to the plate's east edge at x~8750. Only ~50 px of its width is on the plate; the south line is off-plate. Centre assumes the same ~60 ft (90 px) width as the west leg, which puts the centreline at y~7165, essentially on the plate edge. A heavy line at y~7140 crossing Montgomery into this strip is the sewer (12\" SEWER), not a street edge."
+    },
+    "west_leg": {
+     "x": 8593,
+     "y": 7123
+    }
+   },
+   "offset_px": 45,
+   "plate_edge": true,
+   "confidence": "medium",
+   "note": "Montgomery: west property line through (8555,7075)/(8590,7000), east line = plate cut (~8724 at y 7000), about 115-120 px wide, centreline x~8657 at y 7000, ~8593 at y 7120. West leg (printed 'AVE.', 1700-1730, width '60' printed in street): north property line y~7078 (lot line); the solid line at y~7110 below the house numbers runs straight across Newton's mouth, so it is a curb/sidewalk line, not the property line; dashed 6\" W. pipe at y~7122. South line is below the plate edge (7170); centreline = 7078 + 45 = 7123 (estimate). Jog: north lines 7078 (west) vs 7120 (east) = ~42 px in y, ~45 px along Montgomery. If the west leg's north line were instead taken as the 7110 line the jog would shrink to ~10 px, so the size of the offset is uncertain.",
+   "reader": "P1r2"
+  }
+ ],
+ "two_reads_spread_px": 7.1,
+ "new_pick": {
+  "x": 8566.5,
+  "y": 7165.5,
+  "E": 718632.97,
+  "N": 4335780.89,
+  "which": "east_leg",
+  "moved_px": 43.6,
+  "moved_m": 8.95
+ },
+ "other_point": {
+  "which": "west_leg",
+  "x": 8589.5,
+  "y": 7124.0,
+  "E": 718638.24,
+  "N": 4335789.09,
+  "two_reads_spread_px": 7.3
+ },
+ "old_pick": {
+  "x": 8585.0,
+  "y": 7126.0,
+  "E": 718637.29,
+  "N": 4335788.73,
+  "names": [
+   "Brewster Avenue",
+   "Montgomery Road"
+  ],
+  "reads": [
+   {
+    "file": "sbg/picks22/s22-75_f.json",
+    "a": "Brewster Avenue",
+    "b": "Montgomery Road",
+    "x": 8585,
+    "y": 7126,
+    "kind": "T"
+   }
+  ]
+ },
+ "osm_match": {
+  "osm": [
+   718630.38,
+   4335773.09
+  ],
+  "why": null,
+  "names": [
+   "Brewster Avenue",
+   "Montgomery Road"
+  ]
+ },
+ "osm_crossings_of_these_names": [
+  {
+   "E": 718630.4,
+   "N": 4335773.1,
+   "from_new_m": 8.2,
+   "from_old_m": 17.1
+  }
+ ],
+ "distance_to_other_plate_m": {
+  "new": 7.41,
+  "other_point": 17.09,
+  "old": 16.33
+ }
+}

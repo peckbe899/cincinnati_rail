@@ -48,18 +48,34 @@ What the re-read shows:
 - **The 34R/38 ties (7, 9) and 33/34R (3)** stand on both plates (moves under 4 m) and stay 17-26 m apart.
 - **Tie 1:** both re-reads on 22-67 repeat the old reading: where the diagonal avenue merges into the north-south avenue, 29.6 m from OSM's Gilbert/Woodburn crossing. Further north on the same avenue, where Hewitt and the "MONT." branch leave (y about 135-180), it sits 4.3-13 m from 22-69's five-way point and 5-11 m from OSM. A targeted read of that junction on 22-67 would settle it.
 
+## Round 2: two targeted reads (Ben, 6 November)
+
+Two independent reads each (`reads/P1r1.json`, `P1r2.json`; regions by `method/prep2.py`). The records are `data/sanborn/picks22_reread/22-67/t01b_gilbert_avenue__woodburn_avenue.json` and `22-75/t13b_brewster_avenue__montgomery_road.json`. The verdicts are appended to `verdicts.json` with `"round": 2`; the last verdict for a tie counts.
+
+- **Tie 1, Gilbert & Woodburn (22-67 / 22-69): (a) mis-pick on 22-67.**
+  - Both reads put the junction where Hewitt and the "MONT." branch leave the north-south avenue at (5833, 174), 5.8 px apart.
+  - That point is 3.7 m from 22-69's pick and 3.3 m from OSM's Gilbert/Woodburn crossing.
+  - The old pick, where the diagonal printed GILBERT merges into the avenue at (5826, 330), is 30.0 m from 22-69 and 34.1 m from OSM. It is replaced in the rerun.
+  - WOODBURN is not printed in 22-67's region; the avenue's name comes from 22-69 and OSM.
+- **Tie 13, Brewster & Montgomery (22-69 / 22-75): (b) wrong name match.**
+  - Brewster's other leg on 22-75, east of Montgomery, is at (8567, 7166). It lies on the plate's bottom edge with about 50 px of its width on the plate, so its centre is estimated. The two reads are 7.1 px apart.
+  - That leg is 7.4 m from 22-69's pick and 8.2 m from OSM's one crossing. The old 22-75 pick, the west leg, is 17.1 m and 17.8 m away.
+  - The old tie paired unlike legs of the jog, as at Ridgeway and Clarion, so it is dropped. The jog's size is uncertain: one reader gives 45 px along Montgomery, or about 10 px if a curb line is the leg's north line.
+
+Counts after round 2: (a) 1, (b) 4, (c) 9, unresolved 1 (tie 11, Wehrman & Gilbert).
+
 ## Seam report with the wrong matches dropped
 
-The rerun uses `tools/sanborn/seams.py`, unchanged, through `rerun.py`. No mis-picks to replace; ties 2, 4 and 12 are dropped. Plates are on their own models. The full report is in `seams_detail.md`, `seams.csv`, `per_pair.csv` and `seams.json`. "Before" is `reports/2026-11-06_seams/`.
+The rerun uses `tools/sanborn/seams.py` through `rerun.py`. After round 2: tie 1's pick on 22-67 is replaced by the targeted read, and ties 2, 4, 12 and 13 are dropped. Plates are on their own models. The full report is in `seams_detail.md`, `seams.csv`, `per_pair.csv` and `seams.json`. "Before" is `reports/2026-11-06_seams/`.
 
 | Seam | | Shared | Median m | 90% m | Max m | > 10 m | > 20 m |
 |---|---|---|---|---|---|---|---|
 | plate-plate | before | 146 | 2.88 | 12.75 | 30.01 | 19 | 9 |
-| plate-plate | after | 143 | 2.78 | 11.12 | 30.01 | 16 | 7 |
-| plate-1904 | before | 556 | 0.40 | 7.75 | 35.09 | 51 | 25 |
-| plate-1904 | after | 556 | 0.40 | 7.75 | 35.09 | 51 | 25 |
+| plate-plate | after round 1 (2, 4, 12 dropped) | 143 | 2.78 | 11.12 | 30.01 | 16 | 7 |
+| plate-plate | after round 2 (13 dropped too, tie 1 re-picked on 22-67) | 142 | 2.75 | 9.98 | 27.44 | 14 | 6 |
+| plate-1904 | before and after | 556 | 0.40 | 7.75 | 35.09 | 51 | 25 |
 
-The widest seam (tie 1, 30.0 m) is still in; it is unresolved, not dropped.
+After round 2 the widest plate-plate seam is 22-37L / 22-37R at Groub & Ralston (27.4 m, a real disagreement between the two halves; see `reports/2026-11-06_local/`).
 
 ## Files
 
