@@ -62,6 +62,38 @@ Checks on the result:
 - **Years:** from `works_ledger.json`.
 - **Line works:** each line's own cuts, fills and portals come from the hub model by phase, not from these rasters.
 
+## Code: `region/ground` (6 November 2026)
+
+The compositor that turns these layers into the ground for any year, and the parametric works that will replace
+hand-made rasters from here on.
+
+```
+python -m region.ground works --year 1930                       # which works count in 1930, which are skipped and why
+python -m region.ground compose --year 1930 --bbox 711000 4330000 714000 4332500 --out out/ground_1930.tif
+python -m region.ground check --out ground/reports/check_2026_vs_map3.json   # compose 2026 and compare with map 3
+python -m pytest tests/test_ground.py
+```
+
+```python
+from region.ground import compose, sample, Pad, Corridor
+g = compose(1930, bbox=(x0, y0, x1, y1))          # g.z metres NAVD88, g.src the layer per cell, g.applied, g.skipped
+z = sample(1930, [(x, y), ...])                    # bilinear, metres
+pad = Pad("quay", polygon, level=151.8, fill_slope=1/3, cut_slope=0.5)        # an areal work with slopes to daylight
+cut = Corridor("line_6_cutting", [(x, y, z), ...], half_width=6.45, cut_slope=1/1.5)   # a linear work
+g2 = compose(1930, bbox, extra_works=[pad, cut]); pad.stats["fill_m3"]
+```
+
+Rule (`region/ground/compose.py`): the canon 1912 ground is the base (the 2026 canon ground where the 1912 raster does
+not reach, labelled `map3_outside_1912`); timeline `real` subtracts the 1912 riverworks delta. Then every work in
+`works_ledger.json` whose year (`built_by`, else `built_from`) is at or before the year is applied in ledger order by
+the kind set in `region/ground/layers.py`: target and mode rasters as the riverworks were made (mode 1 forces the
+target, 2 only raises); the 2026 canon ground inside a delta's footprint (the interstates: the delta was made against
+today's LiDAR, which the repo does not hold); the 2026 canon ground inside the kept-works zones, feathered 16 m; a bed
+surface where it has values. An undated work counts only at 2026 and is listed as skipped before. New works are
+`Pad` and `Corridor` objects: per cell, with Z the design level at the nearest point of the work's edge and d the
+distance to it, `proposed = clip(existing, Z - fill_slope * d, Z + cut_slope * d)`, so the daylight line is found,
+not drawn, and cut and fill volumes come out of the same pass. Every cell carries the code of the layer that set it.
+
 ## Known gaps
 
 - **Embankment dates:** the 7 October plan, citing tracker 2J, says 1925-1930. Ben ruled on 8 October for 1903-1925, with the Mill Creek mouth to Sawyer Point stretch on map 2. The ledger follows the ruling; the tracker needs updating.
