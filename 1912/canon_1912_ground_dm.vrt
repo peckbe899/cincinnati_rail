@@ -1,0 +1,21 @@
+<VRTDataset rasterXSize="16701" rasterYSize="13701">
+  <SRS dataAxisToSRSAxisMapping="1,2">EPSG:26916</SRS>
+  <GeoTransform>697252.0, 2.0, 0.0, 4349224.0, 0.0, -2.0</GeoTransform>
+  <VRTRasterBand dataType="Int16" band="1">
+    <NoDataValue>-32768</NoDataValue>
+    <SimpleSource>
+      <SourceFilename relativeToVRT="1">canon_1912_ground_dm_n.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="16701" RasterYSize="6850" DataType="Int16" BlockXSize="512" BlockYSize="512" />
+      <SrcRect xOff="0" yOff="0" xSize="16701" ySize="6850" />
+      <DstRect xOff="0" yOff="0" xSize="16701" ySize="6850" />
+    </SimpleSource>
+    <SimpleSource>
+      <SourceFilename relativeToVRT="1">canon_1912_ground_dm_s.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="16701" RasterYSize="6851" DataType="Int16" BlockXSize="512" BlockYSize="512" />
+      <SrcRect xOff="0" yOff="0" xSize="16701" ySize="6851" />
+      <DstRect xOff="0" yOff="6850" xSize="16701" ySize="6851" />
+    </SimpleSource>
+  </VRTRasterBand>
+</VRTDataset>
