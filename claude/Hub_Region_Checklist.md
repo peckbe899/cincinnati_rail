@@ -171,6 +171,32 @@ bridges reproduce the page's facts table from records.
 - [ ] 2.3.6 **The Deck's editor logic ported unchanged into a Web Worker**, rendering on MapLibre, layout saved as
   append-only operations with ids, base files frozen as base v1 with an alias table and a golden replay test
   (scrutiny item 6). One platform id shared by the Deck, the Profiles and the model (item 7).
+- [ ] 2.3.8 **The street and plot editor rebuilt as a pane** (Ben, 6 Nov: "fully editable and more powerful";
+  replaces the lean in 9.5). Requirements: draw new streets the plate passes missed; edit any street, block or plot;
+  additions from the pipeline merge into the hub instead of overwriting it; smoother layers; sidewalks and kerbs;
+  a lot model that can later become buildings in 3D. Options for the editor: (a) MapLibre with terra-draw (or
+  maplibre-gl-draw) for the drawing tools and the ported `applyOps`/`rebuildPlots` logic in a Web Worker; (b) an
+  iD-style editor (OSM's) adapted to the model (the richest editing model, most code); (c) keep the canvas editor
+  and only swap its rendering. Lean: (a).
+- [ ] 2.3.9 **Base and edits kept apart, merged on read** (Ben, 6 Nov: the hub separate from the importer, so an
+  import merges instead of covering). Model: every street, block and plot carries `origin` (plate id and pipeline
+  run, or `authored` by Ben) and a stable id; the pipeline writes only `derived` features of its own plate set; Ben's
+  edits and authored features are a separate table; the view is derived with edits applied on top. An import
+  re-runs for a plate: new derived features appear, unchanged ones stay, changed ones are listed with the edit
+  that touches them, and an authored feature is never moved or removed by an import. Options for the merge: (a)
+  three-way per feature with the last import as base (as the hub's seed merge does today, per record); (b)
+  OSM-style changesets with per-feature versions and a conflict list; (c) CRDT per feature (overkill for one
+  user). Lean: (b), which is (a) with history and a reviewable list.
+- [ ] 2.3.10 **Street model for sidewalks and kerbs**: a street is a centreline with a carriageway width, sidewalk
+  widths and kerb lines derived (options: widths by distance along the line, or per segment); blocks and plots
+  snap to the kerb line; the Sanborn plate gives printed widths as the default source.
+- [ ] 2.3.11 **Lots that can become buildings**: plots keep their Sanborn attributes (use, storeys, material where
+  printed) and an optional footprint and height so the station workspace and the region map can extrude them later
+  (3D buildings from lots). Options for the 3D: (a) MapLibre fill-extrusion from the plot layer (free, flat roofs);
+  (b) three.js meshes in the station workspace from the same records; (c) both from one record. Lean: (c).
+- [ ] 2.3.12 **Layer rendering**: every Deck layer (Sanborn sheets by year, relief, streets, blocks, plots, lots,
+  transit, structures) as a MapLibre source with its own visibility, opacity and year range; the heavy static ones
+  as PMTiles (2.3.2).
 - [ ] 2.3.7 Two old-hub bugs logged: `rer_deck_routes.py:665` `fn.split('/')` never matches on Windows (junction
   points never update); `station_access_report.py` reports on stale repo profiles. Fix the first in the old hub if
   Ben keeps using the tie before slice 3 retires it.
@@ -257,12 +283,14 @@ do not touch each other's paths.
 1913; Lunken 1937-1941; the interstates about 1940-1965; the kept-works zones fluid with per-zone years; the river at
 139.62 m for every year; map 3's river bed is canon; the river bridges page and the C&O/intercity viaduct are part of
 the implementation (walls below the track); the 1912 ground re-derived from the sheets as a true 1912 surface;
-Sanborn not re-derived; slice order as listed; Line 6 not a milestone of its own.
+Sanborn not re-derived; slice order as listed; Line 6 not a milestone of its own; all section 6 leans taken on 6
+November (the Deck as street editor now superseded by 9.5); RER B follows the north arch viaduct's deck north of
+Northside (the straight grade goes) and leaves it south of Camp Washington on a ramp viaduct of its own, walls below
+the track, to the tunnel that meets RER A; the Deck rebuilt as an editor with base and edits kept apart.
 
 ## 6. Open rulings (with leans)
 
 - 1912 scope: whole survey (lean) or core first.
-- The Deck's role: street and plot editor through slice 7 (lean) or folded into the map in slice 3.
 - Tunnel-method rules: ratify the ranked list from `Drive_Selection_Root_Causes_2026-11-04.md` as amended on 4
   November (lean: ratify as the engine now has it, then refine from the diff reports).
 - D/E lettering: as the Deck and KMZ have it (lean) or as tracker 2M.
@@ -297,8 +325,10 @@ digging index; a 3D globe; re-deriving the Sanborn streets; keeping the Python c
 - 9.3 **FastAPI plus Vite/React** (6 Nov, provisional). Options: 2.0.15 a-c. Decision: (a). Consequence: a
   front-end build step; Range and SSE for free.
 - 9.4 **SQLite with hand-written migrations** (6 Nov, provisional). Options: 2.0.7 a-d. Decision: (a).
-- 9.5 **The Deck stays the street editor** (lean, unruled). Options: keep; fold into the map. Consequence if kept:
-  one adapter (`deck/layout`), the Sanborn pipeline untouched.
+- 9.5 **The Deck is rebuilt as the street and plot pane in slice 3** (Ben, 6 Nov; replaces the earlier lean to keep
+  it). Options: keep as is; fold into the map as a viewer; rebuild as an editor with its data model designed for
+  sidewalks and lots. Decision: rebuild, with base and edits kept apart and merged on read (2.3.8 to 2.3.12). The
+  old Deck keeps running until the pane has done a real task; the Sanborn pipeline stays a separate importer.
 - 9.6 **Dates, layers and zones as data** (6 Nov, Ben). Context: the old hub unravelled on timeline changes.
   Decision: no date, layer, level or geometry in code; ledgers and zone files with per-item years. Consequence: a
   test that a date change is one record edit.
