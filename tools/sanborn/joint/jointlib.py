@@ -97,8 +97,24 @@ def corr(pid, P, tag='joint'):
     return np.c_[B @ np.asarray(j['coefE']), B @ np.asarray(j['coefN'])]
 
 
+_BO = {}
+
+
+def base_for(pid, tag):
+    """the plate's own model under this model set: rebuilt from corrected controls if the model file carries one
+    (base_override, tools/sanborn/joint/local2.py), else the stored one"""
+    j = load(pid, tag)
+    bo = j.get('base_override')
+    if not bo:
+        return lambda q: base_many(pid, q)
+    if (pid, tag) not in _BO:
+        import fwdlib
+        _BO[(pid, tag)] = fwdlib.make(bo['model'], np.asarray(bo['X'], float), np.asarray(bo['O'], float))
+    return lambda q: _BO[(pid, tag)](np.asarray(q, float))
+
+
 def world_many(pid, q, tag='joint'):
-    P = base_many(pid, q); return P + corr(pid, P, tag)
+    P = base_for(pid, tag)(q); return P + corr(pid, P, tag)
 
 
 def world(pid, x, y, tag='joint'):
