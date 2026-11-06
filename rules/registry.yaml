@@ -193,12 +193,13 @@ rules:
     text: 'A stretch ends only at an anchor: a box station, a portal (open track), the sunk river box, a canon box section
       (canal, covered way), a change of building phase, or a painted shaft. A mined station is inside its drive, not
       an anchor.'
-    status: provisional
+    status: ratified
     ruling:
-      date: 2026-11-04
+      date: '2026-11-06'
       by: Ben
-      words: null
-      source: profiles.html:1344-1345,1452; data/profile/README.md:116
+      words: ratify all, as long as you're sure that these are correct
+      source: 'this session, 6 November 2026, after a line-by-line check against profiles.html solveTypes (1384-1505);
+        earlier: profiles.html:1344-1345,1452; data/profile/README.md:116'
     decision: null
     rank: null
     params: []
@@ -210,6 +211,7 @@ rules:
     - 2026-10-28 stretches between station boxes, portals, canon sections, rivers and phase changes
     - 2026-10-31 boxes are the only break points
     - 2026-11-04 shafts added, mined stations inside drives
+    - '2026-11-06: ratified by Ben (the eleven tunnel-method rules, checked against the code)'
     notes: Ben chose the Shaft brush on 4 November (not quoted).
   - id: geometry.anchor.shaft_brush
     domain: geometry
@@ -236,12 +238,13 @@ rules:
     domain: geometry
     text: A paint sets the method of every stretch it touches, snapped out to the anchors; it is never overridden, and
       what cannot be built under it is hatched and flagged.
-    status: provisional
+    status: ratified
     ruling:
-      date: 2026-11-04
+      date: '2026-11-06'
       by: Ben
-      words: I painted this as cut-and-cover, and it refuses to acknowledge that
-      source: claude/Drive_Selection_Root_Causes_2026-11-04.md:3; profiles.html:1346-1348,1494-1495
+      words: ratify all, as long as you're sure that these are correct
+      source: 'this session, 6 November 2026, after a line-by-line check against profiles.html solveTypes (1384-1505);
+        earlier: claude/Drive_Selection_Root_Causes_2026-11-04.md:3; profiles.html:1346-1348,1494-1495'
     decision: method_per_stretch
     rank: 1
     params:
@@ -255,18 +258,20 @@ rules:
     history:
     - 2026-10-31 a tube paint over a box the rules need was a warning, the paint winning on the drawing
     - 2026-11-04 paints snapped to anchors; the larger of two paints wins with a warning
+    - '2026-11-06: ratified by Ben (the eleven tunnel-method rules, checked against the code)'
     notes: Ben's words are a complaint, not the rule; the Hub Region checklist lists ratifying the ranked list as open.
       The RER still reads paints per point (typeAt).
   - id: geometry.method.bank_works
     domain: geometry
     text: 'A stretch touching the sunk river box with no mined station and shorter than the phase''s shortest drive
       is the bank works: cut and cover in a cofferdam, the immersed tunnel''s land end.'
-    status: provisional
+    status: ratified
     ruling:
-      date: 2026-10-31
+      date: '2026-11-06'
       by: Ben
-      words: null
-      source: claude/Station_3D_Log.md 2026-10-31 (one pass, 5); profiles.html:1496
+      words: ratify all, as long as you're sure that these are correct
+      source: 'this session, 6 November 2026, after a line-by-line check against profiles.html solveTypes (1384-1505);
+        earlier: claude/Station_3D_Log.md 2026-10-31 (one pass, 5); profiles.html:1496'
     decision: method_per_stretch
     rank: 2
     params:
@@ -282,16 +287,18 @@ rules:
     history:
     - 2026-10-31 leftover beside the sunk box is the bank works
     - 2026-11-04 kept as rank 2
+    - '2026-11-06: ratified by Ben (the eleven tunnel-method rules, checked against the code)'
     notes: Mined stations beside a river excepted. Never flagged as unbuildable even past cc_max (p.bank).
   - id: geometry.method.canon_bored
     domain: geometry
     text: A stretch the canon marks bored (a shallow or deep founding section, or under a river) is a bored drive.
-    status: provisional
+    status: ratified
     ruling:
-      date: 2026-10-31
+      date: '2026-11-06'
       by: Ben
-      words: null
-      source: profiles.html:1385,1497; CANON table profiles.html:293-323
+      words: ratify all, as long as you're sure that these are correct
+      source: 'this session, 6 November 2026, after a line-by-line check against profiles.html solveTypes (1384-1505);
+        earlier: profiles.html:1385,1497; CANON table profiles.html:293-323'
     decision: method_per_stretch
     rank: 3
     params: []
@@ -303,18 +310,20 @@ rules:
     - 2026-10-09 canon sections decide the type
     - 2026-11-02 a canon method section is only a hint for paints (a paint inside one is checked)
     - 2026-11-04 canon bored forces the drive
+    - '2026-11-06: ratified by Ben (the eleven tunnel-method rules, checked against the code)'
     notes: 'Conflict in wording: the paint-fit rule calls a canon method section ''only a hint'', the engine makes it
       force a drive when unpainted.'
   - id: geometry.method.mined_station_forces_drive
     domain: geometry
-    text: A stretch with a mined station in it is one bored drive through the station, unless cut and cover is feasible
-      throughout and the station's type says otherwise.
-    status: provisional
+    text: A stretch with a mined station in it is one bored drive through the station. A station selected as a box,
+      or within the phase's cut-and-cover limit, is an anchor and not part of any stretch, so there is no exception.
+    status: ratified
     ruling:
-      date: 2026-10-31
+      date: '2026-11-06'
       by: Ben
-      words: null
-      source: profiles.html:1498,1501; claude/Station_3D_Log.md 2026-10-31 (one pass, 3)
+      words: ratify all, as long as you're sure that these are correct
+      source: 'this session, 6 November 2026, after a line-by-line check against profiles.html solveTypes (1384-1505);
+        earlier: profiles.html:1498,1501; claude/Station_3D_Log.md 2026-10-31 (one pass, 3)'
     decision: method_per_stretch
     rank: 4
     params: []
@@ -326,17 +335,21 @@ rules:
     - 2026-10-29 a drive is deep if it reaches a deep station
     - 2026-10-31 one drive through any mined stations
     - 2026-11-04 rank 4; a mined station in a box stretch is flagged, not overridden
+    - '2026-11-06: text corrected to the code (solveTypes 1489, 1498): no ''unless cut and cover is feasible'' clause
+      exists'
+    - '2026-11-06: ratified by Ben (the eleven tunnel-method rules, checked against the code)'
     notes: ''
   - id: geometry.method.both_feasible_phase_prefers
     domain: geometry
     text: 'Where cut and cover end to end and a bored drive are both feasible, the phase''s preference decides: Phase
       1 cut and cover, later phases bored.'
-    status: provisional
+    status: ratified
     ruling:
-      date: 2026-11-04
+      date: '2026-11-06'
       by: Ben
-      words: null
-      source: data/profile/README.md:116; data/profile/metro_structure.json:247 (prefer_about); profiles.html:1499
+      words: ratify all, as long as you're sure that these are correct
+      source: 'this session, 6 November 2026, after a line-by-line check against profiles.html solveTypes (1384-1505);
+        earlier: data/profile/README.md:116; data/profile/metro_structure.json:247 (prefer_about); profiles.html:1499'
     decision: method_per_stretch
     rank: 5
     params:
@@ -351,16 +364,18 @@ rules:
     - '2026-10-28 between the limits: cut and cover unless the bored stretch makes a whole drive (handoff)'
     - 2026-11-01 the cheaper by cost
     - 2026-11-04 the phase's prefer
+    - '2026-11-06: ratified by Ben (the eleven tunnel-method rules, checked against the code)'
     notes: Ben's choice on 4 November (phase preference), not quoted.
   - id: geometry.method.one_feasible
     domain: geometry
     text: Where only one method is feasible that one is taken, and the stretch note says why the other was not.
-    status: provisional
+    status: ratified
     ruling:
-      date: 2026-11-04
+      date: '2026-11-06'
       by: Ben
-      words: null
-      source: profiles.html:1500-1501
+      words: ratify all, as long as you're sure that these are correct
+      source: 'this session, 6 November 2026, after a line-by-line check against profiles.html solveTypes (1384-1505);
+        earlier: profiles.html:1500-1501'
     decision: method_per_stretch
     rank: 6
     params: []
@@ -371,18 +386,20 @@ rules:
     tests: []
     history:
     - '2026-11-04'
+    - '2026-11-06: ratified by Ben (the eleven tunnel-method rules, checked against the code)'
     notes: ''
   - id: geometry.method.neither_feasible_nearer
     domain: geometry
     text: 'Where neither method is feasible the stretch is drawn as the nearer to feasible (fewer bad samples; a tie
       by the phase''s preference; a mined station forces bored) and flagged as an error: lower the rail for a drive,
       raise it for a box, or paint a shaft.'
-    status: provisional
+    status: ratified
     ruling:
-      date: 2026-11-04
+      date: '2026-11-06'
       by: Ben
-      words: null
-      source: profiles.html:1502-1507
+      words: ratify all, as long as you're sure that these are correct
+      source: 'this session, 6 November 2026, after a line-by-line check against profiles.html solveTypes (1384-1505);
+        earlier: profiles.html:1502-1507'
     decision: method_per_stretch
     rank: 7
     params: []
@@ -393,17 +410,19 @@ rules:
     tests: []
     history:
     - '2026-11-04'
+    - '2026-11-06: ratified by Ben (the eleven tunnel-method rules, checked against the code)'
     notes: ''
   - id: geometry.feasibility.box
     domain: geometry
     text: Cut and cover is feasible for a stretch only where every tunnel sample is within the phase's cut-and-cover
       limit, there is no mined station and the canon does not say bored.
-    status: provisional
+    status: ratified
     ruling:
-      date: 2026-11-04
+      date: '2026-11-06'
       by: Ben
-      words: null
-      source: profiles.html:1366,1489
+      words: ratify all, as long as you're sure that these are correct
+      source: 'this session, 6 November 2026, after a line-by-line check against profiles.html solveTypes (1384-1505);
+        earlier: profiles.html:1366,1489'
     decision: null
     rank: null
     params:
@@ -416,18 +435,21 @@ rules:
     tests: []
     history:
     - 2026-10-28 cc_max per phase
+    - '2026-11-06: ratified by Ben (the eleven tunnel-method rules, checked against the code)'
     notes: ''
   - id: geometry.feasibility.drive
     domain: geometry
-    text: A bored drive is feasible only where the launch boxes from each anchor reach one full diameter of cover held
-      over the approach length, those boxes stay within the cut-and-cover limit, the drive left is at least the phase's
-      shortest drive (or holds a mined station), and nothing in it is below half a diameter of cover.
-    status: unratified
+    text: A drive is feasible where the launch boxes from each anchor carry on until the tube has its full cover, held
+      over the approach length, and stay within the cut-and-cover limit; the drive between them is at least the phase's
+      shortest drive, or runs through a mined station whatever its length; and nothing in it has less than the hard
+      fraction of a diameter of cover.
+    status: ratified
     ruling:
-      date: 2026-11-04
-      by: Claude
-      words: null
-      source: profiles.html:1479-1490
+      date: '2026-11-06'
+      by: Ben
+      words: ratify all, as long as you're sure that these are correct
+      source: 'this session, 6 November 2026, after a line-by-line check against profiles.html solveTypes (1384-1505);
+        earlier: profiles.html:1479-1490'
     decision: null
     rank: null
     params:
@@ -448,6 +470,8 @@ rules:
     - 2026-10-28 min_drive applies only to pockets; box to box is a drive at any length (Ben's answer)
     - 2026-10-29 the only drive between two anchors is bored at any length
     - 2026-11-04 the drive must be at least min_drive unless mined
+    - '2026-11-06: ''or through a mined station whatever its length'' added to match solveTypes 1490'
+    - '2026-11-06: ratified by Ben (the eleven tunnel-method rules, checked against the code)'
     notes: 'Conflict: Ben''s 28 October answer and the 29 October rule make a box-to-box tunnel a drive at any length;
       the 4 November engine requires min_drive for the drive between the launch boxes. Entered once, unratified.'
   - id: geometry.launch_box.full_cover
@@ -482,12 +506,13 @@ rules:
     domain: geometry
     text: 'Inside a stretch a shortfall is a flag, never a change of method: a tube short of a full diameter is bored
       with ground treatment (a warning), short of half a diameter unbuildable; a box past its limit unbuildable.'
-    status: provisional
+    status: ratified
     ruling:
-      date: 2026-10-31
+      date: '2026-11-06'
       by: Ben
-      words: switch to cut and cover if it passes limits, or it is forced to be regraded
-      source: claude/Station_3D_Log.md 2026-10-31 (low cover); profiles.html:1354-1355,1530-1535,1556-1573
+      words: ratify all, as long as you're sure that these are correct
+      source: 'this session, 6 November 2026, after a line-by-line check against profiles.html solveTypes (1384-1505);
+        earlier: claude/Station_3D_Log.md 2026-10-31 (low cover); profiles.html:1354-1355,1530-1535,1556-1573'
     decision: null
     rank: null
     params:
@@ -506,6 +531,7 @@ rules:
     - 2026-10-31 shallow pockets cut and cover where every drive left is whole, else Regrade error
     - 2026-11-01 box pockets by cost
     - '2026-11-04 pockets removed: a shortfall is only a flag'
+    - '2026-11-06: ratified by Ben (the eleven tunnel-method rules, checked against the code)'
     notes: The 31 October quote allowed a switch to cut and cover inside a drive where within limits; the 4 November
       engine switches only at stretch level. Read as consistent at stretch level; noted.
   - id: geometry.portal.min_open_run
