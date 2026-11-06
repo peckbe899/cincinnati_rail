@@ -1,0 +1,3529 @@
+params:
+  - {meaning: Metro ruling grade on the running line (the base limit the phase rules start from), path: settings.maxGrade, source: 'data/profile/settings.json:3; profiles.html:277', status: recorded, unit: permille, value: 50}
+  - {meaning: 'Metro platform length, 400 ft (Ben, 23 October 2026; was 500 ft)', path: settings.platform, source: 'data/profile/settings.json:4; profiles.html:277', status: recorded, unit: m, value: 121.92}
+  - {meaning: default rail depth below ground at an unset Metro station (the level solver's upper bound), path: settings.defDepth, source: 'data/profile/settings.json:5; profiles.html:277', status: recorded, unit: m, value: 7.62}
+  - {meaning: the soffit (rail less deckDepth) this far over the ground makes the line elevated, path: settings.elevAbove, source: 'data/profile/settings.json:6; profiles.html:277,1378', status: recorded, unit: m, value: 3}
+  - {meaning: rail less than this below the ground is at grade, path: settings.coverBelow, source: 'data/profile/settings.json:7; profiles.html:277,1379', status: recorded, unit: m, value: 3}
+  - {meaning: 'old deep-tube threshold outside the canon (60 ft); still read by pointType and kindAt, superseded by phases.deep_from', path: settings.deepBelow, source: 'data/profile/settings.json:8; profiles.html:277,1269,2204', status: recorded, unit: m, value: 18.29}
+  - {meaning: flag a canon-shallow station deeper than this (40 ft); fallback for cc_max without the structure record, path: settings.shallowMax, source: 'data/profile/settings.json:9; profiles.html:277,1241,1912', status: recorded, unit: m, value: 12.19}
+  - {meaning: 'Metro viaduct deck under the rail (below-rail at crossings, the soffit test, road clearances)', path: settings.deckDepth, source: 'profiles.html:277 (METRO_DEFAULTS; not in data/profile/settings.json)', status: literal_in_code, unit: m, value: 1.5}
+  - {meaning: 'Ohio normal pool, 138.68 m NAVD88; the water surface over rivers and the datum for bridges and the sunk box', path: settings.poolFt, source: 'data/profile/settings.json:10; profiles.html:277,603', status: recorded, unit: ft, value: 455.0}
+  - {meaning: Metro vertical curve radius at every grade change, path: settings.vcRadius, source: 'profiles.html:277; docs/research/profile_design.md:25', status: literal_in_code, unit: m, value: 1500}
+  - {meaning: shortest vertical curve (AREMA / Amtrak 100 ft), path: settings.vcMinLen, source: 'profiles.html:277,754', status: literal_in_code, unit: m, value: 30.5}
+  - {meaning: tunnel grade below which a drainage warning is raised (starting value), path: settings.drainMin, source: 'profiles.html:277,2107', status: literal_in_code, unit: permille, value: 3}
+  - {meaning: curve resistance allowance k in k / R per mille (SNCF), path: settings.curveK, source: 'profiles.html:277,1982', status: literal_in_code, unit: permille*m, value: 800}
+  - {meaning: 'platform grade limit; on the Metro overridden by ERA.sgMax per line, the RER reads its own setting', path: settings.stationMaxGrade, source: 'profiles.html:277,1227', status: literal_in_code, unit: permille, value: 7.5}
+  - {meaning: window the grade is averaged over to count as sustained (two Metro platform lengths), path: settings.sustainedLen, source: 'profiles.html:277,1168', status: literal_in_code, unit: m, value: 243.84}
+  - {meaning: 'steepest side slope of a drawn-ground line at its ends (1 in 2, an embankment)', path: settings.fillSlope, source: 'profiles.html:277,1737', status: literal_in_code, unit: permille, value: 500}
+  - {meaning: steepest grade allowed on a drawn-ground line between its ends (a street); error past it, path: settings.groundMax, source: 'profiles.html:277,1738', status: literal_in_code, unit: permille, value: 150}
+  - {meaning: drawn ground averaging more than this over groundSustain is a warning, path: settings.groundWarn, source: 'profiles.html:277,1746', status: literal_in_code, unit: permille, value: 100}
+  - {meaning: window for the drawn-ground sustained-grade warning, path: settings.groundSustain, source: 'profiles.html:277,1742', status: literal_in_code, unit: m, value: 100}
+  - {meaning: roof slab of the Metro sunk box over the box's roof underside (assumed); 5.0 m rail to roof top, path: settings.riverRoof, source: 'profiles.html:277,1011', status: literal_in_code, unit: m, value: 1.0}
+  - {meaning: 'sunk box roof at most this far below the bed, on the flat bottom only', path: settings.riverSink, source: 'profiles.html:277,1025', status: literal_in_code, unit: m, value: 5.0}
+  - {meaning: 'sunk box roof at most this far above the bed, at every point under water', path: settings.riverRise, source: 'profiles.html:277,1024', status: literal_in_code, unit: m, value: 3.0}
+  - {meaning: bed within this of the crossing's lowest bed counts as the flat bottom, path: settings.riverFlatTol, source: 'profiles.html:277,1025', status: literal_in_code, unit: m, value: 1.0}
+  - {meaning: clear water kept over the made-up bed at normal pool on a navigable river (12 ft), path: settings.riverClearWater, source: 'profiles.html:277,1027', status: literal_in_code, unit: m, value: 3.66}
+  - {meaning: 'clay, canopy and riprap over a sunk box roof that stands above the bed (drawing value)', path: settings.riverCap, source: 'profiles.html:277,1034', status: literal_in_code, unit: m, value: 1.0}
+  - {meaning: street surface to structure underside over a highway, path: settings.roadClearHighway, source: 'profiles.html:277,454', status: literal_in_code, unit: m, value: 4.9}
+  - {meaning: street surface to structure underside over a major road, path: settings.roadClearMajor, source: 'profiles.html:277,454', status: literal_in_code, unit: m, value: 4.3}
+  - {meaning: street surface to structure underside over a minor street, path: settings.roadClearMinor, source: 'profiles.html:277,454', status: literal_in_code, unit: m, value: 4.3}
+  - {meaning: RER ruling grade (canon), path: settings_rer.maxGrade, source: 'data/profile/rer/settings.json:3; profiles.html:286', status: recorded, unit: permille, value: 35}
+  - {meaning: 'TRI / RER platform length, 670 ft (was 200 m)', path: settings_rer.platform, source: 'data/profile/rer/settings.json:4; profiles.html:286', status: recorded, unit: m, value: 204.2}
+  - {meaning: RER underground station rail depth (canon starting value), path: settings_rer.defDepth, source: 'data/profile/rer/settings.json:5', status: recorded, unit: m, value: 12}
+  - {meaning: RER deep-bore threshold outside the canon (starting value), path: settings_rer.deepBelow, source: 'data/profile/rer/settings.json:8', status: recorded, unit: m, value: 25}
+  - {meaning: RER canon-shallow flag depth; also the open-trough dig limit in the paint-fit check, path: settings_rer.shallowMax, source: 'data/profile/rer/settings.json:9; profiles.html:1621', status: recorded, unit: m, value: 18}
+  - {meaning: RER box and station box rail-to-top (25 kV over bilevel stock); the trough-to-box depth; the sunk box top, path: settings_rer.envelope, source: 'data/profile/rer/settings.json:10; profiles.html:1260,1009', status: recorded, unit: m, value: 6.6}
+  - {meaning: RER bored tube crown above the rail, path: settings_rer.boreCrown, source: 'data/profile/rer/settings.json:16; profiles.html:286', status: recorded, unit: m, value: 7.5}
+  - {meaning: old flat RER crossing minimum; replaced by the structure-sum separation rule, path: settings_rer.minRailToRailClearanceAtCrossings, source: 'data/profile/rer/settings.json:11; docs/research/profile_design.md:40', status: recorded, unit: m, value: 9}
+  - {meaning: RER viaduct deck under the rail, path: settings_rer.deckDepth, source: 'profiles.html:286', status: literal_in_code, unit: m, value: 2.0}
+  - {meaning: RER box or tube floor below the rail, path: settings_rer.invertDepth, source: 'profiles.html:286', status: literal_in_code, unit: m, value: 1.0}
+  - {meaning: bend-point spacing on surface RER stretches following the smoothed ground, path: settings_rer.surfStep, source: 'data/profile/rer/settings.json:13; profiles.html:286', status: recorded, unit: m, value: 250}
+  - {meaning: old RER tube cover starting value; minCover (one diameter) is what reqCover reads, path: settings_rer.tubeCover, source: 'data/profile/rer/settings.json:15', status: recorded, unit: m, value: 3}
+  - {meaning: 'RER cover over a bored tube, one diameter', path: settings_rer.minCover, source: 'profiles.html:286,1217', status: literal_in_code, unit: m, value: 8.5}
+  - {meaning: RER vertical curve radius, path: settings_rer.vcRadius, source: 'profiles.html:286', status: literal_in_code, unit: m, value: 3000}
+  - {meaning: RER platform grade limit (EBO / TSI), path: settings_rer.stationMaxGrade, source: 'profiles.html:286; docs/research/profile_design.md:69', status: literal_in_code, unit: permille, value: 2.5}
+  - {meaning: RER sustained-grade window (two platform lengths), path: settings_rer.sustainedLen, source: 'profiles.html:286', status: literal_in_code, unit: m, value: 408.4}
+  - {meaning: Metro clear height from rail to a structure's underside for a line in the open (4.42 envelope + 0.15); replaces the 4.2 literal when the record loads, path: metro_structure.open_clear_height, source: 'data/profile/metro_structure.json:18; profiles.html:1070', status: recorded, unit: m, value: 4.57}
+  - {meaning: CTA standard envelope height for open structures, path: metro_structure.envelope.open_height, source: 'data/profile/metro_structure.json:16', status: recorded, unit: m, value: 4.42}
+  - {meaning: type A tube inside diameter (Phase 1; the twin tube of Phase 2), path: metro_structure.tubes.A.inside, source: 'data/profile/metro_structure.json:22', status: recorded, unit: m, value: 5.1}
+  - {meaning: type A outside diameter; the cover one tube needs and the od in the crossing gap, path: metro_structure.tubes.A.outside, source: 'data/profile/metro_structure.json:23', status: recorded, unit: m, value: 5.5}
+  - {meaning: rail over the inside invert (type A and C); gives rail-to-top 4.6 m and shield-from 10.10 m, path: metro_structure.tubes.A.rail_over_invert, source: 'data/profile/metro_structure.json:24; profiles.html:1063', status: recorded, unit: m, value: 0.7}
+  - {meaning: type A twin-tube running centres (outside + 3.24 m of ground), path: metro_structure.tubes.A.spacing, source: 'data/profile/metro_structure.json:25', status: recorded, unit: m, value: 8.74}
+  - {meaning: each type A tube eases out this much before an island (10.90 m centres), path: metro_structure.tubes.A.island_ease, source: 'data/profile/metro_structure.json:26', status: recorded, unit: m, value: 1.08}
+  - {meaning: type C tube inside diameter (Phase 3 and later), path: metro_structure.tubes.C.inside, source: 'data/profile/metro_structure.json:31', status: recorded, unit: m, value: 5.4}
+  - {meaning: 'type C outside diameter; rail-to-top 4.95 m, shield-from 10.85 m', path: metro_structure.tubes.C.outside, source: 'data/profile/metro_structure.json:32', status: recorded, unit: m, value: 5.9}
+  - {meaning: type C twin-tube running centres, path: metro_structure.tubes.C.spacing, source: 'data/profile/metro_structure.json:34', status: recorded, unit: m, value: 9.14}
+  - {meaning: each type C tube eases out this much before an island, path: metro_structure.tubes.C.island_ease, source: 'data/profile/metro_structure.json:35', status: recorded, unit: m, value: 0.88}
+  - {meaning: double-track bore inside diameter (Phase 2 running tunnel), path: metro_structure.tubes.bore.inside, source: 'data/profile/metro_structure.json:40', status: recorded, unit: m, value: 8.6}
+  - {meaning: 'double-track bore outside diameter (canon); rail-to-top 6.5 m, bore-from 15.50 m', path: metro_structure.tubes.bore.outside, source: 'data/profile/metro_structure.json:41', status: recorded, unit: m, value: 9.0}
+  - {meaning: rail over the bore invert, path: metro_structure.tubes.bore.rail_over_invert, source: 'data/profile/metro_structure.json:42', status: recorded, unit: m, value: 2.3}
+  - {meaning: 'track centres in the bore (the box spacing, so no approach where the bore meets a double-track box)', path: metro_structure.tubes.bore.spacing, source: 'data/profile/metro_structure.json:43', status: recorded, unit: m, value: 3.9}
+  - {meaning: double-track box and side-platform station track centres, path: metro_structure.box.spacing, source: 'data/profile/metro_structure.json:47', status: recorded, unit: m, value: 3.9}
+  - {meaning: box inside width; outside = spacing + 4.0 m for the street-width check, path: metro_structure.box.inside, source: 'data/profile/metro_structure.json:48; profiles.html:1538', status: recorded, unit: m, value: 7.9}
+  - {meaning: rail to the box roof underside; the sunk box adds riverRoof to it, path: metro_structure.box.roof_underside, source: 'data/profile/metro_structure.json:49; profiles.html:1011', status: recorded, unit: m, value: 4.0}
+  - {meaning: box floor below the rail (below-rail at crossings), path: metro_structure.box.below, source: 'data/profile/metro_structure.json:50', status: recorded, unit: m, value: 1.0}
+  - {meaning: 'rail to the box roof top; the trough-to-box depth, D_HALL''s base, the box-roof-out-of-ground test', path: metro_structure.box.top, source: 'data/profile/metro_structure.json:51; profiles.html:1369,1564', status: recorded, unit: m, value: 4.6}
+  - {meaning: steel columns between the tracks (1904 IRT frame), path: metro_structure.box.column_size, source: 'data/profile/metro_structure.json:52', status: recorded, unit: m, value: 0.25}
+  - {meaning: column spacing (5 ft), path: metro_structure.box.column_every, source: 'data/profile/metro_structure.json:53', status: recorded, unit: m, value: 1.524}
+  - {meaning: track centres at an island station box, path: metro_structure.island_box.spacing, source: 'data/profile/metro_structure.json:56', status: recorded, unit: m, value: 10.9}
+  - {meaning: island platform width, path: metro_structure.island_box.island, source: 'data/profile/metro_structure.json:57', status: recorded, unit: m, value: 8.0}
+  - {meaning: rail to platform edge, path: metro_structure.island_box.edge, source: 'data/profile/metro_structure.json:58', status: recorded, unit: m, value: 1.45}
+  - {meaning: platform top over the rail, path: metro_structure.island_box.platform_height, source: 'data/profile/metro_structure.json:59', status: recorded, unit: m, value: 1.12}
+  - {meaning: island box rail to roof underside; island rail-to-top 5.2 m, path: metro_structure.island_box.roof_underside, source: 'data/profile/metro_structure.json:61; profiles.html:479', status: recorded, unit: m, value: 4.6}
+  - {meaning: least approach length where the track spacing changes; also the cover-hold window of a launch box and the reach of the tube-into-box island test, path: metro_structure.approach_m, source: 'data/profile/metro_structure.json:63; profiles.html:1294,1483,1590', status: recorded, unit: m, value: 40.0}
+  - {meaning: Phase 1 deepest cut and cover (40 ft), path: metro_structure.phases.1.cc_max, source: 'data/profile/metro_structure.json:68', status: recorded, unit: m, value: 12.19}
+  - {meaning: Phase 1 shortest shield drive (a judgement), path: metro_structure.phases.1.min_drive, source: 'data/profile/metro_structure.json:69', status: recorded, unit: m, value: 400.0}
+  - {meaning: rail depth from which a mined station gets lifts (access only), path: metro_structure.phases.1.deep_from, source: 'data/profile/metro_structure.json:70', status: recorded, unit: m, value: 18.29}
+  - {meaning: Phase 1 minimum radius for station approaches and spacing changes, path: metro_structure.phases.1.min_radius, source: 'data/profile/metro_structure.json:71', status: recorded, unit: m, value: 40.0}
+  - {meaning: Phase 1 grade limit, path: metro_structure.phases.1.grade_max, source: 'data/profile/metro_structure.json:72', status: recorded, unit: permille, value: 50}
+  - {meaning: grade allowed on a straight underground stretch (as a warning where straight_warn), path: metro_structure.phases.1.grade_straight, source: 'data/profile/metro_structure.json:73', status: recorded, unit: permille, value: 60}
+  - {meaning: 'Phases 1-2: the straight-underground allowance is a warning, not allowed outright', path: metro_structure.phases.1.straight_warn, source: 'data/profile/metro_structure.json:74', status: recorded, unit: flag, value: true}
+  - {meaning: train-averaged radius over which grade_curve applies (later phases only), path: metro_structure.phases.1.curve_radius, source: 'data/profile/metro_structure.json:76', status: recorded, unit: m, value: 500.0}
+  - {meaning: Phase 1 bored tunnel by hand shield, path: metro_structure.phases.1.tbm, source: 'data/profile/metro_structure.json:77', status: recorded, unit: flag, value: false}
+  - {meaning: Phase 1 method where both box and drive are feasible, path: metro_structure.phases.1.prefer, source: 'data/profile/metro_structure.json:78', status: recorded, unit: enum, value: cutcover}
+  - {meaning: Phase 2 running tunnel is the 9.0 m double-track bore; its twin tubes are type A, path: metro_structure.phases.2.tube, source: 'data/profile/metro_structure.json:82; profiles.html:1117', status: recorded, unit: enum, value: bore}
+  - {meaning: Phase 2 deepest cut and cover (the bore minimum + 1 m so the methods overlap), path: metro_structure.phases.2.cc_max, source: 'data/profile/metro_structure.json:83', status: recorded, unit: m, value: 16.5}
+  - {meaning: Phase 2 shortest drive, path: metro_structure.phases.2.min_drive, source: 'data/profile/metro_structure.json:84', status: recorded, unit: m, value: 300.0}
+  - {meaning: Phase 2 minimum approach radius, path: metro_structure.phases.2.min_radius, source: 'data/profile/metro_structure.json:86', status: recorded, unit: m, value: 55.0}
+  - {meaning: Phase 2 prefers a bored drive, path: metro_structure.phases.2.prefer, source: 'data/profile/metro_structure.json:93', status: recorded, unit: enum, value: bored}
+  - {meaning: Phase 3 and later deepest cut and cover, path: metro_structure.phases.3.cc_max, source: 'data/profile/metro_structure.json:98', status: recorded, unit: m, value: 15.0}
+  - {meaning: Phase 3 shortest drive, path: metro_structure.phases.3.min_drive, source: 'data/profile/metro_structure.json:99', status: recorded, unit: m, value: 300.0}
+  - {meaning: Phase 3 and later minimum approach radius, path: metro_structure.phases.3.min_radius, source: 'data/profile/metro_structure.json:101', status: recorded, unit: m, value: 70.0}
+  - {meaning: 'Phase 3 on: up to grade_straight on a straight is allowed outright', path: metro_structure.phases.3.straight_warn, source: 'data/profile/metro_structure.json:104', status: recorded, unit: flag, value: false}
+  - {meaning: 'Phase 3 on: bored tunnel by TBM (TYPES.deep)', path: metro_structure.phases.3.tbm, source: 'data/profile/metro_structure.json:107', status: recorded, unit: flag, value: true}
+  - {meaning: 'later phases: up to this on curves over curve_radius', path: metro_structure.phases.later.grade_curve, source: 'data/profile/metro_structure.json:120', status: recorded, unit: permille, value: 60}
+  - {meaning: base grade limit in the record, path: metro_structure.grades.limit, source: 'data/profile/metro_structure.json:217', status: recorded, unit: permille, value: 50.0}
+  - {meaning: fallback straight-underground limit, path: metro_structure.grades.straight_underground_max, source: 'data/profile/metro_structure.json:218', status: recorded, unit: permille, value: 60.0}
+  - {meaning: train-averaged radius at or over which a stretch counts as straight, path: metro_structure.grades.straight_radius, source: 'data/profile/metro_structure.json:219; profiles.html:1137,1148', status: recorded, unit: m, value: 1000.0}
+  - {meaning: ticket hall or mezzanine clear height (Piccadilly Circus 9 ft), path: metro_structure.hall.clear, source: 'data/profile/metro_structure.json:225', status: recorded, unit: m, value: 2.75}
+  - {meaning: hall roof slab, path: metro_structure.hall.roof, source: 'data/profile/metro_structure.json:226', status: recorded, unit: m, value: 0.6}
+  - {meaning: 'cover over the hall roof; D_HALL = box top + clear + roof + cover = 8.55 m side, 9.15 m island', path: metro_structure.hall.cover, source: 'data/profile/metro_structure.json:227; profiles.html:480', status: recorded, unit: m, value: 0.6}
+  - {meaning: cover below this fraction of a diameter cannot be bored at all (unbuildable); between it and one diameter is treated ground (warning), path: metro_structure.cost.cover_hard, source: 'data/profile/metro_structure.json:237; profiles.html:1453,1534,1563', status: recorded, unit: fraction_of_od, value: 0.5}
+  - {meaning: 'an open run inside a tunnel shorter than this is tunnelled through, not a portal', path: metro_structure.portal_min_m, source: 'data/profile/metro_structure.json:240; profiles.html:1406', status: recorded, unit: m, value: 100.0}
+  - {meaning: clear height of the street-level mezzanine under an elevated station; rail at least deckDepth + this over the ground (starting value), path: metro_structure.elevated_station.mezzanine_clear_m, source: 'data/profile/metro_structure.json:244; profiles.html:271', status: recorded, unit: m, value: 3.5}
+  - {meaning: 'streets built over the subway: a box under them needs its roof alone under the ground, no cover', path: metro_structure.subway_streets, source: 'data/profile/metro_structure.json:230-234; profiles.html:456,1369', status: recorded, unit: list, value: [Central Parkway, Victory, Martin Luther King]}
+  - {meaning: the building phase of each line where the Chronology has no segment set, path: metro_structure.line_phase, source: 'data/profile/metro_structure.json:126-143; profiles.html:1106', status: recorded, unit: map, value: Lines 1-7 = 1; 8-12 = 2; 13-14 = 3; CVG_Express = later}
+  - {meaning: phase from a segment's opening year where no phase is set by hand, path: chronology.phase_years, source: 'claude/Station_3D_Log.md 2026-10-28 (Chronology); profiles.html:1076', status: recorded, unit: map, value: to 1933 = 1; 1934-49 = 2; 1950-79 = 3; 1980 on = later}
+  - {meaning: the Ohio keeps riverClearWater over the made-up bed, path: canon.rivers.Ohio River.navigable, source: data/profile/rer/canon.json rivers, status: recorded, unit: flag, value: true}
+  - {meaning: 'no survey: bed taken 3 m below the pool', path: canon.rivers.Little Miami River.bed_below_pool_m, source: data/profile/rer/canon.json rivers, status: recorded, unit: m, value: 3.0}
+  - {meaning: centreline river range width, path: canon.rivers.Little Miami River.width_m, source: data/profile/rer/canon.json rivers, status: recorded, unit: m, value: 60.0}
+  - {meaning: old Union Terminal track level reference (superseded for TRI by the 135.7 m box), path: canon.union_terminal_track_level_m, source: data/profile/rer/canon.json, status: recorded, unit: m, value: 154.0}
+  - {meaning: 'one level for A, B and D in the Union Terminal TRI box (Ben, 26 October)', path: canon.lines.RER_A_trunk.fixed.Union Terminal, source: data/profile/rer/canon.json lines.RER_A_trunk.fixed, status: recorded, unit: m, value: 135.7}
+  - {meaning: 'RER A lowered at least 7 m under the yard floor (Ben chose Lower RER A, 27 October)', path: canon.lines.RER_A_trunk.locked.0.st.Evans, source: data/profile/rer/canon.json lines.RER_A_trunk.locked, status: recorded, unit: m, value: 139.0}
+  - {meaning: 'other systems'' structures at CUT and Norwood: heights below / above their rail for the context clearance', path: context.blocks.heights, source: 'data/profile/README.md:55', status: recorded, unit: m, value: box 1.0/6.6; trough and at grade 0.8/5.8 clear; viaduct 1.6/5.8 clear}
+  - {meaning: the Indianapolis / D upper deck over the highest lower-deck rail (the crossing rule), path: context.upper_deck.over_lower_rail, source: 'data/profile/README.md:75; claude/Station_3D_Log.md 2026-10-28', status: recorded, unit: m, value: 7.9}
+  - {meaning: 'cover over a Metro box roof; the box needs top + this under the ground, the roof alone on the subway streets', path: literal.BOX_COVER, source: 'profiles.html:1185,1218,1369', status: literal_in_code, unit: m, value: 0.6}
+  - {meaning: ground between the upper structure's floor and the lower structure's top at a crossing where a box is involved, path: literal.SEP_GAP, source: 'profiles.html:1185,2212,2226', status: literal_in_code, unit: m, value: 0.5}
+  - {meaning: track bed below the rail at grade and in a trough (below-rail at crossings); also the road bridge deck over a trough, path: literal.BED_DEPTH, source: 'profiles.html:1185,1205,2269', status: literal_in_code, unit: m, value: 0.8}
+  - {meaning: fallback Metro clear height in the open before the structure record loads (then 4.57), path: literal.OPEN_CLEAR.metro, source: 'profiles.html:1199; docs/research/profile_design.md:55', status: literal_in_code, unit: m, value: 4.2}
+  - {meaning: RER clear height in the open under a structure (25 kV), path: literal.OPEN_CLEAR.rer, source: 'profiles.html:1199', status: literal_in_code, unit: m, value: 5.8}
+  - {meaning: fallback twin tube before the record loads (the old 4.4 m tube), path: literal.METRO_ST.tube, source: 'profiles.html:1054', status: literal_in_code, unit: m, value: 0.68 below / 4.08 top / 4.76 od}
+  - {meaning: fallback bore before the record loads, path: literal.METRO_ST.bore, source: 'profiles.html:1055', status: literal_in_code, unit: m, value: 3.2 below / 5.8 top / 9.0 od}
+  - {meaning: 'no open-track or box sliver shorter than this between open track and boxes; the least length of a flagged paint note, misfit, or gully note', path: literal.MIN_RUN, source: 'profiles.html:1298,1307,1412,1465,1524,1555,1645', status: literal_in_code, unit: m, value: 20}
+  - {meaning: 'the launch box ends only where the tube keeps full cover over approach_m (K = approach_m / step samples), not at a blip', path: literal.approach_K_window, source: 'profiles.html:1483', status: literal_in_code, unit: m, value: 40}
+  - {meaning: fallback for portal_min_m without the record, path: literal.portal_min_fallback, source: 'profiles.html:1406', status: literal_in_code, unit: m, value: 100}
+  - {meaning: fallback for cost.cover_hard without the record, path: literal.cover_hard_fallback, source: 'profiles.html:1453,1534,1563,1622', status: literal_in_code, unit: fraction_of_od, value: 0.5}
+  - {meaning: 'hysteresis inside which the last solve''s decision stood (1 November); removed from the engine on 4 November, no longer read', path: literal.dead_band_m, source: claude/Station_3D_Log.md 2026-11-01 (D) and 2026-11-04, status: literal_in_code, unit: m, value: 0.25}
+  - {meaning: fallback min_drive without the record, path: literal.min_drive_fallback, source: 'profiles.html:1241', status: literal_in_code, unit: m, value: 300}
+  - {meaning: fallback approach radius without a phase value, path: literal.min_radius_fallback, source: 'profiles.html:1292', status: literal_in_code, unit: m, value: 40}
+  - {meaning: 'a platform may slide this far either way from its station point (the Deck''s limit); a saved slide past it is flagged, never clamped', path: literal.SLIDE_M, source: 'profiles.html:1838,2100,3545; hub/README.md:58', status: literal_in_code, unit: m, value: 150}
+  - {meaning: viaduct pier spacing on an elevated run (drawing value), path: literal.VIA_SPAN, source: 'profiles.html:953', status: literal_in_code, unit: m, value: 25}
+  - {meaning: piers kept this far either side of a crossing line, path: literal.VIA_CLEAR, source: 'profiles.html:953,963', status: literal_in_code, unit: m, value: 7}
+  - {meaning: 'longest equal span over a river, piers to the surveyed bed', path: literal.RIVER_SPAN, source: 'profiles.html:953,976', status: literal_in_code, unit: m, value: 120}
+  - {meaning: a span up to this is a girder under the deck; longer a through truss, path: literal.GIRDER_MAX, source: 'profiles.html:953', status: literal_in_code, unit: m, value: 40}
+  - {meaning: rail to soffit of a girder span (Ben's girder rule); at most 3.1 m on the north viaduct, path: literal.girder_soffit, source: 'profiles.html:951; claude/Station_3D_Log.md 2026-10-28 (Girders)', status: literal_in_code, unit: m, value: span / 10 + 0.8}
+  - {meaning: through truss depth over the rail on spans over GIRDER_MAX, path: literal.truss_depth, source: 'profiles.html:952', status: literal_in_code, unit: m, value: span / 8}
+  - {meaning: 'rail at pool + 1 m or more inside a river range is a bridge (elevated), else the sunk box', path: literal.bridge_above_pool, source: 'profiles.html:1250,1374,2199', status: literal_in_code, unit: m, value: 1}
+  - {meaning: car length for the platform gap (outside face 15.56^2 / 8R), path: literal.CAR_LEN, source: 'profiles.html:2008,2036', status: literal_in_code, unit: m, value: 15.56}
+  - {meaning: end door from the car centre for the inside-face gap (5.4^2 / 2R), path: literal.END_DOOR, source: 'profiles.html:2008,2036', status: literal_in_code, unit: m, value: 5.4}
+  - {meaning: platform radius under this is an error unless a named gap-filler exception, path: literal.PLAT_R_ERR, source: 'profiles.html:2008,2037', status: literal_in_code, unit: m, value: 600}
+  - {meaning: platform radius under this is a warning, path: literal.PLAT_R_WARN, source: 'profiles.html:2008,2037', status: literal_in_code, unit: m, value: 3000}
+  - {meaning: plan radius every 10 m from a circle through points 40 m apart (h = 4 samples), path: literal.radii_window, source: 'profiles.html:1951,1962', status: literal_in_code, unit: m, value: 40}
+  - {meaning: a single vertex turning this much is an unfinished corner (warning), path: literal.DRAW.single, source: 'profiles.html:2047', status: literal_in_code, unit: deg, value: 5}
+  - {meaning: a turn of this much beside a segment under DRAW.kinkSeg (10 m) is a join kink (error), path: literal.DRAW.kink, source: 'profiles.html:2047', status: literal_in_code, unit: deg, value: 10}
+  - {meaning: a turn over this doubles back (error), path: literal.DRAW.back, source: 'profiles.html:2047', status: literal_in_code, unit: deg, value: 90}
+  - {meaning: 'turns both ways inside a platform of this much each way: S-curve platform (error); 2 deg a warning', path: literal.DRAW.sErr, source: 'profiles.html:2047,2076', status: literal_in_code, unit: deg, value: 5}
+  - {meaning: Metro Lines 1-7 (and 2b) platform grade limit, path: literal.ERA.sgMax.lines_1_7, source: 'profiles.html:1187-1188; docs/research/profile_design.md:67', status: literal_in_code, unit: permille, value: 7.5}
+  - {meaning: Metro Lines 8-14 and CVG Express platform grade limit, path: literal.ERA.sgMax.lines_8_14, source: 'profiles.html:1190-1192', status: literal_in_code, unit: permille, value: 4}
+  - {meaning: chainage tolerance matching an RER junction bend point, path: literal.JTOL, source: 'profiles.html:335', status: literal_in_code, unit: m, value: 0.6}
+  - {meaning: width another line's drawn ground counts across at a crossing where the Deck has no street, path: literal.GND_W, source: 'profiles.html:664,680', status: literal_in_code, unit: m, value: 15}
+  - {meaning: flat tunnel stretches longer than this get the drainage warning, path: literal.drainage_min_len, source: 'profiles.html:2107', status: literal_in_code, unit: m, value: 60}
+  - {meaning: 'tolerance before a box station past cc_max, a tube short of hard cover, or a roof out of the ground is flagged', path: literal.station_limit_tol, source: 'profiles.html:1402,1563-1564', status: literal_in_code, unit: m, value: 0.05}
+  - {meaning: low-cover warnings under this shortfall are not shown, path: literal.low_cover_min_short, source: 'profiles.html:1535', status: literal_in_code, unit: m, value: 0.05}
+  - {meaning: Lower / Raise keep the rail this much past the bound, path: literal.regrade_margin, source: 'profiles.html:3607', status: literal_in_code, unit: m, value: 0.3}
+  - {meaning: Lower / Raise grades at most the limit less this, path: literal.regrade_grade_reserve, source: 'profiles.html:3606', status: literal_in_code, unit: permille, value: 2}
+  - {meaning: Propose fill makes the ground up to the structure's minimum plus this, path: literal.fill_over, source: 'profiles.html:1690', status: literal_in_code, unit: m, value: 0.02}
+  - {meaning: the proposed fill line stays within this above the fill it needs (and 0.5 m under the ground where the ground is already high), path: literal.fill_band, source: 'profiles.html:1713-1715', status: literal_in_code, unit: m, value: 0.3}
+  - {meaning: each end ticket hall drawn over the first 25 m of the platform, path: literal.hall.end_halls_len, source: 'profiles.html:529', status: literal_in_code, unit: m, value: 25}
+  - {meaning: a mezzanine covers the middle 60 % of the platform, path: literal.hall.mezzanine_fraction, source: 'profiles.html:528-529', status: literal_in_code, unit: fraction, value: 0.6}
+  - {meaning: a point more than this off the solved rail falls back to the per-point rule, path: literal.autoType_rail_tol, source: 'profiles.html:1607', status: literal_in_code, unit: m, value: 0.3}
+  - {meaning: the 3D build groups same-name stations of every system within this as one complex (Ben marks the rest in the Deck), path: literal.sync.complex_radius, source: 'tools/station3d/sync.py:1008,1019; hub/README.md:10', status: literal_in_code, unit: m, value: 150}
+  - {meaning: a Profiles station matched to a Deck station, path: literal.sync.profiles_station_match, source: 'tools/station3d/sync.py:1008', status: literal_in_code, unit: m, value: '400 m same name, 150 m any'}
+  - {meaning: 'the river surface for every year of the region ground (30 ft on the Cincinnati gauge, about 0.9 m over normal pool)', path: literal.ground.river_level_all_years, source: 'claude/Hub_Region_Checklist.md:284; docs/sanborn/Relief_Maps_Log.md 10i.12', status: literal_in_code, unit: m, value: 139.62}
+  - {meaning: two platforms on one line overlap, path: literal.platform_overlap, source: 'profiles.html:2101', status: literal_in_code, unit: m, value: centres closer than settings.platform}
+  - {meaning: twin tubes under a street narrower than their footprint are noted from this length, path: literal.tube_street_note_len, source: 'profiles.html:1551', status: literal_in_code, unit: m, value: 50}
+rules:
+  - id: geometry.method.per_stretch
+    domain: geometry
+    text: The tunnel method is chosen once for each stretch between two anchors and the profile is then checked against
+      it; it is never chosen per sample from the depth.
+    status: ratified
+    ruling:
+      date: 2026-11-04
+      by: Ben
+      words: rethink how the logic needs to work ... the kind of logic that a transit engineer would use when deciding
+        how drives work
+      source: data/profile/README.md:116; claude/Station_3D_Log.md 2026-11-04
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - 2026-10-28 per-point classes C/E/B then drives
+    - 2026-10-31 one pass by engineering rules
+    - 2026-11-01 method by cost
+    - 2026-11-04 one method per stretch, cost sums removed
+    notes: 'The ranked list below is what the engine does; the Hub Region checklist (6 November) still lists ratifying
+      it as an open ruling (lean: ratify as the engine has it).'
+  - id: geometry.anchor.kinds
+    domain: geometry
+    text: 'A stretch ends only at an anchor: a box station, a portal (open track), the sunk river box, a canon box section
+      (canal, covered way), a change of building phase, or a painted shaft. A mined station is inside its drive, not
+      an anchor.'
+    status: provisional
+    ruling:
+      date: 2026-11-04
+      by: Ben
+      words: null
+      source: profiles.html:1344-1345,1452; data/profile/README.md:116
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - 2026-10-28 stretches between station boxes, portals, canon sections, rivers and phase changes
+    - 2026-10-31 boxes are the only break points
+    - 2026-11-04 shafts added, mined stations inside drives
+    notes: Ben chose the Shaft brush on 4 November (not quoted).
+  - id: geometry.anchor.shaft_brush
+    domain: geometry
+    text: A painted shaft is a point where the method may change; a stretch is split there. Painting Auto over it clears
+      it.
+    status: provisional
+    ruling:
+      date: 2026-11-04
+      by: Ben
+      words: null
+      source: data/profile/README.md:116; profiles.html:1415-1417
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - 2026-11-04 added with the per-stretch engine
+    notes: Ben's choice among options offered on 4 November; the realism audit's working shafts of 1 November (pockets
+      at tube spacing) are gone.
+  - id: geometry.method.paint_final
+    domain: geometry
+    text: A paint sets the method of every stretch it touches, snapped out to the anchors; it is never overridden, and
+      what cannot be built under it is hatched and flagged.
+    status: provisional
+    ruling:
+      date: 2026-11-04
+      by: Ben
+      words: I painted this as cut-and-cover, and it refuses to acknowledge that
+      source: claude/Drive_Selection_Root_Causes_2026-11-04.md:3; profiles.html:1346-1348,1494-1495
+    decision: method_per_stretch
+    rank: 1
+    params:
+    - literal.MIN_RUN
+    applies_to:
+    - metro
+    flags:
+    - Painted (snapped, note)
+    - Painted (two paints in one stretch, warning)
+    tests: []
+    history:
+    - 2026-10-31 a tube paint over a box the rules need was a warning, the paint winning on the drawing
+    - 2026-11-04 paints snapped to anchors; the larger of two paints wins with a warning
+    notes: Ben's words are a complaint, not the rule; the Hub Region checklist lists ratifying the ranked list as open.
+      The RER still reads paints per point (typeAt).
+  - id: geometry.method.bank_works
+    domain: geometry
+    text: 'A stretch touching the sunk river box with no mined station and shorter than the phase''s shortest drive
+      is the bank works: cut and cover in a cofferdam, the immersed tunnel''s land end.'
+    status: provisional
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-31 (one pass, 5); profiles.html:1496
+    decision: method_per_stretch
+    rank: 2
+    params:
+    - metro_structure.phases.1.min_drive
+    - metro_structure.phases.2.min_drive
+    - metro_structure.phases.3.min_drive
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Tunnel method (note)
+    tests: []
+    history:
+    - 2026-10-31 leftover beside the sunk box is the bank works
+    - 2026-11-04 kept as rank 2
+    notes: Mined stations beside a river excepted. Never flagged as unbuildable even past cc_max (p.bank).
+  - id: geometry.method.canon_bored
+    domain: geometry
+    text: A stretch the canon marks bored (a shallow or deep founding section, or under a river) is a bored drive.
+    status: provisional
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: null
+      source: profiles.html:1385,1497; CANON table profiles.html:293-323
+    decision: method_per_stretch
+    rank: 3
+    params: []
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - 2026-10-09 canon sections decide the type
+    - 2026-11-02 a canon method section is only a hint for paints (a paint inside one is checked)
+    - 2026-11-04 canon bored forces the drive
+    notes: 'Conflict in wording: the paint-fit rule calls a canon method section ''only a hint'', the engine makes it
+      force a drive when unpainted.'
+  - id: geometry.method.mined_station_forces_drive
+    domain: geometry
+    text: A stretch with a mined station in it is one bored drive through the station, unless cut and cover is feasible
+      throughout and the station's type says otherwise.
+    status: provisional
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: null
+      source: profiles.html:1498,1501; claude/Station_3D_Log.md 2026-10-31 (one pass, 3)
+    decision: method_per_stretch
+    rank: 4
+    params: []
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - 2026-10-29 a drive is deep if it reaches a deep station
+    - 2026-10-31 one drive through any mined stations
+    - 2026-11-04 rank 4; a mined station in a box stretch is flagged, not overridden
+    notes: ''
+  - id: geometry.method.both_feasible_phase_prefers
+    domain: geometry
+    text: 'Where cut and cover end to end and a bored drive are both feasible, the phase''s preference decides: Phase
+      1 cut and cover, later phases bored.'
+    status: provisional
+    ruling:
+      date: 2026-11-04
+      by: Ben
+      words: null
+      source: data/profile/README.md:116; data/profile/metro_structure.json:247 (prefer_about); profiles.html:1499
+    decision: method_per_stretch
+    rank: 5
+    params:
+    - metro_structure.phases.1.prefer
+    - metro_structure.phases.2.prefer
+    applies_to:
+    - metro
+    flags:
+    - Tunnel method (note)
+    tests: []
+    history:
+    - '2026-10-28 between the limits: cut and cover unless the bored stretch makes a whole drive (handoff)'
+    - 2026-11-01 the cheaper by cost
+    - 2026-11-04 the phase's prefer
+    notes: Ben's choice on 4 November (phase preference), not quoted.
+  - id: geometry.method.one_feasible
+    domain: geometry
+    text: Where only one method is feasible that one is taken, and the stretch note says why the other was not.
+    status: provisional
+    ruling:
+      date: 2026-11-04
+      by: Ben
+      words: null
+      source: profiles.html:1500-1501
+    decision: method_per_stretch
+    rank: 6
+    params: []
+    applies_to:
+    - metro
+    flags:
+    - Tunnel method (note)
+    tests: []
+    history:
+    - '2026-11-04'
+    notes: ''
+  - id: geometry.method.neither_feasible_nearer
+    domain: geometry
+    text: 'Where neither method is feasible the stretch is drawn as the nearer to feasible (fewer bad samples; a tie
+      by the phase''s preference; a mined station forces bored) and flagged as an error: lower the rail for a drive,
+      raise it for a box, or paint a shaft.'
+    status: provisional
+    ruling:
+      date: 2026-11-04
+      by: Ben
+      words: null
+      source: profiles.html:1502-1507
+    decision: method_per_stretch
+    rank: 7
+    params: []
+    applies_to:
+    - metro
+    flags:
+    - Tunnel method (error)
+    tests: []
+    history:
+    - '2026-11-04'
+    notes: ''
+  - id: geometry.feasibility.box
+    domain: geometry
+    text: Cut and cover is feasible for a stretch only where every tunnel sample is within the phase's cut-and-cover
+      limit, there is no mined station and the canon does not say bored.
+    status: provisional
+    ruling:
+      date: 2026-11-04
+      by: Ben
+      words: null
+      source: profiles.html:1366,1489
+    decision: null
+    rank: null
+    params:
+    - metro_structure.phases.1.cc_max
+    - metro_structure.phases.2.cc_max
+    - metro_structure.phases.3.cc_max
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - 2026-10-28 cc_max per phase
+    notes: ''
+  - id: geometry.feasibility.drive
+    domain: geometry
+    text: A bored drive is feasible only where the launch boxes from each anchor reach one full diameter of cover held
+      over the approach length, those boxes stay within the cut-and-cover limit, the drive left is at least the phase's
+      shortest drive (or holds a mined station), and nothing in it is below half a diameter of cover.
+    status: unratified
+    ruling:
+      date: 2026-11-04
+      by: Claude
+      words: null
+      source: profiles.html:1479-1490
+    decision: null
+    rank: null
+    params:
+    - metro_structure.approach_m
+    - literal.approach_K_window
+    - metro_structure.cost.cover_hard
+    - metro_structure.phases.1.min_drive
+    - metro_structure.phases.2.min_drive
+    - metro_structure.phases.3.min_drive
+    - metro_structure.tubes.A.outside
+    - metro_structure.tubes.C.outside
+    - metro_structure.tubes.bore.outside
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - 2026-10-28 min_drive applies only to pockets; box to box is a drive at any length (Ben's answer)
+    - 2026-10-29 the only drive between two anchors is bored at any length
+    - 2026-11-04 the drive must be at least min_drive unless mined
+    notes: 'Conflict: Ben''s 28 October answer and the 29 October rule make a box-to-box tunnel a drive at any length;
+      the 4 November engine requires min_drive for the drive between the launch boxes. Entered once, unratified.'
+  - id: geometry.launch_box.full_cover
+    domain: geometry
+    text: The launch box from a station, portal or box carries on until the tube has one full diameter of cover, and
+      the drive the rules make starts only there.
+    status: ratified
+    ruling:
+      date: 2026-10-29
+      by: Ben
+      words: the boxes carry on until the tube has its cover
+      source: claude/Station_3D_Log.md 2026-11-03 (depth check); data/profile/README.md:114
+    decision: null
+    rank: null
+    params:
+    - metro_structure.tubes.A.outside
+    - metro_structure.tubes.C.outside
+    - metro_structure.tubes.bore.outside
+    - literal.approach_K_window
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - 2026-10-29 rule stated
+    - 2026-11-01 the cost logic let drives start short of cover with treatment (broke the rule)
+    - '2026-11-03 restored: the box carries through every sample short of a full diameter (Ben: ''The depth check needs
+      to be fixed. it needs to work.'')'
+    - 2026-11-04 the box ends where cover is held over approach_m, not at a blip
+    notes: ''
+  - id: geometry.shortfall.flag_not_change
+    domain: geometry
+    text: 'Inside a stretch a shortfall is a flag, never a change of method: a tube short of a full diameter is bored
+      with ground treatment (a warning), short of half a diameter unbuildable; a box past its limit unbuildable.'
+    status: provisional
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: switch to cut and cover if it passes limits, or it is forced to be regraded
+      source: claude/Station_3D_Log.md 2026-10-31 (low cover); profiles.html:1354-1355,1530-1535,1556-1573
+    decision: null
+    rank: null
+    params:
+    - metro_structure.cost.cover_hard
+    - literal.low_cover_min_short
+    - literal.station_limit_tol
+    applies_to:
+    - metro
+    flags:
+    - Low cover (warning)
+    - unbuildable cover (error, hatched)
+    - unbuildable box (error, hatched)
+    tests: []
+    history:
+    - 2026-10-29 low-cover dips bored through and flagged
+    - 2026-10-31 shallow pockets cut and cover where every drive left is whole, else Regrade error
+    - 2026-11-01 box pockets by cost
+    - '2026-11-04 pockets removed: a shortfall is only a flag'
+    notes: The 31 October quote allowed a switch to cut and cover inside a drive where within limits; the 4 November
+      engine switches only at stretch level. Read as consistent at stretch level; noted.
+  - id: geometry.portal.min_open_run
+    domain: geometry
+    text: 'An open run inside a tunnel shorter than the portal minimum is not a portal: a train cannot surface and go
+      back under in less than the ramps need, so it is part of the stretch at its (negative) depth and noted.'
+    status: unratified
+    ruling:
+      date: 2026-11-01
+      by: Claude
+      words: null
+      source: claude/Station_3D_Log.md 2026-11-01 (B4); profiles.html:1404-1414; data/profile/metro_structure.json:241
+    decision: null
+    rank: null
+    params:
+    - metro_structure.portal_min_m
+    - literal.MIN_RUN
+    applies_to:
+    - metro
+    flags:
+    - Tunnel method (note, from MIN_RUN up)
+    tests: []
+    history:
+    - 2026-11-01 realism audit B4, group 2 approved by Ben ('yes, start group 2')
+    notes: The value 100 m is a drawing value from the audit; Ben approved the group, not the number.
+  - id: geometry.sliver.absorb_only_if_buildable
+    domain: geometry
+    text: 'No open-track or box sliver shorter than the minimum run between open track and boxes: it takes the longer
+      neighbour''s type, but only where that type can be built at its depth; a trough beside a box is never absorbed
+      into the box. Tunnels and stations are never touched.'
+    status: provisional
+    ruling:
+      date: 2026-11-05
+      by: Ben
+      words: this should not be a spot-fix
+      source: claude/Station_3D_Log.md 2026-11-05; profiles.html:1295-1317,1525-1528
+    decision: null
+    rank: null
+    params:
+    - literal.MIN_RUN
+    - metro_structure.box.top
+    - literal.BOX_COVER
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history:
+    - 2026-10-30 no slivers where the ground steps across a threshold (Ben, paraphrased)
+    - 2026-11-05 a sliver may take a neighbour's type only where that type can be built there
+    notes: ''
+  - id: geometry.drive.between_stations_any_length
+    domain: geometry
+    text: A tunnel between two stations is usually too shallow for a shield near each station and boreable in the middle;
+      the whole gap is one drive with the station boxes carrying on through the shallow ends, not a short middle turned
+      cut and cover.
+    status: provisional
+    ruling:
+      date: 2026-10-29
+      by: Ben
+      words: between-station drives not working
+      source: claude/Station_3D_Log.md 2026-10-29 (Fort Mitchell)
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - 2026-10-29 every boreable stretch between anchors is one drive, joined through dips of any length
+    - 2026-10-29 a gap is a drive only where the drive is most of it (Gray)
+    - 2026-11-04 subsumed by feasibility and the phase preference
+    notes: Conflicts with geometry.feasibility.drive on the minimum length; see that entry.
+  - id: geometry.drive.one_type
+    domain: geometry
+    text: A drive is one method and one depth class from end to end unless it comes out to a portal; a change of depth
+      class inside a drive is flagged.
+    status: ratified
+    ruling:
+      date: 2026-10-30
+      by: Ben
+      words: where is it switching for no reason in the middle of a drive?
+      source: claude/Station_3D_Log.md 2026-10-30 (one type per drive)
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    flags:
+    - the drive changes depth class
+    tests: []
+    history:
+    - 2026-10-29 deep if it reaches a deep station or runs a whole drive below deep_from
+    - 2026-10-30 one type per drive
+    - 2026-10-31 the class comes from the phase's method (TBM or shield), not the depth
+    notes: ''
+  - id: geometry.method.tbm_from_phase_3
+    domain: geometry
+    text: 'The bored method of a stretch is the phase''s: hand shield in Phases 1-2, TBM (Deep bore) from Phase 3; deep_from
+      only marks stations that need lifts. A Bore (TBM) selection before Phase 3 is flagged.'
+    status: ratified
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: deep-bore is a thing when it's TBM
+      source: claude/Station_3D_Log.md 2026-10-31 (audit); data/profile/metro_structure.json:223; profiles.html:1245,1401
+    decision: null
+    rank: null
+    params:
+    - metro_structure.phases.1.tbm
+    - metro_structure.phases.3.tbm
+    - metro_structure.phases.1.deep_from
+    applies_to:
+    - metro
+    flags:
+    - Tunnel method (TBM before Phase 3)
+    tests: []
+    history:
+    - 2026-10-28 'Deep tube (Greathead shield)' renamed 'Deep tunnel' (drill and blast in rock)
+    - 2026-10-31 deep = TBM by phase
+    notes: '''Deep'' still means four things in the code (TYPES.deep, deep_from, settings.deepBelow, the canon''s deep);
+      see era.deep.four_meanings.'
+  - id: geometry.method.canon_deep_is_drill_and_blast
+    domain: geometry
+    text: 'The canon''s deep founding sections (Ravine St, Mt Auburn, Price Hill) are deep tunnel: shield in soft ground,
+      drill and blast in the hills'' rock, lift stations; the engine draws them as the phase''s shield.'
+    status: unratified
+    ruling:
+      date: 2026-10-28
+      by: Ben
+      words: null
+      source: profiles.html:290; claude/Realism_Audit_2026-11-01.md:47-51
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - 2026-10-28 renamed
+    - '2026-11-01 audit: comes out drawn as a hand shield'
+    notes: Conflict between the canon's meaning and the engine's TYPES; unresolved.
+  - id: geometry.stretch.note_every_stretch
+    domain: geometry
+    text: Every stretch gets a Tunnel method note saying what it is and why, naming the anchors and how far the boxes
+      carry on.
+    status: provisional
+    ruling:
+      date: 2026-11-04
+      by: Ben
+      words: null
+      source: profiles.html:1520
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    flags:
+    - Tunnel method (note)
+    tests: []
+    history:
+    - '2026-11-04'
+    notes: ''
+  - id: geometry.band.engine_is_the_drawing
+    domain: geometry
+    text: The drawn structure band is the engine's result, so the drawing, the checks and Station 3D give one answer;
+      off the solved rail a point falls back to the per-point rule.
+    status: provisional
+    ruling:
+      date: 2026-11-04
+      by: Ben
+      words: null
+      source: profiles.html:1605-1610,1669-1670; claude/Drive_Selection_Root_Causes_2026-11-04.md:37-40
+    decision: null
+    rank: null
+    params:
+    - literal.autoType_rail_tol
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - before 2026-11-04 typeAt returned the paint first and the engine's result second (two answers)
+    - 2026-11-04 typeAt = autoType on the Metro
+    notes: The RER typeAt still returns the paint first (profiles.html:1671-1675). The scrutiny counts four point-type
+      rules that disagree (pointType, base, kindAt, fitOf).
+  - id: structure.cover.one_diameter_over_tubes
+    domain: structure
+    text: Every shield-driven tube (twin tubes, the double-track bore, TBM) needs at least one outside diameter of ground
+      over its crown; the box roof needs its own cover.
+    status: provisional
+    ruling:
+      date: 2026-10-28
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-28 (one diameter of cover); profiles.html:1214-1220
+    decision: null
+    rank: null
+    params:
+    - metro_structure.tubes.A.outside
+    - metro_structure.tubes.C.outside
+    - metro_structure.tubes.bore.outside
+    - literal.BOX_COVER
+    - settings_rer.minCover
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Cover (error)
+    - Low cover (warning)
+    tests: []
+    history:
+    - 2026-10-09 2.0 m above the 140 m water table, one OD below
+    - 2026-10-28 one OD everywhere; TUBE_COVER_HIGH and WATER_TABLE gone
+    - 2026-11-03 less than one diameter a warning down to half, below that unbuildable
+    notes: 'Minimum rail depths that follow: type A 10.10 m, type C 10.85 m, the bore 15.50 m, RER 16.0 m.'
+  - id: structure.cover.low_cover_warning
+    domain: structure
+    text: A tube with less than one diameter of cover but at least the hard fraction is a warning (bored with ground
+      treatment) with a Propose fill fix; below the hard fraction it stays unbuildable and hatched. A mined station
+      is checked along its whole platform.
+    status: ratified
+    ruling:
+      date: 2026-11-03
+      by: Ben
+      words: warnings should be given when tubes are not deep enough
+      source: claude/Station_3D_Log.md 2026-11-03 (drawn ground); profiles.html:1530-1535,1563
+    decision: null
+    rank: null
+    params:
+    - metro_structure.cost.cover_hard
+    - literal.low_cover_min_short
+    applies_to:
+    - metro
+    flags:
+    - Low cover (warning)
+    - unbuildable cover (error)
+    tests: []
+    history:
+    - 2026-11-01 treatment note from cost logic
+    - 2026-11-03 warning down to half a diameter; mined platform checked whole
+    notes: The audit noted one shortfall raising three issues (note, Cover, unbuildable); one owner per condition is
+      wanted.
+  - id: structure.box.roof_and_cover_under_ground
+    domain: structure
+    text: From at grade the line is an open trough until the rail is the box's roof plus its cover under the finished
+      ground; on a subway street the roof alone suffices because the roof forms the street.
+    status: ratified
+    ruling:
+      date: 2026-11-05
+      by: Ben
+      words: the roof of the cut-and-cover is somehow extending above the ground. there is no trench/trough segment
+        ... despite the 'auto' paint and the minimum tunnel height there's supposed to be over it
+      source: claude/Station_3D_Log.md 2026-11-05; data/profile/README.md:117; profiles.html:1367-1369,1380
+    decision: null
+    rank: null
+    params:
+    - metro_structure.box.top
+    - literal.BOX_COVER
+    - metro_structure.subway_streets
+    - settings_rer.envelope
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history:
+    - 2026-10-09 rail less than 4.6 m down is a trough; 4.6-5.2 m a box whose roof forms the street (warning)
+    - 2026-10-28 the RER too (Blue Ash)
+    - 2026-11-05 the box starts at roof plus cover
+    notes: The RER base rule still starts the box at the envelope depth with no cover (profiles.html:1260); the 5 November
+      change is Metro only in solveTypes.
+  - id: structure.box.thin_cover_warning
+    domain: structure
+    text: A box whose roof is under the ground by less than its cover is a warning (the roof forms the street), and
+      a roof above the ground is an error.
+    status: provisional
+    ruling:
+      date: 2026-10-09
+      by: Ben
+      words: null
+      source: docs/research/profile_design.md:54; profiles.html:2122-2131
+    decision: null
+    rank: null
+    params:
+    - literal.BOX_COVER
+    - metro_structure.box.top
+    applies_to:
+    - metro
+    flags:
+    - Thin cover (warning)
+    - 'Cover: box roof above ground (error)'
+    tests: []
+    history:
+    - 2026-10-09 rulings
+    notes: 'Partly overtaken by structure.box.roof_and_cover_under_ground: the engine no longer makes a box there, but
+      a painted or selected box still gets this check.'
+  - id: structure.box.past_limit_unbuildable
+    domain: structure
+    text: A cut-and-cover box deeper than its phase's limit is unbuildable (hatched, an error with Raise), except the
+      river bank works and the canon's own boxes.
+    status: provisional
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: audit the whole system
+      source: claude/Station_3D_Log.md 2026-10-31 (audit); profiles.html:1556-1573
+    decision: null
+    rank: null
+    params:
+    - metro_structure.phases.1.cc_max
+    - metro_structure.phases.2.cc_max
+    - metro_structure.phases.3.cc_max
+    - literal.station_limit_tol
+    applies_to:
+    - metro
+    flags:
+    - unbuildable box (error)
+    tests: []
+    history:
+    - '2026-10-31 audit A: never draw what cannot be built'
+    notes: ''
+  - id: structure.tube_form.ends_plus_paint
+    domain: structure
+    text: A drive whose two ends are both double track is the double-track bore where it has the bore's cover all along;
+      twin tubes where an end is an island station or a mined station, or where the bore lacks cover. A tube-form paint
+      decides where painted.
+    status: ratified
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: there should never be double-track to double-tube boring for no reason
+      source: claude/Station_3D_Log.md 2026-10-31 (tube form); profiles.html:1466-1477
+    decision: null
+    rank: null
+    params:
+    - metro_structure.tubes.bore.outside
+    - metro_structure.phases.2.tube
+    applies_to:
+    - metro
+    flags:
+    - Tube form (painted bore lacks cover)
+    - Tube form (spacing change inside the tunnel)
+    tests: []
+    history:
+    - 2026-10-28 Phase 2 is the bore (Ben); twin-tube/bore exceptions flagged only
+    - 2026-10-31 ends + paint chosen by Ben
+    - '2026-11-01 B3: a drive through a mined station is twin tubes in every phase'
+    notes: Ben chose 'ends + paint' among options; the quote states the principle.
+  - id: structure.tube_form.mined_station_twin
+    domain: structure
+    text: A mined station is two platform tunnels, so a drive through one is twin tubes end to end in every phase; a
+      painted double-track bore through a mined station is an error.
+    status: provisional
+    ruling:
+      date: 2026-11-01
+      by: Ben
+      words: yes, start group 2
+      source: claude/Station_3D_Log.md 2026-11-01 (B3); profiles.html:1470-1471
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    flags:
+    - Tube form (painted bore through a mined station, error)
+    tests: []
+    history:
+    - 2026-11-01 realism audit B3
+    notes: A cavern with an island is a ruling for later (B6).
+  - id: structure.tube_form.twin_type_by_phase
+    domain: structure
+    text: The twin tubes of a phase whose running tunnel is the bore are type A up to Phase 2 and type C after; a bored
+      stretch takes the tube of the phase it was built in.
+    status: provisional
+    ruling:
+      date: 2026-10-28
+      by: Ben
+      words: null
+      source: claude/Metro_Structure_Gauge_Handoff.md:15-19; profiles.html:1115-1117
+    decision: null
+    rank: null
+    params:
+    - metro_structure.phases.2.tube
+    - metro_structure.tubes.A.spacing
+    - metro_structure.tubes.C.spacing
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - '2026-10-27 handoff: type A Phase 1, Phase 2 open, type C Phase 3 on'
+    - '2026-10-28 Ben: Phase 2 is the 9.0 m bore'
+    notes: ''
+  - id: structure.tube_form.stacked_prefer_bore
+    domain: structure
+    text: Where twin tubes would not fit under a narrow street a single double-track bore is preferred; where tubes
+      are stacked their centres are one running spacing apart vertically, the same ground as side by side.
+    status: provisional
+    ruling:
+      date: 2026-10-28
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-28 (stacked tubes); profiles.html:1549-1551,2207-2212
+    decision: null
+    rank: null
+    params:
+    - metro_structure.tubes.A.spacing
+    - metro_structure.tubes.A.outside
+    - metro_structure.box.inside
+    applies_to:
+    - metro
+    flags:
+    - Tube form (twin tubes under a narrow street, note)
+    tests: []
+    history:
+    - 2026-10-28 Tube choice warnings
+    - 2026-10-31 reworded as a note
+    notes: ''
+  - id: structure.tube_form.no_spacing_change_in_tunnel
+    domain: structure
+    text: 'The track spacing cannot change inside a bored tunnel: a bore meeting twin tubes or a twin-tube station with
+      no box between is flagged; paint one form on both sides or end the bore at a box.'
+    status: provisional
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: null
+      source: profiles.html:1552-1554
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    flags:
+    - Tube form (spacing change in the tunnel)
+    tests: []
+    history:
+    - '2026-10-31'
+    notes: ''
+  - id: structure.approach.spacing_change_in_box
+    domain: structure
+    text: Bored tubes never come closer than their running spacing; where the tracks change spacing beside a station
+      or box the box carries on through the approach until the tracks reach the tubes' spacing, and that approach is
+      part of the station, built as it is. A mined station keeps the tube spacing and gets no approach.
+    status: provisional
+    ruling:
+      date: 2026-10-28
+      by: Ben
+      words: null
+      source: claude/Metro_Structure_Gauge_Handoff.md:67-70; claude/Station_3D_Log.md 2026-10-28 (track geometry) and
+        2026-10-30 (McMicken); profiles.html:1278-1294,1431-1448
+    decision: null
+    rank: null
+    params:
+    - metro_structure.approach_m
+    - metro_structure.phases.1.min_radius
+    - metro_structure.phases.2.min_radius
+    - metro_structure.phases.3.min_radius
+    - metro_structure.box.spacing
+    - metro_structure.island_box.spacing
+    - metro_structure.tubes.A.spacing
+    - metro_structure.tubes.C.spacing
+    - metro_structure.tubes.bore.spacing
+    applies_to:
+    - metro
+    flags:
+    - Approach box (stations too close)
+    - Approach box (outside the street, note)
+    tests: []
+    history:
+    - 2026-10-28 L = max(approach_m, sqrt(4 R shift)); min_radius 150 stand-in then 40/55/70 by phase
+    - 2026-10-28 approach straight where no single arc fits (option A)
+    - 2026-10-30 approaches at every tube-box contact; a painted tube station gets none
+    - 2026-11-01 pockets keep the tube spacing (C3)
+    notes: Ben's 30 October words 'still failing the tunnel-station approach' and 'something is now wrong with the spacing'
+      are complaints, not the rule. At the river at least approach_m whatever the spacing.
+  - id: structure.approach.outside_street_accepted
+    domain: structure
+    text: An approach box that leaves the street or is wider than it is accepted, each a note saying where and by how
+      much; where the Deck has no streets it is not checked.
+    status: provisional
+    ruling:
+      date: 2026-10-28
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-28 (answers, option C); profiles.html:1536-1548
+    decision: null
+    rank: null
+    params:
+    - metro_structure.box.inside
+    - metro_structure.box.spacing
+    applies_to:
+    - metro
+    flags:
+    - Approach box (note)
+    tests: []
+    history:
+    - 2026-10-28 option C chosen
+    notes: ''
+  - id: structure.elevated.decided_by_soffit
+    domain: structure
+    text: A stretch is elevated where the soffit (the deck under the rail) clears the ground by the elevated threshold,
+      so an embankment is not drawn as a viaduct with its girder in the ground.
+    status: unratified
+    ruling:
+      date: 2026-11-01
+      by: Claude
+      words: null
+      source: claude/Station_3D_Log.md 2026-11-01 (D); profiles.html:1370-1378
+    decision: null
+    rank: null
+    params:
+    - settings.elevAbove
+    - settings.deckDepth
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history:
+    - 'before: rail over the ground by elevAbove (pointType and kindAt still do this)'
+    - 2026-11-01 soffit in solveTypes
+    notes: 'Conflict in the code: pointType (1255) and kindAt (2201) still test the rail, solveTypes tests the soffit.'
+  - id: structure.elevated.drawn_structure
+    domain: structure
+    text: 'An elevated run draws the structure it needs: piers at a drawing spacing kept clear of crossing lines and
+      out of the roads, equal spans over a river to the surveyed bed, girders under the deck up to a span limit by the
+      girder rule, through trusses above it.'
+    status: provisional
+    ruling:
+      date: 2026-10-29
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-29 (elevated structure); profiles.html:949-984
+    decision: null
+    rank: null
+    params:
+    - literal.VIA_SPAN
+    - literal.VIA_CLEAR
+    - literal.RIVER_SPAN
+    - literal.GIRDER_MAX
+    - literal.girder_soffit
+    - literal.truss_depth
+    - settings.deckDepth
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Road (pier in a road, warning)
+    tests: []
+    history:
+    - 2026-10-29 built
+    - 2026-10-31 piers kept out of roads
+    notes: The girder rule span/10 + 0.8 is Ben's (28 October, north viaduct girders); the pier spacing, river span
+      and truss depth are drawing values. The audit notes a navigable Ohio needs a 250-300 m channel span (B7).
+  - id: structure.paint.must_fit
+    domain: structure
+    text: 'A paint or a station''s type selection holds only where its structure can be built at the drawn rail on the
+      finished ground: a box''s roof under the ground, a trough''s rail under the ground and no deeper than a dig, at
+      grade within a box''s height below and a viaduct''s height above, elevated with the deck underside over the ground,
+      a tube its cover. A misfit is hatched and listed with Lower, Raise or Clear.'
+    status: ratified
+    ruling:
+      date: 2026-11-02
+      by: Ben
+      words: the painting has to make sense
+      source: claude/Station_3D_Log.md 2026-11-02 (paints); data/profile/README.md:112; profiles.html:1611-1636
+    decision: null
+    rank: null
+    params:
+    - metro_structure.box.top
+    - settings_rer.envelope
+    - settings.elevAbove
+    - settings.deckDepth
+    - settings_rer.shallowMax
+    - settings_rer.minCover
+    - literal.MIN_RUN
+    - literal.station_limit_tol
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Painted (misfit, error)
+    tests: []
+    history:
+    - 2026-11-02 built on the filled ground
+    - 2026-11-03 runs on the drawn ground
+    notes: Rivers, the canon's boxes and locks are the canon's; a canon method section is only a hint.
+  - id: structure.paint.station_paint_running_line_only
+    domain: structure
+    text: A paint across a station paints only the running line; inside each platform only the station's selection counts.
+    status: ratified
+    ruling:
+      date: 2026-11-02
+      by: Ben
+      words: stations need a selection, instead of paint for cut-and-cover, shield, or bore
+      source: claude/Station_3D_Log.md 2026-11-02; profiles.html:266-269
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - 2026-11-02 old station paints migrated to selections
+    - 2026-11-04 migrated selections cleared (Ben's choice); a selection equal to the paint at the centre is dropped
+    notes: 'Root cause 1 of 4 November: a migrated Shield selection silently blocked a new cut-and-cover paint.'
+  - id: structure.paint.two_paints_one_stretch
+    domain: structure
+    text: Two paint kinds in one stretch is a warning and the larger wins; a method changes only at a station, portal
+      or shaft, so paint a shaft where it should change.
+    status: provisional
+    ruling:
+      date: 2026-11-04
+      by: Ben
+      words: null
+      source: profiles.html:1460-1465
+    decision: null
+    rank: null
+    params:
+    - literal.MIN_RUN
+    applies_to:
+    - metro
+    flags:
+    - Painted (warning)
+    tests: []
+    history:
+    - '2026-11-04'
+    notes: ''
+  - id: structure.sunk_box.river_beats_paint
+    domain: structure
+    text: Every Metro and RER river crossing in tunnel is a sunk double-track box, a type of its own that is not a paint;
+      the river beats a tunnel paint, whatever the land tunnel.
+    status: provisional
+    ruling:
+      date: 2026-10-30
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-30 (river crossings); profiles.html:263,997-1012,1674
+    decision: null
+    rank: null
+    params:
+    - settings.riverRoof
+    - metro_structure.box.roof_underside
+    - settings_rer.envelope
+    - settings_rer.invertDepth
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history:
+    - 2026-10-09 RER sunk boxes in a dredged trench
+    - 2026-10-30 every crossing a sunk box (Metro_River_Crossings)
+    notes: Only the CVG Express and Line 1 (the L&N bridge) bridge the Ohio.
+  - id: structure.sunk_box.dimensions_from_record
+    domain: structure
+    text: The Metro sunk box takes its section from the structure record's box with the sunk unit's roof slab on top;
+      the RER sunk box is its envelope box. The band, checks, made-up bed, Station 3D and the legend all use that one
+      box.
+    status: ratified
+    ruling:
+      date: 2026-10-30
+      by: Ben
+      words: make sure the sunk box has the right dimensions
+      source: claude/Station_3D_Log.md 2026-10-30 (follow-up); profiles.html:1007-1012
+    decision: null
+    rank: null
+    params:
+    - metro_structure.box.roof_underside
+    - metro_structure.box.below
+    - metro_structure.box.inside
+    - metro_structure.box.spacing
+    - settings.riverRoof
+    - settings_rer.envelope
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history:
+    - 2026-10-30 riverBoxTop setting replaced by the record's box plus riverRoof
+    notes: riverRoof 1.0 m is assumed.
+  - id: structure.sunk_box.bank_transition
+    domain: structure
+    text: 'The sunk box anchors like a station: a short cut-and-cover transition at each bank where a bored tunnel meets
+      it, the length of a station approach and at least the approach length where the spacing is the same.'
+    status: provisional
+    ruling:
+      date: 2026-10-30
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-30; profiles.html:1325-1330,1431-1433
+    decision: null
+    rank: null
+    params:
+    - metro_structure.approach_m
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history:
+    - '2026-10-30'
+    notes: ''
+  - id: structure.bridge.line1_ln_bridge
+    domain: structure
+    text: 'Line 1 crosses the Ohio on the L&N bridge: the truss spans are a locked elevated stretch on the lidar deck
+      levels with the bridge''s own piers, placed by position, and the bridge is its own structure in Station 3D.'
+    status: ratified
+    ruling:
+      date: 2026-11-02
+      by: Ben
+      words: I have changed Line 1 to be elevated using the L&N bridge
+      source: claude/Station_3D_Log.md 2026-11-02 (Line 1); profiles.html:297-302
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - '2026-11-02 re-pathed and locked; follow-up: ''why not save the profile with the data I gave instead, like we
+      did with the sunken tubes?'' made the bridge an engine structure'
+    notes: Only a line with every pier within 5 m gets the lock.
+  - id: station.type.selection_else_limit
+    domain: station
+    text: A Metro station's structure is its card selection (box, shield, bore, elevated); unselected it is a box within
+      its phase's cut-and-cover limit, else mined by the phase's method. One type for the whole platform, by the depth
+      at the platform centre.
+    status: ratified
+    ruling:
+      date: 2026-11-02
+      by: Ben
+      words: stations need a selection, instead of paint for cut-and-cover, shield, or bore. also, there needs to be
+        an elevated station type, that has a mezzanine/passthrough under it.
+      source: claude/Station_3D_Log.md 2026-11-02; profiles.html:1388-1403
+    decision: station_type
+    rank: 1
+    params:
+    - metro_structure.phases.1.cc_max
+    - metro_structure.phases.2.cc_max
+    - metro_structure.phases.3.cc_max
+    applies_to:
+    - metro
+    flags:
+    - Tunnel method (box past the limit)
+    - Tunnel method (mined in a box stretch)
+    tests: []
+    history:
+    - 2026-10-29 one type per station by the platform centre
+    - 2026-10-31 by cc_max not deep_from (Paycor)
+    - 2026-11-02 selections
+    - 2026-11-04 the selection is never overridden
+    notes: ''
+  - id: station.type.mined_in_box_stretch_flagged
+    domain: station
+    text: A mined station inside a cut-and-cover stretch, or a selected box station deeper than the limit, is flagged
+      and never overridden.
+    status: provisional
+    ruling:
+      date: 2026-11-04
+      by: Ben
+      words: null
+      source: profiles.html:1402,1510
+    decision: station_type
+    rank: 2
+    params:
+    - literal.station_limit_tol
+    applies_to:
+    - metro
+    flags:
+    - Tunnel method
+    tests: []
+    history:
+    - '2026-11-04'
+    notes: ''
+  - id: station.type.box_roof_out_of_ground_unbuildable
+    domain: station
+    text: A box station whose roof stands out of the ground anywhere along its platform (a station across a cut) is
+      unbuildable, hatched, with Lower or a new selection as the fix.
+    status: provisional
+    ruling:
+      date: 2026-11-04
+      by: Ben
+      words: null
+      source: profiles.html:1564; claude/Station_3D_Log.md 2026-11-04 (Rapid Run), 2026-11-05 (Levee)
+    decision: station_type
+    rank: 3
+    params:
+    - metro_structure.box.top
+    - literal.station_limit_tol
+    applies_to:
+    - metro
+    flags:
+    - unbuildable roof (error)
+    tests: []
+    history:
+    - '2026-11-04'
+    notes: Tests the roof alone (box.top), not roof plus cover; the running-line trough rule needs roof plus cover.
+      Possible inconsistency.
+  - id: station.type.elevated_mezzanine
+    domain: station
+    text: An elevated station has a street-level mezzanine under the middle of its platforms, open across the line as
+      a passthrough; its rail stands at least the deck plus the mezzanine's clear height over the ground, and choosing
+      it lifts a lower rail to that.
+    status: ratified
+    ruling:
+      date: 2026-11-02
+      by: Ben
+      words: there needs to be an elevated station type, that has a mezzanine/passthrough under it
+      source: claude/Station_3D_Log.md 2026-11-02; data/profile/metro_structure.json:246; profiles.html:271,476,523-524
+    decision: null
+    rank: null
+    params:
+    - metro_structure.elevated_station.mezzanine_clear_m
+    - settings.deckDepth
+    applies_to:
+    - metro
+    flags:
+    - Access (too little height under the deck, error)
+    tests: []
+    history:
+    - '2026-11-02'
+    notes: 3.5 m is a starting value, not a ruling.
+  - id: station.phase.earlier_segment
+    domain: station
+    text: 'A station is one phase and one tube: the earlier-opened of the segments either side of it in the Chronology,
+      for the whole platform.'
+    status: provisional
+    ruling:
+      date: 2026-10-30
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-30 (review, stations); profiles.html:1093-1102
+    decision: null
+    rank: null
+    params:
+    - chronology.phase_years
+    - metro_structure.line_phase
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - '2026-10-30'
+    notes: Where no segment is set the line's phase from the structure record stands (per drawn piece).
+  - id: station.approach.part_of_station
+    domain: station
+    text: The approach where the tracks change spacing beside a station is part of the station and built as it is; the
+      approach is a switch point, not part of a drive.
+    status: provisional
+    ruling:
+      date: 2026-10-28
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-28 (track geometry)
+    decision: null
+    rank: null
+    params:
+    - metro_structure.approach_m
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - '2026-10-28'
+    notes: See structure.approach.spacing_change_in_box for the mechanics.
+  - id: station.approach.straight_where_no_arc
+    domain: station
+    text: Where no single arc fits the approach starts with a straight after the platform end, long enough for the tightening
+      track's arc to start before the curve; the box grows by the straight, computed by the 3D build from the plan curvature.
+    status: provisional
+    ruling:
+      date: 2026-10-28
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-28 (answers, option A); profiles.html:1288-1294
+    decision: null
+    rank: null
+    params:
+    - metro_structure.phases.1.min_radius
+    - metro_structure.phases.2.min_radius
+    - metro_structure.phases.3.min_radius
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - 2026-10-28 option A
+    notes: The audit (C7) found the approach extra round-trips through a record and can flip a drive near min_drive;
+      computing it in the engine is wanted.
+  - id: station.complex.same_name_150m
+    domain: station
+    text: Stations of any system with the same normalised name within the complex radius are one station complex; stations
+      named differently that are one station are marked by Ben in the Deck's station card.
+    status: unratified
+    ruling:
+      date: 2026-10-31
+      by: Claude
+      words: null
+      source: tools/station3d/sync.py:1018-1033; hub/README.md:10; data/profile/README.md:41
+    decision: null
+    rank: null
+    params:
+    - literal.sync.complex_radius
+    applies_to:
+    - metro
+    - tri
+    - apex
+    flags: []
+    tests: []
+    history:
+    - 2026-10-31 built for the access rules; 'One station with' label added to the Deck
+    notes: The 150 m threshold is a drawing value; the scrutiny notes grouping thresholds of 150, 400, 600 and 800 m
+      in different files.
+  - id: station.chronology.opens_with_earliest_track
+    domain: station
+    text: A station opens with its earliest track unless its own year is set; a later own year is listed as infill.
+    status: provisional
+    ruling:
+      date: 2026-10-29
+      by: Ben
+      words: null
+      source: hub/README.md:8; profiles.html:483-491
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Access (no opening year, warning)
+    tests: []
+    history:
+    - 2026-10-28 stations no earlier than the earliest segment touching them
+    - 2026-10-29 order rules removed, this one kept
+    notes: ''
+  - id: station.threed.rails_centred_unbroken
+    domain: station
+    text: Each line's two tracks are drawn centred on its own path at the spacing its structure needs, widened at islands
+      and eased over the approach, with no break between tube and box; a line never leans to one side.
+    status: provisional
+    ruling:
+      date: 2026-10-27
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-27 (rails centred and unbroken)
+    decision: null
+    rank: null
+    params:
+    - metro_structure.tubes.A.spacing
+    - metro_structure.tubes.C.spacing
+    - metro_structure.box.spacing
+    - metro_structure.island_box.spacing
+    - metro_structure.approach_m
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history:
+    - 2026-10-27 Deck track pairs abandoned for drawing rails; TRI bored stretches at 9.5 m (two 8.5 m tubes 1 m apart,
+      a decision noted)
+    notes: ''
+  - id: platform.length.by_system
+    domain: platform
+    text: 'Platforms are one length per system: the Metro platform length, the TRI / RER length, and the CVG Express
+      its own; every box, approach, platform check and the 3D offsets use it.'
+    status: provisional
+    ruling:
+      date: 2026-10-26
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-26 (rulings); data/profile/settings.json:4,11; data/profile/rer/settings.json:4;
+        data/profile/README.md:61
+    decision: null
+    rank: null
+    params:
+    - settings.platform
+    - settings_rer.platform
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Platform overlap
+    tests: []
+    history:
+    - 2026-10-05 TRI 670 ft (was 200 m in the Profiles until 26 October)
+    - 2026-10-23 Metro 400 ft (was 500 ft)
+    - 2026-10-28 CVG Express 204.2 m, its own system
+    notes: 'Dates differ between sources for the TRI length (5 October in settings.json and the brief, 26 October in
+      the README): the ruling was 5 October, the Profiles adopted it 26 October. The Fountain Square model''s 500 ft
+      is an open lean (400 ft).'
+  - id: platform.default.box_side
+    domain: platform
+    text: A box station's default platform type is side.
+    status: ratified
+    ruling:
+      date: 2026-11-04
+      by: Ben
+      words: cut-and-cover phase 1 should be almost exclusively [side] (like most of MBTA OL and RL, unless there's
+        a transfer (like Park St)
+      source: claude/Station_3D_Log.md 2026-11-04 (platform type); profiles.html:1574-1601
+    decision: platform_default
+    rank: 3
+    params: []
+    applies_to:
+    - metro
+    flags:
+    - '3D issue and hub check: set otherwise than the rule (note)'
+    tests: []
+    history:
+    - 2026-10-09 Lines 1-7 islands by the Deck generator
+    - 2026-10-28 island where the station is on shallow shield (handoff)
+    - 2026-11-04 rule rewritten; old defaults gone
+    notes: Ben's settings on the Deck win over every default.
+  - id: platform.default.island_at_open_transfer
+    domain: platform
+    text: A box station is an island where another Metro line is already open there when it opens (the station complexes
+      and the Chronology).
+    status: ratified
+    ruling:
+      date: 2026-11-04
+      by: Ben
+      words: unless there's a transfer (like Park St)
+      source: claude/Station_3D_Log.md 2026-11-04; profiles.html:1590-1591
+    decision: platform_default
+    rank: 1
+    params:
+    - literal.sync.complex_radius
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - 2026-11-04; Ben chose 'transfer at opening' (the other line open when the station opens)
+    notes: ''
+  - id: platform.default.island_tube_into_box
+    domain: platform
+    text: 'A box station is an island where a tube runs straight into the box (a drive within the approach length plus
+      the minimum run of a platform end): the tubes arrive apart and an island fits between them.'
+    status: ratified
+    ruling:
+      date: 2026-11-04
+      by: Ben
+      words: If it's bored, then it's probably an island because that's an easier box to dig and if it's side, it needs
+        a mezzanine
+      source: claude/Station_3D_Log.md 2026-11-04; profiles.html:1592-1600
+    decision: platform_default
+    rank: 2
+    params:
+    - metro_structure.approach_m
+    - literal.MIN_RUN
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - '2026-11-04'
+    notes: 'Research cited: Chicago State Street twin tubes with one island (1943).'
+  - id: platform.default.mined_side
+    domain: platform
+    text: A mined station's default is side platforms, a platform tunnel per track; an open station keeps the Deck's
+      generated type.
+    status: provisional
+    ruling:
+      date: 2026-11-04
+      by: Ben
+      words: check the research
+      source: claude/Station_3D_Log.md 2026-11-04; profiles.html:1588
+    decision: platform_default
+    rank: 4
+    params: []
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - 2026-10-28 side platforms on bored stretches 'not necessarily wrong but should be noted' (Ben)
+    - 2026-11-04 the research made side the default for mined stations; the note replaced by 'set otherwise than the
+      rule'
+    notes: 'Research: London''s intermediate deep-tube stations, Washington''s twin tubes; islands at Clapham and Euston
+      were exceptions.'
+  - id: platform.default.ben_setting_wins
+    domain: platform
+    text: Ben's per-station platform setting on the Deck wins over every default; stations set otherwise than the rule
+      are listed as a note, not an error.
+    status: provisional
+    ruling:
+      date: 2026-10-28
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-28 (side platforms note) and 2026-11-04; claude/Metro_Structure_Gauge_Handoff.md:21
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    flags:
+    - 'To check: set otherwise than the rule (note)'
+    tests: []
+    history:
+    - '2026-10-28'
+    - 2026-11-04 reworded
+    notes: ''
+  - id: platform.grade.limit_by_era
+    domain: platform
+    text: Each platform has a grade about its centre level; it may not exceed the era's station limit, and the transitions
+      carry the platform grade on.
+    status: provisional
+    ruling:
+      date: 2026-10-16
+      by: Ben
+      words: null
+      source: docs/research/profile_design.md:63-70; profiles.html:1223-1227,2088
+    decision: null
+    rank: null
+    params:
+    - literal.ERA.sgMax.lines_1_7
+    - literal.ERA.sgMax.lines_8_14
+    - settings_rer.stationMaxGrade
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Platform grade
+    tests: []
+    history:
+    - sloped platforms (MTA style) and limits by era ruled; Lines 1-7 7.5, Lines 8-14 4, CVG Express 4, RER 2.5 per
+      mille
+    notes: Limit is by line, not by building phase (audit E).
+  - id: platform.curvature.gapfill
+    domain: platform
+    text: A platform's radius is a least-squares circle fitted to the drawn path over the platform span; under the error
+      radius it is an error unless the station is a named gap-filler exception, under the warning radius a warning,
+      with the extra gap on the outside and inside faces reported.
+    status: provisional
+    ruling:
+      date: 2026-10-09
+      by: Ben
+      words: null
+      source: docs/research/profile_design.md:59; profiles.html:2002-2039,2089-2098
+    decision: null
+    rank: null
+    params:
+    - literal.CAR_LEN
+    - literal.END_DOOR
+    - literal.PLAT_R_ERR
+    - literal.PLAT_R_WARN
+    - settings.platform
+    applies_to:
+    - metro
+    flags:
+    - Platform curve
+    tests: []
+    history:
+    - 2026-10-09 ruling
+    notes: gapfill keys are saved in the profile.
+  - id: platform.curvature.no_s_curve
+    domain: platform
+    text: 'No station works on an S-curve: turns both ways inside the platform span of the error angle each way is an
+      error, smaller wiggles a warning, whatever the fitted radius.'
+    status: provisional
+    ruling:
+      date: 2026-10-09
+      by: Ben
+      words: null
+      source: docs/research/profile_design.md:60; profiles.html:2071-2077,2093
+    decision: null
+    rank: null
+    params:
+    - literal.DRAW.sErr
+    applies_to:
+    - metro
+    flags:
+    - Platform curve (S-curve)
+    tests: []
+    history:
+    - '2026-10-09'
+    notes: ''
+  - id: platform.slide.limit_never_clamped
+    domain: platform
+    text: A platform may slide up to the slide limit either way from its station point; a saved slide past it is kept
+      and flagged, never clamped on load.
+    status: provisional
+    ruling:
+      date: 2026-10-24
+      by: Ben
+      words: null
+      source: claude/Platform_Track_Design_Brief.md:50; claude/Station_3D_Log.md 2026-11-01 (A5); profiles.html:1838,2100,3545
+    decision: null
+    rank: null
+    params:
+    - literal.SLIDE_M
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Platform slide
+    tests: []
+    history:
+    - 2026-10-24 150 m on the Deck
+    - 2026-11-01 one limit for both; never clamped
+    notes: The Deck also caps at half the platform (hub/README.md:58); the page uses the limit alone.
+  - id: platform.tie.both_ways_more_recent_wins
+    domain: platform
+    text: 'The Deck and the Profiles move platforms both ways: a slide in the Profiles becomes the Deck platform''s
+      offset, a move on the Deck moves the station in the Profiles; where both moved one platform the more recent record
+      wins.'
+    status: ratified
+    ruling:
+      date: 2026-10-29
+      by: Ben
+      words: it should run in both directions; the more recent one wins
+      source: claude/Station_3D_Log.md 2026-10-29 (platforms both ways); hub/README.md:56-58
+    decision: platform_position
+    rank: 1
+    params:
+    - literal.SLIDE_M
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history:
+    - 2026-10-27 a platform's position is the Deck platform's centre, slides reset
+    - 2026-10-29 both ways
+    - 2026-11-01 only a slide changed since the last agreement is pushed (A6)
+    notes: ''
+  - id: platform.tie.centre_kept
+    domain: platform
+    text: 'Through every tie a platform slid in the Profiles keeps its centre: the station point goes to the Deck platform''s
+      centre and the slide takes up the difference; only a platform moved on the Deck since the last agreement puts
+      the station at the Deck''s centre with no slide; a platform the Deck cannot take as far keeps its Profiles centre
+      and is reported as drifted.'
+    status: provisional
+    ruling:
+      date: 2026-11-01
+      by: Ben
+      words: the deck tie keeps undoing my changes ... find a better way
+      source: claude/Station_3D_Log.md 2026-11-01 (tie); hub/README.md:9
+    decision: platform_position
+    rank: 2
+    params:
+    - literal.SLIDE_M
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - 'tie log: drifted'
+    tests: []
+    history:
+    - '2026-11-01 realism audit A1-A9: a record never changes without Ben'
+    notes: ''
+  - id: platform.tie.saved_profile_own_frame
+    domain: platform
+    text: 'A saved profile is read in its own frame: it carries the station points it was saved against, and where they
+      differ from the route''s the bends, paints, tube forms and drawn ground are mapped station by station onto the
+      current points, every platform centre kept as point plus slide.'
+    status: provisional
+    ruling:
+      date: 2026-11-01
+      by: Ben
+      words: null
+      source: data/profile/README.md:37; claude/Station_3D_Log.md 2026-11-01 (A1)
+    decision: platform_position
+    rank: 3
+    params: []
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests:
+    - tests/test_core.py::test_saved_profile_read_in_its_own_frame
+    history:
+    - '2026-11-01'
+    - 2026-11-02 re-path mapped by geometry (cmap_geo) so unchanged track keeps its place
+    notes: ''
+  - id: platform.shared_pair.one_level
+    domain: platform
+    text: A platform on a shared pair serves every line on it at the saved line's level; TRI A and D share the Fountain
+      Square platforms on one island.
+    status: provisional
+    ruling:
+      date: 2026-10-26
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-26 (whole region)
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - tri
+    flags:
+    - shared stretch levels differ (3D issue)
+    tests: []
+    history:
+    - 2026-10-26 option A for Fountain Square A/D
+    notes: ''
+  - id: clearance.crossing.structure_sum
+    domain: clearance
+    text: At a crossing the upper rail sits above the lower rail by at least the upper line's structure below its rail
+      plus the separation gap plus the lower line's rail-to-top; a line in the open counts its clear height as its top
+      and its deck or track bed as its below-rail. Two lines at grade need a grade separation.
+    status: provisional
+    ruling:
+      date: 2026-10-09
+      by: Ben
+      words: null
+      source: docs/research/profile_design.md:40,49; profiles.html:2191-2212,2235-2245
+    decision: crossing_separation
+    rank: 1
+    params:
+    - literal.SEP_GAP
+    - literal.BED_DEPTH
+    - settings.deckDepth
+    - settings_rer.deckDepth
+    - metro_structure.box.below
+    - metro_structure.box.top
+    - metro_structure.open_clear_height
+    - literal.OPEN_CLEAR.rer
+    - settings_rer.invertDepth
+    - settings_rer.envelope
+    - settings_rer.boreCrown
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Clearance
+    tests: []
+    history:
+    - flat 8 m Metro / 9 m RER minimum replaced by the structure sum (values accepted by Ben)
+    - 2026-10-28 clear height 4.57 m from the record
+    notes: Crossings with a line not marked 'Profile set' are listed apart and get no markers.
+  - id: clearance.crossing.bored_gap
+    domain: clearance
+    text: Between two bored tunnels the separation is the ground of side-by-side tubes (the larger of the type A and
+      type C running gap), not the box gap; the box gap applies only where a box is involved.
+    status: provisional
+    ruling:
+      date: 2026-10-28
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-28 (stacked tubes); profiles.html:2207-2212
+    decision: crossing_separation
+    rank: 2
+    params:
+    - metro_structure.tubes.A.spacing
+    - metro_structure.tubes.A.outside
+    - metro_structure.tubes.C.spacing
+    - metro_structure.tubes.C.outside
+    - literal.SEP_GAP
+    applies_to:
+    - metro
+    flags:
+    - Clearance
+    tests: []
+    history:
+    - '2026-10-28'
+    notes: ''
+  - id: clearance.crossing.other_line_guessed
+    domain: clearance
+    text: The other line's structure at a crossing is derived again from its rail depth, the surveyed ground and its
+      phase, not read from its solved type, approaches or tube form; the check should read the other line's solved samples.
+    status: unratified
+    ruling:
+      date: 2026-11-01
+      by: Claude
+      words: null
+      source: profiles.html:2197-2205; claude/Realism_Audit_2026-11-01.md:81-83; claude/Code_Scrutiny_2026-11-06.md
+        (context and crossing clearances)
+    decision: crossing_separation
+    rank: 3
+    params:
+    - settings.deepBelow
+    - settings.elevAbove
+    - settings.coverBelow
+    - metro_structure.box.top
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Clearance
+    tests: []
+    history:
+    - 2026-11-01 audit C4
+    - '2026-11-06 scrutiny: rewrite'
+    notes: 'Conflict: kindAt is the old per-point rule (rail-based elevated test, deepBelow, box at 4.6 m) while the
+      line''s own type is the engine''s.'
+  - id: clearance.open.clear_height
+    domain: clearance
+    text: 'A line in the open under another structure needs its clear height from rail to the structure''s underside:
+      the Metro envelope height plus a margin, the RER its 25 kV height.'
+    status: provisional
+    ruling:
+      date: 2026-10-28
+      by: Ben
+      words: null
+      source: 'claude/Station_3D_Log.md 2026-10-28 (Ben''s answers: 4.42 + 0.15 = 4.57 m); docs/research/profile_design.md:55;
+        profiles.html:1196-1200,1070'
+    decision: null
+    rank: null
+    params:
+    - metro_structure.open_clear_height
+    - literal.OPEN_CLEAR.metro
+    - literal.OPEN_CLEAR.rer
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Clearance
+    - Context
+    tests: []
+    history:
+    - 2026-10-09 Metro 4.2 m (ballasted track lifted in maintenance)
+    - 2026-10-28 4.57 m from the record
+    notes: profile_design.md and the page literal still say 4.2; the record's 4.57 overrides when loaded.
+  - id: clearance.context.blocks
+    domain: clearance
+    text: Every other-system structure at CUT and Norwood is checked against the line at its worst point with the crossing
+      rule; under a viaduct only a line in the open is checked, and a line in the open at the level of a track at grade
+      or in a trough is a level clash.
+    status: provisional
+    ruling:
+      date: 2026-10-26
+      by: Ben
+      words: null
+      source: data/profile/README.md:59; profiles.html:2215-2233
+    decision: null
+    rank: null
+    params:
+    - context.blocks.heights
+    - literal.SEP_GAP
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Context
+    tests: []
+    history:
+    - 2026-10-26 context built
+    notes: ''
+  - id: clearance.context.street_openings
+    domain: clearance
+    text: Under an embankment or an arch viaduct a line in the open can pass only through a street opening; outside
+      one it is a clash whatever the heights.
+    status: provisional
+    ruling:
+      date: 2026-10-27
+      by: Ben
+      words: null
+      source: data/profile/README.md:69-74; claude/Station_3D_Log.md 2026-10-26/27 (CUT structure types)
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Context (blocked)
+    tests:
+    - tests/test_core.py::test_context_street_openings
+    history:
+    - '2026-10-27 structure types: fan embankment with a bridge per street, arch viaducts on the wide stretches, normal
+      viaducts elsewhere, descents under 6.5 m embankments with blind arches'
+    notes: ''
+  - id: clearance.upper_deck.over_lower
+    domain: clearance
+    text: The Indianapolis and D upper deck runs at the minimum height over the lower deck by the crossing rule above
+      the highest rail it crosses, then climbs to the Floridian hillside tunnel at a constant grade to the portal.
+    status: provisional
+    ruling:
+      date: 2026-10-27
+      by: Ben
+      words: null
+      source: data/profile/README.md:75; claude/Station_3D_Log.md 2026-10-27 and 2026-10-28 (upper deck 174.9 m)
+    decision: null
+    rank: null
+    params:
+    - context.upper_deck.over_lower_rail
+    applies_to:
+    - tri
+    - apex
+    flags: []
+    tests: []
+    history:
+    - 2026-10-27 174.5 m
+    - 2026-10-28 174.9 m including RER A and R5 at South Cumminsville
+    notes: ''
+  - id: clearance.tunnel_envelope_tight
+    domain: clearance
+    text: Tunnels and boxes are sized to the train's dynamic envelope plus a running clearance, London-style tight;
+      open structures keep the CTA standard envelope.
+    status: ratified
+    ruling:
+      date: 2026-10-28
+      by: Ben
+      words: the Tube uses a much tighter spacing
+      source: claude/Metro_Structure_Gauge_Handoff.md:11-13; claude/Code_Handoff_Yards_and_Metro_2026-10-28.md:116-118
+    decision: null
+    rank: null
+    params:
+    - metro_structure.tubes.A.inside
+    - metro_structure.tubes.C.inside
+    - metro_structure.envelope.open_height
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - 2026-10-27 first version 5.65 m tube, 9.35 m centres, 4.82 m box centres
+    - 2026-10-28 revised to the dynamic envelope
+    notes: The structure values themselves are drawing values.
+  - id: clearance.box.columns_between_tracks
+    domain: clearance
+    text: Double-track boxes have steel columns between the tracks at the record's size and spacing carrying roof beams
+      (1904 IRT frame); clear span and centre wall were rejected.
+    status: provisional
+    ruling:
+      date: 2026-10-28
+      by: Ben
+      words: null
+      source: claude/Code_Handoff_Yards_and_Metro_2026-10-28.md:135; data/profile/metro_structure.json:52-53
+    decision: null
+    rank: null
+    params:
+    - metro_structure.box.column_size
+    - metro_structure.box.column_every
+    - metro_structure.box.spacing
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - '2026-10-28'
+    notes: ''
+  - id: clearance.hall.checks_over_hall_roof
+    domain: clearance
+    text: Where a station has a hall on its box roof the cover and crossing checks run over the hall's roof, not the
+      box's.
+    status: provisional
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: null
+      source: profiles.html:535-541,2121,2241
+    decision: null
+    rank: null
+    params:
+    - metro_structure.hall.clear
+    - metro_structure.hall.roof
+    - metro_structure.hall.cover
+    applies_to:
+    - metro
+    flags:
+    - Cover
+    - Clearance
+    tests: []
+    history:
+    - '2026-10-31'
+    notes: ''
+  - id: era.grade.limit_by_phase
+    domain: era
+    text: 'The grade limit is by building phase: the base limit everywhere; Phases 1-2 a straight stretch underground
+      up to the straight limit as a warning; from Phase 3 up to it on a straight, allowed; later phases also up to it
+      on curves over the curve radius; above the straight limit always an error. The strictest limit over a stretch
+      binds and the flag names the rule.'
+    status: provisional
+    ruling:
+      date: 2026-10-29
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-29 (grade limits by phase); profiles.html:1139-1162; data/profile/metro_structure.json:220
+    decision: grade_limit
+    rank: 1
+    params:
+    - settings.maxGrade
+    - metro_structure.phases.1.grade_max
+    - metro_structure.phases.1.grade_straight
+    - metro_structure.phases.1.straight_warn
+    - metro_structure.phases.3.straight_warn
+    - metro_structure.phases.later.grade_curve
+    - metro_structure.phases.1.curve_radius
+    - metro_structure.grades.straight_radius
+    applies_to:
+    - metro
+    flags:
+    - Grade
+    tests: []
+    history:
+    - '2026-10-27 handoff: over 5% warning on a straight bored or box stretch, over 6% error, elsewhere over 5% error'
+    - 2026-10-28 'straight' = train-averaged radius 1,000 m or more (Ben)
+    - 2026-10-29 by phase
+    notes: The handoff table (all phases warn over 5% on a straight) and the 29 October phases rule (Phase 3 on allowed)
+      differ; the later ruling is in the record.
+  - id: era.grade.sustained_vs_local
+    domain: era
+    text: A stretch over the limit is an error only where the grade averaged over the sustained length is over it too;
+      shorter is a warning. The same for grade with curve.
+    status: provisional
+    ruling:
+      date: 2026-10-30
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-30 (review, gradients); profiles.html:1163-1184
+    decision: grade_limit
+    rank: 2
+    params:
+    - settings.sustainedLen
+    - settings_rer.sustainedLen
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Grade (localized, warning)
+    - Grade (sustained, error)
+    tests: []
+    history:
+    - '2026-10-30'
+    notes: Default window two platform lengths.
+  - id: era.grade.steepest_between_bends
+    domain: era
+    text: The grade checked is the straight grade between vertical curves on the drawn rail (a vertical curve only blends
+      two grades).
+    status: provisional
+    ruling:
+      date: 2026-10-30
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-30 (review); profiles.html:827-828,1914-1921
+    decision: grade_limit
+    rank: 3
+    params: []
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Grade
+    tests: []
+    history:
+    - '2026-10-30'
+    notes: ''
+  - id: era.grade.curve_allowance_train_averaged
+    domain: era
+    text: On a curve the grade is checked with a curve-resistance allowance of k over the radius, the curvature averaged
+      over a train length (the platform length) so a drawing kink does not set the figure; a straight underground stretch
+      skips it.
+    status: provisional
+    ruling:
+      date: 2026-10-28
+      by: Ben
+      words: Grade plus curve allowance reaches 36.2 per mille (tightest radius 378 m)
+      source: claude/Station_3D_Log.md 2026-10-28 (curve grade check); profiles.html:1972-2001
+    decision: grade_limit
+    rank: 4
+    params:
+    - settings.curveK
+    - settings.platform
+    - literal.radii_window
+    - metro_structure.grades.straight_radius
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Curve grade
+    tests: []
+    history:
+    - radius from a 3-point circle over 40 m
+    - 2026-10-28 averaged over a train length
+    notes: Ben's words are the complaint; the averaging was the fix. curveK 800 is a starting value.
+  - id: era.vertical_curve.radius_and_min_length
+    domain: era
+    text: A vertical curve is built into the rail at every grade change, radius by system and never shorter than the
+      minimum length; curves stay off platforms (the platform level runs on for half a curve, then the curve); where
+      the straight grade is too short the curves are shortened and flagged.
+    status: provisional
+    ruling:
+      date: 2026-10-09
+      by: Ben
+      words: null
+      source: docs/research/profile_design.md:25; profiles.html:750-802,2086
+    decision: null
+    rank: null
+    params:
+    - settings.vcRadius
+    - settings_rer.vcRadius
+    - settings.vcMinLen
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Vertical curve
+    tests: []
+    history:
+    - rulings (Ben) in profile_design.md
+    notes: The level solver allows for the transitions (each platform counts as its length plus one curve at the steepest
+      grade); river-tube bottoms held half a curve beyond each bank.
+  - id: era.regrade.straight_grades_no_curve_room
+    domain: era
+    text: Lower and Raise move the rail to the bound (one diameter of cover, or the box limit) plus a margin as straight
+      grades at most the limit less a reserve between the platform ends, lowering a station in the way unless canon
+      or locked; the bends it builds leave no room for the vertical curves, so the rail can be short again.
+    status: unratified
+    ruling:
+      date: 2026-10-31
+      by: Claude
+      words: null
+      source: profiles.html:3601-3640; claude/Realism_Audit_2026-11-01.md:59-61
+    decision: null
+    rank: null
+    params:
+    - literal.regrade_margin
+    - literal.regrade_grade_reserve
+    - settings.maxGrade
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Vertical curve (after a regrade)
+    tests: []
+    history:
+    - 2026-10-31 Regrade
+    - 2026-11-02 renamed Lower, given the level the structure needs; Raise added
+    notes: 'Audit B5: space bends by the curve lengths and bound the curved rail; not done.'
+  - id: era.drainage.warning_only
+    domain: era
+    text: A tunnel stretch flatter than the drainage minimum for longer than the minimum length outside platforms is
+      a warning only (a falling track drain, sumps and pumps); low points are counted as sumps; the covered way drains
+      beneath and is exempt.
+    status: provisional
+    ruling:
+      date: 2026-10-28
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-28 (curve grade check, drainage); profiles.html:2102-2113; docs/research/profile_design.md:62
+    decision: null
+    rank: null
+    params:
+    - settings.drainMin
+    - literal.drainage_min_len
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Drainage (warning)
+    tests: []
+    history:
+    - error until 2026-10-28, then a warning
+    notes: Sumps at every low point, not a fixed spacing (Ben, 28 October).
+  - id: era.phase.by_chronology
+    domain: era
+    text: Each stretch takes the building phase of its Chronology segment (set by hand or from its opening year), else
+      the drawn piece's phase, else the line's; the phase sets the tube, the limits, the method and the preference.
+    status: provisional
+    ruling:
+      date: 2026-10-28
+      by: Ben
+      words: null
+      source: profiles.html:1072-1107; hub/README.md:8; data/profile/metro_structure.json:222
+    decision: null
+    rank: null
+    params:
+    - chronology.phase_years
+    - metro_structure.line_phase
+    applies_to:
+    - metro
+    flags: []
+    tests:
+    - hub/test_hub.js (a phase set in the Chronology reaches an open Profiles page)
+    history:
+    - '2026-10-28 phases by year: to 1933, 1934-49, 1950-79, 1980 on; each drawn piece has a built phase (Ben marks
+      extensions)'
+    notes: ''
+  - id: era.chronology.any_segment_any_year
+    domain: era
+    text: 'There are no order rules in the Chronology: any segment may open in any year; shared TRI track is one segment
+      with its own year and each route''s service year is kept apart.'
+    status: provisional
+    ruling:
+      date: 2026-10-29
+      by: Ben
+      words: null
+      source: 'hub/README.md:8; claude/Station_3D_Log.md 2026-10-28 (Chronology answers: track year and service year
+        apart)'
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - orphans and unset segments listed
+    tests: []
+    history:
+    - 2026-10-28 order rules (core, outward never older) in chronology_rules.js
+    - '2026-10-29 Ben: parts of a line are built before others, the RER runs on old rights of way, the central tunnels
+      come last: no order rules'
+    notes: Conflict between the 28 October log (order rules) and the hub README (none); the README is the later ruling.
+  - id: era.deep.four_meanings
+    domain: era
+    text: Each sample should carry one method, one depth class (stations only) and one tube form; a paint whose method
+      the phase did not have is an error. Today 'deep' means the TBM method, the access threshold, the old depth setting
+      and the canon's drill and blast.
+    status: unratified
+    ruling:
+      date: 2026-11-01
+      by: Claude
+      words: null
+      source: claude/Realism_Audit_2026-11-01.md:47-51; profiles.html:262,1241,1269,2204
+    decision: null
+    rank: null
+    params:
+    - metro_structure.phases.1.deep_from
+    - settings.deepBelow
+    - metro_structure.phases.3.tbm
+    applies_to:
+    - metro
+    flags:
+    - Tunnel method (TBM before Phase 3)
+    tests: []
+    history:
+    - 2026-11-01 audit B2
+    - 2026-11-02 Bore (TBM) selected before Phase 3 flagged (partial)
+    notes: ''
+  - id: era.cvg_express.separate_system
+    domain: era
+    text: 'The CVG Express is not a Metro line: its own system and phase (later), the double-track bore, its own platform
+      length and platform grade limit, Union Terminal at platform M on the CUT deck, and the Ohio on a bridge at the
+      navigation clearance.'
+    status: provisional
+    ruling:
+      date: 2026-10-28
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-28 (answers on the CVG Express); profiles.html:1189-1190,317-321
+    decision: null
+    rank: null
+    params:
+    - literal.ERA.sgMax.lines_8_14
+    - settings.deckDepth
+    applies_to:
+    - metro
+    flags:
+    - River (bridge clearance)
+    tests: []
+    history:
+    - 2026-10-16 opened 1969, bore, 4 per mille platforms, bridge parallel to the C&O at 77.3 ft (starting value)
+    - 2026-10-28 separate system, 670 ft platforms
+    notes: Union Terminal at 160.3 m (was track level 154.0 m).
+  - id: ground.layers.three
+    domain: ground
+    text: 'The finished ground is three layers: the surveyed raster (map 3), the Deck''s street re-grades and open cuts,
+      and Ben''s drawn ground; the level solver, the structure type, cover and every check use it, and Station 3D draws
+      it.'
+    status: provisional
+    ruling:
+      date: 2026-11-03
+      by: Ben
+      words: null
+      source: data/profile/README.md:58; profiles.html:643-703
+    decision: ground_layers
+    rank: 1
+    params: []
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history:
+    - 2026-10-26 raster plus Deck re-grades
+    - 2026-10-26 to 11-02 automatic fill over paints as a layer
+    - 2026-11-03 drawn ground replaces the fill
+    notes: ''
+  - id: ground.drawn.tool
+    domain: ground
+    text: 'The regraded ground is drawn like a rail profile: lines of points joined by straight grades, both ends on
+      the ground below, addable points, the ends sliding along the ground; between its ends the line is the ground,
+      raised or lowered.'
+    status: ratified
+    ruling:
+      date: 2026-11-03
+      by: Ben
+      words: give control to a painting tool, where lines can be drawn by the user instead; make it the same kind of
+        drawing as a rail profile. addable fill points, maximum sustained gradients, etc.
+      source: claude/Station_3D_Log.md 2026-11-03; data/profile/README.md:113; profiles.html:657-695
+    decision: ground_layers
+    rank: 2
+    params: []
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history:
+    - '2026-11-03'
+    notes: ''
+  - id: ground.drawn.limits
+    domain: ground
+    text: A drawn-ground line may not be steeper than the street maximum on any grade (error), nor average more than
+      the sustained warning over the sustained window (warning), and its end slopes may not exceed the embankment slope
+      (error).
+    status: provisional
+    ruling:
+      date: 2026-11-03
+      by: Ben
+      words: maximum sustained gradients
+      source: profiles.html:1731-1749; data/profile/README.md:113
+    decision: null
+    rank: null
+    params:
+    - settings.groundMax
+    - settings.groundWarn
+    - settings.groundSustain
+    - settings.fillSlope
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Ground
+    tests: []
+    history:
+    - 2026-11-03 fillSlope 500 replaces fillTaper 50
+    notes: The values are starting values; Ben chose the 1 in 2 embankment slope on 3 November (not quoted).
+  - id: ground.drawn.counts_across_crossing_street
+    domain: ground
+    text: Another line's drawn ground counts on this line across that line's Deck street (a default width where none)
+      where it crosses, unless this line's own drawn line is there; Station 3D draws each drawn line as a band across
+      its street.
+    status: provisional
+    ruling:
+      date: 2026-11-03
+      by: Ben
+      words: null
+      source: profiles.html:673-694,1750; data/profile/README.md:58
+    decision: ground_layers
+    rank: 3
+    params:
+    - literal.GND_W
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Ground (note)
+    tests: []
+    history:
+    - '2026-11-03'
+    notes: ''
+  - id: ground.paint_never_raises_ground
+    domain: ground
+    text: A paint never raises the finished ground by itself; Propose fill draws the fill a box or tube needs as a drawn
+      line Ben then owns.
+    status: provisional
+    ruling:
+      date: 2026-11-03
+      by: Ben
+      words: null
+      source: data/profile/README.md:58,113; data/profile/metro_structure.json:242
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history:
+    - 2026-10-26 painted cut and cover raised the ground to roof plus cover
+    - 2026-10-30 painted shield and deep too
+    - 2026-11-01 capped at fill_max_m 3.0 (C1)
+    - '2026-11-02 fill removed, then back unlimited per painted stretch (Ben: ''the filling should be unlimited''; ''any
+      tube that is below the minimum should regrade the land above it'')'
+    - 2026-11-03 the live fill layer gone; drawn ground and Propose fill
+    notes: Ben's 2 November words asked for unlimited automatic fill; on 3 November he chose the drawn tool with the
+      automatic fill kept only as a starting proposal.
+  - id: ground.propose_fill.within_paint
+    domain: ground
+    text: Propose fill makes the ground up to the structure's minimum (a box's roof plus cover, a tube's top plus one
+      diameter) a little over, as a line within a band above it with one straight side slope at each end; on a painted
+      stretch the slopes stay inside the paint so a few metres at each end stay short, on a stretch the rules decided
+      they run beyond it so the whole stretch has its cover.
+    status: provisional
+    ruling:
+      date: 2026-11-02
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-11-02 (follow-up) and 2026-11-03; profiles.html:1677-1729
+    decision: null
+    rank: null
+    params:
+    - literal.fill_over
+    - literal.fill_band
+    - settings.fillSlope
+    - literal.BOX_COVER
+    - metro_structure.box.top
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history:
+    - 2026-11-02 the slope back to the surveyed ground stays inside the paint
+    - 2026-11-03 Propose fill button
+    notes: ''
+  - id: ground.regraded_is_diggable
+    domain: ground
+    text: 'Regraded ground, drawn or the Deck''s, is ground a box is dug into: it counts for the box''s roof and cover
+      like surveyed ground.'
+    status: ratified
+    ruling:
+      date: 2026-11-05
+      by: Ben
+      words: Regraded ground is very applicable for digging a box
+      source: claude/Station_3D_Log.md 2026-11-05; data/profile/README.md:117
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history:
+    - 2026-11-05 a first fix that stopped drawn fill counting was reverted
+    notes: ''
+  - id: ground.map3_bed_canon
+    domain: ground
+    text: The map 3 ground is the surveyed ground for every Metro line, and its riverbed in the Ohio and Licking is
+      the canon bed; the profile tools read the bed, the route tools the water surface.
+    status: provisional
+    ruling:
+      date: 2026-11-06
+      by: Ben
+      words: null
+      source: claude/Hub_Region_Checklist.md:282-284; data/profile/README.md:11-15; docs/research/profile_design.md:56
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history:
+    - 2026-10-09 the tiles hold the canon riverbed; canon.json's 12 m Ohio bed depth dropped
+    - 2026-11-06 'map 3's river bed is canon'; map 3 moved to ground/2026
+    notes: Recorded as Ben's 6 November ruling without a verbatim quote.
+  - id: ground.river_level_all_years
+    domain: ground
+    text: The river surface is one level for every year of the region ground.
+    status: provisional
+    ruling:
+      date: 2026-11-06
+      by: Ben
+      words: null
+      source: claude/Hub_Region_Checklist.md:283-284; docs/sanborn/Relief_Maps_Log.md 10i.12
+    decision: null
+    rank: null
+    params:
+    - literal.ground.river_level_all_years
+    - settings.poolFt
+    applies_to:
+    - metro
+    - tri
+    - apex
+    flags: []
+    tests: []
+    history:
+    - 2026-11-06 ruling
+    notes: 'Conflict in values: the maps use 139.62 m (30 ft on the gauge), the Profiles pool is 455 ft = 138.68 m (normal
+      pool); the Profiles'' river checks, bridges and sunk box use the pool.'
+  - id: ground.dates_as_data
+    domain: ground
+    text: 'No date, layer, level or geometry lives in code: works, zones and layers carry per-item years in ledgers,
+      a missing year stays null, and a date change is one record edit.'
+    status: provisional
+    ruling:
+      date: 2026-11-06
+      by: Ben
+      words: null
+      source: claude/Hub_Region_Checklist.md:282,332-334
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    - tri
+    - apex
+    flags: []
+    tests:
+    - a test that a date change is one record edit (planned)
+    history:
+    - 2026-11-06 decision 9.6; the deck done by 1913, Lunken 1937-1941, the interstates about 1940-1965, kept-works
+      zones per zone
+    notes: Recorded as Ben's ruling without a verbatim quote. Today the Metro CANON table and ERA years are hard-coded
+      in profiles.html.
+  - id: ground.deck_regrades
+    domain: ground
+    text: The Deck's street re-grades are added to the surveyed ground and its open cuts and troughs cap it at the trough
+      floor; crossing streets take the larger re-grade.
+    status: provisional
+    ruling:
+      date: 2026-10-26
+      by: Ben
+      words: null
+      source: data/profile/README.md:56; profiles.html:648-656
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history:
+    - 2026-10-26 W 8th and Horne up to 5 m, Findlay +2.0, Bank -2.0
+    notes: ''
+  - id: river.sunk_box.roof_band
+    domain: river
+    text: 'Under a river the sunk box roof sits from the sink depth below the bed to the rise height above it: the upper
+      limit at every point under water, the lower only on the flat bottom; the solver holds the box inside the band
+      and a saved profile is only flagged.'
+    status: provisional
+    ruling:
+      date: 2026-10-30
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-30 (Ben's answer 8); profiles.html:997-1030,1923-1940
+    decision: null
+    rank: null
+    params:
+    - settings.riverSink
+    - settings.riverRise
+    - settings.riverFlatTol
+    - settings.riverRoof
+    - metro_structure.box.roof_underside
+    - settings_rer.envelope
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - River (high)
+    - River (low)
+    tests: []
+    history:
+    - 2026-10-09 rail at most bed - 7.5 m Metro / 9.1 m RER
+    - 2026-10-28 bed - 8.35 m (type A)
+    - '2026-10-30 the band: Metro rail bed - 10.0 to bed - 2.0, RER bed - 11.6 to bed - 3.6'
+    notes: Only points under water (bed below pool) count.
+  - id: river.sunk_box.made_up_bed
+    domain: river
+    text: Where the roof stands above the bed the bed is made up over it with a cap; on a navigable river the made-up
+      bed keeps the clear-water depth at normal pool, and the channel is marked over each box.
+    status: provisional
+    ruling:
+      date: 2026-10-30
+      by: Ben
+      words: null
+      source: profiles.html:1031-1036,1935-1936; data/profile/rer/canon.json rivers.Ohio River
+    decision: null
+    rank: null
+    params:
+    - settings.riverCap
+    - settings.riverClearWater
+    - canon.rivers.Ohio River.navigable
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - River (nav)
+    tests: []
+    history:
+    - '2026-10-30'
+    notes: riverCap is a drawing value.
+  - id: river.ohio.navigable_12ft
+    domain: river
+    text: 'The Ohio is navigable: twelve feet of clear water at normal pool over a raised sunk box roof.'
+    status: provisional
+    ruling:
+      date: 2026-10-30
+      by: Ben
+      words: null
+      source: data/profile/rer/canon.json rivers.Ohio River.src; data/profile/README.md:32
+    decision: null
+    rank: null
+    params:
+    - settings.riverClearWater
+    - canon.rivers.Ohio River.navigable
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - River (nav)
+    tests: []
+    history:
+    - '2026-10-30'
+    notes: ''
+  - id: river.little_miami.pool_minus_3
+    domain: river
+    text: 'The Little Miami has no survey: its bed is taken a set depth below the pool over a centreline width, and
+      it is crossed inside the RER C covered way.'
+    status: provisional
+    ruling:
+      date: 2026-10-09
+      by: Ben
+      words: null
+      source: docs/research/profile_design.md:56; data/profile/rer/canon.json rivers.Little Miami River; profiles.html:707-710
+    decision: null
+    rank: null
+    params:
+    - canon.rivers.Little Miami River.bed_below_pool_m
+    - canon.rivers.Little Miami River.width_m
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history:
+    - '2026-10-09'
+    notes: ''
+  - id: river.crossing.bridge_or_sunk
+    domain: river
+    text: Inside a river range a rail at or above pool plus the bridge threshold is a bridge (elevated), else the sunk
+      box; a crossing above the water that is not a canon bridge is one flag per river.
+    status: provisional
+    ruling:
+      date: 2026-10-30
+      by: Ben
+      words: null
+      source: profiles.html:1250,1374,1931-1939,2161
+    decision: null
+    rank: null
+    params:
+    - literal.bridge_above_pool
+    - settings.poolFt
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - River (bridge)
+    tests: []
+    history:
+    - '2026-10-30'
+    notes: Only the CVG Express and Line 1 (L&N) bridge the Ohio.
+  - id: river.bridge.navigation_clearance
+    domain: river
+    text: A canon bridge that is not fixed holds its rail at least the navigation clearance above normal pool plus the
+      deck, over the whole river range; the solver puts it no higher.
+    status: provisional
+    ruling:
+      date: 2026-10-16
+      by: Ben
+      words: null
+      source: profiles.html:946-948,993-996,1941-1944; CANON CVG_Express bridges
+    decision: null
+    rank: null
+    params:
+    - settings.poolFt
+    - settings.deckDepth
+    applies_to:
+    - metro
+    flags:
+    - River (clearance)
+    tests: []
+    history:
+    - 2026-10-16 CVG Express at 77.3 ft (the Brent Spence USCG figure) as a starting value
+    notes: ''
+  - id: river.ranges_from_outlines
+    domain: river
+    text: River ranges on every route are recomputed from the river outlines at each Deck rebuild (centreline rivers
+      keep theirs), so the water and the riverbank match the terrain.
+    status: ratified
+    ruling:
+      date: 2026-10-30
+      by: Ben
+      words: line 6 is messed up, the water and riverbank are not matched
+      source: claude/Station_3D_Log.md 2026-10-30 (follow-up)
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history:
+    - 2026-10-30 river_ranges in tools/rer_deck_routes.py; Line 6 Ohio and RER-5 Ohio bend points reset to the water
+      edges
+    notes: ''
+  - id: river.shore_not_crossing
+    domain: river
+    text: 'A river range along the RER embanked covered way beside the Ohio is the shore, not a crossing: no band, no
+      sunk box.'
+    status: provisional
+    ruling:
+      date: 2026-10-30
+      by: Ben
+      words: null
+      source: profiles.html:1014-1015; data/profile/README.md:32
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - tri
+    flags: []
+    tests: []
+    history:
+    - '2026-10-26'
+    notes: ''
+  - id: river.covered_way.flat_ok
+    domain: river
+    text: 'The RER-3 / C trunk covered way may stay flat: it drains beneath into the sewers, so no drainage flags there.'
+    status: provisional
+    ruling:
+      date: 2026-10-09
+      by: Ben
+      words: null
+      source: docs/research/profile_design.md:62; profiles.html:2106-2107
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - tri
+    flags: []
+    tests: []
+    history: []
+    notes: ''
+  - id: road.clearance.by_class
+    domain: road
+    text: Over a road the structure underside (the span's girder on the page, the deck in the port) keeps the road class's
+      clearance above the street surface.
+    status: ratified
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: major routes need clearances
+      source: claude/Station_3D_Log.md 2026-10-31 (roads); profiles.html:446-454,2270
+    decision: null
+    rank: null
+    params:
+    - settings.roadClearHighway
+    - settings.roadClearMajor
+    - settings.roadClearMinor
+    - settings.deckDepth
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Road (error)
+    tests: []
+    history:
+    - 2026-10-31 built
+    notes: The three clearance values are starting values; the page and the port measure the underside differently (girder
+      against deck).
+  - id: road.level_crossing
+    domain: road
+    text: 'At grade across a road is a level crossing: never on the Metro (a bridge, a trough or a box); on the RER
+      an error on a major road or highway and a warning on a minor street.'
+    status: provisional
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: null
+      source: profiles.html:2268; data/profile/README.md:40
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Road (level crossing)
+    tests: []
+    history:
+    - '2026-10-31'
+    notes: ''
+  - id: road.trough_under_road_bridge
+    domain: road
+    text: 'An open trough under a road needs room for the road''s bridge: the open clear height plus the bridge deck
+      from the rail to the street; else lower the rail (the trough becomes a box there) or raise the street.'
+    status: provisional
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: null
+      source: profiles.html:2269
+    decision: null
+    rank: null
+    params:
+    - metro_structure.open_clear_height
+    - literal.OPEN_CLEAR.rer
+    - literal.BED_DEPTH
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Road (error)
+    tests: []
+    history:
+    - '2026-10-31'
+    notes: ''
+  - id: road.piers_out_of_roads
+    domain: road
+    text: Viaduct spans keep their piers out of the roads; a pier left in one is a warning to set the spans by hand.
+    status: provisional
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: null
+      source: profiles.html:964,2272
+    decision: null
+    rank: null
+    params:
+    - literal.VIA_SPAN
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Road (pier, warning)
+    tests: []
+    history:
+    - '2026-10-31'
+    notes: ''
+  - id: road.station.street_known
+    domain: road
+    text: 'Every station says what it is under: its street (marked where built over the subway), the roads crossing
+      its platform, nothing, or no streets known outside the Deck region; Lower and Raise name the streets they pass
+      under.'
+    status: ratified
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: knowing when and where stations are under roads/streets is important
+      source: claude/Station_3D_Log.md 2026-10-31 (roads); profiles.html:457-461
+    decision: null
+    rank: null
+    params:
+    - metro_structure.subway_streets
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history:
+    - '2026-10-31'
+    notes: 'Only inside the Deck region: elsewhere nothing is known and nothing is checked.'
+  - id: road.subway_streets
+    domain: road
+    text: 'Central Parkway, Victory Parkway and MLK were laid out over the cut-and-cover box, so a box under them is
+      built with the street: its roof alone under the ground, no cover.'
+    status: provisional
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: null
+      source: data/profile/metro_structure.json:230-235; profiles.html:455-456,1369
+    decision: null
+    rank: null
+    params:
+    - metro_structure.subway_streets
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - 2026-10-31 marked
+    - 2026-11-01 unlimited fill allowed on them (C1)
+    - 2026-11-05 roof alone, no cover
+    notes: ''
+  - id: road.north_viaduct.street_girders
+    domain: road
+    text: On the north arch viaduct the rail runs through each street's minimum (the highest finished level across the
+      structure plus the bus clearance and the girder); a girder's rail-to-soffit is the span over ten plus a constant,
+      at most the cap, so wide openings get a pier in the street or are flagged.
+    status: provisional
+    ruling:
+      date: 2026-10-28
+      by: Ben
+      words: null
+      source: claude/Station_3D_Log.md 2026-10-28 (north arch viaduct; Girders)
+    decision: null
+    rank: null
+    params:
+    - literal.girder_soffit
+    applies_to:
+    - apex
+    - tri
+    flags:
+    - 'north_viaduct meta: no pier on the culvert'
+    tests: []
+    history:
+    - 2026-10-28 rail at street + 7.4 m; girder rule; Harrison, Garrard, W 8th get piers
+    notes: ''
+  - id: access.type.one_per_station
+    domain: access
+    text: Every Metro station gets one access type at opening from its opening year and phase, its rail depth against
+      the hall depth, its platform type and whether another line is one station with it at opening; Ben's choice on
+      the card wins and the later stages are proposed on the hub's access page.
+    status: ratified
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: mezzanines ... use this document
+      source: claude/Station_3D_Log.md 2026-10-31 (station access stage 1); profiles.html:462-534
+    decision: null
+    rank: null
+    params:
+    - metro_structure.hall.clear
+    - metro_structure.hall.roof
+    - metro_structure.hall.cover
+    - metro_structure.box.top
+    - metro_structure.island_box.roof_underside
+    - metro_structure.phases.1.deep_from
+    applies_to:
+    - metro
+    flags:
+    - Access
+    tests: []
+    history:
+    - 2026-10-31 stage 1 and 2
+    - 2026-11-02 elevated mezzanine type
+    notes: The document is Station_Access_and_Mezzanines_by_Phase (not in the repo); the ranked rules below are its
+      reading.
+  - id: access.type.elevated
+    domain: access
+    text: An elevated station's access is the mezzanine under it.
+    status: ratified
+    ruling:
+      date: 2026-11-02
+      by: Ben
+      words: there needs to be an elevated station type, that has a mezzanine/passthrough under it
+      source: profiles.html:510
+    decision: access_type
+    rank: 1
+    params:
+    - metro_structure.elevated_station.mezzanine_clear_m
+    applies_to:
+    - metro
+    flags:
+    - Access (error if not elevated or too low)
+    tests: []
+    history:
+    - '2026-11-02'
+    notes: ''
+  - id: access.type.surface
+    domain: access
+    text: 'An open station (at grade or in a trough) is a surface station: a station house, no underground hall.'
+    status: provisional
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: null
+      source: profiles.html:468,511
+    decision: access_type
+    rank: 2
+    params: []
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - '2026-10-31'
+    notes: ''
+  - id: access.type.mined_hall_or_deep
+    domain: access
+    text: 'A mined station has no box roof: a street-level hall with stairs down, or lifts (deep) from the deep-from
+      depth.'
+    status: provisional
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: null
+      source: profiles.html:465-466,512
+    decision: access_type
+    rank: 3
+    params:
+    - metro_structure.phases.1.deep_from
+    applies_to:
+    - metro
+    flags:
+    - Access (hall over a mined station, error)
+    tests: []
+    history:
+    - 2026-10-31 agreed change to the document
+    notes: ''
+  - id: access.type.shallower_than_d_hall
+    domain: access
+    text: 'A box station shallower than the hall depth is platform level: side platforms with fare control at the platform
+      ends, or with a crossunder where it is an island or an interchange at opening (a note that a hall needs the rail
+      deeper).'
+    status: provisional
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: null
+      source: profiles.html:513-514,519
+    decision: access_type
+    rank: 4
+    params:
+    - metro_structure.hall.clear
+    - metro_structure.hall.roof
+    - metro_structure.hall.cover
+    applies_to:
+    - metro
+    flags:
+    - 'Access (note: platform level with a crossunder)'
+    tests: []
+    history:
+    - '2026-10-31'
+    notes: D_HALL 8.55 m side, 9.15 m island.
+  - id: access.type.halls_by_phase
+    domain: access
+    text: A box station at or below the hall depth gets end ticket halls in Phase 1, a mezzanine in Phase 2 (full length
+      at an interchange), and a full-length mezzanine from Phase 3; a hall on a station too shallow for it is an error.
+    status: provisional
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: null
+      source: profiles.html:515-517,522
+    decision: access_type
+    rank: 5
+    params:
+    - metro_structure.hall.clear
+    - metro_structure.hall.roof
+    - metro_structure.hall.cover
+    applies_to:
+    - metro
+    flags:
+    - Access (hall too shallow, error)
+    tests: []
+    history:
+    - '2026-10-31'
+    notes: ''
+  - id: access.halls.drawn_extent
+    domain: access
+    text: 'Halls are drawn on the box roof: end halls over the first stretch at each end, a mezzanine over the middle
+      fraction, a full-length one over the platform; the crossunder under the floor at one end; a shaft for mined and
+      deep stations.'
+    status: provisional
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: null
+      source: profiles.html:527-532
+    decision: null
+    rank: null
+    params:
+    - literal.hall.end_halls_len
+    - literal.hall.mezzanine_fraction
+    applies_to:
+    - metro
+    flags: []
+    tests: []
+    history:
+    - '2026-10-31'
+    notes: Drawing values.
+  - id: access.year.fallback_to_line_phase
+    domain: access
+    text: A station with no opening year in the Chronology falls back to the line's phase for its access type, a warning,
+      drawn dashed.
+    status: provisional
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: null
+      source: profiles.html:506,520
+    decision: null
+    rank: null
+    params:
+    - metro_structure.line_phase
+    applies_to:
+    - metro
+    flags:
+    - Access (no year, warning)
+    tests: []
+    history:
+    - '2026-10-31'
+    notes: ''
+  - id: network.routes_from_deck
+    domain: network
+    text: Every RER route and Metro line is built from the Mill Creek Deck's pieces; a Deck save rebuilds every drifted
+      route on the Deck's own vertices and moves everything tied to them (ground, stations, rivers, crossings, locks,
+      links, saved profiles) by a chainage map.
+    status: ratified
+    ruling:
+      date: 2026-10-27
+      by: Ben
+      words: always pull from the correct path
+      source: data/profile/README.md:93; claude/Station_3D_Log.md 2026-10-27
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - drift over 0.5 m (3D issue)
+    tests:
+    - tests/test_core.py::test_rer_routes_follow_deck
+    history:
+    - 2026-10-27 RER routes tied
+    - '2026-10-27 Metro lines too (Ben: ''This matters for metro lines too, arguably moreso'')'
+    - 2026-11-02 cmap_geo maps unchanged track exactly
+    notes: CVG Express has no Deck pieces and is not tied; where the Deck draws nothing for over 20 m a profiles seg
+      keeps the line's own path.
+  - id: network.station_point_at_deck_platform
+    domain: network
+    text: A station's point is its Deck platform's centre, so the page draws the platform where the Deck does; the check
+      compares the platform as placed (point plus slide) with the Deck's.
+    status: ratified
+    ruling:
+      date: 2026-10-27
+      by: Ben
+      words: the stations position also matter
+      source: data/profile/README.md:99,103; claude/Station_3D_Log.md 2026-10-27 (Metro tied)
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - platform off its Deck platform (3D issue)
+    tests: []
+    history:
+    - 2026-10-27 slides reset at tied platforms
+    - 2026-11-01 the slide takes up the difference instead (centre kept)
+    notes: ''
+  - id: network.rer.junction_one_level
+    domain: network
+    text: 'An RER junction is one level for every route through it: a bend point at the junction (or the station level
+      where it is inside a platform); moving it on one route moves it on the others after a save.'
+    status: provisional
+    ruling:
+      date: 2026-10-27
+      by: Ben
+      words: null
+      source: profiles.html:330-386,425-444; data/profile/README.md:91
+    decision: null
+    rank: null
+    params:
+    - literal.JTOL
+    applies_to:
+    - tri
+    flags: []
+    tests: []
+    history:
+    - 2026-10-27 trunks and branches with links.json
+    notes: The scrutiny calls the propagation fragile (equality on levels, conflicts swallowed) and wants junctions
+      as equality constraints in one network solve.
+  - id: network.rer.shared_stretch_copied
+    domain: network
+    text: 'Track carried by two RER routes is a shared stretch: edited on either and copied to the other after a save
+      (bends, paints, station levels, platform grades with the sign, the same platform centre, modes); a conflicting
+      save elsewhere is reported and copied next time.'
+    status: provisional
+    ruling:
+      date: 2026-10-27
+      by: Ben
+      words: null
+      source: profiles.html:387-406,428
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - tri
+    flags:
+    - shared stretch levels differ (3D issue)
+    tests: []
+    history:
+    - '2026-10-27'
+    - '2026-11-01 A8: the platform centre is carried, not a signed slide'
+    notes: The far-west A/D track is not listed as shared in links.json (3D issue).
+  - id: network.canon.locks
+    domain: network
+    text: Inside a locked stretch the page and the port put back the locked bend points, station levels and painted
+      structure whatever a saved profile says; a lock fixes the level only, never the slide or a removal; the page will
+      not drag, nudge or type into a locked station or bend.
+    status: provisional
+    ruling:
+      date: 2026-10-27
+      by: Ben
+      words: null
+      source: data/profile/README.md:79-86; profiles.html:915-927; claude/Station_3D_Log.md 2026-11-01 (A8)
+    decision: null
+    rank: null
+    params:
+    - canon.lines.RER_A_trunk.fixed.Union Terminal
+    - canon.lines.RER_A_trunk.locked.0.st.Evans
+    applies_to:
+    - tri
+    - metro
+    flags:
+    - listed under Canon structure
+    tests: []
+    history:
+    - '2026-10-27 B/D viaduct heights locked (Ben: must match and be locked)'
+    - 2026-10-27 RER A rights of way locked from the Deck
+    - 2026-10-28 RER A lowered under the yard
+    - 2026-11-01 lock fixes the level only
+    - 2026-11-02 Line 1 L&N decks locked
+    notes: ''
+  - id: network.canon.fixed_levels
+    domain: network
+    text: A canon fixed station level (absolute, or an offset from the ground or a reference level) is held by the solver;
+      the Union Terminal TRI box is one level for A, B and D.
+    status: provisional
+    ruling:
+      date: 2026-10-26
+      by: Ben
+      words: null
+      source: data/profile/rer/canon.json lines.*.fixed; profiles.html:312-315,320,1762-1763
+    decision: null
+    rank: null
+    params:
+    - canon.lines.RER_A_trunk.fixed.Union Terminal
+    - canon.union_terminal_track_level_m
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Canon (warning)
+    tests: []
+    history:
+    - 2026-10-26 Union Terminal 135.7 m
+    - 2026-10-28 Norwood Central 185.5 m (roofs at street level)
+    notes: RER-5 keeps its old Union Terminal level (142.0 m) and Norwood Central at grade until Ben sets them.
+  - id: network.rer.station_modes
+    domain: network
+    text: An RER station is underground (trunk stations, at the station depth) or at grade on the old railroad with
+      bend points at the surface spacing following the smoothed ground; the canon fixes modes, the card switches one.
+    status: provisional
+    ruling:
+      date: 2026-10-26
+      by: Ben
+      words: null
+      source: data/profile/README.md:31; profiles.html:1038-1040,1760-1765; data/profile/rer/settings.json
+    decision: null
+    rank: null
+    params:
+    - settings_rer.defDepth
+    - settings_rer.surfStep
+    applies_to:
+    - tri
+    flags: []
+    tests: []
+    history: []
+    notes: ''
+  - id: network.level_solver.shallow_as_grade_allows
+    domain: network
+    text: An unset station is as shallow as the grade limit allows, at most the default depth under the ground, canon
+      levels held, solved both ways so steep descents go deeper instead of popping out; river tube bands and bridges
+      are extra nodes.
+    status: provisional
+    ruling:
+      date: 2026-10-09
+      by: Ben
+      words: null
+      source: profiles.html:1754-1790; data/profile/README.md:7
+    decision: null
+    rank: null
+    params:
+    - settings.defDepth
+    - settings.maxGrade
+    - settings.vcRadius
+    - settings.vcMinLen
+    - settings_rer.defDepth
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history:
+    - 2026-11-05 the default level taken at the slid platform centre, not the drawn point
+    notes: 'Scrutiny: a missing level becomes 0 m silently; nothing constrains the ground between stations; to be replaced
+      by a proposer.'
+  - id: network.solve_crossings
+    domain: network
+    text: Solve crossings re-solves the line so each crossing keeps its separation, under the other line where the plain
+      solution is lower and over it where higher, adding crossings one at a time and keeping only those that fit within
+      the grade limit, the canon levels and the river bands.
+    status: provisional
+    ruling:
+      date: 2026-10-09
+      by: Ben
+      words: null
+      source: profiles.html:3700-3720; docs/research/profile_design.md:21
+    decision: null
+    rank: null
+    params:
+    - settings.maxGrade
+    applies_to:
+    - metro
+    - tri
+    flags: []
+    tests: []
+    history: []
+    notes: Greedy and order-dependent (scrutiny); to become constraints in the proposer.
+  - id: network.yard.rer_a_under_yard
+    domain: network
+    text: RER A runs at least seven metres under the yard floor from Evans to the Union Terminal box, with a level platform
+      at Evans.
+    status: provisional
+    ruling:
+      date: 2026-10-27
+      by: Ben
+      words: null
+      source: claude/Code_Handoff_Yards_and_Metro_2026-10-28.md:50-54; claude/Station_3D_Log.md 2026-10-28 (step 2)
+    decision: null
+    rank: null
+    params:
+    - canon.lines.RER_A_trunk.locked.0.st.Evans
+    - settings_rer.envelope
+    applies_to:
+    - tri
+    flags:
+    - 'roadmap r16: box roof only about 0.4 m under the yard floor'
+    tests: []
+    history:
+    - 2026-10-27 Ben chose Lower RER A (139.0 m at Evans, was 147.5)
+    notes: 'Conflict noted at the time: the handoff said the Profiles had Evans at 154.8 m, the repo had 147.5 m (locked).'
+  - id: network.yard.overlap_flags
+    domain: network
+    text: The yard may not cross the Mill Creek culvert nor extend west of the creek; its overlaps with the RER E box
+      and the Mill Creek station box, the lines with no levels under the deck, the unset north connection and the unassigned
+      yard roles are flags to report, not resolved.
+    status: unratified
+    ruling:
+      date: 2026-10-28
+      by: Claude
+      words: null
+      source: claude/Code_Handoff_Yards_and_Metro_2026-10-28.md:88-93; hub/seed/roadmap/r17.json
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - tri
+    - apex
+    flags:
+    - Yard flags (roadmap r17)
+    tests: []
+    history:
+    - 2026-10-28 draft 6 brought in, yards left as drawn
+    notes: The yard extent and track rules (4.5 m spacing, No. 8 turnouts, 200 m radii, 1.5% ramp) are Ben's rulings
+      in the handoff; the overlaps are open.
+  - id: network.drawing.corner_checks
+    domain: network
+    text: 'The drawn plan is checked for unfinished or wrong corners: a single-angle corner is a warning, a join kink
+      beside a short segment and doubling back are errors.'
+    status: provisional
+    ruling:
+      date: 2026-10-09
+      by: Ben
+      words: null
+      source: docs/research/profile_design.md:60; profiles.html:2040-2070
+    decision: null
+    rank: null
+    params:
+    - literal.DRAW.single
+    - literal.DRAW.kink
+    - literal.DRAW.back
+    applies_to:
+    - metro
+    flags:
+    - Drawing
+    tests: []
+    history: []
+    notes: Radii today come from 3-point circles on drawn corners; a horizontal alignment is planned (scrutiny).
+  - id: network.records.change_only_through_ben
+    domain: network
+    text: 'A saved record never changes without Ben: saves carry a version and a mismatch is refused; the tie writes
+      only against the version it started from; a profile changed on both sides in a seed merge is kept whole as Ben''s;
+      saved paints and slides are never rewritten by a rule.'
+    status: provisional
+    ruling:
+      date: 2026-11-01
+      by: Ben
+      words: the deck tie keeps undoing my changes ... find a better way
+      source: claude/Station_3D_Log.md 2026-11-01 (realism audit group 1); hub/README.md:30,39
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    - tri
+    - apex
+    flags:
+    - seed conflicts listed
+    tests:
+    - tests/test_hub.py::test_seed_merge_keeps_a_profile_whole
+    history:
+    - 2026-11-01 A1-A9 approved
+    notes: ''
+  - id: network.profile_set.crossings_apart
+    domain: network
+    text: A line marked set (its weaving done) counts in other lines' crossing checks; crossings with a line not set
+      are listed apart and get no markers.
+    status: provisional
+    ruling:
+      date: 2026-10-31
+      by: Ben
+      words: all of your warnings look exactly the same
+      source: claude/Station_3D_Log.md 2026-10-31 (issues list); profiles.html:2140-2141,2154
+    decision: null
+    rank: null
+    params: []
+    applies_to:
+    - metro
+    - tri
+    flags:
+    - Crossings with lines not set yet
+    tests: []
+    history:
+    - '2026-10-31'
+    notes: Ben's words are about the issue list's look; 'Profile set' was the fix.

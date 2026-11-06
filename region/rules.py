@@ -138,7 +138,7 @@ def report(reg: Registry) -> str:
     for name, rs in reg.decisions().items():
         lines.append("decision %s:" % name)
         for r in rs:
-            lines.append("  %2d %-40s %s" % (r.rank, r.id, r.status))
+            lines.append("  %2s %-40s %s" % (r.rank, r.id, r.status))
     return "\n".join(lines)
 
 
