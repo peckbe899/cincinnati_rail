@@ -18290,13 +18290,23 @@
    "sha256": "4f72243856fa0d9259d233e566fdef32e392e2be723d0fe5045f44bce6a7ef95"
   },
   {
+   "path": "tools/sanborn/arcs/fitarcs.js",
+   "workspace": "arcs/fitarcs.js",
+   "group": "not exported",
+   "zip": null,
+   "category": "script",
+   "in_git": true,
+   "source": "LOST: 14407 bytes (docs/sanborn/EXTRAS_03_README.md); the workspace's JS copy of fitarcs.py",
+   "missing": true
+  },
+  {
    "path": "tools/sanborn/arcs/fitarcs.py",
    "workspace": "arcs/fitarcs.py",
    "group": "not exported",
    "zip": null,
    "category": "script",
    "in_git": true,
-   "source": "MISSING: 14820 bytes, 15 Oct 06:00 in export/TREE.txt; imported by rer1023/apply.py and transit/build_transit.py",
+   "source": "LOST: 14820 bytes, 15 Oct 06:00 in export/TREE.txt; imported by rer1023/apply.py and transit/build_transit.py. The surviving fitter is the Deck page's FA.fit (tools/sanborn/arcs/fitarcs_deck_port.js, from extras_03)",
    "missing": true
   },
   {
@@ -18306,7 +18316,17 @@
    "zip": null,
    "category": "script",
    "in_git": true,
-   "source": "MISSING: 749 bytes, 10 Oct 18:09 in export/TREE.txt; imported by lph/solve_all.py",
+   "source": "LOST: 749 bytes, 10 Oct 18:09 in export/TREE.txt; imported by lph/solve_all.py",
+   "missing": true
+  },
+  {
+   "path": "data/sanborn/deck/xs_v1.json",
+   "workspace": "deck/xs_v1.json",
+   "group": "not exported",
+   "zip": null,
+   "category": "other",
+   "in_git": true,
+   "source": "LOST: the output of deck/xs.py (docs/sanborn/EXTRAS_03_README.md)",
    "missing": true
   },
   {
@@ -18319,6 +18339,26 @@
    "source": "Maps/Basin_Street_Map/sanborn1904_scripts.zip (names.py, 1743 bytes, 11 Oct 21:42: the size and time export/TREE.txt lists for the workspace copy); imported by 33 scripts (key, base, key2)",
    "size": 1743,
    "sha256": "6f49dd09784084ceb48a3ca45b90f4650bccb7cc796dcf30cdd30203c5cc43f0"
+  },
+  {
+   "path": "docs/sanborn/EXTRAS_03_README.md",
+   "workspace": "EXTRAS_03_README.md",
+   "group": "extras_03",
+   "zip": "extras_03.zip",
+   "category": "note",
+   "in_git": true,
+   "size": 1359,
+   "sha256": "a1cb289100b462f29d7780dbf792a64f9aeb05f50e1841a88b1880d102433727"
+  },
+  {
+   "path": "tools/sanborn/arcs/fitarcs_deck_port.js",
+   "workspace": "arcs/fitarcs_deck_port.js",
+   "group": "extras_03",
+   "zip": "extras_03.zip",
+   "category": "script",
+   "in_git": true,
+   "size": 15507,
+   "sha256": "eb1e70d9f536bae44688e7f67b5223b957b6f0d3729e79b6787537cfce9f3f41"
   }
  ],
  "inputs": [
