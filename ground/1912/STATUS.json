@@ -1,8 +1,8 @@
 {
- "notes": "registration: raw inputs listed: 119 rows in MANIFEST.csv (48 sheets, 2 transforms, 5 picks incl. OSM streets, 56 LiDAR 2 m tiles, 8 USGS 1914 sheets); paths in configs/ground_paths.json; registration started",
- "stage": "registration",
- "commit": "431e69f8ff2a8b205d8a4c1c8c5900a9f548179b",
- "updated": "2026-11-06T05:21:02+00:00",
+ "notes": "registration: raw inputs listed: 119 rows in MANIFEST.csv (48 sheets, 2 transforms, 5 picks incl. OSM streets, 56 LiDAR 2 m tiles, 8 USGS 1914 sheets); paths in configs/ground_paths.json; registration started\ncontours: registration done: 48 sheets, joint solve of one survey-wide smoothing TPS (lambda 0.05) on top of the I4 start model; 1709 street controls kept of 1774 (1502 OSM intersections located by corridor fit + 207 picks12), control rms 2.06 m (start model alone 4.0 m median, held-out 2.52 m); 75 shared edges, seam rms max 0.000 m (start model and correction both continuous across neatlines); 8 sheets without street controls (s001 s003 s006 s025 s031 s038 s041 s045) rely on the start model; contour extraction started",
+ "stage": "contours",
+ "commit": "2697c616f618abbbe49c0e49f9b66c6f15756fa2",
+ "updated": "2026-11-06T05:35:06+00:00",
  "done": false,
  "blocked_on": null
 }
