@@ -8,7 +8,7 @@
     "deck": 121.92,
     "station3d": 121.92
    },
-   "note": "Deck island platforms: 186 at 122 m, 11 at 121 m, 1 at 71 m",
+   "note": "Deck island platforms: 123 at 122 m, 4 at 121 m, 1 at 71 m",
    "agree": true
   },
   {
@@ -240,91 +240,68 @@
   }
  ],
  "tie_issues": [
-  "Line 1: 22 platforms off their Deck platform's centre (Gray +2 m, Winton Place +6 m, Kenard -23 m, Lafeyette +12 m, McAlpin +16 m, Burnet North +20 m); run tools/rer_deck_routes.py --apply",
-  "Line 2: 2 platforms off their Deck platform's centre (St Bernard +19 m, Bron Bacevich -150 m); run tools/rer_deck_routes.py --apply",
-  "Line 3: 1 platforms off their Deck platform's centre (Bruckman +178 m); run tools/rer_deck_routes.py --apply",
-  "Line 4: 2 platforms off their Deck platform's centre (Hoyes +168 m, Alliance Academy +168 m); run tools/rer_deck_routes.py --apply",
-  "Line 6: 3 platforms off their Deck platform's centre (North Avondale +176 m, Forest +177 m, Oak -296 m); run tools/rer_deck_routes.py --apply",
-  "Line 7: 3 platforms off their Deck platform's centre (Westbourne +82 m, Bank -146 m, Crosley West +62 m); run tools/rer_deck_routes.py --apply",
-  "Line 12: 7 platforms off their Deck platform's centre (Llewellyn +30 m, Jefferson +73 m, Burnet +18 m, Burwood +36 m, Edmonson -32 m, Maverick -62 m); run tools/rer_deck_routes.py --apply"
+  "Line 1: 15 platforms off their Deck platform's centre (Gray +2 m, Winton Place +6 m, Burnet North +20 m, Central Ave -88 m, Laurel Park +39 m, Lincoln Court +39 m); run tools/rer_deck_routes.py --apply",
+  "Line 2: 2 platforms off their Deck platform's centre (St Bernard -99 m, Bron Bacevich -150 m); run tools/rer_deck_routes.py --apply",
+  "Line 3: 2 platforms off their Deck platform's centre (St Bernard +32 m, Bruckman +235 m); run tools/rer_deck_routes.py --apply",
+  "Line 4: 2 platforms off their Deck platform's centre (Hoyes +215 m, Alliance Academy +216 m); run tools/rer_deck_routes.py --apply",
+  "Line 5: 1 platforms off their Deck platform's centre (Colerain -2 m); run tools/rer_deck_routes.py --apply",
+  "Line 6: 2 platforms off their Deck platform's centre (North Avondale +230 m, Forest +235 m); run tools/rer_deck_routes.py --apply",
+  "Line 7: 4 platforms off their Deck platform's centre (Westbourne +82 m, Bank -241 m, Crosley West +102 m, Krohn +1 m); run tools/rer_deck_routes.py --apply",
+  "Line 9: 1 platforms off their Deck platform's centre (UC Medical/Corryville -2 m); run tools/rer_deck_routes.py --apply",
+  "Line 12: 7 platforms off their Deck platform's centre (Llewellyn +30 m, Jefferson +118 m, Burnet +18 m, Burwood +36 m, Edmonson -32 m, Maverick -62 m); run tools/rer_deck_routes.py --apply"
  ],
  "checks": [
   {
-   "line": "Line 1",
-   "station": "Kenard",
-   "text": "side platforms on a bored stretch (shallow shield, A tunnel)"
+   "line": "Line 2",
+   "station": "Broerman",
+   "text": "side platforms where the rule gives island (box)"
+  },
+  {
+   "line": "Line 2",
+   "station": "St Bernard",
+   "text": "side platforms where the rule gives island (box)"
+  },
+  {
+   "line": "Line 3",
+   "station": "Central Ave",
+   "text": "side platforms where the rule gives island (box)"
   },
   {
    "line": "Line 5",
-   "station": "Courthouse",
-   "text": "side platforms on a bored stretch (shallow shield, A tunnel)"
+   "station": "Sassafras",
+   "text": "side platforms where the rule gives island (box)"
   },
   {
    "line": "Line 5",
+   "station": "Camp Washington",
+   "text": "side platforms where the rule gives island (box)"
+  },
+  {
+   "line": "Line 5",
+   "station": "Crosley East",
+   "text": "side platforms where the rule gives island (box)"
+  },
+  {
+   "line": "Line 5",
+   "station": "Wilstach",
+   "text": "side platforms where the rule gives island (box)"
+  },
+  {
+   "line": "Line 5",
+   "station": "Chinatown-Gest",
+   "text": "side platforms where the rule gives island (box)"
+  },
+  {
+   "line": "Line 5",
+   "station": "Lincoln Court",
+   "text": "side platforms where the rule gives island (box)"
+  },
+  {
+   "line": "Line 7",
    "station": "Eggleston",
-   "text": "side platforms on a bored stretch (shallow shield, A tunnel)"
-  },
-  {
-   "line": "Line 6",
-   "station": "Taft Theater",
-   "text": "side platforms on a bored stretch (deep tube, A tunnel)"
-  },
-  {
-   "line": "Line 8",
-   "station": "Ludlow",
-   "text": "side platforms on a bored stretch (deep tube, C tunnel)"
-  },
-  {
-   "line": "Line 8",
-   "station": "Highwater",
-   "text": "side platforms on a bored stretch (deep tube, C tunnel)"
-  },
-  {
-   "line": "Line 10",
-   "station": "Prospect",
-   "text": "side platforms on a bored stretch (deep tube, C tunnel)"
-  },
-  {
-   "line": "Line 10",
-   "station": "Division",
-   "text": "side platforms on a bored stretch (deep tube, C tunnel)"
-  },
-  {
-   "line": "Line 10",
-   "station": "Bonnie Leslie",
-   "text": "side platforms on a bored stretch (deep tube, C tunnel)"
-  },
-  {
-   "line": "Line 12",
-   "station": "Pleasant Ridge",
-   "text": "side platforms on a bored stretch (deep tube, C tunnel)"
-  },
-  {
-   "line": "Line 12",
-   "station": "Woodford",
-   "text": "side platforms on a bored stretch (deep tube, C tunnel)"
-  },
-  {
-   "line": "Line 12",
-   "station": "Kennedy",
-   "text": "side platforms on a bored stretch (deep tube, C tunnel)"
-  },
-  {
-   "line": "Line 12",
-   "station": "Plainfield",
-   "text": "side platforms on a bored stretch (deep tube, C tunnel)"
-  },
-  {
-   "line": "Line 14",
-   "station": "St Xavier",
-   "text": "side platforms on a bored stretch (deep tube, C tunnel)"
-  },
-  {
-   "line": "Line 14",
-   "station": "Norwood Central",
-   "text": "side platforms on a bored stretch (deep tube, C tunnel)"
+   "text": "side platforms where the rule gives island (box)"
   }
  ],
- "synced_at": "2026-11-04T15:17:31Z",
+ "synced_at": "2026-11-05T16:27:44Z",
  "note": "Profiles values are its settings (config/settings, config/settings_rer) over its built-in defaults; Deck values are its constants as its own code has them, and platform lengths measured from the platforms it draws; Station 3D values are sync.py constants."
 }
