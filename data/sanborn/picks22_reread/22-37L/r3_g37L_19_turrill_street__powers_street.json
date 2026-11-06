@@ -1,0 +1,72 @@
+{
+ "round": 3,
+ "job": "g37L_19",
+ "kind": "control",
+ "plate": "22-37L",
+ "crossing": "Turrill Street & Powers Street",
+ "reads": [
+  {
+   "job": "g37L_19",
+   "found": true,
+   "x": 6259,
+   "y": 312,
+   "kind": "T",
+   "printed": [
+    "Turrill St. (label cut at gutter: 'TURR...')",
+    "(unlabelled in region; taken as Powers Street)"
+   ],
+   "plate_edge": true,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Turrill west edge at x ~6225; its east half runs off the right edge (gutter) at 6272, so x assumes the ~67 px width seen on 37R. Turrill ends at the top E-W street (lots on the south side): T. Same top street as g37L_18, name not printed in region.",
+   "reader": "Cr1"
+  },
+  {
+   "job": "g37L_19",
+   "found": true,
+   "x": 6259,
+   "y": 325,
+   "kind": "T",
+   "printed": [
+    "Turrill",
+    "(unnamed in region; the E-W street north of block 21)"
+   ],
+   "plate_edge": true,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Turrill is printed with no suffix visible. Its west line is at x about 6226. The east line and half the street lie beyond the region's right edge at x 6272, so x is estimated from the street's width on 37R (about 67 px). Turrill ends at the E-W street north of block 21 (lot nos. ...33-31-1629), which forms a T. The name Powers is not printed in the region. In the 37L scan this area lies to the right of the gutter fold (about x 5810), so it shows the facing page.",
+   "reader": "Cr2"
+  }
+ ],
+ "two_reads_spread_px": 13.0,
+ "old_pick": {
+  "x": 6259.0,
+  "y": 319.0,
+  "E": 712371.1,
+  "N": 4337080.23
+ },
+ "osm_match": {
+  "E": 712374.52,
+  "N": 4337075.98,
+  "from_old_m": 5.45,
+  "from_new_m": 5.52
+ },
+ "osm_crossings_of_these_names": [
+  {
+   "E": 712374.5,
+   "N": 4337076.0,
+   "from_new_m": 5.5
+  }
+ ],
+ "control_index": 19,
+ "new_pick": {
+  "x": 6259.0,
+  "y": 318.5,
+  "E": 712371.11,
+  "N": 4337080.33,
+  "moved_px": 0.5,
+  "moved_m": 0.1
+ },
+ "classification": "confirmed",
+ "why": "new pick 0.1 m from the old; 5.5 m from its OSM crossing (old 5.5)"
+}

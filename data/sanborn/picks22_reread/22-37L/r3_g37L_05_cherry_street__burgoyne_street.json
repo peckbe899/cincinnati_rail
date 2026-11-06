@@ -1,0 +1,72 @@
+{
+ "round": 3,
+ "job": "g37L_05",
+ "kind": "control",
+ "plate": "22-37L",
+ "crossing": "Cherry Street & Burgoyne Street",
+ "reads": [
+  {
+   "job": "g37L_05",
+   "found": true,
+   "x": 5910,
+   "y": 640,
+   "kind": "T",
+   "printed": [
+    "Cherry St.",
+    "Burgoyne St."
+   ],
+   "plate_edge": false,
+   "confidence": "high",
+   "same_names_elsewhere": [],
+   "note": "Cherry Street (N-S, x ~5877-5945) ends at Burgoyne Street (E-W, y ~620-660, carries 12in sewer and 6in water pipe); Burgoyne continues west of Cherry to the railroad. Not at gutter (gutter ~330 px east).",
+   "reader": "Cr1"
+  },
+  {
+   "job": "g37L_05",
+   "found": true,
+   "x": 5910,
+   "y": 652,
+   "kind": "T",
+   "printed": [
+    "Cherry Street",
+    "Burgoyne Street"
+   ],
+   "plate_edge": false,
+   "confidence": "high",
+   "same_names_elsewhere": [],
+   "note": "Cherry (block 20 east edge at x about 5880, block 21 west edge at about 5942) ends at Burgoyne Street (north line about y 632, south line about y 677 at Cherry). South of Burgoyne is the block with lots 101/272/271, so this is a T. The same crossing as 37R at about (326, 645); in the 37L scan it lies right of the gutter fold (about x 5810), on the facing page.",
+   "reader": "Cr2"
+  }
+ ],
+ "two_reads_spread_px": 12.0,
+ "old_pick": {
+  "x": 5908.5,
+  "y": 657.5,
+  "E": 712299.64,
+  "N": 4337017.68
+ },
+ "osm_match": {
+  "E": 712297.78,
+  "N": 4337019.48,
+  "from_old_m": 2.59,
+  "from_new_m": 2.31
+ },
+ "osm_crossings_of_these_names": [
+  {
+   "E": 712297.8,
+   "N": 4337019.5,
+   "from_new_m": 2.3
+  }
+ ],
+ "control_index": 5,
+ "new_pick": {
+  "x": 5910.0,
+  "y": 646.0,
+  "E": 712300.05,
+  "N": 4337019.89,
+  "moved_px": 11.6,
+  "moved_m": 2.25
+ },
+ "classification": "confirmed",
+ "why": "new pick 2.3 m from the old; 2.3 m from its OSM crossing (old 2.6)"
+}

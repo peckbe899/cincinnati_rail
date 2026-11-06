@@ -1,0 +1,61 @@
+{
+ "round": 3,
+ "job": "r3t07_34R",
+ "kind": "tie",
+ "plate": "22-34R",
+ "crossing": "Vermont Avenue & Stock Avenue",
+ "reads": [
+  {
+   "job": "r3t07_34R",
+   "found": true,
+   "x": 5308,
+   "y": 3207,
+   "kind": "T",
+   "printed": [
+    "Vermont",
+    "Ave. (only 'AVE.' printed on the E-W street in region)"
+   ],
+   "plate_edge": false,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Vermont (x 5268-5348) ends at the E-W 'AVE.' (y 3158-3257) at the south end of the Vermont block, next to the Old Bed Miami & Erie Canal; the avenue's south line stops at x~5332 so it is effectively an L/T. Name 'Stock' not printed in region; identified as Stock Ave by matching 22-38 (Vermont runs Bates Alley -> Cutter's Ave -> Stock Ave). Lines at y~3200 and x~5292/5008 are the 6in water pipe. The E-W 'AVENUE' crossing Vermont at y~2590 is Cutter's Ave per 22-38, not Stock.",
+   "reader": "Dr1"
+  },
+  {
+   "job": "r3t07_34R",
+   "found": true,
+   "x": 5308,
+   "y": 3209,
+   "kind": "T",
+   "printed": [
+    "Vermont Avenue",
+    "Avenue (only 'AVE.' printed; Stock not printed in region)"
+   ],
+   "plate_edge": false,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Vermont Avenue (block lines x~5267/5348) ends southward at an E-W 60-ft avenue (north line y~3162 = bottom of lots 114/163, south line y~3256), printed only 'AVE.' at ~(4940,3215); 6in W. pipe lines at x~5297 and y~3200 ignored. Avenue's east end abuts the Old Bed Miami & Erie Canal. Identified as Stock Avenue by context (matches plate 22-38 geometry).",
+   "reader": "Dr2"
+  }
+ ],
+ "two_reads_spread_px": 2.0,
+ "old_pick": {
+  "x": 5310.0,
+  "y": 3209.0,
+  "E": 713180.2,
+  "N": 4335172.78
+ },
+ "osm_match": null,
+ "osm_crossings_of_these_names": [],
+ "tie": 7,
+ "new_pick": {
+  "x": 5308.0,
+  "y": 3208.0,
+  "E": 713179.83,
+  "N": 4335172.99,
+  "moved_px": 2.2,
+  "moved_m": 0.43
+ },
+ "classification": "confirmed",
+ "why": "new pick 0.4 m from the old"
+}

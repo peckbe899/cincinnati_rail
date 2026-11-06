@@ -1,0 +1,61 @@
+{
+ "round": 3,
+ "job": "r3t03_33",
+ "kind": "tie",
+ "plate": "22-33",
+ "crossing": "Marshall Avenue & Garrard Avenue",
+ "reads": [
+  {
+   "job": "r3t03_33",
+   "found": true,
+   "x": 10538,
+   "y": 1777,
+   "kind": "cross",
+   "printed": [
+    "Marshall Avenue",
+    "Avenue (name not printed inside region; only 'AVENUE' on the N-S street)"
+   ],
+   "plate_edge": false,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "Marshall Ave (60 ft, y 1735-1820, 96in sewer and a track inside) meets the N-S 60 ft avenue (x 10490-10586). Both continue as short stubs past the crossing (north to y~1670, east to x~10634) where the drawn map area ends; crossing is right at the limit of the mapped area but not cut. Garrard name itself not visible in region; only street meeting Marshall here.",
+   "reader": "Dr1"
+  },
+  {
+   "job": "r3t03_33",
+   "found": true,
+   "x": 10538,
+   "y": 1777,
+   "kind": "cross",
+   "printed": [
+    "Marshall Avenue",
+    "Avenue (only 'AVENUE' printed; Garrard not printed in region)"
+   ],
+   "plate_edge": false,
+   "confidence": "medium",
+   "same_names_elsewhere": [],
+   "note": "N-S 60-ft avenue (edges x~10490/10586) crosses Marshall Avenue (60 ft, north line y~1734, south y~1820; car track at y~1757 and 96in sewer ignored). Name Garrard not printed in region; identified by context (matches 22-34R layout, ~700 px east of the railroad curve). Drawn map ends ~x 10635, about 50 px east of the crossing; crossing itself complete.",
+   "reader": "Dr2"
+  }
+ ],
+ "two_reads_spread_px": 0.0,
+ "old_pick": {
+  "x": 10536.0,
+  "y": 1776.0,
+  "E": 712640.02,
+  "N": 4334381.54
+ },
+ "osm_match": null,
+ "osm_crossings_of_these_names": [],
+ "tie": 3,
+ "new_pick": {
+  "x": 10538.0,
+  "y": 1777.0,
+  "E": 712640.41,
+  "N": 4334381.32,
+  "moved_px": 2.2,
+  "moved_m": 0.45
+ },
+ "classification": "confirmed",
+ "why": "new pick 0.5 m from the old"
+}

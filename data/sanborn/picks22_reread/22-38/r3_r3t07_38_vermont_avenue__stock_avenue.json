@@ -1,0 +1,61 @@
+{
+ "round": 3,
+ "job": "r3t07_38",
+ "kind": "tie",
+ "plate": "22-38",
+ "crossing": "Vermont Avenue & Stock Avenue",
+ "reads": [
+  {
+   "job": "r3t07_38",
+   "found": true,
+   "x": 576,
+   "y": 6385,
+   "kind": "T",
+   "printed": [
+    "Vermont Ave.",
+    "Stock Ave."
+   ],
+   "plate_edge": true,
+   "confidence": "high",
+   "same_names_elsewhere": [],
+   "note": "Vermont (x 537-614, 50 ft) ends at Stock Ave (y 6340-6430, 60 ft). The 6in W.P. line at x~565 turning west at y~6393 is a pipe, not an edge. The east side of the crossing is cut diagonally by the canal bed / edge of mapped area (diagonal from 614,6295 to 548,6430); centre point lies at that edge.",
+   "reader": "Dr1"
+  },
+  {
+   "job": "r3t07_38",
+   "found": true,
+   "x": 575,
+   "y": 6386,
+   "kind": "T",
+   "printed": [
+    "Vermont Avenue",
+    "Stock Avenue"
+   ],
+   "plate_edge": false,
+   "confidence": "high",
+   "same_names_elsewhere": [],
+   "note": "Vermont Avenue (edges x~537/614) ends southward at Stock Avenue (60 ft, edges y~6341/6430), which runs west to the end of the drawn area (~x 320). The 6in W.P. lines inside both streets (x~563, y~6392) ignored. Old canal bed diagonal cuts the SE corner of the crossing; the drawn map ends just south/east of the crossing (map-shape edge, not the scan edge).",
+   "reader": "Dr2"
+  }
+ ],
+ "two_reads_spread_px": 1.4,
+ "old_pick": {
+  "x": 573.0,
+  "y": 6367.0,
+  "E": 713180.26,
+  "N": 4335194.62
+ },
+ "osm_match": null,
+ "osm_crossings_of_these_names": [],
+ "tie": 7,
+ "new_pick": {
+  "x": 575.5,
+  "y": 6385.5,
+  "E": 713180.57,
+  "N": 4335190.79,
+  "moved_px": 18.7,
+  "moved_m": 3.85
+ },
+ "classification": "confirmed",
+ "why": "new pick 3.8 m from the old"
+}

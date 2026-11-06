@@ -64,6 +64,37 @@ Two independent reads each (`reads/P1r1.json`, `P1r2.json`; regions by `method/p
 
 Counts after round 2: (a) 1, (b) 4, (c) 9, unresolved 1 (tie 11, Wehrman & Gilbert).
 
+## Round 3: the controls near the 37L/37R gutter, and the 33/34R and 34R/38 ties (Ben, 6 November)
+
+Every OSM-matched control within 600 px of the gutter on either half (37L x >= 5672, its right edge being 6272; 37R x <= 600), and the crossings behind the 33/34R tie (Marshall & Garrard) and the two 34R/38 ties (Vermont & Stock, Vermont & Bates Alley), on both plates. Each was read twice independently (`reads/Cr1.json`, `Cr2.json`, `Dr1.json`, `Dr2.json`; regions by `method/prep3.py`, collation by `method/collect3.py`). The records are under `data/sanborn/picks22_reread/<plate>/r3_*.json`, each with the old pick, both reads, the new pick and the OSM crossing; the table is `round3.json`.
+
+Classes:
+- confirmed: the new pick is within 5 m of the old one;
+- moved: the new pick stands and the old one was more than 5 m off;
+- wrong match: another OSM crossing of the same names fits the new pick better.
+
+| Plate | Crossing | Kind | Moved m | Two reads apart px | OSM from old m | OSM from new m | Class |
+|---|---|---|---|---|---|---|---|
+| 22-37L | Cherry Street & Burgoyne Street | control | 2.25 | 12.0 | 2.59 | 2.31 | confirmed |
+| 22-37L | Cherry Street & Powers Street | control | 0.83 | 1.4 | 1.74 | 0.92 | confirmed |
+| 22-37L | Turrill Street & Powers Street | control | 0.1 | 13.0 | 5.45 | 5.52 | confirmed |
+| 22-37R | Cherry Street & Powers Street | control | 1.1 | 5.4 | 0.82 | 0.94 | confirmed |
+| 22-37R | Cherry Street & Burgoyne Street | control | 2.61 | 11.2 | 1.74 | 1.76 | confirmed |
+| 22-33 | Marshall Avenue & Garrard Avenue | tie crossing | 0.45 | 0.0 | - | - | confirmed |
+| 22-34R | Marshall Avenue & Garrard Avenue | tie crossing | 0.0 | 0.0 | - | - | confirmed |
+| 22-34R | Vermont Avenue & Stock Avenue | tie crossing | 0.43 | 2.0 | - | - | confirmed |
+| 22-38 | Vermont Avenue & Stock Avenue | tie crossing | 3.85 | 1.4 | - | - | confirmed |
+| 22-34R | Vermont Avenue & Bates Alley | tie crossing | 0.34 | 1.0 | - | - | confirmed |
+| 22-38 | Vermont Avenue & Bates Alley | tie crossing | 0.56 | 1.0 | - | - | confirmed |
+
+All 11 are confirmed: none moved more than 3.8 m, and none is a wrong match.
+
+What it shows about the gutter:
+- **Controls near the gutter:** only 3 on 37L and 2 on 37R, all at the very top of the page (y 330-660). They are the same crossings seen from both halves: Cherry & Powers and Cherry & Burgoyne on both, plus Turrill & Powers on 37L. Both halves put them within about 1-2 m of OSM (Turrill & Powers 5.5 m), so at the top the halves agree.
+- **The rest of the gutter:** from y about 700 to the foot of the page (about 7,800 px) there is no control near the gutter on either half. Colerain & Powers and Colerain & Burgoyne were dropped from both fits as moved streets. That is where the halves disagree by about 25 m (Groub, Geringer, Ralston at y about 3,200-3,450).
+- **37L's controls are on the facing page:** the readers place 37L's gutter fold at about x 5810, and all three of its near-gutter controls lie right of it. 37L's own page has no control near its gutter at all.
+- **"Powers" is not printed** in these regions; the readers identify the street by elimination (the street along the north side of block 21).
+
 ## Seam report with the wrong matches dropped
 
 The rerun uses `tools/sanborn/seams.py` through `rerun.py`. After round 2: tie 1's pick on 22-67 is replaced by the targeted read, and ties 2, 4, 12 and 13 are dropped. Plates are on their own models. The full report is in `seams_detail.md`, `seams.csv`, `per_pair.csv` and `seams.json`. "Before" is `reports/2026-11-06_seams/`.
