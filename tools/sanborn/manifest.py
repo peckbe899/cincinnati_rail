@@ -195,7 +195,7 @@ def inputs():
 def build():
     m = dict(about=__doc__.strip().split('\n')[0], made_by='tools/sanborn/manifest.py build', config='configs/sanborn_paths.json',
              category_rules=CATEGORY, files=files(), inputs=inputs())
-    json.dump(m, open(OUT, 'w', encoding='utf8'), indent=1)
+    json.dump(m, open(OUT, 'w', encoding='utf8', newline='\n'), indent=1)
     return m
 
 
