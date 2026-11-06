@@ -21,10 +21,11 @@ The inverse grids (`model.npz`, `model38.npz`, 95 MB) are on disk under `data/sa
 
 ## Gaps in the export
 
-Three modules the scripts import were not exported (found by checking every script's imports against `export/TREE.txt`):
+Modules the scripts import that were not exported (found by checking every script's imports against `export/TREE.txt`):
 
 - `sbg/names.py` (street-name keys `key`, `base`, `key2`; imported by 33 scripts, among them `cuf/x1904.py`, `sbg/fit/add_ext.py`, the plate builds): added from `Maps/Basin_Street_Map/sanborn1904_scripts.zip`, whose copy has the size and time the workspace tree lists (1743 bytes, 11 October 21:42).
-- `arcs/fitarcs.py` (14820 bytes, 15 October; imported by `rer1023/apply.py` and `transit/build_transit.py`) and `deck/xs.py` (749 bytes, 10 October; imported by `lph/solve_all.py`): no copy on Ben's machine. They have to come from the Topography conversation's workspace if it still exists.
+- Lost for good (`EXTRAS_03_README.md`: the Topography workspace was reset, and no copy exists anywhere): `arcs/fitarcs.py` (14820 bytes, 15 October; imported by `rer1023/apply.py` and `transit/build_transit.py`), the workspace's `arcs/fitarcs.js` (14407 bytes), and `deck/xs.py` (749 bytes, 10 October; imported by `lph/solve_all.py`) with its output `deck/xs_v1.json`. Those three scripts cannot run as they are.
+- The surviving curve fitter is the Deck page's `FA.fit`: `tools/sanborn/arcs/fitarcs_deck_port.js` (from `extras_03.zip`, 6 November) is the page's block copied unchanged, and it is line for line the same as `hub/sites/deck/index.html` lines 412-579. The log (10ze.2, 10ze.6) says it follows `fitarcs.py`'s rules and gave identical results on all 39 lines. `FA.fit(points)` runs on its own in Node (`require('./tools/sanborn/arcs/fitarcs_deck_port.js').FA`): [E, N] points in, `{verts, k, curves}` out.
 
 `cvg/_gp_C.json` and `cvg/_gp_c.json` differ only in case, which Windows cannot hold side by side: the first is `cvg/_gp_C_upper.json` (no script names either).
 

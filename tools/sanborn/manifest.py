@@ -97,16 +97,38 @@ def files():
         else:
             e['missing'] = True
         out.append(e)
+    for ws, (rp, z, size, sha_) in sorted(LATER_ZIPS.items()):
+        p = REPO + '/' + rp
+        e = dict(path=rp, workspace=ws, group=z.split('.')[0], zip=z, category=category(ws), in_git=True)
+        if os.path.exists(p):
+            e.update(size=os.path.getsize(p), sha256=sha(p))
+            if e['sha256'] != sha_:
+                e['export_sha256'] = sha_
+        else:
+            e['missing'] = True
+        out.append(e)
     return out
 
 
 # Workspace files the scripts import that the export left out (found 6 November by the scripts' imports against
-# export/TREE.txt). A source starting "MISSING" has no copy on Ben's machine; ask the Topography conversation for it.
+# export/TREE.txt). A source starting "LOST" has no copy anywhere (the Topography workspace was reset; extras_03).
 NOT_EXPORTED = {
     'sbg/names.py': 'Maps/Basin_Street_Map/sanborn1904_scripts.zip (names.py, 1743 bytes, 11 Oct 21:42: the size and time '
                     'export/TREE.txt lists for the workspace copy); imported by 33 scripts (key, base, key2)',
-    'arcs/fitarcs.py': 'MISSING: 14820 bytes, 15 Oct 06:00 in export/TREE.txt; imported by rer1023/apply.py and transit/build_transit.py',
-    'deck/xs.py': 'MISSING: 749 bytes, 10 Oct 18:09 in export/TREE.txt; imported by lph/solve_all.py',
+    'arcs/fitarcs.py': 'LOST: 14820 bytes, 15 Oct 06:00 in export/TREE.txt; imported by rer1023/apply.py and transit/build_transit.py. '
+                       'The surviving fitter is the Deck page\'s FA.fit (tools/sanborn/arcs/fitarcs_deck_port.js, from extras_03)',
+    'arcs/fitarcs.js': 'LOST: 14407 bytes (docs/sanborn/EXTRAS_03_README.md); the workspace\'s JS copy of fitarcs.py',
+    'deck/xs.py': 'LOST: 749 bytes, 10 Oct 18:09 in export/TREE.txt; imported by lph/solve_all.py',
+    'deck/xs_v1.json': 'LOST: the output of deck/xs.py (docs/sanborn/EXTRAS_03_README.md)',
+}
+
+# Files from zips added to Maps/Topography_Export after its MANIFEST.csv (31 October): workspace path ->
+# (repo path, zip, size and sha256 in the zip)
+LATER_ZIPS = {
+    'arcs/fitarcs_deck_port.js': ('tools/sanborn/arcs/fitarcs_deck_port.js', 'extras_03.zip', 15507,
+                                  'eb1e70d9f536bae44688e7f67b5223b957b6f0d3729e79b6787537cfce9f3f41'),
+    'EXTRAS_03_README.md': ('docs/sanborn/EXTRAS_03_README.md', 'extras_03.zip', 1359,
+                            'a1cb289100b462f29d7780dbf792a64f9aeb05f50e1841a88b1880d102433727'),
 }
 
 
