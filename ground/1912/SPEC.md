@@ -5,6 +5,54 @@ Written 6 November 2026 for a Claude Code session on Ben's computer (reads the r
 the handshake. If something here cannot be met, the local session writes why in `STATUS.json` and stops; it does not
 improvise a different layout.
 
+## 0. Why this is being done, and what went wrong before
+
+Read this before the rest. The old 3D conversation lost weeks to exactly these faults; the local session is expected
+to do better by knowing them.
+
+**Why a true 1912 surface matters.** The Metro's early phases (1905 to the 1930s) are tunnelled and cut into the
+ground as it was then. The tunnel engine decides box or bore, cover and portals from the ground surface along each
+line, and the earthworks model composes every later year on top of the 1912 base. If the base is today's ground,
+every early-phase profile is wrong wherever the land has changed since 1912: fills, cuts, yards, quarries, the whole
+Mill Creek valley floor. Measured on 6 November: outside every recorded work, map 3 and the current "1912" surface
+differ by 0.94 m on average over 615 km², with 82 km² over 2 m and 20 km² over 5 m, and those are only the places
+the two surfaces happen to differ, not the real 1912 changes.
+
+**What the current file actually is.** `canon_1912_ground_dm.vrt` was made by the I4 method: the 1912 contours were
+vectorised and labelled, a true 1912 surface was solved per tile (`pilot_*_S1912`), and then `tile_mosaic.py` built
+the final surface from cleaned LiDAR everywhere, using the 1912 surface only inside the works zones, with the 1912
+contour texture added below about 30 m. A cross-correlation test on 6 November found zero shift and a correlation of
+1.00 between it and map 3: it is LiDAR at every scale that matters. The real 1912 surfaces that were solved per tile
+were not kept as the product.
+
+**The problems that caused it, each avoided by this spec.**
+
+1. *The product was a picture, not data.* Only the final raster survived; the contours, labels, per-tile surfaces
+   and registration residuals stayed in a cloud workspace and were mostly lost. Here the contours and the fit are
+   the product (sections 4.2, 4.3, 4.7) and the raster is derived from them.
+2. *A blend hid the gaps.* Where contours were sparse or the sheet was blank, LiDAR was filled in silently, so the
+   file looks complete and is wrong. Here nodata means nodata (4.4), and the confidence raster (4.5) says how much to
+   trust each cell.
+3. *No interface.* The 3D conversation produced files whose grids, units, nodata, extents and names differed from
+   one run to the next, and every consumer re-guessed them. Here every grid, unit, nodata, name and field is fixed
+   (sections 2 and 4) and the cloud session's reader is written to them (section 6).
+4. *Work that lived on one machine or in one chat.* Anything not in git was gone when the workspace was reclaimed.
+   Here nothing is done until it is pushed (section 7), raw inputs are listed with checksums (section 3), and the
+   rebuild runs from one command with paths in one file (section 5).
+5. *Edges solved per tile.* Tiles were blended with tent weights, so seams averaged two different registrations
+   instead of agreeing. Here the sheets are registered jointly with seam constraints and every seam residual is
+   reported (4.2, 4.7).
+6. *Targets unstated.* Nobody said what "good enough" was, so nothing failed. Here the targets are numbers (4.7)
+   and a miss is reported, not absorbed.
+7. *Scope creep into other layers.* The topography work edited the deck, the river beds and the works rasters along
+   the way, and the ledger could not say which file was which vintage. Here the local session touches only the paths
+   in section 8.
+
+**What "better than before" looks like at the end.** A surface that, where the land has not changed, matches LiDAR
+to under a metre, and where it has changed, shows the 1912 ground rather than today's; contours you can open in
+QGIS with their sheet and level; a report that says how good each sheet and each seam is; and a rebuild anyone can
+run again next year and get the same files.
+
 ## 1. What is being produced
 
 The **real 1912 ground**: the surface the 1912 City Topographic Survey drew, as a raster on the LiDAR lattice, with the
