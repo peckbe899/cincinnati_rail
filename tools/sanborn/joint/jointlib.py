@@ -4,6 +4,9 @@ new(px) = P + d(P), P = F(px), where F is the plate's own model as it was (cufp/
 cuf38/fwd38.pkl, or Ben's georeference for 22-35N) and d is the plate's world-space correction from the joint solve
 (affine, or affine plus quadratic), stored beside the old model as fwd_joint.pkl (cuf38/fwd38_joint.pkl,
 cuf/joint35N.pkl). The old files are never changed.
+
+A model may also carry a page curl (tools/sanborn/joint/curl.py; local3.py): then new(px) = Q + d(Q), Q = F(px + c(px)),
+c the curl's pixel displacement across the plate's gutter.
 """
 import os, pickle, sys
 
@@ -15,6 +18,7 @@ import _ws  # noqa: E402
 SP = _ws.DATA
 for _d in ('cuf', 'cufp', 'cuf38', 'sbg', 'lph'):
     sys.path.insert(0, _ws.CODE + _d)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 
 def base_path(pid):
@@ -86,7 +90,7 @@ def tps_kernel(P, centers, U):
 
 def corr(pid, P, tag='joint'):
     j = load(pid, tag); P = np.asarray(P, float)
-    if j.get('kind', '').startswith('tps') or j.get('kind') == 'affine':     # the local fit (tools/sanborn/joint/local.py)
+    if j.get('kind', '').startswith('tps') or j.get('kind') in ('affine', 'curl'):     # the local fits (local.py, local2.py, local3.py)
         B = basis(P, j['center'], j['scale'], 'affine')
         d = np.c_[B @ np.asarray(j['coefE']), B @ np.asarray(j['coefN'])]
         if j.get('centers'):
@@ -113,8 +117,19 @@ def base_for(pid, tag):
     return lambda q: _BO[(pid, tag)](np.asarray(q, float))
 
 
+def curl_disp(pid, q, tag):
+    """the model's page-curl pixel displacement at pixels q (zero if it has none)"""
+    c = load(pid, tag).get('curl')
+    q = np.asarray(q, float)
+    if not c:
+        return np.zeros_like(q)
+    import curl
+    return curl.disp(c['side'], c['a'], c['k'], q)
+
+
 def world_many(pid, q, tag='joint'):
-    P = base_for(pid, tag)(q); return P + corr(pid, P, tag)
+    q = np.asarray(q, float)
+    P = base_for(pid, tag)(q + curl_disp(pid, q, tag)); return P + corr(pid, P, tag)
 
 
 def world(pid, x, y, tag='joint'):
@@ -128,4 +143,9 @@ def inv(pid, E, N, it=8, tag='joint'):
     for _ in range(it):
         P = W - corr(pid, P, tag)
     px, py = base_inv(pid, P[:, 0].reshape(np.shape(E)), P[:, 1].reshape(np.shape(N)))
+    if load(pid, tag).get('curl'):           # px + c(px) = the old inverse's pixel: undo the curl (fixed point)
+        Q = np.c_[np.ravel(px), np.ravel(py)].astype(float); X = Q.copy()
+        for _ in range(it):
+            X = Q - curl_disp(pid, X, tag)
+        px, py = X[:, 0].reshape(np.shape(E)), X[:, 1].reshape(np.shape(N))
     return px, py
