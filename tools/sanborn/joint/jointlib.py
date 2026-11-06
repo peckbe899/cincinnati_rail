@@ -132,13 +132,35 @@ def curl_disp(pid, q, tag):
 
 def tps_px_many(j, q):
     """a 'tps_px' model: world = affine . [1, (x - center) / scale] + sum_j w_j phi(|x - c_j| / scale), phi = r2 log r"""
-    q = np.asarray(q, float); sc = j['scale_px']; c = np.asarray(j['center_px'], float)
+    x = np.asarray(q, float); sc = j['scale_px']; c = np.asarray(j['center_px'], float)
+    q = x
+    if j.get('curl'):                       # complete2.py: page curl under the spline (37L, 37R)
+        import curl
+        cu = j['curl']; q = x + curl.disp(cu['side'], cu['a'], cu['k'], x)
     B = np.c_[np.ones(len(q)), (q - c) / sc]
     Cc = np.asarray(j['centers_px'], float)
-    d = np.hypot(q[:, None, 0] - Cc[None, :, 0], q[:, None, 1] - Cc[None, :, 1]) / sc
-    with np.errstate(divide='ignore', invalid='ignore'):
-        K = np.where(d > 0, d * d * np.log(d), 0.0)
-    return B @ np.asarray(j['affine'], float) + K @ np.asarray(j['w'], float)
+    out = B @ np.asarray(j['affine'], float)
+    for i in range(0, len(q), 20000):
+        qq = q[i:i + 20000]
+        d = np.hypot(qq[:, None, 0] - Cc[None, :, 0], qq[:, None, 1] - Cc[None, :, 1]) / sc
+        with np.errstate(divide='ignore', invalid='ignore'):
+            K = np.where(d > 0, d * d * np.log(d), 0.0)
+        t = K @ np.asarray(j['w'], float)
+        if j.get('damp'):                   # complete2.py: thin-plate part damped outside the controls' hull
+            t = t * damp_w(np.asarray(j['damp']['hull_px'], float), x[i:i + 20000], j['damp']['width_px'])[:, None]
+        out[i:i + 20000] += t
+    return out
+
+
+def damp_w(H, Q, width):
+    """1 inside the convex polygon H, a cosine taper to 0 over width px outside it"""
+    a = H; b = np.roll(H, -1, 0); e = b - a
+    cross = e[None, :, 0] * (Q[:, None, 1] - a[None, :, 1]) - e[None, :, 1] * (Q[:, None, 0] - a[None, :, 0])
+    inside = np.all(cross >= 0, 1)
+    t = np.clip(((Q[:, None, 0] - a[None, :, 0]) * e[None, :, 0] + (Q[:, None, 1] - a[None, :, 1]) * e[None, :, 1]) / (e[:, 0] ** 2 + e[:, 1] ** 2)[None, :], 0, 1)
+    d = np.hypot(Q[:, None, 0] - (a[None, :, 0] + t * e[None, :, 0]), Q[:, None, 1] - (a[None, :, 1] + t * e[None, :, 1])).min(1)
+    d = np.where(inside, 0.0, d)
+    return np.where(d >= width, 0.0, 0.5 * (1 + np.cos(np.pi * np.clip(d / width, 0, 1))))
 
 
 def world_many(pid, q, tag='joint'):
