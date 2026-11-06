@@ -1,0 +1,61 @@
+{
+  "sheet": 195,
+  "intersections": [
+    {"a": "Dover Street", "b": "East McMillan Street", "x": 657, "y": 433, "kind": "T"},
+    {"a": "Fowler Street", "b": "East McMillan Street", "x": 1338, "y": 439, "kind": "T"},
+    {"a": "Essex Place", "b": "East McMillan Street", "x": 1430, "y": 440, "kind": "T"},
+    {"a": "Symmes Street", "b": "East McMillan Street", "x": 1820, "y": 443, "kind": "T"},
+    {"a": "Marquis Street", "b": "East McMillan Street", "x": 2754, "y": 451, "kind": "T"},
+    {"a": "Boone Street", "b": "East McMillan Street", "x": 3692, "y": 465, "kind": "T"},
+    {"a": "Dover Street", "b": "Wayne Street", "x": 656, "y": 1421, "kind": "T"},
+    {"a": "Fowler Street", "b": "Wayne Street", "x": 1335, "y": 1429, "kind": "cross"},
+    {"a": "Symmes Street", "b": "Wayne Street", "x": 1818, "y": 1435, "kind": "cross"},
+    {"a": "Marquis Street", "b": "Wayne Street", "x": 2747, "y": 1442, "kind": "cross"},
+    {"a": "Boone Street", "b": "Wayne Street", "x": 3679, "y": 1446, "kind": "cross"},
+    {"a": "Dover Street", "b": "Morgan Street", "x": 648, "y": 2371, "kind": "T"},
+    {"a": "Fowler Street", "b": "Morgan Street", "x": 1325, "y": 2378, "kind": "cross"},
+    {"a": "Symmes Street", "b": "Morgan Street", "x": 1812, "y": 2383, "kind": "cross"},
+    {"a": "Marquis Street", "b": "Morgan Street", "x": 2738, "y": 2391, "kind": "T"},
+    {"a": "Boone Street", "b": "Morgan Street", "x": 3672, "y": 2402, "kind": "T"},
+    {"a": "Fowler Street", "b": "Burbank Street", "x": 1322, "y": 3334, "kind": "cross"},
+    {"a": "Symmes Street", "b": "Burbank Street", "x": 1806, "y": 3339, "kind": "cross"},
+    {"a": "Lawrence Street", "b": "Burbank Street", "x": 2272, "y": 3340, "kind": "cross"},
+    {"a": "Marquis Street", "b": "Burbank Street", "x": 2731, "y": 3345, "kind": "cross"},
+    {"a": "Boone Street", "b": "Burbank Street", "x": 3667, "y": 3362, "kind": "cross"},
+    {"a": "Fowler Street", "b": "Wilkinson Street", "x": 1316, "y": 4295, "kind": "cross"},
+    {"a": "Symmes Street", "b": "Wilkinson Street", "x": 1801, "y": 4300, "kind": "cross"},
+    {"a": "Lawrence Street", "b": "Wilkinson Street", "x": 2267, "y": 4300, "kind": "cross"},
+    {"a": "Marquis Street", "b": "Wilkinson Street", "x": 2730, "y": 4303, "kind": "cross"},
+    {"a": "Boone Street", "b": "Wilkinson Street", "x": 3659, "y": 4308, "kind": "cross"}
+  ],
+  "widths": [
+    {"street": "East McMillan Street", "ft": 60},
+    {"street": "Dover Street", "ft": 30},
+    {"street": "Fowler Street", "ft": 30},
+    {"street": "Symmes Street", "ft": 50},
+    {"street": "Marquis Street", "ft": 50},
+    {"street": "Boone Street", "ft": 50},
+    {"street": "Wayne Street", "ft": 50},
+    {"street": "Morgan Street", "ft": 50},
+    {"street": "Burbank Street", "ft": 50},
+    {"street": "Wilkinson Street", "ft": 50},
+    {"street": "Lawrence Street", "ft": 20}
+  ],
+  "alleys": [
+    {"name": "", "x1": 657, "y1": 955, "x2": 1335, "y2": 957, "ft": 20},
+    {"name": "", "x1": 1335, "y1": 957, "x2": 1818, "y2": 964, "ft": 20},
+    {"name": "", "x1": 1818, "y1": 964, "x2": 2750, "y2": 975, "ft": 20},
+    {"name": "", "x1": 2750, "y1": 975, "x2": 3683, "y2": 981, "ft": 20},
+    {"name": "", "x1": 2282, "y1": 1437, "x2": 2278, "y2": 2386, "ft": 20},
+    {"name": "", "x1": 2278, "y1": 2386, "x2": 2272, "y2": 3340, "ft": null},
+    {"name": "", "x1": 3240, "y1": 1444, "x2": 3241, "y2": 3363, "ft": 34},
+    {"name": "The Tunnel", "x1": 3194, "y1": 3364, "x2": 3194, "y2": 4306, "ft": 20},
+    {"name": "", "x1": 884, "y1": 3330, "x2": 884, "y2": 4293, "ft": 20}
+  ],
+  "bends": [],
+  "ends": [
+    {"street": "Burbank Street", "x": 655, "y": 3328, "note": "west end at the angled west line of block 9 / large parcel; no street beyond (printed 50' written along the end)"},
+    {"street": "Wilkinson Street", "x": 400, "y": 4292, "note": "west end at an angled property line near the left edge (address 450); same end appears at the right edge of sheet 194"}
+  ],
+  "notes": "North is up; the scan is rotated very slightly (street lines drift about +0.008 px in y per px of x, and N-S streets drift left going down), so points were measured from the actual block lines with a pixel profile. Names printed without suffix (DOVER, FOWLER, SYMMES, MARQUIS, BOONE, WAYNE, MORGAN, BURBANK, WILKINSON, LAWRENCE) written with 'Street'. McMillan printed 'E. McMILLAN' (60'). Essex Place ('ESSEX PL.') enters McMillan from the north (Volume 4 side) between block corners x 1325 and 1535; Fowler meets McMillan from the south about 90 px further west, so they are two T points, not one crossing. A tiny corner label 'SYMMES' on the paste-over for 499 McMillan sits beside the Fowler street (x~1315); it is treated as a paste-over error - the street at x~1338 is Fowler (FOWLER printed at x 1390 y 1030 and large at Morgan; address 2434 faces it) and Symmes is the 50' street at x~1820. Fowler between Morgan and Burbank is printed 'IMPASSABLE' but is drawn as an open street. Dover (30') runs only from McMillan to Morgan; west of Dover there is blank margin, so Wayne and the 20' alley end at Dover (T); Morgan continues west off the sheet onto 194. The 20' alley between McMillan and Wayne runs the full width from Dover to Boone, crossing Fowler, Symmes and Marquis (recorded as alley segments); a paste strip in it between Fowler and Symmes reads '(KEMPER)', apparently an old name - no current name printed. Block 7 has a 20' 'ALLEY' (Wayne-Morgan) that crosses Morgan into an unlabelled strip through block 11 (Morgan-Burbank) and continues south of Burbank as LAWRENCE (20'), which continues south of Wilkinson onto 186; so Lawrence/Burbank is a cross with an unnamed alley as its north leg. Marquis (50') carries the C.L.&N. railroad tracks down its middle; Burbank crosses the railroad on a 'CONCRETE VIADUCT' (50') - the Burbank/Marquis point is the viaduct centre; east of Marquis Burbank is only 40' and its centre sits about 20 px further south (y~3364), widening again to 50' east of Boone. Morgan stops at Marquis on the west side (the Merker Bros. plumbers' supplies building and the block-8/12 alley run through where it would be) and reappears east of Boone heading onto 196, so both Morgan points are T. The block 8/12 alley (printed ALLEY, 34' narrowing to 30') runs Wayne to Burbank; south of Burbank a 20' passage printed 'THE TUNNEL' runs to Wilkinson, offset ~47 px west of the alley above. A 20' unnamed alley runs Burbank to Wilkinson at x~884 (west of block 13) and continues south of Wilkinson onto 185. The long diagonal line from Morgan (990,2462) down to (620,3410) is the west line of block 9 (a property line), not a street. Railroad tracks ignored."
+}

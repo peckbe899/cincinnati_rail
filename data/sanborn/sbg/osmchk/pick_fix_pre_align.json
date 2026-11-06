@@ -1,0 +1,235 @@
+{
+ "rename": [
+  {
+   "s": 220,
+   "x": 311,
+   "y": 6674,
+   "side": "a",
+   "to": "Elder Street (north roadway)"
+  },
+  {
+   "s": 220,
+   "x": 1743,
+   "y": 6680,
+   "side": "b",
+   "to": "Elder Street (north roadway)"
+  },
+  {
+   "s": 220,
+   "x": 3158,
+   "y": 6691,
+   "side": "a",
+   "to": "Elder Street (north roadway)"
+  },
+  {
+   "s": 220,
+   "x": 311,
+   "y": 7247,
+   "side": "a",
+   "to": "Elder Street (south roadway)"
+  },
+  {
+   "s": 220,
+   "x": 3158,
+   "y": 7262,
+   "side": "a",
+   "to": "Elder Street (south roadway)"
+  },
+  {
+   "s": 140,
+   "x": 2184,
+   "y": 383,
+   "side": "a",
+   "to": "Lockport Avenue (north leg)"
+  },
+  {
+   "s": 140,
+   "x": 2184,
+   "y": 830,
+   "side": "a",
+   "to": "Lockport Avenue (north leg)"
+  }
+ ],
+ "drop": [
+  {
+   "s": 210,
+   "x": 373,
+   "y": 1046
+  },
+  {
+   "s": 210,
+   "x": 1781,
+   "y": 1045
+  },
+  {
+   "s": 141,
+   "x": 653,
+   "y": 757,
+   "note": "approximate Lockport/Court from an outline (sheet 141 note); sheet 140 has it"
+  },
+  {
+   "s": 30,
+   "x": 1174,
+   "y": 1568,
+   "note": "market-space centre; replaced by the two roadways"
+  },
+  {
+   "s": 30,
+   "x": 2784,
+   "y": 1616,
+   "note": "replaced by the two roadways"
+  }
+ ],
+ "add": [
+  {
+   "s": 220,
+   "a": "Pleasant Street",
+   "b": "Elder Street (south roadway)",
+   "x": 1743,
+   "y": 7255,
+   "kind": "T",
+   "note": "Pleasant meets the south market lane (sheet 210 note); added in the OSM check"
+  },
+  {
+   "s": 30,
+   "a": "Plum Street",
+   "b": "West 6th Street (north roadway)",
+   "x": 1174,
+   "y": 1430,
+   "kind": "cross",
+   "note": "north roadway of the 6th St market space (42 ft)"
+  },
+  {
+   "s": 30,
+   "a": "Elm Street",
+   "b": "West 6th Street (north roadway)",
+   "x": 2784,
+   "y": 1430,
+   "kind": "T",
+   "note": "north roadway ends at Elm"
+  },
+  {
+   "s": 30,
+   "a": "Plum Street",
+   "b": "West 6th Street",
+   "x": 1174,
+   "y": 1704,
+   "kind": "cross",
+   "note": "south roadway of the market space, in line with 6th east of Elm"
+  },
+  {
+   "s": 30,
+   "a": "Elm Street",
+   "b": "West 6th Street",
+   "x": 2784,
+   "y": 1690,
+   "kind": "cross",
+   "note": "south roadway meets the 66 ft 6th east of Elm (centre 1664)"
+  }
+ ],
+ "nolink": [
+  {
+   "street": "Pleasant Street",
+   "note": "no Pleasant through the Findlay Market house between the two lanes",
+   "between": [
+    [
+     "pleasant",
+     "elder | north roadway"
+    ],
+    [
+     "pleasant",
+     "elder | south roadway"
+    ]
+   ]
+  },
+  {
+   "street": "Elder Street",
+   "note": "no Elder through the Findlay Market house on the market axis between Elm and Race",
+   "between": [
+    [
+     "elder",
+     "elm"
+    ],
+    [
+     "elder",
+     "race"
+    ]
+   ]
+  }
+ ],
+ "add_bends": [
+  {
+   "s": 140,
+   "street": "Lockport Avenue",
+   "x": 2278,
+   "y": 1475,
+   "note": "diagonal centreline point (sheet 140 note)"
+  },
+  {
+   "s": 140,
+   "street": "Lockport Avenue",
+   "x": 2482,
+   "y": 1692,
+   "note": "diagonal centreline point (sheet 140 note)"
+  }
+ ],
+ "move": [
+  {
+   "s": 30,
+   "x": 1626,
+   "y": 1568,
+   "to": [
+    1626,
+    1704
+   ],
+   "note": "Holcomb-line alley meets the south roadway"
+  },
+  {
+   "s": 30,
+   "x": 2319,
+   "y": 1568,
+   "to": [
+    2319,
+    1704
+   ],
+   "note": "Habig-line alley meets the south roadway"
+  },
+  {
+   "s": 31,
+   "x": 1313,
+   "y": 823,
+   "to": [
+    1313,
+    850
+   ],
+   "note": "Elm/6th: south roadway and the 66 ft street east of Elm, not the market centre"
+  }
+ ],
+ "widths": [
+  {
+   "s": 12,
+   "street": "West Pearl Street",
+   "ft": 40,
+   "note": "each roadway printed 40 ft; 143 ft is the whole space"
+  },
+  {
+   "s": 30,
+   "street": "West 6th Street",
+   "ft": 42,
+   "note": "roadways printed 42 ft either side of the market building"
+  },
+  {
+   "s": 30,
+   "street": "West 6th Street (north roadway)",
+   "ft": 42
+  }
+ ],
+ "parks": [
+  {
+   "name": "Public Play Grounds No. 1",
+   "E": 714796.6,
+   "N": 4330511.9,
+   "note": "middle of W Pearl, Plum to Elm (sheet 12)"
+  }
+ ]
+}

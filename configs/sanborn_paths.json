@@ -1,0 +1,28 @@
+{
+  "about": "Where the Sanborn pipeline finds its files on Ben's machine. Read by tools/sanborn/_ws.py. Relative paths are from the repo root; {name} is another entry of this file. 'mnt' maps each /mnt/user-data/... path the scripts and data files were written with (the Topography conversation's uploads and outputs) to Ben's local copy; the longest matching prefix wins.",
+  "workspace": "data/sanborn",
+  "tools": "tools/sanborn",
+  "deck_site": "hub/sites/deck",
+  "cincinnati_rail": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail",
+  "maps_sanborn": "{cincinnati_rail}/Maps/Sanborn",
+  "historic_topo": "{cincinnati_rail}/Historic_Topo",
+  "new_sanborn": "C:/Users/peckb/Documents/CS2/New Sanborn",
+  "mnt": {
+    "/mnt/user-data/uploads/Documents--_Personal--_Cincinnati Rail/": "{cincinnati_rail}/",
+    "/mnt/user-data/uploads/_Cincinnati Rail/": "{cincinnati_rail}/",
+    "/mnt/user-data/uploads/PNG/": "{new_sanborn}/PNG/",
+    "/mnt/user-data/uploads/GeoTIFF/": "{new_sanborn}/GeoTIFF/",
+    "/mnt/user-data/uploads/82A.png": "{new_sanborn}/PNG/82A.png",
+    "/mnt/user-data/uploads/83A.png": "{new_sanborn}/PNG/83A.png",
+    "/mnt/user-data/uploads/75.png": "{new_sanborn}/PNG/75.png",
+    "/mnt/user-data/uploads/76_1.png": "{new_sanborn}/PNG/76.png",
+    "/mnt/user-data/uploads/38.png": "{new_sanborn}/PNG/38.png",
+    "/mnt/user-data/uploads/35_northern_CUF.tif": "{new_sanborn}/GeoTIFF/35 northern CUF.tif",
+    "/mnt/user-data/uploads/38_south_clifton.tif": "{new_sanborn}/GeoTIFF/38 south clifton.tif",
+    "/mnt/user-data/outputs/M3full": "{cincinnati_rail}/Profile_Analyzer_Handoff",
+    "/mnt/user-data/outputs/M3": "{historic_topo}/Map3_Base",
+    "/mnt/user-data/outputs/1912_georef": "{historic_topo}/1912_City_Topographic_Survey/Georef_LiDAR",
+    "/mnt/user-data/outputs/Georef_1904": "{maps_sanborn}/Georef_1904",
+    "/mnt/user-data/outputs/Bathy": "{historic_topo}/Ohio_Bed"
+  }
+}
