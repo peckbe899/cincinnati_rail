@@ -127,6 +127,18 @@ bridges reproduce the page's facts table from records.
 - [ ] 2.1.11 `metro_profile.py` deleted; railsim configs generated from the model; the Profiles page retired for
   Metro (the old hub keeps TRI and the Deck).
 - [ ] 2.1.12 Line works as corridor earthworks from the solved section (phase-dated), in the volumes.
+- [ ] 2.1.13 **Arrays, not functions** (scrutiny 6 Nov, item 1): every engine quantity a typed array on the 2 m
+  grid computed once per edit; drawing, checks and exports index them.
+- [ ] 2.1.14 **Horizontal alignment as real geometry** (arcs, spirals, cant, design speed) with the plan strip editable
+  by R and spiral length; radii and speed limits derived. Options: (a) write it in the engine (standard formulas,
+  a few hundred lines); (b) fit from the polyline first (railsim's `fit_horizontal` ported) and let Ben edit the
+  fit; (c) LandXML import of alignments drawn in Civil 3D. Lean: (b) then (a): fit once, edit as geometry.
+- [ ] 2.1.15 **Profile proposer** beside the solver, never overriding Ben. Options: (a) QP with OSQP (smooth, fast,
+  needs convex cost); (b) LP/MIP with HiGHS (method choice as integers, slower); (c) dynamic programming over the
+  grid (simple, handles any cost, coarse); (d) the current Regrade and Solve-crossings heuristics kept as they are.
+  Lean: (a) for levels with (c) for method choice; (d) only as the fallback during slice 1.
+- [ ] 2.1.16 **Quantities** (cut, fill, box, bore, lining metres) from the ground model and the structure solve.
+- [ ] 2.1.17 **Flags as data** with rule ids; no UI text in any engine (scrutiny item 5).
 
 ### Slice 2: TRI, region-wide, offline
 
@@ -156,6 +168,13 @@ bridges reproduce the page's facts table from records.
 - [ ] 2.3.5 Issues pane and tables; Chronology and Access retired; the Deck keeps streets and plots only (decision
   record 9.5).
 
+- [ ] 2.3.6 **The Deck's editor logic ported unchanged into a Web Worker**, rendering on MapLibre, layout saved as
+  append-only operations with ids, base files frozen as base v1 with an alias table and a golden replay test
+  (scrutiny item 6). One platform id shared by the Deck, the Profiles and the model (item 7).
+- [ ] 2.3.7 Two old-hub bugs logged: `rer_deck_routes.py:665` `fn.split('/')` never matches on Windows (junction
+  points never update); `station_access_report.py` reports on stale repo profiles. Fix the first in the old hub if
+  Ben keeps using the tie before slice 3 retires it.
+
 ### Slice 4: the network loop
 
 - [ ] 2.4.1 Services, patterns, missions, headways by period; timetables generated.
@@ -177,6 +196,10 @@ bridges reproduce the page's facts table from records.
   and 6 minutes, the standard's rates), the digging index from earthwork volumes and structure costs.
 - [ ] 2.5.4 The station workspace: plan per level, section, 3D rebuilt from the model (three.js; Babylon is the
   alternative with no advantage here); the headless sync deleted; the old 3D page retired. Then CUT.
+
+- [ ] 2.5.5 **3D rebuilt from GLBs per section** built server-side once and cached; exaggeration in the vertex
+  shader (`y = g + (z − g)·k`); instanced piers, columns and equipment; stencil caps on cutaways; the camera, presets,
+  level filter and exports kept from the old page (scrutiny item 8).
 
 ### Slice 6: demand and statistics
 
@@ -257,6 +280,12 @@ from memory (cited before use); the length of the road (each slice usable; order
 
 Power-supply load flow and full ETCS braking curves in railsim; animated walkers in the station loop; money in the
 digging index; a 3D globe; re-deriving the Sanborn streets; keeping the Python copy of the rules.
+
+- 9.8 **No outside engine** (6 Nov, scrutiny). Context: Ben asked whether to find or code a new engine. Options:
+  Civil 3D / OpenRail (geometry only, not scriptable, no canon); OSRD (runs trains, no vertical design); port the
+  page; rewrite from the registry. Decision: port the geometry and checks, rewrite the solvers from the registry with
+  the 4 Nov code as reference, add what no tool had (horizontal alignment, proposer, quantities). See
+  `Code_Scrutiny_2026-11-06.md`.
 
 ## 9. Decision records (context, options, decision, consequences)
 
