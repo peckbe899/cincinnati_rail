@@ -204,6 +204,8 @@ The Sanborn migration (`tools/sanborn`, `data/sanborn`, `hub/sites/deck` tiles a
 
 ## 5. Decisions needed before slice 0
 
+Rulings so far (Ben, 6 November): the rebuild branch is `hub_region`; map 3 moved to `ground/2026/` and the 1912 ground, works, zones and ledger consolidated under `ground/`; the ledger's missing years stay `null` for now; the river bridges page (`design/river_bridges/`) and the C&O / intercity viaduct are part of the implementation (section 2.8 earthworks and the structure records).
+
 1. Branch. The handoff says `hub-region`; this session is bound to `claude/stoic-cray-fqf881`. Either name is fine;
    say which.
 2. The baseline rule in 2.2 (inputs lossless, outputs by signed-off diff) in place of the 1 cm reproduction.

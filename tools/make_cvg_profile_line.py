@@ -37,7 +37,7 @@ from make_rer_profile_lines import crossings, rivers_along  # noqa: E402
 
 PROFILE = ROOT / "data" / "profile"
 KMZ = ROOT / "data" / "kmz" / "CVG_Express.kmz"
-DEM = PROFILE / "dem" / "map3_profile_dem_dm.vrt"
+DEM = ROOT / "ground" / "2026" / "map3_profile_dem_dm.vrt"
 STEP = 2.0
 LID = "CVG_Express"
 TERMINALS = ["Terminal 3", "Terminal 2", "Terminal 4", "Terminal 1B", "Terminal 1A"]

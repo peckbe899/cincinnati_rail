@@ -34,7 +34,7 @@ from railsim.rollingstock import load_library  # noqa: E402
 
 PROFILE = ROOT / "data" / "profile"
 OUT = PROFILE / "rer"
-DEM = PROFILE / "dem" / "map3_profile_dem_dm.vrt"
+DEM = ROOT / "ground" / "2026" / "map3_profile_dem_dm.vrt"
 STEP = 2.0
 APPROACH_STATIONS = 2  # stations kept outside the trunk at each end (portal approaches)
 

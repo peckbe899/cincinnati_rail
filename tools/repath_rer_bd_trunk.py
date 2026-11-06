@@ -36,7 +36,7 @@ from rasterio.windows import Window
 ROOT = Path(__file__).resolve().parent.parent
 SITE, DECK = str(ROOT / "data" / "profile"), str(ROOT / "data" / "deck")
 ORIG = SITE
-VRT = str(ROOT / "data" / "profile" / "dem" / "map3_profile_dem_dm.vrt")
+VRT = str(ROOT / "ground" / "2026" / "map3_profile_dem_dm.vrt")
 TO_UTM = Transformer.from_crs(4326, 26916, always_xy=True)
 TO_LL = Transformer.from_crs(26916, 4326, always_xy=True)
 def jload(p): return json.load(open(p, encoding='utf8'))

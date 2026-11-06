@@ -220,7 +220,7 @@ Living list of what is done and what is left. Newest changes at the top of each 
   - Saved alignments: Lines 1, 2, 4, 5; the other lines use the solver default.
   - Run times: +0.0 to +0.2% vs the ground-fitted profile.
   - The saved Line 5 profile has one stretch at 73 per mille (over the 50 limit).
-  - RER configs read map 3 ground from `data/profile/dem/map3_profile_dem_dm.vrt` inside its extent, with LiDAR and terrain tiles outside.
+  - RER configs read map 3 ground from `ground/2026/map3_profile_dem_dm.vrt` inside its extent, with LiDAR and terrain tiles outside.
   - RER on map 3 ground vs LiDAR: all 51 configs run, scheduled times within -0.17 to +0.12% (mean 0.0%).
 
 - **Rail Profiles page** (`data/profile/profiles.html`, published as a claude.ai artifact): the Metro Profiles editor for both systems.

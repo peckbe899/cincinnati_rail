@@ -69,7 +69,7 @@ def end_stations(net, proj, st, tol=1500.0):
 LIDAR_PROJECTS = ["OH_Statewide_Phase3_2021_B21", "OH_Statewide_Phase1_2019_B19",
                   "IN_Indiana_Statewide_LiDAR_2017_B17", "KY_Statewide_2021_A21"]
 
-MAP3_DEM = "data/profile/dem/map3_profile_dem_dm.vrt"  # decimetres, EPSG:26916, 2 m
+MAP3_DEM = "ground/2026/map3_profile_dem_dm.vrt"  # decimetres, EPSG:26916, 2 m
 
 
 def metro_profile(folder: str) -> dict:

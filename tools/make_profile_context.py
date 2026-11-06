@@ -6,7 +6,7 @@ as ground runs. Writes data/profile/context/lines.json.
 
 Inputs: data/deck/*.json (a snapshot of the Deck's published files: tracks, structures, deck,
 norwood, context; refresh it from the Deck artifact when the Deck changes), data/profile lines and
-the map 3 ground (data/profile/dem). Needs shapely, pyproj and rasterio.
+the map 3 ground (ground/2026). Needs shapely, pyproj and rasterio.
 
 Rulings (Ben, 2026-10-26): blocks drawn and checked, not editable; lower-pair levels rebuilt from the
 Deck's dive figures until the Deck publishes a level per point; Norwood ORR, Transvalley and APEx
@@ -25,7 +25,7 @@ from rasterio.windows import Window
 ROOT = Path(__file__).resolve().parent.parent
 SITE, DECK = str(ROOT / "data" / "profile"), str(ROOT / "data" / "deck")
 ORIG = SITE
-VRT = str(ROOT / "data" / "profile" / "dem" / "map3_profile_dem_dm.vrt")
+VRT = str(ROOT / "ground" / "2026" / "map3_profile_dem_dm.vrt")
 TO_UTM = Transformer.from_crs(4326, 26916, always_xy=True)
 TO_LL = Transformer.from_crs(26916, 4326, always_xy=True)
 def jload(p): return json.load(open(p, encoding='utf8'))

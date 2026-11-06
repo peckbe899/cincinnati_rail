@@ -2,7 +2,7 @@
 
 The canon topography from the Cincinnati Topography chat (relief maps, October 2026), packed for the repo. It gives the code the ground as it stood in 1912, plus each canon work after 1912 as its own layer, so ground for any year can be composed.
 
-Packed 5 November 2026 from `_Cincinnati Rail\Historic_Topo` on Ben's computer, uploaded to the branch `claude/happy-planck-62a8x0` and consolidated here on 6 November (`ground/` is the home of every ground layer; the 2026 canon ground, map 3, still sits at `data/profile/dem/` until the tools that read it are moved). Three files (`1912/canon_1912_ground_dm_n.tif`, `_s.tif`, `previews/canon_1912_preview.jpg`) were re-saved between packing and upload and differ from the packed copies by about 6 KB each; they open and read correctly (grid, cover 73.9 %, levels 134.3-296.2 m) and `MANIFEST.csv` carries the in-repo checksums with the packed ones noted. Every file is under 25 MiB, so the folder can be uploaded through GitHub's web page. `MANIFEST.csv` lists every file with its size, SHA-256 and the original it came from.
+Packed 5 November 2026 from `_Cincinnati Rail\Historic_Topo` on Ben's computer, uploaded to the branch `claude/happy-planck-62a8x0` and consolidated here on 6 November (`ground/` is the home of every ground layer; the 2026 canon ground, map 3, moved here to `2026/` on 6 November with every reader repointed). Three files (`1912/canon_1912_ground_dm_n.tif`, `_s.tif`, `previews/canon_1912_preview.jpg`) were re-saved between packing and upload and differ from the packed copies by about 6 KB each; they open and read correctly (grid, cover 73.9 %, levels 134.3-296.2 m) and `MANIFEST.csv` carries the in-repo checksums with the packed ones noted. Every file is under 25 MiB, so the folder can be uploaded through GitHub's web page. `MANIFEST.csv` lists every file with its size, SHA-256 and the original it came from.
 
 ## What is here
 
@@ -24,7 +24,7 @@ Packed 5 November 2026 from `_Cincinnati Rail\Historic_Topo` on Ben's computer, 
 | `scripts/topo_bathy_scripts_01.zip` | The relief-map scripts from the Topography workspace, for provenance (they use that workspace's absolute paths) |
 | `sources/` | The original READMEs from each `Historic_Topo` folder |
 
-The 2026 canon ground (map 3) is already in the repo: `data/profile/dem/map3_profile_dem_dm.vrt`.
+The 2026 canon ground (map 3): `ground/2026/map3_profile_dem_dm.vrt` with its four tiles and the water surface `map3_profile_dem_dm_water.tif`.
 
 ## Grid and units
 

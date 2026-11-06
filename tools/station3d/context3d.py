@@ -563,7 +563,7 @@ def build(E0, N0, ut_islands=None, deck_live=None, drawn=None):
                 counts={'structures': sum(1 for i in items if i['type'] == 'struct'), 'rails': nlev, 'extended': nest, 'unlevelled': len(unlev),
                         'platforms': sum(1 for i in items if i['type'] == 'plat'), 'piers': npier, 'spans': nspan, 'blind_arches': nblind, 'masts': nmast},
                 sources=['Mill Creek Deck tracks.json, structures.json, deck.json, norwood.json (data/deck)', 'Rail Profiles context definitions (tools/make_profile_context.py)',
-                         'map 3 ground (data/profile/dem)'])
+                         'map 3 ground (ground/2026)'])
 
 
 def tiles(ctx, E0, N0, gx0, gy0):
