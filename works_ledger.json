@@ -1,0 +1,106 @@
+{
+  "about": "Canon ground works between 1912 and 2026, with the raster or zone layer that holds each one. Dates come from the cited source. null means no date has been ruled. Ben rules missing dates; the hub reads this file to compose ground for any year.",
+  "conflicts": [
+    "Embankment dates: the 7 October 2026 relief plan, citing tracker 2J, gives the Embankment 1925-1930 and keeps it off map 2. Ben ruled on 8 October 2026 (Relief_Maps_Log 10d) that the Embankment is 1903-1925 and that map 2 gets the Mill Creek mouth to Sawyer Point stretch. This ledger uses the 8 October ruling. The tracker needs updating."
+  ],
+  "works": [
+    {
+      "id": "ohio_embankment_1912",
+      "name": "Ohio Embankment, Mill Creek mouth to Sawyer Point (5.28 km), and the lower Mill Creek culvert (mouth to about Harrison Ave)",
+      "built_from": 1903,
+      "built_by": 1912,
+      "note": "Culvert 1903-1908. The Embankment stretch is complete by 1912 (map 2).",
+      "layer": "works/riverworks_1912_target_dm.tif + works/riverworks_1912_mode.tif",
+      "source": "Relief_Maps_Log 10d (Ben 8 Oct 2026), 10d.10; Canon_Riverworks README"
+    },
+    {
+      "id": "ohio_embankment_rest",
+      "name": "Ohio Embankment, Sedamsville to the Mill Creek mouth and Sawyer Point to Belterra (gap at the Little Miami)",
+      "built_from": 1912,
+      "built_by": 1925,
+      "note": "Phase dates within 1912-1925 not ruled. Shares the 2026 riverworks raster with the deck and Lunken.",
+      "layer": "works/riverworks_2026_target_dm.tif + works/riverworks_2026_mode.tif (shared)",
+      "source": "Relief_Maps_Log 10d (Ben 8 Oct 2026: Embankment 1903-1925)"
+    },
+    {
+      "id": "mill_creek_deck",
+      "name": "Mill Creek deck, 151.8 m at the Embankment rising to 160 m at Camp Washington north, yards cut 8.5 m below it",
+      "built_from": 1933,
+      "built_by": null,
+      "note": "After 1933 per the 7 October plan citing tracker 2J. Shares the 2026 riverworks raster.",
+      "layer": "works/riverworks_2026_target_dm.tif + works/riverworks_2026_mode.tif (shared)",
+      "source": "Relief_Maps_Plan (7 Oct 2026); Relief_Maps_Log 10d.4"
+    },
+    {
+      "id": "lunken_levees",
+      "name": "Lunken levee ring raised to 83 ft (155.8 m); new levee along the Little Miami east bank",
+      "built_from": 1937,
+      "built_by": null,
+      "note": "Raised after the 1937 flood.",
+      "layer": "works/riverworks_2026_target_dm.tif + works/riverworks_2026_mode.tif (shared)",
+      "source": "Canon_Riverworks README; Relief_Maps_Log 10d.7"
+    },
+    {
+      "id": "lunken_airfield_lift",
+      "name": "Lunken airfield lifted 1 m on Metro spoil (1.9 km2)",
+      "built_from": null,
+      "built_by": null,
+      "layer": "works/riverworks_2026_target_dm.tif + works/riverworks_2026_mode.tif (shared)",
+      "source": "Relief_Maps_Log 10d.9"
+    },
+    {
+      "id": "ky_terraces",
+      "name": "Kentucky terraces and walls: Covington (1912-1928), Newport (1915-1930), Bellevue-Dayton (1920s), Ludlow-Bromley riprap, Licking walls",
+      "built_from": 1912,
+      "built_by": 1930,
+      "note": "Per-town dates as named; Ludlow-Bromley and the Licking walls have no date. Map 3 only.",
+      "layer": "works/ky_terraces_target_dm.tif + works/ky_terraces_mode.tif",
+      "source": "Relief_Maps_Log 10d notes, 10f"
+    },
+    {
+      "id": "canon_interstates",
+      "name": "Canon interstates: I-75 Alignment, I-71 Reroute, I-275 Loop, Middle Ring (new-build stretches only)",
+      "built_from": null,
+      "built_by": null,
+      "note": "Dates belong to the tracker's highway sections (4A-4D). Delta is against today's LiDAR.",
+      "layer": "works/canon_interstates_delta_dm.tif",
+      "source": "Canon_Interstates README; Relief_Maps_Log 5"
+    },
+    {
+      "id": "ohio_bed_canon",
+      "name": "Canon Ohio and Licking bed (scour of the narrowed channel)",
+      "built_from": null,
+      "built_by": null,
+      "note": "Follows the Embankment narrowing; no date ruled. Real 2022 bed kept for comparison.",
+      "layer": "works/ohio_bed_canon_dm.tif (vs works/ohio_bed_real_2022_dm.tif)",
+      "source": "Relief_Maps_Log 10i"
+    },
+    {
+      "id": "real_works_removed",
+      "name": "Real works canon does not have (I-75 south of the I-74 junction, I-71 south of Rookwood, Fort Washington Way and the Ohio Brent Spence approach, 6th St Expressway, riverfront stadiums, unused I-275 stretches)",
+      "built_from": null,
+      "built_by": null,
+      "note": "Never built in canon. The delta takes them out of today's LiDAR.",
+      "layer": "works/real_works_removed_delta_dm.tif; zones/zones_real_works_canon_removes.geojson",
+      "source": "Map3_Base README; Relief_Maps_Log 10g"
+    },
+    {
+      "id": "real_works_kept",
+      "name": "Real post-1912 works canon keeps (every zone in zones_post1912_works not in the removed set)",
+      "built_from": null,
+      "built_by": null,
+      "note": "Real build years not recorded. Ben or a dating pass sets them.",
+      "layer": "zones/zones_post1912_works.geojson",
+      "source": "Relief_Maps_Plan, change zones v1 and v2"
+    },
+    {
+      "id": "metro_tri_line_works",
+      "name": "Metro and TRI line works: cuts, fills, portals, cut-and-cover reinstatement, the canal trench with Line 3 (built by 1908)",
+      "built_from": null,
+      "built_by": null,
+      "note": "Not a raster. Generated from the hub model's structures by phase, so it follows the design.",
+      "layer": null,
+      "source": "Relief_Maps_Plan (map 2 definition)"
+    }
+  ]
+}

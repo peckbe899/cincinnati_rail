@@ -1,113 +1,72 @@
-# Cincinnati Rail running-time simulators
+# Canon ground, 1912 onward (`data/ground`)
 
-Physics-based running times for the alternate-history Cincinnati Metro and RER, built from
-hand-drawn Google Earth KMZ alignments. Two programs share one core:
+The canon topography from the Cincinnati Topography chat (relief maps, October 2026), packed for the repo. It gives the code the ground as it stood in 1912, plus each canon work after 1912 as its own layer, so ground for any year can be composed.
 
-| Program | For | Dwell model | Driving model |
-|---|---|---|---|
-| `python -m railsim.metro` | Metro lines (CMCC fleet, MBTA-style heavy rail) | Door cycle: unlock/open, passenger flow per door, chime and close, dispatch | ATO or manual under cab signals, close to the limit; manual creeps into platforms |
-| `python -m railsim.train` (alias `railsim.commuter`) | Commuter / RER / intercity / HSR (EMU, DMU, push-pull, high-speed) | Platform type: level vs low platform with steps, crew-operated doors, conductor, brake release | Engineer: margin under the limit, planned braking with air-brake delay. `preset: intercity` / `preset: hsr` switch cant rules, ETCS, allowances and dwell |
+Packed 5 November 2026 from `_Cincinnati Rail\Historic_Topo` on Ben's computer. Every file is under 25 MiB, so the folder can be uploaded through GitHub's web page. `MANIFEST.csv` lists every file with its size, SHA-256 and the original it came from.
 
-## Quick start
+## What is here
 
-```bash
-pip install numpy scipy matplotlib pyyaml
-python -m railsim.metro configs/metro/mbta_orange.yaml          # calibration case
-python -m railsim.commuter configs/commuter/mbta_needham.yaml   # calibration case
-python -m railsim.metro configs/metro/cin_line_6.yaml --train CMCC_TYPE1948_10CAR
-python -m railsim.batch configs/commuter --pattern "cin_rer_1*"  # whole folders
-python -m railsim.metro configs/metro/cin_line_1.yaml --list-trains
-python -m railsim.metro configs/metro/cin_line_6.yaml --year 1950  # operating era (fleet, signals, GoA)
-python -m railsim.train configs/train/apex_transcontinental_limited.yaml --stops limited
-python tools/make_cincinnati_configs.py                          # regenerate Cincinnati configs
-python tools/make_apex_configs.py                                # regenerate APEx HSR configs
-python tools/sensitivity.py commuter configs/commuter/mbta_needham.yaml "padding.percent=10"
-```
+| Path | What it is |
+|---|---|
+| `1912/canon_1912_ground_dm.vrt` (+ `_n.tif`, `_s.tif`) | **Canon 1912 ground (map 2).** The real 1912 ground with the canon works finished by 1912: the Ohio Embankment from the Mill Creek mouth to Sawyer Point and the lower Mill Creek culvert. Open the `.vrt`; it joins the two tiles |
+| `1912/survey_cover_1912.tif` | 1 where the 1912 City Topographic Survey covers the ground (270 sq km). Outside it the "1912" ground is today's LiDAR with buildings and streets cleaned out, not 1912 |
+| `works/riverworks_1912_*` | The 1912 riverworks as target, mode and delta. Subtract the delta from the canon 1912 ground to get the real 1912 ground (map 1) |
+| `works/riverworks_2026_*` | The rest of the Ohio Embankment, the Mill Creek deck, the Lunken levees and the airfield lift, as one combined layer |
+| `works/ky_terraces_*` | Kentucky terraces and walls (Covington, Newport, Bellevue-Dayton, Ludlow-Bromley, Licking) |
+| `works/canon_interstates_*` | Canon interstate earthworks (delta against today's LiDAR), their 10 m profiles and their structures |
+| `works/ohio_bed_*` | The canon Ohio and Licking bed, and the real 2022 bed |
+| `works/real_works_removed_*` | Real works canon does not have, taken out of today's LiDAR |
+| `works/*params.json`, `works/embankment_wall_line.geojson` | Every number the riverworks used, and the wall line |
+| `zones/` | Change zones: every post-1912 work (`zones_post1912_works`), the real works canon removes, and the per-OSM-way classes |
+| `works_ledger.json` | Each work with its years, layer and source. Missing years are `null` |
+| `make_ground_1912.py` | Rebuilds the canon (and real) 1912 ground from the `Historic_Topo` originals |
+| `previews/` | An 8 m preview of the canon 1912 ground with the survey edge, and the map 2 relief render |
+| `scripts/topo_bathy_scripts_01.zip` | The relief-map scripts from the Topography workspace, for provenance (they use that workspace's absolute paths) |
+| `sources/` | The original READMEs from each `Historic_Topo` folder |
 
-Outputs go to `output/<config>/`:
+The 2026 canon ground (map 3) is already in the repo: `data/profile/dem/map3_profile_dem_dm.vrt`.
 
-- `summary.json`
-- station CSVs and speed traces
-- `profile_*.png`: speed with posted limits, elevation and grade
-- `alignment.kmz`: the reconstructed alignment coloured by posted speed, with curves, structures and stations. Open it in Google Earth to check the fitted geometry.
+## Grid and units
 
-## What the model does
+- **Rasters:**
+  - EPSG:26916 (NAD83 / UTM 16N), on the LiDAR 2 m lattice.
+  - int16 decimetres NAVD88 (divide by 10 for metres), nodata -32768. Mode rasters are uint8.
+  - The two bed rasters are 4 m.
+- **1912 ground extent:** E 697,252-730,654, N 4,321,822-4,349,224, which is 33.4 x 27.4 km, 16,701 x 13,701 cells. 676.5 of its 915.3 sq km hold values.
+- **Riverworks, Kentucky terrace and 1912 riverworks layers:** E 708,836-724,836, N 4,324,190-4,336,400.
+- **Interstate, real-works and bed layers:** the full LiDAR extent, E 695,000-735,000, N 4,315,000-4,350,000.
+- **Mode values:** 1 forces the target; 2 fills only and never cuts; 0 leaves the ground untouched.
+- **Vectors:**
+  - `zones/*.geojson` and `works/canon_interstates_structures.geojson` are lon/lat (EPSG:4326).
+  - `works/embankment_wall_line.geojson` is a bare LineString in EPSG:26916 metres.
 
-1. **Track network** (`network.py`).
-   - Segments may be drawn in any order and direction, and may branch or form T-junctions.
-   - Routes through stations never reverse at a junction.
-   - `service.route` picks a branch.
-2. **Horizontal alignment** (`horizontal.py`).
-   - The drawn polyline is rebuilt as tangents, spirals and circular arcs. Spirals follow AREMA (1.63·Eu·V, 62·Ea).
-   - A curve drawn as many short chords is fitted as one curve.
-   - A single corner gets the largest radius that stays within `corner_offset_tol_m` of the drawing.
-   - Track length is the true curve length.
-3. **Vertical profile** (`profile.py`).
-   - Ground elevation comes from the legacy CSV, from KMZ altitudes, from USGS 3DEP bare earth via the point service (`profile.usgs: true`), or from AWS Terrain Tiles (`terrain`, USGS 3DEP resampled to ~15 m at zoom 13, the default fallback). Downloads are cached in `data/elevation_cache/`.
-   - A designed track profile is fitted to it: grades are bounded, platforms are near level, grade changes are smoothed, and going below ground costs more than going above it.
-   - Each point is classified as at-grade, fill, viaduct, cut or tunnel.
-   - Metro lines with Metro Profiles data (`profile.analyzer`, `data/profile/`) skip this design and use the designed rail profile: station rail levels, bend points and structure types (elevated, at grade, cut and cover, shield, deep tube) from the Metro Profiles page logic (`railsim/metro_profile.py`).
-4. **Posted speeds** (`speed.py`).
-   - Curve speed is V = √(g·R·(Ea+Eu)/G), with G = 1500 mm.
-   - Short spirals are capped by the rate of change of cant deficiency.
-   - Limits are posted in 5 mph steps, or in cab-signal code steps.
-   - Short zones are consolidated.
-   - User restrictions and terminal approaches can be added.
-5. **Dynamics** (`dynamics.py`).
-   - Time-stepped force balance: tractive effort is limited by adhesion, maximum effort and power; resistance is the Davis equation (with a tunnel factor).
-   - Grade and Röckl curve resistance are averaged over the train's length. Rotating mass is included.
-   - Acceleration and braking changes are jerk-limited.
-   - Braking follows a planned braking curve with brake build-up delay. On steep downgrades it is limited by brake capability.
-   - A restriction holds until the rear of the train clears it.
-6. **Operations** (`operations.py`), drawn from how OSRD, Open Rails, OpenTrack and similar tools work (`docs/research/simulators.md`):
-   - `signalling.system`: `lineside` (OSRD offsets of 100 m anticipation and 50 m postponement), `cab` (code steps), `cbtc` (ATO margin and supervision lag), `etcs2` (indication/permitted lag) or `lzb` (supervision deceleration table).
-   - Driver profile: `power_fraction`, `brake_fraction`, `anticipation_m`, `postponement_m`, `brake_anticipation_s`, `coast_window_s`.
-   - `--rail dry|wet|leaf`: Curtius-Kniffler adhesion, which also limits braking.
-   - `supply.factor` and `supply.zones`: voltage sag reduces available power.
-   - `neutral_sections`: traction is cut over them.
-   - `restrictions` can be given as `turnout: 15` (AREMA number) or a DB turnout type.
-   - Rolling stock can supply a tabulated `te_curve_kmh_kn`, a speed-dependent `brake_curve_kmh_ms2` (HSR brake fade), `power_ramp_s` (diesel spool-up) and `aux_kw`.
-   - Platform stopping: by default the head stops at the far end of the platform (`stations.stop_position`).
-   - `driver.block_length_m`: fixed-block transit ATC. Codes change only at block boundaries, so braking starts at the block where the lower code arrives.
-   - `operating_zones`: a section with its own signalling and driver, e.g. CBTC + ATO on an RER trunk inside manually driven branches.
-   - Stub terminals: a route entry `{name: X, reverse: true}` makes the train run to the buffer and reverse (minimum dwell `stations.reversal_min_s`). A route whose first and last entries are the same station runs as a loop.
-   - `stations.pass_speed_*`: limit for trains passing a platform without stopping, lifted at stations with platform screen doors (`psd`).
-   - Station dwell: `dwell.door_control` (`crew`, or driver-only `button`/`auto`), and per-station platform screen doors (`dwell.psd_classes`, `dwell.psd_stations`, `stations.info.<name>.psd`).
-   - `track.finished` + `geometry.sketch_tolerance_m`: segments not listed as finished are sketches, and their curves get the largest radius within the tolerance of the drawing.
-   - `track.extra` (track from other folders or KMZ/KML files), `{via: [lat, lon]}` route waypoints, `profile.structures` (tunnel/viaduct by station range, coordinates or drawn segment name).
-7. **Operating eras** (`operations: data/operations/cincinnati_metro.yaml`, `--year`). The year picks the default train, signalling, Grade of Automation and door practice. Cincinnati Metro runs from gate cars (1905) through fixed-block ATO (1986) and CBTC (2006) to GoA3 (2020 onward). Sources are in `docs/research/eras.md`. RER configs carry `years:`; the pre-RER services (`cin_rer_*_pre_rer_*`, branches into Union Terminal or Times) come from the `history` block of `data/operations/cincinnati_rer.yaml`.
-8. **Timetable**.
-   - Padding: a percentage, a UIC-style minutes-per-100 km term, pathing time at single-track meets, and terminal recovery.
-   - Results are compared with a reference schedule.
-   - `padding.distribution: eco` spends the padding MARECO-style instead of uniformly: a cruising cap plus coasting before braking, and the energy saved is reported.
-   - `--monte-carlo N` adds driver and dwell variability and reports p50, p85 and p95 trip times.
-   - `--headway H` (or `service.headway_min`) with `turnback_min` gives the round-trip cycle time and the number of trains needed.
+## How the canon 1912 ground was made (checked 5 November 2026)
 
-## Rolling stock
+1. The I4 1912 ground (67 tiles over the 1912 survey; Relief_Maps_Log 10c), with its south extension laid over it (10e.1).
+2. The Kentucky 1912 ground wherever it has values: post-1912 works rebuilt from the 1914 USGS sheets (10e).
+3. The 1912 riverworks: mode 1 sets the target; mode 2 raises the ground to the target and never cuts (10d.10).
 
-`data/rollingstock/metro.yaml` and `data/rollingstock/commuter.yaml` define each train physically: mass, power, tractive effort, adhesion, Davis coefficients, braking rates, jerk and doors. Every value is tagged published [P], secondary [S] or estimate [E].
+Checks on the result:
 
-- **Metro**:
-  - MBTA Orange Line CRRC (VE-10-036 spec) and MBTA Blue Line.
-  - CMCC Types 1903, 1925, 1948, 1985 and 2005 (48 ft, 10 cars, hill-geared for 5% grades).
-  - Long-car 60 ft variants, which are barred from curves under 65 m.
-- **RER**:
-  - Brightliner, Silverliner and Swiftliner.
-  - A to F sets, each modelled on its real inspiration (Sydney V set, MI 84, Coradia Duplex, DB 423, KISS, FLIRT).
-  - Reference consists: MBTA HSP46 + bilevels, SC-44 + bilevels, Caltrain KISS.
-- **HSR**:
-  - Velaro D, ETR 1000, AGV and Avelia Liberty.
-  - APEx Gen 6: 11-car tilting set, 250 mph, physics from CR450-class research.
+- Canon minus real equals the stored 1912 riverworks delta on all 225,133 riverworks cells (0.90 sq km), with no difference anywhere else.
+- No Kentucky cell overlaps a riverworks cell.
+- The `.vrt` reads back identical to the composed array.
 
-## Calibration
+## Composing ground for a year (for the hub)
 
-| Case | Model | Published | Notes |
-|---|---|---|---|
-| MBTA Orange Line, Oak Grove to Forest Hills | 35.8 min (running + dwell) | 35 min (GTFS Fall 2025, weekday midday) | No tuning: researched car spec, line speeds, cab-signal codes on 300 m blocks, MIT dwell model (+2.3%) |
-| MBTA Needham Line, weekend | 34.1 min technical; 38.7 min with 10% + 2 min padding | 40 min | −3.3%. Branch speed limits are unpublished |
+- **Rule:** ground(Y) is the canon 1912 ground, except inside the footprint of each work built by Y. There it takes the 2026 canon ground (`data/profile/dem/map3_profile_dem_dm.vrt`), feathered over about 10-30 m at the footprint edge.
+- **Footprints:**
+  - mode greater than 0 for the target/mode layers;
+  - non-zero cells for the delta layers;
+  - the polygons for the zones.
+- **Years:** from `works_ledger.json`.
+- **Line works:** each line's own cuts, fills and portals come from the hub model by phase, not from these rasters.
 
-See `docs/CALIBRATION.md` for details, `docs/RESEARCH.md` for sources, and `docs/PROGRESS.md` for done and to-do items.
+## Known gaps
 
-## Config reference
-
-See the annotated examples in `configs/metro/mbta_orange.yaml` and `configs/commuter/mbta_needham.yaml`. Each program's defaults are in `DEFAULTS` at the top of `railsim/metro.py` and `railsim/commuter.py`. A line config only overrides what differs.
+- **Embankment dates:** the 7 October plan, citing tracker 2J, says 1925-1930. Ben ruled on 8 October for 1903-1925, with the Mill Creek mouth to Sawyer Point stretch on map 2. The ledger follows the ruling; the tracker needs updating.
+- **The river is at today's level.** Both banks sit on today's Markland pool; no 1912 river level has been set.
+- **Outside the survey cover,** including most of Kentucky away from the riverworks window, the 1912 ground is cleaned modern LiDAR.
+- **The 2026 riverworks layer is combined.** It joins works with different dates (rest of the Embankment, deck, Lunken, airfield lift); splitting it by year needs the parts, which `topo/rw_build.py` in the scripts zip draws separately.
+- **Kept real works** (`real_works_kept` in the ledger) have no build years yet.
+- **Nothing here covers the outer TRI region** beyond the LiDAR extent.
