@@ -88,7 +88,26 @@ def files():
         else:
             e['missing'] = True
         out.append(e)
+    for ws, src in sorted(NOT_EXPORTED.items()):
+        rp = repo_path(ws)
+        p = REPO + '/' + rp
+        e = dict(path=rp, workspace=ws, group='not exported', zip=None, category=category(ws), in_git=True, source=src)
+        if os.path.exists(p):
+            e.update(size=os.path.getsize(p), sha256=sha(p))
+        else:
+            e['missing'] = True
+        out.append(e)
     return out
+
+
+# Workspace files the scripts import that the export left out (found 6 November by the scripts' imports against
+# export/TREE.txt). A source starting "MISSING" has no copy on Ben's machine; ask the Topography conversation for it.
+NOT_EXPORTED = {
+    'sbg/names.py': 'Maps/Basin_Street_Map/sanborn1904_scripts.zip (names.py, 1743 bytes, 11 Oct 21:42: the size and time '
+                    'export/TREE.txt lists for the workspace copy); imported by 33 scripts (key, base, key2)',
+    'arcs/fitarcs.py': 'MISSING: 14820 bytes, 15 Oct 06:00 in export/TREE.txt; imported by rer1023/apply.py and transit/build_transit.py',
+    'deck/xs.py': 'MISSING: 749 bytes, 10 Oct 18:09 in export/TREE.txt; imported by lph/solve_all.py',
+}
 
 
 def _sheet_file(root, s):
