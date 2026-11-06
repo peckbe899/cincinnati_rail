@@ -88,8 +88,8 @@ not reach, labelled `map3_outside_1912`); timeline `real` subtracts the 1912 riv
 `works_ledger.json` whose year (`built_by`, else `built_from`) is at or before the year is applied in ledger order by
 the kind set in `region/ground/layers.py`: target and mode rasters as the riverworks were made (mode 1 forces the
 target, 2 only raises); the 2026 canon ground inside a delta's footprint (the interstates: the delta was made against
-today's LiDAR, which the repo does not hold); the 2026 canon ground inside the kept-works zones, feathered 16 m; a bed
-surface where it has values. An undated work counts only at 2026 and is listed as skipped before. New works are
+today's LiDAR, which the repo does not hold); the 2026 canon ground inside the kept-works zones, feathered 16 m, and inside the river bed's footprint (Ben, 6
+November: the bed the Rail Profiles read, map 3's, is canon; `ohio_bed_canon_dm.tif` gives the footprint). An undated work counts only at 2026 and is listed as skipped before. New works are
 `Pad` and `Corridor` objects: per cell, with Z the design level at the nearest point of the work's edge and d the
 distance to it, `proposed = clip(existing, Z - fill_slope * d, Z + cut_slope * d)`, so the daylight line is found,
 not drawn, and cut and fill volumes come out of the same pass. Every cell carries the code of the layer that set it.

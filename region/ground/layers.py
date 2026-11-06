@@ -57,7 +57,8 @@ LAYERS = {
     "lunken_airfield_lift": dict(kind="target_mode", target="works/riverworks_2026_target_dm.tif", mode="works/riverworks_2026_mode.tif", shared="ohio_embankment_rest"),
     "ky_terraces": dict(kind="target_mode", target="works/ky_terraces_target_dm.tif", mode="works/ky_terraces_mode.tif"),
     "canon_interstates": dict(kind="map3_footprint", delta="works/canon_interstates_delta_dm.tif"),
-    "ohio_bed_canon": dict(kind="raster", raster="works/ohio_bed_canon_dm.tif"),
+    # Ben, 6 November: the bed the Rail Profiles use (map 3's) is canon; the 4 m bed raster only gives the footprint
+    "ohio_bed_canon": dict(kind="map3_footprint", delta="works/ohio_bed_canon_dm.tif"),
     "real_works_removed": dict(kind="none", note="never built in canon; the 1912 base has none of them"),
     "real_works_kept": dict(kind="map3_zones", zones="zones/zones_post1912_works.geojson", minus="zones/zones_real_works_canon_removes.geojson"),
     "metro_tri_line_works": dict(kind="model"),

@@ -40,8 +40,6 @@ def test_2026_reproduces_map3_inside_the_works():
     for code in np.unique(g.src[g.src >= 10]):
         m = g.src == code
         agree = (d[m] <= 0.051).mean()
-        if names[code] == "ohio_bed_canon":
-            continue                        # map 3 holds a different bed (known, ruling pending)
         assert agree > 0.95, (names[code], agree)
 
 
