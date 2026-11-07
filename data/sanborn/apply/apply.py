@@ -170,7 +170,9 @@ def st_stage():
 
 def st_x1904():
     backup('cuf/x1904.json')
-    run_script('cuf/x1904.py', [])
+    frames = list(dict.fromkeys(r['fr'] for r in json.load(open(BK + 'cuf/x1904.json'))))      # the frames it was run on, in order
+    print('1904 frames', len(frames))
+    run_script('cuf/x1904.py', [','.join(frames)])
 
 
 def st_bend():
@@ -180,13 +182,38 @@ def st_bend():
     run_script('cuf/tps1922.py', [','.join(frames)])
 
 
-def st_streets():
-    BJ0 = json.load(open(SP + 'deckpage/basin.json'))
-    json.dump(BJ0, open(HERE + '/basin_before.json', 'w'), separators=(',', ':'))
+def st_alpha():
+    """the scans' alpha masks the plate builds read (cufp/<N>/png_alpha_s4.npy, cuf38/png_alpha_s4.npy), made as
+    tools/sanborn/cufp/prep.py makes them (alpha > 0, every 4th pixel); derived files, not exported with the repo"""
+    from PIL import Image
+    Image.MAX_IMAGE_PIXELS = None
+    cfg = json.load(open(SP + 'cufp/config.json'))
+    todo = [('cuf38/png_alpha_s4.npy', '/mnt/user-data/uploads/38.png')]
     for s, script, args, rem in SETS:
-        backup(rem)
-    # take the plate sets out, newest first, each putting back what its install took out
-    BJ = BJ0
+        if args:
+            n = args[0]; todo.append((f'cufp/{n}/png_alpha_s4.npy', cfg.get(n, {}).get('png') or f'/mnt/user-data/uploads/PNG/{n}.png'))
+    for rel, png in todo:
+        if os.path.exists(SP + rel):
+            continue
+        a = np.array(Image.open(_ws.ext(png)).convert('RGBA'))[:, :, 3]
+        os.makedirs(os.path.dirname(SP + rel), exist_ok=True)
+        np.save(SP + rel, (a[::4, ::4] > 0).astype(np.uint8)); print('made', rel, a.shape, flush=True)
+
+
+def st_streets(start=None):
+    """take the plate sets out newest first, then rebuild them in order; after each set's build its streets and blocks
+    get back the ids they had (carry_set), so the next build sees Ben's edits on the right features. Starts from the
+    page's basin.json as staged (apply/basin_before.json) and the removal files as they were (apply/backup)."""
+    if not os.path.exists(HERE + '/basin_before.json'):
+        shutil.copy2(SP + 'deckpage/basin.json', HERE + '/basin_before.json')
+    shutil.copy2(HERE + '/basin_before.json', SP + 'deckpage/basin.json')
+    for s, script, args, rem in SETS:                       # removal files as they were before any take-out
+        if os.path.exists(BK + rem):
+            shutil.copy2(BK + rem, SP + rem)
+        if os.path.exists(SP + rem.replace('.json', '_prev.json')):
+            os.remove(SP + rem.replace('.json', '_prev.json'))
+    B0 = json.load(open(HERE + '/basin_before.json'))
+    BJ = json.loads(json.dumps(B0))
     for s, script, args, rem in reversed(SETS):
         if not os.path.exists(SP + rem):
             print('no removal file', rem); continue
@@ -196,78 +223,100 @@ def st_streets():
         os.replace(SP + rem, SP + rem.replace('.json', '_prev.json'))
         print('took out', s, n0, '->', len(BJ['features']), flush=True)
     json.dump(BJ, open(SP + 'deckpage/basin.json', 'w'), separators=(',', ':'))
+    report = {}
     for s, script, args, rem in SETS:
         print('build', s, flush=True)
         run_script(script, args + ['--install'])
-    carry_ids()
+        report[s] = carry_set(s, B0)
+        print('  ids', report[s], flush=True)
+    finish(B0, report)
 
 
-# ------------------------------------------------------------------ ids
-def carry_ids():
-    """give each rebuilt street and block the id it had before the rebuild: streets by name, then nearest (mean
-    distance of the new line's points to the old line); blocks by largest overlap. New ones get fresh numbers after the
-    set's highest. Then check Ben's layout and list his streets that moved."""
-    from shapely.geometry import shape, mapping
-    B0 = json.load(open(HERE + '/basin_before.json')); B1 = json.load(open(SP + 'deckpage/basin.json'))
-    sets = {s for s, *_ in SETS}
-    old = collections.defaultdict(list)
-    for f in B0['features']:
-        if f['properties'].get('set') in sets:
-            old[f['properties']['set']].append(f)
-    remap, report = {}, {}
-    for s in sets:
-        O = old.get(s, []); Nw = [f for f in B1['features'] if f['properties'].get('set') == s]
-        used = set(); rs = dict(old=len(O), new=len(Nw), carried=0, fresh=0)
-        for layer in ('street', 'block'):
-            Ol = [f for f in O if f['properties']['layer'] == layer]; Nl = [f for f in Nw if f['properties']['layer'] == layer]
-            pairs = []
-            for i, f in enumerate(Nl):
-                g = shape(f['geometry'])
-                for j, o in enumerate(Ol):
-                    if layer == 'street' and o['properties'].get('name') != f['properties'].get('name'):
+def ben_ids():
+    LAY = json.load(open(SP + 'dbread/deck/layout.json', encoding='utf8'))
+    return LAY, set(LAY.get('streets', {})) | set(LAY.get('blocks', {}))
+
+
+def carry_set(s, B0):
+    """the set's rebuilt streets and blocks get the ids the set's features had before: streets by name, then nearest
+    (mean distance of 21 points of the new line to the old line, under 40 m), blocks by overlap (IoU over 0.3); ids in
+    Ben's layout claim first. The rest get fresh numbers above the prefix's highest."""
+    from shapely.geometry import shape
+    _, BEN = ben_ids()
+    B1 = json.load(open(SP + 'deckpage/basin.json'))
+    O = [f for f in B0['features'] if f['properties'].get('set') == s and f['properties'].get('id')]
+    Nw = [f for f in B1['features'] if f['properties'].get('set') == s]
+    rs = {}
+    remap = {}
+    for layer in ('street', 'block'):
+        Ol = [f for f in O if f['properties']['layer'] == layer]; Nl = [f for f in Nw if f['properties']['layer'] == layer]
+        go = [shape(o['geometry']) for o in Ol]
+        pairs = []
+        for i, f in enumerate(Nl):
+            g = shape(f['geometry'])
+            pts = [g.interpolate(t, normalized=True) for t in np.linspace(0, 1, 21)] if layer == 'street' else None
+            for j, o in enumerate(Ol):
+                if layer == 'street':
+                    if o['properties'].get('name') != f['properties'].get('name'):
                         continue
-                    go = shape(o['geometry'])
-                    if layer == 'street':
-                        pts = [g.interpolate(t, normalized=True) for t in np.linspace(0, 1, 21)]
-                        d = float(np.mean([go.distance(p) for p in pts]))
-                        if d < 40:
-                            pairs.append((d, i, j))
-                    else:
-                        if g.intersects(go):
-                            ov = g.intersection(go).area / max(g.union(go).area, 1e-9)
-                            if ov > 0.3:
-                                pairs.append((1 - ov, i, j))
-            taken_n, taken_o = set(), set()
-            for d, i, j in sorted(pairs):
-                if i in taken_n or j in taken_o:
-                    continue
-                taken_n.add(i); taken_o.add(j)
-                remap[id(Nl[i])] = Ol[j]['properties']['id']
-            rs[layer + '_carried'] = len(taken_n); rs[layer + '_fresh'] = len(Nl) - len(taken_n); rs[layer + '_old_gone'] = len(Ol) - len(taken_o)
-        report[s] = rs
-    # apply: carried ids first, then fresh numbers above each prefix's highest (old or carried)
-    allids = {f['properties']['id'] for f in B0['features']} | {f['properties']['id'] for f in B1['features'] if f['properties'].get('set') not in sets}
-    newcount = collections.Counter()
-    carried_ids = set(remap.values())
-    for f in B1['features']:
-        if f['properties'].get('set') in sets:
-            fid = remap.get(id(f))
-            if fid is None:
-                pre = ''.join(ch for ch in f['properties']['id'] if not ch.isdigit())
-                nums = [int(x[len(pre):]) for x in allids | carried_ids if x.startswith(pre) and x[len(pre):].isdigit()]
-                k = max(nums + [0]) + 1 + newcount[pre]; newcount[pre] += 1
-                fid = f'{pre}{k:04d}'
-            f['properties']['id'] = fid
-    ids = [f['properties']['id'] for f in B1['features']]
+                    d = float(np.mean([go[j].distance(p) for p in pts]))
+                    if d < 40:
+                        pairs.append((o['properties']['id'] not in BEN, d, i, j))
+                elif g.intersects(go[j]):
+                    ov = g.intersection(go[j]).area / max(g.union(go[j]).area, 1e-9)
+                    if ov > 0.3:
+                        pairs.append((o['properties']['id'] not in BEN, 1 - ov, i, j))
+        tn, to = set(), set()
+        for nb, d, i, j in sorted(pairs):
+            if i in tn or j in to:
+                continue
+            tn.add(i); to.add(j); remap[id(Nl[i])] = Ol[j]['properties']['id']
+        rs[layer] = dict(old=len(Ol), new=len(Nl), carried=len(tn), fresh=len(Nl) - len(tn), old_unmatched=len(Ol) - len(to),
+                         ben_unmatched=sorted(Ol[j]['properties']['id'] for j in range(len(Ol)) if j not in to and Ol[j]['properties']['id'] in BEN))
+    taken = {f['properties'].get('id') for f in B1['features'] if f['properties'].get('set') != s} | set(remap.values())
+    known = taken | {f['properties'].get('id') for f in B0['features']}
+    nxt = {}
+    for f in Nw:
+        fid = remap.get(id(f))
+        if fid is None:
+            pre = ''.join(ch for ch in f['properties']['id'] if not ch.isdigit())
+            if pre not in nxt:
+                nxt[pre] = max([int(x[len(pre):]) for x in known if x and x.startswith(pre) and x[len(pre):].isdigit()] + [0]) + 1
+            fid = f'{pre}{nxt[pre]:04d}'; nxt[pre] += 1
+        f['properties']['id'] = fid
+    json.dump(B1, open(SP + 'deckpage/basin.json', 'w'), separators=(',', ':'))
+    return rs
+
+
+def finish(B0, report):
+    """every id in Ben's layout that the page had must still be there: one the rebuild left without a counterpart is
+    kept as it was (it carries Ben's own geometry or his deletion, which the page draws in its place); then the check"""
+    B1 = json.load(open(SP + 'deckpage/basin.json'))
+    LAY, BEN = ben_ids()
+    have = {f['properties'].get('id') for f in B1['features']}
+    kept_old = []
+    for f in B0['features']:
+        fid = f['properties'].get('id')
+        if fid in BEN and fid not in have:
+            g = json.loads(json.dumps(f)); g['properties']['kept_for_edit'] = "apply 2026-11-07: no rebuilt counterpart; kept for Ben's edit"
+            B1['features'].append(g)
+            kept_old.append(dict(id=fid, name=f['properties'].get('name'), set=f['properties'].get('set'),
+                                 edit=sorted(LAY['streets'].get(fid) or LAY['blocks'].get(fid) or {})))
+    ids = [f['properties'].get('id') for f in B1['features'] if f['properties'].get('id')]
     dup = [k for k, v in collections.Counter(ids).items() if v > 1]
     json.dump(B1, open(SP + 'deckpage/basin.json', 'w'), separators=(',', ':'))
+    report['_kept_for_edit'] = kept_old
     check_ben(B0, B1, report, dup)
+
+
+def carry_ids():
+    finish(json.load(open(HERE + '/basin_before.json')), {})
 
 
 def check_ben(B0, B1, report, dup):
     from shapely.geometry import shape
     LAY = json.load(open(SP + 'dbread/deck/layout.json', encoding='utf8'))
-    by0 = {f['properties']['id']: f for f in B0['features']}; by1 = {f['properties']['id']: f for f in B1['features']}
+    by0 = {f['properties']['id']: f for f in B0['features'] if f['properties'].get('id')}; by1 = {f['properties']['id']: f for f in B1['features'] if f['properties'].get('id')}
     missing, renamed, moves = [], [], []
     for layer, key in (('streets', 'street'), ('blocks', 'block')):
         for fid, e in LAY.get(layer, {}).items():
@@ -387,5 +436,6 @@ def st_seams():
 
 if __name__ == '__main__':
     st = sys.argv[1]
-    dict(grids=st_grids, stage=st_stage, x1904=st_x1904, bend=st_bend, streets=st_streets, ids=carry_ids,
-         install_basin=st_install_basin, tiles=st_tiles, seams=st_seams)[st]()
+    f = dict(grids=st_grids, stage=st_stage, x1904=st_x1904, bend=st_bend, alpha=st_alpha, streets=st_streets, ids=carry_ids,
+             install_basin=st_install_basin, tiles=st_tiles, seams=st_seams)[st]
+    f(*sys.argv[2:])
