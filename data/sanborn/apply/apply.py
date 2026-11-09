@@ -81,6 +81,8 @@ def install():
     J.base_inv = lambda pid, E, N: orig['inv'][pid](E, N)
 
     def new(pid, q):
+        if not J.has(pid, tag(pid)):            # a plate not applied yet (its own fit, as the page would draw it)
+            return base_many(pid, q)
         return J.world_many(pid, np.asarray(q, float).reshape(-1, 2), tag(pid))
     fwdlib.world_many = lambda n, q: new('22-' + str(n), q)
     fwd38lib.world_many = lambda q: new('22-38', q)
@@ -92,7 +94,8 @@ def install():
     C.px2ben = px2ben
     C.ben2px = lambda E, N: grid_inv('22-35N')(E, N)
     for P in plates.PLATES:
-        P['inv'] = grid_inv(P['id'])
+        if os.path.exists(HERE + f"/inv/{P['id']}.npz"):
+            P['inv'] = grid_inv(P['id'])
     import seams as S                           # seams.py imports common, fwdlib and fwd38lib by name: the same modules
     _INSTALLED = True
 

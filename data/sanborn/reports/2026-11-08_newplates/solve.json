@@ -1,0 +1,418 @@
+{
+ "made": "2026-11-08T20:32:46",
+ "summary": {
+  "plates": [
+   {
+    "plate": "22-25",
+    "controls": 23,
+    "name_seeded_fit": "tps0.3",
+    "lam": 0.3,
+    "damped": false,
+    "own_rms": 1.1,
+    "heldout": 3.29,
+    "heldout_max": 8.6,
+    "max_corner_move_m": 2.6,
+    "corner_moves_m": [
+     0.6,
+     2.6,
+     0.2,
+     1.8
+    ],
+    "ties": 16,
+    "tie_partners": [
+     "22-26A",
+     "22-26B",
+     "22-28",
+     "22-29"
+    ]
+   },
+   {
+    "plate": "22-28",
+    "controls": 95,
+    "name_seeded_fit": "tps1",
+    "lam": 0.3,
+    "damped": false,
+    "own_rms": 1.49,
+    "heldout": 3.13,
+    "heldout_max": 7.81,
+    "max_corner_move_m": 2.36,
+    "corner_moves_m": [
+     1.6,
+     1.7,
+     2.4,
+     0.7
+    ],
+    "ties": 20,
+    "tie_partners": [
+     "22-25",
+     "22-26A",
+     "22-26B",
+     "22-29",
+     "22-31"
+    ]
+   }
+  ],
+  "ties": 27,
+  "seams": {
+   "dir": "reports/2026-11-08_seams_newplates",
+   "neighbours": {
+    "22-26A": {
+     "before": {
+      "n": 13,
+      "median": 0.62
+     },
+     "after": {
+      "n": 16,
+      "median": 0.64
+     },
+     "with_new": [
+      {
+       "new": "22-25",
+       "n": 2,
+       "median": 0.9,
+       "max": 1.5
+      },
+      {
+       "new": "22-28",
+       "n": 1,
+       "median": 1.49,
+       "max": 1.49
+      }
+     ]
+    },
+    "22-26B": {
+     "before": {
+      "n": 0,
+      "median": null
+     },
+     "after": {
+      "n": 5,
+      "median": 0.48
+     },
+     "with_new": [
+      {
+       "new": "22-25",
+       "n": 4,
+       "median": 0.34,
+       "max": 0.85
+      },
+      {
+       "new": "22-28",
+       "n": 1,
+       "median": 0.55,
+       "max": 0.55
+      }
+     ]
+    },
+    "22-29": {
+     "before": {
+      "n": 24,
+      "median": 0.68
+     },
+     "after": {
+      "n": 33,
+      "median": 0.65
+     },
+     "with_new": [
+      {
+       "new": "22-25",
+       "n": 1,
+       "median": 0.37,
+       "max": 0.37
+      },
+      {
+       "new": "22-28",
+       "n": 8,
+       "median": 0.54,
+       "max": 0.86
+      }
+     ]
+    },
+    "22-31": {
+     "before": {
+      "n": 17,
+      "median": 1.63
+     },
+     "after": {
+      "n": 18,
+      "median": 1.62
+     },
+     "with_new": [
+      {
+       "new": "22-25",
+       "n": 0,
+       "median": null,
+       "max": null
+      },
+      {
+       "new": "22-28",
+       "n": 1,
+       "median": 0.71,
+       "max": 0.71
+      }
+     ]
+    }
+   },
+   "new_pair": {
+    "n": 9,
+    "median": 0.38,
+    "max": 5.84
+   }
+  },
+  "gate": {
+   "heldout_under_5m": true,
+   "neighbour_median_not_worse": {
+    "22-26A": false,
+    "22-26B": true,
+    "22-29": true,
+    "22-31": true
+   },
+   "build": false
+  }
+ },
+ "ties": [
+  {
+   "a": "22-25",
+   "b": "22-26B",
+   "street_1": "Trenton Avenue",
+   "street_2": "Flower Avenue",
+   "before_m": 0.11,
+   "after_m": 0.1,
+   "weight": 1.0
+  },
+  {
+   "a": "22-25",
+   "b": "22-28",
+   "street_1": "West 8th Street",
+   "street_2": "Fairbanks Avenue",
+   "before_m": 0.31,
+   "after_m": 0.98,
+   "weight": 1.0
+  },
+  {
+   "a": "22-28",
+   "b": "22-29",
+   "street_1": "Elberon Avenue",
+   "street_2": "Lehman Road",
+   "before_m": 0.44,
+   "after_m": 0.73,
+   "weight": 1.0
+  },
+  {
+   "a": "22-25",
+   "b": "22-28",
+   "street_1": "West 8th Street",
+   "street_2": "McPherson Avenue",
+   "before_m": 0.45,
+   "after_m": 1.07,
+   "weight": 1.0
+  },
+  {
+   "a": "22-25",
+   "b": "22-26A",
+   "street_1": "Elberon Avenue",
+   "street_2": "Bassett Road",
+   "before_m": 0.46,
+   "after_m": 0.29,
+   "weight": 1.0
+  },
+  {
+   "a": "22-28",
+   "b": "22-29",
+   "street_1": "Elberon Avenue",
+   "street_2": "Glenway Avenue",
+   "before_m": 0.56,
+   "after_m": 0.36,
+   "weight": 1.0
+  },
+  {
+   "a": "22-25",
+   "b": "22-28",
+   "street_1": "West 8th Street",
+   "street_2": "Rosemont Avenue",
+   "before_m": 0.62,
+   "after_m": 0.15,
+   "weight": 1.0
+  },
+  {
+   "a": "22-25",
+   "b": "22-26B",
+   "street_1": "Trenton Avenue",
+   "street_2": "Vineyard Avenue",
+   "before_m": 0.67,
+   "after_m": 0.21,
+   "weight": 1.0
+  },
+  {
+   "a": "22-28",
+   "b": "22-29",
+   "street_1": "Elberon Avenue",
+   "street_2": "Brevier Avenue",
+   "before_m": 0.71,
+   "after_m": 0.37,
+   "weight": 1.0
+  },
+  {
+   "a": "22-25",
+   "b": "22-28",
+   "street_1": "Elberon Avenue",
+   "street_2": "West 8th Street",
+   "before_m": 0.72,
+   "after_m": 0.14,
+   "weight": 1.0
+  },
+  {
+   "a": "22-28",
+   "b": "22-29",
+   "street_1": "Elberon Avenue",
+   "street_2": "Warsaw Avenue",
+   "before_m": 0.74,
+   "after_m": 0.26,
+   "weight": 1.0
+  },
+  {
+   "a": "22-25",
+   "b": "22-28",
+   "street_1": "Terry Street",
+   "street_2": "West 8th Street",
+   "before_m": 0.8,
+   "after_m": 0.2,
+   "weight": 1.0
+  },
+  {
+   "a": "22-25",
+   "b": "22-26B",
+   "street_1": "West 8th Street",
+   "street_2": "Trenton Avenue",
+   "before_m": 0.95,
+   "after_m": 0.48,
+   "weight": 1.0
+  },
+  {
+   "a": "22-28",
+   "b": "22-26B",
+   "street_1": "Kreis Avenue",
+   "street_2": "West 8th Street",
+   "before_m": 1.12,
+   "after_m": 0.55,
+   "weight": 1.0
+  },
+  {
+   "a": "22-25",
+   "b": "22-28",
+   "street_1": "Academy Avenue",
+   "street_2": "West 8th Street",
+   "before_m": 1.21,
+   "after_m": 0.34,
+   "weight": 1.0
+  },
+  {
+   "a": "22-28",
+   "b": "22-29",
+   "street_1": "Elberon Avenue",
+   "street_2": "Osage Avenue",
+   "before_m": 1.25,
+   "after_m": 0.72,
+   "weight": 1.0
+  },
+  {
+   "a": "22-28",
+   "b": "22-29",
+   "street_1": "Elberon Avenue",
+   "street_2": "Price Avenue",
+   "before_m": 1.49,
+   "after_m": 0.86,
+   "weight": 1.0
+  },
+  {
+   "a": "22-25",
+   "b": "22-28",
+   "street_1": "Woodlawn Avenue",
+   "street_2": "West 8th Street",
+   "before_m": 1.67,
+   "after_m": 0.38,
+   "weight": 1.0
+  },
+  {
+   "a": "22-25",
+   "b": "22-26B",
+   "street_1": "Trenton Avenue",
+   "street_2": "Francis Avenue",
+   "before_m": 1.72,
+   "after_m": 0.85,
+   "weight": 1.0
+  },
+  {
+   "a": "22-25",
+   "b": "22-29",
+   "street_1": "Elberon Avenue",
+   "street_2": "West 8th Street",
+   "before_m": 1.99,
+   "after_m": 0.37,
+   "weight": 1.0
+  },
+  {
+   "a": "22-28",
+   "b": "22-29",
+   "street_1": "Elberon Avenue",
+   "street_2": "West 8th Street",
+   "before_m": 2.18,
+   "after_m": 0.35,
+   "weight": 1.0
+  },
+  {
+   "a": "22-28",
+   "b": "22-29",
+   "street_1": "Elberon Avenue",
+   "street_2": "West Liberty Street",
+   "before_m": 2.26,
+   "after_m": 0.72,
+   "weight": 1.0
+  },
+  {
+   "a": "22-28",
+   "b": "22-31",
+   "street_1": "Elberon Avenue",
+   "street_2": "West Liberty Street",
+   "before_m": 2.27,
+   "after_m": 0.71,
+   "weight": 1.0
+  },
+  {
+   "a": "22-25",
+   "b": "22-28",
+   "street_1": "Enright Avenue",
+   "street_2": "West 8th Street",
+   "before_m": 2.71,
+   "after_m": 0.7,
+   "weight": 1.0
+  },
+  {
+   "a": "22-25",
+   "b": "22-26A",
+   "street_1": "Elberon Avenue",
+   "street_2": "West 8th Street",
+   "before_m": 3.13,
+   "after_m": 1.5,
+   "weight": 1.0
+  },
+  {
+   "a": "22-28",
+   "b": "22-26A",
+   "street_1": "Elberon Avenue",
+   "street_2": "West 8th Street",
+   "before_m": 3.31,
+   "after_m": 1.49,
+   "weight": 1.0
+  },
+  {
+   "a": "22-25",
+   "b": "22-28",
+   "street_1": "West 8th Street",
+   "street_2": "Wells Street",
+   "before_m": 11.14,
+   "after_m": 5.83,
+   "weight": 1.0
+  }
+ ]
+}
