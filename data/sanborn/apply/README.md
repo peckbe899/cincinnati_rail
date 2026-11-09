@@ -99,3 +99,13 @@ Every one of them carries his own line (`c`) or his deletion (`del`), so none of
 - `hub/sites/deck/tiles_n` (the 1904 frames as the page draws them) and the street sets built from the 1904 frames were not re-rendered or rebuilt after the re-bend: outside this ruling's scope. Until they are, the 1904 layer shows the frames where the previous bend put them.
 - `plots.json` did not change.
 - Derived inputs the builders need and the repo does not carry were recreated: the scans' alpha masks (`cufp/<N>/png_alpha_s4.npy`, `cuf38/png_alpha_s4.npy`, as `cufp/prep.py` makes them; not in git, 60 MB).
+
+## Plates 25 and 28 added (Ben, 8 and 9 November 2026)
+
+Models `cufp/25/fwd_complete.pkl`, `cufp/28/fwd_complete.pkl` (`tools/sanborn/joint/newplates.py`, `reports/2026-11-08_newplates`); Part 2's gate passed by Ben's ruling of 9 November (from then on the seam gate compares existing seams only).
+
+- Inverse grids for 22-25 and 22-28 (`apply.py grids 22-25 22-28`): round trip 0.18 and 0.21 px at most.
+- No 1904 frame lies under 25 or 28 (no tile of tiles_n, tiles_b or tiles12 touches their area), so nothing new to bend; the bend of 7 November is unchanged.
+- Street sets (`apply.py newsets 25 28`, `cufp/build.py` with 25 and 28 at the end of PLATE_ORDER, prefixes SA and SI, config as 26A: w1 kept, earlier drawing avoided, clipped to `wh/area_utm.json`): c25 28 streets and 12 blocks on 199.2 ha, c28 66 streets and 67 blocks on 213.9 ha; no earlier street or block taken out. Every id in Ben's layout still there with its name; none of his streets moved (`streets_report_25_28.json`).
+- Tiles: tiles_22 re-composited with 25 and 28 (196 -> 215 tiles, none dropped).
+- Seams (`reports/2026-11-08_seams_applied`, against `reports/2026-11-07_seams_applied`, `compare_2026-11-07.json`): every existing seam unchanged (146 plate-plate, median 1.57 m, 90% 5.83 m; 556 plate-1904, median 0.46 m); 27 new seams with 25 and 28, median 0.48 m, 90% 1.24 m, max 5.84 m (25/28 at West 8th Street and Wells Street).

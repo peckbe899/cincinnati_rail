@@ -127,7 +127,7 @@ def run_script(rel, argv):
 
 
 # ------------------------------------------------------------------ stages
-def st_grids():
+def st_grids(*only):
     from scipy.interpolate import griddata
     import jointlib as J
     import seams as S
@@ -135,8 +135,8 @@ def st_grids():
     spec = importlib.util.spec_from_file_location('joint_solve', CODE + 'joint/solve.py'); SV = importlib.util.module_from_spec(spec); spec.loader.exec_module(SV)
     install()
     os.makedirs(HERE + '/inv', exist_ok=True)
-    rep = {}
-    for pid in S.plate_ids():
+    rep = json.load(open(HERE + '/inv/report.json')) if only and os.path.exists(HERE + '/inv/report.json') else {}
+    for pid in (only or S.plate_ids()):
         w, h = SV.plate_size(pid)
         gx, gy = np.meshgrid(np.arange(0, w + 16, 16.0), np.arange(0, h + 16, 16.0)); Q = np.c_[gx.ravel(), gy.ravel()]
         Wd = J.world_many(pid, Q, tag(pid))
@@ -349,6 +349,32 @@ def check_ben(B0, B1, report, dup):
     print(json.dumps(dict(sets=report, duplicate_ids=dup, ben_missing=len(missing), ben_renamed=len(renamed), ben_moved=len(moves)), indent=1))
 
 
+def st_newsets(*nums):
+    """street sets for plates added to the applied layer (cufp/build.py N --install, in PLATE_ORDER, routed to the
+    applied models); nothing else is taken out or rebuilt. Then every id in Ben's layout is checked."""
+    stage_new = HERE + '/basin_before_' + '_'.join(nums) + '.json'
+    if not os.path.exists(stage_new):
+        shutil.copy2(SP + 'deckpage/basin.json', stage_new)
+    shutil.copy2(stage_new, SP + 'deckpage/basin.json')
+    for n in nums:
+        if os.path.exists(SP + f'cufp/{n}/removed.json'):
+            raise SystemExit(f'cufp/{n}/removed.json exists: plate {n} was installed before')
+    for n in nums:
+        print('build', n, flush=True)
+        run_script('cufp/build.py', [n, '--install'])
+    B0 = json.load(open(stage_new)); B1 = json.load(open(SP + 'deckpage/basin.json'))
+    ids = [f['properties'].get('id') for f in B1['features'] if f['properties'].get('id')]
+    dup0 = {k for k, v in collections.Counter(f['properties'].get('id') for f in B0['features'] if f['properties'].get('id')).items() if v > 1}
+    dup = [k for k, v in collections.Counter(ids).items() if v > 1 and k not in dup0]
+    rep = {f'c{n}': dict(streets=sum(1 for f in B1['features'] if f['properties'].get('set') == f'c{n}' and f['properties']['layer'] == 'street'),
+                         blocks=sum(1 for f in B1['features'] if f['properties'].get('set') == f'c{n}' and f['properties']['layer'] == 'block')) for n in nums}
+    keep = open(HERE + '/streets_report.json', 'rb').read() if os.path.exists(HERE + '/streets_report.json') else None
+    check_ben(B0, B1, rep, dup)
+    os.replace(HERE + '/streets_report.json', HERE + '/streets_report_' + '_'.join(nums) + '.json')
+    if keep is not None:                          # the full apply's report stays as it was
+        open(HERE + '/streets_report.json', 'wb').write(keep)
+
+
 def st_install_basin():
     for f in ('basin.json', 'plots.json'):
         a, b = SP + 'deckpage/' + f, DECK + f
@@ -401,7 +427,8 @@ def st_tiles():
     for t in sorted(by):
         base = np.zeros((NP, NP, 4), np.uint8); bd = np.zeros((NP, NP), np.float16)
         for f in sorted(by[t]):                                  # fixed plate order
-            z = np.load(TMP + f); rgba, d = z['rgba'], z['d']
+            with np.load(TMP + f) as z:
+                rgba, d = z['rgba'], z['d']
             take = (rgba[..., 3] > 0) & (d > bd)
             base[take] = rgba[take]; bd[take] = d[take]
         if not (base[..., 3] > 0).any():
@@ -440,5 +467,5 @@ def st_seams():
 if __name__ == '__main__':
     st = sys.argv[1]
     f = dict(grids=st_grids, stage=st_stage, x1904=st_x1904, bend=st_bend, alpha=st_alpha, streets=st_streets, ids=carry_ids,
-             install_basin=st_install_basin, tiles=st_tiles, seams=st_seams)[st]
+             install_basin=st_install_basin, tiles=st_tiles, seams=st_seams, newsets=st_newsets)[st]
     f(*sys.argv[2:])

@@ -19,16 +19,6 @@
 22-29 tiles 15
 22-31 tiles 19
 22-33 tiles 14
-Traceback (most recent call last):
-  File "C:\Users\peckb\Documents\_Personal\_Cincinnati Rail\3D\data\sanborn\apply\apply.py", line 441, in <module>
-    f(*sys.argv[2:])
-  File "C:\Users\peckb\Documents\_Personal\_Cincinnati Rail\3D\data\sanborn\apply\apply.py", line 414, in st_tiles
-    shutil.rmtree(TMP)
-  File "C:\Users\peckb\AppData\Local\Programs\Python\Python312\Lib\shutil.py", line 781, in rmtree
-    return _rmtree_unsafe(path, onexc)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\peckb\AppData\Local\Programs\Python\Python312\Lib\shutil.py", line 635, in _rmtree_unsafe
-    onexc(os.unlink, fullname, err)
-  File "C:\Users\peckb\AppData\Local\Programs\Python\Python312\Lib\shutil.py", line 633, in _rmtree_unsafe
-    os.unlink(fullname)
-PermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\peckb\\Documents\\_Personal\\_Cincinnati Rail\\3D\\data\\sanborn\\apply/tiles_tmp/721408_4338176__13.npz'
+22-25 tiles 14
+22-28 tiles 18
+tiles_22 215 overview 7680 4608 [706560, 4329472, 721920, 4338688]
