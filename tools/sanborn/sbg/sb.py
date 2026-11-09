@@ -17,7 +17,7 @@ def find(sheet):
         return (_ws.DATA + 'cuf/22-35N.jpg')
     if str(sheet).upper() in ('22-66','22-67','22-68','22-69','22-70'):   # 2026-10-21: 1922 plates 66-70 (Corryville, Avondale, Woodburn, Evanston), Ben's scans
         return (_ws.DATA + 'cufp/')+str(sheet)+'.jpg'
-    if str(sheet).upper() in ('22-82A','22-83A','22-75','22-76','22-26A','22-26B','22-29','22-31','22-33'):   # 2026-10-23: 1922 plates 82A (central Norwood) and 83A (east Norwood); 2026-10-24: 75, 76; 2026-10-25: 26a, 26b, 29 (Price Hill); Ben's scans
+    if str(sheet).upper() in ('22-82A','22-83A','22-75','22-76','22-26A','22-26B','22-29','22-31','22-33','22-25','22-28'):   # 2026-10-23: 1922 plates 82A (central Norwood) and 83A (east Norwood); 2026-10-24: 75, 76; 2026-10-25: 26a, 26b, 29 (Price Hill); Ben's scans
         return (_ws.DATA + 'cufp/')+str(sheet).upper()+'.jpg'
     if str(sheet).startswith('22-'):
         n=int(str(sheet)[3:-1]); h=str(sheet)[-1].upper()

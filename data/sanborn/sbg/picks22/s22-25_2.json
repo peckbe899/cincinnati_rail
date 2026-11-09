@@ -1,0 +1,195 @@
+{
+ "sheet": "22-25",
+ "part": 2,
+ "strip": [
+  2780,
+  0,
+  4840,
+  7124
+ ],
+ "made": "2026-11-08T20:29:49",
+ "by": "tools/sanborn/complete/merge_reads.py: two independent reads, a pick only where they agree within 60 px",
+ "reads": [
+  "picks22_reads/22-25/A_2.json",
+  "picks22_reads/22-25/B_2.json"
+ ],
+ "intersections": [
+  {
+   "a": "Academy Avenue",
+   "b": "Farny Street",
+   "x": 4447.5,
+   "y": 1710.0,
+   "kind": "T",
+   "reads": [
+    {
+     "read": "A",
+     "x": 4446,
+     "y": 1710
+    },
+    {
+     "read": "B",
+     "x": 4449,
+     "y": 1710
+    }
+   ],
+   "spread_px": 3.0
+  },
+  {
+   "a": "Rosemont Avenue",
+   "b": "Palos Street",
+   "x": 2549.5,
+   "y": 2205.0,
+   "kind": "T",
+   "reads": [
+    {
+     "read": "A",
+     "x": 2549,
+     "y": 2203
+    },
+    {
+     "read": "B",
+     "x": 2550,
+     "y": 2207
+    }
+   ],
+   "spread_px": 4.1
+  },
+  {
+   "a": "Rosemont Avenue",
+   "b": "West 8th Street",
+   "x": 2549.5,
+   "y": 127.5,
+   "kind": "cross",
+   "reads": [
+    {
+     "read": "A",
+     "x": 2549,
+     "y": 130
+    },
+    {
+     "read": "B",
+     "x": 2550,
+     "y": 125
+    }
+   ],
+   "spread_px": 5.1
+  },
+  {
+   "a": "Academy Avenue",
+   "b": "West 8th Street",
+   "x": 4421.0,
+   "y": 140.0,
+   "kind": "cross",
+   "reads": [
+    {
+     "read": "A",
+     "x": 4422,
+     "y": 155
+    },
+    {
+     "read": "B",
+     "x": 4420,
+     "y": 125
+    }
+   ],
+   "spread_px": 30.1
+  }
+ ],
+ "widths": [
+  {
+   "street": "Academy Avenue",
+   "ft": 60,
+   "x": 4415,
+   "y": 250
+  },
+  {
+   "street": "Farny Street",
+   "ft": 60,
+   "x": 4500,
+   "y": 1710
+  },
+  {
+   "street": "Vaughn Road",
+   "ft": 45,
+   "x": 4545,
+   "y": 4100
+  },
+  {
+   "street": "Rosemont Avenue",
+   "ft": 50,
+   "x": 2560,
+   "y": 2620
+  }
+ ],
+ "bends": [
+  {
+   "street": "Vaughn Road",
+   "x": 4600,
+   "y": 4200,
+   "note": "centreline; road turns from the city-limits line south-east"
+  },
+  {
+   "street": "Vaughn Road",
+   "x": 4700,
+   "y": 4400,
+   "note": "centreline"
+  },
+  {
+   "street": "Vaughn Road",
+   "x": 4790,
+   "y": 4600,
+   "note": "centreline"
+  },
+  {
+   "street": "Vaughn Road",
+   "x": 4895,
+   "y": 4800,
+   "note": "centreline"
+  },
+  {
+   "street": "Vaughn Road",
+   "x": 5048,
+   "y": 5000,
+   "note": "centreline, continues south-east out of the strip"
+  }
+ ],
+ "ends": [
+  {
+   "street": "Rosemont Avenue",
+   "x": 2548.0,
+   "y": 2860.0,
+   "note": "dead end, only the 12 in. sewer continues south"
+  },
+  {
+   "street": "Farny Street",
+   "x": 5001.0,
+   "y": 1710.0,
+   "note": "dead end at the cemetery tract"
+  },
+  {
+   "street": "Palos Street",
+   "x": 3867.5,
+   "y": 2206.5,
+   "note": "dead end; a dashed 50 ft extension runs on to about x 3940"
+  },
+  {
+   "street": "Academy Avenue",
+   "x": 4448.5,
+   "y": 2435.5,
+   "note": "ends at the city limits line (cemetery beyond)"
+  },
+  {
+   "street": "Vaughn Road",
+   "x": 4545,
+   "y": 3960,
+   "note": "north end where the road leaves the city-limits line; road label prints only VAUGHN"
+  },
+  {
+   "street": "Vaughn Street",
+   "x": 4528,
+   "y": 4020,
+   "note": "plate edge / city limits at its north-west end; runs straight SE to a bend near (5325, 5385), outside the strip"
+  }
+ ],
+ "notes": "Top street is West 8th Street (name not printed inside this strip; centre taken mid-way between the plate's north street line and the south lot line, roughly on the car track). Two unnamed streets enter 8th from the north at x 3192 and x 3919 (only stubs on this plate, names '?'). Rosemont Avenue (printed ROSEMONT ... AVENUE) runs north-south at x ~2549; north stub across 8th. The pink 33 ft strip at y ~438 from x ~2960 east to Academy (12 ft strip west of that to Rosemont) is labelled VAUGHN'S EST. (an estate name, no street name printed): not recorded as a street; if it is counted, its T with Academy is at (4424, 438) and its 12 ft mouth on Rosemont at (2549, 450). The east-west dash-dot line at y ~2430 is the city LIMITS line, not a street. Vaughn in the south-east is printed only 'VAUGHN' (suffix not shown); called Vaughn Road here. The vertical line x ~4490-4520 from y 2440 to 4000 is the city limits (blue band), not a street. 84 in. sewer dashed curve is not a street. | West 8th Street runs along the top neat line (south edge y~175, north side cut by the plate edge ~y 75); centre taken at y 125. Rosemont and Academy show street lines continuing north into plate notches, so recorded as cross. Vaughn's Est. and Conrad Harris subdivision lettering are not streets. LIMITS dash-dot line at y~2430 and along x~4510 is the city limit, not a street. Dashed curving line through the middle is a sewer."
+}

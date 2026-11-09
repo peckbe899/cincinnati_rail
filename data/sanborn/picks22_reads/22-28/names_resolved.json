@@ -1,0 +1,41 @@
+{
+ "sheet": "22-28",
+ "made": "2026-11-08",
+ "how": "two further independent readers asked only what is printed along the two streets the strip reads named differently",
+ "checks": [
+  {
+   "read": "N1",
+   "q1": "the east-west street (y ~1800 west, ~1640 east) is printed GLENWAY on its west part (about (1350, 2280)); east of the fork only \"AVENUE\" (about (9060, 1640)); no WARSAW on it",
+   "q2": "the diagonal from (7000, 3470) to (3800, 4200) carries only \"AVENUE\" (about (6550, 3530)); it continues east as the street printed WARSAW; its west end meets the street printed ST. LAWRENCE at about (4350, 4180)"
+  },
+  {
+   "read": "N2",
+   "q1": "GLENWAY (about (1200, 2320)) is the only name on it from x 2000 to 5300; at x ~5300-5600 it forks: the main line curves into the diagonal printed WARSAW; the branch east at y ~1600-1650 has only \"AVENUE\" (about (8950, 1595))",
+   "q2": "\"AVENUE\" (about (6400, 3480)); at about (4400, 4190) it bends into the street printed ST. LAWRENCE; reads as St. Lawrence Avenue"
+  }
+ ],
+ "agreed": [
+  {
+   "street": "the east-west street from x 3400 to 5300 (y 1700-1900)",
+   "name": "Glenway Avenue"
+  }
+ ],
+ "not_agreed": [
+  "the diagonal from (7000, 3470) to (3800, 4200): N1 Warsaw (unnamed, continues as WARSAW), N2 St. Lawrence",
+  "the branch east of the fork (x 5600 to the east edge, y ~1640): printed only AVENUE, no name"
+ ],
+ "renames": [
+  {
+   "read": "B",
+   "part": 3,
+   "frm": "Warsaw Avenue",
+   "to": "Glenway Avenue",
+   "box": [
+    3400,
+    1700,
+    5300,
+    1900
+   ]
+  }
+ ]
+}

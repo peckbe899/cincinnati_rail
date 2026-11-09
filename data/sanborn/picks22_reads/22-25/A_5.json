@@ -1,0 +1,57 @@
+{
+  "sheet": "22-25",
+  "read": "A",
+  "part": 5,
+  "strip": [7520, 0, 8840, 7124],
+  "intersections": [
+    {"a": "West 8th Street", "b": "Terry Street", "x": 7508, "y": 207, "kind": "cross"},
+    {"a": "West 8th Street", "b": "McPherson Avenue", "x": 8022, "y": 207, "kind": "cross"},
+    {"a": "West 8th Street", "b": "Wells Street", "x": 8460, "y": 207, "kind": "cross"},
+    {"a": "West 8th Street", "b": "Fairbanks Avenue", "x": 8930, "y": 207, "kind": "cross"},
+    {"a": "Sedler Street", "b": "Terry Street", "x": 7515, "y": 1683, "kind": "T"},
+    {"a": "Sedler Street", "b": "McPherson Avenue", "x": 8028, "y": 1683, "kind": "cross"},
+    {"a": "Sedler Street", "b": "Wells Street", "x": 8460, "y": 1683, "kind": "T"},
+    {"a": "Bassett Street", "b": "Fairbanks Avenue", "x": 8750, "y": 2853, "kind": "T"},
+    {"a": "?", "b": "Fairbanks Avenue", "x": 8795, "y": 4740, "kind": "T"},
+    {"a": "Steiner Street", "b": "?", "x": 8822, "y": 5300, "kind": "T"},
+    {"a": "Mabel Street", "b": "Fairbanks Avenue", "x": 8230, "y": 5505, "kind": "T"},
+    {"a": "Edwin Avenue", "b": "Fairbanks Avenue", "x": 7830, "y": 6490, "kind": "T"},
+    {"a": "Edwin Avenue", "b": "Mabel Street", "x": 8228, "y": 6490, "kind": "cross"},
+    {"a": "Edwin Avenue", "b": "Steiner Street", "x": 8430, "y": 6493, "kind": "cross"},
+    {"a": "Frank Vanderhorst Street", "b": "Fairbanks Avenue", "x": 7900, "y": 6210, "kind": "T"},
+    {"a": "?", "b": "Frank Vanderhorst Street", "x": 7372, "y": 4808, "kind": "T"},
+    {"a": "Delhi Avenue", "b": "Fairbanks Avenue", "x": 7660, "y": 7035, "kind": "T"}
+  ],
+  "widths": [
+    {"street": "Fairbanks Avenue", "ft": 60, "x": 8930, "y": 260},
+    {"street": "McPherson Avenue", "ft": 50, "x": 8022, "y": 270},
+    {"street": "Wells Street", "ft": 50, "x": 8470, "y": 270},
+    {"street": "Terry Street", "ft": 50, "x": 7510, "y": 270},
+    {"street": "Bassett Street", "ft": 40, "x": 8800, "y": 2870},
+    {"street": "Mabel Street", "ft": 40, "x": 8228, "y": 5610},
+    {"street": "Steiner Street", "ft": 45, "x": 8430, "y": 6450},
+    {"street": "Edwin Avenue", "ft": 40, "x": 7880, "y": 6480},
+    {"street": "Frank Vanderhorst Street", "ft": 25, "x": 7860, "y": 6180},
+    {"street": "Delhi Avenue", "ft": 40, "x": 7570, "y": 7030},
+    {"street": "?", "ft": 40, "x": 8800, "y": 5250}
+  ],
+  "alleys": [],
+  "bends": [
+    {"street": "Fairbanks Avenue", "x": 8930, "y": 2350, "note": "turns from due south to SSW diagonal"},
+    {"street": "Fairbanks Avenue", "x": 8745, "y": 2835, "note": "diagonal ends, runs south again at Bassett"},
+    {"street": "Fairbanks Avenue", "x": 8786, "y": 4720, "note": "turns SW; the 40 ft connector continues straight south"},
+    {"street": "Fairbanks Avenue", "x": 8040, "y": 5775, "note": "SW diagonal steepens toward SSW"},
+    {"street": "Steiner Street", "x": 8430, "y": 5860, "note": "north-south part turns NE as the diagonal 'ST.'"},
+    {"street": "Frank Vanderhorst Street", "x": 7385, "y": 5010, "note": "angle point"},
+    {"street": "Frank Vanderhorst Street", "x": 7495, "y": 5540, "note": "angle point, then straight SE to Fairbanks"}
+  ],
+  "ends": [
+    {"street": "McPherson Avenue", "x": 8025, "y": 2395, "note": "dead end at Heberger property line"},
+    {"street": "Wells Street", "x": 8460, "y": 2395, "note": "dead end at Heberger property line"},
+    {"street": "Frank Vanderhorst Street", "x": 7375, "y": 4375, "note": "25 ft strip ends at Robbe lot line"},
+    {"street": "Edwin Avenue", "x": 8610, "y": 6495, "note": "plate edge"},
+    {"street": "Mabel Street", "x": 8228, "y": 6600, "note": "plate edge (stub south of Edwin)"},
+    {"street": "Steiner Street", "x": 8430, "y": 6590, "note": "plate edge (stub south of Edwin)"}
+  ],
+  "notes": "The avenue at x~8930 from West 8th Street south is printed only 'AVENUE' in this stretch; it runs continuously (jog at y 2350-2835) into the street printed 'FAIRBANKS' further south, so named Fairbanks Avenue. Wells Street north stub beyond 8th is offset east (~8498) from Wells south of 8th (8460); pick uses the south side. Terry Street appears to end at Sedler (only a boundary line continues south). Steiner: vertical part printed 'STEINER', the NE diagonal printed only 'ST.'; treated as one street. '?' at (8795,4740)/(8822,5300): unnamed 40 ft connector running north from the NE end of the Steiner diagonal to Fairbanks Avenue's bend. '?' at (7372,4808): 25 ft strip printed 'NOT OPEN' running west to Enright, meeting the 25 ft strip that becomes Frank Vanderhorst Street (printed 'FRANK VANDERHORST ST.'). Delhi Avenue (name printed further west at x~5400) runs along the bottom plate edge; most of it is cut off. Pipe and sewer lines ignored."
+}

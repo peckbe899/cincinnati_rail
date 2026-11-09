@@ -116,3 +116,14 @@ Each reader gets a vertical strip and writes its OWN file, picks22/s22-31_<part>
     python3 sb.py check 22-31 OUT.jpg picks22/s22-31_<part>.json x0 y0 x1 y1
 
 Same rules as the 26a/26b/29 section above: every crossing in the strip plus about 300 px past its edges, about 10 px precision from 600-1,000 px crops, bends on curved streets, real ends (say "plate edge" for plate-edge cuts), names as printed and expanded, "?" for unnamed, widths where printed; railroads, inclines, creeks, cemetery and park drives, private lanes and boundary bands are not streets; large spaced lettering is subdivision or estate names. Crops in your own folder, deleted when you finish.
+
+## Added 2026-11-08: plates 25 (south-west Price Hill) and 28 (West Price Hill), sheet ids 22-25, 22-28
+
+Ben's scans of 1922 plates 25 and 28: one image each (22-25 about 10,790 x 7,120 px, 22-28 about 10,330 x 6,040 px), about 1.5 px a foot (50 ft streets about 75 px wide), roughly north-up, NOT georeferenced. White outside the plate is the background. Tool commands as for 22-38 with these sheet ids.
+
+- 22-25: south-west Price Hill below West Eighth Street (along the top): Academy Avenue, the streets around Seegar and Bassett in the east, large estate tracts in the middle and west, and Mount Echo Park in the south-east corner.
+- 22-28: West Price Hill: Glenway Avenue running diagonally across the middle, Warsaw, Vincent, Midland, St. William and the dense grid round them; West Eighth Street along the bottom.
+
+Rule 12 (docs/sanborn/RULES.md): these picks are the plate's controls, so each strip is read twice, by two readers working independently. Each reader writes its OWN file, data/sanborn/picks22_reads/22-25/<read>_<part>.json (read A or B, part 1-6; "sheet": "22-25"), and must not open any other reader's file or anything under sbg/picks22. Only crossings both reads agree on within 60 px become picks (sbg/picks22/s22-25_<part>.json, written by tools/sanborn/complete/merge_reads.py).
+
+Same rules as the 26a/26b/29 section: every crossing of two streets whose centre lies inside the strip plus about 300 px past its left and right edges, about 10 px precision from 600-1,000 px crops, bends on curved streets, real ends (say "plate edge" for plate-edge cuts), names as printed and expanded, "?" for unnamed, widths where printed; railroads, inclines, creeks, cemetery and park drives, private lanes and boundary bands are not streets; large spaced lettering is subdivision or estate names. Crops in your own folder, deleted when you finish.

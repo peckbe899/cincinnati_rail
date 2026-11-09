@@ -39,7 +39,7 @@ spread = [float(np.hypot(np.ptp(m['xs']), np.ptp(m['ys']))) for m in M if len(m[
 print('plate', N, 'picks', len(P), 'crossings', len(M), 'read twice', len(spread), 'median spread px', round(float(np.median(spread)), 1) if spread else '-')
 # ---- OSM
 OL = collections.defaultdict(list)
-for fn in ('lph/osm_north.geojson', 'basin/osm_basin.geojson', 'lph/osm_east.geojson') + (('lph/osm_norwood.geojson',) if N in ('82A', '83A', '75', '76') else ()) + (('lph/osm_west.geojson',) if N in ('26A', '26B', '29', '31', '33') else ()):   # Norwood plates (82A, 83A, 75, 76) and Price Hill plates (26A, 26B, 29, 25 Oct): extracts from the same source
+for fn in ('lph/osm_north.geojson', 'basin/osm_basin.geojson', 'lph/osm_east.geojson') + (('lph/osm_norwood.geojson',) if N in ('82A', '83A', '75', '76') else ()) + (('lph/osm_west.geojson',) if N in ('26A', '26B', '29', '31', '33', '25', '28') else ()):   # Norwood plates (82A, 83A, 75, 76) and Price Hill plates (26A, 26B, 29, 25 Oct): extracts from the same source
     for f in json.load(open(SP + fn))['features']:
         nm = f['properties'].get('name')
         if nm and f['geometry']['type'] == 'LineString':
