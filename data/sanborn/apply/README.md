@@ -118,3 +118,13 @@ Model `cufp/39/fwd_complete.pkl` (`reports/2026-11-09_newplates`: 24 controls, h
 - tiles_22 re-composited with 39 (215 -> 229 tiles, none dropped). Plate 40 is not drawn (its model failed the gate).
 - Seams (`reports/2026-11-09_seams_applied` against `reports/2026-11-08_seams_applied`, `compare_2026-11-08.json`): all 173 plate-plate and 556 plate-1904 seams unchanged; 4 new seams, 38/39, median 3.25 m, max 5.28 m.
 - Not done: five tiles of the 1904 layer (tiles_n) touch 39's north-west corner by Spring Grove Avenue. Those frames were not bent onto 39 (the batch's open question: whether Northside streets Ben edited may move with the bend).
+
+## Plate 40 added (9 November 2026)
+
+Model `cufp/40/fwd_complete.pkl` (`reports/2026-11-09_newplates_40_42`: 42 controls, held-out 5.73 m, max 16.44 m). This is over the 5 m gate; Ben chose it (9 November) over the 39-control model (4.52 m) so that all his street names are used: Carthage = Vine, Canal = Baker Place, Ammen = Salway Street, Este at Spring Grove = Kings Run Drive at Spring Grove; Donnell gone, Beech & Spring Grove left out (`cufp/config.json`; `reports/2026-11-09_newplates_40_names`). Built like 39: w1 kept, only ground not already drawn taken, prefix SS.
+
+- c40: 34 streets and 11 blocks; nothing earlier taken out; every id in Ben's layout still there with its name, none moved (`streets_report_40.json`).
+- tiles_22 re-composited with 40 (229 -> 239 tiles).
+- Seams (`reports/2026-11-09_seams_applied` against `reports/2026-11-09_seams_applied_39`, `compare_39.json`): every existing seam unchanged, none lost. New: one 39/40 seam (Mitchell & Kessler, 1.55 m) and 26 seams between plate 40 and the unbent 1904 frames. Of those, frames 647sge, 647sgw, 648, 651, 652, 653 and 654 have medians of 1.5 to 3.6 m; 649m 12.2 m, 650m 6.7 m, 656 11.7 m, and one crossing on 663 at 43.0 m.
+- Deck check at full zoom (plate 40's west side, Hope Street and Durham Avenue): the plate draws and the c40 streets sit on its printed streets.
+- Not done: the 1904 frames under plate 40 were not bent onto it (same open question as plate 39).

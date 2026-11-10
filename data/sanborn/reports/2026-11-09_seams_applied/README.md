@@ -4,21 +4,21 @@ Plate models: each plate's own (fwd.pkl, Ben georeference for 35N).
 
 Read only: every street crossing that two 1922 plates, or a 1922 plate and a 1904 frame, both show, and how far apart the two copies sit on the page. Nothing was fitted, rebuilt or changed. Method: `tools/sanborn/seams.py` (its docstring); matched by street names within 45 m. Files: `seams.csv` (every pair), `per_pair.csv` (by plate and frame), `seams.json` (all of it, with the sha256 of every file read).
 
-Read: 24 plates on the 1922 layer (2197 crossings), 235 1904 deck and north frames (2298 crossings), 142 1904 basin frames (2446 crossings).
+Read: 25 plates on the 1922 layer (2251 crossings), 235 1904 deck and north frames (2298 crossings), 142 1904 basin frames (2446 crossings).
 
 ## Summary
 
 | Seam | Source pairs | Shared crossings | Median m | RMS m | 90% m | Max m | > 5 m | > 10 m | > 20 m | Same names 45-150 m |
 |---|---|---|---|---|---|---|---|---|---|---|
-| plate-plate | 39 | 177 | 1.31 | 4.86 | 5.61 | 29.33 | 22 | 8 | 3 | 1 |
-| plate-1904 | 156 | 556 | 0.46 | 6.38 | 7.41 | 32.13 | 80 | 47 | 23 | 0 |
+| plate-plate | 40 | 178 | 1.31 | 4.85 | 5.58 | 29.33 | 22 | 8 | 3 | 1 |
+| plate-1904 | 167 | 583 | 0.53 | 6.59 | 8.02 | 43.02 | 86 | 53 | 24 | 0 |
 
 Plate against 1904, by how the frame is drawn:
 
 | 1904 frames | Shared crossings | Frames | Median m | 90% m | Max m |
 |---|---|---|---|---|---|
 | deck/north, bent onto 1922 (lph/tps.pkl) | 458 | 88 | 0.27 | 3.41 | 27.58 |
-| deck/north, not bent | 98 | 23 | 4.69 | 25.43 | 32.13 |
+| deck/north, not bent | 125 | 34 | 3.92 | 24.70 | 43.02 |
 | basin (sbg/fit/tf.json) | 0 | 0 | - | - | - |
 
 ## Plate against plate
@@ -49,6 +49,7 @@ Plate against 1904, by how the frame is drawn:
 | 22-38 | 22-39 | 4 | 3.25 | 5.28 | -0.3, -0.2 |
 | 22-38 | 22-66 | 1 | 0.99 | 0.99 | -0.7, -0.7 |
 | 22-38 | 22-68 | 4 | 4.19 | 11.15 | -1.9, +3.1 |
+| 22-39 | 22-40 | 1 | 1.55 | 1.55 | -0.7, -1.4 |
 | 22-66 | 22-67 | 3 | 1.25 | 3.72 | -0.4, +1.4 |
 | 22-66 | 22-68 | 7 | 1.42 | 4.65 | -0.1, -0.8 |
 | 22-66 | 22-69 | 8 | 2.56 | 27.75 | +1.2, +3.5 |
@@ -80,6 +81,7 @@ Plate against 1904, by how the frame is drawn:
 | 22-37L | 9 | 50 | 0.11 | 0.32 | 9.00 |
 | 22-37R | 10 | 36 | 0.16 | 7.14 | 11.20 |
 | 22-38 | 14 | 46 | 0.32 | 5.21 | 23.31 |
+| 22-40 | 11 | 27 | 2.34 | 12.09 | 43.02 |
 | 22-66 | 13 | 25 | 0.14 | 1.09 | 2.60 |
 | 22-67 | 4 | 7 | 0.35 | 3.57 | 4.73 |
 | 22-68 | 2 | 2 | 0.70 | 1.04 | 1.12 |
@@ -113,6 +115,7 @@ Plate against 1904, by how the frame is drawn:
 
 | m | Plate | Other | Crossing | dE, dN m |
 |---|---|---|---|---|
+| 43.0 | 22-40 | 1904 663 (deck/north) | Spring Grove Avenue & Beech Avenue | +32.2, +28.6 |
 | 32.1 | 22-31 | 1904 245 (deck/north) | Queen City Avenue & Garrard Avenue | +32.0, -2.2 |
 | 30.4 | 22-33 | 1904 245 (deck/north) | Garrard Avenue & Queen City Avenue | +30.1, -4.2 |
 | 30.2 | 22-31 | 1904 211 (deck/north) | York Street & Garrard Avenue | +30.2, +0.7 |
@@ -132,7 +135,6 @@ Plate against 1904, by how the frame is drawn:
 | 24.0 | 22-31 | 1904 222 (deck/north) | Harrison Avenue & Garrard Avenue | +23.3, +5.5 |
 | 23.8 | 22-31 | 1904 221 (deck/north) | Harrison Avenue & Garrard Avenue | +22.9, +6.2 |
 | 23.3 | 22-38 | 1904 289 (deck/north, bent) | Julia Ann Street & West McMicken Avenue | +9.5, +21.3 |
-| 22.6 | 22-29 | 1904 57 (deck/north) | Garrard Avenue & Hopkins Street | +15.8, +16.2 |
 
 ## Same street names, 45-150 m apart
 
