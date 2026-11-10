@@ -1,4 +1,4 @@
-# Plates 25 and 28: the two reads merged (2026-11-08)
+# Plates 25, 28, 39 and 40: the two reads merged
 
 Each strip read twice, independently (`docs/sanborn/workspace_notes/sbg/INSTRUCTIONS22.md`, section of 8 November). A pick is kept only where the two reads have the same crossing (same street names) within 60 px, at their mean (`tools/sanborn/complete/merge_reads.py`). Strips overlap by about 300 px, so a crossing near a strip edge can be counted in two strips; the fit merges those.
 
@@ -75,4 +75,62 @@ Crossings the reads did not agree on:
 - strip 4, Seton Avenue & Glenway Avenue (read A at 5390, 1778): the reads are 2060 px apart
 - strip 6, Mansion Avenue & Brevier Avenue (read A at 9902, 2470): the reads are 52 px apart
 - strip 6, Elberon Avenue & West 8th Street (read B at 10045, 5753): the reads are 179 px apart
+
+## 22-39
+
+| Strip | Read A crossings | Read B crossings | Picks | Not agreed |
+|---|---|---|---|---|
+| 1 | 3 | 3 | 3 | 0 |
+| 2 | 0 | 2 | 0 | 2 |
+| 3 | 12 | 12 | 12 | 0 |
+| 4 | 15 | 12 | 10 | 7 |
+| 5 | 10 | 10 | 9 | 2 |
+| 6 | 13 | 12 | 9 | 6 |
+| **All** | 53 | 51 | 43 | 17 |
+
+Crossings the reads did not agree on:
+
+- strip 2, Lafayette Avenue & Middleton Avenue (read B at 3853, 3608): only read B has it
+- strip 2, Warren Avenue & Middleton Avenue (read B at 3957, 5382): only read B has it
+- strip 4, Lafayette Avenue & Marjorie Avenue (read A at 6790, 3585): only read A has it
+- strip 4, Clifton Avenue & Belsaw Place (read A at 5375, 4385): only read A has it
+- strip 4, Belsaw Place & Belsaw Place (read A at 5080, 4553): only read A has it
+- strip 4, Belsaw Place & Belsaw Place (read A at 5080, 4920): only read A has it
+- strip 4, Clifton Avenue & Belsaw Place (read A at 5387, 4927): only read A has it
+- strip 4, Lafayette Circle & Marjorie Avenue (read B at 6800, 3585): only read B has it
+- strip 4, Clifton Avenue & McAlpin Avenue (read B at 5422, 7003): only read B has it
+- strip 5, Woolper Avenue & Vine Street (read A at 8541, 6815): only read A has it
+- strip 5, McAlpin Avenue & Vine Street (read B at 8544, 6820): only read B has it
+- strip 6, Greendale Avenue & Vine Street (read A at 8756, 6436): only read A has it
+- strip 6, Woolper Avenue & Vine Street (read A at 8528, 6822): only read A has it
+- strip 6, Kessler Avenue & Ringwalt Avenue (read A at 9158, 2017): only read A has it
+- strip 6, Frank Court & Vine Street (read B at 10553, 3102): only read B has it
+- strip 6, McAlpin Avenue & Vine Street (read B at 8528, 6853): only read B has it
+- strip 6, Ehrman Avenue & Vine Street (read A at 9290, 5626): the reads are 64 px apart
+
+## 22-40
+
+| Strip | Read A crossings | Read B crossings | Picks | Not agreed |
+|---|---|---|---|---|
+| 1 | 18 | 18 | 16 | 2 |
+| 2 | 15 | 15 | 14 | 2 |
+| 3 | 8 | 8 | 8 | 1 |
+| 4 | 6 | 7 | 5 | 2 |
+| 5 | 7 | 7 | 7 | 0 |
+| 6 | 20 | 22 | 19 | 4 |
+| **All** | 74 | 77 | 69 | 11 |
+
+Crossings the reads did not agree on:
+
+- strip 2, Mitchell Avenue & Donnell Avenue (read A at 2845, 3925): only read A has it
+- strip 2, Spring Grove Avenue & Donnell Avenue (read B at 2840, 3873): only read B has it
+- strip 4, Chickering Avenue & Spring Grove Avenue (read A at 4828, 1795): only read A has it
+- strip 4, Spring Grove Avenue & Erie Avenue (read B at 4823, 1783): only read B has it
+- strip 6, Spring Grove Avenue & Beech Avenue (read A at 7300, 190): only read A has it
+- strip 6, Andrews Street & West Ross Avenue (read B at 8987, 1411): only read B has it
+- strip 6, Andrews Street & Bank Avenue (read B at 8983, 2086): only read B has it
+- strip 6, Bank Avenue & Carthage Avenue (read B at 9559, 2093): only read B has it
+- strip 1, Winton Avenue & McMakin Avenue (read A at 65, 900): the reads are 78 px apart
+- strip 1, McMakin Avenue & North Edgewood Avenue (read A at 1568, 900): the reads are 78 px apart
+- strip 3, Spring Grove Avenue & Mitchell Avenue (read B at 2873, 3823): the reads are 35 px apart
 
