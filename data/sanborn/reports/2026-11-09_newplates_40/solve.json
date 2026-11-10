@@ -1,0 +1,75 @@
+{
+ "made": "2026-11-09T21:54:31",
+ "summary": {
+  "plates": [
+   {
+    "plate": "22-40",
+    "controls": 39,
+    "name_seeded_fit": "tps3",
+    "lam": 3.0,
+    "damped": false,
+    "own_rms": 2.39,
+    "heldout": 4.52,
+    "heldout_max": 11.42,
+    "max_corner_move_m": 0.45,
+    "corner_moves_m": [
+     0.0,
+     0.0,
+     0.5,
+     0.3
+    ],
+    "ties": 1,
+    "tie_partners": [
+     "22-39"
+    ]
+   }
+  ],
+  "ties": 1,
+  "seams": {
+   "dir": "reports/2026-11-09_seams_newplates_40",
+   "neighbours": {
+    "22-39": {
+     "before": {
+      "n": 4,
+      "median": 3.25
+     },
+     "after": {
+      "n": 5,
+      "median": 2.68
+     },
+     "with_new": [
+      {
+       "new": "22-40",
+       "n": 1,
+       "median": 1.53,
+       "max": 1.53
+      }
+     ]
+    }
+   },
+   "new_pair": {
+    "n": 0,
+    "median": null,
+    "max": null
+   }
+  },
+  "gate": {
+   "heldout_under_5m": true,
+   "neighbour_median_not_worse": {
+    "22-39": true
+   },
+   "build": true
+  }
+ },
+ "ties": [
+  {
+   "a": "22-40",
+   "b": "22-39",
+   "street_1": "Mitchell Avenue",
+   "street_2": "Kessler Avenue",
+   "before_m": 2.54,
+   "after_m": 1.53,
+   "weight": 1.0
+  }
+ ]
+}

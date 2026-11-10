@@ -182,7 +182,7 @@ def main():
         d_ = SP + f'reports/{today}_seams_newplates'
         S2.main([d_])
         rows_s = json.load(open(d_ + '/seams.json', encoding='utf8'))['seams']
-        before = json.load(open(SP + 'reports/2026-11-07_seams_applied/seams.json', encoding='utf8'))['seams']
+        before = json.load(open(SP + sorted(__import__('glob').glob(SP + 'reports/*_seams_applied'))[-1].replace(SP, '') + '/seams.json', encoding='utf8'))['seams']
         nb = sorted({r['b_src'] if r['a_src'] in new else r['a_src'] for r in rows_s if r['within_45m'] and r['seam'] == 'plate-plate' and (r['a_src'] in new) != (r['b_src'] in new)})
         per = {}
         for q in nb:

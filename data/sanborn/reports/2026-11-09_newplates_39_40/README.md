@@ -7,7 +7,7 @@ Method as `reports/2026-11-08_newplates` (`tools/sanborn/joint/newplates.py`): e
 | 22-39 | 24 | quadratic | 3.0 | 2.36 | 4.85 | 9.93 | 4.99 | 5 | 22-38, 22-40 |
 | 22-40 | 29 | tps100 | 100.0 | 5.3 | 6.58 | 15.25 | 1.33 | 1 | 22-39 |
 
-Seams (`reports/2026-11-09_seams_newplates`): existing seams unchanged (the applied plates are held fixed). New: 39 with 38, 4 seams, median 3.25 m, max 5.28 m; 39 with 40, 1 seam, 3.72 m (Kessler Avenue at Mitchell Avenue). Plate 40 shares no crossing with any applied plate.
+Seams (`reports/2026-11-09_seams_newplates_39_40`): existing seams unchanged (the applied plates are held fixed). New: 39 with 38, 4 seams, median 3.25 m, max 5.28 m; 39 with 40, 1 seam, 3.72 m (Kessler Avenue at Mitchell Avenue). Plate 40 shares no crossing with any applied plate.
 
 ## Gate
 

@@ -47,6 +47,7 @@ for fn in ('lph/osm_north.geojson', 'basin/osm_basin.geojson', 'lph/osm_east.geo
 U = {k: unary_union(v) for k, v in OL.items()}
 ALIAS = {key(a_): key(b_) for a_, b_ in {'Victory Boulevard': 'Victory Parkway', 'Clough Avenue': 'Crane Avenue',
          'Montgomery Avenue': 'Montgomery Road', 'Montgomery Pike': 'Montgomery Road', 'McNeill Avenue': 'McNeil Avenue', 'Robertson Road': 'Robertson Avenue', 'Mt. Hope Road': 'Mount Hope Avenue', 'Mount Hope Road': 'Mount Hope Avenue', 'Filson Terrace': 'Filson Place', 'Alpine Way': 'Alpine Place'}.items()}   # Price Hill (26A, 29; 25 Oct): renamed since 1922; a wrong pairing is caught by the 6 m residual test   # Norwood (82A/83A): Montgomery printed Pike/Avenue, McNeill spelt with two l's      # renamed since 1922 (same street)
+ALIAS.update({key(a_): key(b_) for a_, b_ in CFG.get('alias', {}).items()})   # 2026-11-09: per-plate aliases (cufp/config.json "alias"), e.g. plate 40: Carthage Avenue = Vine Street
 SUFX = {'rd', 'av', 'ave', 'st', 'pl', 'ter', 'ln', 'dr', 'ct', 'blvd', 'way', 'pk', 'pike', 'al', 'aly', 'cir', 'pkwy', 'sq', 'row', 'road', 'avenue', 'street', 'place', 'terrace', 'lane', 'drive', 'court', 'alley'}
 def stem(k): w = base(k).split(); return ' '.join(w[:-1]) if len(w) > 1 and w[-1] in SUFX else ' '.join(w)
 _ST = collections.defaultdict(set)
@@ -67,7 +68,7 @@ def osm_x(k):
 if G:
     def seed(x, y):
         X = poly(x, y, G['deg']); tx = X @ np.array(G['cx']); ty = X @ np.array(G['cy']); a = G['tif_transform']
-        return W3857.transform(a[0] * (tx + 0.5) + a[1] * (ty + 0.5) + a[2], a[3] * (tx + 0.5) + a[4] * (ty + 0.5) + a[5])
+        return (Transformer.from_crs(G['tif_crs'], 26916, always_xy=True) if G.get('tif_crs') and '3857' not in G['tif_crs'] else W3857).transform(a[0] * (tx + 0.5) + a[1] * (ty + 0.5) + a[2], a[3] * (tx + 0.5) + a[4] * (ty + 0.5) + a[5])   # 2026-11-09: the GeoTIFF's own CRS when it is not EPSG:3857 (plate 40's first pass: EPSG:32616)
 else:                                            # name seed: unique name pairs, RANSAC affine
     cnt = collections.Counter(m['k'] for m in M); cand = []
     for m in M:
