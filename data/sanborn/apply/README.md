@@ -109,3 +109,12 @@ Models `cufp/25/fwd_complete.pkl`, `cufp/28/fwd_complete.pkl` (`tools/sanborn/jo
 - Street sets (`apply.py newsets 25 28`, `cufp/build.py` with 25 and 28 at the end of PLATE_ORDER, prefixes SA and SI, config as 26A: w1 kept, earlier drawing avoided, clipped to `wh/area_utm.json`): c25 28 streets and 12 blocks on 199.2 ha, c28 66 streets and 67 blocks on 213.9 ha; no earlier street or block taken out. Every id in Ben's layout still there with its name; none of his streets moved (`streets_report_25_28.json`).
 - Tiles: tiles_22 re-composited with 25 and 28 (196 -> 215 tiles, none dropped).
 - Seams (`reports/2026-11-08_seams_applied`, against `reports/2026-11-07_seams_applied`, `compare_2026-11-07.json`): every existing seam unchanged (146 plate-plate, median 1.57 m, 90% 5.83 m; 556 plate-1904, median 0.46 m); 27 new seams with 25 and 28, median 0.48 m, 90% 1.24 m, max 5.84 m (25/28 at West 8th Street and Wells Street).
+
+## Plate 39 added (9 November 2026)
+
+Model `cufp/39/fwd_complete.pkl` (`reports/2026-11-09_newplates`: 24 controls, held-out 4.85 m). Built like 26A but without a boundary clip: w1 kept, only ground not already drawn taken (`cufp/config.json`), prefix SJ.
+
+- c39: 23 streets and 5 blocks on 246.7 ha; nothing earlier taken out; every id in Ben's layout still there with its name, none moved (`streets_report_39.json`).
+- tiles_22 re-composited with 39 (215 -> 229 tiles, none dropped). Plate 40 is not drawn (its model failed the gate).
+- Seams (`reports/2026-11-09_seams_applied` against `reports/2026-11-08_seams_applied`, `compare_2026-11-08.json`): all 173 plate-plate and 556 plate-1904 seams unchanged; 4 new seams, 38/39, median 3.25 m, max 5.28 m.
+- Not done: five tiles of the 1904 layer (tiles_n) touch 39's north-west corner by Spring Grove Avenue. Those frames were not bent onto 39 (the batch's open question: whether Northside streets Ben edited may move with the bend).
