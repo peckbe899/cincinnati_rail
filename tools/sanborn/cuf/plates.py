@@ -72,4 +72,4 @@ def _plate(n):
         py = cv2.remap(g['py'].astype(np.float32), fx, fy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=-1e6)
         return px, py
     return dict(id=f'22-{n}', img=img, inv=inv, ok=lambda: os.path.exists(M))
-PLATES += [_plate(n) for n in ('66', '67', '68', '69', '70', '82A', '83A', '75', '76', '26A', '26B', '29', '31', '33', '25', '28', '39', '40')]   # 26A, 26B, 29 Price Hill; 31, 33 Fairmount (2026-10-25); 25, 28 Price Hill (2026-11-08)
+PLATES += [_plate(n) for n in ('66', '67', '68', '69', '70', '82A', '83A', '75', '76', '26A', '26B', '29', '31', '33', '25', '28', '39', '40', '45')]   # 26A, 26B, 29 Price Hill; 31, 33 Fairmount (2026-10-25); 25, 28 Price Hill (2026-11-08)
