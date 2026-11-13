@@ -128,3 +128,13 @@ Model `cufp/40/fwd_complete.pkl` (`reports/2026-11-09_newplates_40_42`: 42 contr
 - Seams (`reports/2026-11-09_seams_applied` against `reports/2026-11-09_seams_applied_39`, `compare_39.json`): every existing seam unchanged, none lost. New: one 39/40 seam (Mitchell & Kessler, 1.55 m) and 26 seams between plate 40 and the unbent 1904 frames. Of those, frames 647sge, 647sgw, 648, 651, 652, 653 and 654 have medians of 1.5 to 3.6 m; 649m 12.2 m, 650m 6.7 m, 656 11.7 m, and one crossing on 663 at 43.0 m.
 - Deck check at full zoom (plate 40's west side, Hope Street and Durham Avenue): the plate draws and the c40 streets sit on its printed streets.
 - Not done: the 1904 frames under plate 40 were not bent onto it (same open question as plate 39).
+
+## Plate 45 added (13 November 2026)
+
+Model `cufp/45/fwd_complete.pkl` (`reports/2026-11-13_newplates_45`: 70 controls, held-out 3.27 m, max 8.23 m). Ben, 13 November: "put it where it is in real life", so the plate sits where its own crossings fit OSM and the 1904 frames under it are left as they are. Built like 39 and 40: w1 kept, only ground not already drawn taken, prefix S4 (every letter after S is in use).
+
+- c45: 40 streets and 19 blocks, north of the streets already drawn from the 1904 frames; nothing earlier taken out; every id in Ben's layout still there with its name, none moved (`streets_report_45.json`).
+- tiles_22 re-composited with 45 (239 -> 254 tiles).
+- Seams (`reports/2026-11-13_seams_applied` against `reports/2026-11-09_seams_applied`, `compare_2026-11-09.json`): all 762 existing seams unchanged, none lost. 66 new seams, all between plate 45 and 1904 frames: median 4.74 m, max 10.88 m (per frame in `reports/2026-11-13_newplates_45/README.md`).
+- Check: the hub was not running, so the Deck page was not opened. Instead the basin streets were drawn over the tiles_22 overview (2 m a pixel): the c45 streets and the earlier Northside streets both lie on the plate's printed streets at that scale. Not checked at full zoom.
+- Not done: the 1904 frames under plate 45 were not bent onto it.

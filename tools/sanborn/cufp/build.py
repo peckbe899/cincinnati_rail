@@ -19,8 +19,8 @@ from shapely.ops import unary_union, polygonize, nearest_points, linemerge
 from scipy.sparse.csgraph import minimum_spanning_tree, shortest_path
 import rasterio, rasterio.features
 CFG = json.load(open(SP + 'cufp/config.json')).get(NP_, {}) if os.path.exists(SP + 'cufp/config.json') else {}
-PLATE_ORDER = ['66', '68', '67', '69', '70', '82A', '83A', '75', '76', '29', '26A', '26B', '31', '33', '25', '28', '39', '40']   # 31, 33 Fairmount (2026-10-25); 82A, 83A Norwood (2026-10-23); 75, 76 (2026-10-24); 29, 26A, 26B Price Hill (2026-10-25)
-INSTALL = '--install' in sys.argv; SET = 'c' + NP_; PREFIX = 'S' + {'66': 'P', '67': 'Q', '68': 'R', '69': 'T', '70': 'U', '82A': 'N', '83A': 'O', '75': 'X', '76': 'Y', '26A': 'D', '26B': 'F', '29': 'G', '31': 'H', '33': 'L', '25': 'A', '28': 'I', '39': 'J', '40': 'S'}[NP_]; FT = 0.3048
+PLATE_ORDER = ['66', '68', '67', '69', '70', '82A', '83A', '75', '76', '29', '26A', '26B', '31', '33', '25', '28', '39', '40', '45']   # 31, 33 Fairmount (2026-10-25); 82A, 83A Norwood (2026-10-23); 75, 76 (2026-10-24); 29, 26A, 26B Price Hill (2026-10-25)
+INSTALL = '--install' in sys.argv; SET = 'c' + NP_; PREFIX = 'S' + {'66': 'P', '67': 'Q', '68': 'R', '69': 'T', '70': 'U', '82A': 'N', '83A': 'O', '75': 'X', '76': 'Y', '26A': 'D', '26B': 'F', '29': 'G', '31': 'H', '33': 'L', '25': 'A', '28': 'I', '39': 'J', '40': 'S', '45': '4'}[NP_]; FT = 0.3048
 BJ = json.load(open(SP + 'deckpage/basin.json'))
 REM = SP + f'cufp/{NP_}/removed.json'
 if os.path.exists(REM):          # put back what the last install took out or clipped
