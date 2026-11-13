@@ -7,13 +7,33 @@
   2240,
   7243
  ],
- "made": "2026-11-13T02:57:40",
+ "made": "2026-11-13T08:40:28",
  "by": "tools/sanborn/complete/merge_reads.py: two independent reads, a pick only where they agree within 60 px",
  "reads": [
   "picks22_reads/22-43/A_1.json",
   "picks22_reads/22-43/B_1.json"
  ],
  "intersections": [
+  {
+   "a": "Runnymeade Avenue",
+   "b": "Kearsarge Avenue",
+   "x": 1822.0,
+   "y": 3131.5,
+   "kind": "cross",
+   "reads": [
+    {
+     "read": "A",
+     "x": 1822,
+     "y": 3132
+    },
+    {
+     "read": "B",
+     "x": 1822,
+     "y": 3131
+    }
+   ],
+   "spread_px": 1.0
+  },
   {
    "a": "Herron Avenue",
    "b": "Kearsarge Avenue",
@@ -55,6 +75,26 @@
    "spread_px": 2.2
   },
   {
+   "a": "Runnymeade Avenue",
+   "b": "Wolcott Street",
+   "x": 1819.0,
+   "y": 2087.0,
+   "kind": "cross",
+   "reads": [
+    {
+     "read": "A",
+     "x": 1818,
+     "y": 2088
+    },
+    {
+     "read": "B",
+     "x": 1820,
+     "y": 2086
+    }
+   ],
+   "spread_px": 2.8
+  },
+  {
    "a": "Herron Avenue",
    "b": "Hoffner Avenue",
    "x": 1075.0,
@@ -93,6 +133,26 @@
     }
    ],
    "spread_px": 4.0
+  },
+  {
+   "a": "Runnymeade Avenue",
+   "b": "Hoffner Avenue",
+   "x": 1833.5,
+   "y": 5320.0,
+   "kind": "cross",
+   "reads": [
+    {
+     "read": "A",
+     "x": 1833,
+     "y": 5322
+    },
+    {
+     "read": "B",
+     "x": 1834,
+     "y": 5318
+    }
+   ],
+   "spread_px": 4.1
   },
   {
    "a": "Colerain Avenue",
@@ -153,6 +213,26 @@
     }
    ],
    "spread_px": 13.0
+  },
+  {
+   "a": "Colerain Avenue",
+   "b": "Runnymeade Avenue",
+   "x": 1818.0,
+   "y": 1135.0,
+   "kind": "T",
+   "reads": [
+    {
+     "read": "A",
+     "x": 1818,
+     "y": 1128
+    },
+    {
+     "read": "B",
+     "x": 1818,
+     "y": 1142
+    }
+   ],
+   "spread_px": 14.0
   },
   {
    "a": "Runnymeade Avenue",
