@@ -1,0 +1,54 @@
+{
+  "sheet": "22-43",
+  "read": "B",
+  "part": 6,
+  "strip": [8820, 0, 10543, 7243],
+  "intersections": [
+    {"a": "Chase Avenue", "b": "Turrill Street", "x": 10350, "y": 45, "kind": "T"},
+    {"a": "Delaney Street", "b": "Walker Alley", "x": 8786, "y": 2815, "kind": "T"},
+    {"a": "Cherry Street", "b": "Walker Alley", "x": 9606, "y": 2862, "kind": "T"},
+    {"a": "Blue Rock Street", "b": "Delaney Street", "x": 8791, "y": 3270, "kind": "cross"},
+    {"a": "Blue Rock Street", "b": "Cherry Street", "x": 9610, "y": 3320, "kind": "cross"},
+    {"a": "Blue Rock Street", "b": "Turrill Street", "x": 10352, "y": 3387, "kind": "cross"},
+    {"a": "Delaney Street", "b": "McMakin Street", "x": 8795, "y": 3727, "kind": "T"},
+    {"a": "Delaney Street", "b": "McMakin Alley", "x": 8795, "y": 3742, "kind": "T"},
+    {"a": "Cherry Street", "b": "McMakin Alley", "x": 9612, "y": 3783, "kind": "T"},
+    {"a": "Cherry Street", "b": "McMakin Alley", "x": 9612, "y": 3843, "kind": "T"},
+    {"a": "McMakin Alley", "b": "Turrill Street", "x": 10355, "y": 3889, "kind": "T"},
+    {"a": "Delaney Street", "b": "Hoffner Avenue", "x": 8810, "y": 5212, "kind": "T"},
+    {"a": "Cherry Street", "b": "Hoffner Avenue", "x": 9638, "y": 5212, "kind": "cross"},
+    {"a": "Hoffner Avenue", "b": "Turrill Street", "x": 10368, "y": 5214, "kind": "T"},
+    {"a": "Colerain Avenue", "b": "Cooper Street", "x": 8548, "y": 6107, "kind": "T"},
+    {"a": "Cherry Street", "b": "Cooper Street", "x": 9654, "y": 6105, "kind": "cross"},
+    {"a": "Cooper Street", "b": "Turrill Street", "x": 10370, "y": 6105, "kind": "cross"},
+    {"a": "Colerain Avenue", "b": "Powers Street", "x": 8968, "y": 6975, "kind": "cross"},
+    {"a": "Cherry Street", "b": "Powers Street", "x": 9655, "y": 6998, "kind": "cross"},
+    {"a": "Powers Street", "b": "Turrill Street", "x": 10371, "y": 6998, "kind": "T"}
+  ],
+  "widths": [
+    {"street": "Turrill Street", "ft": 40, "x": 10320, "y": 160},
+    {"street": "Delaney Street", "ft": 40, "x": 8775, "y": 2520},
+    {"street": "Cherry Street", "ft": 50, "x": 9610, "y": 2575},
+    {"street": "Cherry Street", "ft": 40, "x": 9655, "y": 5330},
+    {"street": "Hoffner Avenue", "ft": 60, "x": 10260, "y": 5200},
+    {"street": "Cooper Street", "ft": 50, "x": 8760, "y": 6090},
+    {"street": "Powers Street", "ft": 40, "x": 10290, "y": 7010},
+    {"street": "Colerain Avenue", "ft": 60, "x": 8910, "y": 6870},
+    {"street": "Walker Alley", "ft": 12, "x": 8860, "y": 2840},
+    {"street": "McMakin Alley", "ft": 12, "x": 9720, "y": 3845}
+  ],
+  "bends": [
+    {"street": "Cherry Street", "x": 9630, "y": 5170, "note": "centre line steps east about 30 px at Hoffner Avenue: 50 ft wide and centred near x 9620 to the north, 40 ft wide and centred near x 9653 to the south"},
+    {"street": "Powers Street", "x": 8968, "y": 6975, "note": "turns at Colerain Avenue: runs due east on the east side (centre y 6998), west-south-west on the west side"}
+  ],
+  "ends": [
+    {"street": "Delaney Street", "x": 8783, "y": 2497, "note": "dead end at the property line north of Walker Alley"},
+    {"street": "Cherry Street", "x": 9606, "y": 2553, "note": "dead end at the property line north of Walker Alley"},
+    {"street": "Turrill Street", "x": 10355, "y": 4440, "note": "northern part stops at the railroad; resumes south of Hoffner Avenue"},
+    {"street": "Cherry Street", "x": 9660, "y": 7085, "note": "plate edge"},
+    {"street": "Cooper Street", "x": 10500, "y": 6105, "note": "plate edge"},
+    {"street": "Powers Street", "x": 10500, "y": 6998, "note": "plate edge"},
+    {"street": "Blue Rock Street", "x": 10480, "y": 3395, "note": "plate edge"}
+  ],
+  "notes": "Chase Avenue / Turrill Street: Chase Avenue's north side is cut by the plate's top edge, so y is a guess (south kerb line about y 75-140; sewer manhole at 10285,20); Turrill's centre is x 10350 (40 ft between about 10290 and 10410). Blue Rock Street is about 175 px wide west of Cherry and east of Turrill, but the block lines stand much further apart between Cherry and Turrill (about 3140-3190 on the north, 3510-3560 on the south); the picks there follow the straight centre line between the narrow parts. McMakin: west of Delaney it is printed 'McMAKIN ST.' (narrow, centre y about 3727 at Delaney); east of Delaney it is 'McMAKIN ALLEY' (12 ft), which is offset at Cherry Street (west arm centre y 3783, east arm 3843), recorded as two T-junctions on each. Cherry / Hoffner: railroad tracks cross the junction; the pick is midway between the offset north and south arms. Colerain / Powers: the street on the west side of Colerain (printed only 'ST.', 40 ft) is taken to be Powers Street continuing; pick is midway between the two arms' meeting points with Colerain's centre line (east arm alone would be about 8985,6998; west arm alone about 8955,6932). Cooper / Colerain is on railroad crossing ground, about 10 px less certain. Turrill does not exist between the railroad (y about 4440) and Hoffner Avenue."
+}

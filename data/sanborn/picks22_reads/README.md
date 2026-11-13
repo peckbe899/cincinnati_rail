@@ -210,3 +210,32 @@ Crossings the reads did not agree on:
 - strip 3, Glen Parker Avenue & Hamilton Avenue (read B at 4120, 1907): the reads are 72 px apart
 - strip 4, Langland Avenue & Thompson Heights Avenue (read A at 6455, 788): the reads are 576 px apart
 
+## 22-43
+
+| Strip | Read A crossings | Read B crossings | Picks | Not agreed |
+|---|---|---|---|---|
+| 1 | 13 | 13 | 8 | 10 |
+| 2 | 10 | 10 | 10 | 0 |
+| 3 | 13 | 13 | 13 | 0 |
+| 4 | 8 | 8 | 8 | 0 |
+| 5 | 14 | 14 | 13 | 2 |
+| 6 | 20 | 20 | 19 | 2 |
+| **All** | 78 | 78 | 71 | 14 |
+
+Crossings the reads did not agree on:
+
+- strip 1, Colerain Avenue & Westfork Road (read A at 958, 12): only read A has it
+- strip 1, Colerain Avenue & Kirby Avenue (read A at 1818, 1128): only read A has it
+- strip 1, Kirby Avenue & Wolcott Street (read A at 1818, 2088): only read A has it
+- strip 1, Kirby Avenue & Kearsarge Avenue (read A at 1822, 3132): only read A has it
+- strip 1, Kirby Avenue & Hoffner Avenue (read A at 1833, 5322): only read A has it
+- strip 1, Colerain Avenue & Runnymeade Avenue (read B at 1818, 1142): only read B has it
+- strip 1, Hanfield Street & Jerome Street (read B at 2546, 110): only read B has it
+- strip 1, Runnymeade Avenue & Wolcott Street (read B at 1820, 2086): only read B has it
+- strip 1, Runnymeade Avenue & Kearsarge Avenue (read B at 1822, 3131): only read B has it
+- strip 1, Runnymeade Avenue & Hoffner Avenue (read B at 1834, 5318): only read B has it
+- strip 5, Delaney Street & Walker Alley (read A at 8785, 2812): only read A has it
+- strip 5, Joe Williams Street & McMakin Street (read B at 7716, 3358): only read B has it
+- strip 6, Delaney Street & McMakin Alley (read B at 8795, 3742): only read B has it
+- strip 6, Colerain Avenue & Powers Street (read A at 9005, 7005): the reads are 48 px apart
+

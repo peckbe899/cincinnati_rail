@@ -8,7 +8,7 @@ where they agree, a spline fit tied to the applied plates, the 5 m held-out gate
 | 45 | done 13 November 2026 (held-out 3.27 m; built, 1904 frames under it not bent) |
 | 1B | to do |
 | 18A | to do |
-| 43 | to do |
+| 43 | done 13 November 2026 (held-out 2.85 m; built, 1904 frames under it not bent) |
 | 44 | to do |
 | 59B | to do |
 | 60A | to do |

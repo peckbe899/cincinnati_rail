@@ -138,3 +138,13 @@ Model `cufp/45/fwd_complete.pkl` (`reports/2026-11-13_newplates_45`: 70 controls
 - Seams (`reports/2026-11-13_seams_applied` against `reports/2026-11-09_seams_applied`, `compare_2026-11-09.json`): all 762 existing seams unchanged, none lost. 66 new seams, all between plate 45 and 1904 frames: median 4.74 m, max 10.88 m (per frame in `reports/2026-11-13_newplates_45/README.md`).
 - Check: the hub was not running, so the Deck page was not opened. Instead the basin streets were drawn over the tiles_22 overview (2 m a pixel): the c45 streets and the earlier Northside streets both lie on the plate's printed streets at that scale. Not checked at full zoom.
 - Not done: the 1904 frames under plate 45 were not bent onto it.
+
+## Plate 43 added (13 November 2026)
+
+Model `cufp/43/fwd_complete.pkl` (`reports/2026-11-13_newplates_43`: 33 controls, held-out 2.85 m, max 11.18 m). Built like 45: at its fitted position, 1904 frames under it left as they are, w1 kept, only ground not already drawn taken, prefix S3.
+
+- c43: 8 streets and 7 blocks (Cass, Herron, Kearsarge, Hoffner west of the creek, Powers at the west end, and stubs of Sylvan and Edgewood); most of the plate's streets were already on the page. Nothing earlier taken out; every id in Ben's layout still there with its name, none moved (`streets_report_43.json`).
+- To look at: S30002 (Edgewood Avenue) and S30007, S30008 (Sylvan Avenue) are drawn as long lines south from Colerain across the Byron Kirby Heirs tract. On the plate those streets look like short stubs at Colerain; the reader noted their ends as approximate.
+- tiles_22 re-composited with 43 (254 -> 255 tiles).
+- Seams (`reports/2026-11-13_seams_applied` against `reports/2026-11-13_seams_applied_45`, `compare_45.json`): all 828 existing seams unchanged, none lost. 68 new, all with plate 43: 13 plate-plate (37L, 37R, 45), median 1.25 m, max 4.77 m; 55 with 1904 frames, median 4.27 m, max 9.76 m.
+- Check (the hub is not running; basin streets drawn over the tiles_22 overview, 2 m a pixel): plate 43 meets 37L/37R along Powers Street and 45 at Chase Avenue without a visible step, and the streets lie on its printed streets at that scale. Not checked at full zoom.

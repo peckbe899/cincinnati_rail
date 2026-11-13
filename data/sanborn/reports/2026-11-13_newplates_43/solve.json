@@ -1,0 +1,223 @@
+{
+ "made": "2026-11-13T02:58:26",
+ "summary": {
+  "plates": [
+   {
+    "plate": "22-43",
+    "controls": 33,
+    "name_seeded_fit": "tps3",
+    "lam": 10.0,
+    "damped": false,
+    "own_rms": 2.19,
+    "heldout": 2.85,
+    "heldout_max": 11.18,
+    "max_corner_move_m": 1.21,
+    "corner_moves_m": [
+     0.2,
+     0.3,
+     1.2,
+     0.8
+    ],
+    "ties": 13,
+    "tie_partners": [
+     "22-37L",
+     "22-37R",
+     "22-45"
+    ]
+   }
+  ],
+  "ties": 13,
+  "seams": {
+   "dir": "reports/2026-11-13_seams_newplates_43",
+   "neighbours": {
+    "22-37L": {
+     "before": {
+      "n": 12,
+      "median": 1.29
+     },
+     "after": {
+      "n": 21,
+      "median": 1.26
+     },
+     "with_new": [
+      {
+       "new": "22-43",
+       "n": 9,
+       "median": 1.25,
+       "max": 3.69
+      }
+     ]
+    },
+    "22-37R": {
+     "before": {
+      "n": 16,
+      "median": 1.45
+     },
+     "after": {
+      "n": 19,
+      "median": 1.32
+     },
+     "with_new": [
+      {
+       "new": "22-43",
+       "n": 3,
+       "median": 1.26,
+       "max": 4.77
+      }
+     ]
+    },
+    "22-45": {
+     "before": {
+      "n": 0,
+      "median": null
+     },
+     "after": {
+      "n": 1,
+      "median": 0.56
+     },
+     "with_new": [
+      {
+       "new": "22-43",
+       "n": 1,
+       "median": 0.56,
+       "max": 0.56
+      }
+     ]
+    }
+   },
+   "new_pair": {
+    "n": 0,
+    "median": null,
+    "max": null
+   }
+  },
+  "gate": {
+   "heldout_under_5m": true,
+   "neighbour_median_not_worse": {
+    "22-37L": true,
+    "22-37R": true,
+    "22-45": true
+   },
+   "build": true
+  }
+ },
+ "ties": [
+  {
+   "a": "22-43",
+   "b": "22-37L",
+   "street_1": "Cass Avenue",
+   "street_2": "Powers Street",
+   "before_m": 0.21,
+   "after_m": 0.64,
+   "weight": 1.0
+  },
+  {
+   "a": "22-43",
+   "b": "22-37L",
+   "street_1": "Sylvan Avenue",
+   "street_2": "Powers Street",
+   "before_m": 0.48,
+   "after_m": 1.47,
+   "weight": 1.0
+  },
+  {
+   "a": "22-43",
+   "b": "22-45",
+   "street_1": "Chase Avenue",
+   "street_2": "Turrill Street",
+   "before_m": 0.87,
+   "after_m": 0.56,
+   "weight": 1.0
+  },
+  {
+   "a": "22-43",
+   "b": "22-37L",
+   "street_1": "Herron Avenue",
+   "street_2": "Powers Street",
+   "before_m": 1.11,
+   "after_m": 1.27,
+   "weight": 1.0
+  },
+  {
+   "a": "22-43",
+   "b": "22-37L",
+   "street_1": "Runnymeade Avenue",
+   "street_2": "Powers Street",
+   "before_m": 1.35,
+   "after_m": 0.96,
+   "weight": 1.0
+  },
+  {
+   "a": "22-43",
+   "b": "22-37L",
+   "street_1": "Cherry Street",
+   "street_2": "Powers Street",
+   "before_m": 1.88,
+   "after_m": 1.14,
+   "weight": 1.0
+  },
+  {
+   "a": "22-43",
+   "b": "22-37R",
+   "street_1": "Turrill Street",
+   "street_2": "Powers Street",
+   "before_m": 1.95,
+   "after_m": 1.02,
+   "weight": 1.0
+  },
+  {
+   "a": "22-43",
+   "b": "22-37L",
+   "street_1": "Turrill Street",
+   "street_2": "Powers Street",
+   "before_m": 1.95,
+   "after_m": 1.05,
+   "weight": 1.0
+  },
+  {
+   "a": "22-43",
+   "b": "22-37R",
+   "street_1": "Cherry Street",
+   "street_2": "Powers Street",
+   "before_m": 2.32,
+   "after_m": 1.26,
+   "weight": 1.0
+  },
+  {
+   "a": "22-43",
+   "b": "22-37L",
+   "street_1": "Llewellyn Street",
+   "street_2": "Powers Street",
+   "before_m": 3.88,
+   "after_m": 1.25,
+   "weight": 1.0
+  },
+  {
+   "a": "22-43",
+   "b": "22-37L",
+   "street_1": "Borden Street",
+   "street_2": "Powers Street",
+   "before_m": 6.96,
+   "after_m": 3.68,
+   "weight": 1.0
+  },
+  {
+   "a": "22-43",
+   "b": "22-37L",
+   "street_1": "Colerain Avenue",
+   "street_2": "Powers Street",
+   "before_m": 7.15,
+   "after_m": 3.52,
+   "weight": 1.0
+  },
+  {
+   "a": "22-43",
+   "b": "22-37R",
+   "street_1": "Colerain Avenue",
+   "street_2": "Powers Street",
+   "before_m": 8.28,
+   "after_m": 4.76,
+   "weight": 1.0
+  }
+ ]
+}
