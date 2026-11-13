@@ -1,4 +1,4 @@
-# Plates 25, 28, 39 and 40: the two reads merged
+# Plates 25 and 28: the two reads merged (2026-11-13)
 
 Each strip read twice, independently (`docs/sanborn/workspace_notes/sbg/INSTRUCTIONS22.md`, section of 8 November). A pick is kept only where the two reads have the same crossing (same street names) within 60 px, at their mean (`tools/sanborn/complete/merge_reads.py`). Strips overlap by about 300 px, so a crossing near a strip edge can be counted in two strips; the fit merges those.
 
@@ -133,4 +133,80 @@ Crossings the reads did not agree on:
 - strip 1, Winton Avenue & McMakin Avenue (read A at 65, 900): the reads are 78 px apart
 - strip 1, McMakin Avenue & North Edgewood Avenue (read A at 1568, 900): the reads are 78 px apart
 - strip 3, Spring Grove Avenue & Mitchell Avenue (read B at 2873, 3823): the reads are 35 px apart
+
+## 22-45
+
+| Strip | Read A crossings | Read B crossings | Picks | Not agreed |
+|---|---|---|---|---|
+| 1 | 38 | 39 | 34 | 9 |
+| 2 | 31 | 35 | 25 | 16 |
+| 3 | 33 | 29 | 27 | 8 |
+| 4 | 24 | 24 | 20 | 7 |
+| 5 | 15 | 24 | 15 | 9 |
+| 6 | 11 | 13 | 6 | 12 |
+| **All** | 152 | 164 | 127 | 61 |
+
+Crossings the reads did not agree on:
+
+- strip 1, Martha Street & Carlin Street (read A at 1395, 1580): only read A has it
+- strip 1, Hemlock Alley & Sagateo Alley (read A at 2117, 5033): only read A has it
+- strip 1, Cypress Alley & Sagateo Alley (read A at 2085, 5266): only read A has it
+- strip 1, Martha Street & Tarrant Street (read B at 1190, 1742): only read B has it
+- strip 1, Leher Street & Chase Avenue (read B at 775, 4243): only read B has it
+- strip 1, Hemlock Alley & Agate Alley (read B at 2118, 5035): only read B has it
+- strip 1, Cypress Alley & Agate Alley (read B at 2087, 5277): only read B has it
+- strip 2, Innes Avenue & Otte Street (read A at 3518, 291): only read A has it
+- strip 2, Innes Avenue & Philomena Avenue (read A at 3522, 690): only read A has it
+- strip 2, Innes Avenue & Frederick Avenue (read A at 3528, 1085): only read A has it
+- strip 2, Innes Avenue & Bruce Avenue (read A at 3626, 3413): only read A has it
+- strip 2, Hamilton Avenue & Otte Street (read A at 4352, 282): only read A has it
+- strip 2, Hamilton Avenue & Glen Armand Avenue (read A at 4354, 293): only read A has it
+- strip 2, Kirby Avenue & Virginia Avenue (read B at 2697, 1502): only read B has it
+- strip 2, Tarrant Street & Virginia Avenue (read B at 2447, 2171): only read B has it
+- strip 2, Bruce Avenue & Virginia Avenue (read B at 2080, 3222): only read B has it
+- strip 2, Cypress Alley & Florida Avenue (read B at 2258, 5303): only read B has it
+- strip 2, Florida Avenue & Hanfield Street (read B at 2216, 5522): only read B has it
+- strip 2, Kirby Avenue & Hanfield Street (read B at 2664, 5620): only read B has it
+- strip 2, Gordon Street & Hanfield Street (read B at 3028, 5690): only read B has it
+- strip 2, Pitts Avenue & Hanfield Street (read B at 3586, 5806): only read B has it
+- strip 2, Witler Street & Hanfield Street (read B at 3947, 5873): only read B has it
+- strip 3, Haight Avenue & Addingham Place (read A at 5788, 3289): only read A has it
+- strip 3, Haight Avenue & Pullan Avenue (read A at 6068, 4039): only read A has it
+- strip 3, Chase Avenue & Pitts (read A at 3698, 5152): only read A has it
+- strip 3, Addingham & Haight Avenue (read B at 5788, 3289): only read B has it
+- strip 4, East View Avenue & Thompson Heights Avenue (read A at 5843, 856): only read A has it
+- strip 4, Fergus Street & Thompson Heights Avenue (read A at 7456, 803): only read A has it
+- strip 4, Langland Avenue & Glen Parker Avenue (read A at 6430, 1365): only read A has it
+- strip 4, Langland Avenue & Donaldson Place (read B at 6742, 3466): only read B has it
+- strip 4, Fergus Street & Apjones Street (read B at 7512, 4310): only read B has it
+- strip 4, Mad Anthony Street & Apjones Street (read B at 7775, 4288): only read B has it
+- strip 5, Frederick Avenue & Fergus Street (read B at 7452, 797): only read B has it
+- strip 5, Pullan Avenue & Beech Hill Avenue (read B at 7284, 3818): only read B has it
+- strip 5, Pullan Avenue & Fergus Street (read B at 7511, 3779): only read B has it
+- strip 5, Pullan Avenue & Chambers Street (read B at 8286, 3690): only read B has it
+- strip 5, Pullan Avenue & Dane Street (read B at 8895, 3637): only read B has it
+- strip 5, Chase Avenue & Fergus Street (read B at 7514, 5273): only read B has it
+- strip 5, Chase Avenue & Mad Anthony Street (read B at 7869, 5260): only read B has it
+- strip 5, Chase Avenue & Chambers Street (read B at 8463, 5178): only read B has it
+- strip 5, Chase Avenue & Dane Street (read B at 9065, 5125): only read B has it
+- strip 6, Crawford Road & Dane Street (read A at 9283, 2249): only read A has it
+- strip 6, Crawford Road & Apjones Street (read A at 9882, 4026): only read A has it
+- strip 6, Crawford Road & Ellis Street (read A at 10118, 4490): only read A has it
+- strip 6, Crawford Road & Lingo Street (read A at 10472, 5437): only read A has it
+- strip 6, Crawford Road & Knowlton Street (read A at 10650, 5903): only read A has it
+- strip 6, Dane Street & Crawford Avenue (read B at 9280, 2250): only read B has it
+- strip 6, Dane Street & Rodney Street (read B at 8822, 3148): only read B has it
+- strip 6, Apjones Street & Crawford Avenue (read B at 9883, 4018): only read B has it
+- strip 6, Ellis Street & Crawford Avenue (read B at 10100, 4503): only read B has it
+- strip 6, Dane Street & Chase Avenue (read B at 9066, 5138): only read B has it
+- strip 6, Lingo Street & Crawford Avenue (read B at 10466, 5440): only read B has it
+- strip 6, Knowlton Street & Crawford Avenue (read B at 10653, 5911): only read B has it
+- strip 1, Virginia Avenue & Kirby Avenue (read A at 2738, 1345): the reads are 199 px apart
+- strip 1, Kirby Avenue & Virginia Avenue (read B at 2697, 1540): the reads are 199 px apart
+- strip 2, Glen Parker Avenue & Hamilton Avenue (read B at 4170, 1946): the reads are 135 px apart
+- strip 3, East View Avenue & Thompson Heights Avenue (read A at 5864, 858): the reads are 795 px apart
+- strip 3, Hamilton Avenue & Glen Parker Avenue (read A at 4055, 1875): the reads are 72 px apart
+- strip 3, Hamilton Avenue & Glen Parker Avenue (read A at 4186, 1954): the reads are 81 px apart
+- strip 3, Glen Parker Avenue & Hamilton Avenue (read B at 4120, 1907): the reads are 72 px apart
+- strip 4, Langland Avenue & Thompson Heights Avenue (read A at 6455, 788): the reads are 576 px apart
 
