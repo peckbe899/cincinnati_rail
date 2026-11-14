@@ -22,7 +22,7 @@ import streets as S  # noqa: E402
 from scipy.interpolate import LinearNDInterpolator  # noqa: E402
 from shapely.geometry import shape  # noqa: E402
 J = S.J
-N = sys.argv[1]; TAG = sys.argv[2] if len(sys.argv) > 2 else 'guided'; K, IGN, SNAP, TURN, MINSIDE, UNSURE, FAR = 2, 1, 18, 8, 28, 8, 35
+N = sys.argv[1]; TAG = sys.argv[2] if len(sys.argv) > 2 else 'guided'; K, IGN, SNAP, TURN, MINSIDE, UNSURE, FAR, MARK = 2, 1, 18, 8, 28, 8, 35, 12
 SP = S.SP; OUT = SP + 'unet_data/'; os.makedirs(OUT, exist_ok=True)
 full = cv2.imread(SP + f'cufp/22-{N}.jpg'); H, W = full.shape[:2]
 img = cv2.resize(full, (W // K, H // K), interpolation=cv2.INTER_AREA); h, w = img.shape[:2]
@@ -108,9 +108,35 @@ if os.path.exists(OUT + f'{N}_streets.json'):
     out[(out == 0) & (near == 0)] = 255
     out[added == 2] = 255; out[added == 1] = 0
     ring = cv2.morphologyEx((added == 1).astype(np.uint8), cv2.MORPH_GRADIENT, np.ones((3, 3), np.uint8)) > 0; out[ring] = 255
+# Streets marked by eye on full-size crops (picks22_guided/22-N/streets_marked.json; Ben, 14 November 2026: go in
+# yourself and read them). Each has its two edges as lines in plate px. Every piece of an edge is moved onto the printed
+# line beside it when there is a clear one within MARK px (a reading is good to about 5-10 px); an edge with no printed
+# line (the paper's edge, a railway side) stays as read. The strip between the edges is taught as street.
+nmark = nmark_on = 0; MF = SP + f'picks22_guided/22-{N}/streets_marked.json'
+if os.path.exists(MF):
+    def refine(pl):
+        pl = np.array(pl, float); segs = []; hit = 0
+        for a_, b_ in zip(pl[:-1], pl[1:]):
+            L = np.hypot(*(b_ - a_)); nrm = np.array([-(b_ - a_)[1], (b_ - a_)[0]]) / (L or 1); a2, b2 = a_, b_
+            if L >= MINSIDE:
+                ds = {o: dark(a_ + nrm * o, b_ + nrm * o) + 0.4 * abs(o) for o in range(-MARK, MARK + 1)}; o1 = min(ds, key=ds.get)
+                bst = min(((dark(a_ + nrm * (o1 + i), b_ + nrm * (o1 + j)), i, j) for i in range(-4, 5) for j in range(-4, 5)))
+                c2, d2 = a_ + nrm * (o1 + bst[1]), b_ + nrm * (o1 + bst[2])
+                if on_line(c2, d2): a2, b2 = c2, d2; hit += 1
+            segs.append((a2, b2))
+        v = [segs[0][0]] + [(segs[k][1] + segs[k + 1][0]) / 2 for k in range(len(segs) - 1)] + [segs[-1][1]]
+        return np.array(v), hit, len(segs)
+    marked = np.zeros((h, w), np.uint8); refined = []
+    for m in json.load(open(MF, encoding='utf8')):
+        l, hl, nl = refine(m['left']); r, hr, nr = refine(m['right']); nmark += nl + nr; nmark_on += hl + hr
+        cv2.fillPoly(marked, [(np.r_[l, r[::-1]] / K).round().astype(np.int32)], 1)
+        refined.append(dict(name=m['name'], left=l.round(1).tolist(), right=r.round(1).tolist(), edge_pieces=nl + nr, on_printed_line=hl + hr))
+    json.dump(refined, open(OUT + f'{N}_marked_refined.json', 'w', encoding='utf8', newline=chr(10)), indent=1)
+    out[marked == 1] = 0
+    ring = cv2.morphologyEx(marked, cv2.MORPH_GRADIENT, np.ones((3, 3), np.uint8)) > 0; out[ring & (lab == 1)] = 255
 out[~alpha] = 255
 cv2.imwrite(OUT + f'{N}_img.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 92]); cv2.imwrite(OUT + f'{N}_label.png', out)
-json.dump(dict(plate=N, tag=TAG, scale=K, ignore_px=IGN, sides=nside, sides_snapped=nmoved, sides_on_printed_line=nver, plate_pieces_added=nadd, plate_pieces_blanked=nblank, size=[w, h], block=float((out == 1).mean()), street=float((out == 0).mean()), ignore=float((out == 255).mean())),
+json.dump(dict(plate=N, tag=TAG, scale=K, ignore_px=IGN, sides=nside, sides_snapped=nmoved, sides_on_printed_line=nver, plate_pieces_added=nadd, plate_pieces_blanked=nblank, marked_edge_pieces=nmark, marked_on_printed_line=nmark_on, size=[w, h], block=float((out == 1).mean()), street=float((out == 0).mean()), ignore=float((out == 255).mean())),
           open(OUT + f'{N}_meta.json', 'w', encoding='utf8', newline='\n'), indent=1)
 full_vis = full.copy()                       # full-size check: snapped block sides (green) on the scan
 for q in snapped:
