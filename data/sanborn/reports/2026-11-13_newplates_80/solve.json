@@ -1,48 +1,48 @@
 {
- "made": "2026-11-13T23:24:16",
+ "made": "2026-11-13T23:56:08",
  "summary": {
   "plates": [
    {
     "plate": "22-80",
-    "controls": 53,
-    "name_seeded_fit": "quadratic",
-    "lam": 10.0,
-    "damped": true,
-    "own_rms": 1.67,
-    "heldout": 2.1,
-    "heldout_max": 5.5,
-    "max_corner_move_m": 25.24,
+    "controls": 73,
+    "name_seeded_fit": "tps1",
+    "lam": 1.0,
+    "damped": false,
+    "own_rms": 1.21,
+    "heldout": 1.87,
+    "heldout_max": 4.77,
+    "max_corner_move_m": 5.91,
     "corner_moves_m": [
-     25.2,
-     15.5,
-     23.8,
-     10.9
+     2.9,
+     2.1,
+     0.3,
+     5.9
     ],
-    "ties": 2,
+    "ties": 7,
     "tie_partners": [
      "22-40"
     ]
    }
   ],
-  "ties": 2,
+  "ties": 7,
   "seams": {
    "dir": "reports/2026-11-13_seams_newplates_80",
    "neighbours": {
     "22-40": {
      "before": {
-      "n": 1,
-      "median": 1.55
-     },
-     "after": {
       "n": 3,
       "median": 3.28
+     },
+     "after": {
+      "n": 8,
+      "median": 1.69
      },
      "with_new": [
       {
        "new": "22-80",
-       "n": 2,
-       "median": 3.74,
-       "max": 4.2
+       "n": 7,
+       "median": 1.8,
+       "max": 3.28
       }
      ]
     }
@@ -56,27 +56,72 @@
   "gate": {
    "heldout_under_5m": true,
    "neighbour_median_not_worse": {
-    "22-40": false
+    "22-40": true
    },
-   "build": false
+   "build": true
   }
  },
  "ties": [
   {
    "a": "22-80",
    "b": "22-40",
-   "street_1": "Carthage Avenue",
-   "street_2": "Ross Street",
-   "before_m": 1.85,
-   "after_m": 4.19,
+   "street_1": "Kessler Avenue",
+   "street_2": "Carthage Avenue",
+   "before_m": 1.2,
+   "after_m": 0.86,
    "weight": 1.0
   },
   {
    "a": "22-80",
    "b": "22-40",
-   "street_1": "Carthage Avenue",
-   "street_2": "Mitchell Avenue",
-   "before_m": 11.37,
+   "street_1": "Wuest Street",
+   "street_2": "Carthage Avenue",
+   "before_m": 1.36,
+   "after_m": 0.97,
+   "weight": 1.0
+  },
+  {
+   "a": "22-80",
+   "b": "22-40",
+   "street_1": "Lawrence Street",
+   "street_2": "Carthage Avenue",
+   "before_m": 2.43,
+   "after_m": 1.58,
+   "weight": 1.0
+  },
+  {
+   "a": "22-80",
+   "b": "22-40",
+   "street_1": "Ross Avenue",
+   "street_2": "Carthage Avenue",
+   "before_m": 3.05,
+   "after_m": 1.8,
+   "weight": 1.0
+  },
+  {
+   "a": "22-80",
+   "b": "22-40",
+   "street_1": "Baker Avenue",
+   "street_2": "Carthage Avenue",
+   "before_m": 3.43,
+   "after_m": 2.07,
+   "weight": 1.0
+  },
+  {
+   "a": "22-80",
+   "b": "22-40",
+   "street_1": "Phillips Avenue",
+   "street_2": "Carthage Avenue",
+   "before_m": 3.93,
+   "after_m": 2.41,
+   "weight": 1.0
+  },
+  {
+   "a": "22-80",
+   "b": "22-40",
+   "street_1": "Mitchell Avenue",
+   "street_2": "Carthage Avenue",
+   "before_m": 8.87,
    "after_m": 3.28,
    "weight": 1.0
   }

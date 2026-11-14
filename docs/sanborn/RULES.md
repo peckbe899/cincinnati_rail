@@ -36,4 +36,4 @@ From Ben and `claude/Sanborn_1922_Plate_Process.md`; Claude Code can't read the 
     a first fit, and two readers each get a full-size crop around it with both street names and mark its centre or
     say it is not drawn (`tools/sanborn/guided/`). A pick is a crossing both found within 30 px. Blind strip picks
     only seed the first fit and supply crossings that exist only in 1922; they are not controls. First used on
-    plate 80: 53 controls and 2.10 m held-out, against 23 and 6.33 m read blind.
+    plate 80: 73 controls and 1.87 m held-out, against 23 and 6.33 m read blind.

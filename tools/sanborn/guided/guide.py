@@ -43,17 +43,19 @@ def way(l, pt):                       # direction of a street on the plate at th
 rnd = random.Random(SEED); rows = []; os.makedirs(CROPS + READ, exist_ok=True)
 for x in X:
     c = px(x['E'], x['N'])
-    if np.isnan(c).any() or not (350 < c[0] < W - 350 and 350 < c[1] < H - 350): continue
+    if np.isnan(c).any() or not (0 <= c[0] < W and 0 <= c[1] < H): continue
     yy, xx = int(c[1]) // 4, int(c[0]) // 4
-    if A[max(0, yy - 40):yy + 40, max(0, xx - 40):xx + 40].min() == 0: continue      # within 160 px of the plate's edge
+    if A[max(0, yy - 15):yy + 15, max(0, xx - 15):xx + 15].max() == 0: continue      # more than 60 px off the plate (streets along the plate's edge count: 13 Nov, Mitchell Avenue on plate 80)
     pt = Point(x['E'], x['N'])
     rows.append(dict(id=f'{N}-{len(rows) + 1:03d}', a=x['a'], b=x['b'], E=round(x['E'], 2), N=round(x['N'], 2), pred=[round(float(c[0]), 1), round(float(c[1]), 1)],
                      a_runs=way(L[x['la']][1], pt), b_runs=way(L[x['lb']][1], pt)))
-rows.sort(key=lambda r: (r['pred'][0] // 900, r['pred'][1])); 
-for i, r in enumerate(rows): r['id'] = f'{N}-{i + 1:03d}'
+rows.sort(key=lambda r: (r['pred'][0] // 900, r['pred'][1]))
+OLD = json.load(open(OUT + f'guide_{READ}.json')) if os.path.exists(OUT + f'guide_{READ}.json') else []     # a guide already written: its crossings keep their ids, only new ones are added
+rows = [r for r in rows if not any(np.hypot(r['E'] - o['E'], r['N'] - o['N']) < 8 for o in OLD)]
+for i, r in enumerate(rows): r['id'] = f'{N}-{len(OLD) + i + 1:03d}'
 for r in rows:
-    cx = int(r['pred'][0] + rnd.uniform(-70, 70)); cy = int(r['pred'][1] + rnd.uniform(-70, 70))
+    cx = int(min(max(r['pred'][0] + rnd.uniform(-70, 70), 300), W - 300)); cy = int(min(max(r['pred'][1] + rnd.uniform(-70, 70), 300), H - 300))
     r['box'] = [cx - 300, cy - 300, cx + 300, cy + 300]
     sb.render(f'22-{N}', tuple(r['box']), CROPS + READ + f'/{r["id"]}.jpg')
-json.dump(rows, open(OUT + f'guide_{READ}.json', 'w'), indent=1)
-print(N, READ, 'crossings on the plate', len(rows))
+json.dump(OLD + rows, open(OUT + f'guide_{READ}.json', 'w'), indent=1)
+print(N, READ, 'crossings on the plate', len(OLD) + len(rows), 'new', [r['id'] for r in rows])

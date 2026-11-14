@@ -58,31 +58,6 @@
   },
   {
    "a": "Carthage Avenue",
-   "b": "Washington Avenue",
-   "x": 2977.5,
-   "y": 2957.5,
-   "kind": "T",
-   "reads": [
-    {
-     "read": "A",
-     "x": 2970,
-     "y": 2955
-    },
-    {
-     "read": "B",
-     "x": 2985,
-     "y": 2960
-    }
-   ],
-   "spread_px": 15.8,
-   "b_names": [
-    "Carthage Avenue",
-    "Washington"
-   ],
-   "fit": false
-  },
-  {
-   "a": "Carthage Avenue",
    "b": "Oak Street",
    "x": 3213.5,
    "y": 666.0,
@@ -125,51 +100,6 @@
     }
    ],
    "spread_px": 23.2,
-   "fit": false
-  },
-  {
-   "a": "Carthage Avenue",
-   "b": "Ross Avenue",
-   "x": 3062.5,
-   "y": 1562.5,
-   "kind": "cross",
-   "reads": [
-    {
-     "read": "A",
-     "x": 3075,
-     "y": 1570
-    },
-    {
-     "read": "B",
-     "x": 3050,
-     "y": 1555
-    }
-   ],
-   "spread_px": 29.2,
-   "fit": false
-  },
-  {
-   "a": "Kemper",
-   "b": "Franklin",
-   "x": 4412.5,
-   "y": 4185.0,
-   "kind": null,
-   "reads": [
-    {
-     "read": "B",
-     "part": 2,
-     "x": 4400,
-     "y": 4165
-    },
-    {
-     "read": "A",
-     "part": 3,
-     "x": 4425,
-     "y": 4205
-    }
-   ],
-   "spread_px": 47.2,
-   "note": "read once in each of two neighbouring strips (their overlap)",
    "fit": false
   },
   {
@@ -238,7 +168,7 @@
   },
   {
    "a": "Tower Avenue",
-   "b": "East Ross Avenue",
+   "b": "Ross Avenue",
    "x": 3716.5,
    "y": 1608.0,
    "kind": "guided",
@@ -307,6 +237,74 @@
    "y": 5726.5,
    "kind": "guided",
    "id": "80-042"
+  },
+  {
+   "a": "Ross Avenue",
+   "b": "Carthage Avenue",
+   "x": 3059.0,
+   "y": 1534.0,
+   "kind": "guided",
+   "id": "80-095"
+  },
+  {
+   "a": "Glencross Avenue",
+   "b": "Mitchell Avenue",
+   "x": 3381.0,
+   "y": 6749.0,
+   "kind": "guided",
+   "id": "80-100"
+  },
+  {
+   "a": "Sullivan Avenue",
+   "b": "Mitchell Avenue",
+   "x": 3815.0,
+   "y": 6775.0,
+   "kind": "guided",
+   "id": "80-103"
+  },
+  {
+   "a": "Mitchell Avenue",
+   "b": "Parker Place",
+   "x": 3906.5,
+   "y": 6780.0,
+   "kind": "guided",
+   "id": "80-104"
+  },
+  {
+   "a": "Glencross Avenue",
+   "b": "Tower Avenue",
+   "x": 3381.0,
+   "y": 6749.0,
+   "kind": "guided",
+   "id": "80-101",
+   "fit": false
+  },
+  {
+   "a": "Mitchell Avenue",
+   "b": "Tower Avenue",
+   "x": 3381.0,
+   "y": 6749.0,
+   "kind": "guided",
+   "id": "80-102",
+   "fit": false
+  },
+  {
+   "a": "Tower Avenue",
+   "b": "Delmar Avenue",
+   "x": 3340,
+   "y": 5690,
+   "kind": "added",
+   "fit": false,
+   "why": "Tower's north leg at Delmar (reader B); the street jogs about 100 px here"
+  },
+  {
+   "a": "Tower Avenue",
+   "b": "Delmar Avenue",
+   "x": 3443,
+   "y": 5698,
+   "kind": "added",
+   "fit": false,
+   "why": "Tower's south leg at Delmar (reader A)"
   }
  ],
  "widths": [],
@@ -330,6 +328,13 @@
    "x": 2950,
    "y": 3490,
    "note": "northern Burnet section stops at Board of Education lot / St. Bernard park"
+  },
+  {
+   "street": "Oak Street",
+   "x": 4085,
+   "y": 705,
+   "kind": "added",
+   "note": "Oak Street's east end (strip-2 readers)"
   }
  ],
  "notes": "Street names for the two north-south avenues north of Jackson are printed only as AVENUE in this strip; the west one is taken as Tower Avenue (continues south, slight jog near Washington and again at the bottom E-W street at y~5690), the east one (x~4232 at Ross to ~4055 at Jackson) is written '?' and appears to continue south as Sullivan Avenue with a jog at Jackson. Kemper Avenue (x~4378 at y 4848) appears to continue south as Langley Avenue; recorded under each printed name. Unnamed E-W streets: one at y~4740-4850 (Burnet to Kemper), one with streetcar tracks at y~5680-5735, the '...STREET' at y~6245 west of Zetta, and the avenue along the bottom edge at y~6720-6810. Carthage Avenue becomes Burnet Avenue at Washington; the diagonal avenue from the south-west (name off strip) meets Carthage at the same spot. Oak Street east end meets a short unnamed street running north-east at x~4085 (uncertain). Ross Avenue stub continues west of Carthage. Stub west of Carthage at y~2205 unnamed. | Tower Avenue: the long avenue printed only AVENUE north of Franklin, named TOWER near y 5400-6500; assumed the same street (jog near y 5665). Sullivan Avenue: the avenue from Ross (x 4225) south to the bottom, name printed SULLIVAN only near y 6500; assumed continuous. Cross-street names printed without suffix (Oak, Cleveland, McClelland, Washington, Jackson, Jefferson, Franklin, Kemper) left bare. '?' streets: unnamed in strip at y~4775-4835, y~5655-5740, the STREET west of Zetta at y~6237, and the bottom avenue with car tracks at y~6715-6765; Oak's east end meets an unnamed diagonal street by the canal. Blue line at y~5450-5490 treated as pipe, not street. Old canal bed not a street."

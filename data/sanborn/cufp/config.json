@@ -162,12 +162,68 @@
   "png": "/mnt/user-data/uploads/PNG/80.png",
   "best_names": true,
   "alias": {
-   "Carthage Avenue": "Vine Street"
+   "Carthage Avenue": "Vine Street",
+   "Ross Avenue": "East Ross Avenue"
   },
   "notes": "Carthage Avenue (1922) is Vine Street today, as on plate 40. fit.py also reads the Norwood OSM extract for 80 (St. Bernard).",
   "keep_sets": [
    "w1"
   ],
-  "avoid_existing": true
+  "avoid_existing": true,
+  "keys": {
+   "Rose Hill Lane": "rose hill ln"
+  },
+  "names_1922": {
+   "East Mitchell Avenue": "Mitchell Avenue",
+   "West Mitchell Avenue": "Mitchell Avenue",
+   "Broermann Avenue": "Broerman Avenue"
+  },
+  "guided_not_controls": {
+   "80-082": "plate corner, both readers low; 8.8 m from the fit of the interior crossings",
+   "80-097": "Washington meets Carthage at its bend, both readers low; 8.3 m",
+   "80-112": "one junction for two of today's streets; 12.9 m",
+   "80-115": "Rose Hill / Red Bud, redeveloped; 12.3 m",
+   "80-116": "point off the paper's corner, low; 15.5 m"
+  },
+  "extra_picks": [
+   {
+    "a": "Tower Avenue",
+    "b": "Delmar Avenue",
+    "x": 3340,
+    "y": 5690,
+    "why": "Tower's north leg at Delmar (reader B); the street jogs about 100 px here"
+   },
+   {
+    "a": "Tower Avenue",
+    "b": "Delmar Avenue",
+    "x": 3443,
+    "y": 5698,
+    "why": "Tower's south leg at Delmar (reader A)"
+   },
+   {
+    "a": "Franklin Avenue",
+    "b": "Greenlee Avenue",
+    "x": 5005,
+    "y": 4222,
+    "why": "the street printed STREET running east from Kemper to Greenlee, in line with Franklin; read off the plate, name assumed"
+   }
+  ],
+  "extra_ends": [
+   {
+    "street": "Ross Avenue",
+    "x": 9050,
+    "y": 2200,
+    "why": "the avenue runs on east past Imwalle to the plate's edge (both strip-6 readers)"
+   },
+   {
+    "street": "Oak Street",
+    "x": 4085,
+    "y": 705,
+    "why": "Oak Street's east end (strip-2 readers)"
+   }
+  ],
+  "guided_drop": {
+   "80-096": "McClelland did not reach Carthage in 1922; 40 m off"
+  }
  }
 }
