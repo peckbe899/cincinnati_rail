@@ -57,6 +57,9 @@ for k, (x0, y0, x1, y1) in enumerate(strips, 1):
         if p['id'] in _cfg.get('guided_not_controls', {}): p['fit'] = False
     for p in keep: p['fit'] = False            # earlier blind picks: kept for the street set, not controls (cufp/fit.py skips them)
     more = [dict(a=e['a'], b=e['b'], x=e['x'], y=e['y'], kind='added', fit=False, why=e.get('why', '')) for e in _cfg.get('extra_picks', []) if x0 <= e['x'] < x1]   # cufp/config.json "extra_picks": crossings read off the plate by hand for the street set only
+    _xe = _cfg.get('extra_ends', [])           # a hand-measured end replaces an earlier end of that street within 150 px
+    dd['ends'] = [e for e in dd.get('ends', []) if not any((e.get('street') or '').split()[:1] == q['street'].split()[:1] and np.hypot(e['x'] - q['x'], e['y'] - q['y']) < 150 for q in _xe)]
+    dd['bends'] = [e for e in dd.get('bends', []) if e.get('kind') != 'added'] + [dict(street=e['street'], x=e['x'], y=e['y'], kind='added', note=e.get('why', '')) for e in _cfg.get('extra_bends', []) if x0 <= e['x'] < x1]   # "extra_bends": centre points measured along a street
     dd['ends'] = [e for e in dd.get('ends', []) if e.get('kind') != 'added'] + [dict(street=e['street'], x=e['x'], y=e['y'], kind='added', note=e.get('why', '')) for e in _cfg.get('extra_ends', []) if x0 <= e['x'] < x1]
     dd['intersections'] = keep + mine + more
     json.dump(dd, open(fn, 'w', encoding='utf8', newline='\n'), indent=1)

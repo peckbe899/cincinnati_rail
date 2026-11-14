@@ -163,9 +163,10 @@ Model `cufp/44/fwd_complete.pkl` (`reports/2026-11-13_newplates_44`: 34 controls
 
 Model `cufp/80/fwd_complete.pkl` (`reports/2026-11-13_newplates_80`: guided reads, 73 controls, held-out 1.87 m, max 4.77 m). Built like 43-45: at its fitted position, w1 kept, only ground not already drawn taken, prefix S6. No 1904 frame lies under it.
 
-- c80: 32 streets and 47 blocks. Every id in Ben's layout still there with its name, none moved (`streets_report_80.json`).
+- c80: 33 streets and 46 blocks. Every id in Ben's layout still there with its name, none moved (`streets_report_80.json`).
 - tiles_22 re-composited with 80 (255 -> 267 tiles).
 - Seams (`reports/2026-11-14_seams_applied` against `reports/2026-11-13_seams_applied_44`, `compare_44.json`): all 962 existing seams unchanged, none lost. 7 new, all with plate 40 on Carthage Avenue: median 1.80 m, max 3.28 m.
 - Check: the built streets drawn on the scan at half size, tile by tile (not on the Deck page; the hub is not running). They lie on the printed streets.
 - The street set is drawn through the crossings, so what it holds depends on them. Added by hand for the set only (`cufp/config.json` "extra_picks", "extra_ends"): both legs of Tower at Delmar, the street from Kemper east to Greenlee in line with Franklin (printed only STREET; name assumed), Ross Avenue's east end at the plate's edge, Oak Street's east end.
-- Still wrong or missing: Clay Street's two parts are joined by a short line across the canal; Scenic Avenue's stub east of Greenlee and the short street north of Oak in Wright's subdivision are not drawn; Carthage Avenue is the page's Vine Street line (w1), not redrawn from the plate.
+- 14 November, after Ben's look at the north of the plate: Broerman Avenue, Imwalle Avenue and Ross Avenue east of Imwalle had been drawn from one measured crossing to a rough end point of the first blind read, and lay up to about 110 px off the printed street. Centre points were measured along each on the scan ("extra_bends", "extra_ends") and the streets redrawn through them. Clay Street is now two streets, one each side of the canal. The model, tiles and seams are unchanged.
+- Still wrong or missing: a small kink in Ross Avenue at Broxterman Avenue; Scenic Avenue's stub east of Greenlee and the short street north of Oak in Wright's subdivision are not drawn; Carthage Avenue is the page's Vine Street line (w1), not redrawn from the plate. Streets elsewhere on the plate were checked at half size, not measured point by point.

@@ -165,13 +165,14 @@
    "Carthage Avenue": "Vine Street",
    "Ross Avenue": "East Ross Avenue"
   },
-  "notes": "Carthage Avenue (1922) is Vine Street today, as on plate 40. fit.py also reads the Norwood OSM extract for 80 (St. Bernard).",
+  "notes": "Carthage Avenue (1922) is Vine Street today, as on plate 40. fit.py also reads the Norwood OSM extract for 80 (St. Bernard). Clay Street is two streets either side of the canal: the east part's picks are named 'Clay Street E' (key 'clay east', shown as Clay Street).",
   "keep_sets": [
    "w1"
   ],
   "avoid_existing": true,
   "keys": {
-   "Rose Hill Lane": "rose hill ln"
+   "Rose Hill Lane": "rose hill ln",
+   "Clay Street E": "clay east"
   },
   "names_1922": {
    "East Mitchell Avenue": "Mitchell Avenue",
@@ -211,19 +212,96 @@
   "extra_ends": [
    {
     "street": "Ross Avenue",
-    "x": 9050,
-    "y": 2200,
-    "why": "the avenue runs on east past Imwalle to the plate's edge (both strip-6 readers)"
+    "x": 9150,
+    "y": 2252,
+    "why": "east end at the plate's edge; centre measured on the scan, 14 Nov"
    },
    {
     "street": "Oak Street",
-    "x": 4085,
-    "y": 705,
-    "why": "Oak Street's east end (strip-2 readers)"
+    "x": 4075,
+    "y": 690,
+    "why": "east end; centre measured on the scan, 14 Nov"
+   },
+   {
+    "street": "Broerman Avenue",
+    "x": 5903,
+    "y": 250,
+    "why": "north end at the railroad; centre measured on the scan, 14 Nov"
+   },
+   {
+    "street": "Imwalle Avenue",
+    "x": 6682,
+    "y": 640,
+    "why": "north end at the chemical works; centre measured on the scan, 14 Nov"
+   },
+   {
+    "street": "Clay Street",
+    "x": 3990,
+    "y": 1128,
+    "why": "west part's end at the canal bank; centre measured on the scan, 14 Nov"
+   },
+   {
+    "street": "Clay Street E",
+    "x": 4590,
+    "y": 1205,
+    "why": "east part's dead end at the Broxterman estate; centre measured on the scan, 14 Nov"
    }
   ],
   "guided_drop": {
    "80-096": "McClelland did not reach Carthage in 1922; 40 m off"
+  },
+  "extra_bends": [
+   {
+    "street": "Ross Avenue",
+    "x": 7500,
+    "y": 2047,
+    "why": "centre measured on the scan, 14 Nov"
+   },
+   {
+    "street": "Ross Avenue",
+    "x": 9000,
+    "y": 2233,
+    "why": "centre measured on the scan, 14 Nov"
+   },
+   {
+    "street": "Broerman Avenue",
+    "x": 5840,
+    "y": 1000,
+    "why": "centre measured on the scan, 14 Nov"
+   },
+   {
+    "street": "Broerman Avenue",
+    "x": 5824,
+    "y": 1200,
+    "why": "centre measured on the scan, 14 Nov"
+   },
+   {
+    "street": "Broerman Avenue",
+    "x": 5778,
+    "y": 1700,
+    "why": "centre measured on the scan, 14 Nov"
+   },
+   {
+    "street": "Imwalle Avenue",
+    "x": 6635,
+    "y": 1200,
+    "why": "centre measured on the scan, 14 Nov"
+   },
+   {
+    "street": "Imwalle Avenue",
+    "x": 6668,
+    "y": 800,
+    "why": "centre measured on the scan, 14 Nov"
+   },
+   {
+    "street": "Clay Street",
+    "x": 3300,
+    "y": 1092,
+    "why": "centre measured on the scan, 14 Nov"
+   }
+  ],
+  "names": {
+   "clay east": "Clay Street"
   }
  }
 }
