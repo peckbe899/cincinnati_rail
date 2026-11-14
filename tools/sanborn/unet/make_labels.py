@@ -8,7 +8,9 @@ parcel blocks (today/blocks_N.geojson, guided/parcels.py) drawn onto the plate t
 'guided'). Classes: 0 street or other open ground, 1 block, 255 ignore. Ignored: off the paper, and a band IGN px
 either side of every label edge, because the placement is good to a few metres only; the network has to find the edge
 from the picture, not from a label that is slightly off.
-Writes unet_data/N_img.jpg, N_label.png, N_meta.json (not committed: remade from the scan and the parcels).
+Also writes the guide (N_guide.png): today's blocks and centre lines through the same model, the U-net's extra input
+(unet.py shifts and erases it at random in training, so the network must find the real edge in the picture).
+Writes unet_data/N_img.jpg, N_label.png, N_guide.png, N_meta.json (not committed: remade from the scan and the parcels).
 """
 import json, os, sys
 import numpy as np
@@ -18,17 +20,22 @@ import streets as S  # noqa: E402
 from scipy.interpolate import LinearNDInterpolator  # noqa: E402
 from shapely.geometry import shape  # noqa: E402
 J = S.J
-N = sys.argv[1]; TAG = sys.argv[2] if len(sys.argv) > 2 else 'guided'; K, IGN = 2, 7
+N = sys.argv[1]; TAG = sys.argv[2] if len(sys.argv) > 2 else 'guided'; K, IGN = 2, 3
 SP = S.SP; OUT = SP + 'unet_data/'; os.makedirs(OUT, exist_ok=True)
 full = cv2.imread(SP + f'cufp/22-{N}.jpg'); H, W = full.shape[:2]
 img = cv2.resize(full, (W // K, H // K), interpolation=cv2.INTER_AREA); h, w = img.shape[:2]
 gx, gy = np.meshgrid(np.linspace(-300, W + 300, 120), np.linspace(-300, H + 300, 90)); P = np.c_[gx.ravel(), gy.ravel()]
 inv = LinearNDInterpolator(J.world_many(f'22-{N}', P, TAG), P)
-lab = np.zeros((h, w), np.uint8)
+lab = np.zeros((h, w), np.uint8); cl = np.zeros((h, w), np.uint8)
 for f in json.load(open(SP + f'today/blocks_{N}.geojson', encoding='utf8'))['features']:
     q = inv(np.asarray(shape(f['geometry']).exterior.segmentize(3).coords)[:, :2]) / K
     q = q[~np.isnan(q[:, 0])]
     if len(q) >= 3: cv2.fillPoly(lab, [q.astype(np.int32)], 1)
+for s_ in S.Plate(N).streets():                    # today's centre lines, for the guide input
+    for l in getattr(s_['geom'], 'geoms', [s_['geom']]):
+        q = inv(np.asarray(l.segmentize(3).coords)[:, :2]) / K; q = q[~np.isnan(q[:, 0])]
+        if len(q) >= 2: cv2.polylines(cl, [q.astype(np.int32)], False, 255, 3)
+cv2.imwrite(OUT + f'{N}_guide.png', np.dstack([lab * 255, cl, np.zeros_like(cl)]))   # channel 0: today's blocks, 1: today's centre lines
 edge = cv2.morphologyEx(lab, cv2.MORPH_GRADIENT, np.ones((3, 3), np.uint8)) > 0
 band = cv2.dilate(edge.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * IGN + 1, 2 * IGN + 1))) > 0
 alpha = cv2.resize(np.load(SP + f'cufp/{N}/png_alpha_s4.npy').astype(np.float32), (w, h), interpolation=cv2.INTER_LINEAR) > 0.5
