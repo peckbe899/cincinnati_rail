@@ -31,3 +31,9 @@ From Ben and `claude/Sanborn_1922_Plate_Process.md`; Claude Code can't read the 
     reads, kept when they agree within 60 px). The smoothing is chosen by held-out error. The hand picks are the
     controls, not seeds. An automatic locator was tried and does not read Sanborn plates well enough
     (`docs/sanborn/dense_locator_2026-11-06.md`). (Ben, 6 November 2026.)
+    From 13 November 2026 (Ben: reading a plate blind, strip by strip, is not to be used on its own any more) the
+    hand reads are guided: every crossing on today's map that falls on the plate is projected onto the scan through
+    a first fit, and two readers each get a full-size crop around it with both street names and mark its centre or
+    say it is not drawn (`tools/sanborn/guided/`). A pick is a crossing both found within 30 px. Blind strip picks
+    only seed the first fit and supply crossings that exist only in 1922; they are not controls. First used on
+    plate 80: 53 controls and 2.10 m held-out, against 23 and 6.33 m read blind.

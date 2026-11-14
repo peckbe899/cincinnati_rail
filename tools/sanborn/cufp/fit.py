@@ -27,7 +27,9 @@ G = json.load(open(D + 'png2tif.json')) if os.path.exists(D + 'png2tif.json') el
 # ---- picks
 P = []
 for fn in sorted(glob.glob(SP + f'sbg/picks22/s22-{N}_*.json')):
-    for p in json.load(open(fn))['intersections']: P.append(dict(p, part=os.path.basename(fn)[-6]))
+    for p in json.load(open(fn))['intersections']:
+        if p.get('fit') is False: continue   # 2026-11-13: a plate with guided picks (tools/sanborn/guided): its earlier blind picks stay for the street set but are not controls
+        P.append(dict(p, part=os.path.basename(fn)[-6]))
 M = []
 for p in P:
     if '?' in p['a'] + p['b'] or key(p['a']) == key(p['b']): continue

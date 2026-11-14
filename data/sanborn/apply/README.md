@@ -158,3 +158,13 @@ Model `cufp/44/fwd_complete.pkl` (`reports/2026-11-13_newplates_44`: 34 controls
 - tiles_22 re-composited with 44 (still 255 tiles; 44 falls inside tiles already there).
 - Seams (`reports/2026-11-13_seams_applied` against `reports/2026-11-13_seams_applied_43`, `compare_43.json`): all 896 existing seams unchanged, none lost. 66 new, all with plate 44: 12 plate-plate (37L, 37R, 43, 45), median 0.80 m, max 1.65 m; 54 with 1904 frames, median 4.15 m, max 7.44 m.
 - Check (hub not running; basin streets over the tiles_22 overview, 2 m a pixel): the page's streets lie on plate 44's printed streets, and it meets 43 and 45 without a visible step. Not checked at full zoom.
+
+## Plate 80 added (13 November 2026)
+
+Model `cufp/80/fwd_complete.pkl` (`reports/2026-11-13_newplates_80`: guided reads, 53 controls, held-out 2.10 m, max 5.50 m). Built like 43-45: at its fitted position, w1 kept, only ground not already drawn taken, prefix S6. No 1904 frame lies under it.
+
+- c80: 30 streets and 35 blocks. Every id in Ben's layout still there with its name, none moved (`streets_report_80.json`).
+- tiles_22 re-composited with 80 (255 -> 267 tiles).
+- Seams (`reports/2026-11-13_seams_applied` against `reports/2026-11-13_seams_applied_44`, `compare_44.json`): all 962 existing seams unchanged, none lost. 2 new, both with plate 40: 4.20 m and 3.28 m.
+- Check (hub not running; basin streets over the tiles_22 overview, 2 m a pixel): the c80 streets lie on the plate's printed streets and the plate meets 40 along Carthage Avenue without a visible step. Not checked at full zoom.
+- To look at: the street set is not complete. Several streets the plate prints are not drawn (parts of Mitchell Avenue along the bottom, some north-south streets between Delmar and Mitchell, Carthage Avenue north of Washington), and two lines are wrong: a diagonal across Avon Field's subdivision (Rose Hill Lane) and a short diagonal at Clay Street by the canal. The set is built from the crossings, and guided picks carry today's names (East Ross Avenue, not Ross).

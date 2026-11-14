@@ -15,50 +15,6 @@
  ],
  "intersections": [
   {
-   "a": "Burnet Avenue",
-   "b": "Meadow Street",
-   "x": 2852.5,
-   "y": 5210.0,
-   "kind": "T",
-   "reads": [
-    {
-     "read": "A",
-     "x": 2855,
-     "y": 5215
-    },
-    {
-     "read": "B",
-     "x": 2850,
-     "y": 5205
-    }
-   ],
-   "spread_px": 11.2
-  },
-  {
-   "a": "Delmar Street",
-   "b": "Zetta Avenue",
-   "x": 2980.0,
-   "y": 5645.0,
-   "kind": "T",
-   "reads": [
-    {
-     "read": "A",
-     "x": 2975,
-     "y": 5650
-    },
-    {
-     "read": "B",
-     "x": 2985,
-     "y": 5640
-    }
-   ],
-   "spread_px": 14.1,
-   "b_names": [
-    "Zetta Avenue",
-    "Delmar"
-   ]
-  },
-  {
    "a": "Carthage Avenue",
    "b": "Ross Street",
    "x": 3052.5,
@@ -76,31 +32,8 @@
      "y": 1558
     }
    ],
-   "spread_px": 19.2
-  },
-  {
-   "a": "Bertus Street",
-   "b": "Delmar Street",
-   "x": 2189.0,
-   "y": 5630.0,
-   "kind": "T",
-   "reads": [
-    {
-     "read": "A",
-     "x": 2188,
-     "y": 5640
-    },
-    {
-     "read": "B",
-     "x": 2190,
-     "y": 5620
-    }
-   ],
-   "spread_px": 20.1,
-   "b_names": [
-    "Bertus Street",
-    "Delmar"
-   ]
+   "spread_px": 19.2,
+   "fit": false
   },
   {
    "a": "Mitchell Avenue",
@@ -124,7 +57,8 @@
    "b_names": [
     "Leonard Avenue",
     "Mitchell"
-   ]
+   ],
+   "fit": false
   },
   {
    "a": "Carthage Avenue",
@@ -144,7 +78,8 @@
      "y": 1122
     }
    ],
-   "spread_px": 25.1
+   "spread_px": 25.1,
+   "fit": false
   },
   {
    "a": "Mitchell Avenue",
@@ -168,7 +103,8 @@
    "b_names": [
     "Zetta Avenue",
     "Mitchell"
-   ]
+   ],
+   "fit": false
   },
   {
    "a": "Carthage Avenue",
@@ -192,7 +128,8 @@
    "b_names": [
     "Carthage Avenue",
     "Washington"
-   ]
+   ],
+   "fit": false
   },
   {
    "a": "Carthage Avenue",
@@ -212,27 +149,8 @@
      "y": 5020
     }
    ],
-   "spread_px": 30.0
-  },
-  {
-   "a": "Bertus Street",
-   "b": "Park Place",
-   "x": 1455.0,
-   "y": 4742.5,
-   "kind": "T",
-   "reads": [
-    {
-     "read": "A",
-     "x": 1440,
-     "y": 4745
-    },
-    {
-     "read": "B",
-     "x": 1470,
-     "y": 4740
-    }
-   ],
-   "spread_px": 30.4
+   "spread_px": 30.0,
+   "fit": false
   },
   {
    "a": "Carthage Avenue",
@@ -256,7 +174,8 @@
    "b_names": [
     "Carthage Avenue",
     "Mitchell"
-   ]
+   ],
+   "fit": false
   },
   {
    "a": "Carthage Avenue",
@@ -276,7 +195,8 @@
      "y": 4400
     }
    ],
-   "spread_px": 39.1
+   "spread_px": 39.1,
+   "fit": false
   },
   {
    "a": "Carthage Avenue",
@@ -296,7 +216,8 @@
      "y": 6215
     }
    ],
-   "spread_px": 44.7
+   "spread_px": 44.7,
+   "fit": false
   },
   {
    "a": "Delmar Street",
@@ -320,7 +241,8 @@
    "b_names": [
     "Burnet Avenue",
     "Delmar"
-   ]
+   ],
+   "fit": false
   },
   {
    "a": "Mitchell Avenue",
@@ -344,7 +266,96 @@
    "b_names": [
     "Bertus Street",
     "Mitchell"
-   ]
+   ],
+   "fit": false
+  },
+  {
+   "a": "Bertus Street",
+   "b": "Park Place",
+   "x": 1458.5,
+   "y": 4785.5,
+   "kind": "guided",
+   "id": "80-001"
+  },
+  {
+   "a": "Bertus Street",
+   "b": "Leonard Avenue",
+   "x": 1585.5,
+   "y": 4928.5,
+   "kind": "guided",
+   "id": "80-002"
+  },
+  {
+   "a": "Orchard Street",
+   "b": "Leonard Avenue",
+   "x": 1591.5,
+   "y": 5172.5,
+   "kind": "guided",
+   "id": "80-003"
+  },
+  {
+   "a": "Albert Street",
+   "b": "Leonard Avenue",
+   "x": 1539.0,
+   "y": 6130.0,
+   "kind": "guided",
+   "id": "80-004"
+  },
+  {
+   "a": "Church Street",
+   "b": "Park Place",
+   "x": 2154.0,
+   "y": 4153.5,
+   "kind": "guided",
+   "id": "80-005"
+  },
+  {
+   "a": "Bertus Street",
+   "b": "Orchard Street",
+   "x": 2076.5,
+   "y": 5191.0,
+   "kind": "guided",
+   "id": "80-007"
+  },
+  {
+   "a": "Bertus Street",
+   "b": "Delmar Avenue",
+   "x": 2171.5,
+   "y": 5629.0,
+   "kind": "guided",
+   "id": "80-009"
+  },
+  {
+   "a": "Bertus Street",
+   "b": "Albert Street",
+   "x": 2138.5,
+   "y": 6165.0,
+   "kind": "guided",
+   "id": "80-011"
+  },
+  {
+   "a": "Bertus Street",
+   "b": "Albert Street",
+   "x": 2136.5,
+   "y": 6210.0,
+   "kind": "guided",
+   "id": "80-012"
+  },
+  {
+   "a": "Church Street",
+   "b": "Burnet Avenue",
+   "x": 2872.5,
+   "y": 4742.5,
+   "kind": "guided",
+   "id": "80-018"
+  },
+  {
+   "a": "Meadow Avenue",
+   "b": "Burnet Avenue",
+   "x": 2851.0,
+   "y": 5198.5,
+   "kind": "guided",
+   "id": "80-020"
   }
  ],
  "widths": [],

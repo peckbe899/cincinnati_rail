@@ -1,6 +1,6 @@
 {
  "meta": {
-  "made": "2026-11-13T22:45:32",
+  "made": "2026-11-13T23:34:03",
   "by": "tools/sanborn/seams.py (read only)",
   "plate_models": "each plate's own (fwd.pkl, Ben georeference for 35N)",
   "match_m": 45.0,
@@ -118,6 +118,10 @@
    "22-44": {
     "pick_files": 6,
     "crossings": 43
+   },
+   "22-80": {
+    "pick_files": 6,
+    "crossings": 70
    }
   },
   "frames": {
@@ -125,7 +129,7 @@
    "basin": 142
   },
   "crossings": {
-   "plates": 2456,
+   "plates": 2526,
    "frames_deck_north": 2298,
    "frames_basin": 2446
   },
@@ -163,6 +167,7 @@
    "cufp/70/fwd.pkl": "8091a67248682aa921d14b029e1e6edd7548e2585190849c37d9cf9c6c4f2821",
    "cufp/75/fwd.pkl": "f3ceda5a4a798d046ec588c43431bbed59c99081be674b7199e6cd85251b3a6c",
    "cufp/76/fwd.pkl": "341c2ed53f5963bfbd80b6e7f4be8ccaf14478c2a9d9aeac79f4c3724fcd0855",
+   "cufp/80/fwd.pkl": "2f5c233c4ccd81d76450ebafde3e48873f18fa515787fbdef6afbaefc5d32541",
    "cufp/82A/fwd.pkl": "d934e6819f2965338aaca62af01c646690d7c971d321751c4bf60717a924d870",
    "cufp/83A/fwd.pkl": "ddcb6eb81e3e63585772d0ef26160a875cdc566ed98dc8ea15e2bfd385ea6ece",
    "lph/panels_ext.json": "da88de645abc0e980f966cf11ecff10cb18674c13f293c653b692cbf644976ea",
@@ -671,6 +676,12 @@
    "sbg/picks22/s22-76_d.json": "092144c481269a69c87c2e8b5b6c3bd9a659023b37aba517904b48d3bce38ea3",
    "sbg/picks22/s22-76_e.json": "a3ad7a1c5d66e3b1c33df669f7ffd2c6774d8204ab74c3d8a137b84767a7b52d",
    "sbg/picks22/s22-76_f.json": "bbc30b22134aa05ae4c2a421d2f7fe46804cf5d4add610ac1e1e8c8c80c66081",
+   "sbg/picks22/s22-80_1.json": "8fdd376032f46322f6ec07e1d8570e4364d7cf12410725ce5824363cebf8bdcd",
+   "sbg/picks22/s22-80_2.json": "bd580b581c9cc3985c6936d3f48eed9c0b6d5bd65e25fb1535b5f6d1d1f9284f",
+   "sbg/picks22/s22-80_3.json": "6a0d6d1f02a19f4b3e2b839ca01112b586582c774ba8e251b543c9cac32846be",
+   "sbg/picks22/s22-80_4.json": "a7a95899f75dac10181b2f73211400f4f4f218f9cc6835d2272c66c2b281106b",
+   "sbg/picks22/s22-80_5.json": "ac14895a1be3e046ccbd90f6dd885477df042732b75c9ef71890056ed0ccb9dd",
+   "sbg/picks22/s22-80_6.json": "0ae459c065e000aaa135aa461a8595f7cc3df4f9acf9d7c5cc31222f9d3c8bb8",
    "sbg/picks22/s22-82A_a.json": "563e7a21c65be13b31cfd50c6629ae66357c33114cfa8da64f25bd2608a2b1c4",
    "sbg/picks22/s22-82A_b.json": "50ed93d2b50ce85532fb4935ed177e9914c11c82f5406e9e8d38c6338184104b",
    "sbg/picks22/s22-82A_c.json": "3679d0cd902d5965ed6b1f2e788b5d8b9b52d2682b6fe216dd418ab8333306e2",
@@ -685,13 +696,13 @@
  },
  "summary": {
   "plate-plate": {
-   "pairs_of_sources": 47,
-   "n": 203,
-   "median": 1.25,
-   "rms": 4.58,
-   "p90": 5.26,
+   "pairs_of_sources": 48,
+   "n": 205,
+   "median": 1.26,
+   "rms": 4.57,
+   "p90": 5.24,
    "max": 29.33,
-   "mean_dE": 0.15,
+   "mean_dE": 0.14,
    "mean_dN": 0.34,
    "over_5m": 22,
    "over_10m": 8,
@@ -3521,6 +3532,18 @@
    "max": 1.55,
    "mean_dE": -0.7,
    "mean_dN": -1.39
+  },
+  {
+   "seam": "plate-plate",
+   "a": "22-40",
+   "b": "22-80",
+   "n": 2,
+   "median": 3.74,
+   "rms": 3.77,
+   "p90": 4.11,
+   "max": 4.2,
+   "mean_dE": -0.45,
+   "mean_dN": -0.35
   },
   {
    "seam": "plate-plate",
@@ -20477,6 +20500,44 @@
    "dist_m": 1.55,
    "a_px": "9592,288",
    "b_px": "5837,6350",
+   "b_set": ""
+  },
+  {
+   "seam": "plate-plate",
+   "within_45m": true,
+   "a_src": "22-40",
+   "b_src": "22-80",
+   "street_1": "East Ross Avenue",
+   "street_2": "Carthage Avenue",
+   "b_names": "Carthage Avenue / Ross Street",
+   "a_E": 716210.38,
+   "a_N": 4338660.29,
+   "b_E": 716208.93,
+   "b_N": 4338656.35,
+   "dE": -1.46,
+   "dN": -3.94,
+   "dist_m": 4.2,
+   "a_px": "9566,1402",
+   "b_px": "3058,1563",
+   "b_set": ""
+  },
+  {
+   "seam": "plate-plate",
+   "within_45m": true,
+   "a_src": "22-40",
+   "b_src": "22-80",
+   "street_1": "Mitchell Avenue",
+   "street_2": "Carthage Avenue",
+   "b_names": "Carthage Avenue / Mitchell Avenue",
+   "a_E": 715618.13,
+   "a_N": 4337537.62,
+   "b_E": 715618.69,
+   "b_N": 4337540.86,
+   "dE": 0.56,
+   "dN": 3.23,
+   "dist_m": 3.28,
+   "a_px": "6986,6950",
+   "b_px": "125,6958",
    "b_set": ""
   },
   {

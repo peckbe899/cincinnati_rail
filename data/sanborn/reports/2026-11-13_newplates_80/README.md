@@ -1,14 +1,24 @@
-# Plate 80 (St. Bernard), 13 November 2026: gate NOT passed, not built
+# Plate 80 (St. Bernard) onto the applied 1922 layer, 13 November 2026: guided reads
 
-Two reads per strip, 41 picks (27 not agreed); fit seeded from street names (no GeoTIFF). fit.py now also reads the Norwood OSM extract for 80, and Carthage Avenue is aliased to Vine Street (as on plate 40).
+The first pass, read blind in six strips, gave 23 controls and 6.33 m held-out and was not built
+(`reports/2026-11-13_newplates_80_blind`). This pass uses guided reads (`tools/sanborn/guided/`,
+`picks22_guided/22-80/`): each of the 78 crossings on today's map that fall on the plate, projected through the
+first fit, shown to two readers as a full-size crop with both street names.
 
 | | |
 |---|---|
-| Matched to OSM / controls | 24 / 23 (Delmar & Zetta dropped at 6.2 m) |
-| Name-seeded fit, leave-one-out | affine 6.38 m (max 11.13); no spline does better (tps100 6.39) |
-| Rule 12 spline, held-out | 6.33 m (max 11.23 m, lambda 100) - over 5 m |
-| Ties | 2, both with 40 (median 2.81 m) |
+| Today's crossings on the plate | 78 |
+| Found by both readers | 56 (same verdict on 77 of 78) |
+| The two readers apart | median 3.0 px, 90% within 8.2 px |
+| Picks (both within 30 px, one per plate point) | 54 |
+| Not drawn in 1922 (both readers) | 21: cemetery, estates, the canal where City Park Drive runs |
+| Left out | Tower & Delmar: a jog, each reader took a different leg |
+| Controls | 53 |
+| Name-seeded fit, leave-one-out | 1.92 m (quadratic); affine 2.34 m |
+| Rule 12 spline, held-out | 2.10 m (max 5.50 m, lambda 10, damped) |
 
-The misfit is spread over the plate, not one bad control: nine controls are 7-11 m off on leave-one-out, among them Franklin & Kemper, Mitchell & Zetta, Bertus & Mitchell, Advance & Greenlee, and three on Sullivan. Readers named several avenues from house numbers or from the name printed elsewhere (Tower and Sullivan north of where they are printed, Greenlee and Kemper over their whole length), and several reported 30-50 px scatter between crops. Carthage crossings (Ross, Clay, Albert, Oak) found no OSM crossing within 30 m: Vine Street does not follow the 1922 Carthage line there, or the alias is wrong.
-
-cufp/80/fwd_complete.pkl was written by newplates.py but 80 is not in cuf/plates.py and was not built: nothing on the page changed.
+- Ties: 2, both with plate 40 on Carthage Avenue (Ross 4.19 m, Mitchell 3.28 m). The points on 80 for these are
+  blind picks from the first pass, not guided ones.
+- The image corners move 11-25 m between the name-seeded quadratic and the spline, so the solve was damped. The
+  corners are blank paper; the east half (cemetery) has 3 controls and is the least certain part of the plate.
+- The earlier blind picks with no guided pick (22) stay in `sbg/picks22` for the street set, marked "fit": false.

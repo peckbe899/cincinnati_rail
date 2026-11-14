@@ -1,22 +1,22 @@
 {
- "made": "2026-11-13T22:57:14",
+ "made": "2026-11-13T23:24:16",
  "summary": {
   "plates": [
    {
     "plate": "22-80",
-    "controls": 23,
-    "name_seeded_fit": "affine",
-    "lam": 100.0,
-    "damped": false,
-    "own_rms": 5.44,
-    "heldout": 6.33,
-    "heldout_max": 11.23,
-    "max_corner_move_m": 2.47,
+    "controls": 53,
+    "name_seeded_fit": "quadratic",
+    "lam": 10.0,
+    "damped": true,
+    "own_rms": 1.67,
+    "heldout": 2.1,
+    "heldout_max": 5.5,
+    "max_corner_move_m": 25.24,
     "corner_moves_m": [
-     2.5,
-     1.1,
-     0.3,
-     1.1
+     25.2,
+     15.5,
+     23.8,
+     10.9
     ],
     "ties": 2,
     "tie_partners": [
@@ -35,14 +35,14 @@
      },
      "after": {
       "n": 3,
-      "median": 2.42
+      "median": 3.28
      },
      "with_new": [
       {
        "new": "22-80",
        "n": 2,
-       "median": 2.81,
-       "max": 3.21
+       "median": 3.74,
+       "max": 4.2
       }
      ]
     }
@@ -54,7 +54,7 @@
    }
   },
   "gate": {
-   "heldout_under_5m": false,
+   "heldout_under_5m": true,
    "neighbour_median_not_worse": {
     "22-40": false
    },
@@ -66,18 +66,18 @@
    "a": "22-80",
    "b": "22-40",
    "street_1": "Carthage Avenue",
-   "street_2": "Mitchell Avenue",
-   "before_m": 3.52,
-   "after_m": 2.42,
+   "street_2": "Ross Street",
+   "before_m": 1.85,
+   "after_m": 4.19,
    "weight": 1.0
   },
   {
    "a": "22-80",
    "b": "22-40",
    "street_1": "Carthage Avenue",
-   "street_2": "Ross Street",
-   "before_m": 4.43,
-   "after_m": 3.2,
+   "street_2": "Mitchell Avenue",
+   "before_m": 11.37,
+   "after_m": 3.28,
    "weight": 1.0
   }
  ]

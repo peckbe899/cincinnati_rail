@@ -1,0 +1,84 @@
+{
+ "made": "2026-11-13T22:57:14",
+ "summary": {
+  "plates": [
+   {
+    "plate": "22-80",
+    "controls": 23,
+    "name_seeded_fit": "affine",
+    "lam": 100.0,
+    "damped": false,
+    "own_rms": 5.44,
+    "heldout": 6.33,
+    "heldout_max": 11.23,
+    "max_corner_move_m": 2.47,
+    "corner_moves_m": [
+     2.5,
+     1.1,
+     0.3,
+     1.1
+    ],
+    "ties": 2,
+    "tie_partners": [
+     "22-40"
+    ]
+   }
+  ],
+  "ties": 2,
+  "seams": {
+   "dir": "reports/2026-11-13_seams_newplates_80",
+   "neighbours": {
+    "22-40": {
+     "before": {
+      "n": 1,
+      "median": 1.55
+     },
+     "after": {
+      "n": 3,
+      "median": 2.42
+     },
+     "with_new": [
+      {
+       "new": "22-80",
+       "n": 2,
+       "median": 2.81,
+       "max": 3.21
+      }
+     ]
+    }
+   },
+   "new_pair": {
+    "n": 0,
+    "median": null,
+    "max": null
+   }
+  },
+  "gate": {
+   "heldout_under_5m": false,
+   "neighbour_median_not_worse": {
+    "22-40": false
+   },
+   "build": false
+  }
+ },
+ "ties": [
+  {
+   "a": "22-80",
+   "b": "22-40",
+   "street_1": "Carthage Avenue",
+   "street_2": "Mitchell Avenue",
+   "before_m": 3.52,
+   "after_m": 2.42,
+   "weight": 1.0
+  },
+  {
+   "a": "22-80",
+   "b": "22-40",
+   "street_1": "Carthage Avenue",
+   "street_2": "Ross Street",
+   "before_m": 4.43,
+   "after_m": 3.2,
+   "weight": 1.0
+  }
+ ]
+}
