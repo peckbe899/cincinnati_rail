@@ -67,11 +67,24 @@ def dist(a, b): return float(np.hypot(a['x'] - b['x'], a['y'] - b['y']))
 
 # ---------------------------------------------------------------- crossings
 G = {r['id']: r for r in json.load(open(D + 'guide_A.json', encoding='utf8'))}
-CA, CB = uncopy(reads('A_*.json'), G, 'A'), uncopy(reads('B_*.json'), G, 'B')
+RAW_A, RAW_B = reads('A_*.json'), reads('B_*.json')
+CA, CB = uncopy(dict(RAW_A), G, 'A'), uncopy(dict(RAW_B), G, 'B')
+# Ben's calls on low-confidence crossings (decisions.json: {id: "real" | "A" | "B" | "not"}): "real" = the readers' mean,
+# "A"/"B" = that reader's point; either way a control that screening does not remove. "not" = not a control, not drawn.
+DEC = json.load(open(D + 'decisions.json', encoding='utf8')) if os.path.exists(D + 'decisions.json') else {}
 for g in G.values():
     g['sid_a'] = P.sid_at(ST, g['a'], g['E'], g['N']); g['sid_b'] = P.sid_at(ST, g['b'], g['E'], g['N'])
 picks, street_only, jogs = [], [], []
 for i, g in G.items():
+    d = DEC.get(i)
+    if d == 'not': continue
+    if d in ('real', 'A', 'B'):
+        qs = [r for k, r in (('A', RAW_A.get(i, {})), ('B', RAW_B.get(i, {}))) if r.get('found') and 'x' in r and d in ('real', k)]
+        if qs:
+            x, y = float(np.mean([q['x'] for q in qs])), float(np.mean([q['y'] for q in qs]))
+            picks.append(dict(id=i, a=g['a'], b=g['b'], sid_a=g['sid_a'], sid_b=g['sid_b'], x=x, y=y, E=g['E'], N=g['N'], apart_px=0.0,
+                              both_low=False, ben=d, printed={g['sid_a']: [qs[0].get('name_a_printed', '')], g['sid_b']: [qs[0].get('name_b_printed', '')]}))
+            continue
     fa, fb, a, b = pair(CA, CB, i)
     if not (fa and fb): continue
     if dist(a, b) > AGREE:
@@ -95,6 +108,7 @@ screened = []
 while len(cand) > 8:
     X = np.array([[p['x'], p['y']] for p in cand]); O = np.array([[p['E'], p['N']] for p in cand]); e = np.zeros(len(cand))
     for k in range(len(cand)):
+        if cand[k].get('ben'): continue                  # Ben's call stands
         m = np.ones(len(cand), bool); m[k] = False; e[k] = np.hypot(*(tps_fit(X[m], O[m])(X[k:k + 1])[0] - O[k]))
     w = int(np.argmax(e))
     if e[w] <= CTRL_M: break
@@ -106,6 +120,26 @@ for p in picks:
     p['miss_m'] = round(float(np.hypot(*(F(np.array([[p['x'], p['y']]]))[0] - [p['E'], p['N']]))), 1)
     p['drawn'] = p['control'] or p['miss_m'] <= WRONG_M
     if p['both_low'] and p['miss_m'] > WRONG_M: p['drawn'] = False
+
+# bins: every crossing a reader found is HIGH (a control on its own) or LOW (with why), for Ben to call (decisions.json)
+PK = {p['id']: p for p in picks}; COPIED = {c['id'] for c in copied}; bins = []
+for i, g in G.items():
+    a, b = RAW_A.get(i, {}), RAW_B.get(i, {})
+    fa, fb = bool(a.get('found') and 'x' in a), bool(b.get('found') and 'x' in b)
+    if not (fa or fb): continue
+    p = PK.get(i); row = dict(id=i, a=g['a'], b=g['b'], A=[a['x'], a['y'], a.get('sure')] if fa else None,
+                              B=[b['x'], b['y'], b.get('sure')] if fb else None, ben=DEC.get(i))
+    if p and p.get('same_point_as'): continue           # follows the crossing at the same point
+    if p and p['control']: row.update(bin='high' if not p.get('ben') else 'ben', why='')
+    elif p and p['both_low']: row.update(bin='low', why=f"both readers 'low' ({p['apart_px']} px apart)")
+    elif p: row.update(bin='low', why=f"screened: the fit of the others misses it by {p['miss_m']} m")
+    elif i in COPIED: row.update(bin='low', why='copy check: a reader gave this point to another item too')
+    elif fa and fb: row.update(bin='low', why=f'readers {round(dist(a, b))} px apart')
+    else: row.update(bin='low', why='only reader ' + ('A' if fa else 'B') + ' found it; the other: ' + ((b if fa else a).get('note', '') or '')[:80])
+    if DEC.get(i) == 'not': row['bin'] = 'ben'
+    bins.append(row)
+json.dump(bins, open(D + 'bins.json', 'w', encoding='utf8', newline='\n'), indent=1)
+print('bins: high', sum(r['bin'] == 'high' for r in bins), 'low', sum(r['bin'] == 'low' for r in bins), 'decided', sum(r['bin'] == 'ben' for r in bins))
 
 # ---------------------------------------------------------------- stations, runs
 T = {r['id']: r for r in json.load(open(D + 'trace.json', encoding='utf8'))} if os.path.exists(D + 'trace.json') else {}
