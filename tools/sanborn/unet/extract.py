@@ -20,7 +20,7 @@ import cv2
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, os.path.join(HERE, '..'))
 import _ws  # noqa: E402
 N, NAME = sys.argv[1], sys.argv[2]; SP = _ws.DATA
-K, STEP, MIN_PX, TOL, MINLEN, CURVE, SNAP = 2, 60, 1500, 6.0, 45.0, 4.0, 10
+K, STEP, MIN_PX, TOL, MINLEN, CURVE, SNAP, CORNER = 2, 60, 1500, 9.0, 40.0, 7.0, 10, 45.0
 p = cv2.imread(SP + f'unet_data/{N}_pred_{NAME}.png', 0); h, w = p.shape
 img = cv2.imread(SP + f'unet_data/{N}_img.jpg'); gray = cv2.GaussianBlur(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), (3, 3), 0).astype(np.float32)
 alpha = cv2.resize(np.load(SP + f'cufp/{N}/png_alpha_s4.npy').astype(np.float32), (w, h)) > 0.5
@@ -50,7 +50,7 @@ def straighten(c):
         i, j = idx[k], idx[(k + 1) % len(idx)]; seg = c[i:j + 1] if j > i else np.r_[c[i:], c[:j + 1]]
         a, b = seg[0], seg[-1]; L = float(np.hypot(*(b - a)))
         if L < MINLEN or len(seg) < 5: lines.append(dict(kind='short', a=a, b=b, seg=seg)); continue
-        vx, vy, x0, y0 = cv2.fitLine(seg, cv2.DIST_L2, 0, 0.01, 0.01)[:, 0]; dv = np.array([vx, vy]); p0 = np.array([x0, y0])
+        vx, vy, x0, y0 = cv2.fitLine(seg, cv2.DIST_HUBER, 0, 0.01, 0.01)[:, 0]; dv = np.array([vx, vy]); p0 = np.array([x0, y0])
         dev = np.abs((seg - p0) @ np.array([-vy, vx]))
         if dev.max() > CURVE and L > 60: lines.append(dict(kind='curve', a=a, b=b, seg=seg)); continue
         a2, b2 = p0 + dv * ((a - p0) @ dv), p0 + dv * ((b - p0) @ dv)
@@ -60,15 +60,31 @@ def straighten(c):
                 nrm = np.array([-(b2 - a2)[1], (b2 - a2)[0]]) / np.hypot(*(b2 - a2)); a2, b2 = a2 + nrm * o, b2 + nrm * o
         lines.append(dict(kind='line', a=a2, b=b2, seg=seg))
     # a short side between two straight sides is the mask's rounded corner: drop it, the two lines meet at the corner
-    if sum(l['kind'] == 'line' for l in lines) >= 3: lines = [l for l in lines if l['kind'] != 'short']
+    def meet(p, q):
+        d1, d2 = p['b'] - p['a'], q['b'] - q['a']; den = d1[0] * d2[1] - d1[1] * d2[0]
+        if abs(den) < 0.2 * np.hypot(*d1) * np.hypot(*d2): return None
+        return p['a'] + ((q['a'][0] - p['a'][0]) * d2[1] - (q['a'][1] - p['a'][1]) * d2[0]) / den * d1
+    # corners: a run of short sides between two straight sides is the mask's rounded corner. It is replaced by the point
+    # where the two lines meet, but only when that point is close to the run (CORNER px); otherwise the run stays as it is.
+    n_ = len(lines); out = []; k = 0
+    start = next((i for i, l in enumerate(lines) if l['kind'] == 'line'), None)
+    if start is None: return [l['a'].tolist() for l in lines], []
+    order = [lines[(start + i) % n_] for i in range(n_)]
+    while k < n_:
+        l = order[k]
+        if l['kind'] != 'line': out.append(l); k += 1; continue
+        j = k + 1; run = []
+        while j < n_ and order[j]['kind'] == 'short': run.append(order[j]); j += 1
+        nxt = order[j % n_]
+        out.append(l)
+        if nxt['kind'] == 'line' and nxt is not l:
+            x = meet(l, nxt)
+            if x is not None and np.hypot(*(x - l['b'])) < CORNER and np.hypot(*(x - nxt['a'])) < CORNER: l['b'] = x; nxt['a'] = x
+            else: out += run
+        else: out += run
+        k = j
+    lines = out
     verts = []
-    for k, l in enumerate(lines):                   # corner = where this side's line meets the previous side's line
-        pr = lines[k - 1]
-        if l['kind'] == 'line' and pr['kind'] == 'line':
-            d1, d2 = pr['b'] - pr['a'], l['b'] - l['a']; den = d1[0] * d2[1] - d1[1] * d2[0]
-            if abs(den) > 0.2 * np.hypot(*d1) * np.hypot(*d2):
-                t = ((l['a'][0] - pr['a'][0]) * d2[1] - (l['a'][1] - pr['a'][1]) * d2[0]) / den; x = pr['a'] + t * d1
-                if np.hypot(*(x - l['a'])) < 60: pr['b'] = x; l['a'] = x
     for l in lines:
         if l['kind'] == 'curve':
             s = cv2.GaussianBlur(l['seg'].reshape(-1, 1, 2), (1, 31), 0)[:, 0, :] if len(l['seg']) > 31 else l['seg']
