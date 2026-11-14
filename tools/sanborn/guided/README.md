@@ -53,3 +53,15 @@ today's map (offset legs, divided roads) are one crossing with several points. T
 pooled; each point both readers agree on is paired with the nearest of today's points (one plate point for a group
 within 25 m takes the mean). On the review page such a crossing is listed once, with all of today's points and all the
 reads shown, and "Both" keeps reader A's and reader B's points as two real points.
+
+## Feature-keyed solver (14 November 2026; Ben: strip the process to first principles)
+
+`solve.py N [--write]` places a guided plate from `observations.json` (written by the merge: every agreed crossing
+and traced street point, each tied to its feature of today's map). Crossings pin a point; traced points pin the plate
+across their street's centre line. Nothing is cut at a threshold: each observation is weighted by its fit (Tukey,
+iterated), Ben's decisions at full weight. Stiffness is chosen by a 5-fold held-out test on the crossings, run with
+and without the street points. Streets whose traced points mostly fade are reported as moved since 1922. Seams are
+measured at today's crossings a neighbouring applied plate also has. Model: `cufp/N/fwd_guided.pkl` (tag 'guided').
+`parcels.py N` fetches today's parcel polygons (CAGIS, geometry only) and merges them into blocks
+(`today/blocks_N.geojson`), the reference for block edges; the plate-side reading of block edges and of stubs at the
+plate edge is not built yet.

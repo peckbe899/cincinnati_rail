@@ -398,6 +398,12 @@ for a in added:
 for k, d_ in OUTP.items():
     json.dump(d_, open(SP + f'sbg/picks22/s22-{N}_{k}.json', 'w', encoding='utf8', newline='\n'), indent=1)
 ctrl = [p for p in picks if p['control']]
+# every observation, before any screening, for the feature-keyed solver (solve.py): crossings both readers agree on
+# (or Ben placed) with today's point, and agreed stations with today's street id
+json.dump(dict(crossings=[dict(id=p['id'], group=p.get('group'), a=p['a'], b=p['b'], sid_a=p['sid_a'], sid_b=p['sid_b'], x=p['x'], y=p['y'], E=p['E'], N=p['N'],
+                               low=bool(p['both_low']), ben=p.get('ben'), same_point_as=p.get('same_point_as')) for p in picks],
+               stations=[dict(id=q['id'], sid=sid, x=q['x'], y=q['y']) for sid, items in seq.items() for q in items if q['kind'] == 'station']),
+          open(D + 'observations.json', 'w', encoding='utf8', newline=chr(10)), indent=1)
 json.dump([dict(id=p['id'], a=p['a'], b=p['b'], x=p['x'], y=p['y'], E=p['E'], N=p['N']) for p in ctrl], open(D + 'controls.json', 'w', encoding='utf8', newline='\n'), indent=1)
 d = np.array([dist(CA[i], CB[i]) for i in G if pair(CA, CB, i)[0] and pair(CA, CB, i)[1]])
 rep = dict(sheet=f'22-{N}', crossings=len(G), found_both=len(d), same_verdict=sum(pair(CA, CB, i)[0] == pair(CA, CB, i)[1] for i in G),
