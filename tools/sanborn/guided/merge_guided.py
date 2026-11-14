@@ -58,7 +58,8 @@ def uncopy(R, items, who):
         for j, b in pts[k + 1:]:
             if abs(a['x'] - b['x']) <= 2 and abs(a['y'] - b['y']) <= 2:
                 pi, pj = items[i].get('pred'), items[j].get('pred')
-                if pi and pj and np.hypot(pi[0] - pj[0], pi[1] - pj[1]) > 60: bad |= {i, j}
+                same = 'a' in items[i] and {items[i].get('a'), items[i].get('b')} == {items[j].get('a'), items[j].get('b')}   # one split crossing
+                if pi and pj and not same and np.hypot(pi[0] - pj[0], pi[1] - pj[1]) > 60: bad |= {i, j}
     for i in bad: copied.append(dict(read=who, id=i)); R.pop(i)
     return R
 def pair(A, B, i, key='found'):
@@ -72,40 +73,62 @@ RAW_A, RAW_B = reads('A_*.json'), reads('B_*.json')
 CA, CB = uncopy(dict(RAW_A), G, 'A'), uncopy(dict(RAW_B), G, 'B')
 # Ben's calls (decisions.json, from the review page: bins_page.py --load). Two separate questions per crossing:
 #   drawn: is this crossing on the plate at all?  false -> not a control, not drawn.
-#   where (if drawn): "mean" (the readers' mean), "A", "B", or "manual" with Ben's own x, y.
+#   where (if drawn): "mean" (the readers' mean), "A", "B", "both" (a split intersection: A's point and B's point are
+#   both real), or "manual" with Ben's own x, y.
 # A decided crossing is a control that screening does not remove. "added": crossings Ben placed that the guide did not
 # offer or no reader found: {a, b, x, y} with today's street names; the world point is where those streets meet today.
 _d = json.load(open(D + 'decisions.json', encoding='utf8')) if os.path.exists(D + 'decisions.json') else {}
 DEC, ADDED = _d.get('items', {}), _d.get('added', [])
-def ben_point(i, d):
-    if d.get('where') == 'manual': return float(d['x']), float(d['y'])
-    qs = [r for k, r in (('A', RAW_A.get(i, {})), ('B', RAW_B.get(i, {}))) if r.get('found') and 'x' in r and d.get('where', 'mean') in ('mean', k)]
-    return (float(np.mean([q['x'] for q in qs])), float(np.mean([q['y'] for q in qs]))) if qs else None
 for g in G.values():
     g['sid_a'] = P.sid_at(ST, g['a'], g['E'], g['N']); g['sid_b'] = P.sid_at(ST, g['b'], g['E'], g['N'])
-picks, street_only, jogs = [], [], []
+# Split intersections: today's map often has the same two streets meeting at several points close together (offset
+# legs, divided roads). Those guide items are ONE crossing with several points: a group (same two names, within GROUP_M).
+GROUP_M, MERGE_M = 60.0, 25.0
+GRP = {}                                              # leader id -> member ids
 for i, g in G.items():
-    d = DEC.get(i)
+    hit = [l for l, ms in GRP.items() if {G[l]['a'], G[l]['b']} == {g['a'], g['b']} and any(np.hypot(G[m]['E'] - g['E'], G[m]['N'] - g['N']) <= GROUP_M for m in ms)]
+    if hit:
+        GRP[hit[0]].append(i)
+        for l in hit[1:]: GRP[hit[0]] += GRP.pop(l)
+    else: GRP[i] = [i]
+def found(R, ms): return [R[m] for m in ms if R.get(m, {}).get('found') and 'x' in R[m]]
+def printed_of(g, rs): return {g['sid_a']: [r.get('name_a_printed', '') for r in rs], g['sid_b']: [r.get('name_b_printed', '') for r in rs]}
+picks, street_only, jogs = [], [], []
+for lead, ms in GRP.items():
+    g = G[lead]; d = DEC.get(lead); pts = []           # pts: (x, y, apart_px, both_low)
     if d and d.get('drawn') is False: continue
+    allr = found(RAW_A, ms) + found(RAW_B, ms)
     if d and d.get('drawn'):
-        xy = ben_point(i, d)
-        if xy:
-            ra = RAW_A.get(i, {}); rb = RAW_B.get(i, {})
-            picks.append(dict(id=i, a=g['a'], b=g['b'], sid_a=g['sid_a'], sid_b=g['sid_b'], x=xy[0], y=xy[1], E=g['E'], N=g['N'], apart_px=0.0, both_low=False, ben=d.get('where', 'mean'),
-                              printed={g['sid_a']: [ra.get('name_a_printed', ''), rb.get('name_a_printed', '')], g['sid_b']: [ra.get('name_b_printed', ''), rb.get('name_b_printed', '')]}))
+        ra, rb = found(RAW_A, ms), found(RAW_B, ms); w = d.get('where', 'mean')
+        if w == 'manual': pts = [(float(d['x']), float(d['y']), 0.0, False)]
+        elif w == 'both': pts = [(float(r[0]['x']), float(r[0]['y']), 0.0, False) for r in (ra, rb) if r]
+        else:
+            qs = [r[0] for k, r in (('A', ra), ('B', rb)) if r and w in ('mean', k)]
+            if qs: pts = [(float(np.mean([q['x'] for q in qs])), float(np.mean([q['y'] for q in qs])), 0.0, False)]
+    else:
+        ra, rb = found(CA, ms), found(CB, ms); used = set()
+        for a in ra:
+            c = sorted((dist(a, b), k) for k, b in enumerate(rb) if k not in used)
+            if c and c[0][0] <= AGREE:
+                b = rb[c[0][1]]; used.add(c[0][1])
+                if not any(np.hypot((a['x'] + b['x']) / 2 - p[0], (a['y'] + b['y']) / 2 - p[1]) < SAME_PT for p in pts):
+                    pts.append(((a['x'] + b['x']) / 2, (a['y'] + b['y']) / 2, round(c[0][0], 1), a.get('sure') == 'low' and b.get('sure') == 'low'))
+        if not pts and ra and rb:                      # the readers took different points: drawn in both streets, no control
+            jogs.append(lead)
+            for q in ra + rb: street_only.append(dict(id=lead, x=q['x'], y=q['y'], sids=[g['sid_a'], g['sid_b']], why='split: the readers took different points'))
             continue
-    fa, fb, a, b = pair(CA, CB, i)
-    if not (fa and fb): continue
-    if dist(a, b) > AGREE:
-        jogs.append(i)
-        for q in (a, b): street_only.append(dict(id=i, x=q['x'], y=q['y'], sids=[g['sid_a'], g['sid_b']], why='jog: the readers took different legs'))
-        continue
-    x, y = (a['x'] + b['x']) / 2, (a['y'] + b['y']) / 2
-    first = next((p for p in picks if np.hypot(x - p['x'], y - p['y']) < SAME_PT), None)
-    rec = dict(id=i, a=g['a'], b=g['b'], sid_a=g['sid_a'], sid_b=g['sid_b'], x=x, y=y, E=g['E'], N=g['N'], apart_px=round(dist(a, b), 1),
-               both_low=a.get('sure') == 'low' and b.get('sure') == 'low', printed={g['sid_a']: [a.get('name_a_printed', ''), b.get('name_a_printed', '')], g['sid_b']: [a.get('name_b_printed', ''), b.get('name_b_printed', '')]})
-    if first: rec['same_point_as'] = first['id']
-    picks.append(rec)
+    if not pts: continue
+    spread = max(np.hypot(G[m]['E'] - G[n]['E'], G[m]['N'] - G[n]['N']) for m in ms for n in ms)
+    free = list(ms)
+    for x, y, apart, low in pts:
+        if len(pts) == 1 and spread <= MERGE_M: m = lead; E, Nn = float(np.mean([G[k]['E'] for k in ms])), float(np.mean([G[k]['N'] for k in ms]))
+        elif free: m = min(free, key=lambda k: np.hypot(G[k]['pred'][0] - x, G[k]['pred'][1] - y)); free.remove(m); E, Nn = G[m]['E'], G[m]['N']
+        else: street_only.append(dict(id=lead, x=x, y=y, sids=[g['sid_a'], g['sid_b']], why="split: more points on the plate than on today's map")); continue
+        rec = dict(id=m, group=lead, a=G[m]['a'], b=G[m]['b'], sid_a=G[m]['sid_a'], sid_b=G[m]['sid_b'], x=x, y=y, E=E, N=Nn, apart_px=apart, both_low=low, printed=printed_of(G[m], allr))
+        if d: rec['ben'] = d.get('where', 'mean')
+        first = next((p for p in picks if np.hypot(x - p['x'], y - p['y']) < SAME_PT), None)
+        if first and not d: rec['same_point_as'] = first['id']
+        picks.append(rec)
 
 added_skipped = []
 for k, d in enumerate(ADDED):
@@ -145,25 +168,26 @@ for p in picks:
 
 # bins: every crossing of the guide is HIGH (a control on its own), LOW (a reader found it; with why) or NONE (no reader
 # found it), for Ben to call on the review page (bins_page.py); "ben" = decided by Ben.
-PK = {p['id']: p for p in picks}; COPIED = {c['id'] for c in copied}; bins = []
-for i, g in G.items():
-    a, b = RAW_A.get(i, {}), RAW_B.get(i, {})
-    fa, fb = bool(a.get('found') and 'x' in a), bool(b.get('found') and 'x' in b)
-    p = PK.get(i); row = dict(id=i, a=g['a'], b=g['b'], E=g['E'], N=g['N'], A=[a['x'], a['y'], a.get('sure')] if fa else None,
-                              B=[b['x'], b['y'], b.get('sure')] if fb else None, ben=DEC.get(i),
-                              notes=[a.get('note', ''), b.get('note', '')])
-    if p and p.get('same_point_as') and not DEC.get(i): row.update(bin='same', why='same plate point as ' + p['same_point_as'])
-    elif DEC.get(i): row.update(bin='ben', why='')
-    elif p and p['control']: row.update(bin='high', why='')
-    elif p and p['both_low']: row.update(bin='low', why=f"both readers 'low' ({p['apart_px']} px apart)")
-    elif p: row.update(bin='low', why=f"screened: the fit of the others misses it by {p['miss_m']} m")
-    elif not (fa or fb): row.update(bin='none', why='neither reader found it')
-    elif i in COPIED: row.update(bin='low', why='copy check: a reader gave this point to another item too')
-    elif fa and fb: row.update(bin='low', why=f'readers {round(dist(a, b))} px apart')
-    else: row.update(bin='low', why='only reader ' + ('A' if fa else 'B') + ' found it')
+COPIED = {c['id'] for c in copied}; bins = []
+for lead, ms in GRP.items():
+    g = G[lead]; ra, rb = found(RAW_A, ms), found(RAW_B, ms); ps = [p for p in picks if p.get('group') == lead]
+    row = dict(id=lead, members=ms, a=g['a'], b=g['b'], E=g['E'], N=g['N'], today=[[G[m]['E'], G[m]['N']] for m in ms],
+               A=[ra[0]['x'], ra[0]['y'], ra[0].get('sure')] if ra else None, B=[rb[0]['x'], rb[0]['y'], rb[0].get('sure')] if rb else None,
+               reads=[[r['x'], r['y'], k] for k, rs in (('A', ra), ('B', rb)) for r in rs], ben=DEC.get(lead),
+               notes=[R[m].get('note', '') for R in (RAW_A, RAW_B) for m in ms if R.get(m, {}).get('note')][:4])
+    split = f" (split: {len(ms)} points on today's map)" if len(ms) > 1 else ''
+    if DEC.get(lead): row.update(bin='ben', why='')
+    elif ps and all(p.get('same_point_as') for p in ps): row.update(bin='same', why='same plate point as ' + ps[0]['same_point_as'])
+    elif any(p['control'] for p in ps): row.update(bin='high', why=f"{sum(p['control'] for p in ps)} control point(s)" + split)
+    elif any(p['both_low'] for p in ps): row.update(bin='low', why=f"both readers 'low' ({ps[0]['apart_px']} px apart)" + split)
+    elif ps: row.update(bin='low', why=f"screened: the fit of the others misses it by {min(p['miss_m'] for p in ps)} m" + split)
+    elif not (ra or rb): row.update(bin='none', why='neither reader found it' + split)
+    elif any(m in COPIED for m in ms) and not (found(CA, ms) and found(CB, ms)): row.update(bin='low', why='copy check: a reader gave this point to another crossing too' + split)
+    elif ra and rb: row.update(bin='low', why=f'readers {round(min(dist(x, y) for x in ra for y in rb))} px apart' + split)
+    else: row.update(bin='low', why='only reader ' + ('A' if ra else 'B') + ' found it' + split)
     bins.append(row)
 for p in picks:
-    if p.get('ben') == 'added': bins.append(dict(id=p['id'], a=p['a'], b=p['b'], E=p['E'], N=p['N'], A=None, B=None, bin='ben', why='added by Ben', ben=dict(drawn=True, where='manual', x=p['x'], y=p['y']), notes=[]))
+    if p.get('ben') == 'added': bins.append(dict(id=p['id'], members=[p['id']], today=[[p['E'], p['N']]], reads=[], a=p['a'], b=p['b'], E=p['E'], N=p['N'], A=None, B=None, bin='ben', why='added by Ben', ben=dict(drawn=True, where='manual', x=p['x'], y=p['y']), notes=[]))
 json.dump(bins, open(D + 'bins.json', 'w', encoding='utf8', newline='\n'), indent=1)
 print('bins:', dict(collections.Counter(r['bin'] for r in bins)), 'added skipped:', added_skipped)
 

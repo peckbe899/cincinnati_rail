@@ -23,7 +23,7 @@ if sys.argv[2] == '--load':
         if r['id'].startswith('add'):
             if r['a'] and r['b'] and r['x']: added.append(dict(a=r['a'], b=r['b'], x=float(r['x']), y=float(r['y'])))
         elif r['drawn'] == 'no': items[r['id']] = dict(drawn=False)
-        elif r['drawn'] == 'yes' and r['where'] in ('mean', 'A', 'B'): items[r['id']] = dict(drawn=True, where=r['where'])
+        elif r['drawn'] == 'yes' and r['where'] in ('mean', 'A', 'B', 'both'): items[r['id']] = dict(drawn=True, where=r['where'])
         elif r['drawn'] == 'yes' and r['where'] == 'manual' and r['x']: items[r['id']] = dict(drawn=True, where='manual', x=float(r['x']), y=float(r['y']))
     json.dump(dict(items=items, added=added), open(D + 'decisions.json', 'w', encoding='utf8', newline=chr(10)), indent=1, sort_keys=True)
     print('decisions', len(items), 'added', len(added)); sys.exit()
@@ -42,8 +42,9 @@ cv2.imwrite(OUT + 'img/clean.jpg', full, [cv2.IMWRITE_JPEG_QUALITY, 88])
 lined = full.copy(); streets_on(lined, 1, 2); cv2.imwrite(OUT + 'img/lined.jpg', lined, [cv2.IMWRITE_JPEG_QUALITY, 88])
 items = []
 for r in json.load(open(D + 'bins.json', encoding='utf8')):
-    t = P.px(r['E'], r['N']); pred = None if np.isnan(t[0]) else [round(float(t[0]), 1), round(float(t[1]), 1)]
-    items.append(dict(id=r['id'], bin=r['bin'], a=r['a'], b=r['b'], why=r['why'], A=r['A'], B=r['B'], pred=pred, ben=r.get('ben'),
+    td = [[round(float(v), 1) for v in P.px(E, Nn)] for E, Nn in r['today']]; td = [t for t in td if not np.isnan(t[0])]
+    pred = [float(np.mean([t[0] for t in td])), float(np.mean([t[1] for t in td]))] if td else None
+    items.append(dict(id=r['id'], bin=r['bin'], a=r['a'], b=r['b'], why=r['why'], A=r['A'], B=r['B'], pred=pred, today=td, reads=r['reads'], ben=r.get('ben'),
                       notes=[n for n in r.get('notes', []) if n]))
 data = dict(plate=N, k=K, W=full.shape[1], H=full.shape[0], items=items, streets=sorted({s['name'] for s in ST}))
 open(OUT + 'data.js', 'w', encoding='utf8', newline=chr(10)).write('const DATA = ' + json.dumps(data) + ';' + chr(10))

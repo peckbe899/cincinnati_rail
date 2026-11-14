@@ -47,3 +47,9 @@ size, each crossing with two separate questions (is it drawn on the plate; if so
 Ben's own click), and "Add a crossing" for one the guide does not have (a click plus today's two street names).
 `bins_page.py N --load CSV` writes `decisions.json`; the merge then uses Ben's calls as controls that screening does
 not remove, drops the ones he marks not drawn, and places an added crossing at the point where today's two streets meet.
+
+Split intersections (14 November 2026): guide items with the same two street names within 60 m of each other on
+today's map (offset legs, divided roads) are one crossing with several points. The readers' reads of all of them are
+pooled; each point both readers agree on is paired with the nearest of today's points (one plate point for a group
+within 25 m takes the mean). On the review page such a crossing is listed once, with all of today's points and all the
+reads shown, and "Both" keeps reader A's and reader B's points as two real points.

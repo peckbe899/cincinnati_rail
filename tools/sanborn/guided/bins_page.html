@@ -77,7 +77,7 @@
 <main>
   <p class="help">Pick a crossing from the list or the small map. The big view is the plate at full size: <b>drag</b> to move, <b>click</b> to put your own point.
   <span class="a">Red square = reader A</span>, <span class="b">green circle = reader B</span>, <span class="td">blue + = today's crossing through the current fit</span>, <span class="me">purple × = your point</span>.
-  Two questions per crossing: <b>is it drawn on the plate</b>, and if so <b>where</b>. A crossing the list does not have: <b>Add a crossing</b>.</p>
+  Two questions per crossing: <b>is it drawn on the plate</b>, and if so <b>where</b>. Where the same two streets meet at several points (a split intersection), it is one crossing: all of today's points and all the readers' points are shown, and <b>Both</b> keeps A's and B's points as two real points. A crossing the list does not have: <b>Add a crossing</b>.</p>
   <div class="over" id="over"><div class="omap" id="omap"><img src="img/plate.jpg" alt="plate overview"><div class="frame" id="frame"></div></div></div>
   <div class="left">
     <div class="ibar">
@@ -135,7 +135,7 @@ function marks() {
   inner.querySelectorAll('.pt').forEach(e => e.remove());
   const put = (c, p) => { if (!p) return; const d = document.createElement('div'); d.className = 'pt ' + c; d.style.left = p[0] + 'px'; d.style.top = p[1] + 'px'; inner.appendChild(d); };
   if (adding) { put('M', addpt); return; }
-  const i = IT[sel]; if (!i) return; put('P', i.pred); put('A', i.A); put('B', i.B);
+  const i = IT[sel]; if (!i) return; i.today.forEach(t => put('P', t)); i.reads.forEach(r => put(r[2], r));
   const a = st.ans[sel]; if (a && a.where === 'manual') put('M', [a.x, a.y]);
 }
 // ---------- overview
@@ -153,7 +153,7 @@ function omarks() {
 let mmode = 0; $('mkb').onclick = () => { mmode = (mmode + 1) % 3; $('over').classList.toggle('fade', mmode === 1); $('over').classList.toggle('hide', mmode === 2); };
 // ---------- list, panel
 function status(i) { const a = st.ans[i.id]; if (!a) return ['', i.bin === 'high' ? 'control' : 'to do'];
-  return a.drawn === 'no' ? ['no', 'not drawn'] : ['yes', 'drawn: ' + ({ mean: 'mean', A: 'A', B: 'B', manual: 'my point' })[a.where]]; }
+  return a.drawn === 'no' ? ['no', 'not drawn'] : ['yes', 'drawn: ' + ({ mean: 'mean', A: 'A', B: 'B', both: 'both', manual: 'my point' })[a.where]]; }
 function render() {
   const cnt = b => b === 'add' ? st.adds.length : items.filter(i => i.bin === b).length;
   $('tabs').innerHTML = ''; for (const [b, t] of TABS) { const el = document.createElement('button'); el.textContent = t + ' (' + cnt(b) + ')'; el.className = tab === b ? 'on' : ''; el.onclick = () => { tab = b; render(); }; $('tabs').appendChild(el); }
@@ -189,6 +189,7 @@ function panel() {
   if (i.A && i.B) btn('q2', "Readers' mean", a.where === 'mean', w('mean'));
   if (i.A) btn('q2', 'Reader A', a.where === 'A', w('A'));
   if (i.B) btn('q2', 'Reader B', a.where === 'B', w('B'));
+  if (i.A && i.B) btn('q2', 'Both (split intersection)', a.where === 'both', w('both'));
   btn('q2', 'My point' + (a.where === 'manual' ? ' (' + a.x + ', ' + a.y + ')' : ''), a.where === 'manual', () => {}, '', a.where !== 'manual');
   $('clr').onclick = () => { delete st.ans[sel]; persist(); render(); };
 }
