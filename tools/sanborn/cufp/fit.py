@@ -29,7 +29,7 @@ P = []
 for fn in sorted(glob.glob(SP + f'sbg/picks22/s22-{N}_*.json')):
     for p in json.load(open(fn))['intersections']:
         if p.get('fit') is False: continue   # 2026-11-13: a plate with guided picks (tools/sanborn/guided): its earlier blind picks stay for the street set but are not controls
-        P.append(dict(p, part=os.path.basename(fn)[-6]))
+        P.append(dict(p, a=p.get('osm_a', p['a']), b=p.get('osm_b', p['b']), part=os.path.basename(fn)[-6]))   # 14 Nov: a guided crossing matches OSM by today's names (osm_a, osm_b)
 M = []
 for p in P:
     if '?' in p['a'] + p['b'] or key(p['a']) == key(p['b']): continue

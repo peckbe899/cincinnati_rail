@@ -19,8 +19,6 @@ from shapely.ops import unary_union, polygonize, nearest_points, linemerge
 from scipy.sparse.csgraph import minimum_spanning_tree, shortest_path
 import rasterio, rasterio.features
 CFG = json.load(open(SP + 'cufp/config.json')).get(NP_, {}) if os.path.exists(SP + 'cufp/config.json') else {}
-_key2 = key2; KEYS = CFG.get('keys', {})     # 2026-11-13: per-plate street key by printed name, for two streets the name key runs together (plate 80: Rose Hill Avenue and Rose Hill Lane)
-def key2(n): return KEYS.get(n) or _key2(n)
 PLATE_ORDER = ['66', '68', '67', '69', '70', '82A', '83A', '75', '76', '29', '26A', '26B', '31', '33', '25', '28', '39', '40', '45', '43', '44', '80']   # 31, 33 Fairmount (2026-10-25); 82A, 83A Norwood (2026-10-23); 75, 76 (2026-10-24); 29, 26A, 26B Price Hill (2026-10-25)
 INSTALL = '--install' in sys.argv; SET = 'c' + NP_; PREFIX = 'S' + {'66': 'P', '67': 'Q', '68': 'R', '69': 'T', '70': 'U', '82A': 'N', '83A': 'O', '75': 'X', '76': 'Y', '26A': 'D', '26B': 'F', '29': 'G', '31': 'H', '33': 'L', '25': 'A', '28': 'I', '39': 'J', '40': 'S', '45': '4', '43': '3', '44': '5', '80': '6'}[NP_]; FT = 0.3048
 BJ = json.load(open(SP + 'deckpage/basin.json'))
@@ -66,7 +64,7 @@ for fn_ in sorted(glob.glob(SP + 'sbg/picks22/s22-' + NP_ + '_*.json')):
     for w in d.get('widths', []): O.append(dict(w, typ='width'))
 nodes = []
 for p in P:
-    ka, kb = key2(p['a']), key2(p['b'])
+    ka, kb = p.get('sid_a') or key2(p['a']), p.get('sid_b') or key2(p['b'])     # 14 Nov: guided picks carry street ids (tools/sanborn/guided/streets.py)
     if not ka or not kb or ka == kb: continue
     k = tuple(sorted((ka, kb)))
     q = next((n for n in nodes if n['pair'] == k and np.hypot(n['x'] - p['x'], n['y'] - p['y']) < 60), None)
@@ -78,7 +76,7 @@ for n in nodes:
     for k in n['pair']: V[k].append((float(E), float(N))); NAME.setdefault(k, n['names'][k])
 for o in O:
     if o['typ'] == 'width': continue
-    k = key2(o.get('street') or '')
+    k = o.get('sid') or key2(o.get('street') or '')
     if not k: continue
     E, N = W38(o['x'], o['y']); V[k].append((float(E), float(N))); NAME.setdefault(k, o['street'])
 # per-plate name settings (2026-10-23, Norwood): merge keys printed two ways for one street; best printed name per street
@@ -224,7 +222,7 @@ for f in BJ['features']:
         parts = [q for q in getattr(rest, 'geoms', [rest]) if q.geom_type == 'LineString' and q.length > 10]
         if parts and inside < 0.98:      # crossing the edge: the part outside stays (one piece; the longest if it splits)
             q = max(parts, key=lambda q: q.length)
-            twin = [pc['geom'] for pc in pieces if pc['k'] == kk]
+            twin = [pc['geom'] for pc in pieces if kk in (pc['k'], key2(pc['name'] or ''))]
             if twin and q.intersection(unary_union(twin).buffer(45)).length > 0.8 * q.length:
                 dup_dropped.append(p['id']); continue          # the outside part only doubles the plate's own line for the same street
             f2 = json.loads(json.dumps(f)); f2['geometry'] = mapping(q); f2['properties']['clip_by'] = SET; newf.append(f2); clipped.append(p['id'])
@@ -241,7 +239,7 @@ for p in pieces:
     cs = list(p['geom'].coords)
     for e in (0, -1):
         q = Point(cs[e]); inner = Point(cs[1 if e == 0 else -2])
-        same = [(g.distance(q), g) for g, kk in zip(OG, OK) if kk == p['k'] and g.distance(q) < 25]
+        same = [(g.distance(q), g) for g, kk in zip(OG, OK) if kk in (p['k'], key2(p['name'] or '')) and g.distance(q) < 25]
         if same:
             g = min(same, key=lambda t: t[0])[1]; ends = [Point(g.coords[0]), Point(g.coords[-1])]; de = [q.distance(t) for t in ends]
             t = ends[int(np.argmin(de))] if min(de) < 25 else nearest_points(g, q)[0]; cs[e] = (t.x, t.y); nj += 1; continue

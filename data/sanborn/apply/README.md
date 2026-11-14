@@ -159,14 +159,11 @@ Model `cufp/44/fwd_complete.pkl` (`reports/2026-11-13_newplates_44`: 34 controls
 - Seams (`reports/2026-11-13_seams_applied` against `reports/2026-11-13_seams_applied_43`, `compare_43.json`): all 896 existing seams unchanged, none lost. 66 new, all with plate 44: 12 plate-plate (37L, 37R, 43, 45), median 0.80 m, max 1.65 m; 54 with 1904 frames, median 4.15 m, max 7.44 m.
 - Check (hub not running; basin streets over the tiles_22 overview, 2 m a pixel): the page's streets lie on plate 44's printed streets, and it meets 43 and 45 without a visible step. Not checked at full zoom.
 
-## Plate 80 added (13-14 November 2026)
+## Plate 80 added (13-14 November 2026; rebuilt 14 November by the guided reader)
 
-Model `cufp/80/fwd_complete.pkl` (`reports/2026-11-13_newplates_80`: guided reads, 73 controls, held-out 1.87 m, max 4.77 m). Built like 43-45: at its fitted position, w1 kept, only ground not already drawn taken, prefix S6. No 1904 frame lies under it.
+Model `cufp/80/fwd_complete.pkl` (`reports/2026-11-14_newplates_80`: 76 controls, held-out 2.00 m, max 4.96 m). Built at its fitted position, w1 kept, only ground not already drawn taken, prefix S6. No 1904 frame lies under it.
 
-- c80: 33 streets and 46 blocks. Every id in Ben's layout still there with its name, none moved (`streets_report_80.json`).
-- tiles_22 re-composited with 80 (255 -> 267 tiles).
-- Seams (`reports/2026-11-14_seams_applied` against `reports/2026-11-13_seams_applied_44`, `compare_44.json`): all 962 existing seams unchanged, none lost. 7 new, all with plate 40 on Carthage Avenue: median 1.80 m, max 3.28 m.
-- Check: the built streets drawn on the scan at half size, tile by tile (not on the Deck page; the hub is not running). They lie on the printed streets.
-- The street set is drawn through the crossings, so what it holds depends on them. Added by hand for the set only (`cufp/config.json` "extra_picks", "extra_ends"): both legs of Tower at Delmar, the street from Kemper east to Greenlee in line with Franklin (printed only STREET; name assumed), Ross Avenue's east end at the plate's edge, Oak Street's east end.
-- 14 November, after Ben's look at the north of the plate: Broerman Avenue, Imwalle Avenue and Ross Avenue east of Imwalle had been drawn from one measured crossing to a rough end point of the first blind read, and lay up to about 110 px off the printed street. Centre points were measured along each on the scan ("extra_bends", "extra_ends") and the streets redrawn through them. Clay Street is now two streets, one each side of the canal. The model, tiles and seams are unchanged.
-- Still wrong or missing: a small kink in Ross Avenue at Broxterman Avenue; Scenic Avenue's stub east of Greenlee and the short street north of Oak in Wright's subdivision are not drawn; Carthage Avenue is the page's Vine Street line (w1), not redrawn from the plate. Streets elsewhere on the plate were checked at half size, not measured point by point.
+- Rebuilt with no hand entries: crossings, points along every street, street ends, names and a completeness review all come from two-reader passes (`tools/sanborn/guided/README.md`).
+- c80: 39 streets and 40 blocks. Every id in Ben's layout still there with its name, none moved (`streets_report_80.json`).
+- tiles_22 267 tiles. Seams (`reports/2026-11-14_seams_applied`, `compare_44.json`): all 962 existing unchanged; 6 new with plate 40, median 1.44 m.
+- Open items are listed in `reports/2026-11-14_newplates_80/README.md`.

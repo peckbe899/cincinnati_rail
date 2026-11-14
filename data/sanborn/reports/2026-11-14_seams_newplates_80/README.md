@@ -1,16 +1,16 @@
-# Seam report, 2026-11-13
+# Seam report, 2026-11-14
 
 Plate models: each plate's own (fwd.pkl, Ben georeference for 35N).
 
 Read only: every street crossing that two 1922 plates, or a 1922 plate and a 1904 frame, both show, and how far apart the two copies sit on the page. Nothing was fitted, rebuilt or changed. Method: `tools/sanborn/seams.py` (its docstring); matched by street names within 45 m. Files: `seams.csv` (every pair), `per_pair.csv` (by plate and frame), `seams.json` (all of it, with the sha256 of every file read).
 
-Read: 29 plates on the 1922 layer (2552 crossings), 235 1904 deck and north frames (2298 crossings), 142 1904 basin frames (2446 crossings).
+Read: 29 plates on the 1922 layer (2542 crossings), 235 1904 deck and north frames (2298 crossings), 142 1904 basin frames (2446 crossings).
 
 ## Summary
 
 | Seam | Source pairs | Shared crossings | Median m | RMS m | 90% m | Max m | > 5 m | > 10 m | > 20 m | Same names 45-150 m |
 |---|---|---|---|---|---|---|---|---|---|---|
-| plate-plate | 48 | 210 | 1.26 | 4.52 | 5.2 | 29.33 | 22 | 8 | 3 | 1 |
+| plate-plate | 48 | 209 | 1.25 | 4.52 | 5.21 | 29.33 | 22 | 8 | 3 | 1 |
 | plate-1904 | 205 | 758 | 1.5 | 6.22 | 7.05 | 43.02 | 142 | 56 | 24 | 0 |
 
 Plate against 1904, by how the frame is drawn:
@@ -54,7 +54,7 @@ Plate against 1904, by how the frame is drawn:
 | 22-38 | 22-66 | 1 | 0.99 | 0.99 | -0.7, -0.7 |
 | 22-38 | 22-68 | 4 | 4.19 | 11.15 | -1.9, +3.1 |
 | 22-39 | 22-40 | 1 | 1.55 | 1.55 | -0.7, -1.4 |
-| 22-40 | 22-80 | 7 | 1.8 | 3.28 | -0.5, -0.2 |
+| 22-40 | 22-80 | 6 | 1.44 | 2.28 | -0.2, -0.2 |
 | 22-43 | 22-44 | 5 | 0.5 | 1.1 | +0.1, +0.0 |
 | 22-43 | 22-45 | 1 | 0.56 | 0.56 | +0.2, -0.5 |
 | 22-44 | 22-45 | 3 | 0.83 | 1.65 | -0.2, -0.0 |

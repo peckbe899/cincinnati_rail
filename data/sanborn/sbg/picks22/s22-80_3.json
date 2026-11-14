@@ -7,311 +7,1060 @@
   5230,
   7152
  ],
- "made": "2026-11-13T22:54:00",
- "by": "tools/sanborn/complete/merge_reads.py: two independent reads, a pick only where they agree within 60 px",
- "reads": [
-  "picks22_reads/22-80/A_3.json",
-  "picks22_reads/22-80/B_3.json"
- ],
  "intersections": [
-  {
-   "a": "Broxterman Avenue",
-   "b": "Clay Street E",
-   "x": 4120.0,
-   "y": 1222.0,
-   "kind": "T",
-   "reads": [
-    {
-     "read": "A",
-     "x": 4130,
-     "y": 1232
-    },
-    {
-     "read": "B",
-     "x": 4110,
-     "y": 1212
-    }
-   ],
-   "spread_px": 28.3,
-   "fit": false
-  },
   {
    "a": "Ross Avenue",
    "b": "Sullivan Avenue",
+   "osm_a": "East Ross Avenue",
+   "osm_b": "Sullivan Avenue",
+   "sid_a": "east-ross-avenue/1",
+   "sid_b": "sullivan-avenue/1",
    "x": 4240.0,
    "y": 1665.0,
    "kind": "guided",
-   "id": "80-028"
+   "id": "80-028",
+   "fit": true
   },
   {
    "a": "Cleveland Avenue",
    "b": "Sullivan Avenue",
+   "osm_a": "Cleveland Avenue",
+   "osm_b": "Sullivan Avenue",
+   "sid_a": "cleveland-avenue/1",
+   "sid_b": "sullivan-avenue/1",
    "x": 4193.5,
    "y": 2114.0,
    "kind": "guided",
-   "id": "80-030"
+   "id": "80-030",
+   "fit": true
   },
   {
    "a": "McClelland Avenue",
    "b": "Sullivan Avenue",
+   "osm_a": "McClelland Avenue",
+   "osm_b": "Sullivan Avenue",
+   "sid_a": "mcclelland-avenue/1",
+   "sid_b": "sullivan-avenue/1",
    "x": 4141.5,
    "y": 2560.0,
    "kind": "guided",
-   "id": "80-032"
+   "id": "80-032",
+   "fit": true
   },
   {
    "a": "Jefferson Avenue",
    "b": "Kemper Avenue",
+   "osm_a": "Jefferson Avenue",
+   "osm_b": "Kemper Avenue",
+   "sid_a": "jefferson-avenue/1",
+   "sid_b": "kemper-avenue/1",
    "x": 4504.0,
    "y": 3941.0,
    "kind": "guided",
-   "id": "80-036"
+   "id": "80-036",
+   "fit": true
   },
   {
    "a": "Kemper Avenue",
    "b": "Franklin Avenue",
+   "osm_a": "Kemper Avenue",
+   "osm_b": "Franklin Avenue",
+   "sid_a": "kemper-avenue/1",
+   "sid_b": "franklin-avenue#1/1",
    "x": 4474.5,
    "y": 4193.5,
    "kind": "guided",
-   "id": "80-038"
+   "id": "80-038",
+   "fit": true
   },
   {
    "a": "Church Street",
    "b": "Kemper Avenue",
+   "osm_a": "Church Street",
+   "osm_b": "Kemper Avenue",
+   "sid_a": "church-street/1",
+   "sid_b": "kemper-avenue/1",
    "x": 4361.5,
    "y": 4868.5,
    "kind": "guided",
-   "id": "80-040"
-  },
-  {
-   "a": "Langley Avenue",
-   "b": "Delmar Avenue",
-   "x": 4311.5,
-   "y": 5750.5,
-   "kind": "guided",
-   "id": "80-043"
-  },
-  {
-   "a": "Kemper Avenue",
-   "b": "Ross Avenue",
-   "x": 4759.5,
-   "y": 1723.5,
-   "kind": "guided",
-   "id": "80-044"
-  },
-  {
-   "a": "Cleveland Avenue",
-   "b": "Kemper Avenue",
-   "x": 4709.5,
-   "y": 2173.5,
-   "kind": "guided",
-   "id": "80-046"
-  },
-  {
-   "a": "Cleveland Avenue",
-   "b": "Greenlee Avenue",
-   "x": 5229.0,
-   "y": 2228.0,
-   "kind": "guided",
-   "id": "80-047"
-  },
-  {
-   "a": "McClelland Avenue",
-   "b": "Kemper Avenue",
-   "x": 4657.5,
-   "y": 2620.5,
-   "kind": "guided",
-   "id": "80-048"
-  },
-  {
-   "a": "McClelland Avenue",
-   "b": "Greenlee Avenue",
-   "x": 5182.0,
-   "y": 2672.0,
-   "kind": "guided",
-   "id": "80-049"
-  },
-  {
-   "a": "Kemper Avenue",
-   "b": "Washington Avenue",
-   "x": 4599.5,
-   "y": 3065.0,
-   "kind": "guided",
-   "id": "80-050"
-  },
-  {
-   "a": "Washington Avenue",
-   "b": "Greenlee Avenue",
-   "x": 5127.5,
-   "y": 3119.0,
-   "kind": "guided",
-   "id": "80-051"
-  },
-  {
-   "a": "Jackson Avenue",
-   "b": "Kemper Avenue",
-   "x": 4553.0,
-   "y": 3508.0,
-   "kind": "guided",
-   "id": "80-052"
-  },
-  {
-   "a": "Jackson Avenue",
-   "b": "Greenlee Avenue",
-   "x": 5078.0,
-   "y": 3562.0,
-   "kind": "guided",
-   "id": "80-053"
-  },
-  {
-   "a": "Jefferson Avenue",
-   "b": "Greenlee Avenue",
-   "x": 5030.5,
-   "y": 3997.0,
-   "kind": "guided",
-   "id": "80-054"
-  },
-  {
-   "a": "Greenlee Avenue",
-   "b": "Scenic Avenue",
-   "x": 4963.0,
-   "y": 4482.5,
-   "kind": "guided",
-   "id": "80-055"
-  },
-  {
-   "a": "Church Street",
-   "b": "Greenlee Avenue",
-   "x": 4892.0,
-   "y": 4918.0,
-   "kind": "guided",
-   "id": "80-056"
-  },
-  {
-   "a": "Rose Hill Avenue",
-   "b": "Greenlee Avenue",
-   "x": 4822.0,
-   "y": 5346.0,
-   "kind": "guided",
-   "id": "80-057"
-  },
-  {
-   "a": "Delmar Avenue",
-   "b": "Greenlee Avenue",
-   "x": 4771.5,
-   "y": 5779.0,
-   "kind": "guided",
-   "id": "80-058"
-  },
-  {
-   "a": "Greenlee Avenue",
-   "b": "Advance Avenue",
-   "x": 4728.0,
-   "y": 6393.0,
-   "kind": "guided",
-   "id": "80-060"
-  },
-  {
-   "a": "Langley Avenue",
-   "b": "Mitchell Avenue",
-   "x": 4246.0,
-   "y": 6802.5,
-   "kind": "guided",
-   "id": "80-105"
-  },
-  {
-   "a": "Lowry Avenue",
-   "b": "Mitchell Avenue",
-   "x": 4427.5,
-   "y": 6815.5,
-   "kind": "guided",
-   "id": "80-106"
-  },
-  {
-   "a": "Mitchell Avenue",
-   "b": "Greenlee Avenue",
-   "x": 4700.0,
-   "y": 6832.5,
-   "kind": "guided",
-   "id": "80-107"
-  },
-  {
-   "a": "Mitchell Avenue",
-   "b": "Dickson Avenue",
-   "x": 4965.5,
-   "y": 6853.5,
-   "kind": "guided",
-   "id": "80-108"
+   "id": "80-040",
+   "fit": true
   },
   {
    "a": "Church Street",
    "b": "Errun Lane",
-   "x": 4361.5,
-   "y": 4868.5,
+   "osm_a": "Church Street",
+   "osm_b": "Errun Lane",
+   "sid_a": "church-street/1",
+   "sid_b": "errun-lane/1",
+   "x": 4358.0,
+   "y": 4866.5,
    "kind": "guided",
    "id": "80-041",
    "fit": false
   },
   {
-   "a": "Franklin Avenue",
+   "a": "Ave Avenue",
+   "b": "Delmar Avenue",
+   "osm_a": "Langley Avenue",
+   "osm_b": "Delmar Avenue",
+   "sid_a": "langley-avenue/1",
+   "sid_b": "delmar-avenue#1/1",
+   "x": 4311.5,
+   "y": 5750.5,
+   "kind": "guided",
+   "id": "80-043",
+   "fit": true
+  },
+  {
+   "a": "Kemper Avenue",
+   "b": "Ross Avenue",
+   "osm_a": "Kemper Avenue",
+   "osm_b": "East Ross Avenue",
+   "sid_a": "kemper-avenue/1",
+   "sid_b": "east-ross-avenue/1",
+   "x": 4759.5,
+   "y": 1723.5,
+   "kind": "guided",
+   "id": "80-044",
+   "fit": true
+  },
+  {
+   "a": "Cleveland Avenue",
+   "b": "Kemper Avenue",
+   "osm_a": "Cleveland Avenue",
+   "osm_b": "Kemper Avenue",
+   "sid_a": "cleveland-avenue/1",
+   "sid_b": "kemper-avenue/1",
+   "x": 4709.5,
+   "y": 2173.5,
+   "kind": "guided",
+   "id": "80-046",
+   "fit": true
+  },
+  {
+   "a": "Cleveland Avenue",
    "b": "Greenlee Avenue",
-   "x": 5005,
-   "y": 4222,
-   "kind": "added",
-   "fit": false,
-   "why": "the street printed STREET running east from Kemper to Greenlee, in line with Franklin; read off the plate, name assumed"
-  }
- ],
- "widths": [
-  {
-   "street": "Broxterman Avenue",
-   "ft": 40
+   "osm_a": "Cleveland Avenue",
+   "osm_b": "Greenlee Avenue",
+   "sid_a": "cleveland-avenue/1",
+   "sid_b": "greenlee-avenue/1",
+   "x": 5229.0,
+   "y": 2228.0,
+   "kind": "guided",
+   "id": "80-047",
+   "fit": true
   },
   {
-   "street": "Clay Street",
-   "ft": 40
+   "a": "McClelland Avenue",
+   "b": "Kemper Avenue",
+   "osm_a": "McClelland Avenue",
+   "osm_b": "Kemper Avenue",
+   "sid_a": "mcclelland-avenue/1",
+   "sid_b": "kemper-avenue/1",
+   "x": 4657.5,
+   "y": 2620.5,
+   "kind": "guided",
+   "id": "80-048",
+   "fit": true
   },
   {
-   "street": "Kemper Avenue",
-   "ft": 50,
-   "x": 4740,
-   "y": 1760
+   "a": "McClelland Avenue",
+   "b": "Greenlee Avenue",
+   "osm_a": "McClelland Avenue",
+   "osm_b": "Greenlee Avenue",
+   "sid_a": "mcclelland-avenue/1",
+   "sid_b": "greenlee-avenue/1",
+   "x": 5182.0,
+   "y": 2672.0,
+   "kind": "guided",
+   "id": "80-049",
+   "fit": true
+  },
+  {
+   "a": "Kemper Avenue",
+   "b": "Washington Avenue",
+   "osm_a": "Kemper Avenue",
+   "osm_b": "Washington Avenue",
+   "sid_a": "kemper-avenue/1",
+   "sid_b": "washington-avenue/1",
+   "x": 4599.5,
+   "y": 3065.0,
+   "kind": "guided",
+   "id": "80-050",
+   "fit": true
+  },
+  {
+   "a": "Washington Avenue",
+   "b": "Greenlee Avenue",
+   "osm_a": "Washington Avenue",
+   "osm_b": "Greenlee Avenue",
+   "sid_a": "washington-avenue/1",
+   "sid_b": "greenlee-avenue/1",
+   "x": 5127.5,
+   "y": 3119.0,
+   "kind": "guided",
+   "id": "80-051",
+   "fit": true
+  },
+  {
+   "a": "Jackson Avenue",
+   "b": "Kemper Avenue",
+   "osm_a": "Jackson Avenue",
+   "osm_b": "Kemper Avenue",
+   "sid_a": "jackson-avenue/1",
+   "sid_b": "kemper-avenue/1",
+   "x": 4553.0,
+   "y": 3508.0,
+   "kind": "guided",
+   "id": "80-052",
+   "fit": true
+  },
+  {
+   "a": "Jackson Avenue",
+   "b": "Greenlee Avenue",
+   "osm_a": "Jackson Avenue",
+   "osm_b": "Greenlee Avenue",
+   "sid_a": "jackson-avenue/1",
+   "sid_b": "greenlee-avenue/1",
+   "x": 5078.0,
+   "y": 3562.0,
+   "kind": "guided",
+   "id": "80-053",
+   "fit": true
+  },
+  {
+   "a": "Jefferson Avenue",
+   "b": "Greenlee Avenue",
+   "osm_a": "Jefferson Avenue",
+   "osm_b": "Greenlee Avenue",
+   "sid_a": "jefferson-avenue/1",
+   "sid_b": "greenlee-avenue/1",
+   "x": 5030.5,
+   "y": 3997.0,
+   "kind": "guided",
+   "id": "80-054",
+   "fit": true
+  },
+  {
+   "a": "Greenlee Avenue",
+   "b": "Scenic Avenue",
+   "osm_a": "Greenlee Avenue",
+   "osm_b": "Scenic Avenue",
+   "sid_a": "greenlee-avenue/1",
+   "sid_b": "scenic-avenue/1",
+   "x": 4963.0,
+   "y": 4482.5,
+   "kind": "guided",
+   "id": "80-055",
+   "fit": true
+  },
+  {
+   "a": "Church Street",
+   "b": "Greenlee Avenue",
+   "osm_a": "Church Street",
+   "osm_b": "Greenlee Avenue",
+   "sid_a": "church-street/1",
+   "sid_b": "greenlee-avenue/1",
+   "x": 4892.0,
+   "y": 4918.0,
+   "kind": "guided",
+   "id": "80-056",
+   "fit": true
+  },
+  {
+   "a": "Ave Avenue",
+   "b": "Greenlee Avenue",
+   "osm_a": "Rose Hill Avenue",
+   "osm_b": "Greenlee Avenue",
+   "sid_a": "rose-hill-avenue#2/1",
+   "sid_b": "greenlee-avenue/1",
+   "x": 4822.0,
+   "y": 5346.0,
+   "kind": "guided",
+   "id": "80-057",
+   "fit": true
+  },
+  {
+   "a": "Delmar Avenue",
+   "b": "Greenlee Avenue",
+   "osm_a": "Delmar Avenue",
+   "osm_b": "Greenlee Avenue",
+   "sid_a": "delmar-avenue#1/1",
+   "sid_b": "greenlee-avenue/1",
+   "x": 4771.5,
+   "y": 5779.0,
+   "kind": "guided",
+   "id": "80-058",
+   "fit": true
+  },
+  {
+   "a": "Greenlee Avenue",
+   "b": "Ave Avenue",
+   "osm_a": "Greenlee Avenue",
+   "osm_b": "Advance Avenue",
+   "sid_a": "greenlee-avenue/1",
+   "sid_b": "advance-avenue/1",
+   "x": 4728.0,
+   "y": 6393.0,
+   "kind": "guided",
+   "id": "80-060",
+   "fit": true
+  },
+  {
+   "a": "Ave Avenue",
+   "b": "Mitchell Avenue",
+   "osm_a": "Langley Avenue",
+   "osm_b": "East Mitchell Avenue",
+   "sid_a": "langley-avenue/1",
+   "sid_b": "east-mitchell-avenue/1",
+   "x": 4246.0,
+   "y": 6802.5,
+   "kind": "guided",
+   "id": "80-105",
+   "fit": true
+  },
+  {
+   "a": "Ave Avenue",
+   "b": "Mitchell Avenue",
+   "osm_a": "Lowry Avenue",
+   "osm_b": "East Mitchell Avenue",
+   "sid_a": "lowry-avenue/1",
+   "sid_b": "east-mitchell-avenue/1",
+   "x": 4427.5,
+   "y": 6815.5,
+   "kind": "guided",
+   "id": "80-106",
+   "fit": true
+  },
+  {
+   "a": "Mitchell Avenue",
+   "b": "Greenlee Avenue",
+   "osm_a": "East Mitchell Avenue",
+   "osm_b": "Greenlee Avenue",
+   "sid_a": "east-mitchell-avenue/1",
+   "sid_b": "greenlee-avenue/1",
+   "x": 4700.0,
+   "y": 6832.5,
+   "kind": "guided",
+   "id": "80-107",
+   "fit": true
+  },
+  {
+   "a": "Mitchell Avenue",
+   "b": "Dickson Avenue",
+   "osm_a": "East Mitchell Avenue",
+   "osm_b": "Dickson Avenue",
+   "sid_a": "east-mitchell-avenue/1",
+   "sid_b": "dickson-avenue/1",
+   "x": 4965.5,
+   "y": 6853.5,
+   "kind": "guided",
+   "id": "80-108",
+   "fit": true
   }
  ],
  "bends": [
   {
-   "street": "?",
-   "x": 4075,
-   "y": 700,
-   "note": "diagonal ST. along canal turns west"
+   "street": "Ave Avenue",
+   "sid": "advance-avenue/1",
+   "x": 4728.0,
+   "y": 6393.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "advance-avenue/1",
+   "x": 5153.0,
+   "y": 6406.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Church Street",
+   "sid": "church-street/1",
+   "x": 4190.0,
+   "y": 4851.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Church Street",
+   "sid": "church-street/1",
+   "x": 4361.5,
+   "y": 4868.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Church Street",
+   "sid": "church-street/1",
+   "x": 4358.0,
+   "y": 4866.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Church Street",
+   "sid": "church-street/1",
+   "x": 4892.0,
+   "y": 4918.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Church Street",
+   "sid": "church-street/1",
+   "x": 5094.0,
+   "y": 4929.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Cleveland Avenue",
+   "sid": "cleveland-avenue/1",
+   "x": 4193.5,
+   "y": 2114.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Cleveland Avenue",
+   "sid": "cleveland-avenue/1",
+   "x": 4709.5,
+   "y": 2173.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Cleveland Avenue",
+   "sid": "cleveland-avenue/1",
+   "x": 4917.0,
+   "y": 2187.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Cleveland Avenue",
+   "sid": "cleveland-avenue/1",
+   "x": 5229.0,
+   "y": 2228.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Delmar Avenue",
+   "sid": "delmar-avenue#1/1",
+   "x": 4188.0,
+   "y": 5737.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Delmar Avenue",
+   "sid": "delmar-avenue#1/1",
+   "x": 4311.5,
+   "y": 5750.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Delmar Avenue",
+   "sid": "delmar-avenue#1/1",
+   "x": 4477.0,
+   "y": 5758.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Delmar Avenue",
+   "sid": "delmar-avenue#1/1",
+   "x": 4771.5,
+   "y": 5779.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Mitchell Avenue",
+   "sid": "east-mitchell-avenue/1",
+   "x": 4246.0,
+   "y": 6802.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Mitchell Avenue",
+   "sid": "east-mitchell-avenue/1",
+   "x": 4427.5,
+   "y": 6815.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Mitchell Avenue",
+   "sid": "east-mitchell-avenue/1",
+   "x": 4700.0,
+   "y": 6832.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Mitchell Avenue",
+   "sid": "east-mitchell-avenue/1",
+   "x": 4965.5,
+   "y": 6853.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Ross Avenue",
+   "sid": "east-ross-avenue/1",
+   "x": 4240.0,
+   "y": 1665.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ross Avenue",
+   "sid": "east-ross-avenue/1",
+   "x": 4543.0,
+   "y": 1695.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Ross Avenue",
+   "sid": "east-ross-avenue/1",
+   "x": 4759.5,
+   "y": 1723.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Ross Avenue",
+   "sid": "east-ross-avenue/1",
+   "x": 5137.0,
+   "y": 1752.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Errun Lane",
+   "sid": "errun-lane/1",
+   "x": 4358.0,
+   "y": 4866.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Franklin Avenue",
+   "sid": "franklin-avenue#1/1",
+   "x": 4344.0,
+   "y": 4170.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Franklin Avenue",
+   "sid": "franklin-avenue#1/1",
+   "x": 4474.5,
+   "y": 4193.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Franklin Avenue",
+   "sid": "franklin-avenue#1/1",
+   "x": 4637.0,
+   "y": 4207.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Franklin Avenue",
+   "sid": "franklin-avenue#1/1",
+   "x": 4932.0,
+   "y": 4238.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 4700.0,
+   "y": 6832.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 4716.5,
+   "y": 6538.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 4728.0,
+   "y": 6393.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 4742.0,
+   "y": 6240.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 4771.5,
+   "y": 5779.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 4782.0,
+   "y": 5641.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 4822.0,
+   "y": 5346.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 4872.0,
+   "y": 5048.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 4892.0,
+   "y": 4918.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 4916.5,
+   "y": 4749.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 4963.0,
+   "y": 4482.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 5012.0,
+   "y": 4151.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 5030.5,
+   "y": 3997.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 5048.0,
+   "y": 3854.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 5078.0,
+   "y": 3562.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 5107.0,
+   "y": 3263.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 5127.5,
+   "y": 3119.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 5140.0,
+   "y": 2967.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 5182.0,
+   "y": 2672.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 5215.0,
+   "y": 2373.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 5229.0,
+   "y": 2228.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Jackson Avenue",
+   "sid": "jackson-avenue/1",
+   "x": 4553.0,
+   "y": 3508.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Jackson Avenue",
+   "sid": "jackson-avenue/1",
+   "x": 4765.0,
+   "y": 3528.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Jackson Avenue",
+   "sid": "jackson-avenue/1",
+   "x": 5078.0,
+   "y": 3562.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Jefferson Avenue",
+   "sid": "jefferson-avenue/1",
+   "x": 4504.0,
+   "y": 3941.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Jefferson Avenue",
+   "sid": "jefferson-avenue/1",
+   "x": 4720.0,
+   "y": 3960.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Jefferson Avenue",
+   "sid": "jefferson-avenue/1",
+   "x": 5030.5,
+   "y": 3997.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Kemper Avenue",
+   "sid": "kemper-avenue/1",
+   "x": 4361.5,
+   "y": 4868.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Kemper Avenue",
+   "sid": "kemper-avenue/1",
+   "x": 4404.0,
+   "y": 4579.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Kemper Avenue",
+   "sid": "kemper-avenue/1",
+   "x": 4474.5,
+   "y": 4193.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Kemper Avenue",
+   "sid": "kemper-avenue/1",
+   "x": 4504.0,
+   "y": 3941.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Kemper Avenue",
+   "sid": "kemper-avenue/1",
+   "x": 4531.0,
+   "y": 3723.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Kemper Avenue",
+   "sid": "kemper-avenue/1",
+   "x": 4553.0,
+   "y": 3508.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Kemper Avenue",
+   "sid": "kemper-avenue/1",
+   "x": 4599.5,
+   "y": 3065.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Kemper Avenue",
+   "sid": "kemper-avenue/1",
+   "x": 4626.0,
+   "y": 2869.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Kemper Avenue",
+   "sid": "kemper-avenue/1",
+   "x": 4657.5,
+   "y": 2620.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Kemper Avenue",
+   "sid": "kemper-avenue/1",
+   "x": 4692.5,
+   "y": 2296.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Kemper Avenue",
+   "sid": "kemper-avenue/1",
+   "x": 4709.5,
+   "y": 2173.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Kemper Avenue",
+   "sid": "kemper-avenue/1",
+   "x": 4730.0,
+   "y": 2009.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Kemper Avenue",
+   "sid": "kemper-avenue/1",
+   "x": 4759.5,
+   "y": 1723.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "langley-avenue/1",
+   "x": 4246.0,
+   "y": 6802.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "langley-avenue/1",
+   "x": 4263.5,
+   "y": 6542.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "langley-avenue/1",
+   "x": 4278.5,
+   "y": 6279.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "langley-avenue/1",
+   "x": 4297.5,
+   "y": 6016.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "langley-avenue/1",
+   "x": 4311.5,
+   "y": 5750.5,
+   "kind": "traced"
+  },
+  {
+   "street": "McClelland Avenue",
+   "sid": "mcclelland-avenue/1",
+   "x": 5182.0,
+   "y": 2672.0,
+   "kind": "traced"
+  },
+  {
+   "street": "McClelland Avenue",
+   "sid": "mcclelland-avenue/1",
+   "x": 4897.0,
+   "y": 2637.0,
+   "kind": "traced"
+  },
+  {
+   "street": "McClelland Avenue",
+   "sid": "mcclelland-avenue/1",
+   "x": 4657.5,
+   "y": 2620.5,
+   "kind": "traced"
+  },
+  {
+   "street": "McClelland Avenue",
+   "sid": "mcclelland-avenue/1",
+   "x": 4335.0,
+   "y": 2583.0,
+   "kind": "traced"
+  },
+  {
+   "street": "McClelland Avenue",
+   "sid": "mcclelland-avenue/1",
+   "x": 4141.5,
+   "y": 2560.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "rose-hill-avenue#2/1",
+   "x": 5118.0,
+   "y": 5362.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "rose-hill-avenue#2/1",
+   "x": 4822.0,
+   "y": 5346.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Scenic Avenue",
+   "sid": "scenic-avenue/1",
+   "x": 4963.0,
+   "y": 4482.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Sullivan Avenue",
+   "sid": "sullivan-avenue/1",
+   "x": 4141.5,
+   "y": 2560.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Sullivan Avenue",
+   "sid": "sullivan-avenue/1",
+   "x": 4193.5,
+   "y": 2114.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Sullivan Avenue",
+   "sid": "sullivan-avenue/1",
+   "x": 4210.5,
+   "y": 1946.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Sullivan Avenue",
+   "sid": "sullivan-avenue/1",
+   "x": 4240.0,
+   "y": 1665.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Washington Avenue",
+   "sid": "washington-avenue/1",
+   "x": 4599.5,
+   "y": 3065.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Washington Avenue",
+   "sid": "washington-avenue/1",
+   "x": 4813.0,
+   "y": 3089.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Washington Avenue",
+   "sid": "washington-avenue/1",
+   "x": 5127.5,
+   "y": 3119.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "lowry-avenue/1",
+   "x": 4427.5,
+   "y": 6815.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Dickson Avenue",
+   "sid": "dickson-avenue/1",
+   "x": 4965.5,
+   "y": 6853.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Clay Street",
+   "sid": "r-clay-street#2",
+   "x": 4350,
+   "y": 1221,
+   "kind": "review"
+  },
+  {
+   "street": "Clay Street",
+   "sid": "r-clay-street#2",
+   "x": 4350,
+   "y": 1226,
+   "kind": "review"
+  },
+  {
+   "street": "Clay Street",
+   "sid": "r-clay-street#2",
+   "x": 4571,
+   "y": 1231,
+   "kind": "review"
+  },
+  {
+   "street": "Clay Street",
+   "sid": "r-clay-street#2",
+   "x": 4586,
+   "y": 1232,
+   "kind": "review"
   }
  ],
  "ends": [
   {
-   "street": "? (canal-side diagonal street)",
-   "x": 4880,
-   "y": 170,
-   "note": "ends at railroad / canal point"
+   "street": "Ave Avenue",
+   "sid": "advance-avenue/1",
+   "x": 5201.0,
+   "y": 6400.5,
+   "note": "creek/canal strip (green) with 48in sewer, east block line",
+   "kind": "read"
   },
   {
-   "street": "Advance Avenue",
-   "x": 5185,
-   "y": 6415,
-   "note": "ends at boundary band"
+   "street": "Errun Lane",
+   "sid": "errun-lane/1",
+   "x": 4359.0,
+   "y": 4891.5,
+   "note": "south block line of E-W street (lane ends at the street)",
+   "kind": "read"
   },
   {
-   "street": "Scenic Avenue",
-   "x": 5150,
-   "y": 4515,
-   "note": "west end at subdivision line"
+   "street": "Franklin Avenue",
+   "sid": "franklin-avenue#1/1",
+   "x": 5015.0,
+   "y": 4244.5,
+   "note": "meets N-S avenue (60in sewer) centre",
+   "kind": "read"
   },
   {
-   "street": "Clay Street E",
-   "x": 4590,
-   "y": 1205,
-   "kind": "added",
-   "note": "east part's dead end at the Broxterman estate; centre measured on the scan, 14 Nov"
+   "street": "Ave Avenue",
+   "sid": "lowry-avenue/1",
+   "x": 4426.0,
+   "y": 6927.0,
+   "note": "plate edge",
+   "kind": "read"
+  },
+  {
+   "street": "Dickson Avenue",
+   "sid": "dickson-avenue/1",
+   "x": 4962.5,
+   "y": 6972.0,
+   "note": "plate edge",
+   "kind": "read"
   }
  ],
- "notes": "Three N-S avenues cross the grid, printed only 'AVENUE' in this strip (left ~4217->3890, middle ~4748->4440, right ~5246->4840 drifting west southward); names likely printed further left. Middle avenue appears to continue south as Kemper (label at ~4430,4600) and on to Langley (label at 4280,6600); right avenue continues as Greenlee. E-W street at y~3030 printed WASHINGTON at left and STREET here. Jackson jogs at the middle avenue. Bottom avenue (y~6800) unnamed here; stub south at 5410 printed '..WICK'. Unnamed street y~4930 and y~5775 printed only STREET. Henry Avenue from 'HENRY' label along the pink line. | Vertical avenue V3 (house numbers 4900s north to 4200s south) runs continuously SSW from about (5259,1780) to (4710,6780); GREENLEE is printed on it at y 6500 so the whole street is called Greenlee Avenue here; north of y 4000 only AVENUE is printed. Kemper Avenue is printed only near y 4700; the avenue V2 north of it is the same continuous street, called Kemper Avenue throughout. V1 (avenue near x 4220 at top, 3995 at y 4140) has no printed name in this strip. Cleveland Avenue printed west of x 4100; next avenue south printed '...LLAND' at the strip's west edge; H6 printed '...SON' west of x 3900. HENRY and AVON are large spaced subdivision lettering, not streets. Streets all slope slightly (x drifts west going south, y drifts south going east)."
+ "source": "guided (tools/sanborn/guided/merge_guided.py)"
 }

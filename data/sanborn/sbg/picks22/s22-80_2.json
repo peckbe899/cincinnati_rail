@@ -7,273 +7,262 @@
   4140,
   7152
  ],
- "made": "2026-11-13T22:54:00",
- "by": "tools/sanborn/complete/merge_reads.py: two independent reads, a pick only where they agree within 60 px",
- "reads": [
-  "picks22_reads/22-80/A_2.json",
-  "picks22_reads/22-80/B_2.json"
- ],
  "intersections": [
-  {
-   "a": "Broxterman Avenue",
-   "b": "Clay Street E",
-   "x": 4101.5,
-   "y": 1213.5,
-   "kind": "T",
-   "reads": [
-    {
-     "read": "A",
-     "x": 4103,
-     "y": 1212
-    },
-    {
-     "read": "B",
-     "x": 4100,
-     "y": 1215
-    }
-   ],
-   "spread_px": 4.2,
-   "fit": false
-  },
-  {
-   "a": "Carthage Avenue",
-   "b": "Clay Street",
-   "x": 3113.5,
-   "y": 1111.5,
-   "kind": "T",
-   "reads": [
-    {
-     "read": "A",
-     "x": 3112,
-     "y": 1118
-    },
-    {
-     "read": "B",
-     "x": 3115,
-     "y": 1105
-    }
-   ],
-   "spread_px": 13.3,
-   "fit": false
-  },
-  {
-   "a": "Carthage Avenue",
-   "b": "Oak Street",
-   "x": 3213.5,
-   "y": 666.0,
-   "kind": "T",
-   "reads": [
-    {
-     "read": "A",
-     "x": 3205,
-     "y": 670
-    },
-    {
-     "read": "B",
-     "x": 3222,
-     "y": 662
-    }
-   ],
-   "spread_px": 18.8,
-   "b_names": [
-    "Carthage Avenue",
-    "Oak"
-   ],
-   "fit": false
-  },
-  {
-   "a": "Broxterman Avenue",
-   "b": "Ross Avenue",
-   "x": 4101.5,
-   "y": 1628.5,
-   "kind": "T",
-   "reads": [
-    {
-     "read": "A",
-     "x": 4103,
-     "y": 1640
-    },
-    {
-     "read": "B",
-     "x": 4100,
-     "y": 1617
-    }
-   ],
-   "spread_px": 23.2,
-   "fit": false
-  },
   {
    "a": "Tower Avenue",
    "b": "Washington Avenue",
+   "osm_a": "Tower Avenue",
+   "osm_b": "Washington Avenue",
+   "sid_a": "tower-avenue/1",
+   "sid_b": "washington-avenue/1",
    "x": 3570.0,
    "y": 2941.5,
    "kind": "guided",
-   "id": "80-013"
+   "id": "80-013",
+   "fit": true
   },
   {
    "a": "Jackson Avenue",
    "b": "Tower Avenue",
+   "osm_a": "Jackson Avenue",
+   "osm_b": "Tower Avenue",
+   "sid_a": "jackson-avenue/1",
+   "sid_b": "tower-avenue/1",
    "x": 3522.0,
    "y": 3397.5,
    "kind": "guided",
-   "id": "80-014"
+   "id": "80-014",
+   "fit": true
   },
   {
    "a": "Tower Avenue",
    "b": "Jefferson Avenue",
+   "osm_a": "Tower Avenue",
+   "osm_b": "Jefferson Avenue",
+   "sid_a": "tower-avenue/1",
+   "sid_b": "jefferson-avenue/1",
    "x": 3476.5,
    "y": 3832.5,
    "kind": "guided",
-   "id": "80-015"
+   "id": "80-015",
+   "fit": true
   },
   {
    "a": "Franklin Avenue",
    "b": "Tower Avenue",
+   "osm_a": "Franklin Avenue",
+   "osm_b": "Tower Avenue",
+   "sid_a": "franklin-avenue#1/1",
+   "sid_b": "tower-avenue/1",
    "x": 3449.0,
    "y": 4084.5,
    "kind": "guided",
-   "id": "80-016"
+   "id": "80-016",
+   "fit": true
   },
   {
    "a": "Church Street",
    "b": "Tower Avenue",
+   "osm_a": "Church Street",
+   "osm_b": "Tower Avenue",
+   "sid_a": "church-street/1",
+   "sid_b": "tower-avenue/1",
    "x": 3389.0,
    "y": 4778.5,
    "kind": "guided",
-   "id": "80-019"
+   "id": "80-019",
+   "fit": true
   },
   {
    "a": "Meadow Avenue",
    "b": "Tower Avenue",
+   "osm_a": "Meadow Avenue",
+   "osm_b": "Tower Avenue",
+   "sid_a": "meadow-avenue/1",
+   "sid_b": "tower-avenue/1",
    "x": 3363.0,
    "y": 5234.0,
    "kind": "guided",
-   "id": "80-021"
+   "id": "80-021",
+   "fit": true
   },
   {
    "a": "Delmar Avenue",
    "b": "Zetta Avenue",
+   "osm_a": "Delmar Avenue",
+   "osm_b": "Zetta Avenue",
+   "sid_a": "delmar-avenue#1/1",
+   "sid_b": "zetta-avenue/1",
    "x": 3012.0,
    "y": 5669.5,
    "kind": "guided",
-   "id": "80-022"
+   "id": "80-022",
+   "fit": true
   },
   {
    "a": "Albert Street",
    "b": "Zetta Avenue",
+   "osm_a": "Albert Street",
+   "osm_b": "Zetta Avenue",
+   "sid_a": "albert-street#1/1",
+   "sid_b": "zetta-avenue/1",
    "x": 2976.0,
    "y": 6257.5,
    "kind": "guided",
-   "id": "80-024"
+   "id": "80-024",
+   "fit": true
   },
   {
    "a": "Tower Avenue",
    "b": "Ross Avenue",
+   "osm_a": "Tower Avenue",
+   "osm_b": "East Ross Avenue",
+   "sid_a": "tower-avenue/1",
+   "sid_b": "east-ross-avenue/1",
    "x": 3716.5,
    "y": 1608.0,
    "kind": "guided",
-   "id": "80-027"
+   "id": "80-027",
+   "fit": true
   },
   {
    "a": "Cleveland Avenue",
    "b": "Tower Avenue",
+   "osm_a": "Cleveland Avenue",
+   "osm_b": "Tower Avenue",
+   "sid_a": "cleveland-avenue/1",
+   "sid_b": "tower-avenue/1",
    "x": 3669.0,
    "y": 2059.0,
    "kind": "guided",
-   "id": "80-029"
+   "id": "80-029",
+   "fit": true
   },
   {
    "a": "McClelland Avenue",
    "b": "Tower Avenue",
+   "osm_a": "McClelland Avenue",
+   "osm_b": "Tower Avenue",
+   "sid_a": "mcclelland-avenue/1",
+   "sid_b": "tower-avenue/1",
    "x": 3621.5,
    "y": 2504.0,
    "kind": "guided",
-   "id": "80-031"
+   "id": "80-031",
+   "fit": true
   },
   {
    "a": "Washington Avenue",
    "b": "Sullivan Avenue",
+   "osm_a": "Washington Avenue",
+   "osm_b": "Sullivan Avenue",
+   "sid_a": "washington-avenue/1",
+   "sid_b": "sullivan-avenue/1",
    "x": 4094.0,
    "y": 3005.5,
    "kind": "guided",
-   "id": "80-033"
+   "id": "80-033",
+   "fit": true
   },
   {
    "a": "Jackson Avenue",
    "b": "Sullivan Avenue",
+   "osm_a": "Jackson Avenue",
+   "osm_b": "Sullivan Avenue",
+   "sid_a": "jackson-avenue/1",
+   "sid_b": "sullivan-avenue/1",
    "x": 4048.5,
    "y": 3450.5,
    "kind": "guided",
-   "id": "80-034"
+   "id": "80-034",
+   "fit": true
   },
   {
    "a": "Jefferson Avenue",
    "b": "Sullivan Avenue",
+   "osm_a": "Jefferson Avenue",
+   "osm_b": "Sullivan Avenue",
+   "sid_a": "jefferson-avenue/1",
+   "sid_b": "sullivan-avenue/1",
    "x": 4003.5,
    "y": 3884.5,
    "kind": "guided",
-   "id": "80-035"
+   "id": "80-035",
+   "fit": true
   },
   {
    "a": "Franklin Avenue",
    "b": "Sullivan Avenue",
+   "osm_a": "Franklin Avenue",
+   "osm_b": "Sullivan Avenue",
+   "sid_a": "franklin-avenue#1/1",
+   "sid_b": "sullivan-avenue/1",
    "x": 3974.5,
    "y": 4140.5,
    "kind": "guided",
-   "id": "80-037"
+   "id": "80-037",
+   "fit": true
   },
   {
    "a": "Church Street",
    "b": "Sullivan Avenue",
+   "osm_a": "Church Street",
+   "osm_b": "Sullivan Avenue",
+   "sid_a": "church-street/1",
+   "sid_b": "sullivan-avenue/1",
    "x": 3923.0,
    "y": 4830.0,
    "kind": "guided",
-   "id": "80-039"
+   "id": "80-039",
+   "fit": true
   },
   {
    "a": "Sullivan Avenue",
    "b": "Delmar Avenue",
+   "osm_a": "Sullivan Avenue",
+   "osm_b": "Delmar Avenue",
+   "sid_a": "sullivan-avenue/1",
+   "sid_b": "delmar-avenue#1/1",
    "x": 3883.0,
    "y": 5726.5,
    "kind": "guided",
-   "id": "80-042"
+   "id": "80-042",
+   "fit": true
   },
   {
    "a": "Ross Avenue",
    "b": "Carthage Avenue",
+   "osm_a": "East Ross Avenue",
+   "osm_b": "Vine Street",
+   "sid_a": "east-ross-avenue/1",
+   "sid_b": "vine-street/1",
    "x": 3059.0,
    "y": 1534.0,
    "kind": "guided",
-   "id": "80-095"
+   "id": "80-095",
+   "fit": true
   },
   {
    "a": "Glencross Avenue",
    "b": "Mitchell Avenue",
+   "osm_a": "Glencross Avenue",
+   "osm_b": "East Mitchell Avenue",
+   "sid_a": "glencross-avenue",
+   "sid_b": "east-mitchell-avenue/1",
    "x": 3381.0,
    "y": 6749.0,
    "kind": "guided",
-   "id": "80-100"
-  },
-  {
-   "a": "Sullivan Avenue",
-   "b": "Mitchell Avenue",
-   "x": 3815.0,
-   "y": 6775.0,
-   "kind": "guided",
-   "id": "80-103"
-  },
-  {
-   "a": "Mitchell Avenue",
-   "b": "Parker Place",
-   "x": 3906.5,
-   "y": 6780.0,
-   "kind": "guided",
-   "id": "80-104"
+   "id": "80-100",
+   "fit": true
   },
   {
    "a": "Glencross Avenue",
    "b": "Tower Avenue",
-   "x": 3381.0,
+   "osm_a": "Glencross Avenue",
+   "osm_b": "Tower Avenue",
+   "sid_a": "glencross-avenue",
+   "sid_b": "tower-avenue/1",
+   "x": 3382.5,
    "y": 6749.0,
    "kind": "guided",
    "id": "80-101",
@@ -282,68 +271,828 @@
   {
    "a": "Mitchell Avenue",
    "b": "Tower Avenue",
-   "x": 3381.0,
+   "osm_a": "East Mitchell Avenue",
+   "osm_b": "Tower Avenue",
+   "sid_a": "east-mitchell-avenue/1",
+   "sid_b": "tower-avenue/1",
+   "x": 3383.5,
    "y": 6749.0,
    "kind": "guided",
    "id": "80-102",
    "fit": false
   },
   {
-   "a": "Tower Avenue",
-   "b": "Delmar Avenue",
-   "x": 3340,
-   "y": 5690,
-   "kind": "added",
-   "fit": false,
-   "why": "Tower's north leg at Delmar (reader B); the street jogs about 100 px here"
+   "a": "Sullivan Avenue",
+   "b": "Mitchell Avenue",
+   "osm_a": "Sullivan Avenue",
+   "osm_b": "East Mitchell Avenue",
+   "sid_a": "sullivan-avenue/1",
+   "sid_b": "east-mitchell-avenue/1",
+   "x": 3815.0,
+   "y": 6775.0,
+   "kind": "guided",
+   "id": "80-103",
+   "fit": true
   },
   {
-   "a": "Tower Avenue",
-   "b": "Delmar Avenue",
-   "x": 3443,
-   "y": 5698,
-   "kind": "added",
-   "fit": false,
-   "why": "Tower's south leg at Delmar (reader A)"
+   "a": "Mitchell Avenue",
+   "b": "Parker Place",
+   "osm_a": "East Mitchell Avenue",
+   "osm_b": "Parker Place",
+   "sid_a": "east-mitchell-avenue/1",
+   "sid_b": "parker-place/1",
+   "x": 3906.5,
+   "y": 6780.0,
+   "kind": "guided",
+   "id": "80-104",
+   "fit": true
   }
  ],
- "widths": [],
  "bends": [
   {
-   "street": "Carthage Avenue",
-   "x": 3000,
-   "y": 2950,
-   "note": "Carthage Avenue continues south as Burnet Avenue; diagonal avenue from SW joins near 2920,2970"
+   "street": "Albert Street",
+   "sid": "albert-street#1/1",
+   "x": 2976.0,
+   "y": 6257.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Church Street",
+   "sid": "church-street/1",
+   "x": 3389.0,
+   "y": 4778.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Church Street",
+   "sid": "church-street/1",
+   "x": 3587.0,
+   "y": 4791.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Church Street",
+   "sid": "church-street/1",
+   "x": 3923.0,
+   "y": 4830.0,
+   "kind": "traced"
   },
   {
    "street": "Clay Street",
-   "x": 3300,
-   "y": 1092,
-   "kind": "added",
-   "note": "centre measured on the scan, 14 Nov"
+   "sid": "clay-street/1",
+   "x": 3775.0,
+   "y": 1152.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Clay Street",
+   "sid": "clay-street/1",
+   "x": 3530.0,
+   "y": 1120.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Clay Street",
+   "sid": "clay-street/1",
+   "x": 3326.0,
+   "y": 1112.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Cleveland Avenue",
+   "sid": "cleveland-avenue/1",
+   "x": 3669.0,
+   "y": 2059.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Cleveland Avenue",
+   "sid": "cleveland-avenue/1",
+   "x": 3983.0,
+   "y": 2084.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Delmar Avenue",
+   "sid": "delmar-avenue#1/1",
+   "x": 3012.0,
+   "y": 5669.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Delmar Avenue",
+   "sid": "delmar-avenue#1/1",
+   "x": 3337,
+   "y": 5689,
+   "kind": "traced"
+  },
+  {
+   "street": "Delmar Avenue",
+   "sid": "delmar-avenue#1/1",
+   "x": 3443,
+   "y": 5698,
+   "kind": "traced"
+  },
+  {
+   "street": "Delmar Avenue",
+   "sid": "delmar-avenue#1/1",
+   "x": 3612.0,
+   "y": 5708.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Delmar Avenue",
+   "sid": "delmar-avenue#1/1",
+   "x": 3883.0,
+   "y": 5726.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Mitchell Avenue",
+   "sid": "east-mitchell-avenue/1",
+   "x": 3218.0,
+   "y": 6730.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Mitchell Avenue",
+   "sid": "east-mitchell-avenue/1",
+   "x": 3381.0,
+   "y": 6749.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Mitchell Avenue",
+   "sid": "east-mitchell-avenue/1",
+   "x": 3383.5,
+   "y": 6749.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Mitchell Avenue",
+   "sid": "east-mitchell-avenue/1",
+   "x": 3508.0,
+   "y": 6752.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Mitchell Avenue",
+   "sid": "east-mitchell-avenue/1",
+   "x": 3815.0,
+   "y": 6775.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Mitchell Avenue",
+   "sid": "east-mitchell-avenue/1",
+   "x": 3906.5,
+   "y": 6780.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Mitchell Avenue",
+   "sid": "east-mitchell-avenue/1",
+   "x": 4090.0,
+   "y": 6786.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Ross Avenue",
+   "sid": "east-ross-avenue/1",
+   "x": 3059.0,
+   "y": 1534.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ross Avenue",
+   "sid": "east-ross-avenue/1",
+   "x": 3351.0,
+   "y": 1554.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ross Avenue",
+   "sid": "east-ross-avenue/1",
+   "x": 3716.5,
+   "y": 1608.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ross Avenue",
+   "sid": "east-ross-avenue/1",
+   "x": 3947.0,
+   "y": 1628.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Franklin Avenue",
+   "sid": "franklin-avenue#1/1",
+   "x": 3449.0,
+   "y": 4084.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Franklin Avenue",
+   "sid": "franklin-avenue#1/1",
+   "x": 3754.0,
+   "y": 4107.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Franklin Avenue",
+   "sid": "franklin-avenue#1/1",
+   "x": 3974.5,
+   "y": 4140.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Jackson Avenue",
+   "sid": "jackson-avenue/1",
+   "x": 3522.0,
+   "y": 3397.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Jackson Avenue",
+   "sid": "jackson-avenue/1",
+   "x": 3835.0,
+   "y": 3419.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Jackson Avenue",
+   "sid": "jackson-avenue/1",
+   "x": 4048.5,
+   "y": 3450.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Jefferson Avenue",
+   "sid": "jefferson-avenue/1",
+   "x": 3476.5,
+   "y": 3832.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Jefferson Avenue",
+   "sid": "jefferson-avenue/1",
+   "x": 3795.0,
+   "y": 3849.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Jefferson Avenue",
+   "sid": "jefferson-avenue/1",
+   "x": 4003.5,
+   "y": 3884.5,
+   "kind": "traced"
+  },
+  {
+   "street": "McClelland Avenue",
+   "sid": "mcclelland-avenue/1",
+   "x": 3770.0,
+   "y": 2515.5,
+   "kind": "traced"
+  },
+  {
+   "street": "McClelland Avenue",
+   "sid": "mcclelland-avenue/1",
+   "x": 3621.5,
+   "y": 2504.0,
+   "kind": "traced"
+  },
+  {
+   "street": "McClelland Avenue",
+   "sid": "mcclelland-avenue/1",
+   "x": 3486.0,
+   "y": 2484.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Meadow Avenue",
+   "sid": "meadow-avenue/1",
+   "x": 3103.0,
+   "y": 5215.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Meadow Avenue",
+   "sid": "meadow-avenue/1",
+   "x": 3363.0,
+   "y": 5234.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Sullivan Avenue",
+   "sid": "sullivan-avenue/1",
+   "x": 3815.0,
+   "y": 6775.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Sullivan Avenue",
+   "sid": "sullivan-avenue/1",
+   "x": 3834.5,
+   "y": 6489.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Sullivan Avenue",
+   "sid": "sullivan-avenue/1",
+   "x": 3847.5,
+   "y": 6203.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Sullivan Avenue",
+   "sid": "sullivan-avenue/1",
+   "x": 3867.0,
+   "y": 5918.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Sullivan Avenue",
+   "sid": "sullivan-avenue/1",
+   "x": 3883.0,
+   "y": 5726.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Sullivan Avenue",
+   "sid": "sullivan-avenue/1",
+   "x": 3899.0,
+   "y": 5348.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Sullivan Avenue",
+   "sid": "sullivan-avenue/1",
+   "x": 3913.5,
+   "y": 5063.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Sullivan Avenue",
+   "sid": "sullivan-avenue/1",
+   "x": 3923.0,
+   "y": 4830.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Sullivan Avenue",
+   "sid": "sullivan-avenue/1",
+   "x": 3945.0,
+   "y": 4493.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Sullivan Avenue",
+   "sid": "sullivan-avenue/1",
+   "x": 3974.5,
+   "y": 4140.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Sullivan Avenue",
+   "sid": "sullivan-avenue/1",
+   "x": 4003.5,
+   "y": 3884.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Sullivan Avenue",
+   "sid": "sullivan-avenue/1",
+   "x": 4026.0,
+   "y": 3644.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Sullivan Avenue",
+   "sid": "sullivan-avenue/1",
+   "x": 4048.5,
+   "y": 3450.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Sullivan Avenue",
+   "sid": "sullivan-avenue/1",
+   "x": 4094.0,
+   "y": 3005.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Sullivan Avenue",
+   "sid": "sullivan-avenue/1",
+   "x": 4116.5,
+   "y": 2798.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3382.5,
+   "y": 6749.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3383.5,
+   "y": 6749.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3401.5,
+   "y": 6447.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3418.5,
+   "y": 6147.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3441.5,
+   "y": 5848.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3443,
+   "y": 5698,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3337,
+   "y": 5689,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3352.0,
+   "y": 5559.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3363.0,
+   "y": 5234.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3381.0,
+   "y": 4971.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3389.0,
+   "y": 4778.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3422.0,
+   "y": 4378.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3449.0,
+   "y": 4084.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3476.5,
+   "y": 3832.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3522.0,
+   "y": 3397.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3539.5,
+   "y": 3199.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3570.0,
+   "y": 2941.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3621.5,
+   "y": 2504.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3644.0,
+   "y": 2309.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3669.0,
+   "y": 2059.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3716.5,
+   "y": 1608.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Carthage Avenue",
+   "sid": "vine-street/1",
+   "x": 3014.5,
+   "y": 2219.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Carthage Avenue",
+   "sid": "vine-street/1",
+   "x": 3037.5,
+   "y": 1925.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Carthage Avenue",
+   "sid": "vine-street/1",
+   "x": 3059.0,
+   "y": 1534.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Carthage Avenue",
+   "sid": "vine-street/1",
+   "x": 3080.0,
+   "y": 1336.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Carthage Avenue",
+   "sid": "vine-street/1",
+   "x": 3125.5,
+   "y": 1048.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Carthage Avenue",
+   "sid": "vine-street/1",
+   "x": 3207.5,
+   "y": 765.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Carthage Avenue",
+   "sid": "vine-street/1",
+   "x": 3227.5,
+   "y": 477.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Washington Avenue",
+   "sid": "washington-avenue/1",
+   "x": 3246.0,
+   "y": 2919.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Washington Avenue",
+   "sid": "washington-avenue/1",
+   "x": 3570.0,
+   "y": 2941.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Washington Avenue",
+   "sid": "washington-avenue/1",
+   "x": 3879.0,
+   "y": 2970.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Washington Avenue",
+   "sid": "washington-avenue/1",
+   "x": 4094.0,
+   "y": 3005.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Zetta Avenue",
+   "sid": "zetta-avenue/1",
+   "x": 2976.0,
+   "y": 6257.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Zetta Avenue",
+   "sid": "zetta-avenue/1",
+   "x": 2999.0,
+   "y": 5931.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Zetta Avenue",
+   "sid": "zetta-avenue/1",
+   "x": 3012.0,
+   "y": 5669.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Parker Place",
+   "sid": "parker-place/1",
+   "x": 3906.5,
+   "y": 6780.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Oak Street",
+   "sid": "r-oak-street#1",
+   "x": 3229,
+   "y": 671,
+   "kind": "review"
+  },
+  {
+   "street": "Oak Street",
+   "sid": "r-oak-street#1",
+   "x": 3214,
+   "y": 671,
+   "kind": "review"
+  },
+  {
+   "street": "Oak Street",
+   "sid": "r-oak-street#1",
+   "x": 3450,
+   "y": 677,
+   "kind": "review"
+  },
+  {
+   "street": "Oak Street",
+   "sid": "r-oak-street#1",
+   "x": 3500,
+   "y": 678,
+   "kind": "review"
+  },
+  {
+   "street": "Oak Street",
+   "sid": "r-oak-street#1",
+   "x": 3686,
+   "y": 683,
+   "kind": "review"
+  },
+  {
+   "street": "Oak Street",
+   "sid": "r-oak-street#1",
+   "x": 3800,
+   "y": 686,
+   "kind": "review"
+  },
+  {
+   "street": "Oak Street",
+   "sid": "r-oak-street#1",
+   "x": 4071,
+   "y": 707,
+   "kind": "review"
+  },
+  {
+   "street": "Oak Street",
+   "sid": "r-oak-street#1",
+   "x": 4086,
+   "y": 690,
+   "kind": "review"
+  },
+  {
+   "street": "Clay Street",
+   "sid": "r-clay-street#2",
+   "x": 4110,
+   "y": 1221,
+   "kind": "review"
+  },
+  {
+   "street": "Clay Street",
+   "sid": "r-clay-street#2",
+   "x": 4114,
+   "y": 1221,
+   "kind": "review"
+  },
+  {
+   "street": "Broxterman Avenue",
+   "sid": "r-broxterman-avenue#3",
+   "x": 4124,
+   "y": 1229,
+   "kind": "review"
+  },
+  {
+   "street": "Broxterman Avenue",
+   "sid": "r-broxterman-avenue#3",
+   "x": 4121,
+   "y": 1243,
+   "kind": "review"
+  },
+  {
+   "street": "Broxterman Avenue",
+   "sid": "r-broxterman-avenue#3",
+   "x": 4124,
+   "y": 1400,
+   "kind": "review"
+  },
+  {
+   "street": "Broxterman Avenue",
+   "sid": "r-broxterman-avenue#3",
+   "x": 4121,
+   "y": 1400,
+   "kind": "review"
+  },
+  {
+   "street": "Broxterman Avenue",
+   "sid": "r-broxterman-avenue#3",
+   "x": 4124,
+   "y": 1571,
+   "kind": "review"
+  },
+  {
+   "street": "Broxterman Avenue",
+   "sid": "r-broxterman-avenue#3",
+   "x": 4121,
+   "y": 1586,
+   "kind": "review"
   }
  ],
  "ends": [
   {
-   "street": "Burnet Avenue",
-   "x": 2950,
-   "y": 3490,
-   "note": "northern Burnet section stops at Board of Education lot / St. Bernard park"
-  },
-  {
-   "street": "Oak Street",
-   "x": 4075,
-   "y": 690,
-   "kind": "added",
-   "note": "east end; centre measured on the scan, 14 Nov"
+   "street": "Clay Street",
+   "sid": "clay-street/1",
+   "x": 3980.0,
+   "y": 1150.0,
+   "note": "Miami-Erie canal (pink bank)",
+   "kind": "read"
   },
   {
    "street": "Clay Street",
-   "x": 3990,
-   "y": 1128,
-   "kind": "added",
-   "note": "west part's end at the canal bank; centre measured on the scan, 14 Nov"
+   "sid": "clay-street/1",
+   "x": 3091.5,
+   "y": 1109.0,
+   "note": "meets Vine Street (printed AVENUE) along plate edge",
+   "kind": "read"
+  },
+  {
+   "street": "Tower Avenue",
+   "sid": "tower-avenue/1",
+   "x": 3716.0,
+   "y": 1594.0,
+   "note": "north block line of E-W street (canal property beyond)",
+   "kind": "read"
+  },
+  {
+   "street": "Carthage Avenue",
+   "sid": "vine-street/1",
+   "x": 3223.5,
+   "y": 350.0,
+   "note": "plate edge",
+   "kind": "read"
+  },
+  {
+   "street": "Parker Place",
+   "sid": "parker-place/1",
+   "x": 3904.5,
+   "y": 6890.0,
+   "note": "plate edge",
+   "kind": "read"
   }
  ],
- "notes": "Street names for the two north-south avenues north of Jackson are printed only as AVENUE in this strip; the west one is taken as Tower Avenue (continues south, slight jog near Washington and again at the bottom E-W street at y~5690), the east one (x~4232 at Ross to ~4055 at Jackson) is written '?' and appears to continue south as Sullivan Avenue with a jog at Jackson. Kemper Avenue (x~4378 at y 4848) appears to continue south as Langley Avenue; recorded under each printed name. Unnamed E-W streets: one at y~4740-4850 (Burnet to Kemper), one with streetcar tracks at y~5680-5735, the '...STREET' at y~6245 west of Zetta, and the avenue along the bottom edge at y~6720-6810. Carthage Avenue becomes Burnet Avenue at Washington; the diagonal avenue from the south-west (name off strip) meets Carthage at the same spot. Oak Street east end meets a short unnamed street running north-east at x~4085 (uncertain). Ross Avenue stub continues west of Carthage. Stub west of Carthage at y~2205 unnamed. | Tower Avenue: the long avenue printed only AVENUE north of Franklin, named TOWER near y 5400-6500; assumed the same street (jog near y 5665). Sullivan Avenue: the avenue from Ross (x 4225) south to the bottom, name printed SULLIVAN only near y 6500; assumed continuous. Cross-street names printed without suffix (Oak, Cleveland, McClelland, Washington, Jackson, Jefferson, Franklin, Kemper) left bare. '?' streets: unnamed in strip at y~4775-4835, y~5655-5740, the STREET west of Zetta at y~6237, and the bottom avenue with car tracks at y~6715-6765; Oak's east end meets an unnamed diagonal street by the canal. Blue line at y~5450-5490 treated as pipe, not street. Old canal bed not a street."
+ "source": "guided (tools/sanborn/guided/merge_guided.py)"
 }

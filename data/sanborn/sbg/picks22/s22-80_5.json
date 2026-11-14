@@ -7,45 +7,27 @@
   7580,
   7152
  ],
- "made": "2026-11-13T22:54:00",
- "by": "tools/sanborn/complete/merge_reads.py: two independent reads, a pick only where they agree within 60 px",
- "reads": [
-  "picks22_reads/22-80/A_5.json",
-  "picks22_reads/22-80/B_5.json"
- ],
  "intersections": [
-  {
-   "a": "Rose Hill Lane",
-   "b": "Rose Hill Avenue",
-   "x": 6249.0,
-   "y": 5456.5,
-   "kind": "T",
-   "reads": [
-    {
-     "read": "A",
-     "x": 6243,
-     "y": 5458
-    },
-    {
-     "read": "B",
-     "x": 6255,
-     "y": 5455
-    }
-   ],
-   "spread_px": 12.4,
-   "fit": false
-  },
   {
    "a": "Imwalle Avenue",
    "b": "Ross Avenue",
+   "osm_a": "Imwalle Avenue",
+   "osm_b": "East Ross Avenue",
+   "sid_a": "imwalle-avenue/1",
+   "sid_b": "east-ross-avenue/1",
    "x": 6571.5,
    "y": 1930.0,
    "kind": "guided",
-   "id": "80-069"
+   "id": "80-069",
+   "fit": true
   },
   {
-   "a": "Rose Hill Lane",
+   "a": "Rose Hill Avenue",
    "b": "Avon Fields Lane",
+   "osm_a": "Rose Hill Lane",
+   "osm_b": "Avon Fields Lane",
+   "sid_a": "rose-hill-lane/1",
+   "sid_b": "avon-fields-lane",
    "x": 6741.0,
    "y": 5471.0,
    "kind": "guided",
@@ -53,126 +35,264 @@
    "fit": false
   },
   {
-   "a": "Rose Hill Avenue",
-   "b": "Red Bud Place",
-   "x": 6702.5,
-   "y": 5887.0,
-   "kind": "guided",
-   "id": "80-114"
-  },
-  {
-   "a": "Rose Hill Avenue",
-   "b": "Red Bud Avenue",
-   "x": 6872.0,
-   "y": 6639.0,
-   "kind": "guided",
-   "id": "80-115",
-   "fit": false
-  },
-  {
-   "a": "Red Bud Avenue",
-   "b": "Mitchell Avenue",
-   "x": 6491.5,
-   "y": 7137.5,
-   "kind": "guided",
-   "id": "80-116",
-   "fit": false
-  },
-  {
-   "a": "Rose Hill Avenue",
+   "a": "Ave Avenue",
    "b": "Avon Fields Lane",
-   "x": 6741.0,
+   "osm_a": "Rose Hill Avenue",
+   "osm_b": "Avon Fields Lane",
+   "sid_a": "rose-hill-avenue#1/1",
+   "sid_b": "avon-fields-lane",
+   "x": 6742.0,
    "y": 5471.0,
    "kind": "guided",
    "id": "80-113",
    "fit": false
-  }
- ],
- "widths": [
+  },
   {
-   "street": "Rose Hill Lane",
-   "ft": 40
+   "a": "Ave Avenue",
+   "b": "Red Bud Place",
+   "osm_a": "Rose Hill Avenue",
+   "osm_b": "Red Bud Place",
+   "sid_a": "rose-hill-avenue#1/1",
+   "sid_b": "red-bud-place/1",
+   "x": 6702.5,
+   "y": 5887.0,
+   "kind": "guided",
+   "id": "80-114",
+   "fit": true
+  },
+  {
+   "a": "Ave Avenue",
+   "b": "Red Bud Avenue",
+   "osm_a": "Rose Hill Avenue",
+   "osm_b": "Red Bud Avenue",
+   "sid_a": "rose-hill-avenue#1/1",
+   "sid_b": "red-bud-avenue/1",
+   "x": 6872.0,
+   "y": 6639.0,
+   "kind": "guided",
+   "id": "80-115",
+   "fit": true
+  },
+  {
+   "a": "Red Bud Avenue",
+   "b": "Mitchell Avenue",
+   "osm_a": "Red Bud Avenue",
+   "osm_b": "East Mitchell Avenue",
+   "sid_a": "red-bud-avenue/1",
+   "sid_b": "east-mitchell-avenue/1",
+   "x": 6491.5,
+   "y": 7137.5,
+   "kind": "guided",
+   "id": "80-116",
+   "fit": true
   }
  ],
  "bends": [
   {
-   "street": "Rose Hill Avenue",
-   "x": 6735,
-   "y": 5468,
-   "note": "turns from east-west to south"
+   "street": "Mitchell Avenue",
+   "sid": "east-mitchell-avenue/1",
+   "x": 6394.0,
+   "y": 7053.5,
+   "kind": "traced"
   },
   {
-   "street": "Rose Hill Avenue",
-   "x": 6700,
-   "y": 6200,
-   "note": "curve"
-  },
-  {
-   "street": "Rose Hill Avenue",
-   "x": 6711,
-   "y": 5696,
-   "note": "curve south"
-  },
-  {
-   "street": "Rose Hill Avenue",
-   "x": 6684,
-   "y": 6096,
-   "note": "curve"
-  },
-  {
-   "street": "Rose Hill Avenue",
-   "x": 6723,
-   "y": 6399,
-   "note": "curve"
+   "street": "Mitchell Avenue",
+   "sid": "east-mitchell-avenue/1",
+   "x": 6491.5,
+   "y": 7137.5,
+   "kind": "traced"
   },
   {
    "street": "Ross Avenue",
-   "x": 7500,
-   "y": 2047,
-   "kind": "added",
-   "note": "centre measured on the scan, 14 Nov"
+   "sid": "east-ross-avenue/1",
+   "x": 6321.0,
+   "y": 1894.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ross Avenue",
+   "sid": "east-ross-avenue/1",
+   "x": 6571.5,
+   "y": 1930.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ross Avenue",
+   "sid": "east-ross-avenue/1",
+   "x": 6914.0,
+   "y": 1970.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ross Avenue",
+   "sid": "east-ross-avenue/1",
+   "x": 7211.0,
+   "y": 1990.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Ross Avenue",
+   "sid": "east-ross-avenue/1",
+   "x": 7508.0,
+   "y": 2025.0,
+   "kind": "traced"
   },
   {
    "street": "Imwalle Avenue",
-   "x": 6635,
-   "y": 1200,
-   "kind": "added",
-   "note": "centre measured on the scan, 14 Nov"
+   "sid": "imwalle-avenue/1",
+   "x": 6571.5,
+   "y": 1930.0,
+   "kind": "traced"
   },
   {
    "street": "Imwalle Avenue",
-   "x": 6668,
-   "y": 800,
-   "kind": "added",
-   "note": "centre measured on the scan, 14 Nov"
+   "sid": "imwalle-avenue/1",
+   "x": 6604.5,
+   "y": 1602.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Imwalle Avenue",
+   "sid": "imwalle-avenue/1",
+   "x": 6681.0,
+   "y": 949.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "rose-hill-avenue#1/1",
+   "x": 6872.0,
+   "y": 6639.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "rose-hill-avenue#1/1",
+   "x": 6717.5,
+   "y": 6375.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "rose-hill-avenue#1/1",
+   "x": 6679.0,
+   "y": 6080.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "rose-hill-avenue#1/1",
+   "x": 6702.5,
+   "y": 5887.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "rose-hill-avenue#1/1",
+   "x": 6742.0,
+   "y": 5471.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "rose-hill-avenue#2/1",
+   "x": 6515.0,
+   "y": 5464.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Rose Hill Avenue",
+   "sid": "rose-hill-lane/1",
+   "x": 6741.0,
+   "y": 5471.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Tennessee Avenue",
+   "sid": "tennessee-avenue/1",
+   "x": 7440.0,
+   "y": 2062.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Red Bud Place",
+   "sid": "red-bud-place/1",
+   "x": 6702.5,
+   "y": 5887.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Red Bud Avenue",
+   "sid": "red-bud-avenue/1",
+   "x": 6491.5,
+   "y": 7137.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Red Bud Avenue",
+   "sid": "red-bud-avenue/1",
+   "x": 6872.0,
+   "y": 6639.0,
+   "kind": "traced"
   }
  ],
  "ends": [
   {
-   "street": "Red Bud",
-   "x": 6530,
-   "y": 7060,
-   "note": "plate edge"
-  },
-  {
-   "street": "?",
-   "x": 6900,
-   "y": 5455,
-   "note": "plate edge (east stub of avenue past Rose Hill Avenue, printed 'Ave')"
-  },
-  {
-   "street": "?",
-   "x": 6800,
-   "y": 5880,
-   "note": "plate edge stub"
+   "street": "Mitchell Avenue",
+   "sid": "east-mitchell-avenue/1",
+   "x": 6493.0,
+   "y": 7125.0,
+   "note": "plate edge",
+   "kind": "read"
   },
   {
    "street": "Imwalle Avenue",
-   "x": 6682,
-   "y": 640,
-   "kind": "added",
-   "note": "north end at the chemical works; centre measured on the scan, 14 Nov"
+   "sid": "imwalle-avenue/1",
+   "x": 6690.0,
+   "y": 672.5,
+   "note": "railroad right of way",
+   "kind": "read"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "rose-hill-avenue#1/1",
+   "x": 6872.0,
+   "y": 6719.0,
+   "note": "plate edge",
+   "kind": "read"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "rose-hill-avenue#2/1",
+   "x": 6903.5,
+   "y": 5446.0,
+   "note": "plate edge",
+   "kind": "read"
+  },
+  {
+   "street": "Red Bud Place",
+   "sid": "red-bud-place/1",
+   "x": 6822.5,
+   "y": 5886.5,
+   "note": "plate edge",
+   "kind": "read"
+  },
+  {
+   "street": "Red Bud Avenue",
+   "sid": "red-bud-avenue/1",
+   "x": 6490.5,
+   "y": 7122.0,
+   "note": "plate edge",
+   "kind": "read"
+  },
+  {
+   "street": "Red Bud Avenue",
+   "sid": "red-bud-avenue/1",
+   "x": 7000.0,
+   "y": 6544.0,
+   "note": "plate edge",
+   "kind": "read"
   }
  ],
- "notes": "Long avenue across the top third (y~1905 at Imwalle) carries no readable name in this strip (only AVENUE printed far right); recorded as '?'. The east-west street continuing east from Rose Hill Avenue's turn (printed 'Avc', cut by plate edge at ~6900) recorded as '?'. Rose Hill Avenue becomes Red Bud at the X-shaped junction near (6850,6640); the two short stubs going NE and SE there are unnamed and cut by the plate edge. St. Bernard city limit band and cemetery drives not picked. | Long avenue along y~1955 printed only 'AVENUE' near x 8700; name not read, written '?'. Lower avenue printed ROSE HILL west of the strip; the curving street labelled 'ROSE HILL AVE.' is taken as its continuation; the stub east past x 6717 labelled 'Ave' is unnamed. At (6870,6620) Rose Hill Avenue becomes Red Bud to the SW, with two unnamed stubs NE and SE to the plate edge. Dashed line at x~6600 below Rose Hill Avenue is a boundary, not a street. Cemetery right half has no streets."
+ "source": "guided (tools/sanborn/guided/merge_guided.py)"
 }

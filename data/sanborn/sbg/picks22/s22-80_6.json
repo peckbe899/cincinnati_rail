@@ -7,37 +7,62 @@
   9296,
   7152
  ],
- "made": "2026-11-13T22:54:00",
- "by": "tools/sanborn/complete/merge_reads.py: two independent reads, a pick only where they agree within 60 px",
- "reads": [
-  "picks22_reads/22-80/A_6.json",
-  "picks22_reads/22-80/B_6.json"
- ],
  "intersections": [],
- "widths": [],
  "bends": [
   {
    "street": "Ross Avenue",
-   "x": 9000,
-   "y": 2233,
-   "kind": "added",
-   "note": "centre measured on the scan, 14 Nov"
+   "sid": "east-ross-avenue/1",
+   "x": 7805.0,
+   "y": 2062.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Ross Avenue",
+   "sid": "east-ross-avenue/1",
+   "x": 8400.0,
+   "y": 2136.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Ross Avenue",
+   "sid": "east-ross-avenue/1",
+   "x": 8912.5,
+   "y": 2225.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Tennessee Avenue",
+   "sid": "tennessee-avenue/1",
+   "x": 8982.0,
+   "y": 2232.0,
+   "kind": "traced"
   }
  ],
  "ends": [
   {
-   "street": "?",
-   "x": 9200,
-   "y": 2240,
-   "note": "AVENUE (long avenue across top third) cut by plate edge at right"
+   "street": "Ross Avenue",
+   "sid": "east-ross-avenue/1",
+   "x": 9172.0,
+   "y": 2257.5,
+   "note": "plate edge",
+   "kind": "read"
   },
   {
-   "street": "Ross Avenue",
-   "x": 9150,
-   "y": 2252,
-   "kind": "added",
-   "note": "east end at the plate's edge; centre measured on the scan, 14 Nov"
+   "street": "Tennessee Avenue",
+   "sid": "tennessee-avenue/1",
+   "x": 7956.6,
+   "y": 2081.4,
+   "note": "runs into East Ross Avenue",
+   "kind": "read"
+  },
+  {
+   "street": "Tennessee Avenue",
+   "sid": "tennessee-avenue/1",
+   "x": 9170.5,
+   "y": 2257.0,
+   "note": "plate edge",
+   "kind": "read"
   }
  ],
- "notes": "No street crossings in x 7280-9296. The long avenue (printed only 'AVENUE.' here, name further left) crosses the strip at about y 2050-2200 with no cross street; it runs on past the neat line at x about 9050 (plate edge). Top: B. & O. S. W. R. R. and Cincinnati/St. Bernard city limits (railroad, not a street). Below: St. Mary's cemetery, Huffman's Sub. lots, Ross Run creek; none are streets. | No street crossings in x 7280-9296. Strip holds the B&O S.W. R.R. along the top (railroad, not a street), Huffman Sub. and Babbs lots (estates), Ross Run creek, the AVENUE crossing east-west near y 2150-2250 with no cross streets here, a dashed boundary, and St. Mary German Catholic Cemetery; cemetery drives not streets. Plate ends near x 9100."
+ "source": "guided (tools/sanborn/guided/merge_guided.py)"
 }

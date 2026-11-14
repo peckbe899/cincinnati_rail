@@ -7,136 +7,297 @@
   6300,
   7152
  ],
- "made": "2026-11-13T22:54:00",
- "by": "tools/sanborn/complete/merge_reads.py: two independent reads, a pick only where they agree within 60 px",
- "reads": [
-  "picks22_reads/22-80/A_4.json",
-  "picks22_reads/22-80/B_4.json"
- ],
  "intersections": [
-  {
-   "a": "Rose Hill Avenue",
-   "b": "Rose Hill Lane",
-   "x": 6285.0,
-   "y": 5435.0,
-   "kind": "T",
-   "reads": [
-    {
-     "read": "A",
-     "x": 6305,
-     "y": 5420
-    },
-    {
-     "read": "B",
-     "x": 6265,
-     "y": 5450
-    }
-   ],
-   "spread_px": 50.0,
-   "fit": false
-  },
   {
    "a": "Greenlee Avenue",
    "b": "Ross Avenue",
+   "osm_a": "Greenlee Avenue",
+   "osm_b": "East Ross Avenue",
+   "sid_a": "greenlee-avenue/1",
+   "sid_b": "east-ross-avenue/1",
    "x": 5278.5,
    "y": 1778.5,
    "kind": "guided",
-   "id": "80-045"
+   "id": "80-045",
+   "fit": true
   },
   {
-   "a": "Broerman Avenue",
+   "a": "Broermann Avenue",
    "b": "Ross Avenue",
+   "osm_a": "Broermann Avenue",
+   "osm_b": "East Ross Avenue",
+   "sid_a": "broermann-avenue/1",
+   "sid_b": "east-ross-avenue/1",
    "x": 5758.5,
    "y": 1833.0,
    "kind": "guided",
-   "id": "80-064"
+   "id": "80-064",
+   "fit": true
   },
   {
    "a": "Church Street",
-   "b": "Rose Hill Lane",
+   "b": "Rose Hill Avenue",
+   "osm_a": "Church Street",
+   "osm_b": "Rose Hill Lane",
+   "sid_a": "church-street/1",
+   "sid_b": "rose-hill-lane/1b",
    "x": 6297.5,
    "y": 5041.5,
    "kind": "guided",
-   "id": "80-065"
+   "id": "80-065",
+   "fit": true
   },
   {
    "a": "Mitchell Avenue",
    "b": "Warwick Avenue",
+   "osm_a": "East Mitchell Avenue",
+   "osm_b": "Warwick Avenue",
+   "sid_a": "east-mitchell-avenue/1",
+   "sid_b": "warwick-avenue/1",
    "x": 5423.5,
    "y": 6893.5,
    "kind": "guided",
-   "id": "80-109"
+   "id": "80-109",
+   "fit": true
   },
   {
    "a": "Mitchell Avenue",
-   "b": "Ardmore Avenue",
+   "b": "Ave Avenue",
+   "osm_a": "East Mitchell Avenue",
+   "osm_b": "Ardmore Avenue",
+   "sid_a": "east-mitchell-avenue/1",
+   "sid_b": "ardmore-avenue/1",
    "x": 5852.5,
    "y": 6928.5,
    "kind": "guided",
-   "id": "80-111"
-  }
- ],
- "widths": [
-  {
-   "street": "Broerman Avenue",
-   "ft": 50
+   "id": "80-111",
+   "fit": true
   }
  ],
  "bends": [
   {
-   "street": "? Avenue (bottom)",
-   "x": 6260,
-   "y": 6950,
-   "note": "turns south-east"
+   "street": "Broermann Avenue",
+   "sid": "broermann-avenue/1",
+   "x": 5758.5,
+   "y": 1833.0,
+   "kind": "traced"
   },
   {
-   "street": "? (slanting avenue)",
-   "x": 5245,
-   "y": 2300,
-   "note": "runs north-south above, then slants south-south-west"
+   "street": "Broermann Avenue",
+   "sid": "broermann-avenue/1",
+   "x": 5788.5,
+   "y": 1516.0,
+   "kind": "traced"
   },
   {
-   "street": "Avenue (bottom)",
-   "x": 6250,
-   "y": 6960,
-   "note": "turns south-east"
+   "street": "Broermann Avenue",
+   "sid": "broermann-avenue/1",
+   "x": 5858.5,
+   "y": 885.0,
+   "kind": "traced"
   },
   {
-   "street": "Broerman Avenue",
-   "x": 5840,
-   "y": 1000,
-   "kind": "added",
-   "note": "centre measured on the scan, 14 Nov"
+   "street": "Broermann Avenue",
+   "sid": "broermann-avenue/1",
+   "x": 5899.5,
+   "y": 569.0,
+   "kind": "traced"
   },
   {
-   "street": "Broerman Avenue",
-   "x": 5824,
-   "y": 1200,
-   "kind": "added",
-   "note": "centre measured on the scan, 14 Nov"
+   "street": "Broermann Avenue",
+   "sid": "broermann-avenue/1",
+   "x": 5932.0,
+   "y": 266.5,
+   "kind": "traced"
   },
   {
-   "street": "Broerman Avenue",
-   "x": 5778,
-   "y": 1700,
-   "kind": "added",
-   "note": "centre measured on the scan, 14 Nov"
+   "street": "Church Street",
+   "sid": "church-street/1",
+   "x": 5394.0,
+   "y": 4964.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Church Street",
+   "sid": "church-street/1",
+   "x": 5695.0,
+   "y": 4987.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Church Street",
+   "sid": "church-street/1",
+   "x": 5995.0,
+   "y": 5014.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Church Street",
+   "sid": "church-street/1",
+   "x": 6297.5,
+   "y": 5041.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Mitchell Avenue",
+   "sid": "east-mitchell-avenue/1",
+   "x": 5253.0,
+   "y": 6871.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Mitchell Avenue",
+   "sid": "east-mitchell-avenue/1",
+   "x": 5423.5,
+   "y": 6893.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Mitchell Avenue",
+   "sid": "east-mitchell-avenue/1",
+   "x": 5852.5,
+   "y": 6928.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Mitchell Avenue",
+   "sid": "east-mitchell-avenue/1",
+   "x": 6117.0,
+   "y": 6942.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Ross Avenue",
+   "sid": "east-ross-avenue/1",
+   "x": 5278.5,
+   "y": 1778.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Ross Avenue",
+   "sid": "east-ross-avenue/1",
+   "x": 5433.0,
+   "y": 1786.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ross Avenue",
+   "sid": "east-ross-avenue/1",
+   "x": 5758.5,
+   "y": 1833.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ross Avenue",
+   "sid": "east-ross-avenue/1",
+   "x": 6025.0,
+   "y": 1859.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 5248.5,
+   "y": 2076.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Greenlee Avenue",
+   "sid": "greenlee-avenue/1",
+   "x": 5278.5,
+   "y": 1778.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "rose-hill-avenue#2/1",
+   "x": 6000.0,
+   "y": 5430.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "rose-hill-avenue#2/1",
+   "x": 5707.0,
+   "y": 5409.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "rose-hill-avenue#2/1",
+   "x": 5413.0,
+   "y": 5382.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Scenic Avenue",
+   "sid": "scenic-avenue/1",
+   "x": 5327.0,
+   "y": 4510.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Warwick Avenue",
+   "sid": "warwick-avenue/1",
+   "x": 5423.5,
+   "y": 6893.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "ardmore-avenue/1",
+   "x": 5852.5,
+   "y": 6928.5,
+   "kind": "traced"
+  },
+  {
+   "street": "Rose Hill Avenue",
+   "sid": "rose-hill-lane/1b",
+   "x": 6285.0,
+   "y": 5299.0,
+   "kind": "traced"
+  },
+  {
+   "street": "Rose Hill Avenue",
+   "sid": "rose-hill-lane/1b",
+   "x": 6297.5,
+   "y": 5041.5,
+   "kind": "traced"
   }
  ],
  "ends": [
   {
-   "street": "Advance Avenue",
-   "x": 5200,
-   "y": 6440,
-   "note": "dead end at estate line, east of slanting avenue"
+   "street": "Broermann Avenue",
+   "sid": "broermann-avenue/1",
+   "x": 5930.0,
+   "y": 264.0,
+   "note": "block line / railroad property line",
+   "kind": "read"
   },
   {
-   "street": "Broerman Avenue",
-   "x": 5903,
-   "y": 250,
-   "kind": "added",
-   "note": "north end at the railroad; centre measured on the scan, 14 Nov"
+   "street": "Scenic Avenue",
+   "sid": "scenic-avenue/1",
+   "x": 5326.5,
+   "y": 4517.5,
+   "note": "east block line (blank land / green strip beyond)",
+   "kind": "read"
+  },
+  {
+   "street": "Warwick Avenue",
+   "sid": "warwick-avenue/1",
+   "x": 5420.0,
+   "y": 7008.0,
+   "note": "plate edge",
+   "kind": "read"
+  },
+  {
+   "street": "Ave Avenue",
+   "sid": "ardmore-avenue/1",
+   "x": 5851.0,
+   "y": 7029.0,
+   "note": "plate edge",
+   "kind": "read"
   }
  ],
- "notes": "Wide avenue across the top third (y 1830-1915, about 100 ft) not named within the strip ('?'). Slanting avenue running from (5245,1830) south to (4885,5380) printed only 'AVENUE'; name not read ('?'). Cross streets from the west at y 2210 and 2662 print 'AVENUE', at 3108 and 3555 'STREET'; names lie west of the strip and were not read. Street along north of Avon Field's Sub printed 'STREET' only. Bottom avenue printed 'AVENUE' only; two stubs to the south cut by the plate edge, names partly printed ('...WICK AVE', '...FORD AVE'). Large 'HENRY ...' lettering beside the slanting avenue is taken as subdivision lettering. | Imwalle printed IMWALLE without suffix. Long avenue at y~1800 (name printed off strip as AVENUE) recorded as ?. Street at y~5030 printed only STREET, name off strip. Diagonal street at left printed HENR.. (Henry?), partly outside strip. Bottom avenue name off strip; stubs south of it at x 5395 (...WICK AVE) and 5840 (name illegible) cut by plate edge."
+ "source": "guided (tools/sanborn/guided/merge_guided.py)"
 }

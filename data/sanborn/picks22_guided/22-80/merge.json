@@ -1,216 +1,3604 @@
 {
  "sheet": "22-80",
  "crossings": 116,
- "found_A": 90,
- "found_B": 91,
  "found_both": 90,
  "same_verdict": 115,
  "apart_px": {
   "median": 3.1,
-  "p90": 9.3,
-  "max": 106.4
+  "p90": 9.3
  },
- "picks": 80,
- "apart_over_30": [
+ "picks": 89,
+ "controls": 77,
+ "screened": [
   {
-   "id": "80-023",
-   "a": "Tower Avenue",
-   "b": "Delmar Avenue",
-   "A": [
-    3443,
-    5698
-   ],
-   "B": [
-    3337,
-    5689
-   ],
-   "note_A": "Jog of about 100 px at Delmar: north leg (printed TOWE, centre x about 3345) and south leg (printed AVE, nos 4228-39, centre x about 3443). No leg named; south leg used as it is nearer the image middle. North-leg crossing would be about 3345, 5690",
-   "note_B": "Jog: used the north leg labelled TOWER (ends at Delmar). An AVE continues south of Delmar offset east, centre about x 3447, y 5698 (nos. 4234-37)"
-  }
- ],
- "one_reader_only": [
+   "id": "80-096",
+   "a": "McClelland Avenue",
+   "b": "Vine Street",
+   "heldout_m": 40.4
+  },
   {
-   "id": "80-017",
-   "a": "Church Street",
-   "b": "Schroeder Lane",
-   "found_by": "B"
+   "id": "80-112",
+   "a": "Rose Hill Lane",
+   "b": "Avon Fields Lane",
+   "heldout_m": 14.8
   }
  ],
  "not_drawn": [
   {
-   "id": "80-006",
-   "a": "Bertus Street",
-   "b": "Angels Way",
-   "note_A": "no street running lower-left to upper-right; NE side of the diagonal street is undivided George Schroeder tract (lot 1061), Angels Way not drawn",
-   "note_B": "Angels Way not drawn: east of the diagonal street is the undivided George Schroeder tract (1061 / 32); only Schroeder St meets the diagonal here"
-  },
-  {
-   "id": "80-008",
-   "a": "Angels Way",
-   "b": "Orchard Street",
-   "note_A": "Angels Way not drawn; only the UL-LR diagonal street meets Orchard here, land to NE is undivided Schroeder tract",
-   "note_B": "Angels Way not drawn: Schroeder St ends at the diagonal street and the land beyond is the undivided George Schroeder tract"
-  },
-  {
-   "id": "80-010",
-   "a": "Delmar Avenue",
-   "b": "Delmar Court",
-   "note_A": "no up-down street near centre; only a lot boundary with pink/blue colour bands at x~2800. An AVE. is at far right edge x~3010, outside the search radius",
-   "note_B": "No north-south street drawn off Delmar in this piece; only lots (976 is a numbered 25' lot, 973/974 to the south)"
-  },
-  {
-   "id": "80-025",
-   "a": "City Park Drive",
-   "b": "Clay Street",
-   "note_A": "City Park Drive not drawn: the diagonal strip is the Miami & Erie canal. Clay ends near x 4160 at Oxterman Ave and does not reach the canal",
-   "note_B": "City Park Drive is not a street in 1922: the diagonal strip is the Miami & Erie canal. Canal axis meets the CLAY leg (east side) centre line at about 3982,1210; an unnamed ST. on the west side meets it at about 4022,1172"
-  },
-  {
-   "id": "80-026",
-   "a": "City Park Drive",
-   "b": "Tower Avenue",
-   "note_A": "City Park Drive not drawn: diagonal strip is the canal (printed MIAMI). Tower Ave only exists south of Ross here (see 80-027)",
-   "note_B": "City Park Drive is the Miami & Erie canal, not a street; canal axis meets Ross Ave at about 3605,1600, west of Tower (Tower/Ross is at about 3716,1606). Canal and Tower do not cross in this piece"
-  },
-  {
-   "id": "80-059",
-   "a": "Greenlee Avenue",
-   "b": "Delmar Avenue",
-   "note_A": "No Delmar leg drawn near image middle; lots are continuous on both sides of Greenlee. Only Delmar junction in view is the west-side T at about (4772, 5780), same point as 80-058, about 175 px from image middle",
-   "note_B": "only one crossing of these streets is drawn: the west-leg T at about x 4771, y 5778 (same point as 80-058). No east leg is drawn in this image (east side is continuous lots 1662-1670), so a second/jogged crossing cannot be located"
-  },
-  {
-   "id": "80-061",
-   "a": "Dartmouth Drive",
-   "b": "Woodside Heights",
-   "note_A": "Neither street drawn: area is blank estate land (DAVID BROWN'S EST., parcel 47). Only an unrelated AVE. stub and a 48in sewer along the estate's west edge near x 5200.",
-   "note_B": "No streets drawn: blank estate land (DAVID B... / 47) east of a lot edge with 48in sewer at x~5200; only an AVE stub at far left edge (y~6400)."
-  },
-  {
-   "id": "80-062",
-   "a": "Broermann Avenue",
-   "b": "Moeller Avenue",
-   "note_A": "Up-down street present (house nos 5128-5153, centre about x 5845 at y 1000, leaning) but no left-right street meets it in this piece; only single lot lines. Moeller not drawn.",
-   "note_B": "Broermann is drawn (slanting strip, centre ~5840 at y 1000, ~5810 at y 1300) but no left-right street crosses it in this piece; only lot lines (tracts 794, 788, 789)."
-  },
-  {
-   "id": "80-063",
-   "a": "Broermann Avenue",
-   "b": "Tennis Lane",
-   "note_A": "Up-down street present (nos 5120-5134, centre about x 5815 at y 1250) but no left-right street; only a single lot line to the west near y 1320-1350 and a green-tinted lot border to the east. Tennis Lane not drawn.",
-   "note_B": "Broermann is drawn (centre ~5790 at y 1400) but no left-right street; only lot lines between tracts 794/793 and 788/787/786."
-  },
-  {
-   "id": "80-066",
-   "a": "Redwood Terrace",
-   "b": "Woodside Heights",
-   "note_A": "Neither street drawn: blank estate land (D. BROWN'S EST., parcels 47 / 2).",
-   "note_B": "No streets drawn: blank estate land (BROWN'S, tract 2 / 47)."
-  },
-  {
-   "id": "80-067",
-   "a": "Woodside Heights",
-   "b": "Minor Drive",
-   "note_A": "Neither street drawn: blank estate land (BROWN'S EST.). Only a line pair at the far right edge near x 6410, y 6500-6780.",
-   "note_B": "No streets drawn: blank estate land (...WN'S EST.); only a dashed boundary line with green tint running up-down at x~6420-6450."
-  },
-  {
-   "id": "80-068",
-   "a": "Imwalle Avenue",
-   "b": "Moeller Avenue",
-   "note_A": "Up-down street present (nos 5131-5145, centre about x 6655 at y 1200, leaning) but no left-right street meets it; only single lot lines either side. Moeller not drawn.",
-   "note_B": "Imwalle is drawn (slanting strip, centre ~6670 at y 1000, ~6620 at y 1300, with sewer and water pipe) but no left-right street crosses it; only lot lines (tracts 789, 782, 770, 769, 768)."
-  },
-  {
-   "id": "80-070",
-   "a": "Kieley Place",
-   "b": "East Ross Avenue",
-   "note_A": "Only the left-right street is drawn (four parallel lines, centre about y 2090 at x 8000); no up-down street on either side. Kieley Place not drawn.",
-   "note_B": "Only Ross is drawn (four parallel lines sloping down to the right, about y 2040-2160 at x 8000); no up-down street meets it and land either side is blank."
-  },
-  {
-   "id": "80-071",
-   "a": "Tennessee Avenue",
-   "b": "Chalet Drive",
-   "note_A": "No up-down street. The avenue is crossed by a blue-tinted diagonal strip with irregular banks, read as a creek, not a street. Strip centre meets avenue centre near x 8672, y 2193 if that strip is what is meant.",
-   "note_B": "Only one street drawn, printed AVENUE (continuation of Ross). Crossing it diagonally NW-SE is a blue-washed strip between two lines, read as a creek/run, not a street; it meets the avenue centre near (8670, 2198). Cannot tell which named street, if any, it stands for."
-  },
-  {
-   "id": "80-072",
-   "a": "Tennessee Avenue",
-   "b": "East Ross Avenue",
-   "note_A": "Only one left-right avenue is drawn; the two names are the same continuous street here, no junction to measure. Blue creek strip crosses it near x 8672, y 2193.",
-   "note_B": "Only one left-right street drawn (AVENUE, continuation of Ross); no second street. A blue-washed creek-like strip crosses it diagonally near (8670, 2198); if that strip is what became Tennessee, that is the point, but not assumed."
-  },
-  {
-   "id": "80-073",
-   "a": "Tennessee Avenue",
-   "b": "Fisher Avenue",
-   "note_A": "No up-down street. Only a blue-tinted diagonal strip (creek) crosses the avenue, strip centre on avenue centre near x 8672, y 2193. A dashed 53in sewer runs diagonally to the south-west.",
-   "note_B": "Only AVENUE (Ross) and the blue-washed diagonal creek-like strip are drawn; neither Tennessee nor Fisher identifiable. Plate edge / block line at x~9015 on the right."
-  },
-  {
-   "id": "80-074",
-   "a": "Fisher Avenue",
-   "b": "Chalet Drive",
-   "note_A": "Neither up-down street drawn; the only up-down feature is the blue creek strip crossing the avenue near x 8672, y 2193.",
-   "note_B": "Only AVENUE (Ross) and the blue-washed diagonal creek-like strip are drawn; no two up-down streets."
-  },
-  {
-   "id": "80-075",
-   "a": "Fisher Avenue",
-   "b": "East Ross Avenue",
-   "note_A": "No up-down street. Only the blue creek strip crosses the avenue (near x 8672, y 2193).",
-   "note_B": "Ross is drawn (AVENUE) but the only thing crossing it is a blue-washed diagonal creek-like strip (meets avenue centre near (8670, 2198)), plus a dashed sewer; cannot identify it as Fisher."
-  },
-  {
-   "id": "80-076",
-   "a": "Chalet Drive",
-   "b": "East Ross Avenue",
-   "note_A": "No up-down street. Only the blue creek strip crosses the avenue (near x 8672, y 2193).",
-   "note_B": "Ross is drawn (AVENUE) but the only thing crossing it is a blue-washed diagonal creek-like strip (meets avenue centre near (8670, 2198)); cannot identify it as Chalet."
-  },
-  {
-   "id": "80-077",
-   "a": "Heger Drive",
-   "b": "Chalet Drive",
-   "note_A": "Image is entirely blank paper; no streets drawn.",
-   "note_B": "Completely blank paper; no streets drawn."
-  },
-  {
-   "id": "80-078",
-   "a": "Heger Drive",
-   "b": "Chalet Drive",
-   "note_A": "Blank land down to the plate's lower border line (green-tinted edge, y about 5370-5450); no streets drawn.",
-   "note_B": "Blank paper down to the plate's bottom border (sloping line y~5365-5455 with green tint); no streets drawn."
-  },
-  {
-   "id": "80-085",
-   "a": "Martin Street",
+   "id": "80-096",
+   "a": "McClelland Avenue",
    "b": "Vine Street",
-   "note_A": "No street meets Vine near the image middle, only lot lines. The one side street in the image (about 190 px NE of middle, at ~1870,3822) is lettered CHUR.. and is Church Street, measured as 80-091.",
-   "note_B": "only one cross street in the image, a 20 ft street printed CHURCH meeting Vine near 1873,3825 (reported as 80-091); no separate Martin Street drawn or named"
+   "miss_m": 40.4
+  }
+ ],
+ "jogs": [
+  "80-023"
+ ],
+ "stations": 201,
+ "stations_read": 201,
+ "stations_disputed": [
+  {
+   "id": "80-t142",
+   "sid": "red-bud-avenue",
+   "name": "Red Bud Avenue",
+   "A": [
+    6690,
+    6895
+   ],
+   "B": [
+    6697,
+    6864
+   ]
+  }
+ ],
+ "runs": [
+  {
+   "sid": "advance-avenue",
+   "run": 1,
+   "rid": "advance-avenue/1",
+   "name": "Advance Avenue",
+   "t": [
+    0.0,
+    87.0
+   ],
+   "points": [
+    [
+     4728.0,
+     6393.0
+    ],
+    [
+     5153.0,
+     6406.0
+    ]
+   ],
+   "printed": [
+    "ADVANCE",
+    "ADVANC",
+    "AVE.",
+    "AVE.",
+    "AVE.",
+    "AVE."
+   ],
+   "start_open": false,
+   "end_open": true,
+   "start": null,
+   "end": {
+    "x": 5201.0,
+    "y": 6400.5,
+    "at": "creek/canal strip (green) with 48in sewer, east block line",
+    "id": "80-e001"
+   },
+   "name_1922": "Ave Avenue",
+   "name_from": "printed"
   },
   {
-   "id": "80-093",
-   "a": "Wess Park Drive",
-   "b": "East Mitchell Avenue",
-   "note_A": "No up-down street near the middle: land east of Bertus is one undivided tract (911 Stephen Hei..). Only Bertus is drawn (~110 px west of middle, see 80-092); Wess Park Drive not built.",
-   "note_B": "no street drawn north of Mitchell here; unbroken block line of the Stephen Heimert tract (911); only Bertus at far left (x about 2112)"
+   "sid": "albert-street#1",
+   "run": 1,
+   "rid": "albert-street#1/1",
+   "name": "Albert Street",
+   "t": [
+    0.0,
+    56.9,
+    113.9,
+    170.8
+   ],
+   "points": [
+    [
+     2136.5,
+     6210.0
+    ],
+    [
+     2419.0,
+     6220.0
+    ],
+    [
+     2698.0,
+     6234.0
+    ],
+    [
+     2976.0,
+     6257.5
+    ]
+   ],
+   "printed": [
+    "STREET",
+    "STREET",
+    "EET",
+    "(STR)EET"
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Albert Street",
+   "name_from": "today"
   },
   {
-   "id": "80-094",
-   "a": "Railroad Avenue",
-   "b": "Vine Street",
-   "note_A": "Only a railroad (two rails with ties) crosses Vine here at about (3215,505); no left-right street with block lines or a name is drawn. Vine itself is a stub at the plate top.",
-   "note_B": "only a double-track railroad crosses Vine here (about 3228,517); no street named or bounded by block lines alongside it"
+   "sid": "albert-street#2",
+   "run": 1,
+   "rid": "albert-street#2/1",
+   "name": "Albert Street",
+   "t": [
+    0.0,
+    60.9,
+    121.9
+   ],
+   "points": [
+    [
+     1539.0,
+     6130.0
+    ],
+    [
+     1841.0,
+     6142.5
+    ],
+    [
+     2138.5,
+     6165.0
+    ]
+   ],
+   "printed": [],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Albert Street",
+   "name_from": "today"
   },
   {
-   "id": "80-110",
-   "a": "East Mitchell Avenue",
-   "b": "Redwood Terrace",
-   "note_A": "only one side street in the image, a stub south of Mitchell at x~5853 which I assigned to Ardmore (80-111); north side of Mitchell is blank undivided land, no second street drawn",
-   "note_B": "only one side street in the image, a south stub at x 5852 (name illegible, ends ...FORD / AVE); it is nearer the expected Ardmore position and was used for 80-111; no second street for Redwood Terrace"
+   "sid": "bertus-street",
+   "run": 1,
+   "rid": "bertus-street/1",
+   "name": "Bertus Street",
+   "t": [
+    0.0,
+    62.2,
+    94.2,
+    102.5,
+    186.6,
+    211.8,
+    248.8,
+    307.3,
+    373.1,
+    426.8,
+    471.3,
+    497.5,
+    559.7,
+    559.7
+   ],
+   "points": [
+    [
+     2112.0,
+     6664.5
+    ],
+    [
+     2123.0,
+     6355.0
+    ],
+    [
+     2136.5,
+     6210.0
+    ],
+    [
+     2138.5,
+     6165.0
+    ],
+    [
+     2157.0,
+     5746.0
+    ],
+    [
+     2171.5,
+     5629.0
+    ],
+    [
+     2188.0,
+     5444.0
+    ],
+    [
+     2076.5,
+     5191.0
+    ],
+    [
+     1855.0,
+     4974.0
+    ],
+    [
+     1585.5,
+     4928.5
+    ],
+    [
+     1458.5,
+     4785.5
+    ],
+    [
+     1351.0,
+     4680.5
+    ],
+    [
+     1161.0,
+     4443.5
+    ],
+    [
+     1160.0,
+     4444.0
+    ]
+   ],
+   "printed": [
+    "BERTUS",
+    "BERTUS",
+    "BERTUS",
+    "BERTUS",
+    "RTUS",
+    "...RTUS",
+    "RTUS",
+    "...S",
+    "ST.",
+    "ST",
+    "ST.",
+    "ST.",
+    "ST.",
+    "ST.",
+    "BERTUS",
+    "BERTUS",
+    "BERTUS",
+    "BERTUS",
+    "BERTUS",
+    "BERTUS",
+    "BERTUS",
+    "BERTUS"
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Bertus Street",
+   "name_from": "printed"
+  },
+  {
+   "sid": "broermann-avenue",
+   "run": 1,
+   "rid": "broermann-avenue/1",
+   "name": "Broermann Avenue",
+   "t": [
+    0.0,
+    65.0,
+    195.0,
+    260.0,
+    325.0
+   ],
+   "points": [
+    [
+     5758.5,
+     1833.0
+    ],
+    [
+     5788.5,
+     1516.0
+    ],
+    [
+     5858.5,
+     885.0
+    ],
+    [
+     5899.5,
+     569.0
+    ],
+    [
+     5932.0,
+     266.5
+    ]
+   ],
+   "printed": [
+    "BROERM[ANN]",
+    "BROE (part of BROERMAN)",
+    "BROERMAN",
+    "BROERMAN",
+    "AVENUE.",
+    "AVENUE.",
+    "UE.",
+    "AVENUE.",
+    "AVENUE"
+   ],
+   "start_open": false,
+   "end_open": true,
+   "start": null,
+   "end": {
+    "x": 5930.0,
+    "y": 264.0,
+    "at": "block line / railroad property line",
+    "id": "80-e002"
+   },
+   "name_1922": "Broermann Avenue",
+   "name_from": "today"
+  },
+  {
+   "sid": "burnet-avenue",
+   "run": 1,
+   "rid": "burnet-avenue/1",
+   "name": "Burnet Avenue",
+   "t": [
+    0.0,
+    47.4,
+    94.9
+   ],
+   "points": [
+    [
+     2851.0,
+     5198.5
+    ],
+    [
+     2866.5,
+     4969.0
+    ],
+    [
+     2872.5,
+     4742.5
+    ]
+   ],
+   "printed": [
+    "BURNET",
+    "BURNET",
+    "BURNET AVE",
+    "BURNET AVE.",
+    "AVE",
+    "...RNET AVE"
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Burnet Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "church-street",
+   "run": 1,
+   "rid": "church-street/1",
+   "name": "Church Street",
+   "t": [
+    0.0,
+    61.2,
+    88.1,
+    122.4,
+    183.6,
+    285.0,
+    388.4,
+    428.3,
+    496.9,
+    550.7,
+    585.7,
+    590.7,
+    692.8,
+    734.2,
+    795.4,
+    856.6,
+    917.8,
+    978.9
+   ],
+   "points": [
+    [
+     1872.5,
+     3823.5
+    ],
+    [
+     2064.0,
+     4055.0
+    ],
+    [
+     2154.0,
+     4153.5
+    ],
+    [
+     2266.5,
+     4274.0
+    ],
+    [
+     2468.0,
+     4492.0
+    ],
+    [
+     2872.5,
+     4742.5
+    ],
+    [
+     3389.0,
+     4778.5
+    ],
+    [
+     3587.0,
+     4791.5
+    ],
+    [
+     3923.0,
+     4830.0
+    ],
+    [
+     4190.0,
+     4851.0
+    ],
+    [
+     4361.5,
+     4868.5
+    ],
+    [
+     4358.0,
+     4866.5
+    ],
+    [
+     4892.0,
+     4918.0
+    ],
+    [
+     5094.0,
+     4929.5
+    ],
+    [
+     5394.0,
+     4964.0
+    ],
+    [
+     5695.0,
+     4987.0
+    ],
+    [
+     5995.0,
+     5014.0
+    ],
+    [
+     6297.5,
+     5041.5
+    ]
+   ],
+   "printed": [
+    "CHUR",
+    "CHURCH",
+    "CHURCH",
+    "CHURCH",
+    "CHURCH",
+    "CHURCH",
+    "STREET",
+    "STREET",
+    "STREET",
+    "ET (end of STREET)"
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Church Street",
+   "name_from": "printed"
+  },
+  {
+   "sid": "clay-street",
+   "run": 1,
+   "rid": "clay-street/1",
+   "name": "Clay Street",
+   "t": [
+    50.3,
+    100.6,
+    150.9
+   ],
+   "points": [
+    [
+     3775.0,
+     1152.5
+    ],
+    [
+     3530.0,
+     1120.5
+    ],
+    [
+     3326.0,
+     1112.0
+    ]
+   ],
+   "printed": [
+    "ST.",
+    "ST.",
+    "AY",
+    "AY",
+    "CLAY",
+    "CLAY",
+    "ST.",
+    "ST.",
+    "CLAY",
+    "CLAY"
+   ],
+   "start_open": true,
+   "end_open": true,
+   "start": {
+    "x": 3980.0,
+    "y": 1150.0,
+    "at": "Miami-Erie canal (pink bank)",
+    "id": "80-e003"
+   },
+   "end": {
+    "x": 3091.5,
+    "y": 1109.0,
+    "at": "meets Vine Street (printed AVENUE) along plate edge",
+    "id": "80-e004"
+   },
+   "name_1922": "Clay Street",
+   "name_from": "printed"
+  },
+  {
+   "sid": "cleveland-avenue",
+   "run": 1,
+   "rid": "cleveland-avenue/1",
+   "name": "Cleveland Avenue",
+   "t": [
+    0.0,
+    63.9,
+    106.2,
+    213.1,
+    255.5,
+    319.4
+   ],
+   "points": [
+    [
+     3669.0,
+     2059.0
+    ],
+    [
+     3983.0,
+     2084.0
+    ],
+    [
+     4193.5,
+     2114.0
+    ],
+    [
+     4709.5,
+     2173.5
+    ],
+    [
+     4917.0,
+     2187.5
+    ],
+    [
+     5229.0,
+     2228.0
+    ]
+   ],
+   "printed": [
+    "CLEVE",
+    "CLEVELAND",
+    "CLEVELAND",
+    "CLEVELAND",
+    "LAND",
+    "(CLEV)ELAND",
+    "R AVEN",
+    "R AVENUE",
+    "R AVENUE",
+    "AVENUE",
+    "AVENUE"
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Cleveland Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "delmar-avenue#1",
+   "run": 1,
+   "rid": "delmar-avenue#1/1",
+   "name": "Delmar Avenue",
+   "t": [
+    0.0,
+    58.6,
+    171.0,
+    236.9,
+    258.5,
+    292.9,
+    347.4,
+    410.0,
+    436.2,
+    468.6,
+    527.2
+   ],
+   "points": [
+    [
+     2171.5,
+     5629.0
+    ],
+    [
+     2461.0,
+     5639.5
+    ],
+    [
+     3012.0,
+     5669.5
+    ],
+    [
+     3337,
+     5689
+    ],
+    [
+     3443,
+     5698
+    ],
+    [
+     3612.0,
+     5708.0
+    ],
+    [
+     3883.0,
+     5726.5
+    ],
+    [
+     4188.0,
+     5737.5
+    ],
+    [
+     4311.5,
+     5750.5
+    ],
+    [
+     4477.0,
+     5758.0
+    ],
+    [
+     4771.5,
+     5779.0
+    ]
+   ],
+   "printed": [
+    "DE",
+    "DELM...",
+    "DELMAR",
+    "DELMAR",
+    "STREE",
+    "STREET",
+    "STREET",
+    "STREET",
+    "STREET",
+    "STREET"
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Delmar Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "east-mitchell-avenue",
+   "run": 1,
+   "rid": "east-mitchell-avenue/1",
+   "name": "East Mitchell Avenue",
+   "t": [
+    0.0,
+    0.0,
+    59.2,
+    118.4,
+    177.6,
+    236.8,
+    300.8,
+    355.2,
+    424.0,
+    473.6,
+    532.9,
+    594.7,
+    651.3,
+    685.3,
+    685.3,
+    710.5,
+    772.8,
+    791.9,
+    828.9,
+    860.6,
+    897.8,
+    951.6,
+    1005.3,
+    1065.7,
+    1101.3,
+    1189.7,
+    1243.3,
+    1302.5,
+    1341.6
+   ],
+   "points": [
+    [
+     69.5,
+     7038.0
+    ],
+    [
+     69.0,
+     7038.5
+    ],
+    [
+     354.0,
+     6941.5
+    ],
+    [
+     632.0,
+     6872.0
+    ],
+    [
+     911.0,
+     6762.5
+    ],
+    [
+     1191.0,
+     6660.0
+    ],
+    [
+     1510.5,
+     6626.5
+    ],
+    [
+     1770.0,
+     6638.5
+    ],
+    [
+     2112.0,
+     6664.5
+    ],
+    [
+     2351.0,
+     6680.0
+    ],
+    [
+     2640.0,
+     6695.0
+    ],
+    [
+     2945.5,
+     6720.5
+    ],
+    [
+     3218.0,
+     6730.5
+    ],
+    [
+     3381.0,
+     6749.0
+    ],
+    [
+     3383.5,
+     6749.0
+    ],
+    [
+     3508.0,
+     6752.0
+    ],
+    [
+     3815.0,
+     6775.0
+    ],
+    [
+     3906.5,
+     6780.0
+    ],
+    [
+     4090.0,
+     6786.5
+    ],
+    [
+     4246.0,
+     6802.5
+    ],
+    [
+     4427.5,
+     6815.5
+    ],
+    [
+     4700.0,
+     6832.5
+    ],
+    [
+     4965.5,
+     6853.5
+    ],
+    [
+     5253.0,
+     6871.0
+    ],
+    [
+     5423.5,
+     6893.5
+    ],
+    [
+     5852.5,
+     6928.5
+    ],
+    [
+     6117.0,
+     6942.5
+    ],
+    [
+     6394.0,
+     7053.5
+    ],
+    [
+     6491.5,
+     7137.5
+    ]
+   ],
+   "printed": [
+    "MITCHELL",
+    "MITCHELL",
+    "MITCHELL",
+    "MITCHELL",
+    "MITCHE",
+    "MITCHELL",
+    "CHELL",
+    "CHELL",
+    "AVENUE",
+    "AVENUE"
+   ],
+   "start_open": false,
+   "end_open": true,
+   "start": null,
+   "end": {
+    "x": 6493.0,
+    "y": 7125.0,
+    "at": "plate edge",
+    "id": "80-e005"
+   },
+   "name_1922": "Mitchell Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "east-ross-avenue",
+   "run": 1,
+   "rid": "east-ross-avenue/1",
+   "name": "East Ross Avenue",
+   "t": [
+    0.0,
+    61.0,
+    136.5,
+    183.1,
+    243.2,
+    305.2,
+    349.3,
+    427.2,
+    456.4,
+    488.3,
+    555.2,
+    610.4,
+    671.4,
+    723.4,
+    793.5,
+    854.5,
+    915.5,
+    976.6,
+    1098.6
+   ],
+   "points": [
+    [
+     3059.0,
+     1534.0
+    ],
+    [
+     3351.0,
+     1554.0
+    ],
+    [
+     3716.5,
+     1608.0
+    ],
+    [
+     3947.0,
+     1628.0
+    ],
+    [
+     4240.0,
+     1665.0
+    ],
+    [
+     4543.0,
+     1695.5
+    ],
+    [
+     4759.5,
+     1723.5
+    ],
+    [
+     5137.0,
+     1752.0
+    ],
+    [
+     5278.5,
+     1778.5
+    ],
+    [
+     5433.0,
+     1786.0
+    ],
+    [
+     5758.5,
+     1833.0
+    ],
+    [
+     6025.0,
+     1859.5
+    ],
+    [
+     6321.0,
+     1894.0
+    ],
+    [
+     6571.5,
+     1930.0
+    ],
+    [
+     6914.0,
+     1970.0
+    ],
+    [
+     7211.0,
+     1990.5
+    ],
+    [
+     7508.0,
+     2025.0
+    ],
+    [
+     7805.0,
+     2062.5
+    ],
+    [
+     8400.0,
+     2136.5
+    ],
+    [
+     8912.5,
+     2225.5
+    ]
+   ],
+   "printed": [
+    "ROS",
+    "R",
+    "ROSS",
+    "ROSS",
+    "AVENUE.",
+    "AVENUE.",
+    "AVENUE.",
+    "AVENUE."
+   ],
+   "start_open": false,
+   "end_open": true,
+   "start": null,
+   "end": {
+    "x": 9172.0,
+    "y": 2257.5,
+    "at": "plate edge",
+    "id": "80-e036"
+   },
+   "end_more": [
+    8912.5,
+    2225.5
+   ],
+   "name_1922": "Ross Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "errun-lane",
+   "run": 1,
+   "rid": "errun-lane/1",
+   "name": "Errun Lane",
+   "t": [
+    0.0
+   ],
+   "points": [
+    [
+     4358.0,
+     4866.5
+    ]
+   ],
+   "printed": [
+    "KEMPE",
+    "KEMPER"
+   ],
+   "start_open": false,
+   "end_open": true,
+   "start": null,
+   "end": {
+    "x": 4359.0,
+    "y": 4891.5,
+    "at": "south block line of E-W street (lane ends at the street)",
+    "id": "80-e007"
+   },
+   "name_1922": "Errun Lane",
+   "name_from": "today"
+  },
+  {
+   "sid": "franklin-avenue#1",
+   "run": 1,
+   "rid": "franklin-avenue#1/1",
+   "name": "Franklin Avenue",
+   "t": [
+    0.0,
+    60.4,
+    102.7,
+    181.1,
+    208.4,
+    241.4,
+    301.8
+   ],
+   "points": [
+    [
+     3449.0,
+     4084.5
+    ],
+    [
+     3754.0,
+     4107.5
+    ],
+    [
+     3974.5,
+     4140.5
+    ],
+    [
+     4344.0,
+     4170.0
+    ],
+    [
+     4474.5,
+     4193.5
+    ],
+    [
+     4637.0,
+     4207.0
+    ],
+    [
+     4932.0,
+     4238.5
+    ]
+   ],
+   "printed": [
+    "FRANK",
+    "FRANK...",
+    "FRANKLIN",
+    "FRANKLIN",
+    "FRANKLIN",
+    "(FR)ANKLIN",
+    "STREET",
+    "STRE(ET)",
+    "STREET",
+    "STREET",
+    "STREET",
+    "REET"
+   ],
+   "start_open": false,
+   "end_open": true,
+   "start": null,
+   "end": {
+    "x": 5015.0,
+    "y": 4244.5,
+    "at": "meets N-S avenue (60in sewer) centre",
+    "id": "80-e008"
+   },
+   "name_1922": "Franklin Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "greenlee-avenue",
+   "run": 1,
+   "rid": "greenlee-avenue/1",
+   "name": "Greenlee Avenue",
+   "t": [
+    0.0,
+    61.2,
+    93.2,
+    122.4,
+    215.5,
+    244.9,
+    307.3,
+    367.3,
+    394.4,
+    428.6,
+    482.4,
+    551.0,
+    581.3,
+    612.2,
+    672.6,
+    734.7,
+    764.8,
+    795.9,
+    855.7,
+    918.3,
+    948.4,
+    979.6,
+    1040.8
+   ],
+   "points": [
+    [
+     4700.0,
+     6832.5
+    ],
+    [
+     4716.5,
+     6538.0
+    ],
+    [
+     4728.0,
+     6393.0
+    ],
+    [
+     4742.0,
+     6240.0
+    ],
+    [
+     4771.5,
+     5779.0
+    ],
+    [
+     4782.0,
+     5641.0
+    ],
+    [
+     4822.0,
+     5346.0
+    ],
+    [
+     4872.0,
+     5048.0
+    ],
+    [
+     4892.0,
+     4918.0
+    ],
+    [
+     4916.5,
+     4749.0
+    ],
+    [
+     4963.0,
+     4482.5
+    ],
+    [
+     5012.0,
+     4151.0
+    ],
+    [
+     5030.5,
+     3997.0
+    ],
+    [
+     5048.0,
+     3854.0
+    ],
+    [
+     5078.0,
+     3562.0
+    ],
+    [
+     5107.0,
+     3263.0
+    ],
+    [
+     5127.5,
+     3119.0
+    ],
+    [
+     5140.0,
+     2967.0
+    ],
+    [
+     5182.0,
+     2672.0
+    ],
+    [
+     5215.0,
+     2373.0
+    ],
+    [
+     5229.0,
+     2228.0
+    ],
+    [
+     5248.5,
+     2076.0
+    ],
+    [
+     5278.5,
+     1778.5
+    ]
+   ],
+   "printed": [
+    "GRE... (partial)",
+    "GREE...",
+    "GREENLEE",
+    "GREENLEE",
+    "GREENL",
+    "EE-N-EE (letters stacked along street)",
+    "AVEN",
+    "AVENUE",
+    "AVENUE",
+    "AVENUE",
+    "AV UE.",
+    "UE."
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Greenlee Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "imwalle-avenue",
+   "run": 1,
+   "rid": "imwalle-avenue/1",
+   "name": "Imwalle Avenue",
+   "t": [
+    0.0,
+    67.2,
+    201.7
+   ],
+   "points": [
+    [
+     6571.5,
+     1930.0
+    ],
+    [
+     6604.5,
+     1602.0
+    ],
+    [
+     6681.0,
+     949.0
+    ]
+   ],
+   "printed": [
+    "IMWA[LLE]",
+    "IMWA (part of IMWALLE)",
+    "IMWALLE",
+    "IMWALLE",
+    "ST.",
+    "ST."
+   ],
+   "start_open": false,
+   "end_open": true,
+   "start": null,
+   "end": {
+    "x": 6690.0,
+    "y": 672.5,
+    "at": "railroad right of way",
+    "id": "80-e009"
+   },
+   "name_1922": "Imwalle Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "jackson-avenue",
+   "run": 1,
+   "rid": "jackson-avenue/1",
+   "name": "Jackson Avenue",
+   "t": [
+    0.0,
+    63.9,
+    106.4,
+    212.8,
+    255.4,
+    319.3
+   ],
+   "points": [
+    [
+     3522.0,
+     3397.5
+    ],
+    [
+     3835.0,
+     3419.0
+    ],
+    [
+     4048.5,
+     3450.5
+    ],
+    [
+     4553.0,
+     3508.0
+    ],
+    [
+     4765.0,
+     3528.0
+    ],
+    [
+     5078.0,
+     3562.0
+    ]
+   ],
+   "printed": [
+    "JACK",
+    "JACKSON",
+    "JACKSON",
+    "JACKSON",
+    "KSON",
+    "STR",
+    "S",
+    "STREET",
+    "STREET",
+    "STREET",
+    "STREET"
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Jackson Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "jefferson-avenue",
+   "run": 1,
+   "rid": "jefferson-avenue/1",
+   "name": "Jefferson Avenue",
+   "t": [
+    0.0,
+    63.4,
+    103.6,
+    210.0,
+    253.6,
+    317.0
+   ],
+   "points": [
+    [
+     3476.5,
+     3832.5
+    ],
+    [
+     3795.0,
+     3849.5
+    ],
+    [
+     4003.5,
+     3884.5
+    ],
+    [
+     4504.0,
+     3941.0
+    ],
+    [
+     4720.0,
+     3960.5
+    ],
+    [
+     5030.5,
+     3997.0
+    ]
+   ],
+   "printed": [
+    "JEFF",
+    "JEF...",
+    "JEFFERSON",
+    "JEFFERSON",
+    "JEFFERSON",
+    "(JE)FFERSON",
+    "STRE",
+    "STREET",
+    "STREET",
+    "STREET",
+    "STREET",
+    "STREET"
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Jefferson Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "kemper-avenue",
+   "run": 1,
+   "rid": "kemper-avenue/1",
+   "name": "Kemper Avenue",
+   "t": [
+    0.0,
+    59.0,
+    138.0,
+    190.0,
+    236.0,
+    282.4,
+    373.2,
+    412.9,
+    464.4,
+    530.9,
+    556.3,
+    589.9,
+    648.9
+   ],
+   "points": [
+    [
+     4361.5,
+     4868.5
+    ],
+    [
+     4404.0,
+     4579.0
+    ],
+    [
+     4474.5,
+     4193.5
+    ],
+    [
+     4504.0,
+     3941.0
+    ],
+    [
+     4531.0,
+     3723.0
+    ],
+    [
+     4553.0,
+     3508.0
+    ],
+    [
+     4599.5,
+     3065.0
+    ],
+    [
+     4626.0,
+     2869.0
+    ],
+    [
+     4657.5,
+     2620.5
+    ],
+    [
+     4692.5,
+     2296.0
+    ],
+    [
+     4709.5,
+     2173.5
+    ],
+    [
+     4730.0,
+     2009.0
+    ],
+    [
+     4759.5,
+     1723.5
+    ]
+   ],
+   "printed": [
+    "KEM",
+    "KEM(PER)",
+    "KEMPER",
+    "KEMPER",
+    "AVENUE.",
+    "AVENU",
+    "AVENUE.",
+    "AVENUE.",
+    "ENUE.",
+    "NUE."
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Kemper Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "langley-avenue",
+   "run": 1,
+   "rid": "langley-avenue/1",
+   "name": "Langley Avenue",
+   "t": [
+    0.0,
+    53.8,
+    107.6,
+    161.5,
+    215.3
+   ],
+   "points": [
+    [
+     4246.0,
+     6802.5
+    ],
+    [
+     4263.5,
+     6542.0
+    ],
+    [
+     4278.5,
+     6279.0
+    ],
+    [
+     4297.5,
+     6016.0
+    ],
+    [
+     4311.5,
+     5750.5
+    ]
+   ],
+   "printed": [
+    "LANGE... (partial)",
+    "LANGE...",
+    "LANGLEY",
+    "LANGLEY",
+    "AVE.",
+    "AVE.",
+    "AVE",
+    "AVE"
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Ave Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "leonard-avenue#1",
+   "run": 1,
+   "rid": "leonard-avenue#1/1",
+   "name": "Leonard Avenue",
+   "t": [
+    0.0,
+    58.8,
+    100.0,
+    176.4,
+    235.2,
+    294.0
+   ],
+   "points": [
+    [
+     1510.5,
+     6626.5
+    ],
+    [
+     1523.5,
+     6333.0
+    ],
+    [
+     1539.0,
+     6130.0
+    ],
+    [
+     1566.5,
+     5749.0
+    ],
+    [
+     1585.0,
+     5462.0
+    ],
+    [
+     1591.5,
+     5172.5
+    ]
+   ],
+   "printed": [
+    "LEONARD",
+    "LEONAR",
+    "LEONARD",
+    "LEONARD",
+    "LEONARD",
+    "...ARD",
+    "AVE.",
+    "AVE.",
+    "AVE.",
+    "AVE"
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Leonard Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "mcclelland-avenue",
+   "run": 1,
+   "rid": "mcclelland-avenue/1",
+   "name": "McClelland Avenue",
+   "t": [
+    0.0,
+    57.9,
+    107.4,
+    173.7,
+    213.5,
+    289.5,
+    320.6,
+    347.4
+   ],
+   "points": [
+    [
+     5182.0,
+     2672.0
+    ],
+    [
+     4897.0,
+     2637.0
+    ],
+    [
+     4657.5,
+     2620.5
+    ],
+    [
+     4335.0,
+     2583.0
+    ],
+    [
+     4141.5,
+     2560.0
+    ],
+    [
+     3770.0,
+     2515.5
+    ],
+    [
+     3621.5,
+     2504.0
+    ],
+    [
+     3486.0,
+     2484.5
+    ]
+   ],
+   "printed": [
+    "AVENUE",
+    "AVENUE",
+    "AVENUE",
+    "AVENUE",
+    "AVEN",
+    "AVE",
+    "LAND",
+    "(Mc)CLELLAND",
+    "McCLELLAN",
+    "McCLELLAN",
+    "McCLEL",
+    "McCLELLA(N)"
+   ],
+   "start_open": false,
+   "end_open": true,
+   "start": null,
+   "end": null,
+   "name_1922": "McClelland Avenue",
+   "name_from": "today"
+  },
+  {
+   "sid": "meadow-avenue",
+   "run": 1,
+   "rid": "meadow-avenue/1",
+   "name": "Meadow Avenue",
+   "t": [
+    0.0,
+    52.1,
+    104.1
+   ],
+   "points": [
+    [
+     2851.0,
+     5198.5
+    ],
+    [
+     3103.0,
+     5215.5
+    ],
+    [
+     3363.0,
+     5234.0
+    ]
+   ],
+   "printed": [
+    "MEADOW",
+    "MEADOW",
+    "MEADOW ST.",
+    "MEADOW ST.",
+    "ST.",
+    "ST. (name not in piece)"
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Meadow Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "orchard-street",
+   "run": 1,
+   "rid": "orchard-street/1",
+   "name": "Orchard Street",
+   "t": [
+    0.0,
+    57.0,
+    114.0,
+    189.7,
+    228.1,
+    285.1
+   ],
+   "points": [
+    [
+     690.0,
+     5030.5
+    ],
+    [
+     965.0,
+     5066.0
+    ],
+    [
+     1239.0,
+     5109.0
+    ],
+    [
+     1591.5,
+     5172.5
+    ],
+    [
+     1788.0,
+     5181.5
+    ],
+    [
+     2076.5,
+     5191.0
+    ]
+   ],
+   "printed": [
+    "ORCHAR",
+    "ORCHAR",
+    "ORCHARD",
+    "ORCHARD",
+    "SCHROEDER'S",
+    "SCHROEDER'S ST",
+    "...DER ST",
+    "DER ST.",
+    "ST.",
+    "ST (Schroeder's St)"
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Orchard Street",
+   "name_from": "printed"
+  },
+  {
+   "sid": "park-place",
+   "run": 1,
+   "rid": "park-place/1",
+   "name": "Park Place",
+   "t": [
+    0.0,
+    64.3,
+    128.6,
+    192.9
+   ],
+   "points": [
+    [
+     1458.5,
+     4785.5
+    ],
+    [
+     1686.0,
+     4566.5
+    ],
+    [
+     1919.0,
+     4359.5
+    ],
+    [
+     2154.0,
+     4153.5
+    ]
+   ],
+   "printed": [
+    "PARK",
+    "PARK",
+    "PARK",
+    "PARK",
+    "PL.",
+    "PL.",
+    "PL.",
+    "PL."
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Park Place",
+   "name_from": "printed"
+  },
+  {
+   "sid": "rose-hill-avenue#1",
+   "run": 1,
+   "rid": "rose-hill-avenue#1/1",
+   "name": "Rose Hill Avenue",
+   "t": [
+    1087.8,
+    1163.8,
+    1225.1,
+    1265.4,
+    1347.6
+   ],
+   "points": [
+    [
+     6872.0,
+     6639.0
+    ],
+    [
+     6717.5,
+     6375.0
+    ],
+    [
+     6679.0,
+     6080.0
+    ],
+    [
+     6702.5,
+     5887.0
+    ],
+    [
+     6742.0,
+     5471.0
+    ]
+   ],
+   "printed": [
+    "ROSE",
+    "ROSE",
+    "ROSE HILL",
+    "ROSE HILL",
+    "HILL",
+    "HILL",
+    "AVE.",
+    "AVE.",
+    "...VE. (partial)",
+    "AVE."
+   ],
+   "start_open": true,
+   "end_open": false,
+   "start": {
+    "x": 6872.0,
+    "y": 6719.0,
+    "at": "plate edge",
+    "id": "80-e011"
+   },
+   "end": null,
+   "name_1922": "Ave Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "rose-hill-avenue#2",
+   "run": 1,
+   "rid": "rose-hill-avenue#2/1",
+   "name": "Rose Hill Avenue",
+   "t": [
+    59.9,
+    119.8,
+    179.6,
+    239.5,
+    299.4
+   ],
+   "points": [
+    [
+     6515.0,
+     5464.0
+    ],
+    [
+     6000.0,
+     5430.0
+    ],
+    [
+     5707.0,
+     5409.5
+    ],
+    [
+     5413.0,
+     5382.0
+    ],
+    [
+     5118.0,
+     5362.0
+    ],
+    [
+     4822.0,
+     5346.0
+    ]
+   ],
+   "printed": [
+    "ROSE HILL",
+    "ROSE HILL",
+    "ROS",
+    "ROSE",
+    "AVE",
+    "AVE",
+    "AVE",
+    "AVE"
+   ],
+   "start_open": true,
+   "end_open": false,
+   "start": {
+    "x": 6903.5,
+    "y": 5446.0,
+    "at": "plate edge",
+    "id": "80-e037"
+   },
+   "end": null,
+   "start_more": [
+    6515.0,
+    5464.0
+   ],
+   "name_1922": "Ave Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "rose-hill-lane",
+   "run": 1,
+   "rid": "rose-hill-lane/1",
+   "name": "Rose Hill Lane",
+   "t": [
+    0.0,
+    110.6,
+    165.8
+   ],
+   "points": [
+    [
+     6741.0,
+     5471.0
+    ]
+   ],
+   "printed": [
+    "AVE (partial)",
+    "AVE",
+    "ROSE HILL AV.",
+    "ROSE HILL AV.",
+    "[RO]SE HILL AVE",
+    "ROSE HILL AVE."
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Rose Hill Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "scenic-avenue",
+   "run": 1,
+   "rid": "scenic-avenue/1",
+   "name": "Scenic Avenue",
+   "t": [
+    0.0,
+    78.8
+   ],
+   "points": [
+    [
+     4963.0,
+     4482.5
+    ],
+    [
+     5327.0,
+     4510.5
+    ]
+   ],
+   "printed": [
+    "SCENIC",
+    "SCENIC AVE",
+    "SCENIC AVE.",
+    "AVE",
+    "AVE"
+   ],
+   "start_open": false,
+   "end_open": true,
+   "start": null,
+   "end": {
+    "x": 5326.5,
+    "y": 4517.5,
+    "at": "east block line (blank land / green strip beyond)",
+    "id": "80-e013"
+   },
+   "name_1922": "Scenic Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "sullivan-avenue",
+   "run": 1,
+   "rid": "sullivan-avenue/1",
+   "name": "Sullivan Avenue",
+   "t": [
+    0.0,
+    58.4,
+    116.8,
+    175.2,
+    214.7,
+    292.1,
+    350.5,
+    398.6,
+    467.3,
+    540.2,
+    592.1,
+    642.5,
+    682.8,
+    775.0,
+    817.8,
+    866.9,
+    957.7,
+    993.0,
+    1051.4
+   ],
+   "points": [
+    [
+     3815.0,
+     6775.0
+    ],
+    [
+     3834.5,
+     6489.0
+    ],
+    [
+     3847.5,
+     6203.0
+    ],
+    [
+     3867.0,
+     5918.0
+    ],
+    [
+     3883.0,
+     5726.5
+    ],
+    [
+     3899.0,
+     5348.0
+    ],
+    [
+     3913.5,
+     5063.0
+    ],
+    [
+     3923.0,
+     4830.0
+    ],
+    [
+     3945.0,
+     4493.0
+    ],
+    [
+     3974.5,
+     4140.5
+    ],
+    [
+     4003.5,
+     3884.5
+    ],
+    [
+     4026.0,
+     3644.0
+    ],
+    [
+     4048.5,
+     3450.5
+    ],
+    [
+     4094.0,
+     3005.5
+    ],
+    [
+     4116.5,
+     2798.0
+    ],
+    [
+     4141.5,
+     2560.0
+    ],
+    [
+     4193.5,
+     2114.0
+    ],
+    [
+     4210.5,
+     1946.0
+    ],
+    [
+     4240.0,
+     1665.0
+    ]
+   ],
+   "printed": [
+    "SUL... (partial)",
+    "SUL...",
+    "SULLIVAN",
+    "SULLIVAN",
+    "AVENUE",
+    "AVEN(UE)",
+    "AVENUE",
+    "AVENUE",
+    "ENUE",
+    "AVENUE"
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Sullivan Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "tennessee-avenue",
+   "run": 1,
+   "rid": "tennessee-avenue/1",
+   "name": "Tennessee Avenue",
+   "t": [
+    58.6
+   ],
+   "points": [
+    [
+     7440.0,
+     2062.5
+    ],
+    [
+     8982.0,
+     2232.0
+    ]
+   ],
+   "printed": [
+    "...NUE.",
+    "NUE.",
+    "AVENUE.",
+    "AVENUE.",
+    "T",
+    "T"
+   ],
+   "start_open": true,
+   "end_open": true,
+   "start": {
+    "x": 7956.6,
+    "y": 2081.4,
+    "at": "runs into East Ross Avenue",
+    "id": "80-e038"
+   },
+   "end": {
+    "x": 9170.5,
+    "y": 2257.0,
+    "at": "plate edge",
+    "id": "80-e015"
+   },
+   "start_more": [
+    7440.0,
+    2062.5
+   ],
+   "name_1922": "Tennessee Avenue",
+   "name_from": "today"
+  },
+  {
+   "sid": "tower-avenue",
+   "run": 1,
+   "rid": "tower-avenue/1",
+   "name": "Tower Avenue",
+   "t": [
+    0.0,
+    0.0,
+    61.1,
+    122.1,
+    183.2,
+    214.3,
+    223.6,
+    244.3,
+    313.0,
+    366.4,
+    405.3,
+    488.6,
+    550.2,
+    600.8,
+    693.5,
+    732.9,
+    785.0,
+    876.5,
+    916.1,
+    967.3,
+    1060.7
+   ],
+   "points": [
+    [
+     3382.5,
+     6749.0
+    ],
+    [
+     3383.5,
+     6749.0
+    ],
+    [
+     3401.5,
+     6447.0
+    ],
+    [
+     3418.5,
+     6147.0
+    ],
+    [
+     3441.5,
+     5848.0
+    ],
+    [
+     3443,
+     5698
+    ],
+    [
+     3337,
+     5689
+    ],
+    [
+     3352.0,
+     5559.0
+    ],
+    [
+     3363.0,
+     5234.0
+    ],
+    [
+     3381.0,
+     4971.0
+    ],
+    [
+     3389.0,
+     4778.5
+    ],
+    [
+     3422.0,
+     4378.0
+    ],
+    [
+     3449.0,
+     4084.5
+    ],
+    [
+     3476.5,
+     3832.5
+    ],
+    [
+     3522.0,
+     3397.5
+    ],
+    [
+     3539.5,
+     3199.0
+    ],
+    [
+     3570.0,
+     2941.5
+    ],
+    [
+     3621.5,
+     2504.0
+    ],
+    [
+     3644.0,
+     2309.0
+    ],
+    [
+     3669.0,
+     2059.0
+    ],
+    [
+     3716.5,
+     1608.0
+    ]
+   ],
+   "printed": [
+    "TOWER",
+    "TOWER",
+    "TOWER",
+    "TOWER",
+    "TOWER",
+    "TOWER",
+    "AVE.",
+    "AVE.",
+    "TOWER",
+    "TOWER",
+    "TOWER",
+    "TOWER",
+    "AVENUE",
+    "AVENUE",
+    "AVENUE",
+    "AVENUE"
+   ],
+   "start_open": false,
+   "end_open": true,
+   "start": null,
+   "end": {
+    "x": 3716.0,
+    "y": 1594.0,
+    "at": "north block line of E-W street (canal property beyond)",
+    "id": "80-e016"
+   },
+   "name_1922": "Tower Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "vine-street",
+   "run": 1,
+   "rid": "vine-street/1",
+   "name": "Vine Street",
+   "t": [
+    1322.3,
+    1322.3,
+    1382.0,
+    1442.1,
+    1502.2,
+    1534.9,
+    1562.3,
+    1630.7,
+    1682.5,
+    1741.6,
+    1802.7,
+    1862.7,
+    1894.0,
+    1894.0,
+    1922.8,
+    1982.9,
+    2090.0,
+    2163.2,
+    2224.6,
+    2283.4,
+    2320.2,
+    2375.4,
+    2403.5,
+    2523.7,
+    2583.8,
+    2665.4,
+    2704.0,
+    2764.1,
+    2824.2,
+    2884.3
+   ],
+   "points": [
+    [
+     482.5,
+     5515.0
+    ],
+    [
+     317.5,
+     6025.0
+    ],
+    [
+     69.5,
+     7037.0
+    ],
+    [
+     69.0,
+     7038.5
+    ],
+    [
+     160.0,
+     6736.0
+    ],
+    [
+     235.5,
+     6449.0
+    ],
+    [
+     316.0,
+     6161.0
+    ],
+    [
+     374.0,
+     5994.5
+    ],
+    [
+     413.0,
+     5869.0
+    ],
+    [
+     523.0,
+     5530.0
+    ],
+    [
+     593.5,
+     5295.0
+    ],
+    [
+     690.0,
+     5030.5
+    ],
+    [
+     832.5,
+     4761.5
+    ],
+    [
+     1047.5,
+     4541.0
+    ],
+    [
+     1161.0,
+     4443.5
+    ],
+    [
+     1159.0,
+     4444.5
+    ],
+    [
+     1261.0,
+     4358.5
+    ],
+    [
+     1481.5,
+     4165.5
+    ],
+    [
+     1872.5,
+     3823.5
+    ],
+    [
+     2133.5,
+     3605.0
+    ],
+    [
+     2360.5,
+     3400.0
+    ],
+    [
+     2575.5,
+     3222.0
+    ],
+    [
+     2731.0,
+     3113.5
+    ],
+    [
+     2926.5,
+     2974.5
+    ],
+    [
+     2967.0,
+     2806.0
+    ],
+    [
+     3014.5,
+     2219.0
+    ],
+    [
+     3037.5,
+     1925.0
+    ],
+    [
+     3059.0,
+     1534.0
+    ],
+    [
+     3080.0,
+     1336.0
+    ],
+    [
+     3125.5,
+     1048.0
+    ],
+    [
+     3207.5,
+     765.0
+    ],
+    [
+     3227.5,
+     477.0
+    ]
+   ],
+   "printed": [
+    "CARTHA",
+    "CARTHA",
+    "CARTHA",
+    "CARTHA",
+    "CARTHAG",
+    "CARTHAGE",
+    "AVE",
+    "AVE",
+    "AVENUE",
+    "AVENUE",
+    "AVENUE (partial)",
+    "AVENUE",
+    "CA..  ..NUE / AVE.",
+    "CARTH / AVENUE",
+    "CART",
+    "CART",
+    "AVENUE",
+    "AVENUE",
+    "AVENUE",
+    "AVENUE",
+    "CARTHAGE",
+    "CARTHAGE",
+    "...AGE",
+    "AGE"
+   ],
+   "start_open": true,
+   "end_open": true,
+   "start": null,
+   "end": {
+    "x": 3223.5,
+    "y": 350.0,
+    "at": "plate edge",
+    "id": "80-e018"
+   },
+   "start_more": [
+    482.5,
+    5515.0
+   ],
+   "name_1922": "Carthage Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "washington-avenue",
+   "run": 1,
+   "rid": "washington-avenue/1",
+   "name": "Washington Avenue",
+   "t": [
+    0.0,
+    64.1,
+    129.4,
+    192.3,
+    236.3,
+    342.2,
+    384.5,
+    448.6
+   ],
+   "points": [
+    [
+     2926.5,
+     2974.5
+    ],
+    [
+     3246.0,
+     2919.0
+    ],
+    [
+     3570.0,
+     2941.5
+    ],
+    [
+     3879.0,
+     2970.0
+    ],
+    [
+     4094.0,
+     3005.5
+    ],
+    [
+     4599.5,
+     3065.0
+    ],
+    [
+     4813.0,
+     3089.5
+    ],
+    [
+     5127.5,
+     3119.0
+    ]
+   ],
+   "printed": [
+    "WASHINGTO",
+    "WASHINGT",
+    "WASHINGTON",
+    "WASHINGTON",
+    "NGTON",
+    "...STON",
+    "STR",
+    "ST",
+    "STREET",
+    "STREET",
+    "STREET",
+    "STREET"
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Washington Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "zetta-avenue",
+   "run": 1,
+   "rid": "zetta-avenue/1",
+   "name": "Zetta Avenue",
+   "t": [
+    0.0,
+    53.5,
+    94.7,
+    160.5,
+    214.0
+   ],
+   "points": [
+    [
+     2945.5,
+     6720.5
+    ],
+    [
+     2961.5,
+     6456.0
+    ],
+    [
+     2976.0,
+     6257.5
+    ],
+    [
+     2999.0,
+     5931.0
+    ],
+    [
+     3012.0,
+     5669.5
+    ]
+   ],
+   "printed": [
+    "ZETTA",
+    "ZETTA",
+    "ZETTA",
+    "ZETTA",
+    "TTA",
+    "(Z)ETTA",
+    "AVE",
+    "AVE.",
+    "AVE",
+    "AVE (name not in piece)"
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Zetta Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "leonard-avenue#2",
+   "run": 1,
+   "rid": "leonard-avenue#2/1",
+   "name": "Leonard Avenue",
+   "t": [
+    50.5
+   ],
+   "points": [
+    [
+     1585.5,
+     4928.5
+    ]
+   ],
+   "printed": [
+    "AVE.",
+    "AVE.",
+    "LEONARD",
+    "LEONARD"
+   ],
+   "start_open": true,
+   "end_open": false,
+   "start": {
+    "x": 1517.5,
+    "y": 6469.4,
+    "at": "runs into Leonard Avenue",
+    "id": "80-e045"
+   },
+   "end": null,
+   "name_1922": "Ave Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "kessler-avenue",
+   "run": 1,
+   "rid": "kessler-avenue/1",
+   "name": "Kessler Avenue",
+   "t": [
+    413.4
+   ],
+   "points": [
+    [
+     523.0,
+     5530.0
+    ]
+   ],
+   "printed": [
+    "ST.",
+    "ST.",
+    "ST.",
+    "ST."
+   ],
+   "start_open": true,
+   "end_open": false,
+   "start": {
+    "x": 380.0,
+    "y": 5526.0,
+    "at": "plate edge",
+    "id": "80-e020"
+   },
+   "end": null,
+   "name_1922": "Kessler Avenue",
+   "name_from": "today"
+  },
+  {
+   "sid": "wuest-street",
+   "run": 1,
+   "rid": "wuest-street/1",
+   "name": "Wuest Street",
+   "t": [
+    194.2
+   ],
+   "points": [
+    [
+     374.0,
+     5994.5
+    ]
+   ],
+   "printed": [
+    "ST.",
+    "ST.",
+    "ST.",
+    "ST."
+   ],
+   "start_open": true,
+   "end_open": false,
+   "start": {
+    "x": 249.5,
+    "y": 5990.0,
+    "at": "plate edge",
+    "id": "80-e021"
+   },
+   "end": null,
+   "name_1922": "Wuest Street",
+   "name_from": "today"
+  },
+  {
+   "sid": "baker-avenue",
+   "run": 1,
+   "rid": "baker-avenue/1",
+   "name": "Baker Avenue",
+   "t": [
+    0.0
+   ],
+   "points": [
+    [
+     2360.5,
+     3400.0
+    ]
+   ],
+   "printed": [],
+   "start_open": false,
+   "end_open": true,
+   "start": null,
+   "end": {
+    "x": 2285.0,
+    "y": 3313.5,
+    "at": "plate edge",
+    "id": "80-e024"
+   },
+   "name_1922": "Baker Avenue",
+   "name_from": "today"
+  },
+  {
+   "sid": "phillips-avenue",
+   "run": 1,
+   "rid": "phillips-avenue/1",
+   "name": "Phillips Avenue",
+   "t": [
+    0.0
+   ],
+   "points": [
+    [
+     2731.0,
+     3113.5
+    ]
+   ],
+   "printed": [
+    "...S AVE. (partial, in short stub)",
+    "...S AVE.",
+    "AVE.",
+    "AVE."
+   ],
+   "start_open": false,
+   "end_open": true,
+   "start": null,
+   "end": {
+    "x": 2662.0,
+    "y": 3024.0,
+    "at": "plate edge",
+    "id": "80-e025"
+   },
+   "name_1922": "Ave Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "parker-place",
+   "run": 1,
+   "rid": "parker-place/1",
+   "name": "Parker Place",
+   "t": [
+    215.3
+   ],
+   "points": [
+    [
+     3906.5,
+     6780.0
+    ]
+   ],
+   "printed": [],
+   "start_open": true,
+   "end_open": false,
+   "start": {
+    "x": 3904.5,
+    "y": 6890.0,
+    "at": "plate edge",
+    "id": "80-e027"
+   },
+   "end": null,
+   "name_1922": "Parker Place",
+   "name_from": "today"
+  },
+  {
+   "sid": "lowry-avenue",
+   "run": 1,
+   "rid": "lowry-avenue/1",
+   "name": "Lowry Avenue",
+   "t": [
+    0.0
+   ],
+   "points": [
+    [
+     4427.5,
+     6815.5
+    ]
+   ],
+   "printed": [
+    "AVE. (partial)",
+    "AVE.",
+    "AVE.",
+    "AVE."
+   ],
+   "start_open": false,
+   "end_open": true,
+   "start": null,
+   "end": {
+    "x": 4426.0,
+    "y": 6927.0,
+    "at": "plate edge",
+    "id": "80-e028"
+   },
+   "name_1922": "Ave Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "dickson-avenue",
+   "run": 1,
+   "rid": "dickson-avenue/1",
+   "name": "Dickson Avenue",
+   "t": [
+    375.8
+   ],
+   "points": [
+    [
+     4965.5,
+     6853.5
+    ]
+   ],
+   "printed": [
+    "illegible partial",
+    "...E."
+   ],
+   "start_open": true,
+   "end_open": false,
+   "start": {
+    "x": 4962.5,
+    "y": 6972.0,
+    "at": "plate edge",
+    "id": "80-e029"
+   },
+   "end": null,
+   "name_1922": "Dickson Avenue",
+   "name_from": "today"
+  },
+  {
+   "sid": "warwick-avenue",
+   "run": 1,
+   "rid": "warwick-avenue/1",
+   "name": "Warwick Avenue",
+   "t": [
+    396.5
+   ],
+   "points": [
+    [
+     5423.5,
+     6893.5
+    ]
+   ],
+   "printed": [
+    "...RWICK ...VE (partial)",
+    "...RWICK",
+    "WICK",
+    "WICK"
+   ],
+   "start_open": true,
+   "end_open": false,
+   "start": {
+    "x": 5420.0,
+    "y": 7008.0,
+    "at": "plate edge",
+    "id": "80-e030"
+   },
+   "end": null,
+   "name_1922": "Warwick Avenue",
+   "name_from": "today"
+  },
+  {
+   "sid": "ardmore-avenue",
+   "run": 1,
+   "rid": "ardmore-avenue/1",
+   "name": "Ardmore Avenue",
+   "t": [
+    0.0
+   ],
+   "points": [
+    [
+     5852.5,
+     6928.5
+    ]
+   ],
+   "printed": [
+    "illegible partial ... AVE",
+    "illegible (...FORD AVE?)",
+    "AVE.",
+    "AVE."
+   ],
+   "start_open": false,
+   "end_open": true,
+   "start": null,
+   "end": {
+    "x": 5851.0,
+    "y": 7029.0,
+    "at": "plate edge",
+    "id": "80-e031"
+   },
+   "name_1922": "Ave Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "red-bud-place",
+   "run": 1,
+   "rid": "red-bud-place/1",
+   "name": "Red Bud Place",
+   "t": [
+    177.7
+   ],
+   "points": [
+    [
+     6702.5,
+     5887.0
+    ]
+   ],
+   "printed": [],
+   "start_open": true,
+   "end_open": false,
+   "start": {
+    "x": 6822.5,
+    "y": 5886.5,
+    "at": "plate edge",
+    "id": "80-e033"
+   },
+   "end": null,
+   "name_1922": "Red Bud Place",
+   "name_from": "today"
+  },
+  {
+   "sid": "red-bud-avenue",
+   "run": 1,
+   "rid": "red-bud-avenue/1",
+   "name": "Red Bud Avenue",
+   "t": [
+    518.8,
+    643.2
+   ],
+   "points": [
+    [
+     6491.5,
+     7137.5
+    ],
+    [
+     6872.0,
+     6639.0
+    ]
+   ],
+   "printed": [
+    "RED BUD",
+    "RED BUD",
+    "RED BUD",
+    "BUD",
+    "RED",
+    "RED"
+   ],
+   "start_open": true,
+   "end_open": true,
+   "start": {
+    "x": 6490.5,
+    "y": 7122.0,
+    "at": "plate edge",
+    "id": "80-e034"
+   },
+   "end": {
+    "x": 7000.0,
+    "y": 6544.0,
+    "at": "plate edge",
+    "id": "80-e035"
+   },
+   "name_1922": "Red Bud Avenue",
+   "name_from": "printed"
+  },
+  {
+   "sid": "rose-hill-lane",
+   "run": "1b",
+   "rid": "rose-hill-lane/1b",
+   "name": "Rose Hill Lane",
+   "t": [
+    0.0,
+    110.6,
+    165.8
+   ],
+   "points": [
+    [
+     6285.0,
+     5299.0
+    ],
+    [
+     6297.5,
+     5041.5
+    ]
+   ],
+   "printed": [
+    "AVE (partial)",
+    "AVE",
+    "ROSE HILL AV.",
+    "ROSE HILL AV.",
+    "[RO]SE HILL AVE",
+    "ROSE HILL AVE."
+   ],
+   "start_open": false,
+   "end_open": false,
+   "start": null,
+   "end": null,
+   "name_1922": "Rose Hill Avenue",
+   "name_from": "printed"
+  }
+ ],
+ "ends_read": [
+  {
+   "id": "80-e001",
+   "rid": "advance-avenue/1",
+   "side": "end",
+   "result": "ends",
+   "apart_px": 8.1
+  },
+  {
+   "id": "80-e002",
+   "rid": "broermann-avenue/1",
+   "side": "end",
+   "result": "ends",
+   "apart_px": 10.2
+  },
+  {
+   "id": "80-e003",
+   "rid": "clay-street/1",
+   "side": "start",
+   "result": "ends",
+   "apart_px": 10.0
+  },
+  {
+   "id": "80-e004",
+   "rid": "clay-street/1",
+   "side": "end",
+   "result": "ends",
+   "apart_px": 7.3
+  },
+  {
+   "id": "80-e005",
+   "rid": "east-mitchell-avenue/1",
+   "side": "end",
+   "result": "ends",
+   "apart_px": 10.8
+  },
+  {
+   "id": "80-e006",
+   "rid": "east-ross-avenue/1",
+   "side": "end",
+   "result": "runs on",
+   "apart_px": 5.1
+  },
+  {
+   "id": "80-e007",
+   "rid": "errun-lane/1",
+   "side": "end",
+   "result": "ends",
+   "apart_px": 3.6
+  },
+  {
+   "id": "80-e008",
+   "rid": "franklin-avenue#1/1",
+   "side": "end",
+   "result": "ends",
+   "apart_px": 6.4
+  },
+  {
+   "id": "80-e009",
+   "rid": "imwalle-avenue/1",
+   "side": "end",
+   "result": "ends",
+   "apart_px": 36.4
+  },
+  {
+   "id": "80-e010",
+   "rid": "mcclelland-avenue/1",
+   "side": "end",
+   "result": "readers disagree",
+   "apart_px": 47.2
+  },
+  {
+   "id": "80-e011",
+   "rid": "rose-hill-avenue#1/1",
+   "side": "start",
+   "result": "ends",
+   "apart_px": 2.0
+  },
+  {
+   "id": "80-e012",
+   "rid": "rose-hill-avenue#2/1",
+   "side": "start",
+   "result": "runs on",
+   "apart_px": 2.0
+  },
+  {
+   "id": "80-e013",
+   "rid": "scenic-avenue/1",
+   "side": "end",
+   "result": "ends",
+   "apart_px": 15.3
+  },
+  {
+   "id": "80-e014",
+   "rid": "tennessee-avenue/1",
+   "side": "start",
+   "result": "joins east-ross-avenue/1",
+   "apart_px": 10.2
+  },
+  {
+   "id": "80-e015",
+   "rid": "tennessee-avenue/1",
+   "side": "end",
+   "result": "ends",
+   "apart_px": 11.2
+  },
+  {
+   "id": "80-e016",
+   "rid": "tower-avenue/1",
+   "side": "end",
+   "result": "ends",
+   "apart_px": 32.0
+  },
+  {
+   "id": "80-e017",
+   "rid": "vine-street/1",
+   "side": "start",
+   "result": "back along itself",
+   "apart_px": 15.8
+  },
+  {
+   "id": "80-e018",
+   "rid": "vine-street/1",
+   "side": "end",
+   "result": "ends",
+   "apart_px": 7.0
+  },
+  {
+   "id": "80-e019",
+   "rid": "leonard-avenue#2/1",
+   "side": "start",
+   "result": "joins leonard-avenue#1/1",
+   "apart_px": 5.0
+  },
+  {
+   "id": "80-e020",
+   "rid": "kessler-avenue/1",
+   "side": "start",
+   "result": "ends",
+   "apart_px": 8.0
+  },
+  {
+   "id": "80-e021",
+   "rid": "wuest-street/1",
+   "side": "start",
+   "result": "ends",
+   "apart_px": 6.1
+  },
+  {
+   "id": "80-e022",
+   "rid": "west-mitchell-avenue/1",
+   "side": "end",
+   "result": "joins east-mitchell-avenue/1",
+   "apart_px": 2.0
+  },
+  {
+   "id": "80-e023",
+   "rid": "lawrence-street/1",
+   "side": "end",
+   "result": "ends",
+   "apart_px": 10.2
+  },
+  {
+   "id": "80-e024",
+   "rid": "baker-avenue/1",
+   "side": "end",
+   "result": "ends",
+   "apart_px": 6.7
+  },
+  {
+   "id": "80-e025",
+   "rid": "phillips-avenue/1",
+   "side": "end",
+   "result": "ends",
+   "apart_px": 7.2
+  },
+  {
+   "id": "80-e026",
+   "rid": "glencross-avenue/1",
+   "side": "end",
+   "result": "joins east-mitchell-avenue/1",
+   "apart_px": 4.0
+  },
+  {
+   "id": "80-e027",
+   "rid": "parker-place/1",
+   "side": "start",
+   "result": "ends",
+   "apart_px": 1.0
+  },
+  {
+   "id": "80-e028",
+   "rid": "lowry-avenue/1",
+   "side": "end",
+   "result": "ends",
+   "apart_px": 0.0
+  },
+  {
+   "id": "80-e029",
+   "rid": "dickson-avenue/1",
+   "side": "start",
+   "result": "ends",
+   "apart_px": 1.0
+  },
+  {
+   "id": "80-e030",
+   "rid": "warwick-avenue/1",
+   "side": "start",
+   "result": "ends",
+   "apart_px": 0.0
+  },
+  {
+   "id": "80-e031",
+   "rid": "ardmore-avenue/1",
+   "side": "end",
+   "result": "ends",
+   "apart_px": 0.0
+  },
+  {
+   "id": "80-e032",
+   "rid": "avon-fields-lane/1",
+   "side": "end",
+   "result": "ends",
+   "apart_px": 0.0
+  },
+  {
+   "id": "80-e033",
+   "rid": "red-bud-place/1",
+   "side": "start",
+   "result": "ends",
+   "apart_px": 1.4
+  },
+  {
+   "id": "80-e034",
+   "rid": "red-bud-avenue/1",
+   "side": "start",
+   "result": "ends",
+   "apart_px": 10.0
+  },
+  {
+   "id": "80-e035",
+   "rid": "red-bud-avenue/1",
+   "side": "end",
+   "result": "ends",
+   "apart_px": 0.0
+  },
+  {
+   "id": "80-e036",
+   "rid": "east-ross-avenue/1",
+   "side": "end",
+   "result": "ends",
+   "apart_px": 1.0
+  },
+  {
+   "id": "80-e037",
+   "rid": "rose-hill-avenue#2/1",
+   "side": "start",
+   "result": "ends",
+   "apart_px": 2.2
+  },
+  {
+   "id": "80-e038",
+   "rid": "tennessee-avenue/1",
+   "side": "start",
+   "result": "joins east-ross-avenue/1",
+   "apart_px": 3.2
+  },
+  {
+   "id": "80-e039",
+   "rid": "vine-street/1",
+   "side": "start",
+   "result": "runs on",
+   "apart_px": 5.0
+  },
+  {
+   "id": "80-e040",
+   "rid": "leonard-avenue#2/1",
+   "side": "start",
+   "result": "joins leonard-avenue#1/1",
+   "apart_px": 14.0
+  },
+  {
+   "id": "80-e041",
+   "rid": "west-mitchell-avenue/1",
+   "side": "end",
+   "result": "joins east-mitchell-avenue/1",
+   "apart_px": 27.2
+  },
+  {
+   "id": "80-e042",
+   "rid": "glencross-avenue/1",
+   "side": "end",
+   "result": "joins east-mitchell-avenue/1",
+   "apart_px": 4.0
+  },
+  {
+   "id": "80-e043",
+   "rid": "tennessee-avenue/1",
+   "side": "start",
+   "result": "runs on",
+   "apart_px": 15.0
+  },
+  {
+   "id": "80-e044",
+   "rid": "vine-street/1",
+   "side": "start",
+   "result": "runs on",
+   "apart_px": 25.0
+  },
+  {
+   "id": "80-e045",
+   "rid": "leonard-avenue#2/1",
+   "side": "start",
+   "result": "joins leonard-avenue#1/1",
+   "apart_px": 0.0
+  },
+  {
+   "id": "80-e046",
+   "rid": "west-mitchell-avenue/1",
+   "side": "end",
+   "result": "joins east-mitchell-avenue/1",
+   "apart_px": 20.6
+  },
+  {
+   "id": "80-e047",
+   "rid": "glencross-avenue/1",
+   "side": "end",
+   "result": "joins east-mitchell-avenue/1",
+   "apart_px": 5.0
+  }
+ ],
+ "duplicate_runs": [
+  {
+   "rid": "west-mitchell-avenue/1",
+   "name": "West Mitchell Avenue",
+   "same_as": "east-mitchell-avenue/1"
+  },
+  {
+   "rid": "lawrence-street/1",
+   "name": "Lawrence Street",
+   "same_as": "bertus-street/1"
+  },
+  {
+   "rid": "glencross-avenue/1",
+   "name": "Glencross Avenue",
+   "same_as": "east-mitchell-avenue/1"
+  },
+  {
+   "rid": "avon-fields-lane/1",
+   "name": "Avon Fields Lane",
+   "same_as": "rose-hill-avenue#1/1"
+  }
+ ],
+ "review_extended": [
+  {
+   "printed": [
+    "MITCHELL",
+    "MITCHELL"
+   ],
+   "into": "east-mitchell-avenue/1",
+   "already_traced": true
+  }
+ ],
+ "review_added": [
+  {
+   "printed": [
+    "OAK ST.",
+    "OAK"
+   ],
+   "points": [
+    [
+     3229,
+     671
+    ],
+    [
+     3214,
+     671
+    ],
+    [
+     3450,
+     677
+    ],
+    [
+     3500,
+     678
+    ],
+    [
+     3686,
+     683
+    ],
+    [
+     3800,
+     686
+    ],
+    [
+     4071,
+     707
+    ],
+    [
+     4086,
+     690
+    ]
+   ],
+   "start_at": "Carthage Avenue (blue line)",
+   "end_at": "continues NE off section along B.&O.S.W. R.R.",
+   "sid": "r-oak-street#1",
+   "name_1922": "Oak Street"
+  },
+  {
+   "printed": [
+    "CLAY ST.",
+    "CLAY ST."
+   ],
+   "points": [
+    [
+     4110,
+     1221
+    ],
+    [
+     4114,
+     1221
+    ],
+    [
+     4350,
+     1221
+    ],
+    [
+     4350,
+     1226
+    ],
+    [
+     4571,
+     1231
+    ],
+    [
+     4586,
+     1232
+    ]
+   ],
+   "start_at": "Broxterman Ave / Miami-Erie canal bank",
+   "end_at": "continues east off section",
+   "sid": "r-clay-street#2",
+   "name_1922": "Clay Street"
+  },
+  {
+   "printed": [
+    "BROXTERMAN AVE.",
+    "BROXTERMAN AVE"
+   ],
+   "points": [
+    [
+     4124,
+     1229
+    ],
+    [
+     4121,
+     1243
+    ],
+    [
+     4124,
+     1400
+    ],
+    [
+     4121,
+     1400
+    ],
+    [
+     4124,
+     1571
+    ],
+    [
+     4121,
+     1586
+    ]
+   ],
+   "start_at": "Clay St",
+   "end_at": "Ross Ave",
+   "sid": "r-broxterman-avenue#3",
+   "name_1922": "Broxterman Avenue"
+  },
+  {
+   "printed": [
+    "BURNET",
+    "BURNET AVE."
+   ],
+   "points": [
+    [
+     2950,
+     3000
+    ],
+    [
+     2955,
+     3000
+    ],
+    [
+     2952,
+     3150
+    ],
+    [
+     2957,
+     3250
+    ],
+    [
+     2954,
+     3300
+    ],
+    [
+     2956,
+     3480
+    ],
+    [
+     2960,
+     3490
+    ]
+   ],
+   "start_at": "top edge of section (continues north)",
+   "end_at": "south end at Board of Education lot line (~y 3490)",
+   "sid": "r-burnet-avenue#4",
+   "name_1922": "Burnet Avenue"
+  }
+ ],
+ "review_wrong": [
+  {
+   "section": "80-r22",
+   "x": 6400,
+   "y": 5340,
+   "what": "diagonal line from (6286,5293) to (6521,5386) crosses lots 15/16; no street there",
+   "action": "rose-hill-lane/1 cut between points 0 and 1"
   }
  ]
 }
