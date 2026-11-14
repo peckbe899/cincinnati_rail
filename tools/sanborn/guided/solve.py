@@ -32,6 +32,28 @@ ST = [s for s in OBS['stations'] if s['sid'] in BY]
 SC, ORIGIN = 1000.0, np.array([715000.0, 4335000.0])
 C_CROSS, C_LINE, W_LINE, LAMS, FOLDS, ITERS = 12.0, 8.0, 0.5, (0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0), 5, 8
 
+# dense observations from the U-net (unet/extract.py -> unet_obs.json): block-edge points against today's block edges
+# (today/blocks_N.geojson), street centre points against today's centre lines. Each is matched to the nearest place on
+# the reference under the current fit (re-matched every iteration) and pins the plate across that line.
+from scipy.spatial import cKDTree  # noqa: E402
+from shapely.geometry import shape  # noqa: E402
+def sampler(lines):
+    pts, nrm = [], []
+    for l in lines:
+        for t in np.arange(0, l.length, 1.0):
+            a, b = l.interpolate(t), l.interpolate(min(l.length, t + 1.0)); d = np.array([b.x - a.x, b.y - a.y]); n = np.hypot(*d)
+            if n > 0: pts.append([a.x, a.y]); nrm.append([-d[1] / n, d[0] / n])
+    return cKDTree(np.array(pts)), np.array(pts), np.array(nrm)
+DENSE = []          # (name, plate points, tree, reference points, normals, base weight, Tukey c in metres)
+MAXD = 500
+if os.path.exists(D + 'unet_obs.json') and '--no-unet' not in sys.argv:
+    U = json.load(open(D + 'unet_obs.json', encoding='utf8')); r_ = np.random.default_rng(1)
+    sub = lambda a: np.asarray(a, float)[r_.permutation(len(a))[:MAXD]]
+    if os.path.exists(SP + f'today/blocks_{N}.geojson') and U['edges']:
+        DENSE.append(('block_edges', sub(U['edges']), *sampler([shape(f['geometry']).exterior for f in json.load(open(SP + f'today/blocks_{N}.geojson', encoding='utf8'))['features']]), 0.3, 5.0))
+    if U['centres']:
+        DENSE.append(('centre_lines', sub(U['centres']), *sampler([l for g in BY.values() for l in getattr(g, 'geoms', [g])]), 0.3, 8.0))
+
 def phi(d):
     with np.errstate(divide='ignore', invalid='ignore'): return np.where(d > 0, d * d * np.log(d), 0.0)
 
@@ -64,11 +86,12 @@ def project(sid, W):
         F.append([f.x, f.y]); Nm.append([-d[1], d[0]]); ok.append(1.0 < t < g.length - 1.0)
     return np.array(F), np.array(Nm), np.array(ok)
 
-def fit(cr, st, lam, lines=True):
+def fit(cr, st, lam, lines=True, dense=False):
     """IRLS fit. Returns warp, theta (k x 2), crossing weights and misses, station weights and across-street misses."""
     Xc = np.array([[c['x'], c['y']] for c in cr]); Oc = np.array([[c['E'], c['N']] for c in cr]) - ORIGIN
     ben = np.array([bool(c.get('ben')) for c in cr]); Xs = np.array([[s['x'], s['y']] for s in st]).reshape(-1, 2)
     Wp = Warp(np.r_[Xc, Xs] if lines and len(Xs) else Xc); Rc = Wp.rows(Xc); Rs = Wp.rows(Xs) if lines and len(Xs) else np.zeros((0, Wp.k))
+    Rd = [Wp.rows(g[1]) for g in DENSE] if dense else []; wd = [np.zeros(len(r)) for r in Rd]; pd = [np.zeros(len(r)) for r in Rd]
     k = Wp.k; wc = np.where([c['low'] for c in cr], 0.5, 1.0); ws = np.zeros(len(Rs)); th = None
     Pen = np.zeros((2 * k, 2 * k)); Pen[3:k, 3:k] = Wp.R; Pen[k + 3:, k + 3:] = Wp.R
     sids = sorted({s['sid'] for s in st})
@@ -82,6 +105,12 @@ def fit(cr, st, lam, lines=True):
             perp = np.abs(((Ws - F) * Nm).sum(1)); c = C_LINE * (2 if it < 3 else 1)
             ws = W_LINE * tukey(perp, c) * ok
             A = np.r_[A, np.c_[Rs * Nm[:, :1], Rs * Nm[:, 1:]]]; y = np.r_[y, ((F - ORIGIN) * Nm).sum(1)]; w = np.r_[w, ws]
+        if th is not None:
+            for j, (g, R) in enumerate(zip(DENSE, Rd)):
+                Wq = R @ th + ORIGIN; dist, i = g[2].query(Wq); F, Nm = g[3][i], g[4][i]
+                pd[j] = np.abs(((Wq - F) * Nm).sum(1)); c = g[6] * (2 if it < 3 else 1)
+                wd[j] = g[5] * tukey(pd[j], c) * (dist < 3 * g[6])
+                A = np.r_[A, np.c_[R * Nm[:, :1], R * Nm[:, 1:]]]; y = np.r_[y, ((F - ORIGIN) * Nm).sum(1)]; w = np.r_[w, wd[j]]
         sw = np.sqrt(w)[:, None]
         sol = np.linalg.solve((A * sw).T @ (A * sw) + lam * Pen + 1e-9 * np.eye(2 * k), (A * sw).T @ (y * sw[:, 0]))
         th = np.c_[sol[:k], sol[k:]]
@@ -92,30 +121,33 @@ def fit(cr, st, lam, lines=True):
         Ws = Rs @ th + ORIGIN; perp = np.zeros(len(Ws))
         for sid in sids:
             m = np.array([s['sid'] == sid for s in st]); F, Nm, ok = project(sid, Ws[m]); perp[m] = np.abs(((Ws[m] - F) * Nm).sum(1))
+    fit.dense = [(g[0], wd[j], pd[j]) for j, g in enumerate(DENSE)] if dense else []
     return Wp, th, wc, miss, ws, perp
 
 rms = lambda e: float(np.sqrt(np.mean(np.square(e)))) if len(e) else float('nan')
 # evaluation set: crossings a crossings-only fit trusts (independent of the street points), in FOLDS random folds
 _, _, w0, m0, _, _ = fit(CR, [], 0.3, lines=False)
 EV = np.where(w0 >= 0.8)[0]; rng = np.random.default_rng(0); fold = rng.permutation(len(EV)) % FOLDS
-def cv(lam, lines):
+def cv(lam, lines, dense=False):
     e = np.zeros(len(EV))
     for f in range(FOLDS):
         out = set(EV[fold == f].tolist()); tr = [c for i, c in enumerate(CR) if i not in out]
-        Wp, th, *_ = fit(tr, ST, lam, lines)
+        Wp, th, *_ = fit(tr, ST, lam, lines, dense)
         for j in np.where(fold == f)[0]:
             c = CR[EV[j]]; e[j] = np.hypot(*(Wp.world(th, [[c['x'], c['y']]])[0] - [c['E'], c['N']]))
     return e
 rep = dict(plate=N, crossings=len(CR), stations=len(ST), eval_crossings=int(len(EV)), folds=FOLDS, heldout={})
 best = {}
-for lines in (False, True):
-    tab = {lam: cv(lam, lines) for lam in LAMS}; lam = min(tab, key=lambda l: rms(tab[l])); best[lines] = lam
-    rep['heldout']['with_street_points' if lines else 'crossings_only'] = dict(lam=lam, rms=round(rms(tab[lam]), 2), median=round(float(np.median(tab[lam])), 2),
+VAR = [('crossings_only', False, False), ('with_street_points', True, False)] + ([('with_unet', True, True)] if DENSE else [])
+for name, lines, dense in VAR:
+    tab = {lam: cv(lam, lines, dense) for lam in LAMS}; lam = min(tab, key=lambda l: rms(tab[l])); best[name] = lam
+    rep['heldout'][name] = dict(lam=lam, rms=round(rms(tab[lam]), 2), median=round(float(np.median(tab[lam])), 2), p90=round(float(np.percentile(tab[lam], 90)), 2),
         max=round(float(tab[lam].max()), 2), by_lam={str(l): round(rms(e), 2) for l, e in tab.items()})
-    print('held-out', 'with street points' if lines else 'crossings only  ', rep['heldout']['with_street_points' if lines else 'crossings_only'], flush=True)
-use_lines = rep['heldout']['with_street_points']['rms'] <= rep['heldout']['crossings_only']['rms']
-rep['chosen'] = 'with_street_points' if use_lines else 'crossings_only'
-Wp, th, wc, miss, ws, perp = fit(CR, ST, best[use_lines], use_lines)
+    print('held-out', name, rep['heldout'][name], flush=True)
+name, use_lines, use_dense = min(VAR, key=lambda v: rep['heldout'][v[0]]['rms'])
+rep['chosen'] = name
+Wp, th, wc, miss, ws, perp = fit(CR, ST, best[name], use_lines, use_dense)
+rep['unet'] = [dict(kind=n_, points=int(len(w_)), used=int((w_ > 0.06).sum()), median_across_m=round(float(np.median(p_[w_ > 0.06])), 2) if (w_ > 0.06).any() else None) for n_, w_, p_ in fit.dense]
 rep['crossing_weights'] = dict(full=int((wc >= 0.8).sum()), partial=int(((wc > 0.05) & (wc < 0.8)).sum()), out=int((wc <= 0.05).sum()))
 rep['faded_crossings'] = sorted([dict(id=c['id'], a=c['a'], b=c['b'], miss_m=round(float(m), 1), weight=round(float(w), 2)) for c, m, w in zip(CR, miss, wc) if w < 0.5], key=lambda r: -r['miss_m'])
 moved = []
@@ -148,5 +180,5 @@ for d, M in others():
 rep['seams'] = seams
 json.dump(rep, open(D + 'solve.json', 'w', encoding='utf8', newline='\n'), indent=1)
 if WRITE:
-    pickle.dump(dict(Wp.model(th, best[use_lines]), source='tools/sanborn/guided/solve.py'), open(SP + J.joint_path(f'22-{N}', 'guided'), 'wb'))
+    pickle.dump(dict(Wp.model(th, best[name]), source='tools/sanborn/guided/solve.py'), open(SP + J.joint_path(f'22-{N}', 'guided'), 'wb'))
 print(json.dumps({k: v for k, v in rep.items() if k != 'heldout'}, indent=1))
