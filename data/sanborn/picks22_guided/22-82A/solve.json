@@ -9,6 +9,7 @@
    "lam": 3.0,
    "rms": 3.71,
    "median": 2.42,
+   "p90": 5.72,
    "max": 13.45,
    "by_lam": {
     "0.1": 4.99,
@@ -24,6 +25,7 @@
    "lam": 3.0,
    "rms": 3.6,
    "median": 2.19,
+   "p90": 5.43,
    "max": 12.74,
    "by_lam": {
     "0.1": 4.36,
@@ -34,12 +36,42 @@
     "30.0": 4.85,
     "100.0": 6.09
    }
+  },
+  "with_unet": {
+   "lam": 3.0,
+   "rms": 3.38,
+   "median": 2.2,
+   "p90": 5.57,
+   "max": 9.98,
+   "by_lam": {
+    "0.1": 4.0,
+    "0.3": 3.88,
+    "1.0": 3.58,
+    "3.0": 3.38,
+    "10.0": 3.56,
+    "30.0": 4.16,
+    "100.0": 5.27
+   }
   }
  },
- "chosen": "with_street_points",
+ "chosen": "with_unet",
+ "unet": [
+  {
+   "kind": "block_edges",
+   "points": 500,
+   "used": 367,
+   "median_across_m": 1.22
+  },
+  {
+   "kind": "centre_lines",
+   "points": 500,
+   "used": 394,
+   "median_across_m": 0.99
+  }
+ ],
  "crossing_weights": {
-  "full": 74,
-  "partial": 20,
+  "full": 71,
+  "partial": 23,
   "out": 12
  },
  "faded_crossings": [
@@ -47,190 +79,185 @@
    "id": "82A-001",
    "a": "Reading Road",
    "b": "Victory Parkway",
-   "miss_m": 25.1,
-   "weight": 0.0
-  },
-  {
-   "id": "82A-121",
-   "a": "Smith Road",
-   "b": "Lafayette Avenue",
-   "miss_m": 22.2,
-   "weight": 0.0
-  },
-  {
-   "id": "82A-136",
-   "a": "Park Avenue",
-   "b": "Floral Avenue",
-   "miss_m": 21.0,
+   "miss_m": 24.9,
    "weight": 0.0
   },
   {
    "id": "82A-111",
    "a": "Smith Road",
    "b": "Sherman Avenue",
-   "miss_m": 20.6,
+   "miss_m": 22.4,
+   "weight": 0.0
+  },
+  {
+   "id": "82A-121",
+   "a": "Smith Road",
+   "b": "Lafayette Avenue",
+   "miss_m": 20.4,
    "weight": 0.0
   },
   {
    "id": "82A-103",
    "a": "Norwood Avenue",
    "b": "Montgomery Road",
-   "miss_m": 19.9,
+   "miss_m": 19.4,
+   "weight": 0.0
+  },
+  {
+   "id": "82A-136",
+   "a": "Park Avenue",
+   "b": "Floral Avenue",
+   "miss_m": 19.2,
    "weight": 0.0
   },
   {
    "id": "82A-012",
    "a": "Tennessee Avenue",
    "b": "Ross Avenue",
-   "miss_m": 18.2,
+   "miss_m": 18.6,
    "weight": 0.0
   },
   {
    "id": "82A-062",
    "a": "Crown Avenue",
    "b": "Section Avenue",
-   "miss_m": 14.4,
-   "weight": 0.0
-  },
-  {
-   "id": "82A-005",
-   "a": "Asmann Avenue",
-   "b": "Victory Parkway",
-   "miss_m": 13.7,
+   "miss_m": 14.8,
    "weight": 0.0
   },
   {
    "id": "82A-110",
    "a": "Smith Road",
    "b": "Wall Street",
-   "miss_m": 13.6,
+   "miss_m": 14.8,
    "weight": 0.0
   },
   {
-   "id": "82A-112",
-   "a": "Lafayette Avenue",
-   "b": "Washington Avenue",
-   "miss_m": 12.8,
+   "id": "82A-005",
+   "a": "Asmann Avenue",
+   "b": "Victory Parkway",
+   "miss_m": 13.8,
    "weight": 0.0
   },
   {
    "id": "82A-106",
    "a": "Maple Avenue",
    "b": "Montgomery Road",
-   "miss_m": 12.3,
-   "weight": 0.0
+   "miss_m": 11.3,
+   "weight": 0.01
   },
   {
    "id": "82A-068",
    "a": "Allison Street",
    "b": "Section Avenue",
-   "miss_m": 11.5,
-   "weight": 0.01
+   "miss_m": 11.1,
+   "weight": 0.02
+  },
+  {
+   "id": "82A-112",
+   "a": "Lafayette Avenue",
+   "b": "Washington Avenue",
+   "miss_m": 10.7,
+   "weight": 0.02
   },
   {
    "id": "82A-084",
    "a": "Mills Avenue",
    "b": "Walter Avenue",
-   "miss_m": 8.0,
-   "weight": 0.31
+   "miss_m": 8.6,
+   "weight": 0.23
   },
   {
    "id": "82A-089",
    "a": "Foraker Avenue",
    "b": "Station Avenue",
-   "miss_m": 6.8,
-   "weight": 0.23
+   "miss_m": 7.1,
+   "weight": 0.21
   },
   {
    "id": "82A-098",
    "a": "Lafayette Avenue",
    "b": "Jefferson Avenue",
-   "miss_m": 6.7,
-   "weight": 0.24
-  },
-  {
-   "id": "82A-118",
-   "a": "Stewart Park",
-   "b": "Highland Avenue",
-   "miss_m": 4.3,
-   "weight": 0.38
+   "miss_m": 5.5,
+   "weight": 0.31
   },
   {
    "id": "82A-122",
    "a": "Smith Road",
    "b": "Park Avenue",
-   "miss_m": 4.0,
-   "weight": 0.4
+   "miss_m": 5.5,
+   "weight": 0.31
+  },
+  {
+   "id": "82A-118",
+   "a": "Stewart Park",
+   "b": "Highland Avenue",
+   "miss_m": 4.4,
+   "weight": 0.37
   },
   {
    "id": "82A-039",
    "a": "Ivanhoe Avenue",
    "b": "Weyer Avenue",
-   "miss_m": 3.5,
-   "weight": 0.42
-  },
-  {
-   "id": "82A-127",
-   "a": "Buxton Avenue",
-   "b": "Marion Avenue",
-   "miss_m": 3.5,
-   "weight": 0.42
+   "miss_m": 4.1,
+   "weight": 0.39
   },
   {
    "id": "82A-045",
    "a": "Woodlawn Avenue",
    "b": "Franklin Avenue",
-   "miss_m": 2.2,
-   "weight": 0.47
+   "miss_m": 3.1,
+   "weight": 0.44
   },
   {
-   "id": "82A-097",
-   "a": "Mills Avenue",
-   "b": "Montgomery Road",
-   "miss_m": 1.3,
-   "weight": 0.49
+   "id": "82A-127",
+   "a": "Buxton Avenue",
+   "b": "Marion Avenue",
+   "miss_m": 3.1,
+   "weight": 0.44
   },
   {
    "id": "82A-085",
    "a": "Courtland Avenue",
    "b": "Montgomery Road",
-   "miss_m": 0.6,
+   "miss_m": 0.9,
+   "weight": 0.49
+  },
+  {
+   "id": "82A-097",
+   "a": "Mills Avenue",
+   "b": "Montgomery Road",
+   "miss_m": 0.7,
    "weight": 0.5
   }
  ],
  "street_points": {
   "used": 201,
   "faded": 32,
-  "median_across_m": 1.05
+  "median_across_m": 0.94
  },
  "moved_streets": [
   {
    "sid": "floral-avenue#1",
    "stations": 3,
-   "median_off_m": 12.0
-  },
-  {
-   "sid": "lafayette-avenue",
-   "stations": 4,
-   "median_off_m": 8.1
+   "median_off_m": 10.5
   },
   {
    "sid": "park-avenue#2",
    "stations": 4,
-   "median_off_m": 20.4
+   "median_off_m": 18.3
   },
   {
    "sid": "reading-road",
    "stations": 15,
-   "median_off_m": 11.1
+   "median_off_m": 11.3
   }
  ],
  "seams": {
   "75": {
    "n": 6,
    "new_solver": {
-    "median": 3.96,
-    "max": 5.08
+    "median": 3.8,
+    "max": 5.97
    },
    "current_cufp_model": {
     "median": 4.64,
@@ -244,8 +271,8 @@
   "76": {
    "n": 10,
    "new_solver": {
-    "median": 3.66,
-    "max": 7.09
+    "median": 3.64,
+    "max": 6.73
    },
    "current_cufp_model": {
     "median": 4.46,
@@ -259,8 +286,8 @@
   "83A": {
    "n": 4,
    "new_solver": {
-    "median": 2.07,
-    "max": 3.12
+    "median": 1.96,
+    "max": 2.64
    },
    "current_cufp_model": {
     "median": 2.09,
