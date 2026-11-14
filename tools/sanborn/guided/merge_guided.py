@@ -35,6 +35,7 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import streets as S  # noqa: E402
 from shapely.geometry import Point, LineString  # noqa: E402
+from shapely.ops import nearest_points  # noqa: E402
 from scipy.interpolate import RBFInterpolator  # noqa: E402
 N = sys.argv[1]; SP = S.SP; D = SP + f'picks22_guided/22-{N}/'
 P = S.Plate(N); ST = P.streets(); BY = {s['sid']: s for s in ST}
@@ -69,21 +70,29 @@ def dist(a, b): return float(np.hypot(a['x'] - b['x'], a['y'] - b['y']))
 G = {r['id']: r for r in json.load(open(D + 'guide_A.json', encoding='utf8'))}
 RAW_A, RAW_B = reads('A_*.json'), reads('B_*.json')
 CA, CB = uncopy(dict(RAW_A), G, 'A'), uncopy(dict(RAW_B), G, 'B')
-# Ben's calls on low-confidence crossings (decisions.json: {id: "real" | "A" | "B" | "not"}): "real" = the readers' mean,
-# "A"/"B" = that reader's point; either way a control that screening does not remove. "not" = not a control, not drawn.
-DEC = json.load(open(D + 'decisions.json', encoding='utf8')) if os.path.exists(D + 'decisions.json') else {}
+# Ben's calls (decisions.json, from the review page: bins_page.py --load). Two separate questions per crossing:
+#   drawn: is this crossing on the plate at all?  false -> not a control, not drawn.
+#   where (if drawn): "mean" (the readers' mean), "A", "B", or "manual" with Ben's own x, y.
+# A decided crossing is a control that screening does not remove. "added": crossings Ben placed that the guide did not
+# offer or no reader found: {a, b, x, y} with today's street names; the world point is where those streets meet today.
+_d = json.load(open(D + 'decisions.json', encoding='utf8')) if os.path.exists(D + 'decisions.json') else {}
+DEC, ADDED = _d.get('items', {}), _d.get('added', [])
+def ben_point(i, d):
+    if d.get('where') == 'manual': return float(d['x']), float(d['y'])
+    qs = [r for k, r in (('A', RAW_A.get(i, {})), ('B', RAW_B.get(i, {}))) if r.get('found') and 'x' in r and d.get('where', 'mean') in ('mean', k)]
+    return (float(np.mean([q['x'] for q in qs])), float(np.mean([q['y'] for q in qs]))) if qs else None
 for g in G.values():
     g['sid_a'] = P.sid_at(ST, g['a'], g['E'], g['N']); g['sid_b'] = P.sid_at(ST, g['b'], g['E'], g['N'])
 picks, street_only, jogs = [], [], []
 for i, g in G.items():
     d = DEC.get(i)
-    if d == 'not': continue
-    if d in ('real', 'A', 'B'):
-        qs = [r for k, r in (('A', RAW_A.get(i, {})), ('B', RAW_B.get(i, {}))) if r.get('found') and 'x' in r and d in ('real', k)]
-        if qs:
-            x, y = float(np.mean([q['x'] for q in qs])), float(np.mean([q['y'] for q in qs]))
-            picks.append(dict(id=i, a=g['a'], b=g['b'], sid_a=g['sid_a'], sid_b=g['sid_b'], x=x, y=y, E=g['E'], N=g['N'], apart_px=0.0,
-                              both_low=False, ben=d, printed={g['sid_a']: [qs[0].get('name_a_printed', '')], g['sid_b']: [qs[0].get('name_b_printed', '')]}))
+    if d and d.get('drawn') is False: continue
+    if d and d.get('drawn'):
+        xy = ben_point(i, d)
+        if xy:
+            ra = RAW_A.get(i, {}); rb = RAW_B.get(i, {})
+            picks.append(dict(id=i, a=g['a'], b=g['b'], sid_a=g['sid_a'], sid_b=g['sid_b'], x=xy[0], y=xy[1], E=g['E'], N=g['N'], apart_px=0.0, both_low=False, ben=d.get('where', 'mean'),
+                              printed={g['sid_a']: [ra.get('name_a_printed', ''), rb.get('name_a_printed', '')], g['sid_b']: [ra.get('name_b_printed', ''), rb.get('name_b_printed', '')]}))
             continue
     fa, fb, a, b = pair(CA, CB, i)
     if not (fa and fb): continue
@@ -97,6 +106,19 @@ for i, g in G.items():
                both_low=a.get('sure') == 'low' and b.get('sure') == 'low', printed={g['sid_a']: [a.get('name_a_printed', ''), b.get('name_a_printed', '')], g['sid_b']: [a.get('name_b_printed', ''), b.get('name_b_printed', '')]})
     if first: rec['same_point_as'] = first['id']
     picks.append(rec)
+
+added_skipped = []
+for k, d in enumerate(ADDED):
+    w = P.world(np.array([[d['x'], d['y']]]))[0]; here = Point(*w); best = None
+    for sa in (t for t in ST if t['name'] == d['a']):
+        for sb in (t for t in ST if t['name'] == d['b']):
+            if sa['geom'].distance(sb['geom']) > 15: continue
+            x = sa['geom'].intersection(sb['geom'])
+            for q in ([x] if x.geom_type == 'Point' else [g_.representative_point() for g_ in getattr(x, 'geoms', [])] or [nearest_points(sa['geom'], sb['geom'])[0]]):
+                if best is None or q.distance(here) < best[0]: best = (q.distance(here), q, sa['sid'], sb['sid'])
+    if best is None or best[0] > 150: added_skipped.append(dict(d, why="today's streets of these names do not meet within 150 m of the point")); continue
+    picks.append(dict(id=f'{N}-add{k + 1}', a=d['a'], b=d['b'], sid_a=best[2], sid_b=best[3], x=float(d['x']), y=float(d['y']), E=best[1].x, N=best[1].y,
+                      apart_px=0.0, both_low=False, ben='added', printed={best[2]: [], best[3]: []}))
 
 # screening
 def tps_fit(X, O):
@@ -121,25 +143,29 @@ for p in picks:
     p['drawn'] = p['control'] or p['miss_m'] <= WRONG_M
     if p['both_low'] and p['miss_m'] > WRONG_M: p['drawn'] = False
 
-# bins: every crossing a reader found is HIGH (a control on its own) or LOW (with why), for Ben to call (decisions.json)
+# bins: every crossing of the guide is HIGH (a control on its own), LOW (a reader found it; with why) or NONE (no reader
+# found it), for Ben to call on the review page (bins_page.py); "ben" = decided by Ben.
 PK = {p['id']: p for p in picks}; COPIED = {c['id'] for c in copied}; bins = []
 for i, g in G.items():
     a, b = RAW_A.get(i, {}), RAW_B.get(i, {})
     fa, fb = bool(a.get('found') and 'x' in a), bool(b.get('found') and 'x' in b)
-    if not (fa or fb): continue
-    p = PK.get(i); row = dict(id=i, a=g['a'], b=g['b'], A=[a['x'], a['y'], a.get('sure')] if fa else None,
-                              B=[b['x'], b['y'], b.get('sure')] if fb else None, ben=DEC.get(i))
-    if p and p.get('same_point_as'): continue           # follows the crossing at the same point
-    if p and p['control']: row.update(bin='high' if not p.get('ben') else 'ben', why='')
+    p = PK.get(i); row = dict(id=i, a=g['a'], b=g['b'], E=g['E'], N=g['N'], A=[a['x'], a['y'], a.get('sure')] if fa else None,
+                              B=[b['x'], b['y'], b.get('sure')] if fb else None, ben=DEC.get(i),
+                              notes=[a.get('note', ''), b.get('note', '')])
+    if p and p.get('same_point_as') and not DEC.get(i): row.update(bin='same', why='same plate point as ' + p['same_point_as'])
+    elif DEC.get(i): row.update(bin='ben', why='')
+    elif p and p['control']: row.update(bin='high', why='')
     elif p and p['both_low']: row.update(bin='low', why=f"both readers 'low' ({p['apart_px']} px apart)")
     elif p: row.update(bin='low', why=f"screened: the fit of the others misses it by {p['miss_m']} m")
+    elif not (fa or fb): row.update(bin='none', why='neither reader found it')
     elif i in COPIED: row.update(bin='low', why='copy check: a reader gave this point to another item too')
     elif fa and fb: row.update(bin='low', why=f'readers {round(dist(a, b))} px apart')
-    else: row.update(bin='low', why='only reader ' + ('A' if fa else 'B') + ' found it; the other: ' + ((b if fa else a).get('note', '') or '')[:80])
-    if DEC.get(i) == 'not': row['bin'] = 'ben'
+    else: row.update(bin='low', why='only reader ' + ('A' if fa else 'B') + ' found it')
     bins.append(row)
+for p in picks:
+    if p.get('ben') == 'added': bins.append(dict(id=p['id'], a=p['a'], b=p['b'], E=p['E'], N=p['N'], A=None, B=None, bin='ben', why='added by Ben', ben=dict(drawn=True, where='manual', x=p['x'], y=p['y']), notes=[]))
 json.dump(bins, open(D + 'bins.json', 'w', encoding='utf8', newline='\n'), indent=1)
-print('bins: high', sum(r['bin'] == 'high' for r in bins), 'low', sum(r['bin'] == 'low' for r in bins), 'decided', sum(r['bin'] == 'ben' for r in bins))
+print('bins:', dict(collections.Counter(r['bin'] for r in bins)), 'added skipped:', added_skipped)
 
 # ---------------------------------------------------------------- stations, runs
 T = {r['id']: r for r in json.load(open(D + 'trace.json', encoding='utf8'))} if os.path.exists(D + 'trace.json') else {}

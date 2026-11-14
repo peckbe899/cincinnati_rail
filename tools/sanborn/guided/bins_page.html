@@ -6,122 +6,217 @@
 <title>Plate {N} Crossings</title>
 <style>
   :root { --bg: #f6f4ef; --panel: #fff; --ink: #1f2328; --muted: #6b6f76; --line: #dcd8cf;
-          --ok: #1f7a3a; --bad: #b3261e; --todo: #d06a00; --a: #c62828; --b: #2e7d32; }
+          --ok: #1f7a3a; --bad: #b3261e; --todo: #d06a00; --none: #6b3fa0; --a: #c62828; --b: #2e7d32; --me: #7b1fa2; --today: #003cdc; }
   * { box-sizing: border-box; }
   body { margin: 0; font: 14px/1.4 system-ui, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
   header { position: sticky; top: 0; z-index: 10; background: var(--panel); border-bottom: 1px solid var(--line);
-           padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+           padding: 8px 16px; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
   header h1 { font-size: 16px; margin: 0; }
   .tools { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   button, .tools label { font: inherit; border: 1px solid var(--line); background: var(--panel); padding: 5px 10px; border-radius: 6px; cursor: pointer; }
+  button:disabled { opacity: .4; cursor: default; }
+  button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  button.on.no { background: var(--bad); border-color: var(--bad); }
   .progress { color: var(--muted); }
-  main { padding: 12px 16px 60px; }
-  .help { color: var(--muted); max-width: 980px; margin: 0 0 10px; }
+  main { padding: 10px 16px 40px; display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 12px; }
+  .help { grid-column: 1 / -1; color: var(--muted); margin: 0; max-width: 1100px; }
   .help b { color: var(--ink); }
-  .mapwrap { position: relative; overflow: auto; height: 60vh; border: 1px solid var(--line); background: #ddd; border-radius: 6px; }
-  .map { position: relative; }
-  .map img { display: block; user-select: none; }
-  .hi { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--ok); }
-  .mk { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; border: 3px solid var(--todo);
-        background: rgba(255,255,255,.4); cursor: pointer; }
-  .mk span { position: absolute; left: 20px; top: -12px; font: 700 12px system-ui; color: var(--todo); background: rgba(255,255,255,.85); padding: 0 3px; border-radius: 3px; }
-  .mk.done { border-color: var(--ok); } .mk.done span { color: var(--ok); }
-  .mk.not { border-color: var(--bad); } .mk.not span { color: var(--bad); }
-  .hide .mk, .hide .hi { display: none; } .fade .mk, .fade .hi { opacity: .3; }
-  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; margin-top: 14px; }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
-  .card.sel { outline: 3px solid var(--todo); }
-  .card h3 { margin: 0 0 4px; font-size: 14px; }
-  .card .why { color: var(--muted); font-size: 12px; margin-bottom: 6px; }
-  .card img { width: 100%; display: block; border: 1px solid var(--line); cursor: zoom-in; }
-  .card img.big { position: fixed; inset: 3vh 3vw; width: 94vw; height: 94vh; object-fit: contain; background: #fff; z-index: 20; cursor: zoom-out; }
-  .ch { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
-  .ch button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
-  .ch button.on.not { background: var(--bad); border-color: var(--bad); }
-  .key { font-size: 12px; color: var(--muted); }
-  .key .a { color: var(--a); font-weight: 700; } .key .b { color: var(--b); font-weight: 700; }
-  @media (max-width: 600px) { main { padding: 10px 16px 40px; } .cards { grid-template-columns: 1fr; } }
+  .a { color: var(--a); font-weight: 700; } .b { color: var(--b); font-weight: 700; } .me { color: var(--me); font-weight: 700; } .td { color: var(--today); font-weight: 700; }
+  .over { grid-column: 1 / -1; position: relative; overflow: auto; height: 30vh; border: 1px solid var(--line); background: #ddd; border-radius: 6px; }
+  .omap { position: relative; }
+  .omap img { display: block; user-select: none; -webkit-user-drag: none; }
+  .mk { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; border: 3px solid var(--todo); background: rgba(255,255,255,.5); cursor: pointer; }
+  .mk.high { border-color: var(--ok); width: 10px; height: 10px; margin: -5px 0 0 -5px; background: var(--ok); }
+  .mk.none { border-color: var(--none); } .mk.same { display: none; }
+  .mk.yes { border-color: var(--ok); background: #fff; } .mk.no { border-color: var(--bad); background: #fff; }
+  .mk.sel { outline: 3px solid #000; outline-offset: 2px; }
+  .mk.add { border-color: var(--me); background: var(--me); }
+  .frame { position: absolute; border: 2px solid #000; pointer-events: none; }
+  .hide .mk { display: none; } .fade .mk { opacity: .3; }
+  .left { min-width: 0; }
+  .insp { position: relative; overflow: hidden; height: 62vh; border: 1px solid var(--line); background: #ccc; border-radius: 6px; cursor: crosshair; touch-action: none; }
+  .inner { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+  .inner img { display: block; user-select: none; -webkit-user-drag: none; }
+  .pt { position: absolute; pointer-events: none; }
+  .pt.A { width: 26px; height: 26px; margin: -13px 0 0 -13px; border: 3px solid var(--a); }
+  .pt.B { width: 30px; height: 30px; margin: -15px 0 0 -15px; border: 3px solid var(--b); border-radius: 50%; }
+  .pt.P::before, .pt.P::after, .pt.M::before, .pt.M::after { content: ''; position: absolute; background: var(--today); }
+  .pt.P::before { left: -16px; top: -1.5px; width: 32px; height: 3px; } .pt.P::after { left: -1.5px; top: -16px; width: 3px; height: 32px; }
+  .pt.M::before, .pt.M::after { background: var(--me); left: -20px; top: -2px; width: 40px; height: 4px; }
+  .pt.M::before { transform: rotate(45deg); } .pt.M::after { transform: rotate(-45deg); }
+  .ibar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .panel h2 { font-size: 15px; margin: 0 0 2px; }
+  .why { color: var(--muted); font-size: 12px; }
+  .q { margin-top: 10px; } .q b { display: block; margin-bottom: 4px; }
+  .ch { display: flex; gap: 6px; flex-wrap: wrap; }
+  .right { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  .list { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; max-height: 78vh; overflow: auto; }
+  .row { padding: 6px 10px; border-bottom: 1px solid var(--line); cursor: pointer; display: flex; gap: 8px; align-items: baseline; }
+  .row:hover { background: #f0ede6; } .row.sel { background: #e9e4d8; }
+  .row .st { font-size: 12px; white-space: nowrap; margin-left: auto; color: var(--muted); }
+  .row .st.yes { color: var(--ok); font-weight: 600; } .row .st.no { color: var(--bad); font-weight: 600; }
+  .row small { color: var(--muted); display: block; }
+  .addform { display: none; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+  .addform.show { display: flex; }
+  .addform input { font: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; width: 210px; max-width: 100%; }
+  @media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); } .list { max-height: 50vh; } }
 </style>
 </head>
 <body>
 <header>
-  <h1>Plate {N}: low-confidence crossings</h1>
+  <h1>Plate {N}: crossings</h1>
   <span class="progress" id="prog"></span>
   <div class="tools">
-    <button id="mk">Markers</button>
+    <button id="mkb">Markers</button>
     <button id="export">Save answers (CSV)</button>
     <label>Load CSV <input type="file" id="import" accept=".csv" hidden></label>
   </div>
 </header>
 <main>
-  <p class="help">Green dots are the <b>high</b> crossings (already controls). Numbered markers are the <b>low</b> ones; click one to jump to its card.
-  In each card: <span class="key"><span class="a">red square = reader A</span>, <span class="b">green circle = reader B</span>, blue + = where today's crossing lands with the current fit, blue lines = today's streets.</span>
-  Choose <b>real</b> (the crossing is where the readers put it, their mean), <b>A</b> or <b>B</b> (only that reader is right), or <b>not</b> (not this crossing / not drawn). Click a crop to enlarge it.
-  Answers are kept in this browser; <b>Save answers</b> gives the CSV.</p>
-  <div class="mapwrap" id="wrap"><div class="map" id="map"><img src="img/plate.jpg" alt="plate"></div></div>
-  <div class="cards" id="cards"></div>
+  <p class="help">Pick a crossing from the list or the small map. The big view is the plate at full size: <b>drag</b> to move, <b>click</b> to put your own point.
+  <span class="a">Red square = reader A</span>, <span class="b">green circle = reader B</span>, <span class="td">blue + = today's crossing through the current fit</span>, <span class="me">purple × = your point</span>.
+  Two questions per crossing: <b>is it drawn on the plate</b>, and if so <b>where</b>. A crossing the list does not have: <b>Add a crossing</b>.</p>
+  <div class="over" id="over"><div class="omap" id="omap"><img src="img/plate.jpg" alt="plate overview"><div class="frame" id="frame"></div></div></div>
+  <div class="left">
+    <div class="ibar">
+      <button id="zout">−</button><button id="zin">+</button>
+      <button id="lines" class="on">Today's streets</button>
+      <button id="prev">◀ Previous</button><button id="next">Next ▶</button>
+      <button id="addb">Add a crossing</button>
+    </div>
+    <div class="insp" id="insp"><div class="inner" id="inner"><img id="full" src="img/lined.jpg" alt="plate"></div></div>
+    <div class="addform" id="addform">
+      <span id="addhint">Click the plate where the crossing is, then name today's two streets:</span>
+      <input id="adda" list="stl" placeholder="first street (today's name)">
+      <input id="addbn" list="stl" placeholder="second street (today's name)">
+      <button id="addsave">Save crossing</button><button id="addcancel">Cancel</button>
+      <datalist id="stl"></datalist>
+    </div>
+    <div class="panel" id="panel" style="margin-top:8px"><span class="why">No crossing selected.</span></div>
+  </div>
+  <div class="right">
+    <div class="tabs" id="tabs"></div>
+    <div class="list" id="list"></div>
+  </div>
 </main>
 <script src="data.js"></script>
 <script>
-const KEY = 'bins_' + DATA.plate; let ans = {};
-try { ans = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { ans = {}; }
-const low = DATA.items.filter(i => i.bin === 'low');
-for (const i of low) if (i.ben && !ans[i.id]) ans[i.id] = i.ben;
-function save() { try { localStorage.setItem(KEY, JSON.stringify(ans)); } catch (e) {} draw(); }
-const map = document.getElementById('map'), cards = document.getElementById('cards');
-for (const i of DATA.items) {
-  const x = i.x / DATA.k, y = i.y / DATA.k;
-  if (i.bin !== 'low') { const d = document.createElement('div'); d.className = 'hi'; d.style.left = x + 'px'; d.style.top = y + 'px'; map.appendChild(d); continue; }
-  const m = document.createElement('div'); m.className = 'mk'; m.id = 'm_' + i.id; m.style.left = x + 'px'; m.style.top = y + 'px';
-  m.innerHTML = '<span>L' + i.n + '</span>'; m.onclick = () => go(i.id); map.appendChild(m);
-  const c = document.createElement('div'); c.className = 'card'; c.id = 'c_' + i.id;
-  const ab = (i.A ? 'A: ' + i.A[2] : 'A: not found') + ' · ' + (i.B ? 'B: ' + i.B[2] : 'B: not found');
-  c.innerHTML = '<h3>L' + i.n + ' · ' + i.a + ' × ' + i.b + '</h3><div class="why">' + i.why + ' · ' + ab + ' · ' + i.id + '</div>' +
-    '<img src="img/' + i.id + '.jpg" alt="crop" loading="lazy"><div class="ch"></div>';
-  c.querySelector('img').onclick = e => e.target.classList.toggle('big');
-  const ch = c.querySelector('.ch');
-  for (const v of ['real', 'A', 'B', 'not']) {
-    if ((v === 'A' && !i.A) || (v === 'B' && !i.B)) continue;
-    const b = document.createElement('button'); b.textContent = v; b.dataset.v = v; if (v === 'not') b.classList.add('not');
-    b.onclick = () => { ans[i.id] = ans[i.id] === v ? undefined : v; if (!ans[i.id]) delete ans[i.id]; save(); };
-    ch.appendChild(b);
-  }
-  cards.appendChild(c);
+const $ = id => document.getElementById(id), K = DATA.k, KEY = 'cross2_' + DATA.plate;
+let st = { ans: {}, adds: [] };
+try { st = Object.assign(st, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+const IT = {}; for (const i of DATA.items) { IT[i.id] = i;
+  if (i.ben && !st.ans[i.id] && !i.id.includes('-add')) st.ans[i.id] = i.ben.drawn === false ? { drawn: 'no' } : { drawn: 'yes', where: i.ben.where || 'mean', x: i.ben.x, y: i.ben.y }; }
+const items = DATA.items.filter(i => !i.id.includes('-add'));
+for (const i of DATA.items) if (i.id.includes('-add') && !st.adds.some(a => a.x === i.ben.x && a.y === i.ben.y)) st.adds.push({ a: i.a, b: i.b, x: i.ben.x, y: i.ben.y });
+function persist() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+const mid = i => { const q = [i.A, i.B].filter(Boolean); return q.length ? [q.reduce((s, v) => s + v[0], 0) / q.length, q.reduce((s, v) => s + v[1], 0) / q.length] : i.pred; };
+const TABS = [['low', 'Low'], ['none', 'None found'], ['high', 'High'], ['same', 'Same point'], ['add', 'Added']];
+let tab = 'low', sel = null, adding = false, addpt = null;
+// ---------- inspector
+const insp = $('insp'), inner = $('inner'); let z = 1, tx = 0, ty = 0;
+function apply() { inner.style.transform = `translate(${tx}px,${ty}px) scale(${z})`; frame(); }
+function centre(x, y) { tx = insp.clientWidth / 2 - x * z; ty = insp.clientHeight / 2 - y * z; apply(); }
+function view() { return [(insp.clientWidth / 2 - tx) / z, (insp.clientHeight / 2 - ty) / z]; }
+function zoom(f) { const c = view(); z = Math.min(3, Math.max(0.25, z * f)); centre(c[0], c[1]); }
+$('zin').onclick = () => zoom(1.5); $('zout').onclick = () => zoom(1 / 1.5);
+$('lines').onclick = e => { const on = e.target.classList.toggle('on'); $('full').src = on ? 'img/lined.jpg' : 'img/clean.jpg'; };
+let drag = null;
+insp.onpointerdown = e => { drag = { x: e.clientX, y: e.clientY, tx, ty, moved: false }; insp.setPointerCapture(e.pointerId); };
+insp.onpointermove = e => { if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true; if (drag.moved) { tx = drag.tx + dx; ty = drag.ty + dy; apply(); } };
+insp.onpointerup = e => { const d = drag; drag = null; if (!d || d.moved) return;
+  const r = insp.getBoundingClientRect(), x = Math.round((e.clientX - r.left - tx) / z), y = Math.round((e.clientY - r.top - ty) / z);
+  if (x < 0 || y < 0 || x > DATA.W || y > DATA.H) return;
+  if (adding) { addpt = [x, y]; marks(); return; }
+  if (sel && IT[sel]) { st.ans[sel] = { drawn: 'yes', where: 'manual', x, y }; persist(); render(); } };
+function marks() {
+  inner.querySelectorAll('.pt').forEach(e => e.remove());
+  const put = (c, p) => { if (!p) return; const d = document.createElement('div'); d.className = 'pt ' + c; d.style.left = p[0] + 'px'; d.style.top = p[1] + 'px'; inner.appendChild(d); };
+  if (adding) { put('M', addpt); return; }
+  const i = IT[sel]; if (!i) return; put('P', i.pred); put('A', i.A); put('B', i.B);
+  const a = st.ans[sel]; if (a && a.where === 'manual') put('M', [a.x, a.y]);
 }
-function go(id) {
-  document.querySelectorAll('.card.sel').forEach(e => e.classList.remove('sel'));
-  const c = document.getElementById('c_' + id); c.classList.add('sel'); c.scrollIntoView({ behavior: 'smooth', block: 'center' });
+// ---------- overview
+const omap = $('omap');
+function frame() { const f = $('frame'), w = insp.clientWidth / z / K, h = insp.clientHeight / z / K; f.style.left = -tx / z / K + 'px'; f.style.top = -ty / z / K + 'px'; f.style.width = w + 'px'; f.style.height = h + 'px'; }
+omap.onclick = e => { if (e.target.classList.contains('mk')) return; const r = omap.getBoundingClientRect(); centre((e.clientX - r.left) * K, (e.clientY - r.top) * K); };
+function omarks() {
+  omap.querySelectorAll('.mk').forEach(e => e.remove());
+  for (const i of items) { const p = mid(i); if (!p) continue; const a = st.ans[i.id];
+    const m = document.createElement('div'); m.className = 'mk ' + i.bin + (a ? ' ' + a.drawn : '') + (i.id === sel ? ' sel' : '');
+    const q = a && a.where === 'manual' ? [a.x, a.y] : p; m.style.left = q[0] / K + 'px'; m.style.top = q[1] / K + 'px';
+    m.title = i.a + ' × ' + i.b; m.onclick = () => { tab = i.bin; pick(i.id); }; omap.appendChild(m); }
+  for (const a of st.adds) { const m = document.createElement('div'); m.className = 'mk add'; m.style.left = a.x / K + 'px'; m.style.top = a.y / K + 'px'; m.title = a.a + ' × ' + a.b; omap.appendChild(m); }
 }
-function draw() {
-  let n = 0;
-  for (const i of low) {
-    const v = ans[i.id]; if (v) n++;
-    document.getElementById('m_' + i.id).className = 'mk' + (v === 'not' ? ' not' : v ? ' done' : '');
-    document.querySelectorAll('#c_' + CSS.escape(i.id) + ' .ch button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
-  }
-  document.getElementById('prog').textContent = n + ' of ' + low.length + ' answered';
+let mmode = 0; $('mkb').onclick = () => { mmode = (mmode + 1) % 3; $('over').classList.toggle('fade', mmode === 1); $('over').classList.toggle('hide', mmode === 2); };
+// ---------- list, panel
+function status(i) { const a = st.ans[i.id]; if (!a) return ['', i.bin === 'high' ? 'control' : 'to do'];
+  return a.drawn === 'no' ? ['no', 'not drawn'] : ['yes', 'drawn: ' + ({ mean: 'mean', A: 'A', B: 'B', manual: 'my point' })[a.where]]; }
+function render() {
+  const cnt = b => b === 'add' ? st.adds.length : items.filter(i => i.bin === b).length;
+  $('tabs').innerHTML = ''; for (const [b, t] of TABS) { const el = document.createElement('button'); el.textContent = t + ' (' + cnt(b) + ')'; el.className = tab === b ? 'on' : ''; el.onclick = () => { tab = b; render(); }; $('tabs').appendChild(el); }
+  const L = $('list'); L.innerHTML = '';
+  if (tab === 'add') st.adds.forEach((a, k) => { const r = document.createElement('div'); r.className = 'row';
+      r.innerHTML = '<div>' + a.a + ' × ' + a.b + '<small>at ' + a.x + ', ' + a.y + '</small></div>';
+      const x = document.createElement('button'); x.textContent = 'Remove'; x.style.marginLeft = 'auto'; x.onclick = e => { e.stopPropagation(); st.adds.splice(k, 1); persist(); render(); };
+      r.appendChild(x); r.onclick = () => centre(a.x, a.y); L.appendChild(r); });
+  else for (const i of items.filter(i => i.bin === tab)) { const s = status(i); const r = document.createElement('div'); r.className = 'row' + (i.id === sel ? ' sel' : ''); r.id = 'r_' + i.id;
+      r.innerHTML = '<div>' + i.a + ' × ' + i.b + '<small>' + (i.why || 'control') + '</small></div><span class="st ' + s[0] + '">' + s[1] + '</span>'; r.onclick = () => pick(i.id); L.appendChild(r); }
+  const low = items.filter(i => i.bin === 'low' || i.bin === 'none'); $('prog').textContent = low.filter(i => st.ans[i.id]).length + ' of ' + low.length + ' low / none-found answered · ' + st.adds.length + ' added';
+  panel(); marks(); omarks();
 }
-let mode = 0; const wrap = document.getElementById('wrap');
-function cycle() { mode = (mode + 1) % 3; wrap.classList.toggle('fade', mode === 1); wrap.classList.toggle('hide', mode === 2); }
-document.getElementById('mk').onclick = cycle;
-document.addEventListener('keydown', e => { if (e.key === 'm' || e.key === 'M') cycle(); if (e.key === 'Escape') document.querySelectorAll('img.big').forEach(i => i.classList.remove('big')); });
-document.getElementById('export').onclick = () => {
-  const rows = [['n', 'id', 'a', 'b', 'answer']].concat(low.map(i => ['L' + i.n, i.id, i.a, i.b, ans[i.id] || '']));
+function pick(id) { sel = id; const i = IT[id], a = st.ans[id], p = a && a.where === 'manual' ? [a.x, a.y] : mid(i); if (p) centre(p[0], p[1]); render();
+  const r = $('r_' + id); if (r) r.scrollIntoView({ block: 'nearest' }); }
+function step(d) { const L = items.filter(i => i.bin === tab); if (!L.length) return; const k = L.findIndex(i => i.id === sel); pick(L[(k + d + L.length) % L.length].id); }
+$('prev').onclick = () => step(-1); $('next').onclick = () => step(1);
+function panel() {
+  const P = $('panel'), i = IT[sel]; if (!i) { P.innerHTML = '<span class="why">No crossing selected.</span>'; return; }
+  const a = st.ans[sel] || {};
+  const rd = (n, v) => n + ': ' + (v ? 'found, ' + v[2] : 'not found');
+  P.innerHTML = '<h2>' + i.a + ' × ' + i.b + '</h2><div class="why">' + i.id + ' · ' + (i.why || 'high: a control') + ' · ' + rd('A', i.A) + ' · ' + rd('B', i.B) + '</div>' +
+    (i.notes.length ? '<div class="why">Reader notes: ' + i.notes.map(n => '“' + n.replace(/</g, '&lt;') + '”').join(' · ') + '</div>' : '') +
+    '<div class="q"><b>1. Is this crossing drawn on the plate?</b><div class="ch" id="q1"></div></div>' +
+    '<div class="q"><b>2. If it is, where?</b><div class="ch" id="q2"></div><div class="why" style="margin-top:4px">For your own point, click the plate.</div></div>' +
+    '<div class="q"><button id="clr">Clear my answer</button></div>';
+  const btn = (host, t, on, fn, cls, dis) => { const b = document.createElement('button'); b.textContent = t; if (on) b.classList.add('on'); if (cls) b.classList.add(cls); b.disabled = !!dis; b.onclick = fn; $(host).appendChild(b); };
+  const set = v => { st.ans[sel] = v; persist(); render(); };
+  const def = i.A && i.B ? 'mean' : i.A ? 'A' : i.B ? 'B' : null;
+  btn('q1', 'Yes', a.drawn === 'yes', () => { if (a.drawn === 'yes') return; if (def) set({ drawn: 'yes', where: def }); else alert('No reader placed this one: click the plate where it is.'); });
+  btn('q1', 'No', a.drawn === 'no', () => set({ drawn: 'no' }), 'no');
+  const w = v => () => set({ drawn: 'yes', where: v });
+  if (i.A && i.B) btn('q2', "Readers' mean", a.where === 'mean', w('mean'));
+  if (i.A) btn('q2', 'Reader A', a.where === 'A', w('A'));
+  if (i.B) btn('q2', 'Reader B', a.where === 'B', w('B'));
+  btn('q2', 'My point' + (a.where === 'manual' ? ' (' + a.x + ', ' + a.y + ')' : ''), a.where === 'manual', () => {}, '', a.where !== 'manual');
+  $('clr').onclick = () => { delete st.ans[sel]; persist(); render(); };
+}
+// ---------- add
+$('stl').innerHTML = DATA.streets.map(s => '<option value="' + s.replace(/"/g, '&quot;') + '">').join('');
+function addmode(on) { adding = on; addpt = null; $('addform').classList.toggle('show', on); $('addb').classList.toggle('on', on); marks(); }
+$('addb').onclick = () => addmode(!adding); $('addcancel').onclick = () => addmode(false);
+$('addsave').onclick = () => { const a = $('adda').value.trim(), b = $('addbn').value.trim();
+  if (!addpt) return alert('Click the plate where the crossing is first.');
+  if (!DATA.streets.includes(a) || !DATA.streets.includes(b) || a === b) return alert("Choose two different streets from today's names in the list.");
+  st.adds.push({ a, b, x: addpt[0], y: addpt[1] }); persist(); $('adda').value = $('addbn').value = ''; addmode(false); tab = 'add'; render(); };
+// ---------- csv
+$('export').onclick = () => {
+  const rows = [['id', 'a', 'b', 'bin', 'drawn', 'where', 'x', 'y']];
+  for (const i of items) { const a = st.ans[i.id]; if (a) rows.push([i.id, i.a, i.b, i.bin, a.drawn, a.where || '', a.where === 'manual' ? a.x : '', a.where === 'manual' ? a.y : '']); }
+  st.adds.forEach((a, k) => rows.push(['add' + (k + 1), a.a, a.b, 'add', 'yes', 'manual', a.x, a.y]));
   const csv = rows.map(r => r.map(v => '"' + String(v ?? '').replace(/"/g, '""') + '"').join(',')).join('\n');
-  const u = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-  const a = document.createElement('a'); a.href = u; a.download = 'plate_' + DATA.plate + '_crossings.csv'; a.click(); URL.revokeObjectURL(u);
+  const u = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })), el = document.createElement('a');
+  el.href = u; el.download = 'plate_' + DATA.plate + '_crossings.csv'; el.click(); URL.revokeObjectURL(u);
 };
-document.getElementById('import').onchange = e => {
-  const f = e.target.files[0]; if (!f) return;
-  f.text().then(t => {
-    for (const line of t.split(/\r?\n/).slice(1)) {
-      const c = (line.match(/"((?:[^"]|"")*)"/g) || []).map(s => s.slice(1, -1).replace(/""/g, '"'));
-      if (c.length >= 5 && c[4]) ans[c[1]] = c[4];
-    }
-    save();
-  });
-};
-draw();
+$('import').onchange = e => { const f = e.target.files[0]; if (!f) return; f.text().then(t => {
+  st = { ans: {}, adds: [] };
+  for (const line of t.split(/\r?\n/).slice(1)) { const c = (line.match(/"((?:[^"]|"")*)"/g) || []).map(s => s.slice(1, -1).replace(/""/g, '"')); if (c.length < 8) continue;
+    if (c[0].startsWith('add')) st.adds.push({ a: c[1], b: c[2], x: +c[6], y: +c[7] });
+    else st.ans[c[0]] = c[4] === 'no' ? { drawn: 'no' } : c[5] === 'manual' ? { drawn: 'yes', where: 'manual', x: +c[6], y: +c[7] } : { drawn: 'yes', where: c[5] }; }
+  persist(); render(); }); };
+window.onresize = apply;
+const first = items.find(i => i.bin === 'low') || items[0]; if (first) pick(first.id); else render();
 </script>
 </body>
 </html>

@@ -37,3 +37,13 @@ Rules (all in `merge_guided.py`, the same on every plate):
   are taken out, or the run is cut there.
 - Fit (`cufp/fit.py`): guided crossings match OSM by today's names (`osm_a`, `osm_b`). Build (`cufp/build.py`): points
   are grouped by street id (`sid_a`, `sid_b`, `sid`) when they carry one.
+
+## Ben's review of the crossings (14 November 2026)
+
+`merge_guided.py` writes `bins.json`: every crossing of the guide is high (a control on its own), low (a reader found
+it but a rule kept it out, with the reason), none (no reader found it) or same (shares a plate point with another).
+`bins_page.py N OUTDIR` builds a local review page (serve OUTDIR with `python -m http.server`): the plate at full
+size, each crossing with two separate questions (is it drawn on the plate; if so where: the readers' mean, A, B, or
+Ben's own click), and "Add a crossing" for one the guide does not have (a click plus today's two street names).
+`bins_page.py N --load CSV` writes `decisions.json`; the merge then uses Ben's calls as controls that screening does
+not remove, drops the ones he marks not drawn, and places an added crossing at the point where today's two streets meet.
