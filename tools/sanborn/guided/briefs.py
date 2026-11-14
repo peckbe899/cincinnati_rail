@@ -1,6 +1,6 @@
 """Reader briefs for the guided passes (14 November 2026).
 
-    python briefs.py N KIND CROPDIR BRIEFDIR [PER]      KIND: trace | ends | review
+    python briefs.py N KIND CROPDIR BRIEFDIR [PER]      KIND: cross | trace | ends | review
 Writes BRIEFDIR/<N>_<KIND>_<A|B>_<k>.txt; each brief names the output file picks22_guided/22-N/<KIND>_<A|B>_<k>.json.
 Readers A and B get the same items and the same crops; each works alone and must not open the other's file.
 """
@@ -47,7 +47,17 @@ ITEMS:
 OUTPUT: write {out} (plain UTF-8, no byte-order mark): a JSON object
   {{"missing": [{{"section": "...", "printed": "...", "points": [[x, y], ...], "start_at": "...", "end_at": "...", "sure": "high" | "medium" | "low"}}], "wrong": [{{"section": "...", "x": 0, "y": 0, "what": "..."}}]}}
 Then reply with one line: how many missing and how many wrong."""
-if KIND == 'trace':
+CROSS = """For each crossing below the image is a 600 x 600 plate-pixel piece of the scan containing the crossing of the two named streets, somewhere within about 150 plate pixels of the image's middle (NOT exactly at the middle). The stated directions tell you which street is which. Find the point where the centre lines of the two streets meet. For a T, take the point where the centre line of the street that ends meets the centre line of the through street. If the two legs of a street are offset (a jog), use the leg named by the direction given, and say so in the note. If the crossing is not in the image, if one of the streets is not drawn (not built in 1922, or replaced by a railroad, creek, estate or cemetery), or if you cannot tell which of several crossings is meant, record found = false and say why.
+
+CROSSINGS:
+{items}
+
+OUTPUT: write {out} (plain UTF-8, no byte-order mark): a JSON list with one object per crossing, in order:
+  {{"id": "...", "found": true, "x": 1234, "y": 5678, "sure": "high" | "medium" | "low", "name_a_printed": "what the plate prints on the first street here, or empty", "name_b_printed": "...", "note": ""}}
+(for found = false leave x and y out and put the reason in note). Then reply with one line: how many found and how many not."""
+if KIND == 'cross':
+    tpl = CROSS; rows = None
+elif KIND == 'trace':
     rows = json.load(open(OUT + 'trace.json', encoding='utf8')); tpl = TRACE; sub = 't'
     item = lambda r: f"{r['id']}: {r['name']}, running {r['runs']} in the image. Image {CROPS}{sub}/{r['id']}.jpg (plate x {r['box'][0]}-{r['box'][2]}, y {r['box'][1]}-{r['box'][3]}); red cross at about ({int(r['pred'][0])}, {int(r['pred'][1])})."
 elif KIND == 'ends':
@@ -58,9 +68,12 @@ else:
     item = lambda r: f"section {r['id']}: image {CROPS}{sub}/{r['id']}.jpg (plate x {r['box'][0]}-{r['box'][2]}, y {r['box'][1]}-{r['box'][3]})."
 tag = KIND + (ROUND if KIND == 'ends' and ROUND else '')
 for R in 'AB':
+    if KIND == 'cross':          # each reader has its own crop offsets (guide.py with its own seed)
+        rows = json.load(open(OUT + f'guide_{R}.json', encoding='utf8'))
+        item = lambda r, R=R: f"{r['id']}: {r['a']} (runs {r['a_runs']} in the image) and {r['b']} (runs {r['b_runs']}). Image {CROPS}{R}/{r['id']}.jpg (plate x {r['box'][0]}-{r['box'][2]}, y {r['box'][1]}-{r['box'][3]})."
     for k in range(0, len(rows), PER):
         part = rows[k:k + PER]; b = k // PER + 1
-        out = OUT + f'{tag}_{R}_{b}.json'
+        out = OUT + (f'{R}_{b}.json' if KIND == 'cross' else f'{tag}_{R}_{b}.json')
         t = COMMON.format(N=N) + tpl.format(items='\n'.join(item(r) for r in part), out=out)
         open(BD + f'{N}_{tag}_{R}_{b}.txt', 'w', encoding='utf8', newline='\n').write(t)
 print(KIND, len(rows), 'items,', -(-len(rows) // PER), 'briefs per reader')

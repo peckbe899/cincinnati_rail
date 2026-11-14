@@ -47,6 +47,19 @@ def reads(pattern):
     for f in sorted(glob.glob(D + pattern)):
         for r in json.load(open(f, encoding='utf-8-sig')): out[r['id']] = r
     return out
+copied = []
+def uncopy(R, items, who):
+    """a reader who gives two items one point although the items lie more than 60 px apart on the plate copied it
+    (some readers fill items they did not open from a neighbour): those reads count as not given"""
+    pts = [(i, r) for i, r in R.items() if r.get('found', r.get('ends')) and 'x' in r and i in items]
+    bad = set()
+    for k, (i, a) in enumerate(pts):
+        for j, b in pts[k + 1:]:
+            if abs(a['x'] - b['x']) <= 2 and abs(a['y'] - b['y']) <= 2:
+                pi, pj = items[i].get('pred'), items[j].get('pred')
+                if pi and pj and np.hypot(pi[0] - pj[0], pi[1] - pj[1]) > 60: bad |= {i, j}
+    for i in bad: copied.append(dict(read=who, id=i)); R.pop(i)
+    return R
 def pair(A, B, i, key='found'):
     a, b = A.get(i, {}), B.get(i, {})
     return bool(a.get(key)), bool(b.get(key)), a, b
@@ -54,7 +67,7 @@ def dist(a, b): return float(np.hypot(a['x'] - b['x'], a['y'] - b['y']))
 
 # ---------------------------------------------------------------- crossings
 G = {r['id']: r for r in json.load(open(D + 'guide_A.json', encoding='utf8'))}
-CA, CB = reads('A_*.json'), reads('B_*.json')
+CA, CB = uncopy(reads('A_*.json'), G, 'A'), uncopy(reads('B_*.json'), G, 'B')
 for g in G.values():
     g['sid_a'] = P.sid_at(ST, g['a'], g['E'], g['N']); g['sid_b'] = P.sid_at(ST, g['b'], g['E'], g['N'])
 picks, street_only, jogs = [], [], []
@@ -96,7 +109,7 @@ for p in picks:
 
 # ---------------------------------------------------------------- stations, runs
 T = {r['id']: r for r in json.load(open(D + 'trace.json', encoding='utf8'))} if os.path.exists(D + 'trace.json') else {}
-TA, TB = reads('trace_A_*.json'), reads('trace_B_*.json')
+TA, TB = uncopy(reads('trace_A_*.json'), T, 'trace A'), uncopy(reads('trace_B_*.json'), T, 'trace B')
 seq = collections.defaultdict(list); disputed = []
 for i, r in T.items():
     if i not in TA or i not in TB: continue
@@ -308,7 +321,7 @@ rep = dict(sheet=f'22-{N}', crossings=len(G), found_both=len(d), same_verdict=su
            screened=screened, not_drawn=[dict(id=p['id'], a=p['a'], b=p['b'], miss_m=p['miss_m']) for p in picks if not p['drawn']], jogs=jogs,
            stations=len(T), stations_read=sum(1 for i in T if i in TA and i in TB), stations_disputed=disputed,
            runs=[{k: v for k, v in r.items()} for r in runs], ends_read=end_log,
-           duplicate_runs=dups, review_extended=review_used, review_added=added, review_wrong=wrong)
+           copied_reads=copied, duplicate_runs=dups, review_extended=review_used, review_added=added, review_wrong=wrong)
 json.dump(rep, open(D + 'merge.json', 'w', encoding='utf8', newline='\n'), indent=1)
 print(json.dumps(dict(crossings=len(G), picks=len(picks), controls=len(ctrl), screened=len(screened), not_drawn=len(rep['not_drawn']), jogs=len(jogs),
                       stations=len(T), stations_read=rep['stations_read'], disputed=len(disputed), runs=len(runs),

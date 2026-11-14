@@ -1,0 +1,122 @@
+{
+ "made": "2026-11-14T01:20:39",
+ "summary": {
+  "plates": [
+   {
+    "plate": "22-82A",
+    "controls": 79,
+    "name_seeded_fit": "tps1",
+    "lam": 3.0,
+    "damped": false,
+    "own_rms": 2.38,
+    "heldout": 3.42,
+    "heldout_max": 9.9,
+    "max_corner_move_m": 7.63,
+    "corner_moves_m": [
+     2.6,
+     1.2,
+     1.9,
+     7.6
+    ],
+    "ties": 4,
+    "tie_partners": [
+     "22-75",
+     "22-76"
+    ]
+   }
+  ],
+  "ties": 4,
+  "seams": {
+   "dir": "reports/2026-11-14_seams_newplates_82A_test",
+   "neighbours": {
+    "22-75": {
+     "before": {
+      "n": 17,
+      "median": 1.63
+     },
+     "after": {
+      "n": 14,
+      "median": 2.3
+     },
+     "with_new": [
+      {
+       "new": "22-82A",
+       "n": 2,
+       "median": 4.08,
+       "max": 4.92
+      }
+     ]
+    },
+    "22-76": {
+     "before": {
+      "n": 17,
+      "median": 0.67
+     },
+     "after": {
+      "n": 9,
+      "median": 2.23
+     },
+     "with_new": [
+      {
+       "new": "22-82A",
+       "n": 2,
+       "median": 7.04,
+       "max": 8.67
+      }
+     ]
+    }
+   },
+   "new_pair": {
+    "n": 0,
+    "median": null,
+    "max": null
+   }
+  },
+  "gate": {
+   "heldout_under_5m": true,
+   "neighbour_median_not_worse": {
+    "22-75": false,
+    "22-76": false
+   },
+   "build": false
+  }
+ },
+ "ties": [
+  {
+   "a": "22-82A",
+   "b": "22-75",
+   "street_1": "Lowry Avenue",
+   "street_2": "Huston Avenue",
+   "before_m": 5.41,
+   "after_m": 3.23,
+   "weight": 1.0
+  },
+  {
+   "a": "22-82A",
+   "b": "22-75",
+   "street_1": "Hopkins Avenue",
+   "street_2": "Woodburn Avenue",
+   "before_m": 11.04,
+   "after_m": 4.92,
+   "weight": 1.0
+  },
+  {
+   "a": "22-82A",
+   "b": "22-76",
+   "street_1": "Lafayette Avenue",
+   "street_2": "Madison Avenue",
+   "before_m": 11.72,
+   "after_m": 5.42,
+   "weight": 1.0
+  },
+  {
+   "a": "22-82A",
+   "b": "22-76",
+   "street_1": "Lafayette Avenue",
+   "street_2": "Jefferson Avenue",
+   "before_m": 13.57,
+   "after_m": 8.67,
+   "weight": 0.692
+  }
+ ]
+}
