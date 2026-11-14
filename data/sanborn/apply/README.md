@@ -149,3 +149,12 @@ Model `cufp/43/fwd_complete.pkl` (`reports/2026-11-13_newplates_43`: 33 controls
 - tiles_22 re-composited with 43 (254 -> 255 tiles).
 - Seams (`reports/2026-11-13_seams_applied` against `reports/2026-11-13_seams_applied_45`, `compare_45.json`): all 828 existing seams unchanged, none lost. 68 new, all with plate 43: 13 plate-plate (37L, 37R, 45), median 1.25 m, max 4.77 m; 55 with 1904 frames, median 4.27 m, max 9.76 m.
 - Check (the hub is not running; basin streets drawn over the tiles_22 overview, 2 m a pixel): plate 43 meets 37L/37R along Powers Street and 45 at Chase Avenue without a visible step, and the streets lie on its printed streets at that scale. Not checked at full zoom.
+
+## Plate 44 added (13 November 2026)
+
+Model `cufp/44/fwd_complete.pkl` (`reports/2026-11-13_newplates_44`: 34 controls, held-out 3.36 m, max 9.45 m). Built like 43 and 45: at its fitted position, 1904 frames under it left as they are, w1 kept, only ground not already drawn taken, prefix S5.
+
+- c44: 0 streets and 2 blocks; every street on the plate was already on the page. Every id in Ben's layout still there with its name, none moved (`streets_report_44.json`).
+- tiles_22 re-composited with 44 (still 255 tiles; 44 falls inside tiles already there).
+- Seams (`reports/2026-11-13_seams_applied` against `reports/2026-11-13_seams_applied_43`, `compare_43.json`): all 896 existing seams unchanged, none lost. 66 new, all with plate 44: 12 plate-plate (37L, 37R, 43, 45), median 0.80 m, max 1.65 m; 54 with 1904 frames, median 4.15 m, max 7.44 m.
+- Check (hub not running; basin streets over the tiles_22 overview, 2 m a pixel): the page's streets lie on plate 44's printed streets, and it meets 43 and 45 without a visible step. Not checked at full zoom.

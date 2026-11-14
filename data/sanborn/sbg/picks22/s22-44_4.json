@@ -1,0 +1,213 @@
+{
+ "sheet": "22-44",
+ "part": 4,
+ "strip": [
+  4560,
+  0,
+  6120,
+  7220
+ ],
+ "made": "2026-11-13T22:38:13",
+ "by": "tools/sanborn/complete/merge_reads.py: two independent reads, a pick only where they agree within 60 px",
+ "reads": [
+  "picks22_reads/22-44/A_4.json",
+  "picks22_reads/22-44/B_4.json"
+ ],
+ "intersections": [
+  {
+   "a": "Fergus Street",
+   "b": "Spring Grove Avenue",
+   "x": 4521.0,
+   "y": 3570.0,
+   "kind": "T",
+   "reads": [
+    {
+     "read": "A",
+     "x": 4530,
+     "y": 3570
+    },
+    {
+     "read": "B",
+     "x": 4512,
+     "y": 3570
+    }
+   ],
+   "spread_px": 18.0
+  },
+  {
+   "a": "Fergus Street",
+   "b": "Bond Street",
+   "x": 4521.0,
+   "y": 2805.5,
+   "kind": "T",
+   "reads": [
+    {
+     "read": "A",
+     "x": 4530,
+     "y": 2805
+    },
+    {
+     "read": "B",
+     "x": 4512,
+     "y": 2806
+    }
+   ],
+   "spread_px": 18.0
+  },
+  {
+   "a": "Mad Anthony Street",
+   "b": "Bond Street",
+   "x": 5550.0,
+   "y": 2872.5,
+   "kind": "T",
+   "reads": [
+    {
+     "read": "A",
+     "x": 5555,
+     "y": 2865
+    },
+    {
+     "read": "B",
+     "x": 5545,
+     "y": 2880
+    }
+   ],
+   "spread_px": 18.0
+  },
+  {
+   "a": "Mad Anthony Street",
+   "b": "Spring Grove Avenue",
+   "x": 5590.0,
+   "y": 3570.0,
+   "kind": "T",
+   "reads": [
+    {
+     "read": "A",
+     "x": 5580,
+     "y": 3570
+    },
+    {
+     "read": "B",
+     "x": 5600,
+     "y": 3570
+    }
+   ],
+   "spread_px": 20.0
+  },
+  {
+   "a": "Mad Anthony Street",
+   "b": "Cornwall Place",
+   "x": 5317.5,
+   "y": 910.0,
+   "kind": "T",
+   "reads": [
+    {
+     "read": "A",
+     "x": 5335,
+     "y": 905
+    },
+    {
+     "read": "B",
+     "x": 5300,
+     "y": 915
+    }
+   ],
+   "spread_px": 36.4
+  },
+  {
+   "a": "Mad Anthony Street",
+   "b": "Knowlton Street",
+   "x": 5487.5,
+   "y": 2037.5,
+   "kind": "cross",
+   "reads": [
+    {
+     "read": "A",
+     "x": 5505,
+     "y": 2045
+    },
+    {
+     "read": "B",
+     "x": 5470,
+     "y": 2030
+    }
+   ],
+   "spread_px": 38.1
+  }
+ ],
+ "widths": [
+  {
+   "street": "? Street",
+   "ft": 50,
+   "x": 4460,
+   "y": 220
+  },
+  {
+   "street": "Knowlton Street",
+   "ft": 60,
+   "x": 5570,
+   "y": 2030
+  },
+  {
+   "street": "Bond Street",
+   "ft": 40,
+   "x": 5610,
+   "y": 2880
+  },
+  {
+   "street": "Fergus Street",
+   "ft": 50,
+   "x": 4500,
+   "y": 3420
+  },
+  {
+   "street": "Mad Anthony Street",
+   "ft": 50
+  },
+  {
+   "street": "Alibone Street",
+   "ft": 33
+  }
+ ],
+ "bends": [
+  {
+   "street": "Fergus Street",
+   "x": 4415,
+   "y": 2180,
+   "note": "west line kinks south-east"
+  },
+  {
+   "street": "Mad Anthony Street",
+   "x": 5330,
+   "y": 1300,
+   "note": "runs slightly east of north; centre drifts from x 5290 at top to 5600 at Spring Grove"
+  }
+ ],
+ "ends": [
+  {
+   "street": "Bond Street",
+   "x": 4940,
+   "y": 2805,
+   "note": "west Bond stops at lot line"
+  },
+  {
+   "street": "? Street",
+   "x": 6080,
+   "y": 4500,
+   "note": "street south of Spring Grove ends at creek"
+  },
+  {
+   "street": "Bond Street",
+   "x": 5120,
+   "y": 2806,
+   "note": "west Bond ends at lot line of block 19, does not reach Mad Anthony"
+  },
+  {
+   "street": "Alibone Street",
+   "x": 6240,
+   "y": 5300,
+   "note": "ends south of the creek at the Moses F. Brown lots"
+  }
+ ],
+ "notes": "Diagonal 'AVENUE' with Vandalia railroad: full name not printed in strip. Mad Anthony printed 'MAD ANTHONY' at top and 'STREET' lower; assumed one street. Knowlton west of Mad Anthony not clearly open (24in sewer only); Bond west (Bond St.) and east (Bond) not aligned. Chambers Street just east of 6420 not picked. | Top street printed only 'STREET' (probably Chase Avenue or similar; name on neighbouring part). West street at y 1123 printed only 'ST.'. Diagonal avenue printed only 'AVENUE', band between Vandalia tracks and green line, closes against Mad Anthony; its crossing with Chambers(?) Street at x ~6550 lies outside the strip. Knowlton west of Mad Anthony is unlabelled (house numbers 1500/1501, 24in sewer) and taken as Knowlton. Mad Anthony south of Knowlton printed 'STREET'. Fold/gutter at x ~5370."
+}

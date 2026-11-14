@@ -231,3 +231,43 @@ Crossings the reads did not agree on:
 - strip 6, Delaney Street & McMakin Alley (read B at 8795, 3742): only read B has it
 - strip 6, Colerain Avenue & Powers Street (read A at 9005, 7005): the reads are 48 px apart
 
+## 22-44
+
+| Strip | Read A crossings | Read B crossings | Picks | Not agreed |
+|---|---|---|---|---|
+| 1 | 18 | 18 | 18 | 0 |
+| 2 | 20 | 15 | 11 | 11 |
+| 3 | 9 | 7 | 5 | 5 |
+| 4 | 6 | 8 | 6 | 2 |
+| 5 | 8 | 8 | 4 | 5 |
+| 6 | 2 | 2 | 1 | 2 |
+| **All** | 63 | 58 | 45 | 25 |
+
+Crossings the reads did not agree on:
+
+- strip 2, Hamilton Avenue & Palm Avenue (read A at 2118, 2645): only read A has it
+- strip 2, Gulow Street & Hoffner Street (read A at 1406, 5351): only read A has it
+- strip 2, Hamilton Avenue & Hoffner Street (read A at 2248, 5352): only read A has it
+- strip 2, Hamilton Avenue & Ludlow Avenue (read A at 2252, 5348): only read A has it
+- strip 2, Hamilton Avenue & Spring Grove Avenue (read A at 2218, 5388): only read A has it
+- strip 2, Spring Grove Avenue & Cooper Street (read A at 1761, 6203): only read A has it
+- strip 2, Spring Grove Avenue & Powers Street (read A at 1335, 7135): only read A has it
+- strip 2, Kendall Street & Ingot Street (read B at 2430, 1590): only read B has it
+- strip 2, Knowlton Street & Ingot Street (read B at 2473, 2069): only read B has it
+- strip 3, Chase Avenue & Langland Street (read A at 2992, 62): only read A has it
+- strip 3, Chase Avenue & Fergus Street (read A at 4495, 62): only read A has it
+- strip 4, Fergus Street & Knowlton Street (read B at 4515, 2060): only read B has it
+- strip 4, Alibone Street & Spring Grove Avenue (read B at 6240, 3575): only read B has it
+- strip 5, Alibone Street & Spring Grove Avenue (read A at 6245, 3670): only read A has it
+- strip 5, Chambers Street & Cornwall Place (read B at 6530, 812): only read B has it
+- strip 6, Dane Avenue & Knowlton Street (read A at 7870, 1695): only read A has it
+- strip 2, Hamilton Avenue & Pope Street (read A at 1540, 640): the reads are 170 px apart
+- strip 2, Hamilton Avenue & Lingo Street (read A at 1746, 1139): the reads are 146 px apart
+- strip 3, Blue Rock Street & Spring Grove Avenue (read A at 4020, 3600): the reads are 130 px apart
+- strip 3, Fergus Street & Spring Grove Avenue (read A at 4505, 3565): the reads are 65 px apart
+- strip 3, Spring Grove Avenue & Fergus Street (read B at 4445, 3590): the reads are 65 px apart
+- strip 5, Dane Avenue & Bond Street (read A at 7868, 2695): the reads are 97 px apart
+- strip 5, Chambers Street & Spring Grove Avenue (read A at 6755, 3665): the reads are 100 px apart
+- strip 5, Dane Avenue & Spring Grove Avenue (read A at 8035, 3690): the reads are 71 px apart
+- strip 6, Dane Avenue & Spring Grove Avenue (read B at 8220, 3660): the reads are 180 px apart
+

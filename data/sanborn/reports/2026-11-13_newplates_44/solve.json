@@ -1,0 +1,234 @@
+{
+ "made": "2026-11-13T22:39:09",
+ "summary": {
+  "plates": [
+   {
+    "plate": "22-44",
+    "controls": 34,
+    "name_seeded_fit": "tps10",
+    "lam": 10.0,
+    "damped": false,
+    "own_rms": 2.38,
+    "heldout": 3.36,
+    "heldout_max": 9.45,
+    "max_corner_move_m": 1.33,
+    "corner_moves_m": [
+     0.4,
+     1.3,
+     0.7,
+     1.3
+    ],
+    "ties": 12,
+    "tie_partners": [
+     "22-37L",
+     "22-37R",
+     "22-43",
+     "22-45"
+    ]
+   }
+  ],
+  "ties": 12,
+  "seams": {
+   "dir": "reports/2026-11-13_seams_newplates_44",
+   "neighbours": {
+    "22-37L": {
+     "before": {
+      "n": 21,
+      "median": 1.26
+     },
+     "after": {
+      "n": 22,
+      "median": 1.27
+     },
+     "with_new": [
+      {
+       "new": "22-44",
+       "n": 1,
+       "median": 1.61,
+       "max": 1.61
+      }
+     ]
+    },
+    "22-37R": {
+     "before": {
+      "n": 19,
+      "median": 1.32
+     },
+     "after": {
+      "n": 22,
+      "median": 1.29
+     },
+     "with_new": [
+      {
+       "new": "22-44",
+       "n": 3,
+       "median": 1.2,
+       "max": 1.58
+      }
+     ]
+    },
+    "22-43": {
+     "before": {
+      "n": 13,
+      "median": 1.25
+     },
+     "after": {
+      "n": 18,
+      "median": 1.08
+     },
+     "with_new": [
+      {
+       "new": "22-44",
+       "n": 5,
+       "median": 0.5,
+       "max": 1.1
+      }
+     ]
+    },
+    "22-45": {
+     "before": {
+      "n": 1,
+      "median": 0.56
+     },
+     "after": {
+      "n": 4,
+      "median": 0.7
+     },
+     "with_new": [
+      {
+       "new": "22-44",
+       "n": 3,
+       "median": 0.83,
+       "max": 1.65
+      }
+     ]
+    }
+   },
+   "new_pair": {
+    "n": 0,
+    "median": null,
+    "max": null
+   }
+  },
+  "gate": {
+   "heldout_under_5m": true,
+   "neighbour_median_not_worse": {
+    "22-37L": false,
+    "22-37R": true,
+    "22-43": true,
+    "22-45": false
+   },
+   "build": false
+  }
+ },
+ "ties": [
+  {
+   "a": "22-44",
+   "b": "22-43",
+   "street_1": "Turrill Street",
+   "street_2": "Chase Avenue",
+   "before_m": 0.4,
+   "after_m": 0.17,
+   "weight": 1.0
+  },
+  {
+   "a": "22-44",
+   "b": "22-43",
+   "street_1": "Turrill Street",
+   "street_2": "Hoffner Street",
+   "before_m": 0.5,
+   "after_m": 0.48,
+   "weight": 1.0
+  },
+  {
+   "a": "22-44",
+   "b": "22-43",
+   "street_1": "Turrill Street",
+   "street_2": "Blue Rock Street",
+   "before_m": 0.65,
+   "after_m": 0.5,
+   "weight": 1.0
+  },
+  {
+   "a": "22-44",
+   "b": "22-45",
+   "street_1": "Turrill Street",
+   "street_2": "Chase Avenue",
+   "before_m": 0.91,
+   "after_m": 0.57,
+   "weight": 1.0
+  },
+  {
+   "a": "22-44",
+   "b": "22-43",
+   "street_1": "Turrill Street",
+   "street_2": "Cooper Street",
+   "before_m": 0.93,
+   "after_m": 1.1,
+   "weight": 1.0
+  },
+  {
+   "a": "22-44",
+   "b": "22-37R",
+   "street_1": "Spring Grove Avenue",
+   "street_2": "Powers Street",
+   "before_m": 1.04,
+   "after_m": 0.76,
+   "weight": 1.0
+  },
+  {
+   "a": "22-44",
+   "b": "22-37R",
+   "street_1": "Apple Street",
+   "street_2": "Powers Street",
+   "before_m": 1.1,
+   "after_m": 1.2,
+   "weight": 1.0
+  },
+  {
+   "a": "22-44",
+   "b": "22-45",
+   "street_1": "Hamilton Avenue",
+   "street_2": "Chase Avenue",
+   "before_m": 1.14,
+   "after_m": 0.83,
+   "weight": 1.0
+  },
+  {
+   "a": "22-44",
+   "b": "22-43",
+   "street_1": "Turrill Street",
+   "street_2": "Powers Street",
+   "before_m": 1.76,
+   "after_m": 0.56,
+   "weight": 1.0
+  },
+  {
+   "a": "22-44",
+   "b": "22-45",
+   "street_1": "Dane Avenue",
+   "street_2": "Knowlton Street",
+   "before_m": 2.51,
+   "after_m": 1.65,
+   "weight": 1.0
+  },
+  {
+   "a": "22-44",
+   "b": "22-37R",
+   "street_1": "Turrill Street",
+   "street_2": "Powers Street",
+   "before_m": 2.78,
+   "after_m": 1.58,
+   "weight": 1.0
+  },
+  {
+   "a": "22-44",
+   "b": "22-37L",
+   "street_1": "Turrill Street",
+   "street_2": "Powers Street",
+   "before_m": 2.81,
+   "after_m": 1.61,
+   "weight": 1.0
+  }
+ ]
+}

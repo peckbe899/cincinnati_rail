@@ -4,21 +4,21 @@ Plate models: each plate's own (fwd.pkl, Ben georeference for 35N).
 
 Read only: every street crossing that two 1922 plates, or a 1922 plate and a 1904 frame, both show, and how far apart the two copies sit on the page. Nothing was fitted, rebuilt or changed. Method: `tools/sanborn/seams.py` (its docstring); matched by street names within 45 m. Files: `seams.csv` (every pair), `per_pair.csv` (by plate and frame), `seams.json` (all of it, with the sha256 of every file read).
 
-Read: 27 plates on the 1922 layer (2409 crossings), 235 1904 deck and north frames (2298 crossings), 142 1904 basin frames (2446 crossings).
+Read: 28 plates on the 1922 layer (2456 crossings), 235 1904 deck and north frames (2298 crossings), 142 1904 basin frames (2446 crossings).
 
 ## Summary
 
 | Seam | Source pairs | Shared crossings | Median m | RMS m | 90% m | Max m | > 5 m | > 10 m | > 20 m | Same names 45-150 m |
 |---|---|---|---|---|---|---|---|---|---|---|
-| plate-plate | 43 | 191 | 1.27 | 4.71 | 5.45 | 29.33 | 22 | 8 | 3 | 1 |
-| plate-1904 | 194 | 704 | 1.21 | 6.34 | 7.47 | 43.02 | 129 | 56 | 24 | 0 |
+| plate-plate | 47 | 203 | 1.25 | 4.58 | 5.26 | 29.33 | 22 | 8 | 3 | 1 |
+| plate-1904 | 205 | 758 | 1.5 | 6.22 | 7.05 | 43.02 | 142 | 56 | 24 | 0 |
 
 Plate against 1904, by how the frame is drawn:
 
 | 1904 frames | Shared crossings | Frames | Median m | 90% m | Max m |
 |---|---|---|---|---|---|
-| deck/north, bent onto 1922 (lph/tps.pkl) | 480 | 89 | 0.29 | 4.11 | 27.58 |
-| deck/north, not bent | 224 | 52 | 4.23 | 17.92 | 43.02 |
+| deck/north, bent onto 1922 (lph/tps.pkl) | 490 | 90 | 0.30 | 4.46 | 27.58 |
+| deck/north, not bent | 268 | 53 | 4.17 | 15.26 | 43.02 |
 | basin (sbg/fit/tf.json) | 0 | 0 | - | - | - |
 
 ## Plate against plate
@@ -46,13 +46,17 @@ Plate against 1904, by how the frame is drawn:
 | 22-35N | 22-38 | 4 | 3.21 | 5.88 | +0.3, -0.2 |
 | 22-37L | 22-37R | 12 | 1.29 | 5.19 | +0.1, +0.3 |
 | 22-37L | 22-43 | 9 | 1.25 | 3.69 | +0.1, -0.5 |
+| 22-37L | 22-44 | 1 | 1.61 | 1.61 | +1.1, -1.2 |
 | 22-37R | 22-38 | 1 | 12.34 | 12.34 | +12.3, +0.6 |
 | 22-37R | 22-43 | 3 | 1.26 | 4.77 | -0.4, -1.4 |
+| 22-37R | 22-44 | 3 | 1.2 | 1.58 | +0.2, -0.4 |
 | 22-38 | 22-39 | 4 | 3.25 | 5.28 | -0.3, -0.2 |
 | 22-38 | 22-66 | 1 | 0.99 | 0.99 | -0.7, -0.7 |
 | 22-38 | 22-68 | 4 | 4.19 | 11.15 | -1.9, +3.1 |
 | 22-39 | 22-40 | 1 | 1.55 | 1.55 | -0.7, -1.4 |
+| 22-43 | 22-44 | 5 | 0.5 | 1.1 | +0.1, +0.0 |
 | 22-43 | 22-45 | 1 | 0.56 | 0.56 | +0.2, -0.5 |
+| 22-44 | 22-45 | 3 | 0.83 | 1.65 | -0.2, -0.0 |
 | 22-66 | 22-67 | 3 | 1.25 | 3.72 | -0.4, +1.4 |
 | 22-66 | 22-68 | 7 | 1.42 | 4.65 | -0.1, -0.8 |
 | 22-66 | 22-69 | 8 | 2.56 | 27.75 | +1.2, +3.5 |
@@ -86,6 +90,7 @@ Plate against 1904, by how the frame is drawn:
 | 22-38 | 14 | 46 | 0.32 | 5.21 | 23.31 |
 | 22-40 | 11 | 27 | 2.34 | 12.09 | 43.02 |
 | 22-43 | 10 | 55 | 4.27 | 6.74 | 9.76 |
+| 22-44 | 11 | 54 | 4.15 | 5.86 | 7.44 |
 | 22-45 | 17 | 66 | 4.74 | 6.70 | 10.88 |
 | 22-66 | 13 | 25 | 0.14 | 1.09 | 2.60 |
 | 22-67 | 4 | 7 | 0.35 | 3.57 | 4.73 |
