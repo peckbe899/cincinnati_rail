@@ -271,3 +271,45 @@ Crossings the reads did not agree on:
 - strip 5, Dane Avenue & Spring Grove Avenue (read A at 8035, 3690): the reads are 71 px apart
 - strip 6, Dane Avenue & Spring Grove Avenue (read B at 8220, 3660): the reads are 180 px apart
 
+## 22-80
+
+| Strip | Read A crossings | Read B crossings | Picks | Not agreed |
+|---|---|---|---|---|
+| 1 | 23 | 23 | 15 | 16 |
+| 2 | 18 | 24 | 19 | 5 |
+| 3 | 6 | 5 | 2 | 6 |
+| 4 | 1 | 1 | 1 | 0 |
+| 5 | 2 | 2 | 2 | 0 |
+| 6 | 0 | 0 | 0 | 0 |
+| **All** | 50 | 55 | 39 | 27 |
+
+Crossings the reads did not agree on:
+
+- strip 1, Carthage Avenue & Oak Street (read A at 3170, 645): only read A has it
+- strip 1, Carthage Avenue & Burnet Avenue (read A at 2940, 2995): only read A has it
+- strip 1, Carthage Avenue & Church Place (read A at 1890, 3850): only read A has it
+- strip 1, Church Place & Park Place (read A at 2140, 4145): only read A has it
+- strip 1, Church Place & Burnet Avenue (read A at 2865, 4720): only read A has it
+- strip 1, Church Place & Schroeder (read A at 3105, 4722): only read A has it
+- strip 1, Bertus Street & Schroeder's Street (read A at 1560, 5140): only read A has it
+- strip 1, Orchard Street & Joseph Avenue (read A at 1560, 5145): only read A has it
+- strip 1, Burnet Avenue & Washington (read B at 2955, 2972): only read B has it
+- strip 1, Carthage Avenue & Church Street (read B at 1845, 3795): only read B has it
+- strip 1, Church Street & Park Place (read B at 2150, 4195): only read B has it
+- strip 1, Bertus Street & Orchard Street (read B at 1570, 5165): only read B has it
+- strip 1, Leonard Avenue & Schroeder's Street (read B at 1570, 5165): only read B has it
+- strip 1, Leonard Avenue & Albert Street (read B at 1500, 6160): only read B has it
+- strip 1, Bertus Street & Albert Street (read B at 2187, 6170): only read B has it
+- strip 1, Burnet Avenue & Church Street (read B at 2850, 4720): only read B has it
+- strip 2, Sullivan Avenue & Ross Avenue (read B at 4225, 1632): only read B has it
+- strip 2, Sullivan Avenue & Cleveland (read B at 4225, 2085): only read B has it
+- strip 2, Sullivan Avenue & McClelland (read B at 4142, 2545): only read B has it
+- strip 2, Sullivan Avenue & Washington (read B at 4077, 2990): only read B has it
+- strip 2, Burnet Avenue & Jackson (read B at 2960, 3333): only read B has it
+- strip 3, Broxterman Avenue & Ross Avenue (read A at 4135, 1675): only read A has it
+- strip 3, Henry Avenue & Scenic Avenue (read A at 5160, 4515): only read A has it
+- strip 3, Henry Avenue & Rose Hill (read A at 5051, 5372): only read A has it
+- strip 3, Kemper Avenue & Cleveland Avenue (read B at 4720, 2175): only read B has it
+- strip 3, Greenlee Avenue & Cleveland Avenue (read B at 5225, 2200): only read B has it
+- strip 3, Greenlee Avenue & Rose Hill (read B at 4810, 5365): only read B has it
+
