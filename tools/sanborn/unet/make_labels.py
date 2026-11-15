@@ -94,6 +94,7 @@ def strip(mask, a, b, half, val=1):
     if L < 1e-6: return
     n = np.array([-d[1], d[0]]) / L * half
     cv2.fillPoly(mask, [np.array([a + n, b + n, b - n, a - n]).round().astype(np.int32)], val)
+VER = []          # every verified edge (the green ones), full-size px: written as N_edge.png for the U-net
 snapped = []; unsure = np.zeros((h, w), np.uint8); vband = np.zeros((h, w), np.uint8); nver = 0
 nside = nmoved = 0
 for f in json.load(open(SP + f'today/blocks_{N}.geojson', encoding='utf8'))['features']:
@@ -106,6 +107,7 @@ for f in json.load(open(SP + f'today/blocks_{N}.geojson', encoding='utf8'))['fea
         a_, b_ = q2[k], q2[(k + 1) % len(q2)]
         if on_line(a_, b_) or any(x0 <= (a_[0] + b_[0]) / 2 <= x1 and y0 <= (a_[1] + b_[1]) / 2 <= y1 for x0, y0, x1, y1 in PAPER):
             nver += 1   # on a printed line, or declared the trimmed paper edge (edges_review.json)
+            VER.append((a_, b_))
             strip(vband, a_ / K, b_ / K, VBAND)   # ground beside a verified side, not past its ends (14 Nov: McNeil ran on north of where it stops)
         else: cv2.line(unsure, tuple((a_ / K).round().astype(int)), tuple((b_ / K).round().astype(int)), 1, 2 * UNSURE + 1)
 for s_ in S.Plate(N).streets():                    # today's centre lines, for the guide input
@@ -124,9 +126,9 @@ out = lab.copy(); out[band] = 255; out[unsure > 0] = 255
 #    (only when both lines are known; a band along a piece with no width is blanked);
 #  - parcel "street" with no traced street within FAR px is blanked: it is not a street of the plate.
 added = np.zeros((h, w), np.uint8); nadd = nblank = 0
-if os.path.exists(OUT + f'{N}_streets.json'):
+if True:           # on every plate: a parcel street is taught only where the print gives evidence for it
     near = np.zeros((h, w), np.uint8)
-    for p in json.load(open(OUT + f'{N}_streets.json', encoding='utf8')):
+    for p in (json.load(open(OUT + f'{N}_streets.json', encoding='utf8')) if os.path.exists(OUT + f'{N}_streets.json') else []):
         a_, b_ = np.array(p['a']) / K, np.array(p['b']) / K
         strip(near, a_, b_, FAR)
         t = np.linspace(0, 1, 30); q = (a_ + np.outer(t, b_ - a_)).round().astype(int); ok = (q[:, 0] >= 0) & (q[:, 0] < w) & (q[:, 1] >= 0) & (q[:, 1] < h)
@@ -141,6 +143,8 @@ if os.path.exists(OUT + f'{N}_streets.json'):
     near[vband > 0] = 1
     OBSF = SP + f'picks22_guided/22-{N}/observations.json'
     XS = [c for c in json.load(open(OBSF, encoding='utf8'))['crossings']] if os.path.exists(OBSF) else []
+    MF_ = SP + f'cufp/{N}/matches.json'      # a plate with no guided reading: its own fitted controls (blind picks)
+    if not XS and os.path.exists(MF_): XS = [m_ for m_ in json.load(open(MF_, encoding='utf8')) if m_.get('used')]
     for c in XS: cv2.circle(near, (int(round(c['x'] / K)), int(round(c['y'] / K))), FAR, 1, -1)
     out[(out == 0) & (near == 0)] = 255
     # a traced street the parcels lack: the band along it is blanked only over what the parcels call block. A trace runs
@@ -177,7 +181,7 @@ if os.path.exists(MF):
             if L >= MINSIDE:
                 best = max(((ink(a_ + nrm * i, b_ + nrm * j) - 0.004 * (abs(i) + abs(j)), i, j) for i in range(-MARK - 3, MARK + 4) for j in range(-MARK - 3, MARK + 4) if abs(i - j) <= 5))
                 c2, d2 = a_ + nrm * best[1], b_ + nrm * best[2]
-                if ink(c2, d2) >= 0.8 or on_line(c2, d2): a2, b2 = c2, d2; hit += 1
+                if ink(c2, d2) >= 0.8 or on_line(c2, d2): a2, b2 = c2, d2; hit += 1; VER.append((c2, d2))
                 elif not any(x0 <= (a_[0] + b_[0]) / 2 <= x1 and y0 <= (a_[1] + b_[1]) / 2 <= y1 for x0, y0, x1, y1 in PAPER): loose.append((a_, b_))   # read, but no printed line found under it: not taught along it
             segs.append((a2, b2))
         v = [segs[0][0]] + [(segs[k][1] + segs[k + 1][0]) / 2 for k in range(len(segs) - 1)] + [segs[-1][1]]
@@ -215,7 +219,12 @@ if os.path.exists(SP + f'picks22_guided/22-{N}/observations.json'):
         cv2.circle(out, (int(round(c['x'] / K)), int(round(c['y'] / K))), XR, 0, -1)
 out[~alpha] = 255
 cv2.imwrite(OUT + f'{N}_img.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 92]); cv2.imwrite(OUT + f'{N}_label.png', out)
-json.dump(dict(plate=N, tag=TAG, scale=K, ignore_px=IGN, sides=nside, sides_snapped=nmoved, sides_on_printed_line=nver, plate_pieces_added=nadd, plate_pieces_blanked=nblank, marked_edge_pieces=nmark, marked_on_printed_line=nmark_on, size=[w, h], block=float((out == 1).mean()), street=float((out == 0).mean()), ignore=float((out == 255).mean())),
+# Ben, 14 November 2026: apply the green limits to the U-net. The verified edges themselves, one pixel wide at half size:
+# the U-net weights its loss by nearness to them and has a second output that must draw them (unet.py).
+vedge = np.zeros((h, w), np.uint8)
+for a_, b_ in VER: cv2.line(vedge, tuple((np.asarray(a_) / K).round().astype(int)), tuple((np.asarray(b_) / K).round().astype(int)), 255, 1)
+vedge[~alpha] = 0; cv2.imwrite(OUT + f'{N}_edge.png', vedge)
+json.dump(dict(plate=N, tag=TAG, scale=K, ignore_px=IGN, verified_edges=len(VER), sides=nside, sides_snapped=nmoved, sides_on_printed_line=nver, plate_pieces_added=nadd, plate_pieces_blanked=nblank, marked_edge_pieces=nmark, marked_on_printed_line=nmark_on, size=[w, h], block=float((out == 1).mean()), street=float((out == 0).mean()), ignore=float((out == 255).mean())),
           open(OUT + f'{N}_meta.json', 'w', encoding='utf8', newline='\n'), indent=1)
 full_vis = full.copy()                       # full-size check: snapped block sides (green) on the scan
 for q in snapped:
