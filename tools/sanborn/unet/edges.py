@@ -24,7 +24,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'
 import _ws  # noqa: E402
 N = sys.argv[1]; SP = _ws.DATA; U = SP + 'unet_data/'; NEAR, SQ = 30.0, 800
 full = cv2.imread(SP + f'cufp/22-{N}.jpg'); H, W = full.shape[:2]
-g = cv2.GaussianBlur(cv2.cvtColor(full, cv2.COLOR_BGR2GRAY), (3, 3), 0).astype(np.float32)
+_hsv = cv2.cvtColor(full, cv2.COLOR_BGR2HSV); _ink = (_hsv[:, :, 2] < 120) | ((_hsv[:, :, 1] < 90) & (_hsv[:, :, 2] < 170))      # black/grey ink only, as make_labels.py ink_image()
+g = cv2.GaussianBlur(np.where(_ink, cv2.cvtColor(full, cv2.COLOR_BGR2GRAY), 255).astype(np.uint8), (3, 3), 0).astype(np.float32)
 alpha = cv2.resize(np.load(SP + f'cufp/{N}/png_alpha_s4.npy').astype(np.float32), (W, H)) > 0.5
 def dark(a, b):
     d = b - a; L = np.hypot(*d); t = np.linspace(.06, .94, max(10, int(L))); q = a + np.outer(t, d)

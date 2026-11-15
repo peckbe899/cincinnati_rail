@@ -29,7 +29,14 @@ img = cv2.resize(full, (W // K, H // K), interpolation=cv2.INTER_AREA); h, w = i
 gx, gy = np.meshgrid(np.linspace(-300, W + 300, 120), np.linspace(-300, H + 300, 90)); P = np.c_[gx.ravel(), gy.ravel()]
 inv = LinearNDInterpolator(J.world_many(f'22-{N}', P, TAG), P)
 lab = np.zeros((h, w), np.uint8); cl = np.zeros((h, w), np.uint8); rough = np.zeros((h, w), np.uint8)
-grayF = cv2.GaussianBlur(cv2.cvtColor(full, cv2.COLOR_BGR2GRAY), (3, 3), 0).astype(np.float32)      # the snap works on the full-size scan
+def ink_image(bgr):
+    """Ben, 14 November 2026: use black/grey line detection. The printed lines are black or grey ink; the boundary bands
+    (blue-green, pink, yellow, orange) and the building tints are colour. A pixel is ink when it is dark, or fairly dark
+    and without colour; everything else is set to paper white, so only the printed lines are left to fit an edge to."""
+    hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV); gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+    ink = (hsv[:, :, 2] < 120) | ((hsv[:, :, 1] < 90) & (hsv[:, :, 2] < 170))
+    return cv2.GaussianBlur(np.where(ink, gray, 255).astype(np.uint8), (3, 3), 0).astype(np.float32)
+grayF = ink_image(full)      # the snap and every edge test work on the black/grey ink of the full-size scan
 def dark(a, b):
     d = b - a; L = np.hypot(*d); t = np.linspace(0.06, 0.94, max(10, int(L)))
     q = a + np.outer(t, d); x = q[:, 0].round().astype(int); y = q[:, 1].round().astype(int)
@@ -81,6 +88,12 @@ def snap(poly):
         out += extra.get(k, [])
     return np.array(out), moved
 _rf = SP + f'picks22_guided/22-{N}/edges_review.json'; PAPER = (lambda r_: r_.get('paper_boxes', []) + r_.get('ok_boxes', []))(json.load(open(_rf, encoding='utf8'))) if os.path.exists(_rf) else []   # sides kept as they are: the paper edge, or seen on the print by eye
+def strip(mask, a, b, half, val=1):
+    """fill the strip of half-width `half` (half-size px) along a-b (half-size px), with square ends: nothing past a or b"""
+    a = np.asarray(a, float); b = np.asarray(b, float); d = b - a; L = np.hypot(*d)
+    if L < 1e-6: return
+    n = np.array([-d[1], d[0]]) / L * half
+    cv2.fillPoly(mask, [np.array([a + n, b + n, b - n, a - n]).round().astype(np.int32)], val)
 snapped = []; unsure = np.zeros((h, w), np.uint8); vband = np.zeros((h, w), np.uint8); nver = 0
 nside = nmoved = 0
 for f in json.load(open(SP + f'today/blocks_{N}.geojson', encoding='utf8'))['features']:
@@ -93,7 +106,7 @@ for f in json.load(open(SP + f'today/blocks_{N}.geojson', encoding='utf8'))['fea
         a_, b_ = q2[k], q2[(k + 1) % len(q2)]
         if on_line(a_, b_) or any(x0 <= (a_[0] + b_[0]) / 2 <= x1 and y0 <= (a_[1] + b_[1]) / 2 <= y1 for x0, y0, x1, y1 in PAPER):
             nver += 1   # on a printed line, or declared the trimmed paper edge (edges_review.json)
-            cv2.line(vband, tuple((a_ / K).round().astype(int)), tuple((b_ / K).round().astype(int)), 1, 2 * VBAND + 1)   # ground beside a verified side
+            strip(vband, a_ / K, b_ / K, VBAND)   # ground beside a verified side, not past its ends (14 Nov: McNeil ran on north of where it stops)
         else: cv2.line(unsure, tuple((a_ / K).round().astype(int)), tuple((b_ / K).round().astype(int)), 1, 2 * UNSURE + 1)
 for s_ in S.Plate(N).streets():                    # today's centre lines, for the guide input
     for l in getattr(s_['geom'], 'geoms', [s_['geom']]):
@@ -115,7 +128,7 @@ if os.path.exists(OUT + f'{N}_streets.json'):
     near = np.zeros((h, w), np.uint8)
     for p in json.load(open(OUT + f'{N}_streets.json', encoding='utf8')):
         a_, b_ = np.array(p['a']) / K, np.array(p['b']) / K
-        cv2.line(near, tuple(a_.round().astype(int)), tuple(b_.round().astype(int)), 1, 2 * FAR + 1)
+        strip(near, a_, b_, FAR)
         t = np.linspace(0, 1, 30); q = (a_ + np.outer(t, b_ - a_)).round().astype(int); ok = (q[:, 0] >= 0) & (q[:, 0] < w) & (q[:, 1] >= 0) & (q[:, 1] < h)
         if ok.sum() < 10 or (lab[q[ok, 1], q[ok, 0]] == 0).mean() >= 0.6: continue          # the parcels already have this street here
         # 14 Nov 2026: the automatic search is not trusted to place an edge (it took pipe and lot lines for block lines):
@@ -192,6 +205,10 @@ if os.path.exists(MF):
     for a_, b_ in loose: cv2.line(munsure, tuple((a_ / K).round().astype(int)), tuple((b_ / K).round().astype(int)), 1, 2 * UNSURE + 1)
     out[munsure == 1] = 255
     ring = cv2.morphologyEx(marked, cv2.MORPH_GRADIENT, np.ones((3, 3), np.uint8)) > 0; out[ring & (lab == 1)] = 255
+# ground declared block by eye (edges_review.json "block_polys"): only what is blank becomes block, a taught street stays
+if os.path.exists(_rf):
+    for poly in json.load(open(_rf, encoding='utf8')).get('block_polys', []):
+        pm = np.zeros((h, w), np.uint8); cv2.fillPoly(pm, [(np.array(poly, float) / K).round().astype(np.int32)], 1); out[(pm == 1) & (out == 255)] = 1
 # the middle of every crossing the readers agreed on is street (XR px at half size): a junction is never left blank
 if os.path.exists(SP + f'picks22_guided/22-{N}/observations.json'):
     for c in json.load(open(SP + f'picks22_guided/22-{N}/observations.json', encoding='utf8'))['crossings']:
