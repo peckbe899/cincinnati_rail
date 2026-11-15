@@ -46,8 +46,13 @@ if os.path.exists(bf):
             cv2.line(vis, tuple((a / K).astype(int)), tuple((b / K).astype(int)), (0, 150, 0) if ok else (0, 0, 230), 2, cv2.LINE_AA)
     rep['edges'] = dict(on_printed_line=int(ng), not_on_a_line=int(nr), share_on_line_by_length=round(Lg / max(1.0, Lg + Lr), 3))
 yy, xx = np.mgrid[-R // K:R // K + 1, -R // K:R // K + 1]; disc = (xx ** 2 + yy ** 2) <= (R // K) ** 2; cross = []
-if os.path.exists(D + 'observations.json'):
-    for c in json.load(open(D + 'observations.json', encoding='utf8'))['crossings']:
+# crossings: the guided readers' where the plate has them; otherwise the plate's own fitted controls (cufp/N/matches.json)
+XS = None
+if os.path.exists(D + 'observations.json'): XS = json.load(open(D + 'observations.json', encoding='utf8'))['crossings']; rep['crossings_from'] = 'guided readers'
+elif os.path.exists(SP + f'cufp/{N}/matches.json'):
+    XS = [m for m in json.load(open(SP + f'cufp/{N}/matches.json', encoding='utf8')) if m.get('used')]; rep['crossings_from'] = "the plate's fitted controls (blind picks)"
+if XS:
+    for c in XS:
         x, y = int(round(c['x'] / K)), int(round(c['y'] / K)); r = R // K
         if not (r <= x < w - r and r <= y < h - r): continue
         win = st[y - r:y + r + 1, x - r:x + r + 1][disc]; pap = alpha[y - r:y + r + 1, x - r:x + r + 1][disc]
