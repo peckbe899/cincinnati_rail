@@ -1,0 +1,121 @@
+{
+ "name": "lines_v2",
+ "plates": [
+  "82A",
+  "80",
+  "43",
+  "45",
+  "44:val"
+ ],
+ "iters": 4000,
+ "crop": 448,
+ "batch": 6,
+ "line_px": 3,
+ "tol_px": 3,
+ "history": [
+  {
+   "iter": 500,
+   "loss": 0.7861,
+   "minutes": 5.8,
+   "val": {
+    "44": {
+     "precision": 0.5373,
+     "recall": 0.8383,
+     "drawn_share_of_plate": 0.0209,
+     "line_share_of_plate": 0.0092
+    }
+   }
+  },
+  {
+   "iter": 1000,
+   "loss": 0.6113,
+   "minutes": 11.5,
+   "val": {
+    "44": {
+     "precision": 0.5651,
+     "recall": 0.8329,
+     "drawn_share_of_plate": 0.0238,
+     "line_share_of_plate": 0.0092
+    }
+   }
+  },
+  {
+   "iter": 1500,
+   "loss": 0.5058,
+   "minutes": 17.3,
+   "val": {
+    "44": {
+     "precision": 0.7225,
+     "recall": 0.8259,
+     "drawn_share_of_plate": 0.0158,
+     "line_share_of_plate": 0.0092
+    }
+   }
+  },
+  {
+   "iter": 2000,
+   "loss": 0.4003,
+   "minutes": 23.0,
+   "val": {
+    "44": {
+     "precision": 0.7118,
+     "recall": 0.8235,
+     "drawn_share_of_plate": 0.0172,
+     "line_share_of_plate": 0.0092
+    }
+   }
+  },
+  {
+   "iter": 2500,
+   "loss": 0.5148,
+   "minutes": 28.8,
+   "val": {
+    "44": {
+     "precision": 0.7075,
+     "recall": 0.8697,
+     "drawn_share_of_plate": 0.0195,
+     "line_share_of_plate": 0.0092
+    }
+   }
+  },
+  {
+   "iter": 3000,
+   "loss": 0.3217,
+   "minutes": 34.6,
+   "val": {
+    "44": {
+     "precision": 0.6641,
+     "recall": 0.8793,
+     "drawn_share_of_plate": 0.0229,
+     "line_share_of_plate": 0.0092
+    }
+   }
+  },
+  {
+   "iter": 3500,
+   "loss": 0.4243,
+   "minutes": 40.3,
+   "val": {
+    "44": {
+     "precision": 0.7362,
+     "recall": 0.8696,
+     "drawn_share_of_plate": 0.0189,
+     "line_share_of_plate": 0.0092
+    }
+   }
+  },
+  {
+   "iter": 4000,
+   "loss": 0.2802,
+   "minutes": 46.1,
+   "val": {
+    "44": {
+     "precision": 0.755,
+     "recall": 0.8738,
+     "drawn_share_of_plate": 0.0182,
+     "line_share_of_plate": 0.0092
+    }
+   }
+  }
+ ]
+}
