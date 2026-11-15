@@ -1,0 +1,287 @@
+{
+ "name": "edge_v1",
+ "plates": [
+  "82A:all",
+  "80:all",
+  "43:all",
+  "45:all",
+  "44:val"
+ ],
+ "iters": 4000,
+ "crop": 384,
+ "batch": 8,
+ "history": [
+  {
+   "iter": 250,
+   "loss": 0.7861,
+   "minutes": 2.9,
+   "val": {
+    "44": {
+     "pixels": 13402742,
+     "accuracy": 0.9518,
+     "iou_block": 0.9438,
+     "iou_street": 0.7473,
+     "green_edge_met_by_boundary": 0.4029,
+     "green_edge_drawn": 0.9532,
+     "guide_shifted_12px": 0.6152,
+     "green_edge_met_guide_shifted": 0.2083
+    }
+   }
+  },
+  {
+   "iter": 500,
+   "loss": 0.5472,
+   "minutes": 5.8,
+   "val": {
+    "44": {
+     "pixels": 13402742,
+     "accuracy": 0.9618,
+     "iou_block": 0.9554,
+     "iou_street": 0.7884,
+     "green_edge_met_by_boundary": 0.3625,
+     "green_edge_drawn": 0.9431,
+     "guide_shifted_12px": 0.6681,
+     "green_edge_met_guide_shifted": 0.2109
+    }
+   }
+  },
+  {
+   "iter": 750,
+   "loss": 0.5716,
+   "minutes": 8.7,
+   "val": {
+    "44": {
+     "pixels": 13402742,
+     "accuracy": 0.9354,
+     "iou_block": 0.9246,
+     "iou_street": 0.6888,
+     "green_edge_met_by_boundary": 0.2457,
+     "green_edge_drawn": 0.945,
+     "guide_shifted_12px": 0.6158,
+     "green_edge_met_guide_shifted": 0.2772
+    }
+   }
+  },
+  {
+   "iter": 1000,
+   "loss": 0.6671,
+   "minutes": 11.6,
+   "val": {
+    "44": {
+     "pixels": 13402742,
+     "accuracy": 0.9769,
+     "iou_block": 0.9731,
+     "iou_street": 0.8593,
+     "green_edge_met_by_boundary": 0.4121,
+     "green_edge_drawn": 0.919,
+     "guide_shifted_12px": 0.652,
+     "green_edge_met_guide_shifted": 0.1333
+    }
+   }
+  },
+  {
+   "iter": 1250,
+   "loss": 0.6262,
+   "minutes": 14.5,
+   "val": {
+    "44": {
+     "pixels": 13402742,
+     "accuracy": 0.9677,
+     "iou_block": 0.9624,
+     "iou_street": 0.8149,
+     "green_edge_met_by_boundary": 0.4175,
+     "green_edge_drawn": 0.9431,
+     "guide_shifted_12px": 0.667,
+     "green_edge_met_guide_shifted": 0.2046
+    }
+   }
+  },
+  {
+   "iter": 1500,
+   "loss": 0.7482,
+   "minutes": 17.4,
+   "val": {
+    "44": {
+     "pixels": 13402742,
+     "accuracy": 0.9824,
+     "iou_block": 0.9795,
+     "iou_street": 0.8867,
+     "green_edge_met_by_boundary": 0.4639,
+     "green_edge_drawn": 0.9443,
+     "guide_shifted_12px": 0.6579,
+     "green_edge_met_guide_shifted": 0.1326
+    }
+   }
+  },
+  {
+   "iter": 1750,
+   "loss": 0.826,
+   "minutes": 20.2,
+   "val": {
+    "44": {
+     "pixels": 13402742,
+     "accuracy": 0.9671,
+     "iou_block": 0.9616,
+     "iou_street": 0.8115,
+     "green_edge_met_by_boundary": 0.3415,
+     "green_edge_drawn": 0.9409,
+     "guide_shifted_12px": 0.6642,
+     "green_edge_met_guide_shifted": 0.2122
+    }
+   }
+  },
+  {
+   "iter": 2000,
+   "loss": 0.77,
+   "minutes": 23.1,
+   "val": {
+    "44": {
+     "pixels": 13402742,
+     "accuracy": 0.9552,
+     "iou_block": 0.9478,
+     "iou_street": 0.7598,
+     "green_edge_met_by_boundary": 0.3461,
+     "green_edge_drawn": 0.9278,
+     "guide_shifted_12px": 0.69,
+     "green_edge_met_guide_shifted": 0.2979
+    }
+   }
+  },
+  {
+   "iter": 2250,
+   "loss": 0.704,
+   "minutes": 26.0,
+   "val": {
+    "44": {
+     "pixels": 13402742,
+     "accuracy": 0.9668,
+     "iou_block": 0.9616,
+     "iou_street": 0.8046,
+     "green_edge_met_by_boundary": 0.572,
+     "green_edge_drawn": 0.9333,
+     "guide_shifted_12px": 0.6991,
+     "green_edge_met_guide_shifted": 0.3458
+    }
+   }
+  },
+  {
+   "iter": 2500,
+   "loss": 0.7873,
+   "minutes": 28.9,
+   "val": {
+    "44": {
+     "pixels": 13402742,
+     "accuracy": 0.9811,
+     "iou_block": 0.9781,
+     "iou_street": 0.8789,
+     "green_edge_met_by_boundary": 0.5349,
+     "green_edge_drawn": 0.9121,
+     "guide_shifted_12px": 0.6639,
+     "green_edge_met_guide_shifted": 0.2266
+    }
+   }
+  },
+  {
+   "iter": 2750,
+   "loss": 0.5079,
+   "minutes": 31.8,
+   "val": {
+    "44": {
+     "pixels": 13402742,
+     "accuracy": 0.9665,
+     "iou_block": 0.9612,
+     "iou_street": 0.804,
+     "green_edge_met_by_boundary": 0.513,
+     "green_edge_drawn": 0.9324,
+     "guide_shifted_12px": 0.7062,
+     "green_edge_met_guide_shifted": 0.2958
+    }
+   }
+  },
+  {
+   "iter": 3000,
+   "loss": 0.6554,
+   "minutes": 34.7,
+   "val": {
+    "44": {
+     "pixels": 13402742,
+     "accuracy": 0.9738,
+     "iou_block": 0.9697,
+     "iou_street": 0.8378,
+     "green_edge_met_by_boundary": 0.5138,
+     "green_edge_drawn": 0.9302,
+     "guide_shifted_12px": 0.7426,
+     "green_edge_met_guide_shifted": 0.3208
+    }
+   }
+  },
+  {
+   "iter": 3250,
+   "loss": 0.7338,
+   "minutes": 37.6,
+   "val": {
+    "44": {
+     "pixels": 13402742,
+     "accuracy": 0.9673,
+     "iou_block": 0.9623,
+     "iou_street": 0.8043,
+     "green_edge_met_by_boundary": 0.5161,
+     "green_edge_drawn": 0.9288,
+     "guide_shifted_12px": 0.7178,
+     "green_edge_met_guide_shifted": 0.3566
+    }
+   }
+  },
+  {
+   "iter": 3500,
+   "loss": 0.283,
+   "minutes": 40.5,
+   "val": {
+    "44": {
+     "pixels": 13402742,
+     "accuracy": 0.9656,
+     "iou_block": 0.9604,
+     "iou_street": 0.7931,
+     "green_edge_met_by_boundary": 0.4916,
+     "green_edge_drawn": 0.9269,
+     "guide_shifted_12px": 0.7276,
+     "green_edge_met_guide_shifted": 0.3635
+    }
+   }
+  },
+  {
+   "iter": 3750,
+   "loss": 0.4959,
+   "minutes": 43.4,
+   "val": {
+    "44": {
+     "pixels": 13402742,
+     "accuracy": 0.9686,
+     "iou_block": 0.9638,
+     "iou_street": 0.8091,
+     "green_edge_met_by_boundary": 0.5076,
+     "green_edge_drawn": 0.9255,
+     "guide_shifted_12px": 0.7351,
+     "green_edge_met_guide_shifted": 0.3668
+    }
+   }
+  },
+  {
+   "iter": 4000,
+   "loss": 0.494,
+   "minutes": 46.3,
+   "val": {
+    "44": {
+     "pixels": 13402742,
+     "accuracy": 0.9666,
+     "iou_block": 0.9615,
+     "iou_street": 0.7991,
+     "green_edge_met_by_boundary": 0.491,
+     "green_edge_drawn": 0.9208,
+     "guide_shifted_12px": 0.7338,
+     "green_edge_met_guide_shifted": 0.3715
+    }
+   }
+  }
+ ]
+}

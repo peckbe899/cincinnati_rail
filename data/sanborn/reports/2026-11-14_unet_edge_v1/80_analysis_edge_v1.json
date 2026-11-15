@@ -1,0 +1,63 @@
+{
+ "plate": "80",
+ "model": "edge_v1",
+ "edges": {
+  "on_printed_line": 188,
+  "not_on_a_line": 570,
+  "share_on_line_by_length": 0.318
+ },
+ "crossings_from": "the plate's fitted controls (blind picks)",
+ "crossings": {
+  "total": 75,
+  "complete": 73,
+  "partly": 2,
+  "missing": 0,
+  "not_complete": [
+   {
+    "a": "Meadow Avenue",
+    "b": "Burnet Avenue",
+    "x": 2851.0,
+    "y": 5198.5,
+    "street": 0.53,
+    "state": "partly"
+   },
+   {
+    "a": "Phillips Avenue",
+    "b": "Vine Street",
+    "x": 2731.0,
+    "y": 3113.5,
+    "street": 0.85,
+    "state": "partly"
+   }
+  ]
+ },
+ "roads": {
+  "total": 35,
+  "whole": 32,
+  "with_gap": [
+   {
+    "name": "Church Street",
+    "on_street": 0.95,
+    "longest_gap_px": 270
+   },
+   {
+    "name": "Broermann Avenue",
+    "on_street": 0.75,
+    "longest_gap_px": 200
+   },
+   {
+    "name": "Washington Avenue",
+    "on_street": 0.97,
+    "longest_gap_px": 70
+   }
+  ]
+ },
+ "street_pieces": 9,
+ "main_piece_share": 0.999,
+ "against_label": {
+  "street_found": 0.978,
+  "street_missed": 0.022,
+  "block_called_street": 0.047,
+  "iou_street": 0.739
+ }
+}
