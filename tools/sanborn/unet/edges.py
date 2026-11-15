@@ -5,7 +5,8 @@
 
 Edges come from two places (make_labels.py): today's parcel sides slid onto the print (unet_data/N_snapped.json) and
 the streets marked by eye (unet_data/N_marked_refined.json). An edge is
-  green   on a printed line (the scan clearly darker along it than 3 to 6 px either side),
+  green   on a printed line (the scan clearly darker along it than 3 to 6 px either side; for an edge read by eye, also
+          when at least 78% of its length is ink),
   blue    declared to have no printed line (a marked edge with kind "paper": the trimmed paper edge, a railway side),
   grey    a parcel side with a marked edge beside it (the marked edge is the one taught), or one in a not_edge box of
           picks22_guided/22-N/edges_review.json (today's street or property line, nothing printed under it),
@@ -32,6 +33,14 @@ def dark(a, b):
 def on(a, b):
     d = b - a; n = np.array([-d[1], d[0]]) / np.hypot(*d)
     return bool(np.mean([dark(a + n * o, b + n * o) for o in (-6, -3, 3, 6)]) - dark(a, b) > 25)
+def inkshare(a, b):
+    d = b - a; L = np.hypot(*d); t = np.linspace(.04, .96, max(10, int(L))); q = a + np.outer(t, d)
+    x = q[:, 0].round().astype(int); y = q[:, 1].round().astype(int); ok = (x >= 0) & (x < W) & (y >= 0) & (y < H)
+    if ok.sum() <= 8: return 0.0
+    nrm = np.array([-d[1], d[0]]) / (L or 1); g0 = g[y[ok], x[ok]]; side = []          # as make_labels.py ink(): dark, or darker than the paper 5 px either side
+    for o in (-5, 5):
+        xs = np.clip((q[ok, 0] + nrm[0] * o).round().astype(int), 0, W - 1); ys = np.clip((q[ok, 1] + nrm[1] * o).round().astype(int), 0, H - 1); side.append(g[ys, xs])
+    return float(((g0 < 150) | ((g0 < 185) & (g0 < np.minimum(side[0], side[1]) - 18))).mean())
 segs = []
 RF = SP + f'picks22_guided/22-{N}/edges_review.json'; REV = json.load(open(RF, encoding='utf8')) if os.path.exists(RF) else {}   # red parcel sides explained by eye
 marked = json.load(open(U + f'{N}_marked_refined.json', encoding='utf8')) if os.path.exists(U + f'{N}_marked_refined.json') else []
@@ -45,7 +54,7 @@ for m in marked:
         for a, b in zip(p[:-1], p[1:]):
             if np.hypot(*(b - a)) < 28: continue
             mid = (a + b) / 2; okb = any(x0 <= mid[0] <= x1 and y0 <= mid[1] <= y1 for x0, y0, x1, y1 in REV.get('ok_boxes', []))
-            segs.append(dict(src='read', name=m['name'], a=a.tolist(), b=b.tolist(), state='orange' if kind == 'unsure' else ('blue' if kind != 'line' else ('green' if on(a, b) or okb else 'orange'))))
+            segs.append(dict(src='read', name=m['name'], a=a.tolist(), b=b.tolist(), state='orange' if kind == 'unsure' else ('blue' if kind != 'line' else ('green' if on(a, b) or okb or inkshare(a, b) >= 0.78 else 'orange'))))
 for q in json.load(open(U + f'{N}_snapped.json', encoding='utf8')):
     q = np.array(q, float)
     for k in range(len(q)):

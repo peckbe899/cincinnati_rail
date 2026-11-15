@@ -22,7 +22,7 @@ import streets as S  # noqa: E402
 from scipy.interpolate import LinearNDInterpolator  # noqa: E402
 from shapely.geometry import shape  # noqa: E402
 J = S.J
-N = sys.argv[1]; TAG = sys.argv[2] if len(sys.argv) > 2 else 'guided'; K, IGN, SNAP, TURN, MINSIDE, UNSURE, FAR, MARK, PIECE, VBAND, XR = 2, 1, 18, 8, 28, 8, 35, 12, 150.0, 30, 14
+N = sys.argv[1]; TAG = sys.argv[2] if len(sys.argv) > 2 else 'guided'; K, IGN, SNAP, TURN, MINSIDE, UNSURE, FAR, MARK, PIECE, VBAND, XR, FOLLOW = 2, 1, 18, 8, 28, 8, 35, 12, 150.0, 30, 14, 120.0
 SP = S.SP; OUT = SP + 'unet_data/'; os.makedirs(OUT, exist_ok=True)
 full = cv2.imread(SP + f'cufp/22-{N}.jpg'); H, W = full.shape[:2]
 img = cv2.resize(full, (W // K, H // K), interpolation=cv2.INTER_AREA); h, w = img.shape[:2]
@@ -141,15 +141,30 @@ if os.path.exists(OUT + f'{N}_streets.json'):
 nmark = nmark_on = 0; MF = SP + f'picks22_guided/22-{N}/streets_marked.json'
 if os.path.exists(MF):
     loose = []
+    def ink(a, b):
+        d = b - a; L = np.hypot(*d); t = np.linspace(0.04, 0.96, max(10, int(L))); q = a + np.outer(t, d)
+        x = q[:, 0].round().astype(int); y = q[:, 1].round().astype(int); ok = (x >= 0) & (x < W) & (y >= 0) & (y < H)
+        if ok.sum() <= 8: return 0.0
+        # a point is on ink when it is dark, or (along a colour band, where ink prints lighter) clearly darker than the
+        # paper 5 px either side of it
+        nrm = np.array([-d[1], d[0]]) / (L or 1); g0 = grayF[y[ok], x[ok]]; side = []
+        for o in (-5, 5):
+            xs = np.clip((q[ok, 0] + nrm[0] * o).round().astype(int), 0, W - 1); ys = np.clip((q[ok, 1] + nrm[1] * o).round().astype(int), 0, H - 1); side.append(grayF[ys, xs])
+        return float(((g0 < 150) | ((g0 < 185) & (g0 < np.minimum(side[0], side[1]) - 18))).mean())
     def refine(pl):
-        pl = np.array(pl, float); segs = []; hit = 0
+        """a read edge follows the printed line in pieces of about FOLLOW px: each piece is moved sideways (up to MARK + 3
+        px) and turned (its ends up to 5 px apart) to where most of its length lies on ink. A piece is on the print when
+        at least 80% of it is ink (a dashed pipe line is about half) or it passes the darker-than-beside test."""
+        pl = np.array(pl, float); pts = [pl[0]]
         for a_, b_ in zip(pl[:-1], pl[1:]):
+            m = max(1, int(round(np.hypot(*(b_ - a_)) / FOLLOW))); pts += [a_ + (b_ - a_) * i / m for i in range(1, m + 1)]
+        segs = []; hit = 0
+        for a_, b_ in zip(pts[:-1], pts[1:]):
             L = np.hypot(*(b_ - a_)); nrm = np.array([-(b_ - a_)[1], (b_ - a_)[0]]) / (L or 1); a2, b2 = a_, b_
             if L >= MINSIDE:
-                ds = {o: dark(a_ + nrm * o, b_ + nrm * o) + 0.4 * abs(o) for o in range(-MARK, MARK + 1)}; o1 = min(ds, key=ds.get)
-                bst = min(((dark(a_ + nrm * (o1 + i), b_ + nrm * (o1 + j)), i, j) for i in range(-4, 5) for j in range(-4, 5)))
-                c2, d2 = a_ + nrm * (o1 + bst[1]), b_ + nrm * (o1 + bst[2])
-                if on_line(c2, d2): a2, b2 = c2, d2; hit += 1
+                best = max(((ink(a_ + nrm * i, b_ + nrm * j) - 0.004 * (abs(i) + abs(j)), i, j) for i in range(-MARK - 3, MARK + 4) for j in range(-MARK - 3, MARK + 4) if abs(i - j) <= 5))
+                c2, d2 = a_ + nrm * best[1], b_ + nrm * best[2]
+                if ink(c2, d2) >= 0.8 or on_line(c2, d2): a2, b2 = c2, d2; hit += 1
                 elif not any(x0 <= (a_[0] + b_[0]) / 2 <= x1 and y0 <= (a_[1] + b_[1]) / 2 <= y1 for x0, y0, x1, y1 in PAPER): loose.append((a_, b_))   # read, but no printed line found under it: not taught along it
             segs.append((a2, b2))
         v = [segs[0][0]] + [(segs[k][1] + segs[k + 1][0]) / 2 for k in range(len(segs) - 1)] + [segs[-1][1]]
