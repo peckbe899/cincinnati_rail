@@ -22,7 +22,7 @@ import streets as S  # noqa: E402
 from scipy.interpolate import LinearNDInterpolator  # noqa: E402
 from shapely.geometry import shape  # noqa: E402
 J = S.J
-N = sys.argv[1]; TAG = sys.argv[2] if len(sys.argv) > 2 else 'guided'; K, IGN, SNAP, TURN, MINSIDE, UNSURE, FAR, MARK, PIECE = 2, 1, 18, 8, 28, 8, 35, 12, 150.0
+N = sys.argv[1]; TAG = sys.argv[2] if len(sys.argv) > 2 else 'guided'; K, IGN, SNAP, TURN, MINSIDE, UNSURE, FAR, MARK, PIECE, VBAND, XR = 2, 1, 18, 8, 28, 8, 35, 12, 150.0, 30, 14
 SP = S.SP; OUT = SP + 'unet_data/'; os.makedirs(OUT, exist_ok=True)
 full = cv2.imread(SP + f'cufp/22-{N}.jpg'); H, W = full.shape[:2]
 img = cv2.resize(full, (W // K, H // K), interpolation=cv2.INTER_AREA); h, w = img.shape[:2]
@@ -81,7 +81,7 @@ def snap(poly):
         out += extra.get(k, [])
     return np.array(out), moved
 _rf = SP + f'picks22_guided/22-{N}/edges_review.json'; PAPER = (lambda r_: r_.get('paper_boxes', []) + r_.get('ok_boxes', []))(json.load(open(_rf, encoding='utf8'))) if os.path.exists(_rf) else []   # sides kept as they are: the paper edge, or seen on the print by eye
-snapped = []; unsure = np.zeros((h, w), np.uint8); nver = 0
+snapped = []; unsure = np.zeros((h, w), np.uint8); vband = np.zeros((h, w), np.uint8); nver = 0
 nside = nmoved = 0
 for f in json.load(open(SP + f'today/blocks_{N}.geojson', encoding='utf8'))['features']:
     q = inv(np.asarray(shape(f['geometry']).exterior.segmentize(3).coords)[:, :2])
@@ -91,7 +91,9 @@ for f in json.load(open(SP + f'today/blocks_{N}.geojson', encoding='utf8'))['fea
     q2, m = snap(q); nmoved += m; nside += len(q2); cv2.fillPoly(lab, [(q2 / K).round().astype(np.int32)], 1); snapped.append(q2.round(1).tolist())
     for k in range(len(q2)):                    # a side with no printed line under it is not taught as an edge: blank a band along it
         a_, b_ = q2[k], q2[(k + 1) % len(q2)]
-        if on_line(a_, b_) or any(x0 <= (a_[0] + b_[0]) / 2 <= x1 and y0 <= (a_[1] + b_[1]) / 2 <= y1 for x0, y0, x1, y1 in PAPER): nver += 1   # on a printed line, or declared the trimmed paper edge (edges_review.json)
+        if on_line(a_, b_) or any(x0 <= (a_[0] + b_[0]) / 2 <= x1 and y0 <= (a_[1] + b_[1]) / 2 <= y1 for x0, y0, x1, y1 in PAPER):
+            nver += 1   # on a printed line, or declared the trimmed paper edge (edges_review.json)
+            cv2.line(vband, tuple((a_ / K).round().astype(int)), tuple((b_ / K).round().astype(int)), 1, 2 * VBAND + 1)   # ground beside a verified side
         else: cv2.line(unsure, tuple((a_ / K).round().astype(int)), tuple((b_ / K).round().astype(int)), 1, 2 * UNSURE + 1)
 for s_ in S.Plate(N).streets():                    # today's centre lines, for the guide input
     for l in getattr(s_['geom'], 'geoms', [s_['geom']]):
@@ -120,8 +122,17 @@ if os.path.exists(OUT + f'{N}_streets.json'):
         # a traced street the parcels lack is only blanked here; it is taught once it is marked by eye (streets_marked.json)
         if False: pass
         else: cv2.line(added, tuple(a_.round().astype(int)), tuple(b_.round().astype(int)), 2, 2 * FAR + 1); nblank += 1
+    # 14 Nov 2026 (completeness check): the readers' traces have gaps, so "no traced street nearby" alone blanked real
+    # streets (Allison by the Board of Education). A parcel street is also kept where it runs beside a side verified on
+    # the print, or round a crossing both readers placed. A today-only street has neither.
+    near[vband > 0] = 1
+    OBSF = SP + f'picks22_guided/22-{N}/observations.json'
+    XS = [c for c in json.load(open(OBSF, encoding='utf8'))['crossings']] if os.path.exists(OBSF) else []
+    for c in XS: cv2.circle(near, (int(round(c['x'] / K)), int(round(c['y'] / K))), FAR, 1, -1)
     out[(out == 0) & (near == 0)] = 255
-    out[added == 2] = 255; out[added == 1] = 0
+    # a traced street the parcels lack: the band along it is blanked only over what the parcels call block. A trace runs
+    # straight between the readers' points, so it can cut across a real, verified street beside it (Allison, Woodlawn).
+    out[(added == 2) & (out == 1)] = 255; out[added == 1] = 0
     ring = cv2.morphologyEx((added == 1).astype(np.uint8), cv2.MORPH_GRADIENT, np.ones((3, 3), np.uint8)) > 0; out[ring] = 255
 # Streets marked by eye on full-size crops (picks22_guided/22-N/streets_marked.json; Ben, 14 November 2026: go in
 # yourself and read them). Each has its two edges as lines in plate px. Every piece of an edge is moved onto the printed
@@ -166,6 +177,10 @@ if os.path.exists(MF):
     for a_, b_ in loose: cv2.line(munsure, tuple((a_ / K).round().astype(int)), tuple((b_ / K).round().astype(int)), 1, 2 * UNSURE + 1)
     out[munsure == 1] = 255
     ring = cv2.morphologyEx(marked, cv2.MORPH_GRADIENT, np.ones((3, 3), np.uint8)) > 0; out[ring & (lab == 1)] = 255
+# the middle of every crossing the readers agreed on is street (XR px at half size): a junction is never left blank
+if os.path.exists(SP + f'picks22_guided/22-{N}/observations.json'):
+    for c in json.load(open(SP + f'picks22_guided/22-{N}/observations.json', encoding='utf8'))['crossings']:
+        cv2.circle(out, (int(round(c['x'] / K)), int(round(c['y'] / K))), XR, 0, -1)
 out[~alpha] = 255
 cv2.imwrite(OUT + f'{N}_img.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 92]); cv2.imwrite(OUT + f'{N}_label.png', out)
 json.dump(dict(plate=N, tag=TAG, scale=K, ignore_px=IGN, sides=nside, sides_snapped=nmoved, sides_on_printed_line=nver, plate_pieces_added=nadd, plate_pieces_blanked=nblank, marked_edge_pieces=nmark, marked_on_printed_line=nmark_on, size=[w, h], block=float((out == 1).mean()), street=float((out == 0).mean()), ignore=float((out == 255).mean())),
