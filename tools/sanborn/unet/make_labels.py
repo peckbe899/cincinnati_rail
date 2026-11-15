@@ -22,7 +22,7 @@ import streets as S  # noqa: E402
 from scipy.interpolate import LinearNDInterpolator  # noqa: E402
 from shapely.geometry import shape  # noqa: E402
 J = S.J
-N = sys.argv[1]; TAG = sys.argv[2] if len(sys.argv) > 2 else 'guided'; K, IGN, SNAP, TURN, MINSIDE, UNSURE, FAR, MARK = 2, 1, 18, 8, 28, 8, 35, 12
+N = sys.argv[1]; TAG = sys.argv[2] if len(sys.argv) > 2 else 'guided'; K, IGN, SNAP, TURN, MINSIDE, UNSURE, FAR, MARK, PIECE = 2, 1, 18, 8, 28, 8, 35, 12, 150.0
 SP = S.SP; OUT = SP + 'unet_data/'; os.makedirs(OUT, exist_ok=True)
 full = cv2.imread(SP + f'cufp/22-{N}.jpg'); H, W = full.shape[:2]
 img = cv2.resize(full, (W // K, H // K), interpolation=cv2.INTER_AREA); h, w = img.shape[:2]
@@ -35,6 +35,12 @@ def dark(a, b):
     q = a + np.outer(t, d); x = q[:, 0].round().astype(int); y = q[:, 1].round().astype(int)
     ok = (x >= 0) & (x < W) & (y >= 0) & (y < H)
     return float(grayF[y[ok], x[ok]].mean()) if ok.sum() > 8 else 255.0
+def on_line(a, b):
+    """is the side on a printed line: at least 25 grey darker than the paper 3 to 6 px either side of it"""
+    d = b - a; L = np.hypot(*d)
+    if L < MINSIDE: return False
+    nrm = np.array([-d[1], d[0]]) / L
+    return np.mean([dark(a + nrm * o, b + nrm * o) for o in (-6, -3, 3, 6)]) - dark(a, b) > 25
 def snap(poly):
     """Ben, 14 November 2026: teach it how a street looks. A block side is a straight ruled line. Each side of today's
     block (full-size px) is first slid sideways (up to SNAP px, about 3.5 m) to the darkest line beside it, then its two
@@ -43,14 +49,27 @@ def snap(poly):
     neighbouring sides meet. Returns the polygon and how many sides were snapped."""
     v = cv2.approxPolyDP(poly.astype(np.float32).reshape(-1, 1, 2), 3.0, True)[:, 0, :].astype(float); n = len(v); moved = 0
     if n < 3: return poly, 0
-    sides = []
+    def fit_piece(a, b, rng):
+        L = np.hypot(*(b - a)); nrm = np.array([-(b - a)[1], (b - a)[0]]) / (L or 1)
+        ds = {o: dark(a + nrm * o, b + nrm * o) + 0.3 * abs(o) for o in range(-rng, rng + 1, 2)}; o1 = min(ds, key=ds.get)
+        if ds[o1] >= np.median(list(ds.values())) - 10: return None
+        best = min(((dark(a + nrm * (o1 + i), b + nrm * (o1 + j)), i, j) for i in range(-TURN, TURN + 1) for j in range(-TURN, TURN + 1)))
+        return a + nrm * (o1 + best[1]), b + nrm * (o1 + best[2])
+    sides = []; extra = {}
     for k in range(n):
-        a, b = v[k], v[(k + 1) % n]; L = np.hypot(*(b - a)); nrm = np.array([-(b - a)[1], (b - a)[0]]) / (L or 1); a2, b2 = a, b
+        a, b = v[k], v[(k + 1) % n]; L = np.hypot(*(b - a)); a2, b2 = a, b
         if L >= MINSIDE:
-            ds = {o: dark(a + nrm * o, b + nrm * o) + 0.3 * abs(o) for o in range(-SNAP, SNAP + 1, 2)}; o1 = min(ds, key=ds.get)
-            if ds[o1] < np.median(list(ds.values())) - 10:
-                best = min(((dark(a + nrm * (o1 + i), b + nrm * (o1 + j)), i, j) for i in range(-TURN, TURN + 1) for j in range(-TURN, TURN + 1)))
-                a2, b2 = a + nrm * (o1 + best[1]), b + nrm * (o1 + best[2]); moved += 1
+            f = fit_piece(a, b, SNAP)
+            if f is not None and on_line(*f): a2, b2 = f; moved += 1
+            elif L >= 2 * PIECE:
+                # a long side that does not lie on one printed line (a street that bends, a side a little further off):
+                # cut it into pieces and fit each on its own, looking a little further
+                m = int(np.ceil(L / PIECE)); pts = [a + (b - a) * i / m for i in range(m + 1)]; got = []
+                for p, q in zip(pts[:-1], pts[1:]):
+                    f2 = fit_piece(p, q, SNAP + 8); got.append(f2 if f2 is not None and on_line(*f2) else None)
+                if sum(g_ is not None for g_ in got) >= 0.6 * m:
+                    ends = [got[i] if got[i] is not None else (pts[i], pts[i + 1]) for i in range(m)]
+                    a2, b2 = ends[0][0], ends[-1][1]; extra[k] = [(ends[i][1] + ends[i + 1][0]) / 2 for i in range(m - 1)]; moved += 1
         sides.append((a2, b2))
     out = []
     for k in range(n):
@@ -59,13 +78,9 @@ def snap(poly):
             x = a1 + ((a2[0] - a1[0]) * d2[1] - (a2[1] - a1[1]) * d2[0]) / den * d1
             if np.hypot(*(x - a2)) > 2.5 * SNAP: x = None
         out.append(x if x is not None else (b1 + a2) / 2)
+        out += extra.get(k, [])
     return np.array(out), moved
-def on_line(a, b):
-    """is the side on a printed line: at least 25 grey darker than the paper 3 to 6 px either side of it"""
-    d = b - a; L = np.hypot(*d)
-    if L < MINSIDE: return False
-    nrm = np.array([-d[1], d[0]]) / L
-    return np.mean([dark(a + nrm * o, b + nrm * o) for o in (-6, -3, 3, 6)]) - dark(a, b) > 25
+_rf = SP + f'picks22_guided/22-{N}/edges_review.json'; PAPER = (lambda r_: r_.get('paper_boxes', []) + r_.get('ok_boxes', []))(json.load(open(_rf, encoding='utf8'))) if os.path.exists(_rf) else []   # sides kept as they are: the paper edge, or seen on the print by eye
 snapped = []; unsure = np.zeros((h, w), np.uint8); nver = 0
 nside = nmoved = 0
 for f in json.load(open(SP + f'today/blocks_{N}.geojson', encoding='utf8'))['features']:
@@ -76,7 +91,7 @@ for f in json.load(open(SP + f'today/blocks_{N}.geojson', encoding='utf8'))['fea
     q2, m = snap(q); nmoved += m; nside += len(q2); cv2.fillPoly(lab, [(q2 / K).round().astype(np.int32)], 1); snapped.append(q2.round(1).tolist())
     for k in range(len(q2)):                    # a side with no printed line under it is not taught as an edge: blank a band along it
         a_, b_ = q2[k], q2[(k + 1) % len(q2)]
-        if on_line(a_, b_): nver += 1
+        if on_line(a_, b_) or any(x0 <= (a_[0] + b_[0]) / 2 <= x1 and y0 <= (a_[1] + b_[1]) / 2 <= y1 for x0, y0, x1, y1 in PAPER): nver += 1   # on a printed line, or declared the trimmed paper edge (edges_review.json)
         else: cv2.line(unsure, tuple((a_ / K).round().astype(int)), tuple((b_ / K).round().astype(int)), 1, 2 * UNSURE + 1)
 for s_ in S.Plate(N).streets():                    # today's centre lines, for the guide input
     for l in getattr(s_['geom'], 'geoms', [s_['geom']]):
@@ -101,9 +116,9 @@ if os.path.exists(OUT + f'{N}_streets.json'):
         cv2.line(near, tuple(a_.round().astype(int)), tuple(b_.round().astype(int)), 1, 2 * FAR + 1)
         t = np.linspace(0, 1, 30); q = (a_ + np.outer(t, b_ - a_)).round().astype(int); ok = (q[:, 0] >= 0) & (q[:, 0] < w) & (q[:, 1] >= 0) & (q[:, 1] < h)
         if ok.sum() < 10 or (lab[q[ok, 1], q[ok, 0]] == 0).mean() >= 0.6: continue          # the parcels already have this street here
-        if p['left'] and p['right']:
-            quad = np.array([p['left'][0], p['left'][1], p['right'][1], p['right'][0]]) / K
-            cv2.fillPoly(added, [quad.round().astype(np.int32)], 1); nadd += 1
+        # 14 Nov 2026: the automatic search is not trusted to place an edge (it took pipe and lot lines for block lines):
+        # a traced street the parcels lack is only blanked here; it is taught once it is marked by eye (streets_marked.json)
+        if False: pass
         else: cv2.line(added, tuple(a_.round().astype(int)), tuple(b_.round().astype(int)), 2, 2 * FAR + 1); nblank += 1
     out[(out == 0) & (near == 0)] = 255
     out[added == 2] = 255; out[added == 1] = 0
@@ -114,6 +129,7 @@ if os.path.exists(OUT + f'{N}_streets.json'):
 # line (the paper's edge, a railway side) stays as read. The strip between the edges is taught as street.
 nmark = nmark_on = 0; MF = SP + f'picks22_guided/22-{N}/streets_marked.json'
 if os.path.exists(MF):
+    loose = []
     def refine(pl):
         pl = np.array(pl, float); segs = []; hit = 0
         for a_, b_ in zip(pl[:-1], pl[1:]):
@@ -123,16 +139,32 @@ if os.path.exists(MF):
                 bst = min(((dark(a_ + nrm * (o1 + i), b_ + nrm * (o1 + j)), i, j) for i in range(-4, 5) for j in range(-4, 5)))
                 c2, d2 = a_ + nrm * (o1 + bst[1]), b_ + nrm * (o1 + bst[2])
                 if on_line(c2, d2): a2, b2 = c2, d2; hit += 1
+                elif not any(x0 <= (a_[0] + b_[0]) / 2 <= x1 and y0 <= (a_[1] + b_[1]) / 2 <= y1 for x0, y0, x1, y1 in PAPER): loose.append((a_, b_))   # read, but no printed line found under it: not taught along it
             segs.append((a2, b2))
         v = [segs[0][0]] + [(segs[k][1] + segs[k + 1][0]) / 2 for k in range(len(segs) - 1)] + [segs[-1][1]]
         return np.array(v), hit, len(segs)
-    marked = np.zeros((h, w), np.uint8); refined = []
+    marked = np.zeros((h, w), np.uint8); medge = np.zeros((h, w), np.uint8); munsure = np.zeros((h, w), np.uint8); refined = []
     for m in json.load(open(MF, encoding='utf8')):
-        l, hl, nl = refine(m['left']); r, hr, nr = refine(m['right']); nmark += nl + nr; nmark_on += hl + hr
+        # an edge with "left_kind"/"right_kind" other than "line" has no printed line (the trimmed paper edge, a railway
+        # side): it stays exactly as read
+        keep = lambda pl: (np.array(pl, float), 0, len(pl) - 1)
+        l, hl, nl = refine(m['left']) if m.get('left_kind', 'line') == 'line' else keep(m['left'])
+        r, hr, nr = refine(m['right']) if m.get('right_kind', 'line') == 'line' else keep(m['right'])
+        nmark += nl + nr; nmark_on += hl + hr
         cv2.fillPoly(marked, [(np.r_[l, r[::-1]] / K).round().astype(np.int32)], 1)
-        refined.append(dict(name=m['name'], left=l.round(1).tolist(), right=r.round(1).tolist(), edge_pieces=nl + nr, on_printed_line=hl + hr))
+        for e in (l, r): cv2.polylines(medge, [(e / K).round().astype(np.int32)], False, 1, 2 * UNSURE + 5)
+        for e, kd in ((l, m.get('left_kind', 'line')), (r, m.get('right_kind', 'line'))):
+            if kd == 'unsure': cv2.polylines(munsure, [(e / K).round().astype(np.int32)], False, 1, 2 * UNSURE + 1)   # read but not settled: not taught along it
+        refined.append(dict(name=m['name'], left=l.round(1).tolist(), right=r.round(1).tolist(), left_kind=m.get('left_kind', 'line'), right_kind=m.get('right_kind', 'line'), edge_pieces=nl + nr, on_printed_line=hl + hr))
+    # a parcel side that is not on a printed line but has a marked edge beside it: the marked edge decides. Its blanked
+    # band becomes street inside the marked street and block outside it.
+    fix = (unsure > 0) & (medge > 0); out[fix & (marked == 0)] = 1
+    near_m = cv2.dilate(marked, np.ones((2 * UNSURE + 5, 2 * UNSURE + 5), np.uint8)) > 0
+    out[(out == 0) & near_m & (marked == 0) & (medge > 0)] = 1          # parcel "street" just outside a marked edge is block
     json.dump(refined, open(OUT + f'{N}_marked_refined.json', 'w', encoding='utf8', newline=chr(10)), indent=1)
     out[marked == 1] = 0
+    for a_, b_ in loose: cv2.line(munsure, tuple((a_ / K).round().astype(int)), tuple((b_ / K).round().astype(int)), 1, 2 * UNSURE + 1)
+    out[munsure == 1] = 255
     ring = cv2.morphologyEx(marked, cv2.MORPH_GRADIENT, np.ones((3, 3), np.uint8)) > 0; out[ring & (lab == 1)] = 255
 out[~alpha] = 255
 cv2.imwrite(OUT + f'{N}_img.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 92]); cv2.imwrite(OUT + f'{N}_label.png', out)
