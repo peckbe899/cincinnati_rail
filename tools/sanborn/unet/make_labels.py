@@ -224,6 +224,7 @@ cv2.imwrite(OUT + f'{N}_img.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 92]); cv2.imwr
 vedge = np.zeros((h, w), np.uint8)
 for a_, b_ in VER: cv2.line(vedge, tuple((np.asarray(a_) / K).round().astype(int)), tuple((np.asarray(b_) / K).round().astype(int)), 255, 1)
 vedge[~alpha] = 0; cv2.imwrite(OUT + f'{N}_edge.png', vedge)
+json.dump([[np.asarray(a_).round(1).tolist(), np.asarray(b_).round(1).tolist()] for a_, b_ in VER], open(OUT + f'{N}_verified.json', 'w', encoding='utf8', newline=chr(10)))   # the same edges as full-size lines, for edgenet.py
 json.dump(dict(plate=N, tag=TAG, scale=K, ignore_px=IGN, verified_edges=len(VER), sides=nside, sides_snapped=nmoved, sides_on_printed_line=nver, plate_pieces_added=nadd, plate_pieces_blanked=nblank, marked_edge_pieces=nmark, marked_on_printed_line=nmark_on, size=[w, h], block=float((out == 1).mean()), street=float((out == 0).mean()), ignore=float((out == 255).mean())),
           open(OUT + f'{N}_meta.json', 'w', encoding='utf8', newline='\n'), indent=1)
 full_vis = full.copy()                       # full-size check: snapped block sides (green) on the scan
