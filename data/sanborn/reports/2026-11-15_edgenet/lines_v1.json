@@ -1,0 +1,95 @@
+{
+ "name": "lines_v1",
+ "plates": [
+  "82A",
+  "80",
+  "43",
+  "45",
+  "44:val"
+ ],
+ "iters": 3000,
+ "crop": 448,
+ "batch": 6,
+ "line_px": 3,
+ "tol_px": 3,
+ "history": [
+  {
+   "iter": 500,
+   "loss": 0.8625,
+   "minutes": 5.7,
+   "val": {
+    "44": {
+     "precision": 0.3459,
+     "recall": 0.9385,
+     "drawn_share_of_plate": 0.037,
+     "line_share_of_plate": 0.0092
+    }
+   }
+  },
+  {
+   "iter": 1000,
+   "loss": 0.9549,
+   "minutes": 11.4,
+   "val": {
+    "44": {
+     "precision": 0.5886,
+     "recall": 0.8603,
+     "drawn_share_of_plate": 0.0183,
+     "line_share_of_plate": 0.0092
+    }
+   }
+  },
+  {
+   "iter": 1500,
+   "loss": 0.5046,
+   "minutes": 17.1,
+   "val": {
+    "44": {
+     "precision": 0.6534,
+     "recall": 0.8907,
+     "drawn_share_of_plate": 0.0174,
+     "line_share_of_plate": 0.0092
+    }
+   }
+  },
+  {
+   "iter": 2000,
+   "loss": 0.724,
+   "minutes": 22.8,
+   "val": {
+    "44": {
+     "precision": 0.6208,
+     "recall": 0.9067,
+     "drawn_share_of_plate": 0.0208,
+     "line_share_of_plate": 0.0092
+    }
+   }
+  },
+  {
+   "iter": 2500,
+   "loss": 0.5837,
+   "minutes": 28.5,
+   "val": {
+    "44": {
+     "precision": 0.6532,
+     "recall": 0.8768,
+     "drawn_share_of_plate": 0.0188,
+     "line_share_of_plate": 0.0092
+    }
+   }
+  },
+  {
+   "iter": 3000,
+   "loss": 0.5744,
+   "minutes": 34.2,
+   "val": {
+    "44": {
+     "precision": 0.6548,
+     "recall": 0.8749,
+     "drawn_share_of_plate": 0.0185,
+     "line_share_of_plate": 0.0092
+    }
+   }
+  }
+ ]
+}
