@@ -48,6 +48,31 @@ def on_line(a, b):
     if L < MINSIDE: return False
     nrm = np.array([-d[1], d[0]]) / L
     return np.mean([dark(a + nrm * o, b + nrm * o) for o in (-6, -3, 3, 6)]) - dark(a, b) > 25
+# Ben, 15 November 2026: take the pipeline's outputs and fix the plate with them. The networks' block outlines
+# (outlines.py, picks22_guided/22-N/outlines.json) give, for a parcel side the snap could not put on a printed line, the
+# printed line the networks found beside it. Only an outline side that tests as on the print is used, and the moved side
+# is tested against the ink again here; the area prediction must have block on the parcel's own side of the new line (so
+# a side is not moved across an alley onto the next block's line).
+_of = SP + f'picks22_guided/22-{N}/outlines.json'; OUTD, OUTANG = 45.0, 0.9945
+OUTL = [(np.array(r['a'], float), np.array(r['b'], float)) for q in (json.load(open(_of, encoding='utf8')) if os.path.exists(_of) and '--no-outlines' not in sys.argv else []) for r in q if r['state'] == 'on print']
+_pa = cv2.imread(OUT + f'{N}_pred_edge_v1.png', 0); NOUT = [0]
+def from_outline(a, b, poly32):
+    L = np.hypot(*(b - a)); d = (b - a) / L; nrm = np.array([-d[1], d[0]]); m = (a + b) / 2; best = None
+    for p_, q_ in OUTL:
+        e = q_ - p_; Le = np.hypot(*e); e = e / Le
+        if abs(d @ e) < OUTANG: continue
+        dist = abs(e[0] * (m - p_)[1] - e[1] * (m - p_)[0])
+        if dist > OUTD or (best is not None and dist >= best[0]): continue
+        t0, t1 = sorted(((p_ - a) @ d, (q_ - a) @ d))
+        if min(L, t1) - max(0.0, t0) < 0.5 * L: continue
+        a2, b2 = p_ + e * ((a - p_) @ e), p_ + e * ((b - p_) @ e)
+        if not on_line(a2, b2): continue
+        if _pa is not None:
+            m2 = (a2 + b2) / 2; ins = nrm if cv2.pointPolygonTest(poly32, tuple(map(float, m + nrm * 12)), False) > 0 else -nrm
+            v = [int(_pa[int(np.clip(y / K, 0, h - 1)), int(np.clip(x / K, 0, w - 1))]) for x, y in (m2 + ins * 14, m2 - ins * 14)]
+            if v[0] < v[1] + 40: continue
+        best = (dist, a2, b2)
+    return None if best is None else (best[1], best[2])
 def snap(poly):
     """Ben, 14 November 2026: teach it how a street looks. A block side is a straight ruled line. Each side of today's
     block (full-size px) is first slid sideways (up to SNAP px, about 3.5 m) to the darkest line beside it, then its two
@@ -77,6 +102,9 @@ def snap(poly):
                 if sum(g_ is not None for g_ in got) >= 0.6 * m:
                     ends = [got[i] if got[i] is not None else (pts[i], pts[i + 1]) for i in range(m)]
                     a2, b2 = ends[0][0], ends[-1][1]; extra[k] = [(ends[i][1] + ends[i + 1][0]) / 2 for i in range(m - 1)]; moved += 1
+            if a2 is a and OUTL and not on_line(a, b):
+                f = from_outline(a, b, poly.astype(np.float32).reshape(-1, 1, 2))
+                if f is not None: a2, b2 = f; moved += 1; NOUT[0] += 1
         sides.append((a2, b2))
     out = []
     for k in range(n):
@@ -225,7 +253,7 @@ vedge = np.zeros((h, w), np.uint8)
 for a_, b_ in VER: cv2.line(vedge, tuple((np.asarray(a_) / K).round().astype(int)), tuple((np.asarray(b_) / K).round().astype(int)), 255, 1)
 vedge[~alpha] = 0; cv2.imwrite(OUT + f'{N}_edge.png', vedge)
 json.dump([[np.asarray(a_).round(1).tolist(), np.asarray(b_).round(1).tolist()] for a_, b_ in VER], open(OUT + f'{N}_verified.json', 'w', encoding='utf8', newline=chr(10)))   # the same edges as full-size lines, for edgenet.py
-json.dump(dict(plate=N, tag=TAG, scale=K, ignore_px=IGN, verified_edges=len(VER), sides=nside, sides_snapped=nmoved, sides_on_printed_line=nver, plate_pieces_added=nadd, plate_pieces_blanked=nblank, marked_edge_pieces=nmark, marked_on_printed_line=nmark_on, size=[w, h], block=float((out == 1).mean()), street=float((out == 0).mean()), ignore=float((out == 255).mean())),
+json.dump(dict(plate=N, tag=TAG, scale=K, ignore_px=IGN, verified_edges=len(VER), sides=nside, sides_snapped=nmoved, sides_on_printed_line=nver, sides_from_outlines=NOUT[0], plate_pieces_added=nadd, plate_pieces_blanked=nblank, marked_edge_pieces=nmark, marked_on_printed_line=nmark_on, size=[w, h], block=float((out == 1).mean()), street=float((out == 0).mean()), ignore=float((out == 255).mean())),
           open(OUT + f'{N}_meta.json', 'w', encoding='utf8', newline='\n'), indent=1)
 full_vis = full.copy()                       # full-size check: snapped block sides (green) on the scan
 for q in snapped:

@@ -22,6 +22,11 @@ if os.path.exists(mf) and '--bare' not in sys.argv:
         for key in ('left', 'right'):
             q = ((np.array(s[key], float) - [x0, y0]) * sc).round().astype(np.int32)
             cv2.polylines(c, [q], False, (0, 170, 0), 2, cv2.LINE_AA)
+of = _ws.DATA + f'picks22_guided/22-{N}/outlines.json'  # --outlines: the networks' block sides that test as on the print (outlines.py), thin magenta, as a hint
+if '--outlines' in sys.argv and os.path.exists(of):
+    for poly in json.load(open(of, encoding='utf8')):
+        for r in poly:
+            if r['state'] == 'on print': cv2.line(c, *[tuple(((np.array(r[k], float) - [x0, y0]) * sc).round().astype(int)) for k in ('a', 'b')], (200, 0, 200), 1, cv2.LINE_AA)
 for g in range((x0 // 50 + 1) * 50, x1, 50):
     X = int((g - x0) * sc); big = g % 100 == 0; cv2.line(c, (X, 0), (X, c.shape[0]), (0, 0, 255) if big else (150, 150, 255), 1)
     if big: cv2.putText(c, str(g), (X + 2, 12), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 180), 1); cv2.putText(c, str(g), (X + 2, c.shape[0] - 4), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 180), 1)

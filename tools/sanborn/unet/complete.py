@@ -29,17 +29,19 @@ def at(x, y):
     x, y = int(round(x / K)), int(round(y / K))
     return lab[y, x] if 0 <= x < w and 0 <= y < h and alpha[y, x] else None
 cross = []
-for c in json.load(open(D + 'observations.json', encoding='utf8'))['crossings']:
+# a plate with no guided reading: its own fitted controls (cufp/N/matches.json, blind picks), as analyze_pred.py
+XS = json.load(open(D + 'observations.json', encoding='utf8'))['crossings'] if os.path.exists(D + 'observations.json') else [m_ for m_ in json.load(open(SP + f'cufp/{N}/matches.json', encoding='utf8')) if m_.get('used')]
+for c in XS:
     x, y = int(round(c['x'] / K)), int(round(c['y'] / K)); r = R // K
     if not (r <= x < w - r and r <= y < h - r): continue
     win = lab[y - r:y + r + 1, x - r:x + r + 1][disc]; pap = alpha[y - r:y + r + 1, x - r:x + r + 1][disc]
     if pap.sum() < 20: continue
     st, bl = float((win[pap] == 0).mean()), float((win[pap] == 255).mean()); mid = lab[y, x]
     state = 'complete' if st >= 0.9 else ('missing' if mid != 0 else 'partly')
-    cross.append(dict(id=c['id'], a=c['a'], b=c['b'], x=c['x'], y=c['y'], street=round(st, 2), blank=round(bl, 2), state=state))
+    cross.append(dict(id=c.get('id'), a=c['a'], b=c['b'], x=c['x'], y=c['y'], street=round(st, 2), blank=round(bl, 2), state=state))
     cv2.circle(vis, (x, y), 9, dict(complete=(0, 150, 0), partly=(0, 150, 255), missing=(0, 0, 230))[state], 2 if state == 'complete' else -1)
 roads = []
-lines = [(r_['name'], 'traced', np.array(r_['points'], float)) for r_ in json.load(open(D + 'merge.json', encoding='utf8'))['runs']]
+lines = [(r_['name'], 'traced', np.array(r_['points'], float)) for r_ in json.load(open(D + 'merge.json', encoding='utf8'))['runs']] if os.path.exists(D + 'merge.json') else []
 if os.path.exists(D + 'streets_marked.json'):
     for m in json.load(open(D + 'streets_marked.json', encoding='utf8')):
         l, r_ = np.array(m['left'], float), np.array(m['right'], float); n = max(len(l), len(r_))
