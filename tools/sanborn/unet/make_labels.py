@@ -251,6 +251,49 @@ if os.path.exists(_rf):
     for poly in json.load(open(_rf, encoding='utf8')).get('not_street_polys', []):
         pm = np.zeros((h, w), np.uint8); cv2.fillPoly(pm, [(np.array(poly, float) / K).round().astype(np.int32)], 1); out[(pm == 1) & (out == 0)] = 255
         VER = [(a_, b_) for a_, b_ in VER if cv2.pointPolygonTest(np.array(poly, np.float32).reshape(-1, 1, 2), tuple(map(float, (np.asarray(a_) + np.asarray(b_)) / 2)), False) < 0]
+# Ben, 15 November 2026: "the edges of the sheets themselves are almost always streets." A verified block line that
+# faces the sheet's trimmed edge, with the edge within SHEET_D px and no block between, has a street between it and the
+# edge: the sheet was cut along that street. SHEET_D is 1.3 times the plate's usual street width (the marked streets'
+# median; plates are printed at 100 or 200 ft to an inch), 170 px where no street is marked.
+_wd = [float(np.hypot(*(np.array(m_['left'][0]) - np.array(m_['right'][0])))) for m_ in globals().get('refined', [])]
+SHEET_D = float(np.clip(1.3 * np.median(_wd), 80, 220)) if _wd else 170.0; sheet_st = np.zeros((h, w), np.uint8); nsheet = 0
+if '--no-sheet' not in sys.argv:
+    steps = np.arange(3.0, SHEET_D / K)
+    for a_, b_ in VER:
+        a2, b2 = np.asarray(a_, float) / K, np.asarray(b_, float) / K; L_ = np.hypot(*(b2 - a2))
+        if L_ < 10: continue
+        d_ = (b2 - a2) / L_; n_ = np.array([-d_[1], d_[0]]); pts = a2 + np.outer(np.arange(0, L_, 1.0), d_)
+        for sg in (1, -1):
+            g_ = pts[:, None, :] + sg * steps[None, :, None] * n_; gx_ = g_[:, :, 0].round().astype(int); gy_ = g_[:, :, 1].round().astype(int)
+            inside = (gx_ >= 0) & (gx_ < w) & (gy_ >= 0) & (gy_ < h); cxp, cyp = np.clip(gx_, 0, w - 1), np.clip(gy_, 0, h - 1)
+            off = ~inside | ~alpha[cyp, cxp]; first = np.where(off.any(1), off.argmax(1), -1)
+            before = np.arange(len(steps))[None, :] < first[:, None]
+            good = (first > 0) & ~((out[cyp, cxp] == 1) & before).any(1)
+            if good.mean() < 0.7: continue                       # the whole side must face the edge, not just its end
+            sel_ = before & good[:, None]; sheet_st[cyp[sel_], cxp[sel_]] = 1; nsheet += 1
+    sheet_st = cv2.morphologyEx(sheet_st, cv2.MORPH_CLOSE, np.ones((3, 3), np.uint8)); out[(sheet_st == 1) & (out != 1) & alpha] = 0
+# Ben's own mark-up of the lines (the line editor: edit_server.py, picks22_guided/22-N/edges_ben.json). Each entry is a
+# line he touched, with where it was (a0, b0) and where it is now (a, b). "wrong": not a street edge, so it leaves the
+# verified set and a band along it is not taught. "ok": a street edge on the print, verified whatever the ink test
+# says. "none": a street side with no printed line (the sheet's edge), kept out of the verified set. A line he moved or
+# drew is verified where he put it; the band along the old and the new position is not taught in the area label (which
+# side is street is not his to say with a line; the lines network learns the line itself).
+_bf = SP + f'picks22_guided/22-{N}/edges_ben.json'; nben = 0
+if os.path.exists(_bf):
+    def _same(a_, b_, p_, q_):
+        a_, b_, p_, q_ = (np.asarray(v_, float) for v_ in (a_, b_, p_, q_)); d1, d2 = b_ - a_, q_ - p_; L2 = np.hypot(*d2) or 1.0; m_ = (a_ + b_) / 2
+        t_ = np.clip(((m_ - p_) @ d2) / L2 ** 2, 0, 1)
+        return np.hypot(*(m_ - (p_ + t_ * d2))) < 8 and abs(d1 @ d2) / ((np.hypot(*d1) or 1.0) * L2) > 0.97
+    bblank = np.zeros((h, w), np.uint8)
+    for s_ in json.load(open(_bf, encoding='utf8')).get('lines', []):
+        old = (s_['a0'], s_['b0']); new = (np.array(s_['a'], float), np.array(s_['b'], float)); v_ = s_.get('verdict'); nben += 1
+        changed = s_.get('moved') or s_.get('added')
+        if v_ in ('wrong', 'none') or s_.get('moved'): VER = [e_ for e_ in VER if not _same(e_[0], e_[1], *old)]
+        if (v_ == 'wrong' or s_.get('moved')) and not s_.get('added'): strip(bblank, np.array(old[0], float) / K, np.array(old[1], float) / K, UNSURE)
+        if v_ == 'ok':
+            if not any(_same(e_[0], e_[1], *new) for e_ in VER): VER.append(new)
+            if changed: strip(bblank, new[0] / K, new[1] / K, UNSURE)
+    out[bblank == 1] = 255
 # the middle of every crossing the readers agreed on is street (XR px at half size): a junction is never left blank
 if os.path.exists(SP + f'picks22_guided/22-{N}/observations.json'):
     for c in json.load(open(SP + f'picks22_guided/22-{N}/observations.json', encoding='utf8'))['crossings']:
@@ -263,7 +306,7 @@ vedge = np.zeros((h, w), np.uint8)
 for a_, b_ in VER: cv2.line(vedge, tuple((np.asarray(a_) / K).round().astype(int)), tuple((np.asarray(b_) / K).round().astype(int)), 255, 1)
 vedge[~alpha] = 0; cv2.imwrite(OUT + f'{N}_edge.png', vedge)
 json.dump([[np.asarray(a_).round(1).tolist(), np.asarray(b_).round(1).tolist()] for a_, b_ in VER], open(OUT + f'{N}_verified.json', 'w', encoding='utf8', newline=chr(10)))   # the same edges as full-size lines, for edgenet.py
-json.dump(dict(plate=N, tag=TAG, scale=K, ignore_px=IGN, verified_edges=len(VER), sides=nside, sides_snapped=nmoved, sides_on_printed_line=nver, sides_from_outlines=NOUT[0], plate_pieces_added=nadd, plate_pieces_blanked=nblank, marked_edge_pieces=nmark, marked_on_printed_line=nmark_on, size=[w, h], block=float((out == 1).mean()), street=float((out == 0).mean()), ignore=float((out == 255).mean())),
+json.dump(dict(plate=N, tag=TAG, scale=K, ignore_px=IGN, verified_edges=len(VER), sides=nside, sides_snapped=nmoved, sides_on_printed_line=nver, sides_from_outlines=NOUT[0], sheet_edge_sides=nsheet, ben_lines=nben, plate_pieces_added=nadd, plate_pieces_blanked=nblank, marked_edge_pieces=nmark, marked_on_printed_line=nmark_on, size=[w, h], block=float((out == 1).mean()), street=float((out == 0).mean()), ignore=float((out == 255).mean())),
           open(OUT + f'{N}_meta.json', 'w', encoding='utf8', newline='\n'), indent=1)
 full_vis = full.copy()                       # full-size check: snapped block sides (green) on the scan
 for q in snapped:
