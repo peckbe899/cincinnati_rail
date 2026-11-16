@@ -169,7 +169,10 @@ function closeEnd(l, end, lim) {   // the nearest line this end almost meets: ta
   for (const o of lines) { if (o === l || !live(o)) continue; const p = isect(l, o); if (!p) continue;
     const d = dist(l[end], p), g = dseg(p, o.a, o.b); if (d > lim || g > lim || near(l, p) !== end) continue;
     if (d + g < bs) { bs = d + g; best = [o, p]; } }
-  if (!best) return 0; const [o, p] = best; let n = 0;
+  if (!best) {   // no line crosses here: a piece of the same side that stops just short. Take this end to that piece's end
+    let q = null, qd = lim; for (const o of lines) { if (o === l || !live(o)) continue; for (const e of [o.a, o.b]) { const d = dist(l[end], e); if (d <= qd && d > 0.05) { qd = d; q = e; } } }
+    if (!q) return 0; l[end] = q.slice(); if (!l.verdict) l.verdict = 'ok'; return 1; }
+  const [o, p] = best; let n = 0;
   if (dist(l[end], p) > 0.05) { l[end] = p.slice(); if (!l.verdict) l.verdict = 'ok'; n++; }
   if (pull(o, p, lim)) n++; return n;
 }
