@@ -42,6 +42,46 @@ def sheet(n, W, H):
             if np.hypot(*(q1 - q0)) >= 40: out.append(dict(src='sheet', state='sheet', a=q0.round(1).tolist(), b=q1.round(1).tolist()))
     return out
 
+def clean(edges, ang=2.5, off=5.0, gap=25.0):
+    """Ben, 15 November 2026: "why are there so many overlapping and broken lines? it's impossible to build like this."
+    The label's edges are stored as working pieces: every street side cut into 120 px pieces, and the same side twice
+    where today's block side and a reading both lie on it. Here they become one line per straight run: pieces of the
+    same state that lie on one straight line (within `ang` degrees and `off` px) and touch, overlap or are within `gap`
+    px of each other are joined into a single line from the first end to the last."""
+    out = []; cosang = np.cos(np.radians(ang))
+    for state in sorted({e['state'] for e in edges}):
+        segs = sorted([e for e in edges if e['state'] == state], key=lambda e: -np.hypot(e['b'][0] - e['a'][0], e['b'][1] - e['a'][1])); tracks = []
+        for e in segs:
+            a, b = np.array(e['a'], float), np.array(e['b'], float); L = np.hypot(*(b - a))
+            if L < 1: continue
+            hit = None
+            for t in tracks:
+                d, p0 = t['d'], t['p']; n = np.array([-d[1], d[0]])
+                if abs(((b - a) / L) @ d) < cosang or abs((a - p0) @ n) > off or abs((b - p0) @ n) > off: continue
+                lo, hi = sorted(((a - p0) @ d, (b - p0) @ d))
+                if any(lo <= i1 + gap and hi >= i0 - gap for i0, i1 in t['iv']): hit = (t, lo, hi); break
+            if hit: hit[0]['iv'].append((hit[1], hit[2])); hit[0]['names'].add(e.get('name', '')); hit[0]['src'].add(e['src'])
+            else: tracks.append(dict(d=(b - a) / L, p=a, iv=[(0.0, L)], names={e.get('name', '')}, src={e['src']}))
+        for t in tracks:
+            iv = sorted(t['iv']); runs = [list(iv[0])]
+            for i0, i1 in iv[1:]:
+                if i0 <= runs[-1][1] + gap: runs[-1][1] = max(runs[-1][1], i1)
+                else: runs.append([i0, i1])
+            nm = sorted(x for x in t['names'] if x and not x.startswith(('Junction', 'Street between')))
+            for i0, i1 in runs:
+                if i1 - i0 >= 12: out.append(dict(src='read' if 'read' in t['src'] else sorted(t['src'])[0], state=state, name=nm[0] if nm else '', a=(t['p'] + t['d'] * i0).round(1).tolist(), b=(t['p'] + t['d'] * i1).round(1).tolist()))
+    # a line with no printed line under it (blue) or not settled (orange) that lies along a green one says nothing more: drop it
+    G = [(np.array(o['a']), np.array(o['b'])) for o in out if o['state'] == 'green']; keep = []
+    for o in out:
+        if o['state'] in ('blue', 'orange', 'grey'):
+            m = (np.array(o['a']) + np.array(o['b'])) / 2; dup = False
+            for p0, p1 in G:
+                d = p1 - p0; L = np.hypot(*d); t_ = ((m - p0) @ d) / L ** 2
+                if 0 <= t_ <= 1 and abs((m - p0) @ np.array([-d[1], d[0]])) / L < off + 2 and abs((np.array(o['b']) - np.array(o['a'])) @ d) / (L * np.hypot(*(np.array(o['b']) - np.array(o['a'])))) > cosang: dup = True; break
+            if dup: continue
+        keep.append(o)
+    return keep
+
 class Hd(BaseHTTPRequestHandler):
     def log_message(self, *a): pass
     def send(self, body, ctype, code=200):
@@ -55,7 +95,7 @@ class Hd(BaseHTTPRequestHandler):
         m = re.fullmatch(r'/data/([0-9A-Za-z]+)', p)
         if m:
             n = m.group(1); im = scan(n, 0); H, W = im.shape[:2]; bf = SP + f'picks22_guided/22-{n}/edges_ben.json'
-            d = dict(plate=n, W=W, H=H, edges=json.load(open(U + f'{n}_edges.json', encoding='utf8')) + sheet(n, W, H), saved=json.load(open(bf, encoding='utf8')) if os.path.exists(bf) else None)
+            d = dict(plate=n, W=W, H=H, edges=clean(json.load(open(U + f'{n}_edges.json', encoding='utf8'))) + sheet(n, W, H), saved=json.load(open(bf, encoding='utf8')) if os.path.exists(bf) else None)
             return self.send(json.dumps(d).encode(), 'application/json')
         m = re.fullmatch(r'/tile/([0-9A-Za-z]+)/(\d)/(\d+)/(\d+)\.jpg', p)
         if m:

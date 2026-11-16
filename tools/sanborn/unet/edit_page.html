@@ -22,7 +22,8 @@ label{cursor:pointer}
  <span class="sep"></span>
  <button id="bNew" title="N">N Draw new line</button><button id="bDel" title="Delete">Del Delete line</button><button id="bUndo" title="Ctrl+Z">Undo</button>
  <span class="sep"></span>
- <label><input type="checkbox" id="fGrey" checked> today-only</label>
+ <label><input type="checkbox" id="fGrey"> today-only</label>
+ <label><input type="checkbox" id="fBlue"> no-line pieces</label>
  <label><input type="checkbox" id="fSheet" checked> sheet edge</label>
  <label><input type="checkbox" id="fUn"> only unmarked</label>
  <label><input type="checkbox" id="fDel"> show deleted</label>
@@ -68,7 +69,7 @@ async function load(n) {
   const by = new Map(lines.map(l => [l.k, l]));
   for (const s of (P.saved && P.saved.lines) || []) {
     let l = s.added ? null : by.get(key(s.a0, s.b0));
-    if (!l) { l = {k: 'ben' + Math.random(), a0: s.a0 || s.a, b0: s.b0 || s.b, src: s.src || 'ben', state: s.state || 'new', name: s.name || '', added: true}; lines.push(l); }
+    if (!l) { l = {k: 'ben' + Math.random(), a0: s.a0 || s.a, b0: s.b0 || s.b, src: s.src || 'ben', state: s.state || 'new', name: s.name || '', added: !!s.added}; lines.push(l); }
     l.a = s.a.slice(); l.b = s.b.slice(); l.verdict = s.verdict || null;
   }
   view.k = Math.min(cv.width / P.W, cv.height / P.H); view.x = 0; view.y = 0; location.hash = n; $('saved').textContent = 'loaded'; draw();
@@ -90,6 +91,7 @@ function doUndo() { const u = undo.pop(); if (!u) return; lines = JSON.parse(u).
 
 function shown(l) {
   if (l.state === 'grey' && !$('fGrey').checked && !touched(l)) return false;
+  if (l.state === 'blue' && !$('fBlue').checked && !touched(l)) return false;
   if (l.state === 'sheet' && !$('fSheet').checked && !touched(l)) return false;
   if (l.verdict === 'wrong' && !$('fDel').checked) return false;
   if ($('fUn').checked && l.verdict) return false;
@@ -186,7 +188,7 @@ addEventListener('keydown', e => {
 $('bOk').onclick = () => mark('ok'); $('bNone').onclick = () => mark('none'); $('bClear').onclick = () => mark(null);
 $('bNew').onclick = () => setMode(mode === 'new' ? 'select' : 'new'); $('bDel').onclick = del; $('bUndo').onclick = doUndo;
 $('bHelp').onclick = () => { const h = $('help'); h.style.display = h.style.display === 'none' ? '' : 'none'; };
-for (const id of ['fGrey', 'fSheet', 'fUn', 'fDel']) $(id).onchange = draw;
+for (const id of ['fGrey', 'fBlue', 'fSheet', 'fUn', 'fDel']) $(id).onchange = draw;
 addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
 (async () => {
   const pl = await (await fetch('/plates')).json(); $('plate').innerHTML = pl.map(p => `<option>${p}</option>`).join('');

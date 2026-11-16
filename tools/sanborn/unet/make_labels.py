@@ -272,6 +272,11 @@ if '--no-sheet' not in sys.argv:
             if good.mean() < 0.7: continue                       # the whole side must face the edge, not just its end
             sel_ = before & good[:, None]; sheet_st[cyp[sel_], cxp[sel_]] = 1; nsheet += 1
     sheet_st = cv2.morphologyEx(sheet_st, cv2.MORPH_CLOSE, np.ones((3, 3), np.uint8)); out[(sheet_st == 1) & (out != 1) & alpha] = 0
+    # a tab of paper sticking out of the sheet (Ben: a street that runs off the plate is always left as a stub): paper
+    # that an opening 2.5 street widths across removes, and that is at least 18 px thick, is a street stub
+    kq = int(2.5 * SHEET_D / 1.3 / K) | 1; a8 = alpha.astype(np.uint8)
+    tab = cv2.morphologyEx(a8 & (1 - cv2.morphologyEx(a8, cv2.MORPH_OPEN, np.ones((kq, kq), np.uint8))), cv2.MORPH_OPEN, np.ones((9, 9), np.uint8))
+    out[(tab == 1) & (out != 1)] = 0
 # Ben's own mark-up of the lines (the line editor: edit_server.py, picks22_guided/22-N/edges_ben.json). Each entry is a
 # line he touched, with where it was (a0, b0) and where it is now (a, b). "wrong": not a street edge, so it leaves the
 # verified set and a band along it is not taught. "ok": a street edge on the print, verified whatever the ink test
