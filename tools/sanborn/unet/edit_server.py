@@ -15,19 +15,24 @@ make_labels.py reads.
   GET  /tile/N/Z/X/Y.jpg    a 512 px tile of the scan at 1 / 2^Z
   POST /save/N              write edges_ben.json
 """
-import json, os, re, sys
+import json, os, re, sys, threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import numpy as np
 import cv2
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, os.path.join(HERE, '..'))
 import _ws  # noqa: E402
-SP = _ws.DATA; U = SP + 'unet_data/'; T = 512; CACHE = {}
+SP = _ws.DATA; U = SP + 'unet_data/'; T = 512; CACHE = {}; LOCK = threading.RLock()
 
 def scan(n, z):
+    """one plate's scan is held at a time; the lock stops two requests (a tile of the last plate, the data of the next)
+    from clearing it under each other, which dropped the connection and left the page blank"""
+    with LOCK: return _scan(n, z)
+
+def _scan(n, z):
     if CACHE.get('n') != n:
         CACHE.clear(); CACHE['n'] = n; CACHE[0] = cv2.imread(SP + f'cufp/22-{n}.jpg')
     if z not in CACHE:
-        prev = scan(n, z - 1); CACHE[z] = cv2.resize(prev, (max(1, prev.shape[1] // 2), max(1, prev.shape[0] // 2)), interpolation=cv2.INTER_AREA)
+        prev = _scan(n, z - 1); CACHE[z] = cv2.resize(prev, (max(1, prev.shape[1] // 2), max(1, prev.shape[0] // 2)), interpolation=cv2.INTER_AREA)
     return CACHE[z]
 
 def sheet(n, W, H):
