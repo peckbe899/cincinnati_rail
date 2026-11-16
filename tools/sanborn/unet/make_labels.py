@@ -223,7 +223,10 @@ if os.path.exists(MF):
         r, hr, nr = refine(m['right']) if m.get('right_kind', 'line') == 'line' else keep(m['right'])
         nmark += nl + nr; nmark_on += hl + hr
         cv2.fillPoly(marked, [(np.r_[l, r[::-1]] / K).round().astype(np.int32)], 1)
-        for e in (l, r): cv2.polylines(medge, [(e / K).round().astype(np.int32)], False, 1, 2 * UNSURE + 5)
+        # the band beside a marked edge has square ends (15 Nov 2026, plate 45): a thick line's round cap ran past the
+        # edge's end and cut a notch of block into the cross street at every T-junction
+        for e in (l, r):
+            for a_, b_ in zip(e[:-1], e[1:]): strip(medge, a_ / K, b_ / K, UNSURE + 2)
         for e, kd in ((l, m.get('left_kind', 'line')), (r, m.get('right_kind', 'line'))):
             if kd == 'unsure': cv2.polylines(munsure, [(e / K).round().astype(np.int32)], False, 1, 2 * UNSURE + 1)   # read but not settled: not taught along it
         refined.append(dict(name=m['name'], left=l.round(1).tolist(), right=r.round(1).tolist(), left_kind=m.get('left_kind', 'line'), right_kind=m.get('right_kind', 'line'), edge_pieces=nl + nr, on_printed_line=hl + hr))
@@ -241,6 +244,13 @@ if os.path.exists(MF):
 if os.path.exists(_rf):
     for poly in json.load(open(_rf, encoding='utf8')).get('block_polys', []):
         pm = np.zeros((h, w), np.uint8); cv2.fillPoly(pm, [(np.array(poly, float) / K).round().astype(np.int32)], 1); out[(pm == 1) & (out == 255)] = 1
+# ground seen by eye NOT to be a street although a parcel side beside it tests as on a printed line (15 Nov 2026, plate
+# 80: today's street lying on the canal bank, strips beside Broerman where a parcel side sits on a pipe line):
+# edges_review.json "not_street_polys". Taught street inside becomes not taught, and verified edges inside are dropped.
+if os.path.exists(_rf):
+    for poly in json.load(open(_rf, encoding='utf8')).get('not_street_polys', []):
+        pm = np.zeros((h, w), np.uint8); cv2.fillPoly(pm, [(np.array(poly, float) / K).round().astype(np.int32)], 1); out[(pm == 1) & (out == 0)] = 255
+        VER = [(a_, b_) for a_, b_ in VER if cv2.pointPolygonTest(np.array(poly, np.float32).reshape(-1, 1, 2), tuple(map(float, (np.asarray(a_) + np.asarray(b_)) / 2)), False) < 0]
 # the middle of every crossing the readers agreed on is street (XR px at half size): a junction is never left blank
 if os.path.exists(SP + f'picks22_guided/22-{N}/observations.json'):
     for c in json.load(open(SP + f'picks22_guided/22-{N}/observations.json', encoding='utf8'))['crossings']:

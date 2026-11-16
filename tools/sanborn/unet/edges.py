@@ -65,7 +65,9 @@ for q in json.load(open(U + f'{N}_snapped.json', encoding='utf8')):
         ok = (c[:, 0] >= 0) & (c[:, 0] < W // 2) & (c[:, 1] >= 0) & (c[:, 1] < H // 2)
         beside = ok.any() and ((mk[c[ok, 1], c[ok, 0]] > 0) | (strip[c[ok, 1], c[ok, 0]] > 0)).mean() >= 0.6
         mid = (a + b) / 2; inb = lambda key: any(x0 <= mid[0] <= x1 and y0 <= mid[1] <= y1 for x0, y0, x1, y1 in REV.get(key, []))
-        segs.append(dict(src='parcel', a=a.tolist(), b=b.tolist(), state='green' if on(a, b) or inb('ok_boxes') else ('blue' if inb('paper_boxes') else ('grey' if beside or inb('not_edge_boxes') else 'orange'))))
+        # a side inside a not_street_poly (seen by eye to lie on a pipe or lot line, make_labels.py) is explained, not green
+        false_ = any(cv2.pointPolygonTest(np.array(pl, np.float32).reshape(-1, 1, 2), (float(mid[0]), float(mid[1])), False) >= 0 for pl in REV.get('not_street_polys', []))
+        segs.append(dict(src='parcel', a=a.tolist(), b=b.tolist(), state='grey' if false_ else 'green' if on(a, b) or inb('ok_boxes') else ('blue' if inb('paper_boxes') else ('grey' if beside or inb('not_edge_boxes') else 'orange'))))
 COL = dict(green=(0, 150, 0), blue=(230, 120, 0), grey=(150, 150, 150), red=(0, 0, 230), orange=(0, 150, 255))
 v = (full * 0.8 + 50).astype(np.uint8); I = lambda p: tuple(np.round(p).astype(int))
 for s in sorted(segs, key=lambda s: s['state'] in ('red', 'orange')): cv2.line(v, I(s['a']), I(s['b']), COL[s['state']], 5, cv2.LINE_AA)
