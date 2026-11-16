@@ -176,12 +176,20 @@ function closeEnd(l, end, lim) {   // the nearest line this end almost meets: ta
   if (dist(l[end], p) > 0.05) { l[end] = p.slice(); if (!l.verdict) l.verdict = 'ok'; n++; }
   if (pull(o, p, lim)) n++; return n;
 }
+function weld(S, tol) {   // Ben: "1px on this is a rounding error". An end within tol of another line's end takes that end's exact place; else it drops onto the line
+  let n = 0; for (const l of S) for (const end of ['a', 'b']) { const p = l[end]; let q = null, qd = tol;
+    for (const o of lines) { if (o === l || !live(o)) continue; for (const e of [o.a, o.b]) { const d = dist(p, e); if (d <= qd) { qd = d; q = e; } } }
+    if (!q) { qd = tol; for (const o of lines) { if (o === l || !live(o)) continue; const dx = o.b[0] - o.a[0], dy = o.b[1] - o.a[1], L2 = dx * dx + dy * dy || 1; let t = ((p[0] - o.a[0]) * dx + (p[1] - o.a[1]) * dy) / L2; t = Math.max(0, Math.min(1, t)); const e = [o.a[0] + t * dx, o.a[1] + t * dy], d = dist(p, e); if (d <= qd) { qd = d; q = e; } } }
+    if (q && qd > 1e-9) { l[end] = q.slice(); n++; } }
+  return n;
+}
 function corners() {
   const S = [...sel].filter(l => l.verdict !== 'wrong'); if (!S.length) { msg = 'Select one or more lines first.'; draw(); return; }
   snap(); let n = 0;
   if (S.length === 2) { const p = isect(S[0], S[1]); if (!p) { msg = 'Those two lines run the same way: use J to join them.'; undo.pop(); draw(); return; }
     for (const l of S) if (pull(l, p, 1e9)) n++; }
   else for (const l of S) for (const end of ['a', 'b']) n += closeEnd(l, end, 60);
+  weld(S, 1);
   msg = n ? `Closed: ${n} line end${n > 1 ? 's' : ''} moved.` : 'Nothing to close: no other line within 60 px of those ends (select two lines to close a wider gap).'; if (n) save(); else undo.pop(); draw();
 }
 function join() {
