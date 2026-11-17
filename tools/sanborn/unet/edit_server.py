@@ -14,6 +14,8 @@ make_labels.py reads.
   GET  /data/N              size, edges, sheet outline, and what Ben has saved
   GET  /tile/N/Z/X/Y.jpg    a 512 px tile of the scan at 1 / 2^Z
   POST /save/N              write edges_ben.json
+  GET  /bins/N              the ink bins of the plate (unet_data/N_bins.json, ink_bins.py), or {} if there are none
+  GET  /bintile/N/Z/X/Y.png?on=1,4,5   a 512 px see-through tile of the ink in those bins, each in its colour
 """
 import json, os, re, sys, threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -34,6 +36,21 @@ def _scan(n, z):
     if z not in CACHE:
         prev = _scan(n, z - 1); CACHE[z] = cv2.resize(prev, (max(1, prev.shape[1] // 2), max(1, prev.shape[0] // 2)), interpolation=cv2.INTER_AREA)
     return CACHE[z]
+
+BINS = {}
+
+def bins(n, z):
+    """the bin of every pixel (ink_bins.py) at 1 / 2^Z; a smaller level keeps a pixel if any of the four under it is ink"""
+    with LOCK:
+        key = (n, os.path.getmtime(U + f'{n}_bins.png'))   # a new run of ink_bins.py is picked up without a restart
+        if BINS.get('n') != key:
+            BINS.clear(); BINS['n'] = key; BINS[0] = cv2.imread(U + f'{n}_bins.png', 0)
+            BINS['pal'] = np.zeros((256, 4), np.uint8)
+            for k, v in json.load(open(U + f'{n}_bins.json', encoding='utf8'))['bins'].items(): BINS['pal'][int(k)] = [v['rgb'][2], v['rgb'][1], v['rgb'][0], 255]
+        if z not in BINS:
+            q = bins(n, z - 1)[0]; q = np.pad(q, ((0, q.shape[0] % 2), (0, q.shape[1] % 2)))
+            BINS[z] = q.reshape(q.shape[0] // 2, 2, q.shape[1] // 2, 2).max(axis=(1, 3))
+        return BINS[z], BINS['pal']
 
 def sheet(n, W, H):
     """the sheet's own outline as straight pieces (full-size px): the trimmed paper edge, almost always a street side"""
@@ -102,6 +119,16 @@ class Hd(BaseHTTPRequestHandler):
             n = m.group(1); im = scan(n, 0); H, W = im.shape[:2]; bf = SP + f'picks22_guided/22-{n}/edges_ben.json'
             d = dict(plate=n, W=W, H=H, edges=clean(json.load(open(U + f'{n}_edges.json', encoding='utf8'))) + sheet(n, W, H), saved=json.load(open(bf, encoding='utf8')) if os.path.exists(bf) else None)
             return self.send(json.dumps(d).encode(), 'application/json')
+        m = re.fullmatch(r'/bins/([0-9A-Za-z]+)', p)
+        if m:
+            bf = U + f'{m.group(1)}_bins.json'
+            return self.send(open(bf, 'rb').read() if os.path.exists(bf) and os.path.exists(bf[:-4] + 'png') else b'{}', 'application/json')
+        m = re.fullmatch(r'/bintile/([0-9A-Za-z]+)/(\d)/(\d+)/(\d+)\.png', p)
+        if m:
+            n, z, x, y = m.group(1), *map(int, m.groups()[1:]); cm, pal = bins(n, z); t = cm[y * T:(y + 1) * T, x * T:(x + 1) * T]
+            if t.size == 0: return self.send(b'', 'text/plain', 404)
+            q = self.path.split('?on=')[1] if '?on=' in self.path else ''; on = np.zeros(256, bool); on[[int(v) for v in q.split(',') if v.isdigit()]] = True; on[0] = False
+            return self.send(cv2.imencode('.png', (pal * on[:, None])[t])[1].tobytes(), 'image/png')
         m = re.fullmatch(r'/tile/([0-9A-Za-z]+)/(\d)/(\d+)/(\d+)\.jpg', p)
         if m:
             n, z, x, y = m.group(1), *map(int, m.groups()[1:]); im = scan(n, z); t = im[y * T:(y + 1) * T, x * T:(x + 1) * T]

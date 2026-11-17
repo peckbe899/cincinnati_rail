@@ -9,6 +9,8 @@ html,body{margin:0;height:100%;overflow:hidden;font:13px/1.35 system-ui,Segoe UI
 #cv{position:fixed;top:39px;left:0;cursor:crosshair}
 #info{position:fixed;left:8px;bottom:8px;background:rgba(30,30,30,.92);border:1px solid #555;border-radius:6px;padding:8px 10px;z-index:3;max-width:430px}
 #help{position:fixed;right:8px;bottom:8px;background:rgba(30,30,30,.92);border:1px solid #555;border-radius:6px;padding:8px 10px;z-index:3;width:330px}
+#binbox{position:fixed;left:8px;top:47px;background:rgba(30,30,30,.92);border:1px solid #555;border-radius:6px;padding:8px 10px;z-index:3;display:none}
+#binbox h4{margin:0 0 4px} #binbox .sw{width:14px;height:10px} #binbox button{font:inherit;background:#3a3a3a;color:#eee;border:1px solid #555;border-radius:4px;padding:1px 8px;cursor:pointer}
 #help h4{margin:0 0 4px} #help table{border-collapse:collapse} #help td{padding:1px 6px 1px 0;vertical-align:top}
 kbd{background:#444;border:1px solid #666;border-radius:3px;padding:0 4px;font:12px ui-monospace,Consolas,monospace}
 .sw{display:inline-block;width:22px;height:4px;vertical-align:middle;margin-right:4px}
@@ -29,10 +31,12 @@ label{cursor:pointer}
  <label><input type="checkbox" id="fSheet" checked> sheet edge</label>
  <label><input type="checkbox" id="fUn"> only unmarked</label>
  <label><input type="checkbox" id="fDel"> show deleted</label>
+ <button id="bBins" title="B">B Ink bins</button>
  <button id="bHelp">?</button>
  <span id="saved"></span>
 </div>
 <canvas id="cv"></canvas>
+<div id="binbox"></div>
 <div id="info"></div>
 <div id="help">
  <h4>Lines</h4>
@@ -52,6 +56,7 @@ label{cursor:pointer}
  <tr><td><kbd>C</kbd></td><td><b>close corners.</b> Two lines selected: both are stretched or trimmed to the point where they cross. One line, or a box of lines: every end is taken to the nearest line it almost meets (within 60 px)</td></tr>
  <tr><td><kbd>J</kbd></td><td>join the selected pieces of one straight side into a single line</td></tr>
  <tr><td>Snapping</td><td>an end you drag or draw jumps to a nearby end or line (yellow ring). Hold <kbd>Alt</kbd> to place it freely</td></tr>
+ <tr><td><kbd>B</kbd></td><td>ink bins: colour every black mark by what the rules guess it is. Tick bins on and off in the box; nothing in that layer can be edited yet</td></tr>
  <tr><td><kbd>N</kbd></td><td>draw: click two points; <kbd>Esc</kbd> to stop</td></tr>
  <tr><td><kbd>Del</kbd></td><td>delete the selected lines: any line, not only yours</td></tr>
  <tr><td><kbd>Ctrl+Z</kbd></td><td>undo</td></tr>
@@ -77,6 +82,7 @@ async function load(n) {
     if (!l) { l = {k: 'ben' + Math.random(), a0: s.a0 || s.a, b0: s.b0 || s.b, src: s.src || 'ben', state: s.state || 'new', name: s.name || '', added: !!s.added}; lines.push(l); }
     l.a = s.a.slice(); l.b = s.b.slice(); l.verdict = s.verdict || null;
   }
+  loadBins(n);
   view.k = Math.min(cv.width / P.W, cv.height / P.H); view.x = 0; view.y = 0; location.hash = n; $('saved').textContent = 'loaded'; draw();
 }
 const moved = l => !l.added && (Math.abs(l.a[0] - l.a0[0]) + Math.abs(l.a[1] - l.a0[1]) + Math.abs(l.b[0] - l.b0[0]) + Math.abs(l.b[1] - l.b0[1]) > 0.5);
@@ -118,7 +124,15 @@ function paint() {
     const t = tile(z, tx, ty); if (!t.ok) continue; const [sx, sy] = toS([tx * s, ty * s]);
     cx.drawImage(t, Math.round(sx), Math.round(sy), Math.ceil(t.width * (1 << z) * view.k) + 1, Math.ceil(t.height * (1 << z) * view.k) + 1);
   }
+  if (binShow && BIN) {
+    if (fade) { cx.fillStyle = 'rgba(255,255,255,0.72)'; const p0 = toS([0, 0]), p1 = toS([P.W, P.H]); cx.fillRect(p0[0], p0[1], p1[0] - p0[0], p1[1] - p0[1]); }
+    if (binOn.size) for (let ty = Math.max(0, Math.floor(wy0 / s)); ty * s < Math.min(P.H, wy1); ty++) for (let tx = Math.max(0, Math.floor(wx0 / s)); tx * s < Math.min(P.W, wx1); tx++) {
+      const t = binTile(z, tx, ty); if (!t.ok) continue; const [sx, sy] = toS([tx * s, ty * s]);
+      cx.drawImage(t, Math.round(sx), Math.round(sy), Math.ceil(t.width * (1 << z) * view.k) + 1, Math.ceil(t.height * (1 << z) * view.k) + 1);
+    }
+  }
   for (const l of lines) {
+    if (!linesShow && binShow) break;
     if (!shown(l)) continue; const a = toS(l.a), b = toS(l.b);
     if (Math.max(a[0], b[0]) < -20 || Math.min(a[0], b[0]) > cv.width + 20 || Math.max(a[1], b[1]) < -20 || Math.min(a[1], b[1]) > cv.height + 20) continue;
     const s_ = sel.has(l); let c = COL[l.state] || '#ff40ff', w = 1.6; cx.setLineDash([]);
@@ -149,6 +163,28 @@ function dseg(p, a, b) { const dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx 
 function pick(sx, sy) { let best = null, bd = 9; for (const l of lines) { if (!shown(l)) continue; const d = dseg([sx, sy], toS(l.a), toS(l.b)); if (d < bd) { bd = d; best = l; } } return best; }
 
 let drag = null, box = null, snapAt = null, msg = '';
+// ---- ink bins: a rule-based first guess at what every black mark is (ink_bins.py), shown as a coloured layer ----
+let BIN = null, binOn = new Set(), binTiles = new Map(), binShow = false, linesShow = true, fade = false;
+async function loadBins(n) {
+  BIN = await (await fetch('/bins/' + n)).json(); binTiles.clear(); const b = $('binbox');
+  if (!BIN.bins) { BIN = null; b.innerHTML = '<h4>Ink bins</h4>None made for this plate yet.'; return; }
+  binOn = new Set(Object.keys(BIN.bins).map(Number));
+  b.innerHTML = '<h4>Ink bins: a first guess by rules, not checked</h4>' + Object.entries(BIN.bins).map(([k, v]) =>
+    `<div><label><input type="checkbox" data-bin="${k}" checked> <span class="sw" style="background:rgb(${v.rgb})"></span>${v.name} <span style="color:#999">${(100 * v.px / BIN.ink_px).toFixed(1)}%</span></label></div>`).join('') +
+    '<div style="margin-top:5px"><button id="bbAll">all</button> <button id="bbNone">none</button></div>' +
+    '<div style="margin-top:5px"><label><input type="checkbox" id="fLines" checked> street lines</label> &nbsp; <label><input type="checkbox" id="fFade"> fade the print</label></div>';
+  for (const c of b.querySelectorAll('input[data-bin]')) c.onchange = () => { c.checked ? binOn.add(+c.dataset.bin) : binOn.delete(+c.dataset.bin); binTiles.clear(); draw(); };
+  const setAll = v => { for (const c of b.querySelectorAll('input[data-bin]')) { c.checked = v; v ? binOn.add(+c.dataset.bin) : binOn.delete(+c.dataset.bin); } binTiles.clear(); draw(); };
+  $('bbAll').onclick = () => setAll(true); $('bbNone').onclick = () => setAll(false);
+  $('fLines').checked = linesShow; $('fFade').checked = fade;
+  $('fLines').onchange = () => { linesShow = $('fLines').checked; draw(); }; $('fFade').onchange = () => { fade = $('fFade').checked; draw(); };
+}
+function toggleBins() { binShow = !binShow; $('binbox').style.display = binShow ? 'block' : 'none'; $('bBins').classList.toggle('on', binShow); draw(); }
+function binTile(z, x, y) {
+  const id = z + '/' + x + '/' + y; let t = binTiles.get(id);
+  if (!t) { t = new Image(); t.onload = () => { t.ok = true; draw(); }; t.src = '/bintile/' + P.plate + '/' + id + '.png?on=' + [...binOn].sort((a, b) => a - b).join(','); binTiles.set(id, t); if (binTiles.size > 400) binTiles.delete(binTiles.keys().next().value); }
+  return t;
+}
 // ---- snapping and corners (Ben, 15 November 2026: "you gave me no tool to close corners") ----
 const live = l => shown(l) && l.verdict !== 'wrong';
 function isect(l, o) {   // where the two lines, carried on, cross (null if they run nearly the same way)
@@ -248,13 +284,13 @@ addEventListener('keydown', e => {
   if (e.target.tagName === 'SELECT') return; const k = e.key.toLowerCase(), st = e.shiftKey ? 5 : 1;
   if (e.ctrlKey && k === 'z') { doUndo(); e.preventDefault(); }
   else if (k === '1' || k === 'g') mark('ok'); else if (k === '2' || k === 'x') del(); else if (k === '3' || k === 'p') mark('none'); else if (k === '0' || k === 'u') mark(null);
-  else if (k === 'c') corners(); else if (k === 'j') join();
+  else if (k === 'c') corners(); else if (k === 'j') join(); else if (k === 'b') toggleBins();
   else if (k === 'n') setMode(mode === 'new' ? 'select' : 'new'); else if (k === 'escape') { setMode('select'); sel.clear(); draw(); }
   else if (k === 'delete' || k === 'backspace') del();
   else if (k === 'arrowleft') { nudge(-st, 0); e.preventDefault(); } else if (k === 'arrowright') { nudge(st, 0); e.preventDefault(); } else if (k === 'arrowup') { nudge(0, -st); e.preventDefault(); } else if (k === 'arrowdown') { nudge(0, st); e.preventDefault(); }
 });
 $('bOk').onclick = () => mark('ok'); $('bNone').onclick = () => mark('none'); $('bClear').onclick = () => mark(null);
-$('bNew').onclick = () => setMode(mode === 'new' ? 'select' : 'new'); $('bDel').onclick = del; $('bCorner').onclick = corners; $('bJoin').onclick = join; $('bUndo').onclick = doUndo;
+$('bNew').onclick = () => setMode(mode === 'new' ? 'select' : 'new'); $('bDel').onclick = del; $('bBins').onclick = toggleBins; $('bCorner').onclick = corners; $('bJoin').onclick = join; $('bUndo').onclick = doUndo;
 $('bHelp').onclick = () => { const h = $('help'); h.style.display = h.style.display === 'none' ? '' : 'none'; };
 for (const id of ['fGrey', 'fBlue', 'fSheet', 'fUn', 'fDel']) $(id).onchange = draw;
 addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
