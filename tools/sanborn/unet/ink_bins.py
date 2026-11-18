@@ -11,7 +11,7 @@ guess made by rules at full size, not a trained classifier and not ground truth.
   2 lot line          other line ink in block ground
   3 building outline  ink on the edge of a pink or yellow fill
   4 railroad          a line crossed by a row of ticks (hatched), as along Vandalia on plate 44; see railroad()
-  5 streetcar         heavy dashes, as down Hamilton on plate 44
+  5 streetcar         heavy dashes that follow one another along a line, as down Hamilton on plate 44
   6 water pipe        a solid line in street ground that is not a block line (labelled "W. PIPE" on the print)
   7 sewer             thin dashes in street ground (labelled "SEWER" on the print)
   8 text and numbers  small separate marks
@@ -47,6 +47,9 @@ COL = {1: (0, 150, 0), 2: (255, 140, 0), 3: (20, 70, 120), 4: (0, 0, 230), 5: (0
 INK_L = 140      # darker than this (Lab L, 0..255) is ink
 BEN_RAIL = 10     # ink this near (px) a track Ben drew is that track: the ticks reach some 10 px each side of the line
 RAIL = dict(clear=(5, 6.0), row=4, faint=(3, 4.0), faint_row=10, even=0.12, grow=0.2, span=150, block_row=6, reach=120, reach2=175, along=0.4, follow=(3000, 400, 10), spur=2, off=(19.0, 26.0))   # a clear tick: stroke ends of 5 px or more, 6 px or more apart; 4 in a row. A faint one: 3 px, 4 px apart; 10 in a row and evenly spaced (gaps within 12%)
+CAR = dict(row=True, street=False)   # a streetcar dash is one of a row of heavy bars that follow one another along a line. Scored on plate 44 against Ben's
+# tracks (18 November 2026): any heavy bar in street ground found 79.7% of his streetcar with 12,698 px of false ink (big lettering, thick strokes by pipe
+# labels); bars in a row, in any ground, find 85.1% with 1,086 px. The street-ground test cost the line that crosses blocks on the Ludlow viaduct
 TEXT_MAX = 130   # a compact mark no bigger than this is text (street-name letters are about 90 px tall on plate 44)
 
 def shape(lab, n):
@@ -133,6 +136,7 @@ def railroad(ink, closed, paper=None):
                 if j != i and abs(v[0] * d[1] - v[1] * d[0]) <= 15 and abs(((ba[b[j]] - ba[b[i]] + np.pi / 2) % np.pi) - np.pi / 2) <= 0.25: row[i] = True; break
         bars[b[~row]] = False
     heavy = cv2.dilate(bars[lh].astype(np.uint8), np.ones((25, 25), np.uint8))
+    info_car = cv2.dilate(bars[lh].astype(np.uint8), np.ones((9, 9), np.uint8)) > 0   # the heavy dashes that follow one another along a line
     from scipy.sparse import coo_matrix
     from scipy.sparse.csgraph import connected_components
 
@@ -297,6 +301,7 @@ def railroad(ink, closed, paper=None):
                     for path in walks:
                         if len(path) >= 2: cv2.polylines(m_, [np.round(np.array(path)).astype(np.int32)], False, 1, wd)
     info['grown'] = int(len(grown))
+    info['carrow'] = info_car
     return (M > 0) & ink, info
 
 def main():
@@ -322,7 +327,8 @@ def main():
     old = cv2.resize(cv2.imread(f'unet_data/{N}_label.png', 0), (W, H), interpolation=cv2.INTER_NEAREST)[y0:y1, x0:x1]
     ground = np.where(closed == 1, 1, np.where(old == 0, 0, np.where(old == 1, 1, 2))).astype(np.uint8)   # 0 street, 1 block, 2 not known
     out = np.zeros((h, w), np.uint8)
-    rr, RAILINFO = railroad(ink, closed, paper); ink0 = ink
+    rr, RAILINFO = railroad(ink, closed, paper); ink0 = ink; carrow = RAILINFO['carrow']
+    if '--car' in sys.argv: CAR.update(json.loads(sys.argv[sys.argv.index('--car') + 1]))
     # the tracks Ben drew himself: his word, over the rules
     bf = f'picks22_guided/22-{N}/rail_ben.json'; BJ = json.load(open(bf, encoding='utf8')) if os.path.exists(bf) and '--no-ben' not in sys.argv else {}; BEN = BJ.get('tracks', []); ONLY = bool(BJ.get('complete'))   # ONLY: his tracks are all the rail on this plate
     ben = {k: np.zeros((h, w), np.uint8) for k in ('railroad', 'streetcar')}; benlen = dict(railroad=0.0, streetcar=0.0); samp = []
@@ -362,7 +368,8 @@ def main():
                     v = P[j] - P[i]; along = abs(v @ u); across = abs(v[0] * -u[1] + v[1] * u[0]); da = abs(((an[d[j]] - an[d[i]] + np.pi / 2) % np.pi) - np.pi / 2)
                     if across <= 7 and da <= 0.2 and along <= (lg[d[i]] + lg[d[j]]) / 2 + 45: chained[i] = True; break
             k[d[~chained]] = 8
-        k[(k == 5) & ((g != 0) | ONLY)] = 8                              # a heavy bar off the street is a figure 1 of a block number; so is any, where Ben's tracks are all the rail
+        k[(k == 5) & (((g != 0) & CAR['street']) | ONLY)] = 8                              # a heavy bar off the street is a figure 1 of a block number; so is any, where Ben's tracks are all the rail
+        if CAR['row']: k[(k == 5) & ~(np.bincount(lb.ravel(), carrow.ravel(), n) > 0)] = 8   # and so is a bar with no other bar carrying on its line
         kk = k[lb]; sel = mask & (kk > 0); out[sel] = kk[sel]; return mask & (kk == -1)
 
     big = small_pass(ink)
@@ -380,7 +387,8 @@ def main():
     n, lb, st, _ = cv2.connectedComponentsWithStats(th, connectivity=8)
     if n > 1:
         A, lg, tk, mx, my, _ = shape(lb, n); g = ground[np.clip(my.round().astype(int), 0, h - 1), np.clip(mx.round().astype(int), 0, w - 1)]
-        bar = (tk >= 9) & (tk <= 24) & (lg >= 40) & (lg <= 220) & (lg / tk >= 3) & (g == 0); bar[0] = False
+        bar = (tk >= 9) & (tk <= 24) & (lg >= 40) & (lg <= 220) & (lg / tk >= 3) & ((g == 0) | (not CAR['street'])); bar[0] = False
+        if CAR['row']: bar &= np.bincount(lb.ravel(), carrow.ravel(), n) > 0
         let = ~bar & (np.maximum(st[:, 2], st[:, 3]) <= 200) & (np.maximum(st[:, 2], st[:, 3]) >= 25) & (A >= 150); let[0] = False
         for sel, kind in ((bar, 5), (let, 8))[ONLY:]:                    # where Ben's tracks are all the rail, a bar on a line stays line ink
             m = (cv2.dilate(sel[lb].astype(np.uint8), E(7)) > 0) & rest; out[m] = kind; rest &= ~m
