@@ -182,7 +182,7 @@ async function loadBins(n) {
 function toggleBins() { binShow = !binShow; $('binbox').style.display = binShow ? 'block' : 'none'; $('bBins').classList.toggle('on', binShow); draw(); }
 function binTile(z, x, y) {
   const id = z + '/' + x + '/' + y; let t = binTiles.get(id);
-  if (!t) { t = new Image(); t.onload = () => { t.ok = true; draw(); }; t.src = '/bintile/' + P.plate + '/' + id + '.png?on=' + [...binOn].sort((a, b) => a - b).join(','); binTiles.set(id, t); if (binTiles.size > 400) binTiles.delete(binTiles.keys().next().value); }
+  if (!t) { t = new Image(); t.onload = () => { t.ok = true; draw(); }; t.src = '/bintile/' + P.plate + '/' + id + '.png?v=' + (BIN.made || 0) + '&on=' + [...binOn].sort((a, b) => a - b).join(',');   // v: a new run of ink_bins.py must not be hidden by the browser's cache binTiles.set(id, t); if (binTiles.size > 400) binTiles.delete(binTiles.keys().next().value); }
   return t;
 }
 // ---- snapping and corners (Ben, 15 November 2026: "you gave me no tool to close corners") ----

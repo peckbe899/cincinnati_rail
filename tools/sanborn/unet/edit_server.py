@@ -127,7 +127,7 @@ class Hd(BaseHTTPRequestHandler):
         if m:
             n, z, x, y = m.group(1), *map(int, m.groups()[1:]); cm, pal = bins(n, z); t = cm[y * T:(y + 1) * T, x * T:(x + 1) * T]
             if t.size == 0: return self.send(b'', 'text/plain', 404)
-            q = self.path.split('?on=')[1] if '?on=' in self.path else ''; on = np.zeros(256, bool); on[[int(v) for v in q.split(',') if v.isdigit()]] = True; on[0] = False
+            q = self.path.split('on=')[1].split('&')[0] if 'on=' in self.path else ''; on = np.zeros(256, bool); on[[int(v) for v in q.split(',') if v.isdigit()]] = True; on[0] = False
             return self.send(cv2.imencode('.png', (pal * on[:, None])[t])[1].tobytes(), 'image/png')
         m = re.fullmatch(r'/tile/([0-9A-Za-z]+)/(\d)/(\d+)/(\d+)\.jpg', p)
         if m:
