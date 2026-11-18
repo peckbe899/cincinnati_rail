@@ -2,13 +2,14 @@
 <html lang="en"><head><meta charset="utf-8"><title>Plate line editor</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;font:13px/1.35 system-ui,Segoe UI,sans-serif;background:#222;color:#eee}
-#bar{position:fixed;top:0;left:0;right:0;height:38px;background:#2b2b2b;border-bottom:1px solid #444;display:flex;align-items:center;gap:8px;padding:0 8px;z-index:3;white-space:nowrap}
+#bar{position:fixed;top:0;left:0;right:0;min-height:38px;box-sizing:border-box;background:#2b2b2b;border-bottom:1px solid #444;display:flex;flex-wrap:wrap;align-items:center;gap:5px 8px;padding:5px 8px;z-index:4;white-space:nowrap}
+#bar .grp{display:flex;align-items:center;gap:8px}
 #bar button,#bar select{font:inherit;background:#3a3a3a;color:#eee;border:1px solid #555;border-radius:4px;padding:3px 8px;cursor:pointer}
 #bar button.on{background:#7a3fb0;border-color:#b98be0}
 #bar .sep{width:1px;height:22px;background:#555}
-#cv{position:fixed;top:39px;left:0;cursor:crosshair}
+#cv{position:fixed;top:39px;left:0;cursor:crosshair}   /* top is set in size(), under the bar */
 #info{position:fixed;left:8px;bottom:8px;background:rgba(30,30,30,.92);border:1px solid #555;border-radius:6px;padding:8px 10px;z-index:3;max-width:430px}
-#help{position:fixed;right:8px;bottom:8px;background:rgba(30,30,30,.92);border:1px solid #555;border-radius:6px;padding:8px 10px;z-index:3;width:330px}
+#help{position:fixed;right:8px;bottom:8px;background:rgba(30,30,30,.92);border:1px solid #555;border-radius:6px;padding:8px 10px;z-index:3;width:330px;max-width:calc(100vw - 40px);overflow-y:auto;box-sizing:border-box}
 #binbox{position:fixed;left:8px;top:47px;background:rgba(30,30,30,.92);border:1px solid #555;border-radius:6px;padding:8px 10px;z-index:3;display:none}
 #binbox h4{margin:0 0 4px} #binbox .sw{width:14px;height:10px} #binbox button{font:inherit;background:#3a3a3a;color:#eee;border:1px solid #555;border-radius:4px;padding:1px 8px;cursor:pointer}
 #help h4{margin:0 0 4px} #help table{border-collapse:collapse} #help td{padding:1px 6px 1px 0;vertical-align:top}
@@ -18,15 +19,15 @@ kbd{background:#444;border:1px solid #666;border-radius:3px;padding:0 4px;font:1
 label{cursor:pointer}
 </style></head><body>
 <div id="bar">
- <b>Plate</b> <select id="plate"></select>
+ <span class="grp"><b>Plate</b> <select id="plate"></select></span>
  <span class="sep"></span>
- <button id="bOk" title="1">1 Correct</button><button id="bNone" title="3">3 Street side, no printed line</button><button id="bClear" title="0">0 Put back as it was</button>
+ <span class="grp"><button id="bOk" title="1">1 Correct</button> <button id="bNone" title="3">3 Street side, no printed line</button> <button id="bClear" title="0">0 Put back as it was</button></span>
  <span class="sep"></span>
- <button id="bCorner" title="C">C Close corners</button><button id="bJoin" title="J">J Join into one</button>
+ <span class="grp"><button id="bCorner" title="C">C Close corners</button> <button id="bJoin" title="J">J Join into one</button></span>
  <span class="sep"></span>
- <button id="bNew" title="N">N Draw new line</button><button id="bDel" title="Delete">Del Delete line</button><button id="bUndo" title="Ctrl+Z">Undo</button>
+ <span class="grp"><button id="bNew" title="N">N Draw new line</button> <button id="bDel" title="Delete">Del Delete line</button> <button id="bUndo" title="Ctrl+Z">Undo</button></span>
  <span class="sep"></span>
- <button id="bRail" title="R">R Draw railroad</button><button id="bCar" title="S">S Draw streetcar</button>
+ <span class="grp"><button id="bRail" title="R">R Draw railroad</button> <button id="bCar" title="S">S Draw streetcar</button></span>
  <span class="sep"></span>
  <label><input type="checkbox" id="fGrey"> today-only</label>
  <label><input type="checkbox" id="fBlue"> no-line pieces</label>
@@ -75,8 +76,11 @@ let P = null, lines = [], sel = new Set(), view = {x: 0, y: 0, k: 0.2}, tiles = 
 const key = (a, b) => [a[0], a[1], b[0], b[1]].map(v => Math.round(v)).join(',');
 const COL = {green: '#00a000', blue: '#2a6cff', orange: '#ff8c00', grey: '#999', sheet: '#00c8d8', red: '#ff8c00'};
 
-function size() { cv.width = innerWidth; cv.height = innerHeight - 39; draw(); }
+function size() {   // the bar wraps onto as many rows as the window's width needs; the plate starts under it
+  const bh = $('bar').offsetHeight; cv.style.top = bh + 'px'; $('binbox').style.top = (bh + 8) + 'px'; $('help').style.maxHeight = Math.max(80, innerHeight - bh - 16) + 'px';   // the help never covers the bar
+  cv.width = innerWidth; cv.height = Math.max(50, innerHeight - bh); draw(); }
 addEventListener('resize', size);
+new ResizeObserver(() => { if ($('bar').offsetHeight !== parseInt(cv.style.top)) size(); }).observe($('bar'));   // the bar can gain or lose a row without the window changing (the saved note at its end grows)
 const toS = p => [(p[0] - view.x) * view.k, (p[1] - view.y) * view.k], toW = (sx, sy) => [sx / view.k + view.x, sy / view.k + view.y];
 
 async function load(n) {
