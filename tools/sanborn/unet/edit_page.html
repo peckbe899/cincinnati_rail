@@ -92,7 +92,7 @@ async function load(n) {
     if (!l) { l = {k: 'ben' + Math.random(), a0: s.a0 || s.a, b0: s.b0 || s.b, src: s.src || 'ben', state: s.state || 'new', name: s.name || '', added: !!s.added}; lines.push(l); }
     l.a = s.a.slice(); l.b = s.b.slice(); l.verdict = s.verdict || null;
   }
-  rails = ((P.rail && P.rail.tracks) || []).map(t => ({kind: t.kind, pts: t.pts.map(p => p.slice())})); rsel = null; rdraft = null;
+  rails = ((P.rail && P.rail.tracks) || []).map(t => ({kind: t.kind, pts: t.pts.map(p => p.slice())})); rsel = null; rdraft = null; railDone = !!(P.rail && P.rail.complete);
   loadBins(n);
   view.k = Math.min(cv.width / P.W, cv.height / P.H); view.x = 0; view.y = 0; location.hash = n; $('saved').textContent = 'loaded'; draw();
 }
@@ -189,8 +189,10 @@ async function loadBins(n, keep) {
     `<div><label><input type="checkbox" data-bin="${k}" ${binOn.has(+k) ? 'checked' : ''}> <span class="sw" style="background:rgb(${v.rgb})"></span>${v.name} <span style="color:#999">${(100 * v.px / BIN.ink_px).toFixed(1)}%</span></label></div>`).join('') +
     '<div style="margin-top:5px"><button id="bbAll">all</button> <button id="bbNone">none</button></div>' +
     '<div style="margin-top:5px"><label><input type="checkbox" id="fLines" checked> street lines</label> &nbsp; <label><input type="checkbox" id="fFade"> fade the print</label></div>' +
+    '<div style="margin-top:6px"><label title="Rail on this plate is then only the ink on your tracks; what the rules find elsewhere is not rail"><input type="checkbox" id="fDone"> my tracks are all the rail on this plate</label></div>' +
     '<div style="margin-top:6px"><button id="bbRun" title="about 20 seconds">Sort the ink again with my rail</button> <span id="bbMsg" style="color:#ffe600"></span></div>' +
     (BIN.ben_rail ? `<div style="margin-top:4px;color:#bbb;max-width:300px">${BIN.ben_rail}</div>` : '');
+  $('fDone').checked = railDone; $('fDone').onchange = () => { railDone = $('fDone').checked; saveRail(); $('bbMsg').textContent = 'sort the ink again to see it'; };
   $('bbRun').onclick = async () => {
     $('bbRun').disabled = true; $('bbMsg').textContent = 'working…';
     try { const r = await (await fetch('/runbins/' + P.plate, {method: 'POST'})).json(); if (!r.ok) { $('bbMsg').textContent = 'it failed: see the console'; console.log(r.out); $('bbRun').disabled = false; return; } await loadBins(P.plate, new Set(binOn)); draw(); }
@@ -212,13 +214,13 @@ function binTile(z, x, y) {
 // ---- rail: Ben draws the tracks himself (18 November 2026: "i need to tell you where they are, you're missing a lot") ----
 // A track is {kind: 'railroad' | 'streetcar', pts: [[x, y], ...]}: a line through as many points as its curve needs. Kept in
 // its own file (rail_ben.json), never in the street lines
-let rails = [], rsel = null, rdraft = null, railKind = 'railroad', railT = null;
+let rails = [], rsel = null, rdraft = null, railKind = 'railroad', railT = null, railDone = false;   // railDone: these tracks are all the rail on the plate
 const tlen = pts => { let L = 0; for (let i = 1; i < pts.length; i++) L += dist(pts[i - 1], pts[i]); return L; };
 function saveRail() {
   $('saved').textContent = 'saving…'; clearTimeout(railT);
   railT = setTimeout(async () => {
     try {
-      const r = await (await fetch('/saverail/' + P.plate, {method: 'POST', body: JSON.stringify({plate: P.plate, saved_at: new Date().toISOString(), tracks: rails.map(t => ({kind: t.kind, pts: t.pts.map(p => [+p[0].toFixed(1), +p[1].toFixed(1)])}))})})).json();
+      const r = await (await fetch('/saverail/' + P.plate, {method: 'POST', body: JSON.stringify({plate: P.plate, saved_at: new Date().toISOString(), complete: railDone, tracks: rails.map(t => ({kind: t.kind, pts: t.pts.map(p => [+p[0].toFixed(1), +p[1].toFixed(1)])}))})})).json();
       $('saved').textContent = 'saved: ' + r.tracks + ' rail tracks';
     } catch (e) { $('saved').textContent = 'NOT SAVED: is the server running?'; }
   }, 400);

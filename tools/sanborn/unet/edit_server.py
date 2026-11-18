@@ -151,10 +151,12 @@ class Hd(BaseHTTPRequestHandler):
                 pts = [[round(float(p[0]), 1), round(float(p[1]), 1)] for p in t.get('pts', [])]
                 if t.get('kind') in ('railroad', 'streetcar') and len(pts) >= 2: tr.append(dict(kind=t['kind'], pts=pts))
             os.makedirs(SP + f'picks22_guided/22-{n}', exist_ok=True); f = SP + f'picks22_guided/22-{n}/rail_ben.json'
-            if os.path.exists(f):   # a save that drops many tracks at once is kept apart, so nothing Ben drew is lost to a slip
-                old = json.load(open(f, encoding='utf8')).get('tracks', [])
+            oldj = json.load(open(f, encoding='utf8')) if os.path.exists(f) else {}
+            if oldj:   # a save that drops many tracks at once is kept apart, so nothing Ben drew is lost to a slip
+                old = oldj.get('tracks', [])
                 if len(old) >= 4 and len(tr) < len(old) / 2: os.replace(f, f[:-5] + time.strftime('.before_%Y%m%d_%H%M%S.json'))
-            json.dump(dict(plate=n, saved_at=d.get('saved_at'), note='tracks drawn by Ben in the line editor; full-size px of the scan', tracks=tr), open(f + '.tmp', 'w', encoding='utf8', newline='\n'), indent=None, separators=(',', ':'))
+            done = bool(d['complete']) if 'complete' in d else bool(oldj.get('complete'))   # complete: these tracks are all the rail on the plate (ink_bins.py)
+            json.dump(dict(plate=n, saved_at=d.get('saved_at'), note='tracks drawn by Ben in the line editor; full-size px of the scan', complete=done, tracks=tr), open(f + '.tmp', 'w', encoding='utf8', newline='\n'), indent=None, separators=(',', ':'))
             os.replace(f + '.tmp', f)
             return self.send(json.dumps(dict(ok=True, tracks=len(tr))).encode(), 'application/json')
         m = re.fullmatch(r'/runbins/([0-9A-Za-z]+)', self.path)

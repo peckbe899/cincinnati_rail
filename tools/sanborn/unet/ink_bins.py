@@ -34,6 +34,9 @@ Ben, 18 November 2026: "i need to tell you where they are, you're missing a lot"
 the line editor (R railroad, S streetcar), saved in picks22_guided/22-N/rail_ben.json. Where that file exists, the ink
 within BEN_RAIL px of one of his tracks is that kind, whatever the rules say, and the run prints how much of his
 railroad the tick rule had found by itself and how much railroad the rule found away from every track of his.
+Ben, same day, asked whether his tracks on plate 44 are all the rail there: "Yes, only mine". Where rail_ben.json says
+complete (the tick box in the editor's bins box), rail on that plate is only the ink on his tracks: what the rules call
+railroad or streetcar anywhere else goes back to be sorted as other ink (a heavy bar by itself is then a letter stroke).
 """
 import json, os, sys, time
 import numpy as np
@@ -230,7 +233,7 @@ def main():
     out = np.zeros((h, w), np.uint8)
     rr, RAILINFO = railroad(ink, closed); ink0 = ink
     # the tracks Ben drew himself: his word, over the rules
-    bf = f'picks22_guided/22-{N}/rail_ben.json'; BEN = json.load(open(bf, encoding='utf8'))['tracks'] if os.path.exists(bf) and '--no-ben' not in sys.argv else []
+    bf = f'picks22_guided/22-{N}/rail_ben.json'; BJ = json.load(open(bf, encoding='utf8')) if os.path.exists(bf) and '--no-ben' not in sys.argv else {}; BEN = BJ.get('tracks', []); ONLY = bool(BJ.get('complete'))   # ONLY: his tracks are all the rail on this plate
     ben = {k: np.zeros((h, w), np.uint8) for k in ('railroad', 'streetcar')}; benlen = dict(railroad=0.0, streetcar=0.0); samp = []
     for t in BEN:
         p = np.array(t['pts'], float) - off; cv2.polylines(ben[t['kind']], [np.round(p).astype(np.int32)], False, 1, 2 * BEN_RAIL + 1)
@@ -245,7 +248,8 @@ def main():
             got = cv2.dilate(rr.astype(np.uint8), np.ones((2 * BEN_RAIL + 1, 2 * BEN_RAIL + 1), np.uint8))[q[:, 1], q[:, 0]].mean() if len(q) else 0.0
             far = int((rr & (cv2.dilate(ben['railroad'], np.ones((31, 31), np.uint8)) == 0)).sum())
             bensay += f" The tick rule had found {100 * got:.0f}% of your railroad's length by itself, and {far:,} px of what it calls railroad lies more than 25 px from every track of yours."
-        rr = (rr & (ben['streetcar'] == 0)) | (ink & (ben['railroad'] > 0))
+        rr = ((rr & (ben['streetcar'] == 0)) if not ONLY else np.zeros_like(rr)) | (ink & (ben['railroad'] > 0))
+        if ONLY: bensay += ' Only your tracks count as rail on this plate.'
     car = ink & (ben['streetcar'] > 0) & ~rr
     out[rr] = 4; out[car] = 5; ink = ink & ~rr & ~car     # the tracks come out first, so they no longer tie the pipe lines together
 
@@ -267,7 +271,7 @@ def main():
                     v = P[j] - P[i]; along = abs(v @ u); across = abs(v[0] * -u[1] + v[1] * u[0]); da = abs(((an[d[j]] - an[d[i]] + np.pi / 2) % np.pi) - np.pi / 2)
                     if across <= 7 and da <= 0.2 and along <= (lg[d[i]] + lg[d[j]]) / 2 + 45: chained[i] = True; break
             k[d[~chained]] = 8
-        k[(k == 5) & (g != 0)] = 8                                       # a heavy bar off the street is a figure 1 of a block number
+        k[(k == 5) & ((g != 0) | ONLY)] = 8                              # a heavy bar off the street is a figure 1 of a block number; so is any, where Ben's tracks are all the rail
         kk = k[lb]; sel = mask & (kk > 0); out[sel] = kk[sel]; return mask & (kk == -1)
 
     big = small_pass(ink)
@@ -287,7 +291,7 @@ def main():
         A, lg, tk, mx, my, _ = shape(lb, n); g = ground[np.clip(my.round().astype(int), 0, h - 1), np.clip(mx.round().astype(int), 0, w - 1)]
         bar = (tk >= 9) & (tk <= 24) & (lg >= 40) & (lg <= 220) & (lg / tk >= 3) & (g == 0); bar[0] = False
         let = ~bar & (np.maximum(st[:, 2], st[:, 3]) <= 200) & (np.maximum(st[:, 2], st[:, 3]) >= 25) & (A >= 150); let[0] = False
-        for sel, kind in ((bar, 5), (let, 8)):
+        for sel, kind in ((bar, 5), (let, 8))[ONLY:]:                    # where Ben's tracks are all the rail, a bar on a line stays line ink
             m = (cv2.dilate(sel[lb].astype(np.uint8), E(7)) > 0) & rest; out[m] = kind; rest &= ~m
     out[rest & (ground == 0)] = 6; out[rest & (ground == 1)] = 2; out[rest & (ground == 2)] = 9
     cnt = {NAMES[k]: int((out == k).sum()) for k in NAMES}; ink = ink0; tot = int(ink.sum())
