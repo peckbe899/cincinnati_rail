@@ -16,8 +16,13 @@ make_labels.py reads.
   POST /save/N              write edges_ben.json
   GET  /bins/N              the ink bins of the plate (unet_data/N_bins.json, ink_bins.py), or {} if there are none
   GET  /bintile/N/Z/X/Y.png?on=1,4,5   a 512 px see-through tile of the ink in those bins, each in its colour
+  POST /saverail/N          write rail_ben.json: the tracks Ben drew (railroad, streetcar), each a line through points
+  POST /runbins/N           run ink_bins.py on the plate again (it reads rail_ben.json) and give back what it printed
+
+Ben, 18 November 2026: "i need to tell you where they are, you're missing a lot" (the railroad tracks). The tracks are
+kept in their own file, picks22_guided/22-N/rail_ben.json, never in edges_ben.json: that one is the street lines only.
 """
-import json, os, re, sys, threading
+import json, os, re, subprocess, sys, threading, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import numpy as np
 import cv2
@@ -117,7 +122,9 @@ class Hd(BaseHTTPRequestHandler):
         m = re.fullmatch(r'/data/([0-9A-Za-z]+)', p)
         if m:
             n = m.group(1); im = scan(n, 0); H, W = im.shape[:2]; bf = SP + f'picks22_guided/22-{n}/edges_ben.json'
-            d = dict(plate=n, W=W, H=H, edges=clean(json.load(open(U + f'{n}_edges.json', encoding='utf8'))) + sheet(n, W, H), saved=json.load(open(bf, encoding='utf8')) if os.path.exists(bf) else None)
+            rf = SP + f'picks22_guided/22-{n}/rail_ben.json'
+            d = dict(plate=n, W=W, H=H, edges=clean(json.load(open(U + f'{n}_edges.json', encoding='utf8'))) + sheet(n, W, H), saved=json.load(open(bf, encoding='utf8')) if os.path.exists(bf) else None,
+                     rail=json.load(open(rf, encoding='utf8')) if os.path.exists(rf) else None)
             return self.send(json.dumps(d).encode(), 'application/json')
         m = re.fullmatch(r'/bins/([0-9A-Za-z]+)', p)
         if m:
@@ -136,9 +143,27 @@ class Hd(BaseHTTPRequestHandler):
             return self.send(cv2.imencode('.jpg', t, [cv2.IMWRITE_JPEG_QUALITY, 88])[1].tobytes(), 'image/jpeg')
         self.send(b'not found', 'text/plain', 404)
     def do_POST(self):
+        body = self.rfile.read(int(self.headers.get('Content-Length') or 0))
+        m = re.fullmatch(r'/saverail/([0-9A-Za-z]+)', self.path)
+        if m:
+            d = json.loads(body.decode('utf8')); n = m.group(1); tr = []
+            for t in d.get('tracks', []):
+                pts = [[round(float(p[0]), 1), round(float(p[1]), 1)] for p in t.get('pts', [])]
+                if t.get('kind') in ('railroad', 'streetcar') and len(pts) >= 2: tr.append(dict(kind=t['kind'], pts=pts))
+            os.makedirs(SP + f'picks22_guided/22-{n}', exist_ok=True); f = SP + f'picks22_guided/22-{n}/rail_ben.json'
+            if os.path.exists(f):   # a save that drops many tracks at once is kept apart, so nothing Ben drew is lost to a slip
+                old = json.load(open(f, encoding='utf8')).get('tracks', [])
+                if len(old) >= 4 and len(tr) < len(old) / 2: os.replace(f, f[:-5] + time.strftime('.before_%Y%m%d_%H%M%S.json'))
+            json.dump(dict(plate=n, saved_at=d.get('saved_at'), note='tracks drawn by Ben in the line editor; full-size px of the scan', tracks=tr), open(f + '.tmp', 'w', encoding='utf8', newline='\n'), indent=None, separators=(',', ':'))
+            os.replace(f + '.tmp', f)
+            return self.send(json.dumps(dict(ok=True, tracks=len(tr))).encode(), 'application/json')
+        m = re.fullmatch(r'/runbins/([0-9A-Za-z]+)', self.path)
+        if m:
+            r = subprocess.run([sys.executable, os.path.join(HERE, 'ink_bins.py'), m.group(1)], cwd=SP, capture_output=True, text=True, encoding='utf8', errors='replace')
+            return self.send(json.dumps(dict(ok=r.returncode == 0, out=(r.stdout + r.stderr)[-4000:])).encode(), 'application/json')
         m = re.fullmatch(r'/save/([0-9A-Za-z]+)', self.path)
         if not m: return self.send(b'not found', 'text/plain', 404)
-        d = json.loads(self.rfile.read(int(self.headers['Content-Length'])).decode('utf8')); n = m.group(1)
+        d = json.loads(body.decode('utf8')); n = m.group(1)
         os.makedirs(SP + f'picks22_guided/22-{n}', exist_ok=True); f = SP + f'picks22_guided/22-{n}/edges_ben.json'
         json.dump(d, open(f + '.tmp', 'w', encoding='utf8', newline='\n'), indent=1); os.replace(f + '.tmp', f)
         self.send(json.dumps(dict(ok=True, lines=len(d.get('lines', [])))).encode(), 'application/json')

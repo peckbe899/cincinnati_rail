@@ -26,11 +26,14 @@ label{cursor:pointer}
  <span class="sep"></span>
  <button id="bNew" title="N">N Draw new line</button><button id="bDel" title="Delete">Del Delete line</button><button id="bUndo" title="Ctrl+Z">Undo</button>
  <span class="sep"></span>
+ <button id="bRail" title="R">R Draw railroad</button><button id="bCar" title="S">S Draw streetcar</button>
+ <span class="sep"></span>
  <label><input type="checkbox" id="fGrey"> today-only</label>
  <label><input type="checkbox" id="fBlue"> no-line pieces</label>
  <label><input type="checkbox" id="fSheet" checked> sheet edge</label>
  <label><input type="checkbox" id="fUn"> only unmarked</label>
  <label><input type="checkbox" id="fDel"> show deleted</label>
+ <label><input type="checkbox" id="fRail" checked> my rail</label>
  <button id="bBins" title="B">B Ink bins</button>
  <button id="bHelp">?</button>
  <span id="saved"></span>
@@ -43,9 +46,10 @@ label{cursor:pointer}
  <div><span class="sw" style="background:#00a000"></span>on a printed line &nbsp; <span class="sw" style="background:#2a6cff"></span>declared: no printed line</div>
  <div><span class="sw" style="background:#ff8c00"></span>not settled &nbsp; <span class="sw" style="background:#999"></span>today-only &nbsp; <span class="sw" style="background:#00c8d8"></span>sheet edge</div>
  <div style="margin-top:3px"><span class="sw" style="background:#39ff14;height:6px"></span>you: correct &nbsp; <span class="sw" style="background:#ff2020;height:6px"></span>you: deleted (shown only when ticked) &nbsp; <span class="sw" style="background:#ff40ff;height:6px"></span>you: moved or drew</div>
+ <div style="margin-top:3px"><span class="sw" style="background:#ffe600;height:6px"></span>you: railroad (ticks across) &nbsp; <span class="sw" style="background:#ffe600;height:6px"></span>you: streetcar (dashes)</div>
  <h4 style="margin-top:8px">Controls</h4>
  <table>
- <tr><td>Wheel</td><td>zoom &nbsp; <b>drag</b> empty ground to move</td></tr>
+ <tr><td>Wheel</td><td>zoom &nbsp; <b>drag</b> empty ground to move. A right-button drag moves the plate in any mode, also while drawing</td></tr>
  <tr><td>Click</td><td>select a line (Shift+click adds)</td></tr>
  <tr><td>Double-click</td><td>select the whole street the line belongs to</td></tr>
  <tr><td>Shift+drag</td><td>select every line in a box</td></tr>
@@ -58,6 +62,8 @@ label{cursor:pointer}
  <tr><td>Snapping</td><td>an end you drag or draw jumps to a nearby end or line (yellow ring). Hold <kbd>Alt</kbd> to place it freely</td></tr>
  <tr><td><kbd>B</kbd></td><td>ink bins: colour every black mark by what the rules guess it is. Tick bins on and off in the box; nothing in that layer can be edited yet</td></tr>
  <tr><td><kbd>N</kbd></td><td>draw: click two points; <kbd>Esc</kbd> to stop</td></tr>
+ <tr><td><kbd>R</kbd> <kbd>S</kbd></td><td><b>draw a railroad / streetcar track.</b> Click along the track, as many points as the curve needs. Double-click or <kbd>Enter</kbd> ends the track; <kbd>Backspace</kbd> takes back the last point; <kbd>Esc</kbd> stops drawing</td></tr>
+ <tr><td>A track</td><td>click selects it; drag a point to move it; double-click on it adds a point; <kbd>Del</kbd> deletes the track. Tracks are saved in their own file, apart from the street lines</td></tr>
  <tr><td><kbd>Del</kbd></td><td>delete the selected lines: any line, not only yours</td></tr>
  <tr><td><kbd>Ctrl+Z</kbd></td><td>undo</td></tr>
  </table>
@@ -82,6 +88,7 @@ async function load(n) {
     if (!l) { l = {k: 'ben' + Math.random(), a0: s.a0 || s.a, b0: s.b0 || s.b, src: s.src || 'ben', state: s.state || 'new', name: s.name || '', added: !!s.added}; lines.push(l); }
     l.a = s.a.slice(); l.b = s.b.slice(); l.verdict = s.verdict || null;
   }
+  rails = ((P.rail && P.rail.tracks) || []).map(t => ({kind: t.kind, pts: t.pts.map(p => p.slice())})); rsel = null; rdraft = null;
   loadBins(n);
   view.k = Math.min(cv.width / P.W, cv.height / P.H); view.x = 0; view.y = 0; location.hash = n; $('saved').textContent = 'loaded'; draw();
 }
@@ -97,8 +104,8 @@ function save() {
     } catch (e) { $('saved').textContent = 'NOT SAVED: is the server running?'; }
   }, 500);
 }
-function snap() { undo.push(JSON.stringify(lines.map(l => [l.a, l.b, l.verdict, l.added, l.k, l.src, l.state, l.name, l.a0, l.b0]))); if (undo.length > 80) undo.shift(); }
-function doUndo() { const u = undo.pop(); if (!u) return; lines = JSON.parse(u).map(v => ({a: v[0], b: v[1], verdict: v[2], added: v[3], k: v[4], src: v[5], state: v[6], name: v[7], a0: v[8], b0: v[9]})); sel.clear(); save(); draw(); }
+function snap(what) { undo.push(what === 'rail' ? JSON.stringify({rail: rails}) : JSON.stringify(lines.map(l => [l.a, l.b, l.verdict, l.added, l.k, l.src, l.state, l.name, l.a0, l.b0]))); if (undo.length > 80) undo.shift(); }
+function doUndo() { const u = undo.pop(); if (!u) return; const j = JSON.parse(u); if (j.rail) { rails = j.rail; rsel = null; rdraft = null; saveRail(); draw(); return; } lines = j.map(v => ({a: v[0], b: v[1], verdict: v[2], added: v[3], k: v[4], src: v[5], state: v[6], name: v[7], a0: v[8], b0: v[9]})); sel.clear(); save(); draw(); }
 
 function shown(l) {
   if (l.state === 'grey' && !$('fGrey').checked && !touched(l)) return false;
@@ -145,6 +152,7 @@ function paint() {
     if (s_ && sel.size === 1) { cx.setLineDash([]); for (const q of [a, b]) { cx.fillStyle = '#fff'; cx.strokeStyle = '#000'; cx.lineWidth = 1.5; cx.beginPath(); cx.arc(q[0], q[1], 6, 0, 7); cx.fill(); cx.stroke(); } }
   }
   cx.setLineDash([]);
+  if ($('fRail').checked) { for (const r of rails) paintTrack(r.pts, r.kind, r === rsel); if (rdraft) paintTrack(rdraft.pts.concat([rdraft.cur]), rdraft.kind, true); }
   if (draft) { cx.strokeStyle = '#ff40ff'; cx.lineWidth = 2; cx.beginPath(); cx.moveTo(...toS(draft.a)); cx.lineTo(...toS(draft.b)); cx.stroke(); }
   if (snapAt) { const q = toS(snapAt); cx.strokeStyle = '#ffe600'; cx.lineWidth = 2.5; cx.beginPath(); cx.arc(q[0], q[1], 9, 0, 7); cx.stroke(); }
   if (box) { cx.strokeStyle = '#fff'; cx.setLineDash([5, 4]); cx.lineWidth = 1; cx.strokeRect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0); cx.setLineDash([]); }
@@ -154,6 +162,10 @@ function info() {
   const c = {ok: 0, wrong: 0, none: 0}; let mv = 0, ad = 0; for (const l of lines) { if (l.verdict) c[l.verdict]++; if (moved(l)) mv++; if (l.added) ad++; }
   let h = `<b>Plate ${P.plate}</b> &nbsp; ${lines.length} lines &nbsp; you: ${c.ok} correct, ${c.wrong} deleted, ${c.none} no printed line, ${mv} moved, ${ad} drawn`;
   if (mode === 'new') h += '<br><b style="color:#ff40ff">Drawing:</b> click the two ends of a line. Esc to stop.';
+  const rl = {railroad: [0, 0], streetcar: [0, 0]}; for (const r of rails) { rl[r.kind][0]++; rl[r.kind][1] += tlen(r.pts); }
+  if (rails.length) h += `<br>Your rail: ${rl.railroad[0]} railroad track${rl.railroad[0] === 1 ? '' : 's'} (${Math.round(rl.railroad[1]).toLocaleString()} px), ${rl.streetcar[0]} streetcar (${Math.round(rl.streetcar[1]).toLocaleString()} px)`;
+  if (mode === 'rail') h += `<br><b style="color:#ffe600">Drawing a ${railKind} track:</b> click along it. Double-click or Enter ends the track, Backspace takes back a point, Esc stops.`;
+  if (rsel) h += `<br>Selected: your ${rsel.kind} track · ${rsel.pts.length} points · ${Math.round(tlen(rsel.pts))} px`;
   if (sel.size === 1) { const l = [...sel][0]; const L = Math.hypot(l.b[0] - l.a[0], l.b[1] - l.a[1]); h += `<br>Selected: ${l.name || (l.src === 'parcel' ? "today's block side" : l.src === 'sheet' ? 'sheet edge' : l.added ? 'your line' : 'read line')} · ${Math.round(L)} px · (${Math.round(l.a[0])}, ${Math.round(l.a[1])}) to (${Math.round(l.b[0])}, ${Math.round(l.b[1])})`; }
   else if (sel.size > 1) h += `<br>${sel.size} lines selected`;
   if (msg) h += `<br><span style="color:#ffe600">${msg}</span>`;
@@ -165,14 +177,21 @@ function pick(sx, sy) { let best = null, bd = 9; for (const l of lines) { if (!s
 let drag = null, box = null, snapAt = null, msg = '';
 // ---- ink bins: a rule-based first guess at what every black mark is (ink_bins.py), shown as a coloured layer ----
 let BIN = null, binOn = new Set(), binTiles = new Map(), binShow = false, linesShow = true, fade = false;
-async function loadBins(n) {
+async function loadBins(n, keep) {
   BIN = await (await fetch('/bins/' + n)).json(); binTiles.clear(); const b = $('binbox');
   if (!BIN.bins) { BIN = null; b.innerHTML = '<h4>Ink bins</h4>None made for this plate yet.'; return; }
-  binOn = new Set(Object.keys(BIN.bins).map(Number));
+  binOn = new Set(Object.keys(BIN.bins).map(Number).filter(k => !keep || keep.has(k)));
   b.innerHTML = '<h4>Ink bins: a first guess by rules, not checked</h4>' + Object.entries(BIN.bins).map(([k, v]) =>
-    `<div><label><input type="checkbox" data-bin="${k}" checked> <span class="sw" style="background:rgb(${v.rgb})"></span>${v.name} <span style="color:#999">${(100 * v.px / BIN.ink_px).toFixed(1)}%</span></label></div>`).join('') +
+    `<div><label><input type="checkbox" data-bin="${k}" ${binOn.has(+k) ? 'checked' : ''}> <span class="sw" style="background:rgb(${v.rgb})"></span>${v.name} <span style="color:#999">${(100 * v.px / BIN.ink_px).toFixed(1)}%</span></label></div>`).join('') +
     '<div style="margin-top:5px"><button id="bbAll">all</button> <button id="bbNone">none</button></div>' +
-    '<div style="margin-top:5px"><label><input type="checkbox" id="fLines" checked> street lines</label> &nbsp; <label><input type="checkbox" id="fFade"> fade the print</label></div>';
+    '<div style="margin-top:5px"><label><input type="checkbox" id="fLines" checked> street lines</label> &nbsp; <label><input type="checkbox" id="fFade"> fade the print</label></div>' +
+    '<div style="margin-top:6px"><button id="bbRun" title="about 20 seconds">Sort the ink again with my rail</button> <span id="bbMsg" style="color:#ffe600"></span></div>' +
+    (BIN.ben_rail ? `<div style="margin-top:4px;color:#bbb;max-width:300px">${BIN.ben_rail}</div>` : '');
+  $('bbRun').onclick = async () => {
+    $('bbRun').disabled = true; $('bbMsg').textContent = 'working…';
+    try { const r = await (await fetch('/runbins/' + P.plate, {method: 'POST'})).json(); if (!r.ok) { $('bbMsg').textContent = 'it failed: see the console'; console.log(r.out); $('bbRun').disabled = false; return; } await loadBins(P.plate, new Set(binOn)); draw(); }
+    catch (e) { $('bbMsg').textContent = 'no answer: is the server running?'; $('bbRun').disabled = false; }
+  };
   for (const c of b.querySelectorAll('input[data-bin]')) c.onchange = () => { c.checked ? binOn.add(+c.dataset.bin) : binOn.delete(+c.dataset.bin); binTiles.clear(); draw(); };
   const setAll = v => { for (const c of b.querySelectorAll('input[data-bin]')) { c.checked = v; v ? binOn.add(+c.dataset.bin) : binOn.delete(+c.dataset.bin); } binTiles.clear(); draw(); };
   $('bbAll').onclick = () => setAll(true); $('bbNone').onclick = () => setAll(false);
@@ -182,9 +201,43 @@ async function loadBins(n) {
 function toggleBins() { binShow = !binShow; $('binbox').style.display = binShow ? 'block' : 'none'; $('bBins').classList.toggle('on', binShow); draw(); }
 function binTile(z, x, y) {
   const id = z + '/' + x + '/' + y; let t = binTiles.get(id);
-  if (!t) { t = new Image(); t.onload = () => { t.ok = true; draw(); }; t.src = '/bintile/' + P.plate + '/' + id + '.png?v=' + (BIN.made || 0) + '&on=' + [...binOn].sort((a, b) => a - b).join(',');   // v: a new run of ink_bins.py must not be hidden by the browser's cache binTiles.set(id, t); if (binTiles.size > 400) binTiles.delete(binTiles.keys().next().value); }
+  if (!t) { t = new Image(); t.onload = () => { t.ok = true; draw(); }; t.src = '/bintile/' + P.plate + '/' + id + '.png?v=' + (BIN.made || 0) + '&on=' + [...binOn].sort((a, b) => a - b).join(',');   // v: a new run of ink_bins.py must not be hidden by the browser's cache
+    binTiles.set(id, t); if (binTiles.size > 400) binTiles.delete(binTiles.keys().next().value); }
   return t;
 }
+// ---- rail: Ben draws the tracks himself (18 November 2026: "i need to tell you where they are, you're missing a lot") ----
+// A track is {kind: 'railroad' | 'streetcar', pts: [[x, y], ...]}: a line through as many points as its curve needs. Kept in
+// its own file (rail_ben.json), never in the street lines
+let rails = [], rsel = null, rdraft = null, railKind = 'railroad', railT = null;
+const tlen = pts => { let L = 0; for (let i = 1; i < pts.length; i++) L += dist(pts[i - 1], pts[i]); return L; };
+function saveRail() {
+  $('saved').textContent = 'saving…'; clearTimeout(railT);
+  railT = setTimeout(async () => {
+    try {
+      const r = await (await fetch('/saverail/' + P.plate, {method: 'POST', body: JSON.stringify({plate: P.plate, saved_at: new Date().toISOString(), tracks: rails.map(t => ({kind: t.kind, pts: t.pts.map(p => [+p[0].toFixed(1), +p[1].toFixed(1)])}))})})).json();
+      $('saved').textContent = 'saved: ' + r.tracks + ' rail tracks';
+    } catch (e) { $('saved').textContent = 'NOT SAVED: is the server running?'; }
+  }, 400);
+}
+function paintTrack(pts, kind, hot) {   // as on the print: a railroad is a line with ticks across it, a streetcar is heavy dashes
+  const sp = pts.map(toS); const path = () => { cx.beginPath(); cx.moveTo(...sp[0]); for (const q of sp.slice(1)) cx.lineTo(...q); cx.stroke(); };
+  cx.lineJoin = 'round'; cx.setLineDash([]);
+  if (kind === 'railroad') { cx.strokeStyle = hot ? '#fff' : '#000'; cx.lineWidth = 6; path(); cx.strokeStyle = '#ffe600'; cx.lineWidth = 3; path(); cx.setLineDash([2.5, 11]); cx.lineWidth = 13; path(); }
+  else { cx.strokeStyle = hot ? '#fff' : '#000'; cx.lineWidth = 8; path(); cx.strokeStyle = '#ffe600'; cx.lineWidth = 5; cx.setLineDash([14, 7]); path(); }
+  cx.setLineDash([]);
+  if (hot) for (const q of sp) { cx.fillStyle = '#fff'; cx.strokeStyle = '#000'; cx.lineWidth = 1.5; cx.beginPath(); cx.arc(q[0], q[1], 5, 0, 7); cx.fill(); cx.stroke(); }
+}
+function railSnap(w, e) {   // the end of a track already drawn, so one track can carry on from another
+  snapAt = null; if (e && e.altKey) return w; let best = null, bd = 11 / view.k;
+  for (const r of rails) for (const q of [r.pts[0], r.pts[r.pts.length - 1]]) { const d = dist(q, w); if (d < bd) { bd = d; best = q; } }
+  if (best) { snapAt = best.slice(); return best.slice(); } return w;
+}
+function pickRail(sx, sy) {
+  if (!$('fRail').checked) return null; let best = null, bd = 8;
+  for (const r of rails) for (let i = 1; i < r.pts.length; i++) { const d = dseg([sx, sy], toS(r.pts[i - 1]), toS(r.pts[i])); if (d < bd) { bd = d; best = r; } }
+  return best;
+}
+function endTrack() { if (rdraft && rdraft.pts.length >= 2) { snap('rail'); rails.push({kind: rdraft.kind, pts: rdraft.pts}); saveRail(); } rdraft = null; snapAt = null; }
 // ---- snapping and corners (Ben, 15 November 2026: "you gave me no tool to close corners") ----
 const live = l => shown(l) && l.verdict !== 'wrong';
 function isect(l, o) {   // where the two lines, carried on, cross (null if they run nearly the same way)
@@ -247,7 +300,14 @@ function snapPt(w, skip, e) {   // a nearby end first, then a nearby line
 cv.addEventListener('mousedown', e => {
   msg = '';
   const sx = e.offsetX, sy = e.offsetY, w = toW(sx, sy);
+  if (e.button !== 0) { drag = {t: 'pan', sx, sy, x: view.x, y: view.y, did: true}; e.preventDefault(); return; }   // a right- or middle-button drag moves the plate in any mode
+  if (mode === 'rail') { const q = railSnap(w, e); snapAt = null;
+    if (!rdraft) rdraft = {kind: railKind, pts: [q], cur: q}; else if (dist(rdraft.pts[rdraft.pts.length - 1], q) * view.k > 3) rdraft.pts.push(q);
+    draw(); return; }
   if (mode === 'new') { const w = snapPt(toW(sx, sy), null, e); snapAt = null; if (!draft) draft = {a: w, b: w}; else { snap(); const l = {k: 'ben' + Math.random(), a: draft.a, b: w, a0: draft.a, b0: w, src: 'ben', state: 'new', name: '', verdict: 'ok', added: true}; lines.push(l); sel = new Set([l]); draft = null; save(); } draw(); return; }
+  if (rsel && $('fRail').checked) for (let i = 0; i < rsel.pts.length; i++) { const q = toS(rsel.pts[i]); if (Math.hypot(q[0] - sx, q[1] - sy) < 9) { snap('rail'); drag = {t: 'rv', r: rsel, i, did: false}; return; } }
+  { const r = pickRail(sx, sy); if (r && !e.shiftKey) { rsel = r; sel.clear(); draw(); return; } }
+  rsel = null;
   if (e.shiftKey && !pick(sx, sy)) { box = {x0: sx, y0: sy, x1: sx, y1: sy}; return; }
   if (sel.size === 1) { const l = [...sel][0]; for (const end of ['a', 'b']) { const q = toS(l[end]); if (Math.hypot(q[0] - sx, q[1] - sy) < 9) { snap(); drag = {t: 'end', l, end}; return; } } }
   const l = pick(sx, sy);
@@ -257,9 +317,11 @@ cv.addEventListener('mousedown', e => {
 addEventListener('mousemove', e => {
   const r = cv.getBoundingClientRect(), sx = e.clientX - r.left, sy = e.clientY - r.top, w = toW(sx, sy);
   if (draft) { draft.b = snapPt(w, null, e); draw(); } else if (mode === 'new') { snapPt(w, null, e); draw(); }
+  if (mode === 'rail' && !drag) { const q = railSnap(w, e); if (rdraft) rdraft.cur = q; draw(); }
   if (box) { box.x1 = sx; box.y1 = sy; draw(); return; }
   if (!drag) return;
   if (drag.t === 'pan') { view.x = drag.x - (sx - drag.sx) / view.k; view.y = drag.y - (sy - drag.sy) / view.k; drag.did = true; }
+  else if (drag.t === 'rv') { drag.r.pts[drag.i] = w; drag.did = true; }
   else if (drag.t === 'end') drag.l[drag.end] = snapPt(w, drag.l, e);
   else if (drag.t === 'line') { const dx = w[0] - drag.w0[0], dy = w[1] - drag.w0[1]; drag.l.a = [drag.a[0] + dx, drag.a[1] + dy]; drag.l.b = [drag.b[0] + dx, drag.b[1] + dy]; drag.did = true; }
   draw();
@@ -269,30 +331,44 @@ addEventListener('mouseup', e => {
     for (const l of lines) { if (!shown(l)) continue; const m = toS([(l.a[0] + l.b[0]) / 2, (l.a[1] + l.b[1]) / 2]); if (m[0] >= x0 && m[0] <= x1 && m[1] >= y0 && m[1] <= y1) sel.add(l); } box = null; draw(); return; }
   if (!drag) return;
   if (drag.t === 'pan' && !drag.did) { sel.clear(); }
+  if (drag.t === 'rv') { if (drag.did) saveRail(); else undo.pop(); drag = null; draw(); return; }
   if (drag.t === 'end' || (drag.t === 'line' && drag.did)) { if (!drag.l.verdict) drag.l.verdict = 'ok'; save(); } else if (drag.t !== 'pan') undo.pop();
   drag = null; snapAt = null; draw();
 });
-cv.addEventListener('dblclick', e => { const l = pick(e.offsetX, e.offsetY); if (l && l.name) { sel = new Set(lines.filter(x => x.name === l.name && shown(x))); draw(); } });
+cv.addEventListener('contextmenu', e => e.preventDefault());
+cv.addEventListener('dblclick', e => {
+  if (mode === 'rail') { endTrack(); draw(); return; }
+  if (rsel) {   // a new point on the selected track, where it was double-clicked
+    const s = [e.offsetX, e.offsetY]; let bi = -1, bd = 8;
+    for (let i = 1; i < rsel.pts.length; i++) { const d = dseg(s, toS(rsel.pts[i - 1]), toS(rsel.pts[i])); if (d < bd) { bd = d; bi = i; } }
+    if (bi > 0) { snap('rail'); rsel.pts.splice(bi, 0, toW(s[0], s[1])); saveRail(); draw(); } return; }
+  const l = pick(e.offsetX, e.offsetY); if (l && l.name) { sel = new Set(lines.filter(x => x.name === l.name && shown(x))); draw(); } });
 addEventListener('hashchange', () => { const n = location.hash.slice(1); if (P && n && n !== P.plate) { $('plate').value = n; load(n); } });
 cv.addEventListener('wheel', e => { e.preventDefault(); const w = toW(e.offsetX, e.offsetY), f = Math.exp(-e.deltaY * 0.0015); view.k = Math.max(0.03, Math.min(8, view.k * f)); view.x = w[0] - e.offsetX / view.k; view.y = w[1] - e.offsetY / view.k; draw(); }, {passive: false});
 
 function mark(v) { if (!sel.size) return; snap(); for (const l of sel) { l.verdict = v; if (v === null && !l.added) { l.a = l.a0.slice(); l.b = l.b0.slice(); } } save(); draw(); }
-function del() { if (!sel.size) return; snap(); for (const l of sel) { if (l.added) lines.splice(lines.indexOf(l), 1); else l.verdict = 'wrong'; } sel.clear(); save(); draw(); }
-function setMode(m) { mode = m; draft = null; $('bNew').classList.toggle('on', m === 'new'); draw(); }
+function del() { if (rsel) { snap('rail'); rails.splice(rails.indexOf(rsel), 1); rsel = null; saveRail(); draw(); return; } if (!sel.size) return; snap(); for (const l of sel) { if (l.added) lines.splice(lines.indexOf(l), 1); else l.verdict = 'wrong'; } sel.clear(); save(); draw(); }
+function setMode(m, kind) { endTrack(); mode = m; if (kind) railKind = kind; draft = null; if (m !== 'select') rsel = null; $('bNew').classList.toggle('on', m === 'new'); $('bRail').classList.toggle('on', m === 'rail' && railKind === 'railroad'); $('bCar').classList.toggle('on', m === 'rail' && railKind === 'streetcar'); draw(); }
+const railMode = kind => setMode(mode === 'rail' && railKind === kind ? 'select' : 'rail', kind);
 function nudge(dx, dy) { if (!sel.size) return; snap(); for (const l of sel) { l.a = [l.a[0] + dx, l.a[1] + dy]; l.b = [l.b[0] + dx, l.b[1] + dy]; if (!l.verdict) l.verdict = 'ok'; } save(); draw(); }
 addEventListener('keydown', e => {
   if (e.target.tagName === 'SELECT') return; const k = e.key.toLowerCase(), st = e.shiftKey ? 5 : 1;
-  if (e.ctrlKey && k === 'z') { doUndo(); e.preventDefault(); }
+  if (e.ctrlKey && k === 'z') { if (rdraft) { rdraft = null; draw(); } else doUndo(); e.preventDefault(); }
+  else if (e.ctrlKey || e.metaKey) return;
+  else if (mode === 'rail' && k === 'enter') { endTrack(); draw(); }
+  else if (mode === 'rail' && k === 'backspace') { if (rdraft) { rdraft.pts.pop(); if (!rdraft.pts.length) rdraft = null; draw(); } e.preventDefault(); }
+  else if (k === 'r') railMode('railroad'); else if (k === 's') railMode('streetcar');
   else if (k === '1' || k === 'g') mark('ok'); else if (k === '2' || k === 'x') del(); else if (k === '3' || k === 'p') mark('none'); else if (k === '0' || k === 'u') mark(null);
   else if (k === 'c') corners(); else if (k === 'j') join(); else if (k === 'b') toggleBins();
-  else if (k === 'n') setMode(mode === 'new' ? 'select' : 'new'); else if (k === 'escape') { setMode('select'); sel.clear(); draw(); }
+  else if (k === 'n') setMode(mode === 'new' ? 'select' : 'new'); else if (k === 'escape') { setMode('select'); sel.clear(); rsel = null; draw(); }
   else if (k === 'delete' || k === 'backspace') del();
   else if (k === 'arrowleft') { nudge(-st, 0); e.preventDefault(); } else if (k === 'arrowright') { nudge(st, 0); e.preventDefault(); } else if (k === 'arrowup') { nudge(0, -st); e.preventDefault(); } else if (k === 'arrowdown') { nudge(0, st); e.preventDefault(); }
 });
 $('bOk').onclick = () => mark('ok'); $('bNone').onclick = () => mark('none'); $('bClear').onclick = () => mark(null);
 $('bNew').onclick = () => setMode(mode === 'new' ? 'select' : 'new'); $('bDel').onclick = del; $('bBins').onclick = toggleBins; $('bCorner').onclick = corners; $('bJoin').onclick = join; $('bUndo').onclick = doUndo;
+$('bRail').onclick = () => railMode('railroad'); $('bCar').onclick = () => railMode('streetcar');
 $('bHelp').onclick = () => { const h = $('help'); h.style.display = h.style.display === 'none' ? '' : 'none'; };
-for (const id of ['fGrey', 'fBlue', 'fSheet', 'fUn', 'fDel']) $(id).onchange = draw;
+for (const id of ['fGrey', 'fBlue', 'fSheet', 'fUn', 'fDel', 'fRail']) $(id).onchange = draw;
 addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
 (async () => {
   const pl = await (await fetch('/plates')).json(); $('plate').innerHTML = pl.map(p => `<option>${p}</option>`).join('');

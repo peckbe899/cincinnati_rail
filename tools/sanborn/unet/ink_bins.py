@@ -29,14 +29,20 @@ outlines are then taken out, which lets the rest fall apart into separate lines:
 (block ground). A hatched line is railroad even where one of Ben's street-map lines runs along it. Ground is: inside a shape of the street map that closes = block; elsewhere the old area label
 (unet_data/N_label.png, 0 street, 1 block, 255 not known), which was made from the reader's lines, not Ben's.
 Writes unet_data/N_bins.png (the bin of every pixel) and unet_data/N_bins.json (counts).
+
+Ben, 18 November 2026: "i need to tell you where they are, you're missing a lot" (the railroad). He draws the tracks in
+the line editor (R railroad, S streetcar), saved in picks22_guided/22-N/rail_ben.json. Where that file exists, the ink
+within BEN_RAIL px of one of his tracks is that kind, whatever the rules say, and the run prints how much of his
+railroad the tick rule had found by itself and how much railroad the rule found away from every track of his.
 """
-import json, sys, time
+import json, os, sys, time
 import numpy as np
 import cv2
 from scipy.spatial import cKDTree
 NAMES = {1: 'block line', 2: 'lot line', 3: 'building outline', 4: 'railroad', 5: 'streetcar', 6: 'water pipe', 7: 'sewer', 8: 'text and numbers', 9: 'not sorted'}
 COL = {1: (0, 150, 0), 2: (255, 140, 0), 3: (20, 70, 120), 4: (0, 0, 230), 5: (0, 150, 255), 6: (160, 0, 0), 7: (160, 170, 0), 8: (255, 0, 255), 9: (120, 120, 120)}   # BGR: green, light blue, brown, red, orange, navy, teal, magenta, grey
 INK_L = 140      # darker than this (Lab L, 0..255) is ink
+BEN_RAIL = 10     # ink this near (px) a track Ben drew is that track: the ticks reach some 10 px each side of the line
 RAIL = dict(clear=(5, 6.0), row=4, faint=(3, 4.0), faint_row=10, even=0.12, grow=0.2, span=150, block_row=6, reach=120, off=(19.0, 26.0))   # a clear tick: stroke ends of 5 px or more, 6 px or more apart; 4 in a row. A faint one: 3 px, 4 px apart; 10 in a row and evenly spaced (gaps within 12%)
 TEXT_MAX = 130   # a compact mark no bigger than this is text (street-name letters are about 90 px tall on plate 44)
 
@@ -222,7 +228,26 @@ def main():
     old = cv2.resize(cv2.imread(f'unet_data/{N}_label.png', 0), (W, H), interpolation=cv2.INTER_NEAREST)[y0:y1, x0:x1]
     ground = np.where(closed == 1, 1, np.where(old == 0, 0, np.where(old == 1, 1, 2))).astype(np.uint8)   # 0 street, 1 block, 2 not known
     out = np.zeros((h, w), np.uint8)
-    rr, RAILINFO = railroad(ink, closed); out[rr] = 4; ink0 = ink; ink = ink & ~rr     # the tracks come out first, so they no longer tie the pipe lines together
+    rr, RAILINFO = railroad(ink, closed); ink0 = ink
+    # the tracks Ben drew himself: his word, over the rules
+    bf = f'picks22_guided/22-{N}/rail_ben.json'; BEN = json.load(open(bf, encoding='utf8'))['tracks'] if os.path.exists(bf) else []
+    ben = {k: np.zeros((h, w), np.uint8) for k in ('railroad', 'streetcar')}; benlen = dict(railroad=0.0, streetcar=0.0); samp = []
+    for t in BEN:
+        p = np.array(t['pts'], float) - off; cv2.polylines(ben[t['kind']], [np.round(p).astype(np.int32)], False, 1, 2 * BEN_RAIL + 1)
+        for q0, q1 in zip(p[:-1], p[1:]):
+            L = np.hypot(*(q1 - q0)); benlen[t['kind']] += L
+            if t['kind'] == 'railroad': samp.append(q0[None] + np.linspace(0, 1, max(2, int(L / 5) + 1))[:, None] * (q1 - q0)[None])
+    bensay = ''
+    if BEN:
+        nr = sum(t['kind'] == 'railroad' for t in BEN); bensay = f"Your rail: {nr} railroad track{'' if nr == 1 else 's'} ({benlen['railroad']:,.0f} px), {len(BEN) - nr} streetcar ({benlen['streetcar']:,.0f} px)."
+        if samp:   # how much of Ben's railroad the tick rule had found, and what the rule found away from his tracks
+            q = np.vstack(samp).round().astype(int); ok = (q[:, 0] >= 0) & (q[:, 0] < w) & (q[:, 1] >= 0) & (q[:, 1] < h); q = q[ok]
+            got = cv2.dilate(rr.astype(np.uint8), np.ones((2 * BEN_RAIL + 1, 2 * BEN_RAIL + 1), np.uint8))[q[:, 1], q[:, 0]].mean() if len(q) else 0.0
+            far = int((rr & (cv2.dilate(ben['railroad'], np.ones((31, 31), np.uint8)) == 0)).sum())
+            bensay += f" The tick rule had found {100 * got:.0f}% of your railroad's length by itself, and {far:,} px of what it calls railroad lies more than 25 px from every track of yours."
+        rr = (rr & (ben['streetcar'] == 0)) | (ink & (ben['railroad'] > 0))
+    car = ink & (ben['streetcar'] > 0) & ~rr
+    out[rr] = 4; out[car] = 5; ink = ink & ~rr & ~car     # the tracks come out first, so they no longer tie the pipe lines together
 
     def small_pass(mask):
         """sort the small pieces of mask; returns what is left (the big pieces)"""
@@ -269,6 +294,7 @@ def main():
     print(f'plate {N} window {x0},{y0}-{x1},{y1}: ink {tot} px, {100 * tot / max(1, paper.sum()):.1f}% of the paper | {time.time() - t0:.0f} s')
     for k in NAMES: print(f'  {k} {NAMES[k]:17s} {cnt[NAMES[k]]:9d} px  {100 * cnt[NAMES[k]] / max(1, tot):5.1f}%')
     print('  railroad: clear ticks', RAILINFO['clear'], 'faint ticks', RAILINFO['faint'], 'ticks in rows', RAILINFO['chained'], 'links added by carrying rows on', RAILINFO.get('grown'), '| ground of the ink: street', int((ink & (ground == 0)).sum()), 'block', int((ink & (ground == 1)).sum()), 'not known', int((ink & (ground == 2)).sum()))
+    if bensay: print('  ' + bensay)
     if '--pic' in sys.argv:
         c = (im * 0.35 + 255 * 0.65).astype(np.uint8)
         for k in NAMES: c[out == k] = COL[k]
@@ -277,8 +303,8 @@ def main():
             for i, p in enumerate(RAILINFO.get('T', [])): cv2.circle(c, tuple(p.round().astype(int).tolist()), 9, (0, 0, 255), 1)
         cv2.imwrite(sys.argv[sys.argv.index('--pic') + 1], c, [cv2.IMWRITE_JPEG_QUALITY, 92])
     if not win:
-        cv2.imwrite(f'unet_data/{N}_bins.png', out)
-        json.dump(dict(plate=N, size=[W, H], note='rule-based first guess, not ground truth', made=int(time.time()), ink_px=tot, bins={str(k): dict(name=NAMES[k], px=cnt[NAMES[k]], rgb=list(COL[k][::-1])) for k in NAMES}), open(f'unet_data/{N}_bins.json', 'w', encoding='utf8', newline='\n'), indent=1)
+        cv2.imwrite(f'unet_data/{N}_bins.tmp.png', out); os.replace(f'unet_data/{N}_bins.tmp.png', f'unet_data/{N}_bins.png')   # the editor may be reading it
+        json.dump(dict(plate=N, size=[W, H], note='rule-based first guess, not ground truth', made=int(time.time()), ink_px=tot, ben_rail=bensay, bins={str(k): dict(name=NAMES[k], px=cnt[NAMES[k]], rgb=list(COL[k][::-1])) for k in NAMES}), open(f'unet_data/{N}_bins.json', 'w', encoding='utf8', newline='\n'), indent=1)
 
 if __name__ == '__main__':
     main()
