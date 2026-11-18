@@ -46,7 +46,7 @@ NAMES = {1: 'block line', 2: 'lot line', 3: 'building outline', 4: 'railroad', 5
 COL = {1: (0, 150, 0), 2: (255, 140, 0), 3: (20, 70, 120), 4: (0, 0, 230), 5: (0, 150, 255), 6: (160, 0, 0), 7: (160, 170, 0), 8: (255, 0, 255), 9: (120, 120, 120)}   # BGR: green, light blue, brown, red, orange, navy, teal, magenta, grey
 INK_L = 140      # darker than this (Lab L, 0..255) is ink
 BEN_RAIL = 10     # ink this near (px) a track Ben drew is that track: the ticks reach some 10 px each side of the line
-RAIL = dict(clear=(5, 6.0), row=4, faint=(3, 4.0), faint_row=10, even=0.12, grow=0.2, span=150, block_row=6, reach=120, off=(19.0, 26.0))   # a clear tick: stroke ends of 5 px or more, 6 px or more apart; 4 in a row. A faint one: 3 px, 4 px apart; 10 in a row and evenly spaced (gaps within 12%)
+RAIL = dict(clear=(5, 6.0), row=4, faint=(3, 4.0), faint_row=10, even=0.12, grow=0.2, span=150, block_row=6, reach=120, reach2=175, along=0.4, follow=(3000, 400, 10), spur=2, off=(19.0, 26.0))   # a clear tick: stroke ends of 5 px or more, 6 px or more apart; 4 in a row. A faint one: 3 px, 4 px apart; 10 in a row and evenly spaced (gaps within 12%)
 TEXT_MAX = 130   # a compact mark no bigger than this is text (street-name letters are about 90 px tall on plate 44)
 
 def shape(lab, n):
@@ -71,7 +71,7 @@ def line_kernel(length, ang):
     k = np.zeros((length, length), np.uint8); c = length // 2; d = np.array([np.cos(ang), np.sin(ang)]) * c
     cv2.line(k, tuple(np.round(c - d).astype(int).tolist()), tuple(np.round(c + d).astype(int).tolist()), 1, 1); return k
 
-def railroad(ink, closed):
+def railroad(ink, closed, paper=None):
     """Railroad ink: a line crossed by a row of short ticks (Ben: "the railroads (hatched lines like on Vandalia)").
 
     The first rule judged each connected piece of ink by how many short strokes it carried. That failed both ways: a track
@@ -91,8 +91,20 @@ def railroad(ink, closed):
     Tracks on one plate are drawn with different gaps, so there is no single gap to test against.
     A row found either way is then carried on along its own line: a faint tick joins it if it lies one of that row's gaps
     (within 20%), or two where a tick is missing, from a tick already in the row.
-    The ink within 7 px of the line through such a row is railroad, with 35 px carried on past each end."""
-    h, w = ink.shape; r8 = ink.astype(np.uint8); short = np.zeros((h, w), np.uint8); long_ = np.zeros((h, w), np.uint8)
+    The ink within 7 px of the line through such a row is railroad.
+
+    18 November 2026: Ben drew every track of plate 44 himself ("i need to tell you where they are, you're missing a lot"),
+    and the rule is now scored against his tracks (score_rail.py) instead of judged by eye. It found 85.2% of his railroad's
+    length, with 2,162 px of ink called railroad away from his tracks. Four changes took that to 98.8% and 2,365 px (of
+    which 1,705 px is a real spur he did not draw, and the figures at its end):
+      - a straight line must run under a link (ink that a 61 px line fits, under 40% of it or more). The false rows were
+        rows of lot numbers, one to a lot: spaced like ticks, ink enough to pass for a line, and no line there at all
+      - a link may span one missing tick, if it is twice the gap next to it (doubles)
+      - from each end of a row the line is walked on through the stretches that carry no ticks (follow)
+      - a short row is a spur if its line runs into a found track (see below)
+    Tried and dropped: shorter rows (3 ticks, or 4 in a block) by themselves: 0.5 to 1.4 points more track for two to four
+    times the false ink. Still missed on plate 44: a siding drawn as a double line with ticks (track 14, north end)."""
+    h, w = ink.shape; r8 = ink.astype(np.uint8); short = np.zeros((h, w), np.uint8); long_ = np.zeros((h, w), np.uint8); long61 = np.zeros((h, w), np.uint8)
     ori = np.full((h, w), -1, np.int8); ori2 = np.full((h, w), -1, np.int8)   # which way the line under a pixel runs: where a 61 px line fits (within about 5 degrees), else where a 35 px one does (a tight curve)
     # a thin track (2 to 3 px) drawn a few degrees off the 24 directions tried has no room for a straight 35 px line inside
     # it, and came out as a string of short strokes with no ticks to tell from it. So the long-line tests run on the ink
@@ -102,7 +114,9 @@ def railroad(ink, closed):
         ang = np.pi * i / 24
         short |= cv2.morphologyEx(r8, cv2.MORPH_OPEN, line_kernel(9, ang)); l35 = cv2.morphologyEx(fat, cv2.MORPH_OPEN, line_kernel(35, ang)) & r8; long_ |= l35
         ori2[cv2.dilate(l35, np.ones((13, 13), np.uint8)) > 0] = i
-        ori[cv2.dilate(cv2.morphologyEx(fat, cv2.MORPH_OPEN, line_kernel(61, ang)), np.ones((13, 13), np.uint8)) > 0] = i   # read up to 6 px off the line: a faint track often breaks at each tick
+        l61 = cv2.morphologyEx(fat, cv2.MORPH_OPEN, line_kernel(61, ang)); long61 |= l61
+        ori[cv2.dilate(l61, np.ones((13, 13), np.uint8)) > 0] = i   # read up to 6 px off the line: a faint track often breaks at each tick
+    near61 = cv2.dilate(long61 & r8, np.ones((7, 7), np.uint8))   # within 3 px of ink that a 61 px straight line fits
     stub = short & (1 - long_) & cv2.dilate(long_, np.ones((7, 7), np.uint8))   # ticks on plate 44 run 16 to 24 px, so 'long' is 35 px
     ns, ls, ss, cs = cv2.connectedComponentsWithStats(stub, connectivity=8); M = np.zeros((h, w), np.uint8); info = dict(clear=0, faint=0, chained=0, T=np.zeros((0, 2)), E=[])
     onlong = cv2.dilate(long_, np.ones((13, 13), np.uint8)); near = cv2.dilate(r8, np.ones((9, 9), np.uint8))
@@ -150,8 +164,22 @@ def railroad(ink, closed):
             v = T[j] - T[i]; L = np.hypot(*v)
             if L < 25 or abs(v[0] * u[i][1] - v[1] * u[i][0]) > tol[i] or abs(v[0] * u[j][1] - v[1] * u[j][0]) > tol[j]: continue
             q = (T[i][None] + np.linspace(0, 1, 24)[:, None] * v[None]).round().astype(int); qy, qx = np.clip(q[:, 1], 0, h - 1), np.clip(q[:, 0], 0, w - 1)
-            if near[qy, qx].mean() >= 0.8 and heavy[qy, qx].mean() < 0.3: E.append((i, j))
+            if near[qy, qx].mean() < 0.8 or heavy[qy, qx].mean() >= 0.3: continue
+            # a straight line must run under the link: a row of lot numbers, one to a lot, is spaced like ticks and its
+            # figures are ink enough to pass the test above, but there is no line along it (three such rows on plate 44)
+            if near61[qy, qx].mean() >= RAIL['along']: E.append((i, j))
         return np.array(E, int).reshape(-1, 2)
+
+    def doubles(T, E, one):
+        """a link longer than `one` stands for a missing tick: it is kept only if it is twice (within 15%) a shorter link
+        at one of its two ends. Scored on plate 44 against Ben's tracks: a tick is missed about one time in six"""
+        if not len(E): return E
+        L = np.hypot(*(T[E[:, 0]] - T[E[:, 1]]).T); short = {}
+        for (i, j), l in zip(E, L):
+            if l <= one: short.setdefault(i, []).append(l); short.setdefault(j, []).append(l)
+        keep = L <= one
+        for e in np.nonzero(~keep)[0]: keep[e] = any(abs(L[e] - 2 * s_) <= 0.15 * L[e] for k in E[e] for s_ in short.get(k, []))
+        return E[keep]
 
     def rows(T, u, E, need, even, inb=None):
         """the links of the rows of `need` ticks or more"""
@@ -174,8 +202,9 @@ def railroad(ink, closed):
             keep[c] = n >= need and span >= RAIL['span'] and (inb is None or inb[p].mean() < 0.5 or n >= RAIL['block_row'])
         return E[keep[lab[E[:, 0]]]]
 
-    Tc, uc, tolc, inbc = ticks(*RAIL['clear'], blocks=True); Ec = rows(Tc, uc, links(Tc, uc, tolc, RAIL['reach']), RAIL['row'], 0, inbc); info['clear'] = len(Tc)
+    Tc, uc, tolc, inbc = ticks(*RAIL['clear'], blocks=True); Lc_all = doubles(Tc, links(Tc, uc, tolc, RAIL['reach2']), RAIL['reach']); Ec = rows(Tc, uc, Lc_all, RAIL['row'], 0, inbc); info['clear'] = len(Tc)
     Tf, uf, tolf, _ = ticks(*RAIL['faint']); Lf = links(Tf, uf, tolf, 175); info['faint'] = len(Tf)
+    info['Tc'], info['Tf'] = Tc, Tf   # every tick, in a row or not (for score_rail.py and debugging)
     Ef = rows(Tf, uf, Lf[np.hypot(*(Tf[Lf[:, 0]] - Tf[Lf[:, 1]]).T) <= 120] if len(Lf) else Lf, RAIL['faint_row'], RAIL['even'])
     # carry each found row on along its own line: a faint tick joins a row if it is one of the row's gaps (or two, where a
     # tick is missing) from a tick already in it. This fills the stretches where a clear row breaks off, without starting
@@ -197,14 +226,76 @@ def railroad(ink, closed):
                     took.append(e)
                     if np.isnan(gap[j]): gap[j] = g; todo.append(j)
         grown = Lf[np.unique(took)] if took else grown
+    offsheet = np.zeros((h, w), np.uint8) if paper is None else cv2.dilate((~paper).astype(np.uint8), np.ones((61, 61), np.uint8))   # within 30 px of the sheet's edge
+    allT = cKDTree(np.vstack([Tc, Tf])) if len(Tc) + len(Tf) else None; ends = []; MC = np.zeros((h, w), np.uint8)
+
+    def follow(p, e, M0):
+        """Walk on along the line from the last tick of a row, 3 px at a step, keeping to the ink (up to 3 px to either
+        side, 10 px across a break) and turning with it. A track runs on without ticks where it nears a switch (130 to
+        230 px on plate 44), and a row breaks off where two ticks in a row were missed. The walk goes on while ticks, in
+        a row or not, keep coming; it stops where the ink ends, where it meets a track already found, or 400 px after
+        the last tick. What was walked is kept whole only if it met a found track or ran off the sheet's edge. Otherwise
+        only 40 px past the last tick are kept: on plate 44 a walk left the end of a spur across a dimension figure and
+        ran 300 px down a lot line."""
+        path = [np.array(p, float)]; gap = 0; quiet = 0; last = 0; onm = 0; why = 'far'; p = path[0]
+        for step in range(RAIL['follow'][0] // 3):
+            if len(path) >= 8: d = path[-1] - path[-8]; e = d / max(1e-6, np.hypot(*d))
+            q = p + 3 * e; n = np.array([-e[1], e[0]]); hit = None
+            if not (3 <= q[0] < w - 3 and 3 <= q[1] < h - 3): why = 'edge'; break
+            for o in (0, 1, -1, 2, -2, 3, -3):
+                c = q + o * n
+                if r8[int(round(c[1])), int(round(c[0]))]: hit = c; break
+            if hit is None:
+                gap += 3; p = q
+                if gap > RAIL['follow'][2]: why = 'edge' if offsheet[int(round(q[1])), int(round(q[0]))] else 'end'; break
+                continue
+            gap = 0; p = hit; path.append(hit); quiet += 3
+            if allT is not None and allT.query_ball_point(hit, 8): quiet = 0; last = len(path) - 1
+            if quiet > RAIL['follow'][1]: why = 'quiet'; break
+            onm = onm + 1 if step >= 12 and M0[int(round(hit[1])), int(round(hit[0]))] else 0
+            if onm >= 4: why = 'met'; break
+        return (path if why in ('met', 'edge') else path[:last + 14]), why
+
     for T, E in ((Tc, Ec), (Tf, np.vstack([Ef, grown]) if len(Ef) or len(grown) else Ef)):
         if not len(E): continue
         E = np.unique(np.sort(E, axis=1), axis=0); deg = np.bincount(E.ravel(), minlength=len(T)); info['chained'] += int((deg > 0).sum())
         info['E'] = info['E'] + [(a + len(info['T']), b + len(info['T'])) for a, b in E]; info['T'] = np.vstack([info['T'], T])
-        for i, j in E: cv2.line(M, tuple(T[i].round().astype(int).tolist()), tuple(T[j].round().astype(int).tolist()), 1, 15)
-        for i in np.nonzero(deg == 1)[0]:                 # carry the track 35 px past the last tick of a row
-            j = E[(E == i).any(1)][0]; j = j[0] if j[1] == i else j[1]; e = T[i] - T[j]; e /= np.hypot(*e)
-            cv2.line(M, tuple(T[i].round().astype(int).tolist()), tuple((T[i] + 35 * e).round().astype(int).tolist()), 1, 15)
+        for i, j in E:
+            for m_, wd in ((M, 15), (MC, 5)): cv2.line(m_, tuple(T[i].round().astype(int).tolist()), tuple(T[j].round().astype(int).tolist()), 1, wd)
+        nbr = {}
+        for a, b in E: nbr.setdefault(a, []).append(b); nbr.setdefault(b, []).append(a)
+        for i, js in nbr.items():                         # the last tick of a row: every tick it is linked to lies to one side of it (a tick is
+            d = T[js] - T[i]; d /= np.hypot(*d.T)[:, None]    # often linked to the next and the one after, so counting links does not find the ends)
+            if (d @ d[0] > 0).all(): e = -d.mean(0); ends.append((T[i], e / np.hypot(*e)))
+    M0 = MC.copy(); info['walked'] = 0   # 'a track already found' is its centre line, 5 px wide: tracks run side by side as little as 15 px apart
+    for p, e in ends:
+        path, _ = follow(p, e, M0); info['walked'] += 3 * (len(path) - 1)
+        if len(path) >= 2:
+            for m_, wd in ((M, 15), (MC, 5)): cv2.polylines(m_, [np.round(np.array(path)).astype(np.int32)], False, 1, wd)
+        else: cv2.line(M, tuple(p.round().astype(int).tolist()), tuple((p + 35 * e).round().astype(int).tolist()), 1, 15)
+    # Spurs and sidings: a row too short to stand by itself (RAIL['spur'] clear ticks or more, where a row needs 4, or 6 in
+    # a block) is still a track if the line it lies on, walked on from one of its ends, runs into a track already found. On plate
+    # 44 the sidings of the fan at the west edge carry two or three ticks each
+    info['spurs'] = 0
+    if len(Lc_all):
+        took = {(min(a, b), max(a, b)) for a, b in Ec}; R = np.array([l for l in Lc_all if (min(l), max(l)) not in took], int).reshape(-1, 2)
+        if len(R):
+            nc, lab = connected_components(coo_matrix((np.ones(len(R)), (R[:, 0], R[:, 1])), shape=(len(Tc), len(Tc))), directed=False); M0 = MC.copy()
+            for c in np.unique(lab[R[:, 0]]):
+                Ek = R[lab[R[:, 0]] == c]; pk = np.unique(Ek)
+                if len(pk) < RAIL['spur'] or MC[tuple(Tc[pk].round().astype(int)[:, ::-1].T)].mean() > 0.5: continue   # too few ticks, or it lies on a track already found
+                nbr = {}; walks = []; met = False
+                for a, b in Ek: nbr.setdefault(a, []).append(b); nbr.setdefault(b, []).append(a)
+                for i, js in nbr.items():
+                    d = Tc[js] - Tc[i]; d /= np.hypot(*d.T)[:, None]
+                    if (d @ d[0] > 0).all():
+                        e = -d.mean(0); path, why = follow(Tc[i], e / np.hypot(*e), M0); walks.append(path); met |= why == 'met'
+                if not met: continue
+                info['spurs'] += 1
+                for m_, wd in ((M, 15), (MC, 5)):
+                    for a, b in Ek: cv2.line(m_, tuple(Tc[a].round().astype(int).tolist()), tuple(Tc[b].round().astype(int).tolist()), 1, wd)
+                    for path in walks:
+                        if len(path) >= 2: cv2.polylines(m_, [np.round(np.array(path)).astype(np.int32)], False, 1, wd)
     info['grown'] = int(len(grown))
     return (M > 0) & ink, info
 
@@ -231,7 +322,7 @@ def main():
     old = cv2.resize(cv2.imread(f'unet_data/{N}_label.png', 0), (W, H), interpolation=cv2.INTER_NEAREST)[y0:y1, x0:x1]
     ground = np.where(closed == 1, 1, np.where(old == 0, 0, np.where(old == 1, 1, 2))).astype(np.uint8)   # 0 street, 1 block, 2 not known
     out = np.zeros((h, w), np.uint8)
-    rr, RAILINFO = railroad(ink, closed); ink0 = ink
+    rr, RAILINFO = railroad(ink, closed, paper); ink0 = ink
     # the tracks Ben drew himself: his word, over the rules
     bf = f'picks22_guided/22-{N}/rail_ben.json'; BJ = json.load(open(bf, encoding='utf8')) if os.path.exists(bf) and '--no-ben' not in sys.argv else {}; BEN = BJ.get('tracks', []); ONLY = bool(BJ.get('complete'))   # ONLY: his tracks are all the rail on this plate
     ben = {k: np.zeros((h, w), np.uint8) for k in ('railroad', 'streetcar')}; benlen = dict(railroad=0.0, streetcar=0.0); samp = []
