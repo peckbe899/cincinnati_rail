@@ -1,7 +1,7 @@
 """A first, rule-based sorting of a plate's black ink into bins, for Ben to look at in the line editor (17 November 2026).
 
     cd data/sanborn
-    python ../../tools/sanborn/unet/ink_bins.py N [--win X0 Y0 X1 Y1] [--pic OUT.jpg]
+    python ../../tools/sanborn/unet/ink_bins.py N [--win X0 Y0 X1 Y1] [--pic OUT.jpg] [--no-ben] [--save OUT.png]
 
 Ben, 17 November 2026: "yes, try binning them and showing them in the plate editor so i can see". This is a rough first
 guess made by rules at full size, not a trained classifier and not ground truth. It needs the plate's street map
@@ -230,7 +230,7 @@ def main():
     out = np.zeros((h, w), np.uint8)
     rr, RAILINFO = railroad(ink, closed); ink0 = ink
     # the tracks Ben drew himself: his word, over the rules
-    bf = f'picks22_guided/22-{N}/rail_ben.json'; BEN = json.load(open(bf, encoding='utf8'))['tracks'] if os.path.exists(bf) else []
+    bf = f'picks22_guided/22-{N}/rail_ben.json'; BEN = json.load(open(bf, encoding='utf8'))['tracks'] if os.path.exists(bf) and '--no-ben' not in sys.argv else []
     ben = {k: np.zeros((h, w), np.uint8) for k in ('railroad', 'streetcar')}; benlen = dict(railroad=0.0, streetcar=0.0); samp = []
     for t in BEN:
         p = np.array(t['pts'], float) - off; cv2.polylines(ben[t['kind']], [np.round(p).astype(np.int32)], False, 1, 2 * BEN_RAIL + 1)
@@ -302,6 +302,7 @@ def main():
             for i, j in RAILINFO.get('E', []): cv2.line(c, tuple(RAILINFO['T'][i].round().astype(int).tolist()), tuple(RAILINFO['T'][j].round().astype(int).tolist()), (0, 0, 0), 1)
             for i, p in enumerate(RAILINFO.get('T', [])): cv2.circle(c, tuple(p.round().astype(int).tolist()), 9, (0, 0, 255), 1)
         cv2.imwrite(sys.argv[sys.argv.index('--pic') + 1], c, [cv2.IMWRITE_JPEG_QUALITY, 92])
+    if '--save' in sys.argv: cv2.imwrite(sys.argv[sys.argv.index('--save') + 1], out); return   # the bins to a file of its own (for scoring the rules), leaving the plate's bins alone
     if not win:
         cv2.imwrite(f'unet_data/{N}_bins.tmp.png', out); os.replace(f'unet_data/{N}_bins.tmp.png', f'unet_data/{N}_bins.png')   # the editor may be reading it
         json.dump(dict(plate=N, size=[W, H], note='rule-based first guess, not ground truth', made=int(time.time()), ink_px=tot, ben_rail=bensay, bins={str(k): dict(name=NAMES[k], px=cnt[NAMES[k]], rgb=list(COL[k][::-1])) for k in NAMES}), open(f'unet_data/{N}_bins.json', 'w', encoding='utf8', newline='\n'), indent=1)
