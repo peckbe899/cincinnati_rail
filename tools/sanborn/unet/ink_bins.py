@@ -37,7 +37,7 @@ from scipy.spatial import cKDTree
 NAMES = {1: 'block line', 2: 'lot line', 3: 'building outline', 4: 'railroad', 5: 'streetcar', 6: 'water pipe', 7: 'sewer', 8: 'text and numbers', 9: 'not sorted'}
 COL = {1: (0, 150, 0), 2: (255, 140, 0), 3: (20, 70, 120), 4: (0, 0, 230), 5: (0, 150, 255), 6: (160, 0, 0), 7: (160, 170, 0), 8: (255, 0, 255), 9: (120, 120, 120)}   # BGR: green, light blue, brown, red, orange, navy, teal, magenta, grey
 INK_L = 140      # darker than this (Lab L, 0..255) is ink
-RAIL = dict(clear=(5, 6.0), row=4, faint=(3, 4.0), faint_row=10, even=0.12, grow=0.2)   # a clear tick: stroke ends of 5 px or more, 6 px or more apart; 4 in a row. A faint one: 3 px, 4 px apart; 10 in a row and evenly spaced (gaps within 12%)
+RAIL = dict(clear=(5, 6.0), row=4, faint=(3, 4.0), faint_row=10, even=0.12, grow=0.2, span=150, block_row=6, reach=120, off=(19.0, 26.0))   # a clear tick: stroke ends of 5 px or more, 6 px or more apart; 4 in a row. A faint one: 3 px, 4 px apart; 10 in a row and evenly spaced (gaps within 12%)
 TEXT_MAX = 130   # a compact mark no bigger than this is text (street-name letters are about 90 px tall on plate 44)
 
 def shape(lab, n):
@@ -70,10 +70,12 @@ def railroad(ink, closed):
     its length (most of the Vandalia tracks were missed), and a lot line or pipe line with figures touching it passed.
     This one works from the ticks themselves:
       a tick  = two short strokes on opposite sides of a long line (a figure touching a line is on one side only, so it
-                is not a tick), outside every closed block and not beside heavy ink (a streetcar's dashes, a big letter)
-      a track = ticks in a row: each within 120 px of the next and no more than 14 px (22 on a tight curve) off the line
+                is not a tick), not beside a streetcar's heavy dashes
+      a track = ticks in a row: each within 120 px of the next and no more than 19 px (26 on a tight curve) off the line
                 through the other, with ink joining them. The line's direction is read where a 61 px straight line fits
                 the ink (a 35 px one on a tight curve).
+    A row must run 150 px or more. One lying mostly inside a closed block (a siding, or a lot line with marks on it) needs
+    6 clear ticks, and faint ticks inside a closed block do not count at all.
     Two kinds of row count. Clear ticks (stroke ends of 5 px or more, 6 px or more apart): 4 or more in a row. Faint ticks
     (3 px, 4 px apart: thin tracks drawn close together, as along the south of plate 44): 10 or more in a row, and evenly
     spaced: each tick midway between its neighbours (the two gaps within 12% of each other).
@@ -83,25 +85,38 @@ def railroad(ink, closed):
     The ink within 7 px of the line through such a row is railroad, with 35 px carried on past each end."""
     h, w = ink.shape; r8 = ink.astype(np.uint8); short = np.zeros((h, w), np.uint8); long_ = np.zeros((h, w), np.uint8)
     ori = np.full((h, w), -1, np.int8); ori2 = np.full((h, w), -1, np.int8)   # which way the line under a pixel runs: where a 61 px line fits (within about 5 degrees), else where a 35 px one does (a tight curve)
+    # a thin track (2 to 3 px) drawn a few degrees off the 24 directions tried has no room for a straight 35 px line inside
+    # it, and came out as a string of short strokes with no ticks to tell from it. So the long-line tests run on the ink
+    # grown by 1 px; a tick, 16 to 24 px long, is still far too short to pass
+    fat = cv2.dilate(r8, np.ones((3, 3), np.uint8))
     for i in range(24):
         ang = np.pi * i / 24
-        short |= cv2.morphologyEx(r8, cv2.MORPH_OPEN, line_kernel(9, ang)); l35 = cv2.morphologyEx(r8, cv2.MORPH_OPEN, line_kernel(35, ang)); long_ |= l35
+        short |= cv2.morphologyEx(r8, cv2.MORPH_OPEN, line_kernel(9, ang)); l35 = cv2.morphologyEx(fat, cv2.MORPH_OPEN, line_kernel(35, ang)) & r8; long_ |= l35
         ori2[cv2.dilate(l35, np.ones((13, 13), np.uint8)) > 0] = i
-        ori[cv2.dilate(cv2.morphologyEx(r8, cv2.MORPH_OPEN, line_kernel(61, ang)), np.ones((13, 13), np.uint8)) > 0] = i   # read up to 6 px off the line: a faint track often breaks at each tick
+        ori[cv2.dilate(cv2.morphologyEx(fat, cv2.MORPH_OPEN, line_kernel(61, ang)), np.ones((13, 13), np.uint8)) > 0] = i   # read up to 6 px off the line: a faint track often breaks at each tick
     stub = short & (1 - long_) & cv2.dilate(long_, np.ones((7, 7), np.uint8))   # ticks on plate 44 run 16 to 24 px, so 'long' is 35 px
     ns, ls, ss, cs = cv2.connectedComponentsWithStats(stub, connectivity=8); M = np.zeros((h, w), np.uint8); info = dict(clear=0, faint=0, chained=0, T=np.zeros((0, 2)), E=[])
     onlong = cv2.dilate(long_, np.ones((13, 13), np.uint8)); near = cv2.dilate(r8, np.ones((9, 9), np.uint8))
     EL = lambda k: cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k))   # the dashes print mottled, so close the ink before asking how thick it is
     nh, lh, sh, _ = cv2.connectedComponentsWithStats(cv2.morphologyEx(cv2.morphologyEx(r8, cv2.MORPH_CLOSE, EL(5)), cv2.MORPH_OPEN, EL(9)), connectivity=8)
-    bars = sh[:, 4] >= 300; bars[0] = False               # heavy ink: a streetcar dash (some 12 by 100 px) or a big letter. Where a tick crosses a thick-drawn track the blob is far smaller
+    bars = np.zeros(nh, bool)                             # a streetcar dash is a straight bar some 12 by 100 px, and the dashes follow one another along a line.
+    if nh > 1:                                            # The strokes of a big letter are as thick, but a track often runs right beside a street's name
+        _, lg, tk, bx, by, ba = shape(lh, nh); bars = (sh[:, 4] >= 300) & (tk >= 7) & (tk <= 26) & (lg >= 35) & (lg <= 240) & (lg / tk >= 2.5); bars[0] = False
+        b = np.nonzero(bars)[0]; row = np.zeros(len(b), bool); Pb = np.c_[bx[b], by[b]]
+        for i, js in enumerate(cKDTree(Pb).query_ball_point(Pb, 280) if len(b) else []):
+            d = np.array([np.cos(ba[b[i]]), np.sin(ba[b[i]])])
+            for j in js:
+                v = Pb[j] - Pb[i]
+                if j != i and abs(v[0] * d[1] - v[1] * d[0]) <= 15 and abs(((ba[b[j]] - ba[b[i]] + np.pi / 2) % np.pi) - np.pi / 2) <= 0.25: row[i] = True; break
+        bars[b[~row]] = False
     heavy = cv2.dilate(bars[lh].astype(np.uint8), np.ones((25, 25), np.uint8))
     from scipy.sparse import coo_matrix
     from scipy.sparse.csgraph import connected_components
 
-    def ticks(minarea, dmin):
+    def ticks(minarea, dmin, blocks=False):
         """ticks made of stroke ends of minarea px or more, dmin px or more apart: where they are, which way their line runs, how far off it the next may be"""
         ok = (ss[:, 4] >= minarea) & (ss[:, 4] <= 150); ok[0] = False; C = cs[ok]
-        if len(C) < 8: return np.zeros((0, 2)), np.zeros((0, 2)), np.zeros(0)
+        if len(C) < 8: return np.zeros((0, 2)), np.zeros((0, 2)), np.zeros(0), np.zeros(0, bool)
         P = np.array(sorted(cKDTree(C).query_pairs(24)), int).reshape(-1, 2); d = np.hypot(*(C[P[:, 0]] - C[P[:, 1]]).T); m = (C[P[:, 0]] + C[P[:, 1]]) / 2
         keep = (d >= dmin) & (onlong[np.clip(m[:, 1].round().astype(int), 0, h - 1), np.clip(m[:, 0].round().astype(int), 0, w - 1)] > 0)
         P, d, m = P[keep], d[keep], m[keep]; used = np.zeros(len(C), bool); sel = []
@@ -110,11 +125,12 @@ def railroad(ink, closed):
             if not used[a] and not used[b]: used[a] = used[b] = True; sel.append(k)
         T = m[sel]; t = C[P[sel, 0]] - C[P[sel, 1]]; t /= np.hypot(*t.T)[:, None]
         ty, tx = np.clip(T[:, 1].round().astype(int), 0, h - 1), np.clip(T[:, 0].round().astype(int), 0, w - 1)
-        oi = ori[ty, tx]; tol = np.where(oi >= 0, 14.0, 22.0); oi = np.where(oi >= 0, oi, ori2[ty, tx]); u = np.c_[np.cos(np.pi * oi / 24), np.sin(np.pi * oi / 24)]
+        oi = ori[ty, tx]; tol = np.where(oi >= 0, RAIL['off'][0], RAIL['off'][1]); oi = np.where(oi >= 0, oi, ori2[ty, tx]); u = np.c_[np.cos(np.pi * oi / 24), np.sin(np.pi * oi / 24)]
         real = (oi >= 0) & (np.abs((t * u).sum(1)) <= 0.7)    # the two stroke ends must lie across the line, not along it
-        real &= closed[ty, tx] == 0                           # a row of short strokes inside a block that closes is a lot line with marks on it
+        inb = closed[ty, tx] > 0                              # inside a block that closes: a siding, or a lot line with marks on it
+        if not blocks: real &= ~inb
         real &= heavy[ty, tx] == 0                            # the corners of a streetcar's heavy dashes stick out of its thin line like ticks
-        return T[real], u[real], tol[real]
+        return T[real], u[real], tol[real], inb[real]
 
     def links(T, u, tol, reach):
         """every pair of ticks that could be neighbours on one line: no further apart than `reach`, neither more than its
@@ -128,7 +144,7 @@ def railroad(ink, closed):
             if near[qy, qx].mean() >= 0.8 and heavy[qy, qx].mean() < 0.3: E.append((i, j))
         return np.array(E, int).reshape(-1, 2)
 
-    def rows(T, u, E, need, even):
+    def rows(T, u, E, need, even, inb=None):
         """the links of the rows of `need` ticks or more"""
         if not len(E): return E
         if even:   # a tick of a track sits midway between its two neighbours
@@ -143,10 +159,14 @@ def railroad(ink, closed):
             E = E[kp]
             if not len(E): return E
         nc, lab = connected_components(coo_matrix((np.ones(len(E)), (E[:, 0], E[:, 1])), shape=(len(T), len(T))), directed=False)
-        return E[np.bincount(lab, minlength=nc)[lab[E[:, 0]]] >= need]
+        keep = np.zeros(nc, bool)
+        for c in np.unique(lab[E[:, 0]]):
+            p = np.unique(E[lab[E[:, 0]] == c]); n = len(p); span = np.hypot(*(T[p].max(0) - T[p].min(0)))
+            keep[c] = n >= need and span >= RAIL['span'] and (inb is None or inb[p].mean() < 0.5 or n >= RAIL['block_row'])
+        return E[keep[lab[E[:, 0]]]]
 
-    Tc, uc, tolc = ticks(*RAIL['clear']); Ec = rows(Tc, uc, links(Tc, uc, tolc, 120), RAIL['row'], 0); info['clear'] = len(Tc)
-    Tf, uf, tolf = ticks(*RAIL['faint']); Lf = links(Tf, uf, tolf, 175); info['faint'] = len(Tf)
+    Tc, uc, tolc, inbc = ticks(*RAIL['clear'], blocks=True); Ec = rows(Tc, uc, links(Tc, uc, tolc, RAIL['reach']), RAIL['row'], 0, inbc); info['clear'] = len(Tc)
+    Tf, uf, tolf, _ = ticks(*RAIL['faint']); Lf = links(Tf, uf, tolf, 175); info['faint'] = len(Tf)
     Ef = rows(Tf, uf, Lf[np.hypot(*(Tf[Lf[:, 0]] - Tf[Lf[:, 1]]).T) <= 120] if len(Lf) else Lf, RAIL['faint_row'], RAIL['even'])
     # carry each found row on along its own line: a faint tick joins a row if it is one of the row's gaps (or two, where a
     # tick is missing) from a tick already in it. This fills the stretches where a clear row breaks off, without starting
