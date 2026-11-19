@@ -14,7 +14,16 @@ From the repo folder, in PowerShell:
 For each plate N it
   1. prepares the scan, if that was not done before: the raw PNG (New Sanborn/PNG/N.png, configs/sanborn_paths.json)
      -> cufp/22-N.jpg (full size) and cufp/N/png_alpha_s4.npy (where the paper is), as cufp/prep.py does;
-  2. sorts the ink: ink_bins.py N -> unet_data/N_bins.png, N_bins.json.
+  2. sorts the ink: ink_bins.py N -> unet_data/N_bins.png, N_bins.json;
+  3. turns the rail the rules found into tracks for the line editor: rail_tracks.py N -> unet_data/N_rail_rule.json.
+
+Plates Ben has not cut (19 November 2026: "They are in the same path as the PNGs, but under /Sanborn/Maps as PDFs (the
+full plates, not the cut ones that I use)"): a plate number with no PNG at all is taken from its PDF
+(<folder beside New Sanborn>/Sanborn/Maps/Sanborn Cincinnati N.pdf, or --pdf DIR). The PDF holds one JPEG, 11,211 by
+7,433 px at 300 to the inch, the same scan the PNGs were cut from (plate 44: the cut PNG sits at 367, 96 in it), and it
+is copied out as it is, not drawn again. The paper is told from the dark scanner bed by its lightness. Such a plate is
+the WHOLE sheet: margin, title, the printed KEY and any inset are on it, and its pixels are not those of a PNG cut from
+it later (cufp/N/source.json says where the scan came from). A number Ben cut in two (8 -> 8A, 8B) is not taken again.
 A plate takes about a minute. Each plate runs as its own process, so one that fails does not stop the rest; the run can
 be stopped (Ctrl+C) and started again, and picks up where it stopped. A plate already sorted with the same rules (the
 same ink_bins.py) is skipped.
@@ -38,8 +47,14 @@ def png_dir():
     return os.path.normpath(os.path.join(cfg['new_sanborn'], 'PNG'))
 
 
+def pdf_dir():
+    if '--pdf' in sys.argv: return sys.argv[sys.argv.index('--pdf') + 1]
+    return os.path.normpath(os.path.join(png_dir(), '..', '..', 'Sanborn', 'Maps'))
+
+
 def plates(pdir):
-    """every plate with a scan: {N: path of the raw PNG, or None where only the prepared scan is here}. 26a.png is plate 26A"""
+    """every plate with a scan: {N: path of the raw PNG, or of the PDF for a plate that was never cut, or None where only
+    the prepared scan is here}. 26a.png is plate 26A"""
     out = {}
     if os.path.isdir(pdir):
         for f in os.listdir(pdir):
@@ -48,6 +63,11 @@ def plates(pdir):
     for f in os.listdir(os.path.join(DATA, 'cufp')):
         m = re.fullmatch(r'22-(\d+[A-Z]?)\.jpg', f)
         if m and os.path.exists(os.path.join(DATA, 'cufp', m.group(1), 'png_alpha_s4.npy')): out.setdefault(m.group(1), None)
+    have = {re.match(r'\d+', n).group() for n in out}; qdir = pdf_dir()   # a number Ben cut (8 -> 8A, 8B) is not taken again whole
+    if os.path.isdir(qdir):
+        for f in sorted(os.listdir(qdir)):
+            m = re.fullmatch(r'Sanborn Cincinnati (\d+)\s*([A-Za-z]?)\.pdf', f, re.I)
+            if m and m.group(1) not in have: out.setdefault(m.group(1) + m.group(2).upper(), os.path.join(qdir, f))
     return out
 
 
@@ -61,6 +81,24 @@ def prepare(n, png):
     if os.path.exists(jpg) and os.path.exists(alpha): return 'was ready'
     if png is None: raise RuntimeError('no raw PNG for this plate')
     import cv2, numpy as np
+    if png.lower().endswith('.pdf'):   # an uncut plate: the scan is the one JPEG inside the PDF, copied out as it is
+        import fitz
+        doc = fitz.open(png); ims = doc[0].get_images(full=True)
+        if len(doc) != 1 or len(ims) != 1: raise RuntimeError(f'expected one page with one picture, found {len(doc)} pages, {len(ims)} pictures')
+        x = doc.extract_image(ims[0][0]); a = cv2.imdecode(np.frombuffer(x['image'], np.uint8), cv2.IMREAD_COLOR)
+        if a is None or x['ext'] not in ('jpeg', 'jpg'): raise RuntimeError(f'the picture in the PDF is {x["ext"]}, not a JPEG')
+        # the paper: the light sheet against the dark scanner bed. Lightness at quarter size, the largest light piece,
+        # its holes filled (a dark building or a river is still paper), 4 px in from its edge
+        g = cv2.GaussianBlur(cv2.cvtColor(a[::4, ::4], cv2.COLOR_BGR2LAB)[..., 0], (0, 0), 3); t, m = cv2.threshold(g, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        cs = cv2.findContours(m, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]; c = max(cs, key=cv2.contourArea); m = np.zeros_like(m); cv2.drawContours(m, [c], -1, 1, -1)
+        m = cv2.erode(m, np.ones((9, 9), np.uint8)); share = float(m.mean())
+        if not 0.5 <= share <= 0.99: raise RuntimeError(f'the paper was not told from the scanner bed (paper {100 * share:.0f}% of the scan)')
+        os.makedirs(d, exist_ok=True)
+        if not os.path.exists(jpg):
+            open(jpg + '.tmp.jpg', 'wb').write(x['image']); os.replace(jpg + '.tmp.jpg', jpg)
+        np.save(alpha + '.tmp.npy', m.astype(np.uint8)); os.replace(alpha + '.tmp.npy', alpha)
+        json.dump(dict(plate=n, source='pdf', file=png.replace('\\', '/'), size=[a.shape[1], a.shape[0]], paper_share=round(share, 3), note='the whole uncut sheet: margin, title, key and insets are on it; its pixels are not those of a PNG cut from it later'), open(os.path.join(d, 'source.json'), 'w', encoding='utf8', newline='\n'), indent=1)
+        return f'from the PDF {a.shape[1]} x {a.shape[0]}, paper {100 * share:.0f}%'
     from PIL import Image
     Image.MAX_IMAGE_PIXELS = None
     im = np.array(Image.open(png).convert('RGBA')); a = im[:, :, 3]; rgb = im[:, :, :3].copy(); rgb[a == 0] = 255
@@ -74,7 +112,7 @@ def prepare(n, png):
 
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith('--')]; redo = '--redo' in sys.argv; only_list = '--list' in sys.argv
-    pdir = png_dir(); P = plates(pdir); rules = hashlib.sha256(open(INK, 'rb').read()).hexdigest()[:12]
+    pdir = png_dir(); P = plates(pdir); rules = hashlib.sha256(open(INK, 'rb').read()).hexdigest()[:12]; npdf = sum(1 for v in P.values() if v and v.lower().endswith('.pdf'))
     want = sorted((a.upper() for a in args), key=order) if args else sorted(P, key=order)
     state = json.load(open(STATE, encoding='utf8')) if os.path.exists(STATE) else {}
     todo = []
@@ -83,7 +121,7 @@ def main():
         if n not in P: print(f'plate {n}: no scan found in {pdir}'); continue
         if done and not redo: continue
         todo.append(n)
-    print(f'{len(P)} plates have a scan ({pdir}). Asked for {len(want)}; already done with these rules {len(want) - len(todo) - sum(n not in P for n in want)}; to run {len(todo)}: {" ".join(todo)}')
+    print(f'{len(P)} plates have a scan: {len(P) - npdf} cut ({pdir}), {npdf} uncut from PDF ({pdf_dir()}). Asked for {len(want)}; already done with these rules {len(want) - len(todo) - sum(n not in P for n in want)}; to run {len(todo)}: {" ".join(todo)}')
     if only_list or not todo: return
     os.makedirs(os.path.dirname(STATE), exist_ok=True); t_all = time.time(); bad = []
     for k, n in enumerate(todo):
@@ -95,6 +133,9 @@ def main():
             if r.returncode: raise RuntimeError((r.stderr.strip().splitlines() or ['ink_bins.py failed'])[-1])
             b = json.load(open(os.path.join(DATA, 'unet_data', f'{n}_bins.json'), encoding='utf8'))
             px = {v['name']: v['px'] for v in b['bins'].values()}
+            r = subprocess.run([sys.executable, os.path.join(HERE, 'rail_tracks.py'), n], cwd=DATA, capture_output=True, text=True, encoding='utf8', errors='replace')
+            with open(LOG, 'a', encoding='utf8', newline='\n') as f: f.write(r.stdout + r.stderr + '\n')
+            if r.returncode: raise RuntimeError('tracks: ' + (r.stderr.strip().splitlines() or ['rail_tracks.py failed'])[-1])
             rec.update(state='done', ink_px=b['ink_px'], railroad_px=px.get('railroad', 0), streetcar_px=px.get('streetcar', 0), note=b.get('note', ''), ben_rail=bool(b.get('ben_rail')))
         except KeyboardInterrupt:
             print('\nstopped. Start it again to carry on from this plate.'); return
