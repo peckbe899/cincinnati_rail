@@ -46,7 +46,7 @@ NAMES = {1: 'block line', 2: 'lot line', 3: 'building outline', 4: 'railroad', 5
 COL = {1: (0, 150, 0), 2: (255, 140, 0), 3: (20, 70, 120), 4: (0, 0, 230), 5: (0, 150, 255), 6: (160, 0, 0), 7: (160, 170, 0), 8: (255, 0, 255), 9: (120, 120, 120)}   # BGR: green, light blue, brown, red, orange, navy, teal, magenta, grey
 INK_L = 140      # darker than this (Lab L, 0..255) is ink
 BEN_RAIL = 10     # ink this near (px) a track Ben drew is that track: the ticks reach some 10 px each side of the line
-RAIL = dict(clear=(5, 6.0), row=4, faint=(3, 4.0), faint_row=10, even=0.12, grow=0.2, span=150, block_row=6, reach=120, reach2=175, along=0.4, follow=(3000, 400, 10), spur=2, off=(19.0, 26.0))   # a clear tick: stroke ends of 5 px or more, 6 px or more apart; 4 in a row. A faint one: 3 px, 4 px apart; 10 in a row and evenly spaced (gaps within 12%)
+RAIL = dict(clear=(5, 6.0), row=4, faint=(3, 4.0), faint_row=10, even=0.12, grow=0.2, span=150, block_row=6, reach=120, reach2=175, along=0.4, follow=(3000, 400, 10), spur=2, faint_in=1, off=(19.0, 26.0))   # a clear tick: stroke ends of 5 px or more, 6 px or more apart; 4 in a row. A faint one: 3 px, 4 px apart; 10 in a row and evenly spaced (gaps within 12%)
 CAR = dict(row=True, street=False)   # a streetcar dash is one of a row of heavy bars that follow one another along a line. Scored on plate 44 against Ben's
 # tracks (18 November 2026): any heavy bar in street ground found 79.7% of his streetcar with 12,698 px of false ink (big lettering, thick strokes by pipe
 # labels); bars in a row, in any ground, find 85.1% with 1,086 px. The street-ground test cost the line that crosses blocks on the Ludlow viaduct
@@ -207,9 +207,14 @@ def railroad(ink, closed, paper=None):
         return E[keep[lab[E[:, 0]]]]
 
     Tc, uc, tolc, inbc = ticks(*RAIL['clear'], blocks=True); Lc_all = doubles(Tc, links(Tc, uc, tolc, RAIL['reach2']), RAIL['reach']); Ec = rows(Tc, uc, Lc_all, RAIL['row'], 0, inbc); info['clear'] = len(Tc)
-    Tf, uf, tolf, _ = ticks(*RAIL['faint']); Lf = links(Tf, uf, tolf, 175); info['faint'] = len(Tf)
+    # 19 November 2026, plate 43 (the first plate tried after 44): its ticks south-west of Hoffner are 13 px long where
+    # plate 44's are 16 to 24, so most pass only as faint ticks, and faint ticks inside a block used to be dropped. The four
+    # tracks were found for 400 px and lost for the next 2,500. Faint ticks inside a block now count for carrying a found
+    # row on and for the walk along the line; a row of faint ticks still may not start inside a block. Plate 44's score
+    # did not move (98.8%, 2,365 px away). Tried and dropped: shorter stroke ends (7 px for 9): 119,479 px away on plate 44
+    Tf, uf, tolf, inbf = ticks(*RAIL['faint'], blocks=bool(RAIL['faint_in'])); Lf = links(Tf, uf, tolf, 175); info['faint'] = len(Tf)
     info['Tc'], info['Tf'] = Tc, Tf   # every tick, in a row or not (for score_rail.py and debugging)
-    Ef = rows(Tf, uf, Lf[np.hypot(*(Tf[Lf[:, 0]] - Tf[Lf[:, 1]]).T) <= 120] if len(Lf) else Lf, RAIL['faint_row'], RAIL['even'])
+    Ef = rows(Tf, uf, Lf[(np.hypot(*(Tf[Lf[:, 0]] - Tf[Lf[:, 1]]).T) <= 120) & ~inbf[Lf[:, 0]] & ~inbf[Lf[:, 1]]] if len(Lf) else Lf, RAIL['faint_row'], RAIL['even'])   # a row of faint ticks does not start inside a block
     # carry each found row on along its own line: a faint tick joins a row if it is one of the row's gaps (or two, where a
     # tick is missing) from a tick already in it. This fills the stretches where a clear row breaks off, without starting
     # any row that the two rules above did not find
@@ -320,11 +325,17 @@ def main():
     near_fill = cv2.dilate(fill, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))) > 0
     deep_fill = cv2.erode(fill, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (19, 19))) > 0   # well inside a fill: a number printed on a building
     # ground and the block lines, from the street map
-    SM = json.load(open(f'streetmap/22-{N}.json', encoding='utf8')); off = np.array([x0, y0])
+    # A plate without a street map (only plate 44 has one, 19 November 2026) still runs: the blocks are then the old
+    # label's, there are no block lines, and the result says so. That is enough to try the rail rules on another plate;
+    # the other bins of such a run are not to be trusted
+    smf = f'streetmap/22-{N}.json'; NOMAP = not os.path.exists(smf)
+    SM = dict(lines=[], blocks=[]) if NOMAP else json.load(open(smf, encoding='utf8')); off = np.array([x0, y0])
     truth = np.zeros((h, w), np.uint8); closed = np.zeros((h, w), np.uint8)
     for l in SM['lines']: cv2.line(truth, tuple(np.round(np.array(l['a']) - off).astype(int).tolist()), tuple(np.round(np.array(l['b']) - off).astype(int).tolist()), 1, 13)
     for bl in SM['blocks']: cv2.fillPoly(closed, [np.round(np.array(bl['ring']) - off).astype(np.int32)], 1)
-    old = cv2.resize(cv2.imread(f'unet_data/{N}_label.png', 0), (W, H), interpolation=cv2.INTER_NEAREST)[y0:y1, x0:x1]
+    lf = f'unet_data/{N}_label.png'   # the old street / block label; a plate that was never placed has none, and all its ground is then 'not known'
+    old = cv2.resize(cv2.imread(lf, 0), (W, H), interpolation=cv2.INTER_NEAREST)[y0:y1, x0:x1] if os.path.exists(lf) else np.full((h, w), 255, np.uint8)
+    if NOMAP: closed = (old == 1).astype(np.uint8); print(f'plate {N} has no street map (streetmap/22-{N}.json): blocks from the old label' + ('' if os.path.exists(lf) else ' (and there is no old label: no blocks at all)') + ', no block lines. Only the rail bins of this run mean anything')
     ground = np.where(closed == 1, 1, np.where(old == 0, 0, np.where(old == 1, 1, 2))).astype(np.uint8)   # 0 street, 1 block, 2 not known
     out = np.zeros((h, w), np.uint8)
     rr, RAILINFO = railroad(ink, closed, paper); ink0 = ink; carrow = RAILINFO['carrow']
@@ -408,7 +419,7 @@ def main():
     if '--save' in sys.argv: cv2.imwrite(sys.argv[sys.argv.index('--save') + 1], out); return   # the bins to a file of its own (for scoring the rules), leaving the plate's bins alone
     if not win:
         cv2.imwrite(f'unet_data/{N}_bins.tmp.png', out); os.replace(f'unet_data/{N}_bins.tmp.png', f'unet_data/{N}_bins.png')   # the editor may be reading it
-        json.dump(dict(plate=N, size=[W, H], note='rule-based first guess, not ground truth', made=int(time.time()), ink_px=tot, ben_rail=bensay, bins={str(k): dict(name=NAMES[k], px=cnt[NAMES[k]], rgb=list(COL[k][::-1])) for k in NAMES}), open(f'unet_data/{N}_bins.json', 'w', encoding='utf8', newline='\n'), indent=1)
+        json.dump(dict(plate=N, size=[W, H], note='rule-based first guess, not ground truth' + (' | NO STREET MAP: blocks from the old label, no block lines' if NOMAP else ''), made=int(time.time()), ink_px=tot, ben_rail=bensay, bins={str(k): dict(name=NAMES[k], px=cnt[NAMES[k]], rgb=list(COL[k][::-1])) for k in NAMES}), open(f'unet_data/{N}_bins.json', 'w', encoding='utf8', newline='\n'), indent=1)
 
 if __name__ == '__main__':
     main()
