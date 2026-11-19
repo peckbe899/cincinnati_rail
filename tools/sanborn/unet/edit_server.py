@@ -109,6 +109,11 @@ def clean(edges, ang=2.5, off=5.0, gap=25.0):
         keep.append(o)
     return keep
 
+def plates():
+    """every plate the editor can open: one with read lines (N_edges.json) or with sorted ink (N_bins.png, run_plates.py), in plate order"""
+    s = {f[:-len(e)] for f in os.listdir(U) for e in ('_edges.json', '_bins.png') if f.endswith(e)}
+    return sorted((n for n in s if os.path.exists(SP + f'cufp/22-{n}.jpg') and os.path.exists(SP + f'cufp/{n}/png_alpha_s4.npy')), key=lambda n: (int(re.match(r'\d+', n).group()) if re.match(r'\d+', n) else 0, n))
+
 class Hd(BaseHTTPRequestHandler):
     def log_message(self, *a): pass
     def send(self, body, ctype, code=200):
@@ -117,13 +122,19 @@ class Hd(BaseHTTPRequestHandler):
         p = self.path.split('?')[0]
         if p == '/': return self.send(open(os.path.join(HERE, 'edit_page.html'), 'rb').read(), 'text/html; charset=utf-8')
         if p == '/plates':
-            pl = sorted(f[:-len('_edges.json')] for f in os.listdir(U) if f.endswith('_edges.json'))
-            return self.send(json.dumps(pl).encode(), 'application/json')
+            return self.send(json.dumps(plates()).encode(), 'application/json')
+        if p == '/railstate':   # how far Ben's rail check of each plate is: done (he ticked that his tracks are all the rail), begun, or nothing
+            st = {}
+            for n in plates():
+                rf = SP + f'picks22_guided/22-{n}/rail_ben.json'
+                if os.path.exists(rf): st[n] = 'done' if json.load(open(rf, encoding='utf8')).get('complete') else 'begun'
+            return self.send(json.dumps(st).encode(), 'application/json')
         m = re.fullmatch(r'/data/([0-9A-Za-z]+)', p)
         if m:
             n = m.group(1); im = scan(n, 0); H, W = im.shape[:2]; bf = SP + f'picks22_guided/22-{n}/edges_ben.json'
             rf = SP + f'picks22_guided/22-{n}/rail_ben.json'
-            d = dict(plate=n, W=W, H=H, edges=clean(json.load(open(U + f'{n}_edges.json', encoding='utf8'))) + sheet(n, W, H), saved=json.load(open(bf, encoding='utf8')) if os.path.exists(bf) else None,
+            ef = U + f'{n}_edges.json'; rr = U + f'{n}_rail_rule.json'   # a plate that was never placed has no read lines: only the sheet's outline
+            d = dict(plate=n, W=W, H=H, edges=(clean(json.load(open(ef, encoding='utf8'))) if os.path.exists(ef) else []) + sheet(n, W, H), rail_rule=json.load(open(rr, encoding='utf8')) if os.path.exists(rr) else None, saved=json.load(open(bf, encoding='utf8')) if os.path.exists(bf) else None,
                      rail=json.load(open(rf, encoding='utf8')) if os.path.exists(rf) else None)
             return self.send(json.dumps(d).encode(), 'application/json')
         m = re.fullmatch(r'/bins/([0-9A-Za-z]+)', p)
@@ -149,7 +160,7 @@ class Hd(BaseHTTPRequestHandler):
             d = json.loads(body.decode('utf8')); n = m.group(1); tr = []
             for t in d.get('tracks', []):
                 pts = [[round(float(p[0]), 1), round(float(p[1]), 1)] for p in t.get('pts', [])]
-                if t.get('kind') in ('railroad', 'streetcar') and len(pts) >= 2: tr.append(dict(kind=t['kind'], pts=pts))
+                if t.get('kind') in ('railroad', 'streetcar') and len(pts) >= 2: tr.append(dict(kind=t['kind'], pts=pts, **({'src': 'rule'} if t.get('src') == 'rule' else {})))   # src rule: found by the rules, not yet checked by Ben
             os.makedirs(SP + f'picks22_guided/22-{n}', exist_ok=True); f = SP + f'picks22_guided/22-{n}/rail_ben.json'
             oldj = json.load(open(f, encoding='utf8')) if os.path.exists(f) else {}
             if oldj:   # a save that drops many tracks at once is kept apart, so nothing Ben drew is lost to a slip

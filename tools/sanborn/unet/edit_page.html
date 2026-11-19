@@ -48,6 +48,7 @@ label{cursor:pointer}
  <div><span class="sw" style="background:#ff8c00"></span>not settled &nbsp; <span class="sw" style="background:#999"></span>today-only &nbsp; <span class="sw" style="background:#00c8d8"></span>sheet edge</div>
  <div style="margin-top:3px"><span class="sw" style="background:#39ff14;height:6px"></span>you: correct &nbsp; <span class="sw" style="background:#ff2020;height:6px"></span>you: deleted (shown only when ticked) &nbsp; <span class="sw" style="background:#ff40ff;height:6px"></span>you: moved or drew</div>
  <div style="margin-top:3px"><span class="sw" style="background:#ffe600;height:6px"></span>you: railroad (ticks across) &nbsp; <span class="sw" style="background:#ffe600;height:6px"></span>you: streetcar (dashes)</div>
+ <div style="margin-top:3px"><span class="sw" style="background:#ff8c00;height:6px"></span>railroad or streetcar found by the rules, not checked. Click it, then <kbd>K</kbd> keeps it, <kbd>Del</kbd> removes it; moving a point also makes it yours. Ticking "my tracks are all the rail on this plate" keeps every one that is left</div>
  <h4 style="margin-top:8px">Controls</h4>
  <table>
  <tr><td>Wheel</td><td>zoom &nbsp; <b>drag</b> empty ground to move. A right-button drag moves the plate in any mode, also while drawing</td></tr>
@@ -92,7 +93,7 @@ async function load(n) {
     if (!l) { l = {k: 'ben' + Math.random(), a0: s.a0 || s.a, b0: s.b0 || s.b, src: s.src || 'ben', state: s.state || 'new', name: s.name || '', added: !!s.added}; lines.push(l); }
     l.a = s.a.slice(); l.b = s.b.slice(); l.verdict = s.verdict || null;
   }
-  rails = ((P.rail && P.rail.tracks) || []).map(t => ({kind: t.kind, pts: t.pts.map(p => p.slice())})); rsel = null; rdraft = null; railDone = !!(P.rail && P.rail.complete);
+  rails = ((P.rail ? P.rail.tracks : P.rail_rule && P.rail_rule.tracks) || []).map(t => { const r = {kind: t.kind, pts: t.pts.map(p => p.slice())}; if (t.src === 'rule') r.src = 'rule'; return r; }); rsel = null;   // his own tracks once he has saved any; until then the rules' finds (rail_tracks.py), each marked as not checked rdraft = null; railDone = !!(P.rail && P.rail.complete);
   loadBins(n);
   view.k = Math.min(cv.width / P.W, cv.height / P.H); view.x = 0; view.y = 0; location.hash = n; $('saved').textContent = 'loaded'; draw();
 }
@@ -156,7 +157,7 @@ function paint() {
     if (s_ && sel.size === 1) { cx.setLineDash([]); for (const q of [a, b]) { cx.fillStyle = '#fff'; cx.strokeStyle = '#000'; cx.lineWidth = 1.5; cx.beginPath(); cx.arc(q[0], q[1], 6, 0, 7); cx.fill(); cx.stroke(); } }
   }
   cx.setLineDash([]);
-  if ($('fRail').checked) { for (const r of rails) paintTrack(r.pts, r.kind, r === rsel); if (rdraft) paintTrack(rdraft.pts.concat([rdraft.cur]), rdraft.kind, true); }
+  if ($('fRail').checked) { for (const r of rails) paintTrack(r.pts, r.kind, r === rsel, r.src === 'rule'); if (rdraft) paintTrack(rdraft.pts.concat([rdraft.cur]), rdraft.kind, true); }
   if (draft) { cx.strokeStyle = '#ff40ff'; cx.lineWidth = 2; cx.beginPath(); cx.moveTo(...toS(draft.a)); cx.lineTo(...toS(draft.b)); cx.stroke(); }
   if (snapAt) { const q = toS(snapAt); cx.strokeStyle = '#ffe600'; cx.lineWidth = 2.5; cx.beginPath(); cx.arc(q[0], q[1], 9, 0, 7); cx.stroke(); }
   if (box) { cx.strokeStyle = '#fff'; cx.setLineDash([5, 4]); cx.lineWidth = 1; cx.strokeRect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0); cx.setLineDash([]); }
@@ -167,9 +168,10 @@ function info() {
   let h = `<b>Plate ${P.plate}</b> &nbsp; ${lines.length} lines &nbsp; you: ${c.ok} correct, ${c.wrong} deleted, ${c.none} no printed line, ${mv} moved, ${ad} drawn`;
   if (mode === 'new') h += '<br><b style="color:#ff40ff">Drawing:</b> click the two ends of a line. Esc to stop.';
   const rl = {railroad: [0, 0], streetcar: [0, 0]}; for (const r of rails) { rl[r.kind][0]++; rl[r.kind][1] += tlen(r.pts); }
-  if (rails.length) h += `<br>Your rail: ${rl.railroad[0]} railroad track${rl.railroad[0] === 1 ? '' : 's'} (${Math.round(rl.railroad[1]).toLocaleString()} px), ${rl.streetcar[0]} streetcar (${Math.round(rl.streetcar[1]).toLocaleString()} px)`;
+  if (rails.length) h += `<br>Rail tracks: ${rl.railroad[0]} railroad track${rl.railroad[0] === 1 ? '' : 's'} (${Math.round(rl.railroad[1]).toLocaleString()} px), ${rl.streetcar[0]} streetcar (${Math.round(rl.streetcar[1]).toLocaleString()} px)`;
   if (mode === 'rail') h += `<br><b style="color:#ffe600">Drawing a ${railKind} track:</b> click along it. Double-click or Enter ends the track, Backspace takes back a point, Esc stops.`;
-  if (rsel) h += `<br>Selected: your ${rsel.kind} track · ${rsel.pts.length} points · ${Math.round(tlen(rsel.pts))} px`;
+  { const nr = rails.filter(r => r.src === 'rule').length; if (nr) h += `<br><b style="color:#ff8c00">${nr} track${nr === 1 ? '' : 's'} found by the rules, not checked.</b> Click one, then <b>K</b> keeps it, <b>Del</b> removes it, or drag its points to fix it.`; }
+  if (rsel) h += `<br>Selected: ${rsel.src === 'rule' ? 'a' : 'your'} ${rsel.kind} track${rsel.src === 'rule' ? ' found by the rules (not checked)' : ''} · ${rsel.pts.length} points · ${Math.round(tlen(rsel.pts))} px`;
   if (sel.size === 1) { const l = [...sel][0]; const L = Math.hypot(l.b[0] - l.a[0], l.b[1] - l.a[1]); h += `<br>Selected: ${l.name || (l.src === 'parcel' ? "today's block side" : l.src === 'sheet' ? 'sheet edge' : l.added ? 'your line' : 'read line')} · ${Math.round(L)} px · (${Math.round(l.a[0])}, ${Math.round(l.a[1])}) to (${Math.round(l.b[0])}, ${Math.round(l.b[1])})`; }
   else if (sel.size > 1) h += `<br>${sel.size} lines selected`;
   if (msg) h += `<br><span style="color:#ffe600">${msg}</span>`;
@@ -192,7 +194,7 @@ async function loadBins(n, keep) {
     '<div style="margin-top:6px"><label title="Rail on this plate is then only the ink on your tracks; what the rules find elsewhere is not rail"><input type="checkbox" id="fDone"> my tracks are all the rail on this plate</label></div>' +
     '<div style="margin-top:6px"><button id="bbRun" title="about 20 seconds">Sort the ink again with my rail</button> <span id="bbMsg" style="color:#ffe600"></span></div>' +
     (BIN.ben_rail ? `<div style="margin-top:4px;color:#bbb;max-width:300px">${BIN.ben_rail}</div>` : '');
-  $('fDone').checked = railDone; $('fDone').onchange = () => { railDone = $('fDone').checked; saveRail(); $('bbMsg').textContent = 'sort the ink again to see it'; };
+  $('fDone').checked = railDone; $('fDone').onchange = () => { railDone = $('fDone').checked; if (railDone) { snap('rail'); for (const r of rails) delete r.src; } saveRail(); draw(); $('bbMsg').textContent = 'sort the ink again to see it'; };
   $('bbRun').onclick = async () => {
     $('bbRun').disabled = true; $('bbMsg').textContent = 'working…';
     try { const r = await (await fetch('/runbins/' + P.plate, {method: 'POST'})).json(); if (!r.ok) { $('bbMsg').textContent = 'it failed: see the console'; console.log(r.out); $('bbRun').disabled = false; return; } await loadBins(P.plate, new Set(binOn)); draw(); }
@@ -220,16 +222,17 @@ function saveRail() {
   $('saved').textContent = 'saving…'; clearTimeout(railT);
   railT = setTimeout(async () => {
     try {
-      const r = await (await fetch('/saverail/' + P.plate, {method: 'POST', body: JSON.stringify({plate: P.plate, saved_at: new Date().toISOString(), complete: railDone, tracks: rails.map(t => ({kind: t.kind, pts: t.pts.map(p => [+p[0].toFixed(1), +p[1].toFixed(1)])}))})})).json();
+      const r = await (await fetch('/saverail/' + P.plate, {method: 'POST', body: JSON.stringify({plate: P.plate, saved_at: new Date().toISOString(), complete: railDone, tracks: rails.map(t => Object.assign({kind: t.kind, pts: t.pts.map(p => [+p[0].toFixed(1), +p[1].toFixed(1)])}, t.src === 'rule' ? {src: 'rule'} : {}))})})).json();
       $('saved').textContent = 'saved: ' + r.tracks + ' rail tracks';
     } catch (e) { $('saved').textContent = 'NOT SAVED: is the server running?'; }
   }, 400);
 }
-function paintTrack(pts, kind, hot) {   // as on the print: a railroad is a line with ticks across it, a streetcar is heavy dashes
+function paintTrack(pts, kind, hot, rule) {   // rule: found by the rules and not checked yet (orange); his own are yellow
+  const Y = rule ? '#ff8c00' : '#ffe600';   // as on the print: a railroad is a line with ticks across it, a streetcar is heavy dashes
   const sp = pts.map(toS); const path = () => { cx.beginPath(); cx.moveTo(...sp[0]); for (const q of sp.slice(1)) cx.lineTo(...q); cx.stroke(); };
   cx.lineJoin = 'round'; cx.setLineDash([]);
-  if (kind === 'railroad') { cx.strokeStyle = hot ? '#fff' : '#000'; cx.lineWidth = 6; path(); cx.strokeStyle = '#ffe600'; cx.lineWidth = 3; path(); cx.setLineDash([2.5, 11]); cx.lineWidth = 13; path(); }
-  else { cx.strokeStyle = hot ? '#fff' : '#000'; cx.lineWidth = 8; path(); cx.strokeStyle = '#ffe600'; cx.lineWidth = 5; cx.setLineDash([14, 7]); path(); }
+  if (kind === 'railroad') { cx.strokeStyle = hot ? '#fff' : '#000'; cx.lineWidth = 6; path(); cx.strokeStyle = Y; cx.lineWidth = 3; path(); cx.setLineDash([2.5, 11]); cx.lineWidth = 13; path(); }
+  else { cx.strokeStyle = hot ? '#fff' : '#000'; cx.lineWidth = 8; path(); cx.strokeStyle = Y; cx.lineWidth = 5; cx.setLineDash([14, 7]); path(); }
   cx.setLineDash([]);
   if (hot) for (const q of sp) { cx.fillStyle = '#fff'; cx.strokeStyle = '#000'; cx.lineWidth = 1.5; cx.beginPath(); cx.arc(q[0], q[1], 5, 0, 7); cx.fill(); cx.stroke(); }
 }
@@ -311,7 +314,7 @@ cv.addEventListener('mousedown', e => {
     if (!rdraft) rdraft = {kind: railKind, pts: [q], cur: q}; else if (dist(rdraft.pts[rdraft.pts.length - 1], q) * view.k > 3) rdraft.pts.push(q);
     draw(); return; }
   if (mode === 'new') { const w = snapPt(toW(sx, sy), null, e); snapAt = null; if (!draft) draft = {a: w, b: w}; else { snap(); const l = {k: 'ben' + Math.random(), a: draft.a, b: w, a0: draft.a, b0: w, src: 'ben', state: 'new', name: '', verdict: 'ok', added: true}; lines.push(l); sel = new Set([l]); draft = null; save(); } draw(); return; }
-  if (rsel && $('fRail').checked) for (let i = 0; i < rsel.pts.length; i++) { const q = toS(rsel.pts[i]); if (Math.hypot(q[0] - sx, q[1] - sy) < 9) { snap('rail'); drag = {t: 'rv', r: rsel, i, did: false}; return; } }
+  if (rsel && $('fRail').checked) for (let i = 0; i < rsel.pts.length; i++) { const q = toS(rsel.pts[i]); if (Math.hypot(q[0] - sx, q[1] - sy) < 9) { snap('rail'); delete rsel.src; drag = {t: 'rv', r: rsel, i, did: false}; return; } }
   { const r = pickRail(sx, sy); if (r && !e.shiftKey) { rsel = r; sel.clear(); draw(); return; } }
   rsel = null;
   if (e.shiftKey && !pick(sx, sy)) { box = {x0: sx, y0: sy, x1: sx, y1: sy}; return; }
@@ -347,13 +350,14 @@ cv.addEventListener('dblclick', e => {
   if (rsel) {   // a new point on the selected track, where it was double-clicked
     const s = [e.offsetX, e.offsetY]; let bi = -1, bd = 8;
     for (let i = 1; i < rsel.pts.length; i++) { const d = dseg(s, toS(rsel.pts[i - 1]), toS(rsel.pts[i])); if (d < bd) { bd = d; bi = i; } }
-    if (bi > 0) { snap('rail'); rsel.pts.splice(bi, 0, toW(s[0], s[1])); saveRail(); draw(); } return; }
+    if (bi > 0) { snap('rail'); delete rsel.src; rsel.pts.splice(bi, 0, toW(s[0], s[1])); saveRail(); draw(); } return; }
   const l = pick(e.offsetX, e.offsetY); if (l && l.name) { sel = new Set(lines.filter(x => x.name === l.name && shown(x))); draw(); } });
 addEventListener('hashchange', () => { const n = location.hash.slice(1); if (P && n && n !== P.plate) { $('plate').value = n; load(n); } });
 cv.addEventListener('wheel', e => { e.preventDefault(); const w = toW(e.offsetX, e.offsetY), f = Math.exp(-e.deltaY * 0.0015); view.k = Math.max(0.03, Math.min(8, view.k * f)); view.x = w[0] - e.offsetX / view.k; view.y = w[1] - e.offsetY / view.k; draw(); }, {passive: false});
 
 function mark(v) { if (!sel.size) return; snap(); for (const l of sel) { l.verdict = v; if (v === null && !l.added) { l.a = l.a0.slice(); l.b = l.b0.slice(); } } save(); draw(); }
 function del() { if (rsel) { snap('rail'); rails.splice(rails.indexOf(rsel), 1); rsel = null; saveRail(); draw(); return; } if (!sel.size) return; snap(); for (const l of sel) { if (l.added) lines.splice(lines.indexOf(l), 1); else l.verdict = 'wrong'; } sel.clear(); save(); draw(); }
+function keepRail() { if (!rsel || rsel.src !== 'rule') return; snap('rail'); delete rsel.src; saveRail(); draw(); }   // K: the selected track the rules found is right as it is
 function setMode(m, kind) { endTrack(); mode = m; if (kind) railKind = kind; draft = null; if (m !== 'select') rsel = null; $('bNew').classList.toggle('on', m === 'new'); $('bRail').classList.toggle('on', m === 'rail' && railKind === 'railroad'); $('bCar').classList.toggle('on', m === 'rail' && railKind === 'streetcar'); draw(); }
 const railMode = kind => setMode(mode === 'rail' && railKind === kind ? 'select' : 'rail', kind);
 function nudge(dx, dy) { if (!sel.size) return; snap(); for (const l of sel) { l.a = [l.a[0] + dx, l.a[1] + dy]; l.b = [l.b[0] + dx, l.b[1] + dy]; if (!l.verdict) l.verdict = 'ok'; } save(); draw(); }
@@ -363,6 +367,7 @@ addEventListener('keydown', e => {
   else if (e.ctrlKey || e.metaKey) return;
   else if (mode === 'rail' && k === 'enter') { endTrack(); draw(); }
   else if (mode === 'rail' && k === 'backspace') { if (rdraft) { rdraft.pts.pop(); if (!rdraft.pts.length) rdraft = null; draw(); } e.preventDefault(); }
+  else if (k === 'k') keepRail();
   else if (k === 'r') railMode('railroad'); else if (k === 's') railMode('streetcar');
   else if (k === '1' || k === 'g') mark('ok'); else if (k === '2' || k === 'x') del(); else if (k === '3' || k === 'p') mark('none'); else if (k === '0' || k === 'u') mark(null);
   else if (k === 'c') corners(); else if (k === 'j') join(); else if (k === 'b') toggleBins();
@@ -377,7 +382,8 @@ $('bHelp').onclick = () => { const h = $('help'); h.style.display = h.style.disp
 for (const id of ['fGrey', 'fBlue', 'fSheet', 'fUn', 'fDel', 'fRail']) $(id).onchange = draw;
 addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
 (async () => {
-  const pl = await (await fetch('/plates')).json(); $('plate').innerHTML = pl.map(p => `<option>${p}</option>`).join('');
+  const pl = await (await fetch('/plates')).json(); const stt = await (await fetch('/railstate')).json();   // rail checking: done, begun, or not begun
+  $('plate').innerHTML = pl.map(p => `<option value="${p}">${p}${stt[p] === 'done' ? ' \u2713 rail done' : stt[p] === 'begun' ? ' \u2026 rail begun' : ''}</option>`).join('');
   const want = location.hash.slice(1); if (pl.includes(want)) $('plate').value = want;
   $('plate').onchange = () => load($('plate').value); size(); load($('plate').value);
 })();
