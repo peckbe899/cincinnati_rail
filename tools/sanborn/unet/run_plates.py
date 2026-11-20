@@ -19,7 +19,9 @@ For each plate N it
 
 Plates Ben has not cut (19 November 2026: "They are in the same path as the PNGs, but under /Sanborn/Maps as PDFs (the
 full plates, not the cut ones that I use)"): a plate number with no PNG at all is taken from its PDF
-(<folder beside New Sanborn>/Sanborn/Maps/Sanborn Cincinnati N.pdf, or --pdf DIR). The PDF holds one JPEG, 11,211 by
+(<folder beside New Sanborn>/Sanborn/Maps/Sanborn Cincinnati N.pdf, or --pdf DIR; also looked for in that folder's
+TBD, where the PDFs of the plates not yet cut were moved the same day: "Move the pdfs that are outstanding to their own
+folder 'TBD'"). The PDF holds one JPEG, 11,211 by
 7,433 px at 300 to the inch, the same scan the PNGs were cut from (plate 44: the cut PNG sits at 367, 96 in it), and it
 is copied out as it is, not drawn again. The paper is told from the dark scanner bed by its lightness. Such a plate is
 the WHOLE sheet: margin, title, the printed KEY and any inset are on it, and its pixels are not those of a PNG cut from
@@ -64,10 +66,11 @@ def plates(pdir):
         m = re.fullmatch(r'22-(\d+[A-Z]?)\.jpg', f)
         if m and os.path.exists(os.path.join(DATA, 'cufp', m.group(1), 'png_alpha_s4.npy')): out.setdefault(m.group(1), None)
     have = {re.match(r'\d+', n).group() for n in out}; qdir = pdf_dir()   # a number Ben cut (8 -> 8A, 8B) is not taken again whole
-    if os.path.isdir(qdir):
-        for f in sorted(os.listdir(qdir)):
+    for q in (qdir, os.path.join(qdir, 'TBD')):   # TBD: the plates Ben has not cut yet, which he had moved there (19 November 2026)
+        if not os.path.isdir(q): continue
+        for f in sorted(os.listdir(q)):
             m = re.fullmatch(r'Sanborn Cincinnati (\d+)\s*([A-Za-z]?)\.pdf', f, re.I)
-            if m and m.group(1) not in have: out.setdefault(m.group(1) + m.group(2).upper(), os.path.join(qdir, f))
+            if m and m.group(1) not in have: out.setdefault(m.group(1) + m.group(2).upper(), os.path.join(q, f))
     return out
 
 
@@ -112,7 +115,7 @@ def prepare(n, png):
 
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith('--')]; redo = '--redo' in sys.argv; only_list = '--list' in sys.argv
-    pdir = png_dir(); P = plates(pdir); rules = hashlib.sha256(open(INK, 'rb').read()).hexdigest()[:12]; npdf = sum(1 for v in P.values() if v and v.lower().endswith('.pdf'))
+    pdir = png_dir(); P = plates(pdir); rules = hashlib.sha256(open(INK, 'rb').read()).hexdigest()[:12]; npdf = sum(1 for n, v in P.items() if (v and v.lower().endswith('.pdf')) or os.path.exists(os.path.join(DATA, 'cufp', n, 'source.json')))   # source.json: an uncut plate already prepared
     want = sorted((a.upper() for a in args), key=order) if args else sorted(P, key=order)
     state = json.load(open(STATE, encoding='utf8')) if os.path.exists(STATE) else {}
     todo = []
