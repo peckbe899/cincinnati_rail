@@ -53,22 +53,22 @@ Read on 6 November (sources at the end):
   files in git, `dvc repro` for the pipelines; (c) GitHub releases as a file store for the raw inputs the cloud
   session needs; (d) git LFS. Lean: (a) now, (c) when the cloud session needs a raw input, (b) only if the number
   of derived rasters grows past what (a) can track by hand. (d) is out: no chunked access, egress cost on history.
-- [ ] 2.0.7 **Model schema** (`region/model`). Options: (a) hand-written numbered SQL migrations on SQLite, WKB
+- [x] 2.0.7 **Model schema** (done 7 Nov, f1a6383: option (a)) (`region/model`). Options: (a) hand-written numbered SQL migrations on SQLite, WKB
   geometry, R-tree indexes, dataclasses in Python; (b) SQLAlchemy plus Alembic, typed models, migrations
   generated; (c) SQLite with SpatiaLite for real spatial SQL; (d) DuckDB with the spatial extension, columnar, fast
   analytics, weaker for many small writes. Lean: (a): fewest moving parts, every migration readable, and the
   geometry work happens in Shapely anyway. Revisit (d) for the analysis tables in slice 6.
-- [ ] 2.0.8 **Ids and legacy keys**. Options: (a) ULIDs everywhere plus a `legacy_key` table; (b) keep the old
+- [x] 2.0.8 **Ids and legacy keys** (done 7 Nov, f1a6383: option (a)). Options: (a) ULIDs everywhere plus a `legacy_key` table; (b) keep the old
   natural keys as ids and add a display name; (c) UUIDv7. Lean: (a) (sortable, no collisions, old keys still
   resolve).
-- [ ] 2.0.9 **Rule registry** (`rules/registry.yaml`). Options for shape: (a) one YAML file, one entry per rule
+- [x] 2.0.9 **Rule registry** (done 6 Nov, bde8ef2 and 95013d2: option (a), 137 rules, 163 params) (`rules/registry.yaml`). Options for shape: (a) one YAML file, one entry per rule
   with id, text, ruling, status, priority, tests; (b) a table in the model with the YAML as its seed; (c) rules as
   code annotations harvested into a file. Lean: (a) now, (b) when the UI shows "unratified" chips (slice 3).
-- [ ] 2.0.10 **Baseline capture** under `tests/baseline/`: every route's rail every 5 m and structure types from
+- [x] 2.0.10 **Baseline capture** (done 6 Nov, 5d40919: 41 routes every 5 m, Metro run times, issues; TRI times 8a40549 as a pre-ground record) under `tests/baseline/`: every route's rail every 5 m and structure types from
   the current page (headless once, the last time a browser is used), every railsim run time, the 3D issues.
   Options: (a) run the old harness once and commit the samples; (b) commit the old snapshot parts from Ben's
   `hub/work`. Lean: (a), with (b) as a cross-check.
-- [ ] 2.0.11 **Calibration gates as tests** on today's railsim: Orange Line 35.8 against 35 scheduled, Needham 38.0
+- [x] 2.0.11 **Calibration gates as tests** (done 6 Nov, 5d40919: Orange 35.82/35.74, Needham 34.29/33.94 technical) on today's railsim: Orange Line 35.8 against 35 scheduled, Needham 38.0
   against 40; ±1 % regression on the model's own numbers, ±3 % per segment reported. One way: pytest with the
   configs' `reference:` minutes.
 - [ ] 2.0.12 **Bridges and the C&O quad-track viaduct as records** from the bridges page and the KMZs; the RER B
@@ -248,11 +248,11 @@ bridges reproduce the page's facts table from records.
 
 ### 3.2 Sanborn (local session; nothing re-derived)
 
-- [ ] 3.2.1 Check `Maps\Topography_Export` and `Maps\MCD_Tiles_Snapshot` exist.
-- [ ] 3.2.2 Tiles back into `hub/sites/deck/tiles_*` (out of git, checked against the manifest).
-- [ ] 3.2.3 Pipeline and picks into the repo (section 3 layout of the migration plan), paths repointed, no rebuild.
-- [ ] 3.2.4 Read-only seam report over the existing plates.
-- [ ] 3.2.5 New plates one batch at a time, each with its ruling first (Price Hill; Northside and Spring Grove;
+- [x] 3.2.1 Check `Maps\Topography_Export` and `Maps\MCD_Tiles_Snapshot` exist.
+- [x] 3.2.2 Tiles back into `hub/sites/deck/tiles_*` (out of git, checked against the manifest).
+- [x] 3.2.3 Pipeline and picks into the repo (section 3 layout of the migration plan), paths repointed, no rebuild.
+- [x] 3.2.4 Read-only seam report (and the applied refit: seams 2.88 to 1.57 m median, cd9e23f) over the existing plates.
+- [~] 3.2.5 New plates one batch at a time (local session: 25, 28, 39, 40 built; line editor and rail rules on 44), each with its ruling first (Price Hill; Northside and Spring Grove;
   Camp Washington; east and Norwood; basin). Existing streets never move unless the batch's ruling says so.
 
 ### 3.3 Bridges and viaducts
@@ -262,7 +262,7 @@ bridges reproduce the page's facts table from records.
 
 ### 3.4 Rulings and canon
 
-- [ ] 3.4.1 Tunnel-method rules ratified (the registry shows each as unratified until then).
+- [x] 3.4.1 Tunnel-method rules ratified (the eleven, 6 Nov, 95013d2) (the registry shows each as unratified until then).
 - [ ] 3.4.2 Fact tracker canon update (r18): the deck dates, the Embankment dates, D/E lettering.
 - [ ] 3.4.3 The change catalogue reviewed once the 1912 surface is in: real works dated, errors dropped.
 
@@ -291,12 +291,9 @@ the track, to the tunnel that meets RER A; the Deck rebuilt as an editor with ba
 ## 6. Open rulings (with leans)
 
 - 1912 scope: whole survey (lean) or core first.
-- Tunnel-method rules: ratify the ranked list from `Drive_Selection_Root_Causes_2026-11-04.md` as amended on 4
-  November (lean: ratify as the engine now has it, then refine from the diff reports).
 - D/E lettering: as the Deck and KMZ have it (lean) or as tracker 2M.
 - Region box: TRI extent plus 5 km (lean).
 - Fountain Square platforms: 400 ft as the editors (lean) or the model's 500 ft.
-- `node_modules` out of git (lean: yes, one commit).
 
 ## 7. Risks being watched
 
