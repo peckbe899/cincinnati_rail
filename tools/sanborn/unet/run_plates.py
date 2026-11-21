@@ -1,4 +1,4 @@
-"""Run the ink sorting (ink_bins.py, with the rail rules) on many 1922 plates, by itself (19 November 2026).
+"""Run the block step, the ink sorting (ink_bins.py, with the rail rules) and the rail tracks on many 1922 plates (19 November 2026).
 
 Ben, 19 November 2026: "if there are more than 80 plates, we should run them on a good percentage of the plates,
 checked manually, and retrained with a powerful enough ML U-net. can you set up a program to run in powershell (not
@@ -6,20 +6,42 @@ here), I will have them run, let you know when they're done".
 
 From the repo folder, in PowerShell:
 
-    python tools\\sanborn\\unet\\run_plates.py                 every plate that has a scan
+    python tools\\sanborn\\unet\\run_plates.py                 every plate that has a scan: what is out of date is run
     python tools\\sanborn\\unet\\run_plates.py 43 45 80        only these plates
-    python tools\\sanborn\\unet\\run_plates.py --list          say what would be run, and run nothing
-    python tools\\sanborn\\unet\\run_plates.py --redo          run again the plates already done with today's rules
+    python tools\\sanborn\\unet\\run_plates.py --list          say what would be run on each plate, and why, and run nothing
+    python tools\\sanborn\\unet\\run_plates.py --redo          run every step again on the plates asked for
+    (also --pdf DIR: where the uncut plates' PDFs are; any other option stops it, so a slip never starts a run)
 
-For each plate N it
+For each plate N, in this order (21 November 2026; it was prepare, ink, tracks, blocks):
   1. prepares the scan, if that was not done before: the raw PNG (New Sanborn/PNG/N.png, configs/sanborn_paths.json)
      -> cufp/22-N.jpg (full size) and cufp/N/png_alpha_s4.npy (where the paper is), as cufp/prep.py does;
-  2. sorts the ink: ink_bins.py N -> unet_data/N_bins.png, N_bins.json;
-  3. turns the rail the rules found into tracks for the line editor: rail_tracks.py N -> unet_data/N_rail_rule.json;
-  4. block recognition (Ben, 21 November 2026: "the code should have run the block recognition too"): on a plate with no
-     placement, blocks_noguide.py N -> unet_data/N_edges.json, the block lines the line editor shows. It needs the two
-     networks trained with a blank guide (train_noguide.py, run once); until they are there this step is left out and
-     the run says so. A plate that has a placement (a guide: 43, 44, 45, 80, 82A) keeps the lines it has.
+  2. block recognition (Ben, 21 November 2026: "the code should have run the block recognition too"): on a plate with no
+     placement, blocks_noguide.py N (the two networks, then the outline step outlines.py) -> unet_data/N_edges.json,
+     the block lines the line editor shows, and picks22_guided/22-N/outlines.json. It needs the two networks trained
+     with a blank guide (train_noguide.py, run once); until they are there this step is left out and the run says so.
+     A plate that has a placement (a guide: 43, 44, 45, 80, 82A) keeps the outlines and lines it has;
+  3. sorts the ink: ink_bins.py N -> unet_data/N_bins.png, N_bins.json. On a plate without Ben's street map the block
+     lines and the ground come from step 2 (Ben, 21 November 2026, after drawing 90's rail: "I've corrected 90's rail,
+     but the streets are not being binned at all"), so the sorting now runs after the block step;
+  4. turns the rail the rules found into tracks for the line editor: rail_tracks.py N -> unet_data/N_rail_rule.json.
+
+What is redone (unet_data/run_plates.json keeps, per plate, what each step was made with):
+  - the networks (blocks_noguide.py N) only where they were trained again since (blocks_nets: their files' times), or
+    their maps are missing. They are slow; nothing else makes them run;
+  - the outline step alone (blocks_noguide.py N --outlines-only, on the saved maps) where its version changed
+    (outline: blocks_noguide.outline_version(), a short hash of outlines.py, blocks_noguide.py, map_area.py with its
+    templates and ink_bins.py);
+  - the ink sorting and the tracks where the rules changed (rules: a short hash of ink_bins.py, street_map.py,
+    rail_tracks.py and edit_server.py's clean() and sheet(), which make the editor's lines) or where what the bins are
+    made from changed (bins_from: the start of the sha256 of the street map, N_edges.json, edges_ben.json,
+    outlines.json, N_outlines.json, N_mapground.png, the old label and rail_ben.json, each or none).
+  On a plate where Ben has edited the lines (edges_ben.json), the block step leaves the plate's outlines and lines as
+  they are: his edits are keyed to its lines (blocks_noguide.py writes the new ones into unet_data/N_new/), so its bins
+  stay as they are too.
+  A placed plate (43, 44, 45, 80, 82A) sorted by the rules of before 21 Nov 2026 (LEGACY_RULES) is not sorted again
+  for the new rules alone: they changed only how a plate never placed is sorted, and on the five placed plates the new
+  rules give the same bins pixel for pixel and the same tracks (merge/v-batch sandbox; merge/impl/r2 placed5.py). It is
+  sorted again when one of its inputs (street map, label, rail_ben.json, edges_ben.json) is newer than its N_bins.png.
 
 Plates Ben has not cut (19 November 2026: "They are in the same path as the PNGs, but under /Sanborn/Maps as PDFs (the
 full plates, not the cut ones that I use)"): a plate number with no PNG at all is taken from its PDF
@@ -31,20 +53,22 @@ is copied out as it is, not drawn again. The paper is told from the dark scanner
 the WHOLE sheet: margin, title, the printed KEY and any inset are on it, and its pixels are not those of a PNG cut from
 it later (cufp/N/source.json says where the scan came from). A number Ben cut in two (8 -> 8A, 8B) is not taken again.
 A plate takes about a minute. Each plate runs as its own process, so one that fails does not stop the rest; the run can
-be stopped (Ctrl+C) and started again, and picks up where it stopped. A plate already sorted with the same rules (the
-same ink_bins.py) is skipped.
+be stopped (Ctrl+C) and started again, and picks up where it stopped.
 
 What it does NOT do: it never touches the lines or tracks Ben drew (edges_ben.json, rail_ben.json; where he drew tracks,
-ink_bins.py uses them, as the line editor's own button does), it trains nothing, and it makes no street lines. Only
-plate 44 has a street map, so on every other plate only the rail bins (railroad, streetcar) are worth checking.
+ink_bins.py uses them, as the line editor's own button does), and it trains nothing. The block lines and the bins on a
+plate without Ben's street map are the networks' and the rules' guess, not ground truth.
 
-Progress is printed and kept in unet_data/run_plates.json (plate, state, seconds, railroad and streetcar px, the error
-if any) and unet_data/run_plates.log (everything ink_bins.py printed).
+Progress is printed and kept in unet_data/run_plates.json (plate, state, seconds, railroad and streetcar px, the block
+step's line with its QA flag, the error if any) and unet_data/run_plates.log (everything the steps printed).
 """
 import hashlib, json, os, re, subprocess, sys, time
 
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.normpath(os.path.join(HERE, '..', '..', '..'))
-DATA = os.path.join(REPO, 'data', 'sanborn'); INK = os.path.join(HERE, 'ink_bins.py')
+DATA = os.path.join(REPO, 'data', 'sanborn'); INK = os.path.join(HERE, 'ink_bins.py'); RULES = ('ink_bins.py', 'street_map.py', 'rail_tracks.py')   # the ink sorting's rules (street_map.editor_lines: its block lines)
+RULES_FN = {'edit_server.py': ('sheet', 'clean')}   # and the editor's own functions that make those lines (not the rest of the editor's server)
+LEGACY_RULES = {'de9b79144123'}   # ink_bins.py alone, before 21 Nov 2026: a placed plate sorted by these is up to date (see the docstring)
+OPTS = {'--list': 0, '--redo': 0, '--pdf': 1}
 NETS = [os.path.join(DATA, 'unet_data', 'models', m + '.pt') for m in ('area_ng1', 'lines_ng1')]; VPY = os.path.join(HERE, '.venv', 'Scripts', 'python.exe')
 STATE = os.path.join(DATA, 'unet_data', 'run_plates.json'); LOG = os.path.join(DATA, 'unet_data', 'run_plates.log')
 
@@ -118,40 +142,117 @@ def prepare(n, png):
     return f'prepared {im.shape[1]} x {im.shape[0]}'
 
 
+def sha16(p):
+    return hashlib.sha256(open(p, 'rb').read()).hexdigest()[:16] if os.path.exists(p) else None
+
+
+def rules_hash():
+    """the ink sorting's rules: the files in RULES, and the functions in RULES_FN read as source (ast), not imported"""
+    import ast
+    h = hashlib.sha256(b''.join(open(os.path.join(HERE, f), 'rb').read() for f in RULES))
+    for f, names in RULES_FN.items():
+        src = open(os.path.join(HERE, f), encoding='utf8').read(); tree = ast.parse(src); got = {}
+        for node in tree.body:
+            if isinstance(node, ast.FunctionDef) and node.name in names: got[node.name] = ast.get_source_segment(src, node)
+        for k in names: h.update(f'{f}:{k}\0'.encode() + (got.get(k) or 'missing').encode('utf8') + b'\0')
+    return h.hexdigest()[:12]
+
+
+def bins_inputs(n):
+    U, G = os.path.join(DATA, 'unet_data'), os.path.join(DATA, 'picks22_guided', f'22-{n}')
+    return dict(streetmap=os.path.join(DATA, 'streetmap', f'22-{n}.json'), edges=os.path.join(U, f'{n}_edges.json'), edges_ben=os.path.join(G, 'edges_ben.json'),
+                outlines=os.path.join(G, 'outlines.json'), outline_step=os.path.join(U, f'{n}_outlines.json'), mapground=os.path.join(U, f'{n}_mapground.png'),
+                label=os.path.join(U, f'{n}_label.png'), rail_ben=os.path.join(G, 'rail_ben.json'))
+
+
+def bins_from(n):
+    """what the ink sorting of plate n reads for its block lines, ground and rail (the start of each file's sha256, or None)"""
+    return {k: sha16(f) for k, f in bins_inputs(n).items()}
+
+
+def legacy_ok(n, s):
+    """a placed plate sorted by LEGACY_RULES, none of whose inputs (street map, label, Ben's rail and lines) is newer than its bins"""
+    U = os.path.join(DATA, 'unet_data'); b = os.path.join(U, f'{n}_bins.png')
+    if s.get('rules') not in LEGACY_RULES or s.get('bins_from') or not os.path.exists(os.path.join(U, f'{n}_guide.png')) or not os.path.exists(b): return False
+    f = bins_inputs(n); return all(os.path.getmtime(f[k]) <= os.path.getmtime(b) for k in ('streetmap', 'label', 'rail_ben', 'edges_ben') if os.path.exists(f[k]))
+
+
+def plan(n, s, rules, outver, nets, netid, redo):
+    """the steps plate n needs, each with why: [(step, why)]. prepare; nets (the networks and the outline step); outline
+    (the outline step alone, on the saved maps); bins (the ink sorting and the tracks)"""
+    U = os.path.join(DATA, 'unet_data'); st = []; blocks = None
+    if not (os.path.exists(os.path.join(DATA, 'cufp', f'22-{n}.jpg')) and os.path.exists(os.path.join(DATA, 'cufp', n, 'png_alpha_s4.npy'))): st.append(('prepare', 'no prepared scan'))
+    if nets and not os.path.exists(os.path.join(U, f'{n}_guide.png')):   # a placed plate keeps its outlines and lines
+        maps = all(os.path.exists(os.path.join(U, f)) for f in (f'{n}_pred_area_ng1.png', f'{n}_lines_lines_ng1.png'))
+        if redo: blocks = ('nets', 'asked to redo')
+        elif not maps: blocks = ('nets', 'no network maps yet')
+        elif s.get('blocks_nets') != netid: blocks = ('nets', 'the networks were trained again' if s.get('blocks_nets') else 'no block step recorded')
+        elif s.get('outline') != outver: blocks = ('outline', f"outline step {s.get('outline') or 'not recorded'} -> {outver}")
+        elif not os.path.exists(os.path.join(U, f'{n}_edges.json')): blocks = ('outline', 'no N_edges.json')
+        if blocks: st.append(blocks)
+    if redo: why = 'asked to redo'
+    elif s.get('state') != 'done' or not os.path.exists(os.path.join(U, f'{n}_bins.png')): why = 'not sorted yet'
+    elif legacy_ok(n, s): why = None
+    elif s.get('rules') != rules: why = f"rules {s.get('rules')} -> {rules}"
+    elif blocks: why = 'after the block step, if its lines change'
+    else:
+        bf = bins_from(n); old = s.get('bins_from') or {}
+        why = ('made from other files now: ' + ', '.join(k for k in bf if bf[k] != old.get(k, '?'))) if bf != old else None
+    if why: st.append(('bins', why))
+    return st
+
+
+def log_(r, head):
+    with open(LOG, 'a', encoding='utf8', newline='\n') as f: f.write(f'{head}\n{r.stdout}\n{r.stderr}\n')
+
+
 def main():
-    args = [a for a in sys.argv[1:] if not a.startswith('--')]; redo = '--redo' in sys.argv; only_list = '--list' in sys.argv
-    pdir = png_dir(); P = plates(pdir); rules = hashlib.sha256(open(INK, 'rb').read()).hexdigest()[:12]; npdf = sum(1 for n, v in P.items() if (v and v.lower().endswith('.pdf')) or os.path.exists(os.path.join(DATA, 'cufp', n, 'source.json')))   # source.json: an uncut plate already prepared
+    sys.path.insert(0, HERE)
+    from blocks_noguide import outline_version  # noqa: E402   (the outline step's version: outlines.py, blocks_noguide.py, map_area.py)
+    argv = sys.argv[1:]; args = [a for i, a in enumerate(argv) if not a.startswith('--') and (i == 0 or argv[i - 1] != '--pdf')]; redo = '--redo' in argv; only_list = '--list' in argv
+    bad_opt = [a for i, a in enumerate(argv) if a.startswith('--') and a not in OPTS]
+    if bad_opt or ('--pdf' in argv and argv.index('--pdf') + 1 >= len(argv)): sys.exit(f'run_plates.py: unknown option {" ".join(bad_opt) or "--pdf without a folder"} (options: {", ".join(OPTS)}); nothing was run')
+    pdir = png_dir(); P = plates(pdir); npdf = sum(1 for n, v in P.items() if (v and v.lower().endswith('.pdf')) or os.path.exists(os.path.join(DATA, 'cufp', n, 'source.json')))   # source.json: an uncut plate already prepared
+    rules = rules_hash(); outver = outline_version()
     want = sorted((a.upper() for a in args), key=order) if args else sorted(P, key=order)
     state = json.load(open(STATE, encoding='utf8')) if os.path.exists(STATE) else {}
-    nets = all(os.path.exists(f) for f in NETS) and os.path.exists(NETS[1][:-3] + '.done') and os.path.exists(VPY); netid = '+'.join(str(int(os.path.getmtime(f))) for f in NETS) if nets else ''; todo = []
+    nets = all(os.path.exists(f) for f in NETS) and os.path.exists(NETS[1][:-3] + '.done') and os.path.exists(VPY); netid = '+'.join(str(int(os.path.getmtime(f))) for f in NETS) if nets else ''; todo = {}
     for n in want:
-        s = state.get(n, {}); done = s.get('state') == 'done' and s.get('rules') == rules and os.path.exists(os.path.join(DATA, 'unet_data', f'{n}_bins.png'))
         if n not in P: print(f'plate {n}: no scan found in {pdir}'); continue
-        if done and nets and s.get('blocks_nets') != netid: done = False   # sorted before the block networks were there (or they were trained again)
-        if done and not redo: continue
-        todo.append(n)
-    print(f'{len(P)} plates have a scan: {len(P) - npdf} cut ({pdir}), {npdf} uncut from PDF ({pdf_dir()}). Asked for {len(want)}; already done with these rules {len(want) - len(todo) - sum(n not in P for n in want)}; to run {len(todo)}: {" ".join(todo)}')
+        st = plan(n, state.get(n, {}), rules, outver, nets, netid, redo)
+        if st: todo[n] = st
+    print(f'{len(P)} plates have a scan: {len(P) - npdf} cut ({pdir}), {npdf} uncut from PDF ({pdf_dir()}). Asked for {len(want)}; up to date {len(want) - len(todo) - sum(n not in P for n in want)}; '
+          f'to run {len(todo)}. Rules {rules}, outline step {outver}')
     print('block recognition: ' + ('on (the blank-guide networks are trained)' if nets else 'LEFT OUT: the blank-guide networks are not trained yet; run  python tools\\sanborn\\unet\\train_noguide.py  once, then this again'))
+    count = {}
+    for n, st in todo.items():
+        for k, _ in st: count[k] = count.get(k, 0) + 1
+        if only_list: print(f'  plate {n:4s} ' + '; '.join(f'{k} ({w})' for k, w in st))
+    print('steps to run: ' + (', '.join(f'{k} on {v} plate{"" if v == 1 else "s"}' for k, v in count.items()) or 'none') + '   (nets = the networks and the outline step; outline = the outline step alone; bins = the ink sorting and the tracks)')
     if only_list or not todo: return
     os.makedirs(os.path.dirname(STATE), exist_ok=True); t_all = time.time(); bad = []
-    for k, n in enumerate(todo):
-        t0 = time.time(); rec = dict(state='failed', rules=rules, when=time.strftime('%Y-%m-%d %H:%M:%S'))
+    for k, (n, st) in enumerate(todo.items()):
+        t0 = time.time(); rec = dict(state.get(n, {})); rec.update(state='failed', when=time.strftime('%Y-%m-%d %H:%M:%S')); rec.pop('error', None); steps = dict(st)
         try:
             rec['scan'] = prepare(n, P[n])
-            r = subprocess.run([sys.executable, INK, n], cwd=DATA, capture_output=True, text=True, encoding='utf8', errors='replace')
-            with open(LOG, 'a', encoding='utf8', newline='\n') as f: f.write(f'===== plate {n} {rec["when"]} rules {rules} exit {r.returncode}\n{r.stdout}\n{r.stderr}\n')
-            if r.returncode: raise RuntimeError((r.stderr.strip().splitlines() or ['ink_bins.py failed'])[-1])
-            b = json.load(open(os.path.join(DATA, 'unet_data', f'{n}_bins.json'), encoding='utf8'))
-            px = {v['name']: v['px'] for v in b['bins'].values()}
-            r = subprocess.run([sys.executable, os.path.join(HERE, 'rail_tracks.py'), n], cwd=DATA, capture_output=True, text=True, encoding='utf8', errors='replace')
-            with open(LOG, 'a', encoding='utf8', newline='\n') as f: f.write(r.stdout + r.stderr + '\n')
-            if r.returncode: raise RuntimeError('tracks: ' + (r.stderr.strip().splitlines() or ['rail_tracks.py failed'])[-1])
-            if nets:
-                r = subprocess.run([VPY, '-W', 'ignore', os.path.join(HERE, 'blocks_noguide.py'), n], cwd=DATA, capture_output=True, text=True, encoding='utf8', errors='replace')
-                with open(LOG, 'a', encoding='utf8', newline='\n') as f: f.write(r.stdout + r.stderr + '\n')
+            if 'nets' in steps or 'outline' in steps:   # 2: the block step, before the ink sorting (which takes its block lines)
+                r = subprocess.run([VPY, '-W', 'ignore', os.path.join(HERE, 'blocks_noguide.py'), n] + ([] if 'nets' in steps else ['--outlines-only']), cwd=DATA, capture_output=True, text=True, encoding='utf8', errors='replace')
+                log_(r, f'===== plate {n} {rec["when"]} blocks ({"networks and outline step" if "nets" in steps else "outline step only"}) exit {r.returncode}')
                 if r.returncode: raise RuntimeError('blocks: ' + ((r.stdout + r.stderr).strip().splitlines() or ['blocks_noguide.py failed'])[-1])
-                rec.update(blocks_nets=netid, blocks=(r.stdout.strip().splitlines() or [''])[-1].partition('|')[2].strip())
-            rec.update(state='done', ink_px=b['ink_px'], railroad_px=px.get('railroad', 0), streetcar_px=px.get('streetcar', 0), note=b.get('note', ''), ben_rail=bool(b.get('ben_rail')))
+                rec.update(blocks_nets=netid, outline=outver, blocks=(r.stdout.strip().splitlines() or [''])[-1].partition('|')[2].strip())
+            bf = bins_from(n)
+            if 'bins' in steps and (steps['bins'] != 'after the block step, if its lines change' or bf != rec.get('bins_from')):   # 3, 4: the ink sorting, then the tracks
+                r = subprocess.run([sys.executable, INK, n], cwd=DATA, capture_output=True, text=True, encoding='utf8', errors='replace')
+                log_(r, f'===== plate {n} {rec["when"]} rules {rules} exit {r.returncode}')
+                if r.returncode: raise RuntimeError((r.stderr.strip().splitlines() or ['ink_bins.py failed'])[-1])
+                b = json.load(open(os.path.join(DATA, 'unet_data', f'{n}_bins.json'), encoding='utf8'))
+                px = {v['name']: v['px'] for v in b['bins'].values()}
+                r = subprocess.run([sys.executable, os.path.join(HERE, 'rail_tracks.py'), n], cwd=DATA, capture_output=True, text=True, encoding='utf8', errors='replace')
+                log_(r, '')
+                if r.returncode: raise RuntimeError('tracks: ' + (r.stderr.strip().splitlines() or ['rail_tracks.py failed'])[-1])
+                rec.update(rules=rules, bins_from=bf, ink_px=b['ink_px'], railroad_px=px.get('railroad', 0), streetcar_px=px.get('streetcar', 0), block_line_px=px.get('block line', 0),
+                           not_sorted_px=px.get('not sorted', 0), ground_from=b.get('ground_from'), note=b.get('note', ''), ben_rail=bool(b.get('ben_rail')))
+            rec['state'] = 'done'
         except KeyboardInterrupt:
             print('\nstopped. Start it again to carry on from this plate.'); return
         except Exception as e:
@@ -159,7 +260,8 @@ def main():
         rec['seconds'] = round(time.time() - t0)
         state[n] = rec; json.dump(state, open(STATE + '.tmp', 'w', encoding='utf8', newline='\n'), indent=1); os.replace(STATE + '.tmp', STATE)
         left = (time.time() - t_all) / (k + 1) * (len(todo) - k - 1)
-        print(f'[{k + 1}/{len(todo)}] plate {n:4s} ' + (f'done in {rec["seconds"]} s: railroad {rec["railroad_px"]} px, streetcar {rec["streetcar_px"]} px' + (f' | blocks: {rec["blocks"]}' if rec.get('blocks') else '') if rec['state'] == 'done' else f'FAILED: {rec["error"]}') + f' | about {left / 60:.0f} min left', flush=True)
+        print(f'[{k + 1}/{len(todo)}] plate {n:4s} ' + (f'done in {rec["seconds"]} s ({", ".join(steps)}): railroad {rec.get("railroad_px")} px, streetcar {rec.get("streetcar_px")} px, block lines {rec.get("block_line_px")} px'
+              + (f' | blocks: {rec["blocks"]}' if rec.get('blocks') and ('nets' in steps or 'outline' in steps) else '') if rec['state'] == 'done' else f'FAILED: {rec["error"]}') + f' | about {left / 60:.0f} min left', flush=True)
     print(f'finished {len(todo) - len(bad)} of {len(todo)} in {(time.time() - t_all) / 60:.0f} min' + (f'; failed: {" ".join(bad)} (see {LOG})' if bad else '') + f'. Results: {STATE}')
 
 

@@ -18,6 +18,10 @@ Open ends are meant. Ben: "I did not close any streets that continue on other sh
 it so that the road 'ends' on this sheet. Any road that continues is kept open." The same holds where a street stops at
 the creek, the canal or the railway ("Yes, leave open"), and Ludlow's two sides do not line up because it is a viaduct.
 Nothing here closes a street. A picture goes to unet_data/N_streetmap.jpg (blocks tinted, open ends ringed).
+
+21 November 2026: the lines as the editor shows them with Ben's edits applied are editor_lines(), one function that
+ink_bins.py uses too (a plate without a street map: its block lines are then the networks' lines as Ben sees them in
+the editor, with whatever edits he has made). This script does what it did before.
 """
 import json, os, sys
 import numpy as np
@@ -30,11 +34,13 @@ import edit_server as es  # noqa: E402
 def arg(name, default):
     return float(sys.argv[sys.argv.index(name) + 1]) if name in sys.argv else default
 
-def main():
-    N = sys.argv[1]; TOL = arg('--tol', 1.5); EDGE = arg('--edge', 60.0)
-    bf = f'picks22_guided/22-{N}/edges_ben.json'; B = json.load(open(bf, encoding='utf8'))
-    im = cv2.imread(f'cufp/22-{N}.jpg'); H, W = im.shape[:2]
-    SH = es.sheet(N, W, H); E = es.clean(json.load(open(f'unet_data/{N}_edges.json', encoding='utf8'))) + SH
+def editor_lines(N, W, H, edges, ben=None):
+    """the plate's lines as the line editor shows them (edit_server.clean of `edges`, the plate's N_edges.json, plus the
+    sheet's outline) with Ben's edits applied (`ben`, his edges_ben.json, or None): a line he deleted is gone, a line he
+    moved is where he put it, a line he drew is added, and a line he never touched stands if it was shown to him (on a
+    printed line, not settled, or sheet edge). Returns (lines, sheet): every line as dict(a, b, kind, name, moved) with
+    kind printed | sheet_edge | drawn | no_printed_line, and the sheet outline's pieces (edit_server.sheet)"""
+    SH = es.sheet(N, W, H); E = es.clean(edges) + SH; B = ben or dict(lines=[])
     key = lambda a, b: tuple(round(v) for v in a + b); by = {key(l['a0'], l['b0']): l for l in B['lines'] if not l.get('added')}
     KIND = dict(green='printed', orange='printed', sheet='sheet_edge'); L = []
     for e in E:
@@ -44,7 +50,13 @@ def main():
             L.append(dict(a=s['a'], b=s['b'], kind='no_printed_line' if s.get('verdict') == 'none' else KIND.get(e['state'], 'printed'), name=e.get('name', ''), moved=bool(s.get('moved'))))
         elif e['state'] in KIND: L.append(dict(a=e['a'], b=e['b'], kind=KIND[e['state']], name=e.get('name', ''), moved=False))
     L += [dict(a=l['a'], b=l['b'], kind='no_printed_line' if l.get('verdict') == 'none' else 'drawn', name='', moved=False) for l in B['lines'] if l.get('added') and l.get('verdict') != 'wrong']
-    L = [l for l in L if np.hypot(l['b'][0] - l['a'][0], l['b'][1] - l['a'][1]) > 0.05]
+    return [l for l in L if np.hypot(l['b'][0] - l['a'][0], l['b'][1] - l['a'][1]) > 0.05], SH
+
+def main():
+    N = sys.argv[1]; TOL = arg('--tol', 1.5); EDGE = arg('--edge', 60.0)
+    bf = f'picks22_guided/22-{N}/edges_ben.json'; B = json.load(open(bf, encoding='utf8'))
+    im = cv2.imread(f'cufp/22-{N}.jpg'); H, W = im.shape[:2]
+    L, SH = editor_lines(N, W, H, json.load(open(f'unet_data/{N}_edges.json', encoding='utf8')), B)
     def ext(l):
         a, b = np.array(l['a'], float), np.array(l['b'], float); d = (b - a) / np.hypot(*(b - a)); return LineString([a - d * TOL, b + d * TOL])
     ls = [LineString([l['a'], l['b']]) for l in L]; paper = unary_union([LineString([s['a'], s['b']]) for s in SH])

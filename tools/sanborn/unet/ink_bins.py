@@ -1,7 +1,8 @@
 """A first, rule-based sorting of a plate's black ink into bins, for Ben to look at in the line editor (17 November 2026).
 
     cd data/sanborn
-    python ../../tools/sanborn/unet/ink_bins.py N [--win X0 Y0 X1 Y1] [--pic OUT.jpg] [--no-ben] [--save OUT.png]
+    python ../../tools/sanborn/unet/ink_bins.py N [--win X0 Y0 X1 Y1] [--pic OUT.jpg] [--no-ben] [--save OUT.png [--json OUT.json]]
+                                                  [--no-map] [--edges P] [--outlines P] [--unsure LO,HI]
 
 Ben, 17 November 2026: "yes, try binning them and showing them in the plate editor so i can see". This is a rough first
 guess made by rules at full size, not a trained classifier and not ground truth. It needs the plate's street map
@@ -37,11 +38,50 @@ railroad the tick rule had found by itself and how much railroad the rule found 
 Ben, same day, asked whether his tracks on plate 44 are all the rail there: "Yes, only mine". Where rail_ben.json says
 complete (the tick box in the editor's bins box), rail on that plate is only the ink on his tracks: what the rules call
 railroad or streetcar anywhere else goes back to be sorted as other ink (a heavy bar by itself is then a letter stroke).
+
+Ben, 21 November 2026, after drawing the rail on plate 90: "I've corrected 90's rail, but the streets are not being
+binned at all". They were not: the block lines came only from a street map (streetmap/22-N.json, only plate 44 has one)
+and the ground only from it or the old label (unet_data/N_label.png, only the placed plates have one), so on 90 and on
+every plate never placed, block line, lot line, water pipe and sewer were 0 and all line ink was 'not sorted' (2.43M px
+on 90). Such a plate now takes its block lines and ground from the networks' block step (blocks_noguide.py, which
+run_plates.py now runs BEFORE this), where that step is the merged one of 21 November 2026 or later: its
+unet_data/N_outlines.json carries a 'version' (blocks_noguide.outline_version()). The batch's outlines of 21 Nov have
+none: on 90 they are 1 block of 3 lines covering the whole sheet, margin included (sorted from them, 2.43M px of ink
+became lot line and 19 px block line). On such a plate nothing is taken from them, the run says to run
+blocks_noguide.py N --outlines-only first, and the sorting is as before (ground_from 'none'). A version older than
+today's code is used, with a note: on a plate where Ben has edited the lines, the outline step is kept at the version
+that made the lines he edited (blocks_noguide.py):
+  lines         what the line editor shows: edit_server.clean(unet_data/N_edges.json) plus the sheet's outline, with
+                Ben's edits (picks22_guided/22-N/edges_ben.json) applied as street_map.py applies them (one function,
+                street_map.editor_lines)
+  block ground  the block polygons of picks22_guided/22-N/outlines.json, their street holes (hole=True) cut out
+                (block_ground); 'closed' for the railroad rule too
+  street ground the rest of the paper; on an uncut sheet only the map ground (unet_data/N_mapground.png, written by
+                outlines.py): the margin, KEY and title are 'not known'. UNSURE (off by default) would also make 'not
+                known' the ground off the blocks where the area network was unsure; on plate 44 every band tried
+                (P*255 in 32-224, 64-191, 96-160) put less ink in the bin Ben's map puts it than none (merge/impl
+                bins44.py: 93.9% of all ink without, 92.0-93.6% with)
+These are the networks' guess, not Ben's map, and N_bins.json's note says so and names the files. Measured on plate 44
+sorted this way from the merged block step, against the sorting with his street map: 93.9% of all ink in the same bin;
+block line 74.8%, lot line 94.6%, water pipe 92.7%, sewer 94.3%, building outline 99.3% (the batch's own 44 lines:
+block line 67.0%, 92.8% of all ink; no lines and no ground, as the batch sorted the plates never placed: block line,
+lot line, pipe and sewer 0%). Railroad and streetcar scored against Ben's 28 tracks were as good as with his map
+(railroad 98.4% found at 99.5% within 10 px, no false track; with no ground at all 97.9% and 3 false tracks). Plates with a guide
+(43, 44, 45, 80, 82A) are sorted as before: by the street map where there is one (44), else by the old label.
+For tests: --no-map sorts the plate as if it had never been placed (no street map, no label, no guide); --edges P and
+--outlines P read another N_edges.json and outlines.json (the outline step's other outputs, N_outlines.json and
+N_mapground.png, are then read from beside P; Ben's edits are not applied to another file's lines, which they are not
+keyed to); --save OUT.png writes the bins there and no N_bins.json (--json OUT.json writes the counts beside it). The
+test options (--no-map, --edges, --outlines, --unsure, --no-ben, --rail, --car) need --save: a plate's own N_bins.png is
+only ever written by a plain run. An option it does not know is an error.
+N_bins.json 'made_from' gives every input file with the start of its sha256, and 'outline_version' the version of the
+outline step its lines and ground came from (outlines.py takes its railroad bin only from bins of its own version).
 """
-import json, os, sys, time
+import hashlib, json, os, sys, time
 import numpy as np
 import cv2
 from scipy.spatial import cKDTree
+HERE = os.path.dirname(os.path.abspath(__file__))
 NAMES = {1: 'block line', 2: 'lot line', 3: 'building outline', 4: 'railroad', 5: 'streetcar', 6: 'water pipe', 7: 'sewer', 8: 'text and numbers', 9: 'not sorted'}
 COL = {1: (0, 150, 0), 2: (255, 140, 0), 3: (20, 70, 120), 4: (0, 0, 230), 5: (0, 150, 255), 6: (160, 0, 0), 7: (160, 170, 0), 8: (255, 0, 255), 9: (120, 120, 120)}   # BGR: green, light blue, brown, red, orange, navy, teal, magenta, grey
 INK_L = 140      # darker than this (Lab L, 0..255) is ink
@@ -51,6 +91,36 @@ CAR = dict(row=True, street=False)   # a streetcar dash is one of a row of heavy
 # tracks (18 November 2026): any heavy bar in street ground found 79.7% of his streetcar with 12,698 px of false ink (big lettering, thick strokes by pipe
 # labels); bars in a row, in any ground, find 85.1% with 1,086 px. The street-ground test cost the line that crosses blocks on the Ludlow viaduct
 TEXT_MAX = 130   # a compact mark no bigger than this is text (street-name letters are about 90 px tall on plate 44)
+UNSURE = None    # (lo, hi): off the networks' blocks, ground the area network gave lo < P(block)*255 < hi is 'not known'; None: street (plate 44: None is best)
+
+def block_ground(polys, h, w, off=(0, 0)):
+    """the block ground of the outline step's polygons (outlines.py's outlines.json): every block filled, the street holes
+    (polygons whose sides carry hole=True) cut out, and a block lying in another's hole filled again. uint8, 1 = block"""
+    rings = lambda hole: [np.round(np.array([s['a'] for s in p], float) - off).astype(np.int32) for p in polys if p and bool(p[0].get('hole')) == hole and len(p) >= 3]
+    B = np.zeros((h, w), np.uint8); blk = rings(False); hol = rings(True)
+    for r in blk: cv2.fillPoly(B, [r], 1)
+    if hol:
+        Hm = np.zeros((h, w), np.uint8)
+        for r in hol: cv2.fillPoly(Hm, [r], 1)
+        B[Hm > 0] = 0
+        for r in blk:                                     # a block in a hole: its corners lie in the hole (a block's own outer corners never do)
+            c = np.clip(r, 0, [w - 1, h - 1])
+            if Hm[c[:, 1], c[:, 0]].mean() > 0.5: cv2.fillPoly(B, [r], 1)
+    return B
+
+def ben_masks(tracks, h, w, off=(0, 0)):
+    """the band of BEN_RAIL px round each of Ben's tracks (rail_ben.json 'tracks'), one mask per kind"""
+    ben = {k: np.zeros((h, w), np.uint8) for k in ('railroad', 'streetcar')}
+    for t in tracks: cv2.polylines(ben[t['kind']], [np.round(np.array(t['pts'], float) - off).astype(np.int32)], False, 1, 2 * BEN_RAIL + 1)
+    return ben
+
+def ben_railroad(rr, ink, ben, only):
+    """the railroad ink once Ben's tracks count: ink on his railroad is railroad, the rules' railroad on his streetcar is
+    not, and where his tracks are all the rail (only: 'complete') nothing else is"""
+    return ((rr & (ben['streetcar'] == 0)) if not only else np.zeros_like(rr)) | (ink & (ben['railroad'] > 0))
+
+def sha16(p):
+    return hashlib.sha256(open(p, 'rb').read()).hexdigest()[:16] if p and os.path.exists(p) else None
 
 def shape(lab, n):
     """every piece's area, bounding box, length and thickness (from its second moments, as for a straight bar)"""
@@ -309,7 +379,26 @@ def railroad(ink, closed, paper=None):
     info['carrow'] = info_car
     return (M > 0) & ink, info
 
+OPTS = {'--win': 4, '--pic': 1, '--no-ben': 0, '--save': 1, '--json': 1, '--no-map': 0, '--edges': 1, '--outlines': 1, '--unsure': 1, '--rail': 1, '--car': 1, '--ticks': 0}
+TEST_OPTS = ('--no-map', '--edges', '--outlines', '--unsure', '--no-ben', '--rail', '--car')   # these change the sorting: only with --save
+
+
+def check_args(argv):
+    """stop on an option this script does not know, or a test option without --save (it would write the plate's N_bins.png)"""
+    if len(argv) < 2 or argv[1].startswith('--'): sys.exit('usage: ink_bins.py N [options] (see the docstring)')
+    k = 2
+    while k < len(argv):
+        a = argv[k]
+        if a not in OPTS: sys.exit(f'ink_bins.py: unknown option or stray argument {a!r} (options: {", ".join(OPTS)})')
+        if k + OPTS[a] >= len(argv): sys.exit(f'ink_bins.py: {a} needs {OPTS[a]} value(s)')
+        k += 1 + OPTS[a]
+    test = [o for o in TEST_OPTS if o in argv]
+    if test and '--save' not in argv: sys.exit(f'ink_bins.py: {", ".join(test)} change the sorting; give --save OUT.png too (a plain run writes unet_data/{argv[1]}_bins.png)')
+    if '--json' in argv and '--save' not in argv: sys.exit('ink_bins.py: --json goes with --save')
+
+
 def main():
+    check_args(sys.argv)
     N = sys.argv[1]; t0 = time.time()
     if '--rail' in sys.argv: RAIL.update(json.loads(sys.argv[sys.argv.index('--rail') + 1]))   # for trying settings, e.g. --rail '{"faint_row": 8}'
     im = cv2.imread(f'cufp/22-{N}.jpg'); H, W = im.shape[:2]
@@ -324,27 +413,63 @@ def main():
     fill = cv2.morphologyEx(cv2.morphologyEx(fill.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8)), cv2.MORPH_OPEN, np.ones((15, 15), np.uint8))
     near_fill = cv2.dilate(fill, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))) > 0
     deep_fill = cv2.erode(fill, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (19, 19))) > 0   # well inside a fill: a number printed on a building
-    # ground and the block lines, from the street map
-    # A plate without a street map (only plate 44 has one, 19 November 2026) still runs: the blocks are then the old
-    # label's, there are no block lines, and the result says so. That is enough to try the rail rules on another plate;
-    # the other bins of such a run are not to be trusted
-    smf = f'streetmap/22-{N}.json'; NOMAP = not os.path.exists(smf)
-    SM = dict(lines=[], blocks=[]) if NOMAP else json.load(open(smf, encoding='utf8')); off = np.array([x0, y0])
+    # ground and the block lines: from Ben's street map; else, on a plate never placed, from the networks' block step;
+    # else (a placed plate with no street map) the old label's blocks and no block lines, as before
+    opt = lambda k: sys.argv[sys.argv.index(k) + 1] if k in sys.argv else None
+    smf = f'streetmap/22-{N}.json'; nomap = '--no-map' in sys.argv; off = np.array([x0, y0]); used = {}
+    ef = opt('--edges') or f'unet_data/{N}_edges.json'; of = opt('--outlines') or f'picks22_guided/22-{N}/outlines.json'
+    od = (os.path.dirname(os.path.abspath(opt('--outlines'))) + '/') if opt('--outlines') else 'unet_data/'   # the outline step's other outputs
+    placed = os.path.exists(f'unet_data/{N}_guide.png') and not (nomap or opt('--edges') or opt('--outlines'))
+    rp = json.load(open(od + f'{N}_outlines.json', encoding='utf8')) if os.path.exists(od + f'{N}_outlines.json') else {}   # the outline step's counts, with its version
+    SRC = 'map' if os.path.exists(smf) and not nomap else ('nets' if not placed and os.path.exists(ef) and os.path.exists(of) and rp.get('version') else 'label')
+    if SRC == 'label' and not placed and os.path.exists(ef) and os.path.exists(of):
+        print(f'plate {N}: its outlines ({of}) were made by the outline step before 21 Nov 2026 ({od}{N}_outlines.json has no version): not used. '
+              f'Run  blocks_noguide.py {N} --outlines-only  first (run_plates.py does), then this again')
+    elif SRC == 'nets':
+        sys.path.insert(0, HERE)
+        from blocks_noguide import outline_version  # noqa: E402   (no torch)
+        if rp['version'] != outline_version():
+            print(f'plate {N}: its outlines were made by outline step {rp["version"]}, today\'s is {outline_version()}'
+                  + (' (Ben has edited its lines: the new outlines are in unet_data/' + N + '_new/)' if os.path.exists(f'picks22_guided/22-{N}/edges_ben.json') and not opt('--edges') else
+                     f'; blocks_noguide.py {N} --outlines-only makes new ones'))
     truth = np.zeros((h, w), np.uint8); closed = np.zeros((h, w), np.uint8)
-    for l in SM['lines']: cv2.line(truth, tuple(np.round(np.array(l['a']) - off).astype(int).tolist()), tuple(np.round(np.array(l['b']) - off).astype(int).tolist()), 1, 13)
-    for bl in SM['blocks']: cv2.fillPoly(closed, [np.round(np.array(bl['ring']) - off).astype(np.int32)], 1)
+    if SRC == 'map':
+        SM = json.load(open(smf, encoding='utf8')); used['street map'] = smf
+        for l in SM['lines']: cv2.line(truth, tuple(np.round(np.array(l['a']) - off).astype(int).tolist()), tuple(np.round(np.array(l['b']) - off).astype(int).tolist()), 1, 13)
+        for bl in SM['blocks']: cv2.fillPoly(closed, [np.round(np.array(bl['ring']) - off).astype(np.int32)], 1)
+    elif SRC == 'nets':   # the networks' block step: the lines as the editor shows them (with Ben's edits), its blocks less their street holes
+        import street_map  # noqa: E402   (editor_lines: the one function street_map.py uses too)
+        bf_ = f'picks22_guided/22-{N}/edges_ben.json'; benl = json.load(open(bf_, encoding='utf8')) if os.path.exists(bf_) and not opt('--edges') else None   # his edits are keyed to N_edges.json's lines
+        SL, _ = street_map.editor_lines(N, W, H, json.load(open(ef, encoding='utf8')), benl); used.update(lines=ef, **({'Ben edits': bf_} if benl else {}), blocks=of, **{'outline step': od + f'{N}_outlines.json'})
+        for l in SL: cv2.line(truth, tuple(np.round(np.array(l['a']) - off).astype(int).tolist()), tuple(np.round(np.array(l['b']) - off).astype(int).tolist()), 1, 13)
+        closed = block_ground(json.load(open(of, encoding='utf8')), h, w, off)
     lf = f'unet_data/{N}_label.png'   # the old street / block label; a plate that was never placed has none, and all its ground is then 'not known'
-    old = cv2.resize(cv2.imread(lf, 0), (W, H), interpolation=cv2.INTER_NEAREST)[y0:y1, x0:x1] if os.path.exists(lf) else np.full((h, w), 255, np.uint8)
-    if NOMAP: closed = (old == 1).astype(np.uint8); print(f'plate {N} has no street map (streetmap/22-{N}.json): blocks from the old label' + ('' if os.path.exists(lf) else ' (and there is no old label: no blocks at all)') + ', no block lines. Only the rail bins of this run mean anything')
+    old = cv2.resize(cv2.imread(lf, 0), (W, H), interpolation=cv2.INTER_NEAREST)[y0:y1, x0:x1] if os.path.exists(lf) and SRC != 'nets' and not nomap else np.full((h, w), 255, np.uint8)
+    if SRC == 'label':
+        closed = (old == 1).astype(np.uint8); used.update(**({'old label': lf} if os.path.exists(lf) and not nomap else {}))
+        print(f'plate {N} has no street map (streetmap/22-{N}.json) and no block step of the networks: blocks from the old label' + ('' if 'old label' in used else ' (and there is no old label: no blocks at all)') + ', no block lines. Only the rail bins of this run mean anything')
     ground = np.where(closed == 1, 1, np.where(old == 0, 0, np.where(old == 1, 1, 2))).astype(np.uint8)   # 0 street, 1 block, 2 not known
+    if SRC == 'nets':     # off the blocks: street, but for the margin of an uncut sheet and (UNSURE) where the area network was unsure
+        ground = np.where(closed == 1, 1, 0).astype(np.uint8)
+        mf = od + f'{N}_mapground.png'
+        if os.path.exists(mf): ground[(cv2.resize(cv2.imread(mf, 0), (W, H), interpolation=cv2.INTER_NEAREST)[y0:y1, x0:x1] == 0) & (closed == 0)] = 2; used['map ground'] = mf
+        if '--unsure' in sys.argv: UNS = tuple(float(v) for v in opt('--unsure').split(',')) if opt('--unsure') != 'none' else None
+        else: UNS = UNSURE
+        if UNS:
+            af = (rp.get('maps') or {}).get('area') or f'unet_data/{N}_pred_{rp.get("area", "area_ng1")}.png'
+            if os.path.exists(af):
+                pa = cv2.resize(cv2.imread(af, 0), (W, H), interpolation=cv2.INTER_LINEAR)[y0:y1, x0:x1]; used['area map (unsure ground)'] = af
+                ground[(pa > UNS[0]) & (pa < UNS[1]) & (closed == 0) & (ground == 0)] = 2; del pa
+        print(f'plate {N} has no street map: block lines and ground from the networks\' block step ({ef}, {of}){", with Ben edits" if benl else ""}; the networks\' guess, not ground truth')
     out = np.zeros((h, w), np.uint8)
     rr, RAILINFO = railroad(ink, closed, paper); ink0 = ink; carrow = RAILINFO['carrow']
     if '--car' in sys.argv: CAR.update(json.loads(sys.argv[sys.argv.index('--car') + 1]))
     # the tracks Ben drew himself: his word, over the rules
     bf = f'picks22_guided/22-{N}/rail_ben.json'; BJ = json.load(open(bf, encoding='utf8')) if os.path.exists(bf) and '--no-ben' not in sys.argv else {}; BEN = BJ.get('tracks', []); ONLY = bool(BJ.get('complete'))   # ONLY: his tracks are all the rail on this plate
-    ben = {k: np.zeros((h, w), np.uint8) for k in ('railroad', 'streetcar')}; benlen = dict(railroad=0.0, streetcar=0.0); samp = []
+    if BJ: used['Ben rail'] = bf
+    ben = ben_masks(BEN, h, w, off); benlen = dict(railroad=0.0, streetcar=0.0); samp = []
     for t in BEN:
-        p = np.array(t['pts'], float) - off; cv2.polylines(ben[t['kind']], [np.round(p).astype(np.int32)], False, 1, 2 * BEN_RAIL + 1)
+        p = np.array(t['pts'], float) - off
         for q0, q1 in zip(p[:-1], p[1:]):
             L = np.hypot(*(q1 - q0)); benlen[t['kind']] += L
             if t['kind'] == 'railroad': samp.append(q0[None] + np.linspace(0, 1, max(2, int(L / 5) + 1))[:, None] * (q1 - q0)[None])
@@ -356,7 +481,7 @@ def main():
             got = cv2.dilate(rr.astype(np.uint8), np.ones((2 * BEN_RAIL + 1, 2 * BEN_RAIL + 1), np.uint8))[q[:, 1], q[:, 0]].mean() if len(q) else 0.0
             far = int((rr & (cv2.dilate(ben['railroad'], np.ones((31, 31), np.uint8)) == 0)).sum())
             bensay += f" The tick rule had found {100 * got:.0f}% of your railroad's length by itself, and {far:,} px of what it calls railroad lies more than 25 px from every track of yours."
-        rr = ((rr & (ben['streetcar'] == 0)) if not ONLY else np.zeros_like(rr)) | (ink & (ben['railroad'] > 0))
+        rr = ben_railroad(rr, ink, ben, ONLY)
         if ONLY: bensay += ' Only your tracks count as rail on this plate.'
     car = ink & (ben['streetcar'] > 0) & ~rr
     out[rr] = 4; out[car] = 5; ink = ink & ~rr & ~car     # the tracks come out first, so they no longer tie the pipe lines together
@@ -416,10 +541,22 @@ def main():
             for i, j in RAILINFO.get('E', []): cv2.line(c, tuple(RAILINFO['T'][i].round().astype(int).tolist()), tuple(RAILINFO['T'][j].round().astype(int).tolist()), (0, 0, 0), 1)
             for i, p in enumerate(RAILINFO.get('T', [])): cv2.circle(c, tuple(p.round().astype(int).tolist()), 9, (0, 0, 255), 1)
         cv2.imwrite(sys.argv[sys.argv.index('--pic') + 1], c, [cv2.IMWRITE_JPEG_QUALITY, 92])
-    if '--save' in sys.argv: cv2.imwrite(sys.argv[sys.argv.index('--save') + 1], out); return   # the bins to a file of its own (for scoring the rules), leaving the plate's bins alone
+    note = 'rule-based first guess, not ground truth' + {'map': " | block lines and ground from Ben's street map (" + smf + ')',
+                                                          'nets': " | NO STREET MAP: the block lines and the ground are the networks' guess (blocks_noguide.py), not Ben's street map. Block lines: what the line editor shows of "
+                                                                  + ef + ' (clean() + the sheet outline' + (', with his edits in ' + used['Ben edits'] if 'Ben edits' in used else '') + '). Block ground: the block polygons of ' + of
+                                                                  + ' less their street holes; street ground: the rest of the ' + ('map ground (' + used['map ground'] + ')' if 'map ground' in used else 'paper')
+                                                                  + (', but where the area network was unsure (' + used['area map (unsure ground)'] + ')' if 'area map (unsure ground)' in used else ''),
+                                                          'label': ' | NO STREET MAP: blocks from the old label' + (' (' + used.get('old label', '') + ')' if 'old label' in used else ' (none: no blocks)') + ', no block lines'}[SRC]
+    rec = dict(plate=N, size=[W, H], note=note, made=int(time.time()), ground_from=SRC if SRC != 'label' or 'old label' in used else 'none', made_from={k: dict(file=v, sha256=sha16(v)) for k, v in used.items()},
+               outline_version=rp.get('version') if SRC == 'nets' else None, ink_px=tot, ben_rail=bensay,
+               bins={str(k): dict(name=NAMES[k], px=cnt[NAMES[k]], rgb=list(COL[k][::-1])) for k in NAMES})
+    if '--save' in sys.argv:   # the bins to a file of its own (for scoring the rules, or a test), leaving the plate's bins alone: no N_bins.json either
+        cv2.imwrite(opt('--save'), out)
+        if opt('--json'): json.dump(rec, open(opt('--json'), 'w', encoding='utf8', newline='\n'), indent=1)
+        return
     if not win:
         cv2.imwrite(f'unet_data/{N}_bins.tmp.png', out); os.replace(f'unet_data/{N}_bins.tmp.png', f'unet_data/{N}_bins.png')   # the editor may be reading it
-        json.dump(dict(plate=N, size=[W, H], note='rule-based first guess, not ground truth' + (' | NO STREET MAP: blocks from the old label, no block lines' if NOMAP else ''), made=int(time.time()), ink_px=tot, ben_rail=bensay, bins={str(k): dict(name=NAMES[k], px=cnt[NAMES[k]], rgb=list(COL[k][::-1])) for k in NAMES}), open(f'unet_data/{N}_bins.json', 'w', encoding='utf8', newline='\n'), indent=1)
+        json.dump(rec, open(f'unet_data/{N}_bins.json', 'w', encoding='utf8', newline='\n'), indent=1)
 
 if __name__ == '__main__':
     main()
