@@ -185,8 +185,11 @@ class ImportReport:
 
     ``counts`` has ``created``, ``updated``, ``unchanged``, ``deleted`` and ``conflicts``; ``by_kind`` the same per
     kind. ``changes`` lists each change as ``{"op": "create" | "put" | "delete", "kind", "id", "fields": [...]}``.
-    ``conflicts`` lists conflict rows the run raised (rebase proposals, orphans, namespace). ``changeset`` is set
-    when the run was applied and changed something.
+    An applied run then rebases the layers above its own; each record that rebase rewrote follows as
+    ``{"op": "rebase", "kind", "id", "layer": <upper layer slug>, "changeset": <the rebase changeset>,
+    "fields": [...]}`` (rebase entries are not counted in ``counts``; a dry run has none). ``conflicts`` lists
+    conflict rows the run raised (rebase proposals, orphans, namespace). ``changeset`` is set when the run was
+    applied and changed something.
     """
 
     importer: str
@@ -214,8 +217,13 @@ class Store(Protocol):
     and is validated in full before anything is written.
 
     Errors: ``NotFound`` (unknown kind, record, layer, changeset), ``PreconditionRequired`` (no If-Match where one is
-    needed), ``PreconditionFailed`` (stale If-Match), ``Conflict`` (reference, namespace, authority, revert) and
-    ``Invalid`` (schema or validator failure).
+    needed), ``PreconditionFailed`` (stale If-Match), ``Conflict`` (reference, namespace, authority, revert, exists,
+    layer) and ``Invalid`` (schema or validator failure).
+
+    The outbox: every committed changeset appends durable events with increasing ``seq``. ``last_seq``, ``min_seq``
+    and ``epoch`` let a follower (SSE, the scheduler's invalidator) tell new events from a history it can no longer
+    follow: a ``min_seq`` past its cursor means events were pruned, and a new ``epoch`` means the database was
+    restored, whatever the seqs say. Either way the follower resyncs.
     """
 
     def get(self, kind: str, id: str, view: View, *, at: int | None = None) -> dict[str, Any]:
@@ -282,6 +290,20 @@ class Store(Protocol):
     def events_since(self, seq: int, limit: int = 1000) -> Records:
         """Durable events (``record``, ``changeset``) with ``seq`` greater than ``seq``, oldest first, as
         ``{"seq", "type", "data"}`` where ``data`` is the payload of ``region.core.events``."""
+        ...
+
+    def last_seq(self) -> int:
+        """The newest event ``seq`` in the outbox (0 when there is none); the ETag of a list response."""
+        ...
+
+    def min_seq(self) -> int:
+        """The oldest event ``seq`` still in the outbox (0 when there is none). A follower whose cursor is below
+        ``min_seq() - 1`` missed pruned events and must resync."""
+        ...
+
+    def epoch(self) -> str:
+        """The database's epoch (``meta.epoch``, a ULID): new whenever the database is restored from a backup. A
+        follower that sees it change must resync, even when the seqs look continuous (SSE's ``hello`` carries it)."""
         ...
 
     def legacy(self, lkind: str, key: str) -> str | None:
@@ -411,6 +433,19 @@ class JobType(Protocol):
     - ``host``: ``inline`` (under 50 ms), ``thread`` (I/O), ``process`` (railsim), ``engine`` (the Node pool).
     - ``priority``: the default priority (0 focused pane, 1 open panes, 5 goals, 9 maintenance).
     - ``timeout_s``: killed or cancelled after this long.
+
+    Optional members (``region.jobs.registry.check_job_type`` checks each one that is present):
+
+    - ``axes``: the view axes (``year``, ``month``, ``timeline``) the key always includes, beyond those ``plan``
+      reads through ``ctx.axis``. Default ``()``.
+    - ``effect = "truth"`` with ``apply(store, scope_id, view, output) -> Any``: a job that changes the truth (the
+      seed jobs). The scheduler calls ``apply`` after the key check and before the commit, and stores its return
+      value as ``meta["applied"]``. Default: no effect, and the job never writes.
+    - ``code``: a fixed hex string standing for the job's code in its key (tests use it to pin keys). Default: the
+      sha256 of the module that defines the type's class.
+    - ``code_files``: further files (paths or ``repo://`` URIs, folders meaning their ``.py`` files) whose bytes enter
+      the code hash. Default ``()``.
+    - ``job_module``: the module a process worker imports to find the type again. Default: the module of its class.
     """
 
     name: str

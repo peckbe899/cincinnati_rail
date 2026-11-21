@@ -1,0 +1,47 @@
+# A station: a named place where a line stops, as a line file lists it.
+kind: station
+version: 1
+title: Station
+description: >-
+  A named place where a line stops. In increment 1 there is one station per station entry of a line file (keyed
+  <route>|<station key>), so two lines through one place still have two stations; grouping them into complexes is
+  a later step (station_complexes is derived today). The geometry is the station point in EPSG:26916; lon and lat
+  keep the line file's values as written.
+geometry: Point
+columns:
+  name: /name
+  system: /system
+merge:
+  unit: field
+  rebase: auto
+legacy: [station]
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [key, name, system]
+  properties:
+    key:
+      description: The old key, <route>|<station key> (Line_8|Cincinnati State#2).
+      type: string
+      minLength: 1
+    name:
+      type: string
+    system:
+      type: string
+      x-vocab: systems
+    lon:
+      type: [number, "null"]
+      x-unit: deg
+    lat:
+      type: [number, "null"]
+      x-unit: deg
+    attrs:
+      description: Import provenance (the line file's src, trunk).
+      type: object
+  examples:
+    - key: Line_6|Towne
+      name: Towne
+      system: metro
+      lon: -84.4771738
+      lat: 39.1824558

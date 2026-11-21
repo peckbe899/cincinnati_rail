@@ -1,0 +1,63 @@
+# A context feature on the map: other systems' tracks and structures, roads, rivers, landmarks (0001's context_feature).
+kind: feature
+version: 1
+title: Feature
+description: >-
+  One drawn or imported thing on the map that is context for the design rather than part of it: another system's
+  track, a road, a river edge, a landmark, a survey mark. Geometry of any type in EPSG:26916; dated by opening and
+  closing partial dates, so the era slider shows it as built. Import provenance goes in attrs.
+geometry: any
+columns:
+  name: /name
+  system: /system
+  phase: /phase
+dates:
+  open: /opened
+  close: /closed
+merge:
+  unit: field
+  rebase: auto
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [name, class]
+  properties:
+    name:
+      type: string
+    class:
+      description: What it is (track, road, river, landmark, mark, other).
+      type: string
+      minLength: 1
+    system:
+      description: The rail system it belongs to, if any.
+      type: [string, "null"]
+      x-vocab: systems
+    phase:
+      type: [string, "null"]
+    opened:
+      description: Partial ISO date it opened (YYYY or YYYY-MM), or null for undated.
+      type: [string, integer, "null"]
+      x-unit: year
+    closed:
+      description: Partial ISO date it closed, or null.
+      type: [string, integer, "null"]
+      x-unit: year
+    level_m:
+      description: A representative level (top of rail, deck, water), metres NAVD88.
+      type: [number, "null"]
+      x-unit: m
+    note:
+      type: [string, "null"]
+    attrs:
+      description: Import provenance and anything else a source carried; open.
+      type: object
+  examples:
+    - name: Mill Creek
+      class: river
+      system: null
+      phase: null
+      opened: null
+      closed: null
+      level_m: 150.2
+      note: null

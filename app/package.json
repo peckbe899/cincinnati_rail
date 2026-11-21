@@ -14,7 +14,9 @@
     "test": "vitest run --passWithNoTests",
     "e2e": "playwright test",
     "typecheck": "tsc --noEmit -p .",
-    "gen:api": "openapi-ts"
+    "gen:api": "openapi-ts",
+    "gen:map": "node scripts/gen_map_assets.ts",
+    "check:size": "node scripts/check_size.ts"
   },
   "dependencies": {
     "@cr/engine": "*",
@@ -26,6 +28,7 @@
     "pmtiles": "^4.5.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "zod": "^4.6.7",
     "zustand": "^5.1.0"
   },
   "devDependencies": {

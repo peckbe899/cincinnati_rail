@@ -1,0 +1,52 @@
+# A ruling: one decision of Ben's, which params and rules cite.
+kind: ruling
+version: 1
+title: Ruling
+description: >-
+  One decision of Ben's, in his words, with its date and where it was made. A main-layer param revision that changes
+  a registry value cites the ruling that set it (9.25); a lane A session later folds ratified overrides back into
+  rules/registry.yaml.
+geometry: none
+columns:
+  name: /title
+merge:
+  unit: field
+  rebase: auto
+legacy: [ruling]
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [title, date, by]
+  properties:
+    title:
+      type: string
+      minLength: 1
+    date:
+      description: A partial ISO date (YYYY, YYYY-MM or YYYY-MM-DD).
+      type: string
+      pattern: "^-?\\d{1,4}(-\\d{2}){0,2}$"
+    by:
+      type: string
+    words:
+      description: Ben's words, as he said them.
+      type: [string, "null"]
+    source:
+      description: Where the ruling was made (a session, a log line).
+      type: [string, "null"]
+    rules:
+      description: The rule ids the ruling bears on.
+      type: array
+      items: {type: string}
+    params:
+      description: The param paths the ruling sets.
+      type: array
+      items: {type: string}
+  examples:
+    - title: Metro platforms 400 ft
+      date: "2026-10-23"
+      by: Ben
+      words: make the Metro platforms 400 ft
+      source: session of 23 October 2026
+      rules: [platform.length.by_system]
+      params: [settings.platform]

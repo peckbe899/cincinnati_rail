@@ -1,0 +1,83 @@
+# A param: one value a rule or an engine reads, with its scope and years.
+kind: param
+version: 1
+title: Param
+description: >-
+  One value a rule or an engine reads (settings.platform, metro_structure.box.top). The registry's values are the
+  import:registry layer; Ben's change to one is a main-layer revision of the same record that cites a ruling
+  (9.25). If the registry later changes a value Ben overrode, the import raises an authority_divergence conflict,
+  never a silent change. Params resolve by the most specific scope (section, then route, then system, a null
+  scope), then by year range. value takes the unit named in unit; feet are converted to metres at import (9.15)
+  and the source value is kept in attrs.
+geometry: none
+columns:
+  name: /path
+refs:
+  - {path: /scope/id, kind: [route, section], role: scope, on_delete: cascade}
+  - {path: /ruling, kind: ruling, on_delete: restrict}
+merge:
+  unit: field
+  rebase: auto
+legacy: [param]
+seeded: true
+schema:
+  x-conflict: authority_divergence
+  type: object
+  additionalProperties: false
+  required: [path, value, unit]
+  properties:
+    path:
+      description: The dotted param path (settings.platform).
+      type: string
+      minLength: 1
+    value:
+      description: >-
+        The value, in the record's unit (a number, a flag, an enum string, a list or a short map text). Its unit is
+        the record's own unit field, so this node declares none.
+    unit:
+      description: The unit of value (m, permille, deg, flag, enum, map, list, fraction).
+      type: string
+      minLength: 1
+    meaning:
+      type: [string, "null"]
+    source:
+      description: Where the value was recorded (a file and line).
+      type: [string, "null"]
+    status:
+      description: recorded (in a data file) or literal_in_code (a literal of the old page).
+      type: [string, "null"]
+    scope:
+      description: Null for the whole system, or the route or section the value is for.
+      type: [object, "null"]
+      additionalProperties: false
+      required: [kind, id]
+      properties:
+        kind: {type: string, enum: [route, section]}
+        id:
+          type: string
+          pattern: "^[0-7][0-9A-HJKMNP-TV-Z]{25}$"
+    years:
+      description: The years the value holds, [lo, hi] with either end null, or null for always.
+      type: [array, "null"]
+      prefixItems:
+        - {type: [integer, "null"], x-unit: year}
+        - {type: [integer, "null"], x-unit: year}
+      minItems: 2
+      items: false
+    ruling:
+      description: The ruling record behind a value Ben set, or null.
+      type: [string, "null"]
+      pattern: "^[0-7][0-9A-HJKMNP-TV-Z]{25}$"
+    attrs:
+      description: Import provenance (source_value and source_unit of a converted value).
+      type: object
+  examples:
+    - path: settings.vcRadius
+      value: 1500
+      unit: m
+      meaning: Metro vertical curve radius at every grade change
+      source: profiles.html:277
+      status: literal_in_code
+      scope: null
+      years: null
+      ruling: null

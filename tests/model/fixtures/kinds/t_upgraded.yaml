@@ -1,0 +1,11 @@
+# Test kind: version 3, reached from version 1 data by up_1 and up_2.
+kind: t_upgraded
+version: 3
+geometry: none
+schema:
+  type: object
+  additionalProperties: false
+  required: [length_m, label]
+  properties:
+    length_m: {type: number, x-unit: m}
+    label: {type: string}

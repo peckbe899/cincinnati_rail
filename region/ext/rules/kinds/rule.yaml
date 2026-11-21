@@ -1,0 +1,80 @@
+# A rule of the design, as rules/registry.yaml states it.
+kind: rule
+version: 1
+title: Rule
+description: >-
+  One rule of the design, from rules/registry.yaml (the import:registry layer, 9.25): its id, domain, text,
+  status and the ruling that ratified it, the params it reads, the systems it applies to, and its history. Engines
+  cite rules by id in their flags; checks and waivers name them too.
+geometry: none
+columns:
+  name: /rule
+merge:
+  unit: field
+  rebase: auto
+legacy: [rule]
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [rule, domain, text, status]
+  properties:
+    rule:
+      description: The registry id (geometry.method.per_stretch).
+      type: string
+      pattern: "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*){1,3}$"
+    domain:
+      type: string
+    text:
+      type: string
+    status:
+      type: string
+      enum: [ratified, provisional, unratified, retired]
+    ruling:
+      description: The ruling behind the rule, {date, by, words, source} (dates as ISO text), or null.
+      type: [object, "null"]
+      properties:
+        date: {type: [string, "null"]}
+        by: {type: [string, "null"]}
+        words: {type: [string, "null"]}
+        source: {type: [string, "null"]}
+    decision:
+      description: The decision group the rule ranks within, or null.
+      type: [string, "null"]
+    rank:
+      description: Its rank within the decision, or null.
+      type: [integer, "null"]
+      x-unit: index
+    params:
+      description: The param paths the rule reads.
+      type: array
+      items: {type: string}
+    applies_to:
+      type: array
+      items: {type: string, x-vocab: systems}
+    flags:
+      description: The old issue names the rule raises.
+      type: array
+      items: {type: string}
+    tests:
+      type: array
+      items: {type: string}
+    history:
+      type: array
+      items: {type: string}
+    notes:
+      type: [string, "null"]
+  examples:
+    - rule: geometry.method.per_stretch
+      domain: geometry
+      text: The tunnel method is chosen once for each stretch between two anchors.
+      status: ratified
+      ruling: {date: "2026-11-04", by: Ben, words: null, source: data/profile/README.md:116}
+      decision: null
+      rank: null
+      params: []
+      applies_to: [metro]
+      flags: []
+      tests: []
+      history: []
+      notes: null

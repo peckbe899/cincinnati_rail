@@ -1,0 +1,54 @@
+# A track: a run of track along part of a section (count and side), for later slices.
+kind: track
+version: 1
+title: Track
+description: >-
+  A run of track along part of a section: how many tracks lie between chainages c0 and c1, and which side a single
+  track keeps. No importer writes tracks in increment 1; a section without tracks is double track throughout.
+geometry: none
+columns:
+  name: /name
+  parent: /section
+  c0: /c0
+  c1: /c1
+refs:
+  - {path: /section, kind: section, on_delete: cascade, required: true}
+merge:
+  unit: field
+  rebase: auto
+  guard: [/c0, /c1]
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [section, c0, c1, tracks]
+  properties:
+    name:
+      type: [string, "null"]
+    section:
+      type: string
+      pattern: "^[0-7][0-9A-HJKMNP-TV-Z]{25}$"
+    c0:
+      type: number
+      x-unit: m
+    c1:
+      type: number
+      x-unit: m
+    tracks:
+      description: How many running tracks.
+      type: integer
+      minimum: 1
+      x-unit: count
+    side:
+      description: For a single track, the side it keeps (left or right of the chainage direction), else null.
+      enum: [left, right, null]
+    note:
+      type: [string, "null"]
+  examples:
+    - name: Fourth track at Union Terminal
+      section: 01DXF6DT00G2RN476ZR8N14PM3
+      c0: 100.0
+      c1: 400.0
+      tracks: 3
+      side: null
+      note: null

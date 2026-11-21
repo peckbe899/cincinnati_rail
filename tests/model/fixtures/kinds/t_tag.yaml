@@ -1,0 +1,15 @@
+# Test kind: labels that point at sections and are nulled when a section goes (nullify).
+kind: t_tag
+version: 1
+geometry: none
+columns:
+  name: /label
+refs:
+  - {path: /targets/*, kind: t_section, on_delete: nullify, role: target}
+schema:
+  type: object
+  additionalProperties: false
+  required: [label]
+  properties:
+    label: {type: string}
+    targets: {type: array, items: {type: [string, "null"]}}

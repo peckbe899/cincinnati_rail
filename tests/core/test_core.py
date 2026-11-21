@@ -530,6 +530,48 @@ def test_cli_lists_every_command():
     assert set(facts["tiers"]) >= {"ground_1912_real", "profile_lines"}
 
 
+def test_runbook_aliases_run_the_model_actions(hub_var, capsys):
+    """``crhub export``, ``crhub backup`` and ``crhub restore`` (section 9's runbook) are ``crhub model``'s actions
+    under shorter names: same arguments, same work; restore refuses while the hub lock is held."""
+    from region.cli import build_parser
+    from region.cli import main as cli_main
+    from region.core import lock
+    from region.model import open_store
+
+    parser, broken = build_parser()
+    assert broken == {}
+    sub = next(a for a in parser._actions if a.__class__.__name__ == "_SubParsersAction")
+    model_sub = next(a for a in sub.choices["model"]._actions if a.__class__.__name__ == "_SubParsersAction")
+    for name in ("export", "backup", "restore"):
+        alias = sorted(a.dest for a in sub.choices[name]._actions)
+        assert alias == sorted(a.dest for a in model_sub.choices[name]._actions), name
+
+    db = hub_var / "region.db"
+    with open_store(db) as store:
+        rec = store.put(
+            {"kind": "note", "id": None, "data": {"text": "kept"}, "geom": None}, View(), if_match=None, by="ben"
+        )
+    out = hub_var / "seed"
+    assert cli_main(["export", "--db", str(db), "--out", str(out)]) == 0
+    assert (out / "main" / "note" / f"{rec['id']}.json").is_file()
+
+    capsys.readouterr()
+    assert cli_main(["backup", "--db", str(db), "--reason", "manual"]) == 0
+    made = Path(capsys.readouterr().out.strip())
+    assert made.is_file() and made.parent == hub_var / "backups" and made.name.endswith("-manual.db")
+
+    with open_store(db) as store:
+        store.delete("note", rec["id"], View(), if_match=f'"main:{rec["version"]}"', by="ben")
+    with lock.acquire(hub_var, 8766):
+        assert cli_main(["restore", str(made), "--db", str(db)]) == 1
+        assert "crhub serve (pid" in capsys.readouterr().err
+    assert cli_main(["restore", str(made), "--db", str(db)]) == 0
+    with open_store(db, readonly=True) as store:
+        assert store.get("note", rec["id"], View())["data"]["text"] == "kept"
+    assert any(f.name.endswith("-pre-restore.db") for f in (hub_var / "backups").iterdir())
+    assert lock.reader(hub_var) is None
+
+
 # ------------------------------------------------------------------------------------- the rest of the core contract
 
 
@@ -567,6 +609,18 @@ def test_errors_carry_status_and_problem_body():
     assert cases[4][0].to_problem()["errors"][0]["path"] == "/data/x"
     assert "stack" not in cases[6][0].to_problem()
     assert errors.Conflict("x", reason="namespace", code="conflict_layer").to_problem()["code"] == "conflict_layer"
+
+
+def test_engine_errors_carry_stderr_tail_and_issues_outside_the_problem():
+    issues = [{"code": "invalid_type", "path": ["c0_m"], "message": "Expected number"}]
+    e = errors.EngineError("bad input", engine_code="invalid_input", stack="s", stderr_tail="tail\n", issues=issues)
+    assert (e.stderr_tail, e.issues, e.engine_code) == ("tail\n", issues, "invalid_input")
+    assert errors.EngineError("x").stderr_tail == "" and errors.EngineError("x").issues is None
+    u = errors.EngineUnavailable("died", reason="crashed", stderr_tail="last words")
+    assert u.stderr_tail == "last words" and errors.EngineUnavailable("x").stderr_tail == ""
+    for err in (e, u):
+        body = err.to_problem()
+        assert not {"stderr_tail", "issues", "stack"} & set(body)
 
 
 def test_protocol_shapes():

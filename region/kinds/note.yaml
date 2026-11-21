@@ -1,0 +1,49 @@
+# A note: Ben's or a session's remark on a record or a place.
+kind: note
+version: 1
+title: Note
+description: >-
+  A free note on a record (about), optionally at a chainage range of it, or at a place on the map. Notes are truth
+  but no job reads them, so editing one never reruns anything.
+geometry: any
+columns:
+  name: /title
+  parent: /about
+  c0: /c0
+  c1: /c1
+merge:
+  unit: field
+  rebase: auto
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [text]
+  properties:
+    title:
+      type: [string, "null"]
+    text:
+      type: string
+    about:
+      description: The id of the record the note is on, or null for a note on a place.
+      type: [string, "null"]
+    c0:
+      type: [number, "null"]
+      x-unit: m
+    c1:
+      type: [number, "null"]
+      x-unit: m
+    tags:
+      type: array
+      items:
+        type: string
+    author:
+      type: [string, "null"]
+  examples:
+    - title: Portal
+      text: Check the cover over the Central Parkway sewer here.
+      about: null
+      c0: null
+      c1: null
+      tags: [cover]
+      author: ben

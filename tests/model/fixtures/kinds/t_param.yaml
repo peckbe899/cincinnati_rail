@@ -1,0 +1,15 @@
+# Test kind: a param whose overlapping changes are authority divergences (9.25).
+kind: t_param
+version: 1
+geometry: none
+columns:
+  name: /path
+schema:
+  type: object
+  x-conflict: authority_divergence
+  additionalProperties: false
+  required: [path, value]
+  properties:
+    path: {type: string}
+    value: {type: [number, "null"], x-unit: m}
+    ruling: {type: [string, "null"]}

@@ -1,0 +1,62 @@
+# One of Ben's waivers: a check finding he accepts, by rule and place (decision 9.18: waivers are truth).
+kind: waiver
+version: 1
+title: Waiver
+description: >-
+  Ben's acceptance of one check finding: the rule, the record and chainage range it covers, and the ruling or the
+  reason. A job's issues matching a waiver show as waived, not as open. A null subject waives the rule everywhere;
+  null chainages waive it along the whole subject.
+geometry: none
+columns:
+  name: /rule
+  parent: /subject
+  c0: /c0
+  c1: /c1
+merge:
+  unit: field
+  rebase: auto
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [rule, reason]
+  properties:
+    rule:
+      description: The registry rule id the finding carries.
+      type: string
+      minLength: 1
+    subject:
+      description: The id of the record the waiver covers (a section, a station), or null for everywhere.
+      type: [string, "null"]
+    issue:
+      description: The dedupe key of the one issue waived, when the waiver is that narrow.
+      type: [string, "null"]
+    c0:
+      description: Start of the chainage range covered.
+      type: [number, "null"]
+      x-unit: m
+    c1:
+      description: End of the chainage range covered.
+      type: [number, "null"]
+      x-unit: m
+    ruling:
+      description: The ruling id behind the waiver, if any.
+      type: [string, "null"]
+    reason:
+      description: Why the finding is accepted, in Ben's words.
+      type: string
+    until:
+      description: A partial ISO date (YYYY or YYYY-MM) after which the waiver lapses, or null.
+      type: [string, "null"]
+      pattern: "^-?[0-9]{1,4}(-(0[1-9]|1[0-2]))?$"
+    attrs:
+      type: object
+  examples:
+    - rule: grade_limit.metro_max
+      subject: null
+      issue: null
+      c0: 1200.0
+      c1: 1450.0
+      ruling: null
+      reason: The 1931 tunnel portal is fixed; the short steep pitch stays.
+      until: null

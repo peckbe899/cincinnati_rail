@@ -1,0 +1,56 @@
+# A saved 3D view of the old hub's Station 3D page.
+kind: view
+version: 1
+title: Saved view
+description: >-
+  A named view the Station 3D page saves (the old hub's views collection): a camera and a note. The old hub's shim
+  has no collection add, so no saved view exists in the seed yet; the kind is here so they import once it does.
+geometry: none
+columns:
+  name: /name
+merge:
+  unit: field
+  rebase: auto
+legacy: [saved_view]
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [name, camera]
+  $defs:
+    xyz:
+      type: array
+      items: {type: number, x-unit: m}
+      minItems: 3
+      maxItems: 3
+  properties:
+    name:
+      type: string
+      minLength: 1
+    user:
+      type: [string, "null"]
+    camera:
+      type: object
+      required: [pos, target]
+      properties:
+        pos: {$ref: "#/$defs/xyz"}
+        target: {$ref: "#/$defs/xyz"}
+        exag:
+          type: [number, "null"]
+          x-unit: ratio
+        station:
+          type: [string, "null"]
+    note:
+      type: [string, "null"]
+    attrs:
+      description: The old record's other members.
+      type: object
+  examples:
+    - name: Fountain Square from the south
+      user: local
+      camera:
+        pos: [-2626.86, 138.86, -4476.53]
+        target: [-2848.8, 14.58, -4805.8]
+        exag: 1
+        station: null
+      note: null

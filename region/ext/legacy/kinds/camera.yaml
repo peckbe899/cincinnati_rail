@@ -1,0 +1,54 @@
+# A camera: where a user's 3D view of the region last looked from.
+kind: camera
+version: 1
+title: Camera
+description: >-
+  Where one user's Station 3D view last looked from (the old hub's data/users/<user>/camera_<name>): position and
+  target in the 3D scene's own metres, the vertical exaggeration and the station it was centred on.
+geometry: none
+columns:
+  name: /name
+merge:
+  unit: field
+  rebase: auto
+legacy: [camera]
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [user, name, pos, target]
+  $defs:
+    xyz:
+      type: array
+      items: {type: number, x-unit: m}
+      minItems: 3
+      maxItems: 3
+  properties:
+    user:
+      type: string
+      minLength: 1
+    name:
+      description: The camera's name (region).
+      type: string
+      minLength: 1
+    pos:
+      $ref: "#/$defs/xyz"
+    target:
+      $ref: "#/$defs/xyz"
+    exag:
+      description: Vertical exaggeration.
+      type: [number, "null"]
+      x-unit: ratio
+    station:
+      description: The old Deck key of the station the view was centred on (rer:Arlington:712253:4335825).
+      type: [string, "null"]
+    attrs:
+      description: The old record's members this kind has no field for, kept as they were.
+      type: object
+  examples:
+    - user: local
+      name: region
+      pos: [-2626.86, 138.86, -4476.53]
+      target: [-2848.8, 14.58, -4805.8]
+      exag: 1
+      station: "rer:Arlington:712253:4335825"

@@ -1,0 +1,53 @@
+# A platform: what a profile keys its station levels, slides and grades by.
+kind: platform
+version: 1
+title: Platform
+description: >-
+  The platform at a stop. A profile keys its station data (st, sg, so, del, stt, gapfill, mode) by platform id, so
+  a station renamed in a line file keeps its platform id (match before mint, 9.17) and Ben's levels stay on it.
+  section repeats the stop's section so a section's platforms list in one query; a validator keeps the two equal.
+  side and length_m are null until the Deck adapter brings them (the system's platform length applies).
+geometry: none
+columns:
+  name: /name
+  parent: /section
+refs:
+  - {path: /section, kind: section, on_delete: restrict, required: true}
+  - {path: /stop, kind: stop, on_delete: cascade, required: true}
+merge:
+  unit: field
+  rebase: auto
+legacy: [alignment_station]
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [key, name, section, stop]
+  properties:
+    key:
+      description: The station key within its route (the name, or name#index), as the old docs key their fields.
+      type: string
+      minLength: 1
+    name:
+      type: string
+    section:
+      type: string
+      pattern: "^[0-7][0-9A-HJKMNP-TV-Z]{25}$"
+    stop:
+      type: string
+      pattern: "^[0-7][0-9A-HJKMNP-TV-Z]{25}$"
+    side:
+      description: side (two side platforms) or island, when known.
+      enum: [side, island, null]
+    length_m:
+      description: The platform's own length, when it differs from the system's.
+      type: [number, "null"]
+      exclusiveMinimum: 0
+      x-unit: m
+  examples:
+    - key: Towne
+      name: Towne
+      section: 01DXF6DT00G2RN476ZR8N14PM3
+      stop: 01DXF6DT00G2RN476ZR8N14PM3
+      side: null
+      length_m: null

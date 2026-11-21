@@ -1,0 +1,48 @@
+# A roadmap item of the old hub's home page.
+kind: roadmap_item
+version: 1
+title: Roadmap item
+description: >-
+  One item of the roadmap the old hub's home page edits (hub/seed/roadmap/<key>.json): its phase, status, title,
+  detail and order. The old hub owns these while it runs (authority legacy, 9.23).
+geometry: none
+columns:
+  name: /title
+  phase: /phase
+  ord: /order
+merge:
+  unit: field
+  rebase: auto
+legacy: [roadmap_item]
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [key, title, status]
+  properties:
+    key:
+      description: The old record name (r00, or i<base36 ms> for one made in the page).
+      type: string
+      minLength: 1
+    phase:
+      type: [string, "null"]
+    status:
+      type: string
+      enum: [todo, doing, done]
+    title:
+      type: string
+    detail:
+      type: [string, "null"]
+    order:
+      type: [number, "null"]
+      x-unit: index
+    attrs:
+      description: The old record's members this kind has no field for, kept as they were.
+      type: object
+  examples:
+    - key: r00
+      phase: 0 Hub
+      status: done
+      title: One local database for the three views
+      detail: The Deck, Profiles and 3D pages served locally on one SQLite database.
+      order: 0

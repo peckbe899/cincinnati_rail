@@ -10,6 +10,7 @@ through the lead, and then in every package at once.
 | `view.py` | `View(layer, year, month, timeline)`, `instant()`, `token()`; partial dates as month intervals; `is_open` |
 | `protocols.py` | `Store`, `Op`, `WriteResult`, `ImportRun`, `ImportReport`, `PlanCtx`, `RunCtx`, `Output`, `JobType`, `Scheduler`, `EngineClient`, `Importer`, `IdLookup`, `ValidateCtx`, `Validator`, `PathResolver`; the `Record` shape; ETags and refs |
 | `errors.py` | `NotFound` 404, `PreconditionRequired` 428, `PreconditionFailed` 412, `Conflict` 409, `Invalid` 422, `EngineUnavailable` 503, `EngineError` 502; `to_problem()` gives the RFC 9457 body |
+| `lock.py` | the single-instance lock of `var` (`var/hub.lock`): `acquire(var, port) -> Lock`, `reader(var)` (the `Holder` or `None`), `refuse_if_held(var, doing)`, `LockHeld` 409 |
 | `events.py` | the TypedDict payloads of section 5: `record`, `changeset`, `job`, `result`, `tier`, `resync`, `hello` |
 | `ids.py` | `new()`, `stable(namespace, key)`, `namespace_of(id)`; namespaces from `region/ids/namespaces.yaml` |
 | `features.py` | `discover()` of `region/ext/*/`; `kind_files()`; `check_kind()` against `region/kinds/_meta.schema.json` |
@@ -53,9 +54,13 @@ the key NFC-normalised. Each namespace's epoch is a distinct day in `region/ids/
 so every imported id sorts before every authored id, and `namespace_of(id)` reads the namespace back from the time
 part: that is how the store enforces an import layer's namespace on write. A `test` namespace exists for tests.
 
-**Errors.** `Conflict(reason=...)` gives the problem code `conflict_<reason>`. `EngineError` (502, an `ok: false`
+**Errors.** `Conflict(reason=...)` gives the problem code `conflict_<reason>`. `ConflictReason` is `reference`,
+`namespace`, `authority`, `rebase`, `revert`, `exists` (an id, layer slug or tag name taken), `layer` (the layer is
+not open) and `seed` (export refused while seed changes are unmerged). `EngineError` (502, an `ok: false`
 reply) is added beside the six named errors, because a timeout or crash (`EngineUnavailable`) and an engine that
-answered with an error need different handling. Problem `type` URIs are
+answered with an error need different handling. `EngineError(detail, *, engine_code, stack, stderr_tail="",
+issues=None)` and `EngineUnavailable(detail, *, reason, stderr_tail="")` carry the process's stderr tail (and zod's
+issues) as attributes for the job log, never in the problem body. Problem `type` URIs are
 `https://cincinnati-rail.invalid/problems/<code>` (a reserved domain that never resolves).
 
 **Events.** Durable record events carry `op` in `create | put | patch | delete | restore`. `changeset` events may also
@@ -64,7 +69,12 @@ carry `kind`, `message` and `client`; `job` events may carry `view`, `key` and `
 **Protocols.** `WriteResult(changeset, records, seq)`: `changeset` and `seq` are `None` when every op was a no-op.
 `ImportRun(importer, version, layer, namespace, sources, by, id)` with `sources` as `{name: {uri, sha256}}` and `by`
 defaulting to `import:<importer>`. `ImportReport` carries `counts` (`created, updated, unchanged, deleted,
-conflicts`), `by_kind`, `changes`, `conflicts`, `changeset`, `errors`. `Output`'s four members default to empty, in
+conflicts`), `by_kind`, `changes`, `conflicts`, `changeset`, `errors`; after an applied run `changes` also lists each
+record the rebase of the layers above rewrote, as `{op: "rebase", kind, id, layer, changeset, fields}` (not
+counted in `counts`). `Store` also has the outbox's `last_seq()`, `min_seq()` and `epoch()` (`meta.epoch`, new on
+every restore): a follower resyncs when `min_seq` passes its cursor or the epoch changes. `JobType`'s optional
+members are `axes`, `effect = "truth"` with `apply(store, scope_id, view, output)`, `code`, `code_files` and
+`job_module`, each documented on the protocol. `Output`'s four members default to empty, in
 the spec's order. `Store.write` takes `ops: list[Op]` (spelt `Ops`, because the protocol's own `list` method would
 shadow the builtin for type checkers). `Scheduler.watch_goal` defaults `priority=5` and `ttl_s=None`. Job and
 importer `version` is a string (`"1"`), matching `keys.key(version: str)`. `Importer.sources(paths)` receives the

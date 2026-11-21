@@ -1,0 +1,36 @@
+# A node: a point where sections end or meet.
+kind: node
+version: 1
+title: Node
+description: >-
+  A point where sections end or meet. Every section runs from its node a (chainage 0) to its node b (its length).
+  The Metro sections of increment 1 meet no other section, so each has two nodes of its own; shared trunks and seams
+  (slice 2) will make nodes shared.
+geometry: Point
+columns:
+  name: /name
+  system: /system
+merge:
+  unit: field
+  rebase: auto
+legacy: [node]
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [key, name, system]
+  properties:
+    key:
+      description: The node's old key, <route>|a or <route>|b.
+      type: string
+      minLength: 1
+    name:
+      description: A name to show (Line 6 a).
+      type: string
+    system:
+      type: string
+      x-vocab: systems
+  examples:
+    - key: Line_6|a
+      name: Line 6 a
+      system: metro

@@ -1,0 +1,158 @@
+# A section: one stretch of line with its own chainage, the unit a profile and a solve are made for.
+kind: section
+version: 1
+title: Section
+description: >-
+  One stretch of line between two nodes, with its own chainage from 0 at node a to length_m at node b. Chainage is
+  UTM 16N grid length, declared as chainage_basis grid:26916 (decision 9.14); scale is the ground distance per unit
+  of grid chainage on this section, for railsim and quantities. The geometry is the path in EPSG:26916; path keeps
+  the line file's [chainage, lon, lat] points as drawn. A profile (one per section) holds the vertical design.
+  Plan geometry has legacy authority until the Deck adapter lands (9.27).
+geometry: LineString
+columns:
+  name: /name
+  system: /system
+  parent: /route
+  c1: /length_m
+refs:
+  - {path: /route, kind: route, on_delete: restrict}
+  - {path: /a, kind: node, on_delete: restrict}
+  - {path: /b, kind: node, on_delete: restrict}
+  - {path: /crossings/*/other, kind: section, role: crosses, on_delete: nullify}
+merge:
+  unit: field
+  rebase: auto
+  guard: [/length_m, /path, /step_m]
+legacy: [section]
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [key, name, system, length_m, step_m, chainage_basis, scale]
+  $defs:
+    id:
+      type: [string, "null"]
+      pattern: "^[0-7][0-9A-HJKMNP-TV-Z]{25}$"
+    c:
+      type: number
+      x-unit: m
+  properties:
+    key:
+      description: The old key of the section (the route id while each route has one section, Line_6).
+      type: string
+      minLength: 1
+    name:
+      type: string
+    system:
+      type: string
+      x-vocab: systems
+    route:
+      description: The route this section belongs to.
+      $ref: "#/$defs/id"
+    a:
+      description: The node at chainage 0.
+      $ref: "#/$defs/id"
+    b:
+      description: The node at length_m.
+      $ref: "#/$defs/id"
+    length_m:
+      description: The section's length in its chainage basis.
+      type: number
+      minimum: 0
+      x-unit: m
+    step_m:
+      description: The grid step of the section's arrays (ground, rail), from chainage 0.
+      type: number
+      exclusiveMinimum: 0
+      x-unit: m
+    chainage_basis:
+      description: What chainage measures (9.14). Every section declares grid:26916 today.
+      type: string
+      x-vocab: chainage_bases
+    scale:
+      description: Ground distance per unit of grid chainage on this section (geodesic length over grid length).
+      type: number
+      exclusiveMinimum: 0
+      x-unit: ratio
+    path:
+      description: The centre line as drawn, [chainage, lon, lat] points with chainage rising.
+      type: array
+      items:
+        type: array
+        prefixItems:
+          - {type: number, x-unit: m}
+          - {type: number, x-unit: deg}
+          - {type: number, x-unit: deg}
+        minItems: 3
+        items: false
+    rivers:
+      description: River crossings, {name, c0, c1}.
+      type: array
+      items:
+        type: object
+        required: [name, c0, c1]
+        properties:
+          name: {type: string}
+          c0: {$ref: "#/$defs/c"}
+          c1: {$ref: "#/$defs/c"}
+    crossings:
+      description: >-
+        Where another line crosses: c here, oc on the other line (wid, its old key), kind and name (with), and other,
+        the other line's section when it is in the hub.
+      type: array
+      items:
+        type: object
+        required: [c, wid, oc]
+        properties:
+          c: {$ref: "#/$defs/c"}
+          wid: {type: string}
+          oc: {$ref: "#/$defs/c"}
+          kind: {type: string}
+          with: {type: string}
+          other: {$ref: "#/$defs/id"}
+    pieces:
+      description: The Deck pieces the section is made of, {name, id, c0, c1, reversed, gap_before}.
+      type: array
+      items:
+        type: object
+        properties:
+          name: {type: string}
+          id: {type: string}
+          c0: {$ref: "#/$defs/c"}
+          c1: {$ref: "#/$defs/c"}
+          reversed: {type: boolean}
+          gap_before: {type: number, x-unit: m}
+    segs:
+      description: The Deck tie, {piece, lines, pa, pb, fwd, u, v, c0, c1}; u and v are EPSG:26916 [E, N].
+      type: array
+      items:
+        type: object
+        properties:
+          piece: {type: string}
+          lines: {type: string}
+          pa: {type: number, x-unit: m}
+          pb: {type: number, x-unit: m}
+          fwd: {type: boolean}
+          u:
+            type: array
+            items: {type: number, x-unit: m}
+          v:
+            type: array
+            items: {type: number, x-unit: m}
+          c0: {$ref: "#/$defs/c"}
+          c1: {$ref: "#/$defs/c"}
+  examples:
+    - key: Line_6
+      name: Line 6
+      system: metro
+      route: null
+      a: null
+      b: null
+      length_m: 1000.0
+      step_m: 2.0
+      chainage_basis: "grid:26916"
+      scale: 0.99984
+      path: [[0.0, -84.47712, 39.182999], [1000.0, -84.4779714, 39.1744054]]
+      rivers: []
+      crossings: []
+      pieces: []

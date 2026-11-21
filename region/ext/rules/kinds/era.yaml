@@ -1,0 +1,52 @@
+# An era: a span of years with its own building phase and rules.
+kind: era
+version: 1
+title: Era
+description: >-
+  A span of years with its own building phase (the Chronology's phase_years: 1 to 1933, 2 to 1949, 3 to 1979,
+  later from 1980). Eras are records, never layers (9.16); params can name the years they hold for. No importer
+  writes eras in increment 1: the Chronology import (section 11, step 3) brings them.
+geometry: none
+columns:
+  name: /name
+  system: /system
+  phase: /phase
+merge:
+  unit: field
+  rebase: auto
+legacy: [era]
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [name, phase, years]
+  properties:
+    name:
+      type: string
+    system:
+      type: [string, "null"]
+      x-vocab: systems
+    phase:
+      description: The building phase (1, 2, 3, later).
+      type: string
+    years:
+      description: "[first year, last year]; the last may be null for an open era."
+      type: array
+      prefixItems:
+        - {type: integer, x-unit: year}
+        - {type: [integer, "null"], x-unit: year}
+      minItems: 2
+      items: false
+    timeline:
+      description: canon or real, or null for both.
+      type: [string, "null"]
+      x-vocab: timelines
+    note:
+      type: [string, "null"]
+  examples:
+    - name: Phase 1
+      system: metro
+      phase: "1"
+      years: [1800, 1933]
+      timeline: null
+      note: null

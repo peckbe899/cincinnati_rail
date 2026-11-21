@@ -1,0 +1,40 @@
+# Who owns the truth of one record kind during the strangler (decision 9.23).
+kind: authority
+version: 1
+title: Authority
+description: >-
+  Which hub owns the truth of one record kind: the old hub (legacy) or the new model. While legacy owns a kind, the
+  main and legacy layers refuse writes to it (409 authority), except from the legacy importer, and promote is
+  refused; scenarios stay writable. Flipping a kind to model squashes its legacy revisions into main as one
+  changeset. Give each kind one record, with the stable id ids.stable("old_hub", "authority:<kind>"), so a change in
+  main copies the same record up.
+geometry: none
+columns:
+  name: /kind
+merge:
+  unit: field
+  rebase: auto
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [kind, owner]
+  properties:
+    kind:
+      description: The record kind this authority is for.
+      type: string
+      pattern: "^[a-z][a-z0-9_]{0,47}$"
+    owner:
+      description: legacy (the old hub on 8765) or model (this hub).
+      type: string
+      x-vocab: authority_owners
+    ruling:
+      description: The ruling that set the owner, if any.
+      type: [string, "null"]
+    note:
+      type: [string, "null"]
+  examples:
+    - kind: profile
+      owner: legacy
+      ruling: null
+      note: The old hub owns Metro profiles until the Deck adapter lands.
