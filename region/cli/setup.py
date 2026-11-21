@@ -4,8 +4,9 @@
     crhub setup --dry-run     print the steps and their commands, run nothing
     crhub setup --skip-npm    (and --skip-python, --skip-build, --skip-migrate, --skip-imports, --no-doctor)
 
-setup refuses to start while a hub is serving on the configured port: ``npm ci`` replaces the files its engine runs
-from, and the database must not change under it. The steps (9.22, section 9):
+setup refuses to start while another process holds ``var``'s single-instance lock (``region.core.lock``: a serving
+hub, or ``crhub jobs run``), and, as a second check, while a hub answers on the configured port: ``npm ci`` replaces
+the files its engine runs from, and the database must not change under it. The steps (9.22, section 9):
 
 1. **python**: with uv on PATH, ``uv sync --locked --inexact`` (``--inexact`` keeps packages Ben installed by hand);
    without it, ``.venv`` is created with this Python if it does not exist, then
@@ -208,6 +209,16 @@ def _missing(program: str) -> int:
     return 127
 
 
+def lock_holder(cfg: Mapping[str, Any] | None = None) -> Any:
+    """The process holding ``var``'s single-instance lock (a ``region.core.lock.Holder``: a serving hub, or
+    ``crhub jobs run``), or None. Setup refuses while one does; ``hub_serving`` is the second check, for a hub on
+    the configured port that holds no lock in this ``var``."""
+    from region.core import lock, paths
+
+    cfg = cfg if cfg is not None else paths.config()
+    return lock.reader(paths.var_root(cfg))
+
+
 def hub_serving(cfg: Mapping[str, Any] | None = None) -> str | None:
     """The address of a hub serving on the configured port, or None."""
     from region.core import paths
@@ -238,6 +249,10 @@ def migrate_db(cfg: Mapping[str, Any] | None = None) -> int:
         print(f"      skipped: region.model is not in this checkout yet ({type(e).__name__}: {e})")
         print("      run crhub setup again (or crhub model migrate) once the store has landed")
         return 0
+    holder = lock_holder(cfg)
+    if holder is not None:
+        print(f"crhub setup: {holder.describe()} holds the hub lock; stop it before migrating", file=sys.stderr)
+        return 1
     serving = hub_serving(cfg)
     if serving:
         print(f"crhub setup: a hub is serving at {serving}; stop it before migrating", file=sys.stderr)
@@ -426,10 +441,21 @@ def run(args: argparse.Namespace) -> int:
     from region.core.errors import HubError
 
     try:
+        holder = None if args.in_env else lock_holder()
         serving = hub_serving()
     except (HubError, OSError, ValueError) as e:  # configs/local.json is not JSON, or not a JSON object
         print(f"crhub setup: the config cannot be read: {e}", file=sys.stderr)
         print("  -> Fix configs/local.json (see configs/local.example.json), then run setup again.", file=sys.stderr)
+        return 1
+    if holder is not None:
+        print(
+            f"crhub setup: {holder.describe()} holds the hub lock; stop it first (Ctrl+C in its window)",
+            file=sys.stderr,
+        )
+        print(
+            "  -> npm ci replaces the files its engine runs from, and the database must not change under it.",
+            file=sys.stderr,
+        )
         return 1
     if serving and not args.in_env:
         print(f"crhub setup: a hub is serving at {serving}; stop it first (Ctrl+C in its window)", file=sys.stderr)
@@ -453,6 +479,7 @@ __all__ = [
     "first_imports",
     "has_pip",
     "hub_serving",
+    "lock_holder",
     "migrate_db",
     "npm_steps",
     "plan",

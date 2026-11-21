@@ -70,10 +70,14 @@ def _engine_error(reply: dict[str, Any], stderr_tail: str = "") -> EngineError:
     err = reply.get("error") if isinstance(reply.get("error"), dict) else {}
     code = str(err.get("code") or "internal")
     message = str(err.get("message") or "the engine answered with an error")
-    e = EngineError(f"engine: {message}", engine_code=code, stack=str(err.get("stack") or ""))
-    e.issues = err.get("issues")  # type: ignore[attr-defined]
-    e.stderr_tail = stderr_tail  # type: ignore[attr-defined]
-    return e
+    issues = err.get("issues")
+    return EngineError(
+        f"engine: {message}",
+        engine_code=code,
+        stack=str(err.get("stack") or ""),
+        stderr_tail=stderr_tail,
+        issues=list(issues) if isinstance(issues, list) else None,
+    )
 
 
 def _sidecar_argv(node: str) -> list[str]:

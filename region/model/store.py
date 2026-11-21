@@ -118,14 +118,16 @@ class SqliteStore:
         kinds: KindRegistry,
         validators: dict[str, Callable[..., Any]],
         backup_dir: Path | None,
+        readonly: bool = False,
     ) -> None:
         self.path = Path(path)
         self.cache_path = Path(cache) if cache is not None else None
         self.kinds = kinds
         self.validators = validators
         self.backup_dir = Path(backup_dir) if backup_dir is not None else self.path.parent / "backups"
-        self._writer = D.writer_for(self.path, cache=self.cache_path)
-        self._readers = D.Readers(self.path, cache=self.cache_path)
+        self.readonly = readonly
+        self._writer: D.Writer | D.ReadOnlyWriter = D.ReadOnlyWriter(self.path) if readonly else D.writer_for(self.path)
+        self._readers = D.Readers(self.path, cache=self.cache_path, readonly=readonly)
         self._listeners: list[Callable[[int | None], None]] = []
         self._lock = threading.Lock()
         self._closed = False
@@ -139,7 +141,8 @@ class SqliteStore:
             return
         self._closed = True
         self._readers.close()
-        D.release_writer(self.path)
+        if not self.readonly:
+            D.release_writer(self.path)
 
     def __enter__(self) -> SqliteStore:
         return self
@@ -390,6 +393,19 @@ class SqliteStore:
     def meta(self) -> dict[str, str]:
         """The ``meta`` table: ``db_id``, ``epoch``, ``created``, ``last_export``, ``kinds_sha256``."""
         return dict(self._reader().execute("SELECT key, value FROM meta").fetchall())
+
+    def epoch(self) -> str:
+        """The database's epoch (``meta.epoch``): it changes when the database is restored from a backup, so a
+        client holding seqs of the old file must resync (``Store.epoch``)."""
+        row = self._reader().execute("SELECT value FROM meta WHERE key = 'epoch'").fetchone()
+        return str(row[0]) if row is not None and row[0] is not None else ""
+
+    def pending_migrations(self) -> list[int]:
+        """The migration versions not applied to this database: always empty for a store opened read-write (open
+        migrates), and what a read-only store reports instead of migrating."""
+        from .migrate import pending
+
+        return [m.version for m in pending(self._reader())]
 
     def legacy(self, lkind: str, key: str) -> str | None:
         return LG.lookup(self._reader(), lkind, key)
@@ -956,7 +972,10 @@ class SqliteStore:
 
     def checkpoint(self) -> None:
         """``PRAGMA wal_checkpoint(TRUNCATE)`` on the writer (after imports; the writer also runs it on shutdown).
-        Readers still inside a transaction can keep part of the WAL; that is not an error."""
+        Readers still inside a transaction can keep part of the WAL; that is not an error. A read-only store does
+        nothing."""
+        if self.readonly:
+            return
         self._writer.run(lambda con: con.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchall(), transaction=False)
 
     def quick_check(self) -> list[str]:
@@ -979,28 +998,47 @@ def open_store(
     validators: dict[str, Callable[..., Any]] | None = None,
     backup_dir: Path | None = None,
     create: bool = True,
+    readonly: bool = False,
 ) -> SqliteStore:
     """Open (creating and migrating) the truth database at ``path``.
 
-    - ``cache``: ``cache.db`` to attach to readers as schema ``cache`` (WP3 owns its tables).
+    - ``cache``: ``cache.db`` to attach to readers as schema ``cache`` (WP3 owns its tables); never attached to the
+      writer, so truth writes do not take cache.db's write lock. Its folder is created when absent.
     - ``kinds_paths``: kind files or folders of them (default: the core kinds and every feature's).
     - ``validators``: ``{kind: Validator}`` (default: every ``VALIDATORS`` of the features holding the kinds).
     - ``backup_dir``: where pre-migrate and manual backups go (default ``<db folder>/backups``).
     - ``create=False`` refuses a missing database (``NotFound``) instead of creating an empty one.
+    - ``readonly=True`` opens an existing database ``mode=ro`` and changes nothing: no migration (and so no
+      pre-migrate backup), no namespace layers made, no kind-table sync, no writer thread. Writes raise
+      ``db.ReadOnlyWrite``. The kinds still come from the kind files; ``validators`` default to none, since nothing
+      is written. ``pending_migrations()`` says whether the file is older than this code (reads of tables a pending
+      migration adds then fail). A ``cache`` is attached ``mode=ro`` and must exist. Use it for commands that only
+      read (``crhub model check`` and ``info``, ``doctor --data``), which may run beside a serving hub.
 
-    The database file must pass the write guard (``fsio.check_write``).
+    A read-write database file must pass the write guard (``fsio.check_write``); a read-only one need not.
     """
     path = Path(path)
-    if not path.is_file() and not create:
+    if not path.is_file() and (readonly or not create):
         raise NotFound(f"no database at {path} (run crhub setup to create it)")
+    if readonly:
+        bdir = Path(backup_dir) if backup_dir is not None else path.parent / "backups"
+        return SqliteStore(
+            path,
+            cache=cache,
+            kinds=load_kinds(kinds_paths),
+            validators=dict(validators or {}),
+            backup_dir=bdir,
+            readonly=True,
+        )
     fsio.check_write(path)
     if cache is not None:
         fsio.check_write(cache)
+        Path(cache).parent.mkdir(parents=True, exist_ok=True)
     path.parent.mkdir(parents=True, exist_ok=True)
     kinds = load_kinds(kinds_paths)
     found = _discover_validators(kinds) if validators is None else dict(validators)
     bdir = Path(backup_dir) if backup_dir is not None else path.parent / "backups"
-    writer = D.writer_for(path, cache=cache)
+    writer = D.writer_for(path)
     try:
         writer.run(lambda con: migrate(con, backup_dir=bdir), transaction=False)
 

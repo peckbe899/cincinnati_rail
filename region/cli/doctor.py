@@ -1052,33 +1052,19 @@ def check_database(cfg: Mapping[str, Any], *, data: bool = False) -> list[Check]
 
 
 def _check_records(db: Path, cfg: Mapping[str, Any]) -> Check:
-    """Every record validated again, on a checked copy of the database in ``var/tmp``.
+    """Every record validated again, on the live file opened read-only (``open_store(readonly=True)``).
 
-    ``open_store`` migrates a database and rewrites its kind table when it opens it, so doctor never opens the live
-    file with it: a running hub may hold that file, and only serve and setup migrate, after their own backup. The copy
-    is taken with SQLite's online backup API and deleted afterwards.
+    A read-only store never migrates, backs up or rewrites the kind table, and takes no write lock, so doctor can
+    read the file a running hub holds (WAL lets readers in beside the writer). Only serve and setup migrate, after
+    their own backup; ``check_database`` skips this row while a migration is pending.
     """
-    from region.core import paths
-
-    tmp = paths.var_path("tmp", cfg=cfg)
-    made_tmp = not tmp.exists()
-    scratch = tmp / f"doctor-{os.getpid()}-{time.time_ns()}"
     try:
-        from region.model import backup as model_backup
         from region.model import open_store
 
-        copy = model_backup.backup(db, scratch, "doctor")
-        with open_store(copy, create=False, backup_dir=scratch / "backups") as store:
+        with open_store(db, readonly=True) as store:
             problems = store.check_data()
     except Exception as e:
         return Check("records", "warn", f"could not validate the records: {type(e).__name__}: {e}")
-    finally:
-        shutil.rmtree(scratch, ignore_errors=True)
-        if made_tmp:
-            try:
-                tmp.rmdir()
-            except OSError:
-                pass
     if problems:
         first = problems[0]
         return Check(

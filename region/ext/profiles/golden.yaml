@@ -1,0 +1,19 @@
+# What explains a route's rail differing from tests/baseline/profiles (section 7; checklist 2.0.10), read by the
+# profiles.golden_diff job. A difference is classed:
+#   same          every 5 m sample within tol_m of the old page's rail;
+#   rule_fix      listed under rule_fixes here, with the registry rule whose fix makes it;
+#   pending_port  the record input differs from the page's normalised input (the baseline's align) because of a
+#                 normalisation the engine has not ported yet (the reasons below);
+#   unexplained   anything else. Must be zero.
+# A rule fix is added here only with its rule id, never to absorb a difference.
+version: 1
+tol_m: 0.001
+rule_fixes: []
+# - {route: Line_6, rule: era.vertical_curve.radius_and_min_length, note: "why the rail moved", max_m: 0.05}
+pending_ports:
+  reframeDoc: >-
+    The doc was drawn against older stops (its frame differs from the line file); the page maps its PVIs, paints
+    and slides onto the current stops on load (reframeDoc, profiles.html 1839). Increment 2 ports it.
+  defaultAlign: >-
+    No doc was saved for the route; the page's level solver proposes the levels and PVIs (defaultAlign,
+    profiles.html 1756). Increment 2 ports it.

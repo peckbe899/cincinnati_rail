@@ -98,3 +98,18 @@ def test_retention_tiers(write_root):
     assert sorted(p.name.rsplit("-", 1)[1] for p in first) == ["daily.db", "weekly.db"]
     assert auto(db, dest, now=now + dt.timedelta(hours=1)) == []
     assert [p.name.rsplit("-", 1)[1] for p in auto(db, dest, now=now + dt.timedelta(days=1))] == ["daily.db"]
+
+
+def test_epoch_is_the_meta_epoch_and_a_restore_changes_it(make_store, write_root):
+    store = make_store("epoch.db")
+    note(store, "one")
+    first = store.epoch()
+    assert first == store.meta()["epoch"] and len(first) == 26
+    assert store.min_seq() == 1 and store.last_seq() >= 1
+    path = store.backup("manual")
+    db = store.path
+    store.close()
+    restore(path, db)
+    with open_store(db, kinds_paths=KINDS) as again:
+        assert again.epoch() not in ("", first)
+        assert again.epoch() == again.meta()["epoch"]

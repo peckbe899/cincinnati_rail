@@ -239,3 +239,62 @@ def test_only_main_and_proposals_seeded(make_store, write_root):
         "in a proposal",
         "in main",
     ]
+
+
+def test_a_proposal_whose_parent_is_missing_is_skipped_not_fatal(make_store, write_root):
+    """A proposal made on a scenario of one machine reaches a database without that scenario: it is skipped and
+    listed, the other layers still import, and export still runs (leaving the skipped folder as it is)."""
+    one = make_store("one.db")
+    note(one, "in main")
+    one.create_layer("try", by="ben")  # a scenario: never seeded
+    one.create_layer("proposal:on-try", tier="proposal", parent="try", title="on a scenario", by="claude")
+    note(one, "on the scenario's proposal", view=View(layer="proposal:on-try"))
+    one.create_layer("proposal:plain", tier="proposal", by="claude")
+    note(one, "in the plain proposal", view=View(layer="proposal:plain"))
+    out = write_root / "seed"
+    S.export(one, out)
+    assert json.loads((out / "proposals" / "on-try" / "_layer.json").read_text(encoding="utf-8"))["parent"] == "try"
+    before = _files(out)
+
+    two = make_store("two.db")
+    got = S.import_seed(two, out)
+    assert got["skipped"] == [
+        {
+            "layer": "proposal:on-try",
+            "path": (out / "proposals" / "on-try").as_posix(),
+            "reason": "its parent layer try is not in this database",
+        }
+    ]
+    assert got["layers"]["proposal:on-try"]["missing"] is True
+    assert got["layers"]["main"]["added"] == 1 and got["layers"]["proposal:plain"]["added"] == 1
+    assert "proposal:on-try" not in {la["slug"] for la in two.layers()}
+    assert "in the plain proposal" in {r["data"]["text"] for r in two.list("note", View(layer="proposal:plain"))[0]}
+
+    rep = S.export(two, out)  # export imports first, so it meets the same proposal; it must not fail
+    assert rep["imported"]["skipped"][0]["layer"] == "proposal:on-try"
+    assert set(rep["layers"]) == {"main", "proposal:plain"}
+    assert _files(out) == before, "the skipped proposal's folder is left as it is, and the rest is unchanged"
+
+    # once the parent exists here, the proposal imports under it
+    two.create_layer("try", by="ben")
+    again = S.import_seed(two, out)
+    assert again["skipped"] == [] and again["layers"]["proposal:on-try"]["added"] == 1
+    assert two.chain(View(layer="proposal:on-try"))[:2] == ["proposal:on-try", "try"]
+
+
+def test_a_proposal_on_a_proposal_imports_after_its_parent(make_store, write_root):
+    one = make_store("one.db")
+    # "a-child" sorts before "z-base", so name order alone would import the child first
+    one.create_layer("proposal:z-base", tier="proposal", by="claude")
+    note(one, "in the base", view=View(layer="proposal:z-base"))
+    one.create_layer("proposal:a-child", tier="proposal", parent="proposal:z-base", by="claude")
+    note(one, "in the child", view=View(layer="proposal:a-child"))
+    out = write_root / "seed"
+    S.export(one, out)
+    two = make_store("two.db")
+    got = S.import_seed(two, out)
+    assert got["skipped"] == []
+    assert list(got["layers"]) == ["proposal:z-base", "proposal:a-child"]
+    assert two.chain(View(layer="proposal:a-child"))[:2] == ["proposal:a-child", "proposal:z-base"]
+    texts = sorted(r["data"]["text"] for r in two.list("note", View(layer="proposal:a-child"))[0])
+    assert texts == ["in the base", "in the child"]

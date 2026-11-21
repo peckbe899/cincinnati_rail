@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-ConflictReason = Literal["reference", "namespace", "authority", "rebase", "revert"]
+ConflictReason = Literal["reference", "namespace", "authority", "rebase", "revert", "exists", "layer", "seed"]
 
 
 class HubError(Exception):
@@ -121,8 +121,10 @@ class Conflict(HubError):
     """A write refused because of the state of other records (409).
 
     ``reason`` is one of ``reference`` (a restrict ref, a dangling ref), ``namespace`` (an import layer writing outside
-    its namespace), ``authority`` (legacy owns the kind), ``rebase`` and ``revert`` (a later edit stands in the way).
-    ``conflicts`` lists the particulars, one dict per record, each with at least ``kind`` and ``id``.
+    its namespace), ``authority`` (legacy owns the kind), ``rebase`` and ``revert`` (a later edit stands in the way),
+    ``exists`` (a create whose id, layer slug or tag name is taken), ``layer`` (the layer is not open: frozen,
+    promoted or archived) and ``seed`` (export refused while seed changes are unmerged). ``conflicts`` lists the
+    particulars, one dict per record (or layer, or tag), each with at least ``kind`` and ``id``.
     """
 
     status = 409
@@ -169,7 +171,8 @@ class Invalid(HubError):
 class EngineUnavailable(HubError):
     """The engine cannot be reached (503): Node missing or too old, a sidecar that died or timed out, or a hello whose
     contract majors Python does not know. ``reason`` is one of ``no_node``, ``node_version``, ``crashed``, ``timeout``,
-    ``contract``, ``closed``."""
+    ``contract``, ``closed``. ``stderr_tail`` is the last lines the process wrote to stderr: it goes into the job log
+    and the hub log, never into the problem body."""
 
     status = 503
     code = "engine_unavailable"
@@ -186,16 +189,29 @@ class EngineUnavailable(HubError):
 
 class EngineError(HubError):
     """The engine answered ``{"ok": false}`` (502). ``engine_code`` is the engine's own code (``invalid_input``,
-    ``unknown_method``, ``internal``); ``stack`` is the engine's stack trace, logged but never shown to Ben."""
+    ``unknown_method``, ``internal``); ``stack`` is the engine's stack trace and ``stderr_tail`` the last lines its
+    process wrote to stderr, both logged but never shown to Ben. ``issues`` is the list zod reported for an
+    ``invalid_input`` reply (``None`` when the engine sent none); it goes into the job log, not the problem body."""
 
     status = 502
     code = "engine_error"
     title = "Engine error"
 
-    def __init__(self, detail: str = "", *, engine_code: str = "internal", stack: str = "", **extra: Any) -> None:
+    def __init__(
+        self,
+        detail: str = "",
+        *,
+        engine_code: str = "internal",
+        stack: str = "",
+        stderr_tail: str = "",
+        issues: list[Any] | None = None,
+        **extra: Any,
+    ) -> None:
         super().__init__(detail, **extra)
         self.engine_code = engine_code
         self.stack = stack
+        self.stderr_tail = stderr_tail
+        self.issues = issues
 
     def _members(self) -> dict[str, Any]:
         return {"engine_code": self.engine_code}

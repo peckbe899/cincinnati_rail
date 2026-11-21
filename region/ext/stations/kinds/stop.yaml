@@ -1,0 +1,66 @@
+# A stop: where a section stops at a station, at a chainage and in an order.
+kind: stop
+version: 1
+title: Stop
+description: >-
+  Where a section stops at a station: the station point's chainage c on the section and the stop's order along it
+  (of two overlapping platforms the first in order wins). A platform's centre is its stop's c plus the profile's
+  slide (so) for that platform. ground and offset are the line file's values at the station point.
+geometry: Point
+columns:
+  name: /name
+  parent: /section
+  c0: /c
+  ord: /order
+refs:
+  - {path: /section, kind: section, on_delete: restrict, required: true}
+  - {path: /station, kind: station, on_delete: restrict}
+merge:
+  unit: field
+  rebase: auto
+  guard: [/c, /order]
+legacy: [stop]
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [key, name, section, c, order]
+  properties:
+    key:
+      description: The station key within its route, as the old Profiles page keys it (the name, or name#index).
+      type: string
+      minLength: 1
+    name:
+      type: string
+    section:
+      type: string
+      pattern: "^[0-7][0-9A-HJKMNP-TV-Z]{25}$"
+    station:
+      type: [string, "null"]
+      pattern: "^[0-7][0-9A-HJKMNP-TV-Z]{25}$"
+    c:
+      description: The station point's chainage on the section.
+      type: number
+      x-unit: m
+    order:
+      description: The stop's position along the section, from 0.
+      type: integer
+      minimum: 0
+      x-unit: index
+    ground:
+      description: The line file's ground level at the station point, metres NAVD88.
+      type: [number, "null"]
+      x-unit: m
+    offset:
+      description: The line file's offset of the station point from the path.
+      type: [number, "null"]
+      x-unit: m
+  examples:
+    - key: Towne
+      name: Towne
+      section: 01DXF6DT00G2RN476ZR8N14PM3
+      station: null
+      c: 60.5
+      order: 0
+      ground: 164.94
+      offset: 5.4

@@ -167,6 +167,24 @@ class ProcCrash(Sum):
         return Output(meta={"pid": os.getpid()})
 
 
+class ProcEngineError(Sum):
+    """A process job that raises an ``EngineError`` with a stderr tail and issues, which must cross the worker's
+    pipe into the job log."""
+
+    def __init__(self) -> None:
+        super().__init__(name="t.proc_engine_error", host="process", timeout_s=30.0)
+
+    def run(self, inputs: dict[str, Any], rt: Any) -> Output:
+        from region.core.errors import EngineError
+
+        raise EngineError(
+            "engine: invalid input",
+            engine_code="invalid_input",
+            stderr_tail=f"worker {os.getpid()} stderr\n",
+            issues=[{"code": "custom", "path": [], "message": "from the worker"}],
+        )
+
+
 class ProcChatty(Sum):
     """A process job that reports progress every 5 ms for ever and never looks at its token."""
 
@@ -337,6 +355,7 @@ PROC_SLEEP = ProcSleep("t.proc_sleep", timeout_s=30.0)
 PROC_TIMEOUT = ProcSleep("t.proc_timeout", timeout_s=1.0)
 PROC_CRASH = ProcCrash()
 PROC_CHATTY = ProcChatty()
+PROC_ENGINE_ERROR = ProcEngineError()
 UP = Up()
 DOWN = Down()
 VANDAL = Vandal()
@@ -356,6 +375,7 @@ JOB_TYPES = [
     PROC_TIMEOUT,
     PROC_CRASH,
     PROC_CHATTY,
+    PROC_ENGINE_ERROR,
     UP,
     DOWN,
     VANDAL,

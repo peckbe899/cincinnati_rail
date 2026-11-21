@@ -5,7 +5,8 @@
 
 What the spec's WP1 exposes, and where:
 
-- ``open_store(path, *, cache=None, kinds_paths=None) -> SqliteStore`` (here, from ``store``);
+- ``open_store(path, *, cache=None, kinds_paths=None, ..., readonly=False) -> SqliteStore`` (here, from ``store``;
+  ``readonly=True`` reads an existing file and changes nothing);
 - ``region.model.migrate.migrate(con, *, backup_dir) -> list[int]``;
 - ``region.model.backup.backup(db, dest, reason) -> Path`` and ``region.model.backup.restore(src, db)``;
 - ``region.model.seed.export(store, out) -> dict`` and ``region.model.seed.import_seed(store, seed) -> dict``;

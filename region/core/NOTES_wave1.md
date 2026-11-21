@@ -468,3 +468,23 @@ Everything else is as the builder reported.
 - **WP5:**
   - Provide `region/cli/imports.py` with `setup_imports(db) -> int`.
   - Once that file exists, an import error in it stops `crhub setup` instead of being skipped.
+
+
+## Fixes after wave 1 (the lead's fixer, 21 Nov)
+
+These close open items above. Where an item above disagrees with this section, this section holds.
+
+- **cache.db is attached to readers only.** The store's writer connection has no attached database, so a truth write no longer takes cache.db's write lock (`tests/model/test_reads.py::test_cache_write_proceeds_while_a_truth_write_is_open`). `open_store(cache=...)` creates the cache's folder, so the start-up order no longer matters for that folder. `db.writer_for(path)` lost its `cache` argument.
+- **Engine errors in the job log.** `EngineError(detail, *, engine_code, stack, stderr_tail="", issues=None)` and `EngineUnavailable(..., stderr_tail="")` take them as arguments; `region.enginehost` passes them. A job's `error` outcome is now a `region.jobs.hosts.Failure` (`str()` is the traceback), and the scheduler writes `engine stderr (last lines):\n...` and `engine issues: [...]` as job-log lines of their own, from thread, engine and process hosts.
+- **npm scripts.** `engine/package.json` has `gen:rules` and `golden:update`; the golden:update exit test runs `npm run golden:update` through npm's own CLI. `app/package.json` declares `zod ^4.6.7`; npm dedupes it to the engine's copy (one `zod` chunk in the build).
+- **`open_store(path, readonly=True)`** opens an existing file `mode=ro`: no migrate, no namespace layers, no kind-table sync, no writer thread; writes raise `region.model.db.ReadOnlyWrite`; `store.pending_migrations()` says whether the file is older than the code. `crhub model check` and `info` and `doctor --data` use it (doctor no longer copies the database).
+- **Store protocol.** `Store` now has `last_seq()`, `min_seq()` and `epoch()` (`meta.epoch`). The scheduler's invalidator re-plans every goal when the epoch changes (in memory: a restore while no scheduler runs is still caught only by the seq checks). `ConflictReason` lists `exists`, `layer` and `seed`. `ImportReport.changes` documents the `rebase` entries. `JobType`'s optional members (`axes`, `effect` with `apply`, `code`, `code_files`, `job_module`) are documented on the protocol.
+- **`region/core/lock.py`:** `acquire(var, port, *, command="crhub serve", wait_s=1.0) -> Lock`, `reader(var) -> Holder | None`, `refuse_if_held(var, doing)`, `LockHeld` (409, code `hub_running`, carrying `holder`), `Holder(pid, port, started, command).describe()`. An OS lock (`flock`, or `LockFile` on one byte at 1 MiB on Windows) on `var/hub.lock`, whose first 1024 bytes hold the holder as JSON. The OS drops it when the process dies, so a stale file is simply taken over (`tests/core/test_lock.py` kills a child holder). The descriptor is not inheritable, and the file is never deleted. `crhub jobs run`, `crhub jobs wipe` and `crhub restore` (and `model restore`) hold it while they work; `crhub setup` refuses while it is held (`setup.lock_holder()`), and keeps its HTTP probe as a second check.
+- **Seed import:** a proposal whose `_layer.json` parent is not in the database is skipped, listed in the report's `skipped` (`{layer, path, reason}`) with `missing: true` on its layer entry; export goes on and leaves its folder alone. Proposals now import parents first.
+- **CLI:** `crhub export`, `crhub backup` and `crhub restore` are thin aliases of the `model` actions (`region/cli/{export,backup,restore}.py`, sharing `model.export_arguments` and friends).
+
+### What integration (WP2: serve, setup, the e2e gate) must know
+- **serve** takes `lock.acquire(var, port)` first, holds the `Lock` for its whole life (keep a reference: a collected `Lock` releases itself) and releases it at shutdown. A second serve gets `LockHeld`; print `str(err)`, which names the first (`test_second_instance_names_first`). After a `TerminateProcess`, the next start takes the lock over (the `resync.spec` restart test).
+- Doctor's port rows still recognise a hub by HTTP (`/api/v1/health`). Once serve holds the lock, `lock.reader(var)` names the running hub directly; doctor does not use it yet.
+- `crhub model export` and `crhub model import` still write directly while a server runs (SQLite serialises them and the server's data_version poll sees them); 9.28's "through HTTP while a server holds the lock" is WP2's to add.
+- A store opened read-only is the right thing for any server route or command that only reads beside another writer process; the server itself uses `open_store(db, create=False, cache=...)`.

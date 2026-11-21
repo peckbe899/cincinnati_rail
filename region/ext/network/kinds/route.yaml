@@ -1,0 +1,49 @@
+# A route: one line as a passenger rides it (Line 6, the CVG Express), made of sections.
+kind: route
+version: 1
+title: Route
+description: >-
+  One line as a passenger rides it: its name, system and colour. Its sections name it as their route (section
+  data.route), so the sections of a route are /k/section?parent=<route id>. In increment 1 every Metro route has
+  exactly one section, from chainage 0 to the line file's length. attrs keeps the line file's other members
+  (variant, opened, src_flags, route_chainage_m, settings) so the line file can be rebuilt from the records.
+geometry: none
+columns:
+  name: /name
+  system: /system
+merge:
+  unit: field
+  rebase: auto
+legacy: [route]
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [key, name, system]
+  properties:
+    key:
+      description: The old route id (Line_6, CVG_Express), also the line file's name.
+      type: string
+      pattern: "^[A-Za-z][A-Za-z0-9_]*$"
+    name:
+      description: The route's name as shown (Line 6).
+      type: string
+    system:
+      description: The system the route belongs to.
+      type: string
+      x-vocab: systems
+    color:
+      description: The line file's colour, KML aabbggrr hex.
+      type: [string, "null"]
+    attrs:
+      description: >-
+        Import provenance: the line file's members that no other field holds (system_name, variant, opened,
+        src_flags, route_chainage_m, settings), kept so the line file round trips.
+      type: object
+  examples:
+    - key: Line_6
+      name: Line 6
+      system: metro
+      color: ff91c483
+      attrs:
+        system_name: Cincinnati Metro

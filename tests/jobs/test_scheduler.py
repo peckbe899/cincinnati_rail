@@ -417,6 +417,72 @@ def test_engine_host_and_inline_host(make_sched):
         bare.submit("t.engine", "A", MAIN)
 
 
+def test_engine_stderr_tail_and_issues_reach_the_job_log(make_sched):
+    from region.core.errors import EngineError, EngineUnavailable
+
+    store = FakeStore()
+    store.set("thing", "A", {"v": 1})
+    store.set("thing", "B", {"v": 2})
+    issues = [{"code": "invalid_type", "path": ["stations", 0, "z_m"], "message": "Expected number"}]
+
+    def answer(method, params):
+        if params["v"] == 1:
+            raise EngineError(
+                "engine: invalid input", engine_code="invalid_input", stderr_tail="zod said no\n", issues=issues
+            )
+        raise EngineUnavailable("the engine died", reason="crashed", stderr_tail="Segmentation fault\n")
+
+    sched = make_sched(store, engine=FakeEngine(answer=answer))
+    bad = sched.wait_job(sched.submit("t.engine", "A", MAIN)["job"])
+    assert bad["state"] == "failed"
+    lines = [line["msg"] for line in sched.job_log(bad["id"])]
+    assert any(m.startswith("error: ") and "EngineError" in m for m in lines)
+    assert "engine stderr (last lines):\nzod said no" in lines
+    assert any(m.startswith("engine issues: ") and '"Expected number"' in m for m in lines)
+
+    dead = sched.wait_job(sched.submit("t.engine", "B", MAIN)["job"])
+    assert dead["state"] == "failed"
+    lines = [line["msg"] for line in sched.job_log(dead["id"])]
+    assert "engine stderr (last lines):\nSegmentation fault" in lines
+    assert not any(m.startswith("engine issues: ") for m in lines)
+
+    # the same from a process worker: the failure crosses the pipe with its tail and issues
+    proc = sched.wait_job(sched.submit("t.proc_engine_error", "A", MAIN)["job"], timeout=60)
+    assert proc["state"] == "failed"
+    lines = [line["msg"] for line in sched.job_log(proc["id"])]
+    assert any(m.startswith("engine stderr (last lines):\nworker ") for m in lines)
+    assert any(m.startswith("engine issues: ") and "from the worker" in m for m in lines)
+
+
+def test_new_epoch_replans_every_goal_even_when_the_seqs_caught_up(make_sched):
+    """A restore followed by new writes before the next poll leaves the outbox at the cursor again: only the store's
+    new epoch shows that its history is another one."""
+    store = FakeStore()
+    store.set("thing", "A", {"v": 1})
+    store.set("thing", "B", {"v": 1})
+    sched = make_sched(store)
+    old_revs, old_seq = store.snapshot(), store.last_seq()
+    sched.watch_goal("t.sum", "A", MAIN)
+    sched.watch_goal("t.sum", "B", MAIN)
+    store.set("thing", "A", {"v": 2})
+    store.set("thing", "B", {"v": 2})
+    sched.notify()
+    settle(sched)
+    until(lambda: sched.cache.cursor("invalidator") == store.last_seq(), what="the invalidator to catch up")
+    assert (meta(sched, "t.sum", "A")["sum"], meta(sched, "t.sum", "B")["sum"]) == (2, 2)
+    cursor = sched.cache.cursor("invalidator")
+    with store._lock:  # one step as the invalidator sees it: the restore, then two writes
+        store.restore_db(old_revs, old_seq)
+        store.set("thing", "A", {"v": 5})
+        store.set("thing", "A", {"v": 6})
+        assert store.last_seq() == cursor and store.events_since(cursor) == []  # the seqs alone show nothing
+    sched.notify()
+    until(
+        lambda: meta(sched, "t.sum", "A")["sum"] == 6 and meta(sched, "t.sum", "B")["sum"] == 1,
+        what="every goal re-planned after the new epoch",
+    )
+
+
 def test_restored_outbox_replans_every_goal(make_sched):
     store = FakeStore()
     store.set("thing", "A", {"v": 1})

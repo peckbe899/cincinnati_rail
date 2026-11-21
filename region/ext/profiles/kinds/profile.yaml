@@ -1,0 +1,156 @@
+# A profile: Ben's vertical design of one section, merged whole.
+kind: profile
+version: 1
+title: Profile
+description: >-
+  The vertical design of one section (section 4 of the spec): one record per section, merged whole (atomic, the
+  1 November ruling). Keyed by platform id: st (rail level), sg (platform grade), so (slide of the platform centre
+  from the stop), del (platforms left out), stt (station type) and gapfill. Keyed by chainage: pvi, ovr (paints),
+  tf (tunnel forms), shafts and gnd (drawn ground). Also carried: mode, ready, and frame, the stops' chainages the
+  design was drawn against (what reframeDoc maps a re-path from). A field the old alignment doc did not have is
+  left out, so the doc rebuilds value for value. The old doc's stations, summary and updated are derived, never
+  stored. attrs keeps the doc's own header values (v, platform_m, reframed) and keys that name no platform.
+geometry: none
+columns:
+  parent: /section
+refs:
+  - {path: /section, kind: section, on_delete: restrict, required: true}
+merge:
+  unit: atomic
+  rebase: auto
+legacy: [alignment]
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [section]
+  $defs:
+    c:
+      type: number
+      x-unit: m
+    level:
+      type: number
+      x-unit: m
+    range:
+      description: "[c0, c1, value]"
+      type: array
+      prefixItems:
+        - {$ref: "#/$defs/c"}
+        - {$ref: "#/$defs/c"}
+        - {type: string}
+      minItems: 3
+  properties:
+    section:
+      description: The section this profile designs.
+      type: string
+      pattern: "^[0-7][0-9A-HJKMNP-TV-Z]{25}$"
+    st:
+      description: Rail level at each platform, metres NAVD88 (null leaves it to the design).
+      type: object
+      additionalProperties: {type: [number, "null"], x-unit: m}
+    sg:
+      description: Platform grade, rising with chainage (absent means level).
+      type: object
+      additionalProperties: {type: number, x-unit: permille}
+    so:
+      description: Slide of the platform centre from its stop's point, along the chainage (up to 150 m either way).
+      type: object
+      additionalProperties: {type: number, x-unit: m}
+    del:
+      description: Platforms left out of this profile.
+      type: array
+      items: {type: string}
+    gapfill:
+      type: array
+      items: {type: string}
+    stt:
+      description: Station structure type set by Ben.
+      type: object
+      additionalProperties: {type: string, enum: [cutcover, shield, deep, elevated]}
+    mode:
+      description: RER station mode.
+      type: object
+      additionalProperties: {type: string, enum: [under, surface]}
+    pvi:
+      description: >-
+        Points of vertical intersection, [c, z] pairs (the old docs' form) or {c_m, z_m} objects (what the line
+        sheet writes into an empty list); both read the same.
+      type: array
+      items:
+        oneOf:
+          - type: array
+            prefixItems:
+              - {$ref: "#/$defs/c"}
+              - {$ref: "#/$defs/level"}
+            minItems: 2
+            items: false
+          - type: object
+            additionalProperties: false
+            required: [c_m, z_m]
+            properties:
+              c_m: {$ref: "#/$defs/c"}
+              z_m: {$ref: "#/$defs/level"}
+    ovr:
+      description: Structure type paints, [c0, c1, type].
+      type: array
+      items:
+        allOf:
+          - {$ref: "#/$defs/range"}
+          - prefixItems:
+              - true
+              - true
+              - {enum: [elevated, atgrade, trough, cutcover, shield, deep, sunk, bored]}
+    tf:
+      description: Tunnel forms, [c0, c1, twin | bore].
+      type: array
+      items:
+        allOf:
+          - {$ref: "#/$defs/range"}
+          - prefixItems:
+              - true
+              - true
+              - {enum: [twin, bore]}
+    shafts:
+      description: Shaft chainages.
+      type: array
+      items: {$ref: "#/$defs/c"}
+    gnd:
+      description: Drawn ground lines, each a list of [c, z] points.
+      type: array
+      items:
+        type: array
+        items:
+          type: array
+          prefixItems:
+            - {$ref: "#/$defs/c"}
+            - {$ref: "#/$defs/level"}
+          minItems: 2
+          items: false
+    ready:
+      type: boolean
+    frame:
+      description: >-
+        The frame the design was drawn in: the section length and each platform's stop chainage at the time. When
+        the stops have moved since (a re-path), reframeDoc maps the chainage-keyed fields across (a pending port).
+      type: [object, "null"]
+      additionalProperties: false
+      required: [length_m, point_c]
+      properties:
+        length_m: {$ref: "#/$defs/c"}
+        point_c:
+          type: object
+          additionalProperties: {$ref: "#/$defs/c"}
+    attrs:
+      description: >-
+        Provenance: the old doc's header values (v, platform_m, reframed, and system, line or route_chainage_m where
+        they differ from the records), no_doc on a profile no doc was saved for, and unmatched, the doc's keys that
+        name no platform of the section.
+      type: object
+  examples:
+    - section: 01DXF6DT00G2RN476ZR8N14PM3
+      st: {}
+      pvi: [[357.0, 168.5], [574.0, 173.2]]
+      ovr: [[3697.9, 3725.8, cutcover]]
+      ready: false
+      frame: null
+      attrs: {v: 1, platform_m: 121.92}

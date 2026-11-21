@@ -31,9 +31,11 @@ other code path of the scheduler writes to the store.
 **Invalidation.** A thread tails the store's outbox (``Store.events_since``) past ``cursor('invalidator')``, looks
 the changed refs up in ``result_dep`` (rows are written when a key is first wanted, so pending keys are covered
 too), and re-plans the watched goals that want or hold an affected key. An upstream result whose ``output_hash``
-changed re-plans its dependants (``job:`` refs); an unchanged one does not (early cutoff). When the store offers
-``last_seq`` and ``min_seq`` (the SQLite store does; the protocol does not), an outbox that went backwards (a restore)
-or was pruned past the cursor re-plans every watched goal, because what changed is unknown.
+changed re-plans its dependants (``job:`` refs); an unchanged one does not (early cutoff). Through the store's
+``epoch``, ``last_seq`` and ``min_seq`` (``Store`` protocol members; a store without them only loses these checks), a
+new epoch (a restore, even one followed by new writes before the next poll), an outbox that went backwards or one
+pruned past the cursor re-plans every watched goal, because what changed is unknown. The epoch is remembered in
+memory, so a restore made while no scheduler runs is caught by the other two checks only.
 
 **Leases.** A running job holds a lease (30 s) renewed by a heartbeat (every 5 s) while its scheduler is running or
 committing it. A lease that expires (its scheduler died, or could not record the job's end) re-queues the job, at
@@ -66,7 +68,7 @@ from region.core.view import View
 
 from . import goals
 from .cache import Cache, decode_array, encode_output, now_iso, now_s, set_current
-from .hosts import EngineHost, InlineHost, ProcessHost, Task, ThreadHost, as_output
+from .hosts import EngineHost, Failure, InlineHost, ProcessHost, Task, ThreadHost, as_output
 from .plan import PARAM_KIND, ParamResolver, Plan, Planner, iter_deps, query_prefix
 from .registry import Registry, default_registry, module_of
 
@@ -199,6 +201,7 @@ class Scheduler:
         self._events: list[tuple[str, dict[str, Any]]] = []
         self._listeners: list[EventSink] = [on_event] if on_event is not None else []
         self._hello: tuple[str, dict[str, Any]] | None = None
+        self._epoch: str | None = None  # the truth DB's epoch as last seen by the invalidator
         self._wake = threading.Event()
         self._inval_wake = threading.Event()
         self._stopping = threading.Event()
@@ -1051,9 +1054,13 @@ class Scheduler:
                 if self._owned(jid) is not None:
                     self._close_row(con, jid, "cancelled", str(value))
         else:
-            self._fail(row, run.plan, outcome, str(value))
+            self._fail(row, run.plan, outcome, str(value), failure=value if isinstance(value, Failure) else None)
 
-    def _fail(self, row: dict[str, Any], plan: Plan, outcome: str, text: str) -> None:
+    def _fail(
+        self, row: dict[str, Any], plan: Plan, outcome: str, text: str, *, failure: Failure | None = None
+    ) -> None:
+        """Mark the job failed; the job log gets the error, then the engine's stderr tail and zod issues (each a line
+        of its own) when the failure carried them."""
         jid, t, s, v, key = row["id"], row["type"], row["scope"], row["view"], row["key"]
         summary = text.strip().splitlines()[-1][:500] if text.strip() else outcome
         with self._lock:
@@ -1065,6 +1072,10 @@ class Scheduler:
                     (outcome, text, now_iso(), jid),
                 )
                 self._log(con, jid, "error", f"{outcome}: {text}")
+                if failure is not None and failure.stderr_tail.strip():
+                    self._log(con, jid, "error", "engine stderr (last lines):\n" + failure.stderr_tail.rstrip())
+                if failure is not None and failure.issues:
+                    self._log(con, jid, "error", "engine issues: " + json.dumps(failure.issues, ensure_ascii=False))
                 ok = con.execute("SELECT 1 FROM result WHERE key = ? AND status = 'ok'", (key,)).fetchone()
                 if ok is None:
                     con.execute(
@@ -1348,9 +1359,24 @@ class Scheduler:
             except Exception:
                 log.exception("the invalidator failed; it carries on")
 
+    def _store_epoch(self) -> str | None:
+        epoch = getattr(self.store, "epoch", None)  # Store.epoch; a fake without it skips the check
+        return str(epoch()) if callable(epoch) else None
+
     def _invalidate_once(self) -> None:
         cursor = self.cache.cursor("invalidator") or 0
-        last_seq = getattr(self.store, "last_seq", None)  # not in the Store protocol; the SQLite store has it
+        epoch = self._store_epoch()
+        last_seq = getattr(self.store, "last_seq", None)  # Store.last_seq; getattr keeps older fakes working
+        if epoch is not None and epoch != self._epoch:
+            seen, self._epoch = self._epoch, epoch
+            if seen is not None:
+                # a new epoch is a restored truth DB: its outbox is another history, so start from its end and plan
+                # every goal (seq comparisons alone miss a restore followed by new writes before this poll)
+                last = int(last_seq()) if callable(last_seq) else 0
+                log.warning("the truth DB has a new epoch (%s, was %s); re-planning every goal", epoch, seen)
+                self.cache.set_cursor("invalidator", last)
+                cursor = last
+                self.replan_all()
         if cursor and callable(last_seq):
             last = int(last_seq())
             if last < cursor:
@@ -1359,7 +1385,7 @@ class Scheduler:
                 self.cache.set_cursor("invalidator", last)
                 cursor = last
                 self.replan_all()
-        min_seq = getattr(self.store, "min_seq", None)  # not in the Store protocol either
+        min_seq = getattr(self.store, "min_seq", None)  # Store.min_seq, as above
         if cursor and callable(min_seq):
             first = int(min_seq())
             if first > cursor + 1:

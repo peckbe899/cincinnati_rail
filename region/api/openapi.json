@@ -1,0 +1,5813 @@
+{
+ "components": {
+  "schemas": {
+   "Body": {
+    "additionalProperties": false,
+    "description": "The writable part of a record (a PUT replaces it whole).",
+    "properties": {
+     "data": {
+      "additionalProperties": true,
+      "title": "Data",
+      "type": "object"
+     },
+     "geom": {
+      "description": "WKT (or a GeoJSON geometry) in EPSG:26916, or null",
+      "title": "Geom"
+     },
+     "kv": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "the kind version the data is written in (default: current)",
+      "title": "Kv"
+     },
+     "source": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Source"
+     }
+    },
+    "required": [
+     "data"
+    ],
+    "title": "Body",
+    "type": "object"
+   },
+   "Changeset": {
+    "additionalProperties": true,
+    "properties": {
+     "by": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "By"
+     },
+     "client": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Client"
+     },
+     "count": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Count"
+     },
+     "created": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Created"
+     },
+     "id": {
+      "title": "Id",
+      "type": "string"
+     },
+     "kind": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Kind"
+     },
+     "layer": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Layer"
+     },
+     "message": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Message"
+     },
+     "reverts": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reverts"
+     },
+     "seq": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Seq"
+     }
+    },
+    "required": [
+     "id",
+     "layer",
+     "by"
+    ],
+    "title": "Changeset",
+    "type": "object"
+   },
+   "ChangesetFull": {
+    "additionalProperties": true,
+    "properties": {
+     "by": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "By"
+     },
+     "client": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Client"
+     },
+     "count": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Count"
+     },
+     "created": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Created"
+     },
+     "id": {
+      "title": "Id",
+      "type": "string"
+     },
+     "kind": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Kind"
+     },
+     "layer": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Layer"
+     },
+     "message": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Message"
+     },
+     "records": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/Record"
+      },
+      "title": "Records",
+      "type": "array"
+     },
+     "reverts": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reverts"
+     },
+     "seq": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Seq"
+     }
+    },
+    "required": [
+     "id",
+     "layer",
+     "by"
+    ],
+    "title": "ChangesetFull",
+    "type": "object"
+   },
+   "ChangesetIn": {
+    "additionalProperties": false,
+    "properties": {
+     "layer": {
+      "default": "main",
+      "title": "Layer",
+      "type": "string"
+     },
+     "message": {
+      "default": "",
+      "title": "Message",
+      "type": "string"
+     },
+     "ops": {
+      "items": {
+       "$ref": "#/components/schemas/OpIn"
+      },
+      "minItems": 1,
+      "title": "Ops",
+      "type": "array"
+     }
+    },
+    "required": [
+     "ops"
+    ],
+    "title": "ChangesetIn",
+    "type": "object"
+   },
+   "ChangesetList": {
+    "properties": {
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/Changeset"
+      },
+      "title": "Items",
+      "type": "array"
+     }
+    },
+    "required": [
+     "items"
+    ],
+    "title": "ChangesetList",
+    "type": "object"
+   },
+   "ClientLogIn": {
+    "additionalProperties": true,
+    "properties": {
+     "level": {
+      "default": "error",
+      "title": "Level",
+      "type": "string"
+     },
+     "msg": {
+      "default": "",
+      "title": "Msg",
+      "type": "string"
+     }
+    },
+    "title": "ClientLogIn",
+    "type": "object"
+   },
+   "ComputeIn": {
+    "additionalProperties": false,
+    "properties": {
+     "priority": {
+      "default": 1,
+      "maximum": 9.0,
+      "minimum": 0.0,
+      "title": "Priority",
+      "type": "integer"
+     },
+     "scope": {
+      "title": "Scope",
+      "type": "string"
+     },
+     "type": {
+      "title": "Type",
+      "type": "string"
+     },
+     "view": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "$ref": "#/components/schemas/ViewIn"
+       }
+      ],
+      "default": "main|-|canon",
+      "description": "a view token (\"try|1931|canon\") or a view object",
+      "title": "View"
+     },
+     "watch_s": {
+      "anyOf": [
+       {
+        "exclusiveMinimum": 0.0,
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "also keep the goal fresh for this many seconds",
+      "title": "Watch S"
+     }
+    },
+    "required": [
+     "type",
+     "scope"
+    ],
+    "title": "ComputeIn",
+    "type": "object"
+   },
+   "ComputeOut": {
+    "properties": {
+     "job": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Job"
+     },
+     "key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Key"
+     },
+     "state": {
+      "enum": [
+       "hit",
+       "queued",
+       "running"
+      ],
+      "title": "State",
+      "type": "string"
+     }
+    },
+    "required": [
+     "key",
+     "state",
+     "job"
+    ],
+    "title": "ComputeOut",
+    "type": "object"
+   },
+   "Conflict": {
+    "additionalProperties": true,
+    "properties": {
+     "id": {
+      "title": "Id",
+      "type": "string"
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reason"
+     },
+     "state": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "State"
+     }
+    },
+    "required": [
+     "id"
+    ],
+    "title": "Conflict",
+    "type": "object"
+   },
+   "ConflictList": {
+    "properties": {
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/Conflict"
+      },
+      "title": "Items",
+      "type": "array"
+     }
+    },
+    "required": [
+     "items"
+    ],
+    "title": "ConflictList",
+    "type": "object"
+   },
+   "CreateBody": {
+    "additionalProperties": false,
+    "description": "A new record; ``id`` is minted when absent (a ULID when given).",
+    "properties": {
+     "data": {
+      "additionalProperties": true,
+      "title": "Data",
+      "type": "object"
+     },
+     "geom": {
+      "description": "WKT (or a GeoJSON geometry) in EPSG:26916, or null",
+      "title": "Geom"
+     },
+     "id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Id"
+     },
+     "kv": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "the kind version the data is written in (default: current)",
+      "title": "Kv"
+     },
+     "source": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Source"
+     }
+    },
+    "required": [
+     "data"
+    ],
+    "title": "CreateBody",
+    "type": "object"
+   },
+   "Diff": {
+    "properties": {
+     "items": {
+      "description": "RFC 6902 operations from one version to the other",
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "title": "Items",
+      "type": "array"
+     }
+    },
+    "required": [
+     "items"
+    ],
+    "title": "Diff",
+    "type": "object"
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "title": "Detail",
+      "type": "array"
+     }
+    },
+    "title": "HTTPValidationError",
+    "type": "object"
+   },
+   "Health": {
+    "additionalProperties": true,
+    "properties": {
+     "epoch": {
+      "title": "Epoch",
+      "type": "string"
+     },
+     "ok": {
+      "title": "Ok",
+      "type": "boolean"
+     },
+     "started": {
+      "title": "Started",
+      "type": "string"
+     }
+    },
+    "required": [
+     "ok",
+     "epoch",
+     "started"
+    ],
+    "title": "Health",
+    "type": "object"
+   },
+   "History": {
+    "properties": {
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/Record"
+      },
+      "title": "Items",
+      "type": "array"
+     }
+    },
+    "required": [
+     "items"
+    ],
+    "title": "History",
+    "type": "object"
+   },
+   "ImportIn": {
+    "additionalProperties": false,
+    "properties": {
+     "dry_run": {
+      "default": true,
+      "title": "Dry Run",
+      "type": "boolean"
+     },
+     "importer": {
+      "title": "Importer",
+      "type": "string"
+     }
+    },
+    "required": [
+     "importer"
+    ],
+    "title": "ImportIn",
+    "type": "object"
+   },
+   "ImportRunOut": {
+    "additionalProperties": true,
+    "properties": {
+     "id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Id"
+     },
+     "importer": {
+      "title": "Importer",
+      "type": "string"
+     },
+     "state": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "State"
+     }
+    },
+    "required": [
+     "importer"
+    ],
+    "title": "ImportRunOut",
+    "type": "object"
+   },
+   "Importer": {
+    "additionalProperties": true,
+    "properties": {
+     "feature": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Feature"
+     },
+     "layer": {
+      "title": "Layer",
+      "type": "string"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "namespace": {
+      "title": "Namespace",
+      "type": "string"
+     },
+     "version": {
+      "title": "Version",
+      "type": "string"
+     }
+    },
+    "required": [
+     "name",
+     "version",
+     "namespace",
+     "layer"
+    ],
+    "title": "Importer",
+    "type": "object"
+   },
+   "ImporterList": {
+    "properties": {
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/Importer"
+      },
+      "title": "Items",
+      "type": "array"
+     }
+    },
+    "required": [
+     "items"
+    ],
+    "title": "ImporterList",
+    "type": "object"
+   },
+   "Job": {
+    "additionalProperties": true,
+    "properties": {
+     "id": {
+      "title": "Id",
+      "type": "string"
+     },
+     "key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Key"
+     },
+     "msg": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Msg"
+     },
+     "progress": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Progress"
+     },
+     "scope": {
+      "title": "Scope",
+      "type": "string"
+     },
+     "state": {
+      "title": "State",
+      "type": "string"
+     },
+     "type": {
+      "title": "Type",
+      "type": "string"
+     },
+     "view": {
+      "title": "View",
+      "type": "string"
+     }
+    },
+    "required": [
+     "id",
+     "type",
+     "scope",
+     "view",
+     "state"
+    ],
+    "title": "Job",
+    "type": "object"
+   },
+   "JobList": {
+    "properties": {
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/Job"
+      },
+      "title": "Items",
+      "type": "array"
+     }
+    },
+    "required": [
+     "items"
+    ],
+    "title": "JobList",
+    "type": "object"
+   },
+   "JobLog": {
+    "properties": {
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/JobLogLine"
+      },
+      "title": "Items",
+      "type": "array"
+     }
+    },
+    "required": [
+     "items"
+    ],
+    "title": "JobLog",
+    "type": "object"
+   },
+   "JobLogLine": {
+    "properties": {
+     "at": {
+      "title": "At",
+      "type": "string"
+     },
+     "level": {
+      "title": "Level",
+      "type": "string"
+     },
+     "msg": {
+      "title": "Msg",
+      "type": "string"
+     }
+    },
+    "required": [
+     "at",
+     "level",
+     "msg"
+    ],
+    "title": "JobLogLine",
+    "type": "object"
+   },
+   "LatestResult": {
+    "properties": {
+     "key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Key"
+     }
+    },
+    "required": [
+     "key"
+    ],
+    "title": "LatestResult",
+    "type": "object"
+   },
+   "Layer": {
+    "additionalProperties": true,
+    "properties": {
+     "by": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "By"
+     },
+     "created": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Created"
+     },
+     "namespace": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Namespace"
+     },
+     "note": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Note"
+     },
+     "parent": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Parent"
+     },
+     "slug": {
+      "title": "Slug",
+      "type": "string"
+     },
+     "state": {
+      "default": "open",
+      "title": "State",
+      "type": "string"
+     },
+     "tier": {
+      "title": "Tier",
+      "type": "string"
+     },
+     "title": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Title"
+     }
+    },
+    "required": [
+     "slug",
+     "tier"
+    ],
+    "title": "Layer",
+    "type": "object"
+   },
+   "LayerDiff": {
+    "properties": {
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/LayerDiffEntry"
+      },
+      "title": "Items",
+      "type": "array"
+     }
+    },
+    "required": [
+     "items"
+    ],
+    "title": "LayerDiff",
+    "type": "object"
+   },
+   "LayerDiffEntry": {
+    "additionalProperties": true,
+    "properties": {
+     "fields": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Fields",
+      "type": "array"
+     },
+     "id": {
+      "title": "Id",
+      "type": "string"
+     },
+     "kind": {
+      "title": "Kind",
+      "type": "string"
+     },
+     "op": {
+      "title": "Op",
+      "type": "string"
+     },
+     "ours": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ours"
+     },
+     "theirs": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Theirs"
+     }
+    },
+    "required": [
+     "kind",
+     "id",
+     "op",
+     "fields"
+    ],
+    "title": "LayerDiffEntry",
+    "type": "object"
+   },
+   "LayerIn": {
+    "additionalProperties": false,
+    "properties": {
+     "note": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Note"
+     },
+     "parent": {
+      "default": "main",
+      "title": "Parent",
+      "type": "string"
+     },
+     "slug": {
+      "title": "Slug",
+      "type": "string"
+     },
+     "tier": {
+      "default": "scenario",
+      "enum": [
+       "scenario",
+       "proposal"
+      ],
+      "title": "Tier",
+      "type": "string"
+     },
+     "title": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Title"
+     }
+    },
+    "required": [
+     "slug"
+    ],
+    "title": "LayerIn",
+    "type": "object"
+   },
+   "LayerList": {
+    "properties": {
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/Layer"
+      },
+      "title": "Items",
+      "type": "array"
+     }
+    },
+    "required": [
+     "items"
+    ],
+    "title": "LayerList",
+    "type": "object"
+   },
+   "LegacyHit": {
+    "properties": {
+     "id": {
+      "title": "Id",
+      "type": "string"
+     },
+     "kind": {
+      "title": "Kind",
+      "type": "string"
+     }
+    },
+    "required": [
+     "kind",
+     "id"
+    ],
+    "title": "LegacyHit",
+    "type": "object"
+   },
+   "Meta": {
+    "additionalProperties": true,
+    "description": "Kinds with their schemas, features, importers, job types, layers, the engine hello, the schema version and\nthe server epoch.",
+    "properties": {
+     "engine": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Engine"
+     },
+     "epoch": {
+      "title": "Epoch",
+      "type": "string"
+     },
+     "kinds": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "title": "Kinds",
+      "type": "array"
+     },
+     "layers": {
+      "items": {
+       "$ref": "#/components/schemas/Layer"
+      },
+      "title": "Layers",
+      "type": "array"
+     },
+     "old_hub": {
+      "title": "Old Hub",
+      "type": "string"
+     },
+     "schema_version": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Schema Version"
+     },
+     "seq": {
+      "title": "Seq",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "kinds",
+     "layers",
+     "epoch",
+     "seq",
+     "old_hub"
+    ],
+    "title": "Meta",
+    "type": "object"
+   },
+   "OpIn": {
+    "additionalProperties": false,
+    "description": "One op of a changeset (``region.core.protocols.Op``).",
+    "properties": {
+     "body": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Body"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Id"
+     },
+     "if_match": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "If Match"
+     },
+     "kind": {
+      "title": "Kind",
+      "type": "string"
+     },
+     "op": {
+      "enum": [
+       "create",
+       "put",
+       "patch",
+       "delete"
+      ],
+      "title": "Op",
+      "type": "string"
+     },
+     "patch": {
+      "anyOf": [
+       {
+        "items": {
+         "$ref": "#/components/schemas/PatchOp"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Patch"
+     }
+    },
+    "required": [
+     "op",
+     "kind"
+    ],
+    "title": "OpIn",
+    "type": "object"
+   },
+   "PatchOp": {
+    "additionalProperties": false,
+    "description": "One RFC 6902 operation; paths are relative to the body (``/data/pvi/3/z_m``).",
+    "properties": {
+     "from": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "From"
+     },
+     "op": {
+      "enum": [
+       "add",
+       "remove",
+       "replace",
+       "move",
+       "copy",
+       "test"
+      ],
+      "title": "Op",
+      "type": "string"
+     },
+     "path": {
+      "title": "Path",
+      "type": "string"
+     },
+     "value": {
+      "title": "Value"
+     }
+    },
+    "required": [
+     "op",
+     "path"
+    ],
+    "title": "PatchOp",
+    "type": "object"
+   },
+   "Poll": {
+    "properties": {
+     "epoch": {
+      "title": "Epoch",
+      "type": "string"
+     },
+     "events": {
+      "items": {
+       "$ref": "#/components/schemas/PollEvent"
+      },
+      "title": "Events",
+      "type": "array"
+     },
+     "seq": {
+      "title": "Seq",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "epoch",
+     "seq",
+     "events"
+    ],
+    "title": "Poll",
+    "type": "object"
+   },
+   "PollEvent": {
+    "properties": {
+     "data": {
+      "additionalProperties": true,
+      "title": "Data",
+      "type": "object"
+     },
+     "seq": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Seq"
+     },
+     "type": {
+      "title": "Type",
+      "type": "string"
+     }
+    },
+    "required": [
+     "seq",
+     "type",
+     "data"
+    ],
+    "title": "PollEvent",
+    "type": "object"
+   },
+   "Problem": {
+    "additionalProperties": true,
+    "description": "An RFC 9457 problem body.",
+    "properties": {
+     "code": {
+      "title": "Code",
+      "type": "string"
+     },
+     "conflicts": {
+      "default": [],
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "title": "Conflicts",
+      "type": "array"
+     },
+     "detail": {
+      "title": "Detail",
+      "type": "string"
+     },
+     "request_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Request Id"
+     },
+     "status": {
+      "title": "Status",
+      "type": "integer"
+     },
+     "title": {
+      "title": "Title",
+      "type": "string"
+     },
+     "type": {
+      "title": "Type",
+      "type": "string"
+     }
+    },
+    "required": [
+     "type",
+     "title",
+     "status",
+     "detail",
+     "code",
+     "request_id"
+    ],
+    "title": "Problem",
+    "type": "object"
+   },
+   "PromoteIn": {
+    "additionalProperties": false,
+    "properties": {
+     "message": {
+      "default": "",
+      "title": "Message",
+      "type": "string"
+     }
+    },
+    "title": "PromoteIn",
+    "type": "object"
+   },
+   "Record": {
+    "description": "A record in the get() shape (``region.core.protocols.Record``).",
+    "properties": {
+     "by": {
+      "title": "By",
+      "type": "string"
+     },
+     "changeset": {
+      "title": "Changeset",
+      "type": "string"
+     },
+     "created": {
+      "title": "Created",
+      "type": "string"
+     },
+     "data": {
+      "additionalProperties": true,
+      "title": "Data",
+      "type": "object"
+     },
+     "deleted": {
+      "title": "Deleted",
+      "type": "boolean"
+     },
+     "geom": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "WKT in EPSG:26916 metres, snapped to 1 mm",
+      "title": "Geom"
+     },
+     "hash": {
+      "description": "content hash of {id, kind, kv, geom, data}",
+      "title": "Hash",
+      "type": "string"
+     },
+     "id": {
+      "title": "Id",
+      "type": "string"
+     },
+     "kind": {
+      "title": "Kind",
+      "type": "string"
+     },
+     "kv": {
+      "title": "Kv",
+      "type": "integer"
+     },
+     "layer": {
+      "description": "the layer the revision was read from",
+      "title": "Layer",
+      "type": "string"
+     },
+     "origin": {
+      "title": "Origin",
+      "type": "string"
+     },
+     "source": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Source"
+     },
+     "updated": {
+      "title": "Updated",
+      "type": "string"
+     },
+     "version": {
+      "title": "Version",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "id",
+     "kind",
+     "kv",
+     "layer",
+     "version",
+     "hash",
+     "deleted",
+     "origin",
+     "by",
+     "changeset",
+     "created",
+     "updated",
+     "data"
+    ],
+    "title": "Record",
+    "type": "object"
+   },
+   "RecordPage": {
+    "description": "One page of a list: ``next`` is the ``after`` of the next page, or null on the last.",
+    "properties": {
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/Record"
+      },
+      "title": "Items",
+      "type": "array"
+     },
+     "next": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Next"
+     }
+    },
+    "required": [
+     "items"
+    ],
+    "title": "RecordPage",
+    "type": "object"
+   },
+   "Ref": {
+    "properties": {
+     "id": {
+      "title": "Id",
+      "type": "string"
+     },
+     "kind": {
+      "title": "Kind",
+      "type": "string"
+     },
+     "layer": {
+      "title": "Layer",
+      "type": "string"
+     },
+     "role": {
+      "title": "Role",
+      "type": "string"
+     }
+    },
+    "required": [
+     "kind",
+     "id",
+     "role",
+     "layer"
+    ],
+    "title": "Ref",
+    "type": "object"
+   },
+   "RefList": {
+    "properties": {
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/Ref"
+      },
+      "title": "Items",
+      "type": "array"
+     }
+    },
+    "required": [
+     "items"
+    ],
+    "title": "RefList",
+    "type": "object"
+   },
+   "ResolveIn": {
+    "additionalProperties": false,
+    "properties": {
+     "body": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Body"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "take": {
+      "enum": [
+       "ours",
+       "theirs",
+       "merged"
+      ],
+      "title": "Take",
+      "type": "string"
+     }
+    },
+    "required": [
+     "take"
+    ],
+    "title": "ResolveIn",
+    "type": "object"
+   },
+   "ResultMeta": {
+    "additionalProperties": true,
+    "properties": {
+     "arrays": {
+      "additionalProperties": true,
+      "default": {},
+      "title": "Arrays",
+      "type": "object"
+     },
+     "key": {
+      "title": "Key",
+      "type": "string"
+     },
+     "meta": {
+      "additionalProperties": true,
+      "default": {},
+      "title": "Meta",
+      "type": "object"
+     },
+     "scope": {
+      "title": "Scope",
+      "type": "string"
+     },
+     "status": {
+      "title": "Status",
+      "type": "string"
+     },
+     "type": {
+      "title": "Type",
+      "type": "string"
+     }
+    },
+    "required": [
+     "key",
+     "type",
+     "scope",
+     "status"
+    ],
+    "title": "ResultMeta",
+    "type": "object"
+   },
+   "StateIn": {
+    "additionalProperties": false,
+    "properties": {
+     "state": {
+      "enum": [
+       "open",
+       "archived"
+      ],
+      "title": "State",
+      "type": "string"
+     }
+    },
+    "required": [
+     "state"
+    ],
+    "title": "StateIn",
+    "type": "object"
+   },
+   "Tag": {
+    "additionalProperties": true,
+    "properties": {
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "seq": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Seq"
+     }
+    },
+    "required": [
+     "name"
+    ],
+    "title": "Tag",
+    "type": "object"
+   },
+   "TagIn": {
+    "additionalProperties": false,
+    "properties": {
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "note": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Note"
+     }
+    },
+    "required": [
+     "name"
+    ],
+    "title": "TagIn",
+    "type": "object"
+   },
+   "TagList": {
+    "properties": {
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/Tag"
+      },
+      "title": "Items",
+      "type": "array"
+     }
+    },
+    "required": [
+     "items"
+    ],
+    "title": "TagList",
+    "type": "object"
+   },
+   "Tiers": {
+    "additionalProperties": true,
+    "properties": {
+     "at": {
+      "title": "At",
+      "type": "string"
+     },
+     "counts": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "title": "Counts",
+      "type": "object"
+     },
+     "tiers": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "title": "Tiers",
+      "type": "array"
+     }
+    },
+    "required": [
+     "at",
+     "counts",
+     "tiers"
+    ],
+    "title": "Tiers",
+    "type": "object"
+   },
+   "ValidationError": {
+    "properties": {
+     "ctx": {
+      "title": "Context",
+      "type": "object"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "title": "Location",
+      "type": "array"
+     },
+     "msg": {
+      "title": "Message",
+      "type": "string"
+     },
+     "type": {
+      "title": "Error Type",
+      "type": "string"
+     }
+    },
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError",
+    "type": "object"
+   },
+   "ViewIn": {
+    "additionalProperties": false,
+    "properties": {
+     "layer": {
+      "default": "main",
+      "title": "Layer",
+      "type": "string"
+     },
+     "month": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Month"
+     },
+     "tl": {
+      "default": "canon",
+      "title": "Tl",
+      "type": "string"
+     },
+     "year": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Year"
+     }
+    },
+    "title": "ViewIn",
+    "type": "object"
+   },
+   "WriteResult": {
+    "description": "What a committed changeset did; ``changeset`` and ``seq`` are null when every op changed nothing.",
+    "properties": {
+     "changeset": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Changeset"
+     },
+     "records": {
+      "items": {
+       "$ref": "#/components/schemas/Record"
+      },
+      "title": "Records",
+      "type": "array"
+     },
+     "seq": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Seq"
+     }
+    },
+    "required": [
+     "changeset",
+     "records",
+     "seq"
+    ],
+    "title": "WriteResult",
+    "type": "object"
+   }
+  }
+ },
+ "info": {
+  "description": "The hub's API (section 5 of claude/Hub_Region_Architecture.md). Errors are RFC 9457 problems.",
+  "title": "Cincinnati Rail hub",
+  "version": "1"
+ },
+ "openapi": "3.1.0",
+ "paths": {
+  "/api/v1/backup": {
+   "post": {
+    "operationId": "backup",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     }
+    },
+    "summary": "Back the database up now",
+    "tags": [
+     "ops"
+    ]
+   }
+  },
+  "/api/v1/changesets": {
+   "get": {
+    "operationId": "list_changesets",
+    "parameters": [
+     {
+      "in": "query",
+      "name": "by",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "By"
+      }
+     },
+     {
+      "description": "an event seq, or an ISO time",
+      "in": "query",
+      "name": "since",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "an event seq, or an ISO time",
+       "title": "Since"
+      }
+     },
+     {
+      "in": "query",
+      "name": "layer",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Layer"
+      }
+     },
+     {
+      "description": "edit, import, seed, revert, rebase, promote, migration, legacy",
+      "in": "query",
+      "name": "kind",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "edit, import, seed, revert, rebase, promote, migration, legacy",
+       "title": "Kind"
+      }
+     },
+     {
+      "in": "query",
+      "name": "limit",
+      "required": false,
+      "schema": {
+       "default": 100,
+       "maximum": 1000,
+       "minimum": 1,
+       "title": "Limit",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ChangesetList"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Changesets, newest first",
+    "tags": [
+     "changesets"
+    ]
+   },
+   "post": {
+    "description": "Every op is validated before any is written; a 412 lists every stale op in stale.",
+    "operationId": "post_changeset",
+    "parameters": [
+     {
+      "in": "header",
+      "name": "Idempotency-Key",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maxLength": 255,
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Idempotency-Key"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ChangesetIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/WriteResult"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "412": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "428": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     }
+    },
+    "summary": "Write a changeset",
+    "tags": [
+     "changesets"
+    ]
+   }
+  },
+  "/api/v1/changesets/{id}": {
+   "get": {
+    "description": "One changeset with the records it wrote.",
+    "operationId": "get_changeset",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "id",
+      "required": true,
+      "schema": {
+       "title": "Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ChangesetFull"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Changeset",
+    "tags": [
+     "changesets"
+    ]
+   }
+  },
+  "/api/v1/changesets/{id}/revert": {
+   "post": {
+    "description": "A revert changeset with If-Match on what the original produced: a later edit makes it a 409 whose conflicts carry the diff.",
+    "operationId": "revert",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "id",
+      "required": true,
+      "schema": {
+       "title": "Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/WriteResult"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Undo a changeset",
+    "tags": [
+     "changesets"
+    ]
+   }
+  },
+  "/api/v1/client-log": {
+   "post": {
+    "operationId": "client_log",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ClientLogIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "A browser log entry",
+    "tags": [
+     "ops"
+    ]
+   }
+  },
+  "/api/v1/compute": {
+   "post": {
+    "description": "Plan a job now: a cache hit answers at once, otherwise one job is queued for the key.",
+    "operationId": "compute",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ComputeIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ComputeOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "503": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     }
+    },
+    "summary": "Compute",
+    "tags": [
+     "jobs"
+    ]
+   }
+  },
+  "/api/v1/conflicts": {
+   "get": {
+    "operationId": "conflicts",
+    "parameters": [
+     {
+      "description": "open, resolved, dismissed, or all",
+      "in": "query",
+      "name": "state",
+      "required": false,
+      "schema": {
+       "default": "open",
+       "description": "open, resolved, dismissed, or all",
+       "title": "State",
+       "type": "string"
+      }
+     },
+     {
+      "in": "query",
+      "name": "layer",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Layer"
+      }
+     },
+     {
+      "in": "query",
+      "name": "import_run",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Import Run"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ConflictList"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "The review queue",
+    "tags": [
+     "layers"
+    ]
+   }
+  },
+  "/api/v1/conflicts/{id}/resolve": {
+   "post": {
+    "description": "Take ``ours``, ``theirs`` or a ``merged`` body.",
+    "operationId": "resolve",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "id",
+      "required": true,
+      "schema": {
+       "title": "Id",
+       "type": "string"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ResolveIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "412": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     }
+    },
+    "summary": "Resolve",
+    "tags": [
+     "layers"
+    ]
+   }
+  },
+  "/api/v1/data/{tier}/{path}": {
+   "get": {
+    "operationId": "data_file",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "tier",
+      "required": true,
+      "schema": {
+       "title": "Tier",
+       "type": "string"
+      }
+     },
+     {
+      "in": "path",
+      "name": "path",
+      "required": true,
+      "schema": {
+       "title": "Path",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "the file"
+     },
+     "206": {
+      "description": "the range asked for"
+     },
+     "304": {
+      "description": "Not Modified"
+     },
+     "404": {
+      "description": "Not Found"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "A file of a mounted data tier",
+    "tags": [
+     "files"
+    ]
+   }
+  },
+  "/api/v1/events": {
+   "get": {
+    "operationId": "events",
+    "parameters": [
+     {
+      "description": "replay after this seq (for clients that cannot send headers)",
+      "in": "query",
+      "name": "since",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "minimum": 0,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "replay after this seq (for clients that cannot send headers)",
+       "title": "Since"
+      }
+     },
+     {
+      "in": "header",
+      "name": "Last-Event-ID",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Last-Event-Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "text/event-stream": {}
+      },
+      "description": "the event stream"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Server-sent events",
+    "tags": [
+     "events"
+    ]
+   }
+  },
+  "/api/v1/events/poll": {
+   "get": {
+    "operationId": "poll",
+    "parameters": [
+     {
+      "in": "query",
+      "name": "since",
+      "required": false,
+      "schema": {
+       "default": 0,
+       "minimum": 0,
+       "title": "Since",
+       "type": "integer"
+      }
+     },
+     {
+      "in": "query",
+      "name": "limit",
+      "required": false,
+      "schema": {
+       "default": 1000,
+       "maximum": 10000,
+       "minimum": 1,
+       "title": "Limit",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Poll"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "The polling fallback of /events",
+    "tags": [
+     "events"
+    ]
+   }
+  },
+  "/api/v1/export": {
+   "post": {
+    "operationId": "export",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     }
+    },
+    "summary": "Export the seeded layers to region/seed",
+    "tags": [
+     "ops"
+    ]
+   }
+  },
+  "/api/v1/health": {
+   "get": {
+    "operationId": "health",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Health"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Liveness",
+    "tags": [
+     "meta"
+    ]
+   }
+  },
+  "/api/v1/importers": {
+   "get": {
+    "operationId": "importers",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ImporterList"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "The importers of every feature",
+    "tags": [
+     "imports"
+    ]
+   }
+  },
+  "/api/v1/imports": {
+   "post": {
+    "description": "Run an importer: a dry run (the default) reports counts and changes and writes nothing but its run row.",
+    "operationId": "post_import",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ImportIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ImportRunOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     }
+    },
+    "summary": "Post Import",
+    "tags": [
+     "imports"
+    ]
+   }
+  },
+  "/api/v1/imports/{run}": {
+   "get": {
+    "operationId": "get_import",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "run",
+      "required": true,
+      "schema": {
+       "title": "Run",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ImportRunOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Import",
+    "tags": [
+     "imports"
+    ]
+   }
+  },
+  "/api/v1/imports/{run}/apply": {
+   "post": {
+    "description": "Apply a dry run: the importer runs again, and only when every source still hashes as it did.",
+    "operationId": "apply_import",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "run",
+      "required": true,
+      "schema": {
+       "title": "Run",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ImportRunOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     }
+    },
+    "summary": "Apply Import",
+    "tags": [
+     "imports"
+    ]
+   }
+  },
+  "/api/v1/jobs": {
+   "get": {
+    "operationId": "list_jobs",
+    "parameters": [
+     {
+      "description": "only queued and running jobs",
+      "in": "query",
+      "name": "active",
+      "required": false,
+      "schema": {
+       "default": false,
+       "description": "only queued and running jobs",
+       "title": "Active",
+       "type": "boolean"
+      }
+     },
+     {
+      "in": "query",
+      "name": "limit",
+      "required": false,
+      "schema": {
+       "default": 500,
+       "maximum": 5000,
+       "minimum": 1,
+       "title": "Limit",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/JobList"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Jobs, newest first",
+    "tags": [
+     "jobs"
+    ]
+   }
+  },
+  "/api/v1/jobs/{id}": {
+   "get": {
+    "operationId": "get_job",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "id",
+      "required": true,
+      "schema": {
+       "title": "Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Job"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Job",
+    "tags": [
+     "jobs"
+    ]
+   }
+  },
+  "/api/v1/jobs/{id}/cancel": {
+   "post": {
+    "operationId": "cancel",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "id",
+      "required": true,
+      "schema": {
+       "title": "Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Cancel",
+    "tags": [
+     "jobs"
+    ]
+   }
+  },
+  "/api/v1/jobs/{id}/log": {
+   "get": {
+    "operationId": "job_log",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "id",
+      "required": true,
+      "schema": {
+       "title": "Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/JobLog"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Job Log",
+    "tags": [
+     "jobs"
+    ]
+   }
+  },
+  "/api/v1/k/{kind}": {
+   "get": {
+    "description": "Records of the kind resolved in the view and open at its instant, ordered by id. ETag \"seq:N\"; format=geojson gives a FeatureCollection (crs=4326 for longitude and latitude).",
+    "operationId": "list_records",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "kind",
+      "required": true,
+      "schema": {
+       "title": "Kind",
+       "type": "string"
+      }
+     },
+     {
+      "description": "x0,y0,x1,y1 in EPSG:26916 (longitude and latitude with crs=4326)",
+      "in": "query",
+      "name": "bbox",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "x0,y0,x1,y1 in EPSG:26916 (longitude and latitude with crs=4326)",
+       "title": "Bbox"
+      }
+     },
+     {
+      "description": "the promoted parent column",
+      "in": "query",
+      "name": "parent",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the promoted parent column",
+       "title": "Parent"
+      }
+     },
+     {
+      "description": "records that reference this id",
+      "in": "query",
+      "name": "ref",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "records that reference this id",
+       "title": "Ref"
+      }
+     },
+     {
+      "description": "comma-separated ids",
+      "in": "query",
+      "name": "ids",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "comma-separated ids",
+       "title": "Ids"
+      }
+     },
+     {
+      "description": "search names",
+      "in": "query",
+      "name": "q",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "search names",
+       "title": "Q"
+      }
+     },
+     {
+      "description": "comma-separated data members to keep",
+      "in": "query",
+      "name": "fields",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "comma-separated data members to keep",
+       "title": "Fields"
+      }
+     },
+     {
+      "in": "query",
+      "name": "limit",
+      "required": false,
+      "schema": {
+       "default": 500,
+       "maximum": 10000,
+       "minimum": 1,
+       "title": "Limit",
+       "type": "integer"
+      }
+     },
+     {
+      "description": "the next value of the previous page",
+      "in": "query",
+      "name": "after",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the next value of the previous page",
+       "title": "After"
+      }
+     },
+     {
+      "in": "query",
+      "name": "format",
+      "required": false,
+      "schema": {
+       "default": "json",
+       "enum": [
+        "json",
+        "geojson"
+       ],
+       "title": "Format",
+       "type": "string"
+      }
+     },
+     {
+      "in": "query",
+      "name": "crs",
+      "required": false,
+      "schema": {
+       "default": "26916",
+       "enum": [
+        "26916",
+        "4326"
+       ],
+       "title": "Crs",
+       "type": "string"
+      }
+     },
+     {
+      "description": "read the layer as of one of its tags",
+      "in": "query",
+      "name": "tag",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "read the layer as of one of its tags",
+       "title": "Tag"
+      }
+     },
+     {
+      "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+      "in": "query",
+      "name": "layer",
+      "required": false,
+      "schema": {
+       "default": "main",
+       "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+       "title": "Layer",
+       "type": "string"
+      }
+     },
+     {
+      "description": "the view's year; absent means the present",
+      "in": "query",
+      "name": "year",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's year; absent means the present",
+       "title": "Year"
+      }
+     },
+     {
+      "description": "the view's month (needs a year)",
+      "in": "query",
+      "name": "month",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 12,
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's month (needs a year)",
+       "title": "Month"
+      }
+     },
+     {
+      "description": "the timeline: canon or real",
+      "in": "query",
+      "name": "tl",
+      "required": false,
+      "schema": {
+       "default": "canon",
+       "description": "the timeline: canon or real",
+       "title": "Tl",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RecordPage"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     }
+    },
+    "summary": "List records of a kind",
+    "tags": [
+     "records"
+    ]
+   },
+   "post": {
+    "description": "Idempotency-Key makes a retry return the first answer instead of a second record.",
+    "operationId": "create_record",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "kind",
+      "required": true,
+      "schema": {
+       "title": "Kind",
+       "type": "string"
+      }
+     },
+     {
+      "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+      "in": "query",
+      "name": "layer",
+      "required": false,
+      "schema": {
+       "default": "main",
+       "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+       "title": "Layer",
+       "type": "string"
+      }
+     },
+     {
+      "description": "the view's year; absent means the present",
+      "in": "query",
+      "name": "year",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's year; absent means the present",
+       "title": "Year"
+      }
+     },
+     {
+      "description": "the view's month (needs a year)",
+      "in": "query",
+      "name": "month",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 12,
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's month (needs a year)",
+       "title": "Month"
+      }
+     },
+     {
+      "description": "the timeline: canon or real",
+      "in": "query",
+      "name": "tl",
+      "required": false,
+      "schema": {
+       "default": "canon",
+       "description": "the timeline: canon or real",
+       "title": "Tl",
+       "type": "string"
+      }
+     },
+     {
+      "in": "header",
+      "name": "Idempotency-Key",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maxLength": 255,
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Idempotency-Key"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CreateBody"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Record"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     }
+    },
+    "summary": "Create a record",
+    "tags": [
+     "records"
+    ]
+   }
+  },
+  "/api/v1/k/{kind}/{id}": {
+   "delete": {
+    "operationId": "delete_record",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "kind",
+      "required": true,
+      "schema": {
+       "title": "Kind",
+       "type": "string"
+      }
+     },
+     {
+      "in": "path",
+      "name": "id",
+      "required": true,
+      "schema": {
+       "title": "Id",
+       "type": "string"
+      }
+     },
+     {
+      "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+      "in": "query",
+      "name": "layer",
+      "required": false,
+      "schema": {
+       "default": "main",
+       "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+       "title": "Layer",
+       "type": "string"
+      }
+     },
+     {
+      "description": "the view's year; absent means the present",
+      "in": "query",
+      "name": "year",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's year; absent means the present",
+       "title": "Year"
+      }
+     },
+     {
+      "description": "the view's month (needs a year)",
+      "in": "query",
+      "name": "month",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 12,
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's month (needs a year)",
+       "title": "Month"
+      }
+     },
+     {
+      "description": "the timeline: canon or real",
+      "in": "query",
+      "name": "tl",
+      "required": false,
+      "schema": {
+       "default": "canon",
+       "description": "the timeline: canon or real",
+       "title": "Tl",
+       "type": "string"
+      }
+     },
+     {
+      "in": "header",
+      "name": "If-Match",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "If-Match"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Record"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "412": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     },
+     "428": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     }
+    },
+    "summary": "Delete a record (a tombstone)",
+    "tags": [
+     "records"
+    ]
+   },
+   "get": {
+    "description": "The record as it resolves in the view (at=version reads a past version). ETag \"layer:version\".",
+    "operationId": "get_record",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "kind",
+      "required": true,
+      "schema": {
+       "title": "Kind",
+       "type": "string"
+      }
+     },
+     {
+      "in": "path",
+      "name": "id",
+      "required": true,
+      "schema": {
+       "title": "Id",
+       "type": "string"
+      }
+     },
+     {
+      "description": "a past version of the revision",
+      "in": "query",
+      "name": "at",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "a past version of the revision",
+       "title": "At"
+      }
+     },
+     {
+      "description": "read the layer as of one of its tags",
+      "in": "query",
+      "name": "tag",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "read the layer as of one of its tags",
+       "title": "Tag"
+      }
+     },
+     {
+      "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+      "in": "query",
+      "name": "layer",
+      "required": false,
+      "schema": {
+       "default": "main",
+       "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+       "title": "Layer",
+       "type": "string"
+      }
+     },
+     {
+      "description": "the view's year; absent means the present",
+      "in": "query",
+      "name": "year",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's year; absent means the present",
+       "title": "Year"
+      }
+     },
+     {
+      "description": "the view's month (needs a year)",
+      "in": "query",
+      "name": "month",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 12,
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's month (needs a year)",
+       "title": "Month"
+      }
+     },
+     {
+      "description": "the timeline: canon or real",
+      "in": "query",
+      "name": "tl",
+      "required": false,
+      "schema": {
+       "default": "canon",
+       "description": "the timeline: canon or real",
+       "title": "Tl",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Record"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "One record",
+    "tags": [
+     "records"
+    ]
+   },
+   "patch": {
+    "operationId": "patch_record",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "kind",
+      "required": true,
+      "schema": {
+       "title": "Kind",
+       "type": "string"
+      }
+     },
+     {
+      "in": "path",
+      "name": "id",
+      "required": true,
+      "schema": {
+       "title": "Id",
+       "type": "string"
+      }
+     },
+     {
+      "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+      "in": "query",
+      "name": "layer",
+      "required": false,
+      "schema": {
+       "default": "main",
+       "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+       "title": "Layer",
+       "type": "string"
+      }
+     },
+     {
+      "description": "the view's year; absent means the present",
+      "in": "query",
+      "name": "year",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's year; absent means the present",
+       "title": "Year"
+      }
+     },
+     {
+      "description": "the view's month (needs a year)",
+      "in": "query",
+      "name": "month",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 12,
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's month (needs a year)",
+       "title": "Month"
+      }
+     },
+     {
+      "description": "the timeline: canon or real",
+      "in": "query",
+      "name": "tl",
+      "required": false,
+      "schema": {
+       "default": "canon",
+       "description": "the timeline: canon or real",
+       "title": "Tl",
+       "type": "string"
+      }
+     },
+     {
+      "in": "header",
+      "name": "If-Match",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "If-Match"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json-patch+json": {
+       "schema": {
+        "items": {
+         "$ref": "#/components/schemas/PatchOp"
+        },
+        "title": "Ops",
+        "type": "array"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Record"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "412": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "415": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "428": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     }
+    },
+    "summary": "Patch a record (RFC 6902)",
+    "tags": [
+     "records"
+    ]
+   },
+   "put": {
+    "operationId": "put_record",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "kind",
+      "required": true,
+      "schema": {
+       "title": "Kind",
+       "type": "string"
+      }
+     },
+     {
+      "in": "path",
+      "name": "id",
+      "required": true,
+      "schema": {
+       "title": "Id",
+       "type": "string"
+      }
+     },
+     {
+      "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+      "in": "query",
+      "name": "layer",
+      "required": false,
+      "schema": {
+       "default": "main",
+       "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+       "title": "Layer",
+       "type": "string"
+      }
+     },
+     {
+      "description": "the view's year; absent means the present",
+      "in": "query",
+      "name": "year",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's year; absent means the present",
+       "title": "Year"
+      }
+     },
+     {
+      "description": "the view's month (needs a year)",
+      "in": "query",
+      "name": "month",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 12,
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's month (needs a year)",
+       "title": "Month"
+      }
+     },
+     {
+      "description": "the timeline: canon or real",
+      "in": "query",
+      "name": "tl",
+      "required": false,
+      "schema": {
+       "default": "canon",
+       "description": "the timeline: canon or real",
+       "title": "Tl",
+       "type": "string"
+      }
+     },
+     {
+      "in": "header",
+      "name": "If-Match",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "If-Match"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Body"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Record"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "412": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "428": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     }
+    },
+    "summary": "Replace a record",
+    "tags": [
+     "records"
+    ]
+   }
+  },
+  "/api/v1/k/{kind}/{id}/diff": {
+   "get": {
+    "description": "The RFC 6902 patch from one version of the record's body to another.",
+    "operationId": "diff",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "kind",
+      "required": true,
+      "schema": {
+       "title": "Kind",
+       "type": "string"
+      }
+     },
+     {
+      "in": "path",
+      "name": "id",
+      "required": true,
+      "schema": {
+       "title": "Id",
+       "type": "string"
+      }
+     },
+     {
+      "in": "query",
+      "name": "from",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "From",
+       "type": "integer"
+      }
+     },
+     {
+      "in": "query",
+      "name": "to",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "To",
+       "type": "integer"
+      }
+     },
+     {
+      "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+      "in": "query",
+      "name": "layer",
+      "required": false,
+      "schema": {
+       "default": "main",
+       "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+       "title": "Layer",
+       "type": "string"
+      }
+     },
+     {
+      "description": "the view's year; absent means the present",
+      "in": "query",
+      "name": "year",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's year; absent means the present",
+       "title": "Year"
+      }
+     },
+     {
+      "description": "the view's month (needs a year)",
+      "in": "query",
+      "name": "month",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 12,
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's month (needs a year)",
+       "title": "Month"
+      }
+     },
+     {
+      "description": "the timeline: canon or real",
+      "in": "query",
+      "name": "tl",
+      "required": false,
+      "schema": {
+       "default": "canon",
+       "description": "the timeline: canon or real",
+       "title": "Tl",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Diff"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Diff",
+    "tags": [
+     "records"
+    ]
+   }
+  },
+  "/api/v1/k/{kind}/{id}/history": {
+   "get": {
+    "description": "Every revision of the record on the view's layer and below, newest first.",
+    "operationId": "history",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "kind",
+      "required": true,
+      "schema": {
+       "title": "Kind",
+       "type": "string"
+      }
+     },
+     {
+      "in": "path",
+      "name": "id",
+      "required": true,
+      "schema": {
+       "title": "Id",
+       "type": "string"
+      }
+     },
+     {
+      "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+      "in": "query",
+      "name": "layer",
+      "required": false,
+      "schema": {
+       "default": "main",
+       "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+       "title": "Layer",
+       "type": "string"
+      }
+     },
+     {
+      "description": "the view's year; absent means the present",
+      "in": "query",
+      "name": "year",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's year; absent means the present",
+       "title": "Year"
+      }
+     },
+     {
+      "description": "the view's month (needs a year)",
+      "in": "query",
+      "name": "month",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 12,
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's month (needs a year)",
+       "title": "Month"
+      }
+     },
+     {
+      "description": "the timeline: canon or real",
+      "in": "query",
+      "name": "tl",
+      "required": false,
+      "schema": {
+       "default": "canon",
+       "description": "the timeline: canon or real",
+       "title": "Tl",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/History"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "History",
+    "tags": [
+     "records"
+    ]
+   }
+  },
+  "/api/v1/k/{kind}/{id}/history/{version}": {
+   "get": {
+    "description": "One past version of the record's revision.",
+    "operationId": "history_version",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "kind",
+      "required": true,
+      "schema": {
+       "title": "Kind",
+       "type": "string"
+      }
+     },
+     {
+      "in": "path",
+      "name": "id",
+      "required": true,
+      "schema": {
+       "title": "Id",
+       "type": "string"
+      }
+     },
+     {
+      "in": "path",
+      "name": "version",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "Version",
+       "type": "integer"
+      }
+     },
+     {
+      "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+      "in": "query",
+      "name": "layer",
+      "required": false,
+      "schema": {
+       "default": "main",
+       "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+       "title": "Layer",
+       "type": "string"
+      }
+     },
+     {
+      "description": "the view's year; absent means the present",
+      "in": "query",
+      "name": "year",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's year; absent means the present",
+       "title": "Year"
+      }
+     },
+     {
+      "description": "the view's month (needs a year)",
+      "in": "query",
+      "name": "month",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 12,
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's month (needs a year)",
+       "title": "Month"
+      }
+     },
+     {
+      "description": "the timeline: canon or real",
+      "in": "query",
+      "name": "tl",
+      "required": false,
+      "schema": {
+       "default": "canon",
+       "description": "the timeline: canon or real",
+       "title": "Tl",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Record"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "History Version",
+    "tags": [
+     "records"
+    ]
+   }
+  },
+  "/api/v1/k/{kind}/{id}/restore": {
+   "post": {
+    "operationId": "restore",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "kind",
+      "required": true,
+      "schema": {
+       "title": "Kind",
+       "type": "string"
+      }
+     },
+     {
+      "in": "path",
+      "name": "id",
+      "required": true,
+      "schema": {
+       "title": "Id",
+       "type": "string"
+      }
+     },
+     {
+      "in": "query",
+      "name": "version",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "Version",
+       "type": "integer"
+      }
+     },
+     {
+      "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+      "in": "query",
+      "name": "layer",
+      "required": false,
+      "schema": {
+       "default": "main",
+       "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+       "title": "Layer",
+       "type": "string"
+      }
+     },
+     {
+      "description": "the view's year; absent means the present",
+      "in": "query",
+      "name": "year",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's year; absent means the present",
+       "title": "Year"
+      }
+     },
+     {
+      "description": "the view's month (needs a year)",
+      "in": "query",
+      "name": "month",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 12,
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's month (needs a year)",
+       "title": "Month"
+      }
+     },
+     {
+      "description": "the timeline: canon or real",
+      "in": "query",
+      "name": "tl",
+      "required": false,
+      "schema": {
+       "default": "canon",
+       "description": "the timeline: canon or real",
+       "title": "Tl",
+       "type": "string"
+      }
+     },
+     {
+      "in": "header",
+      "name": "If-Match",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "If-Match"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Record"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "412": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     },
+     "428": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     }
+    },
+    "summary": "Restore a past version as a new version",
+    "tags": [
+     "records"
+    ]
+   }
+  },
+  "/api/v1/layers": {
+   "get": {
+    "operationId": "list_layers",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/LayerList"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Every layer",
+    "tags": [
+     "layers"
+    ]
+   },
+   "post": {
+    "description": "Create a scenario or proposal under ``parent`` (main by default).",
+    "operationId": "create_layer",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/LayerIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Layer"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     }
+    },
+    "summary": "Create Layer",
+    "tags": [
+     "layers"
+    ]
+   }
+  },
+  "/api/v1/layers/{slug}": {
+   "get": {
+    "operationId": "get_layer",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "slug",
+      "required": true,
+      "schema": {
+       "title": "Slug",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Layer"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Layer",
+    "tags": [
+     "layers"
+    ]
+   }
+  },
+  "/api/v1/layers/{slug}/diff": {
+   "get": {
+    "description": "What the layer's own revisions change, record by record.",
+    "operationId": "layer_diff",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "slug",
+      "required": true,
+      "schema": {
+       "title": "Slug",
+       "type": "string"
+      }
+     },
+     {
+      "description": "default: the parent's view",
+      "in": "query",
+      "name": "against",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "default: the parent's view",
+       "title": "Against"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/LayerDiff"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Layer Diff",
+    "tags": [
+     "layers"
+    ]
+   }
+  },
+  "/api/v1/layers/{slug}/promote": {
+   "post": {
+    "description": "Write the layer's revisions to its parent as one changeset; 409 lists every record changed there since.",
+    "operationId": "promote",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "slug",
+      "required": true,
+      "schema": {
+       "title": "Slug",
+       "type": "string"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "anyOf": [
+         {
+          "$ref": "#/components/schemas/PromoteIn"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Body"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/WriteResult"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     }
+    },
+    "summary": "Promote",
+    "tags": [
+     "layers"
+    ]
+   }
+  },
+  "/api/v1/layers/{slug}/state": {
+   "post": {
+    "description": "Archive or reopen a scenario or proposal.",
+    "operationId": "set_state",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "slug",
+      "required": true,
+      "schema": {
+       "title": "Slug",
+       "type": "string"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/StateIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Layer"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     }
+    },
+    "summary": "Set State",
+    "tags": [
+     "layers"
+    ]
+   }
+  },
+  "/api/v1/layers/{slug}/tags": {
+   "get": {
+    "operationId": "list_tags",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "slug",
+      "required": true,
+      "schema": {
+       "title": "Slug",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TagList"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "List Tags",
+    "tags": [
+     "layers"
+    ]
+   },
+   "post": {
+    "description": "Name the layer as it stands now (read back with ``tag=`` on any read).",
+    "operationId": "tag",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "slug",
+      "required": true,
+      "schema": {
+       "title": "Slug",
+       "type": "string"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/TagIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Tag"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Tag",
+    "tags": [
+     "layers"
+    ]
+   }
+  },
+  "/api/v1/legacy/{lkind}/{key}": {
+   "get": {
+    "description": "The record an old key maps to (``Line_8|Cincinnati State#2``).",
+    "operationId": "legacy",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "lkind",
+      "required": true,
+      "schema": {
+       "title": "Lkind",
+       "type": "string"
+      }
+     },
+     {
+      "in": "path",
+      "name": "key",
+      "required": true,
+      "schema": {
+       "title": "Key",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/LegacyHit"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Legacy",
+    "tags": [
+     "records"
+    ]
+   }
+  },
+  "/api/v1/meta": {
+   "get": {
+    "operationId": "meta",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Meta"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "What this hub holds and runs",
+    "tags": [
+     "meta"
+    ]
+   }
+  },
+  "/api/v1/refs/{id}": {
+   "get": {
+    "operationId": "refs",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "id",
+      "required": true,
+      "schema": {
+       "title": "Id",
+       "type": "string"
+      }
+     },
+     {
+      "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+      "in": "query",
+      "name": "layer",
+      "required": false,
+      "schema": {
+       "default": "main",
+       "description": "the layer slug (main, a scenario, proposal:<slug>, import:<name>)",
+       "title": "Layer",
+       "type": "string"
+      }
+     },
+     {
+      "description": "the view's year; absent means the present",
+      "in": "query",
+      "name": "year",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's year; absent means the present",
+       "title": "Year"
+      }
+     },
+     {
+      "description": "the view's month (needs a year)",
+      "in": "query",
+      "name": "month",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 12,
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "the view's month (needs a year)",
+       "title": "Month"
+      }
+     },
+     {
+      "description": "the timeline: canon or real",
+      "in": "query",
+      "name": "tl",
+      "required": false,
+      "schema": {
+       "default": "canon",
+       "description": "the timeline: canon or real",
+       "title": "Tl",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RefList"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "What references a record",
+    "tags": [
+     "records"
+    ]
+   }
+  },
+  "/api/v1/results": {
+   "get": {
+    "operationId": "latest",
+    "parameters": [
+     {
+      "description": "the job type",
+      "in": "query",
+      "name": "type",
+      "required": true,
+      "schema": {
+       "description": "the job type",
+       "title": "Type",
+       "type": "string"
+      }
+     },
+     {
+      "description": "the scope id",
+      "in": "query",
+      "name": "scope",
+      "required": true,
+      "schema": {
+       "description": "the scope id",
+       "title": "Scope",
+       "type": "string"
+      }
+     },
+     {
+      "description": "the view token",
+      "in": "query",
+      "name": "view",
+      "required": false,
+      "schema": {
+       "default": "main|-|canon",
+       "description": "the view token",
+       "title": "View",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/LatestResult"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "The latest result of a goal",
+    "tags": [
+     "jobs"
+    ]
+   }
+  },
+  "/api/v1/results/{key}": {
+   "get": {
+    "description": "A result's row, issues and dependencies.",
+    "operationId": "result",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "key",
+      "required": true,
+      "schema": {
+       "title": "Key",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ResultMeta"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Result",
+    "tags": [
+     "jobs"
+    ]
+   }
+  },
+  "/api/v1/results/{key}/a/{name}": {
+   "get": {
+    "description": "One output array as raw bytes, with ``X-Dtype`` and ``X-Shape`` (comma-separated).",
+    "operationId": "result_array",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "key",
+      "required": true,
+      "schema": {
+       "title": "Key",
+       "type": "string"
+      }
+     },
+     {
+      "in": "path",
+      "name": "name",
+      "required": true,
+      "schema": {
+       "title": "Name",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/octet-stream": {}
+      },
+      "description": "the array's raw bytes"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Result Array",
+    "tags": [
+     "jobs"
+    ]
+   }
+  },
+  "/api/v1/tiers": {
+   "get": {
+    "operationId": "tiers",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Tiers"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "The data tiers: missing, partial or present",
+    "tags": [
+     "meta"
+    ]
+   }
+  },
+  "/api/v1/x/profiles/routes/{route_id}/doc": {
+   "get": {
+    "operationId": "x_profiles_get_route_doc",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "route_id",
+      "required": true,
+      "schema": {
+       "title": "Route Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "title": "Response X Profiles Get Route Doc",
+         "type": "object"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "The old alignment doc of a route, rebuilt from its records",
+    "tags": [
+     "profiles"
+    ]
+   }
+  },
+  "/api/v1/x/profiles/sections/{section_id}/input": {
+   "get": {
+    "operationId": "x_profiles_get_section_input",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "section_id",
+      "required": true,
+      "schema": {
+       "title": "Section Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "title": "Response X Profiles Get Section Input",
+         "type": "object"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "SectionInput v0 of a section",
+    "tags": [
+     "profiles"
+    ]
+   }
+  }
+ }
+}

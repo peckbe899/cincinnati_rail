@@ -1,0 +1,57 @@
+# A ground profile: the ground along one section on its grid, as a line file carries it.
+kind: ground_profile
+version: 1
+title: Ground profile
+description: >-
+  The ground along one section on a regular grid from chainage 0 (step_m apart), in integer decimetres NAVD88, as
+  the line file carries it (ground_dm, and ground_dm_lidar where the file has it). The declared fallback ground of
+  section 11 until ground.profile samples region.ground; never seeded, rebuilt from the line files.
+geometry: none
+columns:
+  name: /source
+  parent: /section
+refs:
+  - {path: /section, kind: section, on_delete: cascade, required: true}
+merge:
+  unit: field
+  rebase: auto
+legacy: [ground_profile]
+seeded: false
+schema:
+  type: object
+  additionalProperties: false
+  required: [section, source, vdatum, step_m, z_dm]
+  properties:
+    section:
+      type: string
+      pattern: "^[0-7][0-9A-HJKMNP-TV-Z]{25}$"
+    source:
+      description: Where the levels come from (line_file).
+      type: string
+      enum: [line_file]
+    vdatum:
+      description: The vertical datum of the levels (9.15).
+      type: string
+      x-vocab: vertical_datums
+    step_m:
+      type: number
+      exclusiveMinimum: 0
+      x-unit: m
+    z_dm:
+      description: Ground levels every step_m from chainage 0, decimetres NAVD88; null where there is none.
+      type: array
+      items: {type: [integer, "null"], x-unit: dm}
+    lidar_dm:
+      description: The line file's ground_dm_lidar on the same grid, where it has one.
+      type: array
+      items: {type: [integer, "null"], x-unit: dm}
+    note:
+      description: The line file's ground_note.
+      type: [string, "null"]
+  examples:
+    - section: 01DXF6DT00G2RN476ZR8N14PM3
+      source: line_file
+      vdatum: navd88_m
+      step_m: 2.0
+      z_dm: [1650, 1649, 1648]
+      note: map 3 ground

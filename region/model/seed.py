@@ -22,6 +22,12 @@ changeset) is left out, so a rebuilt database exports the same bytes.
   dismisses it once the seed and the database agree. The rebase planner never closes or replaces it;
 - a record new in the seed is added; a record gone from the seed is kept and listed.
 
+A proposal layer not yet in the database is created under the parent its ``_layer.json`` names. Proposals are
+imported parents first, so one may sit on another proposal of the same seed. A proposal whose parent is not in this
+database (a scenario that lives only on the machine that wrote it, say), or cannot hold a proposal, is skipped: the
+report lists it under ``skipped`` with the reason, the other layers import as usual, and export leaves its folder as
+it is.
+
 Comparisons use the seed form of a record (``seed_text``), so bookkeeping can never raise a false conflict (defect 1
 of the old store). A seed file is first made into the content it would write (validated, upgraded, geometry snapped)
 and compared in that form, so a minimal or hand-written file compares exactly as an exported one does. One seed
@@ -41,7 +47,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from region.core import fsio, ids, paths
-from region.core.errors import Conflict, Invalid
+from region.core.errors import Conflict, Invalid, NotFound
 from region.core.protocols import etag
 from region.core.view import View
 
@@ -157,19 +163,6 @@ def _import_layer(store: SqliteStore, slug: str, d: Path, *, by: str) -> dict[st
     source = _source(d)
 
     def fn(con: sqlite3.Connection) -> dict[str, Any]:
-        layers = L.load(con)
-        if slug not in layers.by_slug:
-            L.create(
-                con,
-                slug,
-                tier="proposal" if slug != "main" else None,
-                parent=meta.get("parent") or "main",
-                title=meta.get("title"),
-                note=meta.get("note"),
-                by=by,
-            )
-            layers = L.load(con)
-        lay = layers.get(slug)
         out: dict[str, Any] = {
             "taken": 0,
             "kept": 0,
@@ -180,6 +173,28 @@ def _import_layer(store: SqliteStore, slug: str, d: Path, *, by: str) -> dict[st
             "changeset": None,
             "run": None,
         }
+        layers = L.load(con)
+        if slug not in layers.by_slug:
+            parent = meta.get("parent") or "main"
+            if parent not in layers.by_slug:
+                out.update(skipped=f"its parent layer {parent} is not in this database", missing=True)
+                return out
+            try:
+                # nothing is written before the layer row, so a refusal here leaves the transaction empty
+                L.create(
+                    con,
+                    slug,
+                    tier="proposal" if slug != "main" else None,
+                    parent=parent,
+                    title=meta.get("title"),
+                    note=meta.get("note"),
+                    by=by,
+                )
+            except (Invalid, NotFound) as e:
+                out.update(skipped=f"the layer cannot be made here: {e.detail}", missing=True)
+                return out
+            layers = L.load(con)
+        lay = layers.get(slug)
         if lay.state != "open":
             out["skipped"] = f"layer {slug} is {lay.state}"
             return out
@@ -357,7 +372,10 @@ def import_seed(store: SqliteStore, seed: Path = SEED, *, layer: str | None = No
     """Merge seed files into the database (see the module doc).
 
     ``seed`` is a seed root (holding ``main/`` and ``proposals/``), or, with ``layer``, one layer's folder. Returns
-    ``{"layers": {slug: {taken, kept, added, same, conflicts, removed_in_seed, changeset, run}}}``.
+    ``{"layers": {slug: {taken, kept, added, same, conflicts, removed_in_seed, changeset, run, skipped?,
+    missing?}}, "skipped": [{"layer", "path", "reason"}]}``. The top-level ``skipped`` lists the proposals that are
+    not in the database because their parent is not (or cannot hold them); those also carry ``missing: true``. A
+    layer that exists but is not open (promoted, frozen) says so in its own ``skipped`` only.
     """
     seed = Path(seed)
     dirs: list[tuple[str, Path]] = []
@@ -367,12 +385,44 @@ def import_seed(store: SqliteStore, seed: Path = SEED, *, layer: str | None = No
         if (seed / "main").is_dir():
             dirs.append(("main", seed / "main"))
         if (seed / "proposals").is_dir():
-            for d in sorted(p for p in (seed / "proposals").iterdir() if p.is_dir() and not p.name.startswith(".")):
-                dirs.append((f"proposal:{d.name}", d))
-    report: dict[str, Any] = {"layers": {}}
+            found = sorted(p for p in (seed / "proposals").iterdir() if p.is_dir() and not p.name.startswith("."))
+            dirs.extend(_parents_first([(f"proposal:{d.name}", d) for d in found]))
+    report: dict[str, Any] = {"layers": {}, "skipped": []}
     for slug, d in dirs:
-        report["layers"][slug] = _import_layer(store, slug, d, by=by)
+        st = _import_layer(store, slug, d, by=by)
+        report["layers"][slug] = st
+        if st.get("missing"):  # not in the database after all: listed apart from a layer that is merely not open
+            report["skipped"].append({"layer": slug, "path": d.as_posix(), "reason": st["skipped"]})
     return report
+
+
+def _declared_parent(d: Path) -> str:
+    """The parent a proposal folder's ``_layer.json`` names (``main`` when it names none or cannot be read: the
+    import itself reports a broken file)."""
+    f = d / LAYER_FILE
+    try:
+        meta = fsio.read_json(f) if f.is_file() else {}
+    except (OSError, ValueError, Invalid):
+        return "main"
+    parent = meta.get("parent") if isinstance(meta, dict) else None
+    return parent if isinstance(parent, str) and parent else "main"
+
+
+def _parents_first(dirs: list[tuple[str, Path]]) -> list[tuple[str, Path]]:
+    """Proposal folders ordered so a parent that is itself a proposal of this seed comes before its children (by
+    name otherwise). A cycle keeps its members in name order; their missing parents then skip them."""
+    parent = {slug: _declared_parent(d) for slug, d in dirs}
+    left = list(dirs)
+    out: list[tuple[str, Path]] = []
+    while left:
+        waiting = {slug for slug, _ in left}
+        ready = [(slug, d) for slug, d in left if parent[slug] not in waiting]
+        if not ready:  # a cycle
+            out.extend(left)
+            break
+        out.extend(ready)
+        left = [x for x in left if x not in ready]
+    return out
 
 
 def open_seed_conflicts(store: SqliteStore) -> list[dict[str, Any]]:

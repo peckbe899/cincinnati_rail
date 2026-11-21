@@ -7,8 +7,12 @@
   Every store opened on the same file in one process shares that thread, so writes are serialised in process and
   SQLite's lock serialises them across processes (the CLI, scripts, seed imports).
 - **Readers** are one connection per thread (sqlite3 connections are not shared between threads), opened lazily.
-- **cache.db** (WP3's, rebuildable) is attached to every reader as schema ``cache`` when the store is given one. The
-  outbox stays in region.db because SQLite does not make one transaction atomic across attached WAL databases.
+- **Read-only stores** (``open_store(readonly=True)``) open their readers ``mode=ro`` and have a ``ReadOnlyWriter``
+  in place of the writer thread, so they never take a write lock and never change the file.
+- **cache.db** (WP3's, rebuildable) is attached to every reader as schema ``cache`` when the store is given one, and
+  never to the writer: ``BEGIN IMMEDIATE`` takes the write lock of every attached database, so a writer with the cache
+  attached would block the scheduler's cache writes for as long as each truth write lasts. The outbox stays in
+  region.db because SQLite does not make one transaction atomic across attached WAL databases.
 
 Transactions are explicit: connections are opened with ``isolation_level=None``, which works the same on Python 3.12
 and 3.13.
@@ -55,14 +59,19 @@ def connect(path: str | os.PathLike[str], *, readonly: bool = False, cache: Path
         for p in PRAGMAS:
             con.execute(p)
     if cache is not None:
-        attach_cache(con, cache)
+        attach_cache(con, cache, readonly=readonly)
     return con
 
 
-def attach_cache(con: sqlite3.Connection, cache: Path) -> None:
-    """Attach ``cache.db`` as schema ``cache`` (created when absent; its tables are WP3's)."""
+def attach_cache(con: sqlite3.Connection, cache: Path, *, readonly: bool = False) -> None:
+    """Attach ``cache.db`` as schema ``cache`` (created when absent; its tables are WP3's). ``readonly`` attaches it
+    ``mode=ro`` (the connection must have been opened with ``uri=True``, as ``connect(readonly=True)`` does), and
+    then the file must exist."""
     names = {r[1] for r in con.execute("PRAGMA database_list")}
     if "cache" in names:
+        return
+    if readonly:
+        con.execute("ATTACH DATABASE ? AS cache", (Path(cache).resolve().as_uri() + "?mode=ro",))
         return
     con.execute("ATTACH DATABASE ? AS cache", (str(cache),))
     con.execute("PRAGMA cache.journal_mode=WAL")
@@ -97,11 +106,12 @@ def run_in_transaction[R](
 
 
 class Writer:
-    """The one writer thread of one database file. ``run(fn)`` executes ``fn(con)`` there in a write transaction."""
+    """The one writer thread of one database file. ``run(fn)`` executes ``fn(con)`` there in a write transaction.
 
-    def __init__(self, path: Path, *, cache: Path | None = None) -> None:
+    Its connection has no attached databases (see the module doc on cache.db)."""
+
+    def __init__(self, path: Path) -> None:
         self.path = path
-        self.cache = cache
         self._q: queue.Queue[tuple[Callable[[sqlite3.Connection], Any], Future[Any], bool] | None] = queue.Queue()
         self._ready: Future[None] = Future()
         self._thread = threading.Thread(target=self._loop, name=f"region-writer:{path.name}", daemon=True)
@@ -111,7 +121,7 @@ class Writer:
 
     def _loop(self) -> None:
         try:
-            self._con = connect(self.path, cache=self.cache)
+            self._con = connect(self.path)
         except BaseException as e:
             self._ready.set_exception(e)
             return
@@ -167,6 +177,25 @@ class Writer:
             self._thread.join(timeout=30)
 
 
+class ReadOnlyWrite(PermissionError):
+    """A write asked of a store opened read-only (a bug in the caller, so it surfaces as a 500)."""
+
+
+class ReadOnlyWriter:
+    """The writer of a read-only store: ``run`` refuses every call with ``ReadOnlyWrite``. No thread, no connection."""
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+
+    on_thread = False
+
+    def run(self, fn: Callable[[sqlite3.Connection], T], *, transaction: bool = True) -> T:
+        raise ReadOnlyWrite(f"the store on {self.path} is open read-only; it cannot write")
+
+    def stop(self) -> None:
+        return None
+
+
 _writers: dict[str, tuple[Writer, int]] = {}
 _writers_lock = threading.Lock()
 
@@ -175,7 +204,7 @@ def _key(path: Path) -> str:
     return os.path.normcase(str(Path(path).resolve()))
 
 
-def writer_for(path: Path, *, cache: Path | None = None) -> Writer:
+def writer_for(path: Path) -> Writer:
     """The shared writer of ``path`` (started on first use); pair every call with ``release_writer``."""
     k = _key(path)
     with _writers_lock:
@@ -183,7 +212,7 @@ def writer_for(path: Path, *, cache: Path | None = None) -> Writer:
         if found is not None and found[0]._thread.is_alive():
             _writers[k] = (found[0], found[1] + 1)
             return found[0]
-        w = Writer(Path(path), cache=cache)
+        w = Writer(Path(path))
         _writers[k] = (w, 1)
         return w
 
@@ -207,11 +236,12 @@ def release_writer(path: Path) -> None:
 
 
 class Readers:
-    """One read connection per thread for one database file (``query_only``)."""
+    """One read connection per thread for one database file (``query_only``; ``mode=ro`` when ``readonly``)."""
 
-    def __init__(self, path: Path, *, cache: Path | None = None) -> None:
+    def __init__(self, path: Path, *, cache: Path | None = None, readonly: bool = False) -> None:
         self.path = path
         self.cache = cache
+        self.readonly = readonly
         self._local = threading.local()
         self._all: list[sqlite3.Connection] = []
         self._lock = threading.Lock()
@@ -222,7 +252,7 @@ class Readers:
         if con is None:
             if self._closed:
                 raise RuntimeError(f"the store on {self.path} is closed")
-            con = connect(self.path, cache=self.cache)
+            con = connect(self.path, cache=self.cache, readonly=self.readonly)
             con.execute("PRAGMA query_only=ON")
             self._local.con = con
             with self._lock:
@@ -270,6 +300,8 @@ def dump_schema(con: sqlite3.Connection) -> str:
 __all__ = [
     "BUSY_TIMEOUT_MS",
     "PRAGMAS",
+    "ReadOnlyWrite",
+    "ReadOnlyWriter",
     "Readers",
     "Writer",
     "attach_cache",

@@ -12,7 +12,8 @@
   timeout capped by the job's remaining time.
 
 Every host reports the end of a task once, through ``Task.on_end(outcome, value)``: ``ok`` with the ``Output``,
-``error`` with a traceback, ``timeout``, ``cancelled`` or ``crashed`` with a message.
+``error`` with a ``Failure`` (the traceback, plus an engine error's stderr tail and zod issues for the job log) or a
+traceback string, ``timeout``, ``cancelled`` or ``crashed`` with a message.
 
 ``RunContext`` gives ``run`` its engine, progress, cancel token and upstream outputs, and nothing else: no store, no
 write method (decision 9.19).
@@ -34,6 +35,42 @@ from typing import Any
 
 from region.core.errors import EngineUnavailable, Invalid
 from region.core.protocols import EngineClient, Output
+
+
+@dataclass(frozen=True)
+class Failure:
+    """The value of an ``error`` outcome. ``text`` is the traceback; ``stderr_tail`` and ``issues`` are what an
+    ``EngineError`` or ``EngineUnavailable`` carried beside it, which the scheduler writes into the job log as lines of
+    their own. ``str()`` gives the traceback, so a host that answers with a plain string still works."""
+
+    text: str
+    stderr_tail: str = ""
+    issues: list[Any] | None = None
+
+    def __str__(self) -> str:
+        return self.text
+
+
+def failure(exc: BaseException) -> Failure:
+    """The ``Failure`` for an exception a job raised (it must be picklable: a process worker sends it back)."""
+    text = "".join(traceback.format_exception(exc))
+    tail = getattr(exc, "stderr_tail", "")
+    issues = getattr(exc, "issues", None)
+    return Failure(
+        text,
+        tail if isinstance(tail, str) else "",
+        _plain(issues) if isinstance(issues, list) and issues else None,
+    )
+
+
+def _plain(issues: list[Any]) -> list[Any] | None:
+    """``issues`` as JSON (zod's issues already are); ``None`` when they cannot be."""
+    import json
+
+    try:
+        return json.loads(json.dumps(issues, allow_nan=False))
+    except (TypeError, ValueError):
+        return None
 
 
 class NoEngine:
@@ -134,8 +171,8 @@ def _run_here(task: Task, engine: EngineClient) -> tuple[str, Any]:
     rt = RunContext(engine, task.on_progress, task.cancel, task.upstream)
     try:
         out = as_output(task.job_type.run(task.inputs, rt))
-    except BaseException:
-        return "error", traceback.format_exc()
+    except BaseException as e:
+        return "error", failure(e)
     return "ok", out
 
 
@@ -284,9 +321,9 @@ def _worker_main(task_r: Any, res_w: Any) -> None:
             rt = RunContext(NoEngine("process jobs have no engine"), progress, token, upstream)
             out = as_output(jt.run(inputs, rt))
             res_w.send(("done", out))
-        except BaseException:
+        except BaseException as e:
             with contextlib.suppress(Exception):
-                res_w.send(("error", traceback.format_exc()))
+                res_w.send(("error", failure(e)))
         finally:
             with lock:
                 tokens.pop(job_id, None)

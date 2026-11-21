@@ -22,12 +22,13 @@ contract (zod) is `src/contract/`, exported to `schema/v0/`.
 ## Commands
 
 ```sh
-npx vitest run                                   # the engine tests (from engine/)
-npx tsc --noEmit -p .                            # types
-node scripts/gen_schema.ts                       # schema/v0 from the zod contract
-node scripts/gen_rules.ts                        # src/rules.gen.ts from rules/registry.yaml
-node scripts/golden_update.ts --rule <id> --note "why"   # accept an output change under a rule id
+npm test                                         # the engine tests (vitest run, from engine/)
+npm run typecheck                                # types
+npm run gen:schema                               # schema/v0 from the zod contract
+npm run gen:rules                                # src/rules.gen.ts from rules/registry.yaml
+npm run golden:update -- --rule <id> --note "why"   # accept an output change under a rule id
 ```
 
-`golden_update.ts` refuses to run without a rule id of the registry. It never touches `tests/baseline/`, which holds
+From the repo root add `-w engine` (`npm run golden:update -w engine -- --rule <id>`). Each script is the matching
+`node scripts/<name>.ts`, which also works on its own. `golden:update` refuses to run without a rule id of the registry. It never touches `tests/baseline/`, which holds
 the Profiles page's own output and is compared within 1 mm by `test/golden.vertical.test.ts`.

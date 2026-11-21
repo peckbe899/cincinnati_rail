@@ -9,7 +9,9 @@
     crhub jobs run <type> <scope> [view]    plan and run one job here, then print its result
 
 ``--cache`` names another ``cache.db`` (default ``var/cache/cache.db``). ``wipe`` and ``run`` are for when the
-server is not running: the server's scheduler is the only writer of the cache while it runs.
+server is not running: the server's scheduler is the only writer of the cache while it runs. They hold ``var``'s
+single-instance lock (``region.core.lock``) while they work, so they refuse to start while a server (or another of
+them) holds it, and a server cannot start under them.
 """
 
 from __future__ import annotations
@@ -172,6 +174,14 @@ def _prune(args: argparse.Namespace) -> int:
     return 0
 
 
+def _server_lock(command: str) -> Any:
+    """``var``'s single-instance lock for this command (``LockHeld``, a 409 the CLI prints, while a server or another
+    command holds it)."""
+    from region.core import lock, paths
+
+    return lock.acquire(paths.var_root(), 0, command=command)
+
+
 def _wipe(args: argparse.Namespace) -> int:
     from region.jobs.cache import wipe
 
@@ -179,7 +189,8 @@ def _wipe(args: argparse.Namespace) -> int:
     if not args.yes:
         print(f"this deletes {path} and its blobs; run again with --yes", file=sys.stderr)
         return 2
-    removed = wipe(path)
+    with _server_lock("crhub jobs wipe"):
+        removed = wipe(path)
     print(f"removed {removed} cache files; the hub recomputes what it needs")
     return 0
 
@@ -198,13 +209,14 @@ def _run(args: argparse.Namespace) -> int:
     if not db.exists():
         raise NotFound(f"no database at {db}; run crhub setup first")
     view = View(args.layer, args.year, args.month, args.tl)
-    store = open_store(db)
-    try:
-        return _run_with(args, store, view)
-    finally:
-        close = getattr(store, "close", None)
-        if callable(close):
-            close()
+    with _server_lock("crhub jobs run"):
+        store = open_store(db)
+        try:
+            return _run_with(args, store, view)
+        finally:
+            close = getattr(store, "close", None)
+            if callable(close):
+                close()
 
 
 def _run_with(args: argparse.Namespace, store: Any, view: Any) -> int:

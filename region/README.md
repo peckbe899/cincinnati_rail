@@ -55,8 +55,8 @@ git pull
 5. **The first imports** (the Metro sections, stations and profiles), once the imports command provides them.
 6. **`crhub doctor`**, whose table ends the run. Setup's exit code is the doctor's.
 
-Setup refuses to start while the new hub is serving: stop it first (Ctrl+C in its window). The old hub can keep
-running. `crhub setup --dry-run` prints the steps without running anything. `--skip-npm`, `--skip-build`, `--skip-python`,
+Setup refuses to start while the new hub is serving, or while `crhub jobs run` holds the hub's lock: stop it first
+(Ctrl+C in its window). It says which process holds the lock (`var\hub.lock`). The old hub can keep running. `crhub setup --dry-run` prints the steps without running anything. `--skip-npm`, `--skip-build`, `--skip-python`,
 `--skip-migrate`, `--skip-imports` and `--no-doctor` leave one step out.
 
 Run `crhub setup` again after any `git pull` that changes `uv.lock`, `requirements.lock`, `package-lock.json`, the
@@ -91,40 +91,47 @@ app's source; `npm run build -w app` (or `crhub setup`) clears it. Stop it with 
 | `crhub setup` | installs the packages, builds the app, creates or migrates the database, runs doctor |
 | `crhub` or `crhub serve` | serves the hub at http://127.0.0.1:8766 |
 | `crhub doctor` | checks this machine, `var`, the ports, the data tiers, the app build and the database |
-| `crhub doctor --data` | the same, and validates every record again, on a copy (slower; never changes the database) |
-| `crhub model export` | before you commit: takes in pulled seeds first, then writes your design to `region/seed/main` |
-| `crhub model backup` | a checked backup of the database into `var\backups` |
-| `crhub model restore <file>` | puts a backup back (the current database is backed up first) |
+| `crhub doctor --data` | the same, and validates every record again (slower; reads the database read-only, never changes it) |
+| `crhub export` | before you commit: takes in pulled seeds first, then writes your design to `region/seed/main` |
+| `crhub backup` | a checked backup of the database into `var\backups` |
+| `crhub restore <file>` | puts a backup back (the current database is backed up first); refuses while the hub serves |
 | `crhub rebuild --compare` | rebuilds a database from git into `var\rebuild` and compares it with yours; never touches yours |
 | `crhub model migrate` | applies pending migrations, backing up first (serve and setup do this for you) |
-| `crhub model check` | `quick_check`, then every record validated again |
-| `crhub model info` | the schema version, the layers and how many records each holds |
+| `crhub model check` | `quick_check`, then every record validated again (read-only: safe while the hub runs) |
+| `crhub model info` | the schema version, the layers and how many records each holds (read-only) |
+| `crhub jobs list` | the queued and running jobs; `crhub jobs show <job>` prints one job and its log |
 | `crhub info` | where this hub finds its repo, `var`, configs, tiers and features |
 | `python -m region.tiers` | the data tier scan on its own (`--json` for the same as `GET /api/v1/tiers`) |
 
-`crhub --help` lists every command, and `crhub <command> --help` its options.
+`crhub --help` lists every command, and `crhub <command> --help` its options. `crhub export`, `crhub backup` and
+`crhub restore` are short names for `crhub model export`, `crhub model backup` and `crhub model restore`: either
+spelling does the same. `crhub restore`, `crhub jobs run` and `crhub jobs wipe` hold the hub's lock while they work,
+so each refuses while the hub serves and names the process that holds the lock.
 
 ### Export, then commit
 
 Your design reaches git only through `region/seed/main`. Before you commit:
 
 ```powershell
-.\crhub model export
+.\crhub export
 git add region/seed
 git commit -m "Hub export"
 ```
 
 Export first takes in any seed changes you pulled, and refuses while one of them conflicts with a change of yours, so
-it never overwrites something it has not merged. Two exports in a row give the same bytes.
+it never overwrites something it has not merged. Two exports in a row give the same bytes. A proposal whose parent
+layer is not in your database (a scenario that lives only on the machine that made it) is not taken in: export lists
+it as not imported and leaves its folder in `region/seed/proposals` as it is.
 
 ### Backups and restore
 
 - Serve and setup back up before every migration. Those backups are kept forever, as are the ones you make with
-  `crhub model backup`.
+  `crhub backup`.
 - Pre-import backups keep the newest 10, daily ones 14 and weekly ones 8.
 - Every backup is checked with `quick_check` before it gets its name, so a file in `var\backups` is always whole.
-- To restore, stop the hub, then `.\crhub model restore var\backups\region-<time>-<reason>.db` (use the full path
-  `crhub info` shows for `var`). The database you replace is backed up first, so a restore can be undone the same way.
+- To restore, stop the hub, then `.\crhub restore var\backups\region-<time>-<reason>.db` (use the full path
+  `crhub info` shows for `var`). It refuses while the hub serves. The database you replace is backed up first, so a
+  restore can be undone the same way.
 
 ### Rebuild
 
@@ -156,7 +163,7 @@ before you move to another machine, or after a large pull.
 | Start | `python hub\hub.py` | `.\crhub` |
 | Address | http://127.0.0.1:8765 | http://127.0.0.1:8766 |
 | Database | `hub\hub.db` | `var\region.db` |
-| Into git | its Export button or `python hub\hub.py export` writes `hub/seed` | `crhub model export` writes `region/seed/main` |
+| Into git | its Export button or `python hub\hub.py export` writes `hub/seed` | `crhub export` writes `region/seed/main` |
 | Pages | Deck, Profiles, Station 3D, Chronology | the map, the line sheet, the inspector, jobs, the review queue |
 
 - **Nothing in the old hub changes.** It keeps its database, its pages, its tests and its port.
@@ -169,7 +176,7 @@ before you move to another machine, or after a large pull.
 - **The new hub's Legacy pane** links to the old hub's pages on 8765.
 - **Running both.** Start each in its own PowerShell window. Doctor shows port 8765 as information only: whether the
   old hub is running there.
-- **Before you pull:** Export in the old hub and run `.\crhub model export`, so your own changes are in git too.
+- **Before you pull:** Export in the old hub and run `.\crhub export`, so your own changes are in git too.
 
 ## When doctor fails
 

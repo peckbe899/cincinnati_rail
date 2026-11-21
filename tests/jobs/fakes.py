@@ -39,6 +39,7 @@ class FakeStore:
         self.by = by
         self._clock = 0
         self._floor = 0  # the highest seq pruned: new events continue after it, as AUTOINCREMENT does
+        self._epoch = 1  # bumped by restore_db, as a restore gives the SQLite store a new meta epoch
 
     # ------------------------------------------------------------------------------------------------ layers
 
@@ -130,6 +131,11 @@ class FakeStore:
         """The oldest event seq still in the outbox (the SQLite store has this too)."""
         with self._lock:
             return self.outbox[0]["seq"] if self.outbox else 0
+
+    def epoch(self) -> str:
+        """The database's epoch: a new one after ``restore_db``, as the SQLite store's ``meta.epoch``."""
+        with self._lock:
+            return f"epoch-{self._epoch}"
 
     def prune(self, upto: int) -> None:
         """Drop outbox events with seq up to ``upto``, as a store pruning its outbox would."""
@@ -318,6 +324,7 @@ class FakeStore:
             self.revs = copy.deepcopy(revs)
             self.outbox = [e for e in self.outbox if e["seq"] <= seq]
             self._floor = min(self._floor, seq)
+            self._epoch += 1
 
     def snapshot(self) -> dict[str, Any]:
         with self._lock:

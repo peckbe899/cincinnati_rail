@@ -161,3 +161,46 @@ def test_two_stores_share_the_writer_and_cache_attaches(make_store, write_root):
     two.close()
     note(one, "the writer outlives the second store")
     assert D._writers  # still running for the first
+
+
+def test_cache_write_proceeds_while_a_truth_write_is_open(make_store, write_root):
+    """The writer has no cache attached, so a truth write transaction does not take cache.db's write lock and the
+    scheduler's cache writes go ahead while it is open."""
+    import sqlite3
+
+    from region.jobs import cache as C
+
+    cache_db = write_root / "cache" / "cache.db"
+    store = make_store("truth.db", cache=cache_db)
+    C.migrate(cache_db)
+    writer_dbs = store._writer.run(lambda con: [r[1] for r in con.execute("PRAGMA database_list")], transaction=False)
+    assert "cache" not in writer_dbs
+    assert "cache" in [r[1] for r in store._reader().execute("PRAGMA database_list")]
+
+    inside, release = threading.Event(), threading.Event()
+
+    def hold(con):
+        con.execute("INSERT INTO meta (key, value) VALUES ('held', 'x')")
+        inside.set()
+        assert release.wait(10)
+
+    t = threading.Thread(target=lambda: store._writer.run(hold))
+    t.start()
+    try:
+        assert inside.wait(10)
+        cache = C.connect(cache_db)
+        cache.execute("PRAGMA busy_timeout=200")
+        try:
+            cache.execute("BEGIN IMMEDIATE")
+            cache.execute("CREATE TABLE probe (x INTEGER)")
+            cache.execute("INSERT INTO probe (x) VALUES (1)")
+            cache.execute("COMMIT")
+        except sqlite3.OperationalError as e:  # "database is locked" when the writer holds cache.db too
+            raise AssertionError(f"a cache write was blocked by an open truth write: {e}") from None
+        finally:
+            cache.close()
+    finally:
+        release.set()
+        t.join(10)
+    assert store.meta()["held"] == "x"
+    assert store._reader().execute("SELECT x FROM cache.probe").fetchall() == [(1,)]

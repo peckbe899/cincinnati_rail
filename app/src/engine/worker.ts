@@ -28,7 +28,8 @@ const load = (): Promise<EngineModule> => {
   engine ??= (async () => {
     // The hub's CSP has no 'unsafe-eval'. zod (the engine's contract library) probes new Function() unless told
     // not to, and Chromium reports that probe as a CSP violation even though zod catches it. jitless skips it.
-    // zod comes hoisted from @cr/engine's dependencies; see the WP6 report for the change asked of WP4.
+    // app/package.json declares zod at the engine's version, so npm dedupes the two to one copy and this config
+    // reaches the zod the engine uses.
     const zod = await import("zod");
     zod.config({ jitless: true });
     return import("@cr/engine");
