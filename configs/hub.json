@@ -1,0 +1,32 @@
+{
+  "about": "The hub's settings (region.core.paths.config). configs/local.json overrides any member on one machine; see configs/local.example.json. var null means the platform default: %LOCALAPPDATA%\\CincinnatiRail\\hub on Windows, <repo>/var elsewhere (9.22). The CRHUB_VAR environment variable overrides both.",
+  "version": 1,
+  "host": "127.0.0.1",
+  "port": 8766,
+  "var": null,
+  "old_hub": "http://127.0.0.1:8765",
+  "pools": {
+    "threads": 4,
+    "processes": 2,
+    "engine": 2
+  },
+  "engine": {
+    "node": "node",
+    "node_min": "22.18",
+    "timeout_s": 30
+  },
+  "jobs": {
+    "lease_s": 30,
+    "heartbeat_s": 5,
+    "max_requeue": 2
+  },
+  "logs": {
+    "keep_days": 30
+  },
+  "backups": {
+    "keep_pre_import": 10,
+    "keep_daily": 14,
+    "keep_weekly": 8
+  },
+  "body_cap_mb": 32
+}

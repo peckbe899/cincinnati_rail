@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cincinnati-rail.invalid/engine/schema/v0/request.json",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    },
+    "method": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$"
+        },
+        {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+@[1-9][0-9]*$"
+        }
+      ],
+      "description": "A bare name takes the version the hello lists."
+    },
+    "params": {
+      "description": "The method's input contract (SectionInput for vertical.rail)."
+    }
+  },
+  "required": [
+    "id",
+    "method",
+    "params"
+  ],
+  "additionalProperties": false,
+  "title": "Request",
+  "description": "One call, written by Python to the sidecar's stdin."
+}

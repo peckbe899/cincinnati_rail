@@ -1,0 +1,72 @@
+{
+  "about": "Data tiers (9.26): folders the hub reads but never writes, most of them produced by lane B. Records and job keys name their files as tier://<name>/<path>, never by absolute path. root is relative to the repo root unless absolute; configs/local.json can move a root on one machine with {\"tiers\": {\"<name>\": {\"root\": \"D:/...\"}}}. A tier is missing when its root is absent, partial when its manifest or index is absent or its handshake does not say done, and present otherwise; a missing or partial tier shows as a status chip and a map layer's available() reason, never as an error. required tiers make crhub doctor fail when missing. mount tiers are served read-only at /api/v1/data/<name>/<path>.",
+  "version": 1,
+  "tiers": [
+    {
+      "name": "ground_1912_real",
+      "about": "The 1912 city survey rebuilt as a real-timeline ground surface, with its confidence and cover rasters, contours and fit report (ground/1912/SPEC.md). Consumers act only once STATUS.json says done.",
+      "lane": "B",
+      "root": "ground/1912",
+      "manifest": "MANIFEST.csv",
+      "index": null,
+      "handshake": {"file": "STATUS.json", "done": "done", "detail": "stage"},
+      "required": false,
+      "mount": false
+    },
+    {
+      "name": "ground_2026",
+      "about": "The 2026 ground (map3 profile DEM in decimetres, with its water mask), the base the compositor fills gaps from.",
+      "lane": "B",
+      "root": "ground/2026",
+      "manifest": null,
+      "index": "map3_profile_dem_dm.vrt",
+      "handshake": null,
+      "required": false,
+      "mount": false
+    },
+    {
+      "name": "sanborn_tiles_22",
+      "about": "The Sanborn 1922 tiles (512 px at 0.25 m, EPSG:26916 corners in index.json) and their overview, for the map's Sanborn layer.",
+      "lane": "B",
+      "root": "hub/sites/deck/tiles_22",
+      "manifest": null,
+      "index": "index.json",
+      "handshake": null,
+      "required": false,
+      "mount": true
+    },
+    {
+      "name": "deck",
+      "about": "The Deck site's files: deck.json, basin.json, plots, structures, relief overview and the other tile sets. Read for the map's relief and context layers and, later, the import:deck base sets.",
+      "lane": "B",
+      "root": "hub/sites/deck",
+      "manifest": null,
+      "index": "deck.json",
+      "handshake": null,
+      "required": false,
+      "mount": true
+    },
+    {
+      "name": "old_hub_seed",
+      "about": "The old hub's seed (alignments, chronology, data, deck, params, roadmap), the source of the legacy:old_hub layer. Read from git, never from the live hub/hub.db.",
+      "lane": "B",
+      "root": "hub/seed",
+      "manifest": null,
+      "index": "alignments",
+      "handshake": null,
+      "required": true,
+      "mount": false
+    },
+    {
+      "name": "profile_lines",
+      "about": "data/profile: the Metro line files (lines/*.json, Deck-tie output), settings and station tables, the source of the import:profiles layer. Each import run records the sha256 of every file it read (9.27).",
+      "lane": "B",
+      "root": "data/profile",
+      "manifest": null,
+      "index": "lines/index.json",
+      "handshake": null,
+      "required": true,
+      "mount": false
+    }
+  ]
+}

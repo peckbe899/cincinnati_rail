@@ -1,0 +1,30 @@
+{
+  "name": "@cr/engine",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The hub's rules engine: pure TypeScript run by Node directly (type stripping) in the sidecar and CLI, and bundled by Vite for the browser worker. Contract v0 is zod in src/contract, exported to schema/v0.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./contract": "./src/contract/index.ts",
+    "./schema/v0/*": "./schema/v0/*"
+  },
+  "scripts": {
+    "gen:schema": "node scripts/gen_schema.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "fast-check": "^4.10.3",
+    "typescript": "~6.0.3",
+    "vitest": "^5.1.1",
+    "yaml": "^2.9.1"
+  }
+}

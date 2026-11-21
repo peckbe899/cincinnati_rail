@@ -1,0 +1,12 @@
+{
+  "about": "Copy this file to configs/local.json (gitignored) to change settings on one machine only. Every member is optional and is merged over configs/hub.json and configs/hub_paths.json. Delete the members you do not need.",
+  "var": "C:/Users/<you>/AppData/Local/CincinnatiRail/hub",
+  "port": 8766,
+  "engine": {
+    "node": "C:/Program Files/nodejs/node.exe"
+  },
+  "tiers": {
+    "ground_1912_real": {"root": "ground/1912"},
+    "sanborn_tiles_22": {"root": "hub/sites/deck/tiles_22"}
+  }
+}

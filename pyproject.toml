@@ -1,25 +1,96 @@
 [project]
+# The distribution keeps its old name so an existing editable install of railsim upgrades in place.
+# It now ships two packages: railsim (the running-time simulators) and region (the hub, branch hub_region).
 name = "railsim"
 version = "10.0.0"
-description = "Physics-based metro and commuter/RER running-time simulators for hand-drawn KMZ alignments"
-requires-python = ">=3.10"
-dependencies = ["numpy>=1.24", "scipy>=1.10", "matplotlib>=3.7", "pyyaml>=6"]
+description = "Cincinnati Rail: the railsim running-time simulators and the region hub"
+requires-python = ">=3.12"
+dependencies = [
+    # railsim
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "matplotlib>=3.8",
+    "pyyaml>=6",
+    # region: geometry, ground and the store
+    "shapely>=2",
+    "pyproj>=3.6",
+    "rasterio>=1.3",
+    "python-ulid>=3",
+    "jsonschema>=4.18",
+    "jsonpatch>=1.33",
+    # region: the server
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+]
 
 [project.optional-dependencies]
-# the local hub (hub/hub.py) and the tools it runs: Deck tie, Profiles context, Station 3D sync
-hub = ["shapely>=2", "pyproj>=3.5", "rasterio>=1.3"]
+# The old local hub (hub/hub.py) and the tools it runs: Deck tie, Profiles context, Station 3D sync.
+# These are core dependencies now; the extra stays so `pip install -e ".[hub]"` keeps working.
+hub = ["shapely>=2", "pyproj>=3.6", "rasterio>=1.3"]
+
+[dependency-groups]
+test = ["pytest>=8.3", "httpx>=0.27", "hypothesis>=6.100"]
+dev = [{ include-group = "test" }, "ruff>=0.8", "datamodel-code-generator>=0.26"]
 
 [project.scripts]
 railsim-metro = "railsim.metro:main"
 railsim-commuter = "railsim.commuter:main"
+crhub = "region.cli:main"
 
 [build-system]
 requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = ["railsim"]
+[tool.setuptools.packages.find]
+include = ["railsim*", "region*"]
+
+[tool.setuptools.package-data]
+region = ["**/*.yaml", "**/*.json", "**/*.sql", "**/*.tsv", "**/*.md"]
+
+[tool.uv]
+# uv syncs the dev group (tests and ruff) by default; `uv sync --no-dev` leaves them out.
+default-groups = ["dev"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+markers = [
+    "slow: long-running test (budgets, whole-network runs); CI runs -m 'not slow and not local'",
+    "local: needs files only Ben's machine has (lane-B tiers outside git); skips itself when they are absent",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+# Lint lane-A code only. The old code (railsim, tools, the old hub, region/ground, region/rules.py, the top-level
+# tests) predates these rules and is not reformatted by this branch. The top-level folders are written "./name": a
+# bare name would exclude every folder of that name anywhere, such as the features region/ext/rules, legacy, stations.
+extend-exclude = [
+    "./railsim",
+    "./tools",
+    "./hub",
+    "./design",
+    "./legacy",
+    "./data",
+    "./ground",
+    "./rules",
+    "./stations",
+    "./output",
+    "./docs",
+    "node_modules",
+    "region/ground",
+    "region/rules.py",
+    # the 0001 store, rewritten by WP1: drop these four lines when it lands
+    "region/model/db.py",
+    "region/model/seed.py",
+    "region/model/__main__.py",
+    "region/model/__init__.py",
+    "tests/test_*.py",
+    "tests/baseline",
+]
+
+[tool.ruff.lint]
+preview = true
+explicit-preview-rules = true
+# PLW1514: open() and read_text()/write_text() without an explicit encoding (Windows defaults to cp1252).
+select = ["E", "F", "W", "I", "UP", "B", "PLW1514"]

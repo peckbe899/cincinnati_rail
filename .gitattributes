@@ -1,0 +1,55 @@
+# Line endings for lane A only (decision 9.29). Lane B's files (tools/sanborn, data/sanborn, hub/sites/deck,
+# ground/1912 and the rest of the old tree) are deliberately not listed, so their CRLF files are not renormalised.
+# Seeds, ids, schemas and generated files must be byte-identical on every machine, so they are LF everywhere.
+
+# the hub's Python packages and data (not region/ground or region/rules.py, which predate the hub)
+region/__init__.py              text eol=lf
+region/__main__.py              text eol=lf
+region/README.md                text eol=lf
+region/core/**                  text=auto eol=lf
+region/cli/**                   text=auto eol=lf
+region/model/**                 text=auto eol=lf
+region/api/**                   text=auto eol=lf
+region/jobs/**                  text=auto eol=lf
+region/enginehost/**            text=auto eol=lf
+region/contract/**              text=auto eol=lf
+region/tiers/**                 text=auto eol=lf
+region/analysis/**              text=auto eol=lf
+region/ext/**                   text=auto eol=lf
+region/kinds/**                 text=auto eol=lf
+region/ids/**                   text eol=lf
+region/seed/**                  text eol=lf
+
+# the engine and the app
+engine/**                       text=auto eol=lf
+app/**                          text=auto eol=lf
+
+# the hub's tests (the top-level tests/*.py predate the hub and are left alone)
+tests/__init__.py               text eol=lf
+tests/conftest.py               text eol=lf
+tests/known_failures.txt        text eol=lf
+tests/core/**                   text=auto eol=lf
+tests/model/**                  text=auto eol=lf
+tests/api/**                    text=auto eol=lf
+tests/jobs/**                   text=auto eol=lf
+tests/enginehost/**             text=auto eol=lf
+tests/importers/**              text=auto eol=lf
+tests/profiles/**               text=auto eol=lf
+tests/ops/**                    text=auto eol=lf
+tests/perf/**                   text=auto eol=lf
+
+# packaging, configs and launchers
+.gitattributes                  text eol=lf
+.python-version                 text eol=lf
+pyproject.toml                  text eol=lf
+uv.lock                         text eol=lf
+requirements.lock               text eol=lf
+package.json                    text eol=lf
+package-lock.json               text eol=lf
+biome.json                      text eol=lf
+configs/hub.json                text eol=lf
+configs/hub_paths.json          text eol=lf
+configs/local.example.json      text eol=lf
+.github/workflows/hub.yml       text eol=lf
+crhub                           text eol=lf
+crhub.cmd                       text eol=crlf

@@ -1,0 +1,9 @@
+# Tests that are known to fail, run as strict xfail by tests/conftest.py (section 9, CI).
+#
+# One pytest node id per line, then optionally "#" and the reason. Strict means the suite fails as soon as a listed
+# test passes (XPASS): then the cause is fixed and its line here must go. Add a line only with the reason and who
+# owns the fix; never to hide a failure the change in hand caused.
+
+# Lane B data: platform centres are off their Deck platforms (Line 6 North Avondale, Forest; Line 1 Gray, Winton
+# Place, Burnet North). Pre-existing, listed in tests/baseline/issues.json (5 Nov). Owner: lane B (Deck tie).
+tests/test_core.py::test_rer_routes_follow_deck  # lane B data: station drift off the Deck platforms

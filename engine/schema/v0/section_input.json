@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cincinnati-rail.invalid/engine/schema/v0/section_input.json",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "section_input/0"
+    },
+    "section_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The section record id."
+    },
+    "length_m": {
+      "type": "number",
+      "minimum": 0,
+      "x-unit": "m",
+      "description": "Section length in the chainage basis."
+    },
+    "chainage_basis": {
+      "type": "string",
+      "const": "grid:26916",
+      "description": "Chainage is UTM 16N (EPSG:26916) grid length along the plan geometry (decision 9.14)."
+    },
+    "scale": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "x-unit": "ratio",
+      "description": "Ground distance per unit of grid chainage on this section, for railsim and quantities."
+    },
+    "step_m": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "x-unit": "m",
+      "description": "Grid step of the output arrays."
+    },
+    "params": {
+      "type": "object",
+      "properties": {
+        "platform_m": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "x-unit": "m",
+          "description": "Platform length."
+        },
+        "vc_radius_m": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "x-unit": "m",
+          "description": "Vertical curve radius."
+        },
+        "vc_min_len_m": {
+          "type": "number",
+          "minimum": 0,
+          "x-unit": "m",
+          "description": "Shortest vertical curve."
+        }
+      },
+      "required": [
+        "platform_m",
+        "vc_radius_m",
+        "vc_min_len_m"
+      ],
+      "additionalProperties": false,
+      "description": "Resolved params (settings.* or settings_rer.* by system, with the CVG overlay)."
+    },
+    "stations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "platform_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The platform record id."
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "x-unit": "index",
+            "description": "Station order along the section. Of two overlapping platforms the first wins."
+          },
+          "c_m": {
+            "type": "number",
+            "x-unit": "m",
+            "description": "Platform centre chainage: the stop's point c plus its slide."
+          },
+          "level_m": {
+            "anyOf": [
+              {
+                "type": "number",
+                "x-unit": "m",
+                "description": "Rail level at the platform, metres NAVD88."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Rail level at the platform, metres NAVD88; null leaves it to the design."
+          },
+          "grade_permille": {
+            "anyOf": [
+              {
+                "type": "number",
+                "x-unit": "permille",
+                "description": "Grade through the platform."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Grade through the platform; null leaves it to the design."
+          }
+        },
+        "required": [
+          "platform_id",
+          "order",
+          "c_m",
+          "level_m",
+          "grade_permille"
+        ],
+        "additionalProperties": false,
+        "description": "A platform on the section. Deleted platforms are removed before the input is built."
+      }
+    },
+    "pvi": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "c_m": {
+            "type": "number",
+            "x-unit": "m",
+            "description": "Chainage of the vertex."
+          },
+          "z_m": {
+            "type": "number",
+            "x-unit": "m",
+            "description": "Rail level at the vertex, metres NAVD88."
+          }
+        },
+        "required": [
+          "c_m",
+          "z_m"
+        ],
+        "additionalProperties": false,
+        "description": "A point of vertical intersection set by Ben."
+      }
+    },
+    "ground": {
+      "type": "object",
+      "properties": {
+        "step_m": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "x-unit": "m",
+          "description": "Sample spacing from chainage 0."
+        },
+        "z_m": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "x-unit": "m",
+            "description": "Ground level, metres NAVD88."
+          }
+        }
+      },
+      "required": [
+        "step_m",
+        "z_m"
+      ],
+      "additionalProperties": false,
+      "description": "Ground levels along the section on a regular grid from chainage 0."
+    }
+  },
+  "required": [
+    "contract",
+    "section_id",
+    "length_m",
+    "chainage_basis",
+    "scale",
+    "step_m",
+    "params",
+    "stations",
+    "pvi"
+  ],
+  "additionalProperties": false,
+  "title": "SectionInput",
+  "description": "Contract section_input/0: the input of vertical.rail@1."
+}
