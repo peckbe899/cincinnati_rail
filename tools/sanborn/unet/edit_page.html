@@ -94,7 +94,7 @@ async function load(n) {
     if (!l) { l = {k: 'ben' + Math.random(), a0: s.a0 || s.a, b0: s.b0 || s.b, src: s.src || 'ben', state: s.state || 'new', name: s.name || '', added: !!s.added}; lines.push(l); }
     l.a = s.a.slice(); l.b = s.b.slice(); l.verdict = s.verdict || null;
   }
-  rails = ((P.rail ? P.rail.tracks : P.rail_rule && P.rail_rule.tracks) || []).map(t => { const r = {kind: t.kind, pts: t.pts.map(p => p.slice())}; if (t.src === 'rule') r.src = 'rule'; return r; }); rsel = null;   // his own tracks once he has saved any; until then the rules' finds (rail_tracks.py), each marked as not checked rdraft = null; railDone = !!(P.rail && P.rail.complete);
+  rails = ((P.rail ? P.rail.tracks : P.rail_rule && P.rail_rule.tracks) || []).map(t => { const r = {kind: t.kind, pts: t.pts.map(p => p.slice())}; if (t.src === 'rule') r.src = 'rule'; return r; }); rsel = null; rdraft = null; railDone = !!(P.rail && P.rail.complete);   // his own tracks once he has saved any; until then the rules' finds (rail_tracks.py), each marked as not checked. (21 Nov 2026: the last two statements had slipped into this comment in bddf7bb, so 'complete' was not read from the file and the next rail save wrote the old value)
   loadBins(n);
   view.k = Math.min(cv.width / P.W, cv.height / P.H); view.x = 0; view.y = 0; location.hash = n; $('saved').textContent = 'loaded'; draw();
 }
@@ -318,7 +318,7 @@ cv.addEventListener('mousedown', e => {
     if (!rdraft) rdraft = {kind: railKind, pts: [q], cur: q}; else if (dist(rdraft.pts[rdraft.pts.length - 1], q) * view.k > 3) rdraft.pts.push(q);
     draw(); return; }
   if (mode === 'new') { const w = snapPt(toW(sx, sy), null, e); snapAt = null; if (!draft) draft = {a: w, b: w}; else { snap(); const l = {k: 'ben' + Math.random(), a: draft.a, b: w, a0: draft.a, b0: w, src: 'ben', state: 'new', name: '', verdict: 'ok', added: true}; lines.push(l); sel = new Set([l]); draft = null; save(); } draw(); return; }
-  if (rsel && $('fRail').checked) for (let i = 0; i < rsel.pts.length; i++) { const q = toS(rsel.pts[i]); if (Math.hypot(q[0] - sx, q[1] - sy) < 9) { snap('rail'); delete rsel.src; drag = {t: 'rv', r: rsel, i, did: false}; return; } }
+  if (rsel && $('fRail').checked) for (let i = 0; i < rsel.pts.length; i++) { const q = toS(rsel.pts[i]); if (Math.hypot(q[0] - sx, q[1] - sy) < 9) { snap('rail'); drag = {t: 'rv', r: rsel, i, did: false, sx, sy}; return; } }   // the track counts as checked only once a point is really moved (mousemove), not on a plain click
   { const r = pickRail(sx, sy); if (r && !e.shiftKey) { rsel = r; sel.clear(); draw(); return; } }
   rsel = null;
   if (e.shiftKey && !pick(sx, sy)) { box = {x0: sx, y0: sy, x1: sx, y1: sy}; return; }
@@ -334,7 +334,7 @@ addEventListener('mousemove', e => {
   if (box) { box.x1 = sx; box.y1 = sy; draw(); return; }
   if (!drag) return;
   if (drag.t === 'pan') { view.x = drag.x - (sx - drag.sx) / view.k; view.y = drag.y - (sy - drag.sy) / view.k; drag.did = true; }
-  else if (drag.t === 'rv') { drag.r.pts[drag.i] = w; drag.did = true; }
+  else if (drag.t === 'rv') { if (drag.did || Math.hypot(sx - drag.sx, sy - drag.sy) > 3) { drag.r.pts[drag.i] = w; drag.did = true; delete drag.r.src; } }
   else if (drag.t === 'end') drag.l[drag.end] = snapPt(w, drag.l, e);
   else if (drag.t === 'line') { const dx = w[0] - drag.w0[0], dy = w[1] - drag.w0[1]; drag.l.a = [drag.a[0] + dx, drag.a[1] + dy]; drag.l.b = [drag.b[0] + dx, drag.b[1] + dy]; drag.did = true; }
   draw();
