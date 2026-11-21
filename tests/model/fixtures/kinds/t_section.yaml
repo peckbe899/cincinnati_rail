@@ -1,0 +1,33 @@
+# Test kind: a line between two nodes (restrict refs), dated, with a guarded chainage.
+kind: t_section
+version: 1
+title: Test section
+geometry: LineString
+columns:
+  name: /name
+  system: /system
+  c0: /length_m
+dates:
+  open: /opened
+  close: /closed
+refs:
+  - {path: /node_a, kind: t_node, on_delete: restrict, required: true}
+  - {path: /node_b, kind: t_node, on_delete: restrict}
+merge:
+  unit: field
+  rebase: auto
+  guard: [/length_m]
+schema:
+  type: object
+  additionalProperties: false
+  required: [name, node_a]
+  properties:
+    name: {type: string}
+    system: {type: [string, "null"]}
+    node_a: {type: [string, "null"]}
+    node_b: {type: [string, "null"]}
+    length_m: {type: [number, "null"], x-unit: m}
+    width_m: {type: [number, "null"], x-unit: m}
+    tracks: {type: [integer, "null"], x-unit: count}
+    opened: {type: [string, integer, "null"], x-unit: year}
+    closed: {type: [string, integer, "null"], x-unit: year}

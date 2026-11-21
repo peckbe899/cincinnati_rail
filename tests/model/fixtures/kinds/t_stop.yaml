@@ -1,0 +1,18 @@
+# Test kind: a stop on a section (cascade), checked by the fixture feature's validator.
+kind: t_stop
+version: 1
+geometry: none
+columns:
+  name: /name
+  parent: /section
+  c0: /c_m
+refs:
+  - {path: /section, kind: t_section, on_delete: cascade, required: true}
+schema:
+  type: object
+  additionalProperties: false
+  required: [name, section, c_m]
+  properties:
+    name: {type: string}
+    section: {type: string}
+    c_m: {type: number, x-unit: m}

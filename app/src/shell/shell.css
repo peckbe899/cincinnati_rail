@@ -1,0 +1,389 @@
+:root {
+  --bg: #16181d;
+  --panel: #1e2128;
+  --line: #2f333d;
+  --text: #d8dbe2;
+  --muted: #8b919e;
+  --accent: #5aa9e6;
+  --warn: #e6b450;
+  --error: #f07178;
+  --ok: #7fd962;
+  color-scheme: dark;
+  font:
+    13px / 1.4 system-ui,
+    "Segoe UI",
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 2px 6px;
+}
+
+.dirty {
+  border-color: var(--warn);
+}
+
+.bad {
+  border-color: var(--error);
+}
+
+button:disabled {
+  opacity: 0.45;
+}
+
+button:not(:disabled):hover {
+  border-color: var(--accent);
+}
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.topbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.topbar .brand {
+  margin-right: 8px;
+}
+
+.topbar .year {
+  width: 5em;
+}
+
+.topbar .spacer {
+  flex: 1;
+}
+
+.dock-area {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.dock {
+  position: absolute;
+  inset: 0;
+}
+
+.pane-root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+.statusbar {
+  display: flex;
+  gap: 14px;
+  padding: 2px 8px;
+  border-top: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.status-item.warn {
+  color: var(--warn);
+}
+
+.status-item.error {
+  color: var(--error);
+}
+
+.toasts {
+  position: fixed;
+  right: 12px;
+  bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 50;
+}
+
+.toast {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  max-width: 480px;
+  padding: 6px 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+}
+
+.toast.warn {
+  border-left-color: var(--warn);
+}
+
+.toast.error {
+  border-left-color: var(--error);
+}
+
+.toast small {
+  color: var(--muted);
+}
+
+.stale-banner {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 10px;
+  background: #3a2f12;
+  border-bottom: 1px solid var(--warn);
+}
+
+/* Panes */
+
+.pane {
+  padding: 8px;
+}
+
+.pane h3 {
+  margin: 0 0 6px;
+  font-size: 13px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+table.grid {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+table.grid th,
+table.grid td {
+  border: 1px solid var(--line);
+  padding: 1px 6px;
+  text-align: right;
+}
+
+table.grid th {
+  color: var(--muted);
+  font-weight: normal;
+}
+
+table.grid td.name,
+table.grid th.name {
+  text-align: left;
+}
+
+table.grid input {
+  width: 7em;
+  text-align: right;
+  padding: 0 4px;
+}
+
+.sheet {
+  display: grid;
+  grid-template-rows: auto minmax(160px, 1fr) auto;
+  height: 100%;
+}
+
+.sheet-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.sheet-canvas {
+  position: relative;
+  min-height: 0;
+}
+
+.sheet-canvas canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.sheet-table {
+  max-height: 40vh;
+  overflow: auto;
+  display: flex;
+  gap: 16px;
+  padding: 6px 8px;
+  border-top: 1px solid var(--line);
+}
+
+/* MapLibre makes its container position: relative, so the map fills the pane by size, not by inset. */
+.map-root {
+  width: 100%;
+  height: 100%;
+}
+
+.map-layers {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  background: rgba(30, 33, 40, 0.92);
+  border: 1px solid var(--line);
+  padding: 4px 8px;
+}
+
+.map-layers label {
+  display: block;
+}
+
+.map-layers .reason {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.form fieldset {
+  border: 1px solid var(--line);
+  margin: 4px 0;
+  padding: 4px 8px;
+}
+
+.form .field {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin: 2px 0;
+}
+
+.form .field > label {
+  flex: 0 0 9em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.form .field > input:not([type="checkbox"]),
+.form .field > select,
+.form .field > textarea {
+  flex: 1 1 auto;
+  min-width: 4em;
+}
+
+.form .tuple {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.form .tuple > input {
+  width: 7em;
+}
+
+.form .field .unit {
+  color: var(--muted);
+  min-width: 2em;
+}
+
+.form .error {
+  color: var(--error);
+  font-size: 11px;
+}
+
+.palette-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 12vh;
+}
+
+.palette {
+  width: min(640px, 92vw);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+.palette-input {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  padding: 8px 10px;
+  font-size: 15px;
+}
+
+.palette ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 50vh;
+  overflow: auto;
+}
+
+.palette li {
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.palette li.active {
+  background: #2a3240;
+}
+
+.palette li small {
+  color: var(--muted);
+  margin-left: 8px;
+}
+
+.progress {
+  display: inline-block;
+  width: 80px;
+  height: 6px;
+  background: var(--line);
+  vertical-align: middle;
+}
+
+.progress > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+ul.plain {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+ul.plain li {
+  padding: 2px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+a {
+  color: var(--accent);
+}

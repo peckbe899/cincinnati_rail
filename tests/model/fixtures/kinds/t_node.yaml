@@ -1,0 +1,19 @@
+# Test kind: a point with a legacy key.
+kind: t_node
+version: 1
+title: Test node
+geometry: Point
+columns:
+  name: /name
+  system: /system
+legacy: [t_node_key]
+schema:
+  type: object
+  additionalProperties: false
+  required: [name]
+  properties:
+    name: {type: string}
+    system: {type: [string, "null"], x-vocab: systems}
+    level_m: {type: [number, "null"], x-unit: m}
+  examples:
+    - {name: Sycamore, system: metro, level_m: 160.5}

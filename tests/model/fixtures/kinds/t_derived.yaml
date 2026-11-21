@@ -1,0 +1,9 @@
+# Test kind: a derived, bulky kind that is never seeded.
+kind: t_derived
+version: 1
+geometry: none
+seeded: false
+schema:
+  type: object
+  properties:
+    n: {type: integer, x-unit: count}

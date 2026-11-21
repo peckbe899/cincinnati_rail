@@ -55,12 +55,24 @@ The first line a sidecar writes, before reading any request:
   not serve is `unknown_method`.
 - **`params`** is the method's input contract (`SectionInput` for `vertical.rail`). The engine validates it with zod
   and answers `invalid_input` (with zod's `issues`) when it fails.
-- **Progress** lines are optional, at most one per 100 ms per request. `progress` runs from 0 to 1.
+- **Progress** lines are optional. `progress` runs from 0 to 1. The engine keeps no clock, so it thins them by
+  amount instead of time: a line goes out only when progress has moved by at least 0.05 since the last one for
+  that request, or reaches 1 (`PROGRESS_STEP` in `src/tol.ts`).
 - **Error codes:** `bad_request` (the line is not a JSON request; `id` is `null` when it could not be read),
   `unknown_method`, `invalid_input`, `internal` (the method threw; `stack` holds the trace). Python raises
   `EngineError` with the code.
 - There is no cancel message. To cancel or time out, Python kills the process and starts a new one (with backoff);
   the open request fails with `EngineUnavailable(reason="timeout")` or `("crashed")`.
+
+## Methods
+
+| Method | Params | Result | Rules its flags cite |
+|---|---|---|---|
+| `vertical.rail@1` | `SectionInput` v0 | `VerticalRail` v0 | `era.vertical_curve.radius_and_min_length`, `platform.length.by_system`, `network.level_solver.shallow_as_grade_allows` |
+| `engine.echo@1` | anything | the params, unchanged | none |
+
+`engine.echo` is a health check and the probe of the round-trip budget (section 6: under 5 ms warm). The method table
+is `engine/src/methods.ts`; the sidecar, the CLI and the browser worker all serve it.
 
 ## Results
 
@@ -70,6 +82,8 @@ The first line a sidecar writes, before reading any request:
   (JCS) canonical JSON of `params`: keys sorted by UTF-16 code units, no whitespace, numbers as `JSON.stringify`
   writes them. `engine/src/contract/common.ts` `canonicalJson` and `region/core/fsio.py` `canonical_json` give the
   same bytes; `engine/test/contract.jcs.json` holds the vectors both test against.
+- In the browser, `solve(method, params, { engineBuild })` takes `engine_build` from the server's hello (a bundle
+  cannot hash its own source); without it outputs carry 64 zeros, which no real build hashes to.
 - Numbers are plain JSON numbers. Arrays are on the grid the output declares (`grid.c0`, `grid.step_m`, `grid.n`).
   Binary frames come in only if a budget test fails (9.20).
 

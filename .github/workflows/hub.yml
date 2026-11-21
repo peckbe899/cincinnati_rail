@@ -1,0 +1,213 @@
+# CI for the hub (branch hub_region; section 9 of claude/Hub_Region_Architecture.md).
+#
+#   py        Ubuntu, Python 3.12 and 3.13: uv lock --check, crhub setup (uv sync, npm ci, app build, migrate,
+#             doctor), ruff, pytest -m "not slow and not local"
+#   engine    Node 22.18 (the floor) and 24: npm ci, tsc --noEmit, vitest (with the schema drift test), Biome; the
+#             app's typecheck and unit tests once app/src exists
+#   e2e       Playwright Chromium against a fixture database built by crhub setup; runs once app/e2e and the serve
+#             command exist, and is a no-op until then
+#   windows   checked out into the folder "cr test" (a space in the path): venv and pip from requirements.lock,
+#             crhub.cmd setup, the core, model, API, engine host and ops tests, then a serve smoke test
+#   hygiene   no file over 25 MiB, no *.db, var, dist or node_modules in git, LF in region/seed, the launchers' modes
+#
+# Known failures run as strict xfail through tests/known_failures.txt, so CI goes red the day one starts passing.
+
+name: hub
+
+on:
+  push:
+    branches: [hub_region, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hub-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONUTF8: "1"
+  FORCE_COLOR: "1"
+
+jobs:
+  py:
+    name: py (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.12", "3.13"]
+    env:
+      UV_PYTHON: ${{ matrix.python }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: uv.lock is current
+        run: uv lock --check
+      - name: crhub setup (uv sync, npm ci, app build, migrate, doctor)
+        run: ./crhub setup
+      - name: ruff
+        run: uv run --locked ruff check .
+      - name: pytest
+        run: uv run --locked pytest -m "not slow and not local"
+
+  engine:
+    name: engine (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["22.18", "24"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - name: npm ci
+        run: npm ci
+      - name: tsc --noEmit (engine)
+        run: npm run typecheck -w engine
+      - name: vitest (engine, with "schemas regenerate with no diff")
+        run: npm test -w engine
+      - name: tsc --noEmit and vitest (app)
+        if: hashFiles('app/src/**') != ''
+        run: |
+          npm run typecheck -w app
+          npm test -w app
+      - name: Biome
+        run: npm run lint
+
+  e2e:
+    name: e2e (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Is there anything to run yet?
+        id: probe
+        run: |
+          if [ -d app/e2e ] && [ -f region/cli/serve.py ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::e2e skipped: app/e2e or region/cli/serve.py does not exist yet"
+          fi
+      - uses: astral-sh/setup-uv@v6
+        if: steps.probe.outputs.run == 'true'
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        if: steps.probe.outputs.run == 'true'
+        with:
+          node-version: "24"
+          cache: npm
+      - name: crhub setup (builds the app and the database the tests run against)
+        if: steps.probe.outputs.run == 'true'
+        run: ./crhub setup
+      - name: Fixture database
+        if: steps.probe.outputs.run == 'true'
+        run: cp var/region.db "$RUNNER_TEMP/fixture.db"
+      - name: Playwright Chromium
+        if: steps.probe.outputs.run == 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Playwright
+        if: steps.probe.outputs.run == 'true'
+        env:
+          CRHUB_E2E_DB: ${{ runner.temp }}/fixture.db
+          CRHUB_E2E_SERVE: >-
+            ["uv", "run", "--locked", "python", "-m", "region", "serve", "--db", "{db}", "--port", "{port}",
+            "--no-browser"]
+        run: npm run e2e -w app
+      - name: Playwright traces
+        if: failure() && steps.probe.outputs.run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: app/test-results
+          if-no-files-found: ignore
+
+  windows:
+    name: windows (Python 3.12, "cr test")
+    runs-on: windows-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: cr test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: cr test
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: cr test/package-lock.json
+      - name: venv and pip from requirements.lock (Ben's path without uv)
+        run: |
+          python -m venv .venv
+          .venv\Scripts\python -m pip install -r requirements.lock -e .
+      - name: crhub.cmd setup
+        run: .\crhub.cmd setup
+      - name: pytest (core, model, API, engine host, ops)
+        run: |
+          $dirs = @('tests/core', 'tests/model', 'tests/api', 'tests/enginehost', 'tests/ops') | Where-Object { Test-Path $_ }
+          .venv\Scripts\python -m pytest -m "not slow and not local" @dirs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: serve smoke test (start, health, stop)
+        if: hashFiles('cr test/region/cli/serve.py') != ''
+        run: |
+          $p = Start-Process -FilePath .venv\Scripts\python.exe -ArgumentList '-m', 'region', 'serve', '--no-browser' `
+            -PassThru -NoNewWindow -RedirectStandardOutput serve.out -RedirectStandardError serve.err
+          $ok = $false
+          foreach ($i in 1..60) {
+            Start-Sleep -Seconds 1
+            try {
+              $r = Invoke-WebRequest -UseBasicParsing -TimeoutSec 2 http://127.0.0.1:8766/api/v1/health
+              if ($r.StatusCode -eq 200) { $ok = $true; break }
+            } catch { }
+            if ($p.HasExited) { break }
+          }
+          if (-not $p.HasExited) { Stop-Process -Id $p.Id -Force }
+          Get-Content serve.out, serve.err -ErrorAction SilentlyContinue | Select-Object -Last 40
+          if (-not $ok) { Write-Error "the hub did not answer /api/v1/health within 60 s"; exit 1 }
+
+  hygiene:
+    name: hygiene
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: No file over 25 MiB
+        run: |
+          big=$(git ls-tree -r -l HEAD | awk '$2 == "blob" && $4 > 26214400')
+          if [ -n "$big" ]; then echo "::error::files over 25 MiB are in git:"; echo "$big"; exit 1; fi
+      - name: No databases, var, dist or node_modules in git
+        run: |
+          bad=$(git ls-files | grep -E '(^|/)(var|dist|node_modules)/|\.db$|\.db-(wal|shm|journal)$' || true)
+          if [ -n "$bad" ]; then echo "::error::these must not be in git:"; echo "$bad"; exit 1; fi
+      - name: LF in region/seed
+        run: |
+          bad=$(git ls-files --eol -- region/seed | grep -E '^i/(crlf|mixed)' || true)
+          if [ -n "$bad" ]; then echo "::error::region/seed must be LF:"; echo "$bad"; exit 1; fi
+      - name: Launchers (crhub executable and LF, crhub.cmd CRLF in the checkout)
+        run: |
+          git ls-files -s crhub | grep -q '^100755 ' || { echo "::error::crhub must be executable in git"; exit 1; }
+          git ls-files --eol crhub | grep -q 'w/lf' || { echo "::error::crhub must be LF"; exit 1; }
+          git ls-files --eol crhub.cmd | grep -q 'w/crlf' || { echo "::error::crhub.cmd must be CRLF"; exit 1; }

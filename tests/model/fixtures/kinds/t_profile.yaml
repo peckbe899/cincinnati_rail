@@ -1,0 +1,28 @@
+# Test kind: one atomic merge unit keyed by platform id, with nulls that must survive (the profile record shape).
+kind: t_profile
+version: 1
+geometry: none
+merge:
+  unit: atomic
+  rebase: auto
+schema:
+  type: object
+  additionalProperties: false
+  properties:
+    mode: {type: [string, "null"]}
+    ready: {type: [boolean, "null"]}
+    st:
+      type: object
+      additionalProperties: {type: [number, "null"], x-unit: m}
+    sg:
+      type: object
+      additionalProperties: {type: [number, "null"], x-unit: permille}
+    pvi:
+      type: array
+      items:
+        type: object
+        additionalProperties: false
+        required: [c_m, z_m]
+        properties:
+          c_m: {type: number, x-unit: m}
+          z_m: {type: [number, "null"], x-unit: m}
