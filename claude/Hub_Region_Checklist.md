@@ -82,13 +82,29 @@ Read on 6 November (sources at the end):
 - [ ] 2.0.14 **Corridor and region ground tiers** from Ben's USGS DEMs and LiDAR (lane B local session, to a spec
   like the 1912 one). Options: (a) COGs per tier, read by window; (b) one Zarr store with pyramids; (c) PMTiles
   terrain-RGB for the map plus COGs for sampling. Lean: (a) plus the terrain-RGB PMTiles in slice 3.
-- [ ] 2.0.15 **App shell and API skeleton**. Options: (a) FastAPI plus Vite/React; (b) Starlette plus Vite/Svelte
+- [~] 2.0.15 **App shell and API skeleton** (cloud, increment 1 below; spec `Hub_Region_Architecture.md`). Options: (a) FastAPI plus Vite/React; (b) Starlette plus Vite/Svelte
   (lighter, smaller ecosystem for map and 3D bindings); (c) a single Python server with HTMX and canvas, no
   front-end build (fewest tools, but the engine must run in the browser for live editing, which rules it out).
   Lean: (a). Decision record 9.3.
 - [ ] 2.0.16 `claude/STATUS.md` board and `claude/Hub_Region_Working_Method.md`; project skills in
   `.claude/skills/` (export before build, rebuild and compare, take a handoff); a hook running the ground and
   engine tests on change.
+
+### Increment 1: the hub platform (21 Nov; spec `Hub_Region_Architecture.md` section 10)
+
+The walking skeleton through every layer: from a fresh clone, `crhub setup` then `crhub serve` brings up the map and the
+Line 6 sheet; a PVI level edited in scenario `try` re-solves in the page, saves, and the server's result arrives over
+SSE; `crhub export` twice gives byte-identical seeds; the old hub untouched; `crhub doctor` passes on Ben's machine.
+
+- [ ] I1.0a Contracts and packaging: `region/core`, launchers, locks, workspaces, kind meta-schema, engine contract v0.
+- [ ] I1.0b Doctor, data tiers (`configs/hub_paths.json`), CI, Ben's runbook (`region/README.md`).
+- [ ] I1.1 Store v2: migration 0002 (`rec` envelope, layers, changesets, outbox, conflicts, import runs), merge and
+  rebase, legacy ids (match before mint), seeds per layer, backups.
+- [ ] I1.2 Server: FastAPI `/api/v1`, problem+json, If-Match 428/412, SSE from the outbox, files with Range, security.
+- [ ] I1.3 Jobs and cache: content-hash keys, early cutoff, goals, scheduler with leases, `cache.db`, blobs.
+- [ ] I1.4 Engine `vertical.rail@1` ported (path, vertices, design, rail grid), the Node sidecar pool, goldens on 41 routes.
+- [ ] I1.5 Metro import (`profile_lines`, `registry`, `old_hub`), `profiles.solve_section`, golden diff job.
+- [ ] I1.6 App: shell with dockview and plugins, URL state, SSE worker, map, line sheet, inspector, jobs, review.
 
 Exit for slice 0: migrations apply to empty and seeded databases; the registry lists every rule the page applies;
 the baseline and gates are committed and pass; the 1912 surface meets its spec or its misses are listed; the
@@ -331,6 +347,16 @@ digging index; a 3D globe; re-deriving the Sanborn streets; keeping the Python c
   test that a date change is one record edit.
 - 9.7 **Sanborn frozen, not re-derived** (6 Nov, Ben). Decision: existing streets, plots and tiles are data; the
   pipeline is kept for new plates only.
+
+- 9.9 to 9.30 (21 Nov): the hub architecture. One record store (`rec` envelope, kinds as YAML schemas); layers as
+  one copy-on-write mechanism for imports, the old hub, Ben's main and scenarios; three-way rebase that never
+  overrides Ben; kind files and feature folders; whole-record PUT with If-Match and JSON Patch; chainage basis
+  declared (grid 26916, for Ben to rule); heights NAVD88 m with the datum per ground layer; the view as layer, year,
+  month, timeline; ids matched before minted with an id ledger in git; truth DB and rebuildable cache DB; jobs keyed
+  by content hashes with early cutoff; a Node sidecar pool for the engine; TypeScript 6.0 pinned, uv with a pip
+  fallback; `crhub` launchers with `var` outside synced folders; the strangler by authority per kind; seeds per
+  layer; one owner per rule value; lane-B inputs as data tiers; byte-identical seeds; maps offline. Full text in
+  `Hub_Region_Architecture.md` section 2.
 
 ## Sources read for section 0
 
