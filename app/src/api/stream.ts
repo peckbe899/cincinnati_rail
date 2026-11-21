@@ -8,11 +8,13 @@
 //   the server sends itself (pruned, overflow) is passed on; a second resync on one connection with nothing durable
 //   between is folded into the first.
 // - Every open after the first is marked reconnected, so ephemeral state (jobs, results) is re-read.
+// - engine {engine_build} arrives when the server's engine pool answers after the hello (which then said null); the
+//   status takes the build.
 // - Reconnects back off from minDelayMs to maxDelayMs with jitter, and reset after a hello. When the response has no
 //   readable body the client polls /events/poll?since= instead.
 
 import { type SseMessage, SseParser } from "./sse.ts";
-import { DURABLE_EVENTS, type HelloEvent, type HubEvent, type ResyncEvent } from "./types.ts";
+import { DURABLE_EVENTS, type EngineEvent, type HelloEvent, type HubEvent, type ResyncEvent } from "./types.ts";
 
 export type FeedState = "idle" | "connecting" | "open" | "closed";
 
@@ -276,6 +278,14 @@ export class EventClient {
       if (seq !== null) this.lastSeq = seq;
       this.durableSinceResync = true;
       this.emit({ type: "event", event: { type, seq, data } as HubEvent });
+      return;
+    }
+    if (type === "engine") {
+      // The pool answered after this connection's hello said engine_build null: the status takes the build, so the
+      // next local solve names the build the server's sidecars run.
+      const e = data as EngineEvent;
+      this.setStatus({ engine_build: e.engine_build ?? null });
+      this.emit({ type: "event", event: { type: "engine", seq: null, data: e } });
       return;
     }
     if (type === "job" || type === "result" || type === "tier") {

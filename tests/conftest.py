@@ -5,6 +5,8 @@
 - **Markers.** ``slow`` and ``local`` are declared in ``pyproject.toml``. CI runs ``-m "not slow and not local"``.
 - **Fixtures for every package.** ``hub_var`` gives a test its own ``var`` folder (``CRHUB_VAR``) with writes
   allowed there; ``write_root`` allows writes under ``tmp_path``.
+- **No forced colour.** Every test runs without ``FORCE_COLOR`` (CI sets it), so the output of a child it starts
+  is plain text.
 
 Test folders are packages (``tests/__init__.py``, ``tests/<area>/__init__.py``), so a module is imported as
 ``tests.<area>.test_x`` and the same file name may appear in two folders. A new ``tests/<area>/`` needs its
@@ -42,6 +44,15 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
         reason = known.get(item.nodeid)
         if reason is not None:
             item.add_marker(pytest.mark.xfail(reason=f"known failure: {reason}", strict=True))
+
+
+@pytest.fixture(autouse=True)
+def _no_forced_colour(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Run every test without ``FORCE_COLOR``. CI sets it for its logs (``.github/workflows/hub.yml``), and a child a
+    test starts (node, npm) then colours its output even into a pipe, so a test that reads that output sees escape
+    codes. Done here, so the old hub's tests (``tests/test_*.py``) stay untouched. pytest's own output keeps its
+    colour: its terminal was set up before any test ran."""
+    monkeypatch.delenv("FORCE_COLOR", raising=False)
 
 
 @pytest.fixture

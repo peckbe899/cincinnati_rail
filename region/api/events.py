@@ -7,9 +7,10 @@ data_version``, which changes when another process commits (the CLI, a script, a
 reach the stream within a second too. Each event goes out as ``id: <seq>``, ``event: <type>``, ``data: <json>``.
 When it has passed new events on, the tailer also wakes the scheduler's invalidator.
 
-**Ephemeral events** (``job``, ``result``, ``tier``) are sent once, without an id: jobs and results from the
-scheduler's ``subscribe``, tiers from a scan at start and every minute on a thread of its own, so a slow tier
-never holds up the outbox (and on every ``GET /tiers``).
+**Ephemeral events** (``job``, ``result``, ``tier``, ``engine``) are sent once, without an id: jobs and results from
+the scheduler's ``subscribe``, tiers from a scan at start and every minute on a thread of its own, so a slow tier
+never holds up the outbox (and on every ``GET /tiers``), and ``engine {engine_build, error}`` when the engine pool
+answers after streams opened (``Hub.set_engine``).
 
 **Every stream** starts with ``hello {epoch, seq, engine_build}``. ``epoch`` is the server epoch: new at every start
 and whenever the database's own epoch changes (a restore), so a client that sees it change resyncs. With
@@ -191,7 +192,7 @@ class EventHub:
                 c.overflow = True
 
     def publish(self, type: str, data: dict[str, Any]) -> None:
-        """Send an ephemeral event (``job``, ``result``, ``tier``) to every open stream."""
+        """Send an ephemeral event (``job``, ``result``, ``tier``, ``engine``) to every open stream."""
         self._publish(("ephemeral", None, type, dict(data)))
 
     def _job_event(self, kind: str, payload: dict[str, Any]) -> None:

@@ -221,9 +221,10 @@ def _run(args: argparse.Namespace) -> int:
 
 def _run_with(args: argparse.Namespace, store: Any, view: Any) -> int:
     from region.core.errors import NotFound
+    from region.ext.rules.params import resolve as resolve_param
     from region.jobs.scheduler import Scheduler
 
-    sched = Scheduler(store, _cache_path(args), None).start()
+    sched = Scheduler(store, _cache_path(args), None, params=resolve_param).start()  # as serve resolves params
     try:
         out = sched.submit(args.type, args.scope, view, priority=0)
         key = out["key"]

@@ -53,14 +53,7 @@ def _within(path: Path, roots: tuple[Path, ...]) -> bool:
     import os
 
     target = os.path.realpath(path)
-    for r in roots:
-        root = os.path.realpath(r)
-        try:
-            if os.path.commonpath([root, target]) == root:
-                return True
-        except ValueError:
-            continue
-    return False
+    return any(paths.names_below(os.path.realpath(r), target) is not None for r in roots)
 
 
 class Serve:
@@ -124,11 +117,14 @@ class Serve:
     def _prepare(self) -> None:
         if self.host not in LOOPBACK:
             raise ServeRefused(f"the hub serves on loopback only (127.0.0.1, ::1), not {self.host}")
+        # before the lock, which creates var and var/hub.lock: a refused start leaves nothing behind
+        if not self.db.is_file():
+            raise NotFound(f"no database at {self.db}: run crhub setup to create it (serve never creates an empty one)")
         self.lock = lock.acquire(self.var, self.port)
         self._say("lock", f"{lock.path_of(self.var)} (pid {self.lock.holder.pid})")
         if not _within(self.db.parent, fsio.write_roots()):
             self._stack.enter_context(fsio.allow_writes(self.db.parent))
-        if not self.db.is_file():
+        if not self.db.is_file():  # removed while the lock was taken
             raise NotFound(f"no database at {self.db}: run crhub setup to create it (serve never creates an empty one)")
         self._check_port()
         from region.model import backup as B
@@ -162,15 +158,19 @@ class Serve:
             self._import_seeds()
         self._scan_tiers()
         self._start_engine()
+        from region.ext.rules.params import resolve as resolve_param
         from region.jobs.scheduler import Scheduler
 
         pools = self.cfg.get("pools") or {}
+        # the rules feature's resolver (9.25: section, then route, then system), the one the profiles router uses,
+        # so a job and a route resolve a param the same way
         self.jobs = Scheduler(
             self.store,
             cache_path,
             self.engine,
             threads=int(pools.get("threads", 4)),
             processes=int(pools.get("processes", 2)),
+            params=resolve_param,
         ).start()
         self._say("jobs", f"scheduler on {cache_path}")
         app_state = self._app_state()
@@ -267,7 +267,7 @@ class Serve:
             hub, answer = self._hub, self._engine_answer
             if hub is None or answer is None:
                 return
-            hub.engine_hello, hub.engine_error = answer
+        hub.set_engine(*answer)  # outside the lock: it publishes to the event loop
 
     def _app_state(self) -> dict[str, Any]:
         from region.cli.doctor import app_build

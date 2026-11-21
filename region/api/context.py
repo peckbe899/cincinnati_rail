@@ -129,6 +129,14 @@ class Hub:
                 self.engine_error = f"{type(e).__name__}: {e}"
         return self.engine_hello, self.engine_error
 
+    def set_engine(self, hello: dict[str, Any] | None, error: str | None) -> None:
+        """The engine pool's answer (serve's background start): kept for ``/meta`` and every later hello, and sent
+        to the streams already open as an ``engine`` event, since their hello said ``engine_build: null``."""
+        self.engine_hello, self.engine_error = (dict(hello) if hello else None), error
+        self._engine_tried = True
+        if self.events is not None:
+            self.events.publish("engine", {"engine_build": self.engine_build(), "error": error})
+
     def engine_build(self) -> str | None:
         hello = self.engine_hello
         return str(hello["engine_build"]) if hello and hello.get("engine_build") else None

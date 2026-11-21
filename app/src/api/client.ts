@@ -192,8 +192,9 @@ export class Api {
       .data;
   }
 
-  history(kind: string, id: string, view: View): Promise<Rec[]> {
-    return this.get(`/k/${kind}/${encodeURIComponent(id)}/history`, viewQuery(view));
+  /** Every revision of the record in the view, newest first. The server answers {items} (region/api/records.py). */
+  async history(kind: string, id: string, view: View): Promise<Rec[]> {
+    return listOf<Rec>(await this.get<unknown>(`/k/${kind}/${encodeURIComponent(id)}/history`, viewQuery(view)));
   }
 
   async restore(kind: string, id: string, version: number, view: View, ifMatch: string): Promise<Rec> {

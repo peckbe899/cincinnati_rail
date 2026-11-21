@@ -4,6 +4,7 @@
     crhub export [--db PATH] [--out region/seed]
 
 A thin alias: the arguments and the work are ``region.cli.model``'s, so the two spellings never drift apart.
+While a hub serves from ``var``, the export goes through its HTTP API (decision 9.28).
 """
 
 from __future__ import annotations

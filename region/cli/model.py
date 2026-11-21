@@ -11,11 +11,16 @@
     crhub model schema   [--write]                      print (or rewrite) region/model/schema.sql
 
 ``crhub export``, ``crhub backup`` and ``crhub restore`` are the same three actions under the runbook's names
-(section 9). ``--db`` defaults to ``var/region.db`` (see ``crhub info`` for where ``var`` is). These commands open the
-database directly; while a server holds the lock, run writes through the server instead (9.28). ``restore`` holds
-the lock itself, so it refuses while a hub serves. ``check`` and ``info`` open the database read-only
-(``open_store(readonly=True)``): they never migrate, back up or rewrite the kind table, so they are safe beside a
-serving hub.
+(section 9). ``--db`` defaults to ``var/region.db`` (see ``crhub info`` for where ``var`` is).
+
+**Beside a serving hub** (9.28: while ``crhub serve`` holds ``var/hub.lock``, its database is written only through
+it). Without ``--db``, ``export`` and ``backup`` go through the running hub's HTTP API (``POST /export``,
+``POST /backup``), and ``import`` and ``migrate`` refuse with a message saying what to do instead (the hub imported
+the pulled seeds when it started, and every export imports them again first). The commands that write the database
+directly (``migrate``, ``export``, ``import``, ``restore``) hold the lock while they work, so they refuse while a hub
+or another command holds it (``LockHeld`` names it), and no hub can start on the database meanwhile. ``check`` and
+``info`` open the database read-only (``open_store(readonly=True)``): they never migrate, back up or rewrite the
+kind table, so they are safe beside a serving hub.
 """
 
 from __future__ import annotations
@@ -107,6 +112,31 @@ def _open(args: argparse.Namespace, **kw: Any) -> Any:
     return open_store(args.db or _db_default(), **kw)
 
 
+class Refused(Exception):
+    """An action that cannot run beside the hub serving from ``var``; the message says what to do instead."""
+
+
+def _running_hub(args: argparse.Namespace) -> Any:
+    """The client of the hub serving from ``var`` when no ``--db`` was given, else ``None``."""
+    if args.db is not None:
+        return None
+    from region.api.client import running_hub
+
+    return running_hub(client="crhub-cli", timeout=600.0)
+
+
+def _holding_the_lock(action: str) -> Any:
+    """``var``'s single-instance lock, held while an action writes the database directly (``LockHeld`` names the
+    hub or command holding it)."""
+    from region.core import lock, paths
+
+    return lock.acquire(paths.var_root(), 0, command=f"crhub model {action}")
+
+
+def _through(hub: Any) -> str:
+    return f"(through the hub serving at {hub.base})"
+
+
 def schema_text() -> str:
     """The schema of a new database after every migration (what ``schema.sql`` holds)."""
     from region.model.db import dump_schema
@@ -128,7 +158,12 @@ def run(args: argparse.Namespace) -> int:
             file=sys.stderr,
         )
         return 2
-    return int(globals()[f"_{action}"](args) or 0)
+    try:
+        return int(globals()[f"_{action}"](args) or 0)
+    except Refused as e:
+        name = action if action in HELP else f"model {action}"  # export and backup also have runbook names
+        print(f"crhub {name}: {e}", file=sys.stderr)
+        return 1
 
 
 def _migrate(args: argparse.Namespace) -> int:
@@ -138,13 +173,17 @@ def _migrate(args: argparse.Namespace) -> int:
 
     db = Path(args.db or _db_default())
     fsio.check_write(db)
-    db.parent.mkdir(parents=True, exist_ok=True)
-    con = connect(db)
-    try:
-        done = migrate(con, backup_dir=None if args.no_backup else db.parent / "backups")
-        print(f"schema at version {current_version(con)}" + (f" (applied {done})" if done else " (up to date)"))
-    finally:
-        con.close()
+    hub = _running_hub(args)
+    if hub is not None:
+        raise Refused(f"a hub is serving at {hub.base}; it migrated the database when it started. Stop it to migrate.")
+    with _holding_the_lock("migrate"):
+        db.parent.mkdir(parents=True, exist_ok=True)
+        con = connect(db)
+        try:
+            done = migrate(con, backup_dir=None if args.no_backup else db.parent / "backups")
+            print(f"schema at version {current_version(con)}" + (f" (applied {done})" if done else " (up to date)"))
+        finally:
+            con.close()
     return 0
 
 
@@ -152,8 +191,18 @@ def _export(args: argparse.Namespace) -> int:
     from region.model import seed
 
     out = args.out or seed.SEED
-    with _open(args) as store:
-        rep = seed.export(store, out)
+    hub = _running_hub(args)
+    if hub is not None:
+        if Path(out).resolve() != Path(seed.SEED).resolve():
+            raise Refused(
+                f"a hub is serving at {hub.base}, and it exports to {seed.SEED} only. Drop --out, or stop the hub to "
+                "export elsewhere."
+            )
+        rep = hub.json("POST", "/export")
+        print(f"export {_through(hub)}")
+    else:
+        with _holding_the_lock("export"), _open(args, create=False) as store:
+            rep = seed.export(store, out)
     for skip in rep["imported"].get("skipped", []):
         print(f"{skip['layer']:24} not imported: {skip['reason']} ({skip['path']} left as it is)")
     for slug, st in rep["layers"].items():
@@ -164,7 +213,13 @@ def _export(args: argparse.Namespace) -> int:
 def _import(args: argparse.Namespace) -> int:
     from region.model import seed
 
-    with _open(args) as store:
+    hub = _running_hub(args)
+    if hub is not None:
+        raise Refused(
+            f"a hub is serving at {hub.base}. It imported the pulled seeds when it started, and crhub export imports "
+            "them again before it writes; run crhub export, or stop the hub and run this again."
+        )
+    with _holding_the_lock("import"), _open(args, create=False) as store:
         rep = seed.import_seed(store, args.seed or seed.SEED, layer=args.layer)
     for slug, st in rep["layers"].items():
         if st.get("skipped"):
@@ -180,6 +235,14 @@ def _import(args: argparse.Namespace) -> int:
 def _backup(args: argparse.Namespace) -> int:
     from region.model.backup import backup
 
+    hub = _running_hub(args)
+    if hub is not None:
+        if args.reason != "manual":
+            raise Refused(f"a hub is serving at {hub.base}; its backups are manual ones. Drop --reason.")
+        made = hub.json("POST", "/backup")
+        print(made["path"])
+        print(f"backup {_through(hub)}", file=sys.stderr)
+        return 0
     db = Path(args.db or _db_default())
     print(backup(db, db.parent / "backups", args.reason))
     return 0

@@ -1,3 +1,4 @@
+import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { Api, ApiError, etagOf } from "../../src/api/client.ts";
@@ -12,6 +13,25 @@ afterEach(() => server.resetHandlers(...hub.handlers()));
 afterAll(() => server.close());
 
 describe("API transport", () => {
+  it("history unwraps the server's {items}", async () => {
+    const revs = [
+      { kind: "profile", id: "P1", layer: "try", version: 2, data: { pvi: [] } },
+      { kind: "profile", id: "P1", layer: "main", version: 1, data: { pvi: [] } },
+    ];
+    server.use(
+      http.get(`${BASE}/k/profile/P1/history`, ({ request }) => {
+        expect(new URL(request.url).searchParams.get("layer")).toBe("try");
+        return HttpResponse.json({ items: revs });
+      }),
+    );
+    const api = new Api({ base: BASE, clientId: "tab-h" });
+    const got = await api.history("profile", "P1", makeView({ layer: "try" }));
+    expect(got.map((r) => [r.layer, r.version])).toEqual([
+      ["try", 2],
+      ["main", 1],
+    ]);
+  });
+
   it("If-Match sent and 304 used", async () => {
     hub.seed({ kind: "profile", id: "P1", data: { pvi: [[0, 200]], st: {} } });
     const api = new Api({ base: BASE, clientId: "tab-abcd" });

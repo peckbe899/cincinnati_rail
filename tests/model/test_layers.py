@@ -27,7 +27,8 @@ def test_scenario_shadows_main_and_copies_up(store, main):
         if_match=tag(seen),
         by="ben",
     )
-    assert up["layer"] == "try" and up["version"] == 1 and tag(up) == '"try:1"'
+    # the copy-up continues the record's lineage: main's version 1, then the scenario's version 2 (on layer try)
+    assert r["version"] == 1 and up["layer"] == "try" and up["version"] == 2 and tag(up) == '"try:2"'
     con = raw(store)
     base = con.execute(
         "SELECT base_hash FROM rec r JOIN layer l ON l.id = r.layer WHERE l.slug = 'try' AND r.id = ?", (r["id"],)
@@ -52,6 +53,23 @@ def test_scenario_shadows_main_and_copies_up(store, main):
     store.create_layer("try-deeper", parent="try", by="ben")
     assert store.chain(View(layer="try-deeper"))[:3] == ["try-deeper", "try", "main"]
     assert store.get("note", own["id"], View(layer="try-deeper"))["layer"] == "try"
+
+
+def test_a_layer_slug_names_its_tier(store, main):
+    """A proposal is called proposal:<name>, as seeds read it back; a tier that disagrees with the slug is refused,
+    and nothing is made. A plain "gate" proposal would come back from its seed folder as a second layer."""
+    said = {}
+    for slug, tier in (("gate", "proposal"), ("proposal:gate", "scenario"), ("import:gate", "scenario")):
+        with pytest.raises(Invalid) as e:
+            store.create_layer(slug, tier=tier, by="ben")
+        said[slug] = e.value.detail
+    assert said["gate"] == "layer slug 'gate' does not match tier 'proposal': a proposal's slug is proposal:<name>"
+    assert said["proposal:gate"].endswith("a scenario's slug has no proposal:, import: or legacy: prefix")
+    assert said["import:gate"].startswith("layer slug 'import:gate' does not match tier 'scenario'")
+    assert {"gate", "proposal:gate", "import:gate"}.isdisjoint(la["slug"] for la in store.layers())
+    made = store.create_layer("proposal:gate", tier="proposal", by="ben")
+    assert (made["slug"], made["tier"]) == ("proposal:gate", "proposal")
+    assert store.create_layer("proposal:by-slug", by="ben")["tier"] == "proposal"
 
 
 def test_import_namespaces_disjoint(store, main, monkeypatch):
@@ -252,3 +270,58 @@ def test_authority_legacy_refuses_main_allows_scenario(store, main):
     assert cs["kind"] == "legacy" and {x["kind"] for x in cs["records"]} == {"authority", "feature"}
     assert store.get("feature", old["id"], main)["layer"] == "main"
     store.write([Op("create", "feature", None, None, body=body)], main, by="ben", message="")
+
+
+def test_copy_up_continues_the_lineage(store, main):
+    """A write to a scenario or proposal copies a record up as the base's version + 1, so the versions one view shows
+    only ever increase; the ETag names the new layer. Undoing the copy-up writes the base's content as the next
+    version (the e2e "Ctrl+Z gives version 3 equal to version 1"). Main's copy-ups still start at version 1."""
+    r = note(store, "v1")
+    for text in ("v2", "v3"):
+        r = store.patch("note", r["id"], [{"op": "replace", "path": "/data/text", "value": text}], main,
+                        if_match=tag(r), by="ben")  # fmt: skip
+    assert (r["layer"], r["version"]) == ("main", 3)
+    store.create_layer("try", by="ben")
+    tried = View(layer="try")
+    up = store.patch("note", r["id"], [{"op": "replace", "path": "/data/text", "value": "try"}], tried,
+                     if_match=tag(r), by="ben")  # fmt: skip
+    assert (up["layer"], up["version"], tag(up)) == ("try", 4, '"try:4"')
+    # the lineage reads through the copy-up: version 3 is main's, version 4 the scenario's
+    assert store.get("note", r["id"], tried, at=3)["data"]["text"] == "v3"
+    assert store.get("note", r["id"], tried, at=1)["data"]["text"] == "v1"
+    assert store.diff("note", r["id"], tried, 3, 4) == [{"op": "replace", "path": "/data/text", "value": "try"}]
+    with pytest.raises(NotFound):
+        store.get("note", r["id"], tried, at=5)
+
+    # a scenario under a scenario continues from the revision it copied, and a proposal does the same
+    store.create_layer("deeper", parent="try", by="ben")
+    deeper = store.patch("note", r["id"], [{"op": "replace", "path": "/data/text", "value": "deeper"}],
+                         View(layer="deeper"), if_match=tag(up), by="ben")  # fmt: skip
+    assert (deeper["layer"], deeper["version"]) == ("deeper", 5)
+    assert store.get("note", r["id"], View(layer="deeper"), at=2)["data"]["text"] == "v2"
+    store.create_layer("proposal:p1", by="ben")
+    prop = store.patch("note", r["id"], [{"op": "replace", "path": "/data/text", "value": "p"}],
+                       View(layer="proposal:p1"), if_match=tag(r), by="ben")  # fmt: skip
+    assert (prop["layer"], prop["version"]) == ("proposal:p1", 4)
+
+    # undo of the copy-up: version 5 equal to version 3; undo of that undo: version 6 equal to version 4
+    cs = store.history("note", r["id"], tried)[0]["changeset"]
+    res = store.revert(cs, by="ben")
+    back = store.get("note", r["id"], tried)
+    assert (back["layer"], back["version"]) == ("try", 5) and back["data"] == r["data"]
+    store.revert(res.changeset, by="ben")
+    again = store.get("note", r["id"], tried)
+    assert (again["version"], again["data"]["text"]) == (6, "try")
+    # restore reads the lineage too: the content of main's version 2, as the scenario's version 7
+    restored = store.restore("note", r["id"], 2, tried, if_match=tag(again), by="ben")
+    assert (restored["layer"], restored["version"], restored["data"]["text"]) == ("try", 7, "v2")
+    assert store.get("note", r["id"], main) == r  # main untouched throughout
+
+    # main's own copy-ups (from an import or legacy layer) still number from 1
+    store.create_layer("import:test", namespace="test", by="t")
+    store.apply_import(run(), [feature("f")], dry_run=False)
+    imported = store.get("feature", tid("f"), main)
+    assert (imported["layer"], imported["version"]) == ("import:test", 1)
+    mine = store.patch("feature", tid("f"), [{"op": "replace", "path": "/data/name", "value": "Ben's"}], main,
+                       if_match=tag(imported), by="ben")  # fmt: skip
+    assert (mine["layer"], mine["version"]) == ("main", 1)

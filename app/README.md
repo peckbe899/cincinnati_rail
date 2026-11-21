@@ -22,7 +22,8 @@ use none). The hub serves the build from `app/dist` (`crhub serve` never runs np
 - `src/core/`: the plugin contract (`plugin.ts`), the registry, the URL codec and its zustand store, units, JSON
   Patch, the record cache (TanStack query-core), drafts, undo, the 412 flow (`save.ts`) and the host.
 - `src/api/`: the transport (`client.ts`), the SSE client (`stream.ts`), the SharedWorker and its relay, the
-  hand-written types (`types.ts`) and, once WP2 writes `region/api/openapi.json`, the generated ones in `gen/`.
+  hand-written types (`types.ts`) and the ones generated from `region/api/openapi.json` in `gen/` (see
+  `src/api/README.md`; `gen/` is replaced whole by `npm run gen:api`).
 - `src/engine/`: the Comlink worker over `@cr/engine`, behind `EngineHandle`, with a main-thread fallback and an
   "unavailable" state when the engine cannot load.
 - `src/plugins/<feature>/index.ts`: one `Plugin` each, found by `import.meta.glob`. Keep `index.ts` small and

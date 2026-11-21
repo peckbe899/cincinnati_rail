@@ -4,8 +4,9 @@ Each event goes out as SSE: ``id: <seq>``, then ``event: <type>``, then ``data: 
 
 - ``record`` and ``changeset`` are durable: rows of the outbox (table ``event`` in ``region.db``), written in the same
   transaction as the change, replayed from ``Last-Event-ID``.
-- ``job``, ``result`` and ``tier`` are ephemeral: sent once, never stored. After a reconnect the client re-reads
-  ``/jobs?active=1``.
+- ``job``, ``result``, ``tier`` and ``engine`` are ephemeral: sent once, never stored. After a reconnect the client
+  re-reads ``/jobs?active=1``. ``engine`` goes out when the engine pool answers (or fails) after streams opened: a
+  stream opened before then said ``engine_build: null`` in its hello.
 - ``resync`` tells a client its cursor is no longer valid (events pruned, a new server epoch, a queue overflow): it
   re-reads what it shows. ``hello`` is the first message of every stream.
 
@@ -18,7 +19,7 @@ Layers appear as slugs (``"main"``), never as row ids. ``bbox`` is ``[x0, y0, x1
 # No "from __future__ import annotations" here: TypedDict needs NotRequired evaluated to tell required keys apart.
 from typing import Literal, NotRequired, TypedDict
 
-EventType = Literal["record", "changeset", "job", "result", "tier", "resync", "hello"]
+EventType = Literal["record", "changeset", "job", "result", "tier", "engine", "resync", "hello"]
 RecordOp = Literal["create", "put", "patch", "delete", "restore"]
 JobState = Literal["queued", "running", "done", "failed", "cancelled"]
 ResultStatus = Literal["ok", "error", "stale"]
@@ -27,7 +28,7 @@ ResyncReason = Literal["pruned", "epoch", "overflow"]
 BBox = list[float]
 
 DURABLE: frozenset[str] = frozenset({"record", "changeset"})
-EPHEMERAL: frozenset[str] = frozenset({"job", "result", "tier"})
+EPHEMERAL: frozenset[str] = frozenset({"job", "result", "tier", "engine"})
 CONTROL: frozenset[str] = frozenset({"resync", "hello"})
 BULK_THRESHOLD = 200
 
@@ -101,6 +102,14 @@ class TierEvent(TypedDict):
     detail: str
 
 
+class EngineEvent(TypedDict):
+    """The engine pool answered after the server started: the build its sidecars run (``None`` when it failed, with
+    ``error`` saying why). A stream whose hello said ``engine_build: null`` takes the build from here."""
+
+    engine_build: str | None
+    error: str | None
+
+
 class ResyncEvent(TypedDict):
     """The client's cursor is gone: re-read, then follow from ``seq``."""
 
@@ -123,6 +132,7 @@ EVENT_PAYLOADS: dict[str, type] = {
     "job": JobEvent,
     "result": ResultEvent,
     "tier": TierEvent,
+    "engine": EngineEvent,
     "resync": ResyncEvent,
     "hello": HelloEvent,
 }
@@ -141,6 +151,7 @@ __all__ = [
     "DURABLE",
     "EPHEMERAL",
     "EVENT_PAYLOADS",
+    "EngineEvent",
     "EventType",
     "HelloEvent",
     "JobEvent",

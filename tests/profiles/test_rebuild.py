@@ -86,3 +86,35 @@ def test_rebuild_refuses_to_build_over_var(hub_var):
         with pytest.raises(Invalid):
             rebuild(out)
     assert live.read_bytes() == b"the live database" and (hub_var / "backups").is_dir()
+
+
+def test_a_seed_that_refers_to_imported_records_rebuilds(hub_var, monkeypatch):
+    """A seeded record may refer to an imported one: a proposal's profile names its section, which only the importers
+    make. The rebuild imports the seed after them, as a fresh clone does (setup's imports, then serve's seeds); with
+    the seed first it stopped on the reference."""
+    from region.cli import rebuild as R
+    from region.core.view import View
+    from region.model import open_store
+    from region.model import seed as S
+
+    first = R.rebuild(hub_var / "r1", working_tree=True)
+    assert first["imports"]["profile_lines"]["counts"]["created"] == 1405
+    seed = hub_var / "seed"
+    with open_store(hub_var / "r1" / "region.db") as store:
+        section = store.legacy("section", "Line_6")
+        assert section is not None
+        store.create_layer("proposal:gate", tier="proposal", title="gate", by="ben")
+        gate = View(layer="proposal:gate")
+        prof = store.list("profile", gate, parent=section)[0][0]
+        level = prof["data"]["pvi"][0][1]
+        store.patch("profile", prof["id"], [{"op": "replace", "path": "/data/pvi/0/1", "value": level + 1.0}], gate,
+                    if_match=f'"{prof["layer"]}:{prof["version"]}"', by="ben")  # fmt: skip
+        S.export(store, seed)
+    assert (seed / "proposals" / "gate" / "profile" / f"{prof['id']}.json").is_file()
+
+    take = R._take
+    monkeypatch.setattr(R, "_take", lambda rel, dest, head: seed if rel == "region/seed" else take(rel, dest, head))
+    again = R.rebuild(hub_var / "r2", working_tree=True)
+    assert again["seed"]["same"], again["seed"]  # the proposal rebuilds byte for byte
+    assert again["seed_import"]["proposal:gate"]["added"] == 1
+    assert again["layers"]["proposal:gate"]["records"] == 1

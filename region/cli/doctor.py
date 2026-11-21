@@ -767,12 +767,37 @@ def bind_error(host: str, port: int) -> str | None:
     return None
 
 
-def check_hub_port(cfg: Mapping[str, Any]) -> Check:
-    """The new hub's port is free, or this hub is already serving on it."""
+def lock_holder(cfg: Mapping[str, Any]) -> Any:
+    """The process holding ``var/hub.lock`` (``region.core.lock.Holder``), or None: no holder, or no lock to read."""
+    from region.core import lock, paths
+
+    try:
+        return lock.reader(paths.var_root(cfg))
+    except Exception:  # an unreadable var is check_var's to report
+        return None
+
+
+def check_hub_port(cfg: Mapping[str, Any]) -> Check | list[Check]:
+    """The new hub's port is free, or this hub is already serving on it.
+
+    The lock in ``var`` is asked first (``region.core.lock.reader``): it names the serving hub even on another port
+    or while it is too busy to answer. HTTP (``/api/v1/health`` on the configured port) is the second check, for a
+    hub serving from another ``var``. A command that holds the lock without serving (``crhub jobs run``, ``crhub
+    restore``) is reported beside the port row, as information.
+    """
     host = str(cfg.get("host") or "127.0.0.1")
     port = int(cfg.get("port") or 8766)
     name = f"port {port}"
     other = f'Stop the program using it, or set "port" in configs/local.json to a free port (the hub uses {port}).'
+    holder = lock_holder(cfg)
+    if holder is not None and holder.command.startswith("crhub serve") and holder.port:
+        return Check(name, "ok", f"the hub is serving at http://{host}:{holder.port}: {holder.describe()}")
+    rows = [Check("hub lock", "info", f"{holder.describe()} holds var/hub.lock")] if holder is not None else []
+    rows.append(_hub_port_by_http(host, port, name, other))
+    return rows if len(rows) > 1 else rows[0]
+
+
+def _hub_port_by_http(host: str, port: int, name: str, other: str) -> Check:
     if listening(host, port):
         who = identify(host, port)
         if who == "hub":

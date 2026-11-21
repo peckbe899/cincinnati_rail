@@ -19,31 +19,148 @@ The architecture is in `claude/Hub_Region_Architecture.md`; the conventions ever
 - **uv** is optional. Install it only once you decide to (9.21): `winget install --id astral-sh.uv -e`. Without uv,
   everything below works through `.venv` and pip.
 
-## First setup
+## First run on Windows, step by step
 
-PowerShell, from the repo folder:
+Do these in order, in a PowerShell window opened in the repo folder (steps 7 and 8 use a second one). The old hub
+can keep running in its own window the whole time: nothing here touches `hub\`, `hub\hub.db` or port 8765. Each step shows what it prints when it
+works; if a step prints something else, stop there and send it back (see "What to send back" under "When doctor
+fails").
+
+**1. Get the branch.**
 
 ```powershell
+git fetch
+git switch hub_region
 git pull
-.\crhub setup
 ```
 
-If `.\crhub setup` says it found neither uv nor `.venv`, make the venv first, then run setup:
+It ends with `Already up to date.` or a list of the files it pulled. `git status` then says `On branch hub_region`.
+
+**2. Check Python and Node.**
+
+```powershell
+py -3.12 --version
+node --version
+```
+
+The first prints `Python 3.12.10`; the second `v24.` something, or `v22.18` or later.
+
+**3. Make sure `.venv` exists.** Without uv, `.\crhub` runs the hub with the Python in the repo's `.venv`. If the
+repo already has `.venv\Scripts\python.exe`, skip this step. Otherwise:
 
 ```powershell
 py -3.12 -m venv .venv
-.venv\Scripts\pip install -r requirements.lock -e .
+.venv\Scripts\python -m pip install -r requirements.lock -e .
+```
+
+The second command ends with `Successfully installed ...`.
+
+**4. Set up.**
+
+```powershell
 .\crhub setup
 ```
 
-(`py -3.12 -m region setup`, run from the repo folder, does the same in one go: it creates `.venv` itself.)
+It takes a few minutes the first time and prints, step by step:
 
-Linux:
+```text
+crhub setup: <the repo folder>
+[1/6] python   <repo>\.venv\Scripts\python.exe -m pip install -r requirements.lock -e .
+...                                    (pip's lines, ending "Successfully installed ...")
+[2/6] npm      <...>\npm.CMD ci
+added 193 packages, and audited 196 packages in 13s
+...                                    (npm's audit note about vulnerabilities is usual; nothing to do)
+[3/6] build    <...>\npm.CMD run build -w app
+...
+✓ built in 1.10s
+[4/6] migrate  create or migrate var/region.db (a checked backup first)
+      created C:\Users\<you>\AppData\Local\CincinnatiRail\hub\region.db at schema 2
+[5/6] imports  the first imports
+  importer       layer               created   updated unchanged   deleted conflicts
+  registry       import:registry         300         0         0         0         0
+  profile_lines  import:profiles        1405         0         0         0         0
+  old_hub        legacy:old_hub           36        13         3         0         0
+[6/6] doctor   crhub doctor
+  ok    python                 3.12.10, 64-bit, <repo>\.venv\Scripts\python.exe
+  ...                                  (one row per check)
+21 ok, 0 warning(s), 0 failure(s): the hub can run here
+crhub setup: done. Start the hub with crhub (or crhub serve).
+```
+
+The counts are the ones CI's Windows runner printed for this branch; the `old_hub` row follows what your `hub\seed`
+holds, so it can differ a little. If the repo is inside OneDrive, doctor counts one warning (`repo`): that is not a
+failure. A second `.\crhub setup` prints `unchanged` counts and creates nothing.
+
+**5. Serve.**
+
+```powershell
+.\crhub
+```
+
+It prints, then opens http://127.0.0.1:8766 in your browser:
+
+```text
+lock      C:\Users\<you>\AppData\Local\CincinnatiRail\hub\hub.lock (pid 1234)
+database  C:\Users\<you>\AppData\Local\CincinnatiRail\hub\region.db (quick_check ok)
+migrate   up to date
+seeds     none in <repo>\region\seed
+tiers     5 present, 1 partial, 0 missing (ground_1912_real partial: stage contours)
+engine    starting 2 sidecar(s) in the background
+jobs      scheduler on C:\Users\<you>\AppData\Local\CincinnatiRail\hub\cache\cache.db
+app       app/dist is current
+serving   http://127.0.0.1:8766  (Ctrl+C stops)
+```
+
+The page shows the map with the 16 Metro sections. The status bar at the bottom says `events: live`, `jobs: idle` and,
+within a few seconds, `engine: ready`. Leave this window open: the hub runs as long as it does.
+
+**6. Open Line 6.** Press Ctrl+K, type `Line_6` and press Enter. The line sheet opens with the ground (brown) and the
+rail (blue), the PVI and station tables under it, and the inspector beside it.
+
+**7. Try an edit in a scenario.** The old hub owns the profiles on `main` for now, so edits go into a scenario. The
+app cannot make a scenario yet; make one called `try` from a second PowerShell window (it prints the new layer):
+
+```powershell
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8766/api/v1/layers -Headers @{"X-CR-Client"="powershell"} `
+  -ContentType "application/json" -Body '{"slug": "try", "tier": "scenario", "parent": "main", "title": "try"}'
+```
+
+Reload the page, choose `try` in `Layer` at the top, change a PVI level in the sheet's table and press Enter. The
+rail redraws at once (the sheet shows `local solve` in milliseconds); a moment later the header shows
+`server <key>, max diff 0 m`: the hub's own solve, sent back over the event stream, agrees. For that moment it may
+still show the previous key with a diff such as `max diff 0.363 m`: that is the hub's solve from before the edit,
+compared with the new rail, and it changes to the new key and `0 m` within a second. The edit is saved on `try`
+as version 2 of the Line 6 profile: a scenario's first edit of a record continues its numbering from the version
+below (here the old hub's version 1). `main` is unchanged. Click the sheet's title (so the focus is outside the
+table) and press Ctrl+Z: the edit is undone as version 3, equal to version 1.
+
+**8. Check the machine with the hub running.** In a second PowerShell window, in the repo folder:
+
+```powershell
+.\crhub doctor
+```
+
+The `port 8766` row now says `the hub is serving at http://127.0.0.1:8766: crhub serve (pid 1234, port 8766, ...)`
+and the last line is `21 ok, 0 warning(s), 0 failure(s): the hub can run here`.
+
+**9. Stop.** Ctrl+C in the hub's window. It prints `stopped   scheduler stopped, engine closed, WAL truncated, lock
+released`.
+
+### Without uv, with uv
+
+Everything above works through `.venv` and pip. Once you choose to install uv (`winget install --id astral-sh.uv -e`),
+`.\crhub` runs through `uv run --locked` instead and `.\crhub setup` installs with `uv sync --locked --inexact` into
+`.venv`. Nothing else changes.
+
+### Linux
 
 ```sh
 git pull
 ./crhub setup
+./crhub serve --no-browser
 ```
+
+### What setup does
 
 `crhub setup` runs these steps and stops at the first that fails:
 
@@ -52,11 +169,13 @@ git pull
 2. **`npm ci`**: the engine's and the app's packages, from `package-lock.json`.
 3. **`npm run build -w app`**: builds the web app into `app\dist`.
 4. **The database.** Creates `var\region.db`, or migrates it after a checked backup into `var\backups`.
-5. **The first imports** (the Metro sections, stations and profiles), once the imports command provides them.
+5. **The first imports**: the registry (sections, stations, params), the Metro line files (profiles) and the old
+   hub's seed (`legacy:old_hub`).
 6. **`crhub doctor`**, whose table ends the run. Setup's exit code is the doctor's.
 
 Setup refuses to start while the new hub is serving, or while `crhub jobs run` holds the hub's lock: stop it first
-(Ctrl+C in its window). It says which process holds the lock (`var\hub.lock`). The old hub can keep running. `crhub setup --dry-run` prints the steps without running anything. `--skip-npm`, `--skip-build`, `--skip-python`,
+(Ctrl+C in its window). It says which process holds the lock (`var\hub.lock`). The old hub can keep running.
+`crhub setup --dry-run` prints the steps without running anything. `--skip-npm`, `--skip-build`, `--skip-python`,
 `--skip-migrate`, `--skip-imports` and `--no-doctor` leave one step out.
 
 Run `crhub setup` again after any `git pull` that changes `uv.lock`, `requirements.lock`, `package-lock.json`, the
@@ -79,8 +198,9 @@ git pull
 5. scans the data tiers;
 6. serves at http://127.0.0.1:8766.
 
-It refuses to create an empty database: run `crhub setup` first. It shows a banner when `app\dist` is older than the
-app's source; `npm run build -w app` (or `crhub setup`) clears it. Stop it with Ctrl+C.
+It refuses to create an empty database: before `crhub setup` it says `no database at ...: run crhub setup to create
+it` and leaves no `var` folder behind. It shows a banner when `app\dist` is older than the app's source;
+`npm run build -w app` (or `crhub setup`) clears it. Stop it with Ctrl+C.
 
 `crhub serve --no-browser` serves without opening a browser; `--port` serves on another port.
 
@@ -92,11 +212,12 @@ app's source; `npm run build -w app` (or `crhub setup`) clears it. Stop it with 
 | `crhub` or `crhub serve` | serves the hub at http://127.0.0.1:8766 |
 | `crhub doctor` | checks this machine, `var`, the ports, the data tiers, the app build and the database |
 | `crhub doctor --data` | the same, and validates every record again (slower; reads the database read-only, never changes it) |
-| `crhub export` | before you commit: takes in pulled seeds first, then writes your design to `region/seed/main` |
-| `crhub backup` | a checked backup of the database into `var\backups` |
+| `crhub export` | before you commit: takes in pulled seeds first, then writes `main` and your proposals to `region/seed` (through the hub while it serves) |
+| `crhub backup` | a checked backup of the database into `var\backups` (through the hub while it serves) |
 | `crhub restore <file>` | puts a backup back (the current database is backed up first); refuses while the hub serves |
 | `crhub rebuild --compare` | rebuilds a database from git into `var\rebuild` and compares it with yours; never touches yours |
-| `crhub model migrate` | applies pending migrations, backing up first (serve and setup do this for you) |
+| `crhub model migrate` | applies pending migrations, backing up first (serve and setup do this for you); refuses while the hub serves |
+| `crhub model import` | takes in pulled seeds without exporting; refuses while the hub serves (serve did it at start, and export does it first) |
 | `crhub model check` | `quick_check`, then every record validated again (read-only: safe while the hub runs) |
 | `crhub model info` | the schema version, the layers and how many records each holds (read-only) |
 | `crhub jobs list` | the queued and running jobs; `crhub jobs show <job>` prints one job and its log |
@@ -105,12 +226,19 @@ app's source; `npm run build -w app` (or `crhub setup`) clears it. Stop it with 
 
 `crhub --help` lists every command, and `crhub <command> --help` its options. `crhub export`, `crhub backup` and
 `crhub restore` are short names for `crhub model export`, `crhub model backup` and `crhub model restore`: either
-spelling does the same. `crhub restore`, `crhub jobs run` and `crhub jobs wipe` hold the hub's lock while they work,
-so each refuses while the hub serves and names the process that holds the lock.
+spelling does the same.
+
+**Beside a running hub.** While `crhub serve` runs, only it writes the database. `crhub export` and `crhub backup` then
+ask it over HTTP (they print `through the hub serving at http://127.0.0.1:8766`), so you can run them in a second
+window without stopping it. `crhub model import` and `crhub model migrate` refuse and say what to do instead. The
+commands that write the database themselves (`crhub restore`, `crhub model migrate`, `export` and `import` with no hub
+running, `crhub jobs run`, `crhub jobs wipe`) hold the hub's lock while they work, so each refuses while the hub serves
+and names the process that holds the lock.
 
 ### Export, then commit
 
-Your design reaches git only through `region/seed/main`. Before you commit:
+Your design reaches git only through `region/seed` (`main` and your proposals; scenarios stay on this machine).
+Before you commit (the hub can keep running):
 
 ```powershell
 .\crhub export
@@ -119,7 +247,9 @@ git commit -m "Hub export"
 ```
 
 Export first takes in any seed changes you pulled, and refuses while one of them conflicts with a change of yours, so
-it never overwrites something it has not merged. Two exports in a row give the same bytes. A proposal whose parent
+it never overwrites something it has not merged. Two exports in a row give the same bytes (the second prints
+`0 written`), with the hub running or not. A proposal is named `proposal:<name>` (its folder is
+`region/seed/proposals/<name>`); the hub refuses to make a proposal with any other name. A proposal whose parent
 layer is not in your database (a scenario that lives only on the machine that made it) is not taken in: export lists
 it as not imported and leaves its folder in `region/seed/proposals` as it is.
 
@@ -163,7 +293,7 @@ before you move to another machine, or after a large pull.
 | Start | `python hub\hub.py` | `.\crhub` |
 | Address | http://127.0.0.1:8765 | http://127.0.0.1:8766 |
 | Database | `hub\hub.db` | `var\region.db` |
-| Into git | its Export button or `python hub\hub.py export` writes `hub/seed` | `crhub export` writes `region/seed/main` |
+| Into git | its Export button or `python hub\hub.py export` writes `hub/seed` | `crhub export` writes `region/seed` |
 | Pages | Deck, Profiles, Station 3D, Chronology | the map, the line sheet, the inspector, jobs, the review queue |
 
 - **Nothing in the old hub changes.** It keeps its database, its pages, its tests and its port.
@@ -174,8 +304,16 @@ before you move to another machine, or after a large pull.
   `main`, and says so. Scenarios stay editable, so you can try designs in the new hub
   without forking the truth. A kind moves to the new hub by one ruling, later.
 - **The new hub's Legacy pane** links to the old hub's pages on 8765.
-- **Running both.** Start each in its own PowerShell window. Doctor shows port 8765 as information only: whether the
-  old hub is running there.
+- **Running both.** Start each in its own PowerShell window, from the repo folder:
+
+  ```powershell
+  python hub\hub.py        # window 1: the old hub, http://127.0.0.1:8765
+  .\crhub                  # window 2: the new hub, http://127.0.0.1:8766
+  ```
+
+  The two never share a file or a port. Stop each with Ctrl+C in its own window. Doctor shows port 8765 as
+  information only (`the old hub is running at http://127.0.0.1:8765`, or that it is free). If the old hub was started
+  on 8766 by mistake, doctor fails the `port 8766` row and says so.
 - **Before you pull:** Export in the old hub and run `.\crhub export`, so your own changes are in git too.
 
 ## When doctor fails
@@ -207,6 +345,21 @@ How doctor tells a synced folder: by the folder names the sync clients use (`One
 `iCloudDrive`, `Mobile Documents`), by the `OneDrive` environment variables, by the folders Dropbox lists in its own
 `info.json`, by the marker files the clients leave in the root they sync, and on Windows by the attributes the cloud
 files system sets on synced folders.
+
+### What to send back
+
+If doctor fails, or any step of the first run prints something other than what it shows, paste these into a session,
+as text (copy from the PowerShell window; no screenshots needed):
+
+1. the whole doctor table: `.\crhub doctor`, from the first row to the `ok, ... warning(s), ... failure(s)` line;
+2. the JSON form: `.\crhub doctor --json`;
+3. `.\crhub info` (where the hub finds its repo, `var`, configs and tiers);
+4. the output of the step that went wrong, from its `[n/6]` line (setup) or its first line (serve) to the end;
+5. if `.\crhub` started and then failed: the last 50 lines of the newest log in `var\logs` (this is the default
+   `var`; if you moved it, use the folder `.\crhub info` names),
+   `Get-ChildItem "$env:LOCALAPPDATA\CincinnatiRail\hub\logs" | Sort-Object LastWriteTime | Select-Object -Last 1 | Get-Content -Tail 50`.
+
+None of these hold a password or a key; they hold folder paths and version numbers.
 
 ## Trouble
 

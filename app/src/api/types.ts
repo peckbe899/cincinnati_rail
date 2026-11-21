@@ -228,6 +228,11 @@ export interface TierEvent {
   status: "missing" | "partial" | "present";
   detail: string;
 }
+/** The engine pool answered after the stream's hello, which then said engine_build null (a cold start). */
+export interface EngineEvent {
+  engine_build: string | null;
+  error: string | null;
+}
 export interface ResyncEvent {
   reason: "pruned" | "epoch" | "overflow";
   seq: number;
@@ -244,6 +249,7 @@ export type HubEvent =
   | { type: "job"; seq: number | null; data: JobEvent }
   | { type: "result"; seq: number | null; data: ResultEvent }
   | { type: "tier"; seq: number | null; data: TierEvent }
+  | { type: "engine"; seq: number | null; data: EngineEvent }
   | { type: "resync"; seq: number | null; data: ResyncEvent }
   | { type: "hello"; seq: number | null; data: HelloEvent };
 

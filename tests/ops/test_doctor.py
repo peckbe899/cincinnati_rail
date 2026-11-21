@@ -324,6 +324,26 @@ def test_hub_port_free_busy_or_this_hub(busy_port, fake_hub, fake_old_hub):
     assert old_here.status == "fail" and "old hub" in old_here.detail
 
 
+def test_hub_port_asks_the_lock_first(hub_var):
+    """A serve holding var's lock is named by the lock, even on another port and before (or without) HTTP answering;
+    a command holding it without serving is reported as information beside the port row."""
+    from region.core import lock
+    from tests.ops.conftest import free_port
+
+    cfg = {"host": "127.0.0.1", "port": free_port(), "var": str(hub_var)}
+    elsewhere = free_port()
+    with lock.acquire(hub_var, elsewhere):
+        row = doctor.check_hub_port(cfg)
+    assert row.status == "ok" and f"the hub is serving at http://127.0.0.1:{elsewhere}" in row.detail
+    assert "crhub serve (pid" in row.detail
+    with lock.acquire(hub_var, 0, command="crhub jobs run"):
+        held, port = doctor.check_hub_port(cfg)
+    assert (held.name, held.status) == ("hub lock", "info") and "crhub jobs run (pid" in held.detail
+    assert port.status == "ok" and "free" in port.detail
+    alone = doctor.check_hub_port(cfg)
+    assert alone.status == "ok" and "free" in alone.detail
+
+
 def test_old_hub_port_is_information_only(fake_old_hub, fake_hub):
     from tests.ops.conftest import free_port
 

@@ -148,7 +148,7 @@ def _pulled(out, kind, rid, **data):
     f = out / "main" / kind / f"{rid}.json"
     obj = json.loads(f.read_text(encoding="utf-8"))
     obj["data"].update(data)
-    f.write_text(S.seed_text(obj), encoding="utf-8")
+    f.write_text(S.seed_text(obj), encoding="utf-8", newline="\n")  # a seed is LF on every platform
     return f
 
 
@@ -231,7 +231,7 @@ def test_seeded_deletion_keeps_the_seeds_data(make_store, write_root):
     obj = json.loads(f.read_text(encoding="utf-8"))
     obj["data"]["name"] = "A, then deleted"
     obj["deleted"] = True
-    f.write_text(S.seed_text(obj), encoding="utf-8")
+    f.write_text(S.seed_text(obj), encoding="utf-8", newline="\n")  # a seed is LF on every platform
     before = f.read_bytes()
     assert S.import_seed(two, out)["layers"]["main"]["taken"] == 1
     assert two.history("t_node", a["id"], View())[0]["data"]["name"] == "A, then deleted"

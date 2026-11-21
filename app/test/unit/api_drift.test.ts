@@ -26,6 +26,9 @@ describe.skipIf(!existsSync(SPEC))("API types", () => {
       const fresh = tsFiles(out);
       expect(fresh.length).toBeGreaterThan(0);
       expect(tsFiles(GEN)).toEqual(fresh);
+      // nothing hand-written lives in src/api/gen: generation replaces the whole folder (its notes are in
+      // src/api/README.md)
+      expect(readdirSync(GEN).sort()).toEqual(readdirSync(out).sort());
       for (const f of fresh) expect(readFileSync(join(GEN, f), "utf-8")).toBe(readFileSync(join(out, f), "utf-8"));
     } finally {
       rmSync(out, { recursive: true, force: true });

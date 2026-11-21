@@ -488,3 +488,34 @@ These close open items above. Where an item above disagrees with this section, t
 - Doctor's port rows still recognise a hub by HTTP (`/api/v1/health`). Once serve holds the lock, `lock.reader(var)` names the running hub directly; doctor does not use it yet.
 - `crhub model export` and `crhub model import` still write directly while a server runs (SQLite serialises them and the server's data_version poll sees them); 9.28's "through HTTP while a server holds the lock" is WP2's to add.
 - A store opened read-only is the right thing for any server route or command that only reads beside another writer process; the server itself uses `open_store(db, create=False, cache=...)`.
+
+
+## Integration after wave 2 (the integrator, 21 Nov)
+
+These change contracts above; where they disagree, this section holds.
+
+- **Copy-up versions (the lead's decision).** A write that copies a record up into a scenario or proposal layer
+  writes the base revision's version + 1 (`changesets.LINEAGE_TIERS`); the ETag names the new layer (`"try:2"` over
+  `"main:1"`). Main, legacy and import layers still start a record at version 1. `get(at=)`, `diff` and `restore` read
+  versions older than the layer's first revision from the base (`layers.lineage_row`). Undoing a scenario's first
+  edit writes the base's content as the next version (Ctrl+Z gives version 3 equal to version 1); the copy-up's row
+  stays.
+- **`engine` event.** An ephemeral `engine {engine_build, error}` goes to every open stream when the pool answers
+  after the stream's hello (`Hub.set_engine`, `region.core.events.EngineEvent`); the app's SSE client takes the build
+  into its status.
+- **Model commands beside a serving hub.** Without `--db`, `crhub export`/`model export` and `crhub backup` go
+  through the running hub (`POST /export`, `POST /backup`); `model import` and `model migrate` refuse with what to do
+  instead. Direct writes (`migrate`, `export`, `import`) hold var's lock while they work.
+- **Doctor** names a serving hub from `var/hub.lock` first (`lock.reader`), HTTP second; a non-serving holder is an
+  `info` row.
+- **Serve** looks for the database before taking the lock, so a refused first start leaves no `var`; its scheduler
+  resolves params with `region.ext.rules.params.resolve`, as the profiles router does (and `crhub jobs run` too).
+- **Paths.** `paths.names_below(root, target)` is the one lexical containment test (`fsio.check_write`,
+  `paths.contained`, `paths.to_uri`, serve). It never asks the OS, so a Windows device path (`C:\x\NUL`, which
+  `abspath` turns into `\\.\NUL`) is refused, never a `ValueError`.
+- **LF.** Every file region/ writes goes through `fsio` as bytes; `tests/ops/test_lf_writes.py` keeps it so. Tests
+  write seed files with `newline="\n"`.
+- **Windows tests.** The serve tests accept the hub's pid as the child of `Popen.pid`, because a venv's
+  `Scripts\python.exe` is a launcher that runs the base interpreter as its child. The engine host's
+  `test.close_stdout` fixture closes `process.stdout`'s own handle as well as fd 1: on Windows libuv holds a duplicate
+  of the stdio pipe handle, so closing fd 1 alone left the pipe open and the call timed out.

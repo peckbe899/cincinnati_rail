@@ -102,6 +102,24 @@ describe("SSE client", () => {
     expect(client.status().state).toBe("closed");
   });
 
+  it("takes the engine build from an engine event when the hello said null", async () => {
+    hub = new FakeHub();
+    server.use(...hub.handlers());
+    const client = new EventClient({ url: `${BASE}/events`, minDelayMs: 5, maxDelayMs: 20, random: () => 0.5 });
+    const { events } = collect(client);
+    client.start();
+    await until(() => hub.openStreams === 1 && client.status().state === "open");
+    expect(client.status().engine_build).toBeNull();
+    const build = "e".repeat(64);
+    hub.broadcast(`event: engine\ndata: ${JSON.stringify({ engine_build: build, error: null })}\n\n`);
+    await until(() => client.status().engine_build === build);
+    expect(client.status().state).toBe("open");
+    expect(events.filter((e) => e.type === "engine").map((e) => e.data)).toEqual([
+      { engine_build: build, error: null },
+    ]);
+    client.stop();
+  });
+
   it("backs off while the server is down and folds a second resync into the first", async () => {
     hub = new FakeHub();
     let fails = 3;

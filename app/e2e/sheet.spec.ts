@@ -86,7 +86,8 @@ test("PVI level edit re-solves locally under 16 ms and saves version 2", async (
   const v2 = await getRecord(request, "profile", String(prof.id), layer);
   expect(v2.version).toBe(Number(v1.version) + 1);
   expect(v2.layer).toBe(layer);
-  await expect(page.getByTestId("server-info")).toContainText("max diff 0", { timeout: 15_000 });
+  // The whole number: "max diff 0.685 m" (the result from before the save, against the new local rail) must not pass.
+  await expect(page.getByTestId("server-info")).toHaveText(/, max diff 0 m$/, { timeout: 15_000 });
 });
 
 test("second context updates within 1 s", async ({ page, browser, request }) => {

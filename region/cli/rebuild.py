@@ -9,8 +9,9 @@ is refused, since step 1 would delete the live database and its backups. Into ``
 2. takes from git's ``HEAD`` (``--working-tree``: from the files as they are) the seed (``region/seed``), the id
    ledgers (``region/ids/*.tsv``) and every importer's sources (the registry, the line files, the old hub's seed),
    into ``src/`` and ``ids/``;
-3. creates ``region.db``, imports the seed, then runs every importer in order (``region.cli.imports``), with the
-   ledger copy in ``ids/``;
+3. creates ``region.db``, runs every importer in order (``region.cli.imports``), with the ledger copy in ``ids/``,
+   then imports the seed, the order a fresh clone takes (``crhub setup``, then ``crhub serve``), since a seeded
+   record may refer to an imported one;
 4. exports the seeded layers into ``seed/`` and compares them, file by file, with git's ``region/seed``; compares
    ``ids/`` with git's ledgers (a line the rebuild added is a key git has not recorded yet);
 5. writes ``report.json``: the commit, every source's sha256, the import counts, a digest of each layer's records
@@ -182,12 +183,6 @@ def rebuild(out: Path | None = None, *, compare: bool = False, working_tree: boo
         "notes": [],
     }
     with open_store(out / "region.db", backup_dir=out / "backups") as store:
-        if seed_src is not None:
-            imported = S.import_seed(store, seed_src)
-            report["seed_import"] = {
-                slug: {k: v for k, v in st.items() if k not in ("changeset", "run")}
-                for slug, st in imported["layers"].items()
-            }
         for name, imp in I.importers().items():
             overrides: dict[str, Path] = {}
             for sname, rel in (SOURCES.get(name) or {}).items():
@@ -206,6 +201,14 @@ def rebuild(out: Path | None = None, *, compare: bool = False, working_tree: boo
                 "errors": r.errors[:20],
                 "sources": {k: v["sha256"] for k, v in sorted(run.sources.entries.items())},
                 "notes": run.sources.notes,
+            }
+        # the seed after the importers, as on a fresh clone (crhub setup imports, then crhub serve takes in the
+        # seed): a seeded record may refer to an imported one, such as a proposal's profile to its section
+        if seed_src is not None:
+            imported = S.import_seed(store, seed_src)
+            report["seed_import"] = {
+                slug: {k: v for k, v in st.items() if k not in ("changeset", "run")}
+                for slug, st in imported["layers"].items()
             }
         S.export(store, out / "seed")
         report["layers"] = layer_digests(store)

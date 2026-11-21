@@ -213,8 +213,11 @@ class Store(Protocol):
 
     Reads resolve up the view's layer chain (the view's layer, its ancestors up to ``main``, then ``legacy:*``, then
     every ``import:*`` layer); the first revision found wins and a tombstone hides the record. Writes go only to
-    ``view.layer``; the first write to a record held below copies it up. Every write belongs to one atomic changeset
-    and is validated in full before anything is written.
+    ``view.layer``; the first write to a record held below copies it up. A copy-up into a scenario or proposal
+    continues the record's lineage: its version is the base revision's version + 1, so versions seen in one view only
+    increase, while the ETag names the new layer (``"try:2"`` over ``"main:1"``); ``get(at=)`` and ``restore`` read
+    the versions below it from the base. Every write belongs to one atomic changeset and is validated in full before
+    anything is written.
 
     Errors: ``NotFound`` (unknown kind, record, layer, changeset), ``PreconditionRequired`` (no If-Match where one is
     needed), ``PreconditionFailed`` (stale If-Match), ``Conflict`` (reference, namespace, authority, revert, exists,

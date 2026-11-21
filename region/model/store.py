@@ -214,7 +214,7 @@ class SqliteStore:
             if rev is None or rev.kind != kind:
                 raise NotFound(f"no {kind} {id} in layer {view.layer}", kind=kind, id=id)
             if at is not None:
-                row = L.hist_row(con, rev.layer, id, int(at))
+                row = L.lineage_row(con, chain, rev.layer, id, int(at))
                 if row is None:
                     raise NotFound(
                         f"no version {at} of {kind} {id} on layer {layers.slugs[rev.layer]}", kind=kind, id=id

@@ -78,22 +78,6 @@ def allow_writes(*roots: str | os.PathLike[str]) -> Iterator[None]:
                 _extra_roots.remove(r)
 
 
-def _within(root: str, target: str) -> bool:
-    try:
-        common = os.path.commonpath([root, target])
-    except ValueError:
-        return False
-    return os.path.normcase(common) == os.path.normcase(root)
-
-
-def _names_below(root: str, target: str) -> tuple[str, ...] | None:
-    """The components of ``target`` below ``root``, or ``None`` when ``target`` is not inside ``root``."""
-    if not _within(root, target):
-        return None
-    rel = os.path.relpath(target, root)
-    return () if rel == "." else Path(rel).parts
-
-
 def check_write(path: str | os.PathLike[str]) -> Path:
     """The absolute path to write, or ``WriteRefused`` when it is outside every write root or has an unsafe name.
 
@@ -107,10 +91,10 @@ def check_write(path: str | os.PathLike[str]) -> Path:
     target = os.path.realpath(given)
     for root in write_roots():
         root_given = os.path.normpath(os.path.abspath(root))
-        below = _names_below(os.path.realpath(root_given), target)
+        below = paths.names_below(os.path.realpath(root_given), target)
         if below is None:
             continue
-        lexical = _names_below(root_given, given)
+        lexical = paths.names_below(root_given, given)
         names = list(below) + list(lexical if lexical is not None else (os.path.basename(given),))
         for part in names:
             if part == "":

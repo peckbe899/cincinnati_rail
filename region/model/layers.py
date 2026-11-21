@@ -148,9 +148,23 @@ def create(
     """Insert a layer row (inside the caller's write transaction) and return it."""
     if not isinstance(slug, str) or not LAYER_RE.match(slug):
         raise Invalid(f"{slug!r} is not a layer slug", errors=[{"path": "/slug", "message": "layer slug"}])
-    tier = tier or tier_of(slug)
+    implied = tier_of(slug)
+    tier = tier or implied
     if tier not in TIERS or tier == "main":
         raise Invalid(f"a new layer's tier is import, legacy, scenario or proposal, not {tier!r}")
+    # The slug names the tier, and seeds rely on it: export writes proposal:<name> to region/seed/proposals/<name>,
+    # and import reads that folder back as proposal:<name>. A proposal called plain "gate" would come back as a second
+    # layer "proposal:gate" sharing its folder, and two exports in a row would differ.
+    if tier != implied:
+        rule = {
+            "proposal": "a proposal's slug is proposal:<name>",
+            "import": "an import layer's slug is import:<name>",
+            "legacy": "a legacy layer's slug is legacy:<name>",
+        }.get(tier, "a scenario's slug has no proposal:, import: or legacy: prefix")
+        raise Invalid(
+            f"layer slug {slug!r} does not match tier {tier!r}: {rule}",
+            errors=[{"path": "/slug", "message": rule}],
+        )
     layers = load(con)
     if slug in layers.by_slug:
         raise Conflict(f"layer {slug!r} exists", reason="exists", conflicts=[{"kind": "layer", "id": slug}])
@@ -226,6 +240,34 @@ def hist_row(con: sqlite3.Connection, layer_id: int, id: str, version: int) -> d
     return json.loads(row[0]) if row else None
 
 
+def lineage_row(
+    con: sqlite3.Connection, chain: list[Layer], layer_id: int, id: str, version: int
+) -> dict[str, Any] | None:
+    """Version ``version`` of the record as its revision on ``layer_id`` numbers it (get() shape), or ``None``.
+
+    A copy-up into a scenario or proposal continues the lineage of its base (``changesets.LINEAGE_TIERS``), so the
+    versions before the layer's first revision of the record are the base's: they are read from the layer below in
+    ``chain`` that held the record when the copy-up was written (the nearest one with an older history row), and from
+    its own lineage in turn.
+    """
+    row = hist_row(con, layer_id, id, version)
+    if row is not None:
+        return row
+    first = con.execute(
+        "SELECT version, rowid FROM rec_hist WHERE layer = ? AND id = ? ORDER BY version LIMIT 1", (layer_id, id)
+    ).fetchone()
+    at = [c.id for c in chain]
+    if first is None or version >= first[0] or layer_id not in at:
+        return None
+    for lower in chain[at.index(layer_id) + 1 :]:
+        held = con.execute(
+            "SELECT 1 FROM rec_hist WHERE layer = ? AND id = ? AND rowid < ? LIMIT 1", (lower.id, id, first[1])
+        ).fetchone()
+        if held:
+            return lineage_row(con, chain, lower.id, id, version)
+    return None
+
+
 def hist_by_hash(con: sqlite3.Connection, id: str, h: str) -> dict[str, Any] | None:
     """Some past revision (get() shape) of ``id`` whose content hash is ``h``: the base of a three-way merge."""
     row = con.execute(
@@ -299,6 +341,7 @@ __all__ = [
     "ensure_namespace_layers",
     "hist_by_hash",
     "hist_row",
+    "lineage_row",
     "load",
     "resolve",
     "set_state",

@@ -91,6 +91,9 @@ def test_crlf_input_reads_same(make_store, write_root):
     # importing the CRLF copy into the first database finds nothing changed
     rep = S.import_seed(one, out)
     assert rep["layers"]["main"]["taken"] == 0 and rep["layers"]["main"]["conflicts"] == []
+    # and an export over the CRLF copy rewrites every file as LF, on every platform
+    S.export(one, out)
+    assert _files(out) == lf
 
 
 def test_out_of_order_refs_one_transaction(make_store, write_root, monkeypatch):
@@ -186,7 +189,7 @@ def test_take_then_seed_only_change_no_conflict(make_store, write_root):
     for name in ("A from the seed", "A from the seed again"):
         obj = json.loads(f.read_text(encoding="utf-8"))
         obj["data"]["name"] = name
-        f.write_text(S.seed_text(obj), encoding="utf-8")
+        f.write_text(S.seed_text(obj), encoding="utf-8", newline="\n")  # a seed is LF on every platform
         rep = S.import_seed(two, out)["layers"]["main"]
         assert rep["taken"] == 1 and rep["conflicts"] == []
         assert two.get("t_node", a["id"], View())["data"]["name"] == name
@@ -204,7 +207,7 @@ def test_take_then_seed_only_change_no_conflict(make_store, write_root):
     assert rep["kept"] == 1 and two.get("t_node", a["id"], View())["data"]["name"] == "Ben's A"
     obj = json.loads(f.read_text(encoding="utf-8"))
     obj["data"]["name"] = "seed's A"
-    f.write_text(S.seed_text(obj), encoding="utf-8")
+    f.write_text(S.seed_text(obj), encoding="utf-8", newline="\n")  # a seed is LF on every platform
     rep = S.import_seed(two, out)["layers"]["main"]
     assert [c["reason"] for c in rep["conflicts"]] == ["both_changed"]
     assert two.get("t_node", a["id"], View())["data"]["name"] == "Ben's A"
@@ -239,6 +242,24 @@ def test_only_main_and_proposals_seeded(make_store, write_root):
         "in a proposal",
         "in main",
     ]
+
+
+def test_two_exports_with_a_proposal_are_byte_identical(make_store, write_root):
+    """The second export imports the first one's proposal folder back as the same layer, so it writes nothing and
+    makes no layer (a plain-named proposal used to come back as a second layer, proposal:<name>, sharing the folder,
+    and the second export rewrote its _layer.json)."""
+    one = make_store("one.db")
+    note(one, "in main")
+    one.create_layer("proposal:gate", tier="proposal", title="gate", by="ben")
+    note(one, "in the proposal", view=View(layer="proposal:gate"))
+    out = write_root / "seed"
+    S.export(one, out)
+    first = _files(out)
+    layers = one.layers()
+    again = S.export(one, out)
+    assert _files(out) == first
+    assert {slug: st["written"] for slug, st in again["layers"].items()} == {"main": 0, "proposal:gate": 0}
+    assert one.layers() == layers
 
 
 def test_a_proposal_whose_parent_is_missing_is_skipped_not_fatal(make_store, write_root):

@@ -74,13 +74,17 @@ def test_layers_promote_tags_and_review_queue(client):
     dup = client.post("/api/v1/layers", json={"slug": "try", "tier": "scenario"}, headers=H)
     assert dup.status_code == 409
     assert client.post("/api/v1/layers", json={"slug": "x", "tier": "import"}, headers=H).status_code == 422
+    # a proposal is named proposal:<name> (its seed folder is read back as that slug); a plain name is refused
+    plain = client.post("/api/v1/layers", json={"slug": "gate", "tier": "proposal"}, headers=H)
+    assert plain.status_code == 422 and "proposal:<name>" in plain.json()["detail"]
     slugs = [la["slug"] for la in client.get("/api/v1/layers").json()["items"]]
-    assert "main" in slugs and "try" in slugs
+    assert "main" in slugs and "try" in slugs and "gate" not in slugs
     path = f"/api/v1/k/note/{rec['id']}"
     client.put(path, params={"layer": "try"}, json={"data": {"text": "tried"}, "geom": None},
                headers={**H, "If-Match": '"main:1"'})
     diff = client.get("/api/v1/layers/try/diff").json()["items"]
-    assert diff == [{"kind": "note", "id": rec["id"], "op": "put", "fields": ["data.text"], "ours": '"try:1"',
+    # the copy-up continues main's version 1 as the scenario's version 2
+    assert diff == [{"kind": "note", "id": rec["id"], "op": "put", "fields": ["data.text"], "ours": '"try:2"',
                      "theirs": '"main:1"'}]
     tag = client.post("/api/v1/layers/try/tags", json={"name": "v1"}, headers=H)
     assert tag.status_code == 201 and tag.json()["name"] == "v1"

@@ -13,8 +13,13 @@ thread's), in three phases:
    row, all in the caller's transaction. A changeset of more than 200 records writes one summary event instead of
    one event per record (9.28).
 
-The first write to a record held below copies it up, with ``base_hash`` set to the revision it was made from.
-``revert`` undoes a changeset as a new ``revert`` changeset, with If-Match on what the original produced.
+The first write to a record held below copies it up, with ``base_hash`` set to the revision it was made from. On a
+scenario or proposal layer the copy-up continues the record's lineage: its version is the base revision's version + 1,
+so the versions one view shows only ever increase (the ETag still names the new layer). Elsewhere (main, legacy and
+import layers) a layer's first revision of a record is version 1.
+``revert`` undoes a changeset as a new ``revert`` changeset, with If-Match on what the original produced. Undoing a
+layer's first revision of a record (its copy-up) writes the base's content again as the next version; the copy-up's
+row stays, so the record's version still only increases.
 """
 
 from __future__ import annotations
@@ -41,6 +46,9 @@ from .records import SELECT, Content, Rev, changed_fields, content, dumps
 
 if TYPE_CHECKING:
     from .store import SqliteStore
+
+# the tiers whose copy-ups continue the lineage of the revision below (version = base version + 1)
+LINEAGE_TIERS = frozenset({"scenario", "proposal"})
 
 ORIGIN_OF = {
     "edit": "authored",
@@ -280,7 +288,7 @@ class Txn:
             "kind": p.kind.name,
             "kv": p.content.kv,
             "layer": self.layer.slug,
-            "version": own.version + 1 if own else 1,
+            "version": self.version_of(p),
             "hash": p.content.hash,
             "deleted": p.deleted,
             "origin": self.origin,
@@ -292,6 +300,15 @@ class Txn:
             "geom": p.content.geom,
             "data": p.content.data,
         }
+
+    def version_of(self, p: Pending) -> int:
+        """The version the pending revision is written as: the next on this layer's own revision; for a copy-up into
+        a scenario or proposal layer the base revision's version + 1 (the lineage continues); else 1."""
+        if p.own is not None:
+            return p.own.version + 1
+        if self.layer.tier in LINEAGE_TIERS and p.before is not None and p.before.layer != self.layer.id:
+            return p.before.version + 1
+        return 1
 
     def etag_of(self, r: Rev | None) -> str | None:
         return etag(self.layers.slugs[r.layer], r.version) if r is not None else None
@@ -522,7 +539,7 @@ class Txn:
     def _version_body(self, cur: Rev | None, version: int | None) -> dict[str, Any]:
         if cur is None or version is None:
             raise Invalid("a restore names a version")
-        row = L.hist_row(self.con, cur.layer, cur.id, int(version))
+        row = L.lineage_row(self.con, self.chain, cur.layer, cur.id, int(version))
         if row is None:
             raise NotFound(f"no version {version} of {cur.kind} {cur.id} on layer {self.layers.slugs[cur.layer]}")
         return {"data": row["data"], "geom": row["geom"], "kv": row["kv"]}
@@ -790,8 +807,8 @@ class Txn:
             c.geom,
             data_text,
         )
+        version = self.version_of(p)
         if p.own is not None:
-            version = p.own.version + 1
             created = p.own.created
             self.con.execute(
                 "UPDATE rec SET version = ?, kv = ?, hash = ?, base_hash = ?, deleted = ?, origin = ?, source = ?, "
@@ -801,7 +818,6 @@ class Txn:
                 (version, *common, p.own.rid),
             )
         else:
-            version = 1
             created = t
             self.con.execute(
                 "INSERT INTO rec (layer, id, kind, version, created, kv, hash, base_hash, deleted, origin, source, "
@@ -982,9 +998,10 @@ def revert_ops(con: sqlite3.Connection, changeset: str) -> tuple[str, list[Inter
             )
             continue
         tag = etag(layer.slug, cur[4])
-        if version > 1:
-            prior = L.hist_row(con, layer.id, rid, version - 1)
-            assert prior is not None
+        # the revision before it on this layer; none when the changeset made the layer's first revision of the record
+        # (a create, or a copy-up, whose version continues the base's lineage and so need not be 1)
+        prior = L.hist_row(con, layer.id, rid, version - 1) if version > 1 else None
+        if prior is not None:
             body = {"data": prior["data"], "geom": prior["geom"], "kv": prior["kv"]}
             ops.append(InternalOp("put", produced["kind"], rid, tag, body=body, tombstone=bool(prior["deleted"])))
         else:
@@ -996,4 +1013,4 @@ def revert_ops(con: sqlite3.Connection, changeset: str) -> tuple[str, list[Inter
     return layer.slug, ops, blocked
 
 
-__all__ = ["Ctx", "InternalOp", "ORIGIN_OF", "Pending", "Txn", "revert_ops"]
+__all__ = ["LINEAGE_TIERS", "Ctx", "InternalOp", "ORIGIN_OF", "Pending", "Txn", "revert_ops"]

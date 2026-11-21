@@ -115,16 +115,38 @@ def check_relpath(rel: str) -> PurePosixPath:
     return PurePosixPath(body)
 
 
+def _components(path: str) -> tuple[str, str, list[str]]:
+    drive, root, rest = os.path.splitroot(os.path.normpath(path))
+    rest = rest.replace(os.altsep, os.sep) if os.altsep else rest
+    return drive, root, [p for p in rest.split(os.sep) if p and p != "."]
+
+
+def names_below(root: str | os.PathLike[str], target: str | os.PathLike[str]) -> tuple[str, ...] | None:
+    """The components of ``target`` below ``root`` (``()`` for the root itself), or ``None`` when it is not inside.
+
+    Purely lexical: call ``realpath`` on both first to follow links. Nothing here asks the OS, so a path on another
+    drive or share is simply not inside, never a ``ValueError``. That matters on Windows, where ``os.path.relpath``
+    calls ``abspath``, which turns ``C:\\x\\NUL`` into the device path ``\\\\.\\NUL`` and then raises because that
+    is "on another mount".
+    """
+    r_drive, r_root, r_parts = _components(os.fspath(root))
+    t_drive, t_root, t_parts = _components(os.fspath(target))
+    if os.path.normcase(r_drive + r_root) != os.path.normcase(t_drive + t_root) or len(t_parts) < len(r_parts):
+        return None
+    for a, b in zip(r_parts, t_parts, strict=False):
+        if os.path.normcase(a) != os.path.normcase(b):
+            return None
+    below = tuple(t_parts[len(r_parts) :])
+    # normpath keeps a leading ".." of a relative path ("." and "../x"): that climbs out, so it is not inside
+    return None if ".." in below else below
+
+
 def contained(root: Path, rel: str) -> Path:
     """``root / rel`` after ``check_relpath``, refused when its realpath leaves ``root``'s realpath."""
     parts = check_relpath(rel).parts
     base = os.path.realpath(root)
     target = os.path.realpath(os.path.join(base, *[p for p in parts if p != "."]))
-    try:
-        common = os.path.commonpath([base, target])
-    except ValueError:  # another drive on Windows
-        raise UnsafePath(f"path {rel!r} leads out of its root") from None
-    if os.path.normcase(common) != os.path.normcase(base):
+    if names_below(base, target) is None:  # another folder, drive or device
         raise UnsafePath(f"path {rel!r} leads out of its root")
     return Path(target)
 
@@ -370,14 +392,9 @@ def to_uri(path: str | os.PathLike[str], cfg: Mapping[str, Any] | None = None) -
     roots.append(("var://", os.path.realpath(var_root(cfg))))
     roots.append(("repo://", os.path.realpath(cfg.get("_repo") or REPO)))
     for prefix, root in roots:
-        try:
-            common = os.path.commonpath([root, target])
-        except ValueError:  # different drives on Windows
-            continue
-        if os.path.normcase(common) == os.path.normcase(root):
-            rel = os.path.relpath(target, root)
-            rel = "" if rel == "." else Path(rel).as_posix()
-            return prefix + rel
+        below = names_below(root, target)  # None for another drive or a device path, never a ValueError
+        if below is not None:
+            return prefix + "/".join(below)
     raise Invalid(f"{path} lies outside the repo, var and every data tier")
 
 
@@ -400,6 +417,7 @@ __all__ = [
     "default_var",
     "describe_var",
     "load_config",
+    "names_below",
     "parse_uri",
     "reload",
     "repo_root",

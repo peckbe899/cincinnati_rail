@@ -297,6 +297,46 @@ def _fake_repo(root: Path) -> Path:
     return root
 
 
+def test_device_paths_are_refused_never_a_value_error(write_root, tmp_path, monkeypatch):
+    """On Windows ``relpath`` calls ``abspath``, which turns ``C:\\x\\d\\NUL`` into the device path ``\\\\.\\NUL``,
+    and then raises ``ValueError`` ("path is on mount '\\\\\\\\.\\\\NUL', start on mount 'C:'"); ``commonpath`` is
+    lexical and lets it through. Emulated here on every platform: the path helpers must answer ``WriteRefused``,
+    ``UnsafePath`` or a URI, and never let the ValueError out."""
+
+    def device(p):
+        return Path(os.fspath(p)).name.split(".", 1)[0].upper() in paths.RESERVED_NAMES
+
+    real_relpath = os.path.relpath
+
+    def relpath(p, start=os.curdir):
+        if device(p) or device(start):
+            raise ValueError(f"path is on mount '\\\\\\\\.\\\\NUL', start on mount {os.fspath(start)!r}")
+        return real_relpath(p, start)
+
+    monkeypatch.setattr(os.path, "relpath", relpath)
+    for name in ("NUL", "con", "COM1.log", "LPT9.tar.gz"):
+        with pytest.raises(fsio.WriteRefused):
+            fsio.write_atomic(write_root / "d" / name, b"x")
+        with pytest.raises(fsio.WriteRefused):
+            fsio.check_write(write_root / name)
+    assert not (write_root / "d").exists()
+    assert fsio.check_write(write_root / "d" / "ok.json").name == "ok.json"  # a safe name is still taken
+
+    # the lexical containment that replaced relpath: inside, the root itself, outside, another drive or device
+    assert paths.names_below(write_root, write_root / "a" / "b.json") == ("a", "b.json")
+    assert paths.names_below(write_root, write_root) == ()
+    assert paths.names_below(write_root / "a", write_root / "ab") is None
+    assert paths.names_below(write_root, write_root.parent) is None
+    assert paths.names_below(write_root, "//./NUL") is None
+    assert paths.names_below(".", "../x") is None and paths.names_below("a", "a/../../x") is None  # relative climbs
+
+    repo = _fake_repo(tmp_path / "repo")
+    cfg = paths.load_config(repo)
+    assert paths.to_uri(repo / "configs" / "NUL", cfg) == "repo://configs/NUL"
+    with pytest.raises(paths.UnsafePath):
+        paths.resolve("repo://configs/NUL", cfg)
+
+
 def test_tier_uri_resolves_and_missing_tier_reports(tmp_path, monkeypatch):
     monkeypatch.delenv(paths.VAR_ENV, raising=False)
     repo = _fake_repo(tmp_path / "repo")
@@ -670,6 +710,7 @@ def test_event_payloads_match_section_5():
     assert events.required_keys("job") == {"id", "type", "scope", "state", "progress", "msg"}
     assert events.required_keys("result") == {"key", "type", "scope", "view", "status", "changed"}
     assert events.required_keys("tier") == {"tier", "status", "detail"}
+    assert events.required_keys("engine") == {"engine_build", "error"}
     assert events.required_keys("resync") == {"reason", "seq"}
     assert events.required_keys("hello") == {"epoch", "seq", "engine_build"}
     assert events.DURABLE | events.EPHEMERAL | events.CONTROL == set(events.EVENT_PAYLOADS)

@@ -4,6 +4,7 @@ for ``crhub model backup``).
     crhub backup [--db PATH] [--reason manual]
 
 A thin alias: the arguments and the work are ``region.cli.model``'s, so the two spellings never drift apart.
+While a hub serves from ``var``, the backup goes through its HTTP API (decision 9.28).
 """
 
 from __future__ import annotations

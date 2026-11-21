@@ -95,7 +95,7 @@ def test_list_filters(store):
             "id": s1["id"],
             "op": "put",
             "fields": ["data.node_b"],
-            "ours": '"try:1"',
+            "ours": '"try:2"',  # the copy-up continues main's version 1
             "theirs": '"main:1"',
         },
     ]
