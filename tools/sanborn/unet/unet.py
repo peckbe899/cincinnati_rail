@@ -21,6 +21,7 @@ import torch, torch.nn as nn, torch.nn.functional as F
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, os.path.join(HERE, '..'))
 import _ws  # noqa: E402
 DATA = _ws.DATA + 'unet_data/'; CROP, BATCH = 384, 8
+NOGUIDE = '--no-guide' in sys.argv   # 21 Nov 2026: a network for plates that were never placed; the guide channels are blank in training and in use
 
 def device():
     try:
@@ -51,6 +52,7 @@ class UNet(nn.Module):
 def load(plate):
     """image with the guide stacked on: R, G, B, today's blocks, today's centre lines (5 channels)"""
     img = cv2.imread(DATA + f'{plate}_img.jpg')[:, :, ::-1]; g = cv2.imread(DATA + f'{plate}_guide.png')
+    if NOGUIDE: g = g * 0
     return np.dstack([img, g[:, :, 0], g[:, :, 1]]), cv2.imread(DATA + f'{plate}_label.png', 0)
 def load_edge(plate, lab):
     """Ben, 14 November 2026: apply the green limits. Returns (weight map, edge target) at the label's size.

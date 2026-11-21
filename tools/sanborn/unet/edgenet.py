@@ -31,7 +31,8 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE); sys
 import _ws  # noqa: E402
 from unet import UNet, device  # noqa: E402
 SP = _ws.DATA; DATA = SP + 'unet_data/'; CROP, BATCH, LINE, GAP, TOL, JIT, NEG_INK, POS = 448, 6, 3, 4, 3, 24, 4.0, 3.0
-AREA = 'edge_v1'       # the area network whose street / block prediction is the seventh input (15 Nov 2026)
+NOGUIDE = '--no-guide' in sys.argv   # 21 Nov 2026: for plates that were never placed, the guide channels are blank (see unet.py); --area NAME names the area network
+AREA = sys.argv[sys.argv.index('--area') + 1] if '--area' in sys.argv else 'edge_v1'       # the area network whose street / block prediction is the seventh input (15 Nov 2026)
 
 def ink_image(bgr):
     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV); gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
@@ -46,6 +47,7 @@ def load(plate):
     gedge = cv2.morphologyEx(gb, cv2.MORPH_GRADIENT, np.ones((5, 5), np.uint8))          # today's block outlines, rough
     sp = cv2.imread(DATA + f'{plate}_pred_{AREA}.png', 0)             # the area network's P(block), half size: which side of a line is street
     sp = cv2.resize(sp, (W, H), interpolation=cv2.INTER_LINEAR) if sp is not None else np.full((H, W), 128, np.uint8)
+    if NOGUIDE: gedge, gc = gedge * 0, gc * 0
     x = np.dstack([full[:, :, ::-1], inkimg, gedge, gc, sp])
     lab = cv2.resize(cv2.imread(DATA + f'{plate}_label.png', 0), (W, H), interpolation=cv2.INTER_NEAREST)
     line = np.zeros((H, W), np.uint8); vf = DATA + f'{plate}_verified.json'
@@ -121,6 +123,8 @@ def predict(name, plate):
 
 if __name__ == '__main__':
     a = sys.argv[1:]; it = 3000
+    if '--area' in a: k = a.index('--area'); a = a[:k] + a[k + 2:]
+    a = [x for x in a if x != '--no-guide']
     if '--iters' in a: k = a.index('--iters'); it = int(a[k + 1]); a = a[:k] + a[k + 2:]
     os.makedirs(DATA + 'models', exist_ok=True)
     train(a[1], a[2:], it) if a[0] == 'train' else predict(a[1], a[2])

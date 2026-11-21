@@ -15,7 +15,11 @@ For each plate N it
   1. prepares the scan, if that was not done before: the raw PNG (New Sanborn/PNG/N.png, configs/sanborn_paths.json)
      -> cufp/22-N.jpg (full size) and cufp/N/png_alpha_s4.npy (where the paper is), as cufp/prep.py does;
   2. sorts the ink: ink_bins.py N -> unet_data/N_bins.png, N_bins.json;
-  3. turns the rail the rules found into tracks for the line editor: rail_tracks.py N -> unet_data/N_rail_rule.json.
+  3. turns the rail the rules found into tracks for the line editor: rail_tracks.py N -> unet_data/N_rail_rule.json;
+  4. block recognition (Ben, 21 November 2026: "the code should have run the block recognition too"): on a plate with no
+     placement, blocks_noguide.py N -> unet_data/N_edges.json, the block lines the line editor shows. It needs the two
+     networks trained with a blank guide (train_noguide.py, run once); until they are there this step is left out and
+     the run says so. A plate that has a placement (a guide: 43, 44, 45, 80, 82A) keeps the lines it has.
 
 Plates Ben has not cut (19 November 2026: "They are in the same path as the PNGs, but under /Sanborn/Maps as PDFs (the
 full plates, not the cut ones that I use)"): a plate number with no PNG at all is taken from its PDF
@@ -41,6 +45,7 @@ import hashlib, json, os, re, subprocess, sys, time
 
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.normpath(os.path.join(HERE, '..', '..', '..'))
 DATA = os.path.join(REPO, 'data', 'sanborn'); INK = os.path.join(HERE, 'ink_bins.py')
+NETS = [os.path.join(DATA, 'unet_data', 'models', m + '.pt') for m in ('area_ng1', 'lines_ng1')]; VPY = os.path.join(HERE, '.venv', 'Scripts', 'python.exe')
 STATE = os.path.join(DATA, 'unet_data', 'run_plates.json'); LOG = os.path.join(DATA, 'unet_data', 'run_plates.log')
 
 
@@ -118,13 +123,15 @@ def main():
     pdir = png_dir(); P = plates(pdir); rules = hashlib.sha256(open(INK, 'rb').read()).hexdigest()[:12]; npdf = sum(1 for n, v in P.items() if (v and v.lower().endswith('.pdf')) or os.path.exists(os.path.join(DATA, 'cufp', n, 'source.json')))   # source.json: an uncut plate already prepared
     want = sorted((a.upper() for a in args), key=order) if args else sorted(P, key=order)
     state = json.load(open(STATE, encoding='utf8')) if os.path.exists(STATE) else {}
-    todo = []
+    nets = all(os.path.exists(f) for f in NETS) and os.path.exists(NETS[1][:-3] + '.done') and os.path.exists(VPY); netid = '+'.join(str(int(os.path.getmtime(f))) for f in NETS) if nets else ''; todo = []
     for n in want:
         s = state.get(n, {}); done = s.get('state') == 'done' and s.get('rules') == rules and os.path.exists(os.path.join(DATA, 'unet_data', f'{n}_bins.png'))
         if n not in P: print(f'plate {n}: no scan found in {pdir}'); continue
+        if done and nets and s.get('blocks_nets') != netid: done = False   # sorted before the block networks were there (or they were trained again)
         if done and not redo: continue
         todo.append(n)
     print(f'{len(P)} plates have a scan: {len(P) - npdf} cut ({pdir}), {npdf} uncut from PDF ({pdf_dir()}). Asked for {len(want)}; already done with these rules {len(want) - len(todo) - sum(n not in P for n in want)}; to run {len(todo)}: {" ".join(todo)}')
+    print('block recognition: ' + ('on (the blank-guide networks are trained)' if nets else 'LEFT OUT: the blank-guide networks are not trained yet; run  python tools\\sanborn\\unet\\train_noguide.py  once, then this again'))
     if only_list or not todo: return
     os.makedirs(os.path.dirname(STATE), exist_ok=True); t_all = time.time(); bad = []
     for k, n in enumerate(todo):
@@ -139,6 +146,11 @@ def main():
             r = subprocess.run([sys.executable, os.path.join(HERE, 'rail_tracks.py'), n], cwd=DATA, capture_output=True, text=True, encoding='utf8', errors='replace')
             with open(LOG, 'a', encoding='utf8', newline='\n') as f: f.write(r.stdout + r.stderr + '\n')
             if r.returncode: raise RuntimeError('tracks: ' + (r.stderr.strip().splitlines() or ['rail_tracks.py failed'])[-1])
+            if nets:
+                r = subprocess.run([VPY, '-W', 'ignore', os.path.join(HERE, 'blocks_noguide.py'), n], cwd=DATA, capture_output=True, text=True, encoding='utf8', errors='replace')
+                with open(LOG, 'a', encoding='utf8', newline='\n') as f: f.write(r.stdout + r.stderr + '\n')
+                if r.returncode: raise RuntimeError('blocks: ' + ((r.stdout + r.stderr).strip().splitlines() or ['blocks_noguide.py failed'])[-1])
+                rec.update(blocks_nets=netid, blocks=(r.stdout.strip().splitlines() or [''])[-1].partition('|')[2].strip())
             rec.update(state='done', ink_px=b['ink_px'], railroad_px=px.get('railroad', 0), streetcar_px=px.get('streetcar', 0), note=b.get('note', ''), ben_rail=bool(b.get('ben_rail')))
         except KeyboardInterrupt:
             print('\nstopped. Start it again to carry on from this plate.'); return
@@ -147,7 +159,7 @@ def main():
         rec['seconds'] = round(time.time() - t0)
         state[n] = rec; json.dump(state, open(STATE + '.tmp', 'w', encoding='utf8', newline='\n'), indent=1); os.replace(STATE + '.tmp', STATE)
         left = (time.time() - t_all) / (k + 1) * (len(todo) - k - 1)
-        print(f'[{k + 1}/{len(todo)}] plate {n:4s} ' + (f'done in {rec["seconds"]} s: railroad {rec["railroad_px"]} px, streetcar {rec["streetcar_px"]} px' if rec['state'] == 'done' else f'FAILED: {rec["error"]}') + f' | about {left / 60:.0f} min left', flush=True)
+        print(f'[{k + 1}/{len(todo)}] plate {n:4s} ' + (f'done in {rec["seconds"]} s: railroad {rec["railroad_px"]} px, streetcar {rec["streetcar_px"]} px' + (f' | blocks: {rec["blocks"]}' if rec.get('blocks') else '') if rec['state'] == 'done' else f'FAILED: {rec["error"]}') + f' | about {left / 60:.0f} min left', flush=True)
     print(f'finished {len(todo) - len(bad)} of {len(todo)} in {(time.time() - t_all) / 60:.0f} min' + (f'; failed: {" ".join(bad)} (see {LOG})' if bad else '') + f'. Results: {STATE}')
 
 

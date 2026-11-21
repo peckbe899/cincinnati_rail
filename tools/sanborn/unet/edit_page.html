@@ -52,6 +52,7 @@ label{cursor:pointer}
  <h4 style="margin-top:8px">Controls</h4>
  <table>
  <tr><td>Wheel</td><td>zoom &nbsp; <b>drag</b> empty ground to move. A right-button drag moves the plate in any mode, also while drawing</td></tr>
+ <tr><td>Right click</td><td>on a point of the selected track: <b>removes that point</b> (<kbd>Ctrl+Z</kbd> brings it back). While drawing, on the last point: takes it back</td></tr>
  <tr><td>Click</td><td>select a line (Shift+click adds)</td></tr>
  <tr><td>Double-click</td><td>select the whole street the line belongs to</td></tr>
  <tr><td>Shift+drag</td><td>select every line in a box</td></tr>
@@ -309,6 +310,9 @@ function snapPt(w, skip, e) {   // a nearby end first, then a nearby line
 cv.addEventListener('mousedown', e => {
   msg = '';
   const sx = e.offsetX, sy = e.offsetY, w = toW(sx, sy);
+  if (e.button === 2 && rsel && $('fRail').checked) for (let i = 0; i < rsel.pts.length; i++) { const q = toS(rsel.pts[i]);   // Ben, 21 November 2026: "add a right click or something to remove points"
+    if (Math.hypot(q[0] - sx, q[1] - sy) < 9) { e.preventDefault(); if (rsel.pts.length <= 2) { msg = 'A track needs two points. Del removes the whole track.'; draw(); return; } snap('rail'); delete rsel.src; rsel.pts.splice(i, 1); saveRail(); draw(); return; } }
+  if (e.button === 2 && mode === 'rail' && rdraft && rdraft.pts.length > 1) { const q = toS(rdraft.pts[rdraft.pts.length - 1]); if (Math.hypot(q[0] - sx, q[1] - sy) < 9) { e.preventDefault(); rdraft.pts.pop(); draw(); return; } }   // while drawing: a right click on the last point takes it back
   if (e.button !== 0) { drag = {t: 'pan', sx, sy, x: view.x, y: view.y, did: true}; e.preventDefault(); return; }   // a right- or middle-button drag moves the plate in any mode
   if (mode === 'rail') { const q = railSnap(w, e); snapAt = null;
     if (!rdraft) rdraft = {kind: railKind, pts: [q], cur: q}; else if (dist(rdraft.pts[rdraft.pts.length - 1], q) * view.k > 3) rdraft.pts.push(q);
