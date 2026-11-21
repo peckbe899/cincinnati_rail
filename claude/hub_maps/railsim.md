@@ -104,7 +104,7 @@ The plan (§2.1) records 141 s for Dayton Airport–Falmouth, almost all of it i
 
 - **`load_era(path, year)`** (`operations.py:109`) returns `(era, default train, year)`. The era is the one whose `years` cover the year; the default train is the latest `fleet.from` at or before it.
 - **Eras by system:**
-  - `cincinnati_metro.yaml` (100 lines): 5 eras — 1905-15 GoA1 gate cars; 1916-85 GoA1; 1986-2005 cab + ATO (code steps, 300 m blocks); 2006-19 CBTC GoA2; 2020-2100 GoA3 with `psd_overhead`. 5 fleet entries (CMCC Type 1903 → 2005). `psd_lines` covers 8 lines.
+  - `cincinnati_metro.yaml` (100 lines): 5 eras, 1905-15 GoA1 gate cars; 1916-85 GoA1; 1986-2005 cab + ATO (code steps, 300 m blocks); 2006-19 CBTC GoA2; 2020-2100 GoA3 with `psd_overhead`. 5 fleet entries (CMCC Type 1903 → 2005). `psd_lines` covers 8 lines.
   - `cincinnati_rer.yaml` (137 lines): 5 eras (1934-50, 51-68, 69-84, 85-2005 SACEM trunk zone, 2006-2100 CBTC trunk zone). 6 fleet entries (Brightliner 1934 … F set 2025). `through_from` gives RER-1 1985, RER-2 and RER-3 1988, RER-4 1990, RER-5 1996. Also `covered_ways`, and `history.rer_era_only` plus 24 `history.services` (pre-through routes with `via`, `to_point`, `profile`, `extra`, `approx` notes).
   - `cvg_express.yaml`: 1 era, 1 fleet entry.
   - `apex.yaml`: no eras; alignment status and station throats only.
@@ -146,12 +146,12 @@ The legacy `build_route` stays only behind the KMZ import (`kml.py`, `LocalProje
 
 - **The record:** `hub/seed/chronology/segments.json` (72 KB) is authoritative. `data/profile/chronology.json` (42 KB) is an older default with 230 segments, all of them in the seed.
 - **Top-level keys:** `about`, `phase_years` [[1800,1933,'1'], [1934,1949,'2'], [1950,1979,'3'], [1980,2200,'later']], `segments`, `stations` (2), `core` (Lines 8-12 opening-segment lists of 15/16/11/14/17), `notes` (2).
-- **Segments:** 556 — metro 415, tri 136, cvx 5.
+- **Segments:** 556, metro 415, tri 136, cvx 5.
   - Keys: `metro|<Line_id>|<A>|<B>` (names sorted), `tri|<A>|<B>`, `cvx|<A>|<B>`. Stations are `<sys>|<name>`. Self-pairs exist, e.g. `metro|Line_8|Cincinnati State|Cincinnati State`.
   - Fields: `year` (556), `src` (556: Ben 533, route data 22, tracker 1), `month` (424), `note` (231), `phase` (66), `services` (3 CVG-branch segments, e.g. `{RER_E_cvg: 1996, RER_B_cvg: 1988}`).
   - Years run 1900-2006. 54 TRI segments carry 1900, a branch's "route opening year" placeholder.
 - **Routes:** `data/profile/chronology_lines.json` (173 KB, written by `tools/chronology.py main()`) holds 41 routes (metro 15, tri 25, cvx 1; kinds line 15, trunk 5, branch 21). Each is `{id, sys, name, color, kind, parent, length, path[[c, lon, lat]], stations[{name, c, lon, lat}] (606 in total), segments[keys]}`. The 556 segment keys match the record 1:1.
-- **Helpers:** `tools/chronology.py` — `seg_key`, `st_key`, `phase_of_year`, `seg_phase`, `phase_at` (lines 28-60).
+- **Helpers:** `tools/chronology.py`, `seg_key`, `st_key`, `phase_of_year`, `seg_phase`, `phase_at` (lines 28-60).
 - **Consumers:** railsim reads chronology only through `metro_profile` (phase → tube type). Service `years` and eras are separate. Nothing links segment opening years to railsim services.
 
 ## 9. Station element model (`stations/fountain_square/`, 1,914 lines)
