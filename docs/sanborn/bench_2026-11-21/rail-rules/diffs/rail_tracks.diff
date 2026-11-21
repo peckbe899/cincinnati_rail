@@ -1,0 +1,78 @@
+--- a/tools/sanborn/unet/rail_tracks.py
++++ b/tools/sanborn/unet/rail_tracks.py
+@@ -9,8 +9,18 @@
+   railroad   the bin is closed (7 px), thinned to its centre line, the ticks (side branches under 24 px) cut off, and
+              the centre line followed from end to end; at a switch the two pieces that run straight on are one track;
+   streetcar  every heavy dash is a short straight piece; dashes that follow one another along a line (an end within
+-             150 px of the next dash's end, within 25 degrees) are joined into one track.
++             TRACKS['car_reach'] px of the next dash's end, within 25 degrees) are joined into one track.
+ Writes unet_data/N_rail_rule.json: {plate, made, note, tracks: [{kind, pts, src: 'rule'}]} in full-size px.
++
++21 November 2026, after the batch of 109 plates (data/sanborn/bench_2026-11-21/rail-rules: scored against Ben's 28
++tracks on plate 44, run as a plate never placed, chosen on one half of it and read on the other; against his 10 checked
++streetcar tracks on 1A; and by eye on random samples of what each change removes or adds on the other 107 plates):
++  - railroad tracks lying within TRACKS['rr_alone'][1] px of one another form a group, and a group shorter than
++    TRACKS['rr_alone'][0] px in all is dropped: on plates that were never placed these are lot lines with hook marks,
++    and rows of lot or house numbers. Plate 44: precision 97.9% to 99.5% at 10 px, recall unchanged (98.4%)
++  - streetcar dashes are joined across a longer gap (TRACKS['car_reach'], was 150 px): the dashes stop under street
++    names and labels printed over the line. Plate 44: recall 83.4% to 88.6% at 30 px, 13 pieces to 9; all the
++    length it adds off Ben's tracks lies under street names, where his own tracks stop
+ These are the rules' guess and nothing more. A track is Ben's only once he has kept it in the editor
+ (picks22_guided/22-N/rail_ben.json), and this script never writes there.
+ """
+@@ -20,6 +30,7 @@
+ from scipy.spatial import cKDTree
+ 
+ N8 = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
++TRACKS = dict(rr_alone=(600, 60), car_reach=350)   # see the note above (21 November 2026)
+ 
+ 
+ def thin(m):
+@@ -93,7 +104,8 @@
+     return out
+ 
+ 
+-def streetcar_tracks(m, reach=150, ang=25, short=150):
++def streetcar_tracks(m, reach=None, ang=25, short=150):
++    reach = TRACKS['car_reach'] if reach is None else reach
+     m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8)); n, lb, st, _ = cv2.connectedComponentsWithStats(m, connectivity=8)
+     D = []   # dashes: (end, end, direction)
+     for i in range(1, n):
+@@ -123,11 +135,35 @@
+     return out
+ 
+ 
++def drop_alone(P, short, near):
++    """railroad that stands alone and short is dropped: tracks lying within `near` px of one another form a group, and a
++    group shorter than `short` px in all goes. On plates never placed (no street map) a lot line with hook marks, or a
++    row of lot or house numbers, passes the tick rule now and then; such rows are short and lie by themselves or in
++    small clusters, where a real spur or siding runs off a longer track"""
++    if not P: return P
++    S = [np.vstack([p[:1]] + [a[None] + np.linspace(0, 1, max(2, int(np.hypot(*(b - a)) / 5) + 1))[1:, None] * (b - a)[None] for a, b in zip(p[:-1], p[1:])]) for p in P]
++    who = np.concatenate([np.full(len(s), i) for i, s in enumerate(S)]); T = cKDTree(np.vstack(S)); up = list(range(len(P)))
++    def root(i):
++        while up[i] != i: up[i] = up[up[i]]; i = up[i]
++        return i
++    for i, s in enumerate(S):
++        for j in {int(j) for js in T.query_ball_point(s, near) for j in who[js]} - {i}: up[root(i)] = root(j)
++    total = {}
++    for i, p in enumerate(P): total[root(i)] = total.get(root(i), 0.0) + plen(p)
++    return [p for i, p in enumerate(P) if total[root(i)] >= short]
++
++
++def tracks(B):
++    """the bins of a plate (ink_bins.py) -> its rule tracks [{kind, src, pts}]"""
++    rr = railroad_tracks((B == 4).astype(np.uint8)); car = streetcar_tracks((B == 5).astype(np.uint8))
++    if TRACKS['rr_alone']: rr = drop_alone(rr, *TRACKS['rr_alone'])
++    return [dict(kind=k, src='rule', pts=[[round(float(x), 1), round(float(y), 1)] for x, y in p]) for k, P in (('railroad', rr), ('streetcar', car)) for p in P]
++
++
+ def run(N):
+     f = f'unet_data/{N}_bins.png'; B = cv2.imread(f, 0); t0 = time.time()
+     if B is None: print(f'plate {N}: no {f}'); return
+-    rr = railroad_tracks((B == 4).astype(np.uint8)); car = streetcar_tracks((B == 5).astype(np.uint8))
+-    tr = [dict(kind=k, src='rule', pts=[[round(float(x), 1), round(float(y), 1)] for x, y in p]) for k, P in (('railroad', rr), ('streetcar', car)) for p in P]
++    tr = tracks(B); rr = [t['pts'] for t in tr if t['kind'] == 'railroad']; car = [t['pts'] for t in tr if t['kind'] == 'streetcar']
+     o = f'unet_data/{N}_rail_rule.json'
+     json.dump(dict(plate=N, made=int(time.time()), bins_made=int(os.path.getmtime(f)), note="the rules' rail finds as tracks, to be checked by Ben in the line editor; not ground truth", tracks=tr), open(o + '.tmp', 'w', encoding='utf8', newline='\n'), separators=(',', ':')); os.replace(o + '.tmp', o)
+     print(f'plate {N:4s} railroad {len(rr):3d} tracks {sum(plen(p) for p in rr):7.0f} px | streetcar {len(car):3d} tracks {sum(plen(p) for p in car):7.0f} px | {time.time() - t0:.0f} s', flush=True)

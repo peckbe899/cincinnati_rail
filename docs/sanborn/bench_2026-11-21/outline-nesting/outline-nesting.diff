@@ -1,0 +1,157 @@
+--- a/tools/sanborn/unet/outlines.py
++++ b/tools/sanborn/unet/outlines.py
+@@ -16,18 +16,53 @@
+    and against the line network (the detected line runs under it or not).
+ Writes picks22_guided/22-N/outlines.json (polygons, plate px, each side flagged), unet_data/N_outlines.jpg and
+ N_outlines.json (the counts).
++
++21 November 2026 (bench_2026-11-21/outline-nesting), three changes after the batch of 109 plates:
++- Nested blocks and street holes. Every block region's outer contour is a block, also one lying in a street hole of
++  another region (RETR_EXTERNAL dropped those: 154 on 28 plates, most inside the margin ring of an uncut sheet), and every
++  hole of MIN_AREA or more gives its street sides as a polygon whose sides carry hole=True. Holes come first in the list,
++  then the blocks, outermost first, so a reader that fills the polygons in order paints each block over its holes as
++  before; a reader that wants street ground skips the hole polygons. 'blocks' counts blocks only. A hole in a block
++  region more than HOLE_PARENT times the plate's median block is left out (counted as holes_in_open_land): on plate 44
++  those are pockets of unsure ground by Mill Creek, the canal, the railway and big parcels, not streets (3.1k px of side,
++  0.1k px of it on Ben's lines), while the holes in merged pairs of blocks are alleys he drew. On the uncut sheets the same rule
++  also leaves out many real streets inside merged districts (bench outline-nesting: set HOLE_PARENT = 0 to keep them).
++- Map ground on an uncut sheet taken whole from a PDF (cufp/N/source.json says 'pdf'): its margin, KEY, title, scale
++  notes and bars, compass roses and inset frames are not map. map_area.py (made in bench_2026-11-21/visual-pdf; it needs
++  its templates/ folder beside it) gives the map ground, which is used as the paper: the rest is seeded as street side,
++  and sides along it are paper_edge sides, which step 4 of blocks_noguide.py leaves out. On a cut plate nothing changes.
++- QA flag. N_outlines.json gets suspect (true/false) and suspect_why, from the census of the batch (bench_2026-11-21/
++  census, classify.py): Q1 the sides step 4 keeps are less than 60% of the line length the line network drew (its
++  P > 0.43 lines at half size, thinned, on the paper or map ground); Q2 two or more block regions lie inside another
++  one's hole (a ring of block ground round them); Q3 the plate's printed scale is not 100 or 200 ft to the inch, the
++  scales the networks were trained at, or is not recorded (scale_table.json, read from the sheets' notes); Q5 an uncut
++  sheet whose map ground could not be found. Q4 (the area network calls 90% or more of the paper block) is reported in
++  'qa' but does not set the flag.
+ """
+ import json, os, sys
+ import numpy as np
+ import cv2
+ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+ import _ws  # noqa: E402
+-N, AREA, LINES = sys.argv[1], sys.argv[2], sys.argv[3]; SP = _ws.DATA; U = SP + 'unet_data/'
++N, AREA, LINES = sys.argv[1], sys.argv[2], sys.argv[3]; SP = _ws.DATA; U = SP + 'unet_data/'; HERE = os.path.dirname(os.path.abspath(__file__))
+ SEED_B, SEED_S, TOL, MINLEN, SLIDE, TURN, CORNER, MIN_AREA, CUT = 14, 8, 8.0, 60.0, 12, 5, 120.0, 6000, 130.0
++MAP_AREA_DIRS = (HERE, SP + 'bench_2026-11-21/visual-pdf')                       # map_area.py with its templates/ folder
++SCALE_TABLES = (SP + 'scale_table.json', SP + 'bench_2026-11-21/census/scale/scale_table.json')   # {N: {ft_per_inch: ...}}
++Q1_KEEP, Q2_NESTED, TRAINED_FT = 0.6, 2, (100, 200)
++HOLE_PARENT = 3.0                                        # a hole's sides only in a region <= 3 x the median block (0: every hole)
+ full = cv2.imread(SP + f'cufp/22-{N}.jpg'); H, W = full.shape[:2]
+ pa = cv2.resize(cv2.imread(U + f'{N}_pred_{AREA}.png', 0), (W, H), interpolation=cv2.INTER_LINEAR)
+ pl = cv2.imread(U + f'{N}_lines_{LINES}.png', 0)
+-alpha = cv2.resize(np.load(SP + f'cufp/{N}/png_alpha_s4.npy').astype(np.float32), (W, H)) > 0.5
++paper = cv2.resize(np.load(SP + f'cufp/{N}/png_alpha_s4.npy').astype(np.float32), (W, H)) > 0.5
++alpha, qa_why = paper, []
++_src = SP + f'cufp/{N}/source.json'; PDF = os.path.exists(_src) and json.load(open(_src, encoding='utf8')).get('source') == 'pdf'
++if PDF:                                                  # an uncut sheet: its map ground is the paper (map_area.py)
++    for _d in MAP_AREA_DIRS:
++        if os.path.exists(os.path.join(_d, 'map_area.py')) and os.path.isdir(os.path.join(_d, 'templates')): sys.path.insert(0, _d); break
++    try:
++        import map_area  # noqa: E402
++        alpha = map_area.map_mask(full)
++    except ImportError: qa_why.append('Q5 uncut sheet, but map_area.py was not found: margin and KEY are not masked')
+ hsv = cv2.cvtColor(full, cv2.COLOR_BGR2HSV); ink = (hsv[:, :, 2] < 120) | ((hsv[:, :, 1] < 90) & (hsv[:, :, 2] < 170))
+ g = cv2.GaussianBlur(np.where(ink, cv2.cvtColor(full, cv2.COLOR_BGR2GRAY), 255).astype(np.uint8), (3, 3), 0).astype(np.float32)
+ lp = cv2.GaussianBlur(pl, (5, 5), 0).astype(np.float32)
+@@ -89,29 +124,58 @@
+         k = j
+     return out
+ 
+-cs, _ = cv2.findContours(block, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
++# every contour with its depth (RETR_TREE): even depth = a block's outer edge, odd = a hole in a block (street ground)
++cs, hier = cv2.findContours(block, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE); dep = []
++for i in range(len(cs)):
++    j, d = i, 0
++    while hier[0][j][3] >= 0: j = hier[0][j][3]; d += 1
++    dep.append(d)
++outers = sorted((i for i in range(len(cs)) if dep[i] % 2 == 0), key=lambda i: dep[i])     # outermost first; depth 0 in RETR_EXTERNAL's order
++holes = [i for i in range(len(cs)) if dep[i] % 2 == 1 and cv2.contourArea(cs[i]) >= MIN_AREA]   # a smaller hole is a speck, not a street
++nested = sum(dep[i] > 0 for i in outers)
++_med = float(np.median([cv2.contourArea(cs[i]) for i in outers])) if outers else 0.0       # open land: a hole in a region far bigger than a block
++open_land = [i for i in holes if HOLE_PARENT and cv2.contourArea(cs[hier[0][i][3]]) > HOLE_PARENT * _med]
++holes = [i for i in holes if i not in open_land]
+ polys = []; vis = (full * 0.7 + 76).astype(np.uint8); cnt = dict(sides=0, on_printed_line=0, on_detected_line=0, len_all=0.0, len_ink=0.0, len_det=0.0, short_pieces=0)
++if alpha is not paper: vis[~alpha] = (vis[~alpha] * 0.6).astype(np.uint8)            # off the map ground: darker
+ inner = cv2.erode(alpha.astype(np.uint8), np.ones((31, 31), np.uint8)) > 0
+-for c in cs:
+-    sides = straighten(c[:, 0, :])
++nblocks = nholes = 0
++for ci, is_hole in [(i, True) for i in holes] + [(i, False) for i in outers]:
++    sides = straighten(cs[ci][:, 0, :])
+     if not sides or len(sides) < 3: continue
+     rec = []
+     for s in sides:
+         a, b = s['a'], s['b']; L = float(np.hypot(*(b - a))); m = ((a + b) / 2).astype(int)
+         inside = 0 <= m[0] < W and 0 <= m[1] < H and inner[m[1], m[0]]
+         if s['kind'] != 'line' or L < 28:
+-            cnt['short_pieces'] += 1; rec.append(dict(a=a.round(1).tolist(), b=b.round(1).tolist(), state='short'))
++            cnt['short_pieces'] += 1; rec.append(dict(a=a.round(1).tolist(), b=b.round(1).tolist(), state='short', **({'hole': True} if is_hole else {})))
+             cv2.line(vis, tuple(a.round().astype(int)), tuple(b.round().astype(int)), (150, 150, 150), 3, cv2.LINE_AA); continue
+         ik = on_ink(a, b); dt = bool(along(lp, a, b).mean() > 90)
+         if inside:
+             cnt['sides'] += 1; cnt['on_printed_line'] += ik; cnt['on_detected_line'] += dt; cnt['len_all'] += L; cnt['len_ink'] += L * ik; cnt['len_det'] += L * dt
+-        rec.append(dict(a=a.round(1).tolist(), b=b.round(1).tolist(), state='on print' if ik else ('on detected line only' if dt else 'not on a line'), paper_edge=not inside))
++        rec.append(dict(a=a.round(1).tolist(), b=b.round(1).tolist(), state='on print' if ik else ('on detected line only' if dt else 'not on a line'), paper_edge=not inside, **({'hole': True} if is_hole else {})))
+         cv2.line(vis, tuple(a.round().astype(int)), tuple(b.round().astype(int)), (0, 150, 0) if ik else ((0, 150, 255) if dt else (0, 0, 230)), 4, cv2.LINE_AA)
+-    polys.append(rec)
++    polys.append(rec); nholes += is_hole; nblocks += not is_hole
++# QA flag (census of the 21 Nov batch): what reaches the line editor against what the line network drew; nesting; scale
++ah = cv2.resize(alpha.astype(np.uint8), (W // 2, H // 2), interpolation=cv2.INTER_NEAREST)
++ph = (cv2.resize(pl, (W // 2, H // 2), interpolation=cv2.INTER_AREA) > 110) & (cv2.erode(ah, np.ones((15, 15), np.uint8)) > 0)
++_thin = getattr(getattr(cv2, 'ximgproc', None), 'thinning', None)                     # opencv-contrib (the networks' venv has it)
++skel = int((_thin(ph.astype(np.uint8) * 255) > 0).sum()) * 2 if _thin else None
++keep = round(cnt['len_all'] / skel, 3) if skel else None   # len_all = the sides step 4 keeps (on the paper, not short)
++ft = next((json.load(open(f, encoding='utf8')).get(N, {}).get('ft_per_inch') for f in SCALE_TABLES if os.path.exists(f)), None)
++if keep is not None and keep < Q1_KEEP: qa_why.append(f'Q1 the editor gets {100 * keep:.0f}% of the line length the line network drew')
++if nested >= Q2_NESTED: qa_why.append(f'Q2 {nested} block regions lie inside another block region')
++if ft not in TRAINED_FT: qa_why.append(f'Q3 scale {ft} ft to the inch' if ft else 'Q3 scale not recorded')
++qa = dict(editor_len_px=round(cnt['len_all']), line_skel_len_px=skel, editor_per_line=keep, nested_regions=nested, ft_per_inch=ft,
++          area_block_share=round(float((pa[paper] > 127).mean()), 3), map_ground_share_of_paper=round(float(alpha.sum() / max(1, paper.sum())), 3))
++if _thin is None: qa['Q1'] = 'not computed: this OpenCV has no ximgproc.thinning'
++if qa['area_block_share'] >= 0.9: qa['Q4'] = 'the area network calls 90% or more of the paper block (not part of the flag)'
++for k_, t_ in enumerate(qa_why): cv2.putText(vis, 'SUSPECT ' + t_, (60, 140 + 90 * k_), cv2.FONT_HERSHEY_SIMPLEX, 2.4, (0, 0, 200), 6, cv2.LINE_AA)
+ os.makedirs(SP + f'picks22_guided/22-{N}', exist_ok=True)
+ json.dump(polys, open(SP + f'picks22_guided/22-{N}/outlines.json', 'w', encoding='utf8', newline='\n'))
+-rep = dict(plate=N, area=AREA, lines=LINES, blocks=len(polys), sides=cnt['sides'], on_printed_line=cnt['on_printed_line'], on_detected_line=cnt['on_detected_line'], short_pieces=cnt['short_pieces'],
+-           share_on_printed_line_by_length=round(cnt['len_ink'] / max(1.0, cnt['len_all']), 3), share_on_detected_line_by_length=round(cnt['len_det'] / max(1.0, cnt['len_all']), 3))
++rep = dict(plate=N, area=AREA, lines=LINES, blocks=nblocks, sides=cnt['sides'], on_printed_line=cnt['on_printed_line'], on_detected_line=cnt['on_detected_line'], short_pieces=cnt['short_pieces'],
++           share_on_printed_line_by_length=round(cnt['len_ink'] / max(1.0, cnt['len_all']), 3), share_on_detected_line_by_length=round(cnt['len_det'] / max(1.0, cnt['len_all']), 3),
++           holes=nholes, holes_in_open_land=len(open_land), map_ground='map_area.py' if alpha is not paper else 'paper', suspect=bool(qa_why), suspect_why=qa_why, qa=qa)
+ json.dump(rep, open(U + f'{N}_outlines.json', 'w', encoding='utf8', newline='\n'), indent=1)
+ cv2.imwrite(U + f'{N}_outlines.jpg', cv2.resize(vis, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA), [cv2.IMWRITE_JPEG_QUALITY, 85])
+ cv2.imwrite(U + f'{N}_blockmask.png', cv2.resize(block * 255, (W // 2, H // 2), interpolation=cv2.INTER_NEAREST))
+--- a/tools/sanborn/unet/blocks_noguide.py
++++ b/tools/sanborn/unet/blocks_noguide.py
+@@ -16,7 +16,12 @@
+   2. line network  (LINES) scan, ink image, blank guide, that P(block) -> unet_data/N_lines_LINES.png P(block line)
+   3. outlines.py N AREA LINES                                          -> picks22_guided/22-N/outlines.json, N_outlines.jpg
+   4. the outline sides as lines for the line editor                    -> unet_data/N_edges.json
+-     (green: on a printed line; orange: not settled. Sides along the paper's edge and short pieces are left out.)
++     (green: on a printed line; orange: not settled. Sides along the paper's edge and short pieces are left out.
++     On an uncut PDF sheet the paper's edge is the edge of its map ground, so margin, KEY and title sides are left out
++     too. The sides of a street hole in block ground, hole=True in outlines.json, are street sides like any other.)
++     N_blocks_ng.json and the last line printed (run_plates.json 'blocks') carry outlines.py's QA flag: 'SUSPECT' and
++     the reasons (Q1 little of the line network's length reaches the editor, Q2 blocks nested in block ground, Q3 a scale
++     the networks were not trained at, Q5 no map ground found on an uncut sheet).
+ Steps 3 and 4 are refused on a plate that has a guide (unet_data/N_guide.png): its outlines and lines come from the
+ placement and are not to be written over. --pred-only stops after step 2 (to score the blank guide on such a plate).
+ Never touches edges_ben.json or rail_ben.json. These are the networks' guess, not ground truth.
+@@ -51,9 +56,12 @@
+             if s['state'] == 'short' or s.get('paper_edge'): continue
+             out.append(dict(src='read', name='', a=s['a'], b=s['b'], state='green' if s['state'] == 'on print' else 'orange'))
+     json.dump(out, open(U + f'{N}_edges.json.tmp', 'w', encoding='utf8', newline='\n')); os.replace(U + f'{N}_edges.json.tmp', U + f'{N}_edges.json')
+-    json.dump(dict(plate=N, made=int(time.time()), how='networks with a blank guide (blocks_noguide.py); not ground truth', area=AREA, lines=LINES, blocks=rep['blocks'], sides=len(out),
+-                   green=sum(o['state'] == 'green' for o in out), share_on_printed_line_by_length=rep['share_on_printed_line_by_length']), open(U + f'{N}_blocks_ng.json', 'w', encoding='utf8', newline='\n'), indent=1)
+-    print(msg, f"| {rep['blocks']} blocks, {len(out)} sides, {sum(o['state'] == 'green' for o in out)} on a printed line ({100 * rep['share_on_printed_line_by_length']:.0f}% by length) | {time.time() - t0:.0f} s", flush=True)
++    why = rep.get('suspect_why', [])
++    json.dump(dict(plate=N, made=int(time.time()), how='networks with a blank guide (blocks_noguide.py); not ground truth', area=AREA, lines=LINES, blocks=rep['blocks'], holes=rep.get('holes', 0), sides=len(out),
++                   green=sum(o['state'] == 'green' for o in out), share_on_printed_line_by_length=rep['share_on_printed_line_by_length'], suspect=bool(why), suspect_why=why, qa=rep.get('qa', {})),
++              open(U + f'{N}_blocks_ng.json', 'w', encoding='utf8', newline='\n'), indent=1)
++    print(msg, f"| {rep['blocks']} blocks, {len(out)} sides, {sum(o['state'] == 'green' for o in out)} on a printed line ({100 * rep['share_on_printed_line_by_length']:.0f}% by length) | {time.time() - t0:.0f} s"
++          + (' | SUSPECT: ' + '; '.join(why) if why else ''), flush=True)
+ 
+ 
+ if __name__ == '__main__':

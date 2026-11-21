@@ -1,0 +1,25 @@
+--- a/tools/sanborn/unet/blocks_noguide.py
++++ b/tools/sanborn/unet/blocks_noguide.py
+@@ -16,7 +16,8 @@
+   2. line network  (LINES) scan, ink image, blank guide, that P(block) -> unet_data/N_lines_LINES.png P(block line)
+   3. outlines.py N AREA LINES                                          -> picks22_guided/22-N/outlines.json, N_outlines.jpg
+   4. the outline sides as lines for the line editor                    -> unet_data/N_edges.json
+-     (green: on a printed line; orange: not settled. Sides along the paper's edge and short pieces are left out.)
++     (green: on a printed line that the line network also drew; orange: not settled. Sides along the paper's edge,
++     short pieces and sides on no line at all are left out: on plate 44 those are 5-7% right, bench_2026-11-21.)
+ Steps 3 and 4 are refused on a plate that has a guide (unet_data/N_guide.png): its outlines and lines come from the
+ placement and are not to be written over. --pred-only stops after step 2 (to score the blank guide on such a plate).
+ Never touches edges_ben.json or rail_ben.json. These are the networks' guess, not ground truth.
+@@ -48,10 +49,10 @@
+     rep = json.loads(r.stdout.strip().splitlines()[-1]); out = []
+     for poly in json.load(open(SP + f'picks22_guided/22-{N}/outlines.json', encoding='utf8')):
+         for s in poly:
+-            if s['state'] == 'short' or s.get('paper_edge'): continue
++            if s['state'] in ('short', 'not on a line') or s.get('paper_edge'): continue
+             out.append(dict(src='read', name='', a=s['a'], b=s['b'], state='green' if s['state'] == 'on print' else 'orange'))
+     json.dump(out, open(U + f'{N}_edges.json.tmp', 'w', encoding='utf8', newline='\n')); os.replace(U + f'{N}_edges.json.tmp', U + f'{N}_edges.json')
+-    json.dump(dict(plate=N, made=int(time.time()), how='networks with a blank guide (blocks_noguide.py); not ground truth', area=AREA, lines=LINES, blocks=rep['blocks'], sides=len(out),
++    json.dump(dict(plate=N, made=int(time.time()), how='networks with a blank guide (blocks_noguide.py); not ground truth', area=AREA, lines=LINES, blocks=rep['blocks'], sides=len(out), bridges=rep.get('bridges', 0),
+                    green=sum(o['state'] == 'green' for o in out), share_on_printed_line_by_length=rep['share_on_printed_line_by_length']), open(U + f'{N}_blocks_ng.json', 'w', encoding='utf8', newline='\n'), indent=1)
+     print(msg, f"| {rep['blocks']} blocks, {len(out)} sides, {sum(o['state'] == 'green' for o in out)} on a printed line ({100 * rep['share_on_printed_line_by_length']:.0f}% by length) | {time.time() - t0:.0f} s", flush=True)
+ 
