@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cincinnati-rail.invalid/engine/schema/v0/response.json",
+  "anyOf": [
+    {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "progress": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "x-unit": "ratio"
+        },
+        "stage": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "progress",
+        "stage"
+      ],
+      "additionalProperties": false,
+      "title": "Progress",
+      "description": "Optional progress of an open request."
+    },
+    {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "ok": {
+          "type": "boolean",
+          "const": true
+        },
+        "result": {
+          "description": "The method's output contract (VerticalRail for vertical.rail)."
+        }
+      },
+      "required": [
+        "id",
+        "ok",
+        "result"
+      ],
+      "additionalProperties": false,
+      "title": "ReplyOk"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "null when the request line could not be read."
+        },
+        "ok": {
+          "type": "boolean",
+          "const": false
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "bad_request",
+                "unknown_method",
+                "invalid_input",
+                "internal"
+              ],
+              "description": "bad_request: the line is not a request; unknown_method: no such method or version; invalid_input: params fail the input contract; internal: the method threw."
+            },
+            "message": {
+              "type": "string"
+            },
+            "stack": {
+              "type": "string"
+            },
+            "issues": {
+              "description": "zod issues, for invalid_input.",
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "id",
+        "ok",
+        "error"
+      ],
+      "additionalProperties": false,
+      "title": "ReplyError"
+    }
+  ],
+  "title": "Response",
+  "description": "Any line a sidecar writes after its hello."
+}

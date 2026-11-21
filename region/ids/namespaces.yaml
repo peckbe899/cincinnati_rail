@@ -1,0 +1,38 @@
+# Id namespaces (decision 9.17). Read by region.core.ids; the store seeds one layer row per namespace.
+#
+# A stable id is a ULID. Its 48-bit time part is the namespace's fixed epoch below, and its 80-bit random part is the
+# first 80 bits of sha256("<namespace>:<key>"), the key NFC-normalised and UTF-8 encoded. Two machines running the
+# same import therefore mint the same id, and an id's time part tells which namespace it belongs to.
+#
+# An import layer (layer slug import:*) may write only ids of its own namespace; the store refuses any other id with
+# a 409 namespace conflict. Other layers write ids of any namespace: legacy:old_hub writes profile revisions over the
+# profiles namespace and mints its own records in old_hub.
+#
+# Rules:
+# - Never change or reuse an epoch: every stable id in the namespace would change.
+# - A new namespace takes the next free day after the last one here.
+# - The id ledger of a namespace is region/ids/<namespace>.tsv (sorted, one line per key and alias, appended by the
+#   importers through IdLookup).
+version: 1
+namespaces:
+  profiles:
+    epoch: "2020-01-01T00:00:00Z"
+    layer: "import:profiles"
+    about: >-
+      Metro routes, sections, nodes, stations, stops, platforms, ground profiles and the empty profile records, from
+      data/profile/lines (importer profile_lines).
+  registry:
+    epoch: "2020-01-02T00:00:00Z"
+    layer: "import:registry"
+    about: Rules and params from rules/registry.yaml (importer registry).
+  old_hub:
+    epoch: "2020-01-03T00:00:00Z"
+    layer: "legacy:old_hub"
+    about: >-
+      Records only the old hub has (roadmap items, the camera), from hub/seed or a backup snapshot of hub/hub.db
+      (importer old_hub).
+  test:
+    epoch: "2019-12-31T00:00:00Z"
+    layer: "import:test"
+    test: true
+    about: For tests only. No committed record uses it and the store does not seed its layer.

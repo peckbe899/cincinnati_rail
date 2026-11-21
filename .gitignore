@@ -10,3 +10,16 @@ hub/hub.db*
 hub/work/
 node_modules/
 .venv/
+
+# the hub (branch hub_region): var holds the databases, cache, blobs, logs and backups; never commit it
+var/
+region.db*
+cache.db*
+region/seed_conflicts/
+configs/local.json
+app/dist/
+app/test-results/
+app/playwright-report/
+.ruff_cache/
+.hypothesis/
+# engine/schema/v0/*.json is generated but committed (the drift test compares it); do not ignore it

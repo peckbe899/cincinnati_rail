@@ -1,0 +1,63 @@
+# The hub's vocabularies: every closed list of values, in one place (section 4: enums are validated in Python, not
+# by SQL CHECKs, so adding a value needs no table rebuild). Read by region.core.features.load_vocab().
+#
+# - units: the values x-unit may take in a kind schema. Every number in a record carries one (9.15).
+# - A string field of a kind schema can declare x-vocab: <list> to be checked against one of the lists here.
+# - The lists the kind meta-schema also spells out (geometry, on_delete, merge_units, rebase_policies,
+#   promoted_columns) are checked equal to region/kinds/_meta.schema.json by tests/core/test_core.py.
+version: 1
+
+units:
+  m: metres. Lengths, chainage, offsets. Levels are metres NAVD88 (9.15).
+  mm: millimetres (tolerances, rail and gauge dimensions).
+  km: kilometres.
+  m2: square metres.
+  m3: cubic metres (earthwork volumes).
+  dm: decimetres (the int16 ground rasters).
+  permille: a grade, per thousand.
+  percent: per hundred.
+  ratio: a dimensionless ratio (a scale factor such as the per-section UTM scale).
+  "1/m": curvature.
+  deg: degrees (angles, bearings).
+  rad: radians.
+  s: seconds.
+  min: minutes.
+  h: hours.
+  m/s: metres per second.
+  km/h: kilometres per hour.
+  m/s2: metres per second squared.
+  kg: kilograms.
+  t: tonnes.
+  kN: kilonewtons.
+  kW: kilowatts.
+  count: a count of things (tracks, cars, platforms).
+  index: an ordinal or a position in a sequence (station order).
+  year: a calendar year.
+  month: a calendar month, 1 to 12.
+
+# Feet appear only at the import and display edges (9.15), never in a stored record.
+display_units: [m, ft, mm, km, permille, percent]
+
+systems: [metro, tri, apex, orr, tv, other]
+timelines: [canon, real]
+layer_tiers: [import, legacy, main, scenario, proposal]
+layer_states: [open, promoted, archived]
+origins: [import, legacy, authored, seed, rebase, promote, migration]
+changeset_kinds: [edit, import, seed, revert, rebase, promote, migration, legacy]
+record_ops: [create, put, patch, delete, restore]
+conflict_reasons: [both_changed, geometry_under_edit, orphan, dangling_ref, invalid, namespace, authority_divergence]
+conflict_states: [open, resolved, dismissed]
+conflict_takes: [ours, theirs, merged]
+authority_owners: [legacy, model]
+geometry: [none, Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, any]
+on_delete: [restrict, cascade, nullify]
+merge_units: [field, atomic]
+rebase_policies: [auto, proposal]
+promoted_columns: [name, system, parent, c0, c1, ord, phase]
+job_hosts: [inline, thread, process, engine]
+job_states: [queued, running, done, failed, cancelled]
+result_statuses: [ok, error, stale]
+tier_statuses: [missing, partial, present]
+flag_severities: [info, warn, error]
+vertical_datums: [navd88_m, city_1912]
+chainage_bases: ["grid:26916"]

@@ -1,0 +1,17 @@
+#!/bin/sh
+# Cincinnati Rail hub launcher for Linux and macOS.
+# Usage: ./crhub [command] [options]    With no command it serves. ./crhub --help lists the commands.
+# It runs "python -m region" through uv when uv is installed, else through .venv (see region/core/README.md).
+set -e
+root=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+export PYTHONUTF8=1
+if command -v uv >/dev/null 2>&1; then
+  exec uv run --locked --project "$root" python -m region "$@"
+fi
+if [ -x "$root/.venv/bin/python" ]; then
+  exec "$root/.venv/bin/python" -m region "$@"
+fi
+echo "crhub: found neither uv nor .venv/bin/python." >&2
+echo "  With uv:    install uv (https://docs.astral.sh/uv/), then ./crhub setup" >&2
+echo "  Without uv: python3.12 -m venv .venv && .venv/bin/pip install -r requirements.lock -e ." >&2
+exit 1

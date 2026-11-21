@@ -1,0 +1,44 @@
+{
+  "name": "@cr/app",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The hub's web app: React 19 hosting dockview panes, served by the hub from app/dist.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run --passWithNoTests",
+    "e2e": "playwright test",
+    "typecheck": "tsc --noEmit -p .",
+    "gen:api": "openapi-ts"
+  },
+  "dependencies": {
+    "@cr/engine": "*",
+    "@tanstack/query-core": "^5.108.2",
+    "comlink": "^4.4.2",
+    "dockview": "^8.9.1",
+    "dockview-react": "^8.9.1",
+    "maplibre-gl": "^6.19.0",
+    "pmtiles": "^4.5.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zustand": "^5.1.0"
+  },
+  "devDependencies": {
+    "@hey-api/openapi-ts": "^0.99.0",
+    "@playwright/test": "1.63.0",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "happy-dom": "^21.0.4",
+    "msw": "^3.0.7",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.1"
+  }
+}

@@ -1,6 +1,21 @@
 {
   "name": "cincinnati-rail-tools",
   "private": true,
-  "description": "Node side of the repo tools: the headless editor runs (tools/station3d/harness.js) and the hub's browser test",
-  "devDependencies": { "playwright": "^1.47.0" }
+  "description": "Node side of the repo: the hub's engine (@cr/engine) and app (@cr/app) as npm workspaces, the headless editor runs (tools/station3d/harness.js) and the old hub's browser test (hub/test_hub.js)",
+  "workspaces": [
+    "engine",
+    "app"
+  ],
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "lint": "biome check engine app",
+    "test": "npm test -w engine -w app",
+    "gen:schema": "npm run gen:schema -w engine"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.8",
+    "playwright": "1.63.0"
+  }
 }

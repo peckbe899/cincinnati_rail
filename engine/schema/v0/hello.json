@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cincinnati-rail.invalid/engine/schema/v0/hello.json",
+  "type": "object",
+  "properties": {
+    "hello": {
+      "type": "object",
+      "properties": {
+        "engine_version": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The version in engine/package.json."
+        },
+        "engine_build": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "sha256 of engine/src/** and engine/package.json."
+        },
+        "contracts": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "description": "Contract name to major: {section_input: 0, vertical_rail: 0}."
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+@[1-9][0-9]*$"
+          }
+        }
+      },
+      "required": [
+        "engine_version",
+        "engine_build",
+        "contracts",
+        "methods"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "hello"
+  ],
+  "additionalProperties": false,
+  "title": "Hello",
+  "description": "The first line a sidecar writes."
+}

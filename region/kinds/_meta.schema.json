@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cincinnati-rail.invalid/region/kinds/_meta.schema.json",
+  "title": "A record kind file",
+  "description": "One YAML file per record kind (decision 9.12): region/kinds/<kind>.yaml for core kinds, region/ext/<feature>/kinds/<kind>.yaml for a feature's. It declares the JSON Schema of the record's data plus the annotations the store needs. region.core.features.check_kind validates a kind file against this schema, checks that 'schema' is itself a valid JSON Schema 2020-12, and checks every x-unit and x-vocab against region/kinds/_vocab.yaml.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "version", "geometry", "schema"],
+  "properties": {
+    "kind": {
+      "description": "The kind's name, equal to the file name without .yaml. Used in URLs (/api/v1/k/<kind>), refs and the kind table.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{0,47}$"
+    },
+    "version": {
+      "description": "The current data version (kv). Raising it needs an upgrader up_<n>(data) -> data for every n below it, in upgrade/<kind>.py.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "title": {"description": "A short name for the app (Section, Platform).", "type": "string"},
+    "description": {"description": "What one record of this kind is, in plain sentences.", "type": "string"},
+    "geometry": {
+      "description": "The geometry type of the record's geom (EPSG:26916 metres), 'none' for records without one, 'any' for mixed.",
+      "enum": ["none", "Point", "LineString", "Polygon", "MultiPoint", "MultiLineString", "MultiPolygon", "any"]
+    },
+    "columns": {
+      "description": "Promoted columns, each derived from data by a JSON pointer, so a column can never disagree with the data (9.9).",
+      "type": "object",
+      "propertyNames": {"enum": ["name", "system", "parent", "c0", "c1", "ord", "phase"]},
+      "additionalProperties": {"$ref": "#/$defs/pointer"}
+    },
+    "dates": {
+      "description": "Pointers into data of the partial ISO dates (YYYY or YYYY-MM) a built thing opens and closes on; stored as month intervals (9.16). Undated built records count only at the present.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "open": {"$ref": "#/$defs/pointer"},
+        "close": {"$ref": "#/$defs/pointer"}
+      }
+    },
+    "refs": {
+      "description": "References from data to other records. A '*' segment stands for every item of an array or every value of an object (/stops/*/platform).",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "kind", "on_delete"],
+        "properties": {
+          "path": {"$ref": "#/$defs/refPointer"},
+          "kind": {
+            "description": "The kind, or kinds, the id must resolve to.",
+            "oneOf": [
+              {"$ref": "#/$defs/kindName"},
+              {"type": "array", "items": {"$ref": "#/$defs/kindName"}, "minItems": 1, "uniqueItems": true}
+            ]
+          },
+          "role": {
+            "description": "The ref's role in the ref table; defaults to the last segment of path that is not '*'.",
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "on_delete": {
+            "description": "What deleting the target does: restrict refuses the delete (409), cascade tombstones this record too, nullify sets the ref to null.",
+            "enum": ["restrict", "cascade", "nullify"]
+          },
+          "required": {"description": "Whether a null or absent ref is invalid.", "type": "boolean", "default": false}
+        }
+      }
+    },
+    "merge": {
+      "description": "How a change below one of Ben's revisions is merged (9.11).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "unit": {
+          "description": "field: top-level data fields merge separately. atomic: the record is one unit (a profile, per the 1 November ruling).",
+          "enum": ["field", "atomic"],
+          "default": "field"
+        },
+        "rebase": {
+          "description": "auto: a change below that touches only fields Ben did not change, and no geometry or guarded field, applies as its own listed rebase changeset. proposal: every change below becomes a conflict row with a proposed revision.",
+          "enum": ["auto", "proposal"],
+          "default": "auto"
+        },
+        "guard": {
+          "description": "Data pointers (chainage, for example) whose change below always becomes a proposal, as geometry does.",
+          "type": "array",
+          "items": {"$ref": "#/$defs/pointer"},
+          "uniqueItems": true
+        }
+      }
+    },
+    "legacy": {
+      "description": "Legacy kinds (lkind) whose old keys map to records of this kind through the legacy index.",
+      "type": "array",
+      "items": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+      "uniqueItems": true
+    },
+    "seeded": {
+      "description": "Whether main and proposal revisions of this kind are written to region/seed (9.24). Derived or bulky kinds say false.",
+      "type": "boolean",
+      "default": true
+    },
+    "schema": {
+      "description": "The JSON Schema 2020-12 of the record's data. Strict for the fields engines read, with an open attrs object for import provenance. Every number carries x-unit.",
+      "$ref": "#/$defs/node"
+    }
+  },
+  "$defs": {
+    "kindName": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,47}$"},
+    "pointer": {
+      "description": "An RFC 6901 JSON pointer into data.",
+      "type": "string",
+      "pattern": "^(/([^/~]|~[01])*)+$"
+    },
+    "refPointer": {
+      "description": "A JSON pointer into data in which a '*' segment matches every array item or object value.",
+      "type": "string",
+      "pattern": "^(/([^/~]|~[01])*)+$"
+    },
+    "nodeList": {"type": "array", "items": {"$ref": "#/$defs/node"}},
+    "nodeMap": {"type": "object", "additionalProperties": {"$ref": "#/$defs/node"}},
+    "node": {
+      "description": "A subschema. A subschema that admits numbers must declare x-unit; x-vocab names a list of region/kinds/_vocab.yaml a string must belong to.",
+      "type": ["object", "boolean"],
+      "if": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": {
+            "anyOf": [
+              {"enum": ["number", "integer"]},
+              {"type": "array", "contains": {"enum": ["number", "integer"]}}
+            ]
+          }
+        }
+      },
+      "then": {"required": ["x-unit"]},
+      "properties": {
+        "x-unit": {"type": "string", "minLength": 1},
+        "x-vocab": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        "properties": {"$ref": "#/$defs/nodeMap"},
+        "patternProperties": {"$ref": "#/$defs/nodeMap"},
+        "additionalProperties": {"$ref": "#/$defs/node"},
+        "unevaluatedProperties": {"$ref": "#/$defs/node"},
+        "propertyNames": {"$ref": "#/$defs/node"},
+        "dependentSchemas": {"$ref": "#/$defs/nodeMap"},
+        "items": {"$ref": "#/$defs/node"},
+        "prefixItems": {"$ref": "#/$defs/nodeList"},
+        "unevaluatedItems": {"$ref": "#/$defs/node"},
+        "contains": {"$ref": "#/$defs/node"},
+        "allOf": {"$ref": "#/$defs/nodeList"},
+        "anyOf": {"$ref": "#/$defs/nodeList"},
+        "oneOf": {"$ref": "#/$defs/nodeList"},
+        "not": {"$ref": "#/$defs/node"},
+        "if": {"$ref": "#/$defs/node"},
+        "then": {"$ref": "#/$defs/node"},
+        "else": {"$ref": "#/$defs/node"},
+        "$defs": {"$ref": "#/$defs/nodeMap"}
+      }
+    }
+  }
+}
