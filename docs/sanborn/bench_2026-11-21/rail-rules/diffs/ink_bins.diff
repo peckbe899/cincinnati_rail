@@ -1,0 +1,57 @@
+--- a/tools/sanborn/unet/ink_bins.py
++++ b/tools/sanborn/unet/ink_bins.py
+@@ -51,6 +51,37 @@
+ # tracks (18 November 2026): any heavy bar in street ground found 79.7% of his streetcar with 12,698 px of false ink (big lettering, thick strokes by pipe
+ # labels); bars in a row, in any ground, find 85.1% with 1,086 px. The street-ground test cost the line that crosses blocks on the Ludlow viaduct
+ TEXT_MAX = 130   # a compact mark no bigger than this is text (street-name letters are about 90 px tall on plate 44)
++# 21 November 2026: the printed KEY box (on every uncut sheet, and on plates cut from near one: 29, 34, 37, 76, 1B) draws
++# a RAILROAD and a TROLLEY sample. The batch of 109 plates put railroad or streetcar ink inside it on all 37 plates that
++# print it, and made 38 rule tracks of it on 32. The box is found by its top (title and sample lines), cut at quarter size
++# from two sheets' KEYs, so a KEY cut by the plate's edge (1B) is found too. On the batch: every real KEY scores 0.71 or
++# more (mean of the two), every other plate 0.54 or less
++KEY_TPL = (('19', (6230, 262, 7090, 742), 1468), ('86', (9714, 1186, 10486, 1636), 1371))   # sheet, full-size box of the KEY's top, full height of its KEY
++KEY_MIN = 0.62
++_KEYT = []
++
++
++def key_box(N, win):
++    """the printed KEY box of plate N as (x0, y0, x1, y1) in full-size px of the window, or None"""
++    if not _KEYT:
++        for n, (x0, y0, x1, y1), full in KEY_TPL:
++            g = cv2.imread(f'cufp/22-{n}.jpg', cv2.IMREAD_REDUCED_GRAYSCALE_4)
++            if g is None: return None
++            _KEYT.append((cv2.GaussianBlur(g, (0, 0), 1.0).astype(np.float32)[y0 // 4:y1 // 4, x0 // 4:x1 // 4].copy(), full / (y1 - y0)))
++    g = cv2.GaussianBlur(cv2.imread(f'cufp/22-{N}.jpg', cv2.IMREAD_REDUCED_GRAYSCALE_4), (0, 0), 1.0).astype(np.float32); found = []
++    for t0, tall in _KEYT:
++        best = (-1.0, None)
++        for s in (0.95, 1.0, 1.05):
++            t = cv2.resize(t0, None, fx=s, fy=s, interpolation=cv2.INTER_AREA) if s != 1.0 else t0
++            if t.shape[0] >= g.shape[0] or t.shape[1] >= g.shape[1]: continue
++            _, mx, _, (x, y) = cv2.minMaxLoc(cv2.matchTemplate(g, t, cv2.TM_CCOEFF_NORMED))
++            if mx > best[0]: best = (float(mx), (4 * x, 4 * y, 4 * (x + t.shape[1]), 4 * (y + round(t.shape[0] * tall))))
++        found.append(best)
++    if np.mean([f[0] for f in found]) < KEY_MIN: return None
++    x0, y0, x1, y1 = max(found)[1]; X0, Y0, X1, Y1 = win
++    b = (max(0, x0 - 20 - X0), max(0, y0 - 20 - Y0), min(X1, x1 + 20) - X0, min(Y1, y1 + 20) - Y0)
++    return b if b[2] > b[0] and b[3] > b[1] else None
++
+ 
+ def shape(lab, n):
+     """every piece's area, bounding box, length and thickness (from its second moments, as for a straight bar)"""
+@@ -339,6 +370,8 @@
+     ground = np.where(closed == 1, 1, np.where(old == 0, 0, np.where(old == 1, 1, 2))).astype(np.uint8)   # 0 street, 1 block, 2 not known
+     out = np.zeros((h, w), np.uint8)
+     rr, RAILINFO = railroad(ink, closed, paper); ink0 = ink; carrow = RAILINFO['carrow']
++    kb = key_box(N, (x0, y0, x1, y1)); RAILINFO['key'] = kb   # no rail inside the printed KEY: its sample lines are sorted as other ink
++    if kb is not None: rr[kb[1]:kb[3], kb[0]:kb[2]] = False; carrow[kb[1]:kb[3], kb[0]:kb[2]] = False
+     if '--car' in sys.argv: CAR.update(json.loads(sys.argv[sys.argv.index('--car') + 1]))
+     # the tracks Ben drew himself: his word, over the rules
+     bf = f'picks22_guided/22-{N}/rail_ben.json'; BJ = json.load(open(bf, encoding='utf8')) if os.path.exists(bf) and '--no-ben' not in sys.argv else {}; BEN = BJ.get('tracks', []); ONLY = bool(BJ.get('complete'))   # ONLY: his tracks are all the rail on this plate
+@@ -408,6 +441,7 @@
+     print(f'plate {N} window {x0},{y0}-{x1},{y1}: ink {tot} px, {100 * tot / max(1, paper.sum()):.1f}% of the paper | {time.time() - t0:.0f} s')
+     for k in NAMES: print(f'  {k} {NAMES[k]:17s} {cnt[NAMES[k]]:9d} px  {100 * cnt[NAMES[k]] / max(1, tot):5.1f}%')
+     print('  railroad: clear ticks', RAILINFO['clear'], 'faint ticks', RAILINFO['faint'], 'ticks in rows', RAILINFO['chained'], 'links added by carrying rows on', RAILINFO.get('grown'), '| ground of the ink: street', int((ink & (ground == 0)).sum()), 'block', int((ink & (ground == 1)).sum()), 'not known', int((ink & (ground == 2)).sum()))
++    if RAILINFO['key'] is not None: print('  the printed KEY at', RAILINFO['key'], '(window px): no rail inside it')
+     if bensay: print('  ' + bensay)
+     if '--pic' in sys.argv:
+         c = (im * 0.35 + 255 * 0.65).astype(np.uint8)

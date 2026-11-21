@@ -1,0 +1,42 @@
+--- a/tools/sanborn/unet/unet.py
++++ b/tools/sanborn/unet/unet.py
+@@ -72,18 +72,33 @@
+     out = x.copy(); out[:, :, 3:] = np.roll(x[:, :, 3:], (dy, dx), (0, 1)); return out
+ def norm(a): return torch.from_numpy(np.ascontiguousarray(a.transpose(0, 3, 1, 2))).float() / 255.0
+ 
+-def predict_full(net, dev, img, tile=768, pad=64):
+-    """P(block) for a whole image, by overlapping tiles (the outer pad of each tile is thrown away)"""
++# Test-time augmentation (21 Nov 2026, bench_2026-11-21/inference): each tile is also run turned and flipped, the
++# answers are turned back and averaged. Training already uses all 8 quarter turns and flips (train(), lines 125-126), so
++# every transform is one the network was taught. (k quarter turns, then a left-right flip); (3, True) is the transpose.
++TTA = {1: ((0, False),), 2: ((0, False), (0, True)), 4: ((0, False), (0, True), (2, True), (3, True)),
++       8: ((0, False), (0, True), (1, False), (1, True), (2, False), (2, True), (3, False), (3, True))}
++def turn(t, k, f):
++    t = torch.rot90(t, k, (-2, -1)) if k else t
++    return torch.flip(t, (-1,)) if f else t
++def unturn(t, k, f):
++    t = torch.flip(t, (-1,)) if f else t
++    return torch.rot90(t, -k, (-2, -1)) if k else t
++
++def predict_full(net, dev, img, tile=768, pad=64, tta=1):
++    """P(block) for a whole image, by overlapping tiles (the outer pad of each tile is thrown away). tta = 4 or 8: each
++    tile is averaged over that many turns and flips (TTA); tta = 1 is the single pass, exactly as before."""
+     h, w = img.shape[:2]; out = np.zeros((h, w), np.float32); edge = np.zeros((h, w), np.float32); step = tile - 2 * pad
+     im = cv2.copyMakeBorder(img, pad, pad + tile, pad, pad + tile, cv2.BORDER_REFLECT)
+-    net.eval()
++    net.eval(); ts = TTA[tta]
+     with torch.no_grad():
+         for y in range(0, h, step):
+             for x in range(0, w, step):
+-                o = net(norm(im[None, y:y + tile, x:x + tile]).to(dev))
+-                p = F.softmax(o[:, :2], 1)[0, 1].cpu().numpy()[pad:pad + step, pad:pad + step]
++                t = norm(im[None, y:y + tile, x:x + tile])
++                o = net(torch.cat([turn(t, k, f) for k, f in ts]).to(dev))
++                pb, pe = F.softmax(o[:, :2], 1)[:, 1].cpu(), torch.sigmoid(o[:, 2]).cpu()
++                p = (sum(unturn(pb[i], k, f) for i, (k, f) in enumerate(ts)) / len(ts)).numpy()[pad:pad + step, pad:pad + step]
+                 out[y:y + step, x:x + step] = p[:min(step, h - y), :min(step, w - x)]
+-                q = torch.sigmoid(o[0, 2]).cpu().numpy()[pad:pad + step, pad:pad + step]
++                q = (sum(unturn(pe[i], k, f) for i, (k, f) in enumerate(ts)) / len(ts)).numpy()[pad:pad + step, pad:pad + step]
+                 edge[y:y + step, x:x + step] = q[:min(step, h - y), :min(step, w - x)]
+     predict_full.edge = edge                     # P(verified-edge line), the third output
+     return out

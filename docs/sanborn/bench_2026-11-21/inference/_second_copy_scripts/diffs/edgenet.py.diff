@@ -1,0 +1,35 @@
+--- a/tools/sanborn/unet/edgenet.py
++++ b/tools/sanborn/unet/edgenet.py
+@@ -29,7 +29,7 @@
+ import torch, torch.nn.functional as F
+ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, '..'))
+ import _ws  # noqa: E402
+-from unet import UNet, device  # noqa: E402
++from unet import UNet, device, TTA, turn, unturn  # noqa: E402
+ SP = _ws.DATA; DATA = SP + 'unet_data/'; CROP, BATCH, LINE, GAP, TOL, JIT, NEG_INK, POS = 448, 6, 3, 4, 3, 24, 4.0, 3.0
+ NOGUIDE = '--no-guide' in sys.argv   # 21 Nov 2026: for plates that were never placed, the guide channels are blank (see unet.py); --area NAME names the area network
+ AREA = sys.argv[sys.argv.index('--area') + 1] if '--area' in sys.argv else 'edge_v1'       # the area network whose street / block prediction is the seventh input (15 Nov 2026)
+@@ -64,13 +64,20 @@
+ 
+ def norm(a): return torch.from_numpy(np.ascontiguousarray(a.transpose(0, 3, 1, 2))).float() / 255.0
+ 
+-def predict_full(net, dev, x, tile=1024, pad=96):
++def predict_full(net, dev, x, tile=1024, pad=96, tta=1):
++    """P(block line) by overlapping tiles. tta as unet.predict_full (turns and flips averaged); tta = 1 is the single
++    pass, exactly as before. Measured on plate 44 (bench_2026-11-21/inference): TTA here gains nothing end to end and
++    costs 7x the time, so blocks_noguide.py leaves it at 1."""
+     h, w = x.shape[:2]; out = np.zeros((h, w), np.float32); step = tile - 2 * pad
+-    im = cv2.copyMakeBorder(x, pad, pad + tile, pad, pad + tile, cv2.BORDER_REFLECT); net.eval()
++    im = cv2.copyMakeBorder(x, pad, pad + tile, pad, pad + tile, cv2.BORDER_REFLECT); net.eval(); ts = TTA[tta]
+     with torch.no_grad():
+         for y in range(0, h, step):
+             for xx in range(0, w, step):
+-                p = F.softmax(net(norm(im[None, y:y + tile, xx:xx + tile]).to(dev)), 1)[0, 1].cpu().numpy()[pad:pad + step, pad:pad + step]
++                t = norm(im[None, y:y + tile, xx:xx + tile]); pb = []
++                for s in range(0, len(ts), 4):                                  # at most 4 tiles of 1024 px at a time
++                    pb.append(F.softmax(net(torch.cat([turn(t, k, f) for k, f in ts[s:s + 4]]).to(dev)), 1)[:, 1].cpu())
++                pb = torch.cat(pb)
++                p = (sum(unturn(pb[i], k, f) for i, (k, f) in enumerate(ts)) / len(ts)).numpy()[pad:pad + step, pad:pad + step]
+                 out[y:y + step, xx:xx + step] = p[:min(step, h - y), :min(step, w - xx)]
+     return out
+ 

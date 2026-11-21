@@ -1,0 +1,33 @@
+--- a/tools/sanborn/unet/blocks_noguide.py
++++ b/tools/sanborn/unet/blocks_noguide.py
+@@ -29,6 +29,12 @@
+ import _ws  # noqa: E402
+ import unet as A, edgenet as E  # noqa: E402
+ SP = _ws.DATA; U = SP + 'unet_data/'; AREA, LINES = 'area_ng1', 'lines_ng1'   # trained with the guide blank: train_noguide.py
++# The area network's answer is averaged over its 8 turns and flips (unet.predict_full tta). Measured on plate 44 against
++# Ben's street map, mean of 6 tile grids (bench_2026-11-21/inference): PQ 0.442 -> 0.482, higher on all 6 grids; his
++# interior lines found 53.6% -> 55.8%, precision unchanged. About 6 s more per plate on the GPU. The line network
++# stays at one pass (its TTA gained nothing on 44). The scans are not resampled: on 44 (100 ft) the area network at
++# the 200-ft size scored PQ 0.12, and at twice the size 0.00.
++AREA_TTA = 8
+ 
+ 
+ def run(N, nets, pred_only):
+@@ -36,7 +42,7 @@
+     full = cv2.imread(SP + f'cufp/22-{N}.jpg')
+     if full is None: raise RuntimeError(f'no scan cufp/22-{N}.jpg')
+     H, W = full.shape[:2]; img = cv2.resize(full, (W // 2, H // 2), interpolation=cv2.INTER_AREA); z = np.zeros(img.shape[:2], np.uint8)
+-    p = A.predict_full(na, dev, np.dstack([img[:, :, ::-1], z, z])); pa = (p * 255).astype(np.uint8); cv2.imwrite(U + f'{N}_pred_{AREA}.png', pa)
++    p = A.predict_full(na, dev, np.dstack([img[:, :, ::-1], z, z]), tta=AREA_TTA); pa = (p * 255).astype(np.uint8); cv2.imwrite(U + f'{N}_pred_{AREA}.png', pa)
+     inkimg, _ = E.ink_image(full); Z = np.zeros((H, W), np.uint8)
+     x = np.dstack([full[:, :, ::-1], inkimg, Z, Z, cv2.resize(pa, (W, H), interpolation=cv2.INTER_LINEAR)])
+     q = E.predict_full(nl, dev, x); cv2.imwrite(U + f'{N}_lines_{LINES}.png', (q * 255).astype(np.uint8))
+@@ -51,7 +57,7 @@
+             if s['state'] == 'short' or s.get('paper_edge'): continue
+             out.append(dict(src='read', name='', a=s['a'], b=s['b'], state='green' if s['state'] == 'on print' else 'orange'))
+     json.dump(out, open(U + f'{N}_edges.json.tmp', 'w', encoding='utf8', newline='\n')); os.replace(U + f'{N}_edges.json.tmp', U + f'{N}_edges.json')
+-    json.dump(dict(plate=N, made=int(time.time()), how='networks with a blank guide (blocks_noguide.py); not ground truth', area=AREA, lines=LINES, blocks=rep['blocks'], sides=len(out),
++    json.dump(dict(plate=N, made=int(time.time()), how='networks with a blank guide (blocks_noguide.py); not ground truth', area=AREA, lines=LINES, area_tta=AREA_TTA, blocks=rep['blocks'], sides=len(out),
+                    green=sum(o['state'] == 'green' for o in out), share_on_printed_line_by_length=rep['share_on_printed_line_by_length']), open(U + f'{N}_blocks_ng.json', 'w', encoding='utf8', newline='\n'), indent=1)
+     print(msg, f"| {rep['blocks']} blocks, {len(out)} sides, {sum(o['state'] == 'green' for o in out)} on a printed line ({100 * rep['share_on_printed_line_by_length']:.0f}% by length) | {time.time() - t0:.0f} s", flush=True)
+ 
