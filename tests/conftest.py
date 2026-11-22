@@ -64,6 +64,16 @@ def _no_forced_colour(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("FORCE_COLOR", raising=False)
 
 
+@pytest.fixture(autouse=True)
+def _isolated_var(tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Point ``CRHUB_VAR`` at a scratch folder for every test, so no test can read or write Ben's real ``var``
+    (``%LOCALAPPDATA%\\CincinnatiRail\\hub`` on Windows) or the repo's ``var``. ``hub_var`` replaces it with the
+    test's own folder; a test of the default location removes it with ``monkeypatch.delenv``."""
+    from region.core import paths
+
+    monkeypatch.setenv(paths.VAR_ENV, str(tmp_path_factory.mktemp("var")))
+
+
 @pytest.fixture
 def write_root(tmp_path: Path):
     """Allow ``fsio`` writes under ``tmp_path`` for the test; yields ``tmp_path``."""

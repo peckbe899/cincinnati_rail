@@ -144,6 +144,14 @@ def test_dry_run_runs_nothing():
     assert "npm" in done.stdout and "ci" in done.stdout
 
 
+@pytest.fixture(autouse=True)
+def _no_hub_on_the_real_port(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Ben may run the tests beside his own hub on 8766. Only the tests that start a fake hub may see a serving hub;
+    every other test here sees none, so a real hub on the machine cannot fail them."""
+    if "fake_hub" not in request.fixturenames:
+        monkeypatch.setattr(setup, "hub_serving", lambda cfg=None: None)
+
+
 def test_migrate_backs_up_an_older_database_first(hub_var, capsys):
     pytest.importorskip("region.model.migrate")
     from region.model.db import connect
