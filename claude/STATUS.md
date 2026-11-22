@@ -26,7 +26,7 @@ Tests: pytest 475 with 1 strict xfail, engine 32, app 67, Playwright 13.
 - Rulings with defaults the build already takes: chainage stays UTM grid length (9.14); `var` under
   `%LOCALAPPDATA%\CincinnatiRail\hub` (9.22); port 8766; uv optional (the pip path works); Keep mine after a stale save
   is a three-way merge for every kind, profiles included; a registry override without a ruling is listed, not refused
-  (9.25); `ground_profile` levels move from decimetres to metres (9.15); merge `hub_region` into `main` once Windows CI
+  (9.25); `ground_profile` still stores decimetres while 9.15 says metres (lean: convert in increment 2); merge `hub_region` into `main` once Windows CI
   is green (9.24).
 
 ## Next checkpoint
