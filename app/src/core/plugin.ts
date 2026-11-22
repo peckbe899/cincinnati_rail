@@ -131,6 +131,10 @@ export interface SheetView {
   z(y: number): number;
   units: Units;
   cursor: number | null;
+  /** The profile plot inside its margins (CSS pixels): the axes and station names are drawn around it. */
+  plot: { x: number; y: number; w: number; h: number };
+  /** Where the pointer is over the canvas, for a readout at the pointer; null when it is not over it. */
+  pointer?: { x: number; y: number } | null;
 }
 
 /** What the sheet hands each band: the section input, the local solve, the server result and the draft. */
@@ -143,6 +147,30 @@ export interface BandData {
   selected: Handle | null;
   /** A platform's name for labels ("Bond Hill"); the id when none is known. */
   platformName?(id: string): string;
+  /** The design line's vertices and vertical curves from the local solve (grade labels, curve ticks). */
+  dv?: readonly import("@cr/engine/contract").DesignVertex[];
+  curves?: readonly import("@cr/engine/contract").VerticalCurve[];
+  /** The chainage of a platform's stop, the drawn point a slid platform hangs on. */
+  stopC?(platformId: string): number | null;
+  /** Bands report what they drew in words here (the sheet's text layer). */
+  report?(item: SheetText): void;
+}
+
+/** A thing a band drew, in words: the sheet lists them in a text layer for screen readers and tests. */
+export interface SheetText {
+  /** "station", "grade", "pvi", "axis". */
+  kind: string;
+  /** The record key it belongs to (a platform id), when it has one. */
+  id?: string;
+  text: string;
+  c: number;
+  z?: number;
+  /** Where on the canvas it was drawn (CSS pixels), when it was in view. */
+  x?: number;
+  y?: number;
+  /** false when the band had it but left its label out for room (thinned). */
+  drawn: boolean;
+  selected?: boolean;
 }
 
 /** A grabbable thing on a band (a PVI, a platform). */
@@ -152,6 +180,8 @@ export interface Handle {
   index: number;
   c: number;
   z?: number;
+  /** The record key of the thing (a platform id), when it has one. */
+  id?: string;
 }
 
 export interface BandDef {

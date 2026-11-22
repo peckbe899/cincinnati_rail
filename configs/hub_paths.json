@@ -9,7 +9,11 @@
       "root": "ground/1912",
       "manifest": "MANIFEST.csv",
       "index": null,
-      "handshake": {"file": "STATUS.json", "done": "done", "detail": "stage"},
+      "handshake": {
+        "file": "STATUS.json",
+        "done": "done",
+        "detail": "stage"
+      },
       "required": false,
       "mount": false
     },
@@ -66,6 +70,17 @@
       "index": "lines/index.json",
       "handshake": null,
       "required": true,
+      "mount": false
+    },
+    {
+      "name": "artifacts_3d",
+      "about": "The 3D artifacts from the project (Ben, 22 Nov 2026: \"the 3D view will hopefully and eventually be able to include\" them), kept beside the repo in _Cincinnati Rail/3D_Artifacts. Read only; the station workspace and 3D view (checklist 2.5.4, 2.5.5) will load them. On a machine where the folder sits elsewhere, set its root in configs/local.json. Declared from the project folder (root '..', index the 3D_Artifacts folder) and not mounted, until the 3D view defines a manifest of what it loads and the tier moves to the folder itself.",
+      "lane": "B",
+      "root": "..",
+      "manifest": null,
+      "index": "3D_Artifacts",
+      "handshake": null,
+      "required": false,
       "mount": false
     }
   ]

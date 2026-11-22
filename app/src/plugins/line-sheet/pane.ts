@@ -27,12 +27,15 @@ import type {
   PaneContext,
   RecordRef,
   Selection,
+  SheetText,
   SheetView,
 } from "../../core/plugin.ts";
 import { isRecordRef } from "../../core/plugin.ts";
 import { setChainage } from "../../core/store.ts";
 import { CHAINAGE_HELP, formatChainage, parseChainage } from "../../core/units.ts";
 import { type View, viewToken } from "../../core/view.ts";
+import { stationLevel } from "./bands.ts";
+import { fmtCh, fmtG, fmtZ, margins, valueAt } from "./drawing.ts";
 import {
   addPvi,
   frameFor,
@@ -149,10 +152,24 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   canvasWrap.className = "sheet-canvas";
   const canvas = document.createElement("canvas");
   canvas.dataset.testid = "sheet-canvas";
-  canvasWrap.append(canvas);
+  canvas.tabIndex = 0;
+  canvas.setAttribute("role", "img");
+  canvas.setAttribute(
+    "aria-label",
+    "Long section. Click a station or a PVI to select it; drag it up or down to set its level; drag elsewhere to pan; wheel to zoom; double-click the rail to add a PVI. Arrows nudge the selection, F shows the whole line, Esc clears.",
+  );
+  // What the canvas drew, in words: station names and levels, grades. Hidden from sight, read by screen readers.
+  const textLayer = document.createElement("ul");
+  textLayer.className = "sheet-text";
+  textLayer.dataset.testid = "sheet-labels";
+  textLayer.setAttribute("aria-label", "On the sheet");
+  canvasWrap.append(canvas, textLayer);
+  const card = document.createElement("div");
+  card.className = "sheet-card";
+  card.dataset.testid = "station-card";
   const tables = document.createElement("div");
   tables.className = "sheet-table";
-  root.append(bar, notice, canvasWrap, tables);
+  root.append(bar, notice, canvasWrap, card, tables);
   el.append(root);
 
   let view = host.view();
@@ -212,6 +229,13 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     if (n) return n;
     void host.names.get("platform", id, view);
     return shortId(id);
+  };
+
+  /** The chainage of a platform's stop (the point a slid platform hangs on); null when the frame does not know it. */
+  const stopOf = (id: string): number | null => {
+    if (!frame) return null;
+    for (const stop of frame.stops) if (frame.platforms.get(stop.id)?.some((p) => p.id === id)) return stop.c;
+    return null;
   };
 
   const showNotice = () => {
@@ -275,6 +299,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       solveInfo.dataset.ms = String(total);
       solveInfo.dataset.rev = String(Number(solveInfo.dataset.rev ?? 0) + 1);
       compare();
+      if (selected?.kind === "station") renderCard();
     } catch (e) {
       local = null;
       solveInfo.textContent =
@@ -414,6 +439,8 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     server = null;
     asked = null;
     builtPvis = -1;
+    selected = null;
+    card.hidden = true;
     editable = "Loading…";
     timeNote = null;
     bad.clear();
@@ -691,7 +718,9 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       seen.set(nm, n);
       const label = n === 1 ? nm : `${nm} ${n}`;
       const name = Object.assign(document.createElement("td"), { className: "name", textContent: label });
-      name.title = `${label} (platform ${s.platform_id})`;
+      name.title = `${label} (platform ${s.platform_id}): click to select it on the sheet`;
+      name.onclick = () => selectStation(s.platform_id, true);
+      if (selected?.kind === "station" && selected.id === s.platform_id) tr.classList.add("selected");
       tr.append(name);
       const was = base?.st?.[s.platform_id] ?? null;
       tr.append(
@@ -708,7 +737,9 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     });
     const left = document.createElement("div");
     left.append(pt, add);
-    tables.append(left, stt);
+    // The stations first: Ben looks for a station's level more often than for a PVI's.
+    tables.append(stt, left);
+    renderCard();
     if (focusLabel) {
       const again = [...tables.querySelectorAll("input")].find((x) => x.getAttribute("aria-label") === focusLabel);
       if (again) {
@@ -719,7 +750,165 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     }
   };
 
+  // ------------------------------------------------------------------------------------------- the station card
+
+  /** The selected station as the sheet's input has it now, with its index; null when none is selected. */
+  const selectedStation = () => {
+    if (selected?.kind !== "station" || !input) return null;
+    const id = selected.id;
+    const stations = localInput(input, data(), frame).stations;
+    const index = stations.findIndex((s) => s.platform_id === id);
+    return index < 0 ? null : { s: stations[index] as SectionInput["stations"][number], index, stations };
+  };
+
+  /** Select a station (from the canvas or the table); centre the view on it when asked. */
+  const selectStation = (id: string, centre: boolean) => {
+    if (!input) return;
+    const stations = localInput(input, data(), frame).stations;
+    const index = stations.findIndex((s) => s.platform_id === id);
+    const s = stations[index];
+    if (!s) return;
+    const rail = local
+      ? { rail_m: local.rail_m, grade_permille: local.grade_permille, step_m: local.grid.step_m }
+      : null;
+    selected = { band: "platforms", kind: "station", index, id, c: s.c_m, z: stationLevel(s, rail) ?? undefined };
+    if (centre && range) {
+      const span = range[1] - range[0];
+      range = clampRange([s.c_m - span / 2, s.c_m + span / 2]);
+    }
+    setChainage(host.store, s.c_m);
+    markRows();
+    renderCard();
+    draw();
+  };
+
+  const markRows = () => {
+    const id = selected?.kind === "station" ? selected.id : null;
+    for (const tr of tables.querySelectorAll<HTMLTableRowElement>("[data-testid=station-table] tr[data-platform]"))
+      tr.classList.toggle("selected", tr.dataset.platform === id);
+  };
+
+  /** The selected station's card: what the old sheet's station panel showed that the records hold. */
+  let cardStale = false;
+  const renderCard = () => {
+    const a = document.activeElement;
+    if (a instanceof HTMLInputElement && card.contains(a)) {
+      cardStale = true;
+      return;
+    }
+    cardStale = false;
+    card.replaceChildren();
+    const sel = selectedStation();
+    if (!sel || !input) {
+      card.hidden = true;
+      return;
+    }
+    card.hidden = false;
+    const { s } = sel;
+    const u = host.units.length;
+    const half = input.params.platform_m / 2;
+    const rail = local
+      ? { rail_m: local.rail_m, grade_permille: local.grade_permille, step_m: local.grid.step_m }
+      : null;
+    const z = stationLevel(s, rail);
+    const ground = input.ground ? valueAt(input.ground.z_m, input.ground.step_m, s.c_m) : null;
+    const gIn = local ? valueAt(local.grade_permille, local.grid.step_m, s.c_m - half - 2 * local.grid.step_m) : null;
+    const gOut = local ? valueAt(local.grade_permille, local.grid.step_m, s.c_m + half + 2 * local.grid.step_m) : null;
+    const name = platformName(s.platform_id);
+    const head = Object.assign(document.createElement("strong"), { textContent: name });
+    head.dataset.testid = "station-card-name";
+    const close = Object.assign(document.createElement("button"), {
+      type: "button",
+      textContent: "×",
+      title: "Clear the selection (Esc)",
+    });
+    close.onclick = () => {
+      selected = null;
+      markRows();
+      renderCard();
+      draw();
+    };
+    const item = (label: string, value: string, testid?: string) => {
+      const span = document.createElement("span");
+      span.append(
+        Object.assign(document.createElement("span"), { className: "muted", textContent: `${label} ` }),
+        value,
+      );
+      if (testid) span.dataset.testid = testid;
+      return span;
+    };
+    const stopC = stopOf(s.platform_id);
+    const parts: HTMLElement[] = [head];
+    parts.push(item("chainage", fmtCh(s.c_m)));
+    if (stopC !== null && Math.abs(stopC - s.c_m) > 0.01) parts.push(item("drawn point", fmtCh(stopC)));
+    parts.push(item("platform", `${fmtCh(s.c_m - half)} to ${fmtCh(s.c_m + half)}`));
+    // The rail level, editable by number: the same draft edit as the station table's cell.
+    const lvl = document.createElement("label");
+    lvl.append(Object.assign(document.createElement("span"), { className: "muted", textContent: "rail " }));
+    const li = document.createElement("input");
+    li.className = "sheet-card-level";
+    li.value = s.level_m === null ? "" : host.units.format(s.level_m, "m");
+    li.placeholder = z === null ? "design" : `${fmtZ(z, host.units, 2)} (design)`;
+    li.inputMode = "decimal";
+    li.setAttribute("aria-label", `${name} rail level`);
+    li.title = `Type a level in ${u}, or leave it empty for the design to set it. Enter saves.`;
+    li.disabled = !canEdit();
+    li.dataset.drawn = li.value;
+    li.addEventListener("input", () => {
+      if (li.value.trim() === "") {
+        li.classList.remove("bad");
+        edit((cur) => setStationLevel(cur, s.platform_id, null));
+        return;
+      }
+      const v = host.units.parse(li.value, "m");
+      li.classList.toggle("bad", v === null);
+      if (v !== null) edit((cur) => setStationLevel(cur, s.platform_id, v));
+    });
+    li.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      if (li.classList.contains("bad")) return;
+      li.blur();
+      void host.runCommand("core.save");
+    });
+    li.addEventListener("blur", () => {
+      if (cardStale) setTimeout(renderCard, 0);
+    });
+    lvl.append(li, ` ${u}`);
+    parts.push(lvl);
+    if (ground !== null) parts.push(item("ground", `${fmtZ(ground, host.units, 2)} ${u}`));
+    if (ground !== null && z !== null)
+      parts.push(
+        item(
+          ground >= z ? "below ground" : "above ground",
+          `${fmtZ(Math.abs(ground - z), host.units, 2)} ${u}`,
+          "station-card-depth",
+        ),
+      );
+    if (gIn !== null) parts.push(item("grade in", fmtG(gIn)));
+    if (gOut !== null) parts.push(item("grade out", fmtG(gOut)));
+    parts.push(item("platform grade", fmtG(s.grade_permille ?? 0)));
+    parts.push(close);
+    card.append(...parts);
+  };
+
   // ------------------------------------------------------------------------------------------------ the canvas
+
+  /** The level range held while a drag is on, so the axis does not jump under the pointer (the old yFrozen). */
+  let frozen: { z0: number; z1: number } | null = null;
+  /** The pointer over the canvas, for the readout box. */
+  let pointer: { x: number; y: number } | null = null;
+
+  /** Keep a range within the line: at least 120 m, at most the whole line with a little air. */
+  const clampRange = (r: [number, number]): [number, number] => {
+    const len = input?.length_m ?? 1000;
+    const air = len * 0.03;
+    const span = Math.min(len + 2 * air, Math.max(120, r[1] - r[0]));
+    let c0 = r[0];
+    if (c0 < -air) c0 = -air;
+    if (c0 + span > len + air) c0 = len + air - span;
+    return [c0, c0 + span];
+  };
 
   const sheetView = (w: number, h: number): SheetView => {
     const [c0, c1] = range ?? [0, input?.length_m ?? 1000];
@@ -728,6 +917,8 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       bands()
         .filter((b) => b.axis === "strip")
         .reduce((s, b) => s + b.height, 0);
+    const M = margins(w, profileH);
+    const plot = { x: M.l, y: M.t, w: Math.max(10, w - M.l - M.r), h: Math.max(10, profileH - M.t - M.b) };
     let z0 = Number.POSITIVE_INFINITY;
     let z1 = Number.NEGATIVE_INFINITY;
     const scan = (arr: ArrayLike<number> | undefined, step: number) => {
@@ -746,11 +937,16 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     if (local) scan(local.rail_m, local.grid.step_m);
     for (const p of input?.pvi ?? []) if (p.c_m >= c0 && p.c_m <= c1) scan([p.z_m], 1);
     if (!Number.isFinite(z0)) [z0, z1] = [150, 250];
-    const pad = Math.max(2, (z1 - z0) * 0.08);
+    const pad = Math.max(3, (z1 - z0) * 0.08);
     z0 -= pad;
     z1 += pad;
-    const sx = w / Math.max(1e-6, c1 - c0);
-    const sy = Math.max(1, profileH - 8) / Math.max(1e-6, z1 - z0);
+    if (frozen) {
+      z0 = Math.min(frozen.z0, z0);
+      z1 = Math.max(frozen.z1, z1);
+      frozen = { z0, z1 };
+    }
+    const sx = plot.w / Math.max(1e-6, c1 - c0);
+    const sy = plot.h / Math.max(1e-6, z1 - z0);
     return {
       c0,
       c1,
@@ -760,10 +956,12 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       height: h,
       dpr: globalThis.devicePixelRatio ?? 1,
       top: profileH,
-      x: (c) => (c - c0) * sx,
-      c: (x) => c0 + x / sx,
-      y: (z) => 4 + (z1 - z) * sy,
-      z: (y) => z1 - (y - 4) / sy,
+      plot,
+      pointer,
+      x: (c) => plot.x + (c - c0) * sx,
+      c: (x) => c0 + (x - plot.x) / sx,
+      y: (z) => plot.y + (z1 - z) * sy,
+      z: (y) => z1 - (y - plot.y) / sy,
       units: host.units,
       cursor,
     };
@@ -779,6 +977,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       paint();
     });
   };
+  let shownText = "";
   const paint = () => {
     const w = canvasWrap.clientWidth;
     const h = canvasWrap.clientHeight;
@@ -794,6 +993,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     g.clearRect(0, 0, w, h);
     const v = sheetView(w, h);
     lastView = v;
+    const texts: SheetText[] = [];
     const bd: BandData = {
       sectionId: target?.sectionId ?? "",
       input: input ? localInput(input, data(), frame) : null,
@@ -802,6 +1002,10 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       profile: target?.profile ?? null,
       selected,
       platformName,
+      dv: local?.dv,
+      curves: local?.curves,
+      stopC: stopOf,
+      report: (t) => texts.push(t),
     };
     let top = v.top;
     for (const b of bands()) {
@@ -812,51 +1016,180 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
         b.draw(g, v, bd);
       }
     }
+    showText(texts);
+  };
+
+  /** The text layer: one item per thing drawn, rebuilt only when what was drawn changes. */
+  const showText = (texts: SheetText[]) => {
+    const key = texts
+      .map((t) => `${t.kind}|${t.id ?? ""}|${t.text}|${t.drawn}|${!!t.selected}|${t.x?.toFixed(1)}|${t.y?.toFixed(1)}`)
+      .join("\n");
+    if (key === shownText) return;
+    shownText = key;
+    textLayer.replaceChildren(
+      ...texts.map((t) => {
+        const li = Object.assign(document.createElement("li"), { textContent: t.text });
+        li.dataset.kind = t.kind;
+        if (t.id) li.dataset.id = t.id;
+        li.dataset.drawn = t.drawn ? "1" : "0";
+        if (t.selected) li.dataset.selected = "1";
+        if (t.z !== undefined) li.dataset.z = String(t.z);
+        li.dataset.c = String(t.c);
+        if (t.x !== undefined) li.dataset.x = t.x.toFixed(1);
+        if (t.y !== undefined) li.dataset.y = t.y.toFixed(1);
+        return li;
+      }),
+    );
   };
 
   // ------------------------------------------------------------------------------------------- interaction
 
-  canvas.addEventListener("mousemove", (e) => {
-    if (!lastView) return;
-    const r = canvas.getBoundingClientRect();
-    cursor = lastView.c(e.clientX - r.left);
-    draw();
-  });
-  canvas.addEventListener("mouseleave", () => {
-    cursor = host.store.getState().c;
-    draw();
-  });
-  canvas.addEventListener("click", (e) => {
-    if (!lastView) return;
-    const r = canvas.getBoundingClientRect();
-    const x = e.clientX - r.left;
-    const y = e.clientY - r.top;
-    // A band's hit() answers from its last draw, and bands are shared by every sheet pane: draw this sheet now, so
-    // the click is tested against this sheet's marks and not another section's.
+  const roundLevel = (v: number, coarse: boolean) => (coarse ? Math.round(v) : Math.round(v * 10) / 10);
+
+  /** Hit-test the bands at a point, against this sheet's marks (bands are shared by every sheet pane). */
+  const hitAt = (x: number, y: number): Handle | null => {
     if (frameReq) {
       cancelAnimationFrame(frameReq);
       frameReq = 0;
     }
     paint();
-    selected = null;
     for (const b of bands()) {
       const hit = b.hit?.(x, y);
-      if (hit) {
-        selected = hit;
-        break;
+      if (hit) return hit;
+    }
+    return null;
+  };
+
+  /** The record's row index of the PVI drawn at (c, z): the band draws them sorted, the record keeps its order. */
+  const pviRowOf = (c: number, z: number | undefined): number | null => {
+    const d = data();
+    const row = d ? pviRows(d).find((p) => p.c === c && p.z === z) : undefined;
+    return row ? row.index : null;
+  };
+
+  /** A PVI chainage moved out of any platform (and its approach), as the old sheet clamped it. */
+  const outOfPlatforms = (c: number): number => {
+    if (!input) return c;
+    const half = input.params.platform_m / 2 + 1;
+    for (const s of localInput(input, data(), frame).stations)
+      if (Math.abs(c - s.c_m) < half) return c < s.c_m ? s.c_m - half : s.c_m + half;
+    return Math.min(input.length_m, Math.max(0, c));
+  };
+
+  const selectHit = (hit: Handle | null, x: number) => {
+    if (!lastView) return;
+    if (hit?.kind === "station" && hit.id) {
+      selectStation(hit.id, false);
+      return;
+    }
+    selected = hit;
+    markRows();
+    renderCard();
+    setChainage(host.store, hit?.c ?? lastView.c(x));
+    if (hit?.kind === "pvi") {
+      const n = pviRowOf(hit.c, hit.z) ?? hit.index;
+      const cell = tables.querySelector(`input[aria-label="PVI ${n + 1} level"]`) as HTMLInputElement | null;
+      cell?.scrollIntoView({ block: "nearest" });
+    }
+    draw();
+  };
+
+  type Drag =
+    | { kind: "station"; id: string; y0: number; z0: number }
+    | { kind: "pvi"; row: number; x0: number; y0: number; c0: number; z0: number }
+    | { kind: "pan"; x0: number; range: [number, number] };
+  let drag: Drag | null = null;
+  let downAt: { x: number; y: number; hit: Handle | null } | null = null;
+  let moved = false;
+
+  const pointOf = (e: { clientX: number; clientY: number }) => {
+    const r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  };
+
+  canvas.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0 || !lastView) return;
+    const { x, y } = pointOf(e);
+    const hit = hitAt(x, y);
+    downAt = { x, y, hit };
+    moved = false;
+    const v = lastView;
+    if (hit?.kind === "station" && hit.id && canEdit() && hit.z !== undefined)
+      drag = { kind: "station", id: hit.id, y0: y, z0: hit.z };
+    else if (hit?.kind === "pvi" && canEdit() && hit.z !== undefined) {
+      const row = pviRowOf(hit.c, hit.z);
+      drag = row === null ? null : { kind: "pvi", row, x0: x, y0: y, c0: hit.c, z0: hit.z };
+    } else if (range) drag = { kind: "pan", x0: x, range: [...range] as [number, number] };
+    if (drag && drag.kind !== "pan") frozen = { z0: v.z0, z1: v.z1 };
+    canvas.setPointerCapture?.(e.pointerId);
+    canvas.focus({ preventScroll: true });
+  });
+
+  canvas.addEventListener("pointermove", (e) => {
+    if (!lastView) return;
+    const { x, y } = pointOf(e);
+    pointer = { x, y };
+    const v = lastView;
+    if (downAt && Math.abs(x - downAt.x) + Math.abs(y - downAt.y) > 3) moved = true;
+    if (drag && moved) {
+      if (drag.kind === "pan") {
+        const span = drag.range[1] - drag.range[0];
+        const shift = ((x - drag.x0) / v.plot.w) * span;
+        range = clampRange([drag.range[0] - shift, drag.range[1] - shift]);
+      } else if (drag.kind === "station") {
+        const z = roundLevel(drag.z0 + v.z(y) - v.z(drag.y0), e.shiftKey);
+        const id = drag.id;
+        edit((cur) => setStationLevel(cur, id, z));
+        if (selected?.kind === "station") selected = { ...selected, z };
+      } else {
+        const c = Math.round(outOfPlatforms(drag.c0 + v.c(x) - v.c(drag.x0)));
+        const z = roundLevel(drag.z0 + v.z(y) - v.z(drag.y0), e.shiftKey);
+        const row = drag.row;
+        edit((cur) => [...setPviC(cur, row, c), ...setPviZ(cur, row, z)]);
+        selected = { band: "pvi", kind: "pvi", index: row, c, z };
       }
     }
-    const c = selected?.c ?? lastView.c(x);
-    setChainage(host.store, c);
-    if (selected?.kind === "pvi") {
-      // The band draws the PVIs sorted by chainage; the table lists them in the record's order. Find the row.
-      const hit = selected;
-      const d = data();
-      const row = d ? pviRows(d).find((p) => p.c === hit.c && p.z === hit.z) : undefined;
-      const n = row ? row.index : hit.index;
-      const cell = tables.querySelector(`input[aria-label="PVI ${n + 1} level"]`) as HTMLInputElement | null;
-      cell?.focus();
-    }
+    cursor = v.c(x);
+    if (!drag) {
+      // The cursor shape tells what a press would do, as on the old sheet.
+      let shape = "crosshair";
+      for (const b of bands()) {
+        const h = b.hit?.(x, y);
+        if (h) {
+          shape = !canEdit() ? "pointer" : h.kind === "station" ? "ns-resize" : "move";
+          break;
+        }
+      }
+      canvas.style.cursor = shape;
+    } else if (drag.kind === "pan" && moved) canvas.style.cursor = "grabbing";
+    draw();
+  });
+
+  const endDrag = (e: PointerEvent) => {
+    const was = drag;
+    const at = downAt;
+    drag = null;
+    downAt = null;
+    frozen = null;
+    canvas.releasePointerCapture?.(e.pointerId);
+    if (at && !moved) selectHit(at.hit, at.x);
+    else if (was && was.kind === "station") renderCard();
+    draw();
+  };
+  canvas.addEventListener("pointerup", endDrag);
+  canvas.addEventListener("pointercancel", endDrag);
+  canvas.addEventListener("mouseleave", () => {
+    pointer = null;
+    if (!drag) cursor = host.store.getState().c;
+    draw();
+  });
+  canvas.addEventListener("dblclick", (e) => {
+    if (!lastView || !canEdit() || !local) return;
+    const { x } = pointOf(e);
+    const c = Math.round(outOfPlatforms(lastView.c(x)) * 10) / 10;
+    const z = local.rail_m[Math.round(c / local.grid.step_m)] ?? 0;
+    edit((cur) => addPvi(cur, c, Math.round(z * 1000) / 1000));
+    selected = { band: "pvi", kind: "pvi", index: -1, c, z: Math.round(z * 1000) / 1000 };
     draw();
   });
   canvas.addEventListener(
@@ -868,20 +1201,69 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       const at = lastView.c(e.clientX - r.left);
       const [c0, c1] = range ?? [0, input.length_m];
       if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-        const shift = ((e.deltaX || e.deltaY) / lastView.width) * (c1 - c0);
-        range = [c0 + shift, c1 + shift];
+        const shift = ((e.deltaX || e.deltaY) / lastView.plot.w) * (c1 - c0);
+        range = clampRange([c0 + shift, c1 + shift]);
       } else {
         const k = Math.exp(e.deltaY * 0.0015);
-        const span = Math.min(input.length_m * 1.2, Math.max(50, (c1 - c0) * k));
+        const span = (c1 - c0) * k;
         const f = (at - c0) / (c1 - c0);
-        range = [at - f * span, at - f * span + span];
+        range = clampRange([at - f * span, at - f * span + span]);
       }
       draw();
     },
     { passive: false },
   );
+  const zoomBy = (k: number) => {
+    if (!range || !input) return;
+    const mid = cursor !== null && cursor >= range[0] && cursor <= range[1] ? cursor : (range[0] + range[1]) / 2;
+    const f = (mid - range[0]) / (range[1] - range[0]);
+    const span = (range[1] - range[0]) * k;
+    range = clampRange([mid - f * span, mid - f * span + span]);
+    draw();
+  };
+  canvas.addEventListener("keydown", (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const step = e.shiftKey ? 1 : 0.1;
+    const sel = selected;
+    if (e.key === "Escape") {
+      selected = null;
+      markRows();
+      renderCard();
+    } else if (e.key === "f" || e.key === "F") {
+      range = input ? clampRange([0, input.length_m]) : null;
+    } else if (e.key === "+" || e.key === "=") zoomBy(1 / 1.4);
+    else if (e.key === "-" || e.key === "_") zoomBy(1.4);
+    else if ((e.key === "ArrowUp" || e.key === "ArrowDown") && sel && sel.z !== undefined && canEdit()) {
+      const z = Math.round((sel.z + (e.key === "ArrowUp" ? step : -step)) * 10) / 10;
+      if (sel.kind === "station" && sel.id) {
+        const id = sel.id;
+        edit((cur) => setStationLevel(cur, id, z));
+        selected = { ...sel, z };
+        renderCard();
+      } else if (sel.kind === "pvi") {
+        const row = pviRowOf(sel.c, sel.z);
+        if (row === null) return;
+        edit((cur) => setPviZ(cur, row, z));
+        selected = { ...sel, z };
+      }
+    } else if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && sel?.kind === "pvi" && canEdit()) {
+      const row = pviRowOf(sel.c, sel.z);
+      if (row === null) return;
+      const c = Math.round(outOfPlatforms(sel.c + (e.key === "ArrowRight" ? 1 : -1) * (e.shiftKey ? 10 : 2)));
+      edit((cur) => setPviC(cur, row, c));
+      selected = { ...sel, c };
+      setChainage(host.store, c);
+    } else if ((e.key === "Delete" || e.key === "Backspace") && sel?.kind === "pvi" && canEdit()) {
+      const row = pviRowOf(sel.c, sel.z);
+      if (row === null) return;
+      edit(() => removePvi(row));
+      selected = null;
+    } else return;
+    e.preventDefault();
+    draw();
+  });
   fit.onclick = () => {
-    range = input ? [0, input.length_m] : null;
+    range = input ? clampRange([0, input.length_m]) : null;
     draw();
   };
   discard.onclick = () => {
@@ -898,7 +1280,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     if (c === null || !range || !input) return;
     if (c >= range[0] && c <= range[1]) return;
     const span = range[1] - range[0];
-    range = [c - span / 2, c + span / 2];
+    range = clampRange([c - span / 2, c + span / 2]);
   };
 
   const unsubStore = host.store.subscribe((s, p) => {

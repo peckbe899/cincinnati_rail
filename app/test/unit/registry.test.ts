@@ -56,7 +56,16 @@ describe("plugin registry", () => {
     ]);
     for (const id of ["map", "line-sheet", "inspector", "jobs", "review", "legacy"]) expect(reg.pane(id)).toBeDefined();
     expect(reg.layers.has("sections")).toBe(true);
-    expect(reg.bandList().map((b) => b.id)).toEqual(["ground", "rail", "platforms", "pvi", "chainage"]);
+    expect(reg.bandList().map((b) => b.id)).toEqual([
+      "axes",
+      "ground",
+      "rail",
+      "grades",
+      "platforms",
+      "pvi",
+      "frame",
+      "chainage",
+    ]);
     expect(reg.keymap.get("ctrl+k")?.def.command).toBe("palette.open");
   });
 
