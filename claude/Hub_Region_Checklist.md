@@ -82,7 +82,7 @@ Read on 6 November (sources at the end):
 - [ ] 2.0.14 **Corridor and region ground tiers** from Ben's USGS DEMs and LiDAR (lane B local session, to a spec
   like the 1912 one). Options: (a) COGs per tier, read by window; (b) one Zarr store with pyramids; (c) PMTiles
   terrain-RGB for the map plus COGs for sampling. Lean: (a) plus the terrain-RGB PMTiles in slice 3.
-- [~] 2.0.15 **App shell and API skeleton** (cloud, increment 1 below; spec `Hub_Region_Architecture.md`). Options: (a) FastAPI plus Vite/React; (b) Starlette plus Vite/Svelte
+- [x] 2.0.15 **App shell and API skeleton** (done 22 Nov, increment 1 below; spec `Hub_Region_Architecture.md`). Options: (a) FastAPI plus Vite/React; (b) Starlette plus Vite/Svelte
   (lighter, smaller ecosystem for map and 3D bindings); (c) a single Python server with HTMX and canvas, no
   front-end build (fewest tools, but the engine must run in the browser for live editing, which rules it out).
   Lean: (a). Decision record 9.3.
@@ -96,15 +96,33 @@ The walking skeleton through every layer: from a fresh clone, `crhub setup` then
 Line 6 sheet; a PVI level edited in scenario `try` re-solves in the page, saves, and the server's result arrives over
 SSE; `crhub export` twice gives byte-identical seeds; the old hub untouched; `crhub doctor` passes on Ben's machine.
 
-- [ ] I1.0a Contracts and packaging: `region/core`, launchers, locks, workspaces, kind meta-schema, engine contract v0.
-- [ ] I1.0b Doctor, data tiers (`configs/hub_paths.json`), CI, Ben's runbook (`region/README.md`).
-- [ ] I1.1 Store v2: migration 0002 (`rec` envelope, layers, changesets, outbox, conflicts, import runs), merge and
+- [x] I1.0a Contracts and packaging: `region/core`, launchers, locks, workspaces, kind meta-schema, engine contract v0.
+- [x] I1.0b Doctor, data tiers (`configs/hub_paths.json`), CI, Ben's runbook (`region/README.md`).
+- [x] I1.1 Store v2: migration 0002 (`rec` envelope, layers, changesets, outbox, conflicts, import runs), merge and
   rebase, legacy ids (match before mint), seeds per layer, backups.
-- [ ] I1.2 Server: FastAPI `/api/v1`, problem+json, If-Match 428/412, SSE from the outbox, files with Range, security.
-- [ ] I1.3 Jobs and cache: content-hash keys, early cutoff, goals, scheduler with leases, `cache.db`, blobs.
-- [ ] I1.4 Engine `vertical.rail@1` ported (path, vertices, design, rail grid), the Node sidecar pool, goldens on 41 routes.
-- [ ] I1.5 Metro import (`profile_lines`, `registry`, `old_hub`), `profiles.solve_section`, golden diff job.
-- [ ] I1.6 App: shell with dockview and plugins, URL state, SSE worker, map, line sheet, inspector, jobs, review.
+- [x] I1.2 Server: FastAPI `/api/v1`, problem+json, If-Match 428/412, SSE from the outbox, files with Range, security.
+- [x] I1.3 Jobs and cache: content-hash keys, early cutoff, goals, scheduler with leases, `cache.db`, blobs.
+- [x] I1.4 Engine `vertical.rail@1` ported (path, vertices, design, rail grid), the Node sidecar pool, goldens on 41 routes.
+- [x] I1.5 Metro import (`profile_lines`, `registry`, `old_hub`), `profiles.solve_section`, golden diff job.
+- [x] I1.6 App: shell with dockview and plugins, URL state, SSE worker, map, line sheet, inspector, jobs, review.
+
+Increment 1 landed 21 to 22 Nov (commits d65828e to 51c551e): built in waves with an independent review of every
+package, an integration pass that ran the gate from a clean copy, and a six-lens adversarial review (89 findings, 87
+confirmed and fixed or ruled). Gate: setup, serve, map, Line 6 sheet, a PVI edit in scenario `try` re-solved in the
+page in about 7 ms and confirmed by the server over SSE, export twice byte-identical, old hub untouched, doctor 21 ok.
+Tests: pytest 475 with 1 strict xfail (lane B), engine vitest 32, app vitest 67, Playwright 13. The engine port
+matches the baseline rail on 41 of 41 routes within 0.5 mm. Still to confirm: Windows CI green, and `crhub doctor` on
+Ben's machine.
+
+Increment 2 (next, in order; spec section 11):
+- [ ] I2.1 Close the loop: `ground.profile` from `region.ground`, the railsim adapter (`route.assemble`, `railsim.run`,
+  `railsim.attribution`), the run-time band and table on the sheet. Gate: edit a Line 6 PVI, see the run time change
+  within 10 s, Line 6 within 1 % of `tests/baseline/runtimes.json`.
+- [ ] I2.2 Engine ports: `reframeDoc`, `defaultAlign`, the level solver rewritten, the structure solver from the
+  registry with rule ids, flags as data; zero unexplained differences on the 16 Metro routes.
+- [ ] I2.3 Review-queue actions in the app (resolve, rebase, promote); the three params the
+  engine still takes from page defaults registered (`transition_share`, `short_curve_flag_m`, `design_passes`).
+- [ ] I2.4 Chronology, eras, operations, rolling stock and services imported (556 segments, partial dates).
 
 Exit for slice 0: migrations apply to empty and seeded databases; the registry lists every rule the page applies;
 the baseline and gates are committed and pass; the 1912 surface meets its spec or its misses are listed; the

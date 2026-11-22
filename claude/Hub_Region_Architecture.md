@@ -418,7 +418,7 @@ CREATE TABLE seed_base (layer INT, id TEXT, hash TEXT NOT NULL, PRIMARY KEY (lay
 ### Semantics
 
 - **Read.** The chain is the view's layer, its ancestors up to main, then legacy, then every import layer. The first revision found wins, and a tombstone hides the record. A list is one window-function query over the chain, with the R-tree and the time columns as filters.
-- **Write.** A write goes only to `view.layer`, and If-Match is checked against the resolved revision. The ETag is `"<layer>:<version>"`. The first write to a record held below copies it up, with `base_hash` set.
+- **Write.** A write goes only to `view.layer`, and If-Match is checked against the resolved revision. The ETag is `"<layer>:<version>"`. The first write to a record held below copies it up, with `base_hash` set. A copy-up into a scenario or proposal continues the record's version lineage (base version + 1), so the versions Ben sees in one view only rise; copy-ups into main, legacy and import layers start at 1. Undoing a scenario's first edit writes a new version equal in content to the base (ruled by the lead, 21 Nov, during integration).
 - **Changeset.** It is atomic, and every operation is validated before any is written. A changeset of more than 200 records gets a summary event. Revert writes the prior content under If-Match.
 - **Promote.** A scenario's revisions go to its parent as one changeset, with If-Match against the parent's current revisions. Conflicts are listed, and the layer becomes `promoted`.
 - **Tag.** A tag reads its layer as of an event `seq`, reconstructed from `rec_hist`.
