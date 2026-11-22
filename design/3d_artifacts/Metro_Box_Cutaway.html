@@ -1,0 +1,269 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Metro Box Cutaway</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a drawing sheet with one large 3D view, a control column beside it, the key and notes below. */
+:root {
+  --paper: #eef1f2; --sheet: #f8fafa; --ink: #1d2a30; --muted: #5d6b72; --rule: #c6cfd3; --env: #d1531f; --scene: #e9eef0;
+  --display: "Archivo", "Arial Narrow", Arial, sans-serif; --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #11181b; --sheet: #172024; --ink: #e2e9ec; --muted: #94a3aa; --rule: #2f3c42; --env: #f07a45; --scene: #1b252a; color-scheme: dark } }
+:root[data-theme="dark"] { --paper: #11181b; --sheet: #172024; --ink: #e2e9ec; --muted: #94a3aa; --rule: #2f3c42; --env: #f07a45; --scene: #1b252a; color-scheme: dark }
+body { background: var(--paper); color: var(--ink); font: 15px/1.55 var(--display); font-stretch: 92%; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 24px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 18px; }
+header { display: grid; grid-template-columns: 1fr auto; gap: 8px 24px; align-items: end; border-bottom: 2px solid var(--ink); padding-bottom: 12px; }
+h1 { margin: 0; font-size: clamp(26px, 4vw, 38px); font-stretch: 78%; font-weight: 700; text-wrap: balance; }
+.sub { margin: 4px 0 0; color: var(--muted); max-width: 66ch; }
+.tb { font: 12px/1.6 var(--mono); color: var(--muted); text-align: right; }
+.tb b { color: var(--ink); font-weight: 500; }
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 14px; align-items: start; }
+.view { position: relative; background: var(--scene); border: 1px solid var(--rule); height: min(68vh, 620px); min-height: 360px; overflow: hidden; }
+.view canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.labels { position: absolute; inset: 0; pointer-events: none; }
+.lab { position: absolute; transform: translate(-50%, -100%); font: 500 11px var(--mono); color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); padding: 1px 5px; white-space: nowrap; }
+.lab::after { content: ""; position: absolute; left: 50%; top: 100%; width: 1px; height: 10px; background: var(--muted); }
+.lab { margin-top: -10px; }
+.hint { position: absolute; left: 10px; bottom: 8px; font: 11px var(--mono); color: var(--muted); background: var(--sheet); padding: 2px 6px; border: 1px solid var(--rule); }
+.panel { display: grid; gap: 14px; background: var(--sheet); border: 1px solid var(--rule); padding: 14px; }
+.panel h2 { margin: 0 0 6px; font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+.btns { display: flex; flex-wrap: wrap; gap: 6px; }
+button { font: 500 13px var(--display); font-stretch: 90%; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); padding: 5px 9px; cursor: pointer; }
+button:hover { border-color: var(--ink); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--env); outline-offset: 2px; }
+.toggles { display: grid; gap: 4px; }
+.toggles label { display: flex; gap: 8px; align-items: center; font-size: 14px; cursor: pointer; }
+.sw { width: 12px; height: 12px; display: inline-block; border: 1px solid var(--ink); }
+.keybox { background: var(--sheet); border: 1px solid var(--rule); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+td.v { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+.tablewrap { overflow-x: auto; }
+.notes { color: var(--muted); font-size: 14px; max-width: 80ch; display: grid; gap: 6px; }
+.notes p { margin: 0; }
+.notes a { color: var(--ink); }
+@media (max-width: 820px) { .stage { grid-template-columns: 1fr; } header { grid-template-columns: 1fr; } .tb { text-align: left; } }
+</style>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Metro box cutaway</h1>
+      <p class="sub">250 m of double-track cut-and-cover box, built to the Phase 1 pattern: steel columns between the tracks, the roof and near wall cut away to show the frame and the equipment. Everything is at real size and real spacing.</p>
+    </div>
+    <div class="tb"><b>APEx / Cincinnati Metro</b><br>28 Oct 2026<br>Drawing values, not survey</div>
+  </header>
+  <div class="stage">
+    <div class="view" id="view">
+      <canvas id="c" aria-label="3D cutaway of 250 m of double-track Metro box with columns, track and tunnel equipment"></canvas>
+      <div class="labels" id="labels"></div>
+      <div class="hint">Drag to orbit · right-drag or two fingers to pan · scroll or pinch to zoom</div>
+    </div>
+    <aside class="panel">
+      <div>
+        <h2>Views</h2>
+        <div class="btns">
+          <button id="v-over">Overview</button>
+          <button id="v-track">Track level</button>
+          <button id="v-signal">Signal</button>
+          <button id="v-end">Closed end</button>
+          <button id="v-section">End-on</button>
+        </div>
+      </div>
+      <div>
+        <h2>Show</h2>
+        <div class="toggles">
+          <label><input type="checkbox" id="t-legacy" checked> <i class="sw" style="background:#1d2a30"></i>Legacy signals</label>
+          <label><input type="checkbox" id="t-cbtc" checked> <i class="sw" style="background:#2f8f55"></i>CBTC and radio</label>
+          <label><input type="checkbox" id="t-safety" checked> <i class="sw" style="background:#b8352a"></i>Safety</label>
+          <label><input type="checkbox" id="t-serv" checked> <i class="sw" style="background:#e0b23a"></i>Power, lights, drains</label>
+          <label><input type="checkbox" id="t-train" checked> <i class="sw" style="background:#dfe7ec"></i>Train</label>
+          <label><input type="checkbox" id="t-ribs" checked> <i class="sw" style="background:#5b6670"></i>Roof beams</label>
+          <label><input type="checkbox" id="t-labels" checked> <i class="sw" style="background:none"></i>Labels</label>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <div class="keybox tablewrap">
+    <table>
+      <thead><tr><th>Item</th><th>Where</th><th>Spacing in this 250 m</th><th>Basis</th></tr></thead>
+      <tbody>
+        <tr><td>Steel columns</td><td class="v">between the tracks</td><td>every 1.52 m (5 ft), 165 columns</td><td>1904 IRT frame: columns 5 ft apart lengthwise</td></tr>
+        <tr><td>Roof beams</td><td class="v">across the box, on the columns</td><td>every 1.52 m</td><td>1904 IRT: steel ribs 5 ft apart with jack arches between</td></tr>
+        <tr><td>Track</td><td class="v">3.90 m centres</td><td>timber sleepers in concrete, about every 0.6 m (assumed)</td><td>Phase 1 practice, as plate A</td></tr>
+        <tr><td>Third rail</td><td class="v">outer sides, 1.27 m off centre</td><td>insulators every 3 m</td><td>MBTA spec; uncovered, as MBTA and Chicago</td></tr>
+        <tr><td>Signal, trip stop, insulated joints (legacy)</td><td class="v">signal on the outer wall, about 2.4 m up; trip stop by the inner rail</td><td>one block end per track</td><td>250 m blocks (assumed)</td></tr>
+        <tr><td>CBTC transponders</td><td class="v">between the rails</td><td>every 100 m (assumed)</td><td>Singapore practice; spacing not found</td></tr>
+        <tr><td>Radio access point</td><td class="v">outer wall, 3.4 m up</td><td>one (about every 300 m, assumed)</td><td>not well sourced</td></tr>
+        <tr><td>Leaky feeder</td><td class="v">both outer walls, 3.55 m up</td><td>continuous</td><td>opposite walls for two tracks (iBwave)</td></tr>
+        <tr><td>Cable racks</td><td class="v">outer walls, 1.5 and 1.8 m up</td><td>continuous</td><td>heights assumed</td></tr>
+        <tr><td>Tunnel lights</td><td class="v">outer walls, 3.2 m up</td><td>every 18 m</td><td>1904 IRT; NFPA 130 0.25 fc at the walking surface</td></tr>
+        <tr><td>Standpipe and hose valves</td><td class="v">far wall, 1.05 m up</td><td>valves every 61 m (200 ft)</td><td>Seattle NFPA 130 amendment</td></tr>
+        <tr><td>Blue light station</td><td class="v">far wall</td><td>one (every 250 m)</td><td>about the 800 ft WMATA spacing</td></tr>
+        <tr><td>Distance markers</td><td class="v">far wall, 1.2 m up</td><td>every 100 m</td><td>JICA recommendation</td></tr>
+        <tr><td>Drains</td><td class="v">channels each side of the column row</td><td>continuous; no low point in this stretch, so no sump</td><td>sumps go at low points only</td></tr>
+        <tr><td>Train</td><td class="v">one track</td><td>4 cars, about 80 m</td><td>2.85 × 3.66 m cars</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="notes">
+    <p>Box: 7.90 m inside, rail to roof underside 4.0 m, 0.6 m walls and roof, 1.0 m below the rail and 4.6 m to the roof top (canon). The roof is left on over the last 40 m to show the closed box. Columns are drawn 0.25 m square, about the size of the IRT's built-up bulb-angle columns.</p>
+    <p>Sources: <a href="https://nycsubway.org/wiki/Chapter_14:_Engineering_Features_of_the_New_York_Subway">1904 IRT engineering features</a>; <a href="https://www.nycsubway.org/wiki/The_New_York_Subway:_Chapter_07,_Lighting_System_for_Passenger_Stations_and_Tunnel">IRT tunnel lighting</a>; <a href="https://www.seattle.gov/documents/departments/fire/business/nfpa130amendments2012sfc.pdf">Seattle NFPA 130 amendments</a>; <a href="https://mayor.dc.gov/sites/default/files/dc/sites/mayormb/publication/attachments/Final_Initial_FEMS_Report.pdf">WMATA blue lights</a>; <a href="https://www.ibwave.com/storage/app/media/pdf/white-papers/Subways-White-Paper.pdf">iBwave subway radio</a>; <a href="https://en.wikipedia.org/wiki/Train_stop">Train stop</a>.</p>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function () {
+  const L = 250, WI = 3.95, XC = 1.95, COL = 1.524;
+  const view = document.getElementById('view'), canvas = document.getElementById('c'), labelsEl = document.getElementById('labels');
+  if (!window.THREE) { view.insertAdjacentHTML('beforeend', '<p style="padding:16px">The 3D library did not load.</p>'); return; }
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 2000);
+  const controls = new THREE.OrbitControls(camera, canvas);
+  controls.enableDamping = true; controls.dampingFactor = 0.08;
+  function bg() { scene.background = new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue('--scene').trim() || '#e9eef0'); }
+  bg(); try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', bg); } catch (e) {}
+  new MutationObserver(bg).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f94, 0.85));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.55); sun.position.set(-60, 120, 80); scene.add(sun);
+  const M = (c, o) => new THREE.MeshLambertMaterial(Object.assign({ color: c }, o || {}));
+  const mat = {
+    conc: M(0xb9c3c7), concD: M(0x9aa6ab), slab: M(0xaeb7bb), steel: M(0x5b6670), rail: M(0x30363a), timber: M(0x8a6a45),
+    third: M(0xc8692c), ins: M(0x777777), sig: M(0x1d2a30), red: M(0xd23b2a, { emissive: 0x551008 }), amb: M(0xe5a51d), grn: M(0x2fae5a, { emissive: 0x0d3a1d }),
+    trip: M(0xe0b23a), cbtc: M(0x2f8f55), pipe: M(0xb8352a), blue: M(0x2f64c9, { emissive: 0x16306a }), lamp: M(0xffe9a8, { emissive: 0xffd36a }),
+    cable: M(0x3a4246), white: M(0xf2f4f5), drain: M(0x2b3a48), car: M(0xdfe7ec), carD: M(0x46525a), win: M(0x2a3a44)
+  };
+  const groups = { structure: new THREE.Group(), ribs: new THREE.Group(), legacy: new THREE.Group(), cbtc: new THREE.Group(), safety: new THREE.Group(), serv: new THREE.Group(), train: new THREE.Group() };
+  Object.values(groups).forEach(g => scene.add(g));
+  function box(g, m, sx, sy, sz, x, y, z) { const me = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m); me.position.set(x, y, z); g.add(me); return me; }
+  function inst(g, m, sx, sy, sz, positions) {
+    const me = new THREE.InstancedMesh(new THREE.BoxGeometry(sx, sy, sz), m, positions.length); const o = new THREE.Object3D();
+    positions.forEach((p, i) => { o.position.set(p[0], p[1], p[2]); o.updateMatrix(); me.setMatrixAt(i, o.matrix); }); g.add(me); return me;
+  }
+  function cyl(g, m, r, len, x, y, z) { const me = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 10), m); me.rotation.z = Math.PI / 2; me.position.set(x, y, z); g.add(me); return me; }
+  const S = groups.structure;
+  // x along the track (0..250), y up (top of rail = 0), z across (+ is the near, cut-away side)
+  box(S, mat.concD, L, 0.55, 2 * WI + 1.2, L / 2, -0.725, 0);            // base slab
+  box(S, mat.slab, L, 0.23, 2 * WI, L / 2, -0.335, 0);                    // track concrete
+  box(S, mat.conc, L, 5.6, 0.6, L / 2, 1.8, -WI - 0.3);                   // far wall, full height
+  box(S, mat.conc, 210, 3.0, 0.6, 105, 0.5, WI + 0.3);                    // near wall cut down to 2.0 m
+  box(S, mat.conc, 40, 5.6, 0.6, 230, 1.8, WI + 0.3);                     // near wall full over the closed end
+  box(S, mat.conc, 40, 0.6, 2 * WI + 1.2, 230, 4.3, 0);                   // roof over the closed end
+  box(S, mat.conc, 0.08, 5.6, 2 * WI + 1.2, 250.04, 1.8, 0).material = mat.concD;
+  const colPos = [], ribPos = [];
+  for (let x = 0.76; x < L; x += COL) { colPos.push([x, 1.89, 0]); if (x < 210) ribPos.push([x, 3.83, 0]); }
+  inst(S, mat.steel, 0.25, 4.22, 0.25, colPos);
+  inst(groups.ribs, mat.steel, 0.18, 0.34, 2 * WI, ribPos);
+  // track
+  const T = groups.structure, slp = [];
+  [XC, -XC].forEach(z => {
+    [-0.7175, 0.7175].forEach(dz => box(T, mat.rail, L, 0.17, 0.07, L / 2, -0.085, z + dz));
+    for (let x = 0.3; x < L; x += 0.6) slp.push([x, -0.235, z]);
+  });
+  inst(T, mat.timber, 0.2, 0.13, 2.4, slp);
+  const P = groups.serv, insP = [];
+  [[XC, 1], [-XC, -1]].forEach(([z, s]) => {
+    box(P, mat.third, L, 0.12, 0.09, L / 2, 0.09, z + s * 1.27);
+    for (let x = 1.5; x < L; x += 3) insP.push([x, -0.05, z + s * 1.27]);
+  });
+  inst(P, mat.ins, 0.12, 0.16, 0.12, insP);
+  // drains each side of the column row
+  [-0.38, 0.38].forEach(z => box(P, mat.drain, L, 0.02, 0.15, L / 2, -0.215, z));
+  // cable racks and cables on both outer walls (near wall only up to its cut height)
+  [[-WI, 0, L], [WI, 0, L]].forEach(([zw, a, b]) => {
+    const s = Math.sign(zw);
+    [1.5, 1.8].forEach(y => {
+      box(P, mat.steel, b - a, 0.03, 0.32, (a + b) / 2, y, zw - s * 0.16);
+      [0.07, 0.16, 0.25].forEach(d => cyl(P, mat.cable, 0.035, b - a, (a + b) / 2, y + 0.05, zw - s * d));
+    });
+  });
+  // tunnel lights every 18 m: far wall everywhere, near wall over the closed end
+  const lampP = [];
+  for (let x = 9; x < L; x += 18) { lampP.push([x, 3.2, -WI + 0.08]); if (x > 210) lampP.push([x, 3.2, WI - 0.08]); }
+  inst(P, mat.lamp, 0.6, 0.12, 0.14, lampP);
+  // legacy signalling: track +XC runs toward +x (signal at x = 200, near wall); track -XC toward -x (signal at x = 50, far wall)
+  const G = groups.legacy;
+  function signal(x, zw, faceDir) {
+    const s = Math.sign(zw);
+    box(G, mat.sig, 0.3, 0.75, 0.3, x, 2.4, zw - s * 0.2);
+    [[0.22, mat.red], [0, mat.amb], [-0.22, mat.grn]].forEach(([dy, m]) => { const l = box(G, m, 0.04, 0.14, 0.14, x + faceDir * 0.17, 2.4 + dy, zw - s * 0.2); });
+  }
+  signal(210.5, WI, -1); signal(50, -WI, 1);
+  function trip(x, z) { box(G, mat.trip, 0.06, 0.18, 0.06, x, -0.03, z); box(G, mat.trip, 0.3, 0.04, 0.08, x, 0.064, z); }
+  trip(210.5, XC - 0.86); trip(50, -XC + 0.86);
+  [[210.5, XC], [50, -XC]].forEach(([x, z]) => {
+    [-0.7175, 0.7175].forEach(dz => box(G, mat.red, 0.08, 0.19, 0.1, x, -0.085, z + dz));
+    box(G, mat.sig, 0.5, 0.35, 0.4, x - 1.2, -0.05, z - Math.sign(z) * 1.05);                  // impedance bond, inner side
+  });
+  // CBTC: transponders every 100 m between the rails, an access point, leaky feeders on both walls
+  const C = groups.cbtc;
+  [25, 125, 225].forEach(x => [XC, -XC].forEach(z => box(C, mat.cbtc, 0.5, 0.04, 0.35, x, -0.14, z)));
+  box(C, mat.cbtc, 0.35, 0.25, 0.15, 150, 3.4, -WI + 0.1);
+  cyl(C, mat.cbtc, 0.028, L, L / 2, 3.55, -WI + 0.06);
+  cyl(C, mat.cbtc, 0.028, 40, 230, 3.55, WI - 0.06);
+  // safety: standpipe with hose valves every 61 m, blue light station, distance markers
+  const F = groups.safety;
+  cyl(F, mat.pipe, 0.075, L, L / 2, 1.05, -WI + 0.12);
+  [30.5, 91.5, 152.5, 213.5].forEach(x => box(F, mat.pipe, 0.3, 0.3, 0.25, x, 1.05, -WI + 0.25));
+  box(F, mat.blue, 0.4, 0.55, 0.15, 125, 1.6, -WI + 0.1); box(F, mat.blue, 0.16, 0.16, 0.16, 125, 2.0, -WI + 0.12);
+  function marker(x, txt) {
+    const cv = document.createElement('canvas'); cv.width = 128; cv.height = 64; const g = cv.getContext('2d');
+    g.fillStyle = '#ffffff'; g.fillRect(0, 0, 128, 64); g.fillStyle = '#111'; g.font = 'bold 34px monospace'; g.textAlign = 'center'; g.fillText(txt, 64, 45);
+    const m = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cv) });
+    const me = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.25), m); me.position.set(x, 1.2, -WI + 0.02); F.add(me);
+  }
+  [0, 100, 200].forEach(x => marker(x + 0.4, (x / 1000).toFixed(1)));
+  // train: 4 cars on the +XC track, x 30 to 110
+  const R = groups.train;
+  for (let k = 0; k < 4; k++) {
+    const x0 = 30 + k * 20.3, cx = x0 + 9.95;
+    box(R, mat.car, 19.9, 2.4, 2.845, cx, 2.15, XC);
+    box(R, mat.car, 19.9, 0.25, 2.2, cx, 3.47, XC);
+    box(R, mat.carD, 19.0, 0.65, 2.45, cx, 0.62, XC);
+    [cx - 7.1, cx + 7.1].forEach(tx => box(R, mat.rail, 2.6, 0.55, 2.0, tx, 0.38, XC));
+    for (let w = -8; w <= 8; w += 2) box(R, mat.win, 1.2, 0.75, 2.86, cx + w, 2.35, XC);
+  }
+  // labels
+  const LBL = [
+    ['Steel columns, every 1.52 m', [20.5, 3.4, 0], 'structure'], ['Roof beams', [60, 4.05, 0], 'ribs'], ['Third rail', [22, 0.25, -XC - 1.27], 'serv'],
+    ['Signal (legacy)', [50, 2.95, -WI + 0.2], 'legacy'], ['Trip stop', [50, 0.25, -XC + 0.86], 'legacy'], ['Insulated joints', [51.5, 0.15, -XC - 0.72], 'legacy'],
+    ['CBTC transponder', [25, 0.05, -XC], 'cbtc'], ['Radio access point', [150, 3.75, -WI + 0.1], 'cbtc'], ['Leaky feeder', [40, 3.7, -WI + 0.06], 'cbtc'],
+    ['Cable racks', [14, 2.0, -WI + 0.2], 'serv'], ['Tunnel light, every 18 m', [27, 3.4, -WI + 0.1], 'serv'], ['Standpipe and hose valve', [30.5, 1.35, -WI + 0.25], 'safety'],
+    ['Blue light station', [125, 2.25, -WI + 0.12], 'safety'], ['Distance marker', [100.4, 1.45, -WI + 0.02], 'safety'], ['Drain', [12, -0.15, 0.38], 'serv'], ['Train, 4 cars', [70, 3.95, XC], 'train']
+  ];
+  const labEls = LBL.map(([t]) => { const d = document.createElement('div'); d.className = 'lab'; d.textContent = t; labelsEl.appendChild(d); return d; });
+  const tog = { legacy: 't-legacy', cbtc: 't-cbtc', safety: 't-safety', serv: 't-serv', train: 't-train', ribs: 't-ribs' };
+  function applyToggles() { Object.entries(tog).forEach(([g, id]) => { groups[g].visible = document.getElementById(id).checked; }); }
+  Object.values(tog).concat(['t-labels']).forEach(id => document.getElementById(id).addEventListener('change', applyToggles));
+  applyToggles();
+  const V = {
+    over: [[-10, 13, 19], [32, 1.0, -0.5]], track: [[6, 1.75, -XC], [60, 1.4, -XC]], signal: [[58, 2.5, -0.6], [50, 1.7, -WI + 0.5]],
+    end: [[194, 9, 11], [216, 1.5, 0]], section: [[-14, 2.0, 0], [10, 1.6, 0]]
+  };
+  function go(k) { camera.position.set(...V[k][0]); controls.target.set(...V[k][1]); controls.update(); }
+  ['over', 'track', 'signal', 'end', 'section'].forEach(k => document.getElementById('v-' + k).addEventListener('click', () => go(k)));
+  go('over');
+  const v3 = new THREE.Vector3();
+  function resize() { const w = view.clientWidth, h = view.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+  new ResizeObserver(resize).observe(view); resize();
+  function frame() {
+    controls.update(); renderer.render(scene, camera);
+    const show = document.getElementById('t-labels').checked, w = view.clientWidth, h = view.clientHeight;
+    LBL.forEach(([t, p, g], i) => {
+      const el = labEls[i]; v3.set(p[0], p[1], p[2]).project(camera);
+      const dist = camera.position.distanceTo(new THREE.Vector3(p[0], p[1], p[2]));
+      const on = show && dist < 75 && (g === 'structure' || groups[g].visible) && v3.z < 1 && Math.abs(v3.x) < 1.05 && Math.abs(v3.y) < 1.05;
+      el.hidden = !on; if (on) { el.style.left = ((v3.x + 1) / 2 * w) + 'px'; el.style.top = ((1 - v3.y) / 2 * h) + 'px'; }
+    });
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+</script>
+
+</body></html>
