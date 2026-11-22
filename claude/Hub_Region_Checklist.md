@@ -257,6 +257,11 @@ bridges reproduce the page's facts table from records.
 - [ ] 2.5.4 The station workspace: plan per level, section, 3D rebuilt from the model (three.js; Babylon is the
   alternative with no advantage here); the headless sync deleted; the old 3D page retired. Then CUT.
 
+- [ ] 2.5.6 **The look Ben is aiming for** (Ben, 22 Nov: the 3D artifacts in `_Cincinnati Rail\3D_Artifacts` are "the
+  end-goal of this hub (so keep that in mind for the vision)", and the 3D view should eventually include them). They
+  are the data tier `artifacts_3d` (`configs/hub_paths.json`, read only, doctor reports it). Before 2.5.4 starts:
+  inventory the folder (formats, what each shows), make it the visual reference for the station workspace and the
+  region 3D, and decide which artifacts load directly (GLB, glTF) and which are rebuilt from the model.
 - [ ] 2.5.5 **3D rebuilt from GLBs per section** built server-side once and cached; exaggeration in the vertex
   shader (`y = g + (z − g)·k`); instanced piers, columns and equipment; stencil caps on cutaways; the camera, presets,
   level filter and exports kept from the old page (scrutiny item 8).

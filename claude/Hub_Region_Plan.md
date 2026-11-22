@@ -26,6 +26,9 @@ a test, and a score drawn on the design:
 | Station | halls, passages, flights, lifts, gates, entrances on their levels | a walking network loaded with peak flows, assigned by quickest path with capacity | level of service per element; transfer times; step-free routes and their penalty; decision points; digging index; platform clearing time |
 | Network | services, patterns, missions, headways, eras | timetables built from the patterns; blocking time per section by signalling era | stringlines; minimum against planned headway on each trunk; junction conflicts; fleet; loads and peak load points |
 
+The look it is aiming for is the project's 3D artifacts (`_Cincinnati Rail\3D_Artifacts`, Ben, 22 November: "the
+end-goal of this hub"); the 3D view is to include them in the end.
+
 "Robust and useful" (Ben, 6 November) means: one model, one copy of every rule with its ruling, inputs kept with
 source and date, results derived and cached, every change versioned, every rule tested as an invariant over Ben's
 real data, and the whole thing rebuildable from git plus Ben's export in one command. Every quantity an engineer
