@@ -47,7 +47,7 @@ from typing import Any
 from region.core import fsio, paths
 from region.core.errors import Invalid, NotFound
 
-ORDER = ("registry", "profile_lines", "old_hub")
+ORDER = ("registry", "profile_lines", "old_hub", "ground_layers")
 """The run order: an importer whose records sit on another's comes after it."""
 
 

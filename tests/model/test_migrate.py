@@ -35,7 +35,7 @@ def test_0002_applies_to_empty_and_0001_db(write_root):
     assert _schema(old) == _schema(fresh)
     assert M.applied(old) == [1, 2]
     layers = [r[0] for r in old.execute("SELECT slug FROM layer ORDER BY id")]
-    assert layers == ["main", "import:profiles", "import:registry", "legacy:old_hub"]
+    assert layers == ["main", "import:profiles", "import:registry", "legacy:old_hub", "import:ground"]
     meta = dict(old.execute("SELECT key, value FROM meta").fetchall())
     assert {"db_id", "epoch", "created"} <= set(meta)
     # 0002 refuses to drop 0001 tables that hold rows, and changes nothing

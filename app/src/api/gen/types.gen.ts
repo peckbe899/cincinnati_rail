@@ -301,6 +301,32 @@ export type Diff = {
 };
 
 /**
+ * FocusIn
+ *
+ * How urgent a pane's goal is: 0 for the pane in focus, 1 for an open pane, 5 when the pane closed.
+ */
+export type FocusIn = {
+    /**
+     * Priority
+     */
+    priority: number;
+    /**
+     * Scope
+     */
+    scope: string;
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * View
+     *
+     * a view token
+     */
+    view?: string;
+};
+
+/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -631,6 +657,149 @@ export type LegacyHit = {
 };
 
 /**
+ * LiveSource
+ *
+ * One watched source: an importer's files, a data tier or the old hub's database.
+ */
+export type LiveSource = {
+    /**
+     * At
+     */
+    at?: string | null;
+    /**
+     * Changed
+     */
+    changed?: string | null;
+    /**
+     * Changeset
+     */
+    changeset?: string | null;
+    /**
+     * Kind
+     */
+    kind: 'import' | 'tier';
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Review
+     */
+    review?: number;
+    /**
+     * Run
+     */
+    run?: number | null;
+    /**
+     * Sections
+     */
+    sections?: Array<string>;
+    /**
+     * Source
+     *
+     * import:<importer> or tier:<tier>
+     */
+    source: string;
+    /**
+     * State
+     *
+     * idle, changing, waiting, importing, applied, review, held or error
+     */
+    state: string;
+    /**
+     * Text
+     *
+     * what happened last, in plain words
+     */
+    text: string;
+    /**
+     * Undo
+     *
+     * whether Undo this import is offered (its last import changeset stands)
+     */
+    undo?: boolean;
+    [key: string]: unknown;
+};
+
+/**
+ * LiveStatus
+ */
+export type LiveStatus = {
+    /**
+     * Counts
+     */
+    counts?: {
+        [key: string]: number;
+    };
+    /**
+     * Enabled
+     */
+    enabled: boolean;
+    /**
+     * History
+     */
+    history?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Marks
+     */
+    marks?: Array<PendingMark>;
+    /**
+     * Paused
+     */
+    paused: boolean;
+    /**
+     * Pending
+     *
+     * sources that changed and are not yet taken in (changing, importing, paused)
+     */
+    pending: number;
+    /**
+     * Poll S
+     */
+    poll_s?: number | null;
+    /**
+     * Settle S
+     */
+    settle_s?: number | null;
+    /**
+     * Sources
+     */
+    sources?: Array<LiveSource>;
+    /**
+     * Updated
+     *
+     * when the last change was taken in (ISO 8601 UTC)
+     */
+    updated?: string | null;
+};
+
+/**
+ * LiveSummary
+ *
+ * What the status bar's Sources chip shows.
+ */
+export type LiveSummary = {
+    /**
+     * Paused
+     */
+    paused: boolean;
+    /**
+     * Pending
+     *
+     * sources that changed and are not yet taken in (changing, importing, paused)
+     */
+    pending: number;
+    /**
+     * Updated
+     *
+     * when the last change was taken in (ISO 8601 UTC)
+     */
+    updated?: string | null;
+};
+
+/**
  * Meta
  *
  * Kinds with their schemas, features, importers, job types, layers, the engine hello, the schema version and
@@ -723,6 +892,40 @@ export type PatchOp = {
      * Value
      */
     value?: unknown;
+};
+
+/**
+ * PendingList
+ */
+export type PendingList = {
+    /**
+     * Items
+     */
+    items: Array<PendingMark>;
+};
+
+/**
+ * PendingMark
+ */
+export type PendingMark = {
+    /**
+     * Scope
+     */
+    scope: string;
+    /**
+     * State
+     */
+    state: string;
+    /**
+     * Type
+     *
+     * import, or the job type re-solving the section
+     */
+    type: string;
+    /**
+     * View
+     */
+    view: string;
 };
 
 /**
@@ -2973,6 +3176,227 @@ export type LegacyResponses = {
 };
 
 export type LegacyResponse = LegacyResponses[keyof LegacyResponses];
+
+export type LiveStatusData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/live';
+};
+
+export type LiveStatusResponses = {
+    /**
+     * Successful Response
+     */
+    200: LiveStatus;
+};
+
+export type LiveStatusResponse = LiveStatusResponses[keyof LiveStatusResponses];
+
+export type LiveFocusData = {
+    body: FocusIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/live/focus';
+};
+
+export type LiveFocusErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type LiveFocusError = LiveFocusErrors[keyof LiveFocusErrors];
+
+export type LiveFocusResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type LiveFocusResponse = LiveFocusResponses[keyof LiveFocusResponses];
+
+export type LivePauseData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/live/pause';
+};
+
+export type LivePauseErrors = {
+    /**
+     * a problem (RFC 9457)
+     */
+    409: Problem;
+};
+
+export type LivePauseError = LivePauseErrors[keyof LivePauseErrors];
+
+export type LivePauseResponses = {
+    /**
+     * Successful Response
+     */
+    200: LiveSummary;
+};
+
+export type LivePauseResponse = LivePauseResponses[keyof LivePauseResponses];
+
+export type LivePendingData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/live/pending';
+};
+
+export type LivePendingResponses = {
+    /**
+     * Successful Response
+     */
+    200: PendingList;
+};
+
+export type LivePendingResponse = LivePendingResponses[keyof LivePendingResponses];
+
+export type LiveResumeData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/live/resume';
+};
+
+export type LiveResumeErrors = {
+    /**
+     * a problem (RFC 9457)
+     */
+    409: Problem;
+};
+
+export type LiveResumeError = LiveResumeErrors[keyof LiveResumeErrors];
+
+export type LiveResumeResponses = {
+    /**
+     * Successful Response
+     */
+    200: LiveSummary;
+};
+
+export type LiveResumeResponse = LiveResumeResponses[keyof LiveResumeResponses];
+
+export type LiveApplyData = {
+    body?: never;
+    path: {
+        /**
+         * Source
+         */
+        source: string;
+    };
+    query?: never;
+    url: '/api/v1/live/sources/{source}/apply';
+};
+
+export type LiveApplyErrors = {
+    /**
+     * a problem (RFC 9457)
+     */
+    404: Problem;
+    /**
+     * a problem (RFC 9457)
+     */
+    409: Problem;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type LiveApplyError = LiveApplyErrors[keyof LiveApplyErrors];
+
+export type LiveApplyResponses = {
+    /**
+     * Successful Response
+     */
+    200: LiveSource;
+};
+
+export type LiveApplyResponse = LiveApplyResponses[keyof LiveApplyResponses];
+
+export type LiveCheckData = {
+    body?: never;
+    path: {
+        /**
+         * Source
+         */
+        source: string;
+    };
+    query?: never;
+    url: '/api/v1/live/sources/{source}/check';
+};
+
+export type LiveCheckErrors = {
+    /**
+     * a problem (RFC 9457)
+     */
+    404: Problem;
+    /**
+     * a problem (RFC 9457)
+     */
+    409: Problem;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type LiveCheckError = LiveCheckErrors[keyof LiveCheckErrors];
+
+export type LiveCheckResponses = {
+    /**
+     * Successful Response
+     */
+    200: LiveSource;
+};
+
+export type LiveCheckResponse = LiveCheckResponses[keyof LiveCheckResponses];
+
+export type LiveUndoData = {
+    body?: never;
+    path: {
+        /**
+         * Source
+         */
+        source: string;
+    };
+    query?: never;
+    url: '/api/v1/live/sources/{source}/undo';
+};
+
+export type LiveUndoErrors = {
+    /**
+     * a problem (RFC 9457)
+     */
+    404: Problem;
+    /**
+     * a problem (RFC 9457)
+     */
+    409: Problem;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type LiveUndoError = LiveUndoErrors[keyof LiveUndoErrors];
+
+export type LiveUndoResponses = {
+    /**
+     * Successful Response
+     */
+    200: LiveSource;
+};
+
+export type LiveUndoResponse = LiveUndoResponses[keyof LiveUndoResponses];
 
 export type MetaData = {
     body?: never;

@@ -35,7 +35,8 @@ def upsert(
     auto: bool = False,
 ) -> dict[str, Any]:
     """Create the goal or update it. ``watch``, ``pinned`` and ``expires`` change only when given (``expires=False``
-    means unchanged); a new priority replaces the old one only when the goal is not watched or is more urgent."""
+    means unchanged), and a goal watched for ever keeps no expiry when it is watched again for a while; a new
+    priority replaces the old one only when the goal is not watched or is more urgent."""
     now = now_iso()
     old = get(con, type, scope, view)
     if old is None:
@@ -63,7 +64,13 @@ def upsert(
             new_priority = min(int(old["priority"]), int(priority))
         else:
             new_priority = int(priority)
-        new_expires = old["expires"] if expires is False else expires
+        if expires is False:
+            new_expires = old["expires"]
+        elif watch and old["watch"] and old["expires"] is None and not old["auto"]:
+            # a goal watched for ever (the live hub's background goals) stays so when a pane watches it for a while
+            new_expires = None
+        else:
+            new_expires = expires
         new_pinned = old["pinned"] if pinned is None else int(bool(pinned))
         new_auto = 0 if (watch and not auto) else old["auto"]
         con.execute(
@@ -112,9 +119,19 @@ def watched(con: sqlite3.Connection, *, keys: set[str] | None = None, errors: bo
     return sorted(found.values(), key=lambda g: (g["priority"], g["type"], g["scope"], g["view"]))
 
 
+def pending(con: sqlite3.Connection) -> list[dict[str, Any]]:
+    """Watched, unexpired goals whose answer is being worked on (queued, running, or waiting on an upstream)."""
+    rows = con.execute(
+        "SELECT type, scope, view, state, priority FROM goal WHERE watch = 1 AND (expires IS NULL OR expires > ?) "
+        "AND state IN ('queued', 'running', 'waiting') ORDER BY priority, type, scope, view",
+        (now_s(),),
+    )
+    return [dict(r) for r in rows]
+
+
 def wanting(con: sqlite3.Connection, type: str, key: str) -> list[dict[str, Any]]:
     """Goals of ``type`` whose wanted key is ``key``."""
     return [dict(r) for r in con.execute("SELECT * FROM goal WHERE type = ? AND want_key = ?", (type, key))]
 
 
-__all__ = ["get", "set_state", "upsert", "wanting", "watched"]
+__all__ = ["get", "pending", "set_state", "upsert", "wanting", "watched"]

@@ -115,6 +115,30 @@ matches the baseline rail on 41 of 41 routes within 0.5 mm. Still to confirm: Wi
 Ben's machine.
 
 Increment 2 (next, in order; spec section 11):
+- [x] I2.0 **Always live** (22 Nov; decision 9.31, `region/live`). The server watches every source (each importer's
+  files, every data tier's root, index, manifest and handshake, Ben's live `hub/hub.db` through `PRAGMA
+  data_version`), settles bursts (1.5 s), imports a change from the working tree as one revertible changeset that
+  never overrides Ben (what touches his edits waits in Review), and re-solves only what it touched, the pane in
+  focus first. A Sources chip and pane (Pause live, Undo this import, Apply, Check now), toasts in plain words, a
+  re-solving mark on the sheet. `file:` dependencies invalidate exactly their results (compute-5), list queries by
+  parent invalidate only their parent's goals, a `ground_layer` record follows the 1912 handshake. Budgets as tests
+  (`tests/live`, `app/e2e/live.spec.ts`): a saved line file in the open sheet in 2.4 to 2.5 s (taken in 2.0 to 2.2 s,
+  solved on the server 2.1 to 2.3 s, with the 1.5 s settle), a burst of 50 writes is one import and one solve, one
+  line's change re-solves one section, a re-save or a note edit runs nothing, idle watcher 0.42 % of a CPU, slowest
+  save during a 16-line import 61 ms (big imports commit in parts of 100), an import over Ben's edit waits in Review.
+  Review (22 Nov, `tests/live/test_robust.py`, `test_parts.py`): a file held open (WinError 32) is looked at again
+  and taken in; a half-written, deleted or missing source deletes nothing and the all-clear is said; each file is read
+  once into a copy that is hashed and imported; a part that fails, or a hub stopped between parts, leaves the written
+  parts one changeset with Ben's edits over them in Review; Undo clears the review items its import raised and stays
+  offered after a re-save; pause lets go of `hub.db` and a reconnect is no change; the old hub's own log commits read
+  nothing; a source that never stops moving is acted on after 60 s.
+  Proof on a live hub (22 Nov, a scratch copy of the tree, Playwright on Line 3's sheet): an old-hub station level
+  saved reaches the open sheet in 1.8 to 2.0 s and a line file's station in 2.0 to 2.3 s, in place; 50 writes in 1 s
+  are one applied import per importer and one solve; a re-save runs nothing; a Line 6 change solves Line 6 only; a
+  source change over Ben's scenario edit is a Review item and his value stays; the idle server 0.75 to 0.98 % of a
+  CPU. Fixed: a file saved in the folder above the repo (the 3D artifacts tier's root) or beside the line files no
+  longer shows in the pane, its history, the chip's count or its time; a folder two sources watch is looked at once
+  per round.
 - [ ] I2.1 Close the loop: `ground.profile` from `region.ground`, the railsim adapter (`route.assemble`, `railsim.run`,
   `railsim.attribution`), the run-time band and table on the sheet. Gate: edit a Line 6 PVI, see the run time change
   within 10 s, Line 6 within 1 % of `tests/baseline/runtimes.json`.
@@ -278,6 +302,24 @@ bridges reproduce the page's facts table from records.
 - [ ] 2.7.1 Exporters: KMZ with levels and structures, LandXML, CSV, sheets as PDF/PNG, glTF.
 - [ ] 2.7.2 Performance budgets as tests; the one-command rebuild; byte-identical seeds and goldens.
 - [ ] 2.7.3 The old hub removed; README rewritten; Ben's migration note.
+
+### Usability standards (Ben, 22 Nov: "easy to use, yet very powerful")
+
+A pane or feature counts as done only when it meets these:
+
+- **Edit where you look.** A value is changed where it is shown (the sheet's cells, the station card, the map), not
+  in a separate form.
+- **See the effect at once.** An edit shows its result in the same view within a frame; the server's answer and any
+  import follow by themselves.
+- **Ben's terms.** Names, chainage `k+mmm`, metres NAVD 88 and plain sentences; never an id, a key or a stack trace.
+- **Undo always.** Every change Ben makes or the hub takes in can be undone in one step (Ctrl+Z, Undo this import).
+- **Nothing silent.** What the hub does on its own (an import, a re-solve, a held change) is said in a toast, a mark
+  or the Sources pane.
+- **Nothing lost.** No reload, no lost selection, zoom, scroll or unsaved edit when data changes underneath.
+- **No commands for daily work.** Saving in the old hub, a Deck tie or lane B's handshake reaches the hub without
+  PowerShell; commands are for setup, export and repair.
+- **Parity with the old page before a pane counts as done.** Everything the old page showed and let Ben do, the pane
+  does too.
 
 ## 3. Lane B: the tracks that run alongside
 

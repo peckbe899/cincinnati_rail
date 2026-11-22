@@ -40,6 +40,7 @@ SOURCES = {
     "registry": {"registry": "rules/registry.yaml"},
     "profile_lines": {"lines": "data/profile/lines"},
     "old_hub": {"lines": "data/profile/lines", "seed": "hub/seed"},
+    "ground_layers": {"status_1912": "ground/1912/STATUS.json"},
 }
 """Each importer's sources as repo paths, for taking them from git (the tiers' default roots)."""
 CLEARED = ("region.db", "region.db-wal", "region.db-shm", "seed", "ids", "src", "work", "backups", "report.json")

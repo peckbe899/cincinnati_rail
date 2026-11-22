@@ -53,8 +53,10 @@ describe("plugin registry", () => {
       "map",
       "palette",
       "review",
+      "sources",
     ]);
-    for (const id of ["map", "line-sheet", "inspector", "jobs", "review", "legacy"]) expect(reg.pane(id)).toBeDefined();
+    for (const id of ["map", "line-sheet", "inspector", "jobs", "review", "legacy", "sources"])
+      expect(reg.pane(id)).toBeDefined();
     expect(reg.layers.has("sections")).toBe(true);
     expect(reg.bandList().map((b) => b.id)).toEqual([
       "axes",

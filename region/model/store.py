@@ -620,13 +620,19 @@ class SqliteStore:
         return res
 
     def apply_import(
-        self, run: ImportRun, records: Iterable[dict[str, Any]], *, dry_run: bool, ids: LG.IdLookupImpl | None = None
+        self,
+        run: ImportRun,
+        records: Iterable[dict[str, Any]],
+        *,
+        dry_run: bool,
+        ids: LG.IdLookupImpl | None = None,
+        backup: bool = True,
     ) -> ImportReport:
         """Diff an importer's records against its layer by hash; report, or commit in one transaction. ``ids`` (an
-        ``IdLookupImpl``) is flushed in that transaction."""
+        ``IdLookupImpl``) is flushed in that transaction; ``backup=False`` skips the pre-import backup."""
         from .imports import apply_import
 
-        return apply_import(self, run, records, dry_run=dry_run, ids=ids)
+        return apply_import(self, run, records, dry_run=dry_run, ids=ids, backup=backup)
 
     def import_run(self, run_id: int) -> dict[str, Any]:
         """The stored report of one import run (``/imports/{run}``)."""

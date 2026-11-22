@@ -46,7 +46,7 @@ def test_imports_cli_lists_runs_dry_and_refuses_while_a_hub_runs(hub_var, capsys
     ledgers = copy_ledgers(hub_var / "ids")
     assert main(["imports", "list"]) == 0
     listed = capsys.readouterr().out.splitlines()
-    assert [ln.split("@")[0] for ln in listed] == ["registry", "profile_lines", "old_hub"]
+    assert [ln.split("@")[0] for ln in listed] == ["registry", "profile_lines", "old_hub", "ground_layers"]
     assert main(["imports", "run", "profile_lines", "--dry-run", "--json", "--ledger-dir", str(ledgers)]) == 0
     (dry,) = json.loads(capsys.readouterr().out)
     assert dry["dry_run"] and dry["counts"]["created"] == 1405

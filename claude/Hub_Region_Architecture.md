@@ -261,7 +261,7 @@ Every thing in the design is a versioned record in one store: a section, a profi
 
 - **Data tiers.** Files outside git are tiers in `configs/hub_paths.json`. Records name them as `tier://<tier>/<path>`, never by absolute path.
 - **Missing tiers** show as status chips and as a layer's `available()` reason, never as errors.
-- **Changed sources** produce a dry-run import report, and apply is an explicit step. Examples: a new Sanborn batch, `basin.json`, the line files.
+- **Changed sources** are taken in live (9.31): a settled change makes a dry run, and one that reads cleanly is applied as one revertible import changeset, never over Ben's edits (what touches them waits in the review queue). With live off (`crhub serve --no-live`) a changed source produces a dry-run report at start and apply is an explicit step. Examples: a new Sanborn batch, `basin.json`, the line files.
 - **Versioned base sets.** Each import run records its source sha256s, so every base set is versioned.
 - **The 1912 surface.** When its handshake says done with targets met, the `real_1912` ground layer record becomes available. Making it the base is one record edit.
 - **Recompute after a base change** runs at background priority, with a pending mark per section and an estimate. At today's 5.1 s per 10 km, ground sampling alone for 1,656 km takes about 14 minutes, before any solves.
@@ -271,7 +271,7 @@ Every thing in the design is a versioned record in one store: a section, a profi
 - **Context.** `data/profile/lines/*.json` are Deck-tie output, written with the Windows `fn.split('/')` bug at line 665. Ben's copies can differ from git.
 - **Decision.**
   - Plan geometry has legacy authority until the Deck adapter lands.
-  - The line files are read from git, and each import run records their sha256.
+  - The line files are read from the working tree in live mode (`crhub serve`, 9.31), and the old hub from a backup-API snapshot of Ben's live `hub/hub.db` (its seed when there is no database). Git stays the source for `crhub rebuild` and CI, and for `crhub imports run` unless `--working-tree` is given. Each import run records the sha256 of every file it read, so a run says exactly which bytes it took in.
   - A re-path that moves chainage under Ben's profile becomes a proposal carrying the ported `reframeDoc` result (9.11).
 
 ### 9.28 Writers outside the server, and bulk writes (21 Nov)
@@ -298,6 +298,16 @@ Every thing in the design is a versioned record in one store: a section, a profi
 - **Static layers** are PMTiles from a tile job.
 - **Era filtering** runs on the client.
 - **A Playwright test** runs with every non-local request aborted.
+
+### 9.31 Always live (22 Nov)
+
+- **Context.** Ben: "It should always be live. The issue the previous one had was that it kept running new calculations for every change, and it was very clunky." The old hub re-ran a whole pipeline (two headless browsers, about 143 s) on every save.
+- **Decision.**
+  - **Watch, settle, act.** The server (`region/live`) polls every declared source with `os.scandir` and `stat` (no inotify, no new dependency): each importer's sources, each data tier's root, index, manifest and handshake, and the old hub's `hub/hub.db` (size, time and `PRAGMA data_version` on a read-only connection). A change is acted on once its source has been quiet for 1.5 s (`live.settle_s`), so a burst of writes or a half-written file is one change.
+  - **Import live, never over Ben.** A settled change of an importer's source makes a dry run from the working tree (9.27); a source whose files hash as the last applied run's runs nothing. A clean dry run is applied as one import changeset. Ben's revisions sit in layers above, so the rebase (9.11) merges what touches nothing he changed and every change that touches his edit is a review-queue conflict with the import's proposal; his revision stays on read. Undo this import reverts the changeset, marks the run `reverted` and holds those exact files until they change.
+  - **Recompute only what changed.** A record invalidates the results whose plans read it; a list query filtered by `parent` is invalidated only by a change to a record on that parent, so one line's change re-plans one line's goals. A changed file or tier invalidates exactly the results with a `file:` dependency on it (wanted keys included). Every section in `main` has a background goal (priority 5); the pane in focus raises its own to 0 and an open pane to 1 (`POST /live/focus`), queued jobs with it. Early cutoff stops a chain whose output did not change.
+  - **Ben sees it.** Ephemeral `source`, `live` and `pending` events; a toast in his words; a Sources chip and pane with Pause live and Undo this import.
+- **Consequences.** No command for daily updates. Imports skip the schema pass for records whose hash is unchanged (the 1,405 Metro records diff in about 0.2 s instead of 1.7 s), and live imports take the pre-import backup at most hourly (each is one revertible changeset). Budgets are tests (`tests/live`, `app/e2e/live.spec.ts`).
 
 ## 3. Layout
 
@@ -345,6 +355,9 @@ region/
     profiles/                    kind profile; inputs.py; jobs solve_section, golden_diff; router
     rules/                       kinds rule, ruling, param, era; importer registry
     legacy/                      kinds roadmap_item, camera, view; importer old_hub; authority defaults
+  live/                          (I2.0, 9.31) watch.py sources.py service.py words.py: the source watcher, live imports,
+                                 Pause live and Undo this import; routes in api/live.py
+  ext/terrain/                   kind ground_layer; importer ground_layers (the ground tiers' handshakes)
   analysis/                      railsim adapter (increment 2)
   ground/  rules.py              built, unchanged
   seed/main/  seed/proposals/    seeds (9.24)
@@ -485,6 +498,10 @@ Every read takes `layer`, `year`, `month` and `tl` (timeline). Every write requi
 | GET | `/events/poll?since=` | fallback for SSE | |
 | POST | `/export`, `/backup`, `/client-log` | ops | |
 | GET | `/tiers` | tier status | |
+| GET | `/live`, `/live/pending` | the live hub's sources and state; the sections being imported or re-solved (9.31) | |
+| POST | `/live/pause`, `/live/resume` | Pause live, Resume live | |
+| POST | `/live/sources/{source}/undo`, `/apply`, `/check` | Undo this import; take held files; look now | |
+| POST | `/live/focus` | `{type, scope, view, priority}`: a pane's goal 0 in focus, 1 open, 5 closed | |
 | GET | `/data/{tier}/{path}`, `/assets/*`, `/` | files, app | Range, ETag, gzip (not webp or pmtiles) |
 | GET | `/x/profiles/sections/{id}/input` | SectionInput v0 | |
 | GET | `/x/profiles/routes/{id}/doc` | old alignment doc rebuilt from records | |
@@ -503,6 +520,10 @@ changeset {"seq":18400,"id":"01K…","layer":"import:profiles","by":"import:prof
 job       {"id":"…","type":"profiles.solve_section","scope":"01K…","state":"running","progress":0.4,"msg":"vertical"}
 result    {"key":"…","type":"profiles.solve_section","scope":"01K…","view":"main|-|canon","status":"ok","changed":[[3200,4100]]}
 tier      {"tier":"ground_1912_real","status":"missing|partial|present","detail":"stage contours"}
+source    {"source":"import:old_hub","label":"Old hub","state":"applied","text":"Line 3 updated from the old hub: 2 stations
+           moved, re-solving","changeset":"01K…","review":0,"sections":["01K…"],"toast":true,"undo":true,"live":{…}}
+live      {"paused":false,"pending":0,"updated":"2026-11-22T14:02:00Z"}
+pending   {"items":[{"type":"profiles.solve_section","scope":"01K…","view":"main|-|canon","state":"re-solving"}]}
 resync    {"reason":"pruned|epoch|overflow","seq":18400}
 hello     {"epoch":"…","seq":18400,"engine_build":"…"}
 ```

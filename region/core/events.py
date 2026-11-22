@@ -4,7 +4,8 @@ Each event goes out as SSE: ``id: <seq>``, then ``event: <type>``, then ``data: 
 
 - ``record`` and ``changeset`` are durable: rows of the outbox (table ``event`` in ``region.db``), written in the same
   transaction as the change, replayed from ``Last-Event-ID``.
-- ``job``, ``result``, ``tier`` and ``engine`` are ephemeral: sent once, never stored. After a reconnect the client
+- ``job``, ``result``, ``tier``, ``engine``, ``source``, ``live`` and ``pending`` are ephemeral: sent once, never
+  stored (``source``, ``live`` and ``pending`` come from the live hub, ``region/live``). After a reconnect the client
   re-reads ``/jobs?active=1``. ``engine`` goes out when the engine pool answers (or fails) after streams opened: a
   stream opened before then said ``engine_build: null`` in its hello.
 - ``resync`` tells a client its cursor is no longer valid (events pruned, a new server epoch, a queue overflow): it
@@ -19,7 +20,9 @@ Layers appear as slugs (``"main"``), never as row ids. ``bbox`` is ``[x0, y0, x1
 # No "from __future__ import annotations" here: TypedDict needs NotRequired evaluated to tell required keys apart.
 from typing import Literal, NotRequired, TypedDict
 
-EventType = Literal["record", "changeset", "job", "result", "tier", "engine", "resync", "hello"]
+EventType = Literal[
+    "record", "changeset", "job", "result", "tier", "engine", "source", "live", "pending", "resync", "hello"
+]
 RecordOp = Literal["create", "put", "patch", "delete", "restore"]
 JobState = Literal["queued", "running", "done", "failed", "cancelled"]
 ResultStatus = Literal["ok", "error", "stale"]
@@ -28,7 +31,7 @@ ResyncReason = Literal["pruned", "epoch", "overflow"]
 BBox = list[float]
 
 DURABLE: frozenset[str] = frozenset({"record", "changeset"})
-EPHEMERAL: frozenset[str] = frozenset({"job", "result", "tier", "engine"})
+EPHEMERAL: frozenset[str] = frozenset({"job", "result", "tier", "engine", "source", "live", "pending"})
 CONTROL: frozenset[str] = frozenset({"resync", "hello"})
 BULK_THRESHOLD = 200
 
@@ -110,6 +113,56 @@ class EngineEvent(TypedDict):
     error: str | None
 
 
+class LiveSummary(TypedDict):
+    """The live hub's state for the status bar's Sources chip: paused or not, how many sources wait, and when the
+    last change was taken in (ISO 8601 UTC, ``None`` before the first)."""
+
+    paused: bool
+    pending: int
+    updated: str | None
+
+
+class SourceEvent(TypedDict):
+    """A watched source (an importer's files, a data tier, the old hub's database) changed and the live hub acted on
+    it (``region/live``). ``text`` says what happened in Ben's words ("Line 3 updated from the old hub: 2 stations
+    moved, re-solving"); ``toast`` asks the app to show it; ``undo`` says Undo this import can revert ``changeset``;
+    ``review`` counts the changes that touch Ben's edits and wait in the review queue; ``sections`` the sections the
+    change touched."""
+
+    source: str
+    label: str
+    kind: str
+    state: str
+    text: str
+    at: str | None
+    run: int | None
+    changeset: str | None
+    review: int
+    sections: list[str]
+    toast: bool
+    undo: bool
+    level: str
+    live: LiveSummary
+    changed: NotRequired[str | None]
+    counts: NotRequired[dict[str, int]]
+    watching: NotRequired[list[str]]
+
+
+class PendingMark(TypedDict):
+    """A section being imported (``type`` ``import``) or re-solved (a job type)."""
+
+    type: str
+    scope: str
+    view: str
+    state: str
+
+
+class PendingEvent(TypedDict):
+    """Every pending mark now (sent when the set changes)."""
+
+    items: list[PendingMark]
+
+
 class ResyncEvent(TypedDict):
     """The client's cursor is gone: re-read, then follow from ``seq``."""
 
@@ -133,6 +186,9 @@ EVENT_PAYLOADS: dict[str, type] = {
     "result": ResultEvent,
     "tier": TierEvent,
     "engine": EngineEvent,
+    "source": SourceEvent,
+    "live": LiveSummary,
+    "pending": PendingEvent,
     "resync": ResyncEvent,
     "hello": HelloEvent,
 }
@@ -156,12 +212,16 @@ __all__ = [
     "HelloEvent",
     "JobEvent",
     "JobState",
+    "LiveSummary",
+    "PendingEvent",
+    "PendingMark",
     "RecordEvent",
     "RecordOp",
     "ResultEvent",
     "ResultStatus",
     "ResyncEvent",
     "ResyncReason",
+    "SourceEvent",
     "TierEvent",
     "TierStatus",
     "required_keys",

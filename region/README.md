@@ -203,10 +203,8 @@ git pull
 5. takes in the seeds you pulled (`region/seed`) and prints what changed (a pre-import backup first when that
    changes records). A seed file it cannot read (merge-conflict markers, a file saved in another encoding) is named
    with its path, and serving goes on without that layer;
-6. checks each importer's sources (the old hub's `hub/seed`, the Metro line files, the registry) against the last
-   import it applied. For a changed one it makes a dry run, prints its counts and `crhub imports apply <run>`, and
-   shows a banner: the map and the sheets show the old import until you apply it;
-7. scans the data tiers;
+6. scans the data tiers;
+7. starts the live hub (next section), which brings every import up to its files in the background;
 8. serves at http://127.0.0.1:8766.
 
 It refuses to create an empty database: before `crhub setup` it says `no database at ...: run crhub setup to create
@@ -214,6 +212,65 @@ it` and leaves no `var` folder behind. It shows a banner when `app\dist` is olde
 `npm run build -w app` (or `crhub setup`) clears it. Stop it with Ctrl+C.
 
 `crhub serve --no-browser` serves without opening a browser; `--port` serves on another port.
+
+### Always live: no commands for daily updates
+
+While the hub serves it watches everything it reads from outside its database, and takes a change in as soon as it is
+saved. You do not run anything, in PowerShell or anywhere else:
+
+- **the Metro line files** (`data\profile\lines`, what a Deck tie writes), read as they are on disk;
+- **the old hub**: its live database `hub\hub.db` while you work in it (read through a copy, never the file itself),
+  and its `hub\seed` export;
+- **the rule registry** (`rules\registry.yaml`);
+- **every data tier**: the 1912 ground's `STATUS.json`, the Sanborn tiles' index, the Deck's files, and the others in
+  `configs\hub_paths.json`.
+
+What happens when you save:
+
+1. The hub waits until the files have been quiet for 1.5 s (a Deck tie writing all sixteen line files, or a file
+   still being written, is one change), then reads them.
+2. If they hold the same as last time (a file saved again unchanged), nothing runs.
+3. Otherwise the import is checked first (a dry run). One that cannot be read (a half-written file, a deleted file,
+   a folder that is not there) is reported and nothing changes; it is tried again when the file changes, and a toast
+   says when it can be read again. A file another program holds open (Excel, OneDrive, a virus scanner) is looked
+   at again a few times over the next minute, quietly, and taken in once it is free. Each file is read once into a
+   copy that is both hashed and imported, so what the import records is exactly what it read.
+4. It is then taken in as one import, which Undo this import reverts. **It never overrides your edits:** they sit in
+   your layers above the import, a change that touches nothing you changed comes through, and a change that touches
+   your edit (a station moved under a profile you edited, a field you changed) waits in the **Review** pane while
+   your version stays what you see.
+5. Only what the change touched is solved again: a change to Line 3's file re-solves Line 3 and nothing else, a note
+   re-solves nothing, and the line in the pane you are looking at is solved first.
+
+What you see: a toast in plain words (`Line 3 updated from the old hub: 2 stations moved, re-solving`, `1912 ground:
+stage contours to surface, ready to use`), the open panes updating in place (your selection, zoom and unsaved edits
+stay), a `re-solving…` mark on the line sheet while its line is being solved, and the **Sources chip** in the status
+bar: `live`, `live: 2 pending` while changes are being taken in, `live: paused`, and when the last change came in.
+
+**The Sources pane** (click the chip, or Ctrl+K and `Show the sources`) lists each source, its state, when it last
+changed and what that change did, and the last ten changes. Its buttons:
+
+- **Pause live** stops taking changes in (the hub keeps watching, and the chip counts what waits); **Resume live**
+  takes in everything that changed meanwhile. The pause is kept across a restart of the hub, and serve says so.
+  While paused the hub holds no handle on `hub\hub.db`, so the old hub can replace or delete it.
+- **Undo this import** (also on the toast) reverts that source's last import as one change, and closes the Review
+  items that import raised (they were about changes that are gone now). It stays offered until a newer import from
+  the same source replaces it, even after a re-save or a file that could not be read. The same files are then
+  held: they are not taken in again until they change, and **Apply** takes them in anyway.
+- **Check now** looks at a source at once.
+
+A big import (a Deck tie) is written in parts so your edits never wait long. If the hub is stopped between two
+parts (the window closed, the machine shut down), the next import closes what was written as one change you can
+undo, puts the changes that touch your edits in Review, and writes the rest. The old hub's own bookkeeping (its
+pipeline log) changes `hub.db` without changing any document: the hub sees that and reads nothing. A file saved in a
+folder the hub only keeps an eye on (the project folder above the repo, which holds `3D_Artifacts`, or `data\profile`
+beside the line files) is not a change: the chip, the pane and its history stay as they were, unless the save moves
+that tier's status or something a result reads.
+
+`crhub serve --no-live` (or `"live": {"enabled": false}` in `configs\local.json`) serves without watching: serve then
+reports changed sources at start as dry runs, to apply with `crhub imports apply <run>`. Other settings under `"live"`
+in `configs\local.json`: `settle_s` (1.5), `poll_s` (0.25) and `old_hub_db` (`hub/hub.db`; null to stop watching the
+old hub's database). `crhub rebuild` and CI still read the line files and the old hub's seed from git.
 
 ## Commands
 
@@ -314,7 +371,8 @@ before you move to another machine, or after a large pull.
 ## Where things live
 
 - **`var`**, the hub's own folder: `region.db` (the design), `cache.db` (results that can always be rebuilt),
-  `cache\blobs`, `logs` (one file per day, kept 30 days) and `backups`.
+  `cache\blobs`, `logs` (one file per day, kept 30 days), `backups`, and `live\state.json` (whether live is paused,
+  and the imports you undid).
   - On Windows it is `%LOCALAPPDATA%\CincinnatiRail\hub`, not the repo under Documents, because OneDrive often syncs
     Documents and sync clients corrupt SQLite databases. On Linux it is the repo's `var` folder.
   - To move it, set `"var"` in `configs/local.json`, or the `CRHUB_VAR` environment variable for one session.
@@ -326,7 +384,8 @@ before you move to another machine, or after a large pull.
   ground, the 2026 ground, the Sanborn tiles, the Deck's files, the old hub's seed and the Metro line files. Each is
   present, partial or missing. A missing or partial tier shows as a status chip and as the reason a map layer is
   unavailable; only a missing required tier (the old hub's seed, the line files) makes doctor fail. The 1912 surface
-  stays partial until `ground/1912/STATUS.json` says `"done": true`.
+  stays partial until `ground/1912/STATUS.json` says `"done": true`; the moment it does, the live hub turns the
+  `real_1912` ground layer record available and tells you.
 
 ## The old hub and the new hub side by side
 
@@ -339,10 +398,10 @@ before you move to another machine, or after a large pull.
 | Pages | Deck, Profiles, Station 3D, Chronology | the map, the line sheet, the inspector, jobs, the review queue |
 
 - **Nothing in the old hub changes.** It keeps its database, its pages, its tests and its port.
-- **The new hub reads the old one's design from git, never from its live database.** The `legacy:old_hub` layer is
-  built from `hub/seed`. So: Export in the old hub (and commit). At its next start the new hub sees that `hub/seed`
-  changed, makes a dry run of the `old_hub` import, prints its counts and `crhub imports apply <run>`, and shows a
-  banner. Run that command (it can run beside the hub), and the new hub shows the change.
+- **The new hub follows the old one live.** While both run, a save in the old hub reaches the new hub within a few
+  seconds: the new hub reads `hub\hub.db` through a copy made with SQLite's backup API (never the live file, and it
+  never writes it), and shows a toast such as `Line 3 updated from the old hub: 2 stations moved, re-solving`. Without
+  `hub\hub.db` (a fresh clone) it reads `hub/seed`. Export in the old hub as before, so git has your changes too.
 - **Who owns what.** Each kind of record has an `authority` record saying which hub owns it (plan geometry stays
   with the old hub until the Deck adapter lands). While the old hub owns a kind, the new hub refuses edits to it on
   `main`, and says so. Scenarios stay editable, so you can try designs in the new hub

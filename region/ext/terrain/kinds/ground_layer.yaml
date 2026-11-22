@@ -1,0 +1,67 @@
+# A ground layer: one ground surface the hub can sample, and whether it can be used yet.
+kind: ground_layer
+version: 1
+title: Ground layer
+description: >-
+  A ground surface (9.15): its vertical datum, units and the transform it came in by, and whether it can be used
+  now. Written by ground_layers@1 from each ground tier's handshake (configs/hub_paths.json): available turns true
+  when the handshake says done (ground/1912/STATUS.json for the real 1912 surface), and stage is what the
+  handshake reports meanwhile (contours, surface). Making a layer the base is one record edit in main (9.26).
+geometry: none
+columns:
+  name: /title
+merge:
+  unit: field
+  rebase: auto
+legacy: [ground_layer]
+seeded: false
+schema:
+  type: object
+  additionalProperties: false
+  required: [key, title, tier, available, vdatum, units]
+  properties:
+    key:
+      description: The layer's key (real_1912), the value region.ground's compositor names its source by.
+      type: string
+      minLength: 1
+    title:
+      type: string
+    tier:
+      description: The data tier that holds the surface (tier://<tier>/).
+      type: string
+    available:
+      description: Whether the surface can be sampled now (its handshake says done).
+      type: boolean
+    stage:
+      description: The stage the handshake reports (contours, surface), or null.
+      type: [string, "null"]
+    blocked_on:
+      type: [string, "null"]
+    updated:
+      description: When lane B last wrote the handshake (ISO 8601, as the handshake says).
+      type: [string, "null"]
+    commit:
+      description: The lane B commit the handshake names, when it names one.
+      type: [string, "null"]
+    vdatum:
+      description: The vertical datum of the surface's levels (9.15).
+      type: string
+      x-vocab: vertical_datums
+    units:
+      description: The units the surface's cells hold (dm, m).
+      type: string
+    transform:
+      description: How the surface came into NAVD88 metres, or null when it is native.
+      type: [string, "null"]
+  examples:
+    - key: real_1912
+      title: 1912 ground (real timeline)
+      tier: ground_1912_real
+      available: false
+      stage: contours
+      blocked_on: null
+      updated: "2026-11-06T05:35:34+00:00"
+      commit: null
+      vdatum: navd88_m
+      units: dm
+      transform: 1912 city datum, fitted offset to NAVD88 (report/fit_report.json)

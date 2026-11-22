@@ -173,11 +173,24 @@ function StatusBar({ host }: { host: AppHost }) {
   const sorted = [...items.values()].sort((a, b) => (a.order ?? 50) - (b.order ?? 50));
   return (
     <footer className="statusbar" data-testid="statusbar">
-      {sorted.map((i) => (
-        <span key={i.id} className={`status-item ${i.level ?? "info"}`} title={i.title} data-status={i.id}>
-          {i.text}
-        </span>
-      ))}
+      {sorted.map((i) =>
+        i.command ? (
+          <button
+            type="button"
+            key={i.id}
+            className={`status-item status-button ${i.level ?? "info"}`}
+            title={i.title}
+            data-status={i.id}
+            onClick={() => void host.runCommand(i.command as string)}
+          >
+            {i.text}
+          </button>
+        ) : (
+          <span key={i.id} className={`status-item ${i.level ?? "info"}`} title={i.title} data-status={i.id}>
+            {i.text}
+          </span>
+        ),
+      )}
       <span
         className={`status-item ${engine === "unavailable" ? "warn" : "info"}`}
         title={host.engine.reason() ?? ""}

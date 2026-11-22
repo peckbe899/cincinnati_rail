@@ -2,7 +2,9 @@
 
 Imports diff by hash outside the write lock, then commit in one short transaction (9.28): the diff reads through a
 reader connection, and each op carries the If-Match it was planned against, so a write that lands in between makes the
-commit stale and the diff is taken again (three tries).
+commit stale and the diff is taken again (three tries). An import of more than 200 changes commits in parts of
+``CHUNK`` records, each its own short transaction under one changeset id; the last part writes the changeset row, its
+one summary event and the rebase, so a save that arrives meanwhile waits for one part only.
 
 - A record whose content hash equals what resolves on the layer's chain is ``unchanged``; a new one is ``created``;
   another is ``updated``. A record on the layer that the run no longer yields becomes an import tombstone
@@ -20,24 +22,35 @@ becomes a ``dangling_ref`` conflict instead of blocking the import.
 from __future__ import annotations
 
 import json
+import logging
 from collections import Counter
 from collections.abc import Iterable
+from functools import partial
 from typing import TYPE_CHECKING, Any
 
 from region.core import ids as core_ids
 from region.core.errors import HubError, Invalid, PreconditionFailed
+from region.core.events import BULK_THRESHOLD
 from region.core.protocols import ImportReport, ImportRun, etag
 from region.core.view import View
 
 from . import layers as L
 from .db import now, run_in_transaction
-from .records import SELECT, changed_fields, content, dumps, rev_of
+from .records import SELECT, changed_fields, content, content_hash, dumps, rev_of
 
 if TYPE_CHECKING:
     from .legacy import IdLookupImpl
     from .store import SqliteStore
 
+log = logging.getLogger("region.model")
+
 ATTEMPTS = 3
+STARTED = now()
+"""When this process loaded the module: a run still ``running`` from before it was cut off (the hub stopped or
+crashed mid-import), never one of this process's own."""
+CHUNK = 100
+"""Records per transaction of an import of more than ``BULK_THRESHOLD`` (200) changes: a part holds the writer for a
+few tens of milliseconds, so a save of Ben's that arrives during a big import waits for one part, not the whole."""
 
 
 def _normalize(records: Iterable[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
@@ -67,6 +80,33 @@ def _normalize(records: Iterable[dict[str, Any]]) -> tuple[list[dict[str, Any]],
     return out, errors
 
 
+def _unchanged_fast(store: SqliteStore, con: Any, chain: list[L.Layer], r: dict[str, Any]) -> bool:
+    """Whether an incoming record holds exactly the content that resolves on the chain, found by hash alone.
+
+    The full path validates every record against its kind's schema before hashing it, which costs about 1 ms a
+    record (1.7 s for the 1,405 records of the Metro line files). A record whose raw body, at the kind's current
+    version and with WKT or no geometry, hashes to the stored hash holds the stored bytes, which were validated when
+    they were written, so it is ``unchanged`` without the schema pass. Anything else (another version, a geometry
+    to normalise, a hash that differs, a tombstone) takes the full path."""
+    kind = store.kinds.get(r["kind"]) if hasattr(store.kinds, "get") else None
+    if kind is None:
+        return False
+    body = r["body"]
+    data, geom = body.get("data"), body.get("geom")
+    if body.get("kv", kind.version) != kind.version or not isinstance(data, dict):
+        return False
+    if geom is not None and not isinstance(geom, str):
+        return False
+    cur = L.resolve(con, chain, r["id"])
+    if cur is None or cur.deleted or cur.kind != kind.name:
+        return False
+    try:
+        h = content_hash(r["id"], kind.name, kind.version, geom, data)
+    except Invalid:
+        return False
+    return h == cur.hash
+
+
 def _plan(
     store: SqliteStore, con: Any, layer: L.Layer, chain: list[L.Layer], incoming: list[dict[str, Any]]
 ) -> tuple[list[Any], list[dict[str, Any]], dict[str, int], list[dict[str, Any]]]:
@@ -78,6 +118,9 @@ def _plan(
     unchanged: Counter[str] = Counter()
     slugs = L.load(con).slugs
     for r in incoming:
+        if _unchanged_fast(store, con, chain, r):
+            unchanged[r["kind"]] += 1
+            continue
         try:
             kind = store.kinds[r["kind"]]
             if not core_ids.is_ulid(r["id"]):
@@ -144,9 +187,12 @@ def apply_import(
     *,
     dry_run: bool,
     ids: IdLookupImpl | None = None,
+    backup: bool = True,
 ) -> ImportReport:
-    """See the module doc. ``ids``, when given, is flushed into the legacy index in the import's transaction."""
-    from .changesets import Txn
+    """See the module doc. ``ids``, when given, is flushed into the legacy index in the import's transaction.
+    ``backup=False`` skips the ``pre-import`` backup (the live importer takes one at most hourly: each of its runs is
+    one revertible changeset)."""
+    from .changesets import Part, Txn
     from .merge import rebase
 
     layers = L.load(store._reader())
@@ -191,6 +237,8 @@ def apply_import(
         raise Invalid(f"import {run.importer}: {len(errors)} record(s) refused: {errors[0]['message']}", errors=errors)
 
     view = View(layer=layer.slug)
+    if not dry_run:
+        recover_parts(store, layer.slug)
     for attempt in range(ATTEMPTS):
         con = store._reader()
         chain = L.load(con).chain(layer.slug)
@@ -234,8 +282,10 @@ def apply_import(
             finish("unchanged")
             return report
 
-        def commit(c: Any, ops: list[Any] = ops) -> tuple[Any, Any, Any]:
-            txn = Txn(
+        def txn(c: Any, part: Any = None) -> Any:
+            # a part is checked with the whole import before the first part is written (refs may point into a later
+            # part), so it is written without checking again
+            return Txn(
                 store,
                 c,
                 view,
@@ -244,23 +294,72 @@ def apply_import(
                 kind="import",
                 import_run=run.id,
                 on_delete=False,
+                part=part,
+                validators=part is None,
+                dangling="refuse" if part is None else "list",
             )
-            res = txn.run(ops)
+
+        def commit(c: Any, ops: list[Any] = ops, part: Any = None, before: frozenset[str] = frozenset()) -> Any:
+            t = txn(c, part)
+            res = t.run(ops)
             written = ids.flush_into(c) if ids is not None else {}
-            changed = {p.id for p in txn.written()}
+            changed = set(before) | {p.id for p in t.written()}
             reb = rebase(store, c, lower=layer.slug, changed=changed, import_run=run.id, by="rebase")
             return res, written, reb
 
-        if attempt == 0:
+        if attempt == 0 and backup:
             store.pre_import_backup()  # section 9: an import that changes records is backed up first
+        # A big import (a Deck tie rewriting every line file) is committed in parts of CHUNK records, each its own
+        # short transaction, so a save of Ben's waits for one part rather than the whole import (9.28). The parts
+        # share one changeset id; the last writes the changeset row, its one summary event and the rebase.
+        part = Part() if len(ops) > BULK_THRESHOLD else None
+        done: set[str] = set()
         try:
-            res, written, reb = store._writer.run(commit)
+            if part is not None:
+
+                def check_all(c: Any, ops: list[Any] = ops) -> None:
+                    txn(c).plan(ops)
+
+                run_in_transaction(store._reader(), check_all, begin="BEGIN")
+                # the run names its changeset before any part is written, so parts left by a hub that stopped
+                # mid-import are found and closed by the next import of the layer (recover_parts)
+                store._writer.run(
+                    lambda c, cs=part.id: c.execute("UPDATE import_run SET changeset = ? WHERE id = ?", (cs, run.id))
+                )
+            if part is None:
+                res, written, reb = store._writer.run(commit)
+            else:
+                for i in range(0, len(ops) - CHUNK, CHUNK):
+
+                    def one(
+                        c: Any, chunk: list[Any] = ops[i : i + CHUNK], part: Any = part, first: bool = i == 0
+                    ) -> tuple[set[str], Any]:
+                        t = txn(c, part)
+                        t.run(chunk)
+                        # the ids minted by this run go into the legacy index with the first part, so a part
+                        # written before a stop keeps its ids when the import runs again
+                        flushed = ids.flush_into(c) if (first and ids is not None) else None
+                        return {p.id for p in t.written()}, flushed
+
+                    got, flushed = store._writer.run(one)
+                    done |= got
+                    if flushed is not None and ids is not None:
+                        ids.write_ledger(flushed)
+                part.last = True
+                last = ops[len(ops) - ((len(ops) - 1) % CHUNK + 1) :]
+                res, written, reb = store._writer.run(partial(commit, ops=last, part=part, before=frozenset(done)))
         except PreconditionFailed:
+            if part is not None and part.count:
+                report.changeset = _close_part(store, txn, part, done, layer.slug, run.id)
+                finish("failed")
+                raise
             if attempt == ATTEMPTS - 1:
                 finish("failed")
                 raise
             continue
         except HubError:
+            if part is not None and part.count:
+                report.changeset = _close_part(store, txn, part, done, layer.slug, run.id)
             finish("failed")
             raise
         if ids is not None:
@@ -274,6 +373,100 @@ def apply_import(
         store._notify(res.seq)
         return report
     raise AssertionError("unreachable")
+
+
+def _close_part(store: SqliteStore, txn: Any, part: Any, done: set[str], layer: str, run_id: int | None) -> str | None:
+    """Write the changeset row and summary event of the parts already committed (a later part failed), so what was
+    written is one listed changeset that Undo can revert, and rebase Ben's revisions over the records those parts
+    changed: a change that touches his edit is a review item, as it is when the whole import lands. Returns the
+    changeset id, or ``None`` when it could not be closed."""
+    from .merge import rebase
+
+    part.last = True
+
+    def fn(c: Any) -> Any:
+        res = txn(c, part).run([])
+        if done:
+            rebase(store, c, lower=layer, changed=set(done), import_run=run_id, by="rebase")
+        return res
+
+    try:
+        res = store._writer.run(fn)
+    except Exception:  # the import failed already; its report says so
+        log.exception("closing the parts of import run %s failed", run_id)
+        return None
+    store._notify(res.seq)
+    return str(part.id)
+
+
+def recover_parts(store: SqliteStore, layer: str) -> list[str]:
+    """Close the parts of imports into ``layer`` that a hub stopped in the middle of (a killed process, a power
+    cut): the run names its changeset before its first part is written (``apply_import``), so its revisions are
+    found by that id. Each becomes one listed changeset with its summary event, Ben's revisions over its records are
+    rebased (a change that touches his edit is a review item), and the run is marked failed. The next import of
+    the layer then writes the rest. Returns the changeset ids closed."""
+    from .changesets import Part, Txn
+
+    con = store._reader()
+    lay = L.load(con).get(layer)
+    rows = con.execute(
+        "SELECT r.id, r.importer, r.changeset FROM import_run r WHERE r.layer = ? AND r.dry_run = 0 "
+        "AND r.state = 'running' AND r.changeset IS NOT NULL AND r.started < ? "
+        "AND NOT EXISTS (SELECT 1 FROM changeset c WHERE c.id = r.changeset)",
+        (lay.id, STARTED),
+    ).fetchall()
+    closed: list[str] = []
+    seqs: list[int | None] = []
+    for run_id, importer, cs in rows:
+        written = con.execute(
+            "SELECT h.id, json_extract(h.row, '$.kind') FROM rec_hist h WHERE h.layer = ? AND h.changeset = ?",
+            (lay.id, cs),
+        ).fetchall()
+        if written:
+            part = Part(id=cs, count=len(written), kinds=Counter(str(k) for _i, k in written), last=True)
+            ids_ = {str(i) for i, _k in written}
+
+            def fn(
+                c: Any, part: Any = part, ids_: set[str] = ids_, run_id: int = run_id, name: str = f"{importer}"
+            ) -> Any:
+                from .merge import rebase
+
+                res = Txn(
+                    store,
+                    c,
+                    View(layer=layer),
+                    by=f"import:{name}",
+                    message=f"import {name} (cut off)",
+                    kind="import",
+                    import_run=run_id,
+                    on_delete=False,
+                    part=part,
+                    validators=False,
+                    dangling="list",
+                ).run([])
+                rebase(store, c, lower=layer, changed=ids_, import_run=run_id, by="rebase")
+                return res
+
+            seqs.append(store._writer.run(fn).seq)
+            closed.append(str(cs))
+
+        def mark(c: Any, run_id: int = run_id, cs: str = cs, n: int = len(written)) -> None:
+            c.execute(
+                "UPDATE import_run SET state = 'failed', finished = ?, report = ? WHERE id = ?",
+                (now(), dumps({"interrupted": {"changeset": cs if n else None, "written": n}}), run_id),
+            )
+
+        store._writer.run(mark)
+        log.warning(
+            "import run %s (%s) was cut off; its %d written record(s) are changeset %s",
+            run_id,
+            importer,
+            len(written),
+            cs,
+        )
+    for seq in seqs:
+        store._notify(seq)
+    return closed
 
 
 def _report_json(r: ImportReport) -> dict[str, Any]:
@@ -323,4 +516,27 @@ def report_of(store: SqliteStore, run_id: int) -> dict[str, Any]:
     }
 
 
-__all__ = ["apply_import", "report_of"]
+def mark_reverted(store: SqliteStore, run_id: int, by: str) -> None:
+    """Record that an applied run's changeset was undone (``state = 'reverted'``): ``last_applied`` then skips it, so
+    the importer's sources count as changed since the run before it, and the live importer holds those sources
+    until they change again (``region/live``). The review items that run raised are about changes that are gone now,
+    so the open ones are dismissed (a stop it moved under Ben's profile is back where his profile was drawn)."""
+
+    def fn(con: Any) -> None:
+        row = con.execute("SELECT report FROM import_run WHERE id = ?", (run_id,)).fetchone()
+        rep = json.loads(row[0]) if row and row[0] else {}
+        rep["reverted"] = {"by": by, "at": now()}
+        con.execute(
+            "UPDATE import_run SET state = 'reverted', report = ? WHERE id = ? AND state = 'applied'",
+            (dumps(rep), run_id),
+        )
+        con.execute(
+            "UPDATE conflict SET state = 'dismissed', resolution = 'no longer stale', resolved_by = ? "
+            "WHERE import_run = ? AND state = 'open'",
+            (by, run_id),
+        )
+
+    store._writer.run(fn)
+
+
+__all__ = ["apply_import", "mark_reverted", "recover_parts", "report_of"]

@@ -53,6 +53,10 @@ export interface PaneContext {
   setTitle(title: string): void;
   /** Called when the pane is resized (dockview layout changes). */
   onResize(fn: () => void): Disposable;
+  /** Whether the pane is the one in focus (the dock's active panel). */
+  isActive?(): boolean;
+  /** Called when the pane gains or loses the focus: a pane in focus asks for its results first (priority 0). */
+  onActive?(fn: (active: boolean) => void): Disposable;
 }
 
 export interface MountedPane {
@@ -252,6 +256,8 @@ export interface StatusItem {
   level?: "info" | "warn" | "error";
   title?: string;
   order?: number;
+  /** A command the item runs when clicked (the Sources chip opens the sources pane). */
+  command?: string;
 }
 
 /** What a plugin and a pane may use. */

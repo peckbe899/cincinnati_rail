@@ -18,6 +18,7 @@ import type { SectionInput, VerticalRail } from "@cr/engine/contract";
 import type { JsonPatch, Rec } from "../../api/types.ts";
 import { layerPhrase } from "../../core/describe.ts";
 import { bodyOf } from "../../core/drafts.ts";
+import { liveBoard } from "../../core/live.ts";
 import { shortId } from "../../core/names.ts";
 import type {
   BandData,
@@ -136,6 +137,10 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   solveInfo.dataset.testid = "solve-info";
   const serverInfo = Object.assign(document.createElement("span"), { className: "muted" });
   serverInfo.dataset.testid = "server-info";
+  // The live hub's mark while this section is being imported or re-solved (region/live)
+  const pendingMark = Object.assign(document.createElement("span"), { className: "pending-mark" });
+  pendingMark.dataset.testid = "pending";
+  pendingMark.hidden = true;
   const discard = Object.assign(document.createElement("button"), {
     type: "button",
     textContent: "Discard",
@@ -144,7 +149,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   });
   discard.dataset.testid = "sheet-discard";
   const fit = Object.assign(document.createElement("button"), { type: "button", textContent: "Fit" });
-  bar.append(title, profileInfo, solveInfo, serverInfo, discard, fit);
+  bar.append(title, profileInfo, solveInfo, serverInfo, pendingMark, discard, fit);
   const notice = Object.assign(document.createElement("div"), { className: "sheet-notice" });
   notice.dataset.testid = "sheet-notice";
   notice.setAttribute("role", "status");
@@ -205,6 +210,24 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   let again = false;
   let generation = 0;
   let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+  // The hub keeps this pane's goal fresh (watch_s) at priority 0 while the pane has the focus and 1 while it is open;
+  // a section the sheet leaves goes back to the background (5). The watch is renewed while the pane is open.
+  const WATCH_S = 600;
+  let focused: { sectionId: string; token: string } | null = null;
+  let renewTimer: ReturnType<typeof setInterval> | null = null;
+  const priority = () => ((ctx.isActive?.() ?? true) ? 0 : 1);
+  const release = () => {
+    if (focused) void host.api.focus(SOLVE_JOB, focused.sectionId, focused.token, 5);
+    focused = null;
+  };
+  const showPending = () => {
+    const what = target ? liveBoard.pendingFor(target.sectionId, viewToken(view)) : null;
+    pendingMark.hidden = !what;
+    const text = what ? `${what}…` : "";
+    if (pendingMark.textContent !== text) pendingMark.textContent = text;
+    pendingMark.title =
+      what === "importing" ? "A change to this line's sources is being taken in" : "The hub is solving this line again";
+  };
   const bands = () => host.registry.bandList();
   const canEdit = () => editable === true && !!target?.profile;
   /** The read-only reason in Ben's terms: main refuses a kind the old hub owns, named by the line. */
@@ -352,7 +375,10 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     const p = target.profile;
     asked = p ? `${p.layer}:${p.version}` : "";
     try {
-      const r = await host.api.compute(SOLVE_JOB, target.sectionId, viewToken(view), 1);
+      const token = viewToken(view);
+      if (focused && (focused.sectionId !== target.sectionId || focused.token !== token)) release();
+      focused = { sectionId: target.sectionId, token };
+      const r = await host.api.compute(SOLVE_JOB, target.sectionId, token, priority(), WATCH_S);
       if (gen === generation && r.key && (r.state === "hit" || r.state === "ok" || r.state === "done"))
         void loadServer(r.key);
     } catch {
@@ -477,6 +503,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       frame = frameFor(fr, inp);
       sectionName = name;
       title.textContent = name;
+      showPending();
       ctx.setTitle(name);
       editable = editMessage(ed);
       timeNote = await loadTimeNote(sectionId);
@@ -1339,6 +1366,11 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       if (ev.data.status === "ok") void loadServer(ev.data.key);
     } else if (ev.type === "resync") {
       void load();
+    } else if (target && ev.type === "source" && (ev.data.sections ?? []).includes(target.sectionId)) {
+      // a change the live hub took in touched this line: read it now rather than after the record events' pause
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = null;
+      void refreshInput();
     } else if (target && ev.type === "record" && INPUT_KINDS.has(ev.data.kind)) {
       scheduleRefresh();
     } else if (target && ev.type === "changeset" && Object.keys(ev.data.kinds ?? {}).some((k) => INPUT_KINDS.has(k))) {
@@ -1355,6 +1387,16 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     }
   });
   const unsubEngine = host.engine.onChange(() => void solve());
+  const unsubLive = liveBoard.subscribe(showPending);
+  const active = ctx.onActive?.((on) => {
+    if (focused) void host.api.focus(SOLVE_JOB, focused.sectionId, focused.token, on ? 0 : 1);
+  });
+  renewTimer = setInterval(
+    () => {
+      if (focused && target) void requestSolve();
+    },
+    (WATCH_S / 2) * 1000,
+  );
 
   void load().then(() => {
     const sel = host.store.getState().sel;
@@ -1375,6 +1417,10 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       unsubNames();
       unsubEvents();
       unsubEngine();
+      unsubLive();
+      active?.dispose();
+      if (renewTimer) clearInterval(renewTimer);
+      release();
     },
     serialize: () => ({ range, section: shownSection }),
   };

@@ -14,7 +14,14 @@
 //   readable body the client polls /events/poll?since= instead.
 
 import { type SseMessage, SseParser } from "./sse.ts";
-import { DURABLE_EVENTS, type EngineEvent, type HelloEvent, type HubEvent, type ResyncEvent } from "./types.ts";
+import {
+  DURABLE_EVENTS,
+  type EngineEvent,
+  EPHEMERAL_EVENTS,
+  type HelloEvent,
+  type HubEvent,
+  type ResyncEvent,
+} from "./types.ts";
 
 export type FeedState = "idle" | "connecting" | "open" | "closed";
 
@@ -288,7 +295,7 @@ export class EventClient {
       this.emit({ type: "event", event: { type: "engine", seq: null, data: e } });
       return;
     }
-    if (type === "job" || type === "result" || type === "tier") {
+    if (EPHEMERAL_EVENTS.has(type)) {
       this.emit({ type: "event", event: { type, seq: null, data } as HubEvent });
     }
   }

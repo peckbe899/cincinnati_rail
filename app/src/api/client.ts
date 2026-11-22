@@ -12,11 +12,14 @@ import type {
   Job,
   JsonPatch,
   LayerMeta,
+  LiveStatus,
+  LiveSummary,
   Meta,
   Problem,
   Rec,
   ResultArray,
   ResultMeta,
+  SourceEvent,
   TierStatus,
   WriteResult,
 } from "./types.ts";
@@ -242,17 +245,17 @@ export class Api {
 
   // ------------------------------------------------------------------------------------------------ jobs, results
 
+  /** Plan a job now; with watchS the hub also keeps the goal fresh that long (it re-solves after an import). */
   async compute(
     type: string,
     scope: string,
     view: string,
     priority = 0,
+    watchS?: number,
   ): Promise<{ key: string; state: string; job: string | null }> {
-    return (
-      await this.send<{ key: string; state: string; job: string | null }>("POST", "/compute", {
-        json: { type, scope, view, priority },
-      })
-    ).data;
+    const json: Record<string, unknown> = { type, scope, view, priority };
+    if (watchS !== undefined) json.watch_s = watchS;
+    return (await this.send<{ key: string; state: string; job: string | null }>("POST", "/compute", { json })).data;
   }
 
   /** The latest result key for a goal, or null. */
@@ -288,6 +291,31 @@ export class Api {
 
   async cancelJob(id: string): Promise<void> {
     await this.send("POST", `/jobs/${encodeURIComponent(id)}/cancel`);
+  }
+
+  // ---------------------------------------------------------------------------------------------------- live hub
+
+  /** The live hub's sources and state (GET /live); enabled false when the hub serves with --no-live. */
+  live(): Promise<LiveStatus> {
+    return this.get("/live");
+  }
+
+  async livePause(on: boolean): Promise<LiveSummary> {
+    return (await this.send<LiveSummary>("POST", on ? "/live/pause" : "/live/resume")).data;
+  }
+
+  /** Undo this import (revert), Apply held files, or Check now, on one source. */
+  async liveSource(source: string, action: "undo" | "apply" | "check"): Promise<SourceEvent> {
+    return (await this.send<SourceEvent>("POST", `/live/sources/${encodeURIComponent(source)}/${action}`)).data;
+  }
+
+  /** How urgent a pane's goal is: 0 in focus, 1 open, 5 closed (the background). Best effort. */
+  async focus(type: string, scope: string, view: string, priority: number): Promise<void> {
+    try {
+      await this.send("POST", "/live/focus", { json: { type, scope, view, priority }, cache: false });
+    } catch {
+      /* a priority is a hint: the goal is solved either way */
+    }
   }
 
   async tiers(): Promise<TierStatus[]> {

@@ -111,6 +111,8 @@ class Hub:
     engine_error: str | None = None
     features: list[dict[str, Any]] = field(default_factory=list)
     app: dict[str, Any] = field(default_factory=dict)
+    live: Any = None
+    """The live hub (``region.live.Live``) when serve runs it, else ``None``."""
     _engine_tried: bool = False
 
     def engine_status(self) -> tuple[dict[str, Any] | None, str | None]:

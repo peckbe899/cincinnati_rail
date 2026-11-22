@@ -28,7 +28,7 @@ import json
 import sqlite3
 from collections import Counter
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 from region.core import ids
@@ -159,12 +159,27 @@ def _bbox_union(boxes: Iterable[tuple[float, float, float, float] | None]) -> li
     return [min(b[0] for b in have), min(b[1] for b in have), max(b[2] for b in have), max(b[3] for b in have)]
 
 
+@dataclass
+class Part:
+    """The running totals of a changeset written in parts (``Txn(part=...)``): its id, and the count, kinds and boxes
+    of the parts written so far. ``last`` is set on the part that writes the changeset row and the summary event."""
+
+    id: str = field(default_factory=ids.new)
+    count: int = 0
+    kinds: Counter[str] = field(default_factory=Counter)
+    boxes: list[Any] = field(default_factory=list)
+    last: bool = False
+
+
 class Ctx:
     """``region.core.protocols.ValidateCtx`` over a changeset being validated: reads see its pending revisions."""
 
     def __init__(self, txn: Txn) -> None:
         self.txn = txn
         self.view = txn.view
+        # a record the changeset does not write, read once per changeset: 430 stops of one import each read their
+        # section (a large record) and parsed it again, which held the writer for 0.1 s (validators only read)
+        self._read: dict[str, dict[str, Any]] = {}
 
     def get(self, kind: str, id: str) -> dict[str, Any] | None:
         p = self.txn.pending.get(id)
@@ -173,7 +188,10 @@ class Ctx:
         r = self.txn.resolve(id)
         if r is None or r.deleted or r.kind != kind:
             return None
-        return r.record(self.txn.layers.slugs[r.layer])
+        got = self._read.get(id)
+        if got is None:
+            got = self._read[id] = r.record(self.txn.layers.slugs[r.layer])
+        return got
 
     def list(self, kind: str, **filters: Any) -> list[dict[str, Any]]:
         k = self.txn.store.kinds[kind]
@@ -227,6 +245,7 @@ class Txn:
         on_delete: bool = True,
         validators: bool = True,
         dangling: str = "refuse",
+        part: Part | None = None,
     ) -> None:
         if not isinstance(by, str) or not by:
             raise Invalid("every write names who made it (by)", errors=[{"path": "/by", "message": "required"}])
@@ -248,6 +267,9 @@ class Txn:
             raise Invalid(f"dangling is refuse or list, not {dangling!r}")
         self.dangling_mode = dangling
         self.dangling: list[dict[str, Any]] = []
+        # one part of a changeset committed in several short transactions (a big import, 9.28): the parts share one
+        # changeset id, and only the last writes the changeset row and its one summary event
+        self.part = part
         self.layers = L.load(con)
         self.layer = self.layers.get(view.layer)
         if self.layer.state != "open":
@@ -258,8 +280,22 @@ class Txn:
             )
         self.chain = self.layers.chain(view.layer)
         self.below = self.chain[1:]
+        # Undo this import (the live hub): a revert of an import changeset, on the layer that import wrote, is the
+        # importer's own write, so a built layer takes it and its revisions keep the import's origin
+        self.reverts_import = (
+            kind == "revert"
+            and reverts is not None
+            and self.layer.tier in ("import", "legacy")
+            and (con.execute("SELECT kind FROM changeset WHERE id = ?", (reverts,)).fetchone() or [None])[0]
+            == "import"
+        )
         if origin is None:
-            origin = "legacy" if (kind == "import" and self.layer.tier == "legacy") else ORIGIN_OF.get(kind, "authored")
+            if self.reverts_import:
+                origin = "legacy" if self.layer.tier == "legacy" else "import"
+            else:
+                origin = (
+                    "legacy" if (kind == "import" and self.layer.tier == "legacy") else ORIGIN_OF.get(kind, "authored")
+                )
         self.origin = origin
         self.pending: dict[str, Pending] = {}
         self.order: list[Pending] = []
@@ -706,7 +742,7 @@ class Txn:
         """Writes exempt from the authority check: the flip itself, the legacy importer, and rebases (and conflict
         resolutions) on the legacy layer, which only carry changes from the imports below into the old hub's own
         revisions."""
-        if self.cs_kind == "legacy":
+        if self.cs_kind == "legacy" or self.reverts_import:
             return True
         return self.layer.tier == "legacy" and self.cs_kind in ("import", "rebase")
 
@@ -732,7 +768,11 @@ class Txn:
                         reason="authority",
                         conflicts=[{"kind": p.kind.name, "id": p.id}],
                     )
-            if self.layer.tier in ("import", "legacy") and self.cs_kind not in BUILT_LAYER_WRITES:
+            if (
+                self.layer.tier in ("import", "legacy")
+                and self.cs_kind not in BUILT_LAYER_WRITES
+                and not self.reverts_import
+            ):
                 # the next run of the layer's importer replaces or tombstones whatever it does not yield, so an
                 # authored write there would vanish without a conflict
                 raise Conflict(
@@ -877,20 +917,28 @@ class Txn:
     def commit(self) -> WriteResult:
         """Phase 3: write every pending revision, the events and the changeset row."""
         writes = [p for p in self.order if not p.noop]
-        if not writes:
-            return WriteResult(None, self._op_records(), None)
-        cs = ids.new()
+        part = self.part
+        if not writes and (part is None or not part.last or not part.count):
+            return WriteResult(part.id if part is not None and part.count else None, self._op_records(), None)
+        cs = part.id if part is not None else ids.new()
         t = now()
         for p in writes:
             self._write(p, cs, t)
         count = len(writes)
-        summary = count > BULK_THRESHOLD
         kinds = Counter(p.kind.name for p in writes)
         boxes = []
         for p in writes:
             boxes.append(p.content.bbox)
             if p.before is not None:
                 boxes.append(p.before.bbox)
+        if part is not None:
+            part.count += count
+            part.kinds.update(kinds)
+            part.boxes.extend(boxes)
+            if not part.last:
+                return WriteResult(cs, self._op_records(), None)
+            count, kinds, boxes = part.count, part.kinds, part.boxes
+        summary = count > BULK_THRESHOLD or part is not None
         if not summary:
             rows = []
             for p in writes:
@@ -1037,4 +1085,4 @@ def revert_ops(con: sqlite3.Connection, changeset: str) -> tuple[str, list[Inter
     return layer.slug, ops, blocked
 
 
-__all__ = ["LINEAGE_TIERS", "Ctx", "InternalOp", "ORIGIN_OF", "Pending", "Txn", "revert_ops"]
+__all__ = ["LINEAGE_TIERS", "Ctx", "InternalOp", "ORIGIN_OF", "Part", "Pending", "Txn", "revert_ops"]

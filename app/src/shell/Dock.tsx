@@ -22,7 +22,7 @@ function layoutKey(workspace: string): string {
 
 /**
  * The default design workspace: the map on the left, the line sheet in the middle with the whole column's height
- * (its table needs the rows), the inspector on the right with Jobs, Review and Old hub as tabs below it.
+ * (its table needs the rows), the inspector on the right with Jobs, Review, Old hub and Sources as tabs below it.
  */
 export function defaultLayout(api: DockviewApi, has: (id: string) => boolean): void {
   const add = (paneId: string, position?: Parameters<DockviewApi["addPanel"]>[0]["position"]) => {
@@ -37,6 +37,7 @@ export function defaultLayout(api: DockviewApi, has: (id: string) => boolean): v
   add("jobs", has(below) ? { referencePanel: below, direction: "below" } : undefined);
   add("review", has("jobs") ? { referencePanel: "jobs" } : undefined);
   add("legacy", has("jobs") ? { referencePanel: "jobs" } : undefined);
+  add("sources", has("jobs") ? { referencePanel: "jobs" } : undefined);
   api.getPanel("jobs")?.api.setActive();
   api.getPanel("inspector")?.api.setActive();
   api.getPanel("line-sheet")?.api.setActive();
@@ -75,6 +76,11 @@ function PaneHost(props: IDockviewPanelProps<PaneParams> & { host: AppHost }) {
       onResize(fn) {
         resizers.add(fn);
         return { dispose: () => resizers.delete(fn) };
+      },
+      isActive: () => api.isActive,
+      onActive(fn) {
+        const d = api.onDidActiveChange((e) => fn(e.isActive));
+        return { dispose: () => d.dispose() };
       },
     };
     def.mount(el, ctx).then(

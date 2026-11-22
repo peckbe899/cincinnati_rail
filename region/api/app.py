@@ -8,8 +8,9 @@ outbox tailer behind SSE).
 
 Layout, in matching order:
 
-1. ``/api/v1/...``: meta, records, changesets, layers and conflicts, importers, jobs and results, events, ops, tiers
-   and the mounted data tiers (``region/api/{meta,records,changesets,layers,imports,jobs,events,ops,files}.py``);
+1. ``/api/v1/...``: meta, records, changesets, layers and conflicts, importers, jobs and results, the live hub,
+   events, ops, tiers and the mounted data tiers
+   (``region/api/{meta,records,changesets,layers,imports,jobs,live,events,ops,files}.py``);
 2. ``/api/v1/x/<feature>/...``: the ``router`` of each feature folder that has a ``router.py``
    (``region.core.features.discover``); a router that fails to load is logged and left out, so one broken feature
    does not stop the hub;
@@ -38,7 +39,7 @@ from starlette.middleware.gzip import GZipMiddleware
 
 from region.core import features, paths
 
-from . import changesets, events, files, imports, jobs, layers, meta, ops, problem, records
+from . import changesets, events, files, imports, jobs, layers, live, meta, ops, problem, records
 from .context import Hub
 from .http import NO_GZIP
 from .security import Guard
@@ -130,7 +131,7 @@ def create_app(store: Any, jobs_: Any, engine: Any, cfg: dict[str, Any] | None =
     app.state.engine = engine
     app.state.cfg = cfg
     problem.install(app)
-    for module in (meta, records, changesets, layers, imports, jobs, events, ops, files):
+    for module in (meta, records, changesets, layers, imports, jobs, live, events, ops, files):
         app.include_router(module.router, prefix=API)
     hub.features = mount_features(app, hub)
     app.include_router(files.app_router)

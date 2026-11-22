@@ -103,7 +103,7 @@ def test_import_namespaces_disjoint(store, main, monkeypatch):
     # both import layers sit under main, side by side
     assert {r["layer"] for r in store.list("feature", main)[0]} == {"import:test", "import:test_b"}
     assert [r["id"] for r in store.list("feature", a)[0]] == sorted([tid("x"), other])
-    assert store.chain(a) == ["import:test", "import:profiles", "import:registry", "import:test_b"]
+    assert store.chain(a) == ["import:test", "import:profiles", "import:registry", "import:ground", "import:test_b"]
 
 
 def test_list_10k_resolves_under_200ms(store, imp_layer):

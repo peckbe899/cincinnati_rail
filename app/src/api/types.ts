@@ -238,6 +238,48 @@ export interface EngineEvent {
   engine_build: string | null;
   error: string | null;
 }
+/** The live hub's summary for the Sources chip (region/core/events.py LiveSummary). */
+export interface LiveSummary {
+  paused: boolean;
+  pending: number;
+  updated: string | null;
+}
+/** A watched source acted on a change (region/live): what happened, in Ben's words. */
+export interface SourceEvent {
+  source: string;
+  label: string;
+  kind: "import" | "tier" | string;
+  state: string;
+  text: string;
+  at: string | null;
+  changed?: string | null;
+  run: number | null;
+  changeset: string | null;
+  review: number;
+  sections: string[];
+  toast?: boolean;
+  undo?: boolean;
+  level?: "info" | "warn" | "error";
+  live?: LiveSummary;
+}
+/** A section being imported (type "import") or re-solved (a job type). */
+export interface PendingMark {
+  type: string;
+  scope: string;
+  view: string;
+  state: string;
+}
+export interface PendingEvent {
+  items: PendingMark[];
+}
+/** GET /live. */
+export interface LiveStatus extends LiveSummary {
+  enabled: boolean;
+  settle_s?: number;
+  sources?: SourceEvent[];
+  history?: { at: string; source: string; label: string; text: string }[];
+  marks?: PendingMark[];
+}
 export interface ResyncEvent {
   reason: "pruned" | "epoch" | "overflow";
   seq: number;
@@ -255,7 +297,12 @@ export type HubEvent =
   | { type: "result"; seq: number | null; data: ResultEvent }
   | { type: "tier"; seq: number | null; data: TierEvent }
   | { type: "engine"; seq: number | null; data: EngineEvent }
+  | { type: "source"; seq: number | null; data: SourceEvent }
+  | { type: "live"; seq: number | null; data: LiveSummary }
+  | { type: "pending"; seq: number | null; data: PendingEvent }
   | { type: "resync"; seq: number | null; data: ResyncEvent }
   | { type: "hello"; seq: number | null; data: HelloEvent };
 
 export const DURABLE_EVENTS: ReadonlySet<string> = new Set(["record", "changeset"]);
+/** Ephemeral events passed on as they come (engine is handled on its own: it also updates the status). */
+export const EPHEMERAL_EVENTS: ReadonlySet<string> = new Set(["job", "result", "tier", "source", "live", "pending"]);

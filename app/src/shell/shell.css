@@ -502,3 +502,35 @@ a {
 .sheet-table table.grid td.name {
   cursor: pointer;
 }
+
+/* The Sources chip is a button in the status bar that reads like the other items. */
+.status-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: underline dotted;
+}
+
+.status-item.status-button.warn {
+  color: var(--warn);
+}
+
+/* The line sheet's mark while the live hub imports or re-solves its line. */
+.pending-mark {
+  color: var(--warn);
+  font-size: 12px;
+}
+
+.sources-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.sources-history {
+  font-size: 12px;
+}

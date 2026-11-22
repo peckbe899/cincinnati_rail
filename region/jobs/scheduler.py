@@ -403,6 +403,48 @@ class Scheduler:
             raise
         self._drain([("want", plan, int(priority), "goal", None)])
 
+    def ensure_watched(self, type: str, scope: str, view: View, priority: int = 5) -> bool:
+        """Watch ``(type, scope, view)`` for ever unless it is watched already (a pane's priority and the goal's
+        answer are left as they are). The live hub's background goals. Returns whether a watch was added."""
+        self.registry.get(type)
+        with self._lock, self.cache.tx() as con:
+            g = goals.get(con, type, scope, view.token())
+            if g is not None and g["watch"] and (g["expires"] is None or g["expires"] > now_s()):
+                return False
+        self.watch_goal(type, scope, view, priority=priority, ttl_s=None)
+        return True
+
+    def set_priority(self, type: str, scope: str, view: View, priority: int) -> None:
+        """Make a goal (and its queued or running job) this urgent: 0 for the pane in focus, 1 for open panes, 5 for
+        the background. Unlike ``watch_goal`` this lowers a priority too, so a pane that loses the focus hands it
+        back; a goal nobody asked for is left alone."""
+        token = view.token()
+        with self._lock, self.cache.tx() as con:
+            g = goals.get(con, type, scope, token)
+            if g is None:
+                return
+            con.execute(
+                "UPDATE goal SET priority = ?, updated = ? WHERE type = ? AND scope = ? AND view = ?",
+                (int(priority), now_iso(), type, scope, token),
+            )
+            if g.get("want_key"):
+                con.execute(
+                    "UPDATE job SET priority = ? WHERE type = ? AND key = ? AND state = 'queued'",
+                    (int(priority), type, g["want_key"]),
+                )
+            con.execute(
+                "UPDATE job SET priority = ? WHERE type = ? AND scope = ? AND view = ? AND state = 'queued' "
+                "AND key IS NULL",
+                (int(priority), type, scope, token),
+            )
+        self._wake.set()
+
+    def pending(self) -> list[dict[str, Any]]:
+        """Watched goals whose answer is being worked on: ``[{"type", "scope", "view", "state", "priority"}]``
+        (the per-section pending marks of the live hub)."""
+        with self._lock, self.cache.tx() as con:
+            return goals.pending(con)
+
     def unwatch(self, type: str, scope: str, view: View) -> None:
         """Stop keeping a goal fresh (its latest result stays)."""
         with self._lock, self.cache.tx() as con:
@@ -1012,9 +1054,17 @@ class Scheduler:
         self._flush()
 
     def _on_end(self, jid: str, outcome: str, value: Any) -> None:
+        if self._closed:
+            # a run that ended after stop() (an engine call answered while the hub shut down): stop() put the job back
+            # in the queue, so the next start runs it; the closed cache cannot take its answer
+            return
         try:
             self._finish(jid, outcome, value)
         except Exception:
+            if self._closed or self._stopping.is_set():
+                # the hub stopped while this run was being committed: stop() re-queued the job for the next start
+                log.info("job %s ended while the scheduler stopped; it runs again at the next start", jid)
+                return
             log.exception("finishing job %s failed", jid)
             with contextlib.suppress(Exception):
                 self._fail_row(jid, "the scheduler failed to commit the result", traceback.format_exc())
@@ -1378,17 +1428,27 @@ class Scheduler:
             except Exception:
                 log.exception("the invalidator failed; it carries on")
 
-    def check_files(self) -> set[str]:
-        """The ``file:`` refs of watched goals whose file no longer hashes as their result recorded (a golden
-        baseline rewritten, a rules file edited): those goals are planned again. Hashes come from the cache's
-        size-and-mtime cache, so an unchanged file costs one ``stat``. Returns the refs that moved."""
-        rows = self.cache.query(
-            "SELECT DISTINCT d.ref, d.ref_hash FROM result_dep d JOIN goal g ON g.latest_key = d.key "
-            "WHERE g.watch = 1 AND (g.expires IS NULL OR g.expires > ?) AND d.ref >= 'file:' AND d.ref < 'file;'",
-            (time.time(),),
-        )
+    def _watched_file_refs(self) -> list[tuple[str, str | None]]:
+        """``(ref, hash)`` of every ``file:`` dependency of a watched goal's latest or wanted key."""
+        return [
+            (r[0], r[1])
+            for r in self.cache.query(
+                "SELECT DISTINCT d.ref, d.ref_hash FROM result_dep d JOIN goal g "
+                "ON (g.latest_key = d.key OR g.want_key = d.key) "
+                "WHERE g.watch = 1 AND (g.expires IS NULL OR g.expires > ?) AND d.ref >= 'file:' AND d.ref < 'file;'",
+                (time.time(),),
+            )
+        ]
+
+    def check_files(self, only: set[str] | None = None) -> set[str]:
+        """The ``file:`` refs of watched goals whose file no longer hashes as their result (or their wanted key)
+        recorded (a golden baseline rewritten, a tier's handshake turned done): exactly those goals are planned
+        again. Hashes come from the cache's size-and-mtime cache, so an unchanged file costs one ``stat``. ``only``
+        limits the check to those refs. Returns the refs that moved."""
         moved = set()
-        for ref, h in rows:
+        for ref, h in self._watched_file_refs():
+            if only is not None and ref not in only:
+                continue
             try:
                 now = self.cache.file_sha256(paths.resolve(ref[len("file:") :]))
             except HubError:
@@ -1398,6 +1458,27 @@ class Scheduler:
         if moved:
             self.invalidate(moved)
         return moved
+
+    def files_changed(self, changed: Iterable[Path | str]) -> set[str]:
+        """The live watcher saw these paths (files, or folders whose contents moved) change: check the ``file:``
+        refs that name them or a file under them, and re-plan exactly the watched goals whose file now hashes
+        differently. A re-save of the same bytes moves no key and runs nothing. Returns the refs that moved."""
+        import os
+
+        targets = [os.path.normcase(os.path.realpath(p)) for p in changed]
+        if not targets:
+            return set()
+        hit: set[str] = set()
+        for ref, _h in self._watched_file_refs():
+            try:
+                local = os.path.normcase(os.path.realpath(paths.resolve(ref[len("file:") :])))
+            except HubError:
+                continue
+            for t in targets:
+                if local == t or local.startswith(t.rstrip(os.sep) + os.sep) or t.startswith(local + os.sep):
+                    hit.add(ref)
+                    break
+        return self.check_files(hit) if hit else set()
 
     def _store_epoch(self) -> str | None:
         epoch = getattr(self.store, "epoch", None)  # Store.epoch; a fake without it skips the check
@@ -1441,16 +1522,18 @@ class Scheduler:
             rec_refs: set[str] = set()
             kinds: set[str] = set()
             bulk: set[str] = set()
+            by_kind: dict[str, set[str]] = {}
             params = False
             for ev in events:
                 data = ev.get("data") or {}
                 if ev.get("type") == "record":
                     rec_refs.add(f"rec:{data.get('id')}")
                     kinds.add(str(data.get("kind")))
+                    by_kind.setdefault(str(data.get("kind")), set()).add(str(data.get("id")))
                 elif ev.get("type") == "changeset" and data.get("summary"):
                     bulk.update((data.get("kinds") or {}).keys())
             params = PARAM_KIND in kinds or PARAM_KIND in bulk
-            items = self._affected(rec_refs, kinds, bulk, params)
+            items = self._affected(rec_refs, kinds, bulk, params, by_kind=by_kind)
             if items:
                 self._drain(items)
             cursor = int(events[-1]["seq"])
@@ -1458,7 +1541,59 @@ class Scheduler:
             if len(events) < 1000:
                 return
 
-    def _affected(self, refs: set[str], kinds: set[str], bulk: set[str], params: bool) -> list[tuple]:
+    def _parents(self, ids: set[str]) -> set[str] | None:
+        """The ``parent`` column of these records in any layer (``None`` when the store cannot say)."""
+        reader = getattr(self.store, "_reader", None)
+        if not callable(reader) or not ids:
+            return None
+        out: set[str] = set()
+        id_list = sorted(ids)
+        try:
+            con = reader()
+            for i in range(0, len(id_list), 400):
+                chunk = id_list[i : i + 400]
+                marks = ",".join("?" * len(chunk))
+                out.update(
+                    r[0]
+                    for r in con.execute(f"SELECT DISTINCT parent FROM rec WHERE id IN ({marks})", chunk).fetchall()
+                    if r[0] is not None
+                )
+        except Exception:
+            return None
+        return out
+
+    def _query_keys(self, kind: str, ids: set[str] | None) -> set[str]:
+        """The keys whose plans listed ``kind`` and whose answer a change to the records ``ids`` can alter.
+
+        A list query is ``rec:<kind>?<filters>``. A record that was in the answer is a ``rec:<id>`` ref of its own,
+        so a change to it, or its leaving the answer, is found by that ref. A record can join only an answer whose
+        filters it matches now; for a query filtered by ``parent`` alone (a section's stops, platforms, profile,
+        ground) that is the query on its current parent, so a profile saved on Line 6 re-plans Line 6's goals and
+        not the 15 others. Any other query (no filter, a bbox, a text search) is affected by every change."""
+        lo, hi = query_prefix(kind)
+        rows = self.cache.query("SELECT DISTINCT ref, key FROM result_dep WHERE ref >= ? AND ref < ?", (lo, hi))
+        parents = self._parents(ids) if ids else None
+        found: set[str] = set()
+        for ref, key in rows:
+            if parents is not None:
+                try:
+                    filters = json.loads(ref[len(lo) :])
+                except ValueError:
+                    filters = None
+                if isinstance(filters, dict) and set(filters) == {"parent"} and filters["parent"] not in parents:
+                    continue
+            found.add(key)
+        return found
+
+    def _affected(
+        self,
+        refs: set[str],
+        kinds: set[str],
+        bulk: set[str],
+        params: bool,
+        *,
+        by_kind: dict[str, set[str]] | None = None,
+    ) -> list[tuple]:
         """The watched goals whose wanted or latest key depends on any changed ref, as ``replan`` items."""
         found: set[str] = set()
         ref_list = sorted(refs)
@@ -1469,11 +1604,8 @@ class Scheduler:
                 r[0] for r in self.cache.query(f"SELECT DISTINCT key FROM result_dep WHERE ref IN ({marks})", chunk)
             )
         for kind in kinds | bulk:
-            lo, hi = query_prefix(kind)
-            found.update(
-                r[0]
-                for r in self.cache.query("SELECT DISTINCT key FROM result_dep WHERE ref >= ? AND ref < ?", (lo, hi))
-            )
+            ids = None if (kind in bulk or by_kind is None) else by_kind.get(kind)
+            found.update(self._query_keys(kind, ids))
         for kind in bulk:
             found.update(r[0] for r in self.cache.query("SELECT DISTINCT key FROM result_dep WHERE kind = ?", (kind,)))
         if params:

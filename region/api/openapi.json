@@ -561,6 +561,39 @@
     "title": "Diff",
     "type": "object"
    },
+   "FocusIn": {
+    "additionalProperties": false,
+    "description": "How urgent a pane's goal is: 0 for the pane in focus, 1 for an open pane, 5 when the pane closed.",
+    "properties": {
+     "priority": {
+      "maximum": 9.0,
+      "minimum": 0.0,
+      "title": "Priority",
+      "type": "integer"
+     },
+     "scope": {
+      "title": "Scope",
+      "type": "string"
+     },
+     "type": {
+      "title": "Type",
+      "type": "string"
+     },
+     "view": {
+      "default": "main|-|canon",
+      "description": "a view token",
+      "title": "View",
+      "type": "string"
+     }
+    },
+    "required": [
+     "type",
+     "scope",
+     "priority"
+    ],
+    "title": "FocusIn",
+    "type": "object"
+   },
    "HTTPValidationError": {
     "properties": {
      "detail": {
@@ -1111,6 +1144,229 @@
     "title": "LegacyHit",
     "type": "object"
    },
+   "LiveSource": {
+    "additionalProperties": true,
+    "description": "One watched source: an importer's files, a data tier or the old hub's database.",
+    "properties": {
+     "at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "At"
+     },
+     "changed": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Changed"
+     },
+     "changeset": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Changeset"
+     },
+     "kind": {
+      "enum": [
+       "import",
+       "tier"
+      ],
+      "title": "Kind",
+      "type": "string"
+     },
+     "label": {
+      "title": "Label",
+      "type": "string"
+     },
+     "review": {
+      "default": 0,
+      "title": "Review",
+      "type": "integer"
+     },
+     "run": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Run"
+     },
+     "sections": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Sections",
+      "type": "array"
+     },
+     "source": {
+      "description": "import:<importer> or tier:<tier>",
+      "title": "Source",
+      "type": "string"
+     },
+     "state": {
+      "description": "idle, changing, waiting, importing, applied, review, held or error",
+      "title": "State",
+      "type": "string"
+     },
+     "text": {
+      "description": "what happened last, in plain words",
+      "title": "Text",
+      "type": "string"
+     },
+     "undo": {
+      "default": false,
+      "description": "whether Undo this import is offered (its last import changeset stands)",
+      "title": "Undo",
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "source",
+     "label",
+     "kind",
+     "state",
+     "text"
+    ],
+    "title": "LiveSource",
+    "type": "object"
+   },
+   "LiveStatus": {
+    "properties": {
+     "counts": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "title": "Counts",
+      "type": "object"
+     },
+     "enabled": {
+      "title": "Enabled",
+      "type": "boolean"
+     },
+     "history": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "title": "History",
+      "type": "array"
+     },
+     "marks": {
+      "items": {
+       "$ref": "#/components/schemas/PendingMark"
+      },
+      "title": "Marks",
+      "type": "array"
+     },
+     "paused": {
+      "title": "Paused",
+      "type": "boolean"
+     },
+     "pending": {
+      "description": "sources that changed and are not yet taken in (changing, importing, paused)",
+      "title": "Pending",
+      "type": "integer"
+     },
+     "poll_s": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Poll S"
+     },
+     "settle_s": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Settle S"
+     },
+     "sources": {
+      "items": {
+       "$ref": "#/components/schemas/LiveSource"
+      },
+      "title": "Sources",
+      "type": "array"
+     },
+     "updated": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "when the last change was taken in (ISO 8601 UTC)",
+      "title": "Updated"
+     }
+    },
+    "required": [
+     "paused",
+     "pending",
+     "enabled"
+    ],
+    "title": "LiveStatus",
+    "type": "object"
+   },
+   "LiveSummary": {
+    "description": "What the status bar's Sources chip shows.",
+    "properties": {
+     "paused": {
+      "title": "Paused",
+      "type": "boolean"
+     },
+     "pending": {
+      "description": "sources that changed and are not yet taken in (changing, importing, paused)",
+      "title": "Pending",
+      "type": "integer"
+     },
+     "updated": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "when the last change was taken in (ISO 8601 UTC)",
+      "title": "Updated"
+     }
+    },
+    "required": [
+     "paused",
+     "pending"
+    ],
+    "title": "LiveSummary",
+    "type": "object"
+   },
    "Meta": {
     "additionalProperties": true,
     "description": "Kinds with their schemas, features, importers, job types, layers, the engine hello, the schema version and\nthe server epoch.",
@@ -1288,6 +1544,51 @@
      "path"
     ],
     "title": "PatchOp",
+    "type": "object"
+   },
+   "PendingList": {
+    "properties": {
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/PendingMark"
+      },
+      "title": "Items",
+      "type": "array"
+     }
+    },
+    "required": [
+     "items"
+    ],
+    "title": "PendingList",
+    "type": "object"
+   },
+   "PendingMark": {
+    "properties": {
+     "scope": {
+      "title": "Scope",
+      "type": "string"
+     },
+     "state": {
+      "title": "State",
+      "type": "string"
+     },
+     "type": {
+      "description": "import, or the job type re-solving the section",
+      "title": "Type",
+      "type": "string"
+     },
+     "view": {
+      "title": "View",
+      "type": "string"
+     }
+    },
+    "required": [
+     "type",
+     "scope",
+     "view",
+     "state"
+    ],
+    "title": "PendingMark",
     "type": "object"
    },
    "Poll": {
@@ -5404,6 +5705,330 @@
     "summary": "Legacy",
     "tags": [
      "records"
+    ]
+   }
+  },
+  "/api/v1/live": {
+   "get": {
+    "operationId": "live_status",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/LiveStatus"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "The live hub: sources, their state, Pause live",
+    "tags": [
+     "live"
+    ]
+   }
+  },
+  "/api/v1/live/focus": {
+   "post": {
+    "operationId": "live_focus",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/FocusIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "A pane's goal priority",
+    "tags": [
+     "live"
+    ]
+   }
+  },
+  "/api/v1/live/pause": {
+   "post": {
+    "operationId": "live_pause",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/LiveSummary"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     }
+    },
+    "summary": "Pause live",
+    "tags": [
+     "live"
+    ]
+   }
+  },
+  "/api/v1/live/pending": {
+   "get": {
+    "operationId": "live_pending",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PendingList"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Sections being imported or re-solved",
+    "tags": [
+     "live"
+    ]
+   }
+  },
+  "/api/v1/live/resume": {
+   "post": {
+    "operationId": "live_resume",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/LiveSummary"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     }
+    },
+    "summary": "Resume live",
+    "tags": [
+     "live"
+    ]
+   }
+  },
+  "/api/v1/live/sources/{source}/apply": {
+   "post": {
+    "operationId": "live_apply",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "source",
+      "required": true,
+      "schema": {
+       "title": "Source",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/LiveSource"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Import held files anyway",
+    "tags": [
+     "live"
+    ]
+   }
+  },
+  "/api/v1/live/sources/{source}/check": {
+   "post": {
+    "operationId": "live_check",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "source",
+      "required": true,
+      "schema": {
+       "title": "Source",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/LiveSource"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Look at a source now",
+    "tags": [
+     "live"
+    ]
+   }
+  },
+  "/api/v1/live/sources/{source}/undo": {
+   "post": {
+    "operationId": "live_undo",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "source",
+      "required": true,
+      "schema": {
+       "title": "Source",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/LiveSource"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        }
+       }
+      },
+      "description": "a problem (RFC 9457)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Undo this import",
+    "tags": [
+     "live"
     ]
    }
   },

@@ -2,7 +2,8 @@
 
 **Config.** ``configs/hub.json`` (committed: port, var, pool sizes), then ``configs/hub_paths.json`` (committed: the
 data tiers), then ``configs/local.json`` (this machine only, gitignored; see ``configs/local.example.json``), merged in
-that order. ``config()`` caches the merge for the process; ``reload()`` drops the cache.
+that order, then the file the ``CRHUB_CONFIG`` environment variable names, if any (a test hub that moves a tier's
+root). ``config()`` caches the merge for the process; ``reload()`` drops the cache.
 
 **var.** The folder for the databases, cache, blobs, logs and backups. In order of precedence: the ``CRHUB_VAR``
 environment variable, ``"var"`` in ``configs/local.json``, ``"var"`` in ``configs/hub.json``, then the platform
@@ -42,6 +43,7 @@ from .errors import Invalid, NotFound
 REPO: Path = Path(__file__).resolve().parents[2]
 CONFIG_FILES = ("configs/hub.json", "configs/hub_paths.json", "configs/local.json")
 VAR_ENV = "CRHUB_VAR"
+CONFIG_ENV = "CRHUB_CONFIG"
 SCHEMES = ("tier", "repo", "var")
 
 # Windows device names, reserved with any extension and in any case (CON.txt, nul, COM1.log, LPT¹).
@@ -202,6 +204,12 @@ def load_config(repo: Path | None = None) -> dict[str, Any]:
         over.pop("about", None)
         _merge(cfg, over)
         files.append(str(local))
+    extra = os.environ.get(CONFIG_ENV)
+    if extra and repo is None:
+        over = _read_json(Path(extra))
+        over.pop("about", None)
+        _merge(cfg, over)
+        files.append(str(extra))
     cfg["_repo"] = str(root)
     cfg["_files"] = files
     return cfg
@@ -409,6 +417,7 @@ __all__ = [
     "TierStatus",
     "UnsafePath",
     "VAR_ENV",
+    "CONFIG_ENV",
     "available",
     "check_name",
     "check_relpath",

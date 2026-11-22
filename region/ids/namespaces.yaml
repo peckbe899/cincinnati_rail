@@ -31,6 +31,12 @@ namespaces:
     about: >-
       Records only the old hub has (roadmap items, the camera), from hub/seed or a backup snapshot of hub/hub.db
       (importer old_hub).
+  ground:
+    epoch: "2020-01-04T00:00:00Z"
+    layer: "import:ground"
+    about: >-
+      The ground layers lane B delivers (the 1912 surface), one record per surface, from each ground tier's handshake
+      (importer ground_layers).
   test:
     epoch: "2019-12-31T00:00:00Z"
     layer: "import:test"

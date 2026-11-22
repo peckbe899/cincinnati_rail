@@ -369,6 +369,65 @@ class ClientLogIn(_Open):
     msg: str = ""
 
 
+# ---------------------------------------------------------------------------------------------------------- live
+
+
+class LiveSummary(BaseModel):
+    """What the status bar's Sources chip shows."""
+
+    paused: bool
+    pending: int = Field(description="sources that changed and are not yet taken in (changing, importing, paused)")
+    updated: str | None = Field(None, description="when the last change was taken in (ISO 8601 UTC)")
+
+
+class LiveSource(_Open):
+    """One watched source: an importer's files, a data tier or the old hub's database."""
+
+    source: str = Field(description="import:<importer> or tier:<tier>")
+    label: str
+    kind: Literal["import", "tier"]
+    state: str = Field(description="idle, changing, waiting, importing, applied, review, held or error")
+    text: str = Field(description="what happened last, in plain words")
+    at: str | None = None
+    changed: str | None = None
+    run: int | None = None
+    changeset: str | None = None
+    review: int = 0
+    sections: list[str] = Field(default_factory=list)
+    undo: bool = Field(False, description="whether Undo this import is offered (its last import changeset stands)")
+
+
+class PendingMark(BaseModel):
+    type: str = Field(description="import, or the job type re-solving the section")
+    scope: str
+    view: str
+    state: str
+
+
+class LiveStatus(LiveSummary):
+    enabled: bool
+    settle_s: float | None = None
+    poll_s: float | None = None
+    sources: list[LiveSource] = Field(default_factory=list)
+    history: list[dict[str, Any]] = Field(default_factory=list)
+    counts: dict[str, int] = Field(default_factory=dict)
+    marks: list[PendingMark] = Field(default_factory=list)
+
+
+class PendingList(BaseModel):
+    items: list[PendingMark]
+
+
+class FocusIn(BaseModel):
+    """How urgent a pane's goal is: 0 for the pane in focus, 1 for an open pane, 5 when the pane closed."""
+
+    model_config = ConfigDict(extra="forbid")
+    type: str
+    scope: str
+    view: str = Field("main|-|canon", description="a view token")
+    priority: int = Field(ge=0, le=9)
+
+
 class Problem(_Open):
     """An RFC 9457 problem body."""
 

@@ -14,12 +14,17 @@ Start-up, in order (each step prints one line):
 6. **Seeds.** Pulled seeds (``region/seed``) are imported (``region.model.seed.import_seed``) and reported; any
    failure (a broken file included) is reported with its path and serving goes on. After a restore, or with a seed
    folder another checkout last used, nothing is taken silently: a banner says how many records are listed.
-7. **Imports.** Each importer's sources are hashed and compared with its last applied run; for a changed one a
-   dry run is made and its report printed (9.26), to be applied with ``crhub imports apply RUN``.
+7. **Imports.** With the live hub on (the default), nothing here: the live hub (step 10) brings every importer up to
+   its files in the background. With ``--no-live`` each importer's sources are hashed and compared with its last
+   applied run; for a changed one a dry run is made and its report printed (9.26), to be applied with
+   ``crhub imports apply RUN``.
 8. **Tiers.** The data tiers are scanned and counted.
 9. **Engine, scheduler, app.** The engine pool starts in the background (the first sidecar's hello names the build;
    ``--no-engine`` leaves it out), the scheduler starts, and the app is served on 127.0.0.1 (port 8766 by
    default). A banner says when ``app/dist`` is older than ``app/src`` or missing.
+10. **Live.** The live hub (``region.live.Live``) watches every source (the line files, the old hub's seed and its
+    live ``hub.db``, the registry, every data tier), imports a change once it settles and re-solves what it touched;
+    ``live.enabled`` false in the config, or ``--no-live``, leaves it out.
 
 Shutdown (Ctrl+C, SIGTERM, Ctrl+Break, or ``stop()``): the SSE streams end, the server stops, then the scheduler
 stops, the engine pool closes, the WAL is checkpointed with TRUNCATE, the store closes and the lock is released.
@@ -74,6 +79,7 @@ class Serve:
         browser: bool = False,
         seeds: bool = True,
         imports: bool | None = None,
+        live: bool | None = None,
         cfg: dict[str, Any] | None = None,
         out: Callable[[str], None] | None = None,
     ) -> None:
@@ -85,8 +91,17 @@ class Serve:
         self.use_engine = engine
         self.browser = browser
         self.seeds = seeds
-        # the start-up check of the importers' sources follows the seeds by default (--no-seeds skips both)
-        self.check_imports = seeds if imports is None else imports
+        live_cfg = self.cfg.get("live") or {}
+        if live is not None:
+            self.use_live = bool(live)
+        elif imports is not None:
+            self.use_live = False  # an explicit choice of the start-up dry runs is the hub without live (tests)
+        else:
+            self.use_live = seeds and bool(live_cfg.get("enabled", True))
+        # the start-up check of the importers' sources follows the seeds by default (--no-seeds skips both); the live
+        # hub does it instead when it runs
+        self.check_imports = (seeds if imports is None else imports) and not self.use_live
+        self.live: Any = None
         self.stale_imports: list[dict[str, Any]] = []
         self._daily_stop = threading.Event()  # set at shutdown: ends the daily backups and the engine retries
         self.engine_retry_s: tuple[float, ...] = (5.0, 10.0, 30.0, 60.0, 120.0, 300.0)
@@ -196,12 +211,34 @@ class Serve:
             self.store, self.jobs, self.engine, {**self.cfg, "_app": app_state, "port": self.port, "host": self.host}
         )
         hub = self.app.state.hub
+        if self.use_live:
+            self._start_live(hub)
         if self.engine is not None:
             hub._engine_tried = True  # the background start fills the hello; no request waits for Node
             with self._engine_lock:
                 self._hub = hub
             self._hand_engine_to_hub()
         self.server = self._uvicorn()
+
+    def _start_live(self, hub: Any) -> None:
+        try:
+            from region.live import Live
+
+            self.live = Live(self.store, self.jobs, cfg=self.cfg, publish=hub.events.publish)
+            hub.live = self.live
+            self.live.start()
+        except Exception as e:
+            self.live = None
+            hub.live = None
+            self._say("live", f"NOT started: {type(e).__name__}: {e}")
+            log.exception("the live hub failed to start")
+            return
+        n = len(self.live.sources)
+        state = "PAUSED (Resume live in the Sources pane)" if self.live.paused else "on"
+        self._say(
+            "live",
+            f"{state}: watching {n} sources (settle {self.live.settle_s:g} s); changes are imported as they are saved",
+        )
 
     def _check_port(self) -> None:
         from region.cli.doctor import bind_error, identify
@@ -507,6 +544,8 @@ class Serve:
         self._closed = True
         self._daily_stop.set()
         steps: list[tuple[str, Callable[[], Any]]] = []
+        if self.live is not None:
+            steps.append(("live", self.live.stop))
         if self.jobs is not None:
             steps.append(("scheduler", self.jobs.stop))
         if self.engine is not None:
@@ -523,7 +562,8 @@ class Serve:
         if self.lock is not None:
             self.lock.release()
         if not quiet and self.store is not None:
-            done = ["scheduler stopped"] + (["engine closed"] if self.engine is not None else [])
+            done = (["live stopped"] if self.live is not None else []) + ["scheduler stopped"]
+            done += ["engine closed"] if self.engine is not None else []
             self._say("stopped", ", ".join([*done, "WAL truncated", "lock released"]))
 
 
