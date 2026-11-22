@@ -76,6 +76,50 @@ test("Line 6 sheet shows ground and rail", async ({ page, watch, request }) => {
   expect(watch.consoleErrors).toEqual([]);
 });
 
+test("Line 6 sheet draws the station names and levels, and a station click selects it", async ({ page, request }) => {
+  const sid = await line6Section(request);
+  const prof = await profileOf(request, sid, "main");
+  await openSheet(page, "main", sid, String(prof.id));
+  // The whole line: the sheet's text layer lists every station with its level, and the ends are named on the canvas.
+  const labels = page.getByTestId("sheet-labels");
+  await expect(labels.locator('li[data-kind="station"]').first()).toBeAttached();
+  const stations = await labels
+    .locator('li[data-kind="station"]')
+    .evaluateAll((ls) =>
+      ls.map((l) => ({ text: l.textContent ?? "", drawn: (l as HTMLElement).dataset.drawn === "1" })),
+    );
+  expect(stations.length).toBeGreaterThan(5);
+  expect(stations[0]?.text).toMatch(/^Towne, \d+\+\d{3}, rail \d+\.\d m$/);
+  expect(stations[0]?.drawn).toBe(true);
+  expect(stations.at(-1)?.drawn).toBe(true);
+  const canvas = page.getByTestId("sheet-canvas");
+  const box = await canvas.boundingBox();
+  if (!box) throw new Error("no canvas");
+  // Select Bond Hill from the table: the sheet names it in the selection colour and shows its card.
+  await page.getByTestId("station-table").locator("td.name", { hasText: "Bond Hill" }).click();
+  await expect(page.getByTestId("station-card-name")).toHaveText("Bond Hill");
+  await expect(page.getByTestId("station-card")).toContainText("platform");
+  await expect(page.getByLabel("Bond Hill rail level")).toBeVisible();
+  const selectedLabel = labels.locator('li[data-kind="station"][data-selected="1"]');
+  await expect(selectedLabel).toHaveAttribute("data-drawn", "1");
+  await expect(selectedLabel).toContainText("Bond Hill, ");
+  // Zoomed in around it (a few km across, as Ben looks at a stretch): every station in view is named.
+  await canvas.focus();
+  for (let i = 0; i < 6; i++) await page.keyboard.press("+");
+  await expect.poll(() => labels.locator('li[data-kind="station"][data-x]').count()).toBeGreaterThan(2);
+  expect(await labels.locator('li[data-kind="station"][data-x][data-drawn="0"]').count()).toBe(0);
+  // Esc clears the selection; a click on the station's bar on the canvas selects it again.
+  await page.keyboard.press("Escape");
+  await expect(page.getByTestId("station-card")).toBeHidden();
+  const bond = labels.locator('li[data-kind="station"]', { hasText: "Bond Hill, " }).first();
+  const x = Number(await bond.getAttribute("data-x"));
+  const y = Number(await bond.getAttribute("data-y"));
+  await page.mouse.click(box.x + x, box.y + y + 3);
+  await expect(page.getByTestId("station-card-name")).toHaveText("Bond Hill");
+  // Grades are labelled between the vertices in the old format.
+  await expect(labels.locator('li[data-kind="grade"]').first()).toHaveText(/^[+−]\d+\.\d‰$/);
+});
+
 test("PVI level edit re-solves locally under 16 ms and saves version 2", async ({ page, request }) => {
   const sid = await line6Section(request);
   const layer = await scenario(request, "edit");
