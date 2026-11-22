@@ -1,0 +1,12 @@
+# A test kind at version 1 (tests/model/test_seed.py, data-8).
+kind: t_up
+version: 1
+geometry: none
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [text]
+  properties:
+    text: {type: string}
+    title: {type: [string, "null"]}

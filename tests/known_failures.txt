@@ -2,8 +2,15 @@
 #
 # One pytest node id per line, then optionally "#" and the reason. Strict means the suite fails as soon as a listed
 # test passes (XPASS): then the cause is fixed and its line here must go. Add a line only with the reason and who
-# owns the fix; never to hide a failure the change in hand caused.
+# owns the fix; never to hide a failure the change in hand caused. A line that starts with [win32] (a sys.platform
+# value) applies on that platform only.
 
 # Lane B data: platform centres are off their Deck platforms (Line 6 North Avondale, Forest; Line 1 Gray, Winton
 # Place, Burnet North). Pre-existing, listed in tests/baseline/issues.json (5 Nov). Owner: lane B (Deck tie).
 tests/test_core.py::test_rer_routes_follow_deck  # lane B data: station drift off the Deck platforms
+
+# Windows only: the fixture's test.close_stdout closes the stream's handle and fd 1, yet on windows-latest the pipe
+# stays open (some handle on it survives), so the call waits out its timeout instead of failing as crashed. The
+# client's EOF handling is the same code on both platforms and passes on Ubuntu. Owner: lane A (engine host fixture,
+# tests/enginehost/sidecar_fixture.mts); found in CI run 44957537479.
+[win32] tests/enginehost/test_client.py::test_sidecar_that_outlives_its_stdout_is_killed  # Windows: the fixture's closed stdout is not EOF there

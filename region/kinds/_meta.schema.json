@@ -87,6 +87,12 @@
           "type": "array",
           "items": {"$ref": "#/$defs/pointer"},
           "uniqueItems": true
+        },
+        "frame": {
+          "description": "Kinds whose guarded or geometry change below, on this record's parent or on a record that shares its parent, puts this record's revisions above under edit (a geometry_under_edit conflict): a profile is drawn against its section's stops (9.11, 9.27).",
+          "type": "array",
+          "items": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+          "uniqueItems": true
         }
       }
     },

@@ -3,7 +3,7 @@ import { Api } from "../../src/api/client.ts";
 import type { HubEvent, Rec } from "../../src/api/types.ts";
 import { applyPatch, diff, PatchError } from "../../src/core/jsonpatch.ts";
 import { RecordCache } from "../../src/core/records.ts";
-import { formatChainage, M_PER_FT, Units } from "../../src/core/units.ts";
+import { formatChainage, M_PER_FT, parseChainage, Units } from "../../src/core/units.ts";
 import { lonLatToUtm, utmToLonLat } from "../../src/core/utm.ts";
 import { isOpen, makeView, viewInstant, viewQuery, viewToken } from "../../src/core/view.ts";
 
@@ -47,6 +47,33 @@ describe("units", () => {
     expect(formatChainage(5.25, new Units())).toBe("0+005.3");
     expect(formatChainage(12999.97, new Units())).toBe("13+000.0");
     expect(formatChainage(29539.6, new Units())).toBe("29+539.6");
+  });
+
+  it("shows a ratio and degrees as stored, and reads a chainage in any of Ben's forms (usability-8, -11)", () => {
+    const u = new Units();
+    // A section's scale is a ratio: 0.99983821 must not read 1 (about 4.8 m over Line 6's 29.5 km).
+    expect(u.format(0.99983821, "ratio")).toBe("0.99983821");
+    expect(u.parse(u.format(0.99983821, "ratio"), "ratio")).toBe(0.99983821);
+    // Longitudes and latitudes to 7 decimals (a centimetre), not 3 (about 100 m).
+    expect(u.format(-84.4781079, "deg")).toBe("-84.4781079");
+    expect(u.format(39.1732656, "deg")).toBe("39.1732656");
+    expect(u.format(12.345, "permille")).toBe("12.35");
+    expect(u.format(3, "count")).toBe("3");
+    expect(parseChainage("4+233.8", u)).toBeCloseTo(4233.8, 9);
+    expect(parseChainage("0+005.3", u)).toBeCloseTo(5.3, 9);
+    expect(parseChainage("12+400", u)).toBe(12400);
+    expect(parseChainage("4233.8", u)).toBeCloseTo(4233.8, 9);
+    expect(parseChainage("4,233.8", u)).toBeCloseTo(4233.8, 9);
+    expect(parseChainage("12,400", u)).toBe(12400);
+    expect(parseChainage("4+1000", u)).toBeNull();
+    expect(parseChainage("4+23x", u)).toBeNull();
+    expect(parseChainage("", u)).toBeNull();
+    // In feet the readout is plain feet, and a plain number is feet; the km form stays metres.
+    u.set("ft");
+    expect(formatChainage(4233.8, u)).toBe("13890.4 ft");
+    expect(parseChainage("13890.4 ft", u)).toBeCloseTo(13890.4 * M_PER_FT, 9);
+    expect(parseChainage("13890.4", u)).toBeCloseTo(13890.4 * M_PER_FT, 9);
+    expect(parseChainage("4+233.8", u)).toBeCloseTo(4233.8, 9);
   });
 });
 

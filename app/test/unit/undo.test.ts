@@ -96,16 +96,26 @@ describe("drafts, undo and the 412 flow", () => {
     expect(typeof offer.keepMine).toBe("function");
     expect(typeof offer.takeTheirs).toBe("function");
 
-    // Keep mine: my change lands on top of theirs, with If-Match on theirs.
+    // The offer says what each side changed from my base: they moved both PVIs, I changed P1's level.
+    expect(offer.changes.mine.map((c) => [c.path, c.before, c.after])).toEqual([["/data/st/P1", 205, 207]]);
+    expect(offer.changes.theirs.map((c) => [c.path, c.before, c.after])).toEqual([
+      ["/data/pvi/0/1", 200, 199],
+      ["/data/pvi/1/1", 212.5, 210],
+    ]);
+    expect(offer.changes.both).toEqual([]);
+
+    // Keep mine: my change lands on top of theirs, with If-Match on theirs. Their PVIs, which I never touched,
+    // stay as they saved them (a whole-document save would have put my base's PVIs back).
     const kept = await offer.keepMine();
     expect(kept.version).toBe(6);
     expect(kept.data).toEqual({
       pvi: [
-        [100, 200],
-        [900, 212.5],
+        [100, 199],
+        [900, 210],
       ],
       st: { P1: 207 },
     });
+    expect(hub.log.filter((l) => l.method === "PATCH").at(-1)?.status).toBe(200);
     expect(hub.log.filter((l) => l.method === "PATCH").at(-1)?.headers["if-match"]).toBe('"main:5"');
     expect(deps.drafts.all()).toEqual([]);
 
@@ -136,6 +146,55 @@ describe("drafts, undo and the 412 flow", () => {
       ],
       st: {},
     });
+  });
+
+  it("Keep mine sends only my changes, keeps their other fields, and names the fields both changed", async () => {
+    // Two tabs on Line 6's profile: tab B types PVI 10's level, tab A saves PVI 11's level first (usability-1).
+    const pvi = Array.from({ length: 12 }, (_, i) => [i * 500, 190 + i]);
+    hub.seed({ kind: "profile", id: "L9", data: { pvi, st: { P1: 150 } } });
+    const deps = app();
+    const view = makeView({ layer: "main" });
+    const rec = await deps.records.get("profile", "L9", view);
+    deps.drafts.edit(rec, view, [{ op: "replace", path: "/data/pvi/9/1", value: 232 }]);
+    const theirs = structuredClone(pvi);
+    (theirs[10] as number[])[1] = 191.5;
+    hub.write("main", "profile", "L9", { pvi: theirs, st: { P1: 150 } }, "ben-tab-a");
+    const key = deps.drafts.key("profile", "L9", view);
+    const out = await save(deps, key);
+    expect(out.status).toBe("stale");
+    const offer = (out as { offer: import("../../src/core/save.ts").StaleOffer }).offer;
+    expect(offer.changes.mine.map((c) => c.path)).toEqual(["/data/pvi/9/1"]);
+    expect(offer.changes.theirs.map((c) => [c.path, c.after])).toEqual([["/data/pvi/10/1", 191.5]]);
+    expect(offer.changes.both).toEqual([]);
+    const kept = await offer.keepMine();
+    // The patch carried my one field only; tab A's 191.5 stays.
+    const sent = hub.log.filter((l) => l.method === "PATCH" && l.url.includes("/k/profile/L9")).at(-1);
+    expect(sent?.status).toBe(200);
+    expect((kept.data.pvi as number[][])[9]).toEqual([4500, 232]);
+    expect((kept.data.pvi as number[][])[10]).toEqual([5000, 191.5]);
+
+    // A note changed in two places at once (data-12, spec-4): their title stays, my text goes on top.
+    hub.seed({ kind: "note", id: "N7", data: { text: "a", title: "old title" } });
+    const note = await deps.records.get("note", "N7", view);
+    deps.drafts.edit(note, view, [{ op: "replace", path: "/data/text", value: "my edit" }]);
+    hub.write("main", "note", "N7", { text: "a", title: "new title" }, "crhub rec");
+    const o2 = (await save(deps, deps.drafts.key("note", "N7", view))) as {
+      offer: import("../../src/core/save.ts").StaleOffer;
+    };
+    expect((await o2.offer.keepMine()).data).toEqual({ text: "my edit", title: "new title" });
+
+    // Both change the same field: the offer names it with the three values, and Keep mine puts mine there.
+    deps.drafts.edit(kept, view, [{ op: "replace", path: "/data/pvi/9/1", value: 233 }]);
+    const both = structuredClone(kept.data.pvi as number[][]);
+    (both[9] as number[])[1] = 240;
+    (both[2] as number[])[1] = 180;
+    hub.write("main", "profile", "L9", { pvi: both, st: { P1: 150 } }, "other");
+    const o3 = (await save(deps, key)) as { offer: import("../../src/core/save.ts").StaleOffer };
+    expect(o3.offer.changes.both).toEqual([{ path: "/data/pvi/9/1", base: 232, mine: 233, theirs: 240 }]);
+    const third = await o3.offer.keepMine();
+    expect((third.data.pvi as number[][])[9]).toEqual([4500, 233]);
+    expect((third.data.pvi as number[][])[2]).toEqual([1000, 180]);
+    expect(deps.drafts.all()).toEqual([]);
   });
 
   it("a second save while the first is in flight waits for it and sends only the newer edits", async () => {

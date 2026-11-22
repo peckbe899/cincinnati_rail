@@ -115,7 +115,13 @@ export class Api {
       });
     } catch (e) {
       if ((e as Error)?.name === "AbortError") throw e;
-      throw new ApiError({ status: 0, code: "network", detail: `The hub did not answer (${String(e)}).` });
+      throw new ApiError({
+        status: 0,
+        code: "network",
+        detail:
+          "The hub is not answering. Is it running? Start it from the repo folder with .\\crhub (or crhub serve). Unsaved edits stay in this tab, and the app reconnects by itself.",
+        cause: String(e),
+      });
     }
     const etag = res.headers.get("ETag");
     if (res.status === 304 && cached)

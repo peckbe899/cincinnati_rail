@@ -52,6 +52,11 @@ export class UndoStack {
     return this.done[this.done.length - 1] ?? null;
   }
 
+  /** The label of what Ctrl+Shift+Z would redo. */
+  peekRedo(): UndoEntry | null {
+    return this.undone[this.undone.length - 1] ?? null;
+  }
+
   async undo(): Promise<WriteResult | null> {
     return this.step(this.done, this.undone);
   }

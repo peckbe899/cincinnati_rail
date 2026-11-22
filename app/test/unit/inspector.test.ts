@@ -99,4 +99,104 @@ describe("inspector form", () => {
     expect(defaultFor(schema)).toEqual({ text: "", level: 0 });
     expect(defaultFor({ type: "array", prefixItems: [{ type: "number" }, { type: "number" }] })).toEqual([0, 0]);
   });
+
+  it("shows references and id keys by name, keeps every stored digit, and asks before removing many values", () => {
+    // A section as the kind file writes it: route through a local $ref, scale a ratio, path a long list.
+    const section: JsonSchema = {
+      type: "object",
+      required: ["name", "scale"],
+      $defs: { id: { type: ["string", "null"], pattern: "^[0-7][0-9A-HJKMNP-TV-Z]{25}$" } },
+      properties: {
+        name: { type: "string" },
+        route: { description: "The route this section belongs to.", $ref: "#/$defs/id" },
+        scale: { type: "number", "x-unit": "ratio" },
+        lon: { type: "number", "x-unit": "deg" },
+        path: { type: "array", items: { type: "array", prefixItems: [{ type: "number", "x-unit": "m" }] } },
+        st: { type: "object", additionalProperties: { type: ["number", "null"], "x-unit": "m" } },
+        del: { type: "array", items: { type: "string" } },
+      },
+    };
+    const ROUTE = "01DXF6DT00BGVCFV19RSHKD3VH";
+    const PB = "01DXF6DT00ZFVP0VMY5AH612Y8";
+    const PL = "01DXF6DT00PJFDTH9QH6NEQMFX";
+    const names: Record<string, string> = { [ROUTE]: "Line 6", [PB]: "Bond Hill", [PL]: "Lytle Park" };
+    const value = {
+      name: "Line 6",
+      route: ROUTE,
+      scale: 0.99983821,
+      lon: -84.4781079,
+      path: Array.from({ length: 759 }, (_, i) => [i]),
+      st: { [PB]: 162.7 },
+      del: [PL],
+    };
+    const ops: JsonPatch[] = [];
+    const asked: string[] = [];
+    const opened: string[] = [];
+    document.body.replaceChildren(
+      buildForm(section, value, {
+        units: new Units(),
+        onPatch: (p) => ops.push(p),
+        refs: [{ path: "/route", kind: "route" }],
+        name: (_k, id) => names[id] ?? id,
+        open: (k, id) => opened.push(`${k}:${id}`),
+        confirm: (t) => {
+          asked.push(t);
+          return false;
+        },
+      }),
+    );
+    // usability-5 (6): the route is a picker showing "Line 6", with Open; no quoted ULID in a JSON box.
+    const route = input("route") as unknown as HTMLSelectElement;
+    expect(route.tagName).toBe("SELECT");
+    expect(route.selectedOptions[0]?.textContent).toBe("Line 6");
+    expect(document.querySelector("textarea")).toBeNull();
+    [...document.querySelectorAll("button")].find((b) => b.textContent === "Open")?.click();
+    expect(opened).toEqual([`route:${ROUTE}`]);
+    // usability-5 (7): a platform-keyed level is labelled by the platform's name; a platform id value shows its name.
+    expect(input("Bond Hill").value).toBe("162.7");
+    expect(document.body.textContent).toContain("Lytle Park");
+    // usability-11: the stored digits, not three decimals.
+    expect(input("scale").value).toBe("0.99983821");
+    expect(input("lon").value).toBe("-84.4781079");
+    // usability-17: 759 path points are folded, so no point has a remove button until asked for.
+    expect(document.body.textContent).toContain("Show the 759 items");
+    expect([...document.querySelectorAll("button")].filter((b) => b.textContent === "−").length).toBe(1);
+    // Removing the whole path asks first, naming the count; a "no" sends nothing.
+    const removePath = [...document.querySelectorAll("fieldset")]
+      .find((f) => f.querySelector("legend")?.textContent === "path (759)")
+      ?.querySelector('button[title="Remove this field"]') as HTMLButtonElement;
+    removePath.click();
+    expect(asked).toEqual(["Remove path, all 759 items of it?"]);
+    expect(ops).toEqual([]);
+  });
+
+  it("keeps a reference that may name several kinds (a param's scope) a plain field, never a picker of none", () => {
+    // /meta sends param.yaml's ref {path: /scope/id, kind: [route, section]}: there is no one list to pick from.
+    const param: JsonSchema = {
+      type: "object",
+      properties: {
+        scope: { type: "object", properties: { kind: { type: "string" }, id: { type: "string" } } },
+      },
+    };
+    const asked: string[] = [];
+    document.body.replaceChildren(
+      buildForm(
+        param,
+        { scope: { kind: "section", id: "01DXF6DT00BGVCFV19RSHKD3VH" } },
+        {
+          units: new Units(),
+          onPatch: () => {},
+          refs: [{ path: "/scope/id", kind: ["route", "section"] }],
+          choices: async (k) => {
+            asked.push(k);
+            return [];
+          },
+        },
+      ),
+    );
+    const id = input("id");
+    expect(id.tagName).toBe("INPUT");
+    expect(id.value).toBe("01DXF6DT00BGVCFV19RSHKD3VH");
+    expect(asked).toEqual([]);
+  });
 });

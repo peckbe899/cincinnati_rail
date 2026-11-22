@@ -60,11 +60,17 @@ def error_of(status: int, body: Any) -> E.HubError:
     return RemoteError(status, detail, code=code or f"http_{status}")
 
 
+# The hub is loopback only, so its requests never go through a proxy: Python honours HTTP_PROXY and, on Windows, the
+# Internet Settings proxy, whose "<local>" bypass does not cover dotted hosts such as 127.0.0.1 (doctor does the same).
+_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
+
 class HubClient:
     """Requests to one hub at ``base`` (``http://127.0.0.1:8766``)."""
 
     def __init__(self, base: str, *, client: str = "crhub-cli", by: str | None = None, timeout: float = 60.0) -> None:
         self.base = base.rstrip("/")
+        self.holder: lock.Holder | None = None
         self.client = client
         self.by = by
         self.timeout = timeout
@@ -93,7 +99,7 @@ class HubClient:
             data = json.dumps({} if json_body is None else json_body, ensure_ascii=False).encode("utf-8")
         req = urllib.request.Request(self.url(path, query), data=data, method=method.upper(), headers=h)
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:  # noqa: S310 - loopback only
+            with _OPENER.open(req, timeout=self.timeout) as resp:  # noqa: S310 - loopback only
                 raw = resp.read()
                 return resp.status, dict(resp.headers.items()), _decode(raw, resp.headers.get("Content-Type"))
         except urllib.error.HTTPError as e:
@@ -117,11 +123,14 @@ def _decode(raw: bytes, content_type: str | None) -> Any:
 
 def running_hub(var: Path | None = None, **kw: Any) -> HubClient | None:
     """A client of the hub serving from ``var`` (by the holder of ``var/hub.lock``), or ``None`` when no serve holds
-    it. A holder that serves nothing (``crhub jobs run``, port 0) gives ``None`` too; ``lock.reader`` names it."""
+    it. A holder that serves nothing (``crhub jobs run``, port 0) gives ``None`` too; ``lock.reader`` names it. The URL
+    uses the host the serve recorded (``--host ::1`` is dialled as ``[::1]``); ``client.holder`` is the holder."""
     holder = lock.reader(Path(var) if var is not None else paths.var_root())
     if holder is None or not holder.port or not holder.command.startswith("crhub serve"):
         return None
-    return HubClient(f"http://127.0.0.1:{holder.port}", **kw)
+    client = HubClient(holder.url(), **kw)
+    client.holder = holder
+    return client
 
 
 __all__ = ["HubClient", "RemoteError", "error_of", "running_hub"]

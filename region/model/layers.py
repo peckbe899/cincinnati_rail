@@ -165,6 +165,19 @@ def create(
             f"layer slug {slug!r} does not match tier {tier!r}: {rule}",
             errors=[{"path": "/slug", "message": rule}],
         )
+    if tier == "proposal":
+        # a proposal's name is its folder in region/seed/proposals: a name Windows cannot hold (aux, con, nul, com1,
+        # a trailing dot) is refused here, not at the first export
+        from region.core import paths
+
+        name = slug.split(":", 1)[1]
+        try:
+            paths.check_name(name)
+        except paths.UnsafePath as e:
+            raise Invalid(
+                f"proposal name {name!r} cannot be a folder on Windows ({e.detail}); pick another name",
+                errors=[{"path": "/slug", "message": "a name Windows cannot hold as a folder"}],
+            ) from None
     layers = load(con)
     if slug in layers.by_slug:
         raise Conflict(f"layer {slug!r} exists", reason="exists", conflicts=[{"kind": "layer", "id": slug}])

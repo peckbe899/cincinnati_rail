@@ -98,6 +98,7 @@ class _Sidecar:
         self._wlock = threading.Lock()  # stdin, apart, so a long write never holds up the reader
         self._next_id = 1
         self._dead: EngineUnavailable | None = None
+        self._culprit: int | None = None  # the call whose timeout killed the process; the others were bystanders
         self._hello: Future[dict[str, Any]] = Future()
         try:
             self.proc = subprocess.Popen(
@@ -189,12 +190,27 @@ class _Sidecar:
                     stderr_tail=self.stderr_tail(),
                 )
             dead = self._dead
-            pending = list(self._pending.values())
+            culprit = self._culprit
+            pending = list(self._pending.items())
             self._pending.clear()
         if not self._hello.done():
             self._hello.set_exception(dead)
-        for fut, _ in pending:
-            if not fut.done():
+        for rid, (fut, _) in pending:
+            if fut.done():
+                continue
+            if culprit is not None and rid != culprit:
+                # killed for another call's timeout: this call did nothing wrong, so it is sent again to a fresh
+                # sidecar (engine methods are pure) instead of failing, and caching, as that call's timeout
+                fut.set_exception(
+                    _NotSent(
+                        EngineUnavailable(
+                            f"the engine sidecar {self.name} was killed when another call timed out",
+                            reason="crashed",
+                            stderr_tail=dead.stderr_tail,
+                        )
+                    )
+                )
+            else:
                 fut.set_exception(_copy_unavailable(dead))
 
     # --------------------------------------------------------------------------------------------------- calls
@@ -213,8 +229,17 @@ class _Sidecar:
     def _dead_or_timeout(self) -> EngineUnavailable:
         return self._dead or EngineUnavailable("the engine timed out", reason="timeout")
 
-    def call(self, method: str, params: Any, timeout_s: float, progress: ProgressFn | None) -> dict[str, Any]:
-        """One call. ``_NotSent`` when the request never reached the process (it was already gone)."""
+    def call(
+        self,
+        method: str,
+        params: Any,
+        timeout_s: float,
+        progress: ProgressFn | None,
+        cancel: threading.Event | None = None,
+    ) -> dict[str, Any]:
+        """One call. ``_NotSent`` when the request never reached the process (it was already gone). With ``cancel``,
+        a call still open ``CANCEL_GRACE_S`` after the event is set is ended: the process is killed (the other calls
+        on it are sent again) and the call fails with ``EngineUnavailable(reason="cancelled")``."""
         fut: Future[dict[str, Any]] = Future()
         with self._lock:
             if self._dead is not None:
@@ -242,18 +267,35 @@ class _Sidecar:
             self.kill("crashed", f"the engine sidecar {self.name} stopped reading")
             self._close_stdin()
             raise _NotSent(self._dead_or_timeout()) from None
-        try:
-            return fut.result(timeout=timeout_s)
-        except FutureTimeout:
-            detail = f"{method} took longer than {timeout_s:g} s; the engine sidecar {self.name} was killed"
-            self.kill("timeout", detail)
-            raise _copy_unavailable(self._dead_or_timeout()) from None
+        end = time.monotonic() + timeout_s
+        cancelled_at: float | None = None
+        while True:
+            left = end - time.monotonic()
+            if cancel is not None and cancelled_at is None and cancel.is_set():
+                cancelled_at = time.monotonic()
+            if cancelled_at is not None:
+                left = min(left, cancelled_at + CANCEL_GRACE_S - time.monotonic())
+            if left <= 0:
+                break
+            try:
+                return fut.result(timeout=min(left, CANCEL_POLL_S) if cancel is not None else left)
+            except FutureTimeout:
+                continue
+        if cancelled_at is not None and time.monotonic() < end:
+            detail = f"{method} was cancelled; the engine sidecar {self.name} was killed {CANCEL_GRACE_S:g} s later"
+            self.kill("cancelled", detail, culprit=rid)
+            raise EngineUnavailable(detail, reason="cancelled") from None
+        detail = f"{method} took longer than {timeout_s:g} s; the engine sidecar {self.name} was killed"
+        self.kill("timeout", detail, culprit=rid)
+        raise _copy_unavailable(self._dead_or_timeout()) from None
 
-    def kill(self, reason: str, detail: str) -> None:
-        """Kill the process now; open calls fail with ``EngineUnavailable(reason)``."""
+    def kill(self, reason: str, detail: str, *, culprit: int | None = None) -> None:
+        """Kill the process now; open calls fail with ``EngineUnavailable(reason)``. With ``culprit`` (the id of the
+        call that timed out), the other open calls are sent again by the pool instead (``_NotSent``)."""
         with self._lock:
             if self._dead is None:
                 self._dead = EngineUnavailable(detail, reason=reason, stderr_tail=self.stderr_tail())
+                self._culprit = culprit
         try:
             self.proc.kill()
         except OSError:
@@ -283,6 +325,14 @@ class _Sidecar:
             except (OSError, subprocess.TimeoutExpired):
                 pass
         self._reader.join(timeout=CLOSE_WAIT_S)
+
+
+# A cancelled call (its job superseded) is ended this long after the cancel, as a process job is (section 6).
+CANCEL_GRACE_S = 1.0
+CANCEL_POLL_S = 0.05
+
+# Refusals that no waiting changes: the pool answers them at once rather than sleeping out the crash backoff.
+PERMANENT = frozenset({"no_node", "node_version", "contract"})
 
 
 class _NotSent(Exception):
@@ -329,11 +379,15 @@ class _Ring:
 class Pool:
     """A pool of ``size`` engine sidecars; see the module docstring.
 
+    ``supports_cancel``: ``call`` takes a ``cancel`` event (the scheduler's engine host passes a job's token).
+
     ``node`` is the Node executable (``engine.node`` of the config by default) and ``argv`` replaces the whole
     sidecar command (tests use it to run a misbehaving sidecar). ``env`` is the children's environment (this
     process's by default). Thread-safe: calls from many threads share the sidecars, each multiplexing its open
     calls by id.
     """
+
+    supports_cancel = True
 
     def __init__(
         self,
@@ -361,6 +415,7 @@ class Pool:
         self._slots: list[_Sidecar | None] = [None] * self.size
         self._failures = [0] * self.size
         self._failed_at = [0.0] * self.size
+        self._fail_reason: list[str | None] = [None] * self.size
         self._hellos: list[dict[str, Any] | None] = [None] * self.size
         self._locks = [threading.Lock() for _ in range(self.size)]
         self._build: str | None = None
@@ -398,7 +453,9 @@ class Pool:
                 return sc
             if sc is not None:
                 self._slots[slot] = None
-            if self._failures[slot]:
+            if self._failures[slot] and self._fail_reason[slot] not in PERMANENT:
+                # back off after a sidecar that started and crashed; a configuration error (no Node, an old Node, a
+                # contract mismatch) is answered at once instead, since waiting does not change it
                 first, most = self._backoff
                 wait = min(first * 2 ** (self._failures[slot] - 1), most)
                 left = self._failed_at[slot] + wait - time.monotonic()
@@ -414,8 +471,8 @@ class Pool:
                 except EngineUnavailable as e:
                     sc.kill("contract", e.detail)
                     raise EngineUnavailable(e.detail, reason="contract", stderr_tail=sc.stderr_tail()) from None
-            except EngineUnavailable:
-                self._failed(slot)
+            except EngineUnavailable as e:
+                self._failed(slot, e.reason)
                 raise
             self._slots[slot] = sc
             self._hellos[slot] = hello
@@ -440,9 +497,10 @@ class Pool:
                     reason="contract",
                 )
 
-    def _failed(self, slot: int) -> None:
+    def _failed(self, slot: int, reason: str | None = None) -> None:
         self._failures[slot] += 1
         self._failed_at[slot] = time.monotonic()
+        self._fail_reason[slot] = reason
 
     def hello(self) -> dict[str, Any]:
         """The hello body of the engine (slot 0's sidecar, started if need be)."""
@@ -459,8 +517,10 @@ class Pool:
         timeout_s: float | None = None,
         key: str | None = None,
         progress: ProgressFn | None = None,
+        cancel: threading.Event | None = None,
     ) -> dict[str, Any]:
-        """Call ``method`` on the sidecar of ``key`` (the params' ``section_id`` by default)."""
+        """Call ``method`` on the sidecar of ``key`` (the params' ``section_id`` by default). ``cancel`` ends the call
+        ``CANCEL_GRACE_S`` after it is set (see ``_Sidecar.call``)."""
         if key is None:
             sid = params.get("section_id") if isinstance(params, dict) else None
             key = str(sid) if sid is not None else method
@@ -469,7 +529,7 @@ class Pool:
         for attempt in (1, 2):
             sc = self._sidecar(slot)
             try:
-                result = sc.call(method, params, t, progress)
+                result = sc.call(method, params, t, progress, cancel)
             except _NotSent as e:
                 # the sidecar was gone before the request was written: start another and send it there, once
                 self._failed(slot)

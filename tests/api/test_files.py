@@ -105,3 +105,12 @@ def test_app_not_built(client):
     r = client.get("/")
     assert r.status_code == 503 and "crhub setup" in r.text
 
+
+
+def test_a_range_past_the_end_of_a_file_is_a_problem(client, tier):
+    """server-9: Starlette answered a bare 416 with no body for a file; it is RFC 9457 like every other error."""
+    size = (tier / "plain.bin").stat().st_size
+    r = client.get("/api/v1/data/files/plain.bin", headers={"Range": f"bytes={size + 10}-"})
+    assert r.status_code == 416 and r.headers["content-type"].startswith("application/problem+json")
+    assert r.json()["code"] == "range_not_satisfiable" and r.json()["request_id"]
+    assert r.headers["content-range"] == f"bytes */{size}"

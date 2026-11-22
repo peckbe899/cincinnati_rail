@@ -69,3 +69,68 @@ export async function lookup(api: Api, meta: Meta, raw: string, signal?: AbortSi
   );
   return found.filter((h): h is LegacyHit => h !== null);
 }
+
+/** A record found by its name. */
+export interface NameHit {
+  kind: string;
+  id: string;
+  name: string;
+  /** The section a platform or a stop is on, when the record says it. */
+  section: string | null;
+  /** A station's old key ("Line_3|Bond Hill"), which says its line. */
+  key: string | null;
+}
+
+/** The kinds Ctrl+K searches by name, the likeliest first. */
+export const NAME_KINDS = ["section", "route", "station", "platform"];
+
+/** The ways a name may be typed: "Line6", "line_6" and "Line 6" all look for "Line 6". */
+export function nameQueries(text: string): string[] {
+  const t = text.trim();
+  const spaced = t
+    .replace(/_/g, " ")
+    .replace(/([A-Za-z])(\d)/g, "$1 $2")
+    .replace(/\s+/g, " ");
+  return [...new Set([t, spaced])].filter((q) => q.length >= 2);
+}
+
+/** Records whose name matches the text (the server's name search, /k/<kind>?q=), a few per kind. */
+export async function searchNames(
+  api: Api,
+  view: import("../../core/view.ts").View,
+  text: string,
+  signal?: AbortSignal,
+  kinds: string[] = NAME_KINDS,
+  perKind = 8,
+): Promise<NameHit[]> {
+  const qs = nameQueries(text);
+  const found = await Promise.all(
+    kinds.flatMap((kind) =>
+      qs.map(async (q) => {
+        if (signal?.aborted) return [];
+        try {
+          const { items } = await api.list(kind, view, { q, limit: perKind, fields: "name,key,section" });
+          return items.map((r) => {
+            const d = r.data as Record<string, unknown>;
+            return {
+              kind,
+              id: r.id,
+              name: typeof d.name === "string" ? d.name : r.id,
+              section: typeof d.section === "string" ? d.section : null,
+              key: typeof d.key === "string" ? d.key : null,
+            };
+          });
+        } catch {
+          return [];
+        }
+      }),
+    ),
+  );
+  const seen = new Set<string>();
+  return found.flat().filter((h) => {
+    const k = `${h.kind}:${h.id}`;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}

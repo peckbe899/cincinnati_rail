@@ -1,0 +1,13 @@
+# The same test kind at version 2, with its upgrader in ../upgrade/t_up.py (data-8).
+kind: t_up
+version: 2
+geometry: none
+seeded: true
+schema:
+  type: object
+  additionalProperties: false
+  required: [text, label]
+  properties:
+    text: {type: string}
+    title: {type: [string, "null"]}
+    label: {type: string}

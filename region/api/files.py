@@ -29,7 +29,7 @@ from region.core import paths
 from region.core.errors import NotFound
 
 from .context import hub_of
-from .http import etag_matches, media_type, not_modified
+from .http import RangeNotSatisfiable, byte_range, etag_matches, media_type, not_modified, range_problem
 
 router = APIRouter(tags=["files"])
 app_router = APIRouter(include_in_schema=False)
@@ -65,6 +65,16 @@ def file_response(request: Request, path: Path, *, cache_control: str = REVALIDA
     tag = f'"{st.st_size:x}-{st.st_mtime_ns:x}"'
     if etag_matches(request.headers.get("if-none-match"), tag):
         return not_modified(tag, cache_control=cache_control)
+    rng = request.headers.get("range")
+    if rng and (request.headers.get("if-range") or tag).strip() == tag:
+        try:
+            byte_range(rng, st.st_size)
+        except RangeNotSatisfiable:
+            from . import problem
+
+            return range_problem(st.st_size, {"ETag": tag}, problem.request_id_of(request))
+        except ValueError:
+            pass  # a Range header this server does not parse: the whole file, as Starlette serves it
     return FileResponse(
         path,
         media_type=media_type(path),

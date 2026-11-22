@@ -72,12 +72,15 @@ PING = b": ping\n\n"
 
 
 class _Client:
-    __slots__ = ("closed", "overflow", "queue")
+    __slots__ = ("closed", "floor", "overflow", "queue")
 
     def __init__(self, size: int) -> None:
         self.queue: asyncio.Queue[Item] = asyncio.Queue(size)
         self.overflow = False
         self.closed = False
+        # the seq a resync sent this client covered: durable items at or below it never enter its queue, so the
+        # tailer's backlog after an overflow cannot fill the queue again with events the resync already covered
+        self.floor = 0
 
 
 class EventHub:
@@ -185,6 +188,8 @@ class EventHub:
                     c.queue.put_nowait(None)
                 continue
             if c.overflow:
+                continue
+            if item[0] == "durable" and item[1] is not None and item[1] <= c.floor:
                 continue
             try:
                 c.queue.put_nowait(item)
@@ -300,6 +305,7 @@ class EventHub:
                         client.queue.get_nowait()
                     client.overflow = False
                     sent = int(await anyio.to_thread.run_sync(store.last_seq))
+                    client.floor = max(client.floor, sent)
                     yield sse("resync", {"reason": "overflow", "seq": sent})
                     continue
                 try:

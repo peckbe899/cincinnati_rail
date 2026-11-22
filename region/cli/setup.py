@@ -56,6 +56,8 @@ class Step:
     action: Callable[[], int] | None = None
     skip: str | None = None
     hint: str = ""
+    # run before the command: a message means the step cannot run now (it fails with that message)
+    check: Callable[[], str | None] | None = None
 
     def describe(self) -> str:
         if self.skip:
@@ -120,8 +122,130 @@ def child_env(environ: Mapping[str, str] | None = None) -> dict[str, str]:
 # ----------------------------------------------------------------------------------------------------- the steps
 
 
-def python_steps(repo: Path, environ: Mapping[str, str], which: Callable[[str], str | None]) -> tuple[list[Step], Path]:
-    """Step 1: uv, or the venv and pip path; and the environment it installs into."""
+IN_USE_HINT = (
+    "If pip or uv says [WinError 5] Access is denied or [WinError 32], another program runs from the environment "
+    "(the old hub, python hub\\hub.py): stop it with Ctrl+C in its window and run setup again."
+)
+
+
+def _own_pids() -> set[int]:
+    """This process and its ancestors (``.\\crhub setup`` runs under the venv's launcher, which is not another
+    program)."""
+    out = {os.getpid()}
+    try:
+        out.add(os.getppid())
+    except OSError:
+        pass
+    if sys.platform == "win32":
+        parents = _win_parents()
+        pid = os.getpid()
+        while pid and len(out) < 64:
+            out.add(pid)
+            pid = parents.get(pid, 0)
+            if pid in out:
+                break
+    return out
+
+
+def _win_processes() -> list[tuple[int, int, str]]:  # pragma: no cover - Windows only
+    """``(pid, parent pid, executable path)`` of every process this user can query (Toolhelp32 and
+    ``QueryFullProcessImageNameW``)."""
+    import ctypes
+    from ctypes import wintypes
+
+    class Entry(ctypes.Structure):  # PROCESSENTRY32W
+        _fields_ = [
+            ("dwSize", wintypes.DWORD), ("cntUsage", wintypes.DWORD), ("th32ProcessID", wintypes.DWORD),
+            ("th32DefaultHeapID", ctypes.c_size_t), ("th32ModuleID", wintypes.DWORD), ("cntThreads", wintypes.DWORD),
+            ("th32ParentProcessID", wintypes.DWORD), ("pcPriClassBase", ctypes.c_long), ("dwFlags", wintypes.DWORD),
+            ("szExeFile", ctypes.c_wchar * 260),
+        ]  # fmt: skip
+
+    k32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    k32.CreateToolhelp32Snapshot.restype = wintypes.HANDLE
+    k32.CreateToolhelp32Snapshot.argtypes = [wintypes.DWORD, wintypes.DWORD]
+    k32.Process32FirstW.argtypes = k32.Process32NextW.argtypes = [wintypes.HANDLE, ctypes.POINTER(Entry)]
+    k32.OpenProcess.restype = wintypes.HANDLE
+    k32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    k32.QueryFullProcessImageNameW.argtypes = [
+        wintypes.HANDLE, wintypes.DWORD, wintypes.LPWSTR, ctypes.POINTER(wintypes.DWORD)
+    ]  # fmt: skip
+    k32.CloseHandle.argtypes = [wintypes.HANDLE]
+    snap = k32.CreateToolhelp32Snapshot(0x2, 0)  # TH32CS_SNAPPROCESS
+    if not snap or snap == ctypes.c_void_p(-1).value:
+        return []
+    out: list[tuple[int, int, str]] = []
+    try:
+        e = Entry()
+        e.dwSize = ctypes.sizeof(Entry)
+        ok = k32.Process32FirstW(snap, ctypes.byref(e))
+        while ok:
+            exe = ""
+            h = k32.OpenProcess(0x1000, False, e.th32ProcessID)  # PROCESS_QUERY_LIMITED_INFORMATION
+            if h:
+                try:
+                    buf = ctypes.create_unicode_buffer(1024)
+                    size = wintypes.DWORD(len(buf))
+                    if k32.QueryFullProcessImageNameW(h, 0, buf, ctypes.byref(size)):
+                        exe = buf.value
+                finally:
+                    k32.CloseHandle(h)
+            out.append((int(e.th32ProcessID), int(e.th32ParentProcessID), exe))
+            ok = k32.Process32NextW(snap, ctypes.byref(e))
+    finally:
+        k32.CloseHandle(snap)
+    return out
+
+
+def _win_parents() -> dict[int, int]:
+    try:
+        return {pid: ppid for pid, ppid, _ in _win_processes()}
+    except Exception:
+        return {}
+
+
+def venv_users(env_dir: Path, processes: Callable[[], list[tuple[int, int, str]]] | None = None) -> list[str]:
+    """Other programs running from ``env_dir``'s interpreters (``"pid 1234 C:\\...\\python.exe"``), on Windows,
+    where a package file such a program has loaded cannot be replaced. Empty elsewhere, or when the processes cannot
+    be listed."""
+    if processes is None:
+        if sys.platform != "win32":
+            return []
+        processes = _win_processes
+    try:
+        procs = processes()
+    except Exception:
+        return []
+    root = os.path.normcase(os.path.realpath(env_dir)) + os.sep
+    mine = _own_pids()
+    out = []
+    for pid, _ppid, exe in procs:
+        if pid in mine or not exe:
+            continue
+        if os.path.normcase(os.path.realpath(exe)).startswith(root):
+            out.append(f"pid {pid} {exe}")
+    return out
+
+
+def _env_free(env_dir: Path, processes: Callable[[], list[tuple[int, int, str]]] | None = None) -> str | None:
+    users = venv_users(env_dir, processes)
+    if not users:
+        return None
+    return (
+        f"another program runs from {env_dir} ({'; '.join(users[:3])}), probably the old hub (python hub\\hub.py). "
+        "Windows will not let pip or uv replace a package it has loaded. Stop it (Ctrl+C in its window), then run "
+        "crhub setup again; restart it afterwards."
+    )
+
+
+def python_steps(
+    repo: Path,
+    environ: Mapping[str, str],
+    which: Callable[[str], str | None],
+    processes: Callable[[], list[tuple[int, int, str]]] | None = None,
+) -> tuple[list[Step], Path]:
+    """Step 1: uv, or the venv and pip path; and the environment it installs into. Before installing, the step
+    checks that no other program runs from that environment (``venv_users``)."""
     uv = which("uv")
     if uv:
         env_dir = uv_env_dir(repo, environ)
@@ -130,7 +254,9 @@ def python_steps(repo: Path, environ: Mapping[str, str], which: Callable[[str], 
                 "python",
                 f"uv sync into {env_dir}",
                 argv=[uv, "sync", "--locked", "--inexact"],
-                hint="If it says the lock is out of date, git pull again; uv.lock is the lead's to change.",
+                hint="If it says the lock is out of date, git pull again; uv.lock is the lead's to change. "
+                + IN_USE_HINT,
+                check=lambda: _env_free(env_dir, processes),
             )
         ], env_dir
     venv = repo / ".venv"
@@ -155,7 +281,9 @@ def python_steps(repo: Path, environ: Mapping[str, str], which: Callable[[str], 
             "python",
             "pip install into .venv",
             argv=[str(py), "-m", "pip", "install", "-r", "requirements.lock", "-e", "."],
-            hint="Without uv, pip needs the network to fetch the wheels requirements.lock pins.",
+            hint=IN_USE_HINT + " Otherwise: without uv, pip needs the network to fetch the wheels requirements.lock "
+            "pins.",
+            check=lambda: _env_free(venv, processes),
         )
     )
     return steps, venv
@@ -389,7 +517,11 @@ def execute(p: Plan, *, runner: CommandRunner = run_command, environ: Mapping[st
         print(f"[{i}/{n}] {step.name:8} {step.describe()}", flush=True)
         if step.skip:
             continue
-        if step.argv:
+        why = step.check() if step.check is not None else None
+        if why:
+            print(f"crhub setup: {why}", file=sys.stderr)
+            code = 1
+        elif step.argv:
             code = runner(step.argv, p.repo, env)
         elif step.action:
             try:

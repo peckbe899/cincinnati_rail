@@ -11,12 +11,23 @@ A backup is written to a temporary name in the destination folder, checked, then
 retry on WinError 5 and 32 as ``fsio.write_atomic``), so a half-written backup never carries a backup's name. The
 destination passes the write guard (``fsio.check_write``). ``rebuild`` never touches the live database; a restore
 copies into it through the backup API, so an open WAL is handled by SQLite.
+
+**Restore and the seed.** A backup carries ``seed_base`` as it was when the backup was taken, so the seed import's
+rule "ours unchanged since the seed was last seen: take the seed" would silently undo the restore at the next start
+(``region/seed`` usually holds newer exports). So a restore marks every seeded layer (``meta.seed_restore``), and the
+next seed import of each such layer takes nothing silently: every record where ``region/seed`` and the restored
+database differ becomes a listed ``both_changed`` seed conflict. Ben keeps the restored revision (take ``ours``) or
+the seed's (take ``theirs``), one by one or with ``crhub conflicts resolve --all``.
+
+**Restore refuses** a file that is not a hub database (no ``schema_version`` table, such as the old hub's
+``hub.db``), and a hub database made by another ``crhub setup`` (another ``db_id``) unless ``force`` is given.
 """
 
 from __future__ import annotations
 
 import contextlib
 import datetime as dt
+import json
 import os
 import re
 import sqlite3
@@ -132,37 +143,106 @@ def backup(db: Path, dest: Path, reason: str) -> Path:
         con.close()
 
 
-def restore(src: Path, db: Path, *, backup_dir: Path | None = None) -> None:
+SEED_RESTORE_KEY = "seed_restore"
+SEEDED_TIERS = ("main", "proposal")
+
+
+def _table(con: sqlite3.Connection, name: str) -> bool:
+    return con.execute("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?", (name,)).fetchone() is not None
+
+
+def _meta_of(con: sqlite3.Connection) -> dict[str, str]:
+    if not _table(con, "meta"):
+        return {}
+    return {str(k): str(v) for k, v in con.execute("SELECT key, value FROM meta").fetchall()}
+
+
+def describe(path: Path) -> dict[str, object]:
+    """What a database file holds, for a restore's report: ``{"db_id", "schema", "records", "last_export"}`` (the
+    values a file does not have are ``None``). Read-only."""
+    con = sqlite3.connect(Path(path).resolve().as_uri() + "?mode=ro", uri=True)
+    try:
+        out: dict[str, object] = {"db_id": None, "schema": None, "records": None, "last_export": None}
+        if _table(con, "schema_version"):
+            row = con.execute("SELECT max(version) FROM schema_version").fetchone()
+            out["schema"] = row[0] if row else None
+        meta = _meta_of(con)
+        out["db_id"] = meta.get("db_id")
+        out["last_export"] = meta.get("last_export")
+        if _table(con, "rec"):
+            out["records"] = con.execute("SELECT count(*) FROM rec WHERE deleted = 0").fetchone()[0]
+        return out
+    finally:
+        con.close()
+
+
+def restore(src: Path, db: Path, *, backup_dir: Path | None = None, force: bool = False) -> dict[str, object]:
     """Replace the content of ``db`` with backup ``src``, after backing ``db`` up (reason ``pre-restore``).
 
-    ``src`` must pass ``quick_check``. No other connection may be writing ``db`` (the CLI holds the lock). The
-    restored database gets a new ``epoch`` in ``meta``, so clients resync.
+    ``src`` must pass ``quick_check`` and be a hub database (``schema_version``); one made by another ``crhub
+    setup`` (another ``db_id`` than ``db``'s) is refused unless ``force``. No other connection may be writing ``db``
+    (the CLI holds the lock). The restored database gets a new ``epoch`` in ``meta``, so clients resync, and its
+    seeded layers are marked for the next seed import (see the module doc). Returns ``{"pre_restore": path or
+    None, "replaced": describe(db) or None, "restored": describe(src), "seed_layers": [slug, ...]}``.
     """
     src = Path(src)
     db = Path(db)
     problems = quick_check(src)
     if problems:
         raise Invalid(f"{src} is not a sound database: " + "; ".join(problems))
+    restored = describe(src)
+    if restored["schema"] is None:
+        raise Invalid(
+            f"{src} is not a hub database (it has no schema_version table; the old hub's hub.db is not one). "
+            "Pick a file from the backups folder (crhub info shows where it is)."
+        )
+    replaced = describe(db) if db.is_file() else None
+    if (
+        not force
+        and replaced is not None
+        and replaced["db_id"] is not None
+        and restored["db_id"] is not None
+        and replaced["db_id"] != restored["db_id"]
+    ):
+        raise Invalid(
+            f"{src} is a backup of another database (db_id {restored['db_id']}), not of {db} "
+            f"(db_id {replaced['db_id']}). Pass --force to restore it anyway."
+        )
     fsio.check_write(db)
+    pre = None
     if db.is_file():
-        backup(db, Path(backup_dir) if backup_dir is not None else db.parent / "backups", "pre-restore")
+        pre = backup(db, Path(backup_dir) if backup_dir is not None else db.parent / "backups", "pre-restore")
     s = sqlite3.connect(src.resolve().as_uri() + "?mode=ro", uri=True)
     d = sqlite3.connect(str(db), isolation_level=None)
+    slugs: list[str] = []
     try:
         d.execute("PRAGMA busy_timeout=5000")
         s.backup(d)
         d.execute("PRAGMA journal_mode=WAL")
-        has_meta = d.execute("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'meta'").fetchone()
-        if has_meta:
+        if _table(d, "meta"):
+            epoch = ids.new()
             d.execute(
                 "INSERT INTO meta (key, value) VALUES ('epoch', ?) "
                 "ON CONFLICT (key) DO UPDATE SET value = excluded.value",
-                (ids.new(),),
+                (epoch,),
             )
+            if _table(d, "layer") and _table(d, "seed_base"):
+                marks = ",".join("?" * len(SEEDED_TIERS))
+                rows = d.execute(
+                    f"SELECT id, slug FROM layer WHERE tier IN ({marks}) ORDER BY id", SEEDED_TIERS
+                ).fetchall()
+                slugs = [r[1] for r in rows]
+                mark = {"epoch": epoch, "from": src.name, "at": _stamp(), "layers": [r[0] for r in rows]}
+                d.execute(
+                    "INSERT INTO meta (key, value) VALUES (?, ?) "
+                    "ON CONFLICT (key) DO UPDATE SET value = excluded.value",
+                    (SEED_RESTORE_KEY, json.dumps(mark, sort_keys=True)),
+                )
         d.execute("PRAGMA wal_checkpoint(TRUNCATE)")
     finally:
         d.close()
         s.close()
+    return {"pre_restore": pre, "replaced": replaced, "restored": restored, "seed_layers": slugs}
 
 
 def listing(dest: Path) -> list[BackupFile]:
@@ -192,8 +272,7 @@ def prune(dest: Path) -> list[Path]:
         if keep is None:
             continue
         for b in files[: max(0, len(files) - keep)]:
-            fsio.check_write(b.path)
-            b.path.unlink()
+            fsio.remove(b.path)  # retried while a scanner or sync client holds it (Windows)
             removed.append(b.path)
     return removed
 
@@ -220,4 +299,16 @@ def _backup_at(db: Path, dest: Path, reason: str, t: dt.datetime) -> Path:
         con.close()
 
 
-__all__ = ["KEEP", "BackupFile", "auto", "backup", "backup_connection", "listing", "prune", "quick_check", "restore"]
+__all__ = [
+    "KEEP",
+    "SEED_RESTORE_KEY",
+    "BackupFile",
+    "auto",
+    "backup",
+    "backup_connection",
+    "describe",
+    "listing",
+    "prune",
+    "quick_check",
+    "restore",
+]

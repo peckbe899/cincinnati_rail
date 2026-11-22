@@ -83,7 +83,7 @@ def test_import_namespaces_disjoint(store, main, monkeypatch):
     assert e.value.reason == "namespace"
     a = View(layer="import:test")
     body = {"data": {"name": "x", "class": "road"}, "geom": None}
-    store.write([Op("create", "feature", tid("x"), None, body=body)], a, by="t", message="")
+    store.apply_import(run(), [{"kind": "feature", "id": tid("x"), **body}], dry_run=False)
     other = ids.stable("test_b", "y")
     with pytest.raises(Conflict) as e:
         store.write([Op("create", "feature", other, None, body=body)], a, by="t", message="")
@@ -93,7 +93,13 @@ def test_import_namespaces_disjoint(store, main, monkeypatch):
     assert e.value.reason == "namespace"
     with pytest.raises(Invalid):
         store.write([Op("create", "feature", None, None, body=body)], a, by="t", message="")
-    store.write([Op("create", "feature", other, None, body=body)], View(layer="import:test_b"), by="t", message="")
+    store.apply_import(
+        run("import:test_b", "test_b"), [{"kind": "feature", "id": other, **body}], dry_run=False
+    )  # its own layer takes it, through its importer
+    # an authored write to an import layer is refused: the next import would replace or tombstone it (data-14)
+    with pytest.raises(Conflict) as e:
+        store.write([Op("create", "feature", ids.stable("test", "z"), None, body=body)], a, by="t", message="")
+    assert e.value.reason == "layer"
     # both import layers sit under main, side by side
     assert {r["layer"] for r in store.list("feature", main)[0]} == {"import:test", "import:test_b"}
     assert [r["id"] for r in store.list("feature", a)[0]] == sorted([tid("x"), other])

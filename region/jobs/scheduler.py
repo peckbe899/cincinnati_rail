@@ -61,7 +61,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from region.core import fsio, ids, paths
-from region.core.errors import EngineUnavailable, NotFound
+from region.core.errors import EngineUnavailable, HubError, NotFound
 from region.core.log import log_context
 from region.core.protocols import EngineClient, Output, Store, parse_ref, ref_job
 from region.core.view import View
@@ -231,6 +231,12 @@ class Scheduler:
             self._threads.append(t)
         rows = self.cache.query("SELECT * FROM job WHERE state = 'queued' AND key IS NULL")
         self._drain([("replan_job", dict(r)) for r in rows])
+        # a watched goal is planned again at start: a pull that changed the code (its hash), the engine source
+        # (engine_build) or a file it reads moves its key though no record changed (planning only, so cheap)
+        try:
+            self.replan_all()
+        except Exception:
+            log.exception("re-planning the watched goals at start failed; they are re-planned on their next change")
         self._wake.set()
         self._inval_wake.set()
         return self
@@ -359,19 +365,19 @@ class Scheduler:
         return out or {"key": plan.key, "state": "queued", "job": None}
 
     def result(self, type: str, scope: str, view: View) -> str | None:
-        """The latest ok result key of the goal ``(type, scope, view)``, or ``None``."""
-        token = view.token()
-        row = self.cache.one(
-            "SELECT latest_key FROM goal WHERE type = ? AND scope = ? AND view = ?", (type, scope, token)
-        )
-        if row is not None and row[0]:
-            return row[0]
-        row = self.cache.one(
-            "SELECT key FROM result WHERE type = ? AND scope = ? AND view = ? AND status = 'ok' "
-            "ORDER BY created DESC LIMIT 1",
-            (type, scope, token),
-        )
-        return row[0] if row is not None else None
+        """The key of the ok result of ``(type, scope, view)`` for its inputs as they are now, or ``None`` while that
+        result is not computed. The goal is planned again on every read, so an edit, an import, new code or an
+        eviction is never answered with an older result as if it were current; when the inputs cannot be planned
+        (the engine down, the scope gone) the answer is ``None`` too."""
+        try:
+            plan = self.planner.plan(type, scope, view)
+        except HubError:
+            return None
+        key = getattr(plan, "key", None)
+        if not key:
+            return None
+        row = self.cache.one("SELECT 1 FROM result WHERE key = ? AND status = 'ok'", (key,))
+        return key if row is not None else None
 
     def watch_goal(
         self,
@@ -1114,6 +1120,9 @@ class Scheduler:
         # still plans to it; each goal whose content moved during the run gets the work for its new key queued, so
         # a goal is never left holding a result its content no longer matches.
         moved_others: list[tuple[Plan, int]] = []
+        # goals whose content moved off this key during the run: they never get it as their latest result (nor a
+        # result event for it), only the work for their new key
+        moved_goals: set[tuple[str, str]] = set() if own_valid else {(s, v)}
         with self._lock, self.cache.tx() as con:
             others = [g for g in goals.wanting(con, t, key) if not (g["scope"] == s and g["view"] == v)]
         for g in others:
@@ -1122,6 +1131,8 @@ class Scheduler:
             except Exception as e:
                 log.warning("re-planning %s/%s in %s failed: %s", t, g["scope"], g["view"], e)
                 continue
+            if p.key != key:
+                moved_goals.add((g["scope"], g["view"]))
             if p.key == key and (own_valid or not truth):
                 valid = True
             else:
@@ -1215,6 +1226,8 @@ class Scheduler:
                     )
                     self._log(con, jid, "info", f"done in {ms:.0f} ms; output {enc.output_hash}")
                     for g in goals.wanting(con, t, key):
+                        if (g["scope"], g["view"]) in moved_goals:
+                            continue
                         prev = g.get("latest_key")
                         prev_hash = None
                         if prev and prev != key:
@@ -1348,7 +1361,10 @@ class Scheduler:
 
     # ----------------------------------------------------------------------------------------- invalidator
 
+    FILE_CHECK_S = 5.0
+
     def _invalidate_loop(self) -> None:
+        files_at = time.monotonic()
         while not self._stopping.is_set():
             self._inval_wake.wait(self.poll_s)
             self._inval_wake.clear()
@@ -1356,8 +1372,32 @@ class Scheduler:
                 return
             try:
                 self._invalidate_once()
+                if time.monotonic() - files_at >= self.FILE_CHECK_S:
+                    files_at = time.monotonic()
+                    self.check_files()
             except Exception:
                 log.exception("the invalidator failed; it carries on")
+
+    def check_files(self) -> set[str]:
+        """The ``file:`` refs of watched goals whose file no longer hashes as their result recorded (a golden
+        baseline rewritten, a rules file edited): those goals are planned again. Hashes come from the cache's
+        size-and-mtime cache, so an unchanged file costs one ``stat``. Returns the refs that moved."""
+        rows = self.cache.query(
+            "SELECT DISTINCT d.ref, d.ref_hash FROM result_dep d JOIN goal g ON g.latest_key = d.key "
+            "WHERE g.watch = 1 AND (g.expires IS NULL OR g.expires > ?) AND d.ref >= 'file:' AND d.ref < 'file;'",
+            (time.time(),),
+        )
+        moved = set()
+        for ref, h in rows:
+            try:
+                now = self.cache.file_sha256(paths.resolve(ref[len("file:") :]))
+            except HubError:
+                now = None
+            if now != h:
+                moved.add(ref)
+        if moved:
+            self.invalidate(moved)
+        return moved
 
     def _store_epoch(self) -> str | None:
         epoch = getattr(self.store, "epoch", None)  # Store.epoch; a fake without it skips the check

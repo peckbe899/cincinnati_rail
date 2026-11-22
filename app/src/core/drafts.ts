@@ -103,13 +103,32 @@ export class Drafts {
     this.emit(key, next);
   }
 
-  /** Keep the working copy but start it from another base (Keep mine after a 412). */
-  rebase(key: string, base: Rec): void {
+  /** Start the draft from another base (Keep mine after a 412), with my changes rebased onto it as body. */
+  rebase(key: string, base: Rec, body?: Body): void {
     const d = this.map.get(key);
     if (!d) return;
-    const next = { ...d, base, saving: false };
+    const next = { ...d, base, body: body ?? d.body, saving: false };
     this.map.set(key, next);
     this.emit(key, next);
+  }
+
+  /** Put back a draft kept across a reload (host.restoreKept), unless one for the record is open already. */
+  restore(d: Pick<Draft, "kind" | "id" | "view" | "base" | "body">): Draft | null {
+    const key = this.key(d.kind, d.id, d.view);
+    if (this.map.has(key) || deepEqual(d.body, bodyOf(d.base))) return null;
+    const next: Draft = {
+      key,
+      kind: d.kind,
+      id: d.id,
+      view: d.view,
+      base: d.base,
+      body: d.body,
+      rev: 1,
+      saving: false,
+    };
+    this.map.set(key, next);
+    this.emit(key, next);
+    return next;
   }
 
   drop(key: string): void {

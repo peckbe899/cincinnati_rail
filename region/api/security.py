@@ -10,8 +10,10 @@
 - **Bodies** are capped (``body_cap_mb`` of the config, 32 MB): a larger ``Content-Length`` gets 413 before the body
   is read, and a body that grows past the cap while it streams is cut off with 413.
 - **Headers on every response:** the CSP of section 9, ``X-Content-Type-Options: nosniff``, ``Referrer-Policy:
-  same-origin``, ``Cross-Origin-Resource-Policy: same-origin`` (another site cannot embed the hub's files) and
-  ``X-Request-ID``.
+  same-origin``, ``Cross-Origin-Resource-Policy: same-origin`` (another site cannot embed the hub's files),
+  ``X-Frame-Options: DENY`` (no other page can frame the hub and overlay its buttons) and ``X-Request-ID``. An API
+  response that names no cache policy of its own gets ``Cache-Control: no-store``: a record's ETag
+  (``"<layer>:<version>"``) can repeat after a restore, so the browser must never answer from a stored copy.
 - **Request ids.** Each request gets a ``request_id`` (``X-Request-ID`` when the client sent a sane one), which every
   log line of the request carries (``region.core.log``) and every problem body names.
 - **Paths** holding a control character once decoded (``%0a``, ``%00``) get 404 before routing.
@@ -49,7 +51,10 @@ SECURITY_HEADERS = (
     (b"x-content-type-options", b"nosniff"),
     (b"referrer-policy", b"same-origin"),
     (b"cross-origin-resource-policy", b"same-origin"),
+    (b"x-frame-options", b"DENY"),
 )
+API_PREFIX = "/api/v1/"
+API_CACHE = b"no-store"
 
 Scope = MutableMapping[str, Any]
 Message = MutableMapping[str, Any]
@@ -131,6 +136,10 @@ class Guard:
                 for k, v in SECURITY_HEADERS:
                     if k not in present:
                         headers.append((k, v))
+                if b"cache-control" not in present and (scope.get("path") or "").startswith(API_PREFIX):
+                    # the app keeps its own copy of each body it revalidates (If-None-Match, 304); the browser's
+                    # cache must not, or a record ETag that repeats after a restore serves an old body
+                    headers.append((b"cache-control", API_CACHE))
                 headers.append((b"x-request-id", rid.encode()))
                 message["headers"] = headers
             await send(message)

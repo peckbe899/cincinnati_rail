@@ -6,7 +6,9 @@ import { Api, ApiError } from "../api/client.ts";
 import { connectEvents, type EventFeed, type FeedMessage } from "../api/events.ts";
 import type { HubEvent, Meta, Rec } from "../api/types.ts";
 import { createEngine, type EngineHandle } from "../engine/client.ts";
-import { Drafts } from "./drafts.ts";
+import { patchLabel } from "./describe.ts";
+import { type Draft, Drafts } from "./drafts.ts";
+import { Names } from "./names.ts";
 import type { Disposable, Host, Selection, StatusItem, Toast } from "./plugin.ts";
 import { isRecordRef } from "./plugin.ts";
 import { RecordCache } from "./records.ts";
@@ -15,14 +17,15 @@ import { type SaveOutcome, type StaleOffer, save } from "./save.ts";
 import { type AppStore, createAppStore, setSelection, stateView } from "./store.ts";
 import { UndoStack } from "./undo.ts";
 import { Units } from "./units.ts";
-import type { View } from "./view.ts";
+import { makeView, type View } from "./view.ts";
 
 export type UiMessage =
   | { type: "toast"; toast: Toast }
   | { type: "status"; item: StatusItem | { id: string; remove: true } }
   | { type: "open"; pane: string; params: Record<string, unknown> }
   | { type: "stale"; offer: StaleOffer }
-  | { type: "palette"; open: boolean };
+  | { type: "palette"; open: boolean }
+  | { type: "reset-layout" };
 
 export class Emitter<T> {
   private subs = new Set<(m: T) => void>();
@@ -42,12 +45,18 @@ export interface HostOptions {
   events?: EventFeed | null;
   engine?: EngineHandle;
   units?: Units;
+  /** Where unsaved drafts are kept across a reload of the tab (sessionStorage by default; null keeps none). */
+  draftStore?: Pick<Storage, "getItem" | "setItem" | "removeItem"> | null;
 }
+
+/** The sessionStorage key of the tab's unsaved drafts. */
+export const DRAFTS_KEY = "cr.drafts";
 
 export class AppHost implements Host {
   readonly api: Api;
   readonly store: AppStore;
   readonly records: RecordCache;
+  readonly names: Names;
   readonly events: EventFeed;
   readonly drafts = new Drafts();
   readonly undo: UndoStack;
@@ -61,12 +70,17 @@ export class AppHost implements Host {
   private oldHubUrl = "http://127.0.0.1:8765";
   private activations: Disposable[] = [];
   private unsubs: (() => void)[] = [];
+  private readonly draftStore: Pick<Storage, "getItem" | "setItem" | "removeItem"> | null;
+  /** Drafts kept by the tab before a reload, until Ben restores or drops them. */
+  private kept: Draft[] = [];
+  private keepTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(o: HostOptions) {
     this.registry = o.registry;
     this.api = o.api ?? new Api({ clientId: sessionClientId() });
     this.store = o.store ?? createAppStore();
     this.records = new RecordCache(this.api);
+    this.names = new Names(this.records);
     this.units = o.units ?? new Units("m", safeStorage());
     this.engine = o.engine ?? createEngine();
     this.undo = new UndoStack(this.api, (recs, view) => this.applyWritten(recs, view));
@@ -78,6 +92,9 @@ export class AppHost implements Host {
         clientId: this.api.clientId,
       });
     this.unsubs.push(this.events.subscribe((m) => this.onFeed(m)));
+    this.draftStore = o.draftStore === undefined ? safeSession() : o.draftStore;
+    this.kept = this.readKept();
+    this.unsubs.push(this.drafts.subscribe(() => this.keepDrafts()));
     // An old key in the URL (?route=Line_6, #Line_8, sel=legacy/...) is resolved through /legacy once it arrives.
     this.unsubs.push(
       this.store.subscribe((s, p) => {
@@ -96,9 +113,93 @@ export class AppHost implements Host {
     else this.toast({ text: `No record for old key ${sel.legacy.lkind} ${sel.legacy.key}.`, level: "warn" });
   }
 
+  /** Whether closing or reloading the tab must ask first: any unsaved draft, in any layer. */
+  beforeUnload(e: Pick<BeforeUnloadEvent, "preventDefault"> & { returnValue?: unknown }): boolean {
+    this.flushKept();
+    if (this.dirtyDrafts().length === 0) return false;
+    e.preventDefault();
+    e.returnValue = "";
+    return true;
+  }
+
+  /** Write the tab's drafts to sessionStorage soon (a burst of keystrokes writes once). */
+  private keepDrafts(): void {
+    if (!this.draftStore || this.keepTimer) return;
+    this.keepTimer = setTimeout(() => this.flushKept(), 300);
+  }
+
+  private flushKept(): void {
+    if (this.keepTimer) clearTimeout(this.keepTimer);
+    this.keepTimer = null;
+    if (!this.draftStore) return;
+    const all = [...this.dirtyDrafts(), ...this.kept];
+    try {
+      if (all.length === 0) this.draftStore.removeItem(DRAFTS_KEY);
+      else
+        this.draftStore.setItem(
+          DRAFTS_KEY,
+          JSON.stringify(all.map((d) => ({ kind: d.kind, id: d.id, view: d.view, base: d.base, body: d.body }))),
+        );
+    } catch {
+      /* storage full or denied: the unload prompt still guards them */
+    }
+  }
+
+  private readKept(): Draft[] {
+    try {
+      const raw = this.draftStore?.getItem(DRAFTS_KEY);
+      if (!raw) return [];
+      const list = JSON.parse(raw) as Pick<Draft, "kind" | "id" | "view" | "base" | "body">[];
+      return list.map((d) => ({ ...d, key: this.drafts.key(d.kind, d.id, d.view), rev: 0, saving: false }));
+    } catch {
+      return [];
+    }
+  }
+
+  /** Drafts this tab held before it was reloaded, not yet restored or dropped. */
+  keptDrafts(): readonly Draft[] {
+    return this.kept;
+  }
+
+  /** Put the kept drafts back as drafts (a save of one whose record moved on meets the 412 banner). */
+  restoreKept(): number {
+    const n = this.kept.length;
+    for (const d of this.kept) this.drafts.restore(d);
+    this.kept = [];
+    this.flushKept();
+    return n;
+  }
+
+  dropKept(): void {
+    this.kept = [];
+    this.flushKept();
+  }
+
+  /** After a reload: say that unsaved edits were kept, and offer them back. */
+  offerKeptDrafts(): void {
+    if (this.kept.length === 0) return;
+    const what = this.kept.map((d) => `${this.names.text(d.kind, d.id, d.view)} on ${d.view.layer}`);
+    this.toast({
+      text: `Unsaved edits from before the reload: ${[...new Set(what)].join("; ")}.`,
+      level: "warn",
+      ttl: 0,
+      actions: [
+        {
+          label: "Restore them",
+          run: () => {
+            const n = this.restoreKept();
+            this.toast({ text: `Restored ${n} unsaved edit${n === 1 ? "" : "s"}.`, level: "info", ttl: 3000 });
+          },
+        },
+        { label: "Drop them", run: () => this.dropKept() },
+      ],
+    });
+  }
+
   /** Run every plugin's activate(), then resolve an old-key selection from the URL. Call once, after the shell is up. */
   activate(): void {
     void this.resolveSelection();
+    this.offerKeptDrafts();
     for (const p of this.registry.plugins.values()) {
       try {
         const d = p.activate?.(this);
@@ -203,13 +304,57 @@ export class AppHost implements Host {
     return this.oldHubUrl;
   }
 
-  /** Save every draft; a stale one raises the Keep mine / Take theirs banner. */
-  async saveAll(label = "edit"): Promise<SaveOutcome[]> {
+  /**
+   * Who owns a kind's records on main (decision 9.23): "legacy" while the old hub does, "model" once flipped, null
+   * when no authority record names the kind. Read from main's authority records, which the record cache keeps fresh.
+   */
+  async owner(kind: string): Promise<string | null> {
+    try {
+      const { items } = await this.records.list("authority", makeView({ layer: "main" }), { limit: 500 });
+      const rec = items.find((r) => (r.data as Record<string, unknown>).kind === kind && !r.deleted);
+      const o = rec ? (rec.data as Record<string, unknown>).owner : null;
+      return typeof o === "string" ? o : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Whether records of a kind can be written in a view: true, or the plain reason they cannot. Import and legacy
+   * layers are read-only; main refuses a kind the old hub owns (the server answers 409 authority).
+   */
+  async editable(kind: string, view: View = this.view()): Promise<true | string> {
+    if (view.layer.includes(":")) return `${view.layer} is read-only: switch to a scenario to edit`;
+    if (view.layer === "main" && (await this.owner(kind)) === "legacy")
+      return `The old hub owns ${kind} records on main: switch to a scenario to edit`;
+    return true;
+  }
+
+  /** The drafts with unsaved changes, in one layer or in all. */
+  dirtyDrafts(layer?: string): Draft[] {
+    return this.drafts.all().filter((d) => (layer === undefined || d.view.layer === layer) && this.drafts.dirty(d.key));
+  }
+
+  /** What a draft changes, in Ben's terms: "PVI 3 level on Line 6 profile". */
+  draftLabel(d: Draft): string {
+    const name = (id: string) => this.names.text("platform", id, d.view);
+    return `${patchLabel(d.kind, this.drafts.ops(d), name)} on ${this.names.text(d.kind, d.id, d.view)}`;
+  }
+
+  /**
+   * Save the drafts of the layer on view (the current one by default): a draft typed in another layer stays a draft
+   * there, so Save on a scenario never re-sends a draft main refused. A stale one raises the Keep mine / Take theirs
+   * banner; each save says what it saved, and as which version.
+   */
+  async saveAll(label?: string, layer: string = this.view().layer): Promise<SaveOutcome[]> {
     const out: SaveOutcome[] = [];
-    for (const d of this.drafts.all()) {
+    for (const d of this.dirtyDrafts(layer)) {
+      const what = label ?? this.draftLabel(d);
       try {
-        const r = await save(this, d.key, label);
+        const r = await save(this, d.key, what);
         if (r.status === "stale") this.ui.emit({ type: "stale", offer: r.offer });
+        if (r.status === "saved")
+          this.toast({ text: `Saved ${what}: version ${r.rec.version} on ${r.rec.layer}.`, level: "info", ttl: 3000 });
         out.push(r);
       } catch (e) {
         this.problem(e);
@@ -219,18 +364,22 @@ export class AppHost implements Host {
   }
 
   async undoLast(): Promise<void> {
+    const e = this.undo.peek();
     try {
-      await this.undo.undo();
-    } catch (e) {
-      this.problem(e);
+      const r = await this.undo.undo();
+      if (r && e) this.toast({ text: `Undone: ${e.label}${versionNote(r.records)}.`, level: "info", ttl: 3000 });
+    } catch (err) {
+      this.problem(err);
     }
   }
 
   async redoLast(): Promise<void> {
+    const e = this.undo.peekRedo();
     try {
-      await this.undo.redo();
-    } catch (e) {
-      this.problem(e);
+      const r = await this.undo.redo();
+      if (r && e) this.toast({ text: `Redone: ${e.label}${versionNote(r.records)}.`, level: "info", ttl: 3000 });
+    } catch (err) {
+      this.problem(err);
     }
   }
 
@@ -244,12 +393,23 @@ export class AppHost implements Host {
 
   private onFeed(m: FeedMessage): void {
     if (m.type === "status") {
-      const label = m.state === "open" ? "live" : m.state === "connecting" ? "connecting" : m.state;
+      const label =
+        m.state === "open"
+          ? "live"
+          : m.state === "connecting"
+            ? "connecting"
+            : m.state === "closed"
+              ? "the hub is not answering"
+              : m.state;
       this.status({
         id: "core.events",
         text: `events: ${label}`,
         level: m.state === "open" ? "info" : "warn",
         order: 0,
+        title:
+          m.state === "closed"
+            ? "Is the hub running? Start it from the repo folder with .\\crhub (or crhub serve). The app reconnects by itself."
+            : undefined,
       });
       return;
     }
@@ -263,6 +423,20 @@ export class AppHost implements Host {
         ttl: 4000,
       });
     }
+  }
+}
+
+/** ", now version 4 on try" for the one record an undo wrote. */
+function versionNote(recs: Rec[] | undefined): string {
+  const r = recs?.length === 1 ? recs[0] : undefined;
+  return r ? `, now version ${r.version} on ${r.layer}` : "";
+}
+
+function safeSession(): Storage | null {
+  try {
+    return globalThis.sessionStorage ?? null;
+  } catch {
+    return null;
   }
 }
 

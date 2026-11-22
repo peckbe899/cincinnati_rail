@@ -510,9 +510,14 @@ class Cache:
         return True
 
     def protected_keys(self) -> set[str]:
-        """Results eviction spares: pinned results and the latest and wanted results of pinned goals."""
+        """Results eviction spares: pinned results, the latest and wanted results of pinned goals, and those of
+        watched goals that have not expired (what an open sheet shows)."""
         keys = {r[0] for r in self.query("SELECT key FROM result WHERE pinned = 1")}
         for r in self.query("SELECT want_key, latest_key FROM goal WHERE pinned = 1"):
+            keys.update(k for k in (r[0], r[1]) if k)
+        for r in self.query(
+            "SELECT want_key, latest_key FROM goal WHERE watch = 1 AND (expires IS NULL OR expires > ?)", (now_s(),)
+        ):
             keys.update(k for k in (r[0], r[1]) if k)
         return keys
 

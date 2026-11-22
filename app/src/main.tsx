@@ -8,7 +8,7 @@ import type { Plugin } from "./core/plugin.ts";
 import { discover, eventKey } from "./core/registry.ts";
 import { bindUrl } from "./core/store.ts";
 import { App } from "./shell/App.tsx";
-import { corePlugin, TEXT_KEYS } from "./shell/core_plugin.ts";
+import { corePlugin, fieldKeepsKey } from "./shell/core_plugin.ts";
 
 const registry = discover();
 const host = new AppHost({ registry });
@@ -20,12 +20,14 @@ window.addEventListener("keydown", (e) => {
   const key = eventKey(e);
   const binding = registry.keymap.get(key)?.def;
   if (!binding) return;
-  const t = e.target as HTMLElement | null;
-  const typing = !!t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
-  if (typing && TEXT_KEYS.has(key)) return;
+  if (fieldKeepsKey(e.target, key)) return;
   e.preventDefault();
   void host.runCommand(binding.command);
 });
+
+// Unsaved edits live in this tab: closing or reloading it asks first (they are also kept in sessionStorage, so a
+// reload offers them back; see AppHost.offerKeptDrafts).
+window.addEventListener("beforeunload", (e) => host.beforeUnload(e));
 
 // Browser errors reach the hub's log through /client-log (section 9, Logging).
 let logged = 0;

@@ -1,6 +1,12 @@
 // The map pane. Everything it loads is local: the style, glyphs and sprite from /map/ (committed under
 // app/public/map), the records as GeoJSON from /api/v1/k/<kind>?format=geojson&crs=4326, the overviews from
-// /api/v1/data/<tier>/. Era filtering runs here, on the open and close month intervals the features carry.
+// /api/v1/data/<tier>/. Era filtering runs here, on the open and close month intervals the features carry, for the
+// layers whose features carry any (timeFiltered in layers.ts).
+//
+// Chainage: the line of the selection (a section, its profile, a platform or a stop on it) is the map's current
+// line. The map marks the chainage in the URL (c, set by the line sheet) on it, and under the mouse near it shows
+// the nearest chainage, in the tooltip and the status bar. A click on several records at once (two lines' Bond Hill
+// stations 0.2 m apart) lists them by name and line and lets Ben choose.
 //
 // Records are read in the view's own instant. A list at the present (year unset) leaves out every record that has
 // closed (region.core.view.is_open), so a list read once at the present and filtered here could never show a line
@@ -11,12 +17,18 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import type { FeatureCollection } from "geojson";
 import { type GeoJSONSource, Map as MlMap, type StyleSpecification, setWorkerUrl } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
-import type { LayerDef, MountedPane, PaneContext } from "../../core/plugin.ts";
+import type { Rec } from "../../api/types.ts";
+import type { LayerDef, MountedPane, PaneContext, RecordRef } from "../../core/plugin.ts";
 import { isRecordRef } from "../../core/plugin.ts";
 import { setLayerToggle, setMapPos } from "../../core/store.ts";
+import { formatChainage } from "../../core/units.ts";
 import { lonLatToUtm, utmToLonLat } from "../../core/utm.ts";
 import { viewInstant } from "../../core/view.ts";
-import { eraFilter, FONT } from "./layers.ts";
+import { nearestChainage, type PathPoint, pointAt, stationLine } from "./chainage.ts";
+import { eraFilter, FONT, timeFiltered } from "./layers.ts";
+
+/** Under the mouse, the nearest chainage of the current line shows when the line is this close (metres). */
+const READOUT_M = 400;
 
 const DEFAULT_CENTER = { lat: 39.12, lon: -84.51, z: 11 };
 
@@ -83,15 +95,22 @@ export async function mountMap(el: HTMLElement, ctx: PaneContext): Promise<Mount
   const fetchRecords = async (d: LayerDef): Promise<FeatureCollection> => {
     if (d.source.type !== "records") throw new Error("not a records layer");
     const fc = await host.records.geojson(d.source.kind, recordsView(), d.source.query ?? {});
-    hasDates.set(
-      d.id,
-      fc.features.some((f) => f.properties && "open_lo" in f.properties),
-    );
+    hasDates.set(d.id, timeFiltered(fc));
     return fc;
   };
 
   const applyTime = (d: LayerDef) => {
-    if (d.time !== "intervals" || !hasDates.get(d.id)) return;
+    if (d.time !== "intervals") return;
+    if (!hasDates.get(d.id)) {
+      // No feature carries a date: nothing to filter, and a filter left from earlier data comes off.
+      for (const id of added.get(d.id) ?? []) {
+        const own = d
+          .style({ source: `src-${d.id}`, prefix: `${d.id}-`, font: FONT, selected: selectedId() })
+          .find((l) => l.id === id);
+        if (map.getLayer(id)) map.setFilter(id, own && "filter" in own ? (own.filter ?? null) : null);
+      }
+      return;
+    }
     const instant = viewInstant(host.view());
     for (const id of added.get(d.id) ?? []) {
       const base = d
@@ -169,6 +188,8 @@ export async function mountMap(el: HTMLElement, ctx: PaneContext): Promise<Mount
         removeLayer(d);
       }
     }
+    // The chainage marker stays on top of the layers added since.
+    if (map.getLayer("chainage-cursor")) map.moveLayer("chainage-cursor");
     drawToggles();
   };
 
@@ -216,7 +237,128 @@ export async function mountMap(el: HTMLElement, ctx: PaneContext): Promise<Mount
     const c = map.getCenter();
     setMapPos(host.store, { z: map.getZoom(), lat: c.lat, lon: c.lng });
   });
+  // ------------------------------------------------------------------------------- the current line and chainage
+
+  /** The line of the selection, with its path, for the chainage marker and readout. */
+  let line: { id: string; name: string; key: string; path: PathPoint[] } | null = null;
+  let lineFor: string | null = null;
+
+  const sectionOfSel = async (sel: RecordRef): Promise<string | null> => {
+    if (sel.kind === "section") return sel.id;
+    if (sel.kind !== "profile" && sel.kind !== "platform" && sel.kind !== "stop") return null;
+    const d = (await host.records.get(sel.kind, sel.id, host.view())).data as Record<string, unknown>;
+    return typeof d.section === "string" ? d.section : null;
+  };
+
+  const loadLine = async () => {
+    const sel = host.store.getState().sel;
+    const token = isRecordRef(sel) ? `${sel.kind}:${sel.id}` : null;
+    if (token === lineFor) return;
+    lineFor = token;
+    if (!isRecordRef(sel)) return;
+    try {
+      const sid = await sectionOfSel(sel);
+      if (!sid) return;
+      if (line?.id === sid) return;
+      const rec: Rec = await host.records.get("section", sid, host.view());
+      const d = rec.data as Record<string, unknown>;
+      const path = Array.isArray(d.path) ? (d.path as PathPoint[]) : [];
+      if (lineFor !== token) return;
+      line = { id: sid, name: typeof d.name === "string" ? d.name : sid, key: String(d.key ?? ""), path };
+      drawMarker();
+    } catch {
+      /* no line, no marker */
+    }
+  };
+
+  const drawMarker = () => {
+    const c = host.store.getState().c;
+    const at = line && c !== null ? pointAt(line.path, c) : null;
+    const data: FeatureCollection = {
+      type: "FeatureCollection",
+      features: at ? [{ type: "Feature", properties: {}, geometry: { type: "Point", coordinates: at } }] : [],
+    };
+    const src = map.getSource("chainage-cursor") as GeoJSONSource | undefined;
+    if (src) src.setData(data);
+    else if (map.isStyleLoaded()) {
+      map.addSource("chainage-cursor", { type: "geojson", data });
+      map.addLayer({
+        id: "chainage-cursor",
+        type: "circle",
+        source: "chainage-cursor",
+        paint: {
+          "circle-radius": 6,
+          "circle-color": "#d8dbe2",
+          "circle-stroke-color": "#16181d",
+          "circle-stroke-width": 2,
+        },
+      });
+    }
+  };
+  void loaded.then(() => {
+    drawMarker();
+    void loadLine();
+  });
+
+  // ------------------------------------------------------------------------------------------ picking records
+
+  let chooser: HTMLElement | null = null;
+  const closeChooser = () => {
+    chooser?.remove();
+    chooser = null;
+  };
+
+  /** "Bond Hill, Line 3" for a station; the record's name otherwise. */
+  const choiceLabel = async (ref: RecordRef): Promise<{ text: string; line: string | null }> => {
+    const v = host.view();
+    try {
+      const rec = await host.records.get(ref.kind, ref.id, v);
+      const d = rec.data as Record<string, unknown>;
+      const name = await host.names.get(ref.kind, ref.id, v);
+      const ln =
+        ref.kind === "station"
+          ? stationLine(d.key)
+          : typeof d.section === "string"
+            ? await host.names.get("section", d.section, v)
+            : null;
+      return { text: ln ? `${name}, ${ln}` : `${name} (${ref.kind})`, line: ln };
+    } catch {
+      return { text: host.names.text(ref.kind, ref.id, v), line: null };
+    }
+  };
+
+  const choose = async (refs: RecordRef[], at: { x: number; y: number }) => {
+    closeChooser();
+    const labels = await Promise.all(refs.map(choiceLabel));
+    // The record on the current line first: it is the likeliest meant.
+    const order = refs
+      .map((r, i) => ({ r, l: labels[i] as { text: string; line: string | null } }))
+      .sort((a, b) => Number(b.l.line === line?.name) - Number(a.l.line === line?.name));
+    const box = document.createElement("div");
+    box.className = "map-chooser";
+    box.setAttribute("role", "menu");
+    box.style.left = `${at.x + 8}px`;
+    box.style.top = `${at.y + 8}px`;
+    box.append(Object.assign(document.createElement("div"), { className: "muted", textContent: "Which one?" }));
+    for (const { r, l } of order) {
+      const b = Object.assign(document.createElement("button"), { type: "button", textContent: l.text });
+      b.setAttribute("role", "menuitem");
+      b.onclick = () => {
+        closeChooser();
+        host.select(r);
+      };
+      box.append(b);
+    }
+    box.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape") closeChooser();
+    });
+    el.append(box);
+    chooser = box;
+    (box.querySelector("button") as HTMLButtonElement | null)?.focus();
+  };
+
   map.on("click", (e) => {
+    closeChooser();
     const pickable = layers().filter((d) => d.pick && added.has(d.id));
     const ids = pickable.flatMap((d) => added.get(d.id) ?? []);
     if (!ids.length) return;
@@ -224,6 +366,7 @@ export async function mountMap(el: HTMLElement, ctx: PaneContext): Promise<Mount
       [e.point.x - 4, e.point.y - 4],
       [e.point.x + 4, e.point.y + 4],
     ];
+    const refs: RecordRef[] = [];
     for (const f of map.queryRenderedFeatures(box, { layers: ids })) {
       const d = pickable.find((x) => (added.get(x.id) ?? []).includes(f.layer.id));
       const ref = d?.pick?.({
@@ -231,20 +374,34 @@ export async function mountMap(el: HTMLElement, ctx: PaneContext): Promise<Mount
         properties: (f.properties ?? {}) as Record<string, unknown>,
         layer: f.layer.id,
       });
-      if (ref) {
-        host.select(ref);
-        return;
-      }
+      if (ref && !refs.some((r) => r.kind === ref.kind && r.id === ref.id)) refs.push(ref);
     }
+    // Stations over lines: the topmost kind decides, as before, unless there are several of it.
+    const kind = refs[0]?.kind;
+    const same = refs.filter((r) => r.kind === kind);
+    if (same.length === 1) host.select(same[0] as RecordRef);
+    else if (same.length > 1) void choose(same, e.point);
   });
   map.on("mousemove", (e) => {
     const [x, y] = lonLatToUtm(e.lngLat.lng, e.lngLat.lat);
-    wrap.title = `E ${x.toFixed(1)}  N ${y.toFixed(1)} (EPSG:26916)`;
+    const en = `E ${x.toFixed(1)}  N ${y.toFixed(1)} (EPSG:26916)`;
+    const near = line ? nearestChainage(line.path, e.lngLat.lng, e.lngLat.lat) : null;
+    if (line && near && near.off_m <= READOUT_M) {
+      const text = `c ${formatChainage(near.c, host.units)} on ${line.name}`;
+      wrap.title = `${text}, ${Math.round(near.off_m)} m off the line\n${en}`;
+      host.status({ id: "map.chainage", text: `map: ${text}`, level: "info", order: 6 });
+    } else {
+      wrap.title = en;
+      host.status({ id: "map.chainage", remove: true });
+    }
   });
+  map.on("mouseout", () => host.status({ id: "map.chainage", remove: true }));
   map.on("error", (e) => console.warn("map:", (e as unknown as { error?: { message?: string } }).error?.message ?? e));
 
   const unsubStore = host.store.subscribe((s, p) => {
     if (s.lay !== p.lay) void sync();
+    if (s.sel !== p.sel) void loadLine();
+    if (s.c !== p.c) drawMarker();
     if (s.year !== p.year || s.month !== p.month) for (const d of layers()) applyTime(d);
     if (s.layer !== p.layer || s.tl !== p.tl || s.year !== p.year || s.month !== p.month)
       for (const d of layers()) if (d.source.type === "records" && added.has(d.id)) refresh(d);
@@ -288,6 +445,8 @@ export async function mountMap(el: HTMLElement, ctx: PaneContext): Promise<Mount
   return {
     dispose() {
       gone = true;
+      closeChooser();
+      host.status({ id: "map.chainage", remove: true });
       unsubStore();
       unsubEvents();
       unsubReg();

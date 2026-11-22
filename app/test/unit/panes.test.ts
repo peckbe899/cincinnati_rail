@@ -42,13 +42,20 @@ const server = setupServer(
   ...hub.handlers(),
   http.get(`${BASE}/x/profiles/sections/:id/input`, () => HttpResponse.json(INPUT)),
   http.get(`${BASE}/results`, () => HttpResponse.json({ key: null })),
+  // The sheet reads the section's stops and platforms and main's authority records; this fake has none of them.
+  http.get(`${BASE}/k/:kind`, () => HttpResponse.json({ items: [], next: null })),
   http.post(`${BASE}/compute`, async ({ request }) => {
     computes.push(await request.json());
     return HttpResponse.json({ key: "k1", state: "queued", job: "j1" });
   }),
 );
 beforeAll(() => server.listen({ onUnhandledFrame: "error" }));
-afterAll(() => server.close());
+// Names are read in the background (host.names) and may still be on their way when a test ends: let them land
+// before the fake hub goes, so none of them reaches the real network.
+afterAll(async () => {
+  await new Promise((r) => setTimeout(r, 300));
+  server.close();
+});
 
 function feed(): EventFeed {
   const subs = new Set<(m: FeedMessage) => void>();

@@ -236,12 +236,13 @@ def list_conflicts(
 
 def _dismiss(con: sqlite3.Connection, layer: L.Layer, rec_id: str) -> None:
     """Close the rebase planner's open conflict of a record that is no longer stale. Seed conflicts stay open until
-    Ben resolves them or the seed and his revision agree (``seed.import_seed``)."""
+    Ben resolves them or the seed and his revision agree (``seed.import_seed``); a frame conflict (a stop moved
+    under a profile, no proposal) and a dangling ref without a proposal stay open until he resolves them."""
     con.execute(
         "UPDATE conflict SET state = 'dismissed', resolution = 'no longer stale', resolved_by = 'rebase' "
         "WHERE layer = ? AND rec_id = ? AND state = 'open' AND (reason IN "
-        "('both_changed', 'geometry_under_edit', 'orphan', 'authority_divergence', 'invalid') "
-        "OR (reason = 'dangling_ref' AND proposed IS NOT NULL)) "
+        "('both_changed', 'orphan', 'authority_divergence', 'invalid') "
+        "OR (reason IN ('dangling_ref', 'geometry_under_edit') AND proposed IS NOT NULL)) "
         f"AND (import_run IS NULL OR import_run NOT IN {SEED_RUNS})",
         (layer.id, rec_id),
     )
@@ -263,8 +264,10 @@ def rebase(
     changed: set[str] | None = None,
     import_run: int | None = None,
     by: str = "rebase",
+    only: str | None = None,
 ) -> dict[str, Any]:
-    """Rebase the copied-up revisions above ``lower`` (every layer when ``None``), only for ``changed`` ids when given.
+    """Rebase the copied-up revisions above ``lower`` (every layer when ``None``), only for ``changed`` ids when given,
+    and only on layer ``only`` when given.
 
     Runs inside the caller's write transaction. Returns ``{"changesets": [...], "conflicts": [...], "changes": [...]}``.
     """
@@ -275,8 +278,11 @@ def rebase(
         uppers = layers.above(layers.get(lower))
     else:
         uppers = sorted((r for r in layers.by_id.values() if r.tier != "import"), key=lambda r: (layers.depth(r), r.id))
+    if only is not None:
+        uppers = [u for u in uppers if u.slug == only]
     report: dict[str, Any] = {"changesets": [], "conflicts": [], "changes": []}
     ids_now = set(changed) if changed is not None else None
+    moved = _moved_frames(store, con, layers, lower, changed)
     deleted_below: set[str] = set()
     if ids_now:
         for (rid,) in con.execute(
@@ -355,7 +361,11 @@ def rebase(
                 or bool(kind.guard_changed(base.get("data") if base else None, theirs.get("data")))
             )
             reason = None
-            if geometry:
+            if ours.hash == ours.base_hash:
+                # Ben's revision holds exactly the content it was copied from (an undone edit, say): he has no
+                # change to protect, so the change below is taken whole, geometry included
+                merged, overlaps = theirs, []
+            elif geometry:
                 reason = "geometry_under_edit"
             elif base is None or overlaps:
                 reason = _overlap_reason(kind)
@@ -454,6 +464,13 @@ def rebase(
                     )
                 if ids_now is not None:
                     ids_now |= {p.id for p in txn.written()}
+    # a stop or section moved below one of Ben's revisions drawn against it (a profile's frame, 9.11 and 9.27)
+    if moved:
+        for upper in uppers:
+            if upper.state != "open":
+                continue
+            for c in _frame_conflicts(store, con, upper, moved, import_run):
+                report["conflicts"].append(c)
     # a record Ben refers to, deleted below: his referring revision now dangles
     if deleted_below:
         for upper in uppers:
@@ -487,6 +504,106 @@ def rebase(
     return report
 
 
+def replan_own(store: SqliteStore, con: sqlite3.Connection, layer: L.Layer, ids: set[str]) -> dict[str, Any] | None:
+    """Re-run the planner for records of ``layer`` just written there while a rebase conflict of theirs is open, so
+    the conflict follows Ben's revision as it is now: a hand merge closes it (its base moves below), any other edit
+    refreshes it, and it can always be resolved. Seed conflicts are refreshed by the next seed import instead."""
+    if not ids or layer.state != "open":
+        return None
+    rows = con.execute(
+        "SELECT DISTINCT rec_id FROM conflict WHERE layer = ? AND state = 'open' "
+        f"AND (import_run IS NULL OR import_run NOT IN {SEED_RUNS}) AND rec_id IN (SELECT value FROM json_each(?))",
+        (layer.id, json.dumps(sorted(ids))),
+    ).fetchall()
+    busy = {r[0] for r in rows}
+    if not busy:
+        return None
+    chain = L.load(con).chain(layer.slug)
+    if len(chain) < 2:
+        return None
+    return rebase(store, con, lower=chain[1].slug, changed=busy, only=layer.slug, by="rebase")
+
+
+def _moved_frames(
+    store: SqliteStore, con: sqlite3.Connection, layers: L.Layers, lower: str | None, changed: set[str] | None
+) -> list[tuple[str, str, str | None, list[str]]]:
+    """The records among ``changed`` on ``lower`` whose guarded fields or geometry changed in their latest revision
+    (or that were made or deleted there), of a kind some kind frames (``merge.frame``): ``[(id, kind, parent,
+    fields)]``."""
+    if lower is None or not changed:
+        return []
+    framing = {f for k in store.kinds.values() for f in k.frame}
+    if not framing:
+        return []
+    low = layers.get(lower)
+    out = []
+    rows = con.execute(
+        f"SELECT {SELECT}, r.parent FROM rec r WHERE r.layer = ? AND r.id IN (SELECT value FROM json_each(?))",
+        (low.id, json.dumps(sorted(changed))),
+    ).fetchall()
+    for row in rows:
+        cur = rev_of(row[:-1])
+        if cur.kind not in framing or cur.kind not in store.kinds:
+            continue
+        kind = store.kinds[cur.kind]
+        prev = L.hist_row(con, low.id, cur.id, cur.version - 1) if cur.version > 1 else None
+        if prev is None or bool(prev.get("deleted")) != cur.deleted:
+            fields = ["created" if prev is None else "deleted" if cur.deleted else "restored"]
+        else:
+            fields = list(kind.guard_changed(prev.get("data"), cur.data))
+            if not _same(prev.get("geom"), cur.geom):
+                fields.append("geom")
+        if fields:
+            out.append((cur.id, cur.kind, row[-1], fields))
+    return out
+
+
+def _frame_conflicts(
+    store: SqliteStore,
+    con: sqlite3.Connection,
+    upper: L.Layer,
+    moved: list[tuple[str, str, str | None, list[str]]],
+    import_run: int | None,
+) -> list[dict[str, Any]]:
+    """``geometry_under_edit`` conflicts for ``upper``'s copied-up revisions framed by a moved record: whose parent
+    is the moved record or shares its parent. A record with an open conflict already keeps that one."""
+    out = []
+    for name in sorted(k.name for k in store.kinds.values() if k.frame):
+        kind = store.kinds[name]
+        for xid, xkind, xparent, fields in moved:
+            if xkind not in kind.frame:
+                continue
+            parents = sorted({p for p in (xid, xparent) if p})
+            marks = ",".join("?" * len(parents))
+            for row in con.execute(
+                f"SELECT {SELECT} FROM rec r WHERE r.layer = ? AND r.kind = ? AND r.base_hash IS NOT NULL "
+                f"AND r.deleted = 0 AND r.parent IN ({marks})",
+                (upper.id, name, *parents),
+            ).fetchall():
+                ours = rev_of(row)
+                busy = con.execute(
+                    "SELECT 1 FROM conflict WHERE layer = ? AND rec_id = ? AND state = 'open'", (upper.id, ours.id)
+                ).fetchone()
+                if busy:
+                    continue
+                out.append(
+                    upsert_conflict(
+                        con,
+                        upper,
+                        ours.id,
+                        name,
+                        "geometry_under_edit",
+                        ours_hash=ours.hash,
+                        theirs_hash=ours.base_hash,
+                        base_hash=ours.base_hash,
+                        proposed=None,
+                        fields=[f"{xkind} {xid}: {', '.join(fields)}"],
+                        import_run=import_run,
+                    )
+                )
+    return out
+
+
 # -------------------------------------------------------------------------------------------------- resolution
 
 
@@ -508,6 +625,11 @@ def resolve_conflict(
     layer = layers.get(c["layer"])
     row = con.execute(f"SELECT {SELECT} FROM rec r WHERE r.layer = ? AND r.id = ?", (layer.id, c["rec_id"])).fetchone()
     ours = rev_of(row) if row else None
+    # a seed conflict's "theirs" is the seed's revision (kept in proposed); the base below is not involved
+    from_seed = is_seed_run(con, c["import_run"])
+    view = View(layer=layer.slug)
+    if ours is None and c["ours_hash"] is None and from_seed:
+        return _resolve_absent(store, con, c, layer, take, body, by=by)
     if ours is None or ours.hash != c["ours_hash"] and c["ours_hash"] is not None:
         raise Conflict(
             f"{c['kind']} {c['rec_id']} changed since the conflict opened",
@@ -516,10 +638,7 @@ def resolve_conflict(
         )
     result: dict[str, Any] = {"conflict": cid, "take": take, "changeset": None}
     theirs_hash = c["theirs_hash"]
-    view = View(layer=layer.slug)
     tag = etag(layer.slug, ours.version)
-    # a seed conflict's "theirs" is the seed's revision (kept in proposed); the base below is not involved
-    from_seed = is_seed_run(con, c["import_run"])
     if take == "ours":
         if not from_seed:
             con.execute("UPDATE rec SET base_hash = ? WHERE rid = ?", (theirs_hash, ours.rid))
@@ -553,6 +672,59 @@ def resolve_conflict(
     return result
 
 
+def _resolve_absent(
+    store: SqliteStore,
+    con: sqlite3.Connection,
+    c: dict[str, Any],
+    layer: L.Layer,
+    take: str,
+    body: dict[str, Any] | None,
+    *,
+    by: str,
+) -> dict[str, Any]:
+    """A seed conflict on a record the layer does not hold (a restored database lacks a record ``region/seed`` has):
+    ``ours`` keeps it out (the next export removes its file), ``theirs`` or ``merged`` writes it."""
+    from .changesets import InternalOp, Txn
+
+    view = View(layer=layer.slug)
+    result: dict[str, Any] = {"conflict": c["id"], "take": take, "changeset": None}
+    if take != "ours":
+        if take == "merged" and body is None:
+            raise Invalid("take merged needs the merged body")
+        got = body if take == "merged" else (c["proposed"] or {})
+        tomb = bool(got.get("deleted"))
+        layers = L.load(con)
+        below = L.resolve(con, layers.chain(layer.slug)[1:], c["rec_id"])
+        if below is not None and not below.deleted:
+            op = InternalOp(
+                "put",
+                c["kind"],
+                c["rec_id"],
+                etag(layers.slugs[below.layer], below.version),
+                body=_body(got),
+                tombstone=tomb,
+            )
+        else:
+            op = InternalOp(
+                "put" if tomb else "create",
+                c["kind"],
+                c["rec_id"],
+                None,
+                body=_body(got),
+                tombstone=tomb,
+                check_match=False,
+            )
+        txn = Txn(
+            store, con, view, by=by, message=f"resolve conflict {c['id']}: {take}", kind="rebase", on_delete=False
+        )
+        result["changeset"] = txn.run([op]).changeset
+    con.execute(
+        "UPDATE conflict SET state = 'resolved', resolved_by = ?, resolution = ? WHERE id = ?", (by, take, c["id"])
+    )
+    result["record"] = store._get_on(con, c["kind"], c["rec_id"], view)
+    return result
+
+
 __all__ = [
     "REASONS",
     "TAKES",
@@ -561,6 +733,7 @@ __all__ = [
     "list_conflicts",
     "merge3",
     "rebase",
+    "replan_own",
     "resolve_conflict",
     "upsert_conflict",
 ]

@@ -207,7 +207,7 @@ table.grid input {
 
 .sheet {
   display: grid;
-  grid-template-rows: auto minmax(160px, 1fr) auto;
+  grid-template-rows: auto auto minmax(160px, 1fr) auto;
   height: 100%;
 }
 
@@ -386,4 +386,66 @@ ul.plain li {
 
 a {
   color: var(--accent);
+}
+
+/* The line sheet's notice line: why it is read-only, a cell that is not a number, a view that hides the line. */
+.sheet-bar strong {
+  white-space: nowrap;
+}
+
+.sheet-notice {
+  padding: 3px 8px;
+  color: var(--warn);
+  border-bottom: 1px solid var(--line);
+}
+
+.sheet-notice:empty {
+  padding: 0;
+  border: 0;
+}
+
+/* Station names stay narrow, so the level column next to them is in view without scrolling sideways. */
+.sheet-table table.grid td.name {
+  max-width: 11em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sheet-table table.grid input {
+  width: 6.5em;
+}
+
+/* "Which one?" when a map click lands on several records. */
+.map-chooser {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px 8px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.map-chooser button {
+  text-align: left;
+}
+
+.palette-empty {
+  margin: 0;
+  padding: 8px 10px;
+}
+
+.palette-empty[hidden] {
+  display: none;
+}
+
+.ref-name {
+  margin: 0 4px;
+}
+
+.stale-banner > div {
+  flex: 1;
 }

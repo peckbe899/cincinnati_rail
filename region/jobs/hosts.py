@@ -93,9 +93,10 @@ class _DeadlineEngine:
     """The scheduler's engine as one job sees it: calls capped by the job's deadline; ``close`` does nothing (the
     engine is shared)."""
 
-    def __init__(self, engine: EngineClient, deadline: float) -> None:
+    def __init__(self, engine: EngineClient, deadline: float, cancel: threading.Event | None = None) -> None:
         self._engine = engine
         self._deadline = deadline
+        self._cancel = cancel
 
     def hello(self) -> dict[str, Any]:
         return self._engine.hello()
@@ -104,6 +105,9 @@ class _DeadlineEngine:
         left = self._deadline - time.monotonic()
         if left <= 0:
             raise EngineUnavailable("the job ran out of time before calling the engine", reason="timeout")
+        if self._cancel is not None and getattr(self._engine, "supports_cancel", False):
+            # a superseded job's call ends 1 s after the cancel (section 6), freeing its slot and its sidecar
+            return self._engine.call(method, params, timeout_s=min(float(timeout_s), left), cancel=self._cancel)  # type: ignore[call-arg]
         return self._engine.call(method, params, timeout_s=min(float(timeout_s), left))
 
     def close(self) -> None:
@@ -197,7 +201,7 @@ class _InProcess:
     def _engine_for(self, task: Task) -> EngineClient:
         if self.engine is None:
             return NoEngine()
-        return _DeadlineEngine(self.engine, task.deadline)
+        return _DeadlineEngine(self.engine, task.deadline, task.cancel)
 
     def _work(self, task: Task) -> None:
         outcome, value = "error", "the host failed before the job ran"
@@ -238,7 +242,7 @@ class EngineHost(_InProcess):
     def _engine_for(self, task: Task) -> EngineClient:
         if self.engine is None:
             return NoEngine("no engine is configured for this hub")
-        return _DeadlineEngine(self.engine, task.deadline)
+        return _DeadlineEngine(self.engine, task.deadline, task.cancel)
 
 
 class InlineHost:
@@ -277,7 +281,20 @@ class InlineHost:
 
 
 def _worker_main(task_r: Any, res_w: Any) -> None:
-    """The body of one worker process: run tasks from ``task_r``, answer on ``res_w``."""
+    """The body of one worker process: run tasks from ``task_r``, answer on ``res_w``.
+
+    A worker ignores Ctrl+C and Ctrl+Break: the console sends them to every process on it, the hub's workers
+    included, and a job cut short that way would be recorded as failed (and its key cached as an error) before the
+    hub had begun to stop. The hub stops its workers itself (``retire``)."""
+    import signal
+
+    for name in ("SIGINT", "SIGBREAK"):
+        sig = getattr(signal, name, None)
+        if sig is not None:
+            try:
+                signal.signal(sig, signal.SIG_IGN)
+            except (OSError, ValueError):
+                pass
     from . import registry as registry_mod
 
     tasks: queue.Queue = queue.Queue()

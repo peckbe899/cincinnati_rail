@@ -71,6 +71,38 @@ describe("engine", () => {
     for (const f of out.flags) expect(rules.has(f.rule), f.rule).toBe(true);
   });
 
+  test("the design rules come from the input's params when sent, and default to the page's (spec-14)", async () => {
+    // A bend too sharp for the stretch it sits on: its curve is shortened, by more than the page's 0.5 m.
+    const input = {
+      ...fixture("Line_2b"),
+      stations: [],
+      pvi: [
+        { c_m: 1000, z_m: 160 },
+        { c_m: 1010, z_m: 150 },
+      ],
+    };
+    type Out = { flags: { kind: string }[]; rail_m: number[] };
+    const page = (await solve("vertical.rail", input)) as Out;
+    const same = (await solve("vertical.rail", {
+      ...input,
+      params: { ...input.params, short_curve_flag_m: 0.5, transition_share: 0.5, design_passes: 5 },
+    })) as Out;
+    // Sent with the page's values, the rail and flags are those of an input without them.
+    expect(same.rail_m).toEqual(page.rail_m);
+    expect(same.flags).toEqual(page.flags);
+    expect(page.flags.some((f) => f.kind === "vertical_curve_short")).toBe(true);
+    // A registry value is what decides: a flag threshold above the shortfall raises no flag.
+    const lax = (await solve("vertical.rail", {
+      ...input,
+      params: { ...input.params, short_curve_flag_m: 1e6 },
+    })) as Out;
+    expect(lax.flags.some((f) => f.kind === "vertical_curve_short")).toBe(false);
+    // The contract refuses a rule out of range.
+    await expect(
+      solve("vertical.rail", { ...input, params: { ...input.params, transition_share: 1.5 } }),
+    ).rejects.toMatchObject({ code: "invalid_input" });
+  });
+
   test("engine_build follows the recipe of PROTOCOL.md", () => {
     const files = buildFiles();
     expect(files[0]).toBe("package.json");

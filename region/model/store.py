@@ -126,6 +126,9 @@ class SqliteStore:
         self.validators = validators
         self.backup_dir = Path(backup_dir) if backup_dir is not None else self.path.parent / "backups"
         self.readonly = readonly
+        # pre-import backups (section 9): taken before an import or seed import changes records; a throwaway
+        # database (crhub rebuild's) turns them off
+        self.auto_backups = not readonly
         self._writer: D.Writer | D.ReadOnlyWriter = D.ReadOnlyWriter(self.path) if readonly else D.writer_for(self.path)
         self._readers = D.Readers(self.path, cache=self.cache_path, readonly=readonly)
         self._listeners: list[Callable[[int | None], None]] = []
@@ -473,6 +476,8 @@ class SqliteStore:
             changed = {p.id for p in txn.written()}
             if res.changeset and changed and txn.layers.above(txn.layer):
                 M.rebase(self, con, lower=view.layer, changed=changed, by="rebase")
+            if res.changeset and changed:
+                M.replan_own(self, con, txn.layer, changed)
             return res, txn
 
         res, txn = self._writer.run(fn)
@@ -669,6 +674,30 @@ class SqliteStore:
         return self._writer.run(fn)
 
     def promote(self, slug: str, *, by: str, message: str = "", client: str | None = None) -> WriteResult:
+        """Promote ``slug`` into its parent (see ``_promote``). When records changed in the parent since they were
+        copied up (a proposal pulled from a seed whose base is older than this database), the rebase planner runs
+        for them first: disjoint changes merge as listed rebase changesets and the promote is tried once more; the
+        rest become conflict rows (``crhub conflicts list``), named in the refusal."""
+        try:
+            return self._promote(slug, by=by, message=message, client=client)
+        except Conflict as e:
+            stale = {c["id"] for c in e.conflicts if c.get("reason") == "changed in the parent since"}
+            if e.reason != "rebase" or not stale:
+                raise
+            parent = self.layer(slug)["parent"] or "main"
+            reb = self._writer.run(lambda con: M.rebase(self, con, lower=parent, changed=stale, only=slug, by="rebase"))
+            if reb["changesets"]:
+                self._notify(self.last_seq())
+            if not reb["conflicts"]:
+                return self._promote(slug, by=by, message=message, client=client)
+            raise Conflict(
+                f"{e.detail}; {len(reb['conflicts'])} of them overlap Ben's revisions and are listed as conflicts "
+                f"(crhub conflicts list --layer {slug}): resolve them, then promote again",
+                reason="rebase",
+                conflicts=e.conflicts,
+            ) from None
+
+    def _promote(self, slug: str, *, by: str, message: str = "", client: str | None = None) -> WriteResult:
         """Write a scenario's revisions to its parent as one ``promote`` changeset, each with If-Match against the
         parent's revision it was copied from; the layer becomes ``promoted``. ``Conflict(reason="rebase")`` lists
         every record the parent changed since (nothing is written then)."""
@@ -910,9 +939,10 @@ class SqliteStore:
             self._notify(self.last_seq())
         return out
 
-    def rebase(self, *, lower: str | None = None, by: str = "rebase") -> dict[str, Any]:
-        """Run the rebase planner over every copied-up revision above ``lower`` (all layers when ``None``)."""
-        out = self._writer.run(lambda con: M.rebase(self, con, lower=lower, by=by))
+    def rebase(self, *, lower: str | None = None, by: str = "rebase", only: str | None = None) -> dict[str, Any]:
+        """Run the rebase planner over every copied-up revision above ``lower`` (all layers when ``None``), on layer
+        ``only`` alone when given (``POST /layers/{slug}/rebase``, ``crhub model rebase``)."""
+        out = self._writer.run(lambda con: M.rebase(self, con, lower=lower, by=by, only=only))
         if out["changesets"]:
             self._notify(self.last_seq())
         return out
@@ -982,6 +1012,17 @@ class SqliteStore:
         from .backup import quick_check
 
         return quick_check(self._reader())
+
+    def pre_import_backup(self) -> Path | None:
+        """A ``pre-import`` backup into the backup folder, then the retention tiers (the newest 10 kept). ``None``
+        when backups are off for this store (read-only, or ``auto_backups`` set false)."""
+        if self.readonly or not self.auto_backups:
+            return None
+        from .backup import prune
+
+        path = self.backup("pre-import")
+        prune(self.backup_dir)
+        return path
 
     def backup(self, reason: str = "manual", dest: Path | None = None) -> Path:
         """An online, checked backup of this database into ``dest`` (default the store's backup folder)."""

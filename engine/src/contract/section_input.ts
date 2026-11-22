@@ -9,8 +9,37 @@ export const SectionParams = z
     platform_m: z.number().positive().meta(unit("m", "Platform length.")),
     vc_radius_m: z.number().positive().meta(unit("m", "Vertical curve radius.")),
     vc_min_len_m: z.number().nonnegative().meta(unit("m", "Shortest vertical curve.")),
+    transition_share: z
+      .number()
+      .positive()
+      .max(1)
+      .optional()
+      .meta(
+        unit(
+          "ratio",
+          "The share of a stretch the two platform transitions on it may take (absent: 0.5, profiles.html 778).",
+        ),
+      ),
+    short_curve_flag_m: z
+      .number()
+      .nonnegative()
+      .optional()
+      .meta(unit("m", "A vertical curve shortened by more than this is flagged (absent: 0.5, profiles.html 799).")),
+    design_passes: z
+      .int()
+      .positive()
+      .optional()
+      .meta(
+        unit(
+          "count",
+          "Passes of the transition solver, each re-reading its neighbours (absent: 5, profiles.html 765).",
+        ),
+      ),
   })
-  .meta({ description: "Resolved params (settings.* or settings_rer.* by system, with the CVG overlay)." });
+  .meta({
+    description:
+      "Resolved params (settings.* or settings_rer.* by system, with the CVG overlay). The design rules after vc_min_len_m are optional: absent, each takes the Profiles page's value, so an input without them solves as before.",
+  });
 export type SectionParams = z.infer<typeof SectionParams>;
 
 export const SectionStation = z

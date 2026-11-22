@@ -787,6 +787,22 @@ def test_known_failures_are_strict_xfail(request):
     known = load_known_failures()
     assert "tests/test_core.py::test_rer_routes_follow_deck" in known
     assert all("::" in node and node.startswith("tests/") for node in known)
+    # a [win32] line applies on Windows only
+    win = load_known_failures(platform="win32")
+    linux = load_known_failures(platform="linux")
+    windows_only = "tests/enginehost/test_client.py::test_sidecar_that_outlives_its_stdout_is_killed"
+    assert windows_only in win and windows_only not in linux
+    assert all("::" in node and node.startswith("tests/") for node in win)
+
+
+def test_windows_launcher_syncs_only_for_setup_and_finds_region_from_any_folder():
+    """windows-3, windows-12: with uv, only ``.\\crhub setup`` syncs .venv (a running old hub that has its packages
+    loaded never stops serve or doctor); the repo is on PYTHONPATH, so ``region`` imports from any folder."""
+    text = (REPO / "crhub.cmd").read_bytes().decode("ascii")
+    assert 'set "PYTHONPATH=%CRHUB_ROOT%.;%PYTHONPATH%"' in text and 'set "PYTHONPATH=%CRHUB_ROOT%."' in text
+    assert 'if /i "%~1"=="setup" goto uvsync' in text
+    assert 'uv run --no-sync --project "%CRHUB_ROOT%." python -m region %*' in text
+    assert ':uvsync\r\nuv run --locked --project "%CRHUB_ROOT%." python -m region %*' in text
 
 
 def test_launchers():

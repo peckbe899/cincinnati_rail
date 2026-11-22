@@ -80,6 +80,9 @@ export interface KindMeta {
   columns?: Record<string, string>;
   legacy?: string[];
   feature?: string | null;
+  /** The record's references: a pointer in data (with * for any list index) and the kind it names. */
+  refs?: { path: string; kind: string | string[]; role?: string; on_delete?: string; required?: boolean }[];
+  merge?: { unit?: string; rebase?: string; guard?: string[] };
   schema: JsonSchema;
 }
 
@@ -131,6 +134,8 @@ export interface JsonSchema {
   anyOf?: JsonSchema[];
   "x-unit"?: string;
   "x-vocab"?: string;
+  $ref?: string;
+  $defs?: Record<string, JsonSchema>;
   [key: string]: unknown;
 }
 

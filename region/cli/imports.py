@@ -1,12 +1,20 @@
 """``crhub imports``: run the importers (section 10, WP5), and the runner the server, setup and rebuild share.
 
     crhub imports list                                 the importers, their layers and sources
+    crhub imports status [--db PATH]                   which importers' sources changed since their last applied run
     crhub imports run [NAME ...] [--dry-run] [--db PATH] [--hub-db PATH] [--working-tree] [--json]
+    crhub imports apply RUN [--db PATH]                apply a dry run (refused when its sources changed since)
     crhub imports show RUN [--db PATH]                 one run's stored report
 
 With no NAME, every importer runs, in the order ``ORDER`` gives (``registry``, ``profile_lines``, ``old_hub``): the
-old hub's profiles sit on the sections and platforms ``profile_lines`` makes. ``run`` holds ``var``'s single-instance
-lock while it works, so it refuses to start while a hub serves (run imports from the hub then).
+old hub's profiles sit on the sections and platforms ``profile_lines`` makes. While a hub serves from ``var``,
+``run`` and ``apply`` go through its HTTP API (``POST /imports``, ``POST /imports/{run}/apply``; decision 9.28);
+otherwise they hold ``var``'s single-instance lock while they work.
+
+**Changed sources** (9.26). ``check_sources`` hashes each importer's sources and compares them with its last
+applied run; for an importer whose sources changed it makes a dry run, so the change is reported before it is
+applied. ``crhub serve`` runs it at start and prints the reports; ``crhub setup`` applies the imports only into
+layers that hold nothing yet (the first setup), and makes dry runs otherwise.
 
 **The runner** (``run_import``), for one importer:
 
@@ -20,7 +28,8 @@ lock while it works, so it refuses to start while a hub serves (run imports from
    ``borrows`` (the old hub's profiles take the ids of the profiles namespace), and calls ``records(src, ids)``;
 4. calls ``store.apply_import(run, records, dry_run=..., ids=...)``.
 
-``setup_imports(db)`` is what ``crhub setup`` runs: every importer, applied, with a short table.
+``setup_imports(db)`` is what ``crhub setup`` runs: every importer, applied on the first setup and a dry run after
+that, with a short table.
 """
 
 from __future__ import annotations
@@ -405,6 +414,75 @@ def run_all(store: Any, names: Iterable[str] | None = None, **kw: Any) -> list[R
     return runs
 
 
+# ------------------------------------------------------------------------------------------------ changed sources
+
+
+def _tops(entries: Mapping[str, Any] | None) -> dict[str, Any]:
+    """The per-source entries of a run's ``sources`` (not the per-file ``<name>/<relpath>`` ones)."""
+    return {k: v for k, v in (entries or {}).items() if "/" not in k}
+
+
+def last_applied(store: Any, name: str) -> dict[str, Any] | None:
+    """``{"run", "sources", "finished"}`` of the newest import run of ``name`` that was applied (or found nothing to
+    change), or ``None`` when it never ran here."""
+    row = (
+        store._reader()
+        .execute(
+            "SELECT id, sources, finished FROM import_run WHERE importer = ? AND dry_run = 0 "
+            "AND state IN ('applied', 'unchanged') ORDER BY id DESC LIMIT 1",
+            (name,),
+        )
+        .fetchone()
+    )
+    if row is None:
+        return None
+    return {"run": row[0], "sources": json.loads(row[1]) if row[1] else {}, "finished": row[2]}
+
+
+def stale_sources(store: Any, names: Iterable[str] | None = None, **kw: Any) -> list[dict[str, Any]]:
+    """The importers whose sources differ from their last applied run: ``[{"importer", "last_run", "changed"}]``
+    (``changed`` names the sources, or is ``["never imported"]``)."""
+    out = []
+    for name, imp in importers().items():
+        if names is not None and name not in names:
+            continue
+        last = last_applied(store, name)
+        now = _tops(resolve_sources(imp, **kw).entries)
+        if last is None:
+            out.append({"importer": name, "last_run": None, "changed": ["never imported"]})
+            continue
+        before = _tops(last["sources"])
+        changed = sorted(k for k in set(now) | set(before) if now.get(k) != before.get(k))
+        if changed:
+            out.append({"importer": name, "last_run": last["run"], "changed": changed})
+    return out
+
+
+def check_sources(store: Any, *, ledger_dir: Path | None = None) -> list[dict[str, Any]]:
+    """``stale_sources`` with a dry run of each stale importer: each entry gains ``"dry_run"`` (the run id),
+    ``"counts"`` and ``"errors"`` (9.26: a changed source is reported; applying it is a separate step)."""
+    stale = stale_sources(store)
+    for st in stale:
+        done = run_one(store, importers()[st["importer"]], dry_run=True, ledger_dir=ledger_dir)
+        st["dry_run"] = done.report.run
+        st["counts"] = dict(done.report.counts)
+        st["errors"] = list(done.report.errors[:5])
+    return stale
+
+
+def describe_stale(st: Mapping[str, Any]) -> str:
+    """One line for a stale importer (``check_sources``' entry)."""
+    c = st.get("counts") or {}
+    counts = ", ".join(f"{k} {c.get(k, 0)}" for k in ("created", "updated", "deleted", "conflicts"))
+    since = f"since run {st['last_run']}" if st.get("last_run") else "(never applied here)"
+    line = f"{st['importer']}: {', '.join(st['changed'][:4])} changed {since}"
+    if st.get("dry_run") is not None:
+        line += f"; dry run {st['dry_run']}: {counts}. Apply: crhub imports apply {st['dry_run']}"
+    if st.get("errors"):
+        line += f" (it has {len(st['errors'])} error(s): {st['errors'][0].get('message', '')})"
+    return line
+
+
 # ----------------------------------------------------------------------------------------------------- reporting
 
 
@@ -424,24 +502,44 @@ def _table(runs: list[Run]) -> str:
     return "\n".join(lines)
 
 
-def setup_imports(db: Path, *, ledger_dir: Path | None = None) -> int:
-    """``crhub setup``'s imports step: every importer, applied to ``db``, under ``var``'s lock. Returns 0, or 1 when
-    an import failed (its reason printed). ``ledger_dir`` defaults to ``region/ids``."""
+def _layer_empty(store: Any, slug: str) -> bool:
+    con = store._reader()
+    row = con.execute("SELECT 1 FROM rec r JOIN layer l ON l.id = r.layer WHERE l.slug = ? LIMIT 1", (slug,)).fetchone()
+    return row is None
+
+
+def setup_imports(db: Path, *, ledger_dir: Path | None = None, apply: bool = False) -> int:
+    """``crhub setup``'s imports step, under ``var``'s lock. An importer whose layer holds nothing yet (the first
+    setup) is applied; any other runs as a dry run whose report is printed with the command that applies it (9.26:
+    a changed source is reported, and applying it is an explicit step). ``apply=True`` applies every one. Returns
+    0, or 1 when an import failed (its reason printed). ``ledger_dir`` defaults to ``region/ids``."""
     from region.core import lock
     from region.core.errors import HubError
     from region.model import open_store
 
     with lock.acquire(paths.var_root(), 0, command="crhub setup (imports)"):
         with open_store(Path(db), create=False) as store:
+            runs: list[Run] = []
             try:
-                runs = run_all(store, ledger_dir=ledger_dir)
+                for imp in importers().values():
+                    first = apply or _layer_empty(store, imp.layer)
+                    runs.append(run_one(store, imp, dry_run=not first, ledger_dir=ledger_dir))
             except HubError as e:
                 print(f"      imports failed: {e}", file=sys.stderr)
                 for err in (getattr(e, "errors", None) or [])[:5]:
                     print(f"        {err.get('path', '')} {err.get('message', '')}", file=sys.stderr)
                 return 1
     print(_table(runs))
+    planned = [r for r in runs if r.report.dry_run and _changes(r.report.counts)]
+    if planned:
+        print("      these imports were not applied (their layers already hold records); review, then apply:")
+        for r in planned:
+            print(f"        crhub imports apply {r.report.run}    ({r.report.importer})")
     return 0
+
+
+def _changes(counts: Mapping[str, Any]) -> int:
+    return sum(int(counts.get(k, 0) or 0) for k in ("created", "updated", "deleted"))
 
 
 # ----------------------------------------------------------------------------------------------------------- CLI
@@ -466,6 +564,11 @@ def register(subparsers: argparse._SubParsersAction) -> None:
     show = sub.add_parser("show", help="one run's stored report")
     show.add_argument("run_id", type=int, metavar="RUN")
     show.add_argument("--db", type=Path, default=None, help="region.db (default var/region.db)")
+    apply = sub.add_parser("apply", help="apply a dry run (refused when its sources changed since)")
+    apply.add_argument("run_id", type=int, metavar="RUN")
+    apply.add_argument("--db", type=Path, default=None, help="region.db (default var/region.db)")
+    status = sub.add_parser("status", help="which importers' sources changed since their last applied run")
+    status.add_argument("--db", type=Path, default=None, help="region.db (default var/region.db)")
     p.set_defaults(func=_main)
 
 
@@ -490,30 +593,114 @@ def _main(args: argparse.Namespace) -> int:
         with open_store(_db(args), readonly=True) as store:
             print(json.dumps(store.import_run(args.run_id), indent=1, ensure_ascii=False, default=str))
         return 0
+    if action == "status":
+        from region.model import open_store
+
+        with open_store(_db(args), readonly=True) as store:
+            stale = stale_sources(store)
+        for st in stale:
+            print(describe_stale(st))
+        if not stale:
+            print("every importer's sources are as last applied")
+        return 1 if stale else 0
+    hub = _running_hub(args)
+    if hub is not None:
+        return _through_hub(hub, action, args)
     from region.core import lock
     from region.model import open_store
 
     db = _db(args)
-    with lock.acquire(paths.var_root(), 0, command="crhub imports run"):
+    with lock.acquire(paths.var_root(), 0, command=f"crhub imports {action}"):
         with open_store(db, create=False) as store:
-            runs = run_all(
-                store,
-                args.names,
-                dry_run=args.dry_run,
-                hub_db=args.hub_db,
-                use_git=not args.working_tree,
-                ledger_dir=args.ledger_dir,
-            )
-    if args.json:
+            if action == "apply":
+                runs = [_apply_direct(store, args.run_id)]
+            else:
+                runs = run_all(
+                    store,
+                    args.names,
+                    dry_run=args.dry_run,
+                    hub_db=args.hub_db,
+                    use_git=not args.working_tree,
+                    ledger_dir=args.ledger_dir,
+                )
+    if getattr(args, "json", False):
         print(json.dumps([r.summary() for r in runs], indent=1, ensure_ascii=False, default=str))
     else:
         print(_table(runs))
     return 1 if any(r.report.errors for r in runs) else 0
 
 
+def _running_hub(args: argparse.Namespace) -> Any:
+    """The client of the hub serving from ``var`` when no ``--db`` was given (9.28: its database is written only
+    through it), else ``None``."""
+    if getattr(args, "db", None) is not None:
+        return None
+    from region.api.client import running_hub
+
+    return running_hub(client="crhub-cli", timeout=900.0)
+
+
+def _apply_direct(store: Any, run_id: int) -> Run:
+    """Apply dry run ``run_id`` on a store opened here: the importer runs again, only when its sources still hash
+    as they did (the same rule as ``POST /imports/{run}/apply``)."""
+    from region.core.errors import Conflict
+
+    planned = store.import_run(run_id)
+    if not planned.get("dry_run"):
+        raise Conflict(f"import run {run_id} was not a dry run", reason="layer")
+    imp = importer(planned["importer"])
+    now = resolve_sources(imp).entries
+    before = planned.get("sources") or {}
+    if now != before:
+        changed = sorted(k for k in set(now) | set(before) if now.get(k) != before.get(k) and "/" not in k)
+        raise Conflict(
+            f"the sources of import run {run_id} changed since the dry run ({', '.join(changed) or 'files'}); "
+            "run a new dry run (crhub imports run --dry-run)",
+            reason="rebase",
+        )
+    return run_one(store, imp, dry_run=False)
+
+
+def _through_hub(hub: Any, action: str, args: argparse.Namespace) -> int:
+    """``run`` and ``apply`` through the serving hub's ``/imports`` routes."""
+    if action == "run" and (args.hub_db or args.working_tree or args.ledger_dir):
+        print(
+            f"crhub imports run: a hub is serving at {hub.base} ({hub.holder.describe() if hub.holder else 'serve'}),"
+            " and its imports read the usual sources only. Drop --hub-db, --working-tree and --ledger-dir, or stop "
+            "the hub to run with them.",
+            file=sys.stderr,
+        )
+        return 1
+    reps = []
+    if action == "apply":
+        reps.append(hub.json("POST", f"/imports/{args.run_id}/apply"))
+    else:
+        names = list(args.names) or list(importers())
+        for n in names:
+            reps.append(hub.json("POST", "/imports", json_body={"importer": n, "dry_run": bool(args.dry_run)}))
+    print(f"imports (through the hub serving at {hub.base})")
+    if getattr(args, "json", False):
+        print(json.dumps(reps, indent=1, ensure_ascii=False, default=str))
+    else:
+        cols = ("created", "updated", "unchanged", "deleted", "conflicts")
+        for r in reps:
+            c = r.get("counts") or {}
+            flag = " (dry run)" if r.get("dry_run") else ""
+            print(
+                f"  {r.get('importer', ''):<14} {r.get('layer', ''):<17} "
+                + " ".join(f"{k} {c.get(k, 0)}" for k in cols)
+                + f"  run {r.get('run')}{flag}"
+            )
+    return 1 if any(r.get("errors") for r in reps) else 0
+
+
 __all__ = [
     "ORDER",
     "RoutedIds",
+    "check_sources",
+    "describe_stale",
+    "last_applied",
+    "stale_sources",
     "Run",
     "Sources",
     "git_files",

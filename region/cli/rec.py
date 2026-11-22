@@ -11,7 +11,9 @@
     crhub rec revert  CHANGESET
 
 ``FILE`` holds JSON: the record's body ``{"data": {...}, "geom": null}`` for ``create`` and ``put``, an RFC 6902
-patch (a list of operations) for ``patch``; ``-`` reads it from stdin. ``--latest`` takes the record's current ETag
+patch (a list of operations) for ``patch``; ``-`` reads it from stdin. A file may be UTF-8 (with or without a BOM)
+or UTF-16, as Windows PowerShell writes them. In Windows PowerShell 5.1 pass a file, not a pipe: its pipe turns
+every character outside ASCII into ``?`` before the hub sees it. ``--latest`` takes the record's current ETag
 first (read, then write; a write that lands in between still makes the write a 412). Output is the JSON answer.
 
 **Where it goes.** While a serving hub holds ``var``'s lock, every command goes through that hub's HTTP API, so the
@@ -90,9 +92,37 @@ def register(subparsers: argparse._SubParsersAction) -> None:
     p.set_defaults(func=run)
 
 
+def decode_body(raw: bytes, where: str) -> str:
+    """The text of a body file's bytes, by its byte order mark: UTF-8 (with or without a BOM, which Windows
+    PowerShell's ``Out-File -Encoding utf8`` writes) or UTF-16 (what its ``>`` writes). ``Invalid`` otherwise, so a
+    file in another encoding is never read as wrong characters. A U+FFFD or a ``?`` where PowerShell 5.1's pipe
+    replaced a character cannot be told apart here; a file is the safe way to pass a body there."""
+    from region.core.errors import Invalid
+
+    try:
+        if raw.startswith((b"\xff\xfe", b"\xfe\xff")):
+            return raw.decode("utf-16")
+        return raw.decode("utf-8-sig")
+    except UnicodeDecodeError as e:
+        raise Invalid(f"{where} is not UTF-8 or UTF-16 text: {e}") from None
+
+
 def _read_json(name: str) -> Any:
-    text = sys.stdin.read() if name == "-" else Path(name).read_text(encoding="utf-8")
-    return json.loads(text)
+    from region.core.errors import Invalid
+
+    where = "the body on stdin" if name == "-" else name
+    try:
+        if name == "-":
+            buf = getattr(sys.stdin, "buffer", None)
+            raw = buf.read() if buf is not None else sys.stdin.read().encode("utf-8")
+        else:
+            raw = Path(name).read_bytes()
+    except OSError as e:
+        raise Invalid(f"cannot read {where}: {e}") from None
+    try:
+        return json.loads(decode_body(raw, where))
+    except json.JSONDecodeError as e:
+        raise Invalid(f"{where} is not JSON: {e}") from None
 
 
 def _body(doc: Any) -> dict[str, Any]:

@@ -2,8 +2,11 @@
 //
 // save() sends the draft's coalesced patch with If-Match on its base. On success the response goes into the cache,
 // the changeset onto the undo stack, and the draft is done. On 412 the server's body carries the current record
-// (its by and a diff); save() returns a StaleOffer instead of throwing:
-// - keepMine() patches from their record to my working copy, with If-Match on theirs, so the result is mine;
+// (its by and a diff); save() returns a StaleOffer instead of throwing. The offer says what each side changed from
+// the draft's base, and where both changed the same field, so the banner can name them before Ben chooses:
+// - keepMine() rebases my changes onto their record (a three-way rebase: only the fields I changed are sent, with
+//   If-Match on theirs), so their change to a field I never touched stays. Where both changed a field, mine wins
+//   there, and the offer named it first. It is never a whole-document save (plan section 18);
 // - takeTheirs() drops my draft and shows their record.
 //
 // One save of a draft is in flight at a time. A second save() of the same draft (Enter in a cell, then Ctrl+S)
@@ -13,9 +16,23 @@
 import { type Api, ApiError, etagOf } from "../api/client.ts";
 import type { Body, JsonPatch, Rec } from "../api/types.ts";
 import { bodyOf, type Draft, type Drafts } from "./drafts.ts";
-import { diff } from "./jsonpatch.ts";
+import { diff, getAt, rebase3 } from "./jsonpatch.ts";
 import type { RecordCache } from "./records.ts";
 import type { UndoStack } from "./undo.ts";
+
+/** One field one side changed, from the draft's base: its pointer in the body and its value before and after. */
+export interface FieldChange {
+  path: string;
+  before: unknown;
+  after: unknown;
+}
+
+/** What each side changed from the draft's base, and the fields both changed (where Keep mine puts mine). */
+export interface StaleChanges {
+  mine: FieldChange[];
+  theirs: FieldChange[];
+  both: { path: string; base: unknown; mine: unknown; theirs: unknown }[];
+}
 
 export interface StaleOffer {
   draft: Draft;
@@ -23,8 +40,25 @@ export interface StaleOffer {
   theirs: Rec;
   by: string | null;
   diff: JsonPatch | null;
+  changes: StaleChanges;
   keepMine(): Promise<Rec>;
   takeTheirs(): Rec;
+}
+
+/** The three-way picture of a stale draft: base, my working copy, their record. */
+export function staleChanges(base: Body, mine: Body, theirs: Body): StaleChanges {
+  const r = rebase3(base, mine, theirs);
+  const change = (other: Body) => (path: string) => ({ path, before: getAt(base, path), after: getAt(other, path) });
+  return {
+    mine: r.mine.map(change(mine)),
+    theirs: r.theirs.map(change(theirs)),
+    both: r.both.map((path) => ({
+      path,
+      base: getAt(base, path),
+      mine: getAt(mine, path),
+      theirs: getAt(theirs, path),
+    })),
+  };
 }
 
 export type SaveOutcome = { status: "clean" } | { status: "saved"; rec: Rec } | { status: "stale"; offer: StaleOffer };
@@ -110,13 +144,16 @@ async function offer(deps: SaveDeps, key: string, e: ApiError, label: string): P
     theirs,
     by: e.problem.by ?? theirs.by ?? null,
     diff: e.problem.diff ?? null,
+    changes: staleChanges(bodyOf(d.base), d.body, bodyOf(theirs)),
     async keepMine() {
       const running = writes(deps.drafts).get(key);
       if (running) await running.catch(() => undefined);
       const cur = deps.drafts.byKey(key) ?? d;
-      const ops = diff(bodyOf(theirs), cur.body);
+      // Only what this tab changed from its base goes onto theirs: a field it never touched keeps their value.
+      const merged = rebase3(bodyOf(cur.base), cur.body, bodyOf(theirs)).result;
+      const ops = diff(bodyOf(theirs), merged);
       if (ops.length === 0) return takeTheirs();
-      deps.drafts.rebase(key, theirs);
+      deps.drafts.rebase(key, theirs, merged);
       deps.drafts.setSaving(key, true);
       return track(deps.drafts, key, async () => {
         try {

@@ -220,11 +220,22 @@ def _run(args: argparse.Namespace) -> int:
 
 
 def _run_with(args: argparse.Namespace, store: Any, view: Any) -> int:
-    from region.core.errors import NotFound
+    from region.core.errors import HubError, NotFound
     from region.ext.rules.params import resolve as resolve_param
+    from region.jobs.registry import default_registry
     from region.jobs.scheduler import Scheduler
 
-    sched = Scheduler(store, _cache_path(args), None, params=resolve_param).start()  # as serve resolves params
+    engine = None
+    try:
+        host = getattr(default_registry().get(args.type), "host", None)
+    except HubError:  # an unknown type is reported by submit below
+        host = None
+    if host == "engine":
+        # the profiles jobs run on the engine host: start the sidecars for this command, as serve does
+        from region.enginehost import Pool
+
+        engine = Pool(size=1, timeout_s=None)
+    sched = Scheduler(store, _cache_path(args), engine, params=resolve_param).start()  # as serve resolves params
     try:
         out = sched.submit(args.type, args.scope, view, priority=0)
         key = out["key"]
@@ -240,6 +251,8 @@ def _run_with(args: argparse.Namespace, store: Any, view: Any) -> int:
         res = sched.result_meta(key)
     finally:
         sched.stop()
+        if engine is not None:
+            engine.close()
     if args.json:
         _print_json(res)
     else:

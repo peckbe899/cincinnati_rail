@@ -18,6 +18,8 @@ refs:
 merge:
   unit: atomic
   rebase: auto
+  # a stop or section moved below (a re-path) puts Ben's profile revisions above under edit (9.11, 9.27)
+  frame: [stop, section]
 legacy: [alignment]
 seeded: true
 schema:

@@ -33,6 +33,8 @@ def test_workflow_has_the_five_jobs():
     assert py["strategy"]["matrix"]["python"] == ["3.12", "3.13"]
     run = _commands(py)
     assert "uv lock --check" in run and "ruff check" in run and 'pytest -m "not slow and not local"' in run
+    # the app's size budget is checked on the build setup made (spec-15)
+    assert run.index("./crhub setup") < run.index("npm run check:size -w app")
 
     engine = jobs["engine"]
     assert engine["strategy"]["matrix"]["node"] == ["22.18", "24"]
@@ -85,3 +87,15 @@ def test_tree_passes_the_hygiene_rules():
         if line.startswith(("i/crlf", "i/mixed"))
     ]
     assert crlf == [], f"region/seed must be LF: {crlf}"
+
+
+def test_windows_smoke_test_runs_whatever_pytest_said_and_more_areas_are_reported():
+    """spec-6, windows-5, windows-6: the serve smoke test was skipped every time a unit test failed, so the hub was
+    never started by CI on Windows; tests/jobs, importers and profiles never ran there."""
+    steps = {s["name"]: s for s in _workflow()["jobs"]["windows"]["steps"] if "name" in s}
+    smoke = steps["serve smoke test (start, health, stop)"]
+    assert "!cancelled()" in smoke["if"]
+    extra = next(s for n, s in steps.items() if n.startswith("pytest (jobs, importers, profiles"))
+    assert extra.get("continue-on-error") is True
+    for area in ("tests/jobs", "tests/importers", "tests/profiles"):
+        assert area in extra["run"]

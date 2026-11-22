@@ -69,7 +69,16 @@ def read_ledger(path: Path) -> dict[tuple[str, str], str]:
         parts = line.split("\t")
         if len(parts) != 3:
             raise Invalid(f"{path}: ledger line {line!r} is not lkind TAB key TAB id")
-        out[(_unesc(parts[0]), _unesc(parts[1]))] = parts[2]
+        k = (_unesc(parts[0]), _unesc(parts[1]))
+        if k in out and out[k] != parts[2]:
+            # two sessions mapped one old key to two ids (a merge kept both lines): a database built from git would
+            # use one and Ben's the other, so their seeds would name ids the other lacks
+            raise Invalid(
+                f"{path}: {k[0]} {k[1]!r} maps to two ids, {out[k]} and {parts[2]}; keep the line of the id your "
+                "database uses (crhub rec legacy shows it) and delete the other",
+                errors=[{"path": str(path), "message": f"{k[0]} {k[1]!r}: {out[k]} and {parts[2]}"}],
+            )
+        out[k] = parts[2]
     return out
 
 
@@ -133,6 +142,7 @@ class IdLookupImpl:
         self.ledger = ledger_path(namespace, ledger_dir)
         self._ledger = read_ledger(self.ledger)
         self._new: dict[tuple[str, str], tuple[str, str]] = {}
+        self._heal: dict[tuple[str, str], str] = {}
         self._claimed: set[str] = set()
         # the unclaimed records of each kind on the layer, read once per run (the layer does not change until the
         # run commits), so matching n keys against n records costs n list copies, not n queries
@@ -153,6 +163,10 @@ class IdLookupImpl:
             self._claim(pend[0])
             return pend[0]
         found = self.store.legacy(lkind, key)
+        if found is not None and (lkind, key) not in self._ledger and ids.namespace_of(found) == self.namespace:
+            # in the legacy index but not in the ledger (a ledger write lost after its import committed): the line
+            # is written again with this run's, so the ledger heals
+            self._heal[(lkind, key)] = found
         if found is None:
             found = self._ledger.get((lkind, key))
             if found is not None:
@@ -192,10 +206,12 @@ class IdLookupImpl:
         return written
 
     def write_ledger(self, written: dict[tuple[str, str], str]) -> None:
-        if written:
-            append_ledger(self.ledger, written)
-            self._ledger.update(written)
+        lines = {**self._heal, **(written or {})}
+        if lines:
+            append_ledger(self.ledger, lines)
+            self._ledger.update(lines)
         self._new.clear()
+        self._heal.clear()
         self._orphans.clear()
 
     def flush(self) -> dict[tuple[str, str], str]:

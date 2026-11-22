@@ -10,6 +10,7 @@ import type { EventFeed } from "../api/events.ts";
 import type { Meta, Rec } from "../api/types.ts";
 import type { EngineHandle } from "../engine/client.ts";
 import type { Drafts } from "./drafts.ts";
+import type { Names } from "./names.ts";
 import type { RecordCache } from "./records.ts";
 import type { Registry } from "./registry.ts";
 import type { AppStore } from "./store.ts";
@@ -140,6 +141,8 @@ export interface BandData {
   server: { rail_m: ArrayLike<number>; step_m: number } | null;
   profile: Rec | null;
   selected: Handle | null;
+  /** A platform's name for labels ("Bond Hill"); the id when none is known. */
+  platformName?(id: string): string;
 }
 
 /** A grabbable thing on a band (a PVI, a platform). */
@@ -226,6 +229,8 @@ export interface Host {
   api: Api;
   store: AppStore;
   records: RecordCache;
+  /** Record names in Ben's terms, for every place the app would show an id. */
+  names: Names;
   events: EventFeed;
   drafts: Drafts;
   undo: UndoStack;
@@ -242,6 +247,8 @@ export interface Host {
   problem(e: unknown): void;
   status(item: StatusItem | { id: string; remove: true }): void;
   meta(): Promise<Meta>;
+  /** true when records of the kind can be written in the view, else the plain reason they cannot (9.23). */
+  editable(kind: string, view?: View): Promise<true | string>;
   /** The old hub's base URL (configs/hub.json old_hub). */
   oldHub(): string;
 }

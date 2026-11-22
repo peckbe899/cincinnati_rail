@@ -33,6 +33,8 @@ from .inputs import build, gather, params_of, section_input
 ENGINE_METHOD = "vertical.rail"
 BASELINE = "repo://tests/baseline/profiles/{route}.json"
 TABLE = "repo://region/ext/profiles/golden.yaml"
+PVI_TOLERANCE_M = 0.001
+
 CODE_FILES = (
     "repo://region/ext/profiles/inputs.py",
     "repo://region/ext/profiles/doc.py",
@@ -65,9 +67,11 @@ class SolveSection:
         rt.progress(0.1, "vertical")
         out = rt.engine.call(ENGINE_METHOD, inputs)
         grid = out["grid"]
+        # no input_hash in meta: meta is part of output_hash, and the input hash covers fields vertical.rail@1 does
+        # not read (scale, chainage_basis), so an edit of one would give a new output_hash for the same rail and
+        # defeat the early cutoff of every job downstream (9.19). The job's key already names its inputs.
         meta = {
             "contract": out["contract"],
-            "input_hash": out["input_hash"],
             "grid": {"c0": grid["c0"], "step_m": grid["step_m"], "n": grid["n"]},
             "step_m": grid["step_m"],
             "length_m": inputs["length_m"],
@@ -79,12 +83,48 @@ class SolveSection:
             {"rule": f["rule"], "sev": f["sev"], "c0": f["c0"], "c1": f["c1"], "msg": f["kind"], "data": f["data"]}
             for f in out["flags"]
         ]
+        issues.extend(pvi_issues(inputs))
         rt.progress(1.0, "done")
         return Output(
             meta=meta,
             arrays={"rail_m": _f8(out["rail_m"]), "grade_permille": _f8(out["grade_permille"])},
             issues=issues,
         )
+
+
+def pvi_issues(inputs: dict[str, Any]) -> list[dict[str, Any]]:
+    """Issues for PVIs the sheet saved off the line (a chainage below 0 or past ``length_m``, 40000 typed for
+    4000.0, say) or out of chainage order: the canvas never shows them, so they are listed rather than refused (a
+    PVI past the end may be meant)."""
+    length = float(inputs.get("length_m") or 0.0)
+    out: list[dict[str, Any]] = []
+    last = None
+    for i, p in enumerate(inputs.get("pvi") or []):
+        c = float(p["c_m"])
+        if c < -PVI_TOLERANCE_M or c > length + PVI_TOLERANCE_M:
+            out.append(
+                {
+                    "rule": None,
+                    "sev": "warn",
+                    "c0": c,
+                    "c1": c,
+                    "msg": "pvi_off_line",
+                    "data": {"index": i, "c_m": c, "length_m": length},
+                }
+            )
+        if last is not None and c < last:
+            out.append(
+                {
+                    "rule": None,
+                    "sev": "warn",
+                    "c0": c,
+                    "c1": last,
+                    "msg": "pvi_out_of_order",
+                    "data": {"index": i, "c_m": c, "after_m": last},
+                }
+            )
+        last = c if last is None else max(last, c)
+    return out
 
 
 class GoldenDiff:
@@ -174,4 +214,4 @@ SOLVE_SECTION = SolveSection()
 GOLDEN_DIFF = GoldenDiff()
 JOB_TYPES = [SOLVE_SECTION, GOLDEN_DIFF]
 
-__all__ = ["GOLDEN_DIFF", "GoldenDiff", "JOB_TYPES", "SOLVE_SECTION", "SolveSection"]
+__all__ = ["GOLDEN_DIFF", "GoldenDiff", "JOB_TYPES", "SOLVE_SECTION", "SolveSection", "pvi_issues"]

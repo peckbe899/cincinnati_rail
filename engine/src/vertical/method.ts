@@ -48,7 +48,7 @@ export function sectionDesign(input: SectionInput): { verts: Vertices; design: D
     })),
     pvi: input.pvi.map((q) => ({ c: q.c_m, z: q.z_m })),
   });
-  return { verts, design: design(verts) };
+  return { verts, design: design(verts, p) };
 }
 
 function flagsOf(input: SectionInput, verts: Vertices, d: Design): VerticalRailBody["flags"] {

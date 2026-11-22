@@ -253,3 +253,34 @@ def test_a_store_that_is_here_but_broken_stops_setup(hub_var, monkeypatch, capsy
     monkeypatch.delattr(region.model, "backup", raising=False)  # else "from region.model import backup" finds it
     row = doctor.check_database(paths.config())[0]
     assert row.status == "fail" and "cannot be loaded" in row.detail and "crhub setup" in row.hint
+
+
+def test_setup_stops_when_another_program_runs_from_the_venv(tmp_path, capsys):
+    """windows-3: the old hub runs from the repo's .venv and holds numpy's .pyd; pip would fail with WinError 5 and
+    the hint blamed the network. Setup now says what holds the environment before it runs pip or uv."""
+    repo = _repo(tmp_path)
+    venv = repo / ".venv"
+    py = setup.venv_python(venv)
+    write(py, "")
+    (venv / ("Lib/site-packages/pip" if sys.platform == "win32" else "lib/python3.12/site-packages/pip")).mkdir(
+        parents=True
+    )
+    old_hub = [(4242, 1, str(py)), (4343, 1, str(tmp_path / "elsewhere" / "python.exe"))]
+    for which in ({}, {"uv": "/bin/uv"}):
+        steps, _env = setup.python_steps(repo, {}, _which(which), processes=lambda: old_hub)
+        p = setup.Plan(repo=repo, steps=steps)
+        ran: list[list[str]] = []
+
+        def runner(argv, cwd, env, ran=ran):
+            ran.append(list(argv))
+            return 0
+
+        assert setup.execute(p, runner=runner) == 1
+        err = capsys.readouterr().err
+        assert ran == [] and "pid 4242" in err and "4343" not in err and "Ctrl+C" in err, err
+    # with nothing else running from it, the step runs as before
+    steps, _env = setup.python_steps(repo, {}, _which({}), processes=lambda: [(4343, 1, "C:/other/python.exe")])
+    ran = []
+    assert setup.execute(setup.Plan(repo=repo, steps=steps), runner=lambda argv, cwd, env: ran.append(argv) or 0) == 0
+    assert ran and ran[0][1:4] == ["-m", "pip", "install"]
+    assert "WinError 5" in steps[-1].hint

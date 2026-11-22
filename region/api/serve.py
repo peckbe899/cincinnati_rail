@@ -9,10 +9,15 @@ Start-up, in order (each step prints one line):
    ``var`` (``--db``, as the end-to-end tests use) has its folder added to the write roots for the server's life.
 3. **Port.** The port must be free; a hub or the old hub already on it is named.
 4. **quick_check**, then **migrate**: pending migrations run after a backup (``open_store`` backs up first).
-5. **Seeds.** Pulled seeds (``region/seed``) are imported (``region.model.seed.import_seed``) and reported; a
-   failure is reported and serving goes on.
-6. **Tiers.** The data tiers are scanned and counted.
-7. **Engine, scheduler, app.** The engine pool starts in the background (the first sidecar's hello names the build;
+5. **Backups.** The ``daily`` and ``weekly`` backups that are due are taken (``region.model.backup.auto``), then
+   again once a day while the hub serves. Imports and seed imports that change records take a ``pre-import`` one.
+6. **Seeds.** Pulled seeds (``region/seed``) are imported (``region.model.seed.import_seed``) and reported; any
+   failure (a broken file included) is reported with its path and serving goes on. After a restore, or with a seed
+   folder another checkout last used, nothing is taken silently: a banner says how many records are listed.
+7. **Imports.** Each importer's sources are hashed and compared with its last applied run; for a changed one a
+   dry run is made and its report printed (9.26), to be applied with ``crhub imports apply RUN``.
+8. **Tiers.** The data tiers are scanned and counted.
+9. **Engine, scheduler, app.** The engine pool starts in the background (the first sidecar's hello names the build;
    ``--no-engine`` leaves it out), the scheduler starts, and the app is served on 127.0.0.1 (port 8766 by
    default). A banner says when ``app/dist`` is older than ``app/src`` or missing.
 
@@ -68,6 +73,7 @@ class Serve:
         engine: bool = True,
         browser: bool = False,
         seeds: bool = True,
+        imports: bool | None = None,
         cfg: dict[str, Any] | None = None,
         out: Callable[[str], None] | None = None,
     ) -> None:
@@ -79,6 +85,12 @@ class Serve:
         self.use_engine = engine
         self.browser = browser
         self.seeds = seeds
+        # the start-up check of the importers' sources follows the seeds by default (--no-seeds skips both)
+        self.check_imports = seeds if imports is None else imports
+        self.stale_imports: list[dict[str, Any]] = []
+        self._daily_stop = threading.Event()  # set at shutdown: ends the daily backups and the engine retries
+        self.engine_retry_s: tuple[float, ...] = (5.0, 10.0, 30.0, 60.0, 120.0, 300.0)
+        self._daily: threading.Thread | None = None
         self.out = out or (lambda line: print(line, flush=True))
         self.lock: lock.Lock | None = None
         self.store: Any = None
@@ -120,7 +132,7 @@ class Serve:
         # before the lock, which creates var and var/hub.lock: a refused start leaves nothing behind
         if not self.db.is_file():
             raise NotFound(f"no database at {self.db}: run crhub setup to create it (serve never creates an empty one)")
-        self.lock = lock.acquire(self.var, self.port)
+        self.lock = lock.acquire(self.var, self.port, host=self.host)
         self._say("lock", f"{lock.path_of(self.var)} (pid {self.lock.holder.pid})")
         if not _within(self.db.parent, fsio.write_roots()):
             self._stack.enter_context(fsio.allow_writes(self.db.parent))
@@ -154,8 +166,12 @@ class Serve:
             self._say("migrate", f"applied {', '.join(map(str, todo))} after a backup to {self.store.backup_dir}")
         else:
             self._say("migrate", "up to date")
+        self._backups()
         if self.seeds:
             self._import_seeds()
+        if self.check_imports:
+            self._check_imports()
+        self._review_params()
         self._scan_tiers()
         self._start_engine()
         from region.ext.rules.params import resolve as resolve_param
@@ -206,24 +222,109 @@ class Serve:
         from region.model import seed
 
         try:
-            rep = seed.import_seed(self.store)
+            rep = seed.import_seed(self.store, seed.SEED, keep_going=True)
         except HubError as e:
             self._say("seeds", f"NOT imported: {e.detail}")
             log.warning("seed import at start failed: %s", e.detail)
+            return
+        except Exception as e:  # a broken file must never stop the hub; the import changed nothing
+            self._say("seeds", f"NOT imported from {seed.SEED}: {type(e).__name__}: {e}")
+            log.exception("seed import at start failed")
             return
         layers = rep.get("layers") or {}
         if not layers:
             self._say("seeds", f"none in {seed.SEED}")
             return
         for slug, st in layers.items():
+            if st.get("error"):
+                self._say("seeds", f"{slug}: NOT imported ({st['error']}); the database is unchanged for it")
+                continue
             if st.get("skipped"):
                 self._say("seeds", f"{slug}: skipped ({st['skipped']})")
                 continue
+            dangling = len(st.get("dangling") or [])
             self._say(
                 "seeds",
                 f"{slug}: taken {st.get('taken', 0)}, added {st.get('added', 0)}, kept {st.get('kept', 0)}, "
-                f"same {st.get('same', 0)}, conflicts {len(st.get('conflicts') or [])}",
+                f"same {st.get('same', 0)}, conflicts {len(st.get('conflicts') or [])}"
+                + (f", dangling refs {dangling}" if dangling else ""),
             )
+            n = len(st.get("conflicts") or [])
+            if st.get("restored"):
+                self._banner(
+                    f"{slug} was restored from a backup: nothing was taken from region/seed. {n} record(s) differ "
+                    "and are listed as seed conflicts (crhub conflicts list). Keep the restored state with crhub "
+                    "conflicts resolve --all --take ours, or take region/seed's with --take theirs."
+                )
+            elif st.get("foreign_root"):
+                self._banner(
+                    f"{slug} was last exported to or imported from {st['foreign_root']}, another checkout's "
+                    f"region/seed: nothing was taken from this one. {n} record(s) differ and are listed as seed "
+                    "conflicts (crhub conflicts list); resolve them, or run the hub from that checkout."
+                )
+
+    def _backups(self) -> None:
+        """The daily and weekly backups that are due, now and then once a day while serving (section 9)."""
+        from region.model import backup as B
+
+        dest = Path(self.store.backup_dir)
+        try:
+            made = B.auto(self.db, dest)
+        except Exception as e:
+            self._say("backups", f"NOT taken: {type(e).__name__}: {e}")
+            log.exception("the daily backup failed")
+            return
+        what = ", ".join(p.name for p in made) if made else "daily and weekly are current"
+        self._say("backups", f"{what} in {dest}")
+
+        def daily() -> None:
+            while not self._daily_stop.wait(3600):
+                try:
+                    B.auto(self.db, dest)
+                except Exception:
+                    log.exception("the daily backup failed")
+
+        self._daily = threading.Thread(target=daily, name="daily-backup", daemon=True)
+        self._daily.start()
+
+    def _review_params(self) -> None:
+        """Design rule 4: an override of a registry param names its ruling. Says how many do not, and how many equal
+        the registry again (redundant); silent when there are none."""
+        try:
+            from region.ext.rules.params import review
+
+            got = review(self.store)
+        except Exception:
+            log.exception("the param review failed")
+            return
+        bad, same = got["unratified"], got["redundant"]
+        if bad:
+            names = ", ".join(f"{e['path']} = {e['value']} on {e['layer']}" for e in bad[:4])
+            self._say("params", f"{len(bad)} override(s) of the registry name no ruling (unratified): {names}")
+        if same:
+            names = ", ".join(f"{e['path']} on {e['layer']}" for e in same[:4])
+            self._say("params", f"{len(same)} revision(s) equal the registry's value again (redundant): {names}")
+
+    def _check_imports(self) -> None:
+        """9.26: an importer whose sources changed since its last applied run gets a dry run, reported here."""
+        try:
+            from region.cli import imports as I
+
+            self.stale_imports = I.check_sources(self.store)
+        except Exception as e:
+            self._say("imports", f"sources NOT checked: {type(e).__name__}: {e}")
+            log.exception("the import source check failed")
+            return
+        if not self.stale_imports:
+            self._say("imports", "every importer's sources are as last applied")
+            return
+        for st in self.stale_imports:
+            self._say("imports", I.describe_stale(st))
+        self._banner(
+            "an import source changed since it was last applied (the old hub's seed, the line files or the "
+            "registry): the map and sheets show the old import until you apply it. Review the dry run above, then "
+            "crhub imports apply RUN."
+        )
 
     def _scan_tiers(self) -> None:
         from region import tiers as T
@@ -245,24 +346,35 @@ class Serve:
         self._say("engine", f"starting {self.engine.size} sidecar(s) in the background")
 
         def warm() -> None:
-            answer: tuple[dict[str, Any] | None, str | None]
-            try:
-                answer = (dict(self.engine.start()), None)
-            except HubError as e:
-                log.warning("engine: %s", e.detail)
-                answer = (None, e.detail)
-            except Exception as e:
-                log.exception("engine: the pool failed to start")
-                answer = (None, f"{type(e).__name__}: {e}")
-            with self._engine_lock:
-                self._engine_answer = answer
-            self._hand_engine_to_hub()
+            # a failed start (a cold Windows start can take longer than the hello timeout) is tried again with a
+            # growing pause until it answers or the hub stops, so /meta and the SSE hello never keep an old error
+            tries = 0
+            while True:
+                answer: tuple[dict[str, Any] | None, str | None]
+                try:
+                    answer = (dict(self.engine.start()), None)
+                except HubError as e:
+                    log.warning("engine: %s", e.detail)
+                    answer = (None, e.detail)
+                except Exception as e:
+                    log.exception("engine: the pool failed to start")
+                    answer = (None, f"{type(e).__name__}: {e}")
+                with self._engine_lock:
+                    self._engine_answer = answer
+                self._hand_engine_to_hub()
+                if answer[0] is not None:
+                    return
+                pause = self.engine_retry_s[min(tries, len(self.engine_retry_s) - 1)]
+                tries += 1
+                if self._daily_stop.wait(pause):
+                    return
 
         threading.Thread(target=warm, name="engine-start", daemon=True).start()
 
     def _hand_engine_to_hub(self) -> None:
         """Give the pool's hello (or why it failed) to the app's hub, once both exist. The pool can answer before or
-        after the app is made (a slow start-up on Windows can take seconds), so both sides call this."""
+        after the app is made (a slow start-up on Windows can take seconds), so both sides call this; a later
+        answer (a retry that succeeded) replaces an earlier one."""
         with self._engine_lock:
             hub, answer = self._hub, self._engine_answer
             if hub is None or answer is None:
@@ -393,6 +505,7 @@ class Serve:
         if self._closed:
             return
         self._closed = True
+        self._daily_stop.set()
         steps: list[tuple[str, Callable[[], Any]]] = []
         if self.jobs is not None:
             steps.append(("scheduler", self.jobs.stop))

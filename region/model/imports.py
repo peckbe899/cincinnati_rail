@@ -251,6 +251,8 @@ def apply_import(
             reb = rebase(store, c, lower=layer.slug, changed=changed, import_run=run.id, by="rebase")
             return res, written, reb
 
+        if attempt == 0:
+            store.pre_import_backup()  # section 9: an import that changes records is backed up first
         try:
             res, written, reb = store._writer.run(commit)
         except PreconditionFailed:

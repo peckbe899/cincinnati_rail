@@ -10,7 +10,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class Params(BaseModel):
     """
-    Resolved params (settings.* or settings_rer.* by system, with the CVG overlay).
+    Resolved params (settings.* or settings_rer.* by system, with the CVG overlay). The design rules after vc_min_len_m
+    are optional: absent, each takes the Profiles page's value, so an input without them solves as before.
     """
 
     model_config = ConfigDict(
@@ -27,6 +28,18 @@ class Params(BaseModel):
     vc_min_len_m: float = Field(..., ge=0.0)
     """
     Shortest vertical curve.
+    """
+    transition_share: float | None = Field(None, gt=0.0, le=1.0)
+    """
+    The share of a stretch the two platform transitions on it may take (absent: 0.5, profiles.html 778).
+    """
+    short_curve_flag_m: float | None = Field(None, ge=0.0)
+    """
+    A vertical curve shortened by more than this is flagged (absent: 0.5, profiles.html 799).
+    """
+    design_passes: int | None = Field(None, gt=0, le=9007199254740991)
+    """
+    Passes of the transition solver, each re-reading its neighbours (absent: 5, profiles.html 765).
     """
 
 
@@ -124,7 +137,8 @@ class SectionInput(BaseModel):
     """
     params: Params
     """
-    Resolved params (settings.* or settings_rer.* by system, with the CVG overlay).
+    Resolved params (settings.* or settings_rer.* by system, with the CVG overlay). The design rules after vc_min_len_m
+    are optional: absent, each takes the Profiles page's value, so an input without them solves as before.
     """
     stations: list[Station]
     pvi: list[PviItem]

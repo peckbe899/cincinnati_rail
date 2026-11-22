@@ -143,3 +143,44 @@ def test_setup_refuses_while_the_lock_is_held(hub_var, monkeypatch, capsys):
         assert "stop it before migrating" in capsys.readouterr().err
         assert not (hub_var / "region.db").exists()
     assert setup.lock_holder() is None
+
+
+def test_remove_retries_a_file_another_program_holds(write_root, monkeypatch):
+    """windows-10: seed export's deletions had no WinError 32 retry, so a sync client holding a seed file aborted
+    the export with a raw traceback. fsio.remove retries as write_atomic does, then names the file."""
+    import os
+
+    import pytest
+
+    from region.core import fsio
+
+    f = write_root / "held.json"
+    f.write_text("{}", encoding="utf-8")
+    real = os.unlink
+    calls = []
+
+    def busy(path, *a, **kw):
+        calls.append(path)
+        if len(calls) < 3:
+            e = PermissionError(13, "The process cannot access the file")
+            e.winerror = 32
+            raise e
+        return real(path, *a, **kw)
+
+    monkeypatch.setattr(os, "unlink", busy)
+    fsio.remove(f)
+    assert not f.exists() and len(calls) == 3
+    g = write_root / "stuck.json"
+    g.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(fsio, "RETRY_TOTAL_S", 0.05)
+
+    def always(path, *a, **kw):
+        e = PermissionError(13, "held")
+        e.winerror = 32
+        raise e
+
+    monkeypatch.setattr(os, "unlink", always)
+    with pytest.raises(fsio.FileInUse, match="stuck.json"):
+        fsio.remove(g)
+    monkeypatch.setattr(os, "unlink", real)
+    fsio.remove(write_root / "never-there.json")  # a file already gone is fine

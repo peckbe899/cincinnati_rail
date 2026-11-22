@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { applyPatch } from "../../src/core/jsonpatch.ts";
 import {
   addPvi,
+  frameFor,
   localInput,
   maxDiff,
   pviRows,
@@ -12,6 +13,7 @@ import {
   setPviZ,
   setStationLevel,
   solveInput,
+  stationFrame,
   toFloat64,
 } from "../../src/plugins/line-sheet/model.ts";
 
@@ -78,6 +80,70 @@ describe("line sheet model", () => {
     expect("ground" in solveInput(withGround, null)).toBe(false);
     expect(solveInput(withGround, null).pvi).toEqual(input.pvi);
     expect(input.pvi).toEqual([{ c_m: 500, z_m: 205 }]);
+  });
+
+  it("solves a cleared station level as unset, as the server does (compute-3)", () => {
+    // The input the sheet loaded was built with P2 at 151.5. Ben clears P2's level cell: the draft removes the key.
+    const loaded: SectionInput = {
+      ...input,
+      stations: [
+        { platform_id: "P1", order: 0, c_m: 100, level_m: 150, grade_permille: 5 },
+        { platform_id: "P2", order: 1, c_m: 900, level_m: 151.5, grade_permille: 0 },
+      ],
+    };
+    const saved = { pvi: [[500, 205]], st: { P1: 150, P2: 151.5 }, sg: { P1: 5 } };
+    const ops = setStationLevel(saved, "P2", null);
+    expect(ops).toEqual([{ op: "remove", path: "/data/st/P2" }]);
+    const draft = applyPatch({ data: saved, geom: null }, ops).data;
+    expect(localInput(loaded, draft).stations.map((s) => s.level_m)).toEqual([150, null]);
+    // A draft without st or sg leaves every level unset and every grade level, as inputs.py reads `st.get(pid)`.
+    const bare = localInput(loaded, { pvi: [[500, 205]] });
+    expect(bare.stations.map((s) => [s.level_m, s.grade_permille])).toEqual([
+      [null, 0],
+      [null, 0],
+    ]);
+    // A draft without PVIs solves without PVIs (pvi_points of a profile with none is empty).
+    expect(localInput(loaded, { st: {} }).pvi).toEqual([]);
+  });
+
+  it("rebuilds the stations from the frame with the draft's del, so, sg and st", () => {
+    const frame = stationFrame(
+      [
+        { id: "S2", data: { order: 1, c: 900 } },
+        { id: "S1", data: { order: 0, c: 100 } },
+      ],
+      [
+        { id: "PB", data: { stop: "S2", name: "Bond Hill" } },
+        { id: "PA", data: { stop: "S1", name: "Towne" } },
+        { id: "PC", data: { stop: "S2", name: "Bond Hill east" } },
+      ],
+    );
+    const li = localInput(
+      input,
+      { pvi: [], st: { PA: 200, PC: null }, sg: { PC: -5 }, so: { PB: 12.5 }, del: [] },
+      frame,
+    );
+    expect(li.stations).toEqual([
+      { platform_id: "PA", order: 0, c_m: 100, level_m: 200, grade_permille: 0 },
+      { platform_id: "PB", order: 1, c_m: 912.5, level_m: null, grade_permille: 0 },
+      { platform_id: "PC", order: 2, c_m: 900, level_m: null, grade_permille: -5 },
+    ]);
+    // A frame that misses a platform of the server's input (records not read, or moved on) is not used: the
+    // stations then follow the input rather than vanish.
+    expect(
+      frameFor(frame, {
+        ...input,
+        stations: [{ ...(input.stations[0] as SectionInput["stations"][0]), platform_id: "PA" }],
+      }),
+    ).toBe(frame);
+    expect(frameFor(stationFrame([], []), input)).toBeNull();
+    expect(frameFor(null, input)).toBeNull();
+    // A platform the draft deletes leaves the input, and the next one takes its order.
+    const del = localInput(input, { st: { PA: 200 }, del: ["PB"] }, frame);
+    expect(del.stations.map((s) => [s.platform_id, s.order])).toEqual([
+      ["PA", 0],
+      ["PC", 1],
+    ]);
   });
 
   it("reads result arrays of any float dtype and compares rails", () => {

@@ -21,9 +21,12 @@ The architecture is in `claude/Hub_Region_Architecture.md`; the conventions ever
 
 ## First run on Windows, step by step
 
-Do these in order, in a PowerShell window opened in the repo folder (steps 7 and 8 use a second one). The old hub
-can keep running in its own window the whole time: nothing here touches `hub\`, `hub\hub.db` or port 8765. Each step shows what it prints when it
-works; if a step prints something else, stop there and send it back (see "What to send back" under "When doctor
+Do these in order, in a PowerShell window opened in the repo folder (step 8 uses a second one). Stop the old hub
+(Ctrl+C in its window) before step 4: setup installs packages into the repo's `.venv`, which the old hub runs from,
+and Windows refuses to replace a package file a running program has loaded (pip then fails with `[WinError 5]
+Access is denied`). Setup checks this and says so. Restart the old hub after step 4 if you want it; from then on it
+can run beside the new hub, which never touches `hub\`, `hub\hub.db` or port 8765. Each step shows what it prints when
+it works; if a step prints something else, stop there and send it back (see "What to send back" under "When doctor
 fails").
 
 **1. Get the branch.**
@@ -89,7 +92,9 @@ crhub setup: done. Start the hub with crhub (or crhub serve).
 
 The counts are the ones CI's Windows runner printed for this branch; the `old_hub` row follows what your `hub\seed`
 holds, so it can differ a little. If the repo is inside OneDrive, doctor counts one warning (`repo`): that is not a
-failure. A second `.\crhub setup` prints `unchanged` counts and creates nothing.
+failure. The first setup applies the imports. A later `.\crhub setup` applies nothing: it makes a dry run of each
+import and prints `(dry run)` beside its counts, and, when something would change, the command that applies it
+(`crhub imports apply <run>`). Read the counts, then run that command.
 
 **5. Serve.**
 
@@ -103,7 +108,9 @@ It prints, then opens http://127.0.0.1:8766 in your browser:
 lock      C:\Users\<you>\AppData\Local\CincinnatiRail\hub\hub.lock (pid 1234)
 database  C:\Users\<you>\AppData\Local\CincinnatiRail\hub\region.db (quick_check ok)
 migrate   up to date
+backups   region-20261122T080000Z-daily.db, region-20261122T080000Z-weekly.db in C:\Users\<you>\...\hub\backups
 seeds     none in <repo>\region\seed
+imports   every importer's sources are as last applied
 tiers     5 present, 1 partial, 0 missing (ground_1912_real partial: stage contours)
 engine    starting 2 sidecar(s) in the background
 jobs      scheduler on C:\Users\<you>\AppData\Local\CincinnatiRail\hub\cache\cache.db
@@ -114,25 +121,21 @@ serving   http://127.0.0.1:8766  (Ctrl+C stops)
 The page shows the map with the 16 Metro sections. The status bar at the bottom says `events: live`, `jobs: idle` and,
 within a few seconds, `engine: ready`. Leave this window open: the hub runs as long as it does.
 
-**6. Open Line 6.** Press Ctrl+K, type `Line_6` and press Enter. The line sheet opens with the ground (brown) and the
-rail (blue), the PVI and station tables under it, and the inspector beside it.
+**6. Open Line 6.** Press Ctrl+K, type `Line 6` (or the old key `Line_6`) and press Enter. The line sheet opens, titled
+`Line 6`, with the ground (brown) and the rail (blue), the PVI and station tables under it, and the inspector beside it.
 
-**7. Try an edit in a scenario.** The old hub owns the profiles on `main` for now, so edits go into a scenario. The
-app cannot make a scenario yet; make one called `try` from a second PowerShell window (it prints the new layer):
-
-```powershell
-Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8766/api/v1/layers -Headers @{"X-CR-Client"="powershell"} `
-  -ContentType "application/json" -Body '{"slug": "try", "tier": "scenario", "parent": "main", "title": "try"}'
-```
-
-Reload the page, choose `try` in `Layer` at the top, change a PVI level in the sheet's table and press Enter. The
+**7. Try an edit in a scenario.** The old hub owns the profiles on `main` for now, so edits go into a scenario. In
+`Layer` at the top, choose `New scenario...`, type `try` and press Enter (do this once: a second `try` is refused
+with `layer try exists`). With `try` chosen in `Layer`, change a PVI level in the sheet's table and press Enter. The
 rail redraws at once (the sheet shows `local solve` in milliseconds); a moment later the header shows
 `server <key>, max diff 0 m`: the hub's own solve, sent back over the event stream, agrees. For that moment it may
 still show the previous key with a diff such as `max diff 0.363 m`: that is the hub's solve from before the edit,
 compared with the new rail, and it changes to the new key and `0 m` within a second. The edit is saved on `try`
 as version 2 of the Line 6 profile: a scenario's first edit of a record continues its numbering from the version
-below (here the old hub's version 1). `main` is unchanged. Click the sheet's title (so the focus is outside the
-table) and press Ctrl+Z: the edit is undone as version 3, equal to version 1.
+below (here the old hub's version 1), and the app says `Saved PVI 1 level on Line 6 profile: version 2 on try.`
+(for the first PVI). `main` is unchanged. Enter also left the cell, so press Ctrl+Z now: the edit is undone as
+version 3, equal to version 1 (`Undone: ..., now version 3 on try.`). While a cell still holds text you typed and have
+not saved, Ctrl+Z undoes your typing in that cell instead.
 
 **8. Check the machine with the hub running.** In a second PowerShell window, in the repo folder:
 
@@ -144,7 +147,8 @@ The `port 8766` row now says `the hub is serving at http://127.0.0.1:8766: crhub
 and the last line is `21 ok, 0 warning(s), 0 failure(s): the hub can run here`.
 
 **9. Stop.** Ctrl+C in the hub's window. It prints `stopped   scheduler stopped, engine closed, WAL truncated, lock
-released`.
+released`. Because `.\crhub` is a `.cmd` file, Windows then asks `Terminate batch job (Y/N)?`: answer `Y`. The hub has
+already stopped by then; the question is only about the launcher.
 
 ### Without uv, with uv
 
@@ -179,8 +183,9 @@ Setup refuses to start while the new hub is serving, or while `crhub jobs run` h
 `--skip-migrate`, `--skip-imports` and `--no-doctor` leave one step out.
 
 Run `crhub setup` again after any `git pull` that changes `uv.lock`, `requirements.lock`, `package-lock.json`, the
-app or the engine. It is always safe to run: the Python and database steps do nothing when nothing changed; `npm ci`
-reinstalls `node_modules` and the app is built again every time.
+app or the engine. It is always safe to run: the Python and database steps do nothing when nothing changed, the
+imports are dry runs (see step 4), and `npm ci` reinstalls `node_modules` and the app is built again every time.
+Stop the old hub first when the pull changed `requirements.lock` (setup says so when it is running from `.venv`).
 
 ## Every day
 
@@ -194,9 +199,15 @@ git pull
 1. takes the single-instance lock (a second `crhub` says which one is already running);
 2. checks the database (`quick_check`);
 3. backs up, then migrates, when a migration is pending;
-4. takes in the seeds you pulled (`region/seed`) and prints what changed;
-5. scans the data tiers;
-6. serves at http://127.0.0.1:8766.
+4. takes the daily and weekly backups that are due (and again once a day while it serves);
+5. takes in the seeds you pulled (`region/seed`) and prints what changed (a pre-import backup first when that
+   changes records). A seed file it cannot read (merge-conflict markers, a file saved in another encoding) is named
+   with its path, and serving goes on without that layer;
+6. checks each importer's sources (the old hub's `hub/seed`, the Metro line files, the registry) against the last
+   import it applied. For a changed one it makes a dry run, prints its counts and `crhub imports apply <run>`, and
+   shows a banner: the map and the sheets show the old import until you apply it;
+7. scans the data tiers;
+8. serves at http://127.0.0.1:8766.
 
 It refuses to create an empty database: before `crhub setup` it says `no database at ...: run crhub setup to create
 it` and leaves no `var` folder behind. It shows a banner when `app\dist` is older than the app's source;
@@ -215,6 +226,11 @@ it` and leaves no `var` folder behind. It shows a banner when `app\dist` is olde
 | `crhub export` | before you commit: takes in pulled seeds first, then writes `main` and your proposals to `region/seed` (through the hub while it serves) |
 | `crhub backup` | a checked backup of the database into `var\backups` (through the hub while it serves) |
 | `crhub restore <file>` | puts a backup back (the current database is backed up first); refuses while the hub serves |
+| `crhub conflicts list` | the open conflicts (the review queue); `(seed)` marks the ones that block export |
+| `crhub conflicts resolve <id> --take ours` | keeps your revision (`--take theirs` takes the other side; `--all` resolves every open one, `--seed` only the seed ones) |
+| `crhub imports status` | which importers' sources changed since their last applied import |
+| `crhub imports run [name] --dry-run` | a dry run of the imports (through the hub while it serves); without `--dry-run` it applies them |
+| `crhub imports apply <run>` | applies a dry run, refused when its sources changed since (through the hub while it serves) |
 | `crhub rebuild --compare` | rebuilds a database from git into `var\rebuild` and compares it with yours; never touches yours |
 | `crhub model migrate` | applies pending migrations, backing up first (serve and setup do this for you); refuses while the hub serves |
 | `crhub model import` | takes in pulled seeds without exporting; refuses while the hub serves (serve did it at start, and export does it first) |
@@ -228,9 +244,11 @@ it` and leaves no `var` folder behind. It shows a banner when `app\dist` is olde
 `crhub restore` are short names for `crhub model export`, `crhub model backup` and `crhub model restore`: either
 spelling does the same.
 
-**Beside a running hub.** While `crhub serve` runs, only it writes the database. `crhub export` and `crhub backup` then
-ask it over HTTP (they print `through the hub serving at http://127.0.0.1:8766`), so you can run them in a second
-window without stopping it. `crhub model import` and `crhub model migrate` refuse and say what to do instead. The
+**Beside a running hub.** While `crhub serve` runs, only it writes the database. `crhub export`, `crhub backup`,
+`crhub conflicts` and `crhub imports run` and `apply` then ask it over HTTP (they print `through the hub serving at
+http://127.0.0.1:8766`), so you can run them in a second window without stopping it. They never use a proxy for the
+hub's address. `crhub export` refuses a hub that serves from another checkout of the repo, since that hub would write
+the other checkout's `region/seed`. `crhub model import` and `crhub model migrate` refuse and say what to do instead. The
 commands that write the database themselves (`crhub restore`, `crhub model migrate`, `export` and `import` with no hub
 running, `crhub jobs run`, `crhub jobs wipe`) hold the hub's lock while they work, so each refuses while the hub serves
 and names the process that holds the lock.
@@ -246,9 +264,20 @@ git add region/seed
 git commit -m "Hub export"
 ```
 
-Export first takes in any seed changes you pulled, and refuses while one of them conflicts with a change of yours, so
-it never overwrites something it has not merged. Two exports in a row give the same bytes (the second prints
-`0 written`), with the hub running or not. A proposal is named `proposal:<name>` (its folder is
+Export prints the folder it wrote (`into ...`). It first takes in any seed changes you pulled. A layer where one of them
+conflicts with a change of yours is not written, so export never overwrites something it has not merged; the other
+layers are written, and export ends with `export refused for main: ... resolve them first`. Then:
+
+```powershell
+.\crhub conflicts list
+.\crhub conflicts resolve <id> --take ours     # keep yours (or --take theirs for the pulled one)
+.\crhub export
+```
+
+Scenarios are not exported: they stay in this machine's database only (and its backups). Work you want in git goes
+in `main` or a proposal. Two exports in a row give the same bytes (the second prints `0 written`), with the hub
+running or not. A promoted proposal takes no more seed changes, so export leaves its folder as it is when the folder
+holds changes the database never took in (a cloud session's work after the promote). A proposal is named `proposal:<name>` (its folder is
 `region/seed/proposals/<name>`); the hub refuses to make a proposal with any other name. A proposal whose parent
 layer is not in your database (a scenario that lives only on the machine that made it) is not taken in: export lists
 it as not imported and leaves its folder in `region/seed/proposals` as it is.
@@ -257,11 +286,24 @@ it as not imported and leaves its folder in `region/seed/proposals` as it is.
 
 - Serve and setup back up before every migration. Those backups are kept forever, as are the ones you make with
   `crhub backup`.
-- Pre-import backups keep the newest 10, daily ones 14 and weekly ones 8.
+- Serve takes a daily and a weekly backup, and every import or seed import that changes records takes a pre-import
+  one first. Pre-import backups keep the newest 10, daily ones 14 and weekly ones 8.
 - Every backup is checked with `quick_check` before it gets its name, so a file in `var\backups` is always whole.
-- To restore, stop the hub, then `.\crhub restore var\backups\region-<time>-<reason>.db` (use the full path
-  `crhub info` shows for `var`). It refuses while the hub serves. The database you replace is backed up first, so a
-  restore can be undone the same way.
+- To restore, stop the hub, then give the full path of the backup (on Windows `var` is not in the repo):
+
+  ```powershell
+  .\crhub restore "$env:LOCALAPPDATA\CincinnatiRail\hub\backups\region-<time>-<reason>.db"
+  ```
+
+  It refuses while the hub serves, refuses a file that is not a hub database (the old hub's `hub\hub.db`, say), and
+  refuses a backup of another database unless you add `--force`. It prints how many records the database you replace
+  holds and how many the backup holds. The database you replace is backed up first, so a restore can be undone the
+  same way.
+- **A restore and `region/seed`.** `region/seed` usually holds exports newer than the backup. The next start (or
+  export) takes nothing from it silently: every record where `region/seed` and the restored database differ is listed
+  as a seed conflict, and a banner says how many. To keep the restored state, run
+  `.\crhub conflicts resolve --all --seed --take ours`, then `.\crhub export` writes it into `region/seed`. To take
+  `region/seed`'s instead (after restoring a damaged database, say), use `--take theirs`.
 
 ### Rebuild
 
@@ -298,12 +340,14 @@ before you move to another machine, or after a large pull.
 
 - **Nothing in the old hub changes.** It keeps its database, its pages, its tests and its port.
 - **The new hub reads the old one's design from git, never from its live database.** The `legacy:old_hub` layer is
-  built from `hub/seed`. So: Export in the old hub, commit, and the new hub sees it after its next start.
+  built from `hub/seed`. So: Export in the old hub (and commit). At its next start the new hub sees that `hub/seed`
+  changed, makes a dry run of the `old_hub` import, prints its counts and `crhub imports apply <run>`, and shows a
+  banner. Run that command (it can run beside the hub), and the new hub shows the change.
 - **Who owns what.** Each kind of record has an `authority` record saying which hub owns it (plan geometry stays
   with the old hub until the Deck adapter lands). While the old hub owns a kind, the new hub refuses edits to it on
   `main`, and says so. Scenarios stay editable, so you can try designs in the new hub
   without forking the truth. A kind moves to the new hub by one ruling, later.
-- **The new hub's Legacy pane** links to the old hub's pages on 8765.
+- **The new hub's Old hub pane** links to the old hub's pages on 8765.
 - **Running both.** Start each in its own PowerShell window, from the repo folder:
 
   ```powershell
@@ -369,8 +413,16 @@ None of these hold a password or a key; they hold folder paths and version numbe
   repo, but sync clients can damage `.git` and `node_modules`. A clone outside the synced folder is safer.
 - **uv says the lock is out of date.** `uv.lock` changes only through the lead's sessions; `git pull` again. Without uv
   the same holds for `requirements.lock`.
-- **`.\crhub` says it found neither uv nor `.venv`.** Make the venv as in First setup.
-- **Trying the new hub before `hub_region` is merged.** `git worktree add ..\cr_hub hub_region`, then run
-  `.\crhub setup` inside `..\cr_hub`. Its `var` is still `%LOCALAPPDATA%\CincinnatiRail\hub` unless `configs/local.json`
-  there says otherwise.
+- **`.\crhub` says it found neither uv nor `.venv`.** Make the venv as in step 3 of "First run on Windows, step by
+  step".
+- **Setup says another program runs from `.venv`, or pip fails with `[WinError 5] Access is denied`.** The old hub (or
+  another Python started from `.venv`) has a package file loaded. Stop it (Ctrl+C in its window) and run
+  `.\crhub setup` again.
+- **Two checkouts of the repo.** On Windows every checkout uses the same `var` (`%LOCALAPPDATA%\CincinnatiRail\hub`),
+  so a worktree (`git worktree add ..\cr_hub hub_region`) and the main checkout share one database. That is safe: the
+  hub remembers which checkout's `region/seed` each layer was last exported to or imported from, and when you run it
+  from the other checkout it takes nothing from that one's `region/seed` silently (a banner names the other folder and
+  the differences are listed as seed conflicts). `crhub export` refuses a hub serving from another checkout. Simplest
+  is one checkout per `var`: in the second checkout, set `"var"` in its `configs/local.json` to a folder of its own
+  (for example `%LOCALAPPDATA%\CincinnatiRail\hub-worktree`) and run `.\crhub setup` there.
 - **Logs** are in `var\logs\hub-YYYY-MM-DD.jsonl`, one JSON object per line, with the `request_id` an error toast shows.

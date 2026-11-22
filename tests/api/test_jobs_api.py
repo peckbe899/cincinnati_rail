@@ -103,3 +103,37 @@ def test_export_writes_seeds(api, client, write_root, monkeypatch):
     assert r.json()["layers"]["main"]["records"] == 1
     files = [p for p in out.rglob("*") if p.is_file() and p.suffix == ".json"]
     assert files and any(json.loads(p.read_text(encoding="utf-8")).get("kind") == "note" for p in files)
+
+
+def test_only_ok_results_are_immutable_and_a_range_past_the_end_is_a_problem(api, client):
+    """server-8, compute-14: an error row was served immutable for a year (and 304 to If-None-Match), though the key
+    can become ok when it runs again. server-9: a 416 had no problem+json body."""
+    with api.jobs.cache.tx() as con:
+        con.execute(
+            "INSERT INTO result (key, type, scope, view, status, error, created, last_used) "
+            "VALUES ('errkey', 't.api_arr', 'note/x', 'main|-|canon', 'error', 'engine down', '2026-11-22', 0)"
+        )
+    r = client.get("/api/v1/results/errkey")
+    assert r.status_code == 200 and r.json()["status"] == "error"
+    assert r.headers["cache-control"] == "no-store" and "etag" not in r.headers
+    assert client.get("/api/v1/results/errkey", headers={"If-None-Match": '"errkey"'}).status_code == 200
+    rec = api.note("hello")
+    key = _compute(client, f"note/{rec['id']}")["key"]
+    assert api.jobs.wait_idle(10)
+    far = client.get(f"/api/v1/results/{key}/a/v", headers={"Range": "bytes=900-"})
+    assert far.status_code == 416 and far.headers["content-type"].startswith("application/problem+json")
+    body = far.json()
+    assert body["code"] == "range_not_satisfiable" and body["status"] == 416
+    assert far.headers["content-range"] == "bytes */80" and far.headers["x-request-id"]
+
+
+def test_api_answers_are_not_kept_by_the_browser_and_no_page_can_frame_the_hub(api, client):
+    """server-1: a record ETag ("<layer>:<version>") repeats after a restore, and the browser's cache served the
+    old body under it; API answers without a cache policy of their own are no-store. server-7: X-Frame-Options."""
+    rec = api.note("x")
+    r = client.get(f"/api/v1/k/note/{rec['id']}")
+    assert r.status_code == 200 and r.headers["cache-control"] == "no-store"
+    listed = client.get("/api/v1/k/note")
+    assert listed.headers["cache-control"] == "no-store" and listed.headers["etag"].startswith('"seq:')
+    assert r.headers["x-frame-options"] == "DENY"
+    assert client.get("/api/v1/health").headers["cache-control"] == "no-store"

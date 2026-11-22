@@ -62,6 +62,11 @@ ORIGIN_OF = {
 }
 
 
+# The changesets an import or legacy layer takes: its importer's, the rebases (and conflict resolutions) that carry
+# changes from below into the old hub's revisions, an authority flip, and migrations.
+BUILT_LAYER_WRITES = frozenset({"import", "rebase", "legacy", "migration"})
+
+
 @dataclass
 class InternalOp:
     """An op only the store makes: a restore, a rebase or seed write with an explicit base, a seeded tombstone.
@@ -221,6 +226,7 @@ class Txn:
         reverts: str | None = None,
         on_delete: bool = True,
         validators: bool = True,
+        dangling: str = "refuse",
     ) -> None:
         if not isinstance(by, str) or not by:
             raise Invalid("every write names who made it (by)", errors=[{"path": "/by", "message": "required"}])
@@ -235,6 +241,13 @@ class Txn:
         self.reverts = reverts
         self.on_delete = on_delete
         self.run_validators = validators
+        # "refuse": a ref that does not resolve to a live record of its kinds fails the changeset (409 reference);
+        # "list": the revision is written and the refs are kept in self.dangling (a seed import, which mirrors
+        # a state an import below left on purpose and lists it as a dangling_ref conflict)
+        if dangling not in ("refuse", "list"):
+            raise Invalid(f"dangling is refuse or list, not {dangling!r}")
+        self.dangling_mode = dangling
+        self.dangling: list[dict[str, Any]] = []
         self.layers = L.load(con)
         self.layer = self.layers.get(view.layer)
         if self.layer.state != "open":
@@ -719,6 +732,15 @@ class Txn:
                         reason="authority",
                         conflicts=[{"kind": p.kind.name, "id": p.id}],
                     )
+            if self.layer.tier in ("import", "legacy") and self.cs_kind not in BUILT_LAYER_WRITES:
+                # the next run of the layer's importer replaces or tombstones whatever it does not yield, so an
+                # authored write there would vanish without a conflict
+                raise Conflict(
+                    f"layer {self.layer.slug} is rebuilt by its importer, so a write there ({self.cs_kind}) would be "
+                    "lost at the next import; write in main, a scenario or a proposal",
+                    reason="layer",
+                    conflicts=[{"kind": p.kind.name, "id": p.id, "layer": self.layer.slug}],
+                )
             if p.deleted:
                 continue
             for role, value, spec, at in p.content.refs:
@@ -744,7 +766,9 @@ class Txn:
                     )
         if errors:
             raise Invalid("; ".join(f"{e['path']}: {e['message']}" for e in errors[:5]), errors=errors)
-        if dangling:
+        if dangling and self.dangling_mode == "list":
+            self.dangling = dangling
+        elif dangling:
             d = dangling[0]
             raise Conflict(
                 f"{d['kind']} {d['id']} refers to {d['dst']} ({d['role']}), which is not a live "

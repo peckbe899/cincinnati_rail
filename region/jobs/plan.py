@@ -98,43 +98,13 @@ def all_records(store: ReadOnlyStore | Store, kind: str, view: View, **filters: 
             return out
 
 
-def _scope_id(scope: Any) -> str | None:
-    if scope is None or scope in ("", "system"):
-        return None
-    if isinstance(scope, dict):
-        return scope.get("id") or scope.get("section") or scope.get("route")
-    return str(scope)
-
-
 def resolve_param(store: ReadOnlyStore, view: View, path: str, scope: str | None = None) -> Any:
-    """The default param resolver, over records of kind ``param`` whose data has ``path`` and ``value``.
+    """The default param resolver: the rules feature's (``region.ext.rules.params.resolve``, decision 9.25: the
+    section, then its route, then the system; then the years), so a job, a route and the scheduler's default never
+    answer differently. A caller can still pass its own resolver as ``Scheduler(params=...)``."""
+    from region.ext.rules.params import resolve
 
-    A record whose ``scope`` (a string id, or ``{"id": ...}``) equals ``scope`` beats one with no scope (system
-    wide); a record scoped elsewhere is skipped. With a view year, a record carrying ``years: [lo, hi]`` (either end
-    may be null) counts only inside that range. The rules feature (WP5) can pass its own resolver to the scheduler.
-    """
-    best: tuple[int, Any] | None = None
-    for rec in all_records(store, PARAM_KIND, view):
-        data = rec.get("data") or {}
-        if data.get("path") != path:
-            continue
-        sid = _scope_id(data.get("scope"))
-        if sid is None:
-            rank = 0
-        elif scope is not None and sid == scope:
-            rank = 2
-        else:
-            continue
-        years = data.get("years")
-        if view.year is not None and isinstance(years, list) and len(years) == 2:
-            lo, hi = years
-            if (lo is not None and view.year < lo) or (hi is not None and view.year > hi):
-                continue
-        if best is None or rank > best[0]:
-            best = (rank, data.get("value"))
-    if best is None:
-        raise NotFound(f"no param {path}" + (f" for {scope}" if scope else ""))
-    return best[1]
+    return resolve(store, view, path, scope)
 
 
 def _jsonable(value: Any) -> Any:

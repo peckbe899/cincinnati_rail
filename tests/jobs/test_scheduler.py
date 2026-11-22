@@ -477,10 +477,13 @@ def test_new_epoch_replans_every_goal_even_when_the_seqs_caught_up(make_sched):
         store.set("thing", "A", {"v": 6})
         assert store.last_seq() == cursor and store.events_since(cursor) == []  # the seqs alone show nothing
     sched.notify()
-    until(
-        lambda: meta(sched, "t.sum", "A")["sum"] == 6 and meta(sched, "t.sum", "B")["sum"] == 1,
-        what="every goal re-planned after the new epoch",
-    )
+
+    def sums() -> tuple[int | None, int | None]:
+        # a goal whose inputs moved has no result until its new key is computed (Scheduler.result plans again)
+        keys = [sched.result("t.sum", s, MAIN) for s in ("A", "B")]
+        return tuple(sched.result_meta(k)["meta"]["sum"] if k else None for k in keys)  # type: ignore[return-value]
+
+    until(lambda: sums() == (6, 1), what="every goal re-planned after the new epoch")
 
 
 def test_restored_outbox_replans_every_goal(make_sched):

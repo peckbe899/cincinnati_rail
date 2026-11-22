@@ -71,9 +71,16 @@ def _runner() -> Any | None:
 
 
 def find(name: str) -> Any:
+    """The importer called ``name``: a feature's, else one the shared runner knows (``region.cli.imports.importers``,
+    the list ``crhub imports`` and the start-up source check use)."""
     for _feature, imp in discover_importers():
         if imp.name == name:
             return imp
+    runner = _runner()
+    if runner is not None and hasattr(runner, "importers"):
+        found = runner.importers().get(name)
+        if found is not None:
+            return found
     raise NotFound(f"no importer {name!r}")
 
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Meta } from "../../src/api/types.ts";
-import { eraFilter, LAYERS, pickRecord, sectionsLayer } from "../../src/plugins/map/layers.ts";
+import { nearestChainage, type PathPoint, pointAt, stationLine } from "../../src/plugins/map/chainage.ts";
+import { eraFilter, LAYERS, pickRecord, sectionsLayer, timeFiltered } from "../../src/plugins/map/layers.ts";
 import { guessOrder, legacyKinds } from "../../src/plugins/palette/lookup.ts";
 
 describe("map layers", () => {
@@ -42,5 +43,41 @@ describe("Ctrl+K lookup order", () => {
     } as unknown as Meta;
     expect([...legacyKinds(meta).keys()]).toEqual(["route_profile"]);
     expect(legacyKinds({ kinds: {} } as unknown as Meta).has("route")).toBe(true);
+  });
+});
+
+describe("jobs pane in Ben's terms", () => {
+  it("names a job's scope by the job, not by its package", async () => {
+    const { scopeKind, jobText } = await import("../../src/plugins/jobs/index.ts");
+    expect(scopeKind("profiles.solve_section")).toBe("section");
+    expect(scopeKind("profiles.golden_diff")).toBeNull();
+    expect(jobText("profiles.solve_section")).toBe("solve section (profiles)");
+  });
+});
+
+describe("the map at a year, and chainage on the map", () => {
+  it("filters a layer by date only when its features carry dates (usability-7)", () => {
+    // Sections and stations have no dates: every feature has open_lo null, and the server shows them at any year.
+    const undated = { features: [{ properties: { id: "S1", open_lo: null, close_lo: null } }] };
+    expect(timeFiltered(undated)).toBe(false);
+    expect(timeFiltered({ features: [] })).toBe(false);
+    expect(
+      timeFiltered({ features: [...undated.features, { properties: { id: "F", open_lo: 23000, close_lo: null } }] }),
+    ).toBe(true);
+  });
+
+  it("places a chainage on a section's path and reads the nearest chainage back (usability-9)", () => {
+    const path: PathPoint[] = [
+      [0, -84.5, 39.1],
+      [1000, -84.5, 39.109],
+      [2000, -84.49, 39.109],
+    ];
+    expect(pointAt(path, 500)).toEqual([-84.5, 39.1045]);
+    expect(pointAt(path, 2500)).toBeNull();
+    const near = nearestChainage(path, -84.5001, 39.1045);
+    expect(near?.c).toBeCloseTo(500, 0);
+    expect(near?.off_m).toBeLessThan(10);
+    expect(stationLine("Line_3|Bond Hill")).toBe("Line 3");
+    expect(stationLine("Bond Hill")).toBeNull();
   });
 });

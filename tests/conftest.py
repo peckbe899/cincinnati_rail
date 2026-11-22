@@ -22,8 +22,12 @@ import pytest
 KNOWN_FAILURES = Path(__file__).resolve().parent / "known_failures.txt"
 
 
-def load_known_failures(path: Path = KNOWN_FAILURES) -> dict[str, str]:
-    """``{node id: reason}`` from a known-failures file (blank lines and ``#`` comments skipped)."""
+def load_known_failures(path: Path = KNOWN_FAILURES, platform: str | None = None) -> dict[str, str]:
+    """``{node id: reason}`` from a known-failures file (blank lines and ``#`` comments skipped). A line that starts
+    with ``[<platform>]`` (a ``sys.platform`` value, such as ``[win32]``) applies on that platform only."""
+    import sys
+
+    platform = sys.platform if platform is None else platform
     out: dict[str, str] = {}
     if not path.is_file():
         return out
@@ -31,6 +35,11 @@ def load_known_failures(path: Path = KNOWN_FAILURES) -> dict[str, str]:
         for line in f:
             body, _, reason = line.partition("#")
             node = body.strip()
+            if node.startswith("["):
+                only, _, node = node[1:].partition("]")
+                node = node.strip()
+                if only.strip() != platform:
+                    continue
             if node:
                 out[node] = reason.strip() or "listed in tests/known_failures.txt"
     return out

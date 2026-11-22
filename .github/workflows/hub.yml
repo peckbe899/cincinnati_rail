@@ -1,13 +1,14 @@
 # CI for the hub (branch hub_region; section 9 of claude/Hub_Region_Architecture.md).
 #
 #   py        Ubuntu, Python 3.12 and 3.13: uv lock --check, crhub setup (uv sync, npm ci, app build, migrate,
-#             doctor), ruff, pytest -m "not slow and not local"
+#             doctor), the app's size budget, ruff, pytest -m "not slow and not local"
 #   engine    Node 22.18 (the floor) and 24: npm ci, tsc --noEmit, vitest (with the schema drift test), Biome; the
 #             app's typecheck and unit tests once app/src exists
 #   e2e       Playwright Chromium against a fixture database built by crhub setup; runs once app/e2e and the serve
 #             command exist, and is a no-op until then
 #   windows   checked out into the folder "cr test" (a space in the path): venv and pip from requirements.lock,
-#             crhub.cmd setup, the core, model, API, engine host and ops tests, then a serve smoke test
+#             crhub.cmd setup, the core, model, API, engine host and ops tests (the gate), the jobs, importers and
+#             profiles tests (reported, not yet a gate), then a serve smoke test that runs whatever pytest said
 #   hygiene   no file over 25 MiB, no *.db, var, dist or node_modules in git, LF in region/seed, the launchers' modes
 #
 # Known failures run as strict xfail through tests/known_failures.txt, so CI goes red the day one starts passing.
@@ -56,6 +57,8 @@ jobs:
         run: uv lock --check
       - name: crhub setup (uv sync, npm ci, app build, migrate, doctor)
         run: ./crhub setup
+      - name: app size budget (the first chunk of the build setup made)
+        run: npm run check:size -w app
       - name: ruff
         run: uv run --locked ruff check .
       - name: pytest
@@ -170,8 +173,17 @@ jobs:
           $dirs = @('tests/core', 'tests/model', 'tests/api', 'tests/enginehost', 'tests/ops') | Where-Object { Test-Path $_ }
           .venv\Scripts\python -m pytest -m "not slow and not local" @dirs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: pytest (jobs, importers, profiles; reported, not yet a gate on Windows)
+        # the spawn worker pool, pid_alive's Windows branch, the git imports and the profiles jobs, on Ben's
+        # platform; red here shows as a warning until the job is green on Windows once
+        continue-on-error: true
+        run: |
+          $dirs = @('tests/jobs', 'tests/importers', 'tests/profiles') | Where-Object { Test-Path $_ }
+          .venv\Scripts\python -m pytest -m "not slow and not local" @dirs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: serve smoke test (start, health, stop)
-        if: hashFiles('cr test/region/cli/serve.py') != ''
+        # runs even when a unit test above failed, so a red pytest step never hides whether the hub starts here
+        if: ${{ !cancelled() && hashFiles('cr test/region/cli/serve.py') != '' }}
         run: |
           $p = Start-Process -FilePath .venv\Scripts\python.exe -ArgumentList '-m', 'region', 'serve', '--no-browser' `
             -PassThru -NoNewWindow -RedirectStandardOutput serve.out -RedirectStandardError serve.err

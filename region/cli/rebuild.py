@@ -183,6 +183,7 @@ def rebuild(out: Path | None = None, *, compare: bool = False, working_tree: boo
         "notes": [],
     }
     with open_store(out / "region.db", backup_dir=out / "backups") as store:
+        store.auto_backups = False  # a throwaway database: no pre-import backups
         for name, imp in I.importers().items():
             overrides: dict[str, Path] = {}
             for sname, rel in (SOURCES.get(name) or {}).items():

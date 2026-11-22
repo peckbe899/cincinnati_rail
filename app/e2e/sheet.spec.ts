@@ -18,7 +18,10 @@ async function openSheet(page: Page, layer: string, sectionId: string, profileId
   await openApp(page, `layer=${encodeURIComponent(layer)}&tl=canon&sel=profile:${profileId}`);
   await expect(page.getByTestId("pvi-table")).toBeVisible();
   await settled(page, 0);
-  await expect(page.locator(".sheet-bar strong")).toContainText(sectionId);
+  // The sheet shows the section by name ("Line 6"), keeping its id only as data.
+  const title = page.locator(".sheet-bar strong");
+  await expect(title).toHaveAttribute("data-section", sectionId);
+  await expect(title).toHaveText("Line 6");
 }
 
 /** Type a level into the first PVI's cell, one keystroke at a time, as Ben does. */
@@ -57,6 +60,19 @@ test("Line 6 sheet shows ground and rail", async ({ page, watch, request }) => {
   expect(colours.ground).toBeGreaterThan(200);
   expect(colours.rail).toBeGreaterThan(200);
   expect(await page.getByTestId("station-table").locator("tr").count()).toBeGreaterThan(5);
+  // The station rows name their stations, and a station's level is in view without scrolling sideways; the sheet has
+  // the column's height, so its table shows more than a handful of rows.
+  await expect(page.getByTestId("station-table").locator("td.name").first()).toHaveText("Towne");
+  const pane = await page.locator('.pane-root[data-pane="line-sheet"]').boundingBox();
+  const level = await page.getByLabel("Station Bond Hill level").boundingBox();
+  expect((level?.x ?? 0) + (level?.width ?? 0)).toBeLessThanOrEqual((pane?.x ?? 0) + (pane?.width ?? 0));
+  const shown = await page.locator(".sheet-table").evaluate((t) => {
+    const bottom = t.getBoundingClientRect().bottom;
+    return [...t.querySelectorAll('[data-testid="pvi-table"] tr')].filter(
+      (r) => r.getBoundingClientRect().bottom <= bottom,
+    ).length;
+  });
+  expect(shown).toBeGreaterThan(10);
   expect(watch.consoleErrors).toEqual([]);
 });
 
@@ -118,8 +134,9 @@ test("Ctrl+Z gives version 3 equal to version 1", async ({ page, request }) => {
   await expect
     .poll(async () => (await getRecord(request, "profile", String(prof.id), layer)).version)
     .toBe(Number(v1.version) + 1);
-  // Ctrl+Z outside a text field is the app's undo: a revert changeset.
-  await page.locator(".sheet-bar strong").click();
+  // Enter saved and left the cell, so the very next Ctrl+Z is the app's undo (a revert changeset), never the
+  // browser's undo of one keystroke in the cell.
+  await expect(firstPviLevel(page)).not.toBeFocused();
   await page.keyboard.press("Control+z");
   await expect
     .poll(async () => (await getRecord(request, "profile", String(prof.id), layer)).version)
@@ -152,6 +169,9 @@ test("stale tab gets 412 banner", async ({ page, browser, request }) => {
   await expect(banner).toBeVisible();
   await expect(banner.getByRole("button", { name: "Keep mine" })).toBeVisible();
   await expect(banner.getByRole("button", { name: "Take theirs" })).toBeVisible();
+  // It names the line and the field both tabs changed, in Ben's terms.
+  await expect(banner).toContainText("Line 6 profile was saved by");
+  await expect(banner.getByTestId("stale-both")).toContainText("PVI 1 level");
   const before = (await getRecord(request, "profile", String(prof.id), layer)).version as number;
   await banner.getByRole("button", { name: "Keep mine" }).click();
   await expect(banner).toBeHidden();

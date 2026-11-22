@@ -169,6 +169,21 @@ class RangeNotSatisfiable(Exception):
     """A ``Range`` that lies past the end of the body."""
 
 
+def range_problem(size: int, headers: dict[str, str] | None = None, request_id: str | None = None) -> Response:
+    """The 416 answer as RFC 9457 ``problem+json`` (like every other error), with ``Content-Range: bytes */size``.
+    The request id is also in ``X-Request-ID``, which the security middleware adds."""
+    from . import problem
+
+    resp = problem.response(
+        416, "range_not_satisfiable", f"the range asked for lies past the end of the body ({size} bytes)", request_id
+    )
+    for k, v in (headers or {}).items():
+        if k.lower() not in ("content-type", "content-length"):
+            resp.headers[k] = v
+    resp.headers["Content-Range"] = f"bytes */{size}"
+    return resp
+
+
 def byte_range(header: str | None, size: int) -> tuple[int, int] | None:
     """The one range ``(start, end_exclusive)`` a ``Range: bytes=`` header asks for, or ``None`` for the whole body.
 
@@ -221,7 +236,7 @@ def bytes_response(
     try:
         rng = byte_range(rng_header, len(body))
     except RangeNotSatisfiable:
-        return Response(status_code=416, headers={**h, "Content-Range": f"bytes */{len(body)}"})
+        return range_problem(len(body), h)
     if rng is None:
         return Response(body, media_type=media_type, headers=h)
     start, end = rng
@@ -243,4 +258,5 @@ __all__ = [
     "json_response",
     "media_type",
     "not_modified",
+    "range_problem",
 ]

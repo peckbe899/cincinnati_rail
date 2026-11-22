@@ -11,6 +11,15 @@ type Listener = (u: LengthUnit) => void;
 /** x-units that are lengths in metres and so switch with the display unit. */
 const LENGTH_UNITS: ReadonlySet<string> = new Set(["m"]);
 
+/** Decimals shown per x-unit; a unit not listed shows the value in full (up to 12 significant digits). */
+const FIXED_DIGITS: Record<string, number> = {
+  "length-m": 3,
+  "length-ft": 2,
+  permille: 2,
+  percent: 2,
+  deg: 7,
+};
+
 export class Units {
   private unit: LengthUnit;
   private listeners = new Set<Listener>();
@@ -68,11 +77,18 @@ export class Units {
     return this.switches(xunit) && this.unit === "ft" ? v * M_PER_FT : v;
   }
 
-  /** A stored value formatted for display: 3 decimals for levels in metres, 2 in feet, as given otherwise. */
+  /**
+   * A stored value formatted for display: 3 decimals for lengths in metres, 2 in feet, 2 for per mille, 7 for
+   * degrees (a centimetre of latitude). A ratio (a section's scale) and any other unit show every digit the value
+   * has (up to 12 significant), so 0.99983821 never reads 1: a field shows what is stored, and an edit of a field
+   * starts from the stored value, never from a rounded one.
+   */
   format(v: number | null | undefined, xunit: string | undefined, digits?: number): string {
     if (v === null || v === undefined || !Number.isFinite(v)) return "";
-    const d = digits ?? (this.switches(xunit) ? (this.unit === "ft" ? 2 : 3) : xunit === "permille" ? 2 : 3);
-    return trimZeros(this.toDisplay(v, xunit).toFixed(d));
+    const shown = this.toDisplay(v, xunit);
+    const d = digits ?? FIXED_DIGITS[this.switches(xunit) ? `length-${this.unit}` : (xunit ?? "")];
+    if (d === undefined) return String(Number(shown.toPrecision(12)));
+    return trimZeros(shown.toFixed(d));
   }
 
   /** Parse what Ben typed in the display unit. A trailing unit ("12 ft", "3.5m") overrides the display unit. */
@@ -100,3 +116,25 @@ export function formatChainage(c: number, units: Units): string {
   const rest = r - km * 1000;
   return `${km}+${rest.toFixed(1).padStart(5, "0")}`;
 }
+
+/**
+ * A chainage as Ben types it, in metres: "4+233.8" (the readout's form, kilometres + metres), "4233.8", "4,233.8"
+ * or "4 233.8", with an optional unit ("13891 ft" or "4233.8 m"). A bare number is in the display unit. Null when
+ * the text is not a chainage.
+ */
+export function parseChainage(text: string, units: Units): number | null {
+  const t = text.trim();
+  const plus = /^([-+]?\d+)\s*\+\s*(\d{1,3}(?:\.\d*)?)\s*(m)?$/i.exec(t);
+  if (plus?.[1] && plus[2]) {
+    const km = Number(plus[1]);
+    const m = Number(plus[2]);
+    if (m >= 1000) return null;
+    return km < 0 || plus[1].startsWith("-") ? km * 1000 - m : km * 1000 + m;
+  }
+  const grouped = /^([-+]?\d{1,3}(?:[, ]\d{3})+(?:\.\d*)?)\s*(m|ft|')?$/i.exec(t);
+  if (grouped?.[1]) return units.parse(`${grouped[1].replace(/[, ]/g, "")}${grouped[2] ?? ""}`, "m");
+  return units.parse(t, "m");
+}
+
+/** Why a typed chainage was refused, for the cell's title and the sheet's notice. */
+export const CHAINAGE_HELP = "Type a chainage as 4+233.8, 4233.8 or 4,233.8 (metres), or add ft for feet.";

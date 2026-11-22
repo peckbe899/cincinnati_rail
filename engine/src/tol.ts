@@ -22,7 +22,8 @@ export const CHORD_MIN_M = 1e-9;
 /** A vertical curve shorter than this is no curve (railAt and gradeAt, profiles.html 810, 822). */
 export const CURVE_MIN_M = 1e-6;
 
-/** A curve shortened by more than this is flagged (design short, profiles.html 799). */
+/** A curve shortened by more than this is flagged (design short, profiles.html 799). A design rule, not a
+ * tolerance: the default of SectionInput.params.short_curve_flag_m, which Python sends once the registry has it. */
 export const SHORT_FLAG_M = 0.5;
 
 /** Grid size slack: a length within this of a whole number of steps gets that last point (floating division). */
@@ -35,10 +36,12 @@ export const GRADE_CHANGE_MIN = 1e-5;
 
 // ------------------------------------------------------------------------------------------- counts and factors
 
-/** Passes of the transition solver: each pass re-reads the neighbours' transitions (design, profiles.html 765). */
+/** Passes of the transition solver: each pass re-reads the neighbours' transitions (design, profiles.html 765).
+ * The default of SectionInput.params.design_passes. */
 export const DESIGN_PASSES = 5;
 
-/** The two transitions on one stretch take at most this share of it (design, profiles.html 778). */
+/** The two transitions on one stretch take at most this share of it (design, profiles.html 778). A design rule:
+ * the default of SectionInput.params.transition_share. */
 export const TRANSITION_SHARE = 0.5;
 
 /** Per mille in one (grades are ratios inside the engine and per mille in contracts). */

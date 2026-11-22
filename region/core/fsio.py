@@ -36,6 +36,7 @@ from pathlib import Path
 from typing import Any
 
 from . import paths
+from .errors import HubError
 
 RETRY_WINERRORS = frozenset({5, 32})
 RETRY_TOTAL_S = 2.0
@@ -120,6 +121,39 @@ def _replace(src: str, dst: str) -> None:
         except OSError as e:  # on Windows both arrive as PermissionError; any OSError carrying them is retried
             if getattr(e, "winerror", None) not in RETRY_WINERRORS or time.monotonic() >= deadline:
                 raise
+            time.sleep(delay)
+            delay = min(delay * 2, 0.2)
+
+
+class FileInUse(HubError):
+    """A file another program holds open (Windows ``WinError 5`` or ``32`` past the retries): a sync client, an
+    editor or a scanner. The message names the file."""
+
+    status = 409
+    code = "file_in_use"
+    title = "File in use"
+
+
+def remove(path: str | os.PathLike[str]) -> None:
+    """Delete a file through the write guard, with the same retry on ``WinError 5`` and ``32`` as ``write_atomic``.
+    A file still held after the retries raises ``FileInUse`` naming it. A file already gone is fine."""
+    target = check_write(path)
+    deadline = time.monotonic() + RETRY_TOTAL_S
+    delay = 0.01
+    while True:
+        try:
+            os.unlink(target)
+            return
+        except FileNotFoundError:
+            return
+        except OSError as e:
+            if getattr(e, "winerror", None) not in RETRY_WINERRORS:
+                raise
+            if time.monotonic() >= deadline:
+                raise FileInUse(
+                    f"{target} is held open by another program (a sync client such as OneDrive, an editor or a "
+                    "virus scanner); close it and run the command again"
+                ) from None
             time.sleep(delay)
             delay = min(delay * 2, 0.2)
 
@@ -308,6 +342,7 @@ def sha256_file(path: str | os.PathLike[str], *, chunk: int = 1 << 20) -> str:
 
 __all__ = [
     "RETRY_WINERRORS",
+    "FileInUse",
     "WriteRefused",
     "allow_writes",
     "canonical_json",
@@ -317,6 +352,7 @@ __all__ = [
     "read_json",
     "read_text",
     "read_yaml",
+    "remove",
     "sha256_file",
     "sha256_hex",
     "write_atomic",

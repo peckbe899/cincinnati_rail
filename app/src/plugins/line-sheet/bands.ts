@@ -103,7 +103,7 @@ export const platformBand: BandDef = {
       g.lineTo(x1, y);
       g.stroke();
       // Names only when there is room: a platform at least 40 px wide.
-      if (x1 - x0 >= 40) g.fillText(s.platform_id.split("|").pop() ?? s.platform_id, x0, y - 4);
+      if (x1 - x0 >= 40) g.fillText(d.platformName?.(s.platform_id) ?? s.platform_id, x0, y - 4);
       lastPlatforms.push({ x0, x1, y, index, c: s.c_m, z });
     });
   },

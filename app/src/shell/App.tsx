@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import type { LayerMeta } from "../api/types.ts";
+import { fieldLabel, valueText } from "../core/describe.ts";
 import type { AppHost } from "../core/host.ts";
 import type { StatusItem, Toast } from "../core/plugin.ts";
 import type { StaleOffer } from "../core/save.ts";
@@ -60,7 +61,15 @@ function TopBar({ host }: { host: AppHost }) {
   };
 
   const writable = layers.filter((l) => l.tier === "main" || l.tier === "scenario" || l.tier === "proposal");
-  const dirty = host.drafts.all().filter((d) => host.drafts.dirty(d.key)).length;
+  // Save covers this layer's drafts; a draft typed in another layer waits there, and the button says so.
+  const dirty = host.dirtyDrafts(layer).length;
+  const elsewhere = host
+    .dirtyDrafts()
+    .filter((d) => d.view.layer !== layer)
+    .map((d) => d.view.layer);
+  const saveTitle = elsewhere.length
+    ? `Save (Ctrl+S) the edits on ${layer}. Unsaved edits also wait on ${[...new Set(elsewhere)].join(", ")}: switch there to save them.`
+    : "Save (Ctrl+S)";
   return (
     <header className="topbar">
       <strong className="brand">Cincinnati Rail hub</strong>
@@ -123,11 +132,16 @@ function TopBar({ host }: { host: AppHost }) {
         type="button"
         disabled={dirty === 0}
         onClick={() => void host.saveAll()}
-        title="Save (Ctrl+S)"
+        title={saveTitle}
         data-testid="save"
       >
         Save{dirty ? ` (${dirty})` : ""}
       </button>
+      {elsewhere.length ? (
+        <span className="muted" data-testid="drafts-elsewhere" title={saveTitle}>
+          {elsewhere.length} unsaved on {[...new Set(elsewhere)].join(", ")}
+        </span>
+      ) : null}
       <button
         type="button"
         onClick={() => host.ui.emit({ type: "palette", open: true })}
@@ -207,12 +221,22 @@ function Toasts({ host }: { host: AppHost }) {
   );
 }
 
+/** At most this many changes per side are listed in the banner; the rest are counted. */
+const BANNER_ROWS = 6;
+
 function StaleBanner({ host }: { host: AppHost }) {
   const [offer, setOffer] = useState<StaleOffer | null>(null);
   const [busy, setBusy] = useState(false);
   useEffect(() => host.ui.on((m) => m.type === "stale" && setOffer(m.offer)), [host]);
+  useTick(useCallback((fn) => host.names.onChange(fn), [host]));
+  useTick(useCallback((fn) => host.units.onChange(() => fn()), [host]));
   if (!offer) return null;
   const who = offer.by ?? offer.theirs.by;
+  const kind = offer.theirs.kind;
+  const view = offer.draft.view;
+  const name = (id: string) => host.names.text("platform", id, view);
+  const label = (path: string) => fieldLabel(kind, path, name);
+  const val = (path: string, v: unknown) => valueText(kind, path, v, host.units);
   const run = async (f: () => unknown) => {
     setBusy(true);
     try {
@@ -224,17 +248,60 @@ function StaleBanner({ host }: { host: AppHost }) {
       setBusy(false);
     }
   };
+  const both = new Set(offer.changes.both.map((b) => b.path));
+  const list = (title: string, rows: { path: string; before: unknown; after: unknown }[], testid: string) => {
+    const shown = rows.filter((r) => !both.has(r.path)).slice(0, BANNER_ROWS);
+    const rest = rows.filter((r) => !both.has(r.path)).length - shown.length;
+    if (shown.length === 0) return null;
+    return (
+      <div data-testid={testid}>
+        <strong>{title}</strong>{" "}
+        {shown.map((r, i) => (
+          <span key={r.path}>
+            {i ? "; " : ""}
+            {label(r.path)} from {val(r.path, r.before)} to {val(r.path, r.after)}
+          </span>
+        ))}
+        {rest > 0 ? `; and ${rest} more` : ""}.
+      </div>
+    );
+  };
+  const mineCount = offer.changes.mine.length;
   return (
     <div className="stale-banner" role="alert" data-testid="stale-banner">
-      <span>
-        {offer.theirs.kind} {offer.theirs.id} was saved by {who} (version {offer.theirs.version}) while you were editing
-        it.
-      </span>
-      <button type="button" disabled={busy} onClick={() => void run(() => offer.keepMine())}>
-        Keep mine
+      <div>
+        {host.names.text(kind, offer.theirs.id, view)} was saved by {who} (version {offer.theirs.version} on{" "}
+        {offer.theirs.layer}) while you were editing it.
+        {list("They changed", offer.changes.theirs, "stale-theirs")}
+        {list("You changed", offer.changes.mine, "stale-mine")}
+        {offer.changes.both.length ? (
+          <div data-testid="stale-both">
+            <strong>Both changed</strong>{" "}
+            {offer.changes.both.map((b, i) => (
+              <span key={b.path}>
+                {i ? "; " : ""}
+                {label(b.path)} (yours {val(b.path, b.mine)}, theirs {val(b.path, b.theirs)})
+              </span>
+            ))}
+            . Keep mine puts yours there.
+          </div>
+        ) : null}
+      </div>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => void run(() => offer.keepMine())}
+        title="Apply only the fields you changed on top of their version; their other changes stay"
+      >
+        Keep mine ({mineCount} change{mineCount === 1 ? "" : "s"} on top of theirs)
       </button>
-      <button type="button" disabled={busy} onClick={() => void run(() => offer.takeTheirs())}>
-        Take theirs
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => void run(() => offer.takeTheirs())}
+        title="Drop your unsaved changes and show their version"
+      >
+        Take theirs (drop mine)
       </button>
     </div>
   );

@@ -6,17 +6,8 @@
 // length (the transition, a vertex of kind "x"), then the curve, then the grade. Where the straight grade is too
 // short the curves are shortened, and the shortfall is listed in `short`.
 
-import {
-  CHORD_MIN_M,
-  DESIGN_PASSES,
-  EXT_MIN_M,
-  GRADE_CHANGE_MIN,
-  OUTWARD_MIN_M,
-  PERMILLE,
-  RUN_MIN_M,
-  SHORT_FLAG_M,
-  TRANSITION_SHARE,
-} from "../tol.ts";
+import { type DesignRules, PAGE_RULES } from "../params.ts";
+import { CHORD_MIN_M, EXT_MIN_M, GRADE_CHANGE_MIN, OUTWARD_MIN_M, PERMILLE, RUN_MIN_M } from "../tol.ts";
 import type { Vertex, Vertices } from "./vertices.ts";
 
 /** A vertex of the built line: the design vertices plus "x", the end of a platform's transition. */
@@ -49,7 +40,8 @@ export interface Design {
   readonly short: readonly ShortCurve[];
 }
 
-export function design(verts: Vertices): Design {
+/** The built line of a section's vertices, under the design rules (the page's unless the input sends its own). */
+export function design(verts: Vertices, rules: DesignRules = PAGE_RULES): Design {
   const { rv, lmin } = verts;
   const V = verts.v;
   // curve length for a change of grade dg: radius x dg, but never shorter than the minimum (AREMA / Amtrak 100 ft),
@@ -74,7 +66,7 @@ export function design(verts: Vertices): Design {
   // level along a platform end's own grade (the transition carries the platform grade on)
   const zOn = (k: number, c: number): number => at(k).z + (at(k).gp || 0) * (c - at(k).c);
   if (rv > 0) {
-    for (let it = 0; it < DESIGN_PASSES; it++) {
+    for (let it = 0; it < rules.passes; it++) {
       const nx: number[] = new Array<number>(n).fill(0);
       for (let k = 0; k < n; k++) {
         const o = outward(k);
@@ -88,13 +80,13 @@ export function design(verts: Vertices): Design {
         const gq = (zOn(o, oc) - zOn(k, piv)) / (oc - piv);
         nx[k] = curveLen(gq - (at(k).gp || 0)) / 2;
       }
-      // the two transitions on one stretch take at most half of it
+      // the two transitions on one stretch take at most their share of it (half, on the page)
       for (let k = 0; k + 1 < n; k++) {
         const len = at(k + 1).c - at(k).c;
         const a = outward(k) === k + 1 ? (nx[k] as number) : 0;
         const b = outward(k + 1) === k ? (nx[k + 1] as number) : 0;
-        if (a + b > TRANSITION_SHARE * len && a + b > 0) {
-          const f = (TRANSITION_SHARE * len) / (a + b);
+        if (a + b > rules.transitionShare * len && a + b > 0) {
+          const f = (rules.transitionShare * len) / (a + b);
           if (a) nx[k] = (nx[k] as number) * f;
           if (b) nx[k + 1] = (nx[k + 1] as number) * f;
         }
@@ -146,7 +138,7 @@ export function design(verts: Vertices): Design {
   dv.forEach((v, k) => {
     const got = L[k] as number;
     const want = need[k] as number;
-    if (want - got > SHORT_FLAG_M) {
+    if (want - got > rules.shortFlag) {
       short.push({ c: v.c, need: want, got, dgPermille: ((g[k] as number) - (g[k - 1] as number)) * PERMILLE });
     }
   });

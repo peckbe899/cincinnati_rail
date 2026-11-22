@@ -323,7 +323,8 @@ def test_start_up_report_and_db_outside_var(hub_var, tmp_path):
     finally:
         srv.stop()
     steps = [line.split()[0] for line in lines]
-    assert steps[:4] == ["lock", "database", "migrate", "tiers"] and "serving" not in steps
+    assert steps[:5] == ["lock", "database", "migrate", "backups", "tiers"] and "serving" not in steps
+    assert sorted(p.name.rsplit("-", 1)[1] for p in (elsewhere / "backups").glob("*.db")) == ["daily.db", "weekly.db"]
     assert "jobs" in steps and steps[-1] == "stopped"
 
 

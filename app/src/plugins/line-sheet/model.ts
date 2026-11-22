@@ -12,6 +12,9 @@ import { escapeToken } from "../../core/jsonpatch.ts";
 export interface ProfileData {
   pvi?: unknown[];
   st?: Record<string, number | null>;
+  sg?: Record<string, number | null>;
+  so?: Record<string, number>;
+  del?: string[];
   [k: string]: unknown;
 }
 
@@ -35,15 +38,12 @@ export function pviShape(data: ProfileData): Shape {
   return { kind: "object", c: "c_m", z: "z_m" };
 }
 
+/** The PVIs as rows, each read in its own shape (pvi_points in region/ext/profiles/doc.py reads them the same way). */
 export function pviRows(data: ProfileData): PviRow[] {
-  const shape = pviShape(data);
-  return (data.pvi ?? []).map((p, index) => {
-    if (shape.kind === "tuple") {
-      const t = p as number[];
-      return { index, c: Number(t[0]), z: Number(t[1]) };
-    }
-    const o = p as Record<string, number>;
-    return { index, c: Number(o[shape.c]), z: Number(o[shape.z]) };
+  return (Array.isArray(data.pvi) ? data.pvi : []).map((p, index) => {
+    if (Array.isArray(p)) return { index, c: Number(p[0]), z: Number(p[1]) };
+    const o = (p ?? {}) as Record<string, unknown>;
+    return { index, c: Number(o.c_m ?? o.c), z: Number(o.z_m ?? o.z) };
   });
 }
 
@@ -94,17 +94,106 @@ export function setStationLevel(data: ProfileData, platformId: string, z: number
   return ops;
 }
 
+/** A section's stops and platforms, the records the server builds its stations from (inputs.gather). */
+export interface StationFrame {
+  /** The stops in the server's order: by order, then c, then id. */
+  stops: { id: string; c: number }[];
+  /** Each stop's platforms, by id. */
+  platforms: Map<string, { id: string; name: string }[]>;
+}
+
+const byId = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+
+/** The frame of a section from its stop and platform records, sorted as region/ext/profiles/inputs.py gather(). */
+export function stationFrame(
+  stops: { id: string; data: Record<string, unknown> }[],
+  platforms: { id: string; data: Record<string, unknown> }[],
+): StationFrame {
+  const num = (v: unknown) => (typeof v === "number" ? v : 0);
+  const sorted = [...stops].sort(
+    (a, b) => num(a.data.order) - num(b.data.order) || num(a.data.c) - num(b.data.c) || byId(a.id, b.id),
+  );
+  const plats = new Map<string, { id: string; name: string }[]>();
+  for (const p of [...platforms].sort((a, b) => byId(a.id, b.id))) {
+    const stop = String(p.data.stop);
+    const list = plats.get(stop) ?? [];
+    list.push({ id: p.id, name: typeof p.data.name === "string" ? p.data.name : p.id });
+    plats.set(stop, list);
+  }
+  return { stops: sorted.map((s) => ({ id: s.id, c: Number(s.data.c) })), platforms: plats };
+}
+
 /**
- * The input the browser solves: the server's SectionInput with the draft's PVIs and station levels in place of the
- * saved ones. PVIs are sorted by chainage, as the engine expects them in any order but the table shows them sorted.
+ * The frame if it holds every platform of the server's input, else null. The input's stations are the saved
+ * profile's platforms on these same records, so a frame missing one was read from records that moved on (or not
+ * at all), and the stations then follow the input rather than vanish.
  */
-export function localInput(input: SectionInput, data: ProfileData | null): SectionInput {
+export function frameFor(frame: StationFrame | null, input: SectionInput): StationFrame | null {
+  if (!frame) return null;
+  const ids = new Set<string>();
+  for (const list of frame.platforms.values()) for (const p of list) ids.add(p.id);
+  const stops = new Set(frame.stops.map((s) => s.id));
+  for (const [stop, list] of frame.platforms) if (!stops.has(stop)) for (const p of list) ids.delete(p.id);
+  return input.stations.every((s) => ids.has(s.platform_id)) ? frame : null;
+}
+
+const own = (o: unknown, k: string): o is Record<string, unknown> =>
+  !!o && typeof o === "object" && Object.hasOwn(o as object, k);
+
+/**
+ * The stations of a profile on its frame: the same rule as build() in region/ext/profiles/inputs.py, line for line.
+ * The platforms in stop order, minus the profile's del; each at its stop's c plus its slide (so) when that is a
+ * number; its level st[pid] (null when the key is absent); its grade sg[pid] (0 when the key is absent).
+ * test/unit/inputs_parity.test.ts runs both on the same drafts.
+ */
+export function stationsOf(frame: StationFrame, data: ProfileData): SectionInput["stations"] {
+  const deleted = new Set(Array.isArray(data.del) ? (data.del as unknown[]).map(String) : []);
+  const st = (data.st || {}) as Record<string, unknown>;
+  const sg = (data.sg || {}) as Record<string, unknown>;
+  const so = (data.so || {}) as Record<string, unknown>;
+  const out: SectionInput["stations"] = [];
+  for (const stop of frame.stops) {
+    for (const p of frame.platforms.get(stop.id) ?? []) {
+      if (deleted.has(p.id)) continue;
+      const slide = own(so, p.id) ? so[p.id] : undefined;
+      out.push({
+        platform_id: p.id,
+        order: out.length,
+        c_m: typeof slide === "number" ? stop.c + slide : stop.c,
+        level_m: own(st, p.id) ? (st[p.id] as number | null) : null,
+        grade_permille: own(sg, p.id) ? (sg[p.id] as number | null) : 0,
+      });
+    }
+  }
+  return out;
+}
+
+/**
+ * The input the browser solves: the server's SectionInput with the draft's PVIs and stations in place of the saved
+ * ones, so the browser and the server solve the same rail for the same profile. With the section's frame the
+ * stations are rebuilt from the draft as the server builds them (del, so, sg, st). Without one (the stops could not
+ * be read) each station the server sent takes the draft's level and grade by the same rule: a key the draft does
+ * not have is null and 0, never the level the input was built with. PVIs are sorted by chainage, as the table shows
+ * them; the engine takes them in any order.
+ */
+export function localInput(
+  input: SectionInput,
+  data: ProfileData | null,
+  frame: StationFrame | null = null,
+): SectionInput {
   if (!data) return input;
-  const pvi = data.pvi ? pviRows(data).map((r) => ({ c_m: r.c, z_m: r.z })) : input.pvi;
-  const st = data.st;
-  const stations = st
-    ? input.stations.map((s) => (Object.hasOwn(st, s.platform_id) ? { ...s, level_m: st[s.platform_id] ?? null } : s))
-    : input.stations;
+  const pvi = pviRows(data).map((r) => ({ c_m: r.c, z_m: r.z }));
+  let stations: SectionInput["stations"];
+  if (frame) stations = stationsOf(frame, data);
+  else {
+    const st = (data.st || {}) as Record<string, unknown>;
+    const sg = (data.sg || {}) as Record<string, unknown>;
+    stations = input.stations.map((s) => ({
+      ...s,
+      level_m: own(st, s.platform_id) ? (st[s.platform_id] as number | null) : null,
+      grade_permille: own(sg, s.platform_id) ? (sg[s.platform_id] as number | null) : 0,
+    }));
+  }
   return { ...input, pvi: [...pvi].sort((a, b) => a.c_m - b.c_m), stations };
 }
 
@@ -114,8 +203,12 @@ export function localInput(input: SectionInput, data: ProfileData | null): Secti
  * message saves the copy, the validation and the input hash. The rail is the same; only input_hash differs, and the
  * sheet never uses it.
  */
-export function solveInput(input: SectionInput, data: ProfileData | null): SectionInput {
-  const { ground: _ground, ...rest } = localInput(input, data);
+export function solveInput(
+  input: SectionInput,
+  data: ProfileData | null,
+  frame: StationFrame | null = null,
+): SectionInput {
+  const { ground: _ground, ...rest } = localInput(input, data, frame);
   return rest;
 }
 

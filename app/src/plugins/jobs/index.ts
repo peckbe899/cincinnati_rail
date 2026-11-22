@@ -2,7 +2,38 @@
 // ephemeral (section 5), so after every reconnect and resync the list is re-read from /jobs?active=1.
 
 import type { Job, ResultEvent } from "../../api/types.ts";
+import { ULID_RE } from "../../core/names.ts";
 import type { Host, Plugin } from "../../core/plugin.ts";
+import { formatChainage } from "../../core/units.ts";
+
+/** The kind of record a job's scope names, from the job type ("profiles.solve_section" scopes a section). */
+export function scopeKind(type: string): string | null {
+  // The job's own name after the package ("solve_section" of "profiles.solve_section"), never the package name.
+  const job = type.includes(".") ? type.slice(type.indexOf(".") + 1) : type;
+  const m = /(section|route|station|platform|profile|layer)/.exec(job);
+  return m?.[1] ?? null;
+}
+
+/** A job's scope in Ben's terms: the record's name ("Line 6"), or the scope as it is when it is not a record id. */
+export function scopeText(host: Host, type: string, scope: string): string {
+  const kind = scopeKind(type);
+  if (!kind || kind === "layer" || !ULID_RE.test(scope)) return scope;
+  return host.names.text(kind, scope, host.view());
+}
+
+/** A job type in plain words: "profiles.solve_section" reads "solve section (profiles)". */
+export function jobText(type: string): string {
+  const [pkg, ...rest] = type.split(".");
+  return rest.length ? `${rest.join(" ").replace(/_/g, " ")} (${pkg})` : type.replace(/_/g, " ");
+}
+
+/** The chainage ranges a result changed, as the readout writes chainage: "3+514.0 to 4+566.0". */
+export function changedText(changed: number[][] | undefined, host: Host): string {
+  if (!changed?.length) return "";
+  return changed
+    .map(([a, b]) => `${formatChainage(a ?? 0, host.units)} to ${formatChainage(b ?? 0, host.units)}`)
+    .join(", ");
+}
 
 /** The jobs the app knows of, by id, from /jobs and job events. */
 export class JobBoard {
@@ -104,8 +135,8 @@ const plugin: Plugin = {
             const tr = document.createElement("tr");
             tr.dataset.job = j.id;
             const cells = [
-              j.type,
-              j.scope,
+              jobText(j.type),
+              scopeText(host, j.type, j.scope),
               j.error ? `${j.state}: ${j.error}` : `${j.state}${j.msg ? ` (${j.msg})` : ""}`,
             ];
             for (const text of cells) {
@@ -140,14 +171,24 @@ const plugin: Plugin = {
             ul.className = "plain";
             for (const x of board.results) {
               const li = document.createElement("li");
-              li.textContent = `${x.type} ${x.scope} ${x.status}${x.changed?.length ? `, changed ${x.changed.map(([a, b]) => `${Math.round(a ?? 0)}-${Math.round(b ?? 0)} m`).join(", ")}` : ""}`;
+              const changed = changedText(x.changed, host);
+              li.textContent = `${jobText(x.type)}, ${scopeText(host, x.type, x.scope)}: ${x.status}${changed ? `, changed ${changed}` : ""}`;
               ul.append(li);
             }
             root.append(r, ul);
           }
         };
         draw();
-        return { dispose: board.subscribe(draw) };
+        const offBoard = board.subscribe(draw);
+        const offNames = host.names.onChange(draw);
+        const offUnits = host.units.onChange(() => draw());
+        return {
+          dispose() {
+            offBoard();
+            offNames();
+            offUnits();
+          },
+        };
       },
     },
   ],

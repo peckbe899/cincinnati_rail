@@ -32,14 +32,17 @@ const plugin: Plugin = {
         root.className = "pane";
         el.append(root);
         let timer: ReturnType<typeof setTimeout> | null = null;
+        let rows: Conflict[] = [];
         const load = async () => {
-          let rows: Conflict[] = [];
           try {
             rows = await host.api.conflicts({ state: "open", layer: host.view().layer });
           } catch (e) {
             root.textContent = `The review queue could not be read: ${String((e as Error).message ?? e)}`;
             return;
           }
+          draw();
+        };
+        const draw = () => {
           const groups = groupConflicts(rows);
           root.replaceChildren();
           const h = document.createElement("h3");
@@ -57,14 +60,15 @@ const plugin: Plugin = {
               const li = document.createElement("li");
               const a = document.createElement("a");
               a.href = "#";
-              a.textContent = `${c.kind} ${c.rec_id}`;
+              a.textContent = host.names.text(c.kind, c.rec_id, host.view());
+              a.title = `${c.kind} ${c.rec_id}`;
               a.onclick = (e) => {
                 e.preventDefault();
                 host.select({ kind: c.kind, id: c.rec_id });
               };
               const why = document.createElement("span");
               why.className = "muted";
-              why.textContent = ` ${c.reason.replace(/_/g, " ")} on ${c.layer}`;
+              why.textContent = ` (${c.kind}): ${c.reason.replace(/_/g, " ")} on ${c.layer}`;
               li.append(a, why);
               ul.append(li);
             }
@@ -77,6 +81,8 @@ const plugin: Plugin = {
           timer = setTimeout(() => void load(), 300);
         };
         await load();
+        // Names arrive after the first draw: draw again with them (a short wait folds a burst into one read).
+        const unsubNames = host.names.onChange(draw);
         const unsubEvents = host.events.subscribe((m) => {
           if (m.type !== "event") return;
           const ev = m.event;
@@ -91,6 +97,7 @@ const plugin: Plugin = {
             if (timer) clearTimeout(timer);
             unsubEvents();
             unsubStore();
+            unsubNames();
           },
         };
       },

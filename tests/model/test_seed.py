@@ -319,3 +319,142 @@ def test_a_proposal_on_a_proposal_imports_after_its_parent(make_store, write_roo
     assert two.chain(View(layer="proposal:a-child"))[:2] == ["proposal:a-child", "proposal:z-base"]
     texts = sorted(r["data"]["text"] for r in two.list("note", View(layer="proposal:a-child"))[0])
     assert texts == ["in the base", "in the child"]
+
+
+def test_a_dangling_ref_does_not_block_the_rest_of_the_seed(make_store, write_root):
+    """data-9: an import below drops a node Ben's section refers to (allowed, and listed as dangling_ref). In a fresh
+    database the seed of main still imports: the section is written as the seed has it with a dangling_ref conflict,
+    and Ben's unrelated records come in too."""
+    n1, n2 = tid("n1"), tid("n2")
+
+    def nodes(*which):
+        return [
+            {"kind": "t_node", "id": i, "data": {"name": nm, "system": "metro"}, "geom": "POINT (715000 4330000)"}
+            for i, nm in which
+        ]
+
+    live = make_store("live.db")
+    live.create_layer("import:test", namespace="test", by="t")
+    live.apply_import(run(), nodes((n1, "A"), (n2, "B")), dry_run=False)
+    sec = live.put(
+        {
+            "kind": "t_section",
+            "id": None,
+            "data": {"name": "Ben's spur", "node_a": n1, "node_b": n2},
+            "geom": "LINESTRING (715000 4330000, 716000 4331000)",
+        },
+        View(),
+        if_match=None,
+        by="ben",
+    )
+    other = note(live, "Ben's other work")
+    rep = live.apply_import(run(), nodes((n1, "A")), dry_run=False)
+    assert [c["reason"] for c in rep.conflicts] == ["dangling_ref"]
+    out = write_root / "seed"
+    S.export(live, out)
+    fresh = make_store("fresh.db")
+    fresh.create_layer("import:test", namespace="test", by="t")
+    fresh.apply_import(run(), nodes((n1, "A")), dry_run=False)
+    got = S.import_seed(fresh, out)["layers"]["main"]
+    assert got["added"] == 2 and got["conflicts"] == []
+    assert [(c["rec_id"], c["reason"], c["fields"]) for c in got["dangling"]] == [
+        (sec["id"], "dangling_ref", ["node_b"])
+    ]
+    assert fresh.get("note", other["id"], View())["data"]["text"] == "Ben's other work"
+    assert fresh.get("t_section", sec["id"], View())["data"]["node_b"] == n2
+    assert [c["reason"] for c in fresh.conflicts()] == ["dangling_ref"]
+    # it is listed, not an unmerged seed change: export goes on, and gives the same files
+    assert S.open_seed_conflicts(fresh) == []
+    before = _files(out)
+    S.export(fresh, out)
+    assert _files(out) == before
+
+
+def test_a_seed_folder_from_another_checkout_reverts_nothing(make_store, write_root):
+    """windows-1, data-1: two checkouts share one var (the Windows default). Ben exports v-new in checkout A; then
+    a serve from checkout B, whose region/seed still holds v-old, imports B's folder. Nothing is taken: the record
+    stays v-new and the difference is a listed seed conflict."""
+    store = make_store()
+    a, b = write_root / "cr_hub" / "region" / "seed", write_root / "cincinnati_rail" / "region" / "seed"
+    x = note(store, "v-old")
+    S.export(store, b)  # checkout B exported once, long ago
+    cur = store.get("note", x["id"], View())
+    store.patch(
+        "note", x["id"], [{"op": "replace", "path": "/data/text", "value": "v-new"}], View(), if_match=tag(cur),
+        by="ben",
+    )
+    S.export(store, a)  # Ben's latest export, in checkout A
+    got = S.import_seed(store, b)["layers"]["main"]  # serve from checkout B
+    assert got["taken"] == 0 and got["foreign_root"] == S.root_key(a / "main")
+    assert [c["rec_id"] for c in got["conflicts"]] == [x["id"]]
+    assert store.get("note", x["id"], View())["data"]["text"] == "v-new"
+    with pytest.raises(Conflict):  # and export cannot write v-old over it either
+        S.export(store, b)
+    assert json.loads((b / "main" / "note" / f"{x['id']}.json").read_text(encoding="utf-8"))["data"]["text"] == "v-old"
+    # back in checkout A, whose folder agrees with the database: the conflict closes, nothing else changes
+    back = S.import_seed(store, a)["layers"]["main"]
+    assert back["same"] == 1 and back["conflicts"] == [] and S.open_seed_conflicts(store) == []
+    assert S.seed_roots(store) == {"main": S.root_key(a / "main")}
+
+
+def test_export_writes_the_layers_without_a_seed_conflict(make_store, write_root):
+    """data-7: a seed conflict on main blocks main's folder only; a proposal is still written, and the refusal says
+    which layers were written and how to resolve."""
+    from tests.model.test_review import _seed_conflict_on_copied_record
+
+    one, out, f, _c = _seed_conflict_on_copied_record(make_store, write_root)
+    one.create_layer("proposal:gate", by="ben")
+    p = note(one, "in the proposal", view=View(layer="proposal:gate"))
+    with pytest.raises(Conflict) as e:
+        S.export(one, out)
+    assert "main" in e.value.detail and "proposal:gate" in e.value.detail and "crhub conflicts" in e.value.detail
+    assert (out / "proposals" / "gate" / "note" / f"{p['id']}.json").is_file()
+    assert json.loads(f.read_text(encoding="utf-8"))["data"]["name"] == "pulled"
+    assert e.value.extra["report"]["layers"]["main"]["skipped"]
+
+
+def test_export_leaves_a_promoted_layers_changed_folder_alone(make_store, write_root):
+    """data-3: after a promote, a cloud session pushes an edit and a new record into the proposal's folder. The
+    layer takes no seed import, so export must not overwrite the edit or delete the new file."""
+    one = make_store()
+    one.create_layer("proposal:gate", by="ben")
+    first = note(one, "one", view=View(layer="proposal:gate"))
+    out = write_root / "seed"
+    S.export(one, out)
+    one.promote("proposal:gate", by="ben")
+    d = out / "proposals" / "gate" / "note"
+    edited = d / f"{first['id']}.json"
+    obj = json.loads(edited.read_text(encoding="utf-8"))
+    obj["data"]["text"] = "two (cloud edit)"
+    edited.write_text(S.seed_text(obj), encoding="utf-8", newline="\n")
+    new_id = "01K0000000000000000000000A"
+    (d / f"{new_id}.json").write_text(
+        S.seed_text({"id": new_id, "kind": "note", "kv": 1, "geom": None, "data": {"text": "new (cloud)"}}),
+        encoding="utf-8",
+        newline="\n",
+    )
+    rep = S.export(one, out)
+    assert "promoted" in rep["layers"]["proposal:gate"]["skipped"]
+    assert sorted(p.stem for p in d.glob("*.json")) == sorted([first["id"], new_id])
+    assert json.loads(edited.read_text(encoding="utf-8"))["data"]["text"] == "two (cloud edit)"
+
+
+def test_a_proposal_named_after_a_windows_device_is_refused_and_never_blocks_export(make_store, write_root):
+    """windows-4: proposal:aux (or a name ending in a dot) is refused when it is made; a layer that has such a name
+    anyway is skipped by export, and main is still exported and recorded."""
+    one = make_store()
+    for bad in ("proposal:aux", "proposal:con", "proposal:com1"):
+        with pytest.raises(Invalid, match="cannot be a folder"):
+            one.create_layer(bad, by="ben")
+    x = note(one, "main's note")
+    con = raw(one)
+    con.execute(
+        "INSERT INTO layer (slug, tier, parent, state, created, by) VALUES ('proposal:nul', 'proposal', "
+        "(SELECT id FROM layer WHERE slug = 'main'), 'open', '2026-11-22', 'old')"
+    )
+    con.close()
+    out = write_root / "seed"
+    rep = S.export(one, out)
+    assert "cannot be a folder" in rep["layers"]["proposal:nul"]["skipped"]
+    assert (out / "main" / "note" / f"{x['id']}.json").is_file()
+    assert one.meta().get("last_export")

@@ -161,6 +161,16 @@ export const sanbornLayer = imageLayer(
 /** Base layers first, so the network draws over them. */
 export const LAYERS: LayerDef[] = [reliefLayer, sanbornLayer, sectionsLayer, stationsLayer];
 
+/**
+ * Whether a layer's features are filtered by the view's instant: only when some feature carries a date. A kind
+ * with no dates (sections and stations today) has open_lo and close_lo null on every feature, and the server shows
+ * all of them at any year, so the map must too; filtering them would empty the map at any year without a word.
+ * A dated kind's undated records still show only at the present (9.16), as the server lists them.
+ */
+export function timeFiltered(fc: { features: { properties?: Record<string, unknown> | null }[] }): boolean {
+  return fc.features.some((f) => f.properties?.open_lo != null || f.properties?.close_lo != null);
+}
+
 /** The MapLibre filter that keeps features open at a month instant (region.core.view.is_open). */
 export function eraFilter(instant: number | null): FilterSpecification {
   const far = 1e9;

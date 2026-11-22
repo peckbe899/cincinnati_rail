@@ -20,7 +20,10 @@ function layoutKey(workspace: string): string {
   return `cr.layout.v${LAYOUT_VERSION}.${workspace}`;
 }
 
-/** The default design workspace: the map on the left, the line sheet and the inspector on the right, the rest below. */
+/**
+ * The default design workspace: the map on the left, the line sheet in the middle with the whole column's height
+ * (its table needs the rows), the inspector on the right with Jobs, Review and Old hub as tabs below it.
+ */
 export function defaultLayout(api: DockviewApi, has: (id: string) => boolean): void {
   const add = (paneId: string, position?: Parameters<DockviewApi["addPanel"]>[0]["position"]) => {
     if (!has(paneId)) return;
@@ -30,9 +33,12 @@ export function defaultLayout(api: DockviewApi, has: (id: string) => boolean): v
   add("map");
   add("line-sheet", has("map") ? { referencePanel: "map", direction: "right" } : undefined);
   add("inspector", has("line-sheet") ? { referencePanel: "line-sheet", direction: "right" } : undefined);
-  add("jobs", has("line-sheet") ? { referencePanel: "line-sheet", direction: "below" } : undefined);
+  const below = has("inspector") ? "inspector" : "line-sheet";
+  add("jobs", has(below) ? { referencePanel: below, direction: "below" } : undefined);
   add("review", has("jobs") ? { referencePanel: "jobs" } : undefined);
   add("legacy", has("jobs") ? { referencePanel: "jobs" } : undefined);
+  api.getPanel("jobs")?.api.setActive();
+  api.getPanel("inspector")?.api.setActive();
   api.getPanel("line-sheet")?.api.setActive();
 }
 
@@ -140,6 +146,15 @@ export function Dock({ host, workspace }: { host: AppHost; workspace: string }) 
   useEffect(
     () =>
       host.ui.on((m) => {
+        if (m.type === "reset-layout") {
+          // Lay the panes out afresh in place: the host, its drafts and its undo stack stay as they are.
+          const api = apiRef.current;
+          if (!api) return;
+          api.clear();
+          defaultLayout(api, (id) => host.registry.panes.has(id));
+          host.toast({ text: "The pane layout is back to the default.", level: "info", ttl: 3000 });
+          return;
+        }
         if (m.type !== "open") return;
         const api = apiRef.current;
         if (!api || !host.registry.panes.has(m.pane)) return;

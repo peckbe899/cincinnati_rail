@@ -4,11 +4,12 @@
         ...
     holder = lock.reader(var)                  # who holds it now, or None
 
-``acquire`` takes an operating-system lock on ``var/hub.lock`` (``flock`` on POSIX, ``LockFile`` on one byte far
-past the end of the file on Windows) and writes the holder into the file: ``pid``, ``port``, ``started`` and
-``command``. The OS drops the lock when the process ends however it ends (``TerminateProcess``, ``kill -9``, a
-crash), so a lock file left by a dead process is stale by construction: the next ``acquire`` simply takes it over
-and rewrites the holder. A second process (or a second ``acquire`` in the same process) gets ``LockHeld``, which
+``acquire`` takes an operating-system lock on ``var/hub.lock`` (``flock`` on POSIX, ``LockFile`` on one byte far past
+the end of the file on Windows) and writes the holder into the file: ``pid``, ``port``, ``started``, ``command``, the
+``host`` a serve listens on and the checkout (``repo``) it runs from, so a command started in another checkout can tell
+that the hub is not its own. The OS drops the lock when the process ends however it ends (``TerminateProcess``, ``kill
+-9``, a crash), so a lock file left by a dead process is stale by construction: the next ``acquire`` simply takes it
+over and rewrites the holder. A second process (or a second ``acquire`` in the same process) gets ``LockHeld``, which
 names the holder.
 
 The lock is held by a descriptor that child processes do not inherit (Node sidecars, job workers), so a child that
@@ -82,11 +83,23 @@ class Holder:
     port: int
     started: str
     command: str = "crhub serve"
+    host: str = ""
+    repo: str = ""
 
     def describe(self) -> str:
-        """``crhub serve (pid 4242, port 8766, started 2026-11-21T10:00:00+01:00)``."""
+        """``crhub serve (pid 4242, port 8766, started 2026-11-21T10:00:00+01:00, from C:\\cr)``."""
         port = f", port {self.port}" if self.port else ""
-        return f"{self.command} (pid {self.pid}{port}, started {self.started or 'at an unknown time'})"
+        repo = f", from {self.repo}" if self.repo else ""
+        return f"{self.command} (pid {self.pid}{port}, started {self.started or 'at an unknown time'}{repo})"
+
+    def url(self) -> str:
+        """``http://<host>:<port>`` of a serving holder (127.0.0.1 when no host was recorded; IPv6 bracketed)."""
+        host = self.host or "127.0.0.1"
+        if host == "localhost":
+            host = "127.0.0.1"
+        if ":" in host:
+            host = f"[{host}]"
+        return f"http://{host}:{self.port}"
 
 
 class LockHeld(HubError):
@@ -176,7 +189,14 @@ def _read_record(path: Path) -> Holder | None:
     if not isinstance(d, dict):
         return None
     try:
-        return Holder(int(d["pid"]), int(d.get("port") or 0), str(d.get("started") or ""), str(d.get("command") or ""))
+        return Holder(
+            int(d["pid"]),
+            int(d.get("port") or 0),
+            str(d.get("started") or ""),
+            str(d.get("command") or ""),
+            str(d.get("host") or ""),
+            str(d.get("repo") or ""),
+        )
     except (KeyError, TypeError, ValueError):
         return None
 
@@ -188,8 +208,18 @@ def _open(path: Path, *, write: bool) -> int:
     return fd
 
 
-def acquire(var: Path, port: int, *, command: str = "crhub serve", wait_s: float = 1.0) -> Lock:
-    """Take ``var/hub.lock`` for this process and write the holder (``pid``, ``port``, ``started``, ``command``).
+def this_repo() -> str:
+    """The real path of the checkout this code runs from (what a holder records as ``repo``)."""
+    from . import paths
+
+    return os.path.realpath(paths.repo_root())
+
+
+def acquire(
+    var: Path, port: int, *, command: str = "crhub serve", wait_s: float = 1.0, host: str = "127.0.0.1"
+) -> Lock:
+    """Take ``var/hub.lock`` for this process and write the holder (``pid``, ``port``, ``started``, ``command``,
+    ``host``, ``repo``).
 
     A lock left by a process that has ended is taken over. ``LockHeld`` (naming the holder) when another process, or
     another ``Lock`` of this one, still holds it after ``wait_s`` seconds of retries.
@@ -205,7 +235,7 @@ def acquire(var: Path, port: int, *, command: str = "crhub serve", wait_s: float
                 holder = _read_record(path) or Holder(0, 0, "", "another process")
                 raise LockHeld(holder, path)
             time.sleep(_PROBE_GAP_S)
-        holder = Holder(os.getpid(), int(port), _now(), command)
+        holder = Holder(os.getpid(), int(port), _now(), command, host if port else "", this_repo())
         _write_record(fd, json.dumps(asdict(holder), ensure_ascii=False, sort_keys=True).encode("utf-8"))
     except BaseException:
         os.close(fd)
@@ -244,4 +274,4 @@ def refuse_if_held(var: Path, doing: str) -> None:
         raise LockHeld(holder, path, f"{doing} refused: {holder.describe()} holds {path}; stop it first")
 
 
-__all__ = ["LOCK_NAME", "Holder", "Lock", "LockHeld", "acquire", "path_of", "reader", "refuse_if_held"]
+__all__ = ["LOCK_NAME", "Holder", "Lock", "LockHeld", "acquire", "path_of", "reader", "refuse_if_held", "this_repo"]

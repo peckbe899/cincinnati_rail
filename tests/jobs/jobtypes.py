@@ -342,7 +342,18 @@ class EngineJob:
         return Output(meta={"answer": rt.engine.call("vertical.rail", {"v": inputs["v"]})})
 
 
+class FileLen(Sum):
+    """Reads a file by ``var://`` URI (its scope) and answers its length: a job with a ``file:`` dependency."""
+
+    def plan(self, ctx: Any, scope_id: str) -> dict[str, Any]:
+        return {"scope": scope_id, "text": ctx.file(f"var://{scope_id}").read_text(encoding="utf-8")}
+
+    def run(self, inputs: dict[str, Any], rt: Any) -> Output:
+        return Output(meta={"len": len(inputs["text"])}, arrays={"v": np.array([float(len(inputs["text"]))])})
+
+
 SUM = Sum()
+FILE_LEN = FileLen(name="t.file_len")
 INLINE_SUM = Sum(name="t.inline_sum", host="inline")
 TIMELESS = Sum(name="t.timeless")
 TIMED = Timed(name="t.timed")
@@ -363,6 +374,7 @@ ENGINE_JOB = EngineJob()
 
 JOB_TYPES = [
     SUM,
+    FILE_LEN,
     INLINE_SUM,
     TIMELESS,
     TIMED,

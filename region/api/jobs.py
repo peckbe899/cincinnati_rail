@@ -4,9 +4,10 @@
   null), ``queued`` or ``running``. With ``watch_s`` the goal is also kept fresh for that long.
 - ``GET /results?type&scope&view`` answers 200 ``{key}``, ``key`` null when the goal has no result yet (never a 404:
   the app polls it, and Chromium logs every 4xx as a console error).
-- ``GET /results/{key}`` and ``/results/{key}/a/{name}`` are immutable: the ETag is the key, a repeat with
-  ``If-None-Match`` gets 304, and the array bytes (raw little-endian, C order) carry ``X-Dtype`` and ``X-Shape`` and
-  answer ``Range``.
+- ``GET /results/{key}`` and ``/results/{key}/a/{name}`` are immutable once the key's result is ``ok``: the ETag is
+  the key, a repeat with ``If-None-Match`` gets 304, and the array bytes (raw little-endian, C order) carry
+  ``X-Dtype`` and ``X-Shape`` and answer ``Range`` (a range past the end is a 416 problem). An ``error`` or ``stale``
+  row is sent with ``no-store``, since the key can still become ``ok``.
 """
 
 from __future__ import annotations
@@ -59,10 +60,14 @@ def latest(
 @router.get("/results/{key}", response_model=M.ResultMeta, responses=M.problems(404))
 def result(request: Request, key: str) -> Response:
     """A result's row, issues and dependencies."""
+    # Only an ok row is immutable: an error or stale row of a key can become ok when the key runs again, so it is
+    # sent with no-store and never answered with 304.
     tag = f'"{key}"'
+    meta = hub_of(request).jobs.result_meta(key)
+    if meta.get("status") != "ok":
+        return json_response(meta, headers={"Cache-Control": "no-store"})
     if etag_matches(request.headers.get("if-none-match"), tag):
         return not_modified(tag, cache_control=IMMUTABLE)
-    meta = hub_of(request).jobs.result_meta(key)
     return json_response(meta, etag=tag, headers={"Cache-Control": IMMUTABLE})
 
 

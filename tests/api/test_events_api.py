@@ -230,3 +230,22 @@ def test_poll_fallback(api, client):
     assert client.get("/api/v1/events/poll", params={"since": 2}).json()["events"] == []
     gone = client.get("/api/v1/events/poll", params={"since": 9}).json()["events"]
     assert gone == [{"seq": None, "type": "resync", "data": {"reason": "epoch", "seq": 2}}]
+
+
+def test_after_an_overflow_resync_the_covered_backlog_does_not_refill_the_queue():
+    """server-5: after a resync for overflow, the tailer's backlog (events at or below the resync's seq) kept
+    filling the queue, so one slow moment sent a burst of resyncs."""
+    from types import SimpleNamespace
+
+    from region.api.events import EventHub, _Client
+
+    c = _Client(3)
+    hub = SimpleNamespace(_clients=[c])
+    c.floor = 100  # a resync covered everything up to seq 100
+    for seq in range(90, 101):
+        EventHub._deliver(hub, ("durable", seq, "record", {}))
+    assert c.queue.qsize() == 0 and not c.overflow
+    for seq in (101, 102):
+        EventHub._deliver(hub, ("durable", seq, "record", {}))
+    EventHub._deliver(hub, ("ephemeral", None, "job", {}))
+    assert c.queue.qsize() == 3 and not c.overflow

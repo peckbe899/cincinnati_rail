@@ -171,3 +171,72 @@ export function diff(a: Json, b: Json, base = ""): JsonPatch {
   }
   return out;
 }
+
+/** Whether two pointers touch the same part of a document: equal, or one inside the other. */
+export function overlaps(a: string, b: string): boolean {
+  return a === b || a.startsWith(`${b}/`) || b.startsWith(`${a}/`);
+}
+
+/** Set the value at a pointer, or take it away when value is undefined (a copy; doc is never changed). */
+export function setAt<T>(doc: T, path: string, value: unknown): T {
+  const has = getAt(doc, path) !== undefined;
+  if (value === undefined) return has ? applyPatch(doc, [{ op: "remove", path }]) : doc;
+  return applyPatch(doc, [{ op: has ? "replace" : "add", path, value }]);
+}
+
+export interface Rebased<T> {
+  /** Theirs with my changes on top. */
+  result: T;
+  /** The pointers I changed, from my base. */
+  mine: string[];
+  /** The pointers they changed, from the same base. */
+  theirs: string[];
+  /** The pointers both changed to different values: there the result holds mine. */
+  both: string[];
+}
+
+/**
+ * A three-way rebase: the changes from base to mine, applied on top of theirs. A part only one side changed keeps
+ * that side's value, so their change to a field I never touched stays. Where both changed the same part (or one
+ * changed a list the other edited inside) the result holds my value of the larger part, and the pointer is in both,
+ * so the caller can name it before Ben chooses.
+ */
+export function rebase3<T>(base: T, mine: T, theirs: T): Rebased<T> {
+  const mineOps = diff(base, mine);
+  const theirPaths = diff(base, theirs).map((o) => o.path);
+  const writes: string[] = [];
+  const both = new Set<string>();
+  for (const op of mineOps) {
+    let at = op.path;
+    let hit = false;
+    for (const p of theirPaths) {
+      if (!overlaps(p, op.path)) continue;
+      hit = true;
+      if (p.length < at.length) at = p;
+    }
+    if (hit && !deepEqual(getAt(mine, at), getAt(theirs, at))) both.add(at);
+    writes.push(at);
+  }
+  const outer = [...new Set(writes)].filter((p) => !writes.some((q) => q !== p && p.startsWith(`${q}/`)));
+  let result = clone(theirs);
+  for (const p of outer) {
+    // A part whose parent the other side took away goes back whole, from the nearest parent that is still there.
+    let at = p;
+    for (;;) {
+      try {
+        result = setAt(result, at, clone(getAt(mine, at)));
+        break;
+      } catch (e) {
+        if (!(e instanceof PatchError) || at === "") throw e;
+        at = at.slice(0, at.lastIndexOf("/"));
+        both.add(at);
+      }
+    }
+  }
+  return {
+    result,
+    mine: mineOps.map((o) => o.path),
+    theirs: theirPaths,
+    both: [...both].filter((p) => ![...both].some((q) => q !== p && p.startsWith(`${q}/`))),
+  };
+}

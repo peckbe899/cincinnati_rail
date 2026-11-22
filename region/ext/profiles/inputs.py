@@ -7,8 +7,8 @@ Python builds the input; the engine never reads records. ``section_input(ctx, se
 - its ``profile`` (``/k/profile?parent=<section>``; a section without one solves as an empty profile);
 - its ``stop`` and ``platform`` records, in stop order;
 - the params ``platform_m``, ``vc_radius_m`` and ``vc_min_len_m``: ``settings.*`` for the Metro, ``settings_rer.*``
-  for the RER (``settings.vcMinLen`` where the RER has none), asked for with the route as scope, so a route's own
-  value (the CVG Express's 204.216 m platforms) wins over the system's;
+  for the RER (``settings.vcMinLen`` where the RER has none), asked for with the section's id as scope, so a value
+  scoped to the section wins over its route's (the CVG Express's 204.216 m platforms), and that over the system's;
 - with ``ground=True``, its ``ground_profile`` (decimetres to metres; a missing level is interpolated from its
   neighbours, since the contract carries numbers only).
 
@@ -113,10 +113,20 @@ def gather(ctx: Any, section_id: str, *, ground: bool = False) -> Section:
 
 
 def params_of(ctx: Any, section: Mapping[str, Any]) -> dict[str, float]:
-    """The section's resolved params, scoped to its route."""
+    """The section's resolved params, asked for with the section's id as the scope: the resolver ranks a param
+    scoped to this section above one scoped to its route, and that above the system's (9.25)."""
     data = section.get("data") or {}
-    prefix = PREFIX.get(str(data.get("system")), "settings")
-    scope = data.get("route") if isinstance(data.get("route"), str) else None
+    system = data.get("system")
+    prefix = PREFIX.get(str(system)) if system is not None else "settings"
+    if prefix is None:
+        # an APEX, ORR or TV section has no params of its own yet; taking the Metro's would solve it silently with
+        # another system's platforms and curves
+        raise NotFound(
+            f"no params for system {system!r} (params exist for {', '.join(sorted(PREFIX))})",
+            kind="section",
+            id=section.get("id"),
+        )
+    scope = section.get("id") if isinstance(section.get("id"), str) else None
     out: dict[str, float] = {}
     for name, key in PARAMS:
         try:

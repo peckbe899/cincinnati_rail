@@ -1,7 +1,13 @@
 // The inspector pane: the selected record's bookkeeping and a form from its kind's schema. Edits go into the shared
 // draft (the line sheet sees them at once); Save sends the coalesced patch with If-Match.
+//
+// In Ben's terms: the heading names the record ("Section: Line 6", "Profile: Line 6 profile"), the bookkeeping line
+// says which layer and who in plain words, in local time, and a reference or a platform id inside the form shows the
+// record's name. The form is read-only where a save would be refused (an import or legacy layer, or main while the
+// old hub owns the kind), and says why.
 
 import type { JsonPatch, Rec } from "../../api/types.ts";
+import { actorText, layerPhrase, localTime } from "../../core/describe.ts";
 import { bodyOf } from "../../core/drafts.ts";
 import type { MountedPane, PaneContext } from "../../core/plugin.ts";
 import { isRecordRef } from "../../core/plugin.ts";
@@ -50,13 +56,19 @@ export async function mountInspector(el: HTMLElement, ctx: PaneContext): Promise
       root.replaceChildren(
         Object.assign(document.createElement("p"), {
           className: "muted",
-          textContent: `Loading ${sel.kind} ${sel.id}…`,
+          textContent: `Loading ${host.names.text(sel.kind, sel.id, host.view())}…`,
         }),
       );
       return;
     }
     const view = host.view();
-    const meta = await host.meta().catch(() => null);
+    const shown = rec;
+    const [meta, editable, name] = await Promise.all([
+      host.meta().catch(() => null),
+      host.editable(shown.kind, view),
+      host.names.full(shown.kind, shown.id, view),
+      primeNames(shown),
+    ]);
     if (n !== renders || !rec) return;
     if (typing()) {
       pending = true;
@@ -67,10 +79,12 @@ export async function mountInspector(el: HTMLElement, ctx: PaneContext): Promise
     const draft = host.drafts.get(rec.kind, rec.id, view);
     const body = draft?.body ?? bodyOf(rec);
     const head = document.createElement("h3");
-    head.textContent = `${kind?.title ?? rec.kind} ${rec.id}`;
+    head.textContent = `${kind?.title ?? rec.kind}: ${name}`;
+    head.title = `${rec.kind} ${rec.id}`;
     const book = document.createElement("p");
     book.className = "muted";
-    book.textContent = `version ${rec.version} on ${rec.layer}, by ${rec.by}, ${rec.updated}${draft ? " (unsaved changes)" : ""}`;
+    book.textContent = `version ${rec.version} ${layerPhrase(rec.layer)}, by ${actorText(rec.by)}, ${localTime(rec.updated)}${draft ? " (unsaved changes)" : ""}`;
+    book.title = `layer ${rec.layer}, by ${rec.by}, ${rec.updated}`;
     const bar = document.createElement("div");
     const save = Object.assign(document.createElement("button"), {
       type: "button",
@@ -100,10 +114,19 @@ export async function mountInspector(el: HTMLElement, ctx: PaneContext): Promise
       return;
     }
     const current = rec;
+    const readOnly = editable !== true;
     const form = new FormBuilder({
       units: host.units,
       base: current.data,
-      readOnly: view.layer.includes(":"),
+      readOnly,
+      refs: kind.refs,
+      name: (k, id) => (k ? host.names.text(k, id, view) : (anyName(id) ?? id)),
+      choices: async (k) => {
+        const { items } = await host.records.list(k, view, { limit: 500, fields: "name,key" });
+        host.names.learn(items, view);
+        return items.map((r) => ({ id: r.id, name: host.names.text(k, r.id, view) }));
+      },
+      open: (k, id) => host.select({ kind: k, id }),
       onPatch: (ops: JsonPatch) => {
         try {
           host.drafts.edit(current, view, ops);
@@ -112,16 +135,39 @@ export async function mountInspector(el: HTMLElement, ctx: PaneContext): Promise
         }
       },
     }).build(kind.schema, body.data);
-    if (view.layer.includes(":")) {
+    if (readOnly) {
       out.push(
         Object.assign(document.createElement("p"), {
           className: "muted",
-          textContent: `${view.layer} is read-only; switch to main or a scenario to edit.`,
+          textContent: `${editable}.`,
         }),
       );
     }
     out.push(form);
     root.replaceChildren(...out);
+  };
+
+  /** Names of the records a record's form shows by id: a profile's platform keys, from its section's platforms. */
+  const primed = new Set<string>();
+  const primeNames = async (r: Rec) => {
+    const d = r.data as Record<string, unknown>;
+    const sec = typeof d.section === "string" ? d.section : null;
+    if (r.kind !== "profile" || !sec || primed.has(sec)) return;
+    primed.add(sec);
+    try {
+      const { items } = await host.records.list("platform", host.view(), { parent: sec, limit: 500 });
+      host.names.learn(items, host.view());
+    } catch {
+      /* the ids show short instead */
+    }
+  };
+  /** A platform's or a stop's name by id alone (the form's id keys do not say their kind). */
+  const anyName = (id: string): string | null => {
+    for (const k of ["platform", "stop", "station", "section", "route", "node"]) {
+      const n = host.names.peek(k, id, host.view());
+      if (n) return n;
+    }
+    return null;
   };
 
   const follow = () => {
@@ -137,7 +183,7 @@ export async function mountInspector(el: HTMLElement, ctx: PaneContext): Promise
           root.replaceChildren(
             Object.assign(document.createElement("p"), {
               className: "muted",
-              textContent: `${sel.kind} ${sel.id}: ${r.error.message}`,
+              textContent: `${host.names.text(sel.kind, sel.id, host.view())}: ${r.error.message}`,
             }),
           );
           return;
@@ -165,6 +211,7 @@ export async function mountInspector(el: HTMLElement, ctx: PaneContext): Promise
     soon = setTimeout(() => void render(), 150);
   });
   const unsubUnits = host.units.onChange(() => void render());
+  const unsubNames = host.names.onChange(() => void render());
   follow();
   return {
     dispose() {
@@ -174,6 +221,7 @@ export async function mountInspector(el: HTMLElement, ctx: PaneContext): Promise
       unsubDrafts();
       if (soon) clearTimeout(soon);
       unsubUnits();
+      unsubNames();
       root.removeEventListener("focusout", onFocusOut);
     },
   };

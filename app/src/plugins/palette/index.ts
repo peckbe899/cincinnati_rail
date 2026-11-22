@@ -1,10 +1,12 @@
-// The command palette (Ctrl+K): run any command, open any pane, or jump to a record by an old key through the
-// legacy index (section 8: "Ctrl+K resolves legacy keys").
+// The command palette (Ctrl+K): run any command, open any pane, or jump to a record by its name ("Line 6", "Bond
+// Hill") or by an old key through the legacy index (section 8: "Ctrl+K resolves legacy keys"). Hits show names, never
+// ids. Enter while a search is still on its way waits for it, then runs the top item; a search that finds nothing
+// says so.
 
 import type { AppHost } from "../../core/host.ts";
 import type { Host, Plugin } from "../../core/plugin.ts";
 import { parseSel } from "../../core/url.ts";
-import { type LegacyHit, lookup } from "./lookup.ts";
+import { type LegacyHit, lookup, type NameHit, searchNames } from "./lookup.ts";
 
 interface Item {
   label: string;
@@ -22,7 +24,7 @@ function open(host: Host): void {
   box.setAttribute("aria-label", "Command palette");
   const input = document.createElement("input");
   input.className = "palette-input";
-  input.placeholder = "Command, pane, kind:id or an old key (Line_8, Line_8|Cincinnati State#2)";
+  input.placeholder = "A line or station (Line 6, Bond Hill), a command, or an old key (Line_8)";
   input.setAttribute("aria-label", "Command or old key");
   const list = document.createElement("ul");
   box.append(input, list);
@@ -34,6 +36,14 @@ function open(host: Host): void {
   let active = 0;
   let ctrl: AbortController | null = null;
   let timer: ReturnType<typeof setTimeout> | null = null;
+  /** The search for the text as typed now, while it is on its way. */
+  let searching: Promise<void> | null = null;
+  /** Fires the debounced search at once (Enter before the pause is over). */
+  let fireNow: (() => void) | null = null;
+  const empty = document.createElement("p");
+  empty.className = "muted palette-empty";
+  empty.hidden = true;
+  box.append(empty);
   const close = () => {
     ctrl?.abort();
     if (timer) clearTimeout(timer);
@@ -76,32 +86,80 @@ function open(host: Host): void {
     return out.slice(0, 30);
   };
 
+  const view = host.view();
+  /** "Bond Hill (Line 6)" for a platform, a stop or a station; a line by its own name. */
+  const nameLabel = (h: NameHit, sections: Map<string, string>) => {
+    if (h.section && (h.kind === "platform" || h.kind === "stop"))
+      return `${h.name} (${sections.get(h.section) ?? host.names.text("section", h.section, view)})`;
+    const line = h.kind === "station" && h.key?.includes("|") ? h.key.split("|")[0]?.replace(/_/g, " ") : null;
+    return line ? `${h.name} (${line})` : h.name;
+  };
+  const KIND_WORD: Record<string, string> = {
+    section: "line",
+    route: "route",
+    station: "station",
+    platform: "platform",
+  };
+
   const update = () => {
     const q = input.value;
     items = staticItems(q);
     active = 0;
+    empty.hidden = true;
     render();
     ctrl?.abort();
     if (timer) clearTimeout(timer);
+    searching = null;
+    fireNow = null;
     if (q.trim().length < 2) return;
-    timer = setTimeout(async () => {
+    let release: () => void = () => {};
+    searching = new Promise<void>((r) => {
+      release = r;
+    });
+    const run = async () => {
+      timer = null;
+      fireNow = null;
       const c = new AbortController();
       ctrl = c;
-      let hits: LegacyHit[] = [];
-      try {
-        hits = await lookup(host.api, await host.meta(), q, c.signal);
-      } catch {
-        hits = [];
-      }
-      if (c.signal.aborted) return;
-      const legacy: Item[] = hits.map((h) => ({
-        label: `${h.key} → ${h.kind} ${h.id}`,
-        hint: `old ${h.lkind}`,
+      const meta = await host.meta().catch(() => null);
+      const [legacyHits, nameHits] = await Promise.all([
+        meta ? lookup(host.api, meta, q, c.signal).catch((): LegacyHit[] => []) : Promise.resolve([] as LegacyHit[]),
+        searchNames(host.api, view, q, c.signal).catch((): NameHit[] => []),
+      ]);
+      if (c.signal.aborted) return release();
+      for (const h of nameHits) host.names.remember(h.kind, h.id, h.name, view);
+      // The lines of the platforms found, by name, before the list draws.
+      const secIds = [...new Set(nameHits.flatMap((h) => (h.section ? [h.section] : [])))];
+      const secNames = new Map(
+        await Promise.all(secIds.map(async (id) => [id, await host.names.get("section", id, view)] as const)),
+      );
+      if (c.signal.aborted) return release();
+      const byName: Item[] = nameHits.map((h) => ({
+        label: nameLabel(h, secNames),
+        hint: KIND_WORD[h.kind] ?? h.kind,
         run: () => host.select({ kind: h.kind, id: h.id }),
       }));
-      items = [...legacy, ...staticItems(q)];
+      const fresh = legacyHits.filter((h) => !nameHits.some((n) => n.kind === h.kind && n.id === h.id));
+      // An old key's record by name, with its line for a platform or a stop: "Line_6|Bond Hill → Bond Hill (Line 6)".
+      const named = await Promise.all(fresh.map((h) => host.names.full(h.kind, h.id, view)));
+      if (c.signal.aborted) return release();
+      const legacy: Item[] = fresh.map((h, i) => ({
+        label: `${h.key} → ${named[i]}`,
+        hint: `old ${h.lkind} key, ${KIND_WORD[h.kind] ?? h.kind}`,
+        run: () => host.select({ kind: h.kind, id: h.id }),
+      }));
+      items = [...legacy, ...byName, ...staticItems(q)];
+      active = 0;
+      empty.textContent = `No line, station, command or old key matches "${q.trim()}".`;
+      empty.hidden = items.length > 0;
       render();
-    }, 200);
+      release();
+    };
+    fireNow = () => {
+      if (timer) clearTimeout(timer);
+      void run();
+    };
+    timer = setTimeout(() => void run(), 200);
   };
 
   input.addEventListener("input", update);
@@ -110,9 +168,20 @@ function open(host: Host): void {
     else if (e.key === "ArrowDown") active = Math.min(items.length - 1, active + 1);
     else if (e.key === "ArrowUp") active = Math.max(0, active - 1);
     else if (e.key === "Enter") {
-      const it = items[active];
-      close();
-      it?.run();
+      e.preventDefault();
+      // A search still on its way (Enter right after typing): wait for it, so Enter runs what the text finds.
+      const pending = searching;
+      fireNow?.();
+      void (async () => {
+        if (pending) await pending;
+        const it = items[active];
+        if (!it) {
+          empty.hidden = false;
+          return;
+        }
+        close();
+        it.run();
+      })();
       return;
     } else return;
     e.preventDefault();

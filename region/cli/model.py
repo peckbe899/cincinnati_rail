@@ -4,7 +4,9 @@
     crhub model export   [--db PATH] [--out region/seed]   import pulled seeds, then write main and proposals
     crhub model import   [--db PATH] [--seed region/seed]  merge seed files into the database
     crhub model backup   [--db PATH] [--reason manual]
-    crhub model restore  FILE [--db PATH]               backs the current database up first; refuses while a hub serves
+    crhub model restore  FILE [--db PATH] [--force]     backs the current database up first; refuses while a hub serves,
+                                                        a file that is not a hub database, and (without --force) a
+                                                        backup of another database
     crhub model check    [--db PATH]                    quick_check, then every record validated again (read-only)
     crhub model info     [--db PATH] [--json]           schema version, layers, record counts (read-only)
     crhub model kinds    [--json]                       the kind files and whether each is valid
@@ -16,7 +18,9 @@
 **Beside a serving hub** (9.28: while ``crhub serve`` holds ``var/hub.lock``, its database is written only through
 it). Without ``--db``, ``export`` and ``backup`` go through the running hub's HTTP API (``POST /export``,
 ``POST /backup``), and ``import`` and ``migrate`` refuse with a message saying what to do instead (the hub imported
-the pulled seeds when it started, and every export imports them again first). The commands that write the database
+the pulled seeds when it started, and every export imports them again first). ``export`` refuses a hub that serves
+from another checkout (two checkouts share one ``var`` on Windows): it would write that checkout's ``region/seed``.
+The commands that write the database
 directly (``migrate``, ``export``, ``import``, ``restore``) hold the lock while they work, so they refuse while a hub
 or another command holds it (``LockHeld`` names it), and no hub can start on the database meanwhile. ``check`` and
 ``info`` open the database read-only (``open_store(readonly=True)``): they never migrate, back up or rewrite the
@@ -68,6 +72,7 @@ def restore_arguments(p: argparse.ArgumentParser) -> None:
     """The arguments of ``restore`` (shared with ``crhub restore``)."""
     p.add_argument("file", type=Path)
     _add_db(p)
+    p.add_argument("--force", action="store_true", help="restore a backup of another database (another db_id)")
 
 
 def run_action(action: str, args: argparse.Namespace) -> int:
@@ -193,6 +198,7 @@ def _export(args: argparse.Namespace) -> int:
     out = args.out or seed.SEED
     hub = _running_hub(args)
     if hub is not None:
+        _same_checkout(hub, "export", "its export writes that checkout's region/seed")
         if Path(out).resolve() != Path(seed.SEED).resolve():
             raise Refused(
                 f"a hub is serving at {hub.base}, and it exports to {seed.SEED} only. Drop --out, or stop the hub to "
@@ -203,11 +209,37 @@ def _export(args: argparse.Namespace) -> int:
     else:
         with _holding_the_lock("export"), _open(args, create=False) as store:
             rep = seed.export(store, out)
+    print(f"{'into':24} {rep.get('out') or out}")
     for skip in rep["imported"].get("skipped", []):
         print(f"{skip['layer']:24} not imported: {skip['reason']} ({skip['path']} left as it is)")
+    for slug, st in (rep["imported"].get("layers") or {}).items():
+        if st.get("skipped") and not st.get("missing"):
+            print(f"{slug:24} not imported: {st['skipped']}")
     for slug, st in rep["layers"].items():
-        print(f"{slug:24} {st['records']:6} records, {st['written']} written, {st['removed']} removed")
+        line = f"{slug:24} {st['records']:6} records, {st['written']} written, {st['removed']} removed"
+        if st.get("skipped"):
+            line += f" (folder left as it is: {st['skipped']})"
+        print(line)
     return 0
+
+
+def _same_checkout(hub: Any, action: str, what: str = "") -> None:
+    """Refuse to work through a hub that serves from another checkout (two checkouts can share one var on
+    Windows): its region/seed is not the one this checkout commits."""
+    from region.core import lock
+
+    holder = getattr(hub, "holder", None)
+    if holder is None or not holder.repo:
+        return
+    import os
+
+    if os.path.normcase(holder.repo) != os.path.normcase(lock.this_repo()):
+        raise Refused(
+            f"the hub serving at {hub.base} runs from another checkout, {holder.repo}"
+            + (f"; {what}" if what else "")
+            + f", not this one ({lock.this_repo()}). Run crhub {action} in that checkout, or stop that hub and run "
+            "this again here."
+        )
 
 
 def _import(args: argparse.Namespace) -> int:
@@ -256,8 +288,22 @@ def _restore(args: argparse.Namespace) -> int:
 
     db = Path(args.db or _db_default())
     with lock.acquire(paths.var_root(), 0, command="crhub restore"):
-        restore(args.file, db)
-    print(f"restored {db} from {args.file}")
+        rep = restore(args.file, db, force=bool(getattr(args, "force", False)))
+    replaced, restored = rep["replaced"], rep["restored"]
+    if replaced is not None:
+        print(
+            f"replaced  {db}: {replaced['records']} live records, last export {replaced['last_export'] or 'never'}"
+            f" (kept as {rep['pre_restore']})"
+        )
+    print(
+        f"restored  {args.file}: {restored['records']} live records, last export {restored['last_export'] or 'never'}"
+    )
+    if rep["seed_layers"]:
+        print(
+            "seeds     region/seed may hold exports newer than this backup. The next crhub serve (or export) takes "
+            "nothing from it silently: every record that differs is listed as a seed conflict. Keep the restored "
+            "state with crhub conflicts resolve --all --take ours, or take region/seed's with --take theirs."
+        )
     return 0
 
 

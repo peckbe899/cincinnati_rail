@@ -34,3 +34,21 @@ use none). The hub serves the build from `app/dist` (`crhub serve` never runs np
 
 Make `src/plugins/<feature>/index.ts` export a `Plugin` with unique ids. The registry test fails on a duplicate;
 the shell offers the pane in the palette (Ctrl+K) and opens it for a selection its `accepts()` takes.
+
+## Rules the panes keep
+
+- **Names, not ids.** A pane shows a record by its name through `host.names` (`src/core/names.ts`): "Line 6",
+  "Bond Hill (Line 6)", "Line 6 profile". An id shows only short ("…N14PM3") while its name is read.
+- **One rule for the stations.** The line sheet rebuilds the stations and PVIs of the input it solves from the
+  draft by the server's rule (`stationsOf` in `src/plugins/line-sheet/model.ts`, the twin of
+  `region/ext/profiles/inputs.py` `build`). `test/unit/inputs_parity.test.ts` runs both on the same drafts; it
+  needs a Python 3.12 (`CRHUB_PYTHON`, else `python3`, `python` or `py`).
+- **Keep mine is a rebase, never a whole-document save.** After a 412 only the fields this tab changed go onto
+  their version (`rebase3` in `src/core/jsonpatch.ts`); the banner names what each side changed and the fields
+  both changed before Ben chooses.
+- **Enter saves and leaves the cell**, so the next Ctrl+Z is the hub's undo. In a field still showing what it was
+  drawn with (`data-drawn`), Ctrl+Z is the hub's undo too; a field with typed text keeps it.
+- **Unsaved edits are not lost silently.** Closing or reloading the tab asks first; the drafts are kept in
+  sessionStorage and offered back after a reload. Reset the pane layout lays the panes out again in place.
+- **Read-only where a save would be refused**: an import or legacy layer, and main for a kind the old hub owns
+  (`host.editable`, from main's authority records). Save covers the current layer's drafts only.

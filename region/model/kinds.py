@@ -154,6 +154,7 @@ class Kind:
     merge_unit: str = "field"
     rebase: str = "auto"
     guard: tuple[tuple[str, ...], ...] = ()
+    frame: tuple[str, ...] = ()
     legacy: tuple[str, ...] = ()
     seeded: bool = True
     upgraders: dict[int, Callable[[Any], Any]] = field(default_factory=dict)
@@ -392,6 +393,7 @@ def load_file(path: Path) -> Kind:
         merge_unit=merge.get("unit", "field"),
         rebase=merge.get("rebase", "auto"),
         guard=tuple(pointer_parts(p) for p in merge.get("guard") or []),
+        frame=tuple(merge.get("frame") or ()),
         legacy=tuple(doc.get("legacy") or ()),
         seeded=bool(doc.get("seeded", True)),
     )
