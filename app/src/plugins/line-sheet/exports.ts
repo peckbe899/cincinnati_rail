@@ -46,6 +46,22 @@ export const TYPE_LABEL: Record<string, string> = {
 const r2 = (v: number | null): number | null => (v === null || !Number.isFinite(v) ? null : Math.round(v * 100) / 100);
 const r7 = (v: number): number => Math.round(v * 1e7) / 1e7;
 
+/**
+ * A station's type as the old export wrote it (typeAt(c, level) 1669, autoType 1605): the drawn rail's type at the
+ * platform centre where the station's level is on the drawn rail (within 0.3 m), else the type of the station at its
+ * own level (station.facts@1's; Line 6 Forest, slid 235 m, stands 3.9 m over the drawn rail: at grade, not the box
+ * the rail runs in there).
+ */
+export function stationTypeAt(
+  level: number | null,
+  drawnRail: number | null,
+  drawnType: string | null,
+  ownType: string | null,
+): string | null {
+  if (level !== null && drawnRail !== null && Math.abs(drawnRail - level) >= 0.3) return ownType ?? drawnType;
+  return drawnType ?? ownType;
+}
+
 /** The plan position at c on a path of [c, lon, lat] (pathAt 617). */
 export function pathAt(path: ExportModel["path"], c: number): [number, number] {
   let j = 1;

@@ -108,3 +108,20 @@ def test_legacy_both_ways(store, imp_layer, tmp_path):
         run(), [_station(rid, "Cincinnati State", 715000), _station(other, "D", 1)], dry_run=True, ids=look2
     )
     assert store.legacy("t_node_key", "dry key") is None and not (tmp_path / "dry" / "test.tsv").exists()
+
+
+def test_a_run_reads_each_legacy_kind_once(store, imp_layer, tmp_path, monkeypatch):
+    """Speed (the line file budget): the line files' importer asks for some 1,400 ids a run. The legacy index of each
+    old-key kind is read once per run, not one query per key, and the ids are the same."""
+    look = IdLookupImpl(store, layer="import:test", namespace="test", ledger_dir=tmp_path)
+    keys = [f"{KEY}#{i}" for i in range(20)]
+    first = [look.id_for("t_node_key", k, kind="t_node") for k in keys]
+    store.apply_import(run(), [_station(r, f"S{i}", 715000 + i) for i, r in enumerate(first)], dry_run=False, ids=look)
+    asked: list = []
+    real = store.legacy
+    monkeypatch.setattr(store, "legacy", lambda lk, key: asked.append((lk, key)) or real(lk, key))
+    look2 = IdLookupImpl(store, layer="import:test", namespace="test", ledger_dir=tmp_path)
+    again = [look2.id_for("t_node_key", k, kind="t_node") for k in keys]
+    assert again == first
+    assert asked == []
+    assert look2.id_for("t_node_key", "a new key", kind="t_node") == ids.stable("test", "a new key")

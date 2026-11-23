@@ -14,6 +14,7 @@ import {
   gradeChords,
   gradeLabels,
   levelTicks,
+  nameLabels,
   SEV_COLOURS,
   slideText,
   stationText,
@@ -41,12 +42,12 @@ import {
   overGradeBand,
   overviewBand,
   paintPreviewBand,
+  type ReadoutRow,
+  readoutRows,
   reserveLabel,
   roadsBand,
-  runAt,
   sampleAt,
   structureStripBand,
-  structWord,
   waterBand,
 } from "./solved.ts";
 import { stationAccessBand, stationFlagsBand, stationStructureBand } from "./stations.ts";
@@ -153,8 +154,9 @@ export function barGeometry(
   return { xa, xb, ya: v.y(z - gp * half), yb: v.y(z + gp * half) };
 }
 
-/** How far apart station names are kept (px along the axis): the old page's 18, 15 on a whole-line wide plot. */
-export const nameGap = (plotW: number): number => (plotW >= 900 ? 15 : 18);
+/** How far apart station names are kept (px along the axis): the old page's 18, and its 15 on a narrow plot (its
+ * canvas under 560 px, 2302); 15 also on a plot wide enough to show a whole line (900 px and more). */
+export const nameGap = (plotW: number): number => (plotW >= 900 || plotW < 500 ? 15 : 18);
 
 /** A line's name as the old page tagged its crossings: "Line 3" is L3, "CVG Express" CVG; an RER route keeps its
  * short name ("E trunk"). */
@@ -543,12 +545,11 @@ export const platformBand: BandDef = {
       g.restore();
       d.mark?.({ kind: "removed", id: f.platform_id, c: f.point_c_m, x, y, label: bx });
     }
-    // Names: the ends of the line first, then left to right, 18 px apart as on the old page; on a plot wide enough
-    // to show a whole line (900 px and more) 15 px, the old page's narrow gap: rotated 45 degrees, neighbours are
-    // still 10.6 px apart across the text, clear of a 12 px name's letters, and a whole line keeps more names.
-    const n = inp.stations.length;
-    const named = thinLabels(
-      items.map((it) => ({ x: it.x, priority: it.index === 0 || it.index === n - 1 ? 0 : 1, selected: it.on })),
+    // Names: left to right, 18 px apart as on the old page (nameLabels), the line's last station named as well; on a
+    // plot wide enough to show a whole line (900 px and more) 15 px, the old page's narrow gap: rotated 45 degrees,
+    // neighbours are still 10.6 px apart across the text, clear of a 12 px name's letters.
+    const named = nameLabels(
+      items.map((it) => ({ x: it.x, selected: it.on })),
       nameGap(P.w),
     );
     // Levels: a tag under each bar (the level, and the depth under it), kept apart by its own width.
@@ -637,6 +638,24 @@ export const platformBand: BandDef = {
         });
     });
     g.restore();
+    // Names left out for room: say so, and how to read them all (the old page left them out without a word).
+    if (named.size < items.length) {
+      const hint = `${named.size} of ${items.length} names shown: ${P.w < 900 ? "maximise (Shift+F) for more, " : ""}zoom in for all`;
+      g.save();
+      g.font = `500 11px ${UI_FONT}`;
+      g.textAlign = "left";
+      g.textBaseline = "bottom";
+      const w = g.measureText(hint).width + 10;
+      g.globalAlpha = 0.85;
+      g.fillStyle = COLORS.paper;
+      g.fillRect(P.x + 2, P.y + P.h - 32, w, 16);
+      g.globalAlpha = 1;
+      g.fillStyle = COLORS.text;
+      g.fillText(hint, P.x + 7, P.y + P.h - 18);
+      g.restore();
+      d.mark?.({ kind: "names-hint", id: "", text: hint, shown: named.size, of: items.length });
+      d.report?.({ kind: "hint", text: hint, c: v.c0, drawn: true });
+    }
     // Interchanges: under each station's name, a tick on the plot's top edge and the other lines it is one station
     // with ("L3", "L4 L5 A trunk"), as the old page tagged its crossings; kept apart left to right, the selected one
     // always.
@@ -801,71 +820,48 @@ export const frameBand: BandDef = {
   },
 };
 
-/** The readout lines at a chainage, in the old readout's order and formats (3495-3503). With the whole solve: the
- * river and its water and bed, the finished ground with its fill or cut from the survey, depth from the surface, the
- * structure's top with its cover and its bottom, the type ("painted" under a paint) and the street the line runs
- * under, at every chainage as the old readout gave them; before it lands, the surveyed ground. */
-export function readoutLines(d: BandData, c: number, units: SheetView["units"]): string[] {
-  const rail = d.rail ? valueAt(d.rail.rail_m, d.rail.step_m, c) : null;
-  const grade = d.rail ? valueAt(d.rail.grade_permille, d.rail.step_m, c) : null;
-  const dem = d.input?.ground ? valueAt(d.input.ground.z_m, d.input.ground.step_m, c) : null;
-  const sv = d.solved ?? null;
-  const fin = sv ? sampleAt(sv.ground.finished, sv.step_m, c) : null;
-  const surf = sv ? sampleAt(sv.ground.surface, sv.step_m, c) : null;
-  const river = sv?.rivers.find((r) => c >= r.c0 && c <= r.c1) ?? null;
-  const ground = fin ?? dem;
-  const top = river && surf !== null ? surf : ground;
-  const u = units.length;
-  const out = [river ? `${fmtCh(c)} · ${river.name}` : fmtCh(c)];
-  if (river && surf !== null) {
-    const bed = sv ? sampleAt(sv.ground.bed, sv.step_m, c) : null;
-    out.push(`Water   ${fmtZ(surf, units, 2)} ${u}${bed !== null ? ` · bed ${fmtZ(bed, units, 2)}` : ""}`);
-  } else if (ground !== null) {
-    out.push(`Ground  ${fmtZ(ground, units, 2)} ${u}`);
-    if (fin !== null && dem !== null && Math.abs(fin - dem) > 0.02)
-      out.push(
-        `${fin > dem ? "Fill  " : "Cut   "}  ${fmtZ(Math.abs(fin - dem), units, 2)} ${u} from surveyed ${fmtZ(dem, units, 2)}`,
-      );
-  }
-  if (rail !== null) out.push(`Rail    ${fmtZ(rail, units, 2)} ${u}`);
-  if (rail !== null && top !== null)
-    out.push(top >= rail ? `Below   ${fmtZ(top - rail, units, 2)} ${u}` : `Above   ${fmtZ(rail - top, units, 2)} ${u}`);
+/** The readout rows at a chainage, in the old readout's order, words and colours (3495-3503): from the whole solve
+ * (solved.ts readoutRows), the rail and grade read between samples as the old railAt and gradeAt; before the whole
+ * solve lands, the surveyed ground, the rail and its grade, and inside a platform the station's facts. */
+export function readoutRowsAt(d: BandData, c: number, units: SheetView["units"]): ReadoutRow[] {
+  const rail = d.rail ? sampleAt(d.rail.rail_m, d.rail.step_m, c) : null;
+  const grade = d.rail ? sampleAt(d.rail.grade_permille, d.rail.step_m, c) : null;
   const half = (d.input?.params.platform_m ?? 0) / 2;
   const st = d.input?.stations.find((s) => Math.abs(s.c_m - c) <= half);
-  const type = sv ? (runAt(sv.type_runs, c)?.[0] ?? null) : null;
-  if (sv && !st && rail !== null && type !== null) {
-    const sc = runAt(sv.struct_runs, c)?.[0] ?? null;
-    if (sc && (type === "shield" || type === "deep" || type === "cutcover" || type === "sunk")) {
-      const tubes = d.solveInput?.structure?.tubes as Record<string, { label: string }> | undefined;
-      const roof = rail + sc.top;
-      out.push(`Top     ${fmtZ(roof, units, 2)} ${u}${top !== null ? ` · cover ${fmtZ(top - roof, units, 1)}` : ""}`);
-      out.push(`Bottom  ${fmtZ(rail - sc.below, units, 2)} ${u} · ${structWord(sc, tubes)}`);
-    }
+  const solved = readoutRows(d, c, units, rail, grade);
+  if (solved) {
+    if (st) solved.push({ text: `Station ${d.platformName?.(st.platform_id) ?? st.platform_id}` });
+    return solved;
   }
-  if (grade !== null) out.push(`Grade   ${fmtG(grade)}`);
-  if (sv && !st && type !== null) {
-    const ovr = (d.draft?.ovr ?? d.solveInput?.doc?.ovr ?? []) as [number, number, string][];
-    const painted = ovr.some((o) => c >= o[0] && c <= o[1]);
-    out.push(`Type    ${typeLabel(type)}${painted ? " (painted)" : ""}`);
-    const street = d.solveInput?.context.streets.find((r) => c >= Number(r[0]) && c <= Number(r[1]));
-    if (street)
-      out.push(`Street  under ${String(street[3])} (${String(street[4])}, ${fmtZ(Number(street[2]), units, 0)} ${u})`);
-  }
+  const dem = d.input?.ground ? valueAt(d.input.ground.z_m, d.input.ground.step_m, c) : null;
+  const u = units.length;
+  const out: ReadoutRow[] = [{ text: fmtCh(c) }];
+  if (dem !== null) out.push({ text: `Ground  ${fmtZ(dem, units, 2)} ${u}` });
+  if (rail !== null) out.push({ text: `Rail    ${fmtZ(rail, units, 2)} ${u}` });
+  if (rail !== null && dem !== null)
+    out.push({
+      text: dem >= rail ? `Below   ${fmtZ(dem - rail, units, 2)} ${u}` : `Above   ${fmtZ(rail - dem, units, 2)} ${u}`,
+    });
+  if (grade !== null) out.push({ text: `Grade   ${fmtG(grade)}` });
   if (st) {
-    out.push(`Station ${d.platformName?.(st.platform_id) ?? st.platform_id}`);
-    // Inside a platform, what the old readout added: the type with its source, the structure, the street.
+    out.push({ text: `Station ${d.platformName?.(st.platform_id) ?? st.platform_id}` });
     const f = d.facts?.find((x) => x.platform_id === st.platform_id && !x.deleted);
     if (f) {
-      out.push(`Type    ${typeLabel(f.type)}${f.type_source === "ben" ? " (Ben)" : ""}`);
+      out.push({ text: `${typeLabel(f.type)}${f.type_source === "ben" ? " (Ben)" : ""}`, colour: typeColour(f.type) });
       if (f.structure) {
         const off = rail !== null && f.rail_m !== null ? rail - f.rail_m : 0;
-        out.push(`Top     ${fmtZ(f.structure.top_m + off, units, 2)} ${u}`);
-        out.push(`Bottom  ${fmtZ(f.structure.bottom_m + off, units, 2)} ${u}`);
+        out.push({ text: `Top     ${fmtZ(f.structure.top_m + off, units, 2)} ${u}` });
+        out.push({ text: `Bottom  ${fmtZ(f.structure.bottom_m + off, units, 2)} ${u}` });
       }
-      out.push(`Street  ${streetText(f.street)}`);
+      out.push({ text: streetText(f.street) });
     }
   }
   return out;
+}
+
+/** The readout's rows as text (the tests and the text layer read these). */
+export function readoutLines(d: BandData, c: number, units: SheetView["units"]): string[] {
+  return readoutRowsAt(d, c, units).map((r) => r.text);
 }
 
 /** The chainage ruler in k+mmm under the plot, the hairline, a readout box at the pointer and a line in the strip. */
@@ -920,7 +916,8 @@ export const chainageBand: BandDef = {
     // The box at the pointer, as on the old sheet, while the pointer is over the plot.
     const pt = v.pointer;
     if (!pt || pt.y < P.y || pt.y > P.y + P.h) return;
-    const lines = readoutLines(d, c, v.units);
+    const rows = readoutRowsAt(d, c, v.units);
+    const lines = rows.map((r) => r.text);
     g.font = `11px ${NUM_FONT}`;
     const w = Math.max(...lines.map((l) => g.measureText(l).width)) + 16;
     const h = lines.length * 15 + 8;
@@ -934,9 +931,11 @@ export const chainageBand: BandDef = {
     g.globalAlpha = 1;
     g.strokeStyle = COLORS.frame;
     g.strokeRect(bx + 0.5, by + 0.5, w - 1, h - 1);
+    // where the box is: a drag step draws it again there (dirty.ts)
+    d.mark?.({ kind: "readout", id: "", x0: bx, y0: by, x1: bx + w, y1: by + h });
     g.textBaseline = "top";
     lines.forEach((l, i) => {
-      g.fillStyle = i === 0 ? COLORS.ink : COLORS.text;
+      g.fillStyle = i === 0 ? COLORS.ink : (rows[i]?.colour ?? COLORS.text);
       g.fillText(l, bx + 8, by + 5 + i * 15);
     });
     g.textBaseline = "alphabetic";

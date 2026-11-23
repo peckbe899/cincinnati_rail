@@ -7,6 +7,7 @@ import { DockviewReact, themeDark } from "dockview-react";
 import { useCallback, useEffect, useRef } from "react";
 import type { AppHost } from "../core/host.ts";
 import type { MountedPane, PaneContext } from "../core/plugin.ts";
+import { layoutSaver, type SaveApi } from "./layout_save.ts";
 import {
   isMaximiseKey,
   keepMaximised,
@@ -149,22 +150,30 @@ export function Dock({ host, workspace }: { host: AppHost; workspace: string }) 
   const apiRef = useRef<DockviewApi | null>(null);
   const saveTimer = useRef<number | undefined>(undefined);
 
-  const saveLayout = useCallback(() => {
-    const api = apiRef.current;
-    if (!api) return;
-    for (const p of api.panels) {
-      const el = document.querySelector(`[data-pane="${CSS.escape(String(p.params?.paneId ?? ""))}"]`) as
-        | (HTMLElement & { __serialize?: () => unknown })
-        | null;
-      const state = el?.__serialize?.();
-      if (state !== undefined) p.api.updateParameters({ ...(p.params ?? {}), state });
-    }
-    try {
-      localStorage.setItem(layoutKey(workspace), JSON.stringify(withoutMaximised(api.toJSON())));
-    } catch {
-      /* storage full or denied: the default layout comes back next time */
-    }
-  }, [workspace]);
+  // A save writes only what changed and never lays a maximised dock out (layout_save.ts): before, each save fired
+  // the next one, every 500 ms, and each laid the whole dock out twice while a pane was maximised.
+  const ws = useRef(workspace);
+  ws.current = workspace;
+  const saver = useRef(
+    layoutSaver({
+      api: () => apiRef.current as SaveApi | null,
+      stateOf: (p) => {
+        const el = document.querySelector(`[data-pane="${CSS.escape(String(p.params?.paneId ?? ""))}"]`) as
+          | (HTMLElement & { __serialize?: () => unknown })
+          | null;
+        return el?.__serialize?.();
+      },
+      clean: withoutMaximised,
+      write: (text) => {
+        try {
+          localStorage.setItem(layoutKey(ws.current), text);
+        } catch {
+          /* storage full or denied: the default layout comes back next time */
+        }
+      },
+    }),
+  );
+  const saveLayout = useCallback(() => saver.current.save(), []);
 
   const onReady = useCallback(
     (event: DockviewReadyEvent) => {
@@ -185,6 +194,7 @@ export function Dock({ host, workspace }: { host: AppHost; workspace: string }) 
       // A pane maximised earlier in this session is maximised again (a reload keeps it; a new session does not).
       const kept = keptMaximised(workspace);
       const keptPanel = kept ? event.api.getPanel(kept) : undefined;
+      saver.current.prime();
       if (keptPanel && !keptPanel.api.isMaximized()) keptPanel.api.maximize();
       event.api.onDidMaximizedGroupChange(() => {
         const on = event.api.panels.find((p) => p.api.isMaximized());

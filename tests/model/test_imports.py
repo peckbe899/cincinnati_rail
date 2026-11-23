@@ -84,3 +84,28 @@ def test_duplicate_ids_refused(store, imp_layer):
         store.apply_import(run(), [feature("a"), stray], dry_run=False)
     assert c.value.reason == "namespace"
     assert store.list("feature", View())[0] == []
+
+
+def test_a_dry_run_then_the_apply_hash_each_record_once(store, imp_layer, monkeypatch):
+    """Speed (the line file budget): the live hub plans an import twice, a dry run and then the apply, over the same
+    records. With one ``hashes`` memo for both, each record's content is hashed once (and in the next run only what
+    changed). The answer is the same as without the memo."""
+    from region.model import imports as IM
+
+    recs = [feature(n) for n in "abcdefgh"]
+    store.apply_import(run(), recs, dry_run=False)
+    hashed = []
+    real_hash = IM.content_hash
+    monkeypatch.setattr(IM, "content_hash", lambda *a, **k: hashed.append(a[0]) or real_hash(*a, **k))
+    again = [feature(n) for n in "abcdefg"] + [feature("h", "Road H renamed")]
+    memo: dict = {}
+    dry = store.apply_import(run(), again, dry_run=True, hashes=memo)
+    rep = store.apply_import(run(), again, dry_run=False, hashes=memo)
+    assert dry.counts == rep.counts == {"created": 0, "updated": 1, "unchanged": 7, "deleted": 0, "conflicts": 0}
+    assert sorted(hashed) == sorted({tid(n) for n in "abcdefgh"}), hashed
+    # the next run, over new record objects with one more change, hashes only that one
+    hashed.clear()
+    third = [feature(n) for n in "abcdefg"] + [feature("h", "Road H again")]
+    rep = store.apply_import(run(), third, dry_run=False, hashes=memo)
+    assert rep.counts["updated"] == 1 and rep.counts["unchanged"] == 7
+    assert hashed == [tid("h")], hashed

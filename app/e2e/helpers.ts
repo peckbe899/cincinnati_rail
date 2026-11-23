@@ -133,5 +133,26 @@ export async function settled(page: Page, rev: number): Promise<number> {
   return Number(await info.getAttribute("data-ms"));
 }
 
+/**
+ * Run fn with Playwright's own trace paused. Its screenshots and DOM snapshots after each action run on the page's
+ * thread and held the worker's answer up to 70 ms (7 of 8 runs over 16 ms with them, none without), so a check of
+ * the sheet's time as the page sees it measures without them. The test's trace keeps what follows fn.
+ */
+export async function untraced<T>(page: Page, fn: () => Promise<T>): Promise<T> {
+  const tracing = page.context().tracing;
+  let paused = false;
+  try {
+    await tracing.stopChunk();
+    paused = true;
+  } catch {
+    // not tracing (trace off in the configuration)
+  }
+  try {
+    return await fn();
+  } finally {
+    if (paused) await tracing.startChunk();
+  }
+}
+
 /** The level of the first PVI as the table shows it, in metres. */
 export const firstPviLevel = (page: Page) => page.getByLabel("PVI 1 level");

@@ -235,3 +235,30 @@ def test_a_folder_two_sources_watch_is_looked_at_once_per_round(tmp_path: Path, 
         w.poll_once()
     assert sorted(got) == [("a", {"lines": ["Line_3.json"]}), ("b", {"lines": ["Line_3.json"]})]
     assert len(looks) == 9
+
+
+def test_a_change_settles_settle_s_after_the_write_not_after_the_next_rounds(tmp_path: Path) -> None:
+    """Speed (the line file budget): the quiet period is counted from the write (the file's own time, never earlier
+    than the round before it was seen), and the watcher wakes when it ends rather than at its next round. With a
+    round every 1.0 s and 1.0 s to settle, a file written just after a round is acted on about 1.0 s after the write,
+    not 2.0 s (seen at the next round, then quiet for 1.0 s from there)."""
+    f = tmp_path / "a.json"
+    f.write_text("one", encoding="utf-8")
+    got: list = []
+    w = Watcher([Source("s", "S", [Watch(f, "file", "a")])], on_settled=lambda s, c: got.append(time.monotonic()),
+                settle_s=1.0, poll_s=1.0).start()  # fmt: skip
+    try:
+        r = w.rounds
+        while w.rounds == r:
+            time.sleep(0.005)
+        t0 = time.monotonic()
+        f.write_text("two!", encoding="utf-8")
+        deadline = t0 + 5
+        while not got and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert got, "never settled"
+        took = got[0] - t0
+        print(f"\nwritten -> settled {took:.2f} s (settle 1.0 s, a round every 1.0 s)")
+        assert 0.95 <= took < 1.35, took
+    finally:
+        w.stop()

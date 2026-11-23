@@ -15,12 +15,19 @@ section's route itself, so the profiles jobs and the router ask with the section
 
 from __future__ import annotations
 
+import copy
+import threading
 from typing import Any
 
 from region.core.errors import NotFound
 from region.core.view import View
 
 PARAM = "param"
+
+_CACHE_MAX = 512
+_lock = threading.Lock()
+_index_cache: dict[tuple[int, int, View], tuple[Any, int, dict[str, list[dict[str, Any]]]]] = {}
+_route_cache: dict[tuple[int, int, View, str], tuple[Any, int, str | None]] = {}
 
 
 def _records(store: Any, view: View) -> list[dict[str, Any]]:
@@ -33,13 +40,68 @@ def _records(store: Any, view: View) -> list[dict[str, Any]]:
             return out
 
 
+def _token(store: Any) -> tuple[Any, int] | None:
+    """This thread's reader and its ``PRAGMA data_version``: the number changes whenever another connection commits,
+    and every write goes through the store's writer, so an equal number on the same connection means nothing was
+    written since. ``None`` (no caching) for a store without a SQLite reader, or a reader inside a read transaction
+    (its snapshot may be older than the cache)."""
+    reader = getattr(store, "_reader", None)
+    if reader is None:
+        return None
+    try:
+        con = reader()
+        if con.in_transaction:
+            return None
+        return con, int(con.execute("PRAGMA data_version").fetchone()[0])
+    except Exception:  # noqa: BLE001 - a store this cannot read is resolved the slow way
+        return None
+
+
+def _put(cache: dict[Any, Any], key: Any, value: Any) -> None:
+    with _lock:
+        if len(cache) >= _CACHE_MAX:
+            cache.clear()
+        cache[key] = value
+
+
+def _index(store: Any, view: View) -> dict[str, list[dict[str, Any]]]:
+    """The param records of ``view`` by path, read once per write (``_token``): one SectionSolveInput resolves some
+    200 params, and reading every param record for each was most of the hub's time while a line file was taken in.
+    The entry keeps its connection, so a key's ``id`` is never another connection's."""
+    tok = _token(store)
+    if tok is not None:
+        key = (id(store), id(tok[0]), view)
+        with _lock:
+            hit = _index_cache.get(key)
+        if hit is not None and hit[0] is tok[0] and hit[1] == tok[1]:
+            return hit[2]
+    by_path: dict[str, list[dict[str, Any]]] = {}
+    for rec in _records(store, view):
+        data = rec.get("data") or {}
+        by_path.setdefault(str(data.get("path")), []).append({"id": rec["id"], "data": data})
+    if tok is not None:
+        _put(_index_cache, key, (tok[0], tok[1], by_path))
+    return by_path
+
+
 def _route_of(store: Any, view: View, section_id: str) -> str | None:
+    tok = _token(store)
+    if tok is not None:
+        key = (id(store), id(tok[0]), view, section_id)
+        with _lock:
+            hit = _route_cache.get(key)
+        if hit is not None and hit[0] is tok[0] and hit[1] == tok[1]:
+            return hit[2]
     try:
         sec = store.get("section", section_id, view)
     except NotFound:
-        return None
-    route = (sec.get("data") or {}).get("route")
-    return route if isinstance(route, str) else None
+        route = None
+    else:
+        r = (sec.get("data") or {}).get("route")
+        route = r if isinstance(r, str) else None
+    if tok is not None:
+        _put(_route_cache, key, (tok[0], tok[1], route))
+    return route
 
 
 def in_years(years: Any, year: int | None) -> bool:
@@ -64,9 +126,9 @@ def resolve(store: Any, view: View, path: str, scope: str | None = None) -> Any:
     no record holds the path for that scope or the system."""
     route = _route_of(store, view, scope) if scope is not None else None
     best: tuple[tuple[int, int, str], Any] | None = None
-    for rec in _records(store, view):
-        data = rec.get("data") or {}
-        if data.get("path") != path or not in_years(data.get("years"), view.year):
+    for rec in _index(store, view).get(path, ()):
+        data = rec["data"]
+        if not in_years(data.get("years"), view.year):
             continue
         sc = data.get("scope")
         if sc is None:
@@ -84,7 +146,8 @@ def resolve(store: Any, view: View, path: str, scope: str | None = None) -> Any:
             best = (order, data.get("value"))
     if best is None:
         raise NotFound(f"no param {path}" + (f" for {scope}" if scope else ""))
-    return best[1]
+    value = best[1]
+    return copy.deepcopy(value) if isinstance(value, (dict, list)) else value
 
 
 def review(store: Any) -> dict[str, list[dict[str, Any]]]:

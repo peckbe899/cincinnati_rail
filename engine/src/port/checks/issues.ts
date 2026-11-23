@@ -52,6 +52,8 @@ export function gradeFlag(o: GradeOver): PortFlag {
       warn: o.limit.warn,
       why: o.limit.why,
       phase: o.limit.phase,
+      // the binding limit's train-averaged radius ("a 582 m curve" in the old words); Infinity on a straight
+      R: o.limit.R,
       avg: o.sustained.avg,
       W: o.sustained.W,
       len: o.c1 - o.c0,

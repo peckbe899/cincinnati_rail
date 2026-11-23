@@ -31,11 +31,11 @@ from tests.importers.helpers import DOCLESS, MAIN, METRO, fresh_copy, profile_of
 
 REPO = paths.repo_root()
 GOLDEN = REPO / "engine" / "test" / "golden" / "old_page"
-TYPE_EXCEPTIONS = {
-    "Line_10": "docless: its levels are the level solver's, whose ground misses the RER lines' drawn ground across it "
-    "(the RER sections are not in the hub yet, slice 2), so the Ohio approach differs over 158 m",
-}
-"""Lines whose drawn type differs from the old page's somewhere, each with its reason."""
+TYPE_EXCEPTIONS: dict[str, str] = {}
+"""Lines whose drawn type differs from the old page's somewhere, each with its reason. Line 10 was one (its Ohio
+approach over 158 m): its empty profile solved with no bend point, where the old page, with no doc for it, drew the
+level solver's river bend points; a profile with no saved level and no bend point now solves on that default
+design."""
 
 
 def _golden(route: str) -> dict[str, Any]:
@@ -241,3 +241,18 @@ def test_solve_input_endpoint():
         SectionSolveInput.model_validate(body)
         assert "Line_3" in body["neighbours"] and body["neighbours"]["Line_3"]["source"] == "profile"
         assert all(w not in body["neighbours"] for w in DOCLESS)  # no saved levels: the job's, once it has run
+
+
+def test_a_docless_lines_rail_is_its_default_design(pool):
+    """Lines 10, 11 and 13 have no saved design: the rail the lines crossing them read (their neighbour view) is the
+    old page's default design, its levels and its river bend points (Line 10's two at the Ohio), marked "default"."""
+    with read_only() as store:
+        ctx = StoreReads(store, MAIN)
+        for route in DOCLESS:
+            want = _golden(route)["levels"]["default_align"]
+            sid = section_of(store, route)["id"]
+            assert neighbour_view(ctx, sid) is None  # nothing saved to read from the records
+            out = _run(NEIGHBOUR, NEIGHBOUR.plan(ctx, sid), pool).meta["neighbour"]
+            assert out["source"] == "default"
+            assert [s["rail"] for s in out["stations"]] == want["st"]
+            assert out["pvi"] == want["pvi"], route

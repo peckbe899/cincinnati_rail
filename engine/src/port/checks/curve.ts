@@ -175,6 +175,8 @@ export function curveGradeFlag(r: CurveGradeRange): PortFlag {
       lim: r.limit.lim,
       why: r.limit.why,
       phase: r.limit.phase,
+      // the binding limit's train-averaged radius ("a 582 m curve" in the old words); Infinity on a straight
+      R: r.limit.R,
       avg: r.sustained.avg,
       W: r.sustained.W,
     },

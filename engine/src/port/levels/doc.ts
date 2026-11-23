@@ -159,6 +159,13 @@ function parseGnd(raw: PortDoc["gnd"] | null): Pt[][] {
 
 const TYPES = new Set<string>(TYPE_CODES);
 
+/**
+ * Whose design the solve drew: Ben's ("saved"), the level solver's for a profile with no saved level and no bend point
+ * ("default": the old page had no doc for such a line and drew defaultAlign's design, 1756), or Ben's with the level
+ * solver's level at each station he has not set ("partial").
+ */
+export type DesignSource = "saved" | "default" | "partial";
+
 /** What alignFromDoc gives: the profile, the stations, ground, canon and rivers it read, and its findings. */
 export interface AlignResult {
   readonly align: Align;
@@ -168,6 +175,10 @@ export interface AlignResult {
   readonly rivers: RiverModel[];
   readonly reframed: boolean;
   readonly flags: PortFlag[];
+  /** whose design this is (DesignSource) */
+  readonly design: DesignSource;
+  /** the live stations (platform ids) whose level is the level solver's, not a saved one */
+  readonly defaulted: readonly string[];
 }
 
 /**
@@ -254,13 +265,21 @@ export function alignFromDoc(input: PortInput, deps: AlignDeps): AlignResult {
   };
   let stations = unslid;
   let canon = canon0;
+  // a live station with a saved level, and a saved bend point: without either the profile holds no design, as the
+  // old page's missing doc, and the level solver's bend points (the river tubes') stay with its levels
+  const savedAt = (s: LiveStation): boolean => !!doc && typeof doc.st[s.platform_id] === "number";
+  const hasDesign = !!doc && (doc.pvi.length > 0 || unslid.some(savedAt));
+  const defaulted = unslid.filter((s) => !savedAt(s)).map((s) => s.platform_id);
+  const design: DesignSource = !hasDesign ? "default" : defaulted.length ? "partial" : "saved";
   if (doc) {
     const st = align.st.slice();
     unslid.forEach((s, i) => {
       const v = doc.st[s.platform_id];
       if (typeof v === "number") st[i] = v;
     });
-    const pvi = doc.pvi.filter((p) => Array.isArray(p) && p.length >= 2).map(([c, z]) => ({ c: +c, z: +z }));
+    const pvi = hasDesign
+      ? doc.pvi.filter((p) => Array.isArray(p) && p.length >= 2).map(([c, z]) => ({ c: +c, z: +z }))
+      : align.pvi.slice();
     const ovr = doc.ovr
       .filter((o) => Array.isArray(o) && o.length >= PORT_RANGE3_LEN)
       .map(([a, b, t]) => [+a, +b, t === "bored" ? "shield" : t] as const)
@@ -298,7 +317,7 @@ export function alignFromDoc(input: PortInput, deps: AlignDeps): AlignResult {
       );
     }
   }
-  return { align, stations, ground, canon, rivers, reframed, flags };
+  return { align, stations, ground, canon, rivers, reframed, flags, design, defaulted };
 }
 
 /**

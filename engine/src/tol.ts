@@ -287,6 +287,10 @@ export const PORT_RIVER_JOIN_STEPS = 1.5;
 export const PORT_DM_PER_M = 10;
 export const PORT_MM_PER_M = 1000;
 
+/** serialize()'s derived summary (3227): km of each type, the steepest grade to 0.1 per mille. */
+export const M_PER_KM = 1000;
+export const PORT_PERMILLE_TENTHS = 10;
+
 /** Propose fill: its side slopes reach the ground within this, per mille over the slope (1716). */
 export const PORT_FILL_SLOPE_TOL = 1e-6;
 

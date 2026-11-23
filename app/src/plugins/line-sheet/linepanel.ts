@@ -8,8 +8,8 @@
 
 import type { SectionSolveInput, SolvedSection, StationFact } from "@cr/engine/contract";
 import type { Units } from "../../core/units.ts";
-import { flagText, fmtCh, fmtG, SEV_COLOURS, TYPES, typeColour } from "./drawing.ts";
-import { flagBody } from "./solved.ts";
+import { flagText, fmtCh, fmtG, fmtGap, SEV_COLOURS, TYPES, typeColour } from "./drawing.ts";
+import { issueText, type Words, wordsIn } from "./solved.ts";
 
 /** The colour of each issue kind's tag (ISS_CAT 2136). */
 export const KIND_COLOURS: Record<string, string> = {
@@ -72,14 +72,91 @@ export interface IssueRow {
 
 const SEV_OF = { error: "error", warn: "warn", info: "note" } as const;
 
+/** The station flags the whole solve lists itself (its Tunnel method and Unbuildable findings, as the old page did):
+ * from station.facts@1 they are left out of the list once the whole solve is in, so no finding is listed twice. */
+const SOLVE_LISTS = new Set([
+  "station_tbm_before_phase_3",
+  "station_box_past_cc_max",
+  "station_mined_in_box_stretch",
+  "station_box_roof_out_of_ground",
+]);
+
+/** The old page's names of the access types (ACCESS 467-477). */
+const ACCESS_LABEL: Record<string, string> = {
+  surface: "Surface station",
+  platform_level: "Platform level",
+  platform_level_xu: "Platform level, crossunder",
+  end_halls: "End ticket halls",
+  mezzanine: "Mezzanine",
+  mezzanine_full: "Full-length mezzanine",
+  mined_hall: "Street hall, mined station",
+  deep: "Deep station",
+  elevated_mezzanine: "Elevated, mezzanine under",
+};
+
+/**
+ * A station flag in the old issue list's words (designChecks 2087-2101, stationAccess 519-526), or null to word it
+ * as the station panel does (a flag the old page had no row for).
+ */
+export function stationIssueText(
+  f: { kind: string; sev: string; data?: unknown },
+  station: string,
+  w: Words,
+  name: (pid: string) => string,
+  cOf: (pid: string) => number | null,
+  myC: number,
+): string | null {
+  const d = (f.data ?? {}) as Record<string, unknown>;
+  const n = (k: string) => (typeof d[k] === "number" ? (d[k] as number) : Number.NaN);
+  const lit = w.input?.literals;
+  const access = ACCESS_LABEL[String(d.access)] ?? String(d.access);
+  const who = d.source === "ben" ? "Ben" : "rule";
+  switch (f.kind) {
+    case "platform_grade_over":
+      return `${station} platform at ${fmtG(n("grade_permille"))} is over the ${n("limit_permille")}‰ station limit`;
+    case "platform_s_curve":
+      return `${station} platform is on an S-curve (turns ${n("pos_deg").toFixed(0)}° one way and ${n("neg_deg").toFixed(0)}° the other inside the span)${f.sev === "error" ? ": unfinished, a station needs a straight or a single curve" : ": small wiggle in the drawing"}`;
+    case "platform_curve": {
+      const R = n("R_m");
+      const what = `${station} platform on a ${Number.isFinite(R) ? `${Math.round(R)} m` : "straight"} curve: extra gap ${fmtGap(n("out_m"))} outside face, ${fmtGap(n("inn_m"))} inside face`;
+      if (d.level === "error" && !d.gapfill)
+        return `${what} (under ${lit?.PLAT_R_ERR ?? 600} m: needs gap fillers as a named exception, or slide or move the platform)`;
+      return d.level === "error" ? `${what}: named exception with gap fillers` : what;
+    }
+    case "platform_slide_over":
+      return `${station} platform slid ${n("slide_m").toFixed(0)} m from its point (the Deck allows ${n("limit_m")} m); slide it back or move the station point on the Deck`;
+    case "platform_overlap": {
+      const other = String(d.other);
+      const oc = cOf(other);
+      const [a, b] = oc != null && oc < myC ? [name(other), station] : [station, name(other)];
+      return `${a} and ${b} platforms overlap (centres ${n("apart_m").toFixed(0)} m apart); slide one or remove a station`;
+    }
+    case "access_crossunder":
+      return `${station}: ${d.island ? "an island" : "an interchange"} shallower than D_HALL (${w.z(n("depth_m"), 1)} of ${w.z(n("d_hall_m"), 2)} ${w.u}): platform level with a crossunder; a hall needs the rail ${w.z(n("d_hall_m") - n("depth_m"), 1)} ${w.u} deeper`;
+    case "access_no_year":
+      return `${station}: no opening year in the Chronology: the access type falls back to the line's phase (${String(d.phase)}), drawn dashed`;
+    case "access_hall_too_shallow":
+      return `${station}: ${access} (${who}) needs the rail at least ${w.z(n("d_hall_m"), 2)} ${w.u} down for the hall over the box; it is ${w.z(n("depth_m"), 2)}: lower the station, or choose platform level`;
+    case "access_mezzanine_clearance":
+      return `${station}: ${access} (${who}) needs ${w.z(n("need_m"), 2)} ${w.u} clear under the platform deck (the rail ${w.z(n("rail_over_ground_m"), 2)} ${w.u} over the ground); ${Number.isFinite(n("under_m")) ? `there is ${w.z(n("under_m"), 2)}` : "no ground here"}: raise the station`;
+    case "access_not_mezzanine_on_elevated":
+      return `${station}: ${access} chosen for an elevated station: the platforms are reached from a mezzanine under them`;
+    case "access_hall_over_mined":
+      return `${station}: ${access} (${who}) over a mined station: there is no box roof to build the hall on; choose a street hall`;
+    default:
+      return null;
+  }
+}
+
 /** Every issue of the line, the whole solve's findings and the stations' flags, as the old list held them. */
 export function issueRows(
   solved: SolvedSection | null,
   facts: readonly StationFact[] | null,
   units: Units,
   name: (pid: string) => string,
+  input: SectionSolveInput | null = null,
 ): IssueRow[] {
-  const m = (v: number, digits = 1) => `${units.format(v, "m", digits)} ${units.label("m")}`;
+  const w = wordsIn(units, input, solved);
   const out: IssueRow[] = [];
   (solved?.flags ?? []).forEach((f, i) => {
     // the stretch notes too: the old list carried them (Tunnel method), though no marker is drawn for them
@@ -92,7 +169,7 @@ export function issueRows(
       page: f.page,
       sev: SEV_OF[f.sev],
       c: f.c,
-      text: flagBody(f, m),
+      text: issueText(f, w),
       rule: f.rule,
       grp: f.pending ? "pending" : cross ? "cross" : "own",
       ...(f.fix
@@ -107,15 +184,20 @@ export function issueRows(
       ...(f.clear ? { clear: { c0: f.clear.c0, c1: f.clear.c1, station } } : {}),
     });
   });
+  const cOf = new Map((facts ?? []).map((s) => [s.platform_id, s.c_m]));
   for (const s of facts ?? []) {
     if (s.deleted) continue;
     s.flags.forEach((f, j) => {
+      if (solved && SOLVE_LISTS.has(f.kind)) return;
+      const text =
+        stationIssueText(f, name(s.platform_id), w, name, (p) => cOf.get(p) ?? null, s.c_m) ??
+        `${name(s.platform_id)}: ${flagText(f, units, name)}`;
       out.push({
         key: `f${s.platform_id}:${j}`,
         page: stationPage(f.kind),
         sev: SEV_OF[f.sev as keyof typeof SEV_OF] ?? "note",
         c: s.c_m,
-        text: `${name(s.platform_id)}: ${flagText(f, units, name)}`,
+        text,
         rule: f.rule,
         grp: "own",
         station: s.platform_id,
@@ -321,7 +403,7 @@ export function buildLinePanel(c: LineCtx): HTMLElement {
   root.append(fold("summary", el("h3", { textContent: `${c.line} summary` }), kv, types, readyRow));
 
   // ---- the issues (renderIssues 2928-2950)
-  const all = issueRows(s, c.facts, u, c.name);
+  const all = issueRows(s, c.facts, u, c.name, c.ssi);
   const hide = hiddenFilters();
   const mine = all.filter((x) => x.grp !== "pending");
   const pend = all.filter((x) => x.grp === "pending");

@@ -487,6 +487,43 @@ export const SolvedSection = z
     }),
     flags: z.array(SolvedFlag),
     levels: z.object({ st: z.array(opt), unset: z.array(z.int()) }),
+    design: z
+      .object({
+        source: z.enum(["saved", "default", "partial"]),
+        note: z.string(),
+        pvi: z.array(z.object({ c: z.number(), z: z.number() })),
+        st: z.record(z.string(), opt).meta({ description: "The rail level solved at each live platform." }),
+        so: z.record(z.string(), z.number()).meta({ description: "The slides solved (a reframed profile's)." }),
+        defaulted: z.array(z.string()),
+        reframed: z.boolean(),
+      })
+      .meta({
+        description:
+          "Whose design was solved: Ben's (saved), the level solver's for a profile with no saved level and no bend point (default: never written as his record), or his with the level solver's level at each station he has not set (partial); the levels, slides and bend points solved (the default's river bend points, a reframed profile's mapped ones), the stations at a default level, and whether the profile was reframed.",
+      }),
+    derived: z
+      .object({
+        stations: z.array(
+          z.object({
+            name: z.string(),
+            c: z.number(),
+            point_c: z.number(),
+            rail: opt,
+            ground: opt,
+            depth: opt,
+            type: TypeName,
+          }),
+        ),
+        summary: z.object({
+          km_by_type: z.record(z.string(), z.number()),
+          max_grade_permille: z.number(),
+          grades_over_limit: z.int(),
+        }),
+      })
+      .meta({
+        description:
+          "The doc's derived members as the old page's serialize() wrote them on save (R6): per live station its name, centre, drawn point, rail, ground and depth to the centimetre and type; the km of each type, the steepest grade and the grades over the limit. Derived, never Ben's edit.",
+      }),
   })
   .meta({
     title: "SolvedSection",

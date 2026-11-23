@@ -14,6 +14,7 @@ import { design } from "../vertical/design.ts";
 import { railGrid } from "../vertical/rail.ts";
 import { vertices } from "../vertical/vertices.ts";
 import { radii } from "./checks/curve.ts";
+import { type Derived, derivedDoc } from "./checks/derived.ts";
 import { designChecks } from "./checks/design.ts";
 import { allIssues, curveAllowance, curveGradeRanges, drawingFlags, gndChecks } from "./checks/index.ts";
 import { computeSummary, riverChecks } from "./checks/summary.ts";
@@ -28,7 +29,7 @@ import {
   viaductSpans,
 } from "./ground/index.ts";
 import { stationHalls } from "./halls.ts";
-import { alignFromDoc } from "./levels/doc.ts";
+import { alignFromDoc, type DesignSource } from "./levels/doc.ts";
 import { defaultAlign } from "./levels/levels.ts";
 import {
   effOvr,
@@ -79,6 +80,10 @@ export interface SolvedSection extends PortSolved {
   readonly model: TypedModel;
   /** alignFromDoc's own findings (reframed, locks kept, levels unset) */
   readonly docFlags: PortSolved["flags"];
+  /** the doc's derived members as the page's serialize() wrote them on save (R6) */
+  readonly derived: Derived;
+  /** whose design was solved, the stations at the level solver's level, and whether the profile was reframed */
+  readonly design: { readonly source: DesignSource; readonly defaulted: readonly string[]; readonly reframed: boolean };
 }
 
 /** chrSegments (1077): the line's Chronology segments between its stations, from the table. The page built the list
@@ -114,7 +119,11 @@ export function chronologyOf(input: PortInput): ChrSegment[] {
 }
 
 /** The SectionModel of an input: the profile read onto the live stations, the rail, the ground, canon and rivers. */
-export function buildModel(input: PortInput): { model: SectionModel; docFlags: PortSolved["flags"] } {
+export function buildModel(input: PortInput): {
+  model: SectionModel;
+  docFlags: PortSolved["flags"];
+  design: SolvedSection["design"];
+} {
   const grid = gridOf(input.length, input.step);
   const read = alignFromDoc(input, ALIGN_DEPS);
   const { align, stations } = read;
@@ -159,12 +168,16 @@ export function buildModel(input: PortInput): { model: SectionModel; docFlags: P
     curve: { step: input.literals.radii.step, radii: R, allowance: curveAllowance(R, S) },
     halls: [],
   };
-  return { model, docFlags: read.flags };
+  return {
+    model,
+    docFlags: read.flags,
+    design: { source: read.design, defaulted: read.defaulted, reframed: read.reframed },
+  };
 }
 
 /** One section's whole solve (section.solve@1), on P1's TYPES_MODULE unless a stand-in is given. */
 export function solveSection(input: PortInput, T: TypesModule = TYPES_MODULE): SolvedSection {
-  const { model, docFlags } = buildModel(input);
+  const { model, docFlags, design: whose } = buildModel(input);
   const metro = input.system !== "rer";
   const types = metro ? solveTypes(model) : openTypes(model);
   let m: TypedModel = { ...model, types, spans: [] };
@@ -233,5 +246,7 @@ export function solveSection(input: PortInput, T: TypesModule = TYPES_MODULE): S
     curveGrade,
     model: m,
     docFlags,
+    design: whose,
+    derived: derivedDoc(m, summary, T),
   };
 }

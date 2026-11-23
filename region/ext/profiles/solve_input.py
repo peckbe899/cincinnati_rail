@@ -550,6 +550,10 @@ def _approach_seed(ctx: Any, route: str) -> list[Any]:
 # ------------------------------------------------------------------------------------------------- neighbours
 
 
+REFRAME_TOL_M = 0.05
+"""A saved point this far from its stop's is in another frame (reframeDoc 1849; engine PORT_REFRAME_TOL_M)."""
+
+
 def needs_levels(ctx: Any, section_id: str) -> bool:
     """Whether a live station of the section has no saved level (its neighbour view needs the level solver's)."""
     g = gather(ctx, section_id)
@@ -558,6 +562,67 @@ def needs_levels(ctx: Any, section_id: str) -> bool:
     return any(
         not isinstance(st.get(p["id"]), (int, float)) for _, p in g.ordered_platforms() if p["id"] not in deleted
     )
+
+
+def frame_moved(ctx: Any, section_id: str) -> bool:
+    """Whether the profile was saved against other stop points than the line's now (its ``frame``): the solve maps
+    it onto them (reframeDoc, platform.tie.saved_profile_own_frame), as the old page did on load (Line 2b)."""
+    g = gather(ctx, section_id)
+    frame = _frame(g.profile_data.get("frame"))
+    if frame is None:
+        return False
+    deleted = set(g.profile_data.get("del") or [])
+    for stop, p in g.ordered_platforms():
+        saved = frame["point_c"].get(p["id"])
+        if p["id"] not in deleted and saved is not None and abs(saved - float(stop["data"]["c"])) > REFRAME_TOL_M:
+            return True
+    return False
+
+
+def needs_design(ctx: Any, section_id: str) -> bool:
+    """Whether the design the section is drawn with is not the saved profile as it stands: a station with no saved
+    level (the level solver's, and with no design at all its river bend points too: Lines 10, 11 and 13), or a
+    profile in another frame (Line 2b: the lines crossing it read it mapped onto the current stops, as section.solve@1
+    and the old page draw it). Then the section's rail as the lines crossing it read it is its solve's."""
+    return needs_levels(ctx, section_id) or frame_moved(ctx, section_id)
+
+
+def design_of(out: Mapping[str, Any]) -> dict[str, Any]:
+    """What a ``section.solve@1`` answer says of the design it solved, by platform id: ``source`` (saved, default,
+    partial), ``note``, ``reframed``, ``defaulted``, the levels ``st``, the slid centres ``c``, the bend points
+    ``pvi``. Never written as Ben's record: it is what the rail is drawn with until he edits."""
+    d = out.get("design") or {}
+    return {
+        "source": d.get("source", "saved"),
+        "note": d.get("note", "saved"),
+        "reframed": bool(d.get("reframed")),
+        "defaulted": list(d.get("defaulted") or []),
+        "st": {s["platform_id"]: s["level"] for s in out.get("stations") or []},
+        "c": {s["platform_id"]: s["c"] for s in out.get("stations") or []},
+        "pvi": [{"c": float(p["c"]), "z": float(p["z"])} for p in d.get("pvi") or []],
+    }
+
+
+def with_design(si: Mapping[str, Any], design: Mapping[str, Any] | None) -> dict[str, Any]:
+    """A SectionInput (``vertical.rail@1``'s) drawn on ``design`` (``design_of``): each station with no saved level
+    at the design's, and, for a default or reframed design, the design's bend points and (reframed) its slid centres.
+    A saved design in its own frame leaves the input as it is."""
+    if not design or (design.get("source") == "saved" and not design.get("reframed")):
+        return dict(si)
+    st, cs = design.get("st") or {}, design.get("c") or {}
+    stations = []
+    for s in si["stations"]:
+        row = dict(s)
+        pid = row["platform_id"]
+        if row.get("level_m") is None and isinstance(st.get(pid), (int, float)):
+            row["level_m"] = float(st[pid])
+        if design.get("reframed") and isinstance(cs.get(pid), (int, float)):
+            row["c_m"] = float(cs[pid])
+        stations.append(row)
+    out = {**si, "stations": stations}
+    if design.get("source") == "default" or design.get("reframed"):
+        out["pvi"] = [{"c_m": p["c"], "z_m": p["z"]} for p in design.get("pvi") or []]
+    return out
 
 
 def neighbour_view(
@@ -595,6 +660,7 @@ def neighbour_view(
         row["sg"] = float(sg.get(pid) or 0.0)
         if template:
             row["platform_id"] = pid
+            row["point_c"] = float(stop["data"]["c"])
         stations.append(row)
     params = params_of(ctx, g.section)
     sett = settings_of(ctx, system, scope)
@@ -635,20 +701,34 @@ def neighbour_view(
     }
 
 
-def fill_levels(view: Mapping[str, Any], levels: Mapping[str, Any]) -> dict[str, Any] | None:
-    """A ``neighbour_view(template=True)`` with each unset rail from ``levels`` (platform id to level); None while a
-    station still has none."""
+def fill_levels(
+    view: Mapping[str, Any], levels: Mapping[str, Any], design: Mapping[str, Any] | None = None
+) -> dict[str, Any] | None:
+    """A ``neighbour_view(template=True)`` with each unset rail from ``levels`` (platform id to level), and, when the
+    line's own solve drew its default design or reframed its profile (``design``, ``design_of`` of section.solve@1's
+    answer), that design's bend points and (reframed) its slid centres: the design the lines crossing it read is the
+    one its own sheet draws, as on the old page. None while a station still has none."""
+    reframed = bool(design and design.get("reframed"))
+    centres = (design or {}).get("c") or {}
     stations = []
     for s in view["stations"]:
         z = s["rail"] if s["rail"] is not None else levels.get(s.get("platform_id"))
         if not isinstance(z, (int, float)):
             return None
-        stations.append({"c": s["c"], "rail": float(z), "sg": s["sg"]})
-    return {**view, "stations": stations}
+        c = centres.get(s.get("platform_id")) if reframed else None
+        stations.append({"c": float(c) if isinstance(c, (int, float)) else s["c"], "rail": float(z), "sg": s["sg"]})
+    out = {**view, "stations": stations}
+    if design is not None and (design.get("source") == "default" or reframed):
+        out["pvi"] = [{"c": float(p["c"]), "z": float(p["z"])} for p in design.get("pvi") or []]
+    return out
 
 
 __all__ = [
     "fill_levels",
+    "design_of",
+    "frame_moved",
+    "needs_design",
+    "with_design",
     "CANON_FILE",
     "CONTRACT",
     "LITERALS",

@@ -3631,6 +3631,40 @@ export type XProfilesGetRouteDocResponses = {
 
 export type XProfilesGetRouteDocResponse = XProfilesGetRouteDocResponses[keyof XProfilesGetRouteDocResponses];
 
+export type XProfilesGetDesignData = {
+    body?: never;
+    path: {
+        /**
+         * Section Id
+         */
+        section_id: string;
+    };
+    query?: never;
+    url: '/api/v1/x/profiles/sections/{section_id}/design';
+};
+
+export type XProfilesGetDesignErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type XProfilesGetDesignError = XProfilesGetDesignErrors[keyof XProfilesGetDesignErrors];
+
+export type XProfilesGetDesignResponses = {
+    /**
+     * Response X Profiles Get Design
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type XProfilesGetDesignResponse = XProfilesGetDesignResponses[keyof XProfilesGetDesignResponses];
+
 export type XProfilesGetSectionInputData = {
     body?: never;
     path: {

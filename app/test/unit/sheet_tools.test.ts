@@ -16,6 +16,7 @@ import {
   exportGeoJson,
   exportJson,
   profileByKey,
+  stationTypeAt,
   zipBytes,
 } from "../../src/plugins/line-sheet/exports.ts";
 import { buildLinePanel, issueRows, stationPage } from "../../src/plugins/line-sheet/linepanel.ts";
@@ -376,6 +377,12 @@ describe("the settings rows (R20)", () => {
 });
 
 describe("the exports (R16 to R19)", () => {
+  it("a station's type is the old export's: the drawn type on the rail, its own type off it (Line 6 Forest)", () => {
+    // Forest: level 219.7, the drawn rail 215.8 at its centre (a box), the station at its own level at grade
+    expect(stationTypeAt(219.7, 215.8, "cutcover", "atgrade")).toBe("atgrade");
+    expect(stationTypeAt(162.7, 162.71, "cutcover", "shield")).toBe("cutcover");
+    expect(stationTypeAt(null, 162.7, "cutcover", null)).toBe("cutcover");
+  });
   const m: ExportModel = {
     id: "Line_X",
     line: "Line X",

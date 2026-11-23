@@ -271,8 +271,16 @@ that tier's status or something a result reads.
 
 `crhub serve --no-live` (or `"live": {"enabled": false}` in `configs\local.json`) serves without watching: serve then
 reports changed sources at start as dry runs, to apply with `crhub imports apply <run>`. Other settings under `"live"`
-in `configs\local.json`: `settle_s` (1.5), `poll_s` (0.25) and `old_hub_db` (`hub/hub.db`; null to stop watching the
-old hub's database). `crhub rebuild` and CI still read the line files and the old hub's seed from git.
+in `configs\local.json`: `settle_s` (1.5, counted from the file's own write time), `poll_s` (0.25), `yield_s` (0.4:
+after an import that changed something, the next one waits this long so the open sheets read the change first) and
+`old_hub_db` (`hub/hub.db`; null to stop watching the old hub's database). `crhub rebuild` and CI still read the line
+files and the old hub's seed from git.
+
+Lines 10, 11 and 13 have no saved design: the hub solves their default design (the old page's levels and river bend
+points), draws their rail with it, marked "default design (not saved)", and gives it to every line that crosses them.
+It is never written to the profile; it becomes the design only when the line is edited. A profile saved against
+older stop points (Line 2b) is solved, and read by the lines crossing it, mapped onto the current stops, as the old
+page read it; its rail result is still the profile as saved.
 
 ## Commands
 

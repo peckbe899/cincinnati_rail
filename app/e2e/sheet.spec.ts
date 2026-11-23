@@ -11,6 +11,7 @@ import {
   settled,
   solveRev,
   test,
+  untraced,
 } from "./helpers.ts";
 
 /** Open the Line 6 sheet in a layer; returns the section and profile ids. */
@@ -130,8 +131,10 @@ test("PVI level edit re-solves locally under 16 ms and saves version 2", async (
   // Each keystroke re-solves in the worker (keystrokes that land during a solve coalesce into the next one); the
   // solve of the final value takes well under a frame.
   const z = Number(await firstPviLevel(page).inputValue()) + 1.25;
-  await typeLevel(page, z.toFixed(3));
-  const ms = await settled(page, before);
+  const ms = await untraced(page, async () => {
+    await typeLevel(page, z.toFixed(3));
+    return settled(page, before);
+  });
   expect(ms).toBeLessThan(16);
   await expect(firstPviLevel(page)).toHaveValue(z.toFixed(3));
 

@@ -30,6 +30,7 @@ import { liveBoard } from "../../core/live.ts";
 import { shortId } from "../../core/names.ts";
 import type {
   BandData,
+  BandDef,
   Handle,
   Host,
   MountedPane,
@@ -48,6 +49,7 @@ import { createEngine, type EngineHandle } from "../../engine/client.ts";
 import { MAXIMISE_REQUEST, MAXIMISED_EVENT } from "../../shell/maximise.ts";
 import { stationLevel } from "./bands.ts";
 import { bendCard, groundCard, helpCard } from "./cards.ts";
+import { bbox, grow, heldInside, type Rect, railSpan } from "./dirty.ts";
 import {
   flagText,
   fmtCh,
@@ -61,7 +63,15 @@ import {
   valueAt,
   worstSeverity,
 } from "./drawing.ts";
-import { download, type ExportModel, exportGeoJson, exportJson, exportKmz, profileByKey } from "./exports.ts";
+import {
+  download,
+  type ExportModel,
+  exportGeoJson,
+  exportJson,
+  exportKmz,
+  profileByKey,
+  stationTypeAt,
+} from "./exports.ts";
 import { buildLinePanel, type CheckRow, type IssueRow, type PaintRowView } from "./linepanel.ts";
 import {
   addPvi,
@@ -97,7 +107,8 @@ import {
 } from "./model.ts";
 import { buildPanel, keepFocus } from "./panel.ts";
 import { buildSettings, type SettingParam } from "./settings.ts";
-import { issueAt, runAt, type ShowMode, sampleAt } from "./solved.ts";
+import { issueAt, labelBoxes, levelExtent, resetLabels, type ShowMode, sampleAt, typeAtSample } from "./solved.ts";
+import { StaticLayer, sameKey, staticPrefix } from "./static_layer.ts";
 import {
   addGroundAt,
   BRUSH_LABELS,
@@ -537,6 +548,43 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   let addButton: HTMLButtonElement | null = null;
   let solving = false;
   let again = false;
+  /** A rail solve is asked for and starts after the next frame (solve()). */
+  let solveDue = false;
+  /** Starts the due solve when no frame comes (a hidden page): DUE_MS after it was asked for. */
+  let dueTimer: ReturnType<typeof setTimeout> | null = null;
+  const DUE_MS = 100;
+  const WARM_SOLVES = 16;
+  /** A task right after the frame: the solve due starts there, after the frame's paint and raster. */
+  const afterFrame = new MessageChannel();
+  afterFrame.port1.onmessage = () => startDue();
+  let dueSince = 0;
+  /** The last key down or up in the sheet, and how long a burst of keys may hold a solve back. */
+  let lastKeyAt = -1e9;
+  const KEY_QUIET_MS = 8;
+  const DUE_MAX_MS = 120;
+  const keyAt = () => {
+    lastKeyAt = performance.now();
+  };
+  el.addEventListener("keydown", keyAt, true);
+  el.addEventListener("keyup", keyAt, true);
+  /** Work that waits for the rail solve out to land (landed() runs it before the paint). */
+  const railWaiters: (() => void)[] = [];
+  /** Run fn now, or as the rail solve out lands; resolves once it ran. */
+  const afterRail = (fn: () => void): Promise<void> => {
+    if (!solving) {
+      fn();
+      return Promise.resolve();
+    }
+    return new Promise((resolve) =>
+      railWaiters.push(() => {
+        try {
+          fn();
+        } finally {
+          resolve();
+        }
+      }),
+    );
+  };
   let generation = 0;
   let refreshTimer: ReturnType<typeof setTimeout> | null = null;
   // The hub keeps this pane's goal fresh (watch_s) at priority 0 while the pane has the focus and 1 while it is open;
@@ -629,12 +677,46 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     profileInfo.dataset.layer = p ? p.layer : "";
   };
 
+  /**
+   * Ask for a rail solve of the draft as it is now. It starts in a task of its own right after the next frame (or
+   * at once on a page with no frames), never inside a frame's paint and raster: one rail solve and one paint per
+   * frame, never at once, so its answer never waits on a paint (speed; see draw()).
+   */
   const solve = async () => {
     if (!input) return;
     if (solving) {
       again = true;
       return;
     }
+    solveInfo.dataset.busy = "1";
+    if (solveDue) return;
+    solveDue = true;
+    dueSince = performance.now();
+    draw();
+    dueTimer ??= setTimeout(startDue, DUE_MS);
+  };
+  /** Start the solve that is due, unless one is out (it lands first). A burst of keys (a level typed into a cell)
+   * is let finish first, up to DUE_MAX_MS: Chrome holds a worker's answer back until the frame after a key, so a
+   * solve started between two keys of a burst waits a frame for nothing, and its answer is stale at once. */
+  const startDue = () => {
+    if (dueTimer) clearTimeout(dueTimer);
+    dueTimer = null;
+    if (!solveDue || solving) return;
+    const now = performance.now();
+    if (now - lastKeyAt < KEY_QUIET_MS && now - dueSince < DUE_MAX_MS) {
+      requestAnimationFrame(() => afterFrame.port2.postMessage(0));
+      dueTimer = setTimeout(startDue, DUE_MS);
+      return;
+    }
+    void runSolve();
+  };
+  const runSolve = async () => {
+    if (!input) {
+      solveDue = false;
+      solveInfo.dataset.busy = "0";
+      return;
+    }
+    solveDue = false;
     solving = true;
     solveInfo.dataset.busy = "1";
     const gen = generation;
@@ -678,13 +760,15 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
         profileDue = false;
         showProfile();
       }
-      draw();
+      // Edits made while this solve ran are solved after the paint of this one (the frame's callback starts it), so
+      // a solve never waits on a paint and a paint never shows a rail older than its marks (speed).
       if (again) {
         again = false;
-        void solve();
-      } else {
-        solveInfo.dataset.busy = "0";
-      }
+        solveDue = true;
+        dueSince = performance.now();
+        dueTimer ??= setTimeout(startDue, DUE_MS);
+      } else if (!solveDue) solveInfo.dataset.busy = "0";
+      landed();
     }
   };
 
@@ -708,7 +792,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     if (factsTimer) clearTimeout(factsTimer);
     factsTimer = setTimeout(() => {
       factsTimer = null;
-      if (solving) factsSoon();
+      if (solving || solveDue) factsSoon();
       else void solveFacts();
     }, 30);
   };
@@ -729,18 +813,25 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
         engineBuild: host.events.status().engine_build ?? undefined,
       });
       if (gen !== generation) return;
-      facts = (out.result as { stations: StationFact[] }).stations;
-      fullSoon();
-      solveInfo.dataset.factsMs = String(performance.now() - t0);
-      solveInfo.dataset.factsRev = String(Number(solveInfo.dataset.factsRev ?? 0) + 1);
-      showSummary();
-      renderLineSoon();
-      if (!factsAgain) {
-        tableDue = false;
-        refreshTable();
-        renderCard();
-      }
-      draw();
+      const apply = () => {
+        if (gen !== generation) return;
+        facts = (out.result as { stations: StationFact[] }).stations;
+        fullSoon();
+        solveInfo.dataset.factsMs = String(performance.now() - t0);
+        solveInfo.dataset.factsRev = String(Number(solveInfo.dataset.factsRev ?? 0) + 1);
+        showSummary();
+        renderLineSoon();
+        // the tables follow at the end of a drag (endDrag): rebuilding them each step held the frame
+        if (!factsAgain && editingDrag()) tableDue = true;
+        else if (!factsAgain) {
+          tableDue = false;
+          refreshTable();
+          renderCard();
+        }
+        draw();
+      };
+      // never while a rail solve is out: its answer would wait behind the tables (speed)
+      await afterRail(apply);
     } catch (e) {
       solveInfo.title = `station facts failed: ${String((e as Error).message ?? e)}`;
       tableDue = false;
@@ -767,7 +858,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     if (fullTimer) clearTimeout(fullTimer);
     fullTimer = setTimeout(() => {
       fullTimer = null;
-      if (solving || factsBusy || (drag && drag.kind !== "pan" && drag.kind !== "overview")) fullSoon();
+      if (solving || solveDue || factsBusy || (drag && drag.kind !== "pan" && drag.kind !== "overview")) fullSoon();
       else void solveFull();
     }, FULL_PAUSE_MS);
   };
@@ -807,14 +898,17 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
         { engineBuild: host.events.status().engine_build ?? undefined, base: SSI_STASH, typed: SOLVED_TYPED },
       );
       if (gen !== generation) return;
-      solved = out.result as SolvedSection;
-      solveInfo.dataset.fullMs = String(performance.now() - t0);
-      solveInfo.dataset.fullEngineMs = String(out.ms);
-      solveInfo.dataset.fullRev = String(Number(solveInfo.dataset.fullRev ?? 0) + 1);
-      if (rev !== editRev) fullAgain = true;
-      draw();
-      renderLineSoon();
-      if (selected?.kind === "pvi" || selected?.kind === "gp") renderCard();
+      await afterRail(() => {
+        if (gen !== generation) return;
+        solved = out.result as SolvedSection;
+        solveInfo.dataset.fullMs = String(performance.now() - t0);
+        solveInfo.dataset.fullEngineMs = String(out.ms);
+        solveInfo.dataset.fullRev = String(Number(solveInfo.dataset.fullRev ?? 0) + 1);
+        if (rev !== editRev) fullAgain = true;
+        draw();
+        renderLineSoon();
+        if (selected?.kind === "pvi" || selected?.kind === "gp") renderCard();
+      });
     } catch (e) {
       solveInfo.dataset.fullError = String((e as Error).message ?? e);
     } finally {
@@ -877,9 +971,19 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   const warm = async (gen: number) => {
     if (!input) return;
     const inp = solveInput(input, data(), frame);
-    for (let i = 0; i < 4 && gen === generation; i++) {
+    // The solves an edit makes, a level and a platform grade moved each way, until the worker's compiler has them:
+    // the first edit then solves as fast as the hundredth (speed).
+    for (let i = 0; i < WARM_SOLVES && gen === generation; i++) {
+      const d = i % 2 ? 0.5 : -0.5;
+      const k = i % Math.max(1, inp.pvi.length);
+      const j = i % Math.max(1, inp.stations.length);
+      const step = {
+        ...inp,
+        pvi: inp.pvi.map((p, n) => (n === k ? { ...p, z_m: p.z_m + d } : p)),
+        stations: inp.stations.map((s, n) => (n === j ? { ...s, grade_permille: (s.grade_permille ?? 0) + d } : s)),
+      };
       try {
-        await host.engine.solve("vertical.rail", inp);
+        await host.engine.solve("vertical.rail", step);
       } catch {
         return;
       }
@@ -1660,8 +1764,10 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     if (f !== null && Number.isFinite(f)) return f;
     return input?.ground ? valueAt(input.ground.z_m, input.ground.step_m, c) : null;
   };
-  const railNow = (c: number): number | null => (local ? valueAt(local.rail_m, local.grid.step_m, c) : null);
-  const typeNow = (c: number): string | null => (solved ? (runAt(solved.type_runs, c)?.[0] ?? null) : null);
+  // read between the 2 m samples, as the old railAt: at a bend point off the grid ("Rail at the bend", 4+485.3 on
+  // Line 6) the nearest sample was 7 cm off on a 145 per mille change of grade
+  const railNow = (c: number): number | null => (local ? sampleAt(local.rail_m, local.grid.step_m, c) : null);
+  const typeNow = (c: number): string | null => typeAtSample(solved, c);
 
   /** The bend point card of the selected PVI (3110-3133). */
   const bendCardOf = (): HTMLElement | null => {
@@ -1776,7 +1882,9 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     if (lineTimer) return;
     lineTimer = setTimeout(() => {
       lineTimer = null;
-      renderLine();
+      // not while the rail solves or Ben drags (the drag's end asks again): it lays the side panel out (speed)
+      if (solving || solveDue || editingDrag()) renderLineSoon();
+      else renderLine();
     }, 60);
   };
   const renderLine = () => {
@@ -2305,7 +2413,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
           rail,
           ground: f?.ground_m ?? groundBelow(s.c_m),
           depth: f?.depth_m ?? null,
-          type: typeNow(s.c_m) ?? f?.type ?? null,
+          type: stationTypeAt(rail ?? null, railNow(s.c_m), typeNow(s.c_m), f?.type ?? null),
           sg: s.grade_permille ?? 0,
         };
       }),
@@ -2504,8 +2612,12 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     };
     if (input?.ground) scan(input.ground.z_m, input.ground.step_m);
     // a rail only where there is a design: an empty profile's rail is 0 m (hasDesign)
-    if (local && hasDesign(input ? localInput(input, data(), frame) : null)) scan(local.rail_m, local.grid.step_m);
+    const designed = !!local && hasDesign(input ? localInput(input, data(), frame) : null);
+    if (local && designed) scan(local.rail_m, local.grid.step_m);
     for (const p of input?.pvi ?? []) if (p.c_m >= c0 && p.c_m <= c1) scan([p.z_m], 1);
+    // the structure under each bend point, the river and the crossing lines' boxes, as the old yRangeFor
+    const ext = levelExtent({ dv: designed ? local?.dv : undefined, solved, solveInput: ssi }, c0, c1);
+    if (ext) [z0, z1] = [Math.min(z0, ext.lo), Math.max(z1, ext.hi)];
     if (!Number.isFinite(z0)) [z0, z1] = [150, 250];
     const pad = Math.max(3, (z1 - z0) * 0.08);
     z0 -= pad;
@@ -2538,15 +2650,45 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   };
 
   let lastView: SheetView | null = null;
-  // Drawing waits for the next frame, so a burst of keystrokes and solves draws once per frame.
+  // Drawing waits for the next frame, so a burst of keystrokes and solves draws once per frame. One rail solve and
+  // one paint per frame, never at once (speed): the frame paints, then the solve asked for meanwhile starts in a
+  // task right after the frame (its paint and raster done), lands a few ms later and is painted by the next frame.
+  // A frame that comes while a rail solve is out holds its paint until it lands (HOLD_MS at most): the paint would
+  // hold the answer up, and show the old rail under the marks that moved it.
   let frameReq = 0;
+  const HOLD_MS = 50;
+  let heldAt = 0;
   const draw = () => {
     if (frameReq) return;
-    frameReq = requestAnimationFrame(() => {
-      frameReq = 0;
-      paint();
-    });
+    frameReq = requestAnimationFrame(onFrame);
   };
+  const onFrame = () => {
+    frameReq = 0;
+    if (solving) {
+      const now = performance.now();
+      if (!heldAt) heldAt = now;
+      if (now - heldAt < HOLD_MS) return;
+    }
+    heldAt = 0;
+    paint();
+    if (solveDue) afterFrame.port2.postMessage(0);
+  };
+  /** Paint now (a hit test reads what the bands drew). */
+  const paintNow = () => {
+    if (frameReq) {
+      cancelAnimationFrame(frameReq);
+      frameReq = 0;
+    }
+    paint();
+    if (solveDue) afterFrame.port2.postMessage(0);
+  };
+  /** A rail solve landed: the work that waited for it, then the paint on the next frame. */
+  const landed = () => {
+    for (const fn of railWaiters.splice(0)) fn();
+    draw();
+  };
+  /** Whether Ben is dragging something that edits the draft (not a pan). */
+  const editingDrag = () => !!drag && moved && drag.kind !== "pan" && drag.kind !== "overview";
   let shownText = "";
   const paint = () => {
     const p0 = performance.now();
@@ -2565,15 +2707,186 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     const g = canvas.getContext("2d");
     if (!g) return;
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    g.clearRect(0, 0, w, h);
-    const { texts, marks, v } = renderBands(g, w, h, dpr);
+    // A drag step draws again only where it changed things (dirty.ts); any other frame, the whole canvas.
+    const part: { rects: { main: Rect; strips: Rect } | null; key: unknown[] } = { rects: null, key: [] };
+    const prepare = (v: SheetView) => {
+      part.key = frameKey(v, w, h, dpr);
+      part.rects = dragRects(v, w, h, part.key);
+      if (!part.rects) {
+        g.clearRect(0, 0, w, h);
+        return;
+      }
+      const r = part.rects.main;
+      g.save();
+      g.beginPath();
+      g.rect(r.x, r.y, r.w, r.h);
+      g.clip();
+      g.clearRect(r.x, r.y, r.w, r.h);
+    };
+    let out = renderBands(g, w, h, dpr, staticLayer, prepare);
+    if (part.rects) {
+      g.restore();
+      // the strips under the plot (the readout line, the overview) on their own: only the strip bands draw there
+      const r = part.rects.strips;
+      g.save();
+      g.beginPath();
+      g.rect(r.x, r.y, r.w, r.h);
+      g.clip();
+      g.clearRect(r.x, r.y, r.w, r.h);
+      renderBands(g, w, h, dpr, staticLayer, null, (b) => b.axis === "strip");
+      g.restore();
+      const was = painted as NonNullable<typeof painted>;
+      const rects = [part.rects.main, part.rects.strips];
+      if (
+        heldInside(was.marks, out.marks, rects, out.v.x, false) &&
+        heldInside(was.texts, out.texts, rects, out.v.x, true)
+      )
+        dirtyFrames.part++;
+      else {
+        // something changed outside what was drawn (a label thinned away far off): the whole frame, now
+        dirtyFrames.whole++;
+        g.clearRect(0, 0, w, h);
+        out = renderBands(g, w, h, dpr, staticLayer);
+        part.key = frameKey(out.v, w, h, dpr);
+      }
+    }
+    const { texts, marks, v } = out;
+    const ro = marks.find((m) => m.kind === "readout") as
+      | { x0: number; y0: number; x1: number; y1: number }
+      | undefined;
+    painted = {
+      key: part.key,
+      rail: local?.rail_m ?? null,
+      texts,
+      marks,
+      readout: ro ? { x: ro.x0, y: ro.y0, w: ro.x1 - ro.x0, h: ro.y1 - ro.y0 } : null,
+      cursorX: v.cursor === null ? null : v.x(v.cursor),
+      dragAt: dragAt(),
+    };
+    canvas.dataset.staticDraws = String(staticLayer.draws);
+    canvas.dataset.partFrames = String(dirtyFrames.part);
+    canvas.dataset.wholeAfterPart = String(dirtyFrames.whole);
     lastView = v;
     showText(texts);
     lastMarks = marks;
   };
-  /** Every band into a 2D context of w by h CSS pixels, on the sheet's range (the canvas, or an export). */
-  const renderBands = (g: CanvasRenderingContext2D, w: number, h: number, _dpr: number) => {
+  /** What the last frame on the canvas was drawn from, for the next drag step's regions. */
+  let painted: {
+    key: unknown[];
+    rail: ArrayLike<number> | null;
+    texts: SheetText[];
+    marks: SheetMark[];
+    readout: Rect | null;
+    cursorX: number | null;
+    dragAt: [number, number] | null;
+  } | null = null;
+  /** Drag steps drawn in part, and those that had to be drawn whole after all. */
+  const dirtyFrames = { part: 0, whole: 0 };
+  /** Everything but the rail a frame is drawn from: when one of these changed, the frame is drawn whole. */
+  const frameKey = (v: SheetView, w: number, h: number, dpr: number): unknown[] => [
+    w,
+    h,
+    dpr,
+    v.c0,
+    v.c1,
+    v.z0,
+    v.z1,
+    v.plot.x,
+    v.plot.y,
+    v.plot.w,
+    v.plot.h,
+    v.top,
+    host.units.length,
+    show,
+    tool,
+    solved,
+    ssi,
+    input,
+    facts,
+    server,
+    selected?.kind ?? null,
+    staticLayer.draws,
+  ];
+  /** The chainage range of what is dragged: the bend point, or the station's platform. */
+  const dragAt = (): [number, number] | null => {
+    if (drag?.kind === "pvi" && selected?.kind === "pvi") return [selected.c, selected.c];
+    if (drag?.kind === "station" && input) {
+      const id = drag.id;
+      const s = localInput(input, data(), frame).stations.find((x) => x.platform_id === id);
+      const half = input.params.platform_m / 2;
+      return s ? [s.c_m - half, s.c_m + half] : null;
+    }
+    return null;
+  };
+  /** The margin either side of the rail's changed stretch: its grade labels, level tags and joins. */
+  const DIRTY_MARGIN = 100;
+  /**
+   * The regions a drag step changes, or null to draw the whole frame: only while a bend point or a station level is
+   * dragged, on the frame the last one was drawn on. The rail's changed stretch (full height), the strips under the
+   * plot (the readout line, the overview), the cursor line, and the readout box at the pointer, then and now.
+   */
+  const dragRects = (v: SheetView, w: number, h: number, key: unknown[]): { main: Rect; strips: Rect } | null => {
+    const was = painted;
+    if (!was || !local || !was.rail || !editingDrag() || (drag?.kind !== "pvi" && drag?.kind !== "station"))
+      return null;
+    if (!sameKey(was.key, key)) return null;
+    const out: Rect[] = [];
+    const add = (r: Rect | null) => {
+      if (r) out.push(r);
+    };
+    // the dragged bend point or station, where it was and where it is (its marks move before the rail is solved)
+    const at = dragAt();
+    for (const c of [was.dragAt, at])
+      if (c !== null)
+        add(grow({ x: v.x(c[0]) - DIRTY_MARGIN, y: 0, w: v.x(c[1]) - v.x(c[0]) + 2 * DIRTY_MARGIN, h }, 0, w, h));
+    const span = railSpan(was.rail, local.rail_m);
+    if (span) {
+      const step = local.grid.step_m;
+      const xa = v.x(span[0] * step) - DIRTY_MARGIN;
+      const xb = v.x(span[1] * step) + DIRTY_MARGIN;
+      add(grow({ x: xa, y: 0, w: xb - xa, h }, 0, w, h));
+    }
+    const strips = grow({ x: 0, y: v.top, w, h: h - v.top }, 2, w, h);
+    const P = v.plot;
+    for (const x of [was.cursorX, v.cursor === null ? null : v.x(v.cursor)])
+      if (x !== null) add(grow({ x, y: P.y, w: 0, h: h - P.y }, 3, w, h));
+    // the readout box: where it was, and where it goes at the pointer, as the chainage band places it
+    const pt = v.pointer;
+    if (pt && pt.y >= P.y && pt.y <= P.y + P.h) {
+      if (!was.readout) return null;
+      add(grow(was.readout, 2, w, h));
+      const bw = was.readout.w + 40;
+      const bh = was.readout.h + 30;
+      let bx = pt.x + 14;
+      if (bx + bw > P.x + P.w) bx = pt.x - 14 - bw;
+      let by = pt.y + 14;
+      if (by + bh > P.y + P.h) by = Math.max(P.y, pt.y - 14 - bh);
+      add(grow({ x: bx, y: by, w: bw, h: bh }, 2, w, h));
+    } else if (was.readout) add(grow(was.readout, 2, w, h));
+    const main = bbox(out);
+    return main && strips ? { main, strips } : null;
+  };
+  /** What the static bands reported and the label boxes they took, kept with their bitmap. */
+  type StaticKept = {
+    texts: SheetText[];
+    marks: SheetMark[];
+    labels: { x0: number; y0: number; x1: number; y1: number }[];
+  };
+  /** The static bands as a bitmap, copied under the others on each frame (static_layer.ts). */
+  const staticLayer = new StaticLayer<StaticKept>(() => document.createElement("canvas"));
+  /** Every band into a 2D context of w by h CSS pixels, on the sheet's range (the canvas, or an export). With a
+   * static layer, the leading static bands come from its bitmap, drawn again only when what they read changes. */
+  const renderBands = (
+    g: CanvasRenderingContext2D,
+    w: number,
+    h: number,
+    dpr: number,
+    layer: StaticLayer<StaticKept> | null = null,
+    prepare: ((v: SheetView) => void) | null = null,
+    only: ((b: BandDef) => boolean) | null = null,
+  ) => {
     const v = sheetView(w, h);
+    prepare?.(v);
     const texts: SheetText[] = [];
     const marks: SheetMark[] = [];
     const li = input ? localInput(input, data(), frame) : null;
@@ -2604,12 +2917,38 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     };
     let top = v.top;
     const bandMs: Record<string, number> = {};
-    for (const b of bands()) {
+    const list = bands();
+    const head = layer ? staticPrefix(list) : 0;
+    if (head) {
+      const t0 = performance.now();
+      const key = [w, h, dpr, v.c0, v.c1, v.z0, v.z1, v.plot.x, v.plot.y, v.plot.w, v.plot.h];
+      const kept = (layer as NonNullable<typeof layer>).paint(
+        g,
+        [...key, host.units.length, show, solved, ssi, input, li?.ground ?? null],
+        Math.round(w * dpr),
+        Math.round(h * dpr),
+        (bg) => {
+          bg.setTransform(dpr, 0, 0, dpr, 0, 0);
+          const own: StaticKept = { texts: [], marks: [], labels: [] };
+          const sd: BandData = { ...bd, report: (t) => own.texts.push(t), mark: (m) => own.marks.push(m) };
+          resetLabels();
+          for (const b of list.slice(0, head)) b.draw(bg, v, sd);
+          own.labels = labelBoxes();
+          return own;
+        },
+      );
+      texts.push(...kept.texts);
+      marks.push(...kept.marks);
+      // the later bands' labels keep clear of the static bands' ones, as when every band is drawn in order
+      resetLabels(kept.labels);
+      bandMs.static = Math.round((performance.now() - t0) * 10) / 10;
+    }
+    for (const b of list.slice(head)) {
       const t0 = performance.now();
       if (b.axis === "strip") {
-        b.draw(g, { ...v, top }, bd);
+        if (!only || only(b)) b.draw(g, { ...v, top }, bd);
         top += b.height;
-      } else {
+      } else if (!only || only(b)) {
         b.draw(g, v, bd);
       }
       bandMs[b.id] = Math.round((performance.now() - t0) * 10) / 10;
@@ -2623,6 +2962,12 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   (canvas as HTMLCanvasElement & { setRange?: (r: [number, number]) => void }).setRange = (r) => {
     range = clampRange(r);
     draw();
+  };
+  // and a whole frame drawn now, from nothing kept (a test compares it with a drag step drawn in part)
+  (canvas as HTMLCanvasElement & { repaint?: () => void }).repaint = () => {
+    painted = null;
+    staticLayer.reset();
+    paintNow();
   };
   // and the frame they were drawn in, so a test can turn metres into pixels
   (canvas as HTMLCanvasElement & { frame?: () => unknown }).frame = () =>
@@ -2663,11 +3008,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
 
   /** Hit-test the bands at a point, against this sheet's marks (bands are shared by every sheet pane). */
   const hitAt = (x: number, y: number): Handle | null => {
-    if (frameReq) {
-      cancelAnimationFrame(frameReq);
-      frameReq = 0;
-    }
-    paint();
+    paintNow();
     // A bend point wins over a station bar under it, as on the old page (3407-3413).
     const list = bands();
     for (const b of [...list.filter((b) => b.id === "pvi"), ...list.filter((b) => b.id !== "pvi")]) {
@@ -2885,7 +3226,15 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     } else if (at && !moved && at.hit?.kind !== "overview" && !(tool === "paint" && at.hit?.kind !== "flag"))
       selectHit(tool === "ground" && at.hit && at.hit.kind !== "gp" && at.hit.kind !== "flag" ? null : at.hit, at.x);
     else if (was && (was.kind === "station" || was.kind === "slide" || was.kind === "gp")) renderCard();
-    if (was && was.kind !== "pan" && was.kind !== "overview") fullSoon();
+    if (was && was.kind !== "pan" && was.kind !== "overview") {
+      fullSoon();
+      // the tables the drag held back (speed)
+      if (tableDue && !solving && !factsBusy) {
+        tableDue = false;
+        refreshTable();
+        renderCard();
+      }
+    }
     draw();
   };
   canvas.addEventListener("pointerup", endDrag);
@@ -3233,6 +3582,10 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       if (factsTimer) clearTimeout(factsTimer);
       factsEngine?.dispose();
       if (frameReq) cancelAnimationFrame(frameReq);
+      if (dueTimer) clearTimeout(dueTimer);
+      afterFrame.port1.close();
+      el.removeEventListener("keydown", keyAt, true);
+      el.removeEventListener("keyup", keyAt, true);
       if (refreshTimer) clearTimeout(refreshTimer);
       host.status({ id: "sheet.chainage", remove: true });
       stopWatch?.();

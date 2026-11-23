@@ -43,6 +43,9 @@ class StoreReads:
         self.store = store
         self.view = view
         self._params = params or resolve
+        # one request's params, each resolved once: a SectionSolveInput and its neighbours' views read some 200 each,
+        # many of them twice (station_input inside section_solve_input), which was most of the request's time
+        self._memo: dict[tuple[str, str | None], tuple[bool, Any]] = {}
 
     def read(self, kind: str, id: str) -> dict[str, Any] | None:
         try:
@@ -60,12 +63,29 @@ class StoreReads:
                 return out
 
     def param(self, path: str, scope: str | None = None) -> Any:
-        return self._params(self.store, self.view, path, scope)
+        import copy
+
+        k = (path, scope)
+        if k not in self._memo:
+            try:
+                self._memo[k] = (True, self._params(self.store, self.view, path, scope))
+            except NotFound as e:
+                self._memo[k] = (False, e)
+        ok, v = self._memo[k]
+        if not ok:
+            raise v
+        return copy.deepcopy(v) if isinstance(v, (dict, list)) else v
 
     def file(self, uri: str) -> Any:
         from region.core import paths
 
         return paths.resolve(uri)
+
+    def need(self, job_type: str, scope_id: str) -> str:
+        """The reference a job's plan names an upstream result by (``PlanCtx.need``); nothing is planned here."""
+        from region.core.protocols import ref_job
+
+        return ref_job(job_type, scope_id)
 
 
 @dataclass

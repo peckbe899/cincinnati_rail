@@ -26,31 +26,54 @@ from tests.importers.helpers import DOCLESS, LINES, MAIN, METRO, SEED, all_recor
 REPO = paths.repo_root()
 GOLDEN_INPUTS = REPO / "engine" / "test" / "golden" / "inputs"
 BASELINE = REPO / "tests" / "baseline" / "profiles"
-PENDING = {"Line_2b": "pending_port:reframeDoc", **{r: "pending_port:defaultAlign" for r in DOCLESS}}
-SAME = [r for r in METRO if r not in PENDING]
+PENDING = {"Line_2b": "pending_port:reframeDoc"}
+"""Lines 10, 11 and 13 were pending defaultAlign: their rail is now drawn on their default design. Line 2b's rail
+input is still its profile as saved (section.solve@1 and the lines crossing it read it reframed): mapping the rail
+input too keeps every platform centre when a line file moves a stop, which the live sheet test does not expect (a
+ruling for the lead, platform.tie.centre_kept)."""
+FIXED: dict[str, str] = {}
+SAME = [r for r in METRO if r not in PENDING and r not in FIXED]
+DESIGNED = [*DOCLESS, "Line_2b"]
+"""Lines whose record input is not the page's: the rail is drawn on their solve's design (with_design)."""
+RECORD_SAME = [r for r in METRO if r not in DESIGNED]
 
 
 def _run(job, store, sid, engine, view=MAIN):
+    """Plan and run ``job``; an input drawn on the section's own design (``design_from``) gets its rail job's output
+    as the scheduler would hand it."""
+    from region.ext.profiles.jobs import DESIGN_FROM, NEIGHBOUR
+
     inputs = job.plan(StoreReads(store, view), sid)
-    return job.run(inputs, RunContext(engine, lambda f, m: None, threading.Event(), {}))
+    upstream = {}
+    si = inputs.get("input") if isinstance(inputs.get("input"), dict) else inputs
+    ref = si.get(DESIGN_FROM) if isinstance(si, dict) else None
+    if ref:
+        up = NEIGHBOUR.plan(StoreReads(store, view), sid)
+        upstream[ref] = NEIGHBOUR.run(up, RunContext(engine, lambda f, m: None, threading.Event(), {}))
+    return job.run(inputs, RunContext(engine, lambda f, m: None, threading.Event(), upstream))
 
 
 def test_golden_diff_zero_unexplained(pool):
-    """12 Metro routes rail every 5 m within 1 mm of the old page; Line_2b waits on reframeDoc and Lines 10, 11, 13
-    on defaultAlign; none is unexplained. Each run also passes the job type contract."""
+    """15 Metro routes rail every 5 m within 1 mm of the old page, Lines 10, 11 and 13 on their default design (the
+    level solver's levels and river bend points, never saved); Line_2b waits on reframeDoc for its rail input; none
+    is unexplained. Each run also passes the job type contract."""
+    from region.ext.profiles.jobs import NEIGHBOUR
+    from region.jobs.registry import Registry
+
+    reg = Registry([NEIGHBOUR, GOLDEN_DIFF])
     labels = {}
     with read_only() as store:
         for route in METRO:
             sid = section_of(store, route)["id"]
-            check_contract(GOLDEN_DIFF, store, sid, MAIN, engine=pool, params=resolve)
+            check_contract(GOLDEN_DIFF, store, sid, MAIN, engine=pool, params=resolve, registry=reg)
             out = _run(GOLDEN_DIFF, store, sid, pool)
             labels[route] = out.meta["label"]
             assert sid not in json.dumps(out.meta)  # the scope is never echoed into the output
             if out.meta["class"] == "same":
                 assert out.meta["bad"] == 0 and out.meta["worst_m"] <= 0.001
                 assert float(abs(out.arrays["diff_m"]).max()) <= 0.001
-    assert sorted(r for r, label in labels.items() if label == "same") == sorted(SAME) and len(SAME) == 12
-    assert {r: labels[r] for r in PENDING} == PENDING
+    assert sorted(r for r, label in labels.items() if label == "same") == sorted(SAME) and len(SAME) == 15
+    assert {r: labels[r] for r in [*FIXED, *PENDING]} == {**FIXED, **PENDING}
     assert [r for r, label in labels.items() if label == "unexplained"] == []
 
 
@@ -70,8 +93,8 @@ def _named(si: dict, keys: dict[str, str], route: str) -> dict:
 
 def test_record_inputs_equal_engine_fixtures():
     """The input built from the records is the engine's golden fixture (built from the page's normalised align)
-    on the 12 routes whose doc is the page's input, platform for platform; the other four differ only where their
-    pending port says."""
+    on the 12 routes whose doc is the page's input, platform for platform; the other four differ only where the
+    page normalised it (no doc, a doc in another frame), which their solve's design makes up for."""
     with read_only() as store:
         ctx = StoreReads(store, MAIN)
         for route in METRO:
@@ -80,7 +103,7 @@ def test_record_inputs_equal_engine_fixtures():
             si = section_input(ctx, sec["id"], ground=False)
             assert si["scale"] == sec["data"]["scale"] and si["section_id"] == sec["id"]
             want = _golden(route)
-            if route in SAME:
+            if route in RECORD_SAME:
                 assert _named(si, keys, route) == want, route
                 continue
             got = _named(si, keys, route)
@@ -136,7 +159,7 @@ def test_seed_doc_direct_golden(pool):
         out = pool.call("vertical.rail", si)
         want = json.loads((BASELINE / f"{route}.json").read_text(encoding="utf-8"))["rail_m"]
         bad[route] = G.compare(out["rail_m"], want, 5.0, 0.001)["bad"]
-    assert sorted(r for r, n in bad.items() if n == 0) == sorted(SAME)
+    assert sorted(r for r, n in bad.items() if n == 0) == sorted(RECORD_SAME)
     assert bad["Line_2b"] > 0
 
 
@@ -213,3 +236,26 @@ def test_code_hash_covers_the_modules_plan_and_run_call():
     for job in (SOLVE_SECTION, GOLDEN_DIFF):
         assert check_job_type(job) == []
         assert code_hash(job) == want, job.name
+
+
+def test_the_rail_of_a_line_with_no_saved_design_is_its_default_design(pool):
+    """Lines 10, 11 and 13: drawn on the design their own solve made (the level solver's levels and river bend points,
+    "default design (not saved)"), the rail is the old page's within 1 mm (golden_diff, above); the design is what
+    GET /sections/{id}/design serves, and nothing is written."""
+    from region.ext.profiles.jobs import NEIGHBOUR
+    from region.ext.profiles.solve_input import with_design
+
+    with read_only() as store:
+        seq = store.last_seq()
+        ctx = StoreReads(store, MAIN)
+        for route in DOCLESS:
+            sid = section_of(store, route)["id"]
+            out = NEIGHBOUR.run(NEIGHBOUR.plan(ctx, sid), RunContext(pool, lambda f, m: None, threading.Event(), {}))
+            design = out.meta["design"]
+            assert design["source"] == "default" and design["note"] == "default design (not saved)"
+            si = with_design(section_input(ctx, sid, ground=False), design)
+            assert all(s["level_m"] is not None for s in si["stations"])
+            assert si["pvi"] == [{"c_m": p["c"], "z_m": p["z"]} for p in design["pvi"]]
+            rail = pool.call("vertical.rail", si)["rail_m"]
+            assert min(rail) > 100  # a rail at its levels, not at 0 m
+        assert store.last_seq() == seq

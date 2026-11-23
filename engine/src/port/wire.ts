@@ -56,6 +56,13 @@ export function jsonSafe(v: unknown): unknown {
   return v;
 }
 
+/** What the sheet says of the design it draws (design.note). */
+export const DESIGN_NOTE = {
+  saved: "saved",
+  default: "default design (not saved)",
+  partial: "default level (not saved) where no level is set",
+} as const;
+
 /** The sheet's and the server's view of a solve (solved_section/0, less the stamps the host adds). */
 export function solvedJson(input: PortInput, s: SolvedSection): Omit<SolvedJson, "engine_build" | "input_hash"> {
   const g = s.grid;
@@ -139,6 +146,18 @@ export function solvedJson(input: PortInput, s: SolvedSection): Omit<SolvedJson,
     },
     flags: s.flags,
     levels: { st: s.levels.st, unset: s.levels.unset },
+    design: {
+      source: s.design.source,
+      note: DESIGN_NOTE[s.design.source],
+      pvi: s.align.pvi.map((p) => ({ c: p.c, z: p.z })),
+      st: Object.fromEntries(s.stations.map((st, i) => [st.platform_id, s.align.st[i] as number])),
+      so: Object.fromEntries(
+        s.stations.flatMap((st, i) => ((s.align.so[i] ?? 0) !== 0 ? [[st.platform_id, s.align.so[i] as number]] : [])),
+      ),
+      defaulted: [...s.design.defaulted],
+      reframed: s.design.reframed,
+    },
+    derived: s.derived,
   }) as Omit<SolvedJson, "engine_build" | "input_hash">;
 }
 

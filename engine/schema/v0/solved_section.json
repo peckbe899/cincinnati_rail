@@ -1127,6 +1127,180 @@
         "unset"
       ],
       "additionalProperties": false
+    },
+    "design": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": [
+            "saved",
+            "default",
+            "partial"
+          ]
+        },
+        "note": {
+          "type": "string"
+        },
+        "pvi": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "c": {
+                "type": "number"
+              },
+              "z": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "c",
+              "z"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "st": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "description": "The rail level solved at each live platform."
+        },
+        "so": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "The slides solved (a reframed profile's)."
+        },
+        "defaulted": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reframed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "source",
+        "note",
+        "pvi",
+        "st",
+        "so",
+        "defaulted",
+        "reframed"
+      ],
+      "additionalProperties": false,
+      "description": "Whose design was solved: Ben's (saved), the level solver's for a profile with no saved level and no bend point (default: never written as his record), or his with the level solver's level at each station he has not set (partial); the levels, slides and bend points solved (the default's river bend points, a reframed profile's mapped ones), the stations at a default level, and whether the profile was reframed."
+    },
+    "derived": {
+      "type": "object",
+      "properties": {
+        "stations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "c": {
+                "type": "number"
+              },
+              "point_c": {
+                "type": "number"
+              },
+              "rail": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "ground": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "depth": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "elevated",
+                  "atgrade",
+                  "trough",
+                  "cutcover",
+                  "shield",
+                  "deep",
+                  "sunk"
+                ]
+              }
+            },
+            "required": [
+              "name",
+              "c",
+              "point_c",
+              "rail",
+              "ground",
+              "depth",
+              "type"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "summary": {
+          "type": "object",
+          "properties": {
+            "km_by_type": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "number"
+              }
+            },
+            "max_grade_permille": {
+              "type": "number"
+            },
+            "grades_over_limit": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "km_by_type",
+            "max_grade_permille",
+            "grades_over_limit"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "stations",
+        "summary"
+      ],
+      "additionalProperties": false,
+      "description": "The doc's derived members as the old page's serialize() wrote them on save (R6): per live station its name, centre, drawn point, rail, ground and depth to the centimetre and type; the km of each type, the steepest grade and the grades over the limit. Derived, never Ben's edit."
     }
   },
   "required": [
@@ -1163,7 +1337,9 @@
     "curve_grade",
     "summary",
     "flags",
-    "levels"
+    "levels",
+    "design",
+    "derived"
   ],
   "additionalProperties": false,
   "title": "SolvedSection",

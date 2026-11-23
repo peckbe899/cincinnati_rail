@@ -28,8 +28,9 @@
 // drag they follow the rail at once and the structure is the last solve's, as the old page drew it (LAST_T, 1339).
 
 import type { SolvedSection } from "@cr/engine/contract";
+import { curveAllowance, radii } from "@cr/engine/curve";
 import type { BandData, BandDef, Handle, SheetView } from "../../core/plugin.ts";
-import { fmtG, SEV_COLOURS, TYPES, typeColour, valueAt } from "./drawing.ts";
+import { fmtCh, fmtG, fmtZ, SEV_COLOURS, TYPES, typeColour, valueAt } from "./drawing.ts";
 import type { ProfileData } from "./model.ts";
 import { stationStripBand } from "./stations.ts";
 import { groundLines } from "./tools.ts";
@@ -89,6 +90,16 @@ export function sampleAt(arr: ArrayLike<number | null> | undefined, step: number
   return a + (b - a) * Math.min(1, Math.max(0, k - i));
 }
 
+/** The drawn type at c as the old typeAt read it: the type of the sample nearest c (T.t[round(c / step)], 1607), so
+ * a run's ends fall where the old page's did (its GeoJSON runs found every 5 m start on the same metre). */
+export function typeAtSample(
+  sv: Pick<SolvedSection, "type_runs" | "step_m"> | null | undefined,
+  c: number,
+): string | null {
+  if (!sv) return null;
+  return runAt(sv.type_runs, Math.round(c / sv.step_m) * sv.step_m)?.[0] ?? null;
+}
+
 /** The words for another line's structure at a crossing (the old label: "box", "type A tube (cast iron ...)"). */
 export function structWord(s: { k: string; tube?: string } | null, tubes?: Record<string, { label: string }>): string {
   if (!s) return "";
@@ -117,46 +128,543 @@ export const crossingTag = (w: string): string =>
     .replace("RER-", "R");
 
 type Flag = SolvedSection["flags"][number];
+type SolveInput = import("@cr/engine/contract").SectionSolveInput;
 
-/** A finding in plain words for its tooltip and the text layer: what was found, with its numbers; its rule id. */
-export function flagWords(f: Flag, m: (v: number, digits?: number) => string): string {
-  return `${f.page}: ${flagBody(f, m)} (${f.rule})`;
+/** What the words of a finding read beside the finding itself: the units, the solve and its input. */
+export interface Words {
+  /** a length in the display unit to d decimals, no label (the old fmtZ) */
+  z(v: number, d?: number): string;
+  /** the display unit's label (the old uLbl) */
+  u: string;
+  input?: SolveInput | null;
+  solved?: SolvedSection | null;
 }
 
-/** What a finding found, with its numbers, and nothing else (the issues list puts its kind and rule apart). */
-export function flagBody(f: Flag, m: (v: number, digits?: number) => string): string {
+/** Words for findings in a display unit, from the sheet's Units. */
+export function wordsIn(
+  units: { length: string; format(v: number, xunit: string, d?: number): string; label(x: string): string },
+  input?: SolveInput | null,
+  solved?: SolvedSection | null,
+): Words {
+  const ft = units.length === "ft";
+  return {
+    z: (v, d = 1) => (Number.isFinite(v) ? (ft ? v / 0.3048 : v).toFixed(d) : "–"),
+    u: units.label("m"),
+    input: input ?? null,
+    solved: solved ?? null,
+  };
+}
+
+/** A finding in plain words for its tooltip and the text layer: its kind, the old page's sentence, its rule id. */
+export function flagWords(f: Flag, w: Words): string {
+  return `${f.page}: ${issueText(f, w)} (${f.rule})`;
+}
+
+type Phase = "1" | "2" | "3" | "later";
+const phaseWord = (ph: unknown): string => (ph === "later" ? "later" : `Phase ${String(ph)}`);
+const typeWord = (t: unknown): string => TYPES[String(t)]?.label ?? String(t);
+
+/** A structure's name as the old page labelled it (structFor 1202, METRO_ST 1052, the tubes' labels). */
+function structLabel(s: unknown, w: Words): string {
+  const x = (s ?? {}) as { k?: string; tube?: string | null; label?: string };
+  if (x.label) return x.label;
+  const tubes = w.input?.structure?.tubes as Record<string, { label: string }> | undefined;
+  if ((x.k === "tube" || x.k === "bore") && x.tube && tubes?.[x.tube])
+    return (tubes[x.tube] as { label: string }).label;
+  return (
+    (
+      {
+        box: "box",
+        tube: "twin tube",
+        // an RER bored tube (structFor 1214); the Metro's double-track bore carries its tube key
+        bore: "bored tube",
+        sunk: "sunk box",
+        elevated: "viaduct",
+        atgrade: "at grade",
+        trough: "open trough",
+      } as Record<string, string>
+    )[x.k ?? ""] ?? String(x.k)
+  );
+}
+
+/** The grade limit's reason (gradeLimitAt 1142-1153): "Phase 1: a 582 m curve, 50‰". */
+function limitWhy(d: Record<string, unknown>, w: Words): string {
+  const why = d.why;
+  if (why === "rer" || why == null) return "";
+  const ph = (d.phase ?? "later") as Phase;
+  const pr = w.input?.structure?.phases?.[ph];
+  const pl = phaseWord(ph);
+  const lim = Number(d.lim);
+  const st = pr?.grade_straight ?? w.input?.structure?.grades.straight_underground_max ?? lim;
+  const R = typeof d.R === "number" && Number.isFinite(d.R) ? d.R : Number.POSITIVE_INFINITY;
+  if (why === "straight_underground") return `${pl}: straight underground up to ${st}‰ as a warning`;
+  if (why === "straight_open") return `${pl}: straight but not underground, ${lim}‰`;
+  if (why === "straight") return `${pl}: straight, up to ${lim}‰`;
+  if (why === "curve_long") return `${pl}: a curve over ${pr?.curve_radius || 500} m, up to ${lim}‰`;
+  return `${pl}: ${R < Number.POSITIVE_INFINITY ? `a ${Math.round(R)} m curve` : "curve"}, ${lim}‰`;
+}
+
+/** An anchor of a stretch by name (name 1455): a station, the line's end, a river box, a shaft, the portal or a box. */
+function anchorWord(a: unknown): string {
+  const x = (a ?? {}) as { kind?: string; station?: string; river?: string };
+  if (x.kind === "end") return "the line's end";
+  if (x.kind === "station") return String(x.station);
+  if (x.kind === "river") return `the ${x.river || "river"} box`;
+  if (x.kind === "shaft") return "a shaft";
+  if (x.kind === "portal") return "the portal";
+  return "the box";
+}
+
+/** Why a stretch is cut and cover or bored (1491-1506). */
+function stretchWhy(d: Record<string, unknown>, w: Words): string {
+  const n = (k: string) => Number(d[k]);
+  const box = d.method === "box";
+  switch (d.why) {
+    case "painted_cutcover":
+      return "painted cut and cover";
+    case "painted_bored":
+      return `painted ${typeWord(d.cls)}`;
+    case "bank_works":
+      return "too short for a drive beside the river box: the bank works (cut and cover in a cofferdam)";
+    case "canon_bored":
+      return "a canon bored section";
+    case "through_mined_station":
+      return "through a mined station";
+    case "both_feasible_phase_prefers":
+      return `both are possible; Phase ${String(d.phase)} prefers ${box ? "cut and cover" : "a bored drive"}`;
+    case "too_shallow_for_a_tube":
+      return "too shallow for a tube anywhere";
+    case "launch_boxes_past_limit":
+      return "the launch boxes would pass the cut-and-cover limit";
+    case "drive_too_short":
+      return `the drive with its cover would be ${Math.round(n("drive_m"))} m, under ${Math.round(n("min_drive_m"))} m`;
+    case "tube_lacks_half_cover":
+      return "the tube would lack half its cover somewhere";
+    case "deeper_than_limit": {
+      const cc = typeof d.cc_max_m === "number" ? d.cc_max_m : w.input?.structure?.phases?.[d.phase as Phase]?.cc_max;
+      return `deeper than the cut-and-cover limit (${w.z(Number(cc), 2)} ${w.u}) in places`;
+    }
+    case "neither_feasible":
+      return `neither can be built as drawn (${Math.round(n("box_bad_m"))} m past the cut-and-cover limit; ${Math.round(n("bore_bad_m"))} m where a tube cannot be bored): drawn as ${box ? "cut and cover" : "a bored drive"}`;
+    default:
+      return String(d.why ?? "").replace(/_/g, " ");
+  }
+}
+
+/** A station of the solve by its index (the deep-in-shallow-canon finding names it by index). */
+function stationName(i: unknown, w: Words): string {
+  const st = w.solved?.stations.find((s) => s.index === i) ?? w.solved?.stations[Number(i)];
+  return st?.name ?? `station ${String(i)}`;
+}
+
+/** A road the line crosses with its class and width, as the old road checks named it (2266). */
+function roadWho(i: unknown, w: Words): { who: string; name: string } {
+  const r = w.input?.context.roads[Number(i)] as [number, number, number, number, string, string] | undefined;
+  if (!r) return { who: `road ${String(i)}`, name: `road ${String(i)}` };
+  const [, , , width, name, cls] = r;
+  return { who: `${name} (${cls}${width ? `, ${w.z(width, 0)} ${w.u}` : ""})`, name };
+}
+
+/** The old page's misfit reasons (FIT_TEXT 1662). */
+function fitText(why: string, t: string, w: Words): string {
+  const S = w.input?.settings;
+  const boxTop = w.input?.structure?.box.top ?? 4.6;
+  switch (why) {
+    case "roof":
+      return `a box needs its roof under the ground (${w.z(boxTop, 1)} ${w.u} to the rail)`;
+    case "above":
+      return "an open trough has its rail under the ground";
+    case "dig":
+      return t === "trough"
+        ? "an open trough is no deeper than a dig (the cut-and-cover limit)"
+        : `deeper than a box's height (${w.z(boxTop, 1)} ${w.u}) is a trough or a box, not at grade`;
+    case "high":
+      return `higher than ${w.z((S?.elevAbove ?? 0) + (S?.deckDepth ?? 0), 1)} ${w.u} over the ground is elevated, not at grade`;
+    case "buried":
+      return "an elevated deck's underside is over the ground";
+    case "cover":
+      return "a mined station needs half a tube diameter of cover at least, even with ground treatment";
+    default:
+      return why;
+  }
+}
+
+/**
+ * A finding in the old page's words, word for word with its numbers (allIssues 2143-2178, designChecks 2080-2130,
+ * drawingFlags 2060, roadChecksNow 2263, gndChecks 1731, solveTypes 1401-1555, misfitText 1666): what the issue list
+ * shows after its kind. The ranges the old list wrote ("0+122 to 1+022: ...") are in the text as there.
+ */
+export function issueText(f: Flag, w: Words): string {
   const d = f.data as Record<string, unknown>;
   const n = (k: string) => (typeof d[k] === "number" ? (d[k] as number) : Number.NaN);
-  const g = (k: string) => fmtG(n(k));
-  const words: Record<string, () => string> = {
-    grade_over_sustained: () =>
-      `grade ${g("g")} over the ${g("lim")} limit, sustained (${g("avg")} over ${m(n("W"), 0)})`,
-    grade_over_local: () => `grade ${g("g")} over the ${g("lim")} limit, local (${g("avg")} over ${m(n("W"), 0)})`,
-    grade_over_straight_underground: () => `grade ${g("g")} on a straight underground stretch`,
-    curve_grade_sustained: () => `grade with the curve allowance ${g("worst")} over the ${g("lim")} limit, sustained`,
-    curve_grade_local: () => `grade with the curve allowance ${g("worst")} over the ${g("lim")} limit, local`,
-    crossing_short: () => `${d.with}: ${m(n("clear"))} apart, needs ${m(n("need"))}`,
-    crossing_level: () => `${d.with}: crosses at the same level`,
-    context_short: () => `a structure of another system: ${m(n("clear"))} apart, needs ${m(n("need"))}`,
-    tube_cover_short: () => `tube cover ${m(n("cv"))}, needs ${m(n("need"))}`,
-    box_roof_above_ground: () => `box roof ${m(-n("cv"))} above the ground`,
-    box_roof_forms_street: () => `box roof ${m(n("cv"))} under the ground: it forms the street`,
-    unbuildable_cover: () => `cannot be bored: short of cover by up to ${m(n("worst"))}`,
-    unbuildable_box: () => `cannot be dug: a box past its depth limit by up to ${m(n("worst"))}`,
-    unbuildable_roof: () => `the station box roof stands out of the ground by up to ${m(n("worst"))}`,
-    paint_misfit: () => `the ${String(d.t)} paint does not fit (${String(d.why)}, by up to ${m(n("worst"))})`,
-    vertical_curve_short: () => `vertical curve ${m(n("got"), 0)} long, needs ${m(n("need"), 0)}`,
-    drainage_flat: () => `a tunnel grade of ${g("g")} over ${m(n("len"), 0)}: flatter than ${g("min")} for drainage`,
-    low_cover: () => `low cover over ${m(n("length_m"), 0)}, ${m(n("worst_m"))} at the least`,
-    sunk_box_high: () => `the sunk box in the ${String(d.river)} stands ${m(n("over"))} too high`,
-    sunk_box_low: () => `the sunk box in the ${String(d.river)} sits ${m(n("over"))} too low`,
-    deep_in_shallow_canon: () => `a station ${m(n("d"))} deep in a shallow canon section`,
-    stretch_unbuildable: () => `neither a box nor a bored tunnel can be built over ${m(n("length_m"), 0)}`,
-    mined_in_box_stretch: () => `${String(d.station)} is a mined station inside a cut-and-cover stretch`,
-    approach_runs_into_station: () => `an approach box runs into ${String(d.into)}`,
-    spacing_change_in_tunnel: () => `the track spacing changes inside a tunnel (${String(d.from)} to ${String(d.to)})`,
+  const z = (k: string, digits = 1) => w.z(n(k), digits);
+  const u = w.u;
+  const S = w.input?.settings;
+  const tubes = w.input?.structure?.tubes as Record<string, { label: string; spacing: number }> | undefined;
+  const range = `${fmtCh(f.c0)} to ${fmtCh(f.c1)}`;
+  const at = () =>
+    `${fmtCh(f.c)} (${n("lat").toFixed(5)}, ${n("lon").toFixed(5)}${d.piece ? `, ${String(d.piece)}` : ""})`;
+  const grade = () => {
+    const where = `${fmtG(n("g"))} from ${fmtCh(f.c0)} to ${fmtCh(f.c1)}`;
+    const avg = `${n("avg").toFixed(1)}‰ averaged over ${Math.round(n("W"))} m`;
+    return { where, avg, why: limitWhy(d, w) };
   };
+  const words: Record<string, () => string> = {
+    // allIssues: the grades over the limit (2146-2153)
+    grade_over_local: () => {
+      const g = grade();
+      return `${g.where}: over ${n("lim")}‰ for ${Math.round(f.c1 - f.c0)} m only (localized; ${g.avg}; ${g.why})`;
+    },
+    grade_over_straight_underground: () => {
+      const g = grade();
+      return `${g.where}: over ${n("lim")}‰ (${g.why}; ${g.avg})`;
+    },
+    grade_over_sustained: () => {
+      const g = grade();
+      return `${g.where}: sustained over ${(d.warn as number | null) || n("lim")}‰ (${g.avg}${g.why ? `; ${g.why}` : ""})`;
+    },
+    // the clashes with other lines and the context (2154-2156)
+    crossing_level: () => `Crosses ${String(d.with)} at grade at ${fmtCh(f.c)}: needs a grade separation`,
+    context_level: () => `Crosses ${blockName()} at grade at ${fmtCh(f.c)}: needs a grade separation`,
+    crossing_short: () => clash(String(d.with), structLabel(d.to, w)),
+    context_short: () => clash(blockName(), blockName()),
+    // the river checks (2157-2164)
+    sunk_box_high: () =>
+      `Sunk box ${riverAt()}: roof up to ${riverBy()} higher than ${w.z(S?.riverRise ?? 0, 1)} ${u} above the bed (rail at most bed − ${(sunkTop() - (S?.riverRise ?? 0)).toFixed(1)} m)`,
+    sunk_box_low: () =>
+      `Sunk box ${riverAt()}: roof up to ${riverBy()} deeper than ${w.z(S?.riverSink ?? 0, 1)} ${u} into the bed on the flat bottom (rail at least bed − ${(sunkTop() + (S?.riverSink ?? 0)).toFixed(1)} m)`,
+    sunk_box_nav: () =>
+      `Sunk box ${riverAt()}: the made-up bed over its roof leaves less than ${w.z(S?.riverClearWater ?? 0, 2)} ${u} of water at normal pool in the navigable channel, short by ${riverBy()}`,
+    river_above_water: () =>
+      `Crosses the ${String(d.river)} above the water from ${fmtCh(f.c0)} to ${fmtCh(f.c1)}: every river crossing is a sunk box (only the CVG Express and Line 1, on the L&N bridge, bridge the Ohio)`,
+    bridge_below_clearance: () =>
+      `Bridge over the ${String(d.river)}: rail up to ${riverBy().replace(" (", " below the navigation clearance level (")}`,
+    // the road checks (roadChecksNow 2263-2276)
+    level_crossing: () =>
+      `level crossing with ${roadWho(d.road, w).who} at ${fmtCh(f.c)}: the Metro never crosses a street at grade: a bridge over it, a trough under it, or a box`,
+    trough_under_road: () =>
+      `an open trough under ${roadWho(d.road, w).who} at ${fmtCh(f.c)}: the street needs a bridge over it, ${z("need", 2)} ${u} from the rail to the street (the clear height plus a 0.8 m deck), and the rail is ${z("clear", 2)} down: lower the rail there (the trough becomes a box under the street), or raise the street`,
+    clearance_over_road: () =>
+      `${z("clear", 2)} ${u} over ${roadWho(d.road, w).who} at ${fmtCh(f.c)} (the ${d.truss ? "truss" : "girder"} underside to the street); needs ${z("need", 2)}: raise the rail`,
+    pier_in_road: () =>
+      `a viaduct pier stands in ${roadWho(d.road, w).name} at ${fmtCh(f.c)}: no span pattern keeps it out (the road is wider than a span, or two roads too close); set the spans by hand`,
+    // a station deeper than the shallow canon (2167)
+    deep_in_shallow_canon: () => `${stationName(d.station, w)} is ${z("d", 0)} ${u} down in a shallow-canon section`,
+    // designChecks (2085-2127)
+    vertical_curve_short: () =>
+      `Bend of ${fmtG(n("dg"))} at ${fmtCh(f.c)} needs a ${n("need").toFixed(0)} m curve; only ${n("got").toFixed(0)} m fits (radius ${n("radius")} m)`,
+    drainage_flat: () =>
+      `${fmtG(n("g"))} in tunnel for ${n("len").toFixed(0)} m from ${fmtCh(f.c0)}: under ${n("min")}‰, needs a falling track drain or pumping`,
+    curve_grade_sustained: () => curveGrade(true),
+    curve_grade_local: () => curveGrade(false),
+    tube_cover_short: () => {
+      const k = d.hall ? "hall over the box" : structLabel({ k: d.k, tube: d.tube }, w);
+      return `${k[0]?.toUpperCase() ?? ""}${k.slice(1)} cover down to ${z("cv", 1)} ${u} from ${fmtCh(f.c0)} to ${fmtCh(f.c1)}, needs ${z("need", 2)} ${u}`;
+    },
+    box_roof_above_ground: () => `Box roof ${w.z(-n("cv"), 1)} ${u} above ground from ${fmtCh(f.c0)} to ${fmtCh(f.c1)}`,
+    box_roof_forms_street: () =>
+      `Box roof forms the street: cover down to ${z("cv", 2)} ${u} from ${fmtCh(f.c0)} to ${fmtCh(f.c1)} (under ${z("need", 1)} ${u})`,
+    // drawingFlags (2060-2068)
+    path_doubles_back: () =>
+      `Path doubles back (${n("angle").toFixed(0)}°) at ${at()}: drawn pieces overlap or do not meet`,
+    path_kink: () =>
+      `Kink of ${n("angle").toFixed(0)}° beside a ${n("seg").toFixed(1)} m segment at ${at()}: drawn pieces do not meet cleanly`,
+    single_angle_corner: () => `Single-angle corner of ${n("angle").toFixed(0)}° at ${at()}: not yet drawn as a curve`,
+    // gndChecks (1731-1753)
+    ground_end_slope: () =>
+      `${range}: the drawn ground's side slope at its end is ${fmtG(n("g"))}, steeper than ${n("limit")}‰ (1 in ${(1000 / n("limit")).toFixed(1)}): move the end point out`,
+    ground_steep: () => `${range}: the drawn ground at ${fmtG(n("g"))}, steeper than ${n("limit")}‰ (a street)`,
+    ground_sustained: () =>
+      `${range}: the drawn ground averages up to ${fmtG(n("g"))} over ${Math.round(n("over"))} m, past ${n("limit")}‰ sustained`,
+    ground_from_crossing: () =>
+      `${range}: the ground is ${String(d.with ?? d.wid)}'s drawn ground (${z("z", 2)} ${u}) across ${d.street ? String(d.street) : "its line"} (${z("w", 1)} ${u})`,
+    // solveTypes (1401-1555), each "from to: ..." as allIssues wrote it (2170)
+    tbm_before_phase_3: () =>
+      `${range}: ${String(d.station)}: Bore (TBM) selected in Phase ${String(d.phase)}, before the tunnel boring machine (Phase 3 on); Shield for a mined station of this phase`,
+    box_station_past_limit: () =>
+      `${range}: ${String(d.station)} cut and cover ${z("depth_m", 1)} ${u} down, deeper than the cut-and-cover limit (${z("cc_max_m", 2)} ${u}, Phase ${String(d.phase)})`,
+    open_run_not_portal: () =>
+      `${range}: ${Math.round(n("length_m"))} m where the ground comes down to the rail inside the tunnel: too short for a portal (${Math.round(n("portal_min_m"))} m for the ramps), part of the stretch`,
+    approach_runs_into_station: () =>
+      `${range}: the approach box from ${d.from ? String(d.from) : "the box"} runs into ${String(d.into)} after ${Math.round(n("after_m"))} m (needs ${Math.round(n("needs_m"))} m): the stations are too close for the spacing change`,
+    two_paints_one_stretch: () => {
+      const p = (d.paints ?? {}) as Record<string, number>;
+      return `${range}: two paints in one stretch (${Object.entries(p)
+        .map(([k, m]) => `${typeWord(k)} ${Math.round(m)} m`)
+        .join(
+          ", ",
+        )}): a method changes only at a station, portal or shaft, so ${typeWord(d.taken)} takes the whole stretch; paint a Shaft where it should change`;
+    },
+    paint_snapped: () =>
+      `${range}: ${typeWord(d.paint)} painted over ${Math.round(n("painted_m"))} m of a ${Math.round(n("length_m"))} m stretch: snapped to the anchors (${anchorWord(d.from)} to ${anchorWord(d.to)}), the whole stretch is ${typeWord(d.paint)}; paint a Shaft to end it partway`,
+    bore_through_mined_station: () =>
+      `${range}: painted double-track bore through ${String(d.station)}, a mined station: no platforms fit in the running bore; the station is two platform tunnels (twin tubes), clear the paint`,
+    stretch_unbuildable: () =>
+      `${range}: ${Math.round(n("length_m"))} m from ${anchorWord(d.from)} to ${anchorWord(d.to)}: ${stretchWhy({ ...d, why: "neither_feasible" }, w)}. Lower the rail for a drive, raise it for a box, or paint a Shaft and decide each part`,
+    mined_in_box_stretch: () =>
+      `${range}: ${String(d.station)} is a mined station inside a cut-and-cover stretch: select Cut & cover for it, or paint the stretch bored`,
+    stretch: () => {
+      const b = (d.boxes ?? [0, 0]) as [number, number];
+      const boxesOn =
+        d.method !== "box" && (b[0] > 0 || b[1] > 0)
+          ? `, the boxes carrying on ${Math.round(b[0])} m and ${Math.round(b[1])} m until the tube has its cover`
+          : "";
+      const how =
+        d.method === "box" ? "cut and cover" : `one bored drive (${TYPES[String(d.cls)]?.label ?? "bored"}${boxesOn})`;
+      return `${range}: ${Math.round(n("length_m"))} m from ${anchorWord(d.from)} to ${anchorWord(d.to)}: ${how}: ${stretchWhy(d, w)}`;
+    },
+    paint_box_carries_on: () =>
+      `${range}: painted ${typeWord(d.paint)}: the box carries on over these ${Math.round(n("length_m"))} m (${d.because === "approach" ? "the spacing change" : d.because === "bank_works" ? "the bank works" : "until the tube has its cover"})`,
+    low_cover: () =>
+      `${range}: ${Math.round(n("length_m"))} m of tube with up to ${z("worst_m", 2)} ${u} less than one diameter of cover (bored with ground treatment): Propose fill, or lower the rail`,
+    approach_leaves_street: () => {
+      const parts = [
+        n("off_m") ? `leaves the street for about ${n("off_m")} m (under blocks or round a corner)` : "",
+        d.street != null
+          ? `is ${z("width_m", 1)} ${u} wide under ${String(d.street)} (${z("street_width_m", 1)} ${u})`
+          : "",
+      ].filter(Boolean);
+      return `${range}: the ${d.station ? `${String(d.station)} ` : ""}approach box ${parts.join(" and ")}: accepted (Ben)`;
+    },
+    twin_under_narrow_street: () =>
+      `${range}: twin tubes under ${String(d.street)} (${z("street_width_m", 1)} ${u}), narrower than their footprint (${z("footprint_m", 1)} ${u}): the double-track bore would stay under the street (paint it), else stacked tubes`,
+    spacing_change_in_tunnel: () => {
+      const a = tubes?.[String(d.from)];
+      const b = tubes?.[String(d.to)];
+      return `${range}: the tracks change spacing inside the tunnel (${a?.label ?? String(d.from)}, ${w.z(a?.spacing ?? Number.NaN, 2)} ${u}, to ${b?.label ?? String(d.to)}, ${w.z(b?.spacing ?? Number.NaN, 2)} ${u}) with no box to do it in: paint the same tube form on both sides, or end the bore at a box`;
+    },
+    bore_lacks_cover: () =>
+      `${range}: painted double-track bore where it lacks its cover (${z("need_m", 2)} ${u} to the rail): lower the profile, or paint twin tubes`,
+    // the paints that cannot be built (misfitText 1666) and the unbuildable stretches (2173-2175)
+    paint_misfit: () => {
+      const t = String(d.t);
+      const station = typeof d.si === "number" ? stationName(d.si, w) : null;
+      const step = w.input?.step ?? 2;
+      const how = ["roof", "above", "high", "cover"].includes(String(d.why)) ? "lower" : "raise";
+      return `${range}: ${station ? `${station}: selected` : "painted"} ${typeWord(t)}${station ? "" : ` over ${Math.round(f.c1 - f.c0 + step)} m`} where it cannot be built: ${fitText(String(d.why), t, w)}; ${how} the rail by up to ${z("worst", 1)} ${u}, or clear the ${station ? "selection" : "paint"}`;
+    },
+    unbuildable_cover: () =>
+      `${range}: a tube with less than ${w.input?.structure?.cost.cover_hard ?? 0.5} of a diameter of cover, too little to bore even with ground treatment (short of a full diameter by up to ${z("worst", 1)} ${u}): lower the rail (Lower)`,
+    unbuildable_roof: () =>
+      `${range}: a box station with its roof out of the ground (by up to ${z("worst", 1)} ${u}): lower the rail, draw the ground over it (Propose fill), or select an open type`,
+    unbuildable_box: () =>
+      `${range}: a box deeper than the cut-and-cover limit (by up to ${z("worst", 1)} ${u}): raise the rail to within it (Raise), or lower it for a whole drive`,
+    // new in the hub: the saved profile was laid on a re-drawn route (reframeDoc 1838), which the old page did silently
+    profile_reframed: () =>
+      `the saved profile was laid on the route as drawn now (${Math.round(n("from_length"))} m saved, ${Math.round(n("to_length"))} m now): the stations keep their centres`,
+  };
+  function blockName(): string {
+    const b = w.input?.context.blocks[Number(d.block)] as { l?: string; n?: string } | undefined;
+    return b?.l ?? b?.n ?? `block ${String(d.block)}`;
+  }
+  function clash(withName: string, otherLabel: string): string {
+    // a box station's crossing is checked over its hall (2241): "box and hall"
+    const me = d.hall != null ? "box and hall" : structLabel(d.t, w);
+    const up = !!d.meUp;
+    return `${w.z(n("clear"), 2)} ${u} ${up ? "over" : "under"} ${withName} at ${fmtCh(f.c)}; needs ${w.z(n("need"), 2)} ${u} (${up ? me : otherLabel} over ${up ? otherLabel : me})`;
+  }
+  function riverAt(): string {
+    return `under the ${String(d.river)} from ${fmtCh(f.c0)} to ${fmtCh(f.c1)}`;
+  }
+  function riverBy(): string {
+    return `${z("over", 2)} ${u} (worst at ${fmtCh(f.c)})`;
+  }
+  function sunkTop(): number {
+    const box = w.input?.structure?.box;
+    return (box?.roof_underside ?? 4.0) + (S?.riverRoof ?? 1.0);
+  }
+  function curveGrade(sustained: boolean): string {
+    const lim = n("lim");
+    const why = limitWhy(d, w);
+    const train = Math.round(S?.platform ?? 0);
+    const radius = Math.round((S?.curveK ?? 0) / n("add"));
+    return `${sustained ? "Sustained: " : "Localized (a warning): "}grade ${n("g").toFixed(1)}‰ plus ${n("add").toFixed(1)}‰ for the curve reaches ${n("worst").toFixed(1)}‰ from ${fmtCh(f.c0)} to ${fmtCh(f.c1)} (limit ${Number.isFinite(lim) ? lim : (S?.maxGrade ?? 0)}‰${why ? `, ${why}` : ""}; curve averaged over a ${train} m train, as a ${radius} m radius; ${n("avg").toFixed(1)}‰ with curve averaged over ${Math.round(n("W"))} m)`;
+  }
   return words[f.kind]?.() ?? f.kind.replace(/_/g, " ");
+}
+
+// ---------------------------------------------------------------------------------------------------- level range
+
+/**
+ * What the level range takes in besides the ground and the rail, as the old page's (yRangeFor 2286-2297): under and
+ * over each bend point and platform end in view the deepest structure there can be (the double-track bore's bottom
+ * and top, maxBelow and maxTop 1221), the river from the pool down 12 m and up 4 m, each crossing line's structure
+ * at its rail, and each context structure. Null when there is nothing to add. So no outline's bottom is clipped.
+ */
+export function levelExtent(
+  o: {
+    dv?: readonly { c_m: number; z_m: number }[] | undefined;
+    solved?: SolvedSection | null | undefined;
+    solveInput?: SolveInput | null | undefined;
+  },
+  c0: number,
+  c1: number,
+): { lo: number; hi: number } | null {
+  let lo = Number.POSITIVE_INFINITY;
+  let hi = Number.NEGATIVE_INFINITY;
+  const take = (a: number, b: number) => {
+    if (Number.isFinite(a)) lo = Math.min(lo, a);
+    if (Number.isFinite(b)) hi = Math.max(hi, b);
+  };
+  const bore = o.solveInput?.structure?.tubes.bore;
+  const below = bore ? bore.rail_over_invert + (bore.outside - bore.inside) / 2 : 3.2;
+  const top = bore ? bore.inside - bore.rail_over_invert + (bore.outside - bore.inside) / 2 : 5.8;
+  for (const v of o.dv ?? []) if (v.c_m >= c0 && v.c_m <= c1) take(v.z_m - below, v.z_m + top);
+  const pool = o.solveInput?.settings.pool;
+  const rivers = o.solved?.rivers ?? o.solveInput?.rivers ?? [];
+  if (pool !== undefined && rivers.some((r) => r.c1 >= c0 && r.c0 <= c1)) take(pool - 12, pool + 4);
+  for (const x of o.solved?.crossings ?? [])
+    if (x.zo != null && x.to && x.c >= c0 && x.c <= c1) take(x.zo - x.to.below, x.zo + x.to.top);
+  for (const b of o.solveInput?.context.blocks ?? [])
+    if (b.c1 >= c0 && b.c0 <= c1) for (const [c, z] of b.p) if (c >= c0 && c <= c1) take(z - b.b, z + b.t);
+  return Number.isFinite(lo) && Number.isFinite(hi) ? { lo, hi } : null;
+}
+
+// ---------------------------------------------------------------------------------------------------- readout
+
+/** The curve allowance on its 10 m grid for an input (radii 1952, curveAllowance 1975), kept per input object. */
+const allowances = new WeakMap<object, { step: number; v: Float32Array }>();
+
+/** The curve allowance at c, per mille (allowanceAt 1985), from the solve's input; null without one. */
+export function allowanceAt(inp: SolveInput | null | undefined, c: number): number | null {
+  if (!inp?.path?.length || !inp.literals?.radii || !inp.settings) return null;
+  let a = allowances.get(inp);
+  if (!a) {
+    const R = radii(inp.path, inp.length, inp.literals);
+    a = { step: inp.literals.radii.step, v: curveAllowance(R, inp.settings) };
+    allowances.set(inp, a);
+  }
+  const v = a.v[Math.max(0, Math.min(a.v.length - 1, Math.round(c / a.step)))];
+  return v === undefined || !Number.isFinite(v) ? null : v;
+}
+
+/** One row of the hover readout, with the colour the old page gave it (the type, a road's class), if any. */
+export interface ReadoutRow {
+  text: string;
+  colour?: string;
+}
+
+const UNDER_T = new Set(["cutcover", "shield", "deep", "sunk"]);
+
+/**
+ * The hover readout at a chainage from the whole solve, row by row as the old page's (updateReadout 3495-3503): the
+ * river, water and bed, or the ground with its fill or cut from the survey; the rail; below or above; in a tunnel
+ * the top with its cover (or, in a sunk box, its roof against the bed and the made-up bed) and the bottom with the
+ * structure's name; on a viaduct the soffit and the span; the grade, with the curve allowance where it is over
+ * 0.5 per mille ("with curve"); the type ("painted" under a paint) in its colour; the street the line runs under,
+ * the roads it crosses and the context's structures there. Inside a platform the same rows, and the station's name.
+ * Null until the whole solve and the rail are in.
+ */
+export function readoutRows(
+  d: BandData,
+  c: number,
+  units: SheetView["units"],
+  railZ: number | null,
+  gradeG: number | null,
+): ReadoutRow[] | null {
+  const sv = d.solved ?? null;
+  const inp = d.solveInput ?? null;
+  if (!sv || railZ === null) return null;
+  const u = units.length;
+  const Z = (v: number, dd = 1) => fmtZ(v, units, dd);
+  const step = sv.step_m;
+  const g = sampleAt(sv.ground.finished, step, c);
+  // the survey as the solve read it (groundDemAt 647); the section's own ground before it has one
+  const dem = inp?.dem?.length
+    ? sampleAt(inp.dem, inp.step, c)
+    : d.input?.ground
+      ? sampleAt(d.input.ground.z_m, d.input.ground.step_m, c)
+      : null;
+  const river = (sv.rivers ?? []).find((r) => c >= r.c0 && c <= r.c1) ?? null;
+  const pool = inp?.settings.pool ?? null;
+  const sf = river && pool !== null ? pool : g;
+  const bed = river ? sampleAt(sv.ground.bed, step, c) : null;
+  const z = railZ;
+  const out: ReadoutRow[] = [{ text: river ? `${fmtCh(c)} · ${river.name}` : fmtCh(c) }];
+  if (river)
+    out.push({ text: `Water   ${pool !== null ? Z(pool, 2) : "–"} ${u} · bed ${bed !== null ? Z(bed, 2) : "–"}` });
+  else if (g !== null) {
+    out.push({ text: `Ground  ${Z(g, 2)} ${u}` });
+    if (dem !== null && Math.abs(g - dem) > 0.02)
+      out.push({
+        text: `${g > dem ? "Fill  " : "Cut   "}  ${Z(Math.abs(g - dem), 2)} ${u} from surveyed ${Z(dem, 2)}`,
+      });
+  }
+  out.push({ text: `Rail    ${Z(z, 2)} ${u}` });
+  if (sf !== null) out.push({ text: sf - z >= 0 ? `Below   ${Z(sf - z, 2)} ${u}` : `Above   ${Z(z - sf, 2)} ${u}` });
+  // the type and structure of the sample under the pointer, as typeAt read its sample (P[round(c / step)])
+  const cs = Math.round(c / step) * step;
+  const t = typeAtSample(sv, c);
+  const sc = runAt(sv.struct_runs, cs)?.[0] ?? null;
+  const tubes = inp?.structure?.tubes as Record<string, { label: string }> | undefined;
+  if (t && sc && UNDER_T.has(t)) {
+    const top = z + sc.top;
+    if (t === "sunk" && river && bed !== null) {
+      out.push({
+        text: `Roof    ${Z(top, 2)} ${u} · ${top >= bed ? `${Z(top - bed, 1)} above` : `${Z(bed - top, 1)} below`} the bed (${Z(bed, 1)})`,
+      });
+      const mbRun = (sv.made_bed ?? []).find((r) => c >= r.i0 * step && c <= (r.i0 + r.z.length - 1) * step);
+      const mb = mbRun ? sampleAt(mbRun.z, step, c - mbRun.i0 * step) : null;
+      if (mb !== null && pool !== null) out.push({ text: `Made-up bed ${Z(mb, 2)} ${u} · water ${Z(pool - mb, 1)}` });
+    } else if (sf !== null) out.push({ text: `Top     ${Z(top, 2)} ${u} · cover ${Z(sf - top, 1)}` });
+    out.push({ text: `Bottom  ${Z(z - sc.below, 2)} ${u} · ${structWord(sc, tubes)}` });
+  }
+  const sp = t === "elevated" ? (sv.spans ?? []).find((s) => c >= s.c0 && c <= s.c1) : undefined;
+  if (sp)
+    out.push({
+      text: `Soffit  ${Z(z - sp.below, 2)} ${u} · ${Z(sp.L, 1)} ${u} span, ${sp.truss ? `through truss ${Z(sp.above, 1)} ${u} over the rail` : `girder ${Z(sp.below, 2)} ${u} rail to soffit`}`,
+    });
+  if (gradeG !== null) {
+    const add = allowanceAt(inp, c);
+    out.push({
+      text: `Grade   ${fmtG(gradeG)}${add !== null && add > 0.5 ? ` · ${fmtG(Math.abs(gradeG) + add)} with curve` : ""}`,
+    });
+  }
+  if (t) {
+    // painted (overrideAt 833 on effOvr 837): inside a platform only the station's own selection counts, a paint
+    // across it paints the running line
+    const ovr = (d.draft?.ovr ?? inp?.doc?.ovr ?? []) as [number, number, string][];
+    const stt = (d.draft?.stt ?? inp?.doc?.stt ?? {}) as Record<string, string>;
+    const half = (inp?.settings.platform ?? 0) / 2;
+    const at = (sv.stations ?? []).find((s) => c >= s.c - half && c <= s.c + half);
+    const painted = at ? !!stt[at.key] : ovr.some((o) => c >= o[0] && c <= o[1]);
+    out.push({ text: `${TYPES[t]?.label ?? t}${painted ? " (painted)" : ""}`, colour: typeColour(t) });
+  }
+  const ctx = inp?.context;
+  const street = ctx?.streets.find((r) => c >= Number(r[0]) - 5 && c <= Number(r[1]) + 5);
+  if (street)
+    out.push({
+      text: `under ${String(street[3])} (${String(street[4])}, ${Z(Number(street[2]), 0)} ${u})`,
+      colour: ROAD_COLOURS[String(street[4])] ?? ROAD_COLOURS.minor,
+    });
+  for (const r of ctx?.roads ?? [])
+    if (Number(r[2]) >= c - 3 && Number(r[1]) <= c + 3)
+      out.push({
+        text: `crosses ${String(r[4])} (${String(r[5])}, ${Z(Number(r[3]), 0)} ${u})`,
+        colour: ROAD_COLOURS[String(r[5])] ?? ROAD_COLOURS.minor,
+      });
+  for (const b of ctx?.blocks ?? [])
+    if (c >= b.c0 && c <= b.c1)
+      out.push({
+        text: `${String((b as { l?: string }).l ?? b.n)} · rail ${Z(interpP(b.p, c), 2)} ${u}`,
+        colour: MUTED,
+      });
+  return out;
+}
+
+/** A level along a polyline of [c, z] points, held flat past its ends (interpP 2214). */
+function interpP(pp: readonly (readonly [number, number])[], c: number): number {
+  const first = pp[0];
+  if (!first) return Number.NaN;
+  if (c <= first[0]) return first[1];
+  for (let i = 1; i < pp.length; i++) {
+    const [b, zb] = pp[i] as readonly [number, number];
+    if (c <= b) {
+      const [a, za] = pp[i - 1] as readonly [number, number];
+      return b - a > 1e-9 ? za + ((zb - za) * (c - a)) / (b - a) : zb;
+    }
+  }
+  return (pp[pp.length - 1] as readonly [number, number])[1];
 }
 
 /** Whether a finding is drawn as a marker: everything but the stretch notes, which the old page listed apart. */
@@ -230,6 +738,17 @@ class Placer {
   }
 }
 let placer = new Placer();
+
+/** The label boxes taken so far in this paint (the static layer keeps those of its bands, static_layer.ts). */
+export function labelBoxes(): { x0: number; y0: number; x1: number; y1: number }[] {
+  return placer.boxes.slice();
+}
+
+/** Start a paint's labels afresh from boxes already taken (a frame that copies the static bands' bitmap). */
+export function resetLabels(boxes: readonly { x0: number; y0: number; x1: number; y1: number }[] = []): void {
+  placer = new Placer();
+  placer.boxes.push(...boxes);
+}
 
 /** Keep a box clear for the later labels of this paint (the platform band's interchange tags). */
 export function reserveLabel(b: { x0: number; y0: number; x1: number; y1: number }): void {
@@ -1026,11 +1545,15 @@ export const roadsBand: BandDef = {
       if (r[5] !== "minor" || x1 - x0 > 24) {
         const w = g.measureText(r[4]).width;
         const xm = (x0 + x1) / 2;
-        const box = { x0: xm - w / 2, y0: y - 17, x1: xm + w / 2, y1: y - 5 };
-        if (placer.free(box)) {
+        // over the bar as the old page wrote it (2594); two roads at one crossing (the Inner Ring and the Inner Ring
+        // North, one bridge) were written over each other there: the second goes a line higher, readable
+        const at = (k: number) => ({ x0: xm - w / 2, y0: y - 17 - 12 * k, x1: xm + w / 2, y1: y - 5 - 12 * k });
+        const k = [0, 1, 2].find((j) => placer.free(at(j)));
+        if (k !== undefined) {
+          const box = at(k);
           placer.take(box);
           g.textAlign = "center";
-          g.fillText(r[4], xm, y - 5);
+          g.fillText(r[4], xm, box.y1);
           shown = true;
         }
       }
@@ -1079,20 +1602,35 @@ export const curveGradeBand: BandDef = {
       const w = g.measureText(text).width + 8;
       const ys = [xm - w / 2, xm, xm + w / 2].map((x) => rail(v.c(x))).filter((z): z is number => z !== null);
       if (!ys.length) continue;
-      const ym = Math.min(...ys.map((z) => v.y(z))) - 26;
-      const box = { x0: xm - w / 2, y0: ym - 14, x1: xm + w / 2, y1: ym };
-      if (placer.free(box)) {
-        placer.take(box);
-        g.globalAlpha = 0.85;
-        g.fillStyle = PAPER;
-        g.fillRect(box.x0, box.y0, w, 14);
-        g.globalAlpha = 1;
-        g.fillStyle = col;
-        g.textAlign = "center";
-        g.textBaseline = "bottom";
-        g.fillText(text, xm, ym);
-      }
-      d.mark?.({ kind: "curve-grade", id: "", c0: r.c0, c1: r.c1, worst: r.worst, sustained: r.sustained });
+      // the old page's spot (26 px over the rail, 2660); every label is drawn there as the old page drew it, or,
+      // where another label already stands, on the first free spot a line higher (up to five), so none is lost
+      const y0 = Math.min(...ys.map((z) => v.y(z))) - 26;
+      const at = (k: number) => ({ x0: xm - w / 2, y0: y0 - 16 * k - 14, x1: xm + w / 2, y1: y0 - 16 * k });
+      // clear of the crossing tags along the plot's top edge (P.y + 7 to + 19)
+      const top = P.y + 20;
+      let k = [0, 1, 2, 3, 4, 5].find((j) => at(j).y0 >= top && placer.free(at(j))) ?? 0;
+      if (at(k).y0 < top) k = 0;
+      const box = at(k);
+      placer.take(box);
+      g.globalAlpha = 0.85;
+      g.fillStyle = PAPER;
+      g.fillRect(box.x0, box.y0, w, 14);
+      g.globalAlpha = 1;
+      g.fillStyle = col;
+      g.textAlign = "center";
+      g.textBaseline = "bottom";
+      g.fillText(text, xm, box.y1);
+      d.report?.({ kind: "curve-grade", text, c: (r.c0 + r.c1) / 2, x: xm, y: box.y1, drawn: true });
+      d.mark?.({
+        kind: "curve-grade",
+        id: "",
+        c0: r.c0,
+        c1: r.c1,
+        worst: r.worst,
+        sustained: r.sustained,
+        drawn: true,
+        y: box.y1,
+      });
     }
     g.restore();
     g.textAlign = "start";
@@ -1254,7 +1792,7 @@ export const issuesBand: BandDef = {
       g.lineTo(px + 4, P.y + P.h - 1);
       g.closePath();
       g.fill();
-      const text = flagWords(f, (m, digits = 1) => fmtM(v, m, digits));
+      const text = flagWords(f, wordsIn(v.units, d.solveInput, d.solved));
       lastIssues.push({ x: px, y: P.y + P.h - 5, i, c: f.c, text });
       d.mark?.({ kind: "issue", id: f.kind, c: f.c, sev: f.sev, rule: f.rule, page: f.page, x: px });
       d.report?.({ kind: "issue", text, c: f.c, x: px, y: P.y + P.h - 5, drawn: true });

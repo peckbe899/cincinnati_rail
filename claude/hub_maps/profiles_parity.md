@@ -87,7 +87,7 @@ behaviour with its lines, the new status, and the plan.
 | S11 | Deleted stations not drawn; listed under "Removed" (2923-2925) | partial: they vanish, no list | Removed list (A.5). Better: a faint grey tick at the drawn point with the name struck through, so Ben sees where a removed station was. |
 | S13 | Issue triangles along the bottom of the plot, red, amber or grey; station issues at the centre (2735-2738) | missing | New band `station-flags`: the same triangles for the station flags of A.6; hover gives the text and the rule id; click selects the station. |
 | S14 | Vertical scale frozen while dragging (2302-2305) | done | Keep. |
-| S57 (interim) | A station with no level got one from `defaultAlign` | missing: an unset station drops out of the design | Better, until I2.2: draw it as a dashed hollow bar at ground - `defDepth` with "level not set", and offer "Set to ground - 7.62 m" in the panel. |
+| S57 (interim) | A station with no level got one from `defaultAlign` | partial (parity3): the engine solves a profile with no saved level as the old "no doc" case (defaultAlign's levels and river bend points; Lines 10, 11, 13 equal to the golden `levels.default_align`), and the hub serves it read-only as `GET /x/profiles/sections/{id}/design` ("default design (not saved)", never written). The sheet does not draw it yet: still the dashed hollow bar at ground - 7.62 with "level not set" | The sheet draws `design.st` and `design.pvi` labelled "default design (not saved)" and writes them into the draft only when Ben edits, as the old save did |
 | S18 | Hover readout: chainage, ground, rail, depth, structure top and bottom, grade, type ("(painted)"), street; no station name (3495-3540) | partial: ground, rail, below or above, grade, station name | Add, inside a platform: the type with its source, the structure top and bottom, the street. Keep the station name (better than old). |
 
 ### A.2 Selecting a station
@@ -200,7 +200,7 @@ in both and compared what was stored.
 | S86 | Arrow Up and Down step 0.1 (Shift 1) in the display unit and keep the centimetres (3537): 152.02 to 152.12 | 0.1 m in feet too, rounded to 0.1 m: 152.02 became 152.1 | done, on the canvas and in the level and depth fields |
 | S87 | Platform start of a station at the line's start reads 0+000 | "−0+000" (10 stations) | done |
 | S88 | A selection equal to the paint over the centre shows as Rules (S62) | Ben's selection, with no word why it differs from the old card (Line 2: 7 stations, Line 3 Aloysius, Line 14 Daly) | done: the panel says "Same as the paint here: the old page showed this as Rules" |
-| S89 | Names readable in the top margin; the plot 1,200 px wide at 1,600 px | the plot 490 px wide beside the map, inspector and panel; names cut at the top (64 px margin); level tags and "slid" notes running into each other and over the next bars at the whole-line view | done: the sheet takes two thirds of the width (plot about 590 px), the full 84 px top margin, tags and notes only under a bar 12 px wide or on the selected station |
+| S89 | Names readable in the top margin; the plot 1,200 px wide at 1,600 px | the plot 490 px wide beside the map, inspector and panel; names cut at the top (64 px margin); level tags and "slid" notes running into each other and over the next bars at the whole-line view | done (parity3): the old naming rule (left to right, 18 px apart, 15 on a plot under 500 px, the selected one always) and the line's last station named in place of the one before it; a hint "22 of 31 names shown: maximise (Shift+F) for more, zoom in for all" when names are left out. Checked in review, docked at the whole line (590 px plot; the old page at a 595 px plot): Line 6 22 (old 23), Line 1 22 (22), Line 3 20 (20), Line 9 21 (21), Line 10 20 (20); maximised all 31, 29, 31, 29 of 30, 29 (old page at 1,195 px: 30, 27, 29, 29, 27) |
 | S90 | Alt + Left or Right (Back and Forward in the browser on Windows) | a press with no station selected, or on main, went to the browser | done: the sheet keeps them |
 | S91 | Cover checks count the hall over the box (hallAt in the cover sampling, 2118) | the hall too shallow flag only | B, with the cover checks (I2.2) |
 
@@ -314,7 +314,7 @@ or when the difference is one this document calls intended (marked "intended").
 | S75 (rest) | Mined station inside a cut and cover stretch; double-track bore through a mined station | the solver | I2.2 |
 | S76 | Painted misfit for a station selection, with Lower, Raise, Propose fill, Clear | `paintMisfits` | I2.2 |
 | S27 (full) | Opening dates, phases and segment years from the full Chronology | the Chronology import | I2.4 |
-| S80 (derived), S81 | Derived `stations` and `summary` on save; GeoJSON and KMZ station features; PNG and JSON exports | the solver for `type`; the export page work | I2.2, then C |
+| S80 (derived), S81 | Derived `stations` and `summary` on save; GeoJSON and KMZ station features; PNG and JSON exports | derived members on the route doc (R6, parity3); exports done (R16 to R19) | a ruling on storing the derived members |
 | Ben, 23 Nov | Stations drawn in the 3D view as their own Diagram drawings, like the tunnels | `station_element`, the station workspace | 2.5.4, 2.5.6 (Hub_3D_View_Spec) |
 
 ## C. The rest of the page
@@ -329,33 +329,33 @@ summary and line checks, [UI] page work only.
 | R2, R5 | Save button and status texts, autosave, save on close; view-only mode | partial: Save, Ctrl+S, Discard, view-only by layer; no autosave (see S49) | done enough; autosave by Ben's choice |
 | R3 | Conflict banner, Keep mine / Take theirs; reframe after a Deck tie | partial: banner and three-way rebase done; reframe missing | I2.2 for reframe |
 | R4 | Live sync of every doc and param | done (I2.0, always live) | done |
-| R6 | Save format and derived fields; RER propagation | partial: fields kept losslessly; derived and propagation missing | I2.2; RER slice 2 |
+| R6 | Save format and derived fields; RER propagation | partial (parity3): fields kept losslessly. `GET /x/profiles/routes/{id}/doc` now carries `stations` and `summary` from section.solve@1 (`derived`, equal to the page's own values on all 16 lines) when the hub has its engine; they are not stored in the profile record (its schema forbids extra fields; a kind v3 bump waits on a ruling). Propagation missing | the lead's ruling on storing them; RER slice 2 |
 | R7 | Tools Move, Paint, Ground (M, P, G) and cursors | done (tools round): the three tools, their keys and cursors (cell, copy, the drag shapes) | done |
 | R8, R9, R10, R11 | Structure brushes, tube form brushes, shaft brush, paint drag and paint bar | done (tools round): Auto and the six types, Shaft, Twin tubes, Double-track bore, Auto tubes; the drag's preview in the brush's colour; paintRange ported (cut, round, join; Auto clears shafts); the whole solve applies it 150 ms after release | done |
 | R12 | Undo and redo, 200 deep | done: draft steps (0.4); Undo and Redo buttons in the tools row; every tool edit and proposal is one step | done |
 | R13 | Zoom buttons and keys, wheel, pan, pinch; at least 120 m | done (F, +, -, wheel, drag); pinch to check | done |
 | R14 | Show Rail / Rail + box / Box | done (integration round): the three buttons in the header, kept for the session; checked by eye and by section_solve.spec | done |
 | R15 | Units m / ft | done | done |
-| R16, R17, R18, R19 | Export PNG, JSON, GeoJSON, KMZ | done (tools round): the four exports of the draft as drawn; KMZ a stored zip with doc.kml (a plain .kmz, the hub has no downloads gate) | done |
+| R16, R17, R18, R19 | Export PNG, JSON, GeoJSON, KMZ | done (tools round; parity3): the four exports of the draft as drawn. GeoJSON of Line 6 on clean main checked in review: 47 rail runs equal in type, from and to, and 31 stations equal in name, type and rail to the old page's export (run ends now read the type at the nearest sample, `typeAtSample`; a station's type is its own when its level is off the drawn rail, as Forest, `stationTypeAt`). KMZ a stored zip with doc.kml | done |
 | R20 | Settings panel (31 rows), Restore defaults, Reset this line | done (tools round): the 28 Metro rows as settings.* param records, each change a param draft the whole solve previews; Restore defaults back to import:registry; Reset this line as a proposal (section.propose@1) | done; the rail solve (vertical.rail@1) reads saved params only |
-| R21 | Axes, grid, k+mmm, y range taking in everything, frozen while dragging | done: the y range takes in the water, the made bed and the crossings' boxes; frozen in a drag | done |
+| R21 | Axes, grid, k+mmm, y range taking in everything, frozen while dragging | done (parity3): `levelExtent` takes in the bore under each design vertex, the river (pool - 12 to + 4), the crossings' boxes and the context blocks, as `yRangeFor` (2286); frozen in a drag. The earlier "done" was not true in the code. Checked in review on the live pages: Lines 3, 6, 9 equal at the whole line. Lines 1, 5 and 7 still reach lower on the old page, and the cause is the RER crossings (slice 2), not Lines 10, 11, 13: on Line 5, bisected by 2 km windows, only the windows with B, A and D trunk crossings differ (16 to 18 km: old 117.6, new 136.9). Lines 10, 11, 13 and 2b differ while the sheet draws no design rail for them (S57) | done; RER crossings with slice 2 |
 | R22, R31, R32 | Water, made-up bed, channel over the sunk box | done (integration round): pool line, shading, name, made bed and channel from the whole solve; Line 6 at the Ohio drawn as on the old page | done |
 | R23, R24 | Finished ground; REGRADED and CUT | done (integration round): the solve's finished ground against the survey; the readout now reads the finished ground with "Fill" or "Cut" from the surveyed level, as the old one did (review round) | done |
-| R25, R26 | Context blocks; crossings with clearance | partial (review round): blocks, ticks, dashed lines, boxes and labels from the whole solve. Fixed in review: (1) a short crossing is red as on the old page even while the other line is not set (it was grey: every short crossing was grey, since no line is set); (2) a label that met another is placed above, below or left of it (it was left off: Line 1 at 10+042 on Line 6). Still short: crossings with Lines 10, 11 and 13 (no saved levels) get no clearance on the sheet (on Line 6: Line 13 1.9 m, Line 10 4.3 m, Line 11 0.2 m apart, all red on the old page; 7 Metro crossings with lines not set yet on the old page, 4 here). Tried in review: the sheet asking profiles.neighbour@1 itself draws them right, but the always-live test (a saved line file, then Pause and Resume) failed 4 of 4 with the hub no longer answering events, against 2 of 2 without it; reverted. Needs the neighbour views kept warm on the hub and read without planning | the docless neighbours on the hub; RER crossings with slice 2 |
+| R25, R26 | Context blocks; crossings with clearance | done for Metro (parity3): blocks, ticks, dashed lines, boxes and labels from the whole solve; a short crossing red while the other line is not set; a label that meets another moved above, below or left. Crossings with Lines 10, 11 and 13: the live hub keeps a background `profiles.neighbour` goal for each line with no saved level (and Line 2b), registered `rails_delay_s` (60 s) after the start, and `GET /sections/{id}/solve` reads them warm from the job cache without planning. Checked in review on a scratch hub: Line 6 shows Line 13 1.9 m, Line 10 4.3 m, Line 11 0.2 m apart, as the old page; Line 5 shows Line 13 9.3 m, as the old page. A sheet opened before those goals land (the first minute or so after a start with a fresh cache) crosses those lines without their levels until it reads its input again. RER crossings missing (on Line 5, B trunk, A trunk and D trunk twice in 16 to 18 km alone) | RER crossings with slice 2 |
 | R27 | Locked stretches | done (integration round): from the canon locks (transcribed; no Metro line has a lock today) | canon as records |
 | R28, R30 | Rail coloured by structure; tunnel outline | done (integration round): from the whole solve's type and structure runs; the type at every 2 m sample equals the live old page's on 14 of 16 lines (review round, server input from the records, not the goldens) | done; Line 10 and Line 2b below |
-| R29, R37, R38 | Over-grade halo; grade label colours; curve grade | done (review round). Fixed in review: the grade labels ran between vertical.rail@1's vertices, not the old page's chords (2642), which run from each platform's transition end; Line 6 read "+36.5‰" where the old page reads "+42.2‰" (Towne to the first bend), and 6 of the 8 over-limit stretches on Lines 1, 3, 6, 9 and 13 (Line 6's −257.9‰ and +167.6‰ among them) were never red or amber because no label's ends met them. The chords now take the transition ends from the curves; all 8 match | done |
+| R29, R37, R38 | Over-grade halo; grade label colours; curve grade | done (review round; parity3). Grade labels from the old page's chords (transition ends); all 8 over-limit stretches match. "With curve" labels (parity3): every one drawn, one that meets another a line higher; counted in review at the whole line, maximised and docked: Line 1 3, 5 1, 6 1, 7 3, 9 6, equal to the old page. Lines 10, 11, 13 show none (the old page 4 on Line 10): no design rail on the sheet (S57) | done; Lines 10, 11, 13 with S57 |
 | R33, R34, R43 | Limit lines; unbuildable hatch; structure band | done (integration round) | done |
 | R35 | Roads and the street under the line | done (integration round): streets and roads from the context record; the readout now names the street under the line at every chainage (review round) | done |
 | R36 | Viaducts | done (integration round): girders, trusses and piers from the solve's spans (Line 1 on the L&N bridge) | done |
 | R39 | PVI handles and curve ticks | done | done |
 | R40, R51 | Drawn ground lines and the ground point card | done (tools round): drawn live from the draft; Ground's double-click, drag, arrows, Del; the card with chainage, level, over the ground below, grades meeting, rail under it, the line, Remove point and line | done |
 | R41 | Hover hairline and plan dot | done (hairline); the plan dot is the map's cursor | done |
-| R42, R54, R55 | Issue markers, issues list with filters and groups, every issue kind | done (tools round): the list of the whole solve's findings and the station flags, severity and kind chips, the three groups, Show, each fix | done |
+| R42, R54, R55 | Issue markers, issues list with filters and groups, every issue kind | done (tools round; parity3): every finding reads the old page's sentence with its numbers, units, ranges and "−0.0‰" (`issueText`, `stationIssueText`); a unit test holds all 1,692 distinct old rows of the 16 Metro lines word for word. Station flags the whole solve already lists are left out (`SOLVE_LISTS`): that was C.1's 3 untraced extra warnings on Line 6. Extra rows, listed: "Level not set" and crossunder notes on Lines 10, 11, 13; crossunder notes from Ben's selections (Line 2 McMicken, Line 3 Aloysius); a Reframe note on Line 2b | done |
 | R44 | Chronology band | done (integration round): year and phase per segment from the Chronology table; fewer labels than the old page at the whole line (same segments and colours) | done |
 | R45 | V.E. label | done | done |
 | R46 | Overview strip | done (integration round) | done |
-| R47 | Hover readout, full | partial (review round): river with water and bed; finished ground with fill or cut; rail; below or above the surface; structure top with its cover and bottom with its name; grade; type with "(painted)"; the street under the line; inside a platform the station rows of A. Missing: "with curve" beside the grade, the sunk box's roof against the bed, the viaduct's soffit and span | the three rows (the solve has no allowance per point yet) |
+| R47 | Hover readout, full | done (parity3): the old rows, words and colours: water and bed, or ground with fill or cut against the solve's own survey; rail; below or above; in a tunnel top with cover and bottom with the structure's name; the sunk box's roof against the bed and the made-up bed; the viaduct's soffit and span; "Grade X · Y with curve"; the type in its colour with "(painted)"; the street under the line and the crossing roads; the context blocks. Unit test: 112 of 112 old readouts (3 listed). Checked in review on the live pages: 22 points on Lines 1, 2, 4, 6, 9 and CVG zoomed to 100 m, every row equal. One row more than the old page inside a platform: "Station X" (the old readout never named the station; kept, it is better) | done |
 | R48 | Plan card | partial: the map pane | done enough |
 | R49 | Editing help card | done (tools round): the "?" in the tools row, and a pointer to it in the empty card | done |
 | R50 | Bend point card (chainage, level, depth, grades meeting, curve length, Remove) | done (tools round) | done |
@@ -418,3 +418,62 @@ whole line maximised (engine 2 ms; the rest is the round trip behind the whole-l
   drawing changes alike (18 to 58 ms; the engine itself 2 to 7 ms). The time is the main thread busy between the
   request and the answer, most likely the whole solve's answer and redraw landing during the typing; the integration
   round saw the same with the whole solve off (3 of 5). Not fixed here.
+
+### C.2 Independent review of the words, speed and data lanes (23 November, parity3)
+
+Method: the working tree copied to a scratch folder with its own var; a live new hub on a clean fixture copy (rails
+after 5 s) and the old page from the same scratch copy, both in Playwright at 1,600 x 1,000. The lanes' claims were
+checked on the pages, not from their dumps. (The old hub rewrites `data/profile` and `hub/work` from the Deck at its
+start; those were put back from the repo before the suites ran.)
+
+**Checked and true.**
+- Readout (R47): 22 points on Lines 1, 2, 4, 6, 9 and CVG, each zoomed to 100 m, every old row equal, words and
+  numbers ("with curve", tube names, painted, streets, the North arch viaduct). The sheet adds "Station X" inside a
+  platform; the old readout never named it.
+- "With curve" labels (R29, R37, R38) and the names (S89): counts in R29 and S89 above.
+- GeoJSON export (R16 to R19): 47 runs and 31 stations of Line 6 equal to the old page's export.
+- Crossings with Lines 10, 11, 13 (R26): Line 6 shows 1.9, 4.3 and 0.2 m apart, as the old page, once the hub's rails
+  are warm. A Line 3 line file save ran one solve and no rail job; a Line 10 save ran Line 10's rail job once and one
+  solve. No storm.
+- Station parity: parity2's card dump and compare rerun on all 16 Metro lines: no new difference; "Grade in / out"
+  differences fell from 96 to 80 (the "−0.0‰" sign). parity2's 42 edit checks rerun: all 42 equal to parity2's
+  results.
+- Drag drawn in part (speed): six drags (Lines 1, 2, 3, 4, 6, 9; bend points and station bars; whole line, 3 km,
+  1.5 km and 800 m; docked and maximised; scale 1 and 2), the last part-drawn frame against a whole repaint: 0
+  differing pixels in all six.
+- Drag speed on an idle machine, Line 6 maximised, 60 steps: whole line at scale 2 p95 33.3 ms, one long task (61 ms),
+  local solve p50 3.6 ms, p95 9.5 ms; the old page p95 33.3 ms. At 1,200 m and 3,500 m p95 16.7 ms, no long task. The
+  whole solve never ran mid-drag and once after it.
+- Line file save into the open sheet (data): 2.15 s and 2.36 s in the two full Playwright runs (budget 3 s).
+- No default design is written: `/design` and the rails are read-only, the sheet does not use `/design` yet, and no
+  job writes a record.
+
+**Not true as reported.**
+- R21: Lines 1, 5 and 7 reach lower on the old page because of the RER crossings (slice 2), not Lines 10, 11, 13 (see
+  R21). With the rails warm, the Metro boxes of 10, 11 and 13 are in and equal.
+
+**Fixed in review** (test fails without it):
+- A line added while the hub runs (a new line file and its row in `lines/index.json`) got its solve goal but never
+  its rail goal: `watch_all_sections` left the new section in a list only the start reads, so the lines crossing it
+  had no levels for it until a restart. `region/live/service.py` now keeps its rail at once.
+  Test: `tests/live/test_live.py::test_a_line_added_by_a_line_file_has_its_rail_kept`.
+
+**Noted, not changed.**
+- `Live.start` sets the interpreter's switch interval to 1 ms for the whole process and never puts it back (in
+  pytest it stays for the rest of the session). Harmless as far as the suites show.
+- The rails warm only `rails_delay_s` (60 s) after a start with a fresh job cache; a sheet opened before that reads
+  its crossings with Lines 10, 11, 13 without levels until it reads its input again.
+- `test_editing_stays_smooth_while_a_background_import_runs` (200 ms budget) failed once at 243 ms while this review
+  ran two browsers beside it; it passed in the idle rerun.
+
+**Still short after this round.**
+- S57, S84 and S66 on the sheet: the engine and the hub give Lines 10, 11, 13 their default design and Line 2b its
+  reframe (`GET /x/profiles/sections/{id}/design`), but the sheet draws neither yet; so Lines 10, 11, 13 show no
+  design rail, no "with curve" label (Line 10 has 4 on the old page) and a different level range. The server's rail
+  result for Line 2b stays "pending_port:reframeDoc".
+- R6: the derived `stations` and `summary` are on the route doc, not stored in the profile record (a ruling).
+- RER: crossings and their boxes (R21, R26), junctions, shared stretches, modes (slice 2).
+- R61 (the canon card's notes), pinch zoom (R13).
+
+**Suites after review.** See the report of this round: pytest whole, engine and app vitest, tsc, Biome, ruff, the app
+build and size check, Playwright full twice (47 of 47 both times).

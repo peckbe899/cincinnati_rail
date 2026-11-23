@@ -40,10 +40,10 @@ export function axisChainage(c: number, units: Units): string {
   return units.length === "ft" ? `${Math.round(c / M_PER_FT)}` : fmtCh(c);
 }
 
-/** A grade as the old sheet writes it: signed, one decimal, U+2212 for minus ("+13.6‰", "−0.2‰"). */
+/** A grade as the old sheet writes it: signed, one decimal, U+2212 for minus ("+13.6‰", "−0.2‰"). A slight fall
+ * keeps its sign, "−0.0‰", as on the old page (fmtG 620): which way the water runs. */
 export function fmtG(g: number): string {
-  const r = Math.abs(g) < 0.05 ? 0 : g;
-  return `${r >= 0 ? "+" : "−"}${Math.abs(r).toFixed(1)}‰`;
+  return `${g >= 0 ? "+" : "−"}${Math.abs(g).toFixed(1)}‰`;
 }
 
 /** A level in the display unit to d decimals (the old fmtZ), "–" when there is none. */
@@ -124,6 +124,36 @@ export function thinLabels(items: LabelCandidate[], gap: number): Set<number> {
     if (!it.selected && kept.some((x) => Math.abs(x - it.x) < gap)) continue;
     kept.push(it.x);
     out.add(i);
+  }
+  return out;
+}
+
+/**
+ * Which station names to draw, by the old page's rule (2770-2786): left to right, a name within gap px of the last
+ * one drawn is left out, the selected one always drawn. That keeps the most names a gap allows; then, better than the
+ * old page, the line's last station is named too where the old rule left it out, in the place of the name before it
+ * (never the selected one), so both ends of the line are always named and no fewer names are drawn. Items in order
+ * along the line; returns the indexes kept.
+ */
+export function nameLabels(items: readonly { x: number; selected?: boolean }[], gap: number): Set<number> {
+  const out = new Set<number>();
+  let last = Number.NEGATIVE_INFINITY;
+  items.forEach((it, i) => {
+    if (it.x - last < gap && !it.selected) return;
+    last = it.x;
+    out.add(i);
+  });
+  const end = items.length - 1;
+  if (end > 0 && !out.has(end)) {
+    const shown = [...out];
+    const prev = shown[shown.length - 1] as number;
+    const before =
+      shown.length > 1 ? (items[shown[shown.length - 2] as number] as { x: number }).x : Number.NEGATIVE_INFINITY;
+    const lastItem = items[end] as { x: number };
+    if (prev !== 0 && !items[prev]?.selected && lastItem.x - before >= gap) {
+      out.delete(prev);
+      out.add(end);
+    }
   }
   return out;
 }

@@ -458,6 +458,82 @@ class Levels(BaseModel):
     unset: list[UnsetItem]
 
 
+class Source(StrEnum):
+    saved = "saved"
+    default = "default"
+    partial = "partial"
+
+
+class PviItem(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    c: float
+    z: float
+
+
+class Design(BaseModel):
+    """
+    Whose design was solved: Ben's (saved), the level solver's for a profile with no saved level and no bend point
+    (default: never written as his record), or his with the level solver's level at each station he has not set
+    (partial); the levels, slides and bend points solved (the default's river bend points, a reframed profile's mapped
+    ones), the stations at a default level, and whether the profile was reframed.
+    """
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    source: Source
+    note: str
+    pvi: list[PviItem]
+    st: dict[str, float | None]
+    """
+    The rail level solved at each live platform.
+    """
+    so: dict[str, float]
+    """
+    The slides solved (a reframed profile's).
+    """
+    defaulted: list[str]
+    reframed: bool
+
+
+class Station1(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    name: str
+    c: float
+    point_c: float
+    rail: float | None
+    ground: float | None
+    depth: float | None
+    type: Type
+
+
+class Summary1(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    km_by_type: dict[str, float]
+    max_grade_permille: float
+    grades_over_limit: int = Field(..., ge=-9007199254740991, le=9007199254740991)
+
+
+class Derived(BaseModel):
+    """
+    The doc's derived members as the old page's serialize() wrote them on save (R6): per live station its name, centre,
+    drawn point, rail, ground and depth to the centimetre and type; the km of each type, the steepest grade and the
+    grades over the limit. Derived, never Ben's edit.
+    """
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    stations: list[Station1]
+    summary: Summary1
+
+
 class SolvedSection(BaseModel):
     """
     The whole solve of one section (section.solve@1): the drawn type and structure, the legal band, ground, rivers,
@@ -513,3 +589,16 @@ class SolvedSection(BaseModel):
     summary: Summary
     flags: list[Flag]
     levels: Levels
+    design: Design
+    """
+    Whose design was solved: Ben's (saved), the level solver's for a profile with no saved level and no bend point
+    (default: never written as his record), or his with the level solver's level at each station he has not set
+    (partial); the levels, slides and bend points solved (the default's river bend points, a reframed profile's mapped
+    ones), the stations at a default level, and whether the profile was reframed.
+    """
+    derived: Derived
+    """
+    The doc's derived members as the old page's serialize() wrote them on save (R6): per live station its name, centre,
+    drawn point, rail, ground and depth to the centimetre and type; the km of each type, the steepest grade and the
+    grades over the limit. Derived, never Ben's edit.
+    """

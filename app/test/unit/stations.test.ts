@@ -495,11 +495,7 @@ describe("station bands mark what they drew", () => {
   it("the readout inside a platform reads its type, structure and street", () => {
     const lines = readoutLines(data(), 1000, new Units("m"));
     expect(lines).toEqual(
-      expect.arrayContaining([
-        "Station A",
-        "Type    Cut & cover",
-        "Street  under Central Parkway (built over the subway)",
-      ]),
+      expect.arrayContaining(["Station A", "Cut & cover", "under Central Parkway (built over the subway)"]),
     );
   });
 });

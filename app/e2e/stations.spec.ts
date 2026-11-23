@@ -6,7 +6,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { APIRequestContext, Page } from "@playwright/test";
-import { API, expect, getRecord, openApp, profileOf, scenario, settled, solveRev, test } from "./helpers.ts";
+import { API, expect, getRecord, openApp, profileOf, scenario, settled, solveRev, test, untraced } from "./helpers.ts";
 
 const REPO = resolve(import.meta.dirname, "..", "..");
 const doc = (route: string) =>
@@ -718,8 +718,10 @@ test("keys: [ and ] step through the stations, Page Up tilts, E eases; the local
   const sg = page.getByLabel("Bond Hill platform grade");
   const sg0 = Number(await sg.inputValue());
   const rev = await solveRev(page);
-  await edits(page, () => page.keyboard.press("PageUp"));
-  const ms = await settled(page, rev);
+  const ms = await untraced(page, async () => {
+    await edits(page, () => page.keyboard.press("PageUp"));
+    return settled(page, rev);
+  });
   expect(ms).toBeLessThan(16);
   await expect(sg).toHaveValue((sg0 + 0.5).toFixed(1));
   await edits(page, () => page.keyboard.press("e"));

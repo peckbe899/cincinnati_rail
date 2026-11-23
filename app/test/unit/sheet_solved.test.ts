@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import type { BandData, SheetMark, SheetView } from "../../src/core/plugin.ts";
 import { Units } from "../../src/core/units.ts";
 import { readoutLines } from "../../src/plugins/line-sheet/bands.ts";
+import { valueAt } from "../../src/plugins/line-sheet/drawing.ts";
 import { hasDesign, solveInputOf } from "../../src/plugins/line-sheet/model.ts";
 import {
   chronologyOf,
@@ -13,15 +14,20 @@ import {
   clearanceText,
   crossingsBand,
   crossingTag,
+  curveGradeBand,
   flagWords,
   issuesBand,
+  issueText,
   labelSpots,
   outlinesBand,
+  roadsBand,
   runAt,
   sampleAt,
   structureStripBand,
   structWord,
+  typeAtSample,
   waterBand,
+  wordsIn,
 } from "../../src/plugins/line-sheet/solved.ts";
 
 describe("lookups", () => {
@@ -61,21 +67,28 @@ describe("words", () => {
     );
     expect(t).toBe("Line 3 box · 7.3 m apart, needs 6.1 m");
   });
-  it("words a finding with its numbers and its rule", () => {
+  it("words a finding as the old page did, with its numbers and its rule", () => {
     const f = {
       kind: "crossing_short",
       page: "Clearance",
       sev: "error",
-      c0: 1,
-      c1: 1,
-      c: 1,
+      c0: 7752.1,
+      c1: 7752.1,
+      c: 7752.1,
       rule: "clearance.crossing.structure_sum",
-      data: { with: "Line 9", clear: 1.91, need: 6.1 },
+      data: { with: "Line 8", clear: 2.6236, need: 6.1, meUp: false, t: { k: "box" }, to: { k: "box" } },
     } as SolvedSection["flags"][number];
-    expect(flagWords(f, (m) => `${m.toFixed(1)} m`)).toBe(
-      "Clearance: Line 9: 1.9 m apart, needs 6.1 m (clearance.crossing.structure_sum)",
+    const w = wordsIn(new Units("m"));
+    expect(flagWords(f, w)).toBe(
+      "Clearance: 2.62 m under Line 8 at 7+752; needs 6.10 m (box over box) (clearance.crossing.structure_sum)",
     );
-    expect(flagWords({ ...f, kind: "something_new", data: {} }, String)).toBe(
+    // in feet, as the old page with its units in feet (toU)
+    expect(issueText(f, wordsIn(new Units("ft")))).toBe("8.61 ft under Line 8 at 7+752; needs 20.01 ft (box over box)");
+    // a box station's crossing is checked over its hall (2241); an RER bored tube has no tube key (structFor 1214)
+    expect(issueText({ ...f, data: { ...f.data, hall: 3, to: { k: "bore" } } }, w)).toBe(
+      "2.62 m under Line 8 at 7+752; needs 6.10 m (bored tube over box and hall)",
+    );
+    expect(flagWords({ ...f, kind: "something_new", data: {} }, w)).toBe(
       "Clearance: something new (clearance.crossing.structure_sum)",
     );
   });
@@ -301,7 +314,7 @@ const draw = (bands: { draw: BandDef["draw"] }[], d: Partial<BandData>): SheetMa
 type BandDef = import("../../src/core/plugin.ts").BandDef;
 const rail = { rail_m: Array(151).fill(145), grade_permille: Array(151).fill(0), step_m: 2 };
 
-describe("the readout between stations (3495-3503)", () => {
+describe("the readout between stations (3495-3503), in the old readout's words", () => {
   const units = { format: (m: number, _u: string, d = 1) => m.toFixed(d), label: () => "m", length: "m" } as never;
   const d = {
     solved,
@@ -320,12 +333,91 @@ describe("the readout between stations (3495-3503)", () => {
       "Top     149.60 m · cover 10.4",
       "Bottom  144.00 m · type A tube",
       "Grade   +0.0‰",
-      "Type    Shield tunnel",
-      "Street  under Vine Street (major, 18 m)",
+      "Shield tunnel",
+      "under Vine Street (major, 18 m)",
     ]);
   });
   it("marks a painted type", () => {
-    expect(readoutLines(d, 200, units)).toContain("Type    Cut & cover (painted)");
+    expect(readoutLines(d, 200, units)).toContain("Cut & cover (painted)");
+  });
+});
+
+describe("the type at a chainage as the old typeAt read it", () => {
+  it("is the nearest sample's: a run starting at 12+416 holds 12+415 (round(c / 2) = 6208)", () => {
+    const sv = {
+      step_m: 2,
+      type_runs: [
+        ["cutcover", 0, 12416],
+        ["deep", 12416, 13000],
+      ],
+    } as unknown as SolvedSection;
+    expect(typeAtSample(sv, 12415)).toBe("deep");
+    expect(typeAtSample(sv, 12414.9)).toBe("cutcover");
+    expect(typeAtSample(null, 1)).toBeNull();
+  });
+});
+
+describe("the rail at a bend point off the 2 m grid (the bend card's Rail at the bend, 3123)", () => {
+  it("is read between the samples, as the old railAt: Line 6 at 4+485.3 reads 211.11, not the nearest sample's 211.18", () => {
+    // the old page's bend: 210.2 m, +22.3 to +167.6 per mille, a 50 m curve
+    const [c0, z0, gi, go, L] = [4485.3, 210.2, 22.3, 167.6, 50];
+    const rail = (c: number): number => {
+      const a = c0 - L / 2;
+      if (c <= a) return z0 + (gi / 1000) * (c - c0);
+      if (c >= c0 + L / 2) return z0 + (go / 1000) * (c - c0);
+      return z0 + (gi / 1000) * (c - c0) + ((go - gi) / 1000 / (2 * L)) * (c - a) ** 2;
+    };
+    const grid = Array.from({ length: 4000 }, (_, i) => rail(i * 2));
+    expect(rail(c0).toFixed(2)).toBe("211.11");
+    expect((sampleAt(grid, 2, c0) as number).toFixed(2)).toBe("211.11");
+    expect(Math.abs((valueAt(grid, 2, c0) as number) - rail(c0))).toBeGreaterThan(0.05);
+  });
+});
+
+describe("the roads a line crosses (2589-2595)", () => {
+  it("two roads at one crossing are both named, the second a line higher (Inner Ring and Inner Ring North)", () => {
+    const two = {
+      ...ssi,
+      context: {
+        streets: [],
+        roads: [
+          [150, 130, 170, 45.72, "Inner Ring (OH-562 boulevard)", "major"],
+          [150, 130, 170, 45.72, "Inner Ring North (OH-562 boulevard)", "highway"],
+        ],
+        blocks: [],
+      },
+    };
+    const m = draw([waterBand, roadsBand], {
+      solved,
+      rail,
+      solveInput: two as never,
+      input: { ground: { z_m: Array(151).fill(158), step_m: 2 } } as never,
+    }).filter((x) => x.kind === "road");
+    expect(m.map((x) => [x.id, x.drawn])).toEqual([
+      ["Inner Ring (OH-562 boulevard)", true],
+      ["Inner Ring North (OH-562 boulevard)", true],
+    ]);
+  });
+});
+
+describe("the curve grade labels (2654-2664)", () => {
+  it("every one is drawn, as on the old page: one that meets another goes a line higher, none is left off", () => {
+    const two = {
+      ...solved,
+      curve_grade: [
+        { c0: 100, c1: 110, worst: 52.04, sustained: false },
+        { c0: 104, c1: 112, worst: 51.3, sustained: true },
+        { c0: 106, c1: 108, worst: 50.6, sustained: false },
+      ],
+    } as unknown as SolvedSection;
+    const low = { ...rail, rail_m: Array(151).fill(135) };
+    const m = draw([waterBand, curveGradeBand], { solved: two, rail: low, solveInput: ssi }).filter(
+      (x) => x.kind === "curve-grade",
+    );
+    expect(m.map((x) => x.drawn)).toEqual([true, true, true]);
+    // stacked, each clear of the one under it
+    const ys = m.map((x) => x.y as number);
+    expect(new Set(ys).size).toBe(3);
   });
 });
 

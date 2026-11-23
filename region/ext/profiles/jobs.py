@@ -39,8 +39,18 @@ from region.core.protocols import Output
 
 from . import golden as G
 from .inputs import build, gather, params_of, section_input, station_input
-from .solve_input import fill_levels, neighbour_view, section_solve_input
+from .solve_input import (
+    design_of,
+    fill_levels,
+    frame_moved,
+    needs_levels,
+    neighbour_view,
+    section_solve_input,
+    with_design,
+)
 
+DESIGN_FROM = "design_from"
+"""The input member naming the ``profiles.neighbour`` result whose design a rail is drawn with (``with_design``)."""
 ENGINE_METHOD = "vertical.rail"
 STATION_METHOD = "station.facts"
 SOLVE_METHOD = "section.solve"
@@ -76,10 +86,15 @@ class SolveSection:
     code_files = CODE_FILES
 
     def plan(self, ctx: Any, scope_id: str) -> dict[str, Any]:
+        # The rail result stays the profile as saved. Drawing a line with no saved level on its default design here
+        # (as golden_diff does) made every such line's background solve wait on its whole solve at the hub's start,
+        # and the open sheet's update after a saved line file went from 2.7 s to never in app/e2e/live.spec.ts; the
+        # sheet takes the default design from GET /sections/{id}/design instead.
         return section_input(ctx, scope_id, ground=False)
 
     def run(self, inputs: dict[str, Any], rt: Any) -> Output:
         rt.progress(0.1, "vertical")
+        inputs, design = _drawn_on(inputs, rt)
         out = rt.engine.call(ENGINE_METHOD, inputs)
         grid = out["grid"]
         # no input_hash in meta: meta is part of output_hash, and the input hash covers fields vertical.rail@1 does
@@ -94,6 +109,8 @@ class SolveSection:
             "curves": out["curves"],
             "flags": out["flags"],
         }
+        if design is not None:
+            meta["design"] = {k: design[k] for k in ("source", "note", "reframed", "defaulted")}
         issues = [
             {"rule": f["rule"], "sev": f["sev"], "c0": f["c0"], "c1": f["c1"], "msg": f["kind"], "data": f["data"]}
             for f in out["flags"]
@@ -105,6 +122,16 @@ class SolveSection:
             arrays={"rail_m": _f8(out["rail_m"]), "grade_permille": _f8(out["grade_permille"])},
             issues=issues,
         )
+
+
+def _drawn_on(inputs: dict[str, Any], rt: Any) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    """The SectionInput less ``design_from``, drawn on that result's design (``with_design``); the design or None."""
+    ref = inputs.get(DESIGN_FROM)
+    si = {k: v for k, v in inputs.items() if k != DESIGN_FROM}
+    if not ref:
+        return si, None
+    design = (rt.upstream(ref).meta or {}).get("design")
+    return with_design(si, design), design
 
 
 def pvi_issues(inputs: dict[str, Any]) -> list[dict[str, Any]]:
@@ -193,6 +220,8 @@ class GoldenDiff:
             return {"route": route, "baseline": None}
         base = fsio.read_json(path)
         si = build(g, params_of(ctx, g.section), step_m=float(base["step_m"]))
+        if needs_levels(ctx, scope_id):
+            si[DESIGN_FROM] = ctx.need(NEIGHBOUR_JOB, scope_id)
         align = base.get("align") or {}
         deleted = set(align.get("del") or [])
         kept = [s for s in g.stops if s["data"]["key"] not in deleted]
@@ -221,7 +250,8 @@ class GoldenDiff:
             return Output(
                 meta={"route": route, "class": "no_baseline", "reason": None, "rule": None, "label": "no_baseline"}
             )
-        out = rt.engine.call(ENGINE_METHOD, inputs["input"])
+        si, _design = _drawn_on(inputs["input"], rt)
+        out = rt.engine.call(ENGINE_METHOD, si)
         table = inputs["table"]
         cmp = G.compare(out["rail_m"], base["rail_m"], float(base["step_m"]), float(table["tol_m"]))
         if out["grid"]["n"] != base["n"]:
@@ -259,9 +289,12 @@ class GoldenDiff:
 class Neighbour:
     """``profiles.neighbour@1`` (scope: a section id; host: the engine): what the lines crossing this section read of
     it (``solve_input.neighbour_view``): its live stations with their rail levels, bend points, drawn ground, streets,
-    ready flag, phase and settings, in ``meta.neighbour``. A station with no saved level takes the level solver's:
-    then ``plan`` also builds the section's own SectionSolveInput (no neighbours: the default levels do not depend on
-    crossings, so there is no cycle) and ``run`` solves it. The output is the view only, so a change to this line
+    ready flag, phase and settings, in ``meta.neighbour``. A station with no saved level takes the level solver's, and
+    a profile in another frame is mapped onto the current stops: then ``plan`` also builds the section's own
+    SectionSolveInput (no neighbours: the default levels do not depend on crossings, so there is no cycle), ``run``
+    solves it, and ``meta.design`` is the design it drew (``solve_input.design_of``: with no saved design at all, the
+    default one, "default design (not saved)", with its river bend points), which ``profiles.solve_section`` draws
+    the rail with and ``GET /sections/{id}/design`` serves. The output is the view only, so a change to this line
     that leaves the view as it was (a paint, a selection, a tube form) gives the same output hash and the lines
     crossing it are not solved again (early cutoff, 9.19)."""
 
@@ -275,7 +308,7 @@ class Neighbour:
 
     def plan(self, ctx: Any, scope_id: str) -> dict[str, Any]:
         view = neighbour_view(ctx, scope_id)
-        if view is not None:
+        if view is not None and not frame_moved(ctx, scope_id):
             return {"view": view, "template": None, "input": None}
         return {
             "view": None,
@@ -289,8 +322,9 @@ class Neighbour:
         rt.progress(0.1, "levels")
         out = rt.engine.call(SOLVE_METHOD, inputs["input"])
         levels = {s["platform_id"]: s["level"] for s in out["stations"]}
+        design = design_of(out)
         rt.progress(1.0, "done")
-        return Output(meta={"neighbour": fill_levels(inputs["template"], levels)})
+        return Output(meta={"neighbour": fill_levels(inputs["template"], levels, design), "design": design})
 
 
 def _f8n(values: list[Any]) -> Any:

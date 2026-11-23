@@ -17,7 +17,10 @@ stat per watched file; ``os.scandir`` on Windows returns the sizes and times wit
 
 **Settling.** A source is a group of watches (a Deck tie writes all sixteen line files). When any of its signatures
 moves, the source is ``changing``; once nothing in it has moved for ``settle_s`` (1.5 s by default) it is settled and
-``on_settled(source, changed)`` is called once, with the changed paths by watch. A burst of fifty writes over a
+``on_settled(source, changed)`` is called once, with the changed paths by watch. The quiet period counts from the
+write: the newest modification time of the changed files, held between the round before the change was seen and the
+round that saw it (a clock that disagrees, a network share's, a test's, falls back to the round that saw it); and the
+watcher wakes when the period ends rather than at its next round. A burst of fifty writes over a
 second is one call; a half-written file that is still growing is not read until it stops. A source that never stops
 moving is acted on after ``max_wait_s`` all the same.
 
@@ -269,6 +272,8 @@ class Watcher:
         self.clock = clock
         self.paused = False
         self.rounds = 0
+        self._last_t: float | None = None
+        """When the round before this one looked (a change seen now was written after it)."""
         self._probes: dict[Path, DbProbe] = {}
         self._round: dict[tuple[str, Path], Sig] | None = None
         """One round's signatures by (mode, path): a folder two sources watch (the line files, read by the line
@@ -333,6 +338,36 @@ class Watcher:
                 out.extend(w.path / k for k in keys if k)
         return out
 
+    def _written_at(self, s: Source, old: list[Sig], new: list[Sig], t: float) -> float:
+        """When the change seen at ``t`` was written, on the watcher's clock: the newest modification time of the
+        files that changed, held between the last round (it was not written then) and ``t``. Only on the monotonic
+        clock (a file time is wall time); a deletion, a database or another clock counts from ``t``."""
+        lo = self._last_t
+        if lo is None or self.clock is not time.monotonic:
+            return t
+        newest = None
+        for w, a, b in zip(s.watches, old, new, strict=True):
+            if w.mode == "db":
+                return t
+            for k in changed_keys(a, b):
+                sig = b.get(k)
+                if not (isinstance(sig, tuple) and len(sig) == 2 and isinstance(sig[1], int)):
+                    return t  # gone, or a folder: no time of its own
+                newest = sig[1] if newest is None else max(newest, sig[1])
+        if newest is None:
+            return t
+        at = newest / 1e9 - (time.time() - time.monotonic())
+        return min(t, max(lo, at))
+
+    def next_due(self, now: float | None = None) -> float | None:
+        """Seconds until the next changing source's quiet period ends (``None``: none is changing, or paused)."""
+        if self.paused:
+            return None
+        t = self.clock() if now is None else now
+        with self._lock:
+            due = [st.changed_at + self.settle_s - t for st in self._state.values() if st.changed_at is not None]
+        return max(0.0, min(due)) if due else None
+
     # ------------------------------------------------------------------------------------------------- rounds
 
     def poll_once(self, now: float | None = None) -> list[tuple[Source, dict[str, list[str]]]]:
@@ -352,11 +387,12 @@ class Watcher:
                 with self._lock:
                     st = self._state[s.id]
                     if sig != st.seen:
+                        written = self._written_at(s, st.seen, sig, t)
                         st.seen = sig
                         if st.first_at is None:
                             st.first_at = t
                             began.append(s)
-                        st.changed_at = t
+                        st.changed_at = written
                         # a source that never stops moving (a log another program appends to) is acted on after
                         # max_wait_s all the same
                         if self.paused or t - st.first_at < self.max_wait_s:
@@ -375,6 +411,7 @@ class Watcher:
                     settled.append((s, changed))
         finally:
             self._round = None
+            self._last_t = t
         for s in began:  # outside the lock: the callback may ask for pending()
             if self.on_changing is not None:
                 try:
@@ -437,7 +474,9 @@ class Watcher:
 
     def _run(self) -> None:
         while not self._stop.is_set():
-            self._wake.wait(self.poll_s)
+            due = self.next_due()
+            # a little past the end of the quiet period, so the round that wakes finds it over
+            self._wake.wait(self.poll_s if due is None else min(self.poll_s, due + 0.005))
             self._wake.clear()
             if self._stop.is_set():
                 break

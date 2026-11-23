@@ -37,7 +37,10 @@ describe("formats", () => {
   it("writes grades signed to one decimal with a true minus", () => {
     expect(fmtG(13.64)).toBe("+13.6‰");
     expect(fmtG(-0.2)).toBe("−0.2‰");
-    expect(fmtG(-0.01)).toBe("+0.0‰");
+    // a slight fall keeps its sign, as on the old page (fmtG 620): "−0.0‰ in tunnel" says which way it drains
+    expect(fmtG(-0.01)).toBe("−0.0‰");
+    expect(fmtG(0.01)).toBe("+0.0‰");
+    expect(fmtG(0)).toBe("+0.0‰");
   });
   it("writes levels in the display unit", () => {
     expect(fmtZ(162.71, new Units("m"))).toBe("162.7");
@@ -266,10 +269,13 @@ describe("station band", () => {
     d.report = (t) => report.push(t);
     const { g } = fakeContext();
     platformBand.draw(g, view(0, 30000), d);
-    const drawn = report.filter((r) => r.drawn).map((r) => r.id);
-    expect(drawn).toContain("P_B");
-    expect(drawn).toContain("P_D");
-    expect(drawn).not.toContain("P_A");
+    const drawn = report.filter((r) => r.kind === "station" && r.drawn).map((r) => r.id);
+    // the old page's rule (2770-2786): left to right, the selected one always; both ends of the line named
+    expect(drawn).toEqual(["P_A", "P_B", "P_D"]);
+    // and the names left out are counted, with the way to read them
+    expect(report.find((r) => r.kind === "hint")?.text).toBe(
+      "3 of 4 names shown: maximise (Shift+F) for more, zoom in for all",
+    );
   });
   it("hits a station on its bar and on its name", () => {
     const d = data([["P_Forest", 4000, 200]]);
