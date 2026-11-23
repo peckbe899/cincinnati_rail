@@ -1,0 +1,176 @@
+{
+  "about": "The Metro canon of the old Rail Profiles page (data/profile/profiles.html 293-323, CANON: hard-coded there), transcribed for the hub until the canon kind lands (claude/hub_maps/engine_port_plan.md, section 3.2). Each entry keeps its src. engine/test/golden/old_page canon_record is the check (tests/profiles/test_section_solve.py).",
+  "lines": {
+    "Line_1": {
+      "sections": [
+        {
+          "a": "University",
+          "b": "Pennsylvania Station",
+          "m": "shallow",
+          "src": "Founding section, basin method (tracker 2D)"
+        },
+        {
+          "a": "Central Ave",
+          "aIn": false,
+          "b": "University",
+          "m": "deep",
+          "src": "Deep bore up Ravine St (your ruling, May 24)"
+        }
+      ],
+      "bridges": {
+        "Ohio River": {
+          "fixed": true,
+          "src": "The L&N bridge (Ben, 2 November 2026): the rail on the old roadway deck"
+        }
+      },
+      "decks": [
+        {
+          "name": "L&N bridge truss spans",
+          "src": "The L&N bridge (Ben, 2 November 2026): Line 1 on the old roadway deck over the five truss spans, the fixed part of the bridge (the approaches reworked). Bend points fitted to the USGS 3DEP lidar deck heights (data/kmz/LN_Bridge_Truss_Deck_Elevations.kmz), within 0.11 m with the 1500 m vertical curve",
+          "pvi": [
+            [
+              -84.4987493,
+              39.0990852,
+              162.72
+            ],
+            [
+              -84.4982056,
+              39.0985192,
+              164.19
+            ],
+            [
+              -84.4960136,
+              39.0962373,
+              157.64
+            ]
+          ],
+          "piers": [
+            [
+              -84.4987493,
+              39.0990852
+            ],
+            [
+              -84.4976896,
+              39.0979821
+            ],
+            [
+              -84.4972671,
+              39.0975423
+            ],
+            [
+              -84.4968308,
+              39.097088
+            ],
+            [
+              -84.4964083,
+              39.0966482
+            ],
+            [
+              -84.4960067,
+              39.0962301
+            ]
+          ]
+        }
+      ]
+    },
+    "Line_2": {
+      "sections": [
+        {
+          "a": "Zoo",
+          "b": "Roebling",
+          "m": "shallow",
+          "src": "Founding section, basin method (tracker 2D)"
+        },
+        {
+          "a": "McMicken",
+          "aIn": false,
+          "b": "VA Medical Center",
+          "bIn": false,
+          "m": "deep",
+          "src": "Deep tube up Mt Auburn, elevator stations at Inwood, Jefferson, Daniels (your ruling, Oct 6)"
+        }
+      ]
+    },
+    "Line_3": {
+      "sections": [
+        {
+          "a": "St Bernard",
+          "b": "Baltimore",
+          "m": "shallow",
+          "src": "Founding section, basin method (tracker 2D)"
+        },
+        {
+          "a": "St Bernard",
+          "b": "Genesee",
+          "m": "canal",
+          "src": "Canal bed (tracker 2D); north end read from the station list"
+        }
+      ]
+    },
+    "Line_4": {
+      "sections": [
+        {
+          "a": "Price Hill",
+          "b": "Beecher",
+          "m": "shallow",
+          "src": "Founding section, basin method (tracker 2D)"
+        },
+        {
+          "a": "Price Hill",
+          "b": "State",
+          "bIn": false,
+          "m": "deep",
+          "src": "Price Hill bore, straight (your ruling, May 24; tracker 2C)"
+        }
+      ],
+      "fixed": {
+        "Price Hill": {
+          "off": -18.29,
+          "src": "60 ft deep bore (station list)"
+        },
+        "State": {
+          "off": 7.62,
+          "src": "25 ft elevated station (station list)"
+        },
+        "Garrard": {
+          "off": 7.62,
+          "src": "On the 8th St viaduct; inferred from \"underground near MacLean\" (May 24)"
+        }
+      }
+    },
+    "Line_5": {
+      "sections": [
+        {
+          "a": "Northside",
+          "b": "Pennsylvania",
+          "m": "shallow",
+          "src": "Founding section, basin method (tracker 2D)"
+        }
+      ]
+    },
+    "Line_6": {
+      "sections": [
+        {
+          "a": "UC Medical/Corryville",
+          "b": "Public Landing",
+          "m": "shallow",
+          "src": "Founding section, basin method (tracker 2D)"
+        }
+      ]
+    },
+    "CVG_Express": {
+      "fixed": {
+        "Union Terminal": {
+          "abs": 160.3,
+          "src": "Platform M on the CUT platform deck (arch viaduct), level with the APEx field (Deck; log 10l.19, 10l.24)"
+        }
+      },
+      "bridges": {
+        "Ohio River": {
+          "clear": 23.56,
+          "src": "Bridge roughly parallel to the CSX (C&O) bridge (Ben, Oct 16); navigation clearance 77.3 ft above normal pool as the Brent Spence (USCG), starting value"
+        }
+      }
+    }
+  }
+}

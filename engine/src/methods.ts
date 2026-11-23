@@ -9,10 +9,15 @@ import {
   CONTRACTS,
   type ContractName,
   SectionInput,
+  SectionProposal,
+  SectionProposeInput,
+  SectionSolveInput,
+  SolvedSection,
   StationFacts,
   StationInput,
   VerticalRail,
 } from "./contract/index.ts";
+import { SECTION_PROPOSE_RULES, SECTION_SOLVE_RULES, sectionPropose, sectionSolve } from "./port/solve.ts";
 import type { RuleId } from "./rules.gen.ts";
 import { STATION_FACTS_RULES, stationFacts } from "./station/facts.ts";
 import { VERTICAL_RAIL_RULES, verticalRail } from "./vertical/method.ts";
@@ -61,6 +66,32 @@ export const METHODS: readonly MethodDef[] = [
     stamped: true,
     rules: STATION_FACTS_RULES,
     run: (input) => stationFacts(input as StationInput),
+  },
+  {
+    // The whole solve of one section as the old Profiles page made it (claude/hub_maps/engine_port_plan.md): the
+    // structure solver, ground, rivers, viaducts, canon, crossings, context, roads, checks and issues. It runs after
+    // vertical.rail@1 and station.facts@1 (in the sheet's worker and as its own job), never in the drag path.
+    name: "section.solve",
+    version: 1,
+    contracts: { input: "section_solve_input", output: "solved_section" },
+    input: SectionSolveInput,
+    output: SolvedSection,
+    stamped: true,
+    rules: SECTION_SOLVE_RULES,
+    run: (input) => sectionSolve(input as SectionSolveInput),
+  },
+  {
+    // The old page's proposers (Lower, Raise, Fix unbuildable, Propose fill, Solve levels with crossings, Reset this
+    // line, the paint review) on the draft's whole-solve input: the edit to lay on the draft as one undo step, never
+    // saved by the engine. Run on a button, in the full solve's worker, never in the drag path.
+    name: "section.propose",
+    version: 1,
+    contracts: { input: "section_propose_input", output: "section_proposal" },
+    input: SectionProposeInput,
+    output: SectionProposal,
+    stamped: true,
+    rules: SECTION_PROPOSE_RULES,
+    run: (input) => sectionPropose(input as SectionProposeInput),
   },
   {
     // Returns its params unchanged: a health check and the probe of the round-trip budget.

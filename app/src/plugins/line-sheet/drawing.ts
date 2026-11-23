@@ -137,17 +137,55 @@ export interface Chord {
   g: number;
 }
 
+/** A vertex of the built line: the design vertices plus "x", where a platform's level runs out past its end. */
+export interface BuiltVertex {
+  c_m: number;
+  z_m: number;
+  kind: DesignVertex["kind"] | "x";
+}
+
 /**
- * The chords of the design line that carry a grade label: every pair of neighbouring vertices except a point
- * (no length) and a flat platform (a station's own start and end at one level), as the old page skipped them.
+ * The built line's vertices (the old page's design().dv, 750-802): vertical.rail@1 gives the design vertices, and
+ * each platform's transition end ("x", where its level runs on past the platform end by half the curve) is the
+ * vertex of a curve that is at no design vertex. Its level is on the platform's own grade line: the curve's grade
+ * in past a platform end, its grade out before a platform start.
  */
-export function gradeChords(dv: readonly DesignVertex[]): Chord[] {
+export function builtVertices(dv: readonly DesignVertex[], curves: readonly VerticalCurve[] = []): BuiltVertex[] {
+  const out: BuiltVertex[] = dv.map((v) => ({ c_m: v.c_m, z_m: v.z_m, kind: v.kind }));
+  for (const cv of curves) {
+    const c = cv.c_m;
+    if (dv.some((v) => Math.abs(v.c_m - c) < 1e-6)) continue;
+    let k = 0;
+    while (k < dv.length && (dv[k] as DesignVertex).c_m < c) k++;
+    const a = dv[k - 1];
+    const b = dv[k];
+    const afterEnd = a?.kind === "pe";
+    const beforeStart = b?.kind === "ps";
+    if (!afterEnd && !beforeStart) continue;
+    const useA = afterEnd && (!beforeStart || c - (a as DesignVertex).c_m <= (b as DesignVertex).c_m - c);
+    const z = useA
+      ? (a as DesignVertex).z_m + (cv.g_in / 1000) * (c - (a as DesignVertex).c_m)
+      : (b as DesignVertex).z_m - (cv.g_out / 1000) * ((b as DesignVertex).c_m - c);
+    out.push({ c_m: c, z_m: z, kind: "x" });
+  }
+  return out.sort((p, q) => p.c_m - q.c_m);
+}
+
+/**
+ * The chords of the built line that carry a grade label (the old page's chords(), 2642-2644): every pair of
+ * neighbouring vertices except a point (no length), a flat platform (a station's own start and end at one level)
+ * and a flat run to or from a transition end. With the curves, the chords run between the transition ends as the
+ * old page's did, so a label reads the grade the train climbs and matches the solve's over-limit ranges.
+ */
+export function gradeChords(dv: readonly DesignVertex[], curves: readonly VerticalCurve[] = []): Chord[] {
+  const bv = builtVertices(dv, curves);
   const out: Chord[] = [];
-  for (let k = 0; k + 1 < dv.length; k++) {
-    const a = dv[k] as DesignVertex;
-    const b = dv[k + 1] as DesignVertex;
+  for (let k = 0; k + 1 < bv.length; k++) {
+    const a = bv[k] as BuiltVertex;
+    const b = bv[k + 1] as BuiltVertex;
     if (b.c_m - a.c_m < 1e-6) continue;
-    if (a.kind === "ps" && b.kind === "pe" && Math.abs(b.z_m - a.z_m) < 1e-9) continue;
+    const flat = Math.abs(b.z_m - a.z_m) < 1e-9;
+    if (flat && ((a.kind === "ps" && b.kind === "pe") || a.kind === "x" || b.kind === "x")) continue;
     out.push({ c0: a.c_m, z0: a.z_m, c1: b.c_m, z1: b.z_m, g: ((b.z_m - a.z_m) / (b.c_m - a.c_m)) * 1000 });
   }
   return out;

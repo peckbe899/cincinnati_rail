@@ -27,6 +27,7 @@ import { sectionDesign } from "../vertical/method.ts";
 import { gradeAt, railAt, railGrid } from "../vertical/rail.ts";
 import { pathTurns, platformCurve } from "./curve.ts";
 import { finishedGround, sampleGround } from "./ground.ts";
+import { liveCanon, livePhase } from "./live.ts";
 
 /** The rules station.facts@1 can cite in a flag or a fact. */
 export const STATION_FACTS_RULES = [
@@ -140,6 +141,21 @@ export function stationFacts(inp: StationInput): StationFactsBody {
     const slide = typeof v === "number" ? v : 0;
     live.push({ p, c: p.point_c_m + slide, so: slide, index: live.length });
   }
+  // the canon and each station's phase from the live stations, as the old page rebuilt them on every edit (live.ts)
+  const canon = liveCanon(
+    inp.canon,
+    live.map((x) => ({ name: x.p.name, c: x.c })),
+    half,
+  );
+  const phaseOfP = new Map<string, { phase: string; source: string }>();
+  for (const x of live) {
+    const ph = livePhase(inp.chron_segments, x.c, half);
+    phaseOfP.set(
+      x.p.platform_id,
+      ph ? { phase: ph, source: "chronology" } : { phase: x.p.phase, source: x.p.phase_source },
+    );
+  }
+  const phaseP = (p: StationPlatform): string => phaseOfP.get(p.platform_id)?.phase ?? p.phase;
   const { design: d } = sectionDesign(sec);
   const ground = finishedGround(inp);
   const gAt = (c: number): number => (ground ? sampleGround(ground.fin, ground.step, c) : Number.NaN);
@@ -162,8 +178,8 @@ export function stationFacts(inp: StationInput): StationFactsBody {
   // station takes its drive's method (1505-1515)
   const ccMaxOf = (ph: string): number => phaseOf(ph)?.cc_max_m ?? prm.def_depth_m;
   const canonAt = (c: number) => {
-    for (let k = inp.canon.length - 1; k >= 0; k--) {
-      const sec = inp.canon[k] as StationInput["canon"][number];
+    for (let k = canon.length - 1; k >= 0; k--) {
+      const sec = canon[k] as StationInput["canon"][number];
       if (c >= sec.c0 && c <= sec.c1) return sec;
     }
     return null;
@@ -217,7 +233,7 @@ export function stationFacts(inp: StationInput): StationFactsBody {
     const q = baseOf(x.c, z0, isMetro ? () => null : paintAt);
     const g0 = gAt(x.c);
     const ds0 = Number.isFinite(g0) ? g0 - z0 : 0;
-    const ph0 = phaseOf(x.p.phase);
+    const ph0 = phaseOf(phaseP(x.p));
     let ty: Typed;
     if (o === "cutcover" || o === "elevated" || o === "atgrade" || o === "trough")
       ty = { t: o, role: o === "cutcover" ? "box" : "open", why: "selected", drive: null };
@@ -229,7 +245,7 @@ export function stationFacts(inp: StationInput): StationFactsBody {
         why: q.role === "river" ? "river" : q.role === "box" ? "canon_box" : "open",
         drive: null,
       };
-    else if (!isMetro || ds0 <= ccMaxOf(x.p.phase))
+    else if (!isMetro || ds0 <= ccMaxOf(phaseP(x.p)))
       ty = { t: "cutcover", role: "box", why: "box_within_limit", drive: null };
     else ty = { t: ph0?.tbm ? "deep" : "shield", role: "mined", why: "mined_past_limit", drive: null };
     types.set(pid0, ty);
@@ -256,7 +272,7 @@ export function stationFacts(inp: StationInput): StationFactsBody {
       ) {
         role[i] = ty.role;
         paint[i] = null;
-        ph[i] = x.p.phase;
+        ph[i] = phaseP(x.p);
       }
     }
     for (const x of live) {
@@ -329,12 +345,13 @@ export function stationFacts(inp: StationInput): StationFactsBody {
       grade_limit_permille: prm.sg_max_permille,
       grade_limit_param: prm.sg_max_param,
       selected: sel,
-      phase: p.phase,
-      phase_source: p.phase_source,
+      phase: phaseP(p),
+      phase_source: phaseOfP.get(pid)?.source ?? p.phase_source,
       side: island ? ("island" as const) : ("side" as const),
       side_source: p.side_source,
       street: streetFact,
       gapfill: gapfill.has(pid),
+      interchanges: [...new Set(p.complex.map((m) => m.name))],
     };
     if (!L) {
       facts.push({
@@ -366,7 +383,8 @@ export function stationFacts(inp: StationInput): StationFactsBody {
     const g = gAt(c);
     const sf = surfaceAt(c);
     const depth = sf - z;
-    const ph = phaseOf(p.phase);
+    const pPhase = phaseP(p);
+    const ph = phaseOf(pPhase);
     const ccMax = ph ? ph.cc_max_m : prm.def_depth_m;
     const ds = Number.isFinite(g) ? g - z : 0;
     const { t, role, why, drive } = types.get(pid) as Typed;
@@ -375,14 +393,14 @@ export function stationFacts(inp: StationInput): StationFactsBody {
       flags.push({ kind, sev, c0: span[0], c1: span[1], rule, data: { platform_id: pid, ...data } });
     };
     if (isMetro && sel === "deep" && ph && !ph.tbm)
-      flag("station_tbm_before_phase_3", "warn", "geometry.method.tbm_from_phase_3", { phase: p.phase });
+      flag("station_tbm_before_phase_3", "warn", "geometry.method.tbm_from_phase_3", { phase: pPhase });
     if (drive && drive.method === "box")
       flag("station_mined_in_box_stretch", "warn", "station.type.mined_in_box_stretch_flagged", { ...drive });
     if (isMetro && role === "box" && ds > ccMax + LIMIT_TOL)
       flag("station_box_past_cc_max", "warn", "station.type.selection_else_limit", {
         depth_m: ds,
         cc_max_m: ccMax,
-        phase: p.phase,
+        phase: pPhase,
       });
     if (isMetro && t === "cutcover" && ground) {
       let worst = Number.NEGATIVE_INFINITY;
@@ -456,7 +474,7 @@ export function stationFacts(inp: StationInput): StationFactsBody {
       const dHall = boxTop(island) + ms.hall_clear_m + ms.hall_roof_m + ms.hall_cover_m;
       const dd = Number.isFinite(g) ? g - z : Number.NaN;
       const year = p.year;
-      const phase = year !== null ? (p.year_phase ?? p.phase) : p.phase;
+      const phase = year !== null ? (p.year_phase ?? pPhase) : pPhase;
       const atOpen = p.complex.filter((m) => m.year !== null && year !== null && m.year <= year);
       const later = p.complex.filter((m) => m.year !== null && year !== null && m.year > year);
       let rule: AccessType;

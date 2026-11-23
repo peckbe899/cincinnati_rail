@@ -1,0 +1,2339 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cincinnati-rail.invalid/engine/schema/v0/section_solve_input.json",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "section_solve_input/0"
+    },
+    "section_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "route": {
+      "type": "string"
+    },
+    "system": {
+      "type": "string",
+      "enum": [
+        "metro",
+        "rer",
+        "cvx"
+      ]
+    },
+    "length": {
+      "type": "number",
+      "x-unit": "m"
+    },
+    "step": {
+      "type": "number",
+      "x-unit": "m"
+    },
+    "path": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "items": false,
+        "minItems": 3,
+        "maxItems": 3
+      }
+    },
+    "pieces": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "c0": {
+            "type": "number"
+          },
+          "c1": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "c0",
+          "c1"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "dem": {
+      "type": "array",
+      "items": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "description": "The surveyed ground on the grid, m; null where none."
+    },
+    "platforms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "platform_id": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "point_c": {
+            "type": "number"
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "side",
+              "island"
+            ]
+          },
+          "year": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "yearPhase": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "1",
+                  "2",
+                  "3",
+                  "later"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "transferAtOpen": {
+            "type": "boolean"
+          },
+          "trunk": {
+            "type": "boolean"
+          },
+          "sideSet": {
+            "type": "boolean"
+          },
+          "interchangeAtOpen": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "platform_id",
+          "key",
+          "name",
+          "order",
+          "point_c",
+          "side",
+          "year",
+          "yearPhase",
+          "transferAtOpen",
+          "trunk"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "doc": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "st": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "sg": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "number"
+              }
+            },
+            "so": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "number"
+              }
+            },
+            "del": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "pvi": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "items": false,
+                "minItems": 2,
+                "maxItems": 2
+              }
+            },
+            "ovr": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ],
+                "items": false,
+                "minItems": 3,
+                "maxItems": 3
+              }
+            },
+            "stt": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "tf": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ],
+                "items": false,
+                "minItems": 3,
+                "maxItems": 3
+              }
+            },
+            "shafts": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "gnd": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              }
+            },
+            "gapfill": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "mode": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "string",
+                "enum": [
+                  "under",
+                  "surface"
+                ]
+              }
+            },
+            "ready": {
+              "type": "boolean"
+            },
+            "frame": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "length_m": {
+                      "type": "number"
+                    },
+                    "point_c": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "number"
+                      }
+                    }
+                  },
+                  "required": [
+                    "length_m",
+                    "point_c"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "st",
+            "sg",
+            "so",
+            "del",
+            "pvi",
+            "ovr",
+            "stt",
+            "tf",
+            "shafts",
+            "gnd",
+            "gapfill",
+            "mode",
+            "ready",
+            "frame"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "settings": {
+      "type": "object",
+      "properties": {
+        "maxGrade": {
+          "type": "number",
+          "x-unit": "permille"
+        },
+        "platform": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "defDepth": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "elevAbove": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "coverBelow": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "deepBelow": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "shallowMax": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "deckDepth": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "pool": {
+          "type": "number",
+          "x-unit": "m",
+          "description": "settings.poolFt in metres"
+        },
+        "vcRadius": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "vcMinLen": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "drainMin": {
+          "type": "number",
+          "x-unit": "permille"
+        },
+        "curveK": {
+          "type": "number",
+          "x-unit": "permille"
+        },
+        "stationMaxGrade": {
+          "type": "number",
+          "x-unit": "permille"
+        },
+        "fillSlope": {
+          "type": "number",
+          "x-unit": "permille"
+        },
+        "groundWarn": {
+          "type": "number",
+          "x-unit": "permille"
+        },
+        "groundSustain": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "groundMax": {
+          "type": "number",
+          "x-unit": "permille"
+        },
+        "sustainedLen": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "riverRoof": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "riverSink": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "riverRise": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "riverFlatTol": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "riverClearWater": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "riverCap": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "roadClearHighway": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "roadClearMajor": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "roadClearMinor": {
+          "type": "number",
+          "x-unit": "m"
+        },
+        "rer": {
+          "type": "object",
+          "properties": {
+            "envelope": {
+              "type": "number",
+              "x-unit": "m"
+            },
+            "boreCrown": {
+              "type": "number",
+              "x-unit": "m"
+            },
+            "invertDepth": {
+              "type": "number",
+              "x-unit": "m"
+            },
+            "minCover": {
+              "type": "number",
+              "x-unit": "m"
+            },
+            "surfStep": {
+              "type": "number",
+              "x-unit": "m"
+            }
+          },
+          "required": [
+            "envelope",
+            "boreCrown",
+            "invertDepth",
+            "minCover",
+            "surfStep"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "maxGrade",
+        "platform",
+        "defDepth",
+        "elevAbove",
+        "coverBelow",
+        "deepBelow",
+        "shallowMax",
+        "deckDepth",
+        "pool",
+        "vcRadius",
+        "vcMinLen",
+        "drainMin",
+        "curveK",
+        "stationMaxGrade",
+        "fillSlope",
+        "groundWarn",
+        "groundSustain",
+        "groundMax",
+        "sustainedLen",
+        "riverRoof",
+        "riverSink",
+        "riverRise",
+        "riverFlatTol",
+        "riverClearWater",
+        "riverCap",
+        "roadClearHighway",
+        "roadClearMajor",
+        "roadClearMinor"
+      ],
+      "additionalProperties": false,
+      "description": "The settings the solve reads (settings.* or settings_rer.* by system), page names."
+    },
+    "literals": {
+      "type": "object",
+      "properties": {
+        "MIN_RUN": {
+          "type": "number"
+        },
+        "BOX_COVER": {
+          "type": "number"
+        },
+        "SEP_GAP": {
+          "type": "number"
+        },
+        "BED_DEPTH": {
+          "type": "number"
+        },
+        "VIA_SPAN": {
+          "type": "number"
+        },
+        "VIA_CLEAR": {
+          "type": "number"
+        },
+        "RIVER_SPAN": {
+          "type": "number"
+        },
+        "GIRDER_MAX": {
+          "type": "number"
+        },
+        "girder": {
+          "type": "object",
+          "properties": {
+            "ratio": {
+              "type": "number"
+            },
+            "add": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "ratio",
+            "add"
+          ],
+          "additionalProperties": false
+        },
+        "trussRatio": {
+          "type": "number"
+        },
+        "DECK_ON": {
+          "type": "number"
+        },
+        "GND_W": {
+          "type": "number"
+        },
+        "SLIDE_M": {
+          "type": "number"
+        },
+        "CAR_LEN": {
+          "type": "number"
+        },
+        "END_DOOR": {
+          "type": "number"
+        },
+        "PLAT_R_ERR": {
+          "type": "number"
+        },
+        "PLAT_R_WARN": {
+          "type": "number"
+        },
+        "DRAW": {
+          "type": "object",
+          "properties": {
+            "single": {
+              "type": "number"
+            },
+            "nb": {
+              "type": "number"
+            },
+            "kink": {
+              "type": "number"
+            },
+            "kinkSeg": {
+              "type": "number"
+            },
+            "back": {
+              "type": "number"
+            },
+            "sErr": {
+              "type": "number"
+            },
+            "sWarn": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "single",
+            "nb",
+            "kink",
+            "kinkSeg",
+            "back",
+            "sErr",
+            "sWarn"
+          ],
+          "additionalProperties": false
+        },
+        "openClear": {
+          "type": "number"
+        },
+        "bridgeAbovePool": {
+          "type": "number"
+        },
+        "autoTypeRailTol": {
+          "type": "number"
+        },
+        "drainageMinLen": {
+          "type": "number"
+        },
+        "radii": {
+          "type": "object",
+          "properties": {
+            "step": {
+              "type": "number"
+            },
+            "h": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "step",
+            "h"
+          ],
+          "additionalProperties": false
+        },
+        "approachHold": {
+          "type": "number"
+        },
+        "coverHardFallback": {
+          "type": "number"
+        },
+        "minDriveFallback": {
+          "type": "number"
+        },
+        "minRadiusFallback": {
+          "type": "number"
+        },
+        "portalMinFallback": {
+          "type": "number"
+        },
+        "approachFallback": {
+          "type": "number"
+        },
+        "tubeStreetNoteLen": {
+          "type": "number"
+        },
+        "fillOver": {
+          "type": "number"
+        },
+        "fillBand": {
+          "type": "object",
+          "properties": {
+            "above": {
+              "type": "number"
+            },
+            "below": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "above",
+            "below"
+          ],
+          "additionalProperties": false
+        },
+        "platformOverlap": {
+          "type": "number"
+        },
+        "limitTol": {
+          "type": "number"
+        },
+        "lowCoverMinShort": {
+          "type": "number"
+        },
+        "hall": {
+          "type": "object",
+          "properties": {
+            "endHallsLen": {
+              "type": "number"
+            },
+            "mezzanineFraction": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "endHallsLen",
+            "mezzanineFraction"
+          ],
+          "additionalProperties": false
+        },
+        "regradeMargin": {
+          "type": "number",
+          "x-unit": "m",
+          "description": "literal.regrade_margin: Lower / Raise keep the rail this far past the bound."
+        },
+        "regradeReserve": {
+          "type": "number",
+          "x-unit": "permille",
+          "description": "literal.regrade_grade_reserve: Lower / Raise grade at most the limit less this."
+        }
+      },
+      "required": [
+        "MIN_RUN",
+        "BOX_COVER",
+        "SEP_GAP",
+        "BED_DEPTH",
+        "VIA_SPAN",
+        "VIA_CLEAR",
+        "RIVER_SPAN",
+        "GIRDER_MAX",
+        "girder",
+        "trussRatio",
+        "DECK_ON",
+        "GND_W",
+        "SLIDE_M",
+        "CAR_LEN",
+        "END_DOOR",
+        "PLAT_R_ERR",
+        "PLAT_R_WARN",
+        "DRAW",
+        "openClear",
+        "bridgeAbovePool",
+        "autoTypeRailTol",
+        "drainageMinLen",
+        "radii",
+        "approachHold",
+        "coverHardFallback",
+        "minDriveFallback",
+        "minRadiusFallback",
+        "portalMinFallback",
+        "approachFallback",
+        "tubeStreetNoteLen",
+        "fillOver",
+        "fillBand",
+        "platformOverlap",
+        "limitTol",
+        "lowCoverMinShort",
+        "hall"
+      ],
+      "additionalProperties": false,
+      "description": "The page's named literals, each from its literal.* param (the plan's section 3.4)."
+    },
+    "structure": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "box": {
+              "type": "object",
+              "properties": {
+                "below": {
+                  "type": "number"
+                },
+                "top": {
+                  "type": "number"
+                },
+                "roof_underside": {
+                  "type": "number"
+                },
+                "inside": {
+                  "type": "number"
+                },
+                "spacing": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "below",
+                "top",
+                "roof_underside",
+                "inside",
+                "spacing"
+              ],
+              "additionalProperties": false
+            },
+            "island_box": {
+              "type": "object",
+              "properties": {
+                "spacing": {
+                  "type": "number"
+                },
+                "roof_underside": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "spacing",
+                "roof_underside"
+              ],
+              "additionalProperties": false
+            },
+            "tubes": {
+              "type": "object",
+              "properties": {
+                "A": {
+                  "type": "object",
+                  "properties": {
+                    "inside": {
+                      "type": "number"
+                    },
+                    "outside": {
+                      "type": "number"
+                    },
+                    "rail_over_invert": {
+                      "type": "number"
+                    },
+                    "spacing": {
+                      "type": "number"
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "inside",
+                    "outside",
+                    "rail_over_invert",
+                    "spacing",
+                    "label"
+                  ],
+                  "additionalProperties": false
+                },
+                "C": {
+                  "type": "object",
+                  "properties": {
+                    "inside": {
+                      "type": "number"
+                    },
+                    "outside": {
+                      "type": "number"
+                    },
+                    "rail_over_invert": {
+                      "type": "number"
+                    },
+                    "spacing": {
+                      "type": "number"
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "inside",
+                    "outside",
+                    "rail_over_invert",
+                    "spacing",
+                    "label"
+                  ],
+                  "additionalProperties": false
+                },
+                "bore": {
+                  "type": "object",
+                  "properties": {
+                    "inside": {
+                      "type": "number"
+                    },
+                    "outside": {
+                      "type": "number"
+                    },
+                    "rail_over_invert": {
+                      "type": "number"
+                    },
+                    "spacing": {
+                      "type": "number"
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "inside",
+                    "outside",
+                    "rail_over_invert",
+                    "spacing",
+                    "label"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "A",
+                "C",
+                "bore"
+              ],
+              "additionalProperties": false
+            },
+            "phases": {
+              "type": "object",
+              "properties": {
+                "1": {
+                  "type": "object",
+                  "properties": {
+                    "tube": {
+                      "type": "string",
+                      "enum": [
+                        "A",
+                        "C",
+                        "bore"
+                      ]
+                    },
+                    "cc_max": {
+                      "type": "number"
+                    },
+                    "min_drive": {
+                      "type": "number"
+                    },
+                    "deep_from": {
+                      "type": "number"
+                    },
+                    "min_radius": {
+                      "type": "number"
+                    },
+                    "grade_max": {
+                      "type": "number"
+                    },
+                    "grade_straight": {
+                      "type": "number"
+                    },
+                    "straight_warn": {
+                      "type": "boolean"
+                    },
+                    "grade_curve": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "curve_radius": {
+                      "type": "number"
+                    },
+                    "tbm": {
+                      "type": "boolean"
+                    },
+                    "prefer": {
+                      "type": "string",
+                      "enum": [
+                        "cutcover",
+                        "bored"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "tube",
+                    "cc_max",
+                    "min_drive",
+                    "deep_from",
+                    "min_radius",
+                    "grade_max",
+                    "grade_straight",
+                    "straight_warn",
+                    "grade_curve",
+                    "curve_radius",
+                    "tbm",
+                    "prefer"
+                  ],
+                  "additionalProperties": false
+                },
+                "2": {
+                  "type": "object",
+                  "properties": {
+                    "tube": {
+                      "type": "string",
+                      "enum": [
+                        "A",
+                        "C",
+                        "bore"
+                      ]
+                    },
+                    "cc_max": {
+                      "type": "number"
+                    },
+                    "min_drive": {
+                      "type": "number"
+                    },
+                    "deep_from": {
+                      "type": "number"
+                    },
+                    "min_radius": {
+                      "type": "number"
+                    },
+                    "grade_max": {
+                      "type": "number"
+                    },
+                    "grade_straight": {
+                      "type": "number"
+                    },
+                    "straight_warn": {
+                      "type": "boolean"
+                    },
+                    "grade_curve": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "curve_radius": {
+                      "type": "number"
+                    },
+                    "tbm": {
+                      "type": "boolean"
+                    },
+                    "prefer": {
+                      "type": "string",
+                      "enum": [
+                        "cutcover",
+                        "bored"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "tube",
+                    "cc_max",
+                    "min_drive",
+                    "deep_from",
+                    "min_radius",
+                    "grade_max",
+                    "grade_straight",
+                    "straight_warn",
+                    "grade_curve",
+                    "curve_radius",
+                    "tbm",
+                    "prefer"
+                  ],
+                  "additionalProperties": false
+                },
+                "3": {
+                  "type": "object",
+                  "properties": {
+                    "tube": {
+                      "type": "string",
+                      "enum": [
+                        "A",
+                        "C",
+                        "bore"
+                      ]
+                    },
+                    "cc_max": {
+                      "type": "number"
+                    },
+                    "min_drive": {
+                      "type": "number"
+                    },
+                    "deep_from": {
+                      "type": "number"
+                    },
+                    "min_radius": {
+                      "type": "number"
+                    },
+                    "grade_max": {
+                      "type": "number"
+                    },
+                    "grade_straight": {
+                      "type": "number"
+                    },
+                    "straight_warn": {
+                      "type": "boolean"
+                    },
+                    "grade_curve": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "curve_radius": {
+                      "type": "number"
+                    },
+                    "tbm": {
+                      "type": "boolean"
+                    },
+                    "prefer": {
+                      "type": "string",
+                      "enum": [
+                        "cutcover",
+                        "bored"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "tube",
+                    "cc_max",
+                    "min_drive",
+                    "deep_from",
+                    "min_radius",
+                    "grade_max",
+                    "grade_straight",
+                    "straight_warn",
+                    "grade_curve",
+                    "curve_radius",
+                    "tbm",
+                    "prefer"
+                  ],
+                  "additionalProperties": false
+                },
+                "later": {
+                  "type": "object",
+                  "properties": {
+                    "tube": {
+                      "type": "string",
+                      "enum": [
+                        "A",
+                        "C",
+                        "bore"
+                      ]
+                    },
+                    "cc_max": {
+                      "type": "number"
+                    },
+                    "min_drive": {
+                      "type": "number"
+                    },
+                    "deep_from": {
+                      "type": "number"
+                    },
+                    "min_radius": {
+                      "type": "number"
+                    },
+                    "grade_max": {
+                      "type": "number"
+                    },
+                    "grade_straight": {
+                      "type": "number"
+                    },
+                    "straight_warn": {
+                      "type": "boolean"
+                    },
+                    "grade_curve": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "curve_radius": {
+                      "type": "number"
+                    },
+                    "tbm": {
+                      "type": "boolean"
+                    },
+                    "prefer": {
+                      "type": "string",
+                      "enum": [
+                        "cutcover",
+                        "bored"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "tube",
+                    "cc_max",
+                    "min_drive",
+                    "deep_from",
+                    "min_radius",
+                    "grade_max",
+                    "grade_straight",
+                    "straight_warn",
+                    "grade_curve",
+                    "curve_radius",
+                    "tbm",
+                    "prefer"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "1",
+                "2",
+                "3",
+                "later"
+              ],
+              "additionalProperties": false
+            },
+            "approach_m": {
+              "type": "number"
+            },
+            "portal_min_m": {
+              "type": "number"
+            },
+            "min_radius": {
+              "type": "number"
+            },
+            "cost": {
+              "type": "object",
+              "properties": {
+                "cover_hard": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "cover_hard"
+              ],
+              "additionalProperties": false
+            },
+            "grades": {
+              "type": "object",
+              "properties": {
+                "straight_radius": {
+                  "type": "number"
+                },
+                "straight_underground_max": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "straight_radius",
+                "straight_underground_max"
+              ],
+              "additionalProperties": false
+            },
+            "hall": {
+              "type": "object",
+              "properties": {
+                "clear": {
+                  "type": "number"
+                },
+                "roof": {
+                  "type": "number"
+                },
+                "cover": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "clear",
+                "roof",
+                "cover"
+              ],
+              "additionalProperties": false
+            },
+            "mezzanine_clear_m": {
+              "type": "number"
+            },
+            "open_clear_height": {
+              "type": "number"
+            },
+            "subway_streets": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "line_phase": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "1",
+                    "2",
+                    "3",
+                    "later"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "piece_phase": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "string",
+                "enum": [
+                  "1",
+                  "2",
+                  "3",
+                  "later"
+                ]
+              }
+            }
+          },
+          "required": [
+            "box",
+            "island_box",
+            "tubes",
+            "phases",
+            "approach_m",
+            "portal_min_m",
+            "min_radius",
+            "cost",
+            "grades",
+            "hall",
+            "mezzanine_clear_m",
+            "open_clear_height",
+            "subway_streets",
+            "line_phase",
+            "piece_phase"
+          ],
+          "additionalProperties": false,
+          "description": "The Metro structure record (metro_structure.*) resolved for the route."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "era": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "shield": {
+              "type": "string",
+              "enum": [
+                "tube",
+                "bore"
+              ]
+            },
+            "sgMax": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "shield",
+            "sgMax"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "canon": {
+      "type": "object",
+      "properties": {
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "a": {
+                "type": "string"
+              },
+              "b": {
+                "type": "string"
+              },
+              "aIn": {
+                "type": "boolean"
+              },
+              "bIn": {
+                "type": "boolean"
+              },
+              "m": {
+                "type": "string",
+                "enum": [
+                  "shallow",
+                  "deep",
+                  "canal",
+                  "covered"
+                ]
+              },
+              "src": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "a",
+              "b",
+              "aIn",
+              "bIn",
+              "m",
+              "src"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "fixed": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "abs": {
+                "type": "number"
+              },
+              "off": {
+                "type": "number"
+              },
+              "ref": {
+                "type": "number"
+              },
+              "src": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "src"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "modes": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "under",
+                  "surface"
+                ]
+              },
+              "src": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "mode"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "locked": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "c0": {
+                "type": "number"
+              },
+              "c1": {
+                "type": "number"
+              },
+              "st": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "number"
+                }
+              },
+              "pvi": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              },
+              "ovr": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 3,
+                  "maxItems": 3
+                }
+              },
+              "src": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "c0",
+              "c1",
+              "st",
+              "pvi",
+              "ovr",
+              "src"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "bridges": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "fixed": {
+                "type": "boolean"
+              },
+              "clear": {
+                "type": "number"
+              },
+              "src": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "src"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "decks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "pvi": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 3,
+                  "maxItems": 3
+                }
+              },
+              "piers": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              },
+              "src": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "pvi",
+              "piers",
+              "src"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "sections",
+        "fixed",
+        "modes",
+        "locked",
+        "bridges",
+        "decks"
+      ],
+      "additionalProperties": false,
+      "description": "One route's canon: method sections, fixed levels, modes, locks, bridges, decks."
+    },
+    "rivers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "c0": {
+            "type": "number"
+          },
+          "c1": {
+            "type": "number"
+          },
+          "bedBelowPool": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "navigable": {
+            "type": "boolean"
+          },
+          "inCoveredWay": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "c0",
+          "c1",
+          "bedBelowPool",
+          "navigable",
+          "inCoveredWay"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "streets": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "items": false,
+            "minItems": 5,
+            "maxItems": 5
+          }
+        },
+        "roads": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "items": false,
+            "minItems": 6,
+            "maxItems": 6
+          }
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "n": {
+                "type": "string"
+              },
+              "k": {
+                "type": "string"
+              },
+              "c0": {
+                "type": "number"
+              },
+              "c1": {
+                "type": "number"
+              },
+              "p": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              },
+              "b": {
+                "type": "number"
+              },
+              "t": {
+                "type": "number"
+              },
+              "o": {
+                "type": "boolean"
+              },
+              "pl": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 3,
+                  "maxItems": 3
+                }
+              }
+            },
+            "required": [
+              "n",
+              "k",
+              "c0",
+              "c1",
+              "p",
+              "b",
+              "t"
+            ],
+            "additionalProperties": {}
+          }
+        },
+        "add": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "i0": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "v": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            },
+            "required": [
+              "i0",
+              "v"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "cap": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "i0": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "v": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            },
+            "required": [
+              "i0",
+              "v"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "streets",
+        "roads",
+        "blocks",
+        "add",
+        "cap"
+      ],
+      "additionalProperties": false
+    },
+    "crossings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "c": {
+            "type": "number"
+          },
+          "other": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "wid": {
+            "type": "string"
+          },
+          "oc": {
+            "type": "number"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "with": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "c",
+          "other",
+          "wid",
+          "oc",
+          "kind",
+          "with"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "neighbours": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "section": {
+            "type": "string"
+          },
+          "wid": {
+            "type": "string"
+          },
+          "system": {
+            "type": "string",
+            "enum": [
+              "metro",
+              "rer",
+              "cvx"
+            ]
+          },
+          "length_m": {
+            "type": "number",
+            "x-unit": "m"
+          },
+          "platform_m": {
+            "type": "number",
+            "x-unit": "m"
+          },
+          "vc_radius_m": {
+            "type": "number",
+            "x-unit": "m"
+          },
+          "vc_min_len_m": {
+            "type": "number",
+            "x-unit": "m"
+          },
+          "stations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "c": {
+                  "type": "number"
+                },
+                "rail": {
+                  "type": "number"
+                },
+                "sg": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "c",
+                "rail",
+                "sg"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "pvi": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "c": {
+                  "type": "number"
+                },
+                "z": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "c",
+                "z"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "gnd": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "c": {
+                    "type": "number"
+                  },
+                  "z": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "c",
+                  "z"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "streets": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "items": false,
+              "minItems": 5,
+              "maxItems": 5
+            }
+          },
+          "ready": {
+            "type": "boolean"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "profile",
+              "default",
+              "metro_rails"
+            ]
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "1",
+                  "2",
+                  "3",
+                  "later"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "settings": {
+            "type": "object",
+            "properties": {
+              "elevAbove": {
+                "type": "number"
+              },
+              "coverBelow": {
+                "type": "number"
+              },
+              "deepBelow": {
+                "type": "number"
+              },
+              "deckDepth": {
+                "type": "number"
+              },
+              "riverRoof": {
+                "type": "number"
+              },
+              "rer": {
+                "type": "object",
+                "properties": {
+                  "envelope": {
+                    "type": "number",
+                    "x-unit": "m"
+                  },
+                  "boreCrown": {
+                    "type": "number",
+                    "x-unit": "m"
+                  },
+                  "invertDepth": {
+                    "type": "number",
+                    "x-unit": "m"
+                  },
+                  "minCover": {
+                    "type": "number",
+                    "x-unit": "m"
+                  },
+                  "surfStep": {
+                    "type": "number",
+                    "x-unit": "m"
+                  }
+                },
+                "required": [
+                  "envelope",
+                  "boreCrown",
+                  "invertDepth",
+                  "minCover",
+                  "surfStep"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "elevAbove",
+              "coverBelow",
+              "deepBelow",
+              "deckDepth"
+            ],
+            "additionalProperties": false
+          },
+          "open_clear_m": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "section",
+          "wid",
+          "system",
+          "length_m",
+          "platform_m",
+          "vc_radius_m",
+          "vc_min_len_m",
+          "stations",
+          "pvi",
+          "gnd",
+          "streets",
+          "ready",
+          "source",
+          "phase",
+          "settings"
+        ],
+        "additionalProperties": false,
+        "description": "Another line at a crossing, as this line's solve reads it (plan section 3.3)."
+      }
+    },
+    "chronology": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "c0": {
+            "type": "number"
+          },
+          "c1": {
+            "type": "number"
+          },
+          "year": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "1",
+                  "2",
+                  "3",
+                  "later"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "set": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "key",
+          "c0",
+          "c1",
+          "year",
+          "phase",
+          "set"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "approachExtra": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "station": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "side": {
+            "type": "number"
+          },
+          "c": {
+            "type": "number"
+          },
+          "extra": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "station",
+          "side",
+          "c",
+          "extra"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "access": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "chronologyTable": {
+      "description": "The Chronology's entries the line reads, so the segments follow a draft's stations.",
+      "type": "object",
+      "properties": {
+        "sys": {
+          "type": "string"
+        },
+        "segments": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "year": {
+                "type": [
+                  "number",
+                  "string",
+                  "null"
+                ]
+              },
+              "phase": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "additionalProperties": {}
+          }
+        },
+        "phase_years": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "items": false,
+            "minItems": 3,
+            "maxItems": 3
+          }
+        }
+      },
+      "required": [
+        "sys",
+        "segments",
+        "phase_years"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "contract",
+    "section_id",
+    "route",
+    "system",
+    "length",
+    "step",
+    "path",
+    "pieces",
+    "dem",
+    "platforms",
+    "doc",
+    "settings",
+    "literals",
+    "structure",
+    "era",
+    "canon",
+    "rivers",
+    "context",
+    "crossings",
+    "neighbours",
+    "chronology",
+    "approachExtra"
+  ],
+  "additionalProperties": false,
+  "title": "SectionSolveInput",
+  "description": "Everything section.solve@1 reads about one section, built from records (plan section 3): the profile, platforms, settings, literals, structure record, canon, rivers, context, crossings with their neighbours, Chronology."
+}

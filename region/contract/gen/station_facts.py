@@ -401,6 +401,11 @@ class Station(BaseModel):
     curve: Curve | None
     street: Street
     gapfill: bool
+    interchanges: list[str]
+    """
+    The other lines this station is one station with (its complex), by their names (Line 3, A trunk), once each in the
+    complex's order: the sheet tags the station with them as the old page tagged its crossings.
+    """
     flags: list[Flag]
 
 

@@ -52,6 +52,10 @@ ROOTS = {
     "vertical_rail": "VerticalRail",
     "station_input": "StationInput",
     "station_facts": "StationFacts",
+    "section_solve_input": "SectionSolveInput",
+    "solved_section": "SolvedSection",
+    "section_propose_input": "SectionProposeInput",
+    "section_proposal": "SectionProposal",
     "flag": "Flag",
     "hello": "Hello",
     "request": "Request",
@@ -81,6 +85,22 @@ def _wrap_long_lines(text: str) -> str:
     return "\n".join(out)
 
 
+def _standard_dict(text: str) -> str:
+    """The generator writes ``typing.Dict`` for an open object's ``__pydantic_extra__`` even with
+    --use-standard-collections: the builtin ``dict`` instead (ruff UP006, UP035)."""
+    import re
+
+    if "Dict[" not in text:
+        return text
+    text = text.replace("Dict[", "dict[")
+
+    def drop(m: re.Match[str]) -> str:
+        names = [n.strip() for n in m.group(1).split(",") if n.strip() and n.strip() != "Dict"]
+        return f"from typing import {', '.join(names)}" if names else ""
+
+    return re.sub(r"^from typing import (.+)$", drop, text, count=1, flags=re.M)
+
+
 def _init_text(contracts: dict[str, int], modules: list[str]) -> str:
     lines = [
         '"""Pydantic models of engine contract v0, generated from engine/schema/v0 by datamodel-code-generator.',
@@ -97,7 +117,13 @@ def _init_text(contracts: dict[str, int], modules: list[str]) -> str:
     lines += [
         "",
         'SCHEMA_VERSION = "v0"',
-        "CONTRACTS: dict[str, int] = {" + ", ".join(f'"{k}": {v}' for k, v in sorted(contracts.items())) + "}",
+    ]
+    one_c = "CONTRACTS: dict[str, int] = {" + ", ".join(f'"{k}": {v}' for k, v in sorted(contracts.items())) + "}"
+    if len(one_c) <= LINE:
+        lines.append(one_c)
+    else:
+        lines += ["CONTRACTS: dict[str, int] = {", *(f'    "{k}": {v},' for k, v in sorted(contracts.items())), "}"]
+    lines += [
         "",
     ]
     one = "__all__ = [" + ", ".join(f'"{n}"' for n in names) + "]"
@@ -122,7 +148,7 @@ def generate(schema_dir: Path = SCHEMA_DIR) -> dict[str, str]:
             if r.returncode != 0:
                 raise RuntimeError(f"datamodel-codegen failed on {mod}.json:\n{r.stderr or r.stdout}")
             text = fsio.read_text(out)
-            files[f"{mod}.py"] = _wrap_long_lines(text).rstrip("\n") + "\n"
+            files[f"{mod}.py"] = _wrap_long_lines(_standard_dict(text)).rstrip("\n") + "\n"
     files["__init__.py"] = _init_text(index["contracts"], modules)
     return files
 

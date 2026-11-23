@@ -5,7 +5,7 @@
 // pvi. The PVI shape is read from the record: [c, z] pairs (the old docs' form) or {c_m, z_m} / {c, z} objects;
 // edits keep whatever shape the record has.
 
-import type { SectionInput, StationInput } from "@cr/engine/contract";
+import type { SectionInput, SectionSolveInput, StationInput } from "@cr/engine/contract";
 import type { JsonPatch } from "../../api/types.ts";
 import { escapeToken } from "../../core/jsonpatch.ts";
 
@@ -176,6 +176,16 @@ export function stationsOf(frame: StationFrame, data: ProfileData): SectionInput
  * not have is null and 0, never the level the input was built with. PVIs are sorted by chainage, as the table shows
  * them; the engine takes them in any order.
  */
+/**
+ * Whether the profile has a design to draw: a bend point or a station level. Without one (Lines 10, 11 and 13 before
+ * Ben sets any level) vertical.rail@1 gives a rail at 0 m, which is no design at all: the sheet draws no rail then,
+ * and keeps it out of the level range, instead of a rail 150 m under the ground squashing the whole plot.
+ */
+export function hasDesign(input: Pick<SectionInput, "pvi" | "stations"> | null | undefined): boolean {
+  if (!input) return false;
+  return input.pvi.length > 0 || input.stations.some((s) => s.level_m !== null && s.level_m !== undefined);
+}
+
 export function localInput(
   input: SectionInput,
   data: ProfileData | null,
@@ -480,4 +490,77 @@ export function easeGrade(
   if (!gs.length) return null;
   const m = gs.reduce((p, q) => p + q, 0) / gs.length;
   return roundGrade(Math.max(-limit, Math.min(limit, m)));
+}
+
+// ----------------------------------------------------------------------------------- section.solve@1 input
+
+/**
+ * The input the sheet's worker hands section.solve@1 once the rail and the station facts have run: the server's
+ * SectionSolveInput with the draft's profile in place of the record's (every field the solve reads, keyed by
+ * platform id as the record keys them) and each platform's side from its own draft. The neighbours, the canon, the
+ * context and the params stay the server's: the draft edits only this line's profile and platforms.
+ */
+export function solveInputOf(
+  ssi: SectionSolveInput,
+  data: ProfileData | null,
+  sides: (pid: string) => { side: "side" | "island"; source: "ben" } | null = () => null,
+): SectionSolveInput {
+  const platforms = ssi.platforms.map((p) => {
+    const s = sides(p.platform_id);
+    return s ? { ...p, side: s.side, sideSet: true } : p;
+  });
+  if (!data) return { ...ssi, platforms };
+  const num = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
+  const rec = <T>(v: unknown, keep: (x: unknown) => x is T): Record<string, T> =>
+    v && typeof v === "object" && !Array.isArray(v)
+      ? (Object.fromEntries(Object.entries(v).filter(([, x]) => keep(x))) as Record<string, T>)
+      : {};
+  const ranges = (v: unknown): [number, number, string][] =>
+    Array.isArray(v)
+      ? (v as unknown[])
+          .filter((o): o is unknown[] => Array.isArray(o) && o.length >= 3)
+          .map((o) => [Number(o[0]), Number(o[1]), String(o[2])] as [number, number, string])
+      : [];
+  const pvi = (Array.isArray(data.pvi) ? data.pvi : []).flatMap((p: unknown): [number, number][] => {
+    if (Array.isArray(p) && p.length >= 2) return [[Number(p[0]), Number(p[1])]];
+    if (p && typeof p === "object" && "c_m" in p && "z_m" in p)
+      return [[Number((p as { c_m: number }).c_m), Number((p as { z_m: number }).z_m)]];
+    return [];
+  });
+  const gnd = (Array.isArray(data.gnd) ? (data.gnd as unknown[]) : []).map((L) =>
+    (Array.isArray(L) ? L : [])
+      .filter((q): q is unknown[] => Array.isArray(q) && q.length >= 2)
+      .map((q) => [Number(q[0]), Number(q[1])] as [number, number]),
+  );
+  const strs = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
+  type Frame = NonNullable<SectionSolveInput["doc"]>["frame"];
+  const frame = (data as { frame?: unknown }).frame as Frame | undefined;
+  const access = rec(
+    data.access,
+    (x): x is { type: string } => !!x && typeof (x as { type?: unknown }).type === "string",
+  );
+  return {
+    ...ssi,
+    platforms,
+    doc: {
+      st: rec(data.st, (x): x is number | null => x === null || num(x)),
+      sg: rec(data.sg, num),
+      so: rec(data.so, num),
+      del: strs(data.del),
+      pvi,
+      ovr: ranges(data.ovr).map(([a, b, t]) => [a, b, t === "bored" ? "shield" : t] as [number, number, string]),
+      stt: rec(data.stt, (x): x is string => typeof x === "string"),
+      tf: ranges((data as { tf?: unknown }).tf),
+      shafts: (Array.isArray((data as { shafts?: unknown }).shafts)
+        ? (data as { shafts: unknown[] }).shafts
+        : []
+      ).filter(num),
+      gnd,
+      gapfill: strs(data.gapfill),
+      mode: rec(data.mode, (x): x is "under" | "surface" => x === "under" || x === "surface"),
+      ready: !!(data as { ready?: unknown }).ready,
+      frame: frame && typeof frame === "object" ? frame : (ssi.doc?.frame ?? null),
+    },
+    access: Object.fromEntries(Object.entries(access).map(([k, a]) => [k, a.type])),
+  };
 }

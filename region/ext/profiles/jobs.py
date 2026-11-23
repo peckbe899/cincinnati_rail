@@ -18,6 +18,10 @@ input on the baseline's 5 m grid; ``run`` solves it and classes the difference (
 ``rule_fix`` with its rule id, ``pending_port`` with its reason, or ``unexplained``. ``meta.label`` is the class, or
 ``class:reason`` (``pending_port:reframeDoc``).
 
+**profiles.neighbour@1** and **profiles.solve_structure@1** (scope: a section id; host: the engine): the
+neighbour view of a line (what the lines crossing it read) and the whole solve of a section (``section.solve@1``);
+see their class docs.
+
 Neither copies its scope into its inputs or outputs beyond what it read: the section record (whose content hash
 includes its id) is read first, and a scope that names no section raises ``NotFound``.
 
@@ -35,9 +39,12 @@ from region.core.protocols import Output
 
 from . import golden as G
 from .inputs import build, gather, params_of, section_input, station_input
+from .solve_input import fill_levels, neighbour_view, section_solve_input
 
 ENGINE_METHOD = "vertical.rail"
 STATION_METHOD = "station.facts"
+SOLVE_METHOD = "section.solve"
+NEIGHBOUR_JOB = "profiles.neighbour"
 BASELINE = "repo://tests/baseline/profiles/{route}.json"
 TABLE = "repo://region/ext/profiles/golden.yaml"
 PVI_TOLERANCE_M = 0.001
@@ -46,6 +53,7 @@ CODE_FILES = (
     "repo://region/ext/profiles/inputs.py",
     "repo://region/ext/profiles/doc.py",
     "repo://region/ext/profiles/golden.py",
+    "repo://region/ext/profiles/solve_input.py",
 )
 """The modules besides this one whose code makes the outputs (``JobType.code_files``)."""
 
@@ -248,16 +256,129 @@ class GoldenDiff:
         return Output(meta=meta, arrays={"diff_m": _f8(diff)}, issues=issues)
 
 
+class Neighbour:
+    """``profiles.neighbour@1`` (scope: a section id; host: the engine): what the lines crossing this section read of
+    it (``solve_input.neighbour_view``): its live stations with their rail levels, bend points, drawn ground, streets,
+    ready flag, phase and settings, in ``meta.neighbour``. A station with no saved level takes the level solver's:
+    then ``plan`` also builds the section's own SectionSolveInput (no neighbours: the default levels do not depend on
+    crossings, so there is no cycle) and ``run`` solves it. The output is the view only, so a change to this line
+    that leaves the view as it was (a paint, a selection, a tube form) gives the same output hash and the lines
+    crossing it are not solved again (early cutoff, 9.19)."""
+
+    name = NEIGHBOUR_JOB
+    version = "1"
+    scope = "section"
+    host = "engine"
+    priority = 3
+    timeout_s = 60.0
+    code_files = CODE_FILES
+
+    def plan(self, ctx: Any, scope_id: str) -> dict[str, Any]:
+        view = neighbour_view(ctx, scope_id)
+        if view is not None:
+            return {"view": view, "template": None, "input": None}
+        return {
+            "view": None,
+            "template": neighbour_view(ctx, scope_id, template=True),
+            "input": section_solve_input(ctx, scope_id),
+        }
+
+    def run(self, inputs: dict[str, Any], rt: Any) -> Output:
+        if inputs["view"] is not None:
+            return Output(meta={"neighbour": inputs["view"]})
+        rt.progress(0.1, "levels")
+        out = rt.engine.call(SOLVE_METHOD, inputs["input"])
+        levels = {s["platform_id"]: s["level"] for s in out["stations"]}
+        rt.progress(1.0, "done")
+        return Output(meta={"neighbour": fill_levels(inputs["template"], levels)})
+
+
+def _f8n(values: list[Any]) -> Any:
+    import numpy as np
+
+    return np.asarray([float("nan") if v is None else float(v) for v in values], dtype="<f8")
+
+
+SOLVED_ARRAYS = ("limit_tube", "limit_box")
+"""The per-sample arrays of solved_section/0 the job stores as arrays (the rest of the output is meta)."""
+
+
+class SolveStructure:
+    """``profiles.solve_structure@1`` (scope: a section id; host: the engine): the whole solve of the section as the
+    old Profiles page made it (``section.solve@1``: the structure solver, ground, rivers, viaducts, canon, crossings,
+    context, roads, checks and issues). ``plan`` builds the SectionSolveInput from the records
+    (``solve_input.section_solve_input``) and needs ``profiles.neighbour`` of every line that crosses it; ``run``
+    lays the neighbours in and solves. The key holds the neighbours' output hashes, never their records: a change on
+    Line 6 solves Line 3 again only when Line 3 crosses Line 6 and Line 6's view changed. It runs after
+    ``profiles.solve_section`` (priority 4, its own result and event), so the rail is never held up by it.
+
+    ``meta`` is the solved section less its two per-sample limit lines (``arrays``: ``limit_tube``, ``limit_box``,
+    NaN where open) and the ground layers (``arrays``: ``ground_finished``, ``ground_surface``, ``ground_bed``); the
+    issues are its flags, each with its rule id, its marker chainage and the old page's kind in ``data``."""
+
+    name = "profiles.solve_structure"
+    version = "1"
+    scope = "section"
+    host = "engine"
+    priority = 4
+    timeout_s = 60.0
+    code_files = CODE_FILES
+
+    def plan(self, ctx: Any, scope_id: str) -> dict[str, Any]:
+        inp = section_solve_input(ctx, scope_id)
+        refs: dict[str, str] = {}
+        for x in inp["crossings"]:
+            other = x.get("other")
+            if other and other != scope_id and x["wid"] not in refs:
+                refs[x["wid"]] = ctx.need(NEIGHBOUR_JOB, other)
+        return {"input": inp, "neighbours": refs}
+
+    def run(self, inputs: dict[str, Any], rt: Any) -> Output:
+        neighbours: dict[str, Any] = {}
+        for wid, ref in sorted(inputs["neighbours"].items()):
+            view = (rt.upstream(ref).meta or {}).get("neighbour")
+            if view is not None:
+                neighbours[wid] = view
+        rt.progress(0.1, "structure")
+        out = rt.engine.call(SOLVE_METHOD, {**inputs["input"], "neighbours": neighbours})
+        ground = out.get("ground") or {}
+        arrays = {name: _f8n(out[name]) for name in SOLVED_ARRAYS}
+        for layer in ("finished", "surface", "bed"):
+            arrays[f"ground_{layer}"] = _f8n(ground.get(layer) or [])
+        skip = {"engine_build", "input_hash", *SOLVED_ARRAYS}
+        meta = {k: v for k, v in out.items() if k not in skip}
+        meta["ground"] = {k: v for k, v in ground.items() if k not in ("finished", "surface", "bed")}
+        issues = [
+            {
+                "rule": f["rule"],
+                "sev": f["sev"],
+                "c0": f["c0"],
+                "c1": f["c1"],
+                "msg": f["kind"],
+                "data": {**(f.get("data") or {}), "page": f.get("page"), "c": f.get("c")},
+            }
+            for f in out["flags"]
+        ]
+        rt.progress(1.0, "done")
+        return Output(meta=meta, arrays=arrays, issues=issues)
+
+
 SOLVE_SECTION = SolveSection()
 STATION_FACTS = StationFacts()
 GOLDEN_DIFF = GoldenDiff()
-JOB_TYPES = [SOLVE_SECTION, STATION_FACTS, GOLDEN_DIFF]
+NEIGHBOUR = Neighbour()
+SOLVE_STRUCTURE = SolveStructure()
+JOB_TYPES = [SOLVE_SECTION, STATION_FACTS, GOLDEN_DIFF, NEIGHBOUR, SOLVE_STRUCTURE]
 
 __all__ = [
     "GOLDEN_DIFF",
     "STATION_FACTS",
     "GoldenDiff",
     "JOB_TYPES",
+    "NEIGHBOUR",
+    "SOLVE_STRUCTURE",
+    "Neighbour",
+    "SolveStructure",
     "SOLVE_SECTION",
     "SolveSection",
     "StationFacts",

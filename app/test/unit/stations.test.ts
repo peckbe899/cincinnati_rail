@@ -50,6 +50,7 @@ import {
   stationStripBand,
   stationStructureBand,
 } from "../../src/plugins/line-sheet/stations.ts";
+import { fact } from "./fixtures/station_fact.ts";
 
 const m = new Units("m");
 const ft = new Units("ft");
@@ -304,51 +305,6 @@ describe("station words (A.3, A.6)", () => {
 });
 
 /** A station fact with the fields the bands read. */
-function fact(o: Partial<StationFact>): StationFact {
-  return {
-    platform_id: "A",
-    key: "A",
-    name: "A",
-    order: 0,
-    deleted: false,
-    index: 0,
-    point_c_m: 1000,
-    slide_m: 0,
-    c_m: 1000,
-    half_m: 60,
-    level_set: true,
-    level_m: 150,
-    rail_m: 150,
-    rail_ends_m: [150, 150],
-    default_level_m: 156,
-    ground_m: 163.6,
-    ground_dem_m: 163.6,
-    depth_m: 13.6,
-    grade_in_permille: 0,
-    grade_out_permille: 0,
-    platform_grade_permille: 0,
-    grade_limit_permille: 7.5,
-    grade_limit_param: "literal.ERA.sgMax.lines_1_7",
-    type: "cutcover",
-    type_source: "rule",
-    type_why: "box_within_limit",
-    selected: null,
-    role: "box",
-    phase: "1",
-    phase_source: "line_phase",
-    cc_max_m: 12.19,
-    side: "island",
-    side_source: "import",
-    structure: { kind: "box", top_m: 155.2, bottom_m: 149 },
-    elevated_rail_min_m: null,
-    access: null,
-    curve: null,
-    street: { text: "under", street: "Central Parkway", subway: true, roads: [] },
-    gapfill: false,
-    flags: [],
-    ...o,
-  } as StationFact;
-}
 
 describe("station drawing from station.facts@1 (A.1)", () => {
   it("the structure quad tilts with the platform and keeps the box's offsets", () => {

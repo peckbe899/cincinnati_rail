@@ -1,0 +1,277 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cincinnati-rail.invalid/engine/schema/v0/section_proposal.json",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "section_proposal/0"
+    },
+    "engine_build": {
+      "type": "string"
+    },
+    "input_hash": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "regrade",
+        "fix_all",
+        "fill",
+        "solve_cross",
+        "reset",
+        "paint_review"
+      ]
+    },
+    "changed": {
+      "type": "boolean"
+    },
+    "rule": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*){1,3}$",
+      "description": "A rule id of rules/registry.yaml, e.g. geometry.method.per_stretch."
+    },
+    "edit": {
+      "type": "object",
+      "properties": {
+        "pvi": {
+          "description": "The bend points, the whole list.",
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "items": false,
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "st": {
+          "description": "Station levels to set, by platform id.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "sg": {
+          "description": "Platform grades to set, by platform id; 0 removes the key.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "gnd": {
+          "description": "The drawn ground lines, the whole list.",
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        },
+        "clear": {
+          "description": "Profile fields to empty (Reset this line).",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ready": {
+          "type": "boolean"
+        },
+        "ovr": {
+          "description": "A profile saved in an older frame: its paints in the current one.",
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "items": false,
+            "minItems": 3,
+            "maxItems": 3
+          }
+        },
+        "tf": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "items": false,
+            "minItems": 3,
+            "maxItems": 3
+          }
+        },
+        "shafts": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "so": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "frame": {
+          "description": "The frame the profile is now saved in (reframeDoc).",
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "length_m": {
+                  "type": "number"
+                },
+                "point_c": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "number"
+                  }
+                }
+              },
+              "required": [
+                "length_m",
+                "point_c"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "description": "The edit to lay on the draft; members left out are unchanged."
+    },
+    "report": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {},
+      "description": "Numbers and names for the sheet to word."
+    },
+    "paints": {
+      "description": "The paint review: each paint with what the rules give there without it.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "list": {
+            "type": "string",
+            "enum": [
+              "ovr",
+              "tf",
+              "shafts"
+            ]
+          },
+          "j": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "a": {
+            "type": "number"
+          },
+          "b": {
+            "type": "number"
+          },
+          "paint": {
+            "type": "string"
+          },
+          "rules": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "same": {
+            "type": "boolean"
+          },
+          "misfit": {
+            "type": "number"
+          },
+          "fill": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "list",
+          "j",
+          "a",
+          "b",
+          "paint",
+          "rules",
+          "same",
+          "misfit",
+          "fill"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "contract",
+    "engine_build",
+    "input_hash",
+    "kind",
+    "changed",
+    "rule",
+    "edit",
+    "report"
+  ],
+  "additionalProperties": false,
+  "title": "SectionProposal",
+  "description": "What a proposer of section.propose@1 would change on the draft, with its rule and a report."
+}

@@ -7,7 +7,16 @@
 import { z } from "zod";
 
 /** The contract majors this engine speaks, sent in the hello. Python refuses a major it does not know. */
-export const CONTRACTS = { section_input: 0, vertical_rail: 0, station_input: 0, station_facts: 0 } as const;
+export const CONTRACTS = {
+  section_input: 0,
+  vertical_rail: 0,
+  station_input: 0,
+  station_facts: 0,
+  section_solve_input: 0,
+  solved_section: 0,
+  section_propose_input: 0,
+  section_proposal: 0,
+} as const;
 export type ContractName = keyof typeof CONTRACTS;
 
 /** Units as in region/kinds/_vocab.yaml. Every number in a contract carries one as x-unit. */

@@ -14,7 +14,15 @@
 // is read-only where the save would be refused: an import or legacy layer, or main while the old hub owns profiles.
 // Selecting a platform, stop or station (on the map, or with Ctrl+K) opens its line here at its chainage.
 
-import type { SectionInput, StationFact, StationInput, VerticalRail } from "@cr/engine/contract";
+import type {
+  SectionInput,
+  SectionProposal,
+  SectionSolveInput,
+  SolvedSection,
+  StationFact,
+  StationInput,
+  VerticalRail,
+} from "@cr/engine/contract";
 import type { JsonPatch, Rec } from "../../api/types.ts";
 import { layerPhrase } from "../../core/describe.ts";
 import { bodyOf } from "../../core/drafts.ts";
@@ -37,9 +45,12 @@ import { setChainage } from "../../core/store.ts";
 import { CHAINAGE_HELP, formatChainage, parseChainage } from "../../core/units.ts";
 import { type View, viewToken } from "../../core/view.ts";
 import { createEngine, type EngineHandle } from "../../engine/client.ts";
+import { MAXIMISE_REQUEST, MAXIMISED_EVENT } from "../../shell/maximise.ts";
 import { stationLevel } from "./bands.ts";
+import { bendCard, groundCard, helpCard } from "./cards.ts";
 import {
   flagText,
+  fmtCh,
   fmtZ,
   margins,
   SEV_COLOURS,
@@ -50,11 +61,14 @@ import {
   valueAt,
   worstSeverity,
 } from "./drawing.ts";
+import { download, type ExportModel, exportGeoJson, exportJson, exportKmz, profileByKey } from "./exports.ts";
+import { buildLinePanel, type CheckRow, type IssueRow, type PaintRowView } from "./linepanel.ts";
 import {
   addPvi,
   easeGrade,
   factsInput,
   frameFor,
+  hasDesign,
   localInput,
   maxDiff,
   nudgeLevel,
@@ -77,10 +91,31 @@ import {
   setStationSlide,
   setStationType,
   solveInput,
+  solveInputOf,
   stationFrame,
   toFloat64,
 } from "./model.ts";
 import { buildPanel, keepFocus } from "./panel.ts";
+import { buildSettings, type SettingParam } from "./settings.ts";
+import { issueAt, runAt, type ShowMode, sampleAt } from "./solved.ts";
+import {
+  addGroundAt,
+  BRUSH_LABELS,
+  BRUSH_TIPS,
+  type Brush,
+  clearMisfit,
+  clearPaints,
+  type GroundPoint,
+  groundLines,
+  moveGroundPoint,
+  paintRange,
+  proposalOps,
+  removeGroundPoint,
+  setPvi,
+  setReady,
+  type Tool,
+  TYPE_BRUSHES,
+} from "./tools.ts";
 
 export const SOLVE_JOB = "profiles.solve_section";
 
@@ -188,7 +223,194 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   });
   saveBtn.dataset.testid = "sheet-save";
   saveBtn.onclick = () => void host.runCommand("core.save");
-  bar.append(title, summary, profileInfo, solveInfo, serverInfo, pendingMark, saveBtn, discard, fit);
+  // Maximise (the dock's, shell/maximise.ts): the sheet fills the window, the plot its whole height (the old page's
+  // 1,230 px wide plot at 1,600 px); Shift+F or a double-click on the tab does the same. The tables fold away under
+  // the Tables button (folded by default while maximised), so the plot keeps the height.
+  const maxBtn = Object.assign(document.createElement("button"), {
+    type: "button",
+    textContent: "Maximise",
+    title: "Fill the window with the sheet (Shift+F, or double-click its tab); again to put it back",
+  });
+  maxBtn.dataset.testid = "sheet-maximise";
+  maxBtn.setAttribute("aria-pressed", "false");
+  maxBtn.onclick = () => maxBtn.dispatchEvent(new Event(MAXIMISE_REQUEST, { bubbles: true }));
+  const tablesBtn = Object.assign(document.createElement("button"), {
+    type: "button",
+    textContent: "Tables",
+    title: "Show or fold away the stations and PVI tables under the plot",
+  });
+  tablesBtn.dataset.testid = "sheet-tables";
+  // Show: Rail, Rail + box or Box, as on the old page (S.show): the structure outlines over the rail, or the rail alone.
+  const showGroup = document.createElement("span");
+  showGroup.className = "sheet-show";
+  showGroup.dataset.testid = "sheet-show";
+  showGroup.setAttribute("role", "group");
+  showGroup.setAttribute("aria-label", "Show");
+  const SHOW_KEY = "cr.sheet.show";
+  let show: ShowMode = (() => {
+    try {
+      const v = sessionStorage.getItem(SHOW_KEY);
+      return v === "rail" || v === "box" ? v : "railbox";
+    } catch {
+      return "railbox";
+    }
+  })();
+  const showBtns = (
+    [
+      ["rail", "Rail", "The rail alone, coloured by structure"],
+      ["railbox", "Rail + box", "The rail with the tunnel, box and viaduct outlines"],
+      ["box", "Box", "The structures, the tunnels' rail left to the outline"],
+    ] as const
+  ).map(([mode, label, tip]) => {
+    const b = Object.assign(document.createElement("button"), { type: "button", textContent: label, title: tip });
+    b.dataset.show = mode;
+    b.onclick = () => {
+      show = mode;
+      try {
+        sessionStorage.setItem(SHOW_KEY, mode);
+      } catch {
+        /* the choice lasts for this pane */
+      }
+      for (const q of showBtns) q.setAttribute("aria-pressed", String(q.dataset.show === show));
+      draw();
+    };
+    return b;
+  });
+  for (const q of showBtns) q.setAttribute("aria-pressed", String(q.dataset.show === show));
+  showGroup.append(...showBtns);
+  bar.append(
+    title,
+    summary,
+    profileInfo,
+    solveInfo,
+    serverInfo,
+    pendingMark,
+    saveBtn,
+    discard,
+    fit,
+    showGroup,
+    tablesBtn,
+    maxBtn,
+  );
+  // The tools row: the old page's toolbar (claude/hub_maps/profiles_parity.md, C: R1, R7 to R13, R16 to R20, R49).
+  const toolsRow = Object.assign(document.createElement("div"), { className: "sheet-tools" });
+  toolsRow.dataset.testid = "sheet-tools";
+  const mk = (text: string, title: string, testid: string, run: () => void): HTMLButtonElement => {
+    const b = Object.assign(document.createElement("button"), { type: "button", textContent: text, title });
+    b.dataset.testid = testid;
+    b.onclick = run;
+    return b;
+  };
+  const group = (label: string, ...kids: HTMLElement[]): HTMLSpanElement => {
+    const g = Object.assign(document.createElement("span"), { className: "sheet-group" });
+    g.setAttribute("role", "group");
+    g.setAttribute("aria-label", label);
+    g.append(...kids);
+    return g;
+  };
+  // the line picker: every line with its length (buildLineSel 3341), Metro first
+  const lineSel = document.createElement("select");
+  lineSel.dataset.testid = "line-picker";
+  lineSel.setAttribute("aria-label", "Line");
+  lineSel.title = "Every line with its length: pick one to show it here";
+  lineSel.onchange = () => {
+    if (lineSel.value && lineSel.value !== target?.sectionId) host.select({ kind: "section", id: lineSel.value });
+  };
+  let tool: Tool = "move";
+  let brush: Brush = "auto";
+  const toolBtns = (
+    [
+      ["move", "Move", "Drag stations and bend points (M)"],
+      ["paint", "Paint", "Paint structure type along the line (P)"],
+      [
+        "ground",
+        "Ground",
+        "Draw the ground: double-click to start a line or add a point to one, drag the points, Del removes one (G)",
+      ],
+    ] as const
+  ).map(([t, label, tip]) => {
+    const b = mk(label, tip, `tool-${t}`, () => setTool(t));
+    b.dataset.tool = t;
+    return b;
+  });
+  const brushBar = group("Structure brush");
+  brushBar.classList.add("sheet-brushes");
+  brushBar.dataset.testid = "sheet-brushes";
+  const BRUSHES: Brush[] = ["auto", ...TYPE_BRUSHES, "shaft", "tf:twin", "tf:bore", "tf:auto"];
+  const brushBtns = BRUSHES.map((k) => {
+    const b = mk(BRUSH_LABELS[k], BRUSH_TIPS[k] ?? `Paint ${BRUSH_LABELS[k]}`, `brush-${k.replace(":", "-")}`, () => {
+      brush = k;
+      for (const q of brushBtns) q.setAttribute("aria-pressed", String(q.dataset.brush === brush));
+      setTool("paint");
+    });
+    b.dataset.brush = k;
+    if ((TYPE_BRUSHES as readonly string[]).includes(k)) {
+      const sw = Object.assign(document.createElement("span"), { className: "swatch" });
+      sw.style.background = typeColour(k);
+      b.prepend(sw);
+    }
+    b.setAttribute("aria-pressed", String(k === brush));
+    return b;
+  });
+  brushBar.append(...brushBtns);
+  const setTool = (t: Tool) => {
+    tool = t;
+    for (const b of toolBtns) b.setAttribute("aria-pressed", String(b.dataset.tool === t));
+    brushBar.style.opacity = t === "paint" ? "1" : "0.55";
+    canvas.dataset.tool = t;
+    if (t !== "ground" && selected?.kind === "gp") {
+      selected = null;
+      renderCard();
+    }
+    draw();
+  };
+  const settingsBtn = mk("Settings", "The design settings (params) for every Metro line", "settings-open", () =>
+    toggleSettings(),
+  );
+  settingsBtn.setAttribute("aria-expanded", "false");
+  const helpBtn = mk("?", "How to edit: the tools, the keys and the mouse", "help-open", () => toggleHelp());
+  helpBtn.setAttribute("aria-expanded", "false");
+  toolsRow.append(
+    group("Line", lineSel),
+    group("Tool", ...toolBtns),
+    brushBar,
+    group(
+      "Undo",
+      mk("Undo", "Undo (Ctrl+Z)", "sheet-undo", () => void host.runCommand("core.undo")),
+      mk("Redo", "Redo (Ctrl+Shift+Z)", "sheet-redo", () => void host.runCommand("core.redo")),
+    ),
+    group(
+      "Zoom",
+      mk("−", "Zoom out (-)", "zoom-out", () => zoomBy(1 / 0.6)),
+      mk("+", "Zoom in (+)", "zoom-in", () => zoomBy(0.6)),
+    ),
+    group(
+      "Export",
+      mk("Export PNG", "The whole line's long section as a picture", "export-png", () => void exportAs("png")),
+      mk(
+        "Export JSON",
+        "The profile, its stations and summary, and a sample every 10 m",
+        "export-json",
+        () => void exportAs("json"),
+      ),
+      mk(
+        "Export GeoJSON",
+        "The designed rail (3D, rail level) by structure, and the stations, as GeoJSON",
+        "export-geojson",
+        () => void exportAs("geojson"),
+      ),
+      mk(
+        "Export KMZ",
+        "The designed rail (3D, rail level) and the stations, for Google Earth",
+        "export-kmz",
+        () => void exportAs("kmz"),
+      ),
+    ),
+    group("Settings", settingsBtn, helpBtn),
+  );
+  const pop = Object.assign(document.createElement("div"), { className: "sheet-popover" });
+  pop.hidden = true;
+  pop.dataset.testid = "sheet-popover";
   const notice = Object.assign(document.createElement("div"), { className: "sheet-notice" });
   notice.dataset.testid = "sheet-notice";
   notice.setAttribute("role", "status");
@@ -196,11 +418,15 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   canvasWrap.className = "sheet-canvas";
   const canvas = document.createElement("canvas");
   canvas.dataset.testid = "sheet-canvas";
+  // the tool the sheet opens with: Move, the brushes dimmed until Paint (setTool 3728)
+  canvas.dataset.tool = tool;
+  for (const b of toolBtns) b.setAttribute("aria-pressed", String(b.dataset.tool === tool));
+  brushBar.style.opacity = "0.55";
   canvas.tabIndex = 0;
   canvas.setAttribute("role", "img");
   canvas.setAttribute(
     "aria-label",
-    "Long section. Click a station or a PVI to select it; drag it up or down to set its level, Alt + drag a station to slide it; drag elsewhere to pan; wheel to zoom; double-click the rail to add a PVI. Arrows nudge the selection (Alt + Left or Right slides a station, Page Up or Down tilts it), [ and ] step through the stations, E eases the bends, Delete twice removes a station, F shows the whole line, Esc clears.",
+    "Long section. Click a station or a PVI to select it; drag it up or down to set its level, Alt + drag a station to slide it; drag elsewhere to pan; wheel to zoom; double-click the rail to add a PVI. Arrows nudge the selection (Alt + Left or Right slides a station, Page Up or Down tilts it), [ and ] step through the stations, E eases the bends, Delete twice removes a station, F shows the whole line, Shift+F maximises the sheet, Esc clears.",
   );
   // What the canvas drew, in words: station names and levels, grades. Hidden from sight, read by screen readers.
   const textLayer = document.createElement("ul");
@@ -213,8 +439,50 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   card.dataset.testid = "station-card";
   const tables = document.createElement("div");
   tables.className = "sheet-table";
-  root.append(bar, notice, canvasWrap, card, tables);
+  // the side column: the selection's card over the line panel (the old page's side cards)
+  const linePanel = document.createElement("div");
+  linePanel.className = "sheet-line";
+  const side = Object.assign(document.createElement("div"), { className: "sheet-side" });
+  side.dataset.testid = "sheet-side";
+  side.append(card, linePanel);
+  root.append(bar, toolsRow, notice, canvasWrap, side, tables, pop);
   el.append(root);
+
+  let maximised = el.dataset.maximised === "1";
+  /** Whether the tables show, kept for the session apart for the maximised sheet and the docked one. */
+  const tablesKey = () => `cr.sheet.tables.${maximised ? "max" : "docked"}`;
+  const tablesShown = (): boolean => {
+    try {
+      const v = sessionStorage.getItem(tablesKey());
+      return v === null ? !maximised : v === "1";
+    } catch {
+      return !maximised;
+    }
+  };
+  const showMode = () => {
+    root.classList.toggle("maximised", maximised);
+    maxBtn.textContent = maximised ? "Restore" : "Maximise";
+    maxBtn.setAttribute("aria-pressed", String(maximised));
+    const shown = tablesShown();
+    root.classList.toggle("tables-hidden", !shown);
+    // folded away, so the plot takes the sheet's whole height
+    tables.style.display = shown ? "" : "none";
+    tablesBtn.setAttribute("aria-pressed", String(shown));
+  };
+  showMode();
+  const onMaximised = (e: Event) => {
+    maximised = !!(e as CustomEvent<boolean>).detail;
+    showMode();
+  };
+  el.addEventListener(MAXIMISED_EVENT, onMaximised);
+  tablesBtn.onclick = () => {
+    try {
+      sessionStorage.setItem(tablesKey(), tablesShown() ? "0" : "1");
+    } catch {
+      /* the choice lasts until the next change of mode */
+    }
+    showMode();
+  };
 
   let view = host.view();
   let target: Target | null = null;
@@ -233,6 +501,14 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   let si: StationInput | null = null;
   /** station.facts@1 of the draft, one per platform; null until it has run. */
   let facts: StationFact[] | null = null;
+  /** The section's SectionSolveInput (the input of section.solve@1), null when the hub could not give it. */
+  let ssi: SectionSolveInput | null = null;
+  /** section.solve@1 of the draft, the last one that landed (the bands keep it during a drag); null until then. */
+  let solved: SolvedSection | null = null;
+  let fullBusy = false;
+  let fullAgain = false;
+  /** Counts the drafts the sheet has solved the rail for: a full solve that started on an older one runs again. */
+  let editRev = 0;
   let factsBusy = false;
   let factsAgain = false;
   /** The section's platform records, by id (the side edit drafts them). */
@@ -364,6 +640,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     const gen = generation;
     try {
       const inp = solveInput(input, data(), frame);
+      editRev++;
       const t0 = performance.now();
       const out = await host.engine.solve("vertical.rail", inp, {
         engineBuild: host.events.status().engine_build ?? undefined,
@@ -375,7 +652,10 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       solveInfo.dataset.ms = String(total);
       solveInfo.dataset.rev = String(Number(solveInfo.dataset.rev ?? 0) + 1);
       compare();
-      if (!si) showSummary();
+      if (!si) {
+        showSummary();
+        fullSoon();
+      }
       // The panel and tables follow the facts solve that comes next; without one they follow the rail.
       if (!si && tableDue) {
         tableDue = false;
@@ -450,9 +730,11 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       });
       if (gen !== generation) return;
       facts = (out.result as { stations: StationFact[] }).stations;
+      fullSoon();
       solveInfo.dataset.factsMs = String(performance.now() - t0);
       solveInfo.dataset.factsRev = String(Number(solveInfo.dataset.factsRev ?? 0) + 1);
       showSummary();
+      renderLineSoon();
       if (!factsAgain) {
         tableDue = false;
         refreshTable();
@@ -469,6 +751,77 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       if (factsAgain) {
         factsAgain = false;
         void solveFacts();
+      }
+    }
+  };
+
+  /**
+   * section.solve@1 of the draft, the whole solve (claude/hub_maps/engine_port_plan.md, section 8), in a worker of
+   * its own after the rail and the station facts: never during a drag (it waits for the pointer to come up), and
+   * only once a burst of edits has paused for 150 ms. The bands draw the last one that landed, with the live rail.
+   */
+  let fullTimer: ReturnType<typeof setTimeout> | null = null;
+  const FULL_PAUSE_MS = 150;
+  const fullSoon = () => {
+    if (!ssi) return;
+    if (fullTimer) clearTimeout(fullTimer);
+    fullTimer = setTimeout(() => {
+      fullTimer = null;
+      if (solving || factsBusy || (drag && drag.kind !== "pan" && drag.kind !== "overview")) fullSoon();
+      else void solveFull();
+    }, FULL_PAUSE_MS);
+  };
+  let fullEngine: EngineHandle | null = null;
+  /** The input the full solve's worker holds (stash), so a new one from the hub is sent again. */
+  let stashedSsi: SectionSolveInput | null = null;
+  const SSI_STASH = "section_solve_input";
+  const SOLVED_TYPED = ["limit_tube", "limit_box", "ground.finished", "ground.surface", "ground.bed"] as const;
+  const solveFull = async () => {
+    if (!ssi) return;
+    if (fullBusy) {
+      fullAgain = true;
+      return;
+    }
+    fullBusy = true;
+    const gen = generation;
+    const rev = editRev;
+    try {
+      // the server's input crosses to the worker once (stash); each solve sends only the draft's own members, and
+      // the long arrays come back moved, not copied, so the page's thread is never held by the whole solve
+      const inp = solveInputOf(ssi, data(), sideDraft);
+      const t0 = performance.now();
+      fullEngine ??= createEngine();
+      if (stashedSsi !== ssi) {
+        await fullEngine.stash(SSI_STASH, ssi);
+        stashedSsi = ssi;
+      }
+      const ov = settingsOverride();
+      const out = await fullEngine.solve(
+        "section.solve",
+        {
+          doc: inp.doc,
+          platforms: inp.platforms,
+          access: inp.access,
+          ...(ov ? { settings: { ...ssi.settings, ...ov } } : {}),
+        },
+        { engineBuild: host.events.status().engine_build ?? undefined, base: SSI_STASH, typed: SOLVED_TYPED },
+      );
+      if (gen !== generation) return;
+      solved = out.result as SolvedSection;
+      solveInfo.dataset.fullMs = String(performance.now() - t0);
+      solveInfo.dataset.fullEngineMs = String(out.ms);
+      solveInfo.dataset.fullRev = String(Number(solveInfo.dataset.fullRev ?? 0) + 1);
+      if (rev !== editRev) fullAgain = true;
+      draw();
+      renderLineSoon();
+      if (selected?.kind === "pvi" || selected?.kind === "gp") renderCard();
+    } catch (e) {
+      solveInfo.dataset.fullError = String((e as Error).message ?? e);
+    } finally {
+      fullBusy = false;
+      if (fullAgain) {
+        fullAgain = false;
+        fullSoon();
       }
     }
   };
@@ -632,6 +985,15 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       frame = frameFor(fr, inp) ?? frameFor(frame, inp);
       refreshTable();
       void solve();
+      // the whole solve's input last: the heaviest read never holds up the rail's
+      void host.api
+        .solveInput(sectionId, view)
+        .then((x) => {
+          if (gen !== generation) return;
+          ssi = x;
+          fullSoon();
+        })
+        .catch(() => undefined);
     } catch {
       /* the input stays as it was; the next revision tries again */
     }
@@ -653,10 +1015,16 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     local = null;
     si = null;
     facts = null;
+    ssi = null;
+    solved = null;
     server = null;
     asked = null;
     builtPvis = -1;
     selected = null;
+    paintRows = null;
+    checkRows = null;
+    checkNote = null;
+    linePanel.replaceChildren();
     card.hidden = true;
     editable = "Loading…";
     timeNote = null;
@@ -677,6 +1045,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
         return;
       }
       const sectionId = target.sectionId;
+      void fillPicker();
       title.dataset.section = sectionId;
       title.title = `section ${sectionId}`;
       sectionName = host.names.text("section", sectionId, view);
@@ -707,7 +1076,17 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       showProfile();
       showChainage();
       if (!range || shownSection !== sectionId) range = [0, input.length_m];
+      // the whole solve's input is the heaviest read: it follows on its own, so the rail and facts never wait
+      void host.api
+        .solveInput(sectionId, view)
+        .then((x) => {
+          if (gen !== generation) return;
+          ssi = x;
+          fullSoon();
+        })
+        .catch(() => undefined);
       shownSection = sectionId;
+      if (popKind === "settings") void loadSettings().then(renderPop);
       if (target.profile) {
         const p = target.profile;
         stopWatch = host.records.watch(p.kind, p.id, view, (r) => {
@@ -1127,6 +1506,27 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   /** The selected station's panel (A.3): every setting with its value, source and rule, rebuilt after each solve.
    * A field Ben is typing in keeps its text and caret across the rebuild. */
   const renderCard = () => {
+    renderLineSoon();
+    if (input && selected?.kind === "pvi") {
+      card.hidden = false;
+      root.classList.add("with-panel");
+      keepFocus(card, () => {
+        const c = bendCardOf();
+        card.replaceChildren(c ?? document.createElement("div"));
+        return c;
+      });
+      return;
+    }
+    if (input && selected?.kind === "gp") {
+      card.hidden = false;
+      root.classList.add("with-panel");
+      keepFocus(card, () => {
+        const c = groundCardOf();
+        card.replaceChildren(c ?? document.createElement("div"));
+        return c;
+      });
+      return;
+    }
     const sel = selectedStation();
     if (!sel || !input) {
       // No station selected: the panel stays in its place with what Ben can do (the old card's hint), so the
@@ -1141,7 +1541,9 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
         "<p class=sp-hint>Drag a bar up or down for its level (Shift: 1 m steps); Alt + drag slides it along its drawn point. " +
         "Arrows nudge the level 0.1 (Shift 1); Alt + Left or Right slides 0.5 m; Page Up or Down tilts it 0.5‰; " +
         "[ and ] step through the stations; E eases the bends; Delete twice removes one. Ctrl+Z takes back each step; " +
-        "Ctrl+S or Enter in a field saves.</p>";
+        "Ctrl+S or Enter in a field saves.</p>" +
+        "<p class=sp-hint><b>Tools:</b> Move (M), Paint (P) with a structure brush, Ground (G) for the drawn ground. " +
+        "Press <b>?</b> for every tool and key.</p>";
       card.replaceChildren(hint);
       return;
     }
@@ -1234,6 +1636,745 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       card.replaceChildren(panel);
       return panel;
     });
+  };
+
+  // ------------------------------------------------------------------------- tools, cards and the line panel
+
+  /** A brush's colour for the paint preview (2722): the type's, the shield's for a tube form, grey to clear. */
+  const brushColour = (b: Brush): string =>
+    b === "auto" || b === "tf:auto" || b === "shaft"
+      ? "#8b919e"
+      : b.startsWith("tf:")
+        ? typeColour("shield")
+        : typeColour(b);
+
+  /** The ground below the drawn lines at c (baseAt 666): the whole solve's finished ground, else the survey. */
+  const groundBelow = (c: number): number | null => {
+    const f = solved ? sampleAt(solved.ground.finished as ArrayLike<number | null>, solved.step_m, c) : null;
+    if (f !== null && Number.isFinite(f)) return Math.round(f * 100) / 100;
+    const g = input?.ground ? valueAt(input.ground.z_m, input.ground.step_m, c) : null;
+    return g === null || !Number.isFinite(g) ? null : Math.round(g * 100) / 100;
+  };
+  const surfaceAt = (c: number): number | null => {
+    const f = solved ? sampleAt(solved.ground.surface as ArrayLike<number | null>, solved.step_m, c) : null;
+    if (f !== null && Number.isFinite(f)) return f;
+    return input?.ground ? valueAt(input.ground.z_m, input.ground.step_m, c) : null;
+  };
+  const railNow = (c: number): number | null => (local ? valueAt(local.rail_m, local.grid.step_m, c) : null);
+  const typeNow = (c: number): string | null => (solved ? (runAt(solved.type_runs, c)?.[0] ?? null) : null);
+
+  /** The bend point card of the selected PVI (3110-3133). */
+  const bendCardOf = (): HTMLElement | null => {
+    const sel = selected;
+    if (sel?.kind !== "pvi" || !input) return null;
+    const d = data();
+    const row = d ? pviRowOf(sel.c, sel.z) : null;
+    const rows = d ? pviRows(d) : [];
+    const p = row !== null ? rows.find((r) => r.index === row) : undefined;
+    const c = p?.c ?? sel.c;
+    const z = p?.z ?? sel.z ?? 0;
+    const curve = local?.curves.find((q) => Math.abs(q.c_m - c) < 0.5) ?? null;
+    const short = (local?.flags ?? []).some(
+      (f) => f.kind.includes("curve") && Math.abs(((f.c0 ?? 0) + (f.c1 ?? 0)) / 2 - c) < 0.5,
+    );
+    return bendCard({
+      units: host.units,
+      index: row ?? sel.index,
+      c,
+      z,
+      surface: surfaceAt(c),
+      type: typeNow(c),
+      gIn: curve ? curve.g_in : null,
+      gOut: curve ? curve.g_out : null,
+      curve: curve ? { L: curve.L_m, short } : null,
+      railAt: railNow(c),
+      canEdit: canEdit() && row !== null,
+      readOnly: canEdit() ? null : editable === true ? null : editable,
+      set: (cn, zn) => {
+        if (row === null) return;
+        const len = input?.length_m ?? cn + 1;
+        const cc = Math.round(outOfPlatforms(Math.max(1, Math.min(len - 1, cn))));
+        edit((cur) => setPvi(cur, row, cc, zn), { label: `PVI ${row + 1}` });
+        selected = { band: "pvi", kind: "pvi", index: row, c: cc, z: zn };
+        setChainage(host.store, cc);
+        renderCard();
+        draw();
+      },
+      remove: () => {
+        if (row === null) return;
+        edit(() => removePvi(row), { label: `PVI ${row + 1} removed` });
+        selected = null;
+        renderCard();
+        draw();
+      },
+    });
+  };
+
+  /** The ground point card of the selected drawn ground point (3092-3108). */
+  const groundCardOf = (): HTMLElement | null => {
+    const sel = selected;
+    if (sel?.kind !== "gp" || !input) return null;
+    const lines = groundLines(data());
+    const l = Number(sel.id);
+    const P = lines[l]?.pts;
+    const p = P?.[sel.index];
+    if (!P || !p) return null;
+    const k = sel.index;
+    const gr = (a: { c: number; z: number }, b: { c: number; z: number }) =>
+      b.c - a.c > 1e-6 ? ((b.z - a.z) / (b.c - a.c)) * 1000 : null;
+    const prev = P[k - 1];
+    const next = P[k + 1];
+    const gsel: GroundPoint = { l, k };
+    return groundCard({
+      units: host.units,
+      c: p.c,
+      z: p.z,
+      end: k === 0 || k === P.length - 1,
+      below: groundBelowLine(p.c, l),
+      gIn: prev ? gr(prev, p) : null,
+      gOut: next ? gr(p, next) : null,
+      rail: railNow(p.c),
+      from: (P[0] as { c: number }).c,
+      to: (P[P.length - 1] as { c: number }).c,
+      points: P.length,
+      canEdit: canEdit(),
+      set: (c, z) => {
+        edit((cur) => moveGroundPoint(cur, gsel, c, z, input?.length_m ?? c), { label: "ground point" });
+        const now = groundLines(data())[l]?.pts[k];
+        if (now) selected = { band: "drawn-ground", kind: "gp", index: k, id: String(l), c: now.c, z: now.z };
+        renderCard();
+        draw();
+      },
+      remove: (all) => {
+        edit((cur) => removeGroundPoint(cur, gsel, all), {
+          label: all ? "ground line removed" : "ground point removed",
+        });
+        selected = null;
+        renderCard();
+        draw();
+      },
+    });
+  };
+  /** The ground under a drawn line at c: the survey with the Deck's re-grades, the line itself left out. */
+  const groundBelowLine = (c: number, l: number): number | null => {
+    const g = input?.ground ? valueAt(input.ground.z_m, input.ground.step_m, c) : null;
+    const lines = groundLines(data());
+    const own = lines[l]?.pts;
+    const f = groundBelow(c);
+    // the finished ground holds the line itself over its span: the survey is the ground below there
+    if (own && c >= (own[0] as { c: number }).c && c <= (own[own.length - 1] as { c: number }).c) return g;
+    return f ?? g;
+  };
+
+  // ---- the line panel (R52 to R61)
+  let lineTimer: ReturnType<typeof setTimeout> | null = null;
+  let busy: string | null = null;
+  let paintRows: PaintRowView[] | null = null;
+  let checkRows: CheckRow[] | null = null;
+  let checkNote: string | null = null;
+  const renderLineSoon = () => {
+    if (lineTimer) return;
+    lineTimer = setTimeout(() => {
+      lineTimer = null;
+      renderLine();
+    }, 60);
+  };
+  const renderLine = () => {
+    if (!input || !target) {
+      linePanel.replaceChildren();
+      return;
+    }
+    const d = data();
+    const fs = facts ?? [];
+    const live = fs.length ? fs.filter((f) => !f.deleted).length : localInput(input, d, frame).stations.length;
+    const scroll = side.scrollTop;
+    const panel = buildLinePanel({
+      units: host.units,
+      line: sectionName,
+      length: input.length_m,
+      liveStations: live,
+      removed: fs.length - fs.filter((f) => !f.deleted).length,
+      solved,
+      ssi,
+      facts,
+      name: platformName,
+      ready: !!(d as { ready?: unknown } | null)?.ready,
+      canEdit: canEdit(),
+      busy,
+      paints: paintRows,
+      check: checkRows,
+      checkNote,
+      act: {
+        ready: (on) => edit((cur) => setReady(cur, on), { label: on ? "profile set" : "profile not set" }),
+        show: (c) => {
+          if (!range) return;
+          const span = Math.min(range[1] - range[0], 1500);
+          range = clampRange([c - span / 2, c + span / 2]);
+          setChainage(host.store, c);
+          draw();
+        },
+        select: (pid) => selectStation(pid, true, 1500),
+        regrade: (f) =>
+          void propose(
+            {
+              kind: "regrade",
+              mode: f.mode,
+              c0: f.c0,
+              c1: f.c1,
+              fit: f.fit ? ({ t: f.fit.t, why: f.fit.why } as never) : null,
+            },
+            f.mode === "lower" ? "Lower" : "Raise",
+          ),
+        fill: (c0, c1) => void propose({ kind: "fill", c0, c1 }, "Propose fill"),
+        clear: (x) => clearOne(x),
+        stationFix: (pid, kind) => stationFix(pid, kind),
+        easeAll: () => {
+          if (!input) return;
+          void easeStations(localInput(input, data(), frame).stations.map((x) => x.platform_id));
+        },
+        solveCross: () => void propose({ kind: "solve_cross" }, "Solve levels with crossings"),
+        fixAll: () => void propose({ kind: "fix_all" }, "Fix unbuildable"),
+        checkAll: () => void checkAll(),
+        openLine: (id) => host.select({ kind: "section", id }),
+        reviewPaints: () => void reviewPaints(),
+        clearPaint: (r) => {
+          edit((cur) => clearPaints(cur, [r]), { label: "paint cleared" });
+          paintRows = null;
+          void reviewPaints();
+        },
+        clearSamePaints: () => {
+          const same = (paintRows ?? []).filter((r) => r.same);
+          edit((cur) => clearPaints(cur, same), { label: "paints that repeat the rules cleared" });
+          paintRows = null;
+          void reviewPaints();
+        },
+        clearAllPaints: () => {
+          edit((cur) => clearPaints(cur, "all"), { label: "all paints cleared" });
+          paintRows = null;
+          void reviewPaints();
+        },
+        redraw: () => renderLine(),
+      },
+    });
+    linePanel.replaceChildren(panel);
+    side.scrollTop = scroll;
+  };
+
+  /** Clear (clearMisfit 3595): a selection back to the rules, or the paint cut out over the misfit. */
+  const clearOne = (x: NonNullable<IssueRow["clear"]>) => {
+    const d = data();
+    if (!d) return;
+    const ops = clearMisfit(d, x);
+    if (!ops.length) {
+      host.toast({ text: "Nothing to clear here: a lock or the canon holds it", level: "info", ttl: 2500 });
+      return;
+    }
+    edit(() => ops, { label: x.station ? `${platformName(x.station)} back to the rules` : "paint cleared" });
+    host.toast({
+      text: x.station
+        ? `${platformName(x.station)}: back to the rules`
+        : `Paint cleared from ${fmtCh(x.c0)} to ${fmtCh(x.c1)}`,
+      level: "info",
+      ttl: 2500,
+    });
+  };
+
+  /** A station flag's own fix from the issues list: the same as its button in the station panel. */
+  const stationFix = (pid: string, kind: string) => {
+    if (kind === "platform_grade_over") {
+      void easeStations([pid]);
+      return;
+    }
+    if (kind === "platform_curve") {
+      editStation(pid, "gap fillers on", (cur) => setGapfill(cur, pid, true));
+      return;
+    }
+    selectStation(pid, true, 1500);
+  };
+
+  /** A proposal of section.propose@1 on the draft, laid on it as one undo step, with the old page's words. */
+  const propose = async (request: Record<string, unknown>, what: string): Promise<SectionProposal | null> => {
+    if (!ssi || !canEdit() || busy) return null;
+    busy = `${what}…`;
+    renderLine();
+    try {
+      fullEngine ??= createEngine();
+      if (stashedSsi !== ssi) {
+        await fullEngine.stash(SSI_STASH, ssi);
+        stashedSsi = ssi;
+      }
+      const inp = solveInputOf(ssi, data(), sideDraft);
+      const out = await fullEngine.solve(
+        "section.propose",
+        {
+          contract: "section_propose_input/0",
+          doc: inp.doc,
+          platforms: inp.platforms,
+          access: inp.access,
+          request,
+          ...(settingsOverride() ? { settings: { ...ssi.settings, ...settingsOverride() } } : {}),
+        },
+        { engineBuild: host.events.status().engine_build ?? undefined, base: SSI_STASH },
+      );
+      const p = out.result as SectionProposal;
+      if (p.changed) {
+        const d = data();
+        if (d) edit(() => proposalOps(d, p), { label: what });
+      }
+      if (p.kind !== "paint_review") host.toast({ text: proposalWords(p), level: "info", ttl: 5000 });
+      if (p.kind === "fill" && p.changed) {
+        setTool("ground");
+        const l = Number(p.report.line ?? 0);
+        const pts = groundLines(data())[l]?.pts;
+        const k = Math.min(1, (pts?.length ?? 1) - 1);
+        const pt = pts?.[k];
+        if (pt) selected = { band: "drawn-ground", kind: "gp", index: k, id: String(l), c: pt.c, z: pt.z };
+      } else if (p.changed && p.kind !== "paint_review") selected = null;
+      renderCard();
+      return p;
+    } catch (e) {
+      host.problem(e);
+      return null;
+    } finally {
+      busy = null;
+      renderLine();
+    }
+  };
+
+  /** The old page's words for a proposal (regradeDrive 3654, fixAll 2994, proposeFill 1728, solveCross 3719). */
+  const proposalWords = (p: SectionProposal): string => {
+    const r = p.report as Record<string, unknown>;
+    const ch = (c: unknown) => fmtCh(Number(c));
+    const z = (m: unknown) => host.units.format(Number(m), "m", 1);
+    const lu = host.units.label("m");
+    if (p.kind === "regrade") {
+      const mode = r.mode === "raise" ? "raise" : "lower";
+      if (r.blocked) {
+        const b = r.blocked as { name: string };
+        return `This would move ${b.name}, which is held by the canon or locked: not changed`;
+      }
+      if (r.nothing) return `Nothing to ${mode}`;
+      const lowered = (r.lowered as { name: string; by: number }[]) ?? [];
+      const under = (r.under as string[]) ?? [];
+      const short = r.short as { by: number; c: number } | null;
+      return `${mode === "raise" ? "Raised" : "Lowered"} the rail by up to ${z(r.worst)} ${lu} from ${ch(r.c0)} to ${ch(r.c1)}${
+        lowered.length
+          ? `, with ${lowered.map((x) => `${x.name} ${z(x.by)}`).join(", ")} ${lu} ${mode === "raise" ? "higher" : "lower"}`
+          : ""
+      }${under.length ? `; under ${under.slice(0, 6).join(", ")}${under.length > 6 ? ` and ${under.length - 6} more` : ""}` : ""}${
+        short ? ` (still ${host.units.format(short.by, "m", 2)} ${lu} short at ${ch(short.c)})` : ""
+      }. A preview in your draft: Save keeps it, Ctrl+Z takes it back.`;
+    }
+    if (p.kind === "fix_all") {
+      const found = Number(r.found);
+      const left = Number(r.left);
+      if (!found) return "Nothing unbuildable on this line";
+      return left
+        ? `${left} unbuildable stretch${left > 1 ? "es" : ""} left (see the issues: a canon or locked station, or a fix that would undo another)`
+        : `All ${found} fixed. A preview in your draft: Save keeps it, Ctrl+Z takes it back.`;
+    }
+    if (p.kind === "fill")
+      return p.changed
+        ? `Fill drawn from ${ch(r.c0)} to ${ch(r.c1)}, up to ${z(r.top)} ${lu} high, ${r.points} points: edit it in Ground (Ctrl Z undoes it)`
+        : "The structure has its cover here: no fill needed";
+    if (p.kind === "solve_cross")
+      return Number(r.of)
+        ? `Cleared ${r.held} of ${r.of} crossings within ${r.maxGrade}‰. A preview in your draft: Save keeps it, Ctrl+Z takes it back.`
+        : "No crossings with a known rail";
+    if (p.kind === "reset")
+      return "This line reset to the level solver's default profile (not saved: Ctrl+Z takes it back)";
+    return "";
+  };
+
+  /** The paint review (2953-2983): each paint with what the rules give without it. */
+  const reviewPaints = async () => {
+    if (!ssi || busy) return;
+    busy = "Comparing the paints with the rules…";
+    renderLine();
+    try {
+      fullEngine ??= createEngine();
+      if (stashedSsi !== ssi) {
+        await fullEngine.stash(SSI_STASH, ssi);
+        stashedSsi = ssi;
+      }
+      const inp = solveInputOf(ssi, data(), sideDraft);
+      const out = await fullEngine.solve(
+        "section.propose",
+        {
+          contract: "section_propose_input/0",
+          doc: inp.doc,
+          platforms: inp.platforms,
+          access: inp.access,
+          request: { kind: "paint_review" },
+        },
+        { base: SSI_STASH },
+      );
+      paintRows = ((out.result as SectionProposal).paints ?? []) as PaintRowView[];
+    } catch (e) {
+      host.problem(e);
+    } finally {
+      busy = null;
+      renderLine();
+    }
+  };
+
+  /** Check all lines (2996-3010): every Metro line's whole solve, its unbuildable km, misfits, errors and paints. */
+  const checkAll = async () => {
+    if (busy) return;
+    const secs = await loadSections();
+    const metro = secs.filter((x) => x.system !== "rer" && x.system !== "tri");
+    const rows: CheckRow[] = [];
+    fullEngine ??= createEngine();
+    try {
+      for (const [i, x] of metro.entries()) {
+        busy = `Checking ${x.name} (${i + 1} of ${metro.length})…`;
+        renderLine();
+        let sol: SolvedSection;
+        let doc: SectionSolveInput["doc"];
+        if (x.id === target?.sectionId && solved && ssi) {
+          sol = solved;
+          doc = solveInputOf(ssi, data(), sideDraft).doc;
+        } else {
+          const inp = await host.api.solveInput(x.id, view);
+          sol = (await fullEngine.solve("section.solve", inp, {})).result as SolvedSection;
+          doc = inp.doc;
+        }
+        const step = sol.step_m;
+        const km = (w: string) => sol.bad.filter((b) => b.why === w).reduce((t, b) => t + b.c1 - b.c0 + step, 0) / 1000;
+        rows.push({
+          id: x.id,
+          name: x.name,
+          cover: km("cover"),
+          box: km("box"),
+          fit: sol.misfits.reduce((t, m) => t + m.c1 - m.c0 + step, 0) / 1000,
+          err: sol.flags.filter((f) => f.sev === "error" && !f.pending).length,
+          paint: (doc?.ovr ?? []).reduce((t, o) => t + (o[1] - o[0]), 0) / 1000,
+        });
+        checkRows = rows.slice();
+      }
+      checkNote = `${rows.length} Metro lines checked (each as saved in this view; this line as drawn now).`;
+    } catch (e) {
+      checkNote = `The check stopped: ${String((e as Error).message ?? e)}`;
+    } finally {
+      busy = null;
+      checkRows = rows;
+      renderLine();
+    }
+  };
+
+  /** The sections of the view, with their names, systems and lengths (the line picker, Check all lines). */
+  let sectionsCache: { id: string; name: string; system: string; length: number }[] | null = null;
+  const loadSections = async () => {
+    if (sectionsCache) return sectionsCache;
+    try {
+      const recs = await listAll(host, "section", view, {});
+      const out = recs.map((r) => {
+        const d = r.data as Record<string, unknown>;
+        return {
+          id: r.id,
+          name: typeof d.name === "string" ? d.name : shortId(r.id),
+          system: typeof d.system === "string" ? d.system : "",
+          length: typeof d.length_m === "number" ? d.length_m : 0,
+        };
+      });
+      const num = (n: string) => Number(/(\d+)/.exec(n)?.[1] ?? 999);
+      out.sort((a, b) => a.system.localeCompare(b.system) || num(a.name) - num(b.name) || a.name.localeCompare(b.name));
+      sectionsCache = out;
+      return out;
+    } catch {
+      return [];
+    }
+  };
+  /** The line picker: every line with its km, by system (buildLineSel 3341). */
+  const fillPicker = async () => {
+    const secs = await loadSections();
+    const groups = new Map<string, HTMLOptGroupElement>();
+    lineSel.replaceChildren();
+    if (!target)
+      lineSel.append(Object.assign(document.createElement("option"), { value: "", textContent: "Pick a line" }));
+    for (const x of secs) {
+      const label = x.system === "metro" ? "Metro" : x.system === "cvx" ? "Express" : x.system.toUpperCase() || "Other";
+      let g = groups.get(label);
+      if (!g) {
+        g = Object.assign(document.createElement("optgroup"), { label });
+        groups.set(label, g);
+        lineSel.append(g);
+      }
+      g.append(
+        Object.assign(document.createElement("option"), {
+          value: x.id,
+          textContent: `${x.name} · ${(x.length / 1000).toFixed(1)} km`,
+        }),
+      );
+    }
+    lineSel.value = target?.sectionId ?? "";
+  };
+
+  // ---- the settings (R20): the settings.* params, each a draft on its record
+  /** The settings' param records by key (settings.<key>, the system's own or this line's). */
+  let settingRecs = new Map<string, { rec: Rec; own: boolean }>();
+  const registryVals = new Map<string, number>();
+  let resetArmed: ReturnType<typeof setTimeout> | null = null;
+  let popKind: "settings" | "help" | null = null;
+  const loadSettings = async () => {
+    try {
+      const recs = (await listAll(host, "param", view, {})).filter((r) =>
+        String((r.data as Record<string, unknown>).path ?? "").startsWith("settings."),
+      );
+      const route = ssi?.route ?? null;
+      const out = new Map<string, { rec: Rec; own: boolean }>();
+      for (const r of recs) {
+        const d = r.data as { path: string; scope?: { kind: string; id: string } | null };
+        const key = d.path.slice("settings.".length);
+        const scope = d.scope ?? null;
+        const mine = !!scope && (scope.id === target?.sectionId || (route !== null && scope.id === route));
+        if (scope && !mine) continue;
+        const had = out.get(key);
+        if (!had || mine) out.set(key, { rec: r, own: mine });
+      }
+      settingRecs = out;
+    } catch {
+      settingRecs = new Map();
+    }
+  };
+  const paramValue = (rec: Rec): number => {
+    const d = (host.drafts.get("param", rec.id, view)?.body ?? bodyOf(rec)).data as { value?: unknown };
+    return Number(d.value);
+  };
+  /** The settings Ben changed in his drafts, as the whole solve's settings (pool in metres, as the param holds it). */
+  const settingsOverride = (): Record<string, number> | null => {
+    const out: Record<string, number> = {};
+    for (const [k, { rec }] of settingRecs) {
+      if (!host.drafts.get("param", rec.id, view)) continue;
+      const v = paramValue(rec);
+      if (Number.isFinite(v)) out[k === "poolFt" ? "pool" : k] = v;
+    }
+    return Object.keys(out).length ? out : null;
+  };
+  const renderPop = () => {
+    if (popKind === null) {
+      pop.hidden = true;
+      pop.replaceChildren();
+      settingsBtn.setAttribute("aria-expanded", "false");
+      helpBtn.setAttribute("aria-expanded", "false");
+      return;
+    }
+    pop.hidden = false;
+    // under the tools row, so its buttons stay free
+    pop.style.top = `${toolsRow.offsetTop + toolsRow.offsetHeight + 4}px`;
+    settingsBtn.setAttribute("aria-expanded", String(popKind === "settings"));
+    helpBtn.setAttribute("aria-expanded", String(popKind === "help"));
+    if (popKind === "help") {
+      pop.replaceChildren(helpCard());
+      return;
+    }
+    const params = new Map<string, SettingParam>();
+    for (const [k, { rec, own }] of settingRecs)
+      params.set(k, {
+        value: paramValue(rec),
+        changed: !!host.drafts.get("param", rec.id, view),
+        own,
+        registry: registryVals.get(k) ?? null,
+      });
+    const prev = document.activeElement as HTMLElement | null;
+    const focusKey = pop.contains(prev) ? (prev as HTMLInputElement).dataset.key : undefined;
+    pop.replaceChildren(
+      buildSettings({
+        units: host.units,
+        params,
+        canEdit: paramEditable === true,
+        readOnly: paramEditable === true ? null : paramEditable,
+        resetArmed: resetArmed !== null,
+        edit: (key, value) => {
+          const r = settingRecs.get(key);
+          if (!r) return;
+          try {
+            host.drafts.edit(r.rec, view, [{ op: "replace", path: "/data/value", value }], {
+              label: `setting ${key}`,
+            });
+          } catch (e) {
+            host.problem(e);
+          }
+        },
+        restoreDefaults: () => void restoreDefaults(),
+        resetLine: () => {
+          if (!canEdit()) return;
+          if (!resetArmed) {
+            // armed for 4 s, as the station's Remove (the old page's 3 s was short once the sheet is busy)
+            resetArmed = setTimeout(() => {
+              resetArmed = null;
+              renderPop();
+            }, 4000);
+            renderPop();
+            return;
+          }
+          clearTimeout(resetArmed);
+          resetArmed = null;
+          renderPop();
+          void propose({ kind: "reset" }, "Reset this line");
+        },
+      }),
+    );
+    if (focusKey) (pop.querySelector(`input[data-key="${focusKey}"]`) as HTMLInputElement | null)?.focus();
+  };
+  let paramEditable: true | string = "Loading…";
+  const toggleSettings = async () => {
+    if (popKind === "settings") {
+      popKind = null;
+      renderPop();
+      return;
+    }
+    popKind = "settings";
+    paramEditable = await host.editable("param", view);
+    await loadSettings();
+    renderPop();
+  };
+  // a press outside the settings or the help closes it, as the old page's pop (3765)
+  const onDocDown = (e: PointerEvent) => {
+    const t = e.target as Node | null;
+    if (popKind && t && !pop.contains(t) && t !== settingsBtn && t !== helpBtn) {
+      popKind = null;
+      renderPop();
+    }
+  };
+  document.addEventListener("pointerdown", onDocDown);
+  const toggleHelp = () => {
+    popKind = popKind === "help" ? null : "help";
+    renderPop();
+  };
+  /** Restore defaults (3766): every setting back to the registry's value, as drafts Ben saves or discards. */
+  const restoreDefaults = async () => {
+    for (const [k, { rec, own }] of settingRecs) {
+      if (own) continue;
+      let reg = registryVals.get(k);
+      if (reg === undefined) {
+        try {
+          const r = await host.records.get("param", rec.id, { ...view, layer: "import:registry" });
+          reg = Number((r.data as { value?: unknown }).value);
+          if (Number.isFinite(reg)) registryVals.set(k, reg);
+        } catch {
+          reg = undefined;
+        }
+      }
+      if (reg === undefined || !Number.isFinite(reg)) continue;
+      if (paramValue(rec) === reg) {
+        const key = host.drafts.key("param", rec.id, view);
+        if (host.drafts.byKey(key)) host.drafts.drop(key);
+        continue;
+      }
+      try {
+        host.drafts.edit(rec, view, [{ op: "replace", path: "/data/value", value: reg }], {
+          label: `setting ${k} to default`,
+        });
+      } catch (e) {
+        host.problem(e);
+      }
+    }
+    renderPop();
+  };
+
+  // ---- the exports (R16 to R19)
+  const exportModel = (): ExportModel | null => {
+    if (!input || !target) return null;
+    const d = data() ?? {};
+    const fs = facts ?? [];
+    const st = localInput(input, d, frame).stations;
+    const half = input.params.platform_m / 2;
+    const profile: Record<string, unknown> = {};
+    for (const f of ["st", "pvi", "ovr", "gnd", "shafts", "tf", "ready", "sg", "gapfill", "stt", "so", "del", "access"])
+      if (Object.hasOwn(d, f)) profile[f] = (d as Record<string, unknown>)[f];
+    const sm = solved?.summary as { len?: Record<string, number>; maxG?: number } | undefined;
+    return {
+      id: sectionName.replace(/\s+/g, "_"),
+      line: sectionName,
+      system: ssi?.system ?? si?.system ?? "metro",
+      length: input.length_m,
+      platform: input.params.platform_m,
+      path: (ssi?.path ?? []) as ExportModel["path"],
+      railAt: railNow,
+      groundAt: (c) => groundBelow(c),
+      surveyedAt: (c) => (input?.ground ? valueAt(input.ground.z_m, input.ground.step_m, c) : null),
+      typeAt: typeNow,
+      stations: st.map((s) => {
+        const f = fs.find((x) => x.platform_id === s.platform_id);
+        const rail = s.level_m ?? f?.rail_m ?? railNow(s.c_m);
+        return {
+          name: platformName(s.platform_id),
+          c: s.c_m,
+          point_c: stopOf(s.platform_id) ?? s.c_m,
+          rail,
+          ground: f?.ground_m ?? groundBelow(s.c_m),
+          depth: f?.depth_m ?? null,
+          type: typeNow(s.c_m) ?? f?.type ?? null,
+          sg: s.grade_permille ?? 0,
+        };
+      }),
+      // keyed by station as the old doc was, not by the hub's platform ids
+      profile: profileByKey(profile, (pid) => fs.find((x) => x.platform_id === pid)?.key ?? null),
+      summary: sm?.len
+        ? {
+            km_by_type: Object.fromEntries(Object.entries(sm.len).map(([k, v]) => [k, Math.round(v) / 1000])),
+            max_grade_permille: Math.round((sm.maxG ?? 0) * 10) / 10,
+            grades_over_limit: (solved?.over ?? []).filter((o) => o.sev === "error").length,
+          }
+        : null,
+      ...(half ? {} : {}),
+    };
+  };
+  const exportAs = async (kind: "png" | "json" | "geojson" | "kmz") => {
+    const m = exportModel();
+    if (!m || !input) return;
+    if ((kind === "geojson" || kind === "kmz") && m.path.length < 2) {
+      host.toast({ text: "No plan path for this line yet: the GeoJSON and KMZ need it", level: "warn", ttl: 3000 });
+      return;
+    }
+    const now = new Date().toISOString();
+    if (kind === "json")
+      download(`${m.id}_alignment.json`, new Blob([exportJson(m, now)], { type: "application/json" }));
+    else if (kind === "geojson")
+      download(`${m.id}_profile.geojson`, new Blob([exportGeoJson(m, now)], { type: "application/geo+json" }));
+    else if (kind === "kmz")
+      download(
+        `${m.id}_profile.kmz`,
+        new Blob([exportKmz(m, now) as BlobPart], { type: "application/vnd.google-earth.kmz" }),
+      );
+    else {
+      // the whole line at 1 px per 6 m (2,400 to 7,000 px) by 1,000 px, nothing selected (exportPng 3792)
+      const W = Math.max(2400, Math.min(7000, Math.round(input.length_m / 6)));
+      const H = 1000;
+      const c = document.createElement("canvas");
+      c.width = W;
+      c.height = H;
+      const g = c.getContext("2d");
+      if (!g) return;
+      const keep = { range, selected, pointer, cursor };
+      range = [0, input.length_m];
+      selected = null;
+      pointer = null;
+      cursor = null;
+      try {
+        g.fillStyle = "#16181d";
+        g.fillRect(0, 0, W, H);
+        renderBands(g, W, H, 1);
+        g.fillStyle = "#d8dbe2";
+        g.font = "600 16px system-ui, sans-serif";
+        g.fillText(`${m.system} · ${m.line}`, 12, 22);
+        g.font = "12px system-ui, sans-serif";
+        const first = m.stations[0]?.name ?? "";
+        const last = m.stations[m.stations.length - 1]?.name ?? "";
+        g.fillText(
+          `Long section, ${first} to ${last} · ${(m.length / 1000).toFixed(2)} km · ${now.slice(0, 10)}`,
+          12,
+          40,
+        );
+      } finally {
+        ({ range, selected, pointer, cursor } = keep);
+        draw();
+      }
+      const blob = await new Promise<Blob | null>((res) => c.toBlob(res, "image/png"));
+      if (blob) download(`${m.id}_profile.png`, blob);
+    }
+    host.toast({ text: `${m.id} exported (${kind.toUpperCase()}), as drawn now`, level: "info", ttl: 2500 });
   };
 
   /** The slide limit (literal.SLIDE_M), 150 m when the hub has not said. */
@@ -1362,7 +2503,8 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       }
     };
     if (input?.ground) scan(input.ground.z_m, input.ground.step_m);
-    if (local) scan(local.rail_m, local.grid.step_m);
+    // a rail only where there is a design: an empty profile's rail is 0 m (hasDesign)
+    if (local && hasDesign(input ? localInput(input, data(), frame) : null)) scan(local.rail_m, local.grid.step_m);
     for (const p of input?.pvi ?? []) if (p.c_m >= c0 && p.c_m <= c1) scan([p.z_m], 1);
     if (!Number.isFinite(z0)) [z0, z1] = [150, 250];
     const pad = Math.max(3, (z1 - z0) * 0.08);
@@ -1424,14 +2566,25 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     if (!g) return;
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.clearRect(0, 0, w, h);
-    const v = sheetView(w, h);
+    const { texts, marks, v } = renderBands(g, w, h, dpr);
     lastView = v;
+    showText(texts);
+    lastMarks = marks;
+  };
+  /** Every band into a 2D context of w by h CSS pixels, on the sheet's range (the canvas, or an export). */
+  const renderBands = (g: CanvasRenderingContext2D, w: number, h: number, _dpr: number) => {
+    const v = sheetView(w, h);
     const texts: SheetText[] = [];
     const marks: SheetMark[] = [];
+    const li = input ? localInput(input, data(), frame) : null;
     const bd: BandData = {
       sectionId: target?.sectionId ?? "",
-      input: input ? localInput(input, data(), frame) : null,
-      rail: local ? { rail_m: local.rail_m, grade_permille: local.grade_permille, step_m: local.grid.step_m } : null,
+      input: li,
+      // no rail on a line with no design yet (hasDesign): the stations stand at ground - the default depth instead
+      rail:
+        local && hasDesign(li)
+          ? { rail_m: local.rail_m, grade_permille: local.grade_permille, step_m: local.grid.step_m }
+          : null,
       server: server ? { rail_m: server.rail_m, step_m: server.step_m } : null,
       profile: target?.profile ?? null,
       selected,
@@ -1442,21 +2595,35 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       report: (t) => texts.push(t),
       facts,
       mark: (m) => marks.push(m),
+      solved,
+      solveInput: ssi,
+      show,
+      draft: data(),
+      tool,
+      paintPreview: drag?.kind === "paint" ? { c0: drag.c0, c1: drag.c1, colour: brushColour(brush) } : null,
     };
     let top = v.top;
+    const bandMs: Record<string, number> = {};
     for (const b of bands()) {
+      const t0 = performance.now();
       if (b.axis === "strip") {
         b.draw(g, { ...v, top }, bd);
         top += b.height;
       } else {
         b.draw(g, v, bd);
       }
+      bandMs[b.id] = Math.round((performance.now() - t0) * 10) / 10;
     }
-    showText(texts);
-    lastMarks = marks;
+    (canvas as HTMLCanvasElement & { bandMs?: Record<string, number> }).bandMs = bandMs;
+    return { texts, marks, v };
   };
   // The marks() hook: what the bands drew last, as numbers (claude/hub_maps/profiles_parity.md, check 1).
   (canvas as HTMLCanvasElement & { marks?: () => SheetMark[] }).marks = () => lastMarks;
+  // and the view's chainage range, set from a test or a script ([c0, c1], kept within the line)
+  (canvas as HTMLCanvasElement & { setRange?: (r: [number, number]) => void }).setRange = (r) => {
+    range = clampRange(r);
+    draw();
+  };
   // and the frame they were drawn in, so a test can turn metres into pixels
   (canvas as HTMLCanvasElement & { frame?: () => unknown }).frame = () =>
     lastView && {
@@ -1552,8 +2719,17 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     | { kind: "station"; id: string; y0: number; z0: number; step: string }
     | { kind: "slide"; id: string; x0: number; so0: number; step: string }
     | { kind: "pvi"; row: number; x0: number; y0: number; c0: number; z0: number; step: string }
-    | { kind: "pan"; x0: number; range: [number, number] };
+    | { kind: "pan"; x0: number; range: [number, number] }
+    | { kind: "paint"; c0: number; c1: number }
+    | { kind: "gp"; l: number; k: number; x0: number; y0: number; c0: number; z0: number; step: string }
+    | { kind: "overview"; y: number };
   let drag: Drag | null = null;
+  /** A press on the overview strip: the view keeps its span, centred on the chainage under the pointer. */
+  const centreOn = (c: number) => {
+    const [a, b] = range ?? [0, input?.length_m ?? 1000];
+    const span = b - a;
+    range = clampRange([c - span / 2, c + span / 2]);
+  };
   let downAt: { x: number; y: number; hit: Handle | null } | null = null;
   let moved = false;
 
@@ -1570,17 +2746,35 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     moved = false;
     const v = lastView;
     const step = `drag:${Date.now()}`;
-    if (hit?.kind === "station" && hit.id && canEdit() && e.altKey) {
+    const plotHit = x >= v.plot.x && x <= v.plot.x + v.plot.w && y >= v.plot.y - 4 && y <= v.plot.y + v.plot.h + 26;
+    if (hit?.kind === "overview") {
+      centreOn(hit.c);
+      drag = { kind: "overview", y };
+    } else if (tool === "ground" && hit?.kind === "gp" && canEdit() && hit.z !== undefined) {
+      // Ground: drag a point of the drawn ground (3432); it is selected at once
+      const l = Number(hit.id);
+      selected = hit;
+      renderCard();
+      drag = { kind: "gp", l, k: hit.index, x0: x, y0: y, c0: hit.c, z0: hit.z, step };
+    } else if (tool === "paint" && plotHit && canEdit() && hit?.kind !== "flag" && hit?.kind !== "issue") {
+      // Paint: drag along the line with the brush (3441); released, the stretch is painted
+      const c = Math.max(0, Math.min(input?.length_m ?? 0, v.c(x)));
+      drag = { kind: "paint", c0: c, c1: c };
+    } else if (tool !== "move" && hit && (hit.kind === "station" || hit.kind === "pvi")) {
+      // Paint and Ground never move a station or a bend point: a press there pans, as on the old page
+      drag = range ? { kind: "pan", x0: x, range: [...range] as [number, number] } : null;
+    } else if (tool === "move" && hit?.kind === "station" && hit.id && canEdit() && e.altKey) {
       // Alt + drag slides the platform along its drawn point (S45).
       const so = (data()?.so?.[hit.id] as number | undefined) ?? 0;
       drag = { kind: "slide", id: hit.id, x0: x, so0: so, step };
-    } else if (hit?.kind === "station" && hit.id && canEdit() && hit.z !== undefined)
+    } else if (tool === "move" && hit?.kind === "station" && hit.id && canEdit() && hit.z !== undefined)
       drag = { kind: "station", id: hit.id, y0: y, z0: hit.z, step };
-    else if (hit?.kind === "pvi" && canEdit() && hit.z !== undefined) {
+    else if (tool === "move" && hit?.kind === "pvi" && canEdit() && hit.z !== undefined) {
       const row = pviRowOf(hit.c, hit.z);
       drag = row === null ? null : { kind: "pvi", row, x0: x, y0: y, c0: hit.c, z0: hit.z, step };
     } else if (range) drag = { kind: "pan", x0: x, range: [...range] as [number, number] };
-    if (drag && drag.kind !== "pan") frozen = { z0: v.z0, z1: v.z1 };
+    if (drag && drag.kind !== "pan" && drag.kind !== "overview" && drag.kind !== "paint")
+      frozen = { z0: v.z0, z1: v.z1 };
     canvas.setPointerCapture?.(e.pointerId);
     canvas.focus({ preventScroll: true });
   });
@@ -1592,7 +2786,24 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     const v = lastView;
     if (downAt && Math.abs(x - downAt.x) + Math.abs(y - downAt.y) > 3) moved = true;
     if (drag && moved) {
-      if (drag.kind === "pan") {
+      if (drag.kind === "paint") {
+        drag.c1 = Math.max(0, Math.min(input?.length_m ?? 0, v.c(x)));
+      } else if (drag.kind === "gp") {
+        const z = roundLevel(drag.z0 + v.z(y) - v.z(drag.y0), e.shiftKey);
+        const gsel = { l: drag.l, k: drag.k };
+        const c = drag.c0 + v.c(x) - v.c(drag.x0);
+        edit((cur) => moveGroundPoint(cur, gsel, c, z, input?.length_m ?? 0), {
+          step: drag.step,
+          label: "ground point",
+        });
+        const now = groundLines(data())[drag.l]?.pts[drag.k];
+        if (now) selected = { band: "drawn-ground", kind: "gp", index: drag.k, id: String(drag.l), c: now.c, z: now.z };
+      } else if (drag.kind === "overview") {
+        const h = bands()
+          .find((b) => b.id === "overview")
+          ?.hit?.(x, drag.y);
+        if (h) centreOn(h.c);
+      } else if (drag.kind === "pan") {
         const span = drag.range[1] - drag.range[0];
         const shift = ((x - drag.x0) / v.plot.w) * span;
         range = clampRange([drag.range[0] - shift, drag.range[1] - shift]);
@@ -1618,7 +2829,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     cursor = v.c(x);
     if (!drag) {
       // The cursor shape tells what a press would do, as on the old sheet.
-      let shape = "crosshair";
+      let shape = tool === "paint" ? "cell" : tool === "ground" ? "copy" : "crosshair";
       let tip = "";
       for (const b of bands()) {
         const h = b.hit?.(x, y);
@@ -1626,11 +2837,16 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
           shape =
             !canEdit() || h.kind === "flag"
               ? "pointer"
-              : h.kind === "station"
-                ? e.altKey
-                  ? "ew-resize"
-                  : "ns-resize"
-                : "move";
+              : tool !== "move" && (h.kind === "station" || h.kind === "pvi")
+                ? tool === "paint"
+                  ? "cell"
+                  : "copy"
+                : h.kind === "station"
+                  ? e.altKey
+                    ? "ew-resize"
+                    : "ns-resize"
+                  : "move";
+          if (h.kind === "issue") tip = issueAt(x, y) ?? "";
           if (h.kind === "flag" && h.id) {
             const f = facts?.find((q) => q.platform_id === h.id);
             tip = (f?.flags ?? [])
@@ -1653,8 +2869,23 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     downAt = null;
     frozen = null;
     canvas.releasePointerCapture?.(e.pointerId);
-    if (at && !moved) selectHit(at.hit, at.x);
-    else if (was && (was.kind === "station" || was.kind === "slide")) renderCard();
+    if (was?.kind === "paint") {
+      // the stretch painted with the brush (paintRange 3181); a click with the shaft brush puts a shaft there
+      const d = data();
+      const r = d ? paintRange(d, was.c0, was.c1, brush, si ? si.structure !== null : true) : null;
+      if (r) {
+        edit(() => r.ops, { label: r.what === "shaft" ? "shaft" : `paint ${BRUSH_LABELS[brush]}` });
+        if (r.what === "shaft" && r.c !== undefined)
+          host.toast({
+            text: `Shaft at ${fmtCh(r.c)}: a method may change here`,
+            level: "info",
+            ttl: 2500,
+          });
+      }
+    } else if (at && !moved && at.hit?.kind !== "overview" && !(tool === "paint" && at.hit?.kind !== "flag"))
+      selectHit(tool === "ground" && at.hit && at.hit.kind !== "gp" && at.hit.kind !== "flag" ? null : at.hit, at.x);
+    else if (was && (was.kind === "station" || was.kind === "slide" || was.kind === "gp")) renderCard();
+    if (was && was.kind !== "pan" && was.kind !== "overview") fullSoon();
     draw();
   };
   canvas.addEventListener("pointerup", endDrag);
@@ -1666,6 +2897,39 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   });
   canvas.addEventListener("dblclick", (e) => {
     if (!lastView || !canEdit() || !local || !input) return;
+    if (tool === "paint") return;
+    if (tool === "ground") {
+      // Ground: a point on a drawn line, else a new line of three points (addGroundAt 3156)
+      const { x, y } = pointOf(e);
+      const P = lastView.plot;
+      if (x < P.x || x > P.x + P.w || y < P.y - 4 || y > P.y + P.h + 26) return;
+      if (
+        bands()
+          .find((b) => b.id === "drawn-ground")
+          ?.hit?.(x, y)
+      )
+        return;
+      const d = data();
+      if (!d) return;
+      const len = input.length_m;
+      const r = addGroundAt(d, Math.max(0, Math.min(len, lastView.c(x))), lastView.z(y), groundBelow, len);
+      if ("refused" in r) {
+        host.toast({ text: r.refused, level: "info", ttl: 2500 });
+        return;
+      }
+      edit(() => r.ops, { label: r.started ? "ground line started" : "ground point added" });
+      const pt = groundLines(data())[r.sel.l]?.pts[r.sel.k];
+      if (pt) selected = { band: "drawn-ground", kind: "gp", index: r.sel.k, id: String(r.sel.l), c: pt.c, z: pt.z };
+      if (r.started)
+        host.toast({
+          text: "Ground line started: drag its points, double-click on it to add more, Del removes one",
+          level: "info",
+          ttl: 3000,
+        });
+      renderCard();
+      draw();
+      return;
+    }
     const { x } = pointOf(e);
     // Inside a platform there is no bend point to add (S8): the old page refused with these words.
     const at = lastView.c(x);
@@ -1731,6 +2995,34 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
         ((data()?.so?.[station] as number | undefined) ?? 0) +
         (e.key === "ArrowRight" ? 1 : -1) * (e.shiftKey ? 5 : 0.5);
       editStation(station, "slide", (cur) => setStationSlide(cur, station, so, slideMax()));
+    } else if (
+      !e.shiftKey &&
+      (e.key === "m" || e.key === "M" || e.key === "p" || e.key === "P" || e.key === "g" || e.key === "G")
+    ) {
+      setTool(e.key.toLowerCase() === "m" ? "move" : e.key.toLowerCase() === "p" ? "paint" : "ground");
+    } else if (sel?.kind === "gp" && canEdit() && (e.key === "Delete" || e.key === "Backspace")) {
+      const gsel = { l: Number(sel.id), k: sel.index };
+      edit((cur) => removeGroundPoint(cur, gsel), { label: "ground point removed" });
+      selected = null;
+      renderCard();
+    } else if (
+      sel?.kind === "gp" &&
+      canEdit() &&
+      (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowRight")
+    ) {
+      // a ground point: up and down 0.1 (Shift 1) in the display unit, left and right 2 m (Shift 10), 3539
+      const gsel = { l: Number(sel.id), k: sel.index };
+      const P = groundLines(data())[gsel.l]?.pts;
+      const p = P?.[gsel.k];
+      if (!P || !p) return;
+      const dz = e.key === "ArrowUp" ? 1 : e.key === "ArrowDown" ? -1 : 0;
+      const dc = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+      const z = dz ? nudgeLevel(p.z, dz as 1 | -1, e.shiftKey, host.units.length) : p.z;
+      const c = p.c + dc * (e.shiftKey ? 10 : 2);
+      edit((cur) => moveGroundPoint(cur, gsel, c, z, input?.length_m ?? 0), { label: "ground point" });
+      const now = groundLines(data())[gsel.l]?.pts[gsel.k];
+      if (now) selected = { ...sel, c: now.c, z: now.z };
+      renderCard();
     } else if (e.key === "[" || e.key === "]") {
       stepStation(e.key === "]" ? 1 : -1);
     } else if ((e.key === "e" || e.key === "E") && station && canEdit()) {
@@ -1750,7 +3042,8 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       selected = null;
       markRows();
       renderCard();
-    } else if (e.key === "f" || e.key === "F") {
+    } else if ((e.key === "f" || e.key === "F") && !e.shiftKey) {
+      // F shows the whole line; Shift+F is the dock's maximise and goes on to it
       range = input ? clampRange([0, input.length_m]) : null;
     } else if (e.key === "+" || e.key === "=") zoomBy(1 / 1.4);
     else if (e.key === "-" || e.key === "_") zoomBy(1.4);
@@ -1828,6 +3121,12 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     }
   });
   const unsubDrafts = host.drafts.subscribe((key, d) => {
+    // a setting Ben changed (a param draft): the whole solve previews it, the settings panel shows it
+    if (key.startsWith("param/")) {
+      if (popKind === "settings") renderPop();
+      fullSoon();
+      return;
+    }
     // A side edit is a draft on a platform record of this line: the facts and the panel follow it.
     const pid = key.startsWith("platform/") ? key.slice("platform/".length).split("@")[0] : null;
     if (pid && platformRecs.has(pid) && key === host.drafts.key("platform", pid, view)) {
@@ -1836,6 +3135,11 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       return;
     }
     if (key !== draftKey()) return;
+    if (paintRows !== null) {
+      paintRows = null;
+      setTimeout(() => void reviewPaints(), 200);
+    }
+    renderLineSoon();
     // Saved or discarded: the cells show the record again, and what they show is what Ctrl+Z starts from.
     if (d === null) for (const i of tables.querySelectorAll("input")) i.dataset.drawn = i.value;
     // The bar's text follows the solve too: a change in its width would lay the whole sheet out again first.
@@ -1848,6 +3152,8 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     void solve();
   });
   const unsubUnits = host.units.onChange(() => {
+    renderLineSoon();
+    if (popKind) renderPop();
     showChainage();
     table();
     compare();
@@ -1920,6 +3226,10 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   return {
     dispose() {
       generation++;
+      el.removeEventListener(MAXIMISED_EVENT, onMaximised);
+      document.removeEventListener("pointerdown", onDocDown);
+      if (lineTimer) clearTimeout(lineTimer);
+      if (resetArmed) clearTimeout(resetArmed);
       if (factsTimer) clearTimeout(factsTimer);
       factsEngine?.dispose();
       if (frameReq) cancelAnimationFrame(frameReq);

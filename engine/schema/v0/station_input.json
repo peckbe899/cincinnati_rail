@@ -973,11 +973,29 @@
           },
           "c0": {
             "type": "number",
-            "x-unit": "m"
+            "x-unit": "m",
+            "description": "The section's start as the saved profile's stations put it."
           },
           "c1": {
             "type": "number",
-            "x-unit": "m"
+            "x-unit": "m",
+            "description": "The section's end as the saved profile's stations put it."
+          },
+          "a": {
+            "description": "The station (platform name) the section starts at.",
+            "type": "string"
+          },
+          "b": {
+            "description": "The station (platform name) the section ends at.",
+            "type": "string"
+          },
+          "a_in": {
+            "description": "Whether a's platform is in the section (aIn, absent: true).",
+            "type": "boolean"
+          },
+          "b_in": {
+            "description": "Whether b's platform is in the section (bIn, absent: true).",
+            "type": "boolean"
           }
         },
         "required": [
@@ -987,7 +1005,46 @@
         ],
         "additionalProperties": false
       },
-      "description": "The canon's method sections on this section by chainage (buildCanon, profiles.html 876)."
+      "description": "The canon's method sections on this section by chainage (buildCanon, profiles.html 876). A section that names its end stations is placed again from the live stations of the profile solved (a draft's: a station removed, restored or slid moves it, and a removed end drops it, as the old page rebuilt it on every edit); c0 and c1 are then only the saved profile's placing."
+    },
+    "chron_segments": {
+      "description": "The Chronology's segments along the section (chrSegments, profiles.html 1077). With them a station's phase is worked out again at its live centre (phaseAt 1091: the earlier-opened segment either side of the platform), so a slide in a draft gives the old page's phase at once; absent, each platform's phase is as given.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "c0": {
+            "type": "number",
+            "x-unit": "m"
+          },
+          "c1": {
+            "type": "number",
+            "x-unit": "m"
+          },
+          "year": {
+            "x-unit": "year",
+            "description": "Opening year, null when none.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "phase": {
+            "description": "The segment's phase, null when not set.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "c0",
+          "c1",
+          "year",
+          "phase"
+        ],
+        "additionalProperties": false
+      }
     },
     "phases_along": {
       "type": "array",

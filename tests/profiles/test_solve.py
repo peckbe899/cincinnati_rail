@@ -209,7 +209,7 @@ def test_code_hash_covers_the_modules_plan_and_run_call():
     from region.jobs.registry import check_job_type
 
     folder = REPO / "region" / "ext" / "profiles"
-    want = source_hash([folder / f for f in ("jobs.py", "inputs.py", "doc.py", "golden.py")])
+    want = source_hash([folder / f for f in ("jobs.py", "inputs.py", "doc.py", "golden.py", "solve_input.py")])
     for job in (SOLVE_SECTION, GOLDEN_DIFF):
         assert check_job_type(job) == []
         assert code_hash(job) == want, job.name

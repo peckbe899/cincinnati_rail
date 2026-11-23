@@ -144,6 +144,31 @@ describe("grade chords and curve ticks", () => {
     expect(labs[1]?.xm).toBeCloseTo(131);
     expect(gradeLabels(gradeChords(dv), x, 0, 150, 120)).toEqual([]);
   });
+  it("runs the chords between the platforms' transition ends, as the old page's chords() (Line 6 Towne)", () => {
+    // vertical.rail@1's vertices of Line 6 from Towne to Bond Hill, and the curves at the two transition ends (x)
+    const l6: DesignVertex[] = [
+      { c_m: 0, z_m: 159.9, kind: "ps" },
+      { c_m: 121.5, z_m: 159.9, kind: "pe" },
+      { c_m: 357, z_m: 168.5, kind: "pvi" },
+      { c_m: 574, z_m: 173.2, kind: "pvi" },
+      { c_m: 1023.2, z_m: 163.07, kind: "ps" },
+      { c_m: 1145.2, z_m: 162.33, kind: "pe" },
+    ];
+    const curves = [
+      { c_m: 153.1, g_in: 0, g_out: 42.2, L_m: 63.2 },
+      { c_m: 357, g_in: 42.2, g_out: 21.7, L_m: 30.7 },
+      { c_m: 574, g_in: 21.7, g_out: -23.1, L_m: 67.2 },
+      { c_m: 1008, g_in: -23.1, g_out: -6.07, L_m: 30.4 },
+      { c_m: 1160.4, g_in: -6.07, g_out: 1.6, L_m: 30.4 },
+    ];
+    const ch = gradeChords(l6, curves);
+    // the old page labels +42.2‰ from the transition end, not +36.5‰ from the platform end
+    expect(ch.map((x) => fmtG(x.g))).toEqual(["+42.2‰", "+21.7‰", "−23.1‰", "−6.1‰", "−6.1‰", "−6.1‰"]);
+    expect(ch[0]?.c0).toBeCloseTo(153.1);
+    expect(ch[2]?.c1).toBeCloseTo(1008);
+    // without the curves, the vertices alone
+    expect(gradeChords(l6).map((x) => fmtG(x.g))[0]).toBe("+36.5‰");
+  });
   it("ticks each curve at its start and end", () => {
     expect(
       curveTicks([

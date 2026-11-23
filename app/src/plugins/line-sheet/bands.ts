@@ -25,7 +25,31 @@ import {
   verticalExaggeration,
   worstSeverity,
 } from "./drawing.ts";
-import { stationAccessBand, stationFlagsBand, stationStripBand, stationStructureBand } from "./stations.ts";
+import {
+  chronologyStripBand,
+  contextBand,
+  crossingsBand,
+  crossingTicksBand,
+  curveGradeBand,
+  drawnGroundBand,
+  drawTypedRail,
+  groundWorksBand,
+  issuesBand,
+  locksBand,
+  outlinesBand,
+  overColour,
+  overGradeBand,
+  overviewBand,
+  paintPreviewBand,
+  reserveLabel,
+  roadsBand,
+  runAt,
+  sampleAt,
+  structureStripBand,
+  structWord,
+  waterBand,
+} from "./solved.ts";
+import { stationAccessBand, stationFlagsBand, stationStructureBand } from "./stations.ts";
 
 export const COLORS = {
   ground: "#8a6d3b",
@@ -34,7 +58,10 @@ export const COLORS = {
   server: "#7fd962",
   ink: "#d8dbe2",
   selected: "#e6b450",
-  pvi: "#f07178",
+  /** Bend points in the old page's teal (its dark theme's accent), apart from the stations' ink and the flags' red. */
+  pvi: "#2fb8a8",
+  /** The station bars: bold, in the brightest ink, on a dark halo so a bar reads over the rail, ground and box. */
+  bar: "#f2f5f6",
   grid: "#2a2e37",
   gridMajor: "#4a505c",
   frame: "#3a3f4a",
@@ -92,6 +119,55 @@ interface DrawnPlatform {
 
 let lastPvis: { x: number; y: number; index: number; c: number; z: number }[] = [];
 let lastPlatforms: DrawnPlatform[] = [];
+/** The grade labels' boxes as last drawn (CSS pixels): a removed station's name keeps clear of them. */
+let lastGradeBoxes: Box[] = [];
+
+interface Box {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+}
+const overlaps = (a: Box, b: Box, pad = 1) =>
+  a.x0 < b.x1 + pad && b.x0 < a.x1 + pad && a.y0 < b.y1 + pad && b.y0 < a.y1 + pad;
+
+/** The narrowest a bar is drawn (CSS px): at a whole-line view a 120 m platform is 4 or 5 px, too thin to read. */
+export const MIN_BAR_PX = 6;
+
+/** Where a station's bar is drawn: its platform at the level, tilted by the grade, at least MIN_BAR_PX wide about
+ * its centre. The PVI band reads it too, to keep its circles off the bars. */
+export function barGeometry(
+  v: SheetView,
+  s: { c_m: number; grade_permille: number | null },
+  z: number,
+  half: number,
+): { xa: number; xb: number; ya: number; yb: number } {
+  const gp = (s.grade_permille ?? 0) / 1000;
+  let xa = v.x(s.c_m - half);
+  let xb = v.x(s.c_m + half);
+  if (xb - xa < MIN_BAR_PX) {
+    const mid = (xa + xb) / 2;
+    xa = mid - MIN_BAR_PX / 2;
+    xb = mid + MIN_BAR_PX / 2;
+  }
+  return { xa, xb, ya: v.y(z - gp * half), yb: v.y(z + gp * half) };
+}
+
+/** How far apart station names are kept (px along the axis): the old page's 18, 15 on a whole-line wide plot. */
+export const nameGap = (plotW: number): number => (plotW >= 900 ? 15 : 18);
+
+/** A line's name as the old page tagged its crossings: "Line 3" is L3, "CVG Express" CVG; an RER route keeps its
+ * short name ("E trunk"). */
+export function interchangeTag(names: readonly string[]): string {
+  return names.map((n) => n.replace(/^CVG Express$/, "CVG").replace(/^Line /, "L")).join(" ");
+}
+
+/** The level of each live station as drawn (its own, else ground − default depth when unset, else the rail). */
+function drawnLevel(s: { platform_id: string; c_m: number; level_m: number | null }, d: BandData) {
+  const f = d.facts?.find((x) => x.platform_id === s.platform_id);
+  const unset = !!f && s.level_m === null && f.default_level_m !== null;
+  return { z: unset ? (f?.default_level_m as number) : stationLevel(s, d.rail), unset, f };
+}
 
 /** The station's rail level: its own, else the solved rail at its centre. */
 export function stationLevel(s: { c_m: number; level_m: number | null }, rail: BandData["rail"]): number | null {
@@ -204,7 +280,8 @@ export const railBand: BandDef = {
       polyline(g, v, d.server.rail_m, d.server.step_m);
       g.restore();
     }
-    if (d.rail) {
+    // coloured by the whole solve's structure once it has landed (the old page's rail), else the plain rail
+    if (d.rail && !drawTypedRail(g, v, d)) {
       g.strokeStyle = COLORS.rail;
       g.lineWidth = 2;
       polyline(g, v, d.rail.rail_m, d.rail.step_m);
@@ -227,7 +304,8 @@ export const gradeBand: BandDef = {
     g.font = `500 11px ${NUM_FONT}`;
     g.textAlign = "center";
     g.textBaseline = "bottom";
-    for (const lab of gradeLabels(gradeChords(d.dv), v.x, P.x, P.x + P.w, P.w < 500 ? 56 : 66)) {
+    lastGradeBoxes = [];
+    for (const lab of gradeLabels(gradeChords(d.dv, d.curves ?? []), v.x, P.x, P.x + P.w, P.w < 500 ? 56 : 66)) {
       const z = valueAt(rail.rail_m, rail.step_m, v.c(lab.xm));
       if (z === null) continue;
       const ym = v.y(z) - 8;
@@ -236,8 +314,12 @@ export const gradeBand: BandDef = {
       g.fillStyle = COLORS.paper;
       g.fillRect(lab.xm - w / 2, ym - 14, w, 14);
       g.globalAlpha = 1;
-      g.fillStyle = COLORS.text;
+      // red where the grade is over its limit and sustained, amber where it is local (2627-2631)
+      g.fillStyle = overColour(d, lab.chord.c0, lab.chord.c1) ?? COLORS.text;
       g.fillText(lab.text, lab.xm, ym);
+      const box = { x0: lab.xm - w / 2, y0: ym - 14, x1: lab.xm + w / 2, y1: ym };
+      lastGradeBoxes.push(box);
+      d.mark?.({ kind: "grade", id: "", text: lab.text, ...box });
       d.report?.({ kind: "grade", text: lab.text, c: v.c(lab.xm), drawn: true });
     }
     g.restore();
@@ -280,8 +362,7 @@ export const platformBand: BandDef = {
     }[] = [];
     inp.stations.forEach((s, index) => {
       const f = facts.get(s.platform_id);
-      const unset = !!f && s.level_m === null && f.default_level_m !== null;
-      const z = unset ? (f?.default_level_m as number) : stationLevel(s, d.rail);
+      const { z, unset } = drawnLevel(s, d);
       if (z === null) return;
       const on = d.selected?.kind === "station" && (d.selected.id ?? null) === s.platform_id;
       const name = d.platformName?.(s.platform_id) ?? s.platform_id;
@@ -299,22 +380,30 @@ export const platformBand: BandDef = {
         return;
       }
       const gp = (s.grade_permille ?? 0) / 1000;
-      const xa = v.x(s.c_m - half);
-      const xb = Math.max(xa + 3, v.x(s.c_m + half));
-      const ya = v.y(z - gp * half);
-      const yb = v.y(z + gp * half);
-      const colour = on ? COLORS.selected : COLORS.ink;
+      const { xa, xb, ya, yb } = barGeometry(v, s, z, half);
+      const colour = on ? COLORS.selected : COLORS.bar;
       const sev = f ? worstSeverity(f.flags) : null;
       g.save();
       clipPlot(g, v);
       g.lineCap = "butt";
+      // A dark halo under the bar, so it reads over the rail, the ground and its own box (the old page's bold bar).
+      g.strokeStyle = COLORS.paper;
+      g.lineWidth = 11;
+      g.beginPath();
+      g.moveTo(xa - 2, ya);
+      g.lineTo(xb + 2, yb);
+      g.stroke();
       if (sev) {
-        // The flag outline: a wider stroke in the severity colour under the bar, 1.5 px either side.
+        // The flag outline: a thin box in the severity colour around the bar, clear of it, so a flagged station
+        // still reads as a station (a wide red stroke looked like the bend points' circles).
         g.strokeStyle = SEV_COLOURS[sev];
-        g.lineWidth = 9;
+        g.lineWidth = 1.5;
         g.beginPath();
-        g.moveTo(xa - 1.5, ya);
-        g.lineTo(xb + 1.5, yb);
+        g.moveTo(xa - 3.5, ya - 7);
+        g.lineTo(xb + 3.5, yb - 7);
+        g.lineTo(xb + 3.5, yb + 7);
+        g.lineTo(xa - 3.5, ya + 7);
+        g.closePath();
         g.stroke();
       }
       g.strokeStyle = colour;
@@ -432,23 +521,35 @@ export const platformBand: BandDef = {
       g.stroke();
       g.font = `10px ${UI_FONT}`;
       g.textAlign = "center";
-      g.textBaseline = "bottom";
-      g.fillStyle = COLORS.text;
+      g.textBaseline = "middle";
       const t = d.platformName?.(f.platform_id) ?? f.name;
-      g.fillText(t, x, y - 11);
       const w = g.measureText(t).width;
+      // The struck-through name on a paper box, under the rail where the grade labels are not (they sit over it),
+      // else over it, else further off: never on a grade label.
+      const box = (cy: number): Box => ({ x0: x - w / 2 - 3, y0: cy - 7, x1: x + w / 2 + 3, y1: cy + 7 });
+      const spots = [y + 18, y - 18, y + 34, y - 34, y + 50];
+      const cy = spots.find((q) => !lastGradeBoxes.some((b) => overlaps(box(q), b))) ?? (spots[0] as number);
+      const bx = box(cy);
+      g.globalAlpha = 0.85;
+      g.fillStyle = COLORS.paper;
+      g.fillRect(bx.x0, bx.y0, bx.x1 - bx.x0, bx.y1 - bx.y0);
+      g.globalAlpha = 0.7;
+      g.fillStyle = COLORS.text;
+      g.fillText(t, x, cy);
       g.beginPath();
-      g.moveTo(x - w / 2, y - 16);
-      g.lineTo(x + w / 2, y - 16);
+      g.moveTo(x - w / 2, cy);
+      g.lineTo(x + w / 2, cy);
       g.stroke();
       g.restore();
-      d.mark?.({ kind: "removed", id: f.platform_id, c: f.point_c_m, x, y });
+      d.mark?.({ kind: "removed", id: f.platform_id, c: f.point_c_m, x, y, label: bx });
     }
-    // Names: the ends of the line first, then left to right, 18 px apart as on the old page.
+    // Names: the ends of the line first, then left to right, 18 px apart as on the old page; on a plot wide enough
+    // to show a whole line (900 px and more) 15 px, the old page's narrow gap: rotated 45 degrees, neighbours are
+    // still 10.6 px apart across the text, clear of a 12 px name's letters, and a whole line keeps more names.
     const n = inp.stations.length;
     const named = thinLabels(
       items.map((it) => ({ x: it.x, priority: it.index === 0 || it.index === n - 1 ? 0 : 1, selected: it.on })),
-      18,
+      nameGap(P.w),
     );
     // Levels: a tag under each bar (the level, and the depth under it), kept apart by its own width.
     g.font = `500 10px ${NUM_FONT}`;
@@ -536,6 +637,45 @@ export const platformBand: BandDef = {
         });
     });
     g.restore();
+    // Interchanges: under each station's name, a tick on the plot's top edge and the other lines it is one station
+    // with ("L3", "L4 L5 A trunk"), as the old page tagged its crossings; kept apart left to right, the selected one
+    // always.
+    g.save();
+    clipPlot(g, v);
+    g.font = `500 10px ${NUM_FONT}`;
+    g.textAlign = "center";
+    g.textBaseline = "top";
+    let lastRight = Number.NEGATIVE_INFINITY;
+    const tagged = items
+      .map((it) => ({ it, s: inp.stations[it.index], f: facts.get(inp.stations[it.index]?.platform_id ?? "") }))
+      .filter((q) => q.s && (q.f?.interchanges ?? []).length > 0)
+      .sort((a, b) => a.it.x - b.it.x);
+    for (const { it, s, f } of tagged) {
+      const text = interchangeTag(f?.interchanges ?? []);
+      const w = g.measureText(text).width;
+      // kept inside the plot: a tag at the line's end would be cut by its edge
+      const tx = Math.min(P.x + P.w - w / 2 - 3, Math.max(P.x + w / 2 + 3, it.x));
+      const show = it.on || tx - w / 2 > lastRight + 4;
+      g.fillStyle = it.on ? COLORS.selected : COLORS.ink;
+      g.beginPath();
+      g.moveTo(it.x - 4, P.y + 1);
+      g.lineTo(it.x + 4, P.y + 1);
+      g.lineTo(it.x, P.y + 6);
+      g.closePath();
+      g.fill();
+      if (show) {
+        g.globalAlpha = 0.85;
+        g.fillStyle = COLORS.paper;
+        g.fillRect(tx - w / 2 - 2, P.y + 7, w + 4, 12);
+        g.globalAlpha = 1;
+        g.fillStyle = it.on ? COLORS.selected : COLORS.ink;
+        g.fillText(text, tx, P.y + 8);
+        lastRight = Math.max(lastRight, tx + w / 2);
+        reserveLabel({ x0: tx - w / 2 - 2, y0: P.y + 7, x1: tx + w / 2 + 2, y1: P.y + 19 });
+      }
+      d.mark?.({ kind: "xtag", id: s?.platform_id ?? "", text, drawn: show, x: it.x, x0: tx - w / 2, x1: tx + w / 2 });
+    }
+    g.restore();
     g.textAlign = "start";
     g.textBaseline = "alphabetic";
   },
@@ -587,15 +727,31 @@ export const pviBand: BandDef = {
       }
     }
     const pvi = d.input?.pvi ?? [];
+    // The station bars as the platform band draws them (after this band, over the circles): a circle that would
+    // sit on a bar is left out (a whole-line view puts the bend points either side of a platform on it), so a
+    // station is never hidden under bend points; it is drawn again as soon as there is room, or when selected.
+    const half = (d.input?.params.platform_m ?? 0) / 2;
+    const bars: Box[] = [];
+    for (const s of d.input?.stations ?? []) {
+      if (s.c_m + half < v.c0 || s.c_m - half > v.c1) continue;
+      const { z } = drawnLevel(s, d);
+      if (z === null) continue;
+      const b = barGeometry(v, s, z, half);
+      bars.push({ x0: b.xa - 3, x1: b.xb + 3, y0: Math.min(b.ya, b.yb) - 9, y1: Math.max(b.ya, b.yb) + 9 });
+    }
     pvi.forEach((p, index) => {
       if (p.c_m < v.c0 || p.c_m > v.c1) return;
       const x = v.x(p.c_m);
       const y = v.y(p.z_m);
       const sel = d.selected?.kind === "pvi" && d.selected.c === p.c_m && d.selected.z === p.z_m;
+      const r = sel ? 6 : 4;
+      const hidden = !sel && bars.some((b) => overlaps(b, { x0: x - r, x1: x + r, y0: y - r, y1: y + r }, 0));
+      d.mark?.({ kind: "pvi", id: "", c: p.c_m, z: p.z_m, x, y, hidden });
+      if (hidden) return;
       g.strokeStyle = COLORS.pvi;
       g.lineWidth = 1.5;
       g.beginPath();
-      g.arc(x, y, sel ? 6 : 5, 0, Math.PI * 2);
+      g.arc(x, y, r, 0, Math.PI * 2);
       if (sel) {
         g.fillStyle = COLORS.pvi;
         g.fill();
@@ -645,24 +801,56 @@ export const frameBand: BandDef = {
   },
 };
 
-/** The readout lines at a chainage, in the old readout's order and formats. */
+/** The readout lines at a chainage, in the old readout's order and formats (3495-3503). With the whole solve: the
+ * river and its water and bed, the finished ground with its fill or cut from the survey, depth from the surface, the
+ * structure's top with its cover and its bottom, the type ("painted" under a paint) and the street the line runs
+ * under, at every chainage as the old readout gave them; before it lands, the surveyed ground. */
 export function readoutLines(d: BandData, c: number, units: SheetView["units"]): string[] {
   const rail = d.rail ? valueAt(d.rail.rail_m, d.rail.step_m, c) : null;
   const grade = d.rail ? valueAt(d.rail.grade_permille, d.rail.step_m, c) : null;
-  const ground = d.input?.ground ? valueAt(d.input.ground.z_m, d.input.ground.step_m, c) : null;
+  const dem = d.input?.ground ? valueAt(d.input.ground.z_m, d.input.ground.step_m, c) : null;
+  const sv = d.solved ?? null;
+  const fin = sv ? sampleAt(sv.ground.finished, sv.step_m, c) : null;
+  const surf = sv ? sampleAt(sv.ground.surface, sv.step_m, c) : null;
+  const river = sv?.rivers.find((r) => c >= r.c0 && c <= r.c1) ?? null;
+  const ground = fin ?? dem;
+  const top = river && surf !== null ? surf : ground;
   const u = units.length;
-  const out = [fmtCh(c)];
-  if (ground !== null) out.push(`Ground  ${fmtZ(ground, units, 2)} ${u}`);
+  const out = [river ? `${fmtCh(c)} · ${river.name}` : fmtCh(c)];
+  if (river && surf !== null) {
+    const bed = sv ? sampleAt(sv.ground.bed, sv.step_m, c) : null;
+    out.push(`Water   ${fmtZ(surf, units, 2)} ${u}${bed !== null ? ` · bed ${fmtZ(bed, units, 2)}` : ""}`);
+  } else if (ground !== null) {
+    out.push(`Ground  ${fmtZ(ground, units, 2)} ${u}`);
+    if (fin !== null && dem !== null && Math.abs(fin - dem) > 0.02)
+      out.push(
+        `${fin > dem ? "Fill  " : "Cut   "}  ${fmtZ(Math.abs(fin - dem), units, 2)} ${u} from surveyed ${fmtZ(dem, units, 2)}`,
+      );
+  }
   if (rail !== null) out.push(`Rail    ${fmtZ(rail, units, 2)} ${u}`);
-  if (rail !== null && ground !== null)
-    out.push(
-      ground >= rail
-        ? `Below   ${fmtZ(ground - rail, units, 2)} ${u}`
-        : `Above   ${fmtZ(rail - ground, units, 2)} ${u}`,
-    );
-  if (grade !== null) out.push(`Grade   ${fmtG(grade)}`);
+  if (rail !== null && top !== null)
+    out.push(top >= rail ? `Below   ${fmtZ(top - rail, units, 2)} ${u}` : `Above   ${fmtZ(rail - top, units, 2)} ${u}`);
   const half = (d.input?.params.platform_m ?? 0) / 2;
   const st = d.input?.stations.find((s) => Math.abs(s.c_m - c) <= half);
+  const type = sv ? (runAt(sv.type_runs, c)?.[0] ?? null) : null;
+  if (sv && !st && rail !== null && type !== null) {
+    const sc = runAt(sv.struct_runs, c)?.[0] ?? null;
+    if (sc && (type === "shield" || type === "deep" || type === "cutcover" || type === "sunk")) {
+      const tubes = d.solveInput?.structure?.tubes as Record<string, { label: string }> | undefined;
+      const roof = rail + sc.top;
+      out.push(`Top     ${fmtZ(roof, units, 2)} ${u}${top !== null ? ` · cover ${fmtZ(top - roof, units, 1)}` : ""}`);
+      out.push(`Bottom  ${fmtZ(rail - sc.below, units, 2)} ${u} · ${structWord(sc, tubes)}`);
+    }
+  }
+  if (grade !== null) out.push(`Grade   ${fmtG(grade)}`);
+  if (sv && !st && type !== null) {
+    const ovr = (d.draft?.ovr ?? d.solveInput?.doc?.ovr ?? []) as [number, number, string][];
+    const painted = ovr.some((o) => c >= o[0] && c <= o[1]);
+    out.push(`Type    ${typeLabel(type)}${painted ? " (painted)" : ""}`);
+    const street = d.solveInput?.context.streets.find((r) => c >= Number(r[0]) && c <= Number(r[1]));
+    if (street)
+      out.push(`Street  under ${String(street[3])} (${String(street[4])}, ${fmtZ(Number(street[2]), units, 0)} ${u})`);
+  }
   if (st) {
     out.push(`Station ${d.platformName?.(st.platform_id) ?? st.platform_id}`);
     // Inside a platform, what the old readout added: the type with its source, the structure, the street.
@@ -757,15 +945,30 @@ export const chainageBand: BandDef = {
 
 export const BANDS: BandDef[] = [
   axesBand,
+  waterBand,
   groundBand,
+  groundWorksBand,
+  contextBand,
+  crossingsBand,
+  locksBand,
+  overGradeBand,
+  outlinesBand,
   stationStructureBand,
   stationAccessBand,
+  roadsBand,
   railBand,
   gradeBand,
-  platformBand,
+  curveGradeBand,
+  drawnGroundBand,
   pviBand,
+  platformBand,
+  crossingTicksBand,
   stationFlagsBand,
+  issuesBand,
+  paintPreviewBand,
   frameBand,
-  stationStripBand,
+  structureStripBand,
   chainageBand,
+  chronologyStripBand,
+  overviewBand,
 ];

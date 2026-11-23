@@ -6434,6 +6434,50 @@
     ]
    }
   },
+  "/api/v1/x/profiles/sections/{section_id}/solve": {
+   "get": {
+    "operationId": "x_profiles_get_solve_input",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "section_id",
+      "required": true,
+      "schema": {
+       "title": "Section Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "title": "Response X Profiles Get Solve Input",
+         "type": "object"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "SectionSolveInput v0 of a section (the input of section.solve@1)",
+    "tags": [
+     "profiles"
+    ]
+   }
+  },
   "/api/v1/x/profiles/sections/{section_id}/stations": {
    "get": {
     "operationId": "x_profiles_get_station_input",

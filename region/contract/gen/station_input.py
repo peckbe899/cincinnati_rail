@@ -548,7 +548,45 @@ class CanonItem(BaseModel):
     )
     m: M
     c0: float
+    """
+    The section's start as the saved profile's stations put it.
+    """
     c1: float
+    """
+    The section's end as the saved profile's stations put it.
+    """
+    a: str | None = None
+    """
+    The station (platform name) the section starts at.
+    """
+    b: str | None = None
+    """
+    The station (platform name) the section ends at.
+    """
+    a_in: bool | None = None
+    """
+    Whether a's platform is in the section (aIn, absent: true).
+    """
+    b_in: bool | None = None
+    """
+    Whether b's platform is in the section (bIn, absent: true).
+    """
+
+
+class ChronSegment(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    c0: float
+    c1: float
+    year: float | None
+    """
+    Opening year, null when none.
+    """
+    phase: str | None
+    """
+    The segment's phase, null when not set.
+    """
 
 
 class PhasesAlongItem(BaseModel):
@@ -610,7 +648,16 @@ class StationInput(BaseModel):
     cross_ground: list[CrossGroundItem]
     canon: list[CanonItem]
     """
-    The canon's method sections on this section by chainage (buildCanon, profiles.html 876).
+    The canon's method sections on this section by chainage (buildCanon, profiles.html 876). A section that names its
+    end stations is placed again from the live stations of the profile solved (a draft's: a station removed, restored or
+    slid moves it, and a removed end drops it, as the old page rebuilt it on every edit); c0 and c1 are then only the
+    saved profile's placing.
+    """
+    chron_segments: list[ChronSegment] | None = None
+    """
+    The Chronology's segments along the section (chrSegments, profiles.html 1077). With them a station's phase is worked
+    out again at its live centre (phaseAt 1091: the earlier-opened segment either side of the platform), so a slide in a
+    draft gives the old page's phase at once; absent, each platform's phase is as given.
     """
     phases_along: list[PhasesAlongItem]
     """

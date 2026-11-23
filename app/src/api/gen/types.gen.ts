@@ -3665,6 +3665,40 @@ export type XProfilesGetSectionInputResponses = {
 
 export type XProfilesGetSectionInputResponse = XProfilesGetSectionInputResponses[keyof XProfilesGetSectionInputResponses];
 
+export type XProfilesGetSolveInputData = {
+    body?: never;
+    path: {
+        /**
+         * Section Id
+         */
+        section_id: string;
+    };
+    query?: never;
+    url: '/api/v1/x/profiles/sections/{section_id}/solve';
+};
+
+export type XProfilesGetSolveInputErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type XProfilesGetSolveInputError = XProfilesGetSolveInputErrors[keyof XProfilesGetSolveInputErrors];
+
+export type XProfilesGetSolveInputResponses = {
+    /**
+     * Response X Profiles Get Solve Input
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type XProfilesGetSolveInputResponse = XProfilesGetSolveInputResponses[keyof XProfilesGetSolveInputResponses];
+
 export type XProfilesGetStationInputData = {
     body?: never;
     path: {

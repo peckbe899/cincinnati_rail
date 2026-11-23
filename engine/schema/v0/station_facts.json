@@ -697,6 +697,13 @@
           "gapfill": {
             "type": "boolean"
           },
+          "interchanges": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The other lines this station is one station with (its complex), by their names (Line 3, A trunk), once each in the complex's order: the sheet tags the station with them as the old page tagged its crossings."
+          },
           "flags": {
             "type": "array",
             "items": {
@@ -788,6 +795,7 @@
           "curve",
           "street",
           "gapfill",
+          "interchanges",
           "flags"
         ],
         "additionalProperties": false,

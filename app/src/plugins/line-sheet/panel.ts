@@ -17,6 +17,7 @@ import {
   hallRoomText,
   openingText,
   SEV_COLOURS,
+  slideText,
   streetText,
   typeColour,
   typeLabel,
@@ -201,15 +202,41 @@ export function buildPanel(c: PanelCtx): HTMLElement {
   const groups = el("div", { cls: "sp-groups" });
   root.append(groups);
 
+  // Each group folds (its heading is a summary with a one-line digest of what is in it); Ben's choice is kept per
+  // group across stations and visits. The groups Ben uses most come first and open; the rest start folded, so the
+  // panel fits a 1,000 px window without scrolling.
+  const bodies = new Map<string, HTMLElement>();
+  const digests = new Map<string, HTMLElement>();
   const group = (title: string, id: string) => {
-    const g = el("section", { cls: "sp-group", testid: `sp-group-${id}` }, el("h4", { textContent: title }));
-    groups.append(g);
-    return g;
+    const digest = el("span", { cls: "sp-digest" });
+    digests.set(id, digest);
+    const d = el(
+      "details",
+      { cls: "sp-group", testid: `sp-group-${id}` },
+      el("summary", {}, el("h4", { textContent: title }), digest),
+    );
+    d.open = groupOpen(id, f);
+    // the toggle event also follows the open set just above (it is sent later): only Ben's own clicks are kept
+    let shown = d.open;
+    d.addEventListener("toggle", () => {
+      if (d.open === shown) return;
+      shown = d.open;
+      keepGroup(id, d.open);
+    });
+    const body = el("div", { cls: "sp-body" });
+    d.append(body);
+    groups.append(d);
+    bodies.set(id, body);
+    return body;
+  };
+  const digest = (id: string, text: string) => {
+    const d = digests.get(id);
+    if (d) d.textContent = text;
   };
   const sourceEl = (s: Source | null) => {
     if (!s) return el("span", { cls: "sp-src" });
     const span = el("span", { cls: "sp-src", textContent: s.text });
-    if (s.rule) span.append(el("br"), el("span", { cls: "sp-rule", textContent: s.rule }));
+    if (s.rule) span.append(el("span", { cls: "sp-rule", textContent: s.rule }));
     span.title = s.title ?? (s.rule ? (c.ruleText?.(s.rule) ?? `rule ${s.rule}`) : s.text);
     return span;
   };
@@ -597,8 +624,12 @@ export function buildPanel(c: PanelCtx): HTMLElement {
     }
   }
   if (f) {
-    const g = c.metro ? (groups.lastElementChild as HTMLElement) : group("Street", "street");
+    const g = c.metro ? (bodies.get("access") as HTMLElement) : group("Street", "street");
     row(g, "Street", streetText(f.street), { text: "section context", rule: "road.station.street_known" }, "street");
+    digest(
+      c.metro ? "access" : "street",
+      `${f.access ? (ACCESS[f.access.type]?.label ?? f.access.type) : ""}${f.access ? " · " : ""}${streetText(f.street)}`,
+    );
   }
 
   // ---- Platform curve (the Metro)
@@ -661,22 +692,24 @@ export function buildPanel(c: PanelCtx): HTMLElement {
       textContent: x.sev === "error" ? "error" : x.sev === "warn" ? "warning" : "note",
     });
     chip.style.color = SEV_COLOURS[x.sev];
-    const r = el(
-      "div",
-      { cls: "sp-flag", testid: `sp-flag-${x.kind}` },
-      chip,
-      el("span", { textContent: flagText(x, u, (id) => id) }),
-    );
+    // the severity, then the flag in words over a line with its rule and its fix: a narrow panel keeps the text wide
+    const foot = el("div", { cls: "sp-flag-foot" });
     const rule = el("span", { cls: "sp-src", textContent: x.rule });
     rule.title = c.ruleText?.(x.rule) ?? `rule ${x.rule}`;
-    r.append(rule);
+    foot.append(rule);
     const fix = fixFor(x, c);
     if (fix) {
       const b = el("button", { type: "button", textContent: fix.label, testid: `sp-fix-${x.kind}` });
       b.disabled = ro;
       b.onclick = fix.run;
-      r.append(b);
+      foot.append(b);
     }
+    const r = el(
+      "div",
+      { cls: "sp-flag", testid: `sp-flag-${x.kind}` },
+      chip,
+      el("div", {}, el("span", { textContent: flagText(x, u, (id) => id) }), foot),
+    );
     fl.append(r);
   }
 
@@ -703,7 +736,56 @@ export function buildPanel(c: PanelCtx): HTMLElement {
     lim2("Max platform grade", `${P.sg_max_permille.toFixed(1)}‰`, P.sg_max_param, "lim-grade");
     lim2("Deck depth", `${fmtZ(P.deck_depth_m, u, 2)} ${ul}`, `${c.paramPrefix}.deckDepth`, "lim-deck");
   }
+  digest("place", `${fmtCh(c.centre)}${slid ? `, ${slideText(c.centre - c.point, u)}` : ""}`);
+  digest("level", `${fmtZ(c.rail, u, 2)} ${ul}, ${depth === null ? "–" : `${fmtZ(depth, u, 2)} down`}, ${fmtG(sgNow)}`);
+  digest("structure", `${typeLabel(f?.type)}, ${c.side.now === "island" ? "island" : "side platforms"}`);
+  if (f?.curve) digest("curve", `${fmtR(f.curve.R_m)}${curveWord(f.curve) ? ` · ${curveWord(f.curve)}` : ""}`);
+  const nErr = f?.flags.filter((x) => x.sev === "error").length ?? 0;
+  const nWarn = f?.flags.filter((x) => x.sev === "warn").length ?? 0;
+  digest(
+    "flags",
+    f
+      ? f.flags.length
+        ? `${nErr} error${nErr === 1 ? "" : "s"}, ${nWarn} warning${nWarn === 1 ? "" : "s"}`
+        : "none"
+      : "",
+  );
+  if (P) digest("limits", `grade ${P.sg_max_permille.toFixed(1)}‰, platform ${fmtZ(P.platform_m, u, 1)} ${ul}`);
+  for (const id of GROUP_ORDER) {
+    const b = bodies.get(id);
+    if (b?.parentElement) groups.append(b.parentElement);
+  }
   return root;
+}
+
+/** The groups, the most used first: the level and grade, the structure, the flags, the slide, then the rest. */
+export const GROUP_ORDER = ["level", "structure", "flags", "place", "access", "street", "curve", "limits"] as const;
+/** Open until Ben folds them; the rest start folded. The flags open by themselves when the station has a flag. */
+const OPEN_BY_DEFAULT = new Set(["level", "structure"]);
+export const GROUPS_KEY = "cr.sheet.groups";
+
+function storedGroups(): Record<string, boolean> {
+  try {
+    return JSON.parse(localStorage.getItem(GROUPS_KEY) ?? "{}") as Record<string, boolean>;
+  } catch {
+    return {};
+  }
+}
+
+/** Whether a group is open: Ben's choice, else the default (the flags open when there is an error or warning). */
+export function groupOpen(id: string, f: { flags: { sev: string }[] } | null): boolean {
+  const kept = storedGroups()[id];
+  if (typeof kept === "boolean") return kept;
+  if (id === "flags") return !!f?.flags.some((x) => x.sev === "error" || x.sev === "warn");
+  return OPEN_BY_DEFAULT.has(id);
+}
+
+function keepGroup(id: string, open: boolean): void {
+  try {
+    localStorage.setItem(GROUPS_KEY, JSON.stringify({ ...storedGroups(), [id]: open }));
+  } catch {
+    /* storage denied: the group folds back on the next station */
+  }
 }
 
 /** The fix button of a flag, as the old issue list offered them. */

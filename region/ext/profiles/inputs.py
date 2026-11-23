@@ -469,20 +469,37 @@ def _phase_at(route: str, c: float, half: float, segs: list[dict[str, Any]], pie
     return "later", "default"
 
 
-def canon_sections(route: str, live: list[tuple[str, float]], half: float) -> list[dict[str, Any]]:
+def canon_sections(route: str, live: list[tuple[str, float]], half: float,
+                   every: list[tuple[str, float]] | None = None) -> list[dict[str, Any]]:  # fmt: skip
     """buildCanon (876): each canon section of the route by chainage, from its end stations' platform centres (an
-    end with ``aIn``/``bIn`` false left out of it)."""
+    end with ``aIn``/``bIn`` false left out of it). Each section also names its end stations (``a``, ``b``) and
+    whether each end is in (``a_in``, ``b_in``), so the engine resolves it again from a draft's live stations (a
+    station removed, restored or slid; bug A of the parity prove): the chainages here are the saved profile's. With
+    ``every`` (all the section's platforms, removed ones too) a section whose end the saved profile removed is still
+    carried, so a draft that restores the end brings it back; the engine drops it while the end is removed."""
     out = []
     names = [n for n, _ in live]
+    all_names = [n for n, _ in every] if every is not None else names
     for sec in CANON_SECTIONS.get(route, []):
-        if sec["a"] not in names or sec["b"] not in names:
+        if sec["a"] not in all_names or sec["b"] not in all_names:
             continue
-        ca0 = live[names.index(sec["a"])][1]
-        cb0 = live[names.index(sec["b"])][1]
+        src, src_names = (live, names) if sec["a"] in names and sec["b"] in names else (every or live, all_names)
+        ca0 = src[src_names.index(sec["a"])][1]
+        cb0 = src[src_names.index(sec["b"])][1]
         sign = (cb0 > ca0) - (cb0 < ca0) or 1
         ca = ca0 + (sign * half if sec.get("aIn") is False else -sign * half)
         cb = cb0 + (-sign * half if sec.get("bIn") is False else sign * half)
-        out.append({"m": sec["m"], "c0": min(ca, cb), "c1": max(ca, cb)})
+        out.append(
+            {
+                "m": sec["m"],
+                "c0": min(ca, cb),
+                "c1": max(ca, cb),
+                "a": str(sec["a"]),
+                "b": str(sec["b"]),
+                "a_in": sec.get("aIn") is not False,
+                "b_in": sec.get("bIn") is not False,
+            }
+        )
     return out
 
 
@@ -602,11 +619,12 @@ def station_profile(prof: Mapping[str, Any]) -> dict[str, Any]:
     return out
 
 
-def station_input(ctx: Any, section_id: str, *, step_m: float | None = None) -> dict[str, Any]:
+def station_input(ctx: Any, section_id: str, *, step_m: float | None = None, cross: bool = True) -> dict[str, Any]:
     """StationInput v0 (``station_input/0``, the input of ``station.facts@1``) of one section: its SectionInput with
     the ground, the profile's station fields, each platform with what the records say about it (side or island,
     opening year and phase, complex), the path, rivers, streets and roads, the Deck's ground runs, the other lines'
-    drawn ground across this one, and the params of the station rules."""
+    drawn ground across this one, and the params of the station rules. ``cross=False`` leaves the other lines' drawn
+    ground out (and their records out of the reads): section_solve_input has it from the neighbours instead."""
     g = gather(ctx, section_id, ground=True)
     params = params_of(ctx, g.section)
     si = build(g, params, step_m=step_m)
@@ -645,6 +663,7 @@ def station_input(ctx: Any, section_id: str, *, step_m: float | None = None) -> 
         for stop, p in pairs
         if p["id"] not in deleted
     ]
+    all_c = [(str(p["data"].get("name")), float(stop["data"]["c"]) + slide(p["id"])) for stop, p in pairs]
     segs = chron.line_segments(route, live_c, float(d["length_m"]))
     complexes = ctx.list("station_complex")
     platforms = []
@@ -721,8 +740,11 @@ def station_input(ctx: Any, section_id: str, *, step_m: float | None = None) -> 
         ],
         "ground_add": [{"i0": int(r["i0"]), "v": [float(x) for x in r["v"]]} for r in cxd.get("add") or []],
         "ground_cap": [{"i0": int(r["i0"]), "v": [float(x) for x in r["v"]]} for r in cxd.get("cap") or []],
-        "cross_ground": cross_ground(ctx, g.section, float(_param(ctx, GND_W, scope, 15.0))),
-        "canon": canon_sections(route, live_c, half) if metro else [],
+        "cross_ground": cross_ground(ctx, g.section, float(_param(ctx, GND_W, scope, 15.0))) if cross else [],
+        "canon": canon_sections(route, live_c, half, all_c) if metro else [],
+        "chron_segments": [
+            {"c0": float(x["c0"]), "c1": float(x["c1"]), "year": x["year"], "phase": x["phase"] or None} for x in segs
+        ],
         "phases_along": phases_along(route, float(d["length_m"]), segs, d.get("pieces") or [], ms) if ms else [],
     }
 

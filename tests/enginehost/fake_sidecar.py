@@ -31,7 +31,16 @@ def main() -> int:
             "hello": {
                 "engine_version": "9.9.9",
                 "engine_build": a.build,
-                "contracts": {"section_input": a.major, "vertical_rail": 0, "station_input": 0, "station_facts": 0},
+                "contracts": {
+                    "section_input": a.major,
+                    "vertical_rail": 0,
+                    "station_input": 0,
+                    "station_facts": 0,
+                    "section_solve_input": 0,
+                    "solved_section": 0,
+                    "section_propose_input": 0,
+                    "section_proposal": 0,
+                },
                 "methods": ["engine.echo@1"],
             }
         }

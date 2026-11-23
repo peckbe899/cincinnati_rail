@@ -56,6 +56,23 @@ async function factsSettled(page: Page, rev: number): Promise<void> {
 
 /** Open a line's sheet in a layer, with its station facts in. */
 async function openLine(page: Page, request: APIRequestContext, route: string, layer: string) {
+  // These checks read every row of the station panel: its groups all open (they fold by Ben's choice, which the
+  // panel keeps in localStorage; legibility.spec.ts checks the folded defaults).
+  await page.addInitScript(() =>
+    localStorage.setItem(
+      "cr.sheet.groups",
+      JSON.stringify({
+        level: true,
+        structure: true,
+        flags: true,
+        place: true,
+        access: true,
+        street: true,
+        curve: true,
+        limits: true,
+      }),
+    ),
+  );
   const sid = await sectionOf(request, route);
   const prof = await profileOf(request, sid, layer);
   await openApp(page, `layer=${encodeURIComponent(layer)}&tl=canon&sel=profile:${prof.id}`);

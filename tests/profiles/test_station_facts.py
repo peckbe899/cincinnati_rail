@@ -431,3 +431,60 @@ def test_interchange_names_are_the_old_cards():
     assert names["RER_A_trunk"] == "A trunk"
     assert names["Line_2b"] == "Line 2b"
     assert names["Line_7"] == "Line 7"
+
+
+# ------------------------------------------------------------------------------- a draft's live canon (bug A)
+
+
+def _types(out: dict[str, Any]) -> dict[str, tuple[Any, Any, Any]]:
+    return {f["platform_id"]: (f["type"], f["type_why"], f["phase"]) for f in out["stations"] if not f["deleted"]}
+
+
+def test_canon_sections_name_their_end_stations():
+    """Each Metro canon section names its end stations and whether each end is in, so the engine places it again
+    from a draft's live stations; a section whose end the saved profile removed is still carried."""
+    si = _inputs()["Line_3"]
+    assert {(s["m"], s["a"], s["b"], s["a_in"], s["b_in"]) for s in si["canon"]} == {
+        ("shallow", "St Bernard", "Baltimore", True, True),
+        ("canal", "St Bernard", "Genesee", True, True),
+    }
+    assert si["chron_segments"] and all(s["c0"] <= s["c1"] for s in si["chron_segments"])
+    assert {(s["a"], s["a_in"], s["b_in"]) for s in _inputs()["Line_4"]["canon"]} == {
+        ("Price Hill", True, True),
+        ("Price Hill", True, False),
+    }
+
+
+@pytest.mark.parametrize("edit", ["remove", "slide"])
+def test_a_drafts_station_types_equal_the_saved_ones(pool, write_root, edit):
+    """Bug A: the draft's facts (the saved profile's input with the draft's station fields, as the sheet sends them)
+    equal the facts the server builds once the same edit is saved: removing Genesee ends Line 3's canal bed at once,
+    and sliding it 150 m moves the canal's end with it."""
+    pid = _pid("Line_3", "Genesee")
+    prof0 = _inputs()["Line_3"]["profile"]
+    so = {**(prof0.get("so") or {}), pid: 150.0}
+    change: dict[str, Any] = {"del": [*(prof0.get("del") or []), pid]} if edit == "remove" else {"so": so}
+    draft = _edit("Line_3", **change)
+    if edit == "remove":
+        draft["section"]["stations"] = [s for s in draft["section"]["stations"] if s["platform_id"] != pid]
+    else:
+        draft["section"]["stations"] = [
+            {**s, "c_m": s["c_m"] + 150.0} if s["platform_id"] == pid else s for s in draft["section"]["stations"]
+        ]
+    store = fresh_copy(write_root)
+    store.create_layer("try", tier="scenario", parent="main", by="ben")
+    view = View(layer="try")
+    prof = profile_of(store, "Line_3", view)
+    field, value = next(iter(change.items()))
+    store.patch("profile", prof["id"], [{"op": "add", "path": f"/data/{field}", "value": value}], view,
+                if_match=f'"{prof["layer"]}:{prof["version"]}"', by="ben")  # fmt: skip
+    saved = station_input(StoreReads(store, view), section_of(store, "Line_3")["id"])
+    store.close()
+    a = _types(pool.call("station.facts", draft))
+    b = _types(pool.call("station.facts", saved))
+    assert a == b
+    seed = _types(pool.call("station.facts", _inputs()["Line_3"]))
+    if edit == "remove":
+        # the canal's stations no longer have the canal's box
+        assert [k for k, v in seed.items() if v[1] == "canon_box"]
+        assert not [v for v in a.values() if v[1] == "canon_box"]

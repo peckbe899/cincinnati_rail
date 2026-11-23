@@ -1,0 +1,188 @@
+{
+  "line": "Line_2b",
+  "before": {
+    "pvi": [
+      [244.5, 154.5],
+      [429.5, 153.9],
+      [548.8, 153.4],
+      [893.5, 162.8],
+      [1025.9, 166.6],
+      [1074.5, 167],
+      [1242.3, 175],
+      [1888.4, 189.4],
+      [2630.3, 199]
+    ],
+    "st": {
+      "Ludlow": 153,
+      "West Covington": 176.1,
+      "Devou Stadium": 198.7,
+      "Bullock": 146.8,
+      "Covington Union": 155.8
+    },
+    "sg": { "Ludlow": 5, "West Covington": 5, "Devou Stadium": -7.5, "Bullock": -7.5, "Covington Union": 0 },
+    "gnd": []
+  },
+  "regrade": [
+    {
+      "kind": "Unbuildable",
+      "fix": { "mode": "lower", "c0": 1840, "c1": 1908, "t": null, "why": null },
+      "msg": "Lowered the rail by up to 9.9 m from 1+730 to 2+168",
+      "after": {
+        "pvi": [
+          [244.5, 154.5],
+          [429.5, 153.9],
+          [548.8, 153.4],
+          [893.5, 162.8],
+          [1025.9, 166.6],
+          [1074.5, 167],
+          [1242.3, 175],
+          [1420, 176.43],
+          [1874, 179.1],
+          [1880, 179.2],
+          [2568, 198.19],
+          [2630.3, 199]
+        ],
+        "st": {
+          "Ludlow": 153,
+          "West Covington": 176.1,
+          "Devou Stadium": 198.7,
+          "Bullock": 146.8,
+          "Covington Union": 155.8
+        },
+        "sg": { "Ludlow": 5, "West Covington": 5, "Devou Stadium": -7.5, "Bullock": -7.5, "Covington Union": 0 },
+        "gnd": []
+      }
+    },
+    {
+      "kind": "Painted",
+      "fix": { "mode": "lower", "c0": 3384, "c1": 3550, "t": "cutcover", "why": "roof" },
+      "msg": "Lowered the rail by up to 5.6 m from 2+712 to 3+566, with Devou Stadium 3.8 m lower",
+      "after": {
+        "pvi": [
+          [244.5, 154.5],
+          [429.5, 153.9],
+          [548.8, 153.4],
+          [893.5, 162.8],
+          [1025.9, 166.6],
+          [1074.5, 167],
+          [1242.3, 175],
+          [1888.4, 189.4],
+          [2312, 194.88],
+          [2786, 195.58],
+          [2916, 194.2],
+          [3464, 167.9],
+          [3486, 167],
+          [3966, 149.94]
+        ],
+        "st": {
+          "Ludlow": 153,
+          "West Covington": 176.1,
+          "Devou Stadium": 194.93,
+          "Bullock": 146.8,
+          "Covington Union": 155.8
+        },
+        "sg": { "Ludlow": 5, "West Covington": 5, "Devou Stadium": -7.5, "Bullock": -7.5, "Covington Union": 0 },
+        "gnd": []
+      }
+    },
+    {
+      "kind": "Painted",
+      "fix": { "mode": "lower", "c0": 3988, "c1": 4048, "t": "cutcover", "why": "roof" },
+      "msg": "Lowered the rail by up to 1.9 m from 3+154 to 4+206, with Bullock 1.7 m lower; under West Pike Street, Bullock Street, Simon Kenton Way",
+      "after": {
+        "pvi": [
+          [244.5, 154.5],
+          [429.5, 153.9],
+          [548.8, 153.4],
+          [893.5, 162.8],
+          [1025.9, 166.6],
+          [1074.5, 167],
+          [1242.3, 175],
+          [1888.4, 189.4],
+          [2630.3, 199],
+          [2916, 198.2],
+          [3990, 147.9],
+          [4044, 145.5],
+          [4174, 144.9],
+          [4606, 151.96]
+        ],
+        "st": {
+          "Ludlow": 153,
+          "West Covington": 176.1,
+          "Devou Stadium": 198.7,
+          "Bullock": 145.05,
+          "Covington Union": 155.8
+        },
+        "sg": { "Ludlow": 5, "West Covington": 5, "Devou Stadium": -7.5, "Bullock": -7.5, "Covington Union": 0 },
+        "gnd": []
+      }
+    }
+  ],
+  "fix_all": {
+    "msg": "3 unbuildable stretches left (see the issues: a canon or locked station, or a fix that would undo another)",
+    "after": {
+      "pvi": [
+        [126, 153.33],
+        [384, 163.57],
+        [1058, 166.9],
+        [1064, 167],
+        [1290, 176.1],
+        [1420, 176.97],
+        [1952, 199.52],
+        [2786, 195.58],
+        [2916, 194.2],
+        [3174, 181.82],
+        [3228, 179.23],
+        [3304, 175.58],
+        [3470, 167.66],
+        [4044, 145.5],
+        [4174, 144.9],
+        [4898, 155.83]
+      ],
+      "st": {
+        "Ludlow": 153,
+        "West Covington": 176.39,
+        "Devou Stadium": 194.93,
+        "Bullock": 145.05,
+        "Covington Union": 155.8
+      },
+      "sg": { "Ludlow": 5, "West Covington": 5, "Devou Stadium": -7.5, "Bullock": -7.5, "Covington Union": 0 },
+      "gnd": []
+    }
+  },
+  "solve_cross": {
+    "msg": "Cleared 6 of 6 crossings within 50‰",
+    "after": {
+      "pvi": [[237.2, 154.592], [620.7, 173.767], [4823.6, 155.342], [4846.3, 154.207], [4874.5, 153.28]],
+      "st": {
+        "Ludlow": 150.68,
+        "West Covington": 173.52,
+        "Devou Stadium": 196.3,
+        "Bullock": 149.18,
+        "Covington Union": 153.28
+      },
+      "sg": { "Ludlow": 0, "West Covington": 0, "Devou Stadium": 0, "Bullock": 0, "Covington Union": 0 },
+      "gnd": []
+    }
+  },
+  "reset": {
+    "msg": "Unsaved changes",
+    "after": {
+      "pvi": [],
+      "st": {
+        "Ludlow": 150.68,
+        "West Covington": 173.52,
+        "Devou Stadium": 196.3,
+        "Bullock": 143.23,
+        "Covington Union": 153.28
+      },
+      "sg": { "Ludlow": 0, "West Covington": 0, "Devou Stadium": 0, "Bullock": 0, "Covington Union": 0 },
+      "gnd": []
+    }
+  },
+  "paints": [
+    "1+025 to 1+369 Cut & cover\nrules: Cut & cover",
+    "3+383 to 3+550 Cut & cover\nrules: At grade\ndoes not fit over 168 m (see the issues)",
+    "3+987 to 4+129 Cut & cover\nrules: Open trough\ndoes not fit over 62 m (see the issues)"
+  ]
+}

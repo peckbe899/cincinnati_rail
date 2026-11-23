@@ -187,12 +187,37 @@ export const StationInput = z
       .array(
         z.strictObject({
           m: z.enum(["shallow", "deep", "canal", "covered"]),
-          c0: z.number().meta(unit("m")),
-          c1: z.number().meta(unit("m")),
+          c0: z.number().meta(unit("m", "The section's start as the saved profile's stations put it.")),
+          c1: z.number().meta(unit("m", "The section's end as the saved profile's stations put it.")),
+          a: z.string().optional().meta({ description: "The station (platform name) the section starts at." }),
+          b: z.string().optional().meta({ description: "The station (platform name) the section ends at." }),
+          a_in: z
+            .boolean()
+            .optional()
+            .meta({ description: "Whether a's platform is in the section (aIn, absent: true)." }),
+          b_in: z
+            .boolean()
+            .optional()
+            .meta({ description: "Whether b's platform is in the section (bIn, absent: true)." }),
         }),
       )
       .meta({
-        description: "The canon's method sections on this section by chainage (buildCanon, profiles.html 876).",
+        description:
+          "The canon's method sections on this section by chainage (buildCanon, profiles.html 876). A section that names its end stations is placed again from the live stations of the profile solved (a draft's: a station removed, restored or slid moves it, and a removed end drops it, as the old page rebuilt it on every edit); c0 and c1 are then only the saved profile's placing.",
+      }),
+    chron_segments: z
+      .array(
+        z.strictObject({
+          c0: z.number().meta(unit("m")),
+          c1: z.number().meta(unit("m")),
+          year: z.number().nullable().meta(unit("year", "Opening year, null when none.")),
+          phase: z.string().nullable().meta({ description: "The segment's phase, null when not set." }),
+        }),
+      )
+      .optional()
+      .meta({
+        description:
+          "The Chronology's segments along the section (chrSegments, profiles.html 1077). With them a station's phase is worked out again at its live centre (phaseAt 1091: the earlier-opened segment either side of the platform), so a slide in a draft gives the old page's phase at once; absent, each platform's phase is as given.",
       }),
     phases_along: z
       .array(z.strictObject({ c0: z.number().meta(unit("m")), c1: z.number().meta(unit("m")), phase: z.string() }))
@@ -300,6 +325,10 @@ export const StationFact = z
       roads: z.array(z.string()),
     }),
     gapfill: z.boolean(),
+    interchanges: z.array(z.string()).meta({
+      description:
+        "The other lines this station is one station with (its complex), by their names (Line 3, A trunk), once each in the complex's order: the sheet tags the station with them as the old page tagged its crossings.",
+    }),
     flags: z.array(Flag),
   })
   .meta({ description: "Everything the sheet shows about one platform." });

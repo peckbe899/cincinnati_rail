@@ -325,43 +325,96 @@ summary and line checks, [UI] page work only.
 
 | Items | Old | New | Increment |
 |---|---|---|---|
-| R1 | Line picker with km, RER grouped; opens from the hash or the last line | partial: the sheet follows the map selection and the URL; no line list | sheet page work after A |
+| R1 | Line picker with km, RER grouped; opens from the hash or the last line | done (tools round): the picker lists every section of the view with its km, by system; the sheet still opens from the URL and the map selection | done; RER groups with slice 2 |
 | R2, R5 | Save button and status texts, autosave, save on close; view-only mode | partial: Save, Ctrl+S, Discard, view-only by layer; no autosave (see S49) | done enough; autosave by Ben's choice |
 | R3 | Conflict banner, Keep mine / Take theirs; reframe after a Deck tie | partial: banner and three-way rebase done; reframe missing | I2.2 for reframe |
 | R4 | Live sync of every doc and param | done (I2.0, always live) | done |
 | R6 | Save format and derived fields; RER propagation | partial: fields kept losslessly; derived and propagation missing | I2.2; RER slice 2 |
-| R7 | Tools Move, Paint, Ground (M, P, G) and cursors | partial: Move only | sheet page work after A (Paint and Ground edits), effect I2.1 and I2.2 |
-| R8, R9, R10, R11 | Structure brushes, tube form brushes, shaft brush, paint drag and paint bar | missing | edit: page work after A; effect [SOLVER] I2.2 |
-| R12 | Undo and redo, 200 deep | partial (S48) | with A (0.4) |
+| R7 | Tools Move, Paint, Ground (M, P, G) and cursors | done (tools round): the three tools, their keys and cursors (cell, copy, the drag shapes) | done |
+| R8, R9, R10, R11 | Structure brushes, tube form brushes, shaft brush, paint drag and paint bar | done (tools round): Auto and the six types, Shaft, Twin tubes, Double-track bore, Auto tubes; the drag's preview in the brush's colour; paintRange ported (cut, round, join; Auto clears shafts); the whole solve applies it 150 ms after release | done |
+| R12 | Undo and redo, 200 deep | done: draft steps (0.4); Undo and Redo buttons in the tools row; every tool edit and proposal is one step | done |
 | R13 | Zoom buttons and keys, wheel, pan, pinch; at least 120 m | done (F, +, -, wheel, drag); pinch to check | done |
-| R14 | Show Rail / Rail + box / Box | missing | [TYPE] I2.2; the station part comes with A |
+| R14 | Show Rail / Rail + box / Box | done (integration round): the three buttons in the header, kept for the session; checked by eye and by section_solve.spec | done |
 | R15 | Units m / ft | done | done |
-| R16, R17, R18, R19 | Export PNG, JSON, GeoJSON, KMZ | missing | PNG: page work after A; the rest [TYPE] [GROUND] after I2.2 |
-| R20 | Settings panel (31 rows), Restore defaults, Reset this line | missing (params are records, editable in the inspector) | page work after A; Reset is I2.2 |
-| R21 | Axes, grid, k+mmm, y range taking in everything, frozen while dragging | partial: y range from less | done enough; full range with [RIVER] [XING] |
-| R22, R31, R32 | Water, made-up bed, channel over the sunk box | missing | [RIVER] (after I2.2) |
-| R23, R24 | Finished ground; REGRADED and CUT | partial: DEM only | I2.1 |
-| R25, R26 | Context blocks; crossings with clearance | missing | [XING] (2.1.7, after I2.2) |
-| R27 | Locked stretches | missing | canon as data, I2.2 |
-| R28, R30 | Rail coloured by structure; tunnel outline | missing | I2.2 |
-| R29, R37, R38 | Over-grade halo; grade label colours; curve grade | partial: labels in one colour | [CHECKS] I2.2; curve grade with 2.1.14 |
-| R33, R34, R43 | Limit lines; unbuildable hatch; structure band | missing (station part in A) | I2.2 |
-| R35 | Roads and the street under the line | missing (the record comes with A) | drawing after A; clearances [XING] |
-| R36 | Viaducts | missing | [TYPE] [RIVER] I2.2 |
+| R16, R17, R18, R19 | Export PNG, JSON, GeoJSON, KMZ | done (tools round): the four exports of the draft as drawn; KMZ a stored zip with doc.kml (a plain .kmz, the hub has no downloads gate) | done |
+| R20 | Settings panel (31 rows), Restore defaults, Reset this line | done (tools round): the 28 Metro rows as settings.* param records, each change a param draft the whole solve previews; Restore defaults back to import:registry; Reset this line as a proposal (section.propose@1) | done; the rail solve (vertical.rail@1) reads saved params only |
+| R21 | Axes, grid, k+mmm, y range taking in everything, frozen while dragging | done: the y range takes in the water, the made bed and the crossings' boxes; frozen in a drag | done |
+| R22, R31, R32 | Water, made-up bed, channel over the sunk box | done (integration round): pool line, shading, name, made bed and channel from the whole solve; Line 6 at the Ohio drawn as on the old page | done |
+| R23, R24 | Finished ground; REGRADED and CUT | done (integration round): the solve's finished ground against the survey; the readout now reads the finished ground with "Fill" or "Cut" from the surveyed level, as the old one did (review round) | done |
+| R25, R26 | Context blocks; crossings with clearance | partial (review round): blocks, ticks, dashed lines, boxes and labels from the whole solve. Fixed in review: (1) a short crossing is red as on the old page even while the other line is not set (it was grey: every short crossing was grey, since no line is set); (2) a label that met another is placed above, below or left of it (it was left off: Line 1 at 10+042 on Line 6). Still short: crossings with Lines 10, 11 and 13 (no saved levels) get no clearance on the sheet (on Line 6: Line 13 1.9 m, Line 10 4.3 m, Line 11 0.2 m apart, all red on the old page; 7 Metro crossings with lines not set yet on the old page, 4 here). Tried in review: the sheet asking profiles.neighbour@1 itself draws them right, but the always-live test (a saved line file, then Pause and Resume) failed 4 of 4 with the hub no longer answering events, against 2 of 2 without it; reverted. Needs the neighbour views kept warm on the hub and read without planning | the docless neighbours on the hub; RER crossings with slice 2 |
+| R27 | Locked stretches | done (integration round): from the canon locks (transcribed; no Metro line has a lock today) | canon as records |
+| R28, R30 | Rail coloured by structure; tunnel outline | done (integration round): from the whole solve's type and structure runs; the type at every 2 m sample equals the live old page's on 14 of 16 lines (review round, server input from the records, not the goldens) | done; Line 10 and Line 2b below |
+| R29, R37, R38 | Over-grade halo; grade label colours; curve grade | done (review round). Fixed in review: the grade labels ran between vertical.rail@1's vertices, not the old page's chords (2642), which run from each platform's transition end; Line 6 read "+36.5‰" where the old page reads "+42.2‰" (Towne to the first bend), and 6 of the 8 over-limit stretches on Lines 1, 3, 6, 9 and 13 (Line 6's −257.9‰ and +167.6‰ among them) were never red or amber because no label's ends met them. The chords now take the transition ends from the curves; all 8 match | done |
+| R33, R34, R43 | Limit lines; unbuildable hatch; structure band | done (integration round) | done |
+| R35 | Roads and the street under the line | done (integration round): streets and roads from the context record; the readout now names the street under the line at every chainage (review round) | done |
+| R36 | Viaducts | done (integration round): girders, trusses and piers from the solve's spans (Line 1 on the L&N bridge) | done |
 | R39 | PVI handles and curve ticks | done | done |
-| R40, R51 | Drawn ground lines and the ground point card | missing | drawing: page work after A; effect I2.1 |
+| R40, R51 | Drawn ground lines and the ground point card | done (tools round): drawn live from the draft; Ground's double-click, drag, arrows, Del; the card with chainage, level, over the ground below, grades meeting, rail under it, the line, Remove point and line | done |
 | R41 | Hover hairline and plan dot | done (hairline); the plan dot is the map's cursor | done |
-| R42, R54, R55 | Issue markers, issues list with filters and groups, every issue kind | missing (station flags come with A) | [CHECKS] I2.2; the issues pane 2.3.5 |
-| R44 | Chronology band | missing | I2.4 |
+| R42, R54, R55 | Issue markers, issues list with filters and groups, every issue kind | done (tools round): the list of the whole solve's findings and the station flags, severity and kind chips, the three groups, Show, each fix | done |
+| R44 | Chronology band | done (integration round): year and phase per segment from the Chronology table; fewer labels than the old page at the whole line (same segments and colours) | done |
 | R45 | V.E. label | done | done |
-| R46 | Overview strip | missing | page work after A |
-| R47 | Hover readout, full | partial (station part in A) | the rest with [TYPE] [RIVER] [XING] [GROUND] |
+| R46 | Overview strip | done (integration round) | done |
+| R47 | Hover readout, full | partial (review round): river with water and bed; finished ground with fill or cut; rail; below or above the surface; structure top with its cover and bottom with its name; grade; type with "(painted)"; the street under the line; inside a platform the station rows of A. Missing: "with curve" beside the grade, the sunk box's roof against the bed, the viaduct's soffit and span | the three rows (the solve has no allowance per point yet) |
 | R48 | Plan card | partial: the map pane | done enough |
-| R49 | Editing help card | missing | page work with A (a "?" in the panel) |
-| R50 | Bend point card (chainage, level, depth, grades meeting, curve length, Remove) | partial: the PVI table | page work after A |
-| R52 | Line summary and type table | missing (station count in A) | [TYPE] [CHECKS] I2.2 |
-| R53 | Profile set checkbox (`ready`) | missing (stored) | page work after A; used by [XING] |
-| R56, R57, R58, R59, R60 | Lower, Raise, Propose fill, Clear; Solve levels with crossings; Fix unbuildable; Check all lines; Paints card | missing | I2.2 (proposers 2.1.15), I2.1 for Propose fill |
-| R61 | Canon structure card | missing | canon as data, I2.2 |
-| R62, R63, R64 | Pointer, double-click and keys | partial: PVI and station drag, double-click adds a PVI, F, +, -, arrows, Del, Esc; no M, P, G, no ground points | station keys with A; the rest page work after A |
+| R49 | Editing help card | done (tools round): the "?" in the tools row, and a pointer to it in the empty card | done |
+| R50 | Bend point card (chainage, level, depth, grades meeting, curve length, Remove) | done (tools round) | done |
+| R52 | Line summary and type table | done (tools round): length, stations, steepest grade, deepest, highest, sumps, km and share by type, from section.solve@1 | done |
+| R53 | Profile set checkbox (`ready`) | done (tools round) | done |
+| R56, R57, R58, R59, R60 | Lower, Raise, Propose fill, Clear; Solve levels with crossings; Fix unbuildable; Check all lines; Paints card | done (tools round): section.propose@1 (regradeDrive, fixAll, solveCross, proposeFill, plainTypes) as previews in the draft, each one step; matches the old page on all 16 Metro lines (87 of 88 Lower or Raise, Line_2b's reframed one apart); Solve levels with crossings does not see Lines 10, 11 and 13 (see R26) | done; Lines 10, 11, 13 with R26; RER with slice 2 |
+| R61 | Canon structure card | partial (tools round): canon sections and locks; the rest of the old card's notes are prose | the notes with canon as data |
+| R62, R63, R64 | Pointer, double-click and keys | done (tools round): M, P, G; paint drag; Ground double-click, drag, arrows, Del; PVI and station keys as before | done; pinch to check |
 | R65 | RER junction PVIs and shared stretches | missing | slice 2 (network constraints) |
+
+### C.1 Independent review of the whole page (23 November, review round)
+
+Method: the old page from a scratch copy of the old hub (seed equal to `hub/seed`), the new sheet on a scratch hub
+rebuilt from the working tree (`crhub rebuild --working-tree`), both in Playwright at 1,600 x 1,000; and, apart from
+the screens, the server's `section.solve@1` input built from the records (not the golden adapter) solved in Node and
+compared with the live old page sample by sample.
+
+**Engine against the live old page, all 16 Metro lines (input from the records).**
+- Type at every 2 m sample: equal on 14 lines. Line 10 differs at 79 samples (16+244 on, the Ohio approach: no saved
+  levels, its default ground misses the RER lines' drawn ground). Line 2b differs at 12 samples (trough ending 0+556 on
+  the old page, 0+580 here): the old page itself gives 0+556 or 0+580 depending on which line was open before
+  (its model caches leak across lines; opened after Line 1 it gives 0+580, after Line 2 0+556). Not a new-hub fault.
+- Metro crossings: every clearance with a line that has saved levels equals the old page's within 0.05 m (Line 2b's
+  CVG crossing 0.18 m, its reframed profile). Crossings with Lines 10, 11 and 13 have no clearance on the sheet (R26,
+  still short).
+- Findings: the sheet's issue list on Line 6 reads 41 errors, 32 warnings, 39 notes; the old page 41, 209 (29
+  distinct: it repeats one Tunnel method warning 183 times), 39. The 3 extra distinct warnings are not traced.
+
+**Edits.** A Shield paint from 20+013 to 20+812 on Line 6 stores `[20013, 20812, "shield"]` in both (old doc, new
+profile record after Save, on a scenario layer). Station edits as in A.8.
+
+**Drag.** A bend point dragged 60 steps on Line 6 maximised, whole line and 3.5 km: frames p50 16.7 ms, p95 33 ms, max
+50 to 67 ms, no long task; the whole solve did not run during the drag and ran once after it. The old page on the same
+drag: max 117 ms, two long tasks (69 and 63 ms). No stutter. The local solve reads 13 ms at 3.5 km and 25 ms at the
+whole line maximised (engine 2 ms; the rest is the round trip behind the whole-line paint).
+
+**Fixed in this round** (each with a test that fails without it):
+1. Grade labels from the old page's chords (transition ends), so the figures and the over-limit colours match (R29,
+   R37): `app/test/unit/sheet_drawing.test.ts`.
+2. A short crossing red while the other line is not set (R26): `app/test/unit/sheet_solved.test.ts`.
+3. A clearance label that meets another moves above, below or left of it (R26): `sheet_solved.test.ts`.
+4. The readout between stations (R47): `sheet_solved.test.ts`.
+5. The engine suite's own report files (`engine/test/port/report/`) are left out of Biome, so Biome passes after
+   the engine suite runs (it rewrote `checks.json` in a format Biome rejects).
+
+**Still short.**
+- Crossings with Lines 10, 11 and 13 (no saved levels): no clearance on the sheet (R26). Asking
+  `profiles.neighbour@1` from the sheet was tried and reverted: it broke the always-live line file test (Pause and
+  Resume, 4 of 4 runs, the hub stopped answering events). The hub should keep these views warm and the solve input
+  read them without planning a job.
+- RER: crossings, ticks and their checks (Line 6 shows 14 crossings where the old page has 21), junctions, shared
+  stretches, modes (slice 2).
+- R47: "with curve" in the readout, the sunk box's roof against the bed, the viaduct's soffit and span.
+- R61: the canon card's notes (canon as records).
+- Line 10's 160 m on the Ohio approach and the level solver's ground for Lines 10, 11 and 13 (RER drawn ground).
+- The station panel's type from `station.facts@1` can differ from the band's (the full solve's), as reported.
+- Pinch zoom unchecked (R13).
+- The 16 ms local re-solve budget (`sheet.spec.ts` PVI edit, `stations.spec.ts` keys) failed in both full Playwright
+  runs of this round (46.6 and 32.4 ms; 20.2 and 17.4 ms) and 6 of 6 times alone, with and without this round's
+  drawing changes alike (18 to 58 ms; the engine itself 2 to 7 ms). The time is the main thread busy between the
+  request and the answer, most likely the whole solve's answer and redraw landing during the typing; the integration
+  round saw the same with the whole solve off (3 of 5). Not fixed here.

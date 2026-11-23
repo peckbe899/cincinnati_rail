@@ -130,3 +130,211 @@ export const KASA_QUARTER = 4;
 
 /** The outside face's extra gap is car length squared over 8R (the car's middle bulges out; 2036). */
 export const OUTSIDE_GAP_DIV = 8;
+
+// ------------------------------------------------------------------ the port, P1 types (src/port/structure/)
+// The page's tolerances and sampling steps of the structure solver and type lookup (profiles.html 1063-1676). The
+// values Ben rules on come in PortInput.literals and .structure; the ones marked "No param" are design values the
+// registry does not have yet, reported to the lead (claude/hub_maps/engine_port_plan.md, section 3.4).
+
+/** A point this far or more from its platform centre takes the centre's type (pointType, 1248). */
+export const PORT_STATION_POINT_M = 1e-6;
+
+/** Chainage slack of the solver's comparisons: within the cut-and-cover limit (1366), the approach run (1443-1444),
+ * a sliver a box can take (1530), a paint run's next sample (1653). */
+export const PORT_CHAINAGE_EPS_M = 1e-6;
+
+/** A tube has its cover within this (holds 1474, the bore's cover 1424, a drive's hard cover 1486, 1552). */
+export const PORT_COVER_TOL_M = 0.005;
+
+/** Two track spacings, a box and its street, differ by more than this (1440, 1543, 1549). */
+export const PORT_SPACING_TOL_M = 0.01;
+
+/** Unbuildable runs of one kind this close are one stretch (bad, 1567). */
+export const PORT_BAD_JOIN_M = 10;
+
+/** The approach box street check samples every this many metres (1542). */
+export const PORT_APPROACH_CHECK_STEP_M = 10;
+
+/** No param: an approach box is checked against the streets only with a Deck street within this (1540). */
+export const PORT_APPROACH_STREET_SEARCH_M = 300;
+
+/** A drawn piece reaches this far past its ends (pieceAt, 2059). */
+export const PORT_PIECE_PAD_M = 5;
+
+/** No param: a tube wider inside than this is the double-track bore (tubeOf, 1063). */
+export const TUBE_IS_BORE_INSIDE_M = 7;
+
+/** gradeLimitOver samples every this many metres, from this far in (1159). */
+export const PORT_GRADE_LIMIT_STEP_M = 10;
+export const PORT_GRADE_LIMIT_FIRST_M = 5;
+
+/** sustainedGrade's window step and its inner step with the curve allowance (1168, 1175). */
+export const PORT_SUSTAINED_STEP_M = 5;
+export const PORT_SUSTAINED_INNER_M = 10;
+
+/** A sustained grade within this of a limit is not over it (gradeSeverity, 1181), per mille. */
+export const PORT_GRADE_SEV_TOL = 0.05;
+
+/** The approach box street check runs to this past the approach's far end (1542). */
+export const PORT_APPROACH_END_SLACK_M = 0.01;
+
+/** No param: an approach_extra entry without a station matches an approach starting within this (approachExtra,
+ * 1293). */
+export const PORT_APPROACH_EXTRA_MATCH_M = 20;
+
+/** A reverse curve of radius R shifting the track by s needs sqrt(4 R s) (approachLen, 1294). Geometry, not a rule. */
+export const PORT_REVERSE_CURVE_FACTOR = 4;
+
+/** A locked stretch reaches this past its ends (lockAt, 911). */
+export const PORT_LOCK_PAD_M = 0.5;
+
+/** absorbShort's passes (1302). */
+export const PORT_ABSORB_PASSES = 4;
+
+// ------------------------------------------------------- the port, P2 ground, rivers, viaducts, canon (src/port/ground/)
+// The page's tolerances and sampling steps of the ground layers, rivers, viaducts and canon (profiles.html 636-1041). The
+// values Ben rules on come in PortInput.literals, .settings and .structure; the ones marked "No param" are design values
+// the registry does not have yet, reported to the lead (claude/hub_maps/engine_port_plan.md, section 3.4).
+
+/** A drawn ground line this short or shorter is dropped (parseGnd, 670). */
+export const PORT_GND_MIN_LEN_M = 1;
+
+/** chainLL's default reach: a lon/lat further than this from the path has no chainage (866). */
+export const PORT_CHAINLL_TOL_M = 30;
+
+/** chainLL's floor on a zero-length segment's squared length, m squared (870). */
+export const PORT_CHAINLL_L2_MIN = 1e-9;
+
+/** A deck's bend points are rounded to this many per metre, a tenth (buildCanon, 898). */
+export const PORT_DECK_PVI_PER_M = 10;
+
+/** Viaduct piers are rounded to this many per metre, a tenth (viaductSpansNow, 983). */
+export const PORT_VIA_PIER_PER_M = 10;
+
+/** An elevated run shorter than this has no spans (960). */
+export const PORT_VIA_RUN_MIN_M = 1;
+
+/** No param: a canon bridge's own piers count within this of the river range (972). */
+export const PORT_VIA_PIER_SEARCH_M = 400;
+
+/** A canon bridge's pier counts only this far past the last pier placed (972); a pier this far on is a new one, and a
+ * span this short is none (981, 985). */
+export const PORT_VIA_SPAN_MIN_M = 0.5;
+
+/** A bank pier is placed only this far past the last pier (975). */
+export const PORT_VIA_BANK_GAP_M = 1;
+
+/** No param: a pier goes before a crossing or road (else after it) when the gap is over this many VIA_SPANs and the
+ * crossing starts this far on (979). */
+export const PORT_VIA_BEFORE_SPANS = 1.6;
+export const PORT_VIA_BEFORE_MIN_M = 3;
+
+// ------------------------------------------------------------------ the port, P3 crossings (src/port/crossings/)
+// The page's tolerances of the crossing, context and road checks (profiles.html 2182-2275). The design values come in
+// PortInput.literals, .settings, .structure and the neighbours; the one marked "No param" is a design value the
+// registry does not have yet, reported to the lead (claude/hub_maps/engine_port_plan.md, section 3.4).
+
+/** A crossing is clear within this of its need (crossingClearancesNow 2244), a context block too (2232). */
+export const PORT_CLEARANCE_TOL_M = 0.05;
+
+/** No param: a line in the open within this of a context track at grade or in a trough is a level clash (2229). */
+export const PORT_CONTEXT_LEVEL_M = 1;
+
+/** A road check passes within this of its need: the trough's bridge (2269), the clearance over a road (2270). */
+export const PORT_ROAD_TOL_M = 0.02;
+
+/** A viaduct pier stands in a road when it is this far inside the road's edges (2272). */
+export const PORT_PIER_ROAD_INSET_M = 0.5;
+
+// ------------------------------------------------- the port, P4 checks and levels (src/port/checks/, src/port/levels/)
+// The page's tolerances, sampling steps and roundings of the summary, the design checks, the issues, Propose fill and
+// the level solver (profiles.html 1684-2178). The values Ben rules on come in PortInput.settings and .literals; the
+// ones marked "No param" are design values the registry does not have yet, reported to the lead
+// (claude/hub_maps/engine_port_plan.md, section 3.4).
+
+/** The 10 m check grid: the summary's bins (1903), the curve grade (1989) and cover samples (2118), from 5 m. */
+export const PORT_CHECK_STEP_M = 10;
+export const PORT_CHECK_FIRST_M = 5;
+
+/** Two flagged samples of the 10 m grid join into one range within this (1995, 2116). */
+export const PORT_CHECK_JOIN_M = 20;
+
+/** A curve allowance under this (per mille) is no curve for the curve grade check (1992). */
+export const PORT_CURVE_ADD_MIN = 0.5;
+
+/** curveAllowance's half window in samples is the platform over this (1977: a train length on the 10 m grid). */
+export const PORT_ALLOWANCE_WINDOW_DIV_M = 20;
+
+/** Three points of the radii circle closer to a line than this (twice the area, m^2) are straight (1966). */
+export const PORT_RADII_AREA_MIN = 1e-6;
+
+/** A drawn ground's end slope passes within this of fillSlope, per mille (1737). */
+export const PORT_GND_SLOPE_TOL = 0.5;
+
+/** A drawn ground line shorter than this many points has no sustained stretch between its end slopes (1741). */
+export const PORT_GND_SUSTAIN_MIN_POINTS = 4;
+
+/** Two design vertices this close in level make a platform transition chord (designChecks 2083). */
+export const PORT_LEVEL_EQ_M = 1e-9;
+
+/** No param: a chord flatter than this (per mille) has no sign for the sumps (2112). */
+export const PORT_SUMP_FLAT = 0.5;
+
+/** River check samples join within this many grid steps (computeSummary 1925). */
+export const PORT_RIVER_JOIN_STEPS = 1.5;
+
+/** Metres to the decimetre, centimetre and millimetre: the roundings of bend points and fill points (1797, 1724). */
+export const PORT_DM_PER_M = 10;
+export const PORT_MM_PER_M = 1000;
+
+/** Propose fill: its side slopes reach the ground within this, per mille over the slope (1716). */
+export const PORT_FILL_SLOPE_TOL = 1e-6;
+
+/** Propose fill: the point search gives up this many samples past the last fitting end (1724). */
+export const PORT_FILL_SEARCH = 60;
+
+/** Propose fill: the stretch decided by the rules is widened by its slope plus this many samples (1700). */
+export const PORT_FILL_MARGIN_SAMPLES = 2;
+
+/** reframeDoc: a station point moved by more than this is a new frame (1849), a slide is kept past it (1864). */
+export const PORT_REFRAME_TOL_M = 0.05;
+
+/** surfacePvis (RER): the ground smoothed at this many points per surface step (1813), held to the grade limit in
+ * this many passes both ways (1825), and no bend points on a stretch shorter than this many steps (1820). */
+export const PORT_SURF_SMOOTH_DIV = 4;
+export const PORT_SURF_PASSES = 4;
+export const PORT_SURF_MIN_STEPS = 1.5;
+
+/** A saved paint or tube form is [c0, c1, kind]: shorter entries are dropped (alignFromDoc 1890, 1893). */
+export const PORT_RANGE3_LEN = 3;
+
+// ------------------------------------------------------------------------------------------------- proposers
+// Lower, Raise, Fix unbuildable and Solve levels with crossings (regradeDrive 3601-3660, fixAll 2985-2995,
+// solveCross 3693-3720). The page's literals, each named once.
+
+/** Lower / Raise: the margin the rail keeps past its bound (literal.regrade_margin, 3607) when the input carries
+ * none, and the grade reserve under the limit (literal.regrade_grade_reserve, 3606) and the least grade it ramps at
+ * (3606). */
+export const PORT_REGRADE_MARGIN_M = 0.3;
+export const PORT_REGRADE_RESERVE_PERMILLE = 2;
+export const PORT_REGRADE_MIN_GRADE_PERMILLE = 10;
+/** Lower / Raise: at most this many passes, the margin growing by the shortfall plus this each time (3608, 3655). */
+export const PORT_REGRADE_PASSES = 4;
+export const PORT_REGRADE_MARGIN_STEP_M = 0.1;
+/** Lower / Raise: a rail this close to its bound counts as there (3623, 3653), and a station past it by this moves
+ * (3632). */
+export const PORT_REGRADE_TOL_M = 0.01;
+/** Lower / Raise: the bend points run from the platform end this far out (3641), at most this far past the lowered
+ * part (3642), no two bends closer than this (3648), a chord kept under the line within this (3651). */
+export const PORT_REGRADE_END_PAD_M = 4;
+export const PORT_REGRADE_REACH_M = 400;
+export const PORT_REGRADE_MIN_BEND_M = 30;
+export const PORT_REGRADE_CHORD_TOL_M = 0.05;
+/** inPlatform (3142): a platform and this much past each end. */
+export const PORT_IN_PLATFORM_PAD_M = 2;
+/** Fix unbuildable: at most this many rounds of fixes (2989). */
+export const PORT_FIX_ALL_ROUNDS = 3;
+/** Solve levels with crossings: a grade past the limit by this, or a held level missed by this, fails (3700, 3701). */
+export const PORT_CROSS_TOL = 0.05;
+/** The paint review: a paint repeats the rules where they give its type over more than this share (2956). */
+export const PORT_PAINT_SAME_SHARE = 0.95;

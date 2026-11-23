@@ -4,6 +4,13 @@
   the browser and draws the ground);
 - ``GET /sections/{id}/stations``: the section's StationInput v0 (``station_input/0``): what ``station.facts@1``
   reads about each station (the sheet swaps in its draft's ``profile`` and ``section`` and solves it in the worker);
+- ``GET /sections/{id}/solve``: the section's SectionSolveInput v0 (``section_solve_input/0``): what
+  ``section.solve@1`` reads (the sheet swaps in its draft's profile and solves it in its worker after the rail and the
+  station facts). The neighbours are read from their records (``solve_input.neighbour_view``), each one whose live
+  stations all have a saved level; a line without saved levels (Lines 10, 11 and 13) is left out and its crossings
+  are listed without its level. The request never plans or queues a job (a goal would be planned again on every
+  change): the ``profiles.neighbour`` jobs, which give those lines the level solver's levels, run for
+  ``profiles.solve_structure``;
 - ``GET /routes/{id}/doc``: the old alignment doc rebuilt from the records (``doc.doc_of``), equal to the old hub's
   seed doc without its derived members (``stations``, ``summary``, ``updated``).
 
@@ -23,6 +30,7 @@ from region.core.view import View
 
 from .doc import doc_of
 from .inputs import StoreReads, section_input, station_input
+from .solve_input import neighbour_view, section_solve_input
 
 router = APIRouter(tags=["profiles"])
 
@@ -43,6 +51,22 @@ def get_section_input(section_id: str, request: Request) -> dict[str, Any]:
 @router.get("/sections/{section_id}/stations", summary="StationInput v0 of a section (the input of station.facts@1)")
 def get_station_input(section_id: str, request: Request) -> dict[str, Any]:
     return station_input(_reads(request), section_id)
+
+
+@router.get("/sections/{section_id}/solve", summary="SectionSolveInput v0 of a section (the input of section.solve@1)")
+def get_solve_input(section_id: str, request: Request) -> dict[str, Any]:
+    ctx = _reads(request)
+    inp = section_solve_input(ctx, section_id)
+    neighbours: dict[str, Any] = {}
+    for x in inp["crossings"]:
+        other, wid = x.get("other"), x["wid"]
+        if not other or other == section_id or wid in neighbours:
+            continue
+        view = neighbour_view(ctx, other)
+        if view is not None:
+            neighbours[wid] = view
+    inp["neighbours"] = neighbours
+    return inp
 
 
 def route_doc(ctx: StoreReads, route_id: str) -> dict[str, Any]:
@@ -78,4 +102,11 @@ def get_route_doc(route_id: str, request: Request) -> dict[str, Any]:
     return route_doc(_reads(request), route_id)
 
 
-__all__ = ["get_route_doc", "get_section_input", "get_station_input", "route_doc", "router"]
+__all__ = [
+    "get_route_doc",
+    "get_section_input",
+    "get_solve_input",
+    "get_station_input",
+    "route_doc",
+    "router",
+]
