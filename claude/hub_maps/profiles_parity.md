@@ -87,7 +87,7 @@ behaviour with its lines, the new status, and the plan.
 | S11 | Deleted stations not drawn; listed under "Removed" (2923-2925) | partial: they vanish, no list | Removed list (A.5). Better: a faint grey tick at the drawn point with the name struck through, so Ben sees where a removed station was. |
 | S13 | Issue triangles along the bottom of the plot, red, amber or grey; station issues at the centre (2735-2738) | missing | New band `station-flags`: the same triangles for the station flags of A.6; hover gives the text and the rule id; click selects the station. |
 | S14 | Vertical scale frozen while dragging (2302-2305) | done | Keep. |
-| S57 (interim) | A station with no level got one from `defaultAlign` | partial (parity3): the engine solves a profile with no saved level as the old "no doc" case (defaultAlign's levels and river bend points; Lines 10, 11, 13 equal to the golden `levels.default_align`), and the hub serves it read-only as `GET /x/profiles/sections/{id}/design` ("default design (not saved)", never written). The sheet does not draw it yet: still the dashed hollow bar at ground - 7.62 with "level not set" | The sheet draws `design.st` and `design.pvi` labelled "default design (not saved)" and writes them into the draft only when Ben edits, as the old save did |
+| S57 | A station with no level got one from `defaultAlign`; a line with no doc was drawn on defaultAlign's design (1756) | done (parity4): the sheet takes the design from its own whole solve (`section.solve@1` of the profile as held, output `design`; never `/design`, which can be pending) and lays it into the profile it draws, solves, reads and hit-tests (`line-sheet/design.ts`): the default levels and river bend points of Lines 10, 11, 13, a default level for any station with none. The bar says "default design (not saved)". Never written: opening, viewing and exporting make no draft and no request; Ben's first edit takes the design into the draft in the same undo step (as the old save wrote S.align whole), so one Ctrl+Z puts the untouched record back. Measured against the live old page: the rail every 2 m equal (max difference 0.000 m on Lines 10, 11, 13), bend points equal, grade and "with curve" labels equal in all 31 windows (whole line and 3 km), readout equal at all 21 sample points, level range equal (Line 11 equal once the old page's RER crossings are left out, slice 2), issue rows: no row only in the sheet (was 34, 25, 31). Before the design lands (the first whole solve, about 0.1 s) a station with no level is the dashed bar, its "level not set" tag thinned (one per station, none over another) | Done |
 | S18 | Hover readout: chainage, ground, rail, depth, structure top and bottom, grade, type ("(painted)"), street; no station name (3495-3540) | partial: ground, rail, below or above, grade, station name | Add, inside a platform: the type with its source, the structure top and bottom, the street. Keep the station name (better than old). |
 
 ### A.2 Selecting a station
@@ -168,7 +168,7 @@ Discard puts every row back.
 | S63 | Side or island: drives box spacing, hall height, D_HALL (8.55 or 9.15), access rule (1287) | missing | Import and select (0.1, A.3). The computed default (`platDef`) is B. |
 | S64 | Approach extra and complexes, read only (1293, 494) | missing | Complexes imported (0.1); approach extra with the approach boxes (B). |
 | S65 | Access rule: elevated, surface, mined (deep from `deep_from`), shallower than D_HALL (platform level, or crossunder for an island or interchange), Phase 1 end halls, Phase 2 mezzanine (full if interchange), later full; Ben wins (509-517) | missing | Port in `station.facts@1`, rules `access.type.*`. |
-| S66 | Slide limit 150 m: not clamped on load, clamped on any edit (1838, 1883, 3545) | missing | Same, rule `platform.slide.limit_never_clamped`. |
+| S66 | Slide limit 150 m: not clamped on load, clamped on any edit (1838, 1883, 3545); a profile saved against other stops is mapped onto the current ones on load (reframeDoc 1839) | slide limit: missing. Reframe: done (parity4): Line 2b is drawn on the design its whole solve reframed (bend points, slides, paints, tube forms, shafts, drawn ground; `design.reframe` in section.solve@1's output), marked "drawn on the current stops (not saved)", and the first edit writes the reframed profile with its new frame (one undo step). Rail every 2 m equal to the old page (max difference 0.000 m; it was 0.02 to 0.22 m off), 9 bend points, grade labels and readout equal; level range equal less the old page's RER crossings (slice 2) | Slide limit: same, rule `platform.slide.limit_never_clamped`. |
 | S67 | Platform curve: least-squares circle through the path every 2 m over the platform; R < 600 error, < 3000 warning; gaps 15.56^2/8R out, 5.4^2/2R in; S-curve turns of 5 degrees both ways error, 2 warning (2013-2072) | missing | Port, rules `platform.curvature.gapfill`, `platform.curvature.no_s_curve`, literals `CAR_LEN`, `END_DOOR`, `PLAT_R_*`, `DRAW`. |
 | S69 | Platform grade flag, error over limit + 0.05 (2088) | missing | Flag `platform_grade_over`, fix: Ease. |
 | S70 | Platform curve flag: S-curve; R < 600 without gap fillers error; with gap fillers or R < 3000 warning (2090-2098) | missing | Flags `platform_curve`, `platform_s_curve`, fix: Gap fillers. |
@@ -195,7 +195,7 @@ in both and compared what was stored.
 | # | Old (lines) | Found in the new sheet | Now |
 |---|---|---|---|
 | S83 | The other lines in the Opening row by their short names (routeName 336): "Highland (B Highland, 1900)", "later: A Blue Ash 1985" | the route ids: "RER B highland", "RER A blueash" (34 stations) | done: the short name from the Chronology's route name |
-| S84 | A docless line (Lines 10, 11, 13: 79 stations) has every station at a level from defaultAlign, so its type, depth, access and hall room are real | an unset station was read at the design rail, 0 m on a line with no design: "Deep bore (TBM): 226.7 m down", Deep station, a tube 220 m under the bar | done: read at ground - 7.62, where its dashed bar is drawn; 20 of 29 Line 10 stations now match the old card; the rest differ by defaultAlign's grade limits (B, S55 S57) |
+| S84 | A docless line (Lines 10, 11, 13: 79 stations) has every station at a level from defaultAlign, so its type, depth, access and hall room are real | an unset station was read at the design rail, 0 m on a line with no design: "Deep bore (TBM): 226.7 m down", Deep station, a tube 220 m under the bar | done (parity4): every station of Lines 10, 11, 13 stands at its default level (S57), so the facts, the card, the table and the summary read the old page's levels (Line 10's summary equal: 22.27 km, +50.0‰, 70.4 m below, 13.5 m above, 4 sumps, 0.86 km elevated, 1.42 km at grade in the side-by-side shot); the card says "default design, not saved" for those levels. The interim reading at ground - 7.62 stays only for a station with no level while no design is known |
 | S85 | Ease all eases each platform three times before the next (3676, 3579) | three passes over the whole line; the line-end platforms (Towne, Beechgrove) not eased at all, their end vertex being clamped to the line | done: 31 of 31 Line 6 grades equal the old page's |
 | S86 | Arrow Up and Down step 0.1 (Shift 1) in the display unit and keep the centimetres (3537): 152.02 to 152.12 | 0.1 m in feet too, rounded to 0.1 m: 152.02 became 152.1 | done, on the canvas and in the level and depth fields |
 | S87 | Platform start of a station at the line's start reads 0+000 | "−0+000" (10 stations) | done |
@@ -338,13 +338,13 @@ summary and line checks, [UI] page work only.
 | R15 | Units m / ft | done | done |
 | R16, R17, R18, R19 | Export PNG, JSON, GeoJSON, KMZ | done (tools round; parity3): the four exports of the draft as drawn. GeoJSON of Line 6 on clean main checked in review: 47 rail runs equal in type, from and to, and 31 stations equal in name, type and rail to the old page's export (run ends now read the type at the nearest sample, `typeAtSample`; a station's type is its own when its level is off the drawn rail, as Forest, `stationTypeAt`). KMZ a stored zip with doc.kml | done |
 | R20 | Settings panel (31 rows), Restore defaults, Reset this line | done (tools round): the 28 Metro rows as settings.* param records, each change a param draft the whole solve previews; Restore defaults back to import:registry; Reset this line as a proposal (section.propose@1) | done; the rail solve (vertical.rail@1) reads saved params only |
-| R21 | Axes, grid, k+mmm, y range taking in everything, frozen while dragging | done (parity3): `levelExtent` takes in the bore under each design vertex, the river (pool - 12 to + 4), the crossings' boxes and the context blocks, as `yRangeFor` (2286); frozen in a drag. The earlier "done" was not true in the code. Checked in review on the live pages: Lines 3, 6, 9 equal at the whole line. Lines 1, 5 and 7 still reach lower on the old page, and the cause is the RER crossings (slice 2), not Lines 10, 11, 13: on Line 5, bisected by 2 km windows, only the windows with B, A and D trunk crossings differ (16 to 18 km: old 117.6, new 136.9). Lines 10, 11, 13 and 2b differ while the sheet draws no design rail for them (S57) | done; RER crossings with slice 2 |
+| R21 | Axes, grid, k+mmm, y range taking in everything, frozen while dragging | done (parity3): `levelExtent` takes in the bore under each design vertex, the river (pool - 12 to + 4), the crossings' boxes and the context blocks, as `yRangeFor` (2286); frozen in a drag. The earlier "done" was not true in the code. Checked in review on the live pages: Lines 3, 6, 9 equal at the whole line. Lines 1, 5 and 7 still reach lower on the old page, and the cause is the RER crossings (slice 2), not Lines 10, 11, 13: on Line 5, bisected by 2 km windows, only the windows with B, A and D trunk crossings differ (16 to 18 km: old 117.6, new 136.9). Lines 10, 11, 13 and 2b (parity4, with their designs drawn): 10 and 13 equal; 11 and 2b equal once the old page's RER crossings are left out | done; RER crossings with slice 2 |
 | R22, R31, R32 | Water, made-up bed, channel over the sunk box | done (integration round): pool line, shading, name, made bed and channel from the whole solve; Line 6 at the Ohio drawn as on the old page | done |
 | R23, R24 | Finished ground; REGRADED and CUT | done (integration round): the solve's finished ground against the survey; the readout now reads the finished ground with "Fill" or "Cut" from the surveyed level, as the old one did (review round) | done |
 | R25, R26 | Context blocks; crossings with clearance | done for Metro (parity3): blocks, ticks, dashed lines, boxes and labels from the whole solve; a short crossing red while the other line is not set; a label that meets another moved above, below or left. Crossings with Lines 10, 11 and 13: the live hub keeps a background `profiles.neighbour` goal for each line with no saved level (and Line 2b), registered `rails_delay_s` (60 s) after the start, and `GET /sections/{id}/solve` reads them warm from the job cache without planning. Checked in review on a scratch hub: Line 6 shows Line 13 1.9 m, Line 10 4.3 m, Line 11 0.2 m apart, as the old page; Line 5 shows Line 13 9.3 m, as the old page. A sheet opened before those goals land (the first minute or so after a start with a fresh cache) crosses those lines without their levels until it reads its input again. RER crossings missing (on Line 5, B trunk, A trunk and D trunk twice in 16 to 18 km alone) | RER crossings with slice 2 |
 | R27 | Locked stretches | done (integration round): from the canon locks (transcribed; no Metro line has a lock today) | canon as records |
 | R28, R30 | Rail coloured by structure; tunnel outline | done (integration round): from the whole solve's type and structure runs; the type at every 2 m sample equals the live old page's on 14 of 16 lines (review round, server input from the records, not the goldens) | done; Line 10 and Line 2b below |
-| R29, R37, R38 | Over-grade halo; grade label colours; curve grade | done (review round; parity3). Grade labels from the old page's chords (transition ends); all 8 over-limit stretches match. "With curve" labels (parity3): every one drawn, one that meets another a line higher; counted in review at the whole line, maximised and docked: Line 1 3, 5 1, 6 1, 7 3, 9 6, equal to the old page. Lines 10, 11, 13 show none (the old page 4 on Line 10): no design rail on the sheet (S57) | done; Lines 10, 11, 13 with S57 |
+| R29, R37, R38 | Over-grade halo; grade label colours; curve grade | done (review round; parity3). Grade labels from the old page's chords (transition ends); all 8 over-limit stretches match. "With curve" labels (parity3): every one drawn, one that meets another a line higher; counted in review at the whole line, maximised and docked: Line 1 3, 5 1, 6 1, 7 3, 9 6, equal to the old page. Lines 10, 11, 13 (parity4, S57): 4, 1 and 8 at the whole line, equal to the old page, and equal in every 3 km window | done |
 | R33, R34, R43 | Limit lines; unbuildable hatch; structure band | done (integration round) | done |
 | R35 | Roads and the street under the line | done (integration round): streets and roads from the context record; the readout now names the street under the line at every chainage (review round) | done |
 | R36 | Viaducts | done (integration round): girders, trusses and piers from the solve's spans (Line 1 on the L&N bridge) | done |
@@ -470,10 +470,41 @@ start; those were put back from the repo before the suites ran.)
 - S57, S84 and S66 on the sheet: the engine and the hub give Lines 10, 11, 13 their default design and Line 2b its
   reframe (`GET /x/profiles/sections/{id}/design`), but the sheet draws neither yet; so Lines 10, 11, 13 show no
   design rail, no "with curve" label (Line 10 has 4 on the old page) and a different level range. The server's rail
-  result for Line 2b stays "pending_port:reframeDoc".
+  result for Line 2b stays "pending_port:reframeDoc". (Done in parity4, C.3.)
 - R6: the derived `stations` and `summary` are on the route doc, not stored in the profile record (a ruling).
 - RER: crossings and their boxes (R21, R26), junctions, shared stretches, modes (slice 2).
 - R61 (the canon card's notes), pinch zoom (R13).
 
 **Suites after review.** See the report of this round: pytest whole, engine and app vitest, tsc, Biome, ruff, the app
 build and size check, Playwright full twice (47 of 47 both times).
+
+### C.3 Default designs on the sheet (S57, S66, S84; parity4, 23 November)
+
+Method as C.2: the working tree copied to a scratch folder, a new hub with its own var and the old page (its pipeline
+held) from a second copy, both in Playwright at 1,600 x 1,000.
+
+- The design: the sheet's own whole solve of the profile as held gives `design` (Lines 10, 11, 13 "default", Line 2b
+  reframed, with `design.reframe` added to section.solve@1's output for the fields the first edit writes). The sheet
+  lays it into the profile it draws and solves (`line-sheet/design.ts`), so the rail solve each keystroke and drag
+  solves on it; the whole solve keeps solving the record as held (the same answer: the engine test lays the reframed
+  design in and gets the same drawn rail). `/design` is not used: it can be pending for 60 s after a hub start.
+- Rail every 2 m against the old page's `railAt`: max difference 0.000 m on Lines 10, 11, 13, 2b and 6 (11,138,
+  15,028, 13,272, 2,536 and 14,770 samples); bend points equal (2, 2, 0, 9 and 25).
+- Grade and "with curve" labels at plot 1,195 px in both, the whole line and every 3 km: 34 of 34 windows equal on
+  Lines 10, 11, 13, 2b.
+- Readout at the 112 sample points (7 per Metro line): 112 of 112 equal, Lines 10, 11, 13 and 2b included.
+- Level range at the whole line: Lines 10 and 13 equal; 11 and 2b equal to the old page with its RER crossings left
+  out (114.22 to 293.78, 133.10 to 263.28); the other lines as in parity3.
+- Issue rows, all 16 Metro lines: 1,649 of 1,692 equal (the rest RER), 3 rows only in the sheet (Lines 2, 2b, 3, as
+  in parity3; Lines 10, 11, 13 had 34, 25 and 31).
+- parity2's 42 station edit checks rerun: all equal to parity3's (stamps and layer names aside).
+- Writes: opening, viewing and exporting Line 10 make no draft and no request (app/e2e/sheet.spec.ts); a drag of a
+  Line 10 station bar wrote the design and the new level into the draft (2 bend points, 29 levels) and one Ctrl+Z
+  left no draft, the record at version 1.
+- The hub's own rail result (`profiles.solve_section`) stays the profile as saved: the bar's server note says "the
+  profile as saved" instead of a difference while a design is laid in.
+
+- Fixed on the way: with `--trace off` the three 16 ms budget tests failed in `untraced()` (Playwright refuses
+  `startChunk` when nothing traces); it now resumes only a trace that runs. Full Playwright 48 of 48.
+
+**Still short.** The slide limit (S66), RER crossings in the level range (slice 2).

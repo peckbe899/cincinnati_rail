@@ -26,6 +26,7 @@ import type {
 import type { JsonPatch, Rec } from "../../api/types.ts";
 import { layerPhrase } from "../../core/describe.ts";
 import { bodyOf } from "../../core/drafts.ts";
+import { deepEqual } from "../../core/jsonpatch.ts";
 import { liveBoard } from "../../core/live.ts";
 import { shortId } from "../../core/names.ts";
 import type {
@@ -49,6 +50,7 @@ import { createEngine, type EngineHandle } from "../../engine/client.ts";
 import { MAXIMISE_REQUEST, MAXIMISED_EVENT } from "../../shell/maximise.ts";
 import { stationLevel } from "./bands.ts";
 import { bendCard, groundCard, helpCard } from "./cards.ts";
+import { designNote, designOps, editOps, keepsDesign, laidIn, type SheetDesign } from "./design.ts";
 import { bbox, grow, heldInside, type Rect, railSpan } from "./dirty.ts";
 import {
   flagText,
@@ -215,6 +217,10 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   const pendingMark = Object.assign(document.createElement("span"), { className: "pending-mark" });
   pendingMark.dataset.testid = "pending";
   pendingMark.hidden = true;
+  // "default design (not saved)": the sheet draws a design that is not Ben's record (S57, S66, design.ts)
+  const designMark = Object.assign(document.createElement("span"), { className: "design-mark" });
+  designMark.dataset.testid = "design-note";
+  designMark.hidden = true;
   const discard = Object.assign(document.createElement("button"), {
     type: "button",
     textContent: "Discard",
@@ -291,6 +297,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   showGroup.append(...showBtns);
   bar.append(
     title,
+    designMark,
     summary,
     profileInfo,
     solveInfo,
@@ -516,6 +523,11 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   let ssi: SectionSolveInput | null = null;
   /** section.solve@1 of the draft, the last one that landed (the bands keep it during a drag); null until then. */
   let solved: SolvedSection | null = null;
+  /** The design the sheet draws where the profile holds none (design.ts): the last one section.solve@1 gave that
+   * lays something in, kept while the profile does not hold it (so a Ctrl+Z back to the record draws it at once). */
+  let design: SheetDesign | null = null;
+  /** How many designs have been laid in (a test waits for it). */
+  let designRev = 0;
   let fullBusy = false;
   let fullAgain = false;
   /** Counts the drafts the sheet has solved the rail for: a full solve that started on an older one runs again. */
@@ -613,11 +625,38 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       ? ed
       : `The old hub owns ${sectionName}'s profile on main: switch to a scenario (Layer, at the top) to edit it.`;
 
-  /** The profile data to show: the draft's working copy, else the record. */
-  const data = (): ProfileData | null => {
+  /** The profile as Ben's draft or record holds it: the draft's working copy, else the record. */
+  const raw = (): ProfileData | null => {
     const p = target?.profile;
     if (!p) return null;
     return (host.drafts.get(p.kind, p.id, view)?.body ?? bodyOf(p)).data as ProfileData;
+  };
+  let shownMemo: { from: unknown; design: SheetDesign | null; out: ProfileData } | null = null;
+  /**
+   * The profile data to show, solve and hit-test: the draft's working copy, else the record, with the design laid in
+   * where the profile holds none (design.ts: the default design of Lines 10, 11 and 13, Line 2b on the current stops).
+   * Never written as such: edit() lays the design into the draft with Ben's first edit, in the same undo step.
+   */
+  const data = (): ProfileData | null => {
+    const p = target?.profile;
+    if (!p) return null;
+    const d = host.drafts.get(p.kind, p.id, view);
+    const from = d ? d.body : p;
+    if (shownMemo && shownMemo.from === from && shownMemo.design === design) return shownMemo.out;
+    const r = (d?.body ?? bodyOf(p)).data as ProfileData;
+    const out = laidIn(r, design);
+    shownMemo = { from, design, out };
+    return out;
+  };
+  /** The bar's mark of a design drawn that is not Ben's record ("default design (not saved)"). */
+  const showDesign = () => {
+    const r = raw();
+    const note = r ? designNote(r, design) : null;
+    designMark.hidden = !note;
+    if (designMark.textContent !== (note ?? "")) designMark.textContent = note ?? "";
+    designMark.title = note
+      ? "Drawn as the old page drew it, and not saved: it becomes this line's profile with your first edit (Ctrl+Z takes that back)"
+      : "";
   };
 
   const draftKey = () => (target?.profile ? host.drafts.key(target.profile.kind, target.profile.id, view) : null);
@@ -666,6 +705,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     const d = draftKey();
     const dirty = d !== null && host.drafts.dirty(d);
     discard.disabled = !dirty;
+    showDesign();
     if (!target) {
       profileInfo.textContent = "";
       return;
@@ -862,6 +902,23 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       else void solveFull();
     }, FULL_PAUSE_MS);
   };
+  /** A design from a whole solve: kept when it lays something in (design.ts keepsDesign), and when it changes what
+   * the sheet draws, the rail, the facts and the tables follow it. */
+  const takeDesign = (next: SheetDesign | undefined) => {
+    if (!next || !keepsDesign(next) || deepEqual(next as never, design as never)) {
+      showDesign();
+      return;
+    }
+    const r = raw();
+    const before = r ? designOps(r, design) : [];
+    design = next;
+    designRev++;
+    solveInfo.dataset.designRev = String(designRev);
+    showDesign();
+    if (r && deepEqual(before as never, designOps(r, design) as never)) return;
+    tableDue = true;
+    void solve();
+  };
   let fullEngine: EngineHandle | null = null;
   /** The input the full solve's worker holds (stash), so a new one from the hub is sent again. */
   let stashedSsi: SectionSolveInput | null = null;
@@ -879,7 +936,9 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     try {
       // the server's input crosses to the worker once (stash); each solve sends only the draft's own members, and
       // the long arrays come back moved, not copied, so the page's thread is never held by the whole solve
-      const inp = solveInputOf(ssi, data(), sideDraft);
+      // the profile as Ben's draft or record holds it, never with the design laid in: its answer says which design
+      // the profile is drawn with (design), and is the same solve either way (engine/test/port/default_design.test.ts)
+      const inp = solveInputOf(ssi, raw(), sideDraft);
       const t0 = performance.now();
       fullEngine ??= createEngine();
       if (stashedSsi !== ssi) {
@@ -901,6 +960,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       await afterRail(() => {
         if (gen !== generation) return;
         solved = out.result as SolvedSection;
+        takeDesign(solved.design);
         solveInfo.dataset.fullMs = String(performance.now() - t0);
         solveInfo.dataset.fullEngineMs = String(out.ms);
         solveInfo.dataset.fullRev = String(Number(solveInfo.dataset.fullRev ?? 0) + 1);
@@ -940,7 +1000,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   const changedStations = (): Set<string> => {
     const out = new Set<string>();
     const p = target?.profile;
-    const cur = data();
+    const cur = raw();
     if (p && cur) {
       const was = p.data as ProfileData;
       for (const f of STATION_PROFILE_FIELDS) {
@@ -995,8 +1055,12 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       serverInfo.textContent = "";
       return;
     }
-    const d = local ? maxDiff(local.rail_m, server.rail_m) : null;
-    serverInfo.textContent = `server ${server.key.slice(0, 8)}${d === null ? "" : `, max diff ${host.units.format(d, "m", 3)} ${host.units.label("m")}`}`;
+    // the hub solves the profile as saved (profiles.solve_section): with a design laid in (design.ts) the sheet's rail
+    // is another design's, and a difference would say nothing
+    const r = raw();
+    const laid = !!r && designOps(r, design).length > 0;
+    const d = local && !laid ? maxDiff(local.rail_m, server.rail_m) : null;
+    serverInfo.textContent = `server ${server.key.slice(0, 8)}${laid ? ", the profile as saved" : d === null ? "" : `, max diff ${host.units.format(d, "m", 3)} ${host.units.label("m")}`}`;
     serverInfo.dataset.key = server.key;
   };
 
@@ -1121,6 +1185,9 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     facts = null;
     ssi = null;
     solved = null;
+    design = null;
+    shownMemo = null;
+    designMark.hidden = true;
     server = null;
     asked = null;
     builtPvis = -1;
@@ -1256,9 +1323,14 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   const edit = (make: (cur: ProfileData) => JsonPatch, opts: { step?: string; label?: string } = {}) => {
     const p = target?.profile;
     const cur = data();
-    if (!p || !cur || !canEdit()) return;
+    const r = raw();
+    if (!p || !cur || !r || !canEdit()) return;
     try {
-      host.drafts.edit(p, view, make(cur), { label: `${sectionName} profile`, ...opts });
+      // The design drawn where the profile holds none goes into the draft with Ben's first edit, in the same step
+      // (the old page saved S.align whole, serialize 3213): one Ctrl+Z puts the untouched profile back. An edit that
+      // changes nothing writes nothing, the design included.
+      const ops = editOps(r, design, make(cur));
+      if (ops) host.drafts.edit(p, view, ops, { label: `${sectionName} profile`, ...opts });
     } catch (e) {
       host.problem(e);
     }
@@ -1488,7 +1560,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
               cellStep(`Station ${label} level`),
             ),
           `Station ${label} level`,
-          (d?.st?.[s.platform_id] ?? null) !== was,
+          (raw()?.st?.[s.platform_id] ?? null) !== was,
           { allowNull: true },
         ),
       );
@@ -1687,6 +1759,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
         metro: si ? si.structure !== null : true,
         draft: data() ?? {},
         saved: pd,
+        held: raw() ?? undefined,
         savedBy: target?.profile?.by ?? "",
         point,
         centre: s.c_m,
@@ -2611,10 +2684,12 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       }
     };
     if (input?.ground) scan(input.ground.z_m, input.ground.step_m);
-    // a rail only where there is a design: an empty profile's rail is 0 m (hasDesign)
-    const designed = !!local && hasDesign(input ? localInput(input, data(), frame) : null);
+    // a rail only where there is a design: an empty profile's rail is 0 m (hasDesign); the bend points drawn (the
+    // default design's on a line with none saved, Line 2b's on the current stops)
+    const li = input ? localInput(input, data(), frame) : null;
+    const designed = !!local && hasDesign(li);
     if (local && designed) scan(local.rail_m, local.grid.step_m);
-    for (const p of input?.pvi ?? []) if (p.c_m >= c0 && p.c_m <= c1) scan([p.z_m], 1);
+    for (const p of li?.pvi ?? []) if (p.c_m >= c0 && p.c_m <= c1) scan([p.z_m], 1);
     // the structure under each bend point, the river and the crossing lines' boxes, as the old yRangeFor
     const ext = levelExtent({ dv: designed ? local?.dv : undefined, solved, solveInput: ssi }, c0, c1);
     if (ext) [z0, z1] = [Math.min(z0, ext.lo), Math.max(z1, ext.hi)];
@@ -2963,6 +3038,11 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     range = clampRange(r);
     draw();
   };
+  // and the rail drawn now, every sample (a test or a script compares it with the old page's railAt); null with none
+  (canvas as HTMLCanvasElement & { rail?: () => unknown }).rail = () =>
+    local && input && hasDesign(localInput(input, data(), frame))
+      ? { step_m: local.grid.step_m, rail_m: Array.from(local.rail_m) }
+      : null;
   // and a whole frame drawn now, from nothing kept (a test compares it with a drag step drawn in part)
   (canvas as HTMLCanvasElement & { repaint?: () => void }).repaint = () => {
     painted = null;

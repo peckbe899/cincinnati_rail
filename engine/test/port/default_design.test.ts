@@ -66,3 +66,46 @@ describe("a line with no saved design solves on its default design", () => {
     expect(j.design.defaulted.length).toBe(input.platforms.length - 1);
   });
 });
+
+describe("a profile saved in an older frame (Line 2b) gives its design in the current one", () => {
+  test("the reframed paints and frame come with the design, and laid in they solve the same rail", () => {
+    const input = integrationInput("Line_2b");
+    const out = solveSection(input);
+    const j = solvedJson(input, out);
+    expect(j.design.reframed).toBe(true);
+    const rf = j.design.reframe;
+    expect(rf).toBeTruthy();
+    if (!rf || !input.doc) return;
+    const doc = input.doc;
+    expect(rf.frame.length_m).toBe(input.length);
+    for (const p of input.platforms) expect(rf.frame.point_c[p.platform_id]).toBe(p.point_c);
+    // the paints moved with the stations, as the bend points did
+    expect(rf.ovr.length).toBe(doc.ovr.length);
+    expect(rf.ovr).not.toEqual(doc.ovr.map((o) => [o[0], o[1], o[2]]));
+    // the draft Ben's first edit makes: the design's bend points, slides and levels with the reframed fields
+    const laid = solveSection({
+      ...input,
+      doc: {
+        ...doc,
+        pvi: j.design.pvi.map((p) => [p.c, p.z] as const),
+        so: j.design.so,
+        st: { ...doc.st, ...j.design.st },
+        ovr: rf.ovr,
+        tf: rf.tf,
+        shafts: rf.shafts,
+        gnd: rf.gnd,
+        frame: rf.frame,
+      },
+    });
+    const k = solvedJson(input, laid);
+    expect(k.design.reframed).toBe(false);
+    expect(k.design.reframe).toBeNull();
+    expect(k.design.pvi).toEqual(j.design.pvi);
+    expect(laid.drawn).toEqual(out.drawn);
+  });
+
+  test("a profile in its own frame has no reframe", () => {
+    const input = integrationInput("Line_6");
+    expect(solvedJson(input, solveSection(input)).design.reframe).toBeNull();
+  });
+});

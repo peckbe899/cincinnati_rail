@@ -150,7 +150,8 @@ export async function untraced<T>(page: Page, fn: () => Promise<T>): Promise<T> 
   try {
     return await fn();
   } finally {
-    if (paused) await tracing.startChunk();
+    // with tracing off (--trace off) stopChunk is a no-op and startChunk refuses: nothing to resume then
+    if (paused) await tracing.startChunk().catch(() => undefined);
   }
 }
 

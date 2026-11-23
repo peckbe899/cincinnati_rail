@@ -129,6 +129,31 @@ export function thinLabels(items: LabelCandidate[], gap: number): Set<number> {
 }
 
 /**
+ * Which "level not set" tags to draw: one per station at most, none over another. The selected station's first,
+ * then left to right; a tag whose box (centred on x, its bottom at y) runs into one kept is left out, as the names
+ * are thinned. Returns the indexes kept.
+ */
+export function unsetTags(
+  items: readonly { x: number; y: number; w: number; selected?: boolean }[],
+  h = 12,
+  pad = 4,
+): Set<number> {
+  const order = items
+    .map((it, i) => ({ it, i }))
+    .filter(({ it }) => Number.isFinite(it.x) && Number.isFinite(it.y))
+    .sort((a, b) => Number(!!b.it.selected) - Number(!!a.it.selected) || a.it.x - b.it.x);
+  const kept: { x0: number; x1: number; y0: number; y1: number }[] = [];
+  const out = new Set<number>();
+  for (const { it, i } of order) {
+    const b = { x0: it.x - it.w / 2 - pad, x1: it.x + it.w / 2 + pad, y0: it.y - h - pad, y1: it.y + pad };
+    if (kept.some((k) => b.x0 < k.x1 && k.x0 < b.x1 && b.y0 < k.y1 && k.y0 < b.y1)) continue;
+    kept.push(b);
+    out.add(i);
+  }
+  return out;
+}
+
+/**
  * Which station names to draw, by the old page's rule (2770-2786): left to right, a name within gap px of the last
  * one drawn is left out, the selected one always drawn. That keeps the most names a gap allows; then, better than the
  * old page, the line's last station is named too where the old rule left it out, in the place of the name before it

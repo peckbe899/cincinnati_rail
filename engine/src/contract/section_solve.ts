@@ -496,6 +496,20 @@ export const SolvedSection = z
         so: z.record(z.string(), z.number()).meta({ description: "The slides solved (a reframed profile's)." }),
         defaulted: z.array(z.string()),
         reframed: z.boolean(),
+        reframe: z
+          .object({
+            ovr: z.array(z.tuple([z.number(), z.number(), z.string()])),
+            tf: z.array(z.tuple([z.number(), z.number(), z.string()])),
+            shafts: z.array(z.number()),
+            gnd: z.array(z.array(z.tuple([z.number(), z.number()]))),
+            frame: z.object({ length_m: z.number(), point_c: z.record(z.string(), z.number()) }),
+          })
+          .nullable()
+          .optional()
+          .meta({
+            description:
+              "A profile saved in an older frame: its paints, tube forms, shafts and drawn ground in the current one, and the frame it is then in (reframeDoc). The sheet lays them into the draft, with the design's bend points, slides and levels, on the first edit.",
+          }),
       })
       .meta({
         description:

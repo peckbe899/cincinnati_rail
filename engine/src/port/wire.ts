@@ -5,6 +5,7 @@
 
 import type { SectionSolveInput, SolvedSection as SolvedJson } from "../contract/section_solve.ts";
 import { PORT_MM_PER_M } from "../tol.ts";
+import { reframeDoc } from "./levels/doc.ts";
 import type { SolvedSection } from "./model.ts";
 import type { CodedArray, Grid, PortInput, Type } from "./types.ts";
 
@@ -62,6 +63,32 @@ export const DESIGN_NOTE = {
   default: "default design (not saved)",
   partial: "default level (not saved) where no level is set",
 } as const;
+
+/**
+ * A profile saved in an older frame, in the current one (reframeDoc 1839, as the page held S.align after load): the
+ * paints, tube forms, shafts and drawn ground mapped onto the current points, and the frame it is then in (every live
+ * platform's point, as the page's serialize wrote it, 3213). The sheet lays it into the draft, with the design's bend
+ * points, slides and levels, on Ben's first edit; null when the profile is in its own frame.
+ */
+export function reframedFields(input: PortInput): SolvedJson["design"]["reframe"] {
+  if (!input.doc) return null;
+  const r = reframeDoc(input.doc, input.platforms, input.length);
+  if (!r.changed) return null;
+  const gone = new Set(r.doc.del);
+  const range = (o: readonly [number, number, string]): [number, number, string] => [o[0], o[1], o[2]];
+  return {
+    ovr: r.doc.ovr.map(range),
+    tf: r.doc.tf.map(range),
+    shafts: r.doc.shafts.slice(),
+    gnd: r.doc.gnd.map((L) => L.map((q) => [q[0], q[1]] as [number, number])),
+    frame: {
+      length_m: input.length,
+      point_c: Object.fromEntries(
+        input.platforms.filter((p) => !gone.has(p.platform_id)).map((p) => [p.platform_id, p.point_c]),
+      ),
+    },
+  };
+}
 
 /** The sheet's and the server's view of a solve (solved_section/0, less the stamps the host adds). */
 export function solvedJson(input: PortInput, s: SolvedSection): Omit<SolvedJson, "engine_build" | "input_hash"> {
@@ -156,6 +183,7 @@ export function solvedJson(input: PortInput, s: SolvedSection): Omit<SolvedJson,
       ),
       defaulted: [...s.design.defaulted],
       reframed: s.design.reframed,
+      reframe: s.design.reframed ? reframedFields(input) : null,
     },
     derived: s.derived,
   }) as Omit<SolvedJson, "engine_build" | "input_hash">;

@@ -51,6 +51,9 @@ export interface PanelCtx {
   /** The draft's values and the saved record's, for the sources and the "was" notes. */
   draft: ProfileData;
   saved: ProfileData;
+  /** The draft or record before the design was laid in (design.ts), when the sheet draws one Ben's profile does
+   * not hold: a value that is the design's says so ("default design, not saved"). */
+  held?: ProfileData;
   /** Who wrote the saved profile ("import:old_hub", "ben"). */
   savedBy: string;
   /** The drawn point (the stop's chainage) and the platform centre now. */
@@ -126,15 +129,15 @@ export function fieldSource(
   field: string,
   pid: string,
   rule?: string,
+  held?: ProfileData,
 ): Source & { changed: boolean; was: unknown } {
-  const now =
-    field === "gapfill" || field === "del"
-      ? (draft[field] as string[] | undefined)?.includes(pid)
-      : val(draft[field], pid);
-  const was =
-    field === "gapfill" || field === "del"
-      ? (saved[field] as string[] | undefined)?.includes(pid)
-      : val(saved[field], pid);
+  const read = (d: ProfileData) =>
+    field === "gapfill" || field === "del" ? (d[field] as string[] | undefined)?.includes(pid) : val(d[field], pid);
+  const now = read(draft);
+  const was = read(saved);
+  // a value of the design the sheet draws where the profile holds none (design.ts): not Ben's, and not saved
+  if (held && JSON.stringify(now ?? null) !== JSON.stringify(read(held) ?? null))
+    return { text: "default design, not saved", rule, changed: false, was };
   const changed = JSON.stringify(now ?? null) !== JSON.stringify(was ?? null);
   if (changed) return { text: "Ben, not saved", rule, changed, was };
   if (was !== undefined && was !== false) return { text: byWord(savedBy), rule, changed, was };
@@ -326,7 +329,7 @@ export function buildPanel(c: PanelCtx): HTMLElement {
   };
   const zFmt = (v: number) => fmtZ(v, u, 2);
   const zParse = (t: string) => u.parse(t, "m");
-  const prof = (field: string, rule?: string) => fieldSource(c.draft, c.saved, c.savedBy, field, c.pid, rule);
+  const prof = (field: string, rule?: string) => fieldSource(c.draft, c.saved, c.savedBy, field, c.pid, rule, c.held);
 
   // ---- Place
   const place = group("Place", "place");

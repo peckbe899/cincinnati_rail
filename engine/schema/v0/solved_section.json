@@ -1192,6 +1192,115 @@
         },
         "reframed": {
           "type": "boolean"
+        },
+        "reframe": {
+          "description": "A profile saved in an older frame: its paints, tube forms, shafts and drawn ground in the current one, and the frame it is then in (reframeDoc). The sheet lays them into the draft, with the design's bend points, slides and levels, on the first edit.",
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "ovr": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ],
+                    "items": false,
+                    "minItems": 3,
+                    "maxItems": 3
+                  }
+                },
+                "tf": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ],
+                    "items": false,
+                    "minItems": 3,
+                    "maxItems": 3
+                  }
+                },
+                "shafts": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "gnd": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ],
+                      "items": false,
+                      "minItems": 2,
+                      "maxItems": 2
+                    }
+                  }
+                },
+                "frame": {
+                  "type": "object",
+                  "properties": {
+                    "length_m": {
+                      "type": "number"
+                    },
+                    "point_c": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "number"
+                      }
+                    }
+                  },
+                  "required": [
+                    "length_m",
+                    "point_c"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "ovr",
+                "tf",
+                "shafts",
+                "gnd",
+                "frame"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [

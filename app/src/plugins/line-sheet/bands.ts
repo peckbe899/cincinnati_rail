@@ -22,6 +22,7 @@ import {
   thinLabels,
   typeColour,
   typeLabel,
+  unsetTags,
   valueAt,
   verticalExaggeration,
   worstSeverity,
@@ -422,10 +423,7 @@ export const platformBand: BandDef = {
         g.closePath();
         g.stroke();
         g.setLineDash([]);
-        g.font = `600 10px ${UI_FONT}`;
-        g.textAlign = "center";
-        g.textBaseline = "bottom";
-        g.fillText("level not set", (xa + xb) / 2, Math.min(ya, yb) - 5);
+        // its "level not set" tag follows with the names, thinned so the tags never pile up (unsetTags)
       } else {
         g.lineWidth = 6;
         g.beginPath();
@@ -552,6 +550,31 @@ export const platformBand: BandDef = {
       items.map((it) => ({ x: it.x, selected: it.on })),
       nameGap(P.w),
     );
+    // "level not set" over each dashed bar, one per station, left out where it would run into another
+    g.font = `600 10px ${UI_FONT}`;
+    const unsetW = g.measureText("level not set").width;
+    const unsetShown = unsetTags(
+      items.map((it, k) => {
+        const p = lastPlatforms[k] as DrawnPlatform;
+        return it.unset
+          ? { x: (p.x0 + p.x1) / 2, y: Math.min(p.y0, p.y1) - 5, w: unsetW, selected: it.on }
+          : { x: Number.NaN, y: Number.NaN, w: 0 };
+      }),
+    );
+    g.save();
+    clipPlot(g, v);
+    g.textAlign = "center";
+    g.textBaseline = "bottom";
+    for (const k of unsetShown) {
+      const it = items[k];
+      const p = lastPlatforms[k] as DrawnPlatform;
+      const s0 = it ? inp.stations[it.index] : undefined;
+      if (!it || !s0) continue;
+      g.fillStyle = it.on ? COLORS.selected : COLORS.bar;
+      g.fillText("level not set", (p.x0 + p.x1) / 2, Math.min(p.y0, p.y1) - 5);
+      d.mark?.({ kind: "unset-tag", id: s0.platform_id });
+    }
+    g.restore();
     // Levels: a tag under each bar (the level, and the depth under it), kept apart by its own width.
     g.font = `500 10px ${NUM_FONT}`;
     const levelW = g.measureText("00.0 down").width + 6;

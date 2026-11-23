@@ -472,6 +472,43 @@ class PviItem(BaseModel):
     z: float
 
 
+class OvrItem(RootModel[tuple[float, float, str]]):
+    root: tuple[float, float, str] = Field(..., max_length=3, min_length=3)
+
+
+class TfItem(RootModel[tuple[float, float, str]]):
+    root: tuple[float, float, str] = Field(..., max_length=3, min_length=3)
+
+
+class GndItem(RootModel[tuple[float, float]]):
+    root: tuple[float, float] = Field(..., max_length=2, min_length=2)
+
+
+class Frame(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    length_m: float
+    point_c: dict[str, float]
+
+
+class Reframe(BaseModel):
+    """
+    A profile saved in an older frame: its paints, tube forms, shafts and drawn ground in the current one, and the frame
+    it is then in (reframeDoc). The sheet lays them into the draft, with the design's bend points, slides and levels, on
+    the first edit.
+    """
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    ovr: list[OvrItem]
+    tf: list[TfItem]
+    shafts: list[float]
+    gnd: list[list[GndItem]]
+    frame: Frame
+
+
 class Design(BaseModel):
     """
     Whose design was solved: Ben's (saved), the level solver's for a profile with no saved level and no bend point
@@ -496,6 +533,12 @@ class Design(BaseModel):
     """
     defaulted: list[str]
     reframed: bool
+    reframe: Reframe | None = None
+    """
+    A profile saved in an older frame: its paints, tube forms, shafts and drawn ground in the current one, and the frame
+    it is then in (reframeDoc). The sheet lays them into the draft, with the design's bend points, slides and levels, on
+    the first edit.
+    """
 
 
 class Station1(BaseModel):

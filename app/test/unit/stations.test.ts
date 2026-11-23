@@ -302,6 +302,15 @@ describe("station words (A.3, A.6)", () => {
     expect(fieldSource(saved, saved, "import:profile_lines", "st", "A").text).toBe("line file");
     expect(fieldSource(saved, saved, "ben", "sg", "A", "platform.grade.limit_by_era").text).toBe("rule");
   });
+  it("a level of the default design laid in (S57) is the design's, not Ben's and not saved", () => {
+    const held: ProfileData = { st: {} };
+    const shown: ProfileData = { st: { A: 150.2 } };
+    const src = fieldSource(shown, held, "import:profile_lines", "st", "A", undefined, held);
+    expect(src.text).toBe("default design, not saved");
+    expect(src.changed).toBe(false);
+    // once the draft took it (Ben's first edit), it is his unsaved value
+    expect(fieldSource(shown, held, "import:profile_lines", "st", "A", undefined, shown).text).toBe("Ben, not saved");
+  });
 });
 
 /** A station fact with the fields the bands read. */
@@ -491,6 +500,39 @@ describe("station bands mark what they drew", () => {
     expect(tags(2000, null)).toEqual(["A level", "B slide"]);
     expect(tags(20000, { band: "platforms", kind: "station", index: 0, id: "A", c: 1000 })).toEqual(["A level"]);
     expect(tags(20000, { band: "platforms", kind: "station", index: 1, id: "B", c: 1765 })).toEqual(["B slide"]);
+  });
+  it("'level not set' tags: one per station at most, none over another, at any zoom (S57)", () => {
+    // 20 stations with no level, 150 m apart (two platforms at each stop): at the whole line the tags piled into
+    // one smudge (Line 10 before its default design was drawn, parity3 shots)
+    const n = 20;
+    const stations = Array.from({ length: n * 2 }, (_, i) => ({
+      platform_id: `U${i}`,
+      order: i,
+      c_m: 1000 + Math.floor(i / 2) * 150,
+      level_m: null,
+      grade_permille: 0,
+    }));
+    const fs = stations.map((s, i) =>
+      fact({ platform_id: s.platform_id, name: s.platform_id, index: i, point_c_m: s.c_m, c_m: s.c_m, slide_m: 0 }),
+    );
+    const unsetTags = (c0: number, c1: number) => {
+      const marks: SheetMark[] = [];
+      platformBand.draw(fakeContext(), view(c0, c1), {
+        ...data(),
+        input: { ...(data().input as object), stations } as unknown as BandData["input"],
+        facts: fs.map((f) => ({ ...f, level_m: null, level_set: false })),
+        selected: null,
+        mark: (x: SheetMark) => marks.push(x),
+      });
+      return marks.filter((x) => x.kind === "unset-tag").map((x) => x.id);
+    };
+    const whole = unsetTags(0, 20000);
+    expect(new Set(whole).size).toBe(whole.length);
+    expect(whole.length).toBeGreaterThan(0);
+    expect(whole.length).toBeLessThan(n);
+    // zoomed in on four stops, each stop's tag is drawn, once
+    const near = unsetTags(950, 1500);
+    expect(near.length).toBe(4);
   });
   it("the readout inside a platform reads its type, structure and street", () => {
     const lines = readoutLines(data(), 1000, new Units("m"));
