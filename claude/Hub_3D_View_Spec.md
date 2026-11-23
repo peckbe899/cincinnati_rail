@@ -708,7 +708,7 @@ The current order is kept: increment 2 starts with I2.1 (closing the loop to run
 1. Signal side: the outer wall (box page) or the trip-stop side (handoff section 3, item 5).
 2. C&O steel colour (grey is marked "not ruled").
 3. Are R's `RT` and `KY` levels canon for the C&O pairs and the Covington line, or only a reference?
-4. The default mode for the region view: Model (lean), or Diagram for planning.
+4. ~~The default mode for the region view.~~ Ruled by Ben, 23 Nov 2026: **Model** is the default. The tunnels are already diagrammed; stations get the same treatment (their own Diagram drawings), so Diagram stays a mode, not the default.
 5. The host section and chainage basis for the arcade's straightened frame.
 
 ---
