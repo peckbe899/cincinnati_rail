@@ -1,0 +1,64 @@
+# A section's context: the streets it runs along and the roads it crosses, by chainage (read only).
+kind: section_context
+version: 1
+title: Section context
+description: >-
+  What lies along one section, from data/profile/context/lines.json (tools/make_profile_context.py: the Deck's live
+  streets, the highways and OSM roads): streets [c0, c1, width, name, class] the line runs along, roads
+  [c, c0, c1, width, name, class] it crosses, and the Deck's ground runs add (street re-grades, added to the ground)
+  and cap (open cuts) on the 2 m index. The station rules read the street a station is under (stationStreet,
+  profiles.html 458) and the finished ground. profile_lines writes it; blocks and any other member stay in attrs.
+geometry: none
+columns:
+  parent: /section
+refs:
+  - {path: /section, kind: section, on_delete: cascade, required: true}
+merge:
+  unit: field
+  rebase: auto
+legacy: [section_context]
+seeded: false
+schema:
+  type: object
+  additionalProperties: false
+  required: [section, streets, roads]
+  properties:
+    section:
+      type: string
+      pattern: "^[0-7][0-9A-HJKMNP-TV-Z]{25}$"
+    streets:
+      type: array
+      items:
+        type: array
+        prefixItems:
+          - {type: number, x-unit: m}
+          - {type: number, x-unit: m}
+          - {type: [number, "null"], x-unit: m}
+          - {type: string}
+          - {type: string}
+    roads:
+      type: array
+      items:
+        type: array
+        prefixItems:
+          - {type: number, x-unit: m}
+          - {type: number, x-unit: m}
+          - {type: number, x-unit: m}
+          - {type: [number, "null"], x-unit: m}
+          - {type: string}
+          - {type: string}
+    add:
+      description: Ground runs added to the surveyed ground, {i0, v} on the 2 m index (metres).
+      type: array
+      items: {type: object}
+    cap:
+      description: Ground runs the ground is held at most at, {i0, v} on the 2 m index (metres).
+      type: array
+      items: {type: object}
+    attrs:
+      description: The context's other members (blocks), as the file has them.
+      type: object
+  examples:
+    - section: 01DXF6DT00G2RN476ZR8N14PM3
+      streets: [[530.0, 750.0, 45.72, "Inner Ring (OH-562 boulevard)", major]]
+      roads: [[245.3, 234.6, 255.9, 21.3, "Montgomery Avenue", minor]]

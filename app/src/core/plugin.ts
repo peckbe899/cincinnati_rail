@@ -158,6 +158,19 @@ export interface BandData {
   stopC?(platformId: string): number | null;
   /** Bands report what they drew in words here (the sheet's text layer). */
   report?(item: SheetText): void;
+  /** station.facts@1 of the shown draft, one per platform, removed ones included; null until it has run. */
+  facts?: readonly import("@cr/engine/contract").StationFact[] | null;
+  /** Bands record what they drew as numbers here (a station's bar, outline, access, flag), for the tests. */
+  mark?(m: SheetMark): void;
+}
+
+/** A thing a band drew, as numbers in metres and CSS pixels (claude/hub_maps/profiles_parity.md, check 1). */
+export interface SheetMark {
+  /** "bar", "point", "structure", "access", "dhall", "flag", "strip", "removed", "name". */
+  kind: string;
+  /** The platform id it belongs to. */
+  id: string;
+  [k: string]: unknown;
 }
 
 /** A thing a band drew, in words: the sheet lists them in a text layer for screen readers and tests. */

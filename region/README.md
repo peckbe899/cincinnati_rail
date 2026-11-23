@@ -81,8 +81,8 @@ added 193 packages, and audited 196 packages in 13s
 [5/6] imports  the first imports
   importer       layer               created   updated unchanged   deleted conflicts
   registry       import:registry         300         0         0         0         0
-  profile_lines  import:profiles        1405         0         0         0         0
-  old_hub        legacy:old_hub           36        13         3         0         0
+  profile_lines  import:profiles        1421         0         0         0         0
+  old_hub        legacy:old_hub          475       449         3         0         0
 [6/6] doctor   crhub doctor
   ok    python                 3.12.10, 64-bit, <repo>\.venv\Scripts\python.exe
   ...                                  (one row per check)
@@ -173,8 +173,10 @@ git pull
 2. **`npm ci`**: the engine's and the app's packages, from `package-lock.json`.
 3. **`npm run build -w app`**: builds the web app into `app\dist`.
 4. **The database.** Creates `var\region.db`, or migrates it after a checked backup into `var\backups`.
-5. **The first imports**: the registry (sections, stations, params), the Metro line files (profiles) and the old
-   hub's seed (`legacy:old_hub`).
+5. **The first imports**: the registry (sections, stations, params), the Metro line files (profiles, and each
+   section's streets and roads from `data\profile\context\lines.json`) and the old hub's seed (`legacy:old_hub`:
+   the alignments with Ben's access choices, each platform's side or island, the station complexes and the
+   Chronology).
 6. **`crhub doctor`**, whose table ends the run. Setup's exit code is the doctor's.
 
 Setup refuses to start while the new hub is serving, or while `crhub jobs run` holds the hub's lock: stop it first

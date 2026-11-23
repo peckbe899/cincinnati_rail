@@ -50,6 +50,8 @@ OPTIONS = [
 ROOTS = {
     "section_input": "SectionInput",
     "vertical_rail": "VerticalRail",
+    "station_input": "StationInput",
+    "station_facts": "StationFacts",
     "flag": "Flag",
     "hello": "Hello",
     "request": "Request",
@@ -97,8 +99,9 @@ def _init_text(contracts: dict[str, int], modules: list[str]) -> str:
         'SCHEMA_VERSION = "v0"',
         "CONTRACTS: dict[str, int] = {" + ", ".join(f'"{k}": {v}' for k, v in sorted(contracts.items())) + "}",
         "",
-        "__all__ = [" + ", ".join(f'"{n}"' for n in names) + "]",
     ]
+    one = "__all__ = [" + ", ".join(f'"{n}"' for n in names) + "]"
+    lines += [one] if len(one) <= LINE else ["__all__ = [", *(f'    "{n}",' for n in names), "]"]
     return "\n".join(lines) + "\n"
 
 

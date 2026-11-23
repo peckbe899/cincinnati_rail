@@ -74,3 +74,20 @@ def test_section_input_route_is_the_contract_with_ground(client):
     assert body["ground"]["step_m"] == 2.0 and len(body["ground"]["z_m"]) == len(ground["data"]["z_dm"])
     assert body["ground"]["z_m"][0] == ground["data"]["z_dm"][0] / 10
     assert c.get(f"{BASE}/sections/{sec['id']}/input", params={"year": "x"}).status_code == 422
+
+
+def test_station_input_route_is_the_contract(client):
+    """``GET /sections/{id}/stations``: the StationInput of station.facts@1, validated by the engine contract's
+    generated model, and what ``inputs.station_input`` builds in the same view."""
+    from region.contract.gen import StationInput
+    from region.ext.profiles.inputs import station_input
+
+    c, store = client
+    sec = section_of(store, "Line_3")
+    r = c.get(f"{BASE}/sections/{sec['id']}/stations", params={"layer": "main"})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    StationInput.model_validate(body)
+    assert body == station_input(StoreReads(store, MAIN), sec["id"])
+    assert body["section"] == section_input(StoreReads(store, MAIN), sec["id"])
+    assert c.get(f"{BASE}/sections/01DXF6DT000000000000000000/stations").status_code == 404

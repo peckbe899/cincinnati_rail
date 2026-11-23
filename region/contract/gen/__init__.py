@@ -10,9 +10,22 @@ from .hello import Hello
 from .request import Request
 from .response import Response
 from .section_input import SectionInput
+from .station_facts import StationFacts
+from .station_input import StationInput
 from .vertical_rail import VerticalRail
 
 SCHEMA_VERSION = "v0"
-CONTRACTS: dict[str, int] = {"section_input": 0, "vertical_rail": 0}
+CONTRACTS: dict[str, int] = {"section_input": 0, "station_facts": 0, "station_input": 0, "vertical_rail": 0}
 
-__all__ = ["CONTRACTS", "SCHEMA_VERSION", "Flag", "Hello", "Request", "Response", "SectionInput", "VerticalRail"]
+__all__ = [
+    "CONTRACTS",
+    "SCHEMA_VERSION",
+    "Flag",
+    "Hello",
+    "Request",
+    "Response",
+    "SectionInput",
+    "StationFacts",
+    "StationInput",
+    "VerticalRail",
+]

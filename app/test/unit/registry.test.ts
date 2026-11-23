@@ -61,11 +61,15 @@ describe("plugin registry", () => {
     expect(reg.bandList().map((b) => b.id)).toEqual([
       "axes",
       "ground",
+      "station-structure",
+      "station-access",
       "rail",
       "grades",
       "platforms",
       "pvi",
+      "station-flags",
       "frame",
+      "station-strip",
       "chainage",
     ]);
     expect(reg.keymap.get("ctrl+k")?.def.command).toBe("palette.open");

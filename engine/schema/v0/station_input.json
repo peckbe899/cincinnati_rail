@@ -1,0 +1,1041 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cincinnati-rail.invalid/engine/schema/v0/station_input.json",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "station_input/0"
+    },
+    "section": {
+      "type": "object",
+      "properties": {
+        "contract": {
+          "type": "string",
+          "const": "section_input/0"
+        },
+        "section_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The section record id."
+        },
+        "length_m": {
+          "type": "number",
+          "minimum": 0,
+          "x-unit": "m",
+          "description": "Section length in the chainage basis."
+        },
+        "chainage_basis": {
+          "type": "string",
+          "const": "grid:26916",
+          "description": "Chainage is UTM 16N (EPSG:26916) grid length along the plan geometry (decision 9.14)."
+        },
+        "scale": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "x-unit": "ratio",
+          "description": "Ground distance per unit of grid chainage on this section, for railsim and quantities."
+        },
+        "step_m": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "x-unit": "m",
+          "description": "Grid step of the output arrays."
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "platform_m": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "x-unit": "m",
+              "description": "Platform length."
+            },
+            "vc_radius_m": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "x-unit": "m",
+              "description": "Vertical curve radius."
+            },
+            "vc_min_len_m": {
+              "type": "number",
+              "minimum": 0,
+              "x-unit": "m",
+              "description": "Shortest vertical curve."
+            },
+            "transition_share": {
+              "x-unit": "ratio",
+              "description": "The share of a stretch the two platform transitions on it may take (absent: 0.5, profiles.html 778).",
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1
+            },
+            "short_curve_flag_m": {
+              "x-unit": "m",
+              "description": "A vertical curve shortened by more than this is flagged (absent: 0.5, profiles.html 799).",
+              "type": "number",
+              "minimum": 0
+            },
+            "design_passes": {
+              "x-unit": "count",
+              "description": "Passes of the transition solver, each re-reading its neighbours (absent: 5, profiles.html 765).",
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "platform_m",
+            "vc_radius_m",
+            "vc_min_len_m"
+          ],
+          "additionalProperties": false,
+          "description": "Resolved params (settings.* or settings_rer.* by system, with the CVG overlay). The design rules after vc_min_len_m are optional: absent, each takes the Profiles page's value, so an input without them solves as before."
+        },
+        "stations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "platform_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The platform record id."
+              },
+              "order": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "x-unit": "index",
+                "description": "Station order along the section. Of two overlapping platforms the first wins."
+              },
+              "c_m": {
+                "type": "number",
+                "x-unit": "m",
+                "description": "Platform centre chainage: the stop's point c plus its slide."
+              },
+              "level_m": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "x-unit": "m",
+                    "description": "Rail level at the platform, metres NAVD88."
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Rail level at the platform, metres NAVD88; null leaves it to the design."
+              },
+              "grade_permille": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "x-unit": "permille",
+                    "description": "Grade through the platform."
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Grade through the platform; null leaves it to the design."
+              }
+            },
+            "required": [
+              "platform_id",
+              "order",
+              "c_m",
+              "level_m",
+              "grade_permille"
+            ],
+            "additionalProperties": false,
+            "description": "A platform on the section. Deleted platforms are removed before the input is built."
+          }
+        },
+        "pvi": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "c_m": {
+                "type": "number",
+                "x-unit": "m",
+                "description": "Chainage of the vertex."
+              },
+              "z_m": {
+                "type": "number",
+                "x-unit": "m",
+                "description": "Rail level at the vertex, metres NAVD88."
+              }
+            },
+            "required": [
+              "c_m",
+              "z_m"
+            ],
+            "additionalProperties": false,
+            "description": "A point of vertical intersection set by Ben."
+          }
+        },
+        "ground": {
+          "type": "object",
+          "properties": {
+            "step_m": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "x-unit": "m",
+              "description": "Sample spacing from chainage 0."
+            },
+            "z_m": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "x-unit": "m",
+                "description": "Ground level, metres NAVD88."
+              }
+            }
+          },
+          "required": [
+            "step_m",
+            "z_m"
+          ],
+          "additionalProperties": false,
+          "description": "Ground levels along the section on a regular grid from chainage 0."
+        }
+      },
+      "required": [
+        "contract",
+        "section_id",
+        "length_m",
+        "chainage_basis",
+        "scale",
+        "step_m",
+        "params",
+        "stations",
+        "pvi"
+      ],
+      "additionalProperties": false,
+      "title": "SectionInput",
+      "description": "Contract section_input/0: the input of vertical.rail@1."
+    },
+    "route": {
+      "type": "string",
+      "description": "The route key (Line_3)."
+    },
+    "system": {
+      "type": "string",
+      "description": "metro, tri, ..."
+    },
+    "path": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "items": false,
+        "minItems": 3,
+        "maxItems": 3
+      },
+      "description": "The section's path as [c, lon, lat], as the line file has it (the radius fit reads it)."
+    },
+    "profile": {
+      "type": "object",
+      "properties": {
+        "st": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "sg": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "so": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "del": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "stt": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "gapfill": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "access": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "surface",
+                  "platform_level",
+                  "platform_level_xu",
+                  "end_halls",
+                  "mezzanine",
+                  "mezzanine_full",
+                  "mined_hall",
+                  "deep",
+                  "elevated_mezzanine"
+                ],
+                "description": "A station access type (profiles.html 467-477)."
+              },
+              "stages": {
+                "description": "Later stages of the access, as saved.",
+                "type": "array",
+                "items": {}
+              },
+              "source": {
+                "description": "Who chose it (the old hub wrote Ben).",
+                "type": "string"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": false,
+            "description": "Ben's access choice for one platform (profile.access)."
+          }
+        },
+        "mode": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "ovr": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "items": false,
+            "minItems": 3,
+            "maxItems": 3
+          }
+        },
+        "gnd": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        }
+      },
+      "additionalProperties": false,
+      "description": "The profile record's station fields, keyed by platform id, as the record (or the sheet's draft) holds them: st, sg, so, del, stt, gapfill, access, mode, and the chainage fields the station rules read (ovr paints, gnd drawn ground)."
+    },
+    "platforms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "platform_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "key": {
+            "type": "string",
+            "description": "The station key within its route (name, or name#index)."
+          },
+          "name": {
+            "type": "string"
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "x-unit": "index",
+            "description": "The platform's place along the section, in stop order."
+          },
+          "point_c_m": {
+            "type": "number",
+            "x-unit": "m",
+            "description": "The stop's drawn point on the section."
+          },
+          "side": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "side",
+                  "island"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "platform.side: null reads as side."
+          },
+          "side_source": {
+            "type": "string",
+            "enum": [
+              "import",
+              "ben",
+              "default"
+            ]
+          },
+          "year": {
+            "x-unit": "year",
+            "description": "Opening year (Chronology), null when none.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "year_phase": {
+            "description": "The phase of the opening year (chronology.phase_years), null when no year.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phase": {
+            "type": "string",
+            "description": "The building phase at the station (Chronology segment, else line)."
+          },
+          "phase_source": {
+            "type": "string",
+            "enum": [
+              "chronology",
+              "piece_phase",
+              "line_phase",
+              "default"
+            ]
+          },
+          "complex": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "line": {
+                  "type": "string"
+                },
+                "station": {
+                  "type": "string"
+                },
+                "sys": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "The member line's name for the text (Line 5)."
+                },
+                "year": {
+                  "x-unit": "year",
+                  "description": "Opening year from the Chronology, null when none.",
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "line",
+                "station",
+                "sys",
+                "name",
+                "year"
+              ],
+              "additionalProperties": false,
+              "description": "Another line's station this one is one station with (station_complex records)."
+            }
+          }
+        },
+        "required": [
+          "platform_id",
+          "key",
+          "name",
+          "order",
+          "point_c_m",
+          "side",
+          "side_source",
+          "year",
+          "year_phase",
+          "phase",
+          "phase_source",
+          "complex"
+        ],
+        "additionalProperties": false,
+        "description": "One platform of the section with what its records say, deleted ones included."
+      }
+    },
+    "rivers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "c0": {
+            "type": "number"
+          },
+          "c1": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "c0",
+          "c1"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "params": {
+      "type": "object",
+      "properties": {
+        "platform_m": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "x-unit": "m",
+          "description": "settings.platform"
+        },
+        "def_depth_m": {
+          "type": "number",
+          "x-unit": "m",
+          "description": "settings.defDepth"
+        },
+        "elev_above_m": {
+          "type": "number",
+          "x-unit": "m",
+          "description": "settings.elevAbove"
+        },
+        "cover_below_m": {
+          "type": "number",
+          "x-unit": "m",
+          "description": "settings.coverBelow"
+        },
+        "deck_depth_m": {
+          "type": "number",
+          "x-unit": "m",
+          "description": "settings.deckDepth"
+        },
+        "pool_m": {
+          "type": "number",
+          "x-unit": "m",
+          "description": "settings.poolFt in metres"
+        },
+        "sg_max_permille": {
+          "type": "number",
+          "x-unit": "permille",
+          "description": "Platform grade limit (literal.ERA.sgMax.* by line)."
+        },
+        "sg_max_param": {
+          "type": "string",
+          "description": "The param path the limit came from."
+        },
+        "slide_max_m": {
+          "type": "number",
+          "x-unit": "m",
+          "description": "literal.SLIDE_M"
+        },
+        "car_len_m": {
+          "type": "number",
+          "x-unit": "m",
+          "description": "literal.CAR_LEN"
+        },
+        "end_door_m": {
+          "type": "number",
+          "x-unit": "m",
+          "description": "literal.END_DOOR"
+        },
+        "plat_r_err_m": {
+          "type": "number",
+          "x-unit": "m",
+          "description": "literal.PLAT_R_ERR"
+        },
+        "plat_r_warn_m": {
+          "type": "number",
+          "x-unit": "m",
+          "description": "literal.PLAT_R_WARN"
+        },
+        "s_err_deg": {
+          "type": "number",
+          "x-unit": "deg",
+          "description": "literal.DRAW.sErr"
+        },
+        "s_warn_deg": {
+          "type": "number",
+          "x-unit": "deg",
+          "description": "literal.DRAW.sWarn"
+        },
+        "tol_m": {
+          "type": "number",
+          "x-unit": "m",
+          "description": "literal.station_limit_tol"
+        },
+        "box_cover_m": {
+          "type": "number",
+          "x-unit": "m",
+          "description": "literal.BOX_COVER"
+        },
+        "hall_end_len_m": {
+          "type": "number",
+          "x-unit": "m",
+          "description": "literal.hall.end_halls_len"
+        },
+        "mezzanine_fraction": {
+          "type": "number",
+          "x-unit": "ratio",
+          "description": "literal.hall.mezzanine_fraction"
+        }
+      },
+      "required": [
+        "platform_m",
+        "def_depth_m",
+        "elev_above_m",
+        "cover_below_m",
+        "deck_depth_m",
+        "pool_m",
+        "sg_max_permille",
+        "sg_max_param",
+        "slide_max_m",
+        "car_len_m",
+        "end_door_m",
+        "plat_r_err_m",
+        "plat_r_warn_m",
+        "s_err_deg",
+        "s_warn_deg",
+        "tol_m",
+        "box_cover_m",
+        "hall_end_len_m",
+        "mezzanine_fraction"
+      ],
+      "additionalProperties": false,
+      "description": "Resolved params of the station rules."
+    },
+    "structure": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "box_below_m": {
+              "type": "number",
+              "x-unit": "m",
+              "description": "metro_structure.box.below"
+            },
+            "box_top_m": {
+              "type": "number",
+              "x-unit": "m",
+              "description": "metro_structure.box.top"
+            },
+            "box_roof_underside_m": {
+              "type": "number",
+              "x-unit": "m",
+              "description": "metro_structure.box.roof_underside"
+            },
+            "island_roof_underside_m": {
+              "type": "number",
+              "x-unit": "m",
+              "description": "metro_structure.island_box.roof_underside"
+            },
+            "hall_clear_m": {
+              "type": "number",
+              "x-unit": "m",
+              "description": "metro_structure.hall.clear"
+            },
+            "hall_roof_m": {
+              "type": "number",
+              "x-unit": "m",
+              "description": "metro_structure.hall.roof"
+            },
+            "hall_cover_m": {
+              "type": "number",
+              "x-unit": "m",
+              "description": "metro_structure.hall.cover"
+            },
+            "mezzanine_clear_m": {
+              "type": "number",
+              "x-unit": "m",
+              "description": "metro_structure.elevated_station.mezzanine_clear_m"
+            },
+            "tubes": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "inside": {
+                    "type": "number",
+                    "x-unit": "m"
+                  },
+                  "outside": {
+                    "type": "number",
+                    "x-unit": "m"
+                  },
+                  "rail_over_invert": {
+                    "type": "number",
+                    "x-unit": "m"
+                  }
+                },
+                "required": [
+                  "inside",
+                  "outside",
+                  "rail_over_invert"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "phases": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "cc_max_m": {
+                    "type": "number",
+                    "x-unit": "m",
+                    "description": "Deepest cut and cover (metro_structure.phases.<p>.cc_max)."
+                  },
+                  "deep_from_m": {
+                    "type": "number",
+                    "x-unit": "m",
+                    "description": "Rail depth from which a mined station has lifts."
+                  },
+                  "tbm": {
+                    "type": "boolean",
+                    "description": "Bored by tunnel boring machine (deep), else hand shield."
+                  },
+                  "tube": {
+                    "type": "string",
+                    "enum": [
+                      "A",
+                      "C",
+                      "bore"
+                    ],
+                    "description": "The phase's running tube."
+                  }
+                },
+                "required": [
+                  "cc_max_m",
+                  "deep_from_m",
+                  "tbm",
+                  "tube"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "subway_streets": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "box_below_m",
+            "box_top_m",
+            "box_roof_underside_m",
+            "island_roof_underside_m",
+            "hall_clear_m",
+            "hall_roof_m",
+            "hall_cover_m",
+            "mezzanine_clear_m",
+            "tubes",
+            "phases",
+            "subway_streets"
+          ],
+          "additionalProperties": false,
+          "description": "The Metro structure record's values the station rules read."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "streets": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "items": false,
+        "minItems": 5,
+        "maxItems": 5
+      }
+    },
+    "roads": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "items": false,
+        "minItems": 6,
+        "maxItems": 6
+      }
+    },
+    "ground_add": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "i0": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "x-unit": "index",
+            "description": "First 2 m ground index of the run."
+          },
+          "v": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "x-unit": "m"
+            }
+          }
+        },
+        "required": [
+          "i0",
+          "v"
+        ],
+        "additionalProperties": false
+      },
+      "description": "The Deck's street re-grades, added to the ground."
+    },
+    "ground_cap": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "i0": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "x-unit": "index",
+            "description": "First 2 m ground index of the run."
+          },
+          "v": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "x-unit": "m"
+            }
+          }
+        },
+        "required": [
+          "i0",
+          "v"
+        ],
+        "additionalProperties": false
+      },
+      "description": "The Deck's open cuts, the ground held at most at these."
+    },
+    "cross_ground": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "c0": {
+            "type": "number",
+            "x-unit": "m"
+          },
+          "c1": {
+            "type": "number",
+            "x-unit": "m"
+          },
+          "z": {
+            "type": "number",
+            "x-unit": "m",
+            "description": "Another line's drawn ground level across its street."
+          }
+        },
+        "required": [
+          "c0",
+          "c1",
+          "z"
+        ],
+        "additionalProperties": false,
+        "description": "Another line's drawn ground across this line (crossGround, profiles.html 674)."
+      }
+    },
+    "canon": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "m": {
+            "type": "string",
+            "enum": [
+              "shallow",
+              "deep",
+              "canal",
+              "covered"
+            ]
+          },
+          "c0": {
+            "type": "number",
+            "x-unit": "m"
+          },
+          "c1": {
+            "type": "number",
+            "x-unit": "m"
+          }
+        },
+        "required": [
+          "m",
+          "c0",
+          "c1"
+        ],
+        "additionalProperties": false
+      },
+      "description": "The canon's method sections on this section by chainage (buildCanon, profiles.html 876)."
+    },
+    "phases_along": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "c0": {
+            "type": "number",
+            "x-unit": "m"
+          },
+          "c1": {
+            "type": "number",
+            "x-unit": "m"
+          },
+          "phase": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "c0",
+          "c1",
+          "phase"
+        ],
+        "additionalProperties": false
+      },
+      "description": "The building phase along the running line (Chronology segment, else piece, else line), as runs; a stretch of tunnel splits where it changes."
+    }
+  },
+  "required": [
+    "contract",
+    "section",
+    "route",
+    "system",
+    "path",
+    "profile",
+    "platforms",
+    "rivers",
+    "params",
+    "structure",
+    "streets",
+    "roads",
+    "ground_add",
+    "ground_cap",
+    "cross_ground",
+    "canon",
+    "phases_along"
+  ],
+  "additionalProperties": false,
+  "title": "StationInput",
+  "description": "Contract station_input/0: the input of station.facts@1."
+}

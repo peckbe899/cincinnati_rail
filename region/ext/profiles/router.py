@@ -2,6 +2,8 @@
 
 - ``GET /sections/{id}/input``: the section's SectionInput v0, with its ground profile (the line sheet solves it in
   the browser and draws the ground);
+- ``GET /sections/{id}/stations``: the section's StationInput v0 (``station_input/0``): what ``station.facts@1``
+  reads about each station (the sheet swaps in its draft's ``profile`` and ``section`` and solves it in the worker);
 - ``GET /routes/{id}/doc``: the old alignment doc rebuilt from the records (``doc.doc_of``), equal to the old hub's
   seed doc without its derived members (``stations``, ``summary``, ``updated``).
 
@@ -20,7 +22,7 @@ from region.core.errors import Invalid, NotFound
 from region.core.view import View
 
 from .doc import doc_of
-from .inputs import StoreReads, section_input
+from .inputs import StoreReads, section_input, station_input
 
 router = APIRouter(tags=["profiles"])
 
@@ -36,6 +38,11 @@ def _reads(request: Request) -> StoreReads:
 @router.get("/sections/{section_id}/input", summary="SectionInput v0 of a section")
 def get_section_input(section_id: str, request: Request) -> dict[str, Any]:
     return section_input(_reads(request), section_id, ground=True)
+
+
+@router.get("/sections/{section_id}/stations", summary="StationInput v0 of a section (the input of station.facts@1)")
+def get_station_input(section_id: str, request: Request) -> dict[str, Any]:
+    return station_input(_reads(request), section_id)
 
 
 def route_doc(ctx: StoreReads, route_id: str) -> dict[str, Any]:
@@ -71,4 +78,4 @@ def get_route_doc(route_id: str, request: Request) -> dict[str, Any]:
     return route_doc(_reads(request), route_id)
 
 
-__all__ = ["get_route_doc", "get_section_input", "route_doc", "router"]
+__all__ = ["get_route_doc", "get_section_input", "get_station_input", "route_doc", "router"]

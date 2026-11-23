@@ -22,8 +22,18 @@ from typing import Any
 from region.core import fsio
 from region.core.errors import Invalid, NotFound
 
-PREFIXES = ("alignments/", "roadmap/", "data/users/", "views/")
-"""The record paths the importer reads."""
+PREFIXES = (
+    "alignments/",
+    "roadmap/",
+    "data/users/",
+    "views/",
+    "params/station_access",
+    "params/station_platforms",
+    "params/station_complexes",
+    "chronology/segments",
+)
+"""The record paths the importer reads (the station params and the Chronology by their exact paths: the other
+params, such as the 2 MB tube_points, are 3D build outputs the importer has no use for)."""
 
 
 def read_seed(folder: Path) -> dict[str, Any]:

@@ -6433,6 +6433,50 @@
      "profiles"
     ]
    }
+  },
+  "/api/v1/x/profiles/sections/{section_id}/stations": {
+   "get": {
+    "operationId": "x_profiles_get_station_input",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "section_id",
+      "required": true,
+      "schema": {
+       "title": "Section Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "title": "Response X Profiles Get Station Input",
+         "type": "object"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "StationInput v0 of a section (the input of station.facts@1)",
+    "tags": [
+     "profiles"
+    ]
+   }
   }
  }
 }

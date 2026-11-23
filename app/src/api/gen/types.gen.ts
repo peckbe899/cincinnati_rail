@@ -3664,3 +3664,37 @@ export type XProfilesGetSectionInputResponses = {
 };
 
 export type XProfilesGetSectionInputResponse = XProfilesGetSectionInputResponses[keyof XProfilesGetSectionInputResponses];
+
+export type XProfilesGetStationInputData = {
+    body?: never;
+    path: {
+        /**
+         * Section Id
+         */
+        section_id: string;
+    };
+    query?: never;
+    url: '/api/v1/x/profiles/sections/{section_id}/stations';
+};
+
+export type XProfilesGetStationInputErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type XProfilesGetStationInputError = XProfilesGetStationInputErrors[keyof XProfilesGetStationInputErrors];
+
+export type XProfilesGetStationInputResponses = {
+    /**
+     * Response X Profiles Get Station Input
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type XProfilesGetStationInputResponse = XProfilesGetStationInputResponses[keyof XProfilesGetStationInputResponses];

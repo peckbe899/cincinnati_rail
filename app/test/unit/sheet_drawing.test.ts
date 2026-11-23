@@ -28,6 +28,10 @@ describe("formats", () => {
     expect(fmtCh(2500)).toBe("2+500");
     expect(fmtCh(1999.6)).toBe("2+000");
     expect(fmtCh(12)).toBe("0+012");
+    // A platform start just before 0 (a station at 60.9 m, half 61.0) rounds to 0+000, not "−0+000".
+    expect(fmtCh(-0.04)).toBe("0+000");
+    expect(fmtCh(-0.4)).toBe("0+000");
+    expect(fmtCh(-61)).toBe("−0+061");
     expect(axisChainage(3048, new Units("ft"))).toBe("10000");
   });
   it("writes grades signed to one decimal with a true minus", () => {
@@ -79,6 +83,9 @@ describe("axes", () => {
   it("keeps the old margins, smaller on a narrow or short sheet", () => {
     expect(margins(1200, 600)).toEqual({ l: 60, r: 14, t: 84, b: 4 });
     expect(margins(500, 600).l).toBe(46);
+    // A narrow plot (the sheet beside the map, the inspector and the station panel) keeps the full top margin, so
+    // a rotated name such as "Fountain Square" is not cut off at the top (parity review, 23 November).
+    expect(margins(500, 600).t).toBe(84);
     expect(margins(1200, 250).t).toBe(52);
   });
 });

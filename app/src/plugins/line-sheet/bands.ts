@@ -6,6 +6,7 @@ import { formatChainage } from "../../core/units.ts";
 import {
   chainageTicks,
   curveTicks,
+  depthTag,
   fmtCh,
   fmtG,
   fmtVE,
@@ -13,11 +14,18 @@ import {
   gradeChords,
   gradeLabels,
   levelTicks,
+  SEV_COLOURS,
+  slideText,
   stationText,
+  streetText,
   thinLabels,
+  typeColour,
+  typeLabel,
   valueAt,
   verticalExaggeration,
+  worstSeverity,
 } from "./drawing.ts";
+import { stationAccessBand, stationFlagsBand, stationStripBand, stationStructureBand } from "./stations.ts";
 
 export const COLORS = {
   ground: "#8a6d3b",
@@ -239,10 +247,13 @@ export const gradeBand: BandDef = {
 };
 
 /**
- * The stations as the old sheet drew them: a 6 px bar over the platform at its rail level, tilted by its grade,
- * with end ticks; a hollow triangle at the stop when the platform is slid off it; the name rotated 45° in the top
- * margin with a dotted leader down to the bar; the rail level under the bar. Names and levels are thinned so none
- * runs into the next; the selected station is always named, in the selection colour.
+ * The stations as the old sheet drew them, and clearer: a 6 px bar over the platform at its rail level, tilted by its
+ * grade, with end ticks, outlined red or amber when the station has an error or a warning; a hollow triangle at the
+ * drawn point, always, and when the platform is slid off it a thin line to the centre with "slid −235 m"; the name
+ * rotated 45° in the top margin after a square in its type colour, with a dotted leader down to the bar; the rail
+ * level and the depth under the bar. A station with no level is a dashed hollow bar at ground − 7.62 m, marked
+ * "level not set"; a removed one a faint tick at its drawn point with its name struck through. Names and levels are
+ * thinned so none runs into the next; the selected station is always named, in the selection colour.
  */
 export const platformBand: BandDef = {
   id: "platforms",
@@ -255,9 +266,22 @@ export const platformBand: BandDef = {
     const P = v.plot;
     const half = inp.params.platform_m / 2;
     const narrow = P.w < 500;
-    const items: { x: number; y: number; z: number; index: number; on: boolean; name: string }[] = [];
+    const facts = new Map((d.facts ?? []).map((f) => [f.platform_id, f]));
+    const items: {
+      x: number;
+      y: number;
+      z: number;
+      index: number;
+      on: boolean;
+      name: string;
+      colour: string | null;
+      depth: string | null;
+      unset: boolean;
+    }[] = [];
     inp.stations.forEach((s, index) => {
-      const z = stationLevel(s, d.rail);
+      const f = facts.get(s.platform_id);
+      const unset = !!f && s.level_m === null && f.default_level_m !== null;
+      const z = unset ? (f?.default_level_m as number) : stationLevel(s, d.rail);
       if (z === null) return;
       const on = d.selected?.kind === "station" && (d.selected.id ?? null) === s.platform_id;
       const name = d.platformName?.(s.platform_id) ?? s.platform_id;
@@ -280,48 +304,163 @@ export const platformBand: BandDef = {
       const ya = v.y(z - gp * half);
       const yb = v.y(z + gp * half);
       const colour = on ? COLORS.selected : COLORS.ink;
+      const sev = f ? worstSeverity(f.flags) : null;
       g.save();
       clipPlot(g, v);
-      g.strokeStyle = colour;
-      g.fillStyle = colour;
-      g.lineWidth = 6;
       g.lineCap = "butt";
-      g.beginPath();
-      g.moveTo(xa, ya);
-      g.lineTo(xb, yb);
-      g.stroke();
-      g.fillRect(xa, ya - 7, 1.5, 10);
-      g.fillRect(Math.max(xa + 1.5, xb - 1.5), yb - 7, 1.5, 10);
-      const c0 = d.stopC?.(s.platform_id) ?? null;
-      if (c0 !== null && Math.abs(c0 - s.c_m) > 0.01) {
-        const xp = v.x(c0);
-        const yp = v.y(z + gp * (c0 - s.c_m));
-        g.fillStyle = COLORS.paper;
+      if (sev) {
+        // The flag outline: a wider stroke in the severity colour under the bar, 1.5 px either side.
+        g.strokeStyle = SEV_COLOURS[sev];
+        g.lineWidth = 9;
         g.beginPath();
-        g.moveTo(xp, yp - 3);
-        g.lineTo(xp + 4, yp + 3);
-        g.lineTo(xp - 4, yp + 3);
-        g.closePath();
-        g.fill();
-        g.lineWidth = 1.2;
+        g.moveTo(xa - 1.5, ya);
+        g.lineTo(xb + 1.5, yb);
         g.stroke();
       }
+      g.strokeStyle = colour;
+      g.fillStyle = colour;
+      if (unset) {
+        // Hollow and dashed: the rail here is not Ben's, only where ground − 7.62 m would put it.
+        g.lineWidth = 1.2;
+        g.setLineDash([4, 3]);
+        g.beginPath();
+        g.moveTo(xa, ya - 3);
+        g.lineTo(xb, yb - 3);
+        g.lineTo(xb, yb + 3);
+        g.lineTo(xa, ya + 3);
+        g.closePath();
+        g.stroke();
+        g.setLineDash([]);
+        g.font = `600 10px ${UI_FONT}`;
+        g.textAlign = "center";
+        g.textBaseline = "bottom";
+        g.fillText("level not set", (xa + xb) / 2, Math.min(ya, yb) - 5);
+      } else {
+        g.lineWidth = 6;
+        g.beginPath();
+        g.moveTo(xa, ya);
+        g.lineTo(xb, yb);
+        g.stroke();
+      }
+      g.fillRect(xa, ya - 7, 1.5, 10);
+      g.fillRect(Math.max(xa + 1.5, xb - 1.5), yb - 7, 1.5, 10);
+      // The drawn point, always: a hollow triangle on the tilted level; a slid platform hangs off it by a thin line.
+      const c0 = d.stopC?.(s.platform_id) ?? f?.point_c_m ?? s.c_m;
+      const xp = v.x(c0);
+      const yp = v.y(z + gp * (c0 - s.c_m));
+      const slide = s.c_m - c0;
+      if (Math.abs(slide) > 0.5) {
+        const xc = v.x(s.c_m);
+        g.strokeStyle = colour;
+        g.lineWidth = 1;
+        g.globalAlpha = 0.8;
+        g.beginPath();
+        g.moveTo(xp, yp + 4);
+        g.lineTo(xp, yp + 12);
+        g.lineTo(xc, yp + 12);
+        g.stroke();
+        g.globalAlpha = 1;
+        g.font = `500 10px ${NUM_FONT}`;
+        g.textAlign = "center";
+        g.textBaseline = "top";
+        g.fillStyle =
+          sev === "error" && f?.flags.some((x) => x.kind === "platform_slide_over") ? SEV_COLOURS.error : colour;
+        // The note only where the slide line can carry it (or on the selected station): at a whole-line view the
+        // notes ran over the next stations.
+        const note = slideText(slide, v.units);
+        if (on || Math.abs(xc - xp) >= g.measureText(note).width + 4) {
+          g.fillText(note, (xp + xc) / 2, yp + 14);
+          d.mark?.({ kind: "tag", id: s.platform_id, what: "slide" });
+        }
+      }
+      g.fillStyle = COLORS.paper;
+      g.strokeStyle = colour;
+      g.beginPath();
+      g.moveTo(xp, yp - 3);
+      g.lineTo(xp + 4, yp + 3);
+      g.lineTo(xp - 4, yp + 3);
+      g.closePath();
+      g.fill();
+      g.lineWidth = 1.2;
+      g.stroke();
       g.restore();
-      const x = v.x(c0 ?? s.c_m);
-      items.push({ x, y: Math.min(ya, yb), z, index, on, name });
+      d.mark?.({
+        kind: "bar",
+        id: s.platform_id,
+        c0: s.c_m - half,
+        c1: s.c_m + half,
+        z0: z - gp * half,
+        z1: z + gp * half,
+        x0: xa,
+        x1: xb,
+        y0: ya,
+        y1: yb,
+        unset,
+        sev,
+        selected: on,
+      });
+      d.mark?.({ kind: "point", id: s.platform_id, c: c0, z: z + gp * (c0 - s.c_m), x: xp, y: yp, slide });
+      const x = v.x(c0);
+      items.push({
+        x,
+        y: Math.min(ya, yb),
+        z,
+        index,
+        on,
+        name,
+        colour: f ? typeColour(f.type) : null,
+        depth: f && !unset ? depthTag(f.depth_m, v.units) : null,
+        unset,
+      });
       lastPlatforms.push({ x0: xa, x1: xb, y0: ya, y1: yb, index, id: s.platform_id, c: s.c_m, z, label: null });
     });
+    // Removed stations: a faint tick at the drawn point and the name struck through, so Ben sees where one was.
+    for (const f of d.facts ?? []) {
+      if (!f.deleted || f.point_c_m < v.c0 || f.point_c_m > v.c1) continue;
+      const zr = d.rail ? valueAt(d.rail.rail_m, d.rail.step_m, f.point_c_m) : null;
+      if (zr === null) continue;
+      const x = v.x(f.point_c_m);
+      const y = v.y(zr);
+      g.save();
+      clipPlot(g, v);
+      g.globalAlpha = 0.55;
+      g.strokeStyle = COLORS.text;
+      g.lineWidth = 1.5;
+      g.beginPath();
+      g.moveTo(x, y - 9);
+      g.lineTo(x, y + 9);
+      g.stroke();
+      g.font = `10px ${UI_FONT}`;
+      g.textAlign = "center";
+      g.textBaseline = "bottom";
+      g.fillStyle = COLORS.text;
+      const t = d.platformName?.(f.platform_id) ?? f.name;
+      g.fillText(t, x, y - 11);
+      const w = g.measureText(t).width;
+      g.beginPath();
+      g.moveTo(x - w / 2, y - 16);
+      g.lineTo(x + w / 2, y - 16);
+      g.stroke();
+      g.restore();
+      d.mark?.({ kind: "removed", id: f.platform_id, c: f.point_c_m, x, y });
+    }
     // Names: the ends of the line first, then left to right, 18 px apart as on the old page.
     const n = inp.stations.length;
     const named = thinLabels(
       items.map((it) => ({ x: it.x, priority: it.index === 0 || it.index === n - 1 ? 0 : 1, selected: it.on })),
       18,
     );
-    // Levels: a tag under each bar, kept apart by its own width.
+    // Levels: a tag under each bar (the level, and the depth under it), kept apart by its own width.
     g.font = `500 10px ${NUM_FONT}`;
-    const levelW = g.measureText("000.0").width + 6;
+    const levelW = g.measureText("00.0 down").width + 6;
+    // Only under a bar wide enough to read as a platform (12 px), or the selected one: at a whole-line view the
+    // tags ran over the rail and the next stations' bars.
+    const roomy = items.map((it, k) => {
+      const p = lastPlatforms[k] as DrawnPlatform;
+      return it.on || p.x1 - p.x0 >= 12;
+    });
     const levelled = thinLabels(
-      items.map((it) => ({ x: it.x, priority: 0, selected: it.on })),
+      items.map((it, k) => ({ x: roomy[k] ? it.x : Number.NaN, priority: 0, selected: it.on })),
       levelW,
     );
     g.save();
@@ -346,27 +485,40 @@ export const platformBand: BandDef = {
         g.translate(it.x, P.y - 6);
         g.rotate(-Math.PI / 4);
         g.textAlign = "left";
+        let off = 2;
+        if (it.colour) {
+          // The type square before the name: the station's structure at a glance.
+          g.fillStyle = it.colour;
+          g.fillRect(2, -3, 6, 6);
+          off = 11;
+        }
         g.fillStyle = it.on ? COLORS.selected : COLORS.ink;
-        g.fillText(it.name, 2, 0);
-        const len = g.measureText(it.name).width + 2;
+        g.fillText(it.name, off, 0);
+        const len = g.measureText(it.name).width + off;
         g.restore();
         plat.label = { x: it.x, y: P.y - 6, len };
       }
-      const showLevel = levelled.has(k) && it.y + 22 < P.y + P.h;
+      const s0 = inp.stations[it.index];
+      if (s0) d.mark?.({ kind: "name", id: s0.platform_id, drawn: show, colour: it.colour });
+      const showLevel = roomy[k] && levelled.has(k) && it.y + 22 < P.y + P.h && !it.unset;
       if (showLevel) {
+        if (s0) d.mark?.({ kind: "tag", id: s0.platform_id, what: "level" });
         g.save();
         g.font = `500 10px ${NUM_FONT}`;
         g.textAlign = "center";
         g.textBaseline = "top";
         const txt = fmtZ(it.z, v.units);
-        const w = g.measureText(txt).width + 6;
         const ty = Math.max(plat.y0, plat.y1) + 6;
+        const lines = it.depth && it.y + 36 < P.y + P.h ? [txt, it.depth] : [txt];
+        const w = Math.max(...lines.map((l) => g.measureText(l).width)) + 6;
         g.globalAlpha = 0.85;
         g.fillStyle = COLORS.paper;
-        g.fillRect(it.x - w / 2, ty - 1, w, 13);
+        g.fillRect(it.x - w / 2, ty - 1, w, 13 * lines.length);
         g.globalAlpha = 1;
-        g.fillStyle = it.on ? COLORS.selected : COLORS.ink;
-        g.fillText(txt, it.x, ty);
+        lines.forEach((l, i) => {
+          g.fillStyle = i === 0 ? (it.on ? COLORS.selected : COLORS.ink) : COLORS.text;
+          g.fillText(l, it.x, ty + i * 12);
+        });
         g.restore();
       }
       const s = inp.stations[it.index];
@@ -391,7 +543,10 @@ export const platformBand: BandDef = {
     for (const p of lastPlatforms) {
       const t = p.x1 > p.x0 ? Math.min(1, Math.max(0, (x - p.x0) / (p.x1 - p.x0))) : 0;
       const yb = p.y0 + (p.y1 - p.y0) * t;
-      const onBar = x >= p.x0 - 4 && x <= p.x1 + 4 && Math.abs(y - yb) < 8;
+      // The old page's reach: the platform's span, at least ±6 px, plus 3 px; within 9 px of the bar (3407-3413).
+      const mid = (p.x0 + p.x1) / 2;
+      const reach = Math.max((p.x1 - p.x0) / 2, 6) + 3;
+      const onBar = Math.abs(x - mid) <= reach && Math.abs(y - yb) <= 9;
       let onLabel = false;
       if (p.label) {
         // Along the 45° line up and to the right of the anchor, within half a line of text either side.
@@ -508,7 +663,20 @@ export function readoutLines(d: BandData, c: number, units: SheetView["units"]):
   if (grade !== null) out.push(`Grade   ${fmtG(grade)}`);
   const half = (d.input?.params.platform_m ?? 0) / 2;
   const st = d.input?.stations.find((s) => Math.abs(s.c_m - c) <= half);
-  if (st) out.push(`Station ${d.platformName?.(st.platform_id) ?? st.platform_id}`);
+  if (st) {
+    out.push(`Station ${d.platformName?.(st.platform_id) ?? st.platform_id}`);
+    // Inside a platform, what the old readout added: the type with its source, the structure, the street.
+    const f = d.facts?.find((x) => x.platform_id === st.platform_id && !x.deleted);
+    if (f) {
+      out.push(`Type    ${typeLabel(f.type)}${f.type_source === "ben" ? " (Ben)" : ""}`);
+      if (f.structure) {
+        const off = rail !== null && f.rail_m !== null ? rail - f.rail_m : 0;
+        out.push(`Top     ${fmtZ(f.structure.top_m + off, units, 2)} ${u}`);
+        out.push(`Bottom  ${fmtZ(f.structure.bottom_m + off, units, 2)} ${u}`);
+      }
+      out.push(`Street  ${streetText(f.street)}`);
+    }
+  }
   return out;
 }
 
@@ -590,10 +758,14 @@ export const chainageBand: BandDef = {
 export const BANDS: BandDef[] = [
   axesBand,
   groundBand,
+  stationStructureBand,
+  stationAccessBand,
   railBand,
   gradeBand,
   platformBand,
   pviBand,
+  stationFlagsBand,
   frameBand,
+  stationStripBand,
   chainageBand,
 ];

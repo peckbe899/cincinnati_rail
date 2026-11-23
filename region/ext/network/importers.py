@@ -8,6 +8,8 @@ For each route ``data/profile/lines/index.json`` lists (16 today), the importer 
 - for each station entry a ``station``, a ``stop`` on the section (chainage, order) and a ``platform``;
 - an empty ``profile`` (``attrs.no_doc``); the old hub's doc, where one was saved, is the ``legacy:old_hub``
   revision of the same record (``old_hub@1``);
+- a ``section_context`` (the streets the section runs along and the roads it crosses, and the Deck's ground runs,
+  from ``context/lines.json``), where the context file has the route;
 - a ``param`` for each member of the file's ``settings`` overlay (the CVG Express's 204.216 m platforms), scoped to
   the route.
 
@@ -122,16 +124,17 @@ class ProfileLines:
     version = "1"
     namespace = "profiles"
     layer = "import:profiles"
-    from_git = ("lines",)
+    from_git = ("lines", "context")
     """Sources the runner reads from git when their folder is in the repo (9.27: Ben's copies can differ)."""
 
     def sources(self, paths: PathResolver) -> dict[str, str]:
-        return {"lines": "tier://profile_lines/lines"}
+        return {"lines": "tier://profile_lines/lines", "context": "tier://profile_lines/context/lines.json"}
 
     def records(self, src: Mapping[str, Path], ids: IdLookup) -> Iterator[dict[str, Any]]:
         folder = Path(src["lines"])
         files = LN.read_lines(folder)
-        yield from records_of(files, ids)
+        context = LN.read_context(Path(src.get("context") or folder.parent / "context" / "lines.json"))
+        yield from records_of(files, ids, context=context)
 
 
 def run_keys(files: list[dict[str, Any]]) -> dict[str, set[str]]:
@@ -144,8 +147,11 @@ def run_keys(files: list[dict[str, Any]]) -> dict[str, set[str]]:
     return out
 
 
-def records_of(files: list[dict[str, Any]], ids: IdLookup) -> Iterator[dict[str, Any]]:
-    """The records of the line files ``files`` (already read), in a stable order."""
+def records_of(
+    files: list[dict[str, Any]], ids: IdLookup, *, context: Mapping[str, Any] | None = None
+) -> Iterator[dict[str, Any]]:
+    """The records of the line files ``files`` (already read), in a stable order; ``context`` is
+    ``context/lines.json``'s per-line entries (``LN.read_context``)."""
     guard = KeyGuard()
     match = Matcher(run_keys(files))
     known_sections = {line["id"] for line in files}
@@ -182,7 +188,7 @@ def records_of(files: list[dict[str, Any]], ids: IdLookup) -> Iterator[dict[str,
         match.section = None
     for line, sid, rid, a, b, matched in staged:
         match.section = matched
-        yield from _route(line, sid, rid, a, b, ids, guard, match, section_ids, known_sections)
+        yield from _route(line, sid, rid, a, b, ids, guard, match, section_ids, known_sections, context or {})
         match.section = None
 
 
@@ -197,6 +203,7 @@ def _route(
     match: Matcher,
     section_ids: Mapping[str, str],
     known: set[str],
+    context: Mapping[str, Any],
 ) -> Iterator[dict[str, Any]]:
     from region.ext.profiles.doc import empty_profile
 
@@ -261,6 +268,18 @@ def _route(
     if "ground_note" in line:
         ground["note"] = line["ground_note"]
     yield {"kind": "ground_profile", "id": gid, "data": ground, "geom": None, "source": source}
+    cx = context.get(route)
+    if isinstance(cx, Mapping):
+        cid = ids.id_for(
+            "section_context", guard("section_context", LN.context_key(route)), kind="section_context", match=of_section
+        )
+        yield {
+            "kind": "section_context",
+            "id": cid,
+            "data": context_data(sid, cx),
+            "geom": None,
+            "source": "tier://profile_lines/context/lines.json",
+        }
     pid = ids.id_for("alignment", guard("alignment", LN.profile_key(route)), kind="profile", match=of_section)
     yield {"kind": "profile", "id": pid, "data": empty_profile(sid), "geom": None, "source": source}
     keys = LN.station_keys(line)
@@ -340,6 +359,24 @@ def _route(
             "geom": None,
             "source": source,
         }
+
+
+CONTEXT_PARTS = ("streets", "roads", "add", "cap")
+
+
+def context_data(section_id: str, cx: Mapping[str, Any]) -> dict[str, Any]:
+    """A ``section_context`` record's data from a route's ``context/lines.json`` entry: streets, roads, add and cap
+    as the file has them (streets and roads empty where it has none), every other member in ``attrs``."""
+    import copy
+
+    data: dict[str, Any] = {"section": section_id, "streets": [], "roads": []}
+    for k in CONTEXT_PARTS:
+        if k in cx:
+            data[k] = copy.deepcopy(cx[k])
+    rest = {k: copy.deepcopy(v) for k, v in cx.items() if k not in CONTEXT_PARTS}
+    if rest:
+        data["attrs"] = rest
+    return data
 
 
 def line_of(records: list[dict[str, Any]], route: str) -> dict[str, Any]:

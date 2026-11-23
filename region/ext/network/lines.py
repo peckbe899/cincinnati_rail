@@ -60,6 +60,25 @@ def ground_key(route: str) -> str:
     return f"ground:{route}"
 
 
+def context_key(route: str) -> str:
+    """The legacy key of the route's section context (its streets and roads in context/lines.json)."""
+    return f"context:{route}"
+
+
+def read_context(path: Path) -> dict[str, Any]:
+    """``context/lines.json``'s per-line entries (``{route: {streets, roads, blocks, add, cap, ...}}``), or ``{}``
+    where the file is not there."""
+    import json
+
+    p = Path(path)
+    if not p.is_file():
+        return {}
+    with open(p, encoding="utf-8") as fh:
+        doc = json.load(fh)
+    lines = doc.get("lines") if isinstance(doc, dict) else None
+    return lines if isinstance(lines, dict) else {}
+
+
 def profile_key(route: str) -> str:
     """The old hub's record path of the route's alignment doc."""
     return f"alignments/{route}"

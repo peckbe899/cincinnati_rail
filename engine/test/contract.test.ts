@@ -21,7 +21,7 @@ describe("contract v0", () => {
   });
 
   test("contract majors are v0", () => {
-    expect(CONTRACTS).toEqual({ section_input: 0, vertical_rail: 0 });
+    expect(CONTRACTS).toEqual({ section_input: 0, vertical_rail: 0, station_input: 0, station_facts: 0 });
   });
 
   // engine/test/contract.jcs.json holds [value, canonical text] pairs, ASCII-escaped; tests/core/test_core.py checks

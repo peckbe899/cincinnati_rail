@@ -363,7 +363,22 @@ export class AppHost implements Host {
     return out;
   }
 
+  /** Whether Ctrl+Z has something to take back here: an unsaved step in this layer, else a saved changeset. */
+  canUndo(): boolean {
+    return !!this.drafts.peekStep(this.view().layer) || this.undo.canUndo;
+  }
+
+  canRedo(): boolean {
+    return !!this.drafts.peekRedoStep(this.view().layer) || this.undo.canRedo;
+  }
+
+  /** Ctrl+Z: the last unsaved step of this layer first (profiles_parity.md 0.4), else the last saved changeset. */
   async undoLast(): Promise<void> {
+    const step = this.drafts.stepBack(this.view().layer);
+    if (step) {
+      this.toast({ text: `Undone: ${step.label} (not saved yet).`, level: "info", ttl: 2500 });
+      return;
+    }
     const e = this.undo.peek();
     try {
       const r = await this.undo.undo();
@@ -374,6 +389,11 @@ export class AppHost implements Host {
   }
 
   async redoLast(): Promise<void> {
+    const step = this.drafts.stepForward(this.view().layer);
+    if (step) {
+      this.toast({ text: `Redone: ${step.label} (not saved yet).`, level: "info", ttl: 2500 });
+      return;
+    }
     const e = this.undo.peekRedo();
     try {
       const r = await this.undo.redo();

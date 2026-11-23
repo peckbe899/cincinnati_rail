@@ -5,12 +5,14 @@ import type { z } from "zod";
 import { Flag } from "./flags.ts";
 import { Hello, Request, Response } from "./protocol.ts";
 import { SectionInput } from "./section_input.ts";
+import { StationFacts, StationInput } from "./station.ts";
 import { VerticalRail } from "./vertical_rail.ts";
 
 export * from "./common.ts";
 export * from "./flags.ts";
 export * from "./protocol.ts";
 export * from "./section_input.ts";
+export * from "./station.ts";
 export * from "./vertical_rail.ts";
 
 /** The contract major folder these schemas belong to (schema/v0). */
@@ -20,6 +22,8 @@ export const SCHEMA_VERSION = "v0";
 export const SCHEMAS: Record<string, z.ZodType> = {
   section_input: SectionInput,
   vertical_rail: VerticalRail,
+  station_input: StationInput,
+  station_facts: StationFacts,
   flag: Flag,
   hello: Hello,
   request: Request,

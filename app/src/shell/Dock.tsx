@@ -14,7 +14,8 @@ interface PaneParams {
   [k: string]: unknown;
 }
 
-const LAYOUT_VERSION = 1;
+// 2: the line sheet takes about half the width, so its stations can be told apart (profiles_parity.md A.1).
+const LAYOUT_VERSION = 2;
 
 function layoutKey(workspace: string): string {
   return `cr.layout.v${LAYOUT_VERSION}.${workspace}`;
@@ -22,7 +23,7 @@ function layoutKey(workspace: string): string {
 
 /**
  * The default design workspace: the map on the left, the line sheet in the middle with the whole column's height
- * (its table needs the rows), the inspector on the right with Jobs, Review, Old hub and Sources as tabs below it.
+ * (its table needs the rows) and about two thirds of the width, the inspector on the right with Jobs, Review, Old hub and Sources as tabs below it.
  */
 export function defaultLayout(api: DockviewApi, has: (id: string) => boolean): void {
   const add = (paneId: string, position?: Parameters<DockviewApi["addPanel"]>[0]["position"]) => {
@@ -41,6 +42,18 @@ export function defaultLayout(api: DockviewApi, has: (id: string) => boolean): v
   api.getPanel("jobs")?.api.setActive();
   api.getPanel("inspector")?.api.setActive();
   api.getPanel("line-sheet")?.api.setActive();
+  // The line sheet gets about two thirds of the width, the map and the inspector a sixth each: with the station
+  // panel beside it the plot keeps about 650 px on a 1600 px screen (at half the width it had 490, too few to tell
+  // the downtown stations apart).
+  const w = api.width;
+  if (w > 900) {
+    try {
+      api.getPanel("map")?.api.setSize({ width: Math.round(w * 0.18) });
+      api.getPanel("inspector")?.api.setSize({ width: Math.round(w * 0.18) });
+    } catch {
+      /* a layout without these panes keeps dockview's split */
+    }
+  }
 }
 
 function PaneHost(props: IDockviewPanelProps<PaneParams> & { host: AppHost }) {

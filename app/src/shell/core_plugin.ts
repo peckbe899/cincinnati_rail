@@ -12,11 +12,11 @@ export function corePlugin(host: AppHost): Plugin {
     commands: [
       {
         id: "core.undo",
-        title: "Undo the last saved change",
+        title: "Undo the last change (an unsaved step first, then the last save)",
         run: () => host.undoLast(),
-        when: () => host.undo.canUndo,
+        when: () => host.canUndo(),
       },
-      { id: "core.redo", title: "Redo", run: () => host.redoLast(), when: () => host.undo.canRedo },
+      { id: "core.redo", title: "Redo", run: () => host.redoLast(), when: () => host.canRedo() },
       { id: "core.save", title: "Save every draft", run: () => void host.saveAll() },
       { id: "core.units", title: "Switch units (m, ft)", run: () => host.units.toggle() },
       {

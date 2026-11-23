@@ -103,14 +103,13 @@ test("Line 6 sheet draws the station names and levels, and a station click selec
   const selectedLabel = labels.locator('li[data-kind="station"][data-selected="1"]');
   await expect(selectedLabel).toHaveAttribute("data-drawn", "1");
   await expect(selectedLabel).toContainText("Bond Hill, ");
-  // Zoomed in around it (a few km across, as Ben looks at a stretch): every station in view is named.
+  // Centred on it at most 2,500 m across (S16), as Ben looks at a stretch: every station in view is named.
   await canvas.focus();
-  for (let i = 0; i < 6; i++) await page.keyboard.press("+");
   await expect.poll(() => labels.locator('li[data-kind="station"][data-x]').count()).toBeGreaterThan(2);
   expect(await labels.locator('li[data-kind="station"][data-x][data-drawn="0"]').count()).toBe(0);
   // Esc clears the selection; a click on the station's bar on the canvas selects it again.
   await page.keyboard.press("Escape");
-  await expect(page.getByTestId("station-card")).toBeHidden();
+  await expect(page.getByTestId("station-panel-hint")).toBeVisible();
   const bond = labels.locator('li[data-kind="station"]', { hasText: "Bond Hill, " }).first();
   const x = Number(await bond.getAttribute("data-x"));
   const y = Number(await bond.getAttribute("data-y"));

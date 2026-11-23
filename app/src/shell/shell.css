@@ -217,6 +217,10 @@ table.grid input {
   align-items: center;
   padding: 4px 8px;
   border-bottom: 1px solid var(--line);
+  /* one line: text that changes with an edit must never move the plot under the pointer mid-drag */
+  flex-wrap: nowrap;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .sheet-canvas {
@@ -533,4 +537,201 @@ a {
 
 .sources-history {
   font-size: 12px;
+}
+
+/* The station panel (line sheet, A.3): the selected station's settings in groups, each row value, source, rule. */
+.sheet-card:has(.sp) {
+  display: block;
+  padding: 0;
+  max-height: 44vh;
+  overflow: auto;
+}
+.sheet.with-panel .sheet-table {
+  max-height: 24vh;
+}
+/* A wide sheet keeps the plot tall: the panel is a column on the right, as the old page's card was. */
+.sheet.wide.with-panel {
+  grid-template-columns: minmax(0, 1fr) 360px;
+  grid-template-rows: auto auto minmax(260px, 1fr) auto;
+  grid-template-areas: "bar bar" "notice notice" "canvas panel" "tables panel";
+}
+.sheet.wide.with-panel > .sheet-bar {
+  grid-area: bar;
+}
+.sheet.wide.with-panel > .sheet-notice {
+  grid-area: notice;
+}
+.sheet.wide.with-panel > .sheet-canvas {
+  grid-area: canvas;
+}
+.sheet.wide.with-panel > .sheet-table {
+  grid-area: tables;
+  max-height: 36vh;
+}
+.sheet.wide.with-panel > .sheet-card {
+  grid-area: panel;
+  max-height: none;
+  min-height: 0;
+  border-top: none;
+  border-left: 1px solid var(--line);
+}
+.sp-head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 4px 8px;
+  position: sticky;
+  top: 0;
+  background: var(--panel, #1e2128);
+  border-bottom: 1px solid var(--line);
+  z-index: 1;
+}
+.sp-head strong {
+  color: #e6b450;
+  font-size: 1.05em;
+}
+.sp-head .spacer {
+  flex: 1;
+}
+.sp-square,
+.type-chip,
+.sp-chip {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+.type-chip {
+  margin-right: 6px;
+}
+.sp-note {
+  padding: 3px 8px;
+  color: var(--warn, #e6b450);
+}
+.sp-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 2px 14px;
+  padding: 4px 8px 8px;
+}
+.sp-group h4 {
+  margin: 6px 0 2px;
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8b919e;
+}
+.sp-row {
+  display: grid;
+  grid-template-columns: 9.5em 1fr auto;
+  gap: 6px;
+  align-items: center;
+  padding: 1px 0;
+  font-variant-numeric: tabular-nums;
+}
+.sp-row.changed .sp-label::before {
+  content: "• ";
+  color: #e6b450;
+}
+.sp-label {
+  color: #8b919e;
+}
+.sp-src {
+  color: #6f7582;
+  font-size: 0.8em;
+  line-height: 1.2;
+  max-width: 14em;
+  overflow-wrap: anywhere;
+}
+.sp-was {
+  margin-left: 6px;
+  color: #e6b450;
+  font-size: 0.85em;
+}
+.sp-input {
+  width: 7em;
+  text-align: right;
+}
+.sp-input.bad {
+  outline: 1px solid #f07178;
+}
+.sp-select {
+  max-width: 100%;
+  min-width: 0;
+  width: 100%;
+}
+.sp-head {
+  flex-wrap: wrap;
+}
+.sp-head .sp-line {
+  flex-basis: 100%;
+  order: 5;
+}
+.sp-head button {
+  padding: 1px 6px;
+}
+.sp-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 3px 0;
+}
+.sp-hint {
+  margin: 2px 0;
+  color: #8b919e;
+  font-size: 0.85em;
+}
+.sp-param {
+  color: #8fb8e6;
+  font-size: 0.9em;
+}
+.sp-flag {
+  display: grid;
+  grid-template-columns: 4.5em 1fr auto auto;
+  gap: 6px;
+  align-items: center;
+  padding: 2px 0;
+}
+.sp-sev {
+  font-weight: 600;
+  font-size: 0.85em;
+}
+.sheet-table td.street {
+  max-width: 12em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #8b919e;
+}
+.sheet-table td.num {
+  text-align: right;
+}
+.flag-dot {
+  font-size: 0.8em;
+}
+
+/* The panel's column on a wide sheet: one group under the other. */
+.sheet.wide .sp-groups {
+  grid-template-columns: 1fr;
+}
+.sheet.wide .sp-row {
+  grid-template-columns: 7.6em minmax(0, 1fr) 6.8em;
+  font-size: 0.95em;
+}
+
+/* The sheet's bar keeps one line: text that changes with an edit ("unsaved changes", "Save (2 stations)") must
+   never move the plot under the pointer in the middle of a drag. */
+.sheet-bar > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+}
+.sheet-bar > button,
+.sheet-bar > strong {
+  flex-shrink: 0;
+}
+.sheet-bar > span[data-testid="station-summary"] {
+  flex-shrink: 0;
 }

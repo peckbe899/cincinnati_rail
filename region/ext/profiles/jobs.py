@@ -6,6 +6,12 @@ ground edit never reruns the solve); ``run`` calls ``vertical.rail`` and returns
 ``grade_permille`` on the section's grid (``meta.grid`` and ``meta.step_m``), the vertices, curves and flags in
 ``meta``, and the flags as issues. The app's line sheet reads ``rail_m`` and ``meta.step_m``.
 
+**profiles.station_facts@1** (scope: a section id; host: the engine). ``plan`` builds the section's StationInput
+(``inputs.station_input``: the SectionInput with its ground, the profile's station fields, the platforms with their
+side, opening year, phase and complex, the path, the streets and roads, the Deck's ground runs, the params); ``run``
+calls ``station.facts`` and returns its stations in ``meta.stations`` and its flags as issues (each with its rule
+id). The line sheet's worker runs the same method on the draft.
+
 **profiles.golden_diff@1** (scope: a section id; host: the engine). ``plan`` reads the section's baseline file
 (``repo://tests/baseline/profiles/<route>.json``), the class table (``golden.yaml``) and the records, and builds the
 input on the baseline's 5 m grid; ``run`` solves it and classes the difference (``golden.py``): ``same``,
@@ -28,9 +34,10 @@ from region.core import fsio
 from region.core.protocols import Output
 
 from . import golden as G
-from .inputs import build, gather, params_of, section_input
+from .inputs import build, gather, params_of, section_input, station_input
 
 ENGINE_METHOD = "vertical.rail"
+STATION_METHOD = "station.facts"
 BASELINE = "repo://tests/baseline/profiles/{route}.json"
 TABLE = "repo://region/ext/profiles/golden.yaml"
 PVI_TOLERANCE_M = 0.001
@@ -127,6 +134,37 @@ def pvi_issues(inputs: dict[str, Any]) -> list[dict[str, Any]]:
     return out
 
 
+class StationFacts:
+    """``profiles.station_facts@1`` (see the module doc)."""
+
+    name = "profiles.station_facts"
+    version = "1"
+    scope = "section"
+    host = "engine"
+    priority = 2
+    timeout_s = 30.0
+    code_files = CODE_FILES
+
+    def plan(self, ctx: Any, scope_id: str) -> dict[str, Any]:
+        return station_input(ctx, scope_id)
+
+    def run(self, inputs: dict[str, Any], rt: Any) -> Output:
+        rt.progress(0.1, "stations")
+        out = rt.engine.call(STATION_METHOD, inputs)
+        meta = {
+            "contract": out["contract"],
+            "length_m": inputs["section"]["length_m"],
+            "stations": out["stations"],
+            "summary": out["summary"],
+        }
+        issues = [
+            {"rule": f["rule"], "sev": f["sev"], "c0": f["c0"], "c1": f["c1"], "msg": f["kind"], "data": f["data"]}
+            for f in out["flags"]
+        ]
+        rt.progress(1.0, "done")
+        return Output(meta=meta, issues=issues)
+
+
 class GoldenDiff:
     """``profiles.golden_diff@1`` (see the module doc)."""
 
@@ -211,7 +249,17 @@ class GoldenDiff:
 
 
 SOLVE_SECTION = SolveSection()
+STATION_FACTS = StationFacts()
 GOLDEN_DIFF = GoldenDiff()
-JOB_TYPES = [SOLVE_SECTION, GOLDEN_DIFF]
+JOB_TYPES = [SOLVE_SECTION, STATION_FACTS, GOLDEN_DIFF]
 
-__all__ = ["GOLDEN_DIFF", "GoldenDiff", "JOB_TYPES", "SOLVE_SECTION", "SolveSection", "pvi_issues"]
+__all__ = [
+    "GOLDEN_DIFF",
+    "STATION_FACTS",
+    "GoldenDiff",
+    "JOB_TYPES",
+    "SOLVE_SECTION",
+    "SolveSection",
+    "StationFacts",
+    "pvi_issues",
+]

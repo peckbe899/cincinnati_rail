@@ -5,8 +5,16 @@
 // method is adding a row here with its zod in and out, a golden or property test, and a regenerated schema.
 
 import { z } from "zod";
-import { CONTRACTS, type ContractName, SectionInput, VerticalRail } from "./contract/index.ts";
+import {
+  CONTRACTS,
+  type ContractName,
+  SectionInput,
+  StationFacts,
+  StationInput,
+  VerticalRail,
+} from "./contract/index.ts";
 import type { RuleId } from "./rules.gen.ts";
+import { STATION_FACTS_RULES, stationFacts } from "./station/facts.ts";
 import { VERTICAL_RAIL_RULES, verticalRail } from "./vertical/method.ts";
 
 /** What a method may use besides its input. Methods are pure: they read nothing else. */
@@ -41,6 +49,18 @@ export const METHODS: readonly MethodDef[] = [
     stamped: true,
     rules: VERTICAL_RAIL_RULES,
     run: (input) => verticalRail(input as SectionInput),
+  },
+  {
+    // What the line sheet shows and sets about each station (claude/hub_maps/profiles_parity.md 0.2); the rail is
+    // the section's design, as vertical.rail@1 solves it, so vertical.rail@1 and its goldens do not change.
+    name: "station.facts",
+    version: 1,
+    contracts: { input: "station_input", output: "station_facts" },
+    input: StationInput,
+    output: StationFacts,
+    stamped: true,
+    rules: STATION_FACTS_RULES,
+    run: (input) => stationFacts(input as StationInput),
   },
   {
     // Returns its params unchanged: a health check and the probe of the round-trip budget.
