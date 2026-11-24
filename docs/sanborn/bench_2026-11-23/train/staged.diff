@@ -1,0 +1,2227 @@
+diff --git a/tools/sanborn/unet/bench_plate.py b/tools/sanborn/unet/bench_plate.py
+new file mode 100644
+index 0000000..bc5f5b9
+--- /dev/null
++++ b/tools/sanborn/unet/bench_plate.py
+@@ -0,0 +1,177 @@
++"""bench_plate: bench44's scores on any plate with a street map of Ben's, optionally inside a region (23 November 2026).
++
++    cd data/sanborn
++    python ../../tools/sanborn/unet/bench_plate.py --plate 1A --truth STREETMAP.json --area A.png --lines L.png
++           [--region MASK.png] [--tag NAME] [--runs DIR] [--no-pic] [--reuse]
++    python ../../tools/sanborn/unet/bench_plate.py --make-truth N OUT.json
++
++A wrapper, not a copy: it imports bench44.py (beside it) and runs bench44.main() unchanged (the REAL outline step,
++outlines.py --area-png --lines-png --out, the real step 4 and the editor's clean() and sheet(), every score and JSON key
++as bench44's), with five of bench44's plate-44 settings replaced for the run:
++  - N, W, H (and the half-size raster size) from --plate and its scan, cufp/22-N.jpg;
++  - the truth: --truth, a street map in streetmap/22-N.json's format (its size must be the scan's);
++  - the folds: A = inside --region (a mask PNG, nonzero = in; half size, or resized to it), B = outside; with no
++    --region every block and line is in A. Blocks and predicted blocks go by centroid, line samples by their own
++    position, whole lines (workload) by midpoint, as bench44's folds do. So with --region the region's scores are the
++    'A' entries; bench_plate.json repeats them as region_headline.region (and B as region_headline.outside);
++  - the decided ground, cached under the plate, the truth's sha256 and WMAX;
++  - the sheet outline (edit_server.sheet of the plate) and the picture (the plate's scan; the region outlined);
++  - after the outline step, its N_blockinst.png and N_blockmask.png are copied to the 44_ names bench44 reads, so
++    the '1_watershed_regions' stage is scored too (only these copies are new in the run folder).
++Writes RUNS/TAG/ as bench44 does, plus bench_plate.json (bench44.json with the meta fixed and region_headline added);
++prints one json line of the headline scores.
++
++--make-truth N OUT.json: the street map of plate N from Ben's edits, made as street_map.py makes streetmap/22-N.json
++(the same code: street_map.editor_lines, the same polygonize, the same json), but written to OUT.json and nothing into
++streetmap/ or unet_data/. Checked on 44: it gives streetmap/22-44.json byte for byte (bench_2026-11-23/train/trainer).
++"""
++import argparse, contextlib, hashlib, io, json, os, shutil, sys, time
++import numpy as np
++import cv2
++HERE = os.path.dirname(os.path.abspath(__file__)).replace('\\', '/') + '/'; sys.path.insert(0, HERE); sys.path.insert(0, HERE + '..')
++import _ws  # noqa: E402
++SP = _ws.DATA
++
++
++def sha(p, n=16): return hashlib.sha256(open(p, 'rb').read()).hexdigest()[:n] if os.path.exists(p) else None
++
++
++def make_truth(N, out, tol=1.5, edge=60.0):
++    """street_map.main's street map of plate N (its json), written to out (cwd must be data/sanborn)"""
++    from shapely.geometry import LineString, Point
++    from shapely.ops import unary_union, polygonize_full
++    import street_map as SM
++    N = N.upper(); TOL, EDGE = tol, edge
++    bf = f'picks22_guided/22-{N}/edges_ben.json'; B = json.load(open(bf, encoding='utf8'))
++    im = cv2.imread(f'cufp/22-{N}.jpg'); H, W = im.shape[:2]
++    L, SH = SM.editor_lines(N, W, H, json.load(open(f'unet_data/{N}_edges.json', encoding='utf8')), B)
++    def ext(l):
++        a, b = np.array(l['a'], float), np.array(l['b'], float); d = (b - a) / np.hypot(*(b - a)); return LineString([a - d * TOL, b + d * TOL])
++    ls = [LineString([l['a'], l['b']]) for l in L]; paper = unary_union([LineString([s['a'], s['b']]) for s in SH])
++    P = sorted(polygonize_full(unary_union([ext(l) for l in L]))[0].geoms, key=lambda p: (round(p.centroid.y / 400), p.centroid.x))
++    P = [p for p in P if p.area >= 400]
++    blocks = []
++    for i, p in enumerate(P):
++        (cx, cy), (w, h), _ = cv2.minAreaRect(np.array(p.exterior.coords, np.float32))
++        blocks.append(dict(id=i + 1, area_px=round(p.area), narrow_px=round(min(w, h)), ring=[[round(x, 1), round(y, 1)] for x, y in p.exterior.coords[:-1]]))
++    ends = []
++    for i, l in enumerate(L):
++        for p in (l['a'], l['b']):
++            g = min(o.distance(Point(p)) for j, o in enumerate(ls) if j != i)
++            if g > TOL: d = paper.distance(Point(p)); ends.append(dict(at=[round(p[0], 1), round(p[1], 1)], gap_px=round(g, 1), where='sheet_edge' if d <= EDGE else 'inside', paper_edge_px=round(d)))
++    kinds = {k: [sum(1 for l in L if l['kind'] == k), round(sum(ls[i].length for i, l in enumerate(L) if l['kind'] == k))] for k in ('printed', 'drawn', 'sheet_edge', 'no_printed_line')}
++    res = dict(plate=N, size=[W, H], source=bf, source_saved_at=B.get('saved_at'), tolerance_px=TOL, sheet_edge_px=EDGE,
++               note="Ben's ground truth street sides. Open ends are meant: a street that carries on to another sheet, or stops at the creek, canal or railway, is left open.",
++               counts=dict(lines=len(L), length_px=round(sum(l.length for l in ls)), by_kind=kinds, blocks=len(blocks), open_ends=len(ends), open_at_sheet_edge=sum(e['where'] == 'sheet_edge' for e in ends), open_inside=sum(e['where'] == 'inside' for e in ends)),
++               lines=[dict(a=[round(v, 1) for v in l['a']], b=[round(v, 1) for v in l['b']], kind=l['kind'], name=l['name']) for l in L], blocks=blocks, open_ends=ends)
++    os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
++    json.dump(res, open(out, 'w', encoding='utf8', newline='\n'), separators=(',', ':')); return res['counts']
++
++
++def setup(B, plate, truth_file, region_file):
++    """replace bench44's plate-44 settings (module B) for this plate"""
++    ES = B.ES; S = B.S
++    sm = json.load(open(truth_file, encoding='utf8')); scan = cv2.imread(SP + f'cufp/22-{plate}.jpg')
++    H, W = scan.shape[:2]
++    if sm['size'] != [W, H]: sys.exit(f'the truth is for a {sm["size"]} plate, the scan of {plate} is {[W, H]}')
++    h2, w2 = int(H * S), int(W * S)
++    B.N, B.W, B.H, B.h2, B.w2 = plate, W, H, h2, w2
++    if region_file:
++        M = cv2.imread(region_file, 0)
++        if M is None: sys.exit(f'no region mask {region_file}')
++        if M.shape != (h2, w2): M = cv2.resize(M, (w2, h2), interpolation=cv2.INTER_NEAREST)
++        M = M > 0
++    else: M = np.ones((h2, w2), bool)
++    def is_a(x, y):
++        x = np.nan_to_num(np.asarray(x, float)); y = np.nan_to_num(np.asarray(y, float))
++        return M[np.clip((y * S).astype(int), 0, h2 - 1), np.clip((x * S).astype(int), 0, w2 - 1)]
++    tsha = sha(truth_file)
++    def decided_ground(gt, ng, alpha2):
++        """bench44.decided_ground, cached under this plate and its truth"""
++        f = B.RUNS + f"cache/decided_half_{plate}_{tsha}_{B.WMAX:g}.png"
++        if os.path.exists(f): return cv2.imread(f, 0) > 0
++        wm = B.WMAX * S; d1 = np.full((h2, w2), np.inf, np.float32); l1 = np.zeros((h2, w2), np.int32); d2 = np.full((h2, w2), np.inf, np.float32)
++        off = cv2.distanceTransform(np.pad(alpha2.astype(np.uint8), 1), cv2.DIST_L2, 5)[1:-1, 1:-1]
++        for i in [-1] + list(range(1, ng + 1)):
++            if i == -1: y0, y1, x0, x1 = 0, h2, 0, w2; d = off
++            else:
++                ys, xs = np.nonzero(gt == i)
++                if not len(ys): continue
++                m = int(wm) + 2
++                y0, y1, x0, x1 = max(0, ys.min() - m), min(h2, ys.max() + m + 1), max(0, xs.min() - m), min(w2, xs.max() + m + 1)
++                d = cv2.distanceTransform((gt[y0:y1, x0:x1] != i).astype(np.uint8), cv2.DIST_L2, 5)
++            D1, L1, D2 = d1[y0:y1, x0:x1], l1[y0:y1, x0:x1], d2[y0:y1, x0:x1]
++            better = d < D1
++            D2[:] = np.where(better, D1, np.minimum(D2, d)); L1[:] = np.where(better, i, L1); D1[:] = np.where(better, d, D1)
++        dec = (gt > 0) | (alpha2 & (d1 + d2 <= wm)); dec &= alpha2 | (gt > 0)
++        os.makedirs(B.RUNS + 'cache', exist_ok=True); tmp = f[:-4] + f'.{os.getpid()}.tmp.png'; cv2.imwrite(tmp, dec.astype(np.uint8) * 255)
++        try: os.replace(tmp, f)
++        except PermissionError:          # integrator, 24 Nov: two runs side by side (eval_v2 runs two) wrote the same cache; on Windows the second replace can be refused
++            if not os.path.exists(f): raise
++            os.remove(tmp)
++        return dec
++    def load_truth():
++        rings = [np.array(b['ring'], float) for b in sm['blocks']]
++        lines = [(np.array(l['a'], float), np.array(l['b'], float), l['kind']) for l in sm['lines']]
++        gt = B.raster(rings); cen = np.array([B.poly_centroid(r) for r in rings]) if rings else np.zeros((0, 2))
++        alpha2 = cv2.resize(np.load(SP + f'cufp/{plate}/png_alpha_s4.npy').astype(np.float32), (w2, h2)) > 0.5
++        return dict(rings=rings, lines=lines, gt=gt, ng=len(rings), cen=cen, isA=is_a(cen[:, 0], cen[:, 1]) if len(cen) else np.zeros(0, bool), alpha2=alpha2, decided=decided_ground(gt, len(rings), alpha2))
++    def picture(run, shown_ls, dp, ben, db, sh_ls, tol):
++        sc = 0.25; im = cv2.resize(scan, None, fx=sc, fy=sc, interpolation=cv2.INTER_AREA); im = (im * 0.55 + 110).astype(np.uint8)
++        def draw(ls, d, col_ok, col_bad, th):
++            ok = d <= tol; q = (ls.P * sc).astype(int); q[:, 0] = np.clip(q[:, 0], 0, im.shape[1] - 1); q[:, 1] = np.clip(q[:, 1], 0, im.shape[0] - 1)
++            for sel, col in ((ok, col_ok), (~ok, col_bad)):
++                if col is None: continue
++                for x, y in q[sel]: cv2.circle(im, (int(x), int(y)), th, col, -1)
++        draw(ben, db, None, (255, 80, 0), 1); draw(sh_ls, np.zeros(len(sh_ls.P)), (150, 150, 150), None, 1); draw(shown_ls, dp, (0, 160, 0), (0, 0, 230), 1)
++        if region_file:
++            r = cv2.resize(M.astype(np.uint8), (im.shape[1], im.shape[0]), interpolation=cv2.INTER_NEAREST)
++            cv2.drawContours(im, cv2.findContours(r, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0], -1, (200, 0, 200), 2)
++        cv2.imwrite(run + f'{plate}_bench.jpg', im, [cv2.IMWRITE_JPEG_QUALITY, 85])
++    step = B.run_outline_step
++    def run_outline_step(a):
++        """bench44's outline step, then its instance raster under the name bench44 looks for (44_blockinst.png, stage
++        '1_watershed_regions'); the outline step names it after the plate (integrator, 24 Nov; review-code 10)"""
++        info = step(a)
++        for k in ('blockinst', 'blockmask'):
++            s, d = a.run + f'{plate}_{k}.png', a.run + f'44_{k}.png'
++            if plate != '44' and os.path.exists(s): shutil.copyfile(s, d)
++        return info
++    B.is_a = is_a; B.load_truth = load_truth; B.decided_ground = decided_ground; B.picture = picture; B.run_outline_step = run_outline_step
++    B.sheet = lambda n=None: ES.sheet(plate, W, H)
++    return sm, M
++
++
++def main():
++    ap = argparse.ArgumentParser(description='bench44 on another plate (see the docstring)', allow_abbrev=False)
++    ap.add_argument('--make-truth', nargs=2, metavar=('N', 'OUT'))
++    ap.add_argument('--plate'); ap.add_argument('--truth'); ap.add_argument('--area'); ap.add_argument('--lines'); ap.add_argument('--region')
++    ap.add_argument('--tag'); ap.add_argument('--runs'); ap.add_argument('--no-pic', action='store_true'); ap.add_argument('--reuse', action='store_true')
++    a = ap.parse_args()
++    if a.make_truth:
++        print(json.dumps(make_truth(a.make_truth[0], a.make_truth[1]))); return
++    for k in ('plate', 'truth', 'area', 'lines'):
++        if not getattr(a, k): sys.exit(f'--{k} is needed')
++    plate = a.plate.upper(); truth = os.path.abspath(a.truth); region = os.path.abspath(a.region) if a.region else None
++    import bench44 as B
++    t0 = time.time(); sm, M = setup(B, plate, truth, region)
++    tag = a.tag or f'{plate}_' + os.path.basename(a.area)[:-4]
++    argv = [B.__file__, '--area', os.path.abspath(a.area), '--lines', os.path.abspath(a.lines), '--tag', tag]
++    if a.runs: argv += ['--runs', os.path.abspath(a.runs)]
++    if a.no_pic: argv.append('--no-pic')
++    if a.reuse: argv.append('--reuse')
++    sys.argv = argv
++    with contextlib.redirect_stdout(io.StringIO()): B.main()
++    run = B.RUNS + f'{tag}/'; res = json.load(open(run + 'bench44.json', encoding='utf8'))
++    T = B.load_truth(); inA = T['isA']
++    res['meta'].update(plate=plate, truth=f'{truth} (sha256 {sha(truth)}; {len(sm["blocks"])} blocks, {len(sm["lines"])} lines)', truth_source=sm.get('source'), truth_saved_at=sm.get('source_saved_at'),
++                       folds=(f'A: inside the region {region} (sha256 {sha(region)}), B: outside' if region else 'no region: every block and line in A'),
++                       region=dict(file=region, share_of_plate=round(float(M.mean()), 4), truth_blocks_in=int(inA.sum()), truth_blocks_out=int((~inA).sum())),
++                       wrapper=dict(file=os.path.abspath(__file__), sha256=sha(os.path.abspath(__file__)), bench44=B.__file__, bench44_sha256=sha(B.__file__)), wrapper_seconds=round(time.time() - t0, 1))
++    res['region_headline'] = dict(region=res['headline']['A'], outside=res['headline']['B'], all=res['headline']['all'])
++    json.dump(res, open(run + 'bench_plate.json', 'w', encoding='utf8', newline='\n'), indent=1)
++    print(json.dumps(dict(tag=tag, run=run, region_blocks=int(inA.sum()), headline=res['region_headline'])))
++
++
++if __name__ == '__main__':
++    main()
+diff --git a/tools/sanborn/unet/edgenet.py b/tools/sanborn/unet/edgenet.py
+index deaa987..56e3084 100644
+--- a/tools/sanborn/unet/edgenet.py
++++ b/tools/sanborn/unet/edgenet.py
+@@ -22,6 +22,40 @@ This network is built for the one job:
+ - loss: weighted cross-entropy plus a Dice term on the line, so it is drawn thin and whole.
+ Score, on plates held out whole: precision (share of what it draws that is within TOL px of a verified edge, on taught
+ ground) and recall (share of verified edge length it draws within TOL px).
++
++23 November 2026 (data/sanborn/bench_2026-11-23/train). New options, as unet.py's (see there); without them the trainer
++does what it did before, except that under --no-guide the blank guide is no longer moved or blanked at random (no
++effect on the input, only on the random draws; --legacy-noguide keeps the old draws) and an unknown option is an error:
++
++    $PY edgenet.py train NAME --data DIR [PLATE[:val] ...] [--seed S] [--weights N=w,...] [--out MODELDIR]
++                [--iters 3000] [--val-every 250] [--area-blank pseudo]
++
++  --data DIR   the plates of a data folder: the full-size scan cufp/22-N.jpg (or DIR/N/full.jpg if there is one),
++               DIR/N/lines.png (full size: 1 line, 0 not, 255 not scored; for a labelled plate it is what load()
++               builds), DIR/N/area_in.png (half size, P(block) * 255: the 7th input; missing: 128, as load() without
++               the area map), DIR/N/valmask.png (optional, half size, 1 = validation) and meta.json. The guide is
++               blank. --area is not used (the 7th input is area_in.png). Plates 44 and 90 are refused.
++  memory       a plate is held as one uint8 array H x W x 5 (R, G, B, the 7th input at full size, the target): 5 bytes
++               a pixel against 12 for load() (7 channels, target, float32 weights). The ink image is made per crop
++               from the crop's own scan (ink_image works pixel by pixel, so it is the same as from the whole scan),
++               the blank guide channels are zeros, and the weights (1, NEG_INK on ink that is not a line, POS on the
++               line) are made per crop from the crop's ink and target, as load() makes them for the whole plate.
++  keep-best    F1 of precision and recall (score(), pooled over the plates' validation pixels) every --val-every
++               iterations and at the end: NAME.pt is the best, NAME_last.pt the last. The validation ground is
++               predicted from its own bounding box (no training ground around it). A training crop never overlaps
++               a validation pixel: the full-size crop is tested against the half-size valmask's integral image with
++               one half-size pixel to spare on every side (the nearest-neighbour resize puts full-size row Y on
++               half-size row floor(Y h / H), which lies in [Y//2 - 1, Y//2]); such a crop is drawn again.
++  --area-blank S  (integrator, 24 Nov 2026; review-leak finding 1) a comma-separated list of sources (label, map,
++               pseudo) or plates whose 7th input is 128 (no area map) in every crop, as for a plate without
++               area_in.png. train_v2.py passes 'pseudo' in V2: a pseudo plate's line target was made from the very map
++               that is its area_in.png (the merged outline step used area_ng1's map, and its 'not a line' pixels keep
++               off ground the area label leaves untaught, which covers every 0.5 crossing of that map), so on those
++               plates the target can be read off the 7th input: the rule "a line where area_in crosses 0.5" scores
++               precision 1.000 there against 0.54-0.73 on the labelled plates (review-leak channel7_shortcut.json).
++               A plate with validation pixels may not be blanked.
++  --out DIR    as unet.py's (default data/sanborn/train_v2_runs/models/; never inside unet_data/; written whole).
++  model json   as unet.py's, plus each plate's area_in provenance from its meta.json, and whether it was blanked.
+ """
+ import json, os, sys, time
+ import numpy as np
+@@ -30,8 +64,10 @@ import torch, torch.nn.functional as F
+ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, '..'))
+ import _ws  # noqa: E402
+ from unet import UNet, device  # noqa: E402
++import unet as U_  # noqa: E402   (23 Nov: the data folder helpers)
+ SP = _ws.DATA; DATA = SP + 'unet_data/'; CROP, BATCH, LINE, GAP, TOL, JIT, NEG_INK, POS = 448, 6, 3, 4, 3, 24, 4.0, 3.0
+ NOGUIDE = '--no-guide' in sys.argv   # 21 Nov 2026: for plates that were never placed, the guide channels are blank (see unet.py); --area NAME names the area network
++LEGACY_NOGUIDE = '--legacy-noguide' in sys.argv
+ AREA = sys.argv[sys.argv.index('--area') + 1] if '--area' in sys.argv else 'edge_v1'       # the area network whose street / block prediction is the seventh input (15 Nov 2026)
+ 
+ def ink_image(bgr):
+@@ -93,9 +129,11 @@ def train(name, plates, iters):
+             _, x, t, wg = tr[rng.integers(len(tr))]; y = rng.integers(JIT, x.shape[0] - CROP - JIT); xx = rng.integers(JIT, x.shape[1] - CROP - JIT)
+             b = t[y:y + CROP, xx:xx + CROP]
+             if (b == 1).sum() < 60 and rng.random() < 0.8: continue          # mostly crops that have a line in them
+-            a = x[y:y + CROP, xx:xx + CROP].copy(); dy, dx = rng.integers(-JIT, JIT + 1, 2)
+-            a[:, :, 4:6] = x[y + dy:y + dy + CROP, xx + dx:xx + dx + CROP, 4:6]  # the guide is only roughly placed
+-            if rng.random() < 0.3: a[:, :, 4:6] = 0                              # and sometimes missing: the line has to be found on the print
++            a = x[y:y + CROP, xx:xx + CROP].copy()
++            if not NOGUIDE or LEGACY_NOGUIDE:                                    # 23 Nov: a blank guide is neither moved nor blanked (it is zeros)
++                dy, dx = rng.integers(-JIT, JIT + 1, 2)
++                a[:, :, 4:6] = x[y + dy:y + dy + CROP, xx + dx:xx + dx + CROP, 4:6]  # the guide is only roughly placed
++                if rng.random() < 0.3: a[:, :, 4:6] = 0                              # and sometimes missing: the line has to be found on the print
+             if rng.random() < 0.15: a[:, :, 6] = 128                             # and sometimes no area prediction either
+             c = wg[y:y + CROP, xx:xx + CROP]; k = rng.integers(4); a, b, c = np.rot90(a, k), np.rot90(b, k), np.rot90(c, k)
+             if rng.random() < 0.5: a, b, c = a[:, ::-1], b[:, ::-1], c[:, ::-1]
+@@ -114,17 +152,185 @@ def train(name, plates, iters):
+             sc = {p: score(predict_full(net, dev, x), t) for p, x, t, _ in va}
+             hist.append(dict(iter=it, loss=round(float(loss), 4), minutes=round((time.time() - t0) / 60, 1), val=sc)); print(json.dumps(hist[-1]), flush=True)
+             torch.save(net.state_dict(), DATA + f'models/{name}.pt')
+-            json.dump(dict(name=name, plates=plates, iters=iters, crop=CROP, batch=BATCH, line_px=LINE, tol_px=TOL, history=hist), open(DATA + f'models/{name}.json', 'w', encoding='utf8', newline='\n'), indent=1)
++            json.dump(dict(name=name, plates=plates, iters=iters, crop=CROP, batch=BATCH, line_px=LINE, tol_px=TOL, no_guide=NOGUIDE, legacy_noguide=LEGACY_NOGUIDE, history=hist), open(DATA + f'models/{name}.json', 'w', encoding='utf8', newline='\n'), indent=1)
++
++
++# ====================================================================== 23 Nov 2026: the data folder (--data), seeds, keep-best
++def scan_path(root, plate):
++    f = os.path.join(root, plate, 'full.jpg')
++    return f if os.path.exists(f) else SP + f'cufp/22-{plate}.jpg'
++
++def pack(full_bgr, area_half, t):
++    """one plate as H x W x 5 uint8: R, G, B, the 7th input (area_half resized as load() resizes the area map, or 128
++    where there is none) and the target. full_bgr is consumed (pass a fresh array)"""
++    H, W = full_bgr.shape[:2]; S = np.empty((H, W, 5), np.uint8)
++    S[:, :, :3] = full_bgr[:, :, ::-1]
++    S[:, :, 3] = cv2.resize(area_half, (W, H), interpolation=cv2.INTER_LINEAR) if area_half is not None else 128
++    S[:, :, 4] = t
++    return S
++
++def build(S, y0, y1, x0, x1):
++    """the 7-channel input, target and weights of S[y0:y1, x0:x1], as load() gives them for that window: R, G, B,
++    ink, blank guide (2), 7th input; weights 1, NEG_INK on ink that is not a line, POS on the line"""
++    a = S[y0:y1, x0:x1]; h, w = a.shape[:2]
++    inkimg, ink = ink_image(np.ascontiguousarray(a[:, :, 2::-1]))
++    x = np.zeros((h, w, 7), np.uint8); x[:, :, :3] = a[:, :, :3]; x[:, :, 3] = inkimg; x[:, :, 6] = a[:, :, 3]
++    t = a[:, :, 4].copy(); wg = np.ones((h, w), np.float32); wg[ink & (t == 0)] = NEG_INK; wg[t == 1] = POS
++    return x, t, wg
++
++def load_data(root, plate, blank=False):
++    d = os.path.join(root, plate); full = cv2.imread(scan_path(root, plate))
++    if full is None: sys.exit(f'{plate}: no scan {scan_path(root, plate)}')
++    H, W = full.shape[:2]; t = cv2.imread(os.path.join(d, 'lines.png'), 0)
++    if t is None: sys.exit(f'{plate}: no lines.png in {d}')
++    if t.shape != (H, W): sys.exit(f'{plate}: lines.png is {t.shape[::-1]}, the scan {(W, H)}')
++    bad = np.setdiff1d(np.unique(t), [0, 1, 255])
++    if len(bad): sys.exit(f'{plate}/lines.png has values {bad.tolist()} (only 0, 1, 255)')
++    a = None if blank else cv2.imread(os.path.join(d, 'area_in.png'), 0)        # blank (--area-blank): the 7th input is 128, as without area_in.png
++    if a is not None and a.shape != (H // 2, W // 2): print(f'WARNING {plate}: area_in.png is {a.shape[::-1]}, half the scan is {(W // 2, H // 2)}', flush=True)
++    return pack(full, a, t), a is not None
++
++def overlaps_val(vint, y, x, C):
++    """does the full-size crop rows y..y+C-1, columns x..x+C-1 touch a validation pixel (half-size integral image, one
++    half-size pixel to spare on each side)"""
++    return U_.box_sum(vint, y // 2 - 1, x // 2 - 1, (y + C - 1) // 2 + 2, (x + C - 1) // 2 + 2) > 0
++
++def draw_crop(rng, P):
++    """(y, x) of a training crop: never on the validation ground; mostly crops with a line in them (as train())"""
++    S, vint = P['S'], P['vint']; H, W = S.shape[:2]
++    for _ in range(U_.MAX_TRIES):
++        y = rng.integers(JIT, H - CROP - JIT); x = rng.integers(JIT, W - CROP - JIT)
++        if vint is not None and overlaps_val(vint, y, x, CROP): continue
++        if (S[y:y + CROP, x:x + CROP, 4] == 1).sum() < 60 and rng.random() < 0.8: continue
++        return y, x
++    raise RuntimeError(f'plate {P["plate"]}: no usable crop in {U_.MAX_TRIES} tries')
++
++def line_counts(p, t, vm=None):
++    """score()'s counts (drawn, drawn near a line, line, line near the drawing), for pooling over plates; vm: only
++    these pixels may count as drawn"""
++    pr = p > 0.5
++    if vm is not None: pr &= vm
++    k = np.ones((2 * TOL + 1, 2 * TOL + 1), np.uint8); line = t == 1; scored = t != 255
++    near_line = cv2.dilate(line.astype(np.uint8), k) > 0; near_pr = cv2.dilate(pr.astype(np.uint8), k) > 0
++    drawn = pr & (scored | near_line)
++    return np.array([drawn.sum(), (drawn & near_line).sum(), line.sum(), (line & near_pr).sum()], np.int64)
++
++def prf(c):
++    P = c[1] / max(1, c[0]); R = c[3] / max(1, c[2]); return dict(precision=round(float(P), 6), recall=round(float(R), 6), f1=round(float(2 * P * R / max(1e-12, P + R)), 6), drawn_px=int(c[0]), line_px=int(c[2]))
++
++def train_data(name, root, specs, iters, seed, weights, outdir, val_every, area_blank=()):
++    root = os.path.abspath(root); man, man_sha = U_.read_manifest(root)
++    if man is None: print('WARNING: no manifest.json in', root, flush=True)
++    if seed is not None: U_.seed_all(seed)
++    rng = np.random.default_rng(0 if seed is None else seed); dev = device(); tr, va, rec = [], [], []; T0 = time.time()
++    ab = {s.strip().upper() for s in area_blank if s.strip()}; ab_hit = set()
++    for p, how in U_.plate_list(root, specs, man):
++        meta = U_.read_meta(root, p); entry0 = U_.manifest_entry(man, p); src = meta.get('source', (entry0 or {}).get('source', 'unknown'))
++        blank = p in ab or str(src).upper() in ab
++        if blank:
++            ab_hit |= {p, str(src).upper()} & ab
++            if how == 'val' or os.path.exists(os.path.join(root, p, 'valmask.png')): sys.exit(f'--area-blank: {p} has validation pixels; its 7th input stays the area map')
++        S, has_area = load_data(root, p, blank); H, W = S.shape[:2]
++        files, entry = U_.plate_files(root, p, man, ('lines.png', 'area_in.png', 'valmask.png', 'meta.json', 'full.jpg'))
++        files['scan'] = dict(path=scan_path(root, p), sha256=U_.sha256(scan_path(root, p)))
++        vh = U_.read_valmask(root, p, (H // 2, W // 2)) if os.path.exists(os.path.join(root, p, 'valmask.png')) else None
++        if how == 'all' and vh is not None: sys.exit(f'{p}:all: the plate has a valmask.png; refusing to train on its validation pixels')
++        if how == 'val': vh = np.ones((H // 2, W // 2), bool)
++        t = S[:, :, 4]
++        r = dict(plate=p, spec=p + (':' + how if how else ''), source=src, weight=weights.get(p, 1.0), size=[W, H],
++                 line_px=int((t == 1).sum()), scored_share=round(float((t != 255).mean()), 4),
++                 area_in='blank (128): --area-blank' if blank else ('area_in.png' if has_area else 'none (128)'), area_blank=blank,
++                 area_in_meta=meta.get('area_in') or (meta.get('files') or {}).get('area_in.png'), files=files,
++                 scale_ft_per_inch=U_.meta_scale(meta))
++        if vh is not None:
++            vf = cv2.resize(vh.astype(np.uint8), (W, H), interpolation=cv2.INTER_NEAREST) > 0   # as load() resizes the label
++            y0, y1, x0, x1 = U_.bbox(vf); xv, tv, _ = build(S, y0, y1, x0, x1); mv = vf[y0:y1, x0:x1]; tv[~mv] = 255
++            va.append(dict(plate=p, x=xv, t=tv, vm=mv)); r['val_box'] = [x0, y0, x1, y1]; r['val_line_px'] = int((tv == 1).sum()); r['val_scored_px'] = int((tv != 255).sum()); del vf
++        if how != 'val':
++            vint = cv2.integral(vh.astype(np.uint8)) if vh is not None else None
++            if r['weight'] > 0: tr.append(dict(plate=p, S=S, vint=vint))
++            r['train_line_px'] = int((t == 1).sum()) - r.get('val_line_px', 0)
++        else: del S
++        rec.append(r); print(json.dumps({k: v for k, v in r.items() if k != 'files'}), flush=True)
++    if not tr: sys.exit('no training plate')
++    unknown = set(weights) - {r['plate'] for r in rec}
++    if unknown: sys.exit(f'--weights names plates not in the run: {sorted(unknown)}')
++    if ab - ab_hit: sys.exit(f'--area-blank names no plate or source of the run: {sorted(ab - ab_hit)}')
++    load_s = round(time.time() - T0, 1); mem = U_.mem_now()
++    print(json.dumps(dict(loaded_s=load_s, stored_gb=round(sum(P['S'].nbytes for P in tr) / 1e9, 3), process=mem)), flush=True)
++    w = np.array([weights.get(P['plate'], 1.0) for P in tr], float); prob = w / w.sum(); drawn = np.zeros(len(tr), int)
++    os.makedirs(outdir, exist_ok=True)
++    net = UNet(classes=2, in_ch=7).to(dev); opt = torch.optim.Adam(net.parameters(), 1e-3); t0 = time.time(); hist = []; best = None
++    info = dict(name=name, kind='lines', mode='data', data=root, manifest_sha256=man_sha, manifest_content_sha256=U_.content_sha(man), seed=seed, git=U_.git_state(), trainer=dict(file=os.path.abspath(__file__), sha256=U_.sha256(__file__), unet=os.path.abspath(U_.__file__), unet_sha256=U_.sha256(U_.__file__)),
++                torch=torch.__version__, device=device.name, argv=sys.argv[1:], iters=iters, crop=CROP, batch=BATCH, line_px=LINE, tol_px=TOL, no_guide=True, guide_moved_or_blanked=False,
++                area_blank=sorted(ab), area_blank_plates=[r['plate'] for r in rec if r.get('area_blank')],
++                val_every=val_every, select_by='F1 of precision and recall (score()) on the validation pixels pooled over the plates', sampling='plate first (probability weight / sum), then a crop on it',
++                val_scope='the validation pixels predicted from their own bounding box, with area_in.png (area_ng1\'s map) as the 7th input; eval_v2 predicts the whole plate with the new area network\'s map',
++                load=dict(seconds=load_s, stored_bytes=int(sum(P['S'].nbytes for P in tr)), process_after_load=mem), plates=rec)
++    def save_json():
++        info.update(crops_drawn={P['plate']: int(n) for P, n in zip(tr, drawn)}, best=best and dict(iter=best[0], f1=best[1]), history=hist, minutes=round((time.time() - t0) / 60, 2), process_peak=U_.mem_now())
++        U_.write_json(os.path.join(outdir, name + '.json'), info)
++    tt, nt = 0.0, 0   # time in training steps (crops, forward, backward) since the last check
++    for it in range(1, iters + 1):
++        ti = time.time()
++        xs, ts, ws = [], [], []
++        while len(xs) < BATCH:
++            i = int(rng.integers(len(tr))) if np.all(w == w[0]) else int(rng.choice(len(tr), p=prob)); P = tr[i]; y, xx = draw_crop(rng, P); drawn[i] += 1
++            a, b, c = build(P['S'], y, y + CROP, xx, xx + CROP)
++            if rng.random() < 0.15: a[:, :, 6] = 128                             # sometimes no area prediction
++            k = rng.integers(4); a, b, c = np.rot90(a, k), np.rot90(b, k), np.rot90(c, k)
++            if rng.random() < 0.5: a, b, c = a[:, ::-1], b[:, ::-1], c[:, ::-1]
++            a = a.astype(np.float32); a[:, :, :3] = np.clip(a[:, :, :3] * rng.uniform(0.85, 1.15) + rng.uniform(-15, 15), 0, 255)
++            xs.append(a); ts.append(b); ws.append(c)
++        for g_ in opt.param_groups: g_['lr'] = 1e-3 * 0.5 * (1 + np.cos(np.pi * it / iters))
++        net.train(); out = net(norm(np.stack(xs)).to(dev)); tn = np.stack(ts)
++        yt = torch.from_numpy(np.where(tn == 255, 0, tn).astype(np.int64)).to(dev); ok = torch.from_numpy((tn != 255).astype(np.float32)).to(dev)
++        wt = torch.from_numpy(np.ascontiguousarray(np.stack(ws))).to(dev) * ok
++        ce = (F.cross_entropy(out, yt, reduction='none') * wt).sum() / wt.sum().clamp(min=1.0)
++        pl = F.softmax(out, 1)[:, 1] * ok; tl = yt.float() * ok
++        dice = 1 - (2 * (pl * tl).sum() + 1) / (pl.sum() + tl.sum() + 1)
++        loss = ce + dice
++        opt.zero_grad(); loss.backward(); opt.step(); tt += time.time() - ti; nt += 1
++        if it % val_every == 0 or it == iters:
++            h = dict(iter=it, loss=round(float(loss), 4), minutes=round((time.time() - t0) / 60, 2)); h['train_s_per_iter'] = round(tt / max(1, nt), 3); tv = time.time()
++            if va:
++                c = np.zeros(4, np.int64); sc = {}
++                for V in va:
++                    cc = line_counts(predict_full(net, dev, V['x']), V['t'], V['vm']); c += cc; sc[V['plate']] = prf(cc)
++                h['val'] = sc; h['val_pooled'] = prf(c); f1 = h['val_pooled']['f1']
++                if best is None or f1 > best[1]:
++                    best = (it, f1); U_.save_state(U_.cpu_state(net), os.path.join(outdir, name + '.pt')); h['best'] = True
++            h['val_s'] = round(time.time() - tv, 2); hist.append(h); print(json.dumps(h), flush=True); save_json(); tt, nt = 0.0, 0
++    U_.save_state(U_.cpu_state(net), os.path.join(outdir, name + '_last.pt'))
++    if not va: U_.save_state(U_.cpu_state(net), os.path.join(outdir, name + '.pt')); info['note'] = 'no validation pixels: NAME.pt is the last'
++    save_json(); print('wrote', os.path.join(outdir, name + '.pt'), 'best', info['best'], flush=True)
+ 
+ def predict(name, plate):
+     dev = device(); net = UNet(classes=2, in_ch=7); net.load_state_dict(torch.load(DATA + f'models/{name}.pt', map_location='cpu')); net.to(dev)
+     x, t, _ = load(plate); p = predict_full(net, dev, x)
+     cv2.imwrite(DATA + f'{plate}_lines_{name}.png', (p * 255).astype(np.uint8)); print(plate, json.dumps(score(p, t)))
+ 
++VALUED = ('--iters', '--data', '--seed', '--weights', '--out', '--val-every', '--area', '--area-blank')
++FLAGS = ('--no-guide', '--legacy-noguide')
+ if __name__ == '__main__':
+-    a = sys.argv[1:]; it = 3000
+-    if '--area' in a: k = a.index('--area'); a = a[:k] + a[k + 2:]
+-    a = [x for x in a if x != '--no-guide']
+-    if '--iters' in a: k = a.index('--iters'); it = int(a[k + 1]); a = a[:k] + a[k + 2:]
+-    os.makedirs(DATA + 'models', exist_ok=True)
+-    train(a[1], a[2:], it) if a[0] == 'train' else predict(a[1], a[2])
++    a, o = [], {}; k = 1
++    while k < len(sys.argv):
++        s = sys.argv[k]
++        if s in VALUED:
++            if k + 1 >= len(sys.argv): sys.exit(f'{s} needs a value')
++            o.setdefault(s, []).append(sys.argv[k + 1]); k += 2
++        elif s in FLAGS: o[s] = [True]; k += 1
++        elif s.startswith('--'): sys.exit(f'unknown option {s} (known: {", ".join(VALUED + FLAGS)})')
++        else: a.append(s); k += 1
++    it = int(o['--iters'][-1]) if '--iters' in o else 3000
++    if not a or a[0] not in ('train', 'predict'): sys.exit(__doc__)
++    if '--data' in o:
++        if a[0] != 'train': sys.exit('--data is for train')
++        if LEGACY_NOGUIDE or '--area' in o: sys.exit('--legacy-noguide and --area are not for --data (the 7th input is DIR/N/area_in.png)')
++        train_data(a[1], o['--data'][-1], a[2:], it, int(o['--seed'][-1]) if '--seed' in o else None, U_.parse_weights(o.get('--weights', [])),
++                   U_.out_dir(o), U_.val_every_arg(o, U_.VAL_EVERY), [s for v in o.get('--area-blank', []) for s in v.split(',')])
++    else:
++        for s in ('--seed', '--weights', '--out', '--val-every', '--area-blank'):
++            if s in o: sys.exit(f'{s} is for --data (the unet_data plates train as before)')
++        os.makedirs(DATA + 'models', exist_ok=True)
++        train(a[1], a[2:], it) if a[0] == 'train' else predict(a[1], a[2])
+diff --git a/tools/sanborn/unet/eval_v2.py b/tools/sanborn/unet/eval_v2.py
+new file mode 100644
+index 0000000..15fddf7
+--- /dev/null
++++ b/tools/sanborn/unet/eval_v2.py
+@@ -0,0 +1,278 @@
++"""eval_v2: a pair of blank-guide networks end to end, on plate 44 (the benchmark) and plate 1A's validation region
++(23 November 2026; data/sanborn/bench_2026-11-23/train).
++
++    cd data/sanborn
++    ../../tools/sanborn/unet/.venv/Scripts/python.exe -B ../../tools/sanborn/unet/eval_v2.py --area-model A.pt --lines-model L.pt --out DIR
++        [--grids 0,1,2,3,4,5] [--no-44] [--no-1a] [--truth-1a STREETMAP.json] [--region-1a MASK.png]
++        [--baseline-maps data/sanborn/bench44_maps] [--baseline-runs DIR] [--jobs 3] [--python python] [--cpu]
++
++Nothing is trained, and plate 44 only scores: no choice is made on it here (the checkpoint was chosen on 1A's
++validation region by the trainer). Everything goes into DIR; nothing is written in the repo.
++
++1. The two maps, as blocks_noguide.predict makes them (the scan at half size, INTER_AREA, blank guide -> P(block),
++   truncated to uint8; the full scan, its ink image, blank guide and that P(block) resized INTER_LINEAR -> P(line)),
++   with the tile grid moved as data/sanborn/bench_2026-11-21/inference/make_maps44.py moves it (OFFS: the image
++   reflected by the offset on the top and left, the map cropped back): grid0 is the batch's grid, gridK is OFFS[K-1],
++   the grids of data/sanborn/bench44_maps (the baseline: area_ng1 + lines_ng1). Each grid's DIR/maps44/gridK/info.json
++   says how far its decisions are from the baseline grid's (0 for the baseline's own networks: the faithfulness check).
++2. Plate 44 end to end: tools/sanborn/unet/bench44.py --grids DIR/maps44 (the REAL merged outline step, outlines.py
++   --area-png --lines-png --out; the real step 4; the editor's clean() and sheet()) paired with the baseline grids,
++   run by the same bench44 into --baseline-runs (default DIR/runs_baseline44). A baseline run already there is reused
++   only for the same maps (sha256) and the same code and street map (base__gridK/eval_v2_code44.json: bench44.py,
++   outlines.py, blocks_noguide.py, edit_server.py, ink_bins.py, map_area.py, streetmap/22-44.json; a run made before
++   this record existed is reused when outlines.py and the street map's cache match). -> DIR/runs44/v2_grids.json: mean,
++   sd, min, max of every headline score over the grids and the paired gains (this pair minus the baseline, grid by
++   grid). bench44 writes a cache of the decided ground with a bare os.replace, which Windows refuses while another run
++   reads it; so the first baseline run that has to be made runs alone, and DIR/runs44/cache is filled from the
++   baseline's before bench44 --grids starts its 3 runs side by side (integrator, 24 Nov; review-code 1).
++3. Plate 1A: the two maps on the batch's grid, then bench_plate.py (bench44's scorer on 1A, the region = 1A's
++   validation region (train_v2/1A/valmask.png: right of Elm Street) as fold A) for this pair and for the batch's own maps of 1A (unet_data/1A_pred_area_ng1.png,
++   1A_lines_lines_ng1.png). The truth is --truth-1a, or else made from Ben's edits as street_map.py makes a street map
++   (bench_plate.py --make-truth, into DIR/truth/). The region is --region-1a, or else data/sanborn/train_v2/1A/valmask.png,
++   or else the right-hand quarter (half size, x >= int(0.75 w)).
++   NOTE: Ben's 1A lines were made by editing the batch's (area_ng1 + lines_ng1) lines: a line he left alone is exactly
++   the batch's line. So on 1A the baseline starts with an advantage in line position; read the 1A numbers with that in
++   mind. Fold B of 1A (outside the region) was trained on by the v2 networks: it is in sample for them. The region is
++   NOT a test either: the checkpoints were chosen on it, the pseudo-label thresholds were tuned on the whole of 1A,
++   and it holds only 9 of Ben's blocks (one block moves its PQ by about 0.1). Plate 44 is the test.
++4. DIR/eval_v2.json: everything above in one file, with the models' sha256 and json (seed, best iteration). Written
++   to a temporary file and then renamed, so a run killed part way leaves none.
++bench44 and bench_plate run under --python (default: the system python, which has scipy and shapely); the outline
++step under the networks' venv, as the batch runs it. PYTHONDONTWRITEBYTECODE is set for every step.
++"""
++import argparse, hashlib, json, os, subprocess, sys, time
++from concurrent.futures import ThreadPoolExecutor
++import numpy as np
++import cv2
++HERE = os.path.dirname(os.path.abspath(__file__)).replace('\\', '/') + '/'; sys.path.insert(0, HERE); sys.path.insert(0, HERE + '..')
++import _ws  # noqa: E402
++SP = _ws.DATA; U = SP + 'unet_data/'; TOOLS = _ws.CODE + 'unet/'          # the repo's tools/sanborn/unet (bench44.py, outlines.py)
++OFFS = [((160, 400), (300, 700)), ((320, 160), (640, 200)), ((480, 560), (100, 450)), ((240, 0), (520, 0)), ((0, 240), (0, 520))]   # make_maps44.py: (area offset half px, line offset full px)
++GRID_OFFS = {0: (None, None), **{k: OFFS[k - 1] for k in range(1, 6)}}
++os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
++
++
++def sha(p, n=None):
++    if not os.path.exists(p): return None
++    h = hashlib.sha256()
++    with open(p, 'rb') as f:
++        for b in iter(lambda: f.read(1 << 20), b''): h.update(b)
++    return h.hexdigest()[:n] if n else h.hexdigest()
++
++
++def log(*a): print(*a, flush=True)
++
++
++CODE44 = ('bench44.py', 'outlines.py', 'blocks_noguide.py', 'edit_server.py', 'ink_bins.py', 'map_area.py')   # what a baseline bench44 run depends on (with Ben's 44 street map)
++
++
++def code44():
++    """sha256 (16) of the code and truth a bench44 run of 44 depends on: a baseline run is reused only when they are
++    the same as when it was made (integrator, 24 Nov; review-code 11)"""
++    return {**{f: sha(TOOLS + f, 16) for f in CODE44}, 'streetmap/22-44.json': sha(SP + 'streetmap/22-44.json', 16)}
++
++
++def write_json(path, obj):
++    """written whole or not at all (a temporary file, then os.replace; review-code 3)"""
++    tmp = f'{path}.{os.getpid()}.tmp'
++    with open(tmp, 'w', encoding='utf8', newline='\n') as f: json.dump(obj, f, indent=1)
++    for k in range(50):
++        try: os.replace(tmp, path); return
++        except PermissionError:
++            if k == 49: raise
++            time.sleep(0.2)
++
++
++def seed_cache(src_runs, dst_runs):
++    """copy bench44's decided-ground cache (decided_half_<street map sha>_<WMAX>.png) from one runs folder to another,
++    so that runs started side by side find it made and do not all write it at once: bench44.decided_ground replaces it
++    with a bare os.replace, which Windows refuses while another run is reading it (review-code 1; race_test.json:
++    15 of 40 replaces refused)"""
++    import glob, shutil
++    os.makedirs(dst_runs + 'cache', exist_ok=True); n = 0
++    for f in glob.glob(src_runs + 'cache/decided_half_*.png'):
++        d = dst_runs + 'cache/' + os.path.basename(f)
++        if '.tmp' in os.path.basename(f) or os.path.exists(d): continue
++        shutil.copyfile(f, d + f'.{os.getpid()}.tmp'); os.replace(d + f'.{os.getpid()}.tmp', d); n += 1
++    return n
++
++
++def cache_ready(runs):
++    """is bench44's decided-ground cache for Ben's current 44 street map in this runs folder"""
++    import glob
++    return bool(glob.glob(runs + f"cache/decided_half_{sha(SP + 'streetmap/22-44.json', 16)}_*.png"))
++
++
++def tool(name):
++    """a script beside this file if it is there (the staged copies), else the repo's tools/sanborn/unet"""
++    return HERE + name if os.path.exists(HERE + name) else TOOLS + name
++
++
++def env():
++    e = dict(os.environ); e['PYTHONDONTWRITEBYTECODE'] = '1'
++    e['PYTHONPATH'] = os.pathsep.join([_ws.CODE.rstrip('/'), TOOLS.rstrip('/')] + ([e['PYTHONPATH']] if e.get('PYTHONPATH') else []))
++    return e
++
++
++def load_nets(area_pt, lines_pt, cpu):
++    import torch, unet as A
++    dev = torch.device('cpu') if cpu else A.device()
++    # weights_only=False said outright: area_ng1.pt holds DirectML tensors, which torch 2.6's new default refuses (review-code 12); these are our own files
++    na = A.UNet(); na.load_state_dict(torch.load(area_pt, map_location='cpu', weights_only=False)); na.to(dev); na.eval()
++    nl = A.UNet(classes=2, in_ch=7); nl.load_state_dict(torch.load(lines_pt, map_location='cpu', weights_only=False)); nl.to(dev); nl.eval()
++    return dev, na, nl
++
++
++def maps(nets, full, oa=None, ol=None):
++    """blocks_noguide.predict's two maps of a scan, with the tile grids moved by oa (half px) and ol (full px)"""
++    import unet as A, edgenet as E
++    dev, na, nl = nets; H, W = full.shape[:2]; t = {}
++    def moved(fn, net, x, off):
++        if off and (off[0] or off[1]):
++            oy, ox = off; return fn(net, dev, cv2.copyMakeBorder(x, oy, 0, ox, 0, cv2.BORDER_REFLECT))[oy:, ox:]
++        return fn(net, dev, x)
++    t0 = time.time(); img = cv2.resize(full, (W // 2, H // 2), interpolation=cv2.INTER_AREA); z = np.zeros(img.shape[:2], np.uint8)
++    pa = (moved(A.predict_full, na, np.dstack([img[:, :, ::-1], z, z]), oa) * 255).astype(np.uint8); t['area_s'] = round(time.time() - t0, 2)
++    t1 = time.time(); inkimg, _ = E.ink_image(full); Z = np.zeros((H, W), np.uint8)
++    x = np.dstack([full[:, :, ::-1], inkimg, Z, Z, cv2.resize(pa, (W, H), interpolation=cv2.INTER_LINEAR)]); del inkimg
++    pl = (moved(E.predict_full, nl, x, ol) * 255).astype(np.uint8); t['lines_s'] = round(time.time() - t1, 2)
++    return pa, pl, t
++
++
++def differs(a, b):
++    if b is None or a.shape != b.shape: return None
++    return round(float(((a > 127) != (b > 127)).mean()), 6)
++
++
++def run(cmd, what):
++    t0 = time.time(); r = subprocess.run(cmd, cwd=SP, capture_output=True, text=True, encoding='utf8', errors='replace', env=env())
++    if r.returncode: raise RuntimeError(f'{what} failed (exit {r.returncode}):\n{(r.stdout + r.stderr)[-3000:]}')
++    return r, round(time.time() - t0, 1)
++
++
++def headline_all(b): return {k: b[k] for k in ('PQ', 'SQ', 'RQ', 'matched', 'merges', 'fp', 'PQ_decided', 'recall_interior', 'precision', 'precision_green', 'ben_blocks_closed', 'intact_rings', 'delete_len', 'draw_len') if k in b}
++
++
++def main():
++    ap = argparse.ArgumentParser(description='eval_v2 (see the docstring)', allow_abbrev=False)
++    ap.add_argument('--area-model', required=True); ap.add_argument('--lines-model', required=True); ap.add_argument('--out', required=True)
++    ap.add_argument('--grids', default='0,1,2,3,4,5'); ap.add_argument('--no-44', action='store_true'); ap.add_argument('--no-1a', action='store_true')
++    ap.add_argument('--truth-1a'); ap.add_argument('--region-1a'); ap.add_argument('--baseline-maps', default=SP + 'bench44_maps'); ap.add_argument('--baseline-runs')
++    ap.add_argument('--jobs', type=int, default=3); ap.add_argument('--python', default='python'); ap.add_argument('--cpu', action='store_true')
++    a = ap.parse_args()
++    if not (a.no_44 and a.no_1a):       # bench44 and bench_plate need scipy and shapely: say so now, not after the maps (review-code: 'python' is found on PATH)
++        try: ok = subprocess.run([a.python, '-c', 'import scipy, shapely, cv2'], capture_output=True, timeout=120).returncode == 0
++        except (OSError, subprocess.TimeoutExpired): ok = False
++        if not ok: sys.exit(f'--python {a.python}: cannot import scipy, shapely and cv2 (bench44 and bench_plate need them); give a Python that has them')
++    OUT = os.path.abspath(a.out).replace('\\', '/') + '/'; os.makedirs(OUT, exist_ok=True)
++    BR = (os.path.abspath(a.baseline_runs).replace('\\', '/') + '/') if a.baseline_runs else OUT + 'runs_baseline44/'
++    grids = [int(g) for g in a.grids.split(',') if g.strip()]
++    if any(g not in GRID_OFFS for g in grids): sys.exit(f'--grids: 0 to 5 only ({a.grids})')
++    stale = sorted(set(os.listdir(OUT + 'maps44')) - {f'grid{g}' for g in grids}) if os.path.isdir(OUT + 'maps44') else []
++    if stale and not a.no_44: sys.exit(f'{OUT}maps44 holds other grids ({stale}) from an earlier run; bench44 --grids would score them too: use a new --out')
++    mj = lambda pt: (pt[:-3] + '.json') if os.path.exists(pt[:-3] + '.json') else (pt[:-8] + '.json' if pt.endswith('_last.pt') and os.path.exists(pt[:-8] + '.json') else None)
++    def model_info(pt):
++        j = mj(pt); d = json.load(open(j, encoding='utf8')) if j else {}
++        return dict(file=os.path.abspath(pt), sha256=sha(pt), json=j, seed=d.get('seed'), best=d.get('best'), data=d.get('data'), manifest_sha256=d.get('manifest_sha256'), plates=[p.get('spec') if isinstance(p, dict) else p for p in d.get('plates', [])])
++    res = dict(made=time.strftime('%Y-%m-%d %H:%M:%S'), out=OUT, models=dict(area=model_info(a.area_model), lines=model_info(a.lines_model)), eval_v2=dict(file=os.path.abspath(__file__), sha256=sha(os.path.abspath(__file__))),
++               grids=grids, baseline_maps=a.baseline_maps, baseline_runs=BR, timings={})
++    for m in res['models'].values():
++        if any(str(p).split(':')[0].upper() in ('44', '90') for p in (m['plates'] or [])): log('WARNING: the model json lists 44 or 90 among its plates:', m['plates'])
++    T0 = time.time(); nets = load_nets(a.area_model, a.lines_model, a.cpu); res['timings']['load_nets_s'] = round(time.time() - T0, 1)
++    import unet as A_
++    res['device'] = 'cpu' if a.cpu else getattr(A_.device, 'name', None)
++    # ------------------------------------------------------------ plate 44
++    if not a.no_44:
++        full = cv2.imread(SP + 'cufp/22-44.jpg'); g44 = {}
++        for g in grids:
++            oa, ol = GRID_OFFS[g]; d = OUT + f'maps44/grid{g}/'; os.makedirs(d, exist_ok=True)
++            pa, pl, t = maps(nets, full, oa, ol); cv2.imwrite(d + '44_area.png', pa); cv2.imwrite(d + '44_lines.png', pl)
++            ba = cv2.imread(os.path.join(a.baseline_maps, f'grid{g}', '44_area.png'), 0); bl = cv2.imread(os.path.join(a.baseline_maps, f'grid{g}', '44_lines.png'), 0)
++            info = dict(grid=f'grid{g}', area_offset=oa, lines_offset=ol, seconds=t, area_block_share=round(float((pa > 127).mean()), 4), line_share=round(float((pl > 127).mean()), 5),
++                        area_decision_differs_from_baseline=differs(pa, ba), lines_decision_differs_from_baseline=differs(pl, bl),
++                        area_identical_to_baseline=bool(ba is not None and np.array_equal(pa, ba)), lines_identical_to_baseline=bool(bl is not None and np.array_equal(pl, bl)))
++            json.dump(info, open(d + 'info.json', 'w'), indent=1); g44[f'grid{g}'] = info; log('44', json.dumps(info))
++            del pa, pl, ba, bl
++        del full; res['maps44'] = g44
++        # the baseline runs (reused when there for the same maps, made by the same code against the same street map)
++        C44 = code44(); res['code44'] = C44
++        def reusable(g):
++            r = BR + f'base__grid{g}/bench44.json'; am = os.path.join(a.baseline_maps, f'grid{g}', '44_area.png'); lm = os.path.join(a.baseline_maps, f'grid{g}', '44_lines.png')
++            d = None
++            try: d = json.load(open(r, encoding='utf8'))
++            except (OSError, ValueError): return False, 'no run'
++            m = d.get('meta', {})
++            if m.get('area_sha') != sha(am, 16) or m.get('lines_sha') != sha(lm, 16): return False, 'other maps'
++            mk = BR + f'base__grid{g}/eval_v2_code44.json'
++            try: made = json.load(open(mk, encoding='utf8'))
++            except (OSError, ValueError): made = None
++            if made is not None: return (made == C44), ('same code' if made == C44 else f'other code: {sorted(k for k in C44 if made.get(k) != C44[k])}')
++            ok = m.get('outlines_py_sha') == C44['outlines.py'] and cache_ready(BR)    # a run made before 24 Nov has no code record: the outline step's sha and the street map's cache
++            return ok, ('made before the code record: outlines.py and the street map match' if ok else 'made before the code record, and outlines.py or the street map differ')
++        def base(g):
++            ok, why = reusable(g)
++            if ok: return g, f'reused ({why})', 0
++            am = os.path.join(a.baseline_maps, f'grid{g}', '44_area.png'); lm = os.path.join(a.baseline_maps, f'grid{g}', '44_lines.png')
++            _, s = run([a.python, '-B', TOOLS + 'bench44.py', '--area', am, '--lines', lm, '--tag', f'base__grid{g}', '--runs', BR, '--no-pic'], f'baseline bench44 grid{g}')
++            write_json(BR + f'base__grid{g}/eval_v2_code44.json', C44)
++            return g, f'run ({why})', s
++        t0 = time.time(); bres = []
++        todo = [g for g in grids if not reusable(g)[0]]
++        if todo and not cache_ready(BR): bres.append(base(todo[0]))       # the first run alone: it makes the decided-ground cache the others then read (review-code 1)
++        rest = [g for g in grids if g not in {b[0] for b in bres}]
++        with ThreadPoolExecutor(a.jobs) as ex: bres += list(ex.map(base, rest))
++        bres.sort(key=lambda b: b[0])
++        res['timings']['baseline44_s'] = round(time.time() - t0, 1); res['baseline44_runs'] = {f'grid{g}': how for g, how, _ in bres}; log('baseline 44:', res['baseline44_runs'])
++        t0 = time.time(); os.makedirs(OUT + 'runs44', exist_ok=True); res['cache_seeded'] = seed_cache(BR, OUT + 'runs44/')
++        run([a.python, '-B', TOOLS + 'bench44.py', '--grids', OUT + 'maps44', '--tag', 'v2', '--runs', OUT + 'runs44', '--jobs', str(a.jobs), '--paired', BR + 'base__{grid}/bench44.json'], 'bench44 --grids')
++        res['timings']['bench44_grids_s'] = round(time.time() - t0, 1)
++        G = json.load(open(OUT + 'runs44/v2_grids.json', encoding='utf8'))
++        base_h = {g: json.load(open(BR + f'base__{g}/bench44.json', encoding='utf8'))['headline'] for g in G['meta']['grids']}
++        st = lambda v: dict(mean=round(float(np.mean(v)), 4), sd=round(float(np.std(v, ddof=1)), 4) if len(v) > 1 else None)
++        res['bench44'] = dict(grids=G['meta']['grids'], v2=G['headline'], paired=G.get('paired'),
++                              baseline={f: {k: st([base_h[g][f][k] for g in base_h]) for k in base_h[next(iter(base_h))][f] if all(base_h[g][f][k] is not None for g in base_h)} for f in ('all', 'A', 'B')},
++                              per_grid={g: dict(v2=headline_all(G['per_grid'][g]['all']), baseline=headline_all(base_h[g]['all'])) for g in G['meta']['grids']})
++    # ------------------------------------------------------------ plate 1A
++    if not a.no_1a:
++        full = cv2.imread(SP + 'cufp/22-1A.jpg'); H, W = full.shape[:2]; d = OUT + 'maps1A/'; os.makedirs(d, exist_ok=True)
++        pa, pl, t = maps(nets, full); cv2.imwrite(d + '1A_area.png', pa); cv2.imwrite(d + '1A_lines.png', pl); del full
++        res['maps1A'] = dict(seconds=t, area_block_share=round(float((pa > 127).mean()), 4), line_share=round(float((pl > 127).mean()), 5),
++                             area_decision_differs_from_batch=differs(pa, cv2.imread(U + '1A_pred_area_ng1.png', 0)), lines_decision_differs_from_batch=differs(pl, cv2.imread(U + '1A_lines_lines_ng1.png', 0)))
++        del pa, pl
++        if a.truth_1a: truth = os.path.abspath(a.truth_1a); how = 'given (--truth-1a)'
++        else:
++            truth = OUT + 'truth/22-1A.json'; r, _ = run([a.python, '-B', tool('bench_plate.py'), '--make-truth', '1A', truth], 'the 1A street map'); how = 'made from picks22_guided/22-1A/edges_ben.json as street_map.py makes one: ' + r.stdout.strip().splitlines()[-1]
++        if a.region_1a: region = os.path.abspath(a.region_1a); rhow = 'given (--region-1a)'
++        elif os.path.exists(SP + 'train_v2/1A/valmask.png'): region = SP + 'train_v2/1A/valmask.png'; rhow = 'train_v2/1A/valmask.png'
++        else:
++            h2, w2 = H // 2, W // 2; m = np.zeros((h2, w2), np.uint8); m[:, int(w2 * 0.75):] = 255; region = OUT + 'truth/1A_valmask.png'; os.makedirs(OUT + 'truth', exist_ok=True); cv2.imwrite(region, m)
++            rhow = 'the right-hand quarter (x >= int(0.75 w) at half size), made here'
++        res['truth1A'] = dict(file=truth, sha256=sha(truth), how=how, region=region, region_sha256=sha(region), region_how=rhow)
++        def bp(tag, am, lm):
++            r, s = run([a.python, '-B', tool('bench_plate.py'), '--plate', '1A', '--truth', truth, '--region', region, '--area', am, '--lines', lm, '--tag', tag, '--runs', OUT + 'runs1A'], f'bench_plate 1A {tag}')
++            return json.loads(r.stdout.strip().splitlines()[-1]), s
++        t0 = time.time()
++        with ThreadPoolExecutor(2) as ex:
++            fv = ex.submit(bp, 'v2_1A', d + '1A_area.png', d + '1A_lines.png'); fb = ex.submit(bp, 'batch_1A', U + '1A_pred_area_ng1.png', U + '1A_lines_lines_ng1.png')
++            (v, _), (b, _) = fv.result(), fb.result()
++        res['timings']['bench1A_s'] = round(time.time() - t0, 1)
++        diff = {f: {k: (round(v['headline'][f][k] - b['headline'][f][k], 4) if isinstance(v['headline'][f].get(k), (int, float)) and isinstance(b['headline'][f].get(k), (int, float)) else None) for k in v['headline'][f]} for f in ('region', 'outside', 'all')}
++        res['bench1A'] = dict(region_blocks=v['region_blocks'], v2=v['headline'], batch_ng1=b['headline'], v2_minus_batch=diff, runs=dict(v2=v['run'], batch=b['run']),
++                              note='region = the validation region: never trained on by v2, but the checkpoints were chosen on it and the pseudo-label thresholds were tuned on the whole of 1A, so it is not a test (9 of Ben\'s blocks: one block moves PQ by about 0.1); outside = trained on by v2 (in sample); the truth is anchored to the batch lines')
++    res['timings']['total_s'] = round(time.time() - T0, 1)
++    write_json(OUT + 'eval_v2.json', res)
++    # a short table
++    if 'bench44' in res:
++        B = res['bench44']; log('\nplate 44 over grids', B['grids'])
++        for k in ('PQ', 'PQ_decided', 'recall_interior', 'precision', 'ben_blocks_closed', 'merges', 'fp'):
++            v, bs, p = B['v2']['all'].get(k), B['baseline']['all'].get(k), (B['paired'] or {}).get('all', {}).get(k)
++            log(f'  {k:16s} v2 {v and v["mean"]} (sd {v and v["sd"]})  baseline {bs and bs["mean"]}  paired gain {p and p["mean"]} ({p and p["gains"]}/{p and p["of"]} grids up)')
++    if 'bench1A' in res:
++        B = res['bench1A']; log(f'\nplate 1A validation region ({B["region_blocks"]} of Ben\'s blocks by centroid; the checkpoints were chosen here, so not a test)')
++        for k in ('PQ', 'PQ_decided', 'recall_interior', 'precision', 'ben_blocks_closed'):
++            log(f'  {k:16s} v2 {B["v2"]["region"].get(k)}  batch {B["batch_ng1"]["region"].get(k)}')
++    log('wrote', OUT + 'eval_v2.json')
++
++
++if __name__ == '__main__':
++    main()
+diff --git a/tools/sanborn/unet/make_labels_v2.py b/tools/sanborn/unet/make_labels_v2.py
+new file mode 100644
+index 0000000..d8b4fdc
+--- /dev/null
++++ b/tools/sanborn/unet/make_labels_v2.py
+@@ -0,0 +1,715 @@
++"""Training data for the second blank-guide pair (area_ng2, lines_ng2): one folder per plate (23 November 2026).
++
++    cd data/sanborn
++    PY=../../tools/sanborn/unet/.venv/Scripts/python.exe        (system python works too, except for verify)
++    $PY -B ../../tools/sanborn/unet/make_labels_v2.py label  43 45 80 82A   [--out DIR]
++    $PY -B ../../tools/sanborn/unet/make_labels_v2.py map    1A             [--out DIR] [--val-x X]
++    $PY -B ../../tools/sanborn/unet/make_labels_v2.py pseudo 30 60B ...     [--out DIR] [--hi .. --lo .. ...]
++    $PY -B ../../tools/sanborn/unet/make_labels_v2.py verify 43 45 80 82A   [--out DIR]   (venv: torch, unet.py, edgenet.py)
++    $PY -B ../../tools/sanborn/unet/make_labels_v2.py compare 1A --pseudo DIR --map DIR [--json FILE]
++
++Ben, 23 November 2026: "1A is done. let's try training on a number of them. you should choose them by complexity and
++size, with what you think are enough plates to teach the U-net sufficiently". The default output is data/sanborn/train_v2/
++(one subfolder per plate, and manifest.json); --out DIR writes elsewhere (a test). Plates 44 and 90 (Ben's ground
++truth and his planned second one) are never written into train_v2/: 44 is the untouched benchmark.
++
++FORMAT (every plate folder; half size = the scan at 1/2, as make_labels.py makes it; full size = cufp/22-N.jpg)
++  img.jpg     half size RGB scan, exactly as make_labels.py makes N_img.jpg (INTER_AREA, JPEG quality 92)
++  label.png   half size, uint8: 0 street (or other open ground), 1 block, 255 not taught
++  edge.png    half size, as make_labels.py's N_edge.png: the edges the area net's third output draws (unet.load_edge)
++  lines.png   FULL size, uint8: the line net's target exactly as edgenet.load builds t (1 line, 0 not, 255 not scored)
++  area_in.png half size, P(block)*255: the line net's 7th channel (always the batch's unet_data/N_pred_area_ng1.png)
++  valmask.png (map plates only) half size, 1 = validation ground, never trained on: x >= --val-x (half px), by default
++              the right-hand quarter of the image (x >= int(0.75 * width), the same cut unet.train makes). train_v2/1A
++              uses --val-x 1420, the centre line of Elm Street (integrator, 23 Nov: the image's right quarter holds
++              10% of 1A's paper and 1 of Ben's 21 blocks; right of Elm St are 35% of the paper and 9 blocks, none cut)
++  meta.json   source, what made each file and its sha256, the thresholds, counts, the scale in ft per inch
++  streetmap.json (map plates only) Ben's street map, as street_map.py writes it (never into streetmap/)
++The full-size scan is not copied: the line net reads cufp/22-N.jpg (its sha256 is in meta.json).
++manifest.json (in the output folder): every plate, its source, its files' sha256 and its meta.json's (meta_sha256);
++'content_sha256' is the sha256 of the plates section (json, sorted keys). The trainers record both the sha256 of
++manifest.json itself (manifest_sha256, which train_v2.py compares) and content_sha256 (manifest_content_sha256), and
++check every file they read, meta.json included, against the manifest.
++
++LOADING (what 'verify' does; for 43, 45, 80 and 82A it gives today's training arrays pixel for pixel)
++  area net  x = dstack(imread(img.jpg)[:, :, ::-1], zeros, zeros) (the blank guide); label = imread(label.png, 0);
++            edge weights and edge target from imread(edge.png, 0) by unet.load_edge's formulas.
++  line net  full = imread(cufp/22-N.jpg); x = dstack(full[:, :, ::-1], edgenet.ink_image(full)[0], zeros, zeros,
++            resize(imread(area_in.png, 0), (W, H), INTER_LINEAR)); t = imread(lines.png, 0); weights 1, NEG_INK on ink
++            where t == 0, POS where t == 1 (edgenet.load's).
++  valmask   half size; for the line net resize it to full size with INTER_NEAREST.
++
++THE THREE SOURCES
++label   43, 45, 80, 82A: today's training inputs, unchanged. img.jpg, label.png, edge.png and area_in.png are copied
++        byte for byte from unet_data/N_img.jpg, N_label.png, N_edge.png and N_pred_area_ng1.png; lines.png is
++        edgenet.load's t built from N_label.png, N_verified.json and the paper outline, by the same code. 'verify'
++        loads each plate through the new folder and through unet.load, unet.load_edge and edgenet.load (blank guide,
++        --area area_ng1) and compares every array pixel for pixel. area_in.png is IN SAMPLE for these four: area_ng1
++        was trained on them.
++map     a plate whose lines Ben has checked in the line editor (picks22_guided/22-N/edges_ben.json).
++        - Street map: street_map.editor_lines (the editor's lines with his edits) closed as street_map.py closes them
++          (ends extended TOL px, polygonized, faces of 400 px2 or more): written as streetmap.json in the plate folder.
++        - Area label: his closed blocks are 1 (a face under NARROW px across, an alley closed at both ends or a sliver,
++          is 255). Street: from every point of each of his lines a ray goes out on the side that is not block (the side
++          a probe POKE px out does not find in a closed block; where neither side is a closed block, the side that meets
++          another of his lines, running within PAR_DEG degrees of parallel, within WPAIR_FT ft while the other side meets
++          no line nearer than 1.5 times as far) up to
++          the first of his lines, a closed block or the paper's edge; the ground it crosses is street when that stop is
++          within WMAX_FT ft, else only the first BAND_FT ft is (open land beyond: the ground next to the line is still
++          not block). Everything else is 255, and so is a band of 1 px either side of every block's edge (as
++          make_labels.py's IGN) and the ground off the paper.
++        - Line target: his printed and drawn lines are positive, LINE px wide; the GAP px margin beside them is 255
++          (edgenet.load's rules); his sheet-edge and no-printed-line sides are 255 with the same margin (no ink to
++          learn); every other pixel of the ground the area label teaches is negative, and so is a strip WRONG_PX wide
++          along each line he marked wrong (his decision that it is not a street side); the rest is 255.
++        - edge.png: his printed and drawn lines, 1 px at half size (as N_edge.png draws the verified edges).
++        - valmask.png: x >= --val-x (half px), by default the right-hand quarter of the image.
++pseudo  a batch plate (never placed): the merged outline step's own outputs, kept only where they are confident. These
++        are the networks' guesses, filtered; they cannot teach what the networks never see (see LIMITS).
++        Inputs: picks22_guided/22-N/outlines.json (block polygons, street holes cut: ink_bins.block_ground's rule),
++        unet_data/N_pred_area_ng1.png, N_lines_lines_ng1.png, N_edges.json (green = 'on print') and, on an uncut PDF
++        sheet, N_mapground.png (the map ground; elsewhere the paper).
++        Thresholds (PSEUDO; d and ds in half-size px, ms, mr and mu in full-size px, me and ll in feet on the ground):
++        - Block: inside a block polygon AND P(block) > hi (0.95) AND at least d (8) px inside the polygon's edge.
++        - Street: outside every polygon AND P(block) < lo (0.05) AND at least ds (6) px from a polygon AND on the map
++          ground.
++        - Not taught (255): everything else, and the alley strips (below).
++        - Line target: positive = the green editor lines (edit_server.clean of N_edges.json, state green), LINE px, GAP
++          margin 255. Negative only where confidently not a block line: at least ms (12) px from every outline side and
++          every orange editor line, at least mr (6) px from any line-net response above tl (0.1), at least mu (4) px
++          from ground the area label leaves untaught, at least me (20) ft from the paper's edge (a street side drawn
++          along the edge has no block on the plate to show it), and not within the GAP margin of a long straight ink
++          line (ll, 80 ft or longer) in the block ground: such a line may be a block line the networks missed (an alley
++          side, a narrow street); it also takes the long lot lines out of the negatives. The rest is 255.
++        - Alley strips (alley True; ALLEY): two long straight parallel ink lines 8-45 ft apart, overlapping over most of
++          their length, with no building tint between them (Lab a*b* more than 12 from the paper's colour on at most
++          15% of the strip), no line right across the strip (a lot is closed by its rear line), and running across the
++          block (carried on along its line it leaves the block ground within 40 ft at both ends, or meets a strip found
++          in the first pass): an alley or narrow street the networks missed. The strip is 255 in the area label (and so
++          the line negatives keep mu px off it). A missed single street side is not caught (ll covers its line only).
++        - bigx (off, 0): block is taught only in polygons at most bigx times the plate's median block polygon. The
++          networks call open land (creek, rail corridors, farm tracts) block; Ben's map leaves that ground undecided,
++          so it cannot be scored, and whether it is block is a convention he has not settled.
++        - cap (1.0; integrator, 23 Nov): block is taught only in polygons of at most cap x CAP_ACRES acres at the
++          plate's scale (16.97 at 100 ft, 35.46 at 200 ft: the 98th percentile of the labelled plates' block pieces,
++          select/pseudo_area.py --strict). A bigger polygon is a merge across streets, open land, the river or a rail
++          yard far more often than a real block (on the ten chosen plates: 51's landing, 68's Zoo, 76's KEY and
++          Duck Creek ground, 79's and 89's open land). Its ground is 255.
++        - KEY (integrator): the printed KEY's box from bench_2026-11-21/census/rail_key.json (full px, KEY_PAD px
++          more) is 255 in the label and the line target, and has no edge. On the PDF sheets the map ground already
++          leaves it out; on a cut plate (76) nothing else does.
++        - Off the map ground (integrator): on a PDF sheet the line target is 255 more than MG_PAD px off the map ground
++          (N_mapground.png), so a green line in the margin, a title or an inset frame is not taught as a block line.
++        - Hand masks (--mask FILE; integrator): boxes (full px) of ground seen by eye in the overlays to be taught
++          wrongly (a bridge approach across streets, a parkway median, blank paper beyond the mapped ground): 255 in
++          the label and the line target, no edge. The file and its sha256 are in meta.json.
++        - edge.png: the green lines at half size, 1 px (none in the KEY box, off the map ground or in a hand mask).
++        - The thresholds were tuned on plate 1A only (pseudo labels from 1A's batch outputs against 1A's map labels
++          from Ben; bench_2026-11-23/train/labels/tune/); the same comparison is reported on 44 (in a test folder,
++          never train_v2/).
++
++LIMITS (the 21 Nov reviews, docs/sanborn/ml_review_2026-11-21 and bench_2026-11-21): pseudo labels repeat the networks'
++own mistakes where they are confident (confirmation bias); the 200-ft mid-block alleys the networks never see are
++taught as block unless the alley test catches them; the 400-ft sheets and the suspect plates have poor outputs, so
++pseudo labels there are poor; the networks are brittle to pen width and scale.
++"""
++import argparse, hashlib, json, os, shutil, subprocess, sys, time
++import numpy as np
++import cv2
++
++
++def _repo():
++    d = os.path.dirname(os.path.abspath(__file__))
++    while True:
++        if os.path.exists(os.path.join(d, 'tools', 'sanborn', '_ws.py')) and os.path.exists(os.path.join(d, 'configs', 'sanborn_paths.json')): return d
++        p = os.path.dirname(d)
++        if p == d: sys.exit('make_labels_v2: no repo (tools/sanborn/_ws.py) above this file')
++        d = p
++
++
++REPO = _repo(); TOOLS = os.path.join(REPO, 'tools', 'sanborn', 'unet')   # the pipeline's own modules (also when this file is run from a staging folder)
++sys.path.insert(0, TOOLS); sys.path.insert(0, os.path.dirname(TOOLS))
++import _ws  # noqa: E402
++SP = _ws.DATA; U = SP + 'unet_data/'; OUT_DEFAULT = SP + 'train_v2/'
++TEST_ONLY = ('44', '90')               # Ben's ground truth (the benchmark) and his planned second truth plate: never in train_v2/
++NO_WRITE = ('unet_data', 'picks22_guided', 'streetmap', 'cufp')   # folders of data/sanborn this script never writes into
++K, LINE, GAP, TOL = 2, 3, 4, 3         # half size; edgenet.py's LINE, GAP and TOL (full-size px)
++AREA_IN, LINES_NET = 'area_ng1', 'lines_ng1'
++# map labels
++SM_TOL, SM_MIN_FACE, NARROW = 1.5, 400.0, 60.0          # street_map.py's closing (ends extended 1.5 px, faces of 400 px2 or more); a face under 60 px across is not taught
++POKE, WMAX_FT, WPAIR_FT, BAND_FT, WRONG_PX, PAR_DEG = 4, 130.0, 110.0, 20.0, 11, 12.0
++# pseudo labels (tuned on 1A only: see the docstring and the tuning record in meta.json)
++PSEUDO = dict(hi=0.95, lo=0.05, d=8, ds=6, tl=0.1, ms=12, mr=6, mu=4, me=20.0, ll=80.0, gmin=0.0, bigx=0.0, cap=1.0, alley=True)   # gmin: shortest green line taught, ft (0: all); bigx, cap: see the docstring (0: off)
++# integrator, 23 Nov: the size cap, the KEY box and the map ground (see the docstring, pseudo)
++CAP_ACRES = {100: 16.97, 200: 35.46}   # 1.0 x the 98th percentile of the block pieces of the labelled plates' N_label.png at that scale (43 at 100 ft; 45, 80, 82A at 200 ft), acres: bench_2026-11-23/train/select/pseudo_area.py --strict
++KEY_JSON, KEY_PAD, MG_PAD = SP + 'bench_2026-11-21/census/rail_key.json', 20, 12   # the printed KEY's box (full px) from the 21 Nov census; its margin and the map ground's, full px
++ALLEY = dict(min_ft=8.0, max_ft=45.0, min_len_ft=80.0, ang_deg=2.0, overlap=0.6, tint=12.0, tint_share=0.15, cross=True, reach_ft=40.0, passes=2, pad=4, ang_join=1.5, off_join=4.0, gap_ft=8.0, cont=0.8)
++
++
++def sha(path):
++    h = hashlib.sha256()
++    with open(path, 'rb') as f:
++        for b in iter(lambda: f.read(1 << 20), b''): h.update(b)
++    return h.hexdigest()
++
++
++def rel(path):
++    p = os.path.abspath(path).replace('\\', '/'); r = REPO.replace('\\', '/') + '/'
++    return p[len(r):] if p.startswith(r) else p
++
++
++def git_head():
++    try: return subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=REPO, capture_output=True, text=True, timeout=20).stdout.strip() or None
++    except Exception: return None
++
++
++def scale_ft(N):
++    t = json.load(open(SP + 'scale_table.json', encoding='utf8')).get(N) or {}
++    return t.get('ft_per_inch')
++
++
++def check_out(out, N):
++    """refuse a write that would put 44 or 90 into train_v2/, or anything into the pipeline's own folders"""
++    o = os.path.normcase(os.path.abspath(out)); tv = os.path.normcase(os.path.abspath(OUT_DEFAULT))
++    if N in TEST_ONLY and (o == tv or o.startswith(tv + os.sep)): sys.exit(f'plate {N} is test only (Ben\'s truth): never written into train_v2/. Use --out DIR for a test.')
++    for f in NO_WRITE:
++        p = os.path.normcase(os.path.abspath(SP + f))
++        if o == p or o.startswith(p + os.sep): sys.exit(f'--out {out}: never writes into data/sanborn/{f}/')
++
++
++def scan(N):
++    full = cv2.imread(SP + f'cufp/22-{N}.jpg')
++    if full is None: sys.exit(f'no scan cufp/22-{N}.jpg')
++    return full
++
++
++def alpha_half(N, w, h):            # make_labels.py's paper at half size
++    return cv2.resize(np.load(SP + f'cufp/{N}/png_alpha_s4.npy').astype(np.float32), (w, h), interpolation=cv2.INTER_LINEAR) > 0.5
++
++
++def alpha_full(N, W, H):            # edgenet.load's paper at full size
++    return cv2.resize(np.load(SP + f'cufp/{N}/png_alpha_s4.npy').astype(np.float32), (W, H)) > 0.5
++
++
++def half_img(full):
++    H, W = full.shape[:2]; return cv2.resize(full, (W // K, H // K), interpolation=cv2.INTER_AREA)
++
++
++def line_target(H, W, pos, taught, alpha, blank=None):
++    """edgenet.load's t: pos lines (full-size (a, b) pairs) drawn LINE px = 1; the margin of GAP px beside them 255; ground
++    not taught (taught False) 255 except the lines and their margin; off the paper 255. blank (bool, full size): more
++    ground not scored (sheet edges, orange lines), never over a positive. With blank None this is edgenet.load's code."""
++    line = np.zeros((H, W), np.uint8)
++    for a, b in pos: cv2.line(line, tuple(np.round(a).astype(int)), tuple(np.round(b).astype(int)), 1, LINE)
++    near = cv2.dilate(line, np.ones((2 * (LINE + GAP) + 1, 2 * (LINE + GAP) + 1), np.uint8)) > 0
++    t = np.where(line > 0, 1, 0).astype(np.uint8)
++    t[~taught & ~near] = 255
++    t[near & (line == 0)] = 255
++    if blank is not None: t[blank & (line == 0)] = 255
++    t[~alpha] = 255
++    return t
++
++
++def raster(lines, shape, scale=1.0, thick=1, val=1):
++    m = np.zeros(shape, np.uint8)
++    for a, b in lines: cv2.line(m, tuple(np.round(np.asarray(a, float) * scale).astype(int)), tuple(np.round(np.asarray(b, float) * scale).astype(int)), val, thick)
++    return m
++
++
++def block_ground(polys, h, w, scale=1.0):
++    """ink_bins.block_ground at another size: every block polygon filled, the street holes (sides with hole=True) cut
++    out, a block lying in a hole filled again. uint8, 1 = block"""
++    rings = lambda hole: [np.round(np.array([s['a'] for s in p], float) * scale).astype(np.int32) for p in polys if p and bool(p[0].get('hole')) == hole and len(p) >= 3]
++    B = np.zeros((h, w), np.uint8); blk = rings(False); hol = rings(True)
++    for r in blk: cv2.fillPoly(B, [r], 1)
++    if hol:
++        Hm = np.zeros((h, w), np.uint8)
++        for r in hol: cv2.fillPoly(Hm, [r], 1)
++        B[Hm > 0] = 0
++        for r in blk:
++            c = np.clip(r, 0, [w - 1, h - 1])
++            if Hm[c[:, 1], c[:, 0]].mean() > 0.5: cv2.fillPoly(B, [r], 1)
++    return B
++
++
++def edge_band(lab):
++    """make_labels.py's band round every label edge (IGN = 1): the gradient of the block mask, dilated by a 3 px ellipse"""
++    e = cv2.morphologyEx((lab == 1).astype(np.uint8), cv2.MORPH_GRADIENT, np.ones((3, 3), np.uint8)) > 0
++    return cv2.dilate(e.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))) > 0
++
++
++def save_png(path, a):
++    if not cv2.imwrite(path, a): sys.exit(f'could not write {path}')
++
++
++def copy(src, dst):
++    if not os.path.exists(src): sys.exit(f'missing {rel(src)}')
++    shutil.copyfile(src, dst); return dict(made=f'copied byte for byte from {rel(src)}', source_sha256=sha(src))
++
++
++def finish(N, out, source, files, extra):
++    """meta.json in the plate folder and the plate's entry in out/manifest.json (after checking the format)"""
++    d = out + N + '/'; shas = {f: sha(d + f) for f in sorted(files)}
++    lab, t, ai = cv2.imread(d + 'label.png', cv2.IMREAD_UNCHANGED), cv2.imread(d + 'lines.png', cv2.IMREAD_UNCHANGED), cv2.imread(d + 'area_in.png', cv2.IMREAD_UNCHANGED)
++    im = cv2.imread(d + 'img.jpg'); h, w = im.shape[:2]; H, W = t.shape
++    bad = [m for ok, m in ((lab.dtype == np.uint8 and lab.shape == (h, w) and set(np.unique(lab).tolist()) <= {0, 1, 255}, 'label.png'), (t.dtype == np.uint8 and set(np.unique(t).tolist()) <= {0, 1, 255}, 'lines.png'),
++                           ((W // K, H // K) == (w, h), 'lines.png size'), (ai.shape == (h, w), 'area_in.png size'), (cv2.imread(d + 'edge.png', 0).shape == (h, w), 'edge.png size'),
++                           (not os.path.exists(d + 'valmask.png') or cv2.imread(d + 'valmask.png', 0).shape == (h, w), 'valmask.png size')) if not ok]
++    if bad: sys.exit(f'plate {N}: format check failed: {bad}')
++    for f in files: files[f]['sha256'] = shas[f]
++    meta = dict(plate=N, source=source, made=time.strftime('%Y-%m-%d %H:%M:%S'), by=rel(__file__), by_sha256=sha(__file__), git_head=git_head(),
++                ft_per_inch=scale_ft(N), scan=dict(path=f'data/sanborn/cufp/22-{N}.jpg', sha256=sha(SP + f'cufp/22-{N}.jpg')), files=files, **extra)
++    json.dump(meta, open(d + 'meta.json', 'w', encoding='utf8', newline='\n'), indent=1)
++    mf = out + 'manifest.json'; man = json.load(open(mf, encoding='utf8')) if os.path.exists(mf) else dict(plates={})
++    man['plates'][N] = dict(source=source, files=shas, meta_sha256=sha(d + 'meta.json'), ft_per_inch=meta['ft_per_inch'])
++    man['plates'] = {k: man['plates'][k] for k in sorted(man['plates'])}
++    man.update(note='make_labels_v2.py: one folder per plate; content_sha256 = sha256 of json.dumps(plates, sort_keys=True)', updated=meta['made'],
++               content_sha256=hashlib.sha256(json.dumps(man['plates'], sort_keys=True).encode()).hexdigest())
++    json.dump(man, open(mf + '.tmp', 'w', encoding='utf8', newline='\n'), indent=1); os.replace(mf + '.tmp', mf)
++    return meta
++
++
++# ---------------------------------------------------------------- label: today's four labelled plates, unchanged
++def make_label(N, out):
++    d = out + N + '/'; os.makedirs(d, exist_ok=True); F = {}
++    for a, b in (('img.jpg', f'{N}_img.jpg'), ('label.png', f'{N}_label.png'), ('edge.png', f'{N}_edge.png'), ('area_in.png', f'{N}_pred_{AREA_IN}.png')):
++        F[a] = copy(U + b, d + a)
++    F['area_in.png']['note'] = f'IN SAMPLE: {AREA_IN} was trained on this plate (train_noguide.py: 82A, 80, 43, 45)'
++    full = scan(N); H, W = full.shape[:2]; del full
++    lab = cv2.resize(cv2.imread(U + f'{N}_label.png', 0), (W, H), interpolation=cv2.INTER_NEAREST)
++    vf = U + f'{N}_verified.json'; ver = json.load(open(vf, encoding='utf8')) if os.path.exists(vf) else []
++    t = line_target(H, W, ver, lab != 255, alpha_full(N, W, H)); save_png(d + 'lines.png', t)
++    F['lines.png'] = dict(made=f'edgenet.load\'s t from {rel(U + N + "_label.png")}, {rel(vf)} and cufp/{N}/png_alpha_s4.npy (LINE {LINE}, GAP {GAP})',
++                          sources_sha256={rel(U + N + '_label.png'): sha(U + f'{N}_label.png'), rel(vf): sha(vf)})
++    lh = cv2.imread(d + 'label.png', 0)
++    counts = dict(size_half=[lh.shape[1], lh.shape[0]], size_full=[W, H], block=int((lh == 1).sum()), street=int((lh == 0).sum()), untaught=int((lh == 255).sum()),
++                  line_pos=int((t == 1).sum()), line_neg=int((t == 0).sum()), line_unscored=int((t == 255).sum()), verified_edges=len(ver))
++    mk = U + f'{N}_meta.json'
++    return finish(N, out, 'label', F, dict(counts=counts, make_labels_meta=json.load(open(mk, encoding='utf8')) if os.path.exists(mk) else None))
++
++
++# ---------------------------------------------------------------- map: a plate whose lines Ben has checked
++def street_map(N, W, H):
++    """street_map.py's street map of plate N (editor_lines + its closing), as a dict in streetmap/22-N.json's format, and the faces"""
++    import street_map as SM  # noqa: E402
++    from shapely.geometry import LineString, Point
++    from shapely.ops import unary_union, polygonize_full
++    bf = SP + f'picks22_guided/22-{N}/edges_ben.json'; B = json.load(open(bf, encoding='utf8'))
++    L, SH = SM.editor_lines(N, W, H, json.load(open(U + f'{N}_edges.json', encoding='utf8')), B)
++    def ext(l):
++        a, b = np.array(l['a'], float), np.array(l['b'], float); d = (b - a) / np.hypot(*(b - a)); return LineString([a - d * SM_TOL, b + d * SM_TOL])
++    ls = [LineString([l['a'], l['b']]) for l in L]; paper = unary_union([LineString([s['a'], s['b']]) for s in SH])
++    P = sorted(polygonize_full(unary_union([ext(l) for l in L]))[0].geoms, key=lambda p: (round(p.centroid.y / 400), p.centroid.x))
++    P = [p for p in P if p.area >= SM_MIN_FACE]
++    blocks = []
++    for i, p in enumerate(P):
++        (cx, cy), (w, h), _ = cv2.minAreaRect(np.array(p.exterior.coords, np.float32))
++        blocks.append(dict(id=i + 1, area_px=round(p.area), narrow_px=round(min(w, h)), ring=[[round(x, 1), round(y, 1)] for x, y in p.exterior.coords[:-1]]))
++    ends = []
++    for i, l in enumerate(L):
++        for p in (l['a'], l['b']):
++            g = min(o.distance(Point(p)) for j, o in enumerate(ls) if j != i)
++            if g > SM_TOL: dd = paper.distance(Point(p)); ends.append(dict(at=[round(p[0], 1), round(p[1], 1)], gap_px=round(g, 1), where='sheet_edge' if dd <= 60.0 else 'inside', paper_edge_px=round(dd)))
++    kinds = {k: [sum(1 for l in L if l['kind'] == k), round(sum(ls[i].length for i, l in enumerate(L) if l['kind'] == k))] for k in ('printed', 'drawn', 'sheet_edge', 'no_printed_line')}
++    sm = dict(plate=N, size=[W, H], source=f'picks22_guided/22-{N}/edges_ben.json', source_saved_at=B.get('saved_at'), tolerance_px=SM_TOL, sheet_edge_px=60.0,
++              note="Ben's ground truth street sides. Open ends are meant: a street that carries on to another sheet, or stops at the creek, canal or railway, is left open.",
++              counts=dict(lines=len(L), length_px=round(sum(l.length for l in ls)), by_kind=kinds, blocks=len(blocks), open_ends=len(ends), open_at_sheet_edge=sum(e['where'] == 'sheet_edge' for e in ends), open_inside=sum(e['where'] == 'inside' for e in ends)),
++              lines=[dict(a=[round(v, 1) for v in l['a']], b=[round(v, 1) for v in l['b']], kind=l['kind'], name=l['name']) for l in L], blocks=blocks, open_ends=ends)
++    return sm, P, B
++
++
++def street_rays(L, blk, stop, alpha_h, ftpi, sid=None):
++    """the street ground beside Ben's lines (half size): see the docstring, map. Returns the mask and counts"""
++    h, w = blk.shape; pxft = 300.0 / ftpi / K; WMAX = int(round(WMAX_FT * pxft)); WPAIR = WPAIR_FT * pxft; BAND = int(round(BAND_FT * pxft))
++    offs = np.arange(2, WMAX + 1); street = np.zeros((h, w), np.uint8); n = dict(samples=0, block_one_side=0, paired=0, undecided=0, closed=0, banded=0)
++    for l in L:
++        a, b = np.array(l['a'], float) / K, np.array(l['b'], float) / K; Lh = np.hypot(*(b - a))
++        if Lh < 4: continue
++        dv = (b - a) / Lh; nv = np.array([-dv[1], dv[0]]); pts = a + np.outer(np.arange(1.0, Lh - 1.0, 1.0), dv); m = len(pts); n['samples'] += m
++        side = {}
++        for s in (1, -1):
++            q = pts[:, None, :] + s * offs[None, :, None] * nv; x = q[..., 0].round().astype(int); y = q[..., 1].round().astype(int)
++            ins = (x >= 0) & (x < w) & (y >= 0) & (y < h); xc, yc = np.clip(x, 0, w - 1), np.clip(y, 0, h - 1)
++            st = ~ins | (stop[yc, xc] > 0) | (blk[yc, xc] > 0) | ~alpha_h[yc, xc]; st[:, 0] = False   # offset 2 may still touch the line itself
++            first = np.where(st.any(1), st.argmax(1), len(offs)); r = np.where(first < len(offs), offs[np.minimum(first, len(offs) - 1)], np.inf)
++            hit_line = np.zeros(m, bool); k_ = first < len(offs); hit_line[k_] = stop[yc[k_, first[k_]], xc[k_, first[k_]]] > 0
++            par = np.zeros(m, bool)                       # the line met runs (nearly) parallel: the other side of a street
++            if sid is not None and k_.any():
++                j = sid[yc[k_, first[k_]], xc[k_, first[k_]]]; dj = np.array([[0.0, 0.0]] + [list((np.array(o['b'], float) - np.array(o['a'], float)) / max(1e-6, np.hypot(o['b'][0] - o['a'][0], o['b'][1] - o['a'][1]))) for o in L])
++                par[k_] = (j > 0) & (np.abs(dj[j] @ dv) >= np.cos(np.radians(PAR_DEG)))
++            pk = pts + s * POKE * nv; px_, py_ = np.clip(pk[:, 0].round().astype(int), 0, w - 1), np.clip(pk[:, 1].round().astype(int), 0, h - 1)
++            side[s] = dict(x=xc, y=yc, ins=ins, r=r, line=hit_line, par=par if sid is not None else hit_line, inblk=blk[py_, px_] > 0)
++        for s in (1, -1):
++            me, ot = side[s], side[-s]
++            by_block = ot['inblk'] & ~me['inblk']
++            by_pair = ~ot['inblk'] & ~me['inblk'] & me['par'] & (me['r'] <= WPAIR) & ~(ot['line'] & (ot['r'] < 1.5 * me['r']))
++            use = by_block | by_pair
++            if not use.any(): continue
++            n['block_one_side'] += int(by_block.sum()); n['paired'] += int(by_pair.sum())
++            reach = np.where(me['r'] <= WMAX, me['r'], BAND); n['closed'] += int((use & (me['r'] <= WMAX)).sum()); n['banded'] += int((use & (me['r'] > WMAX)).sum())
++            sel = use[:, None] & (offs[None, :] < reach[:, None]) & me['ins']
++            street[me['y'][sel], me['x'][sel]] = 1
++        n['undecided'] = n['samples'] - n['block_one_side'] - n['paired']
++    street = cv2.morphologyEx(street, cv2.MORPH_CLOSE, np.ones((3, 3), np.uint8))   # rays of a slanting line leave pinholes
++    return street > 0, dict(n, wmax_px_half=WMAX, wpair_px_half=round(WPAIR, 1), band_px_half=BAND)
++
++
++def map_labels(N, verbose=True, val_x=None):
++    """the map labels of plate N in memory: (img, label, edge, lines, valmask, streetmap dict, counts). val_x: the
++    validation ground is x >= val_x (half px); None: the right-hand quarter of the image, x >= int(0.75 w)"""
++    full = scan(N); H, W = full.shape[:2]; img = half_img(full); h, w = img.shape[:2]; del full
++    ftpi = scale_ft(N) or 100; ah = alpha_half(N, w, h); af = alpha_full(N, W, H)
++    sm, P, B = street_map(N, W, H)
++    blk = np.zeros((h, w), np.uint8); narrow = np.zeros((h, w), np.uint8)
++    for p, bl in zip(P, sm['blocks']):
++        rings = [np.round(np.array(p.exterior.coords) / K).astype(np.int32)] + [np.round(np.array(r.coords) / K).astype(np.int32) for r in p.interiors]
++        cv2.fillPoly(narrow if bl['narrow_px'] < NARROW else blk, rings, 1)
++    blk[narrow > 0] = 0
++    L = sm['lines']; stop = raster([(l['a'], l['b']) for l in L], (h, w), 1.0 / K, 3) | narrow
++    sid = np.zeros((h, w), np.int32)
++    for i, l in enumerate(L): cv2.line(sid, tuple(np.round(np.array(l['a']) / K).astype(int)), tuple(np.round(np.array(l['b']) / K).astype(int)), i + 1, 3)
++    street, rc = street_rays(L, blk, stop, ah, ftpi, sid)
++    lab = np.full((h, w), 255, np.uint8); lab[street & (blk == 0) & (narrow == 0)] = 0; lab[blk > 0] = 1
++    lab[edge_band(lab)] = 255; lab[~ah] = 255
++    pos = [(l['a'], l['b']) for l in L if l['kind'] in ('printed', 'drawn')]; blank_l = [(l['a'], l['b']) for l in L if l['kind'] in ('sheet_edge', 'no_printed_line')]
++    blank = cv2.dilate(raster(blank_l, (H, W), 1.0, LINE), np.ones((2 * (LINE + GAP) + 1,) * 2, np.uint8)) > 0
++    wrong = [(s['a'], s['b']) for s in B['lines'] if s.get('verdict') == 'wrong']
++    taught = cv2.resize(lab, (W, H), interpolation=cv2.INTER_NEAREST) != 255
++    wr = raster(wrong, (H, W), 1.0, WRONG_PX) > 0; taught |= wr
++    t = line_target(H, W, pos, taught, af, blank)
++    edge = raster(pos, (h, w), 1.0 / K, 1, 255); edge[~ah] = 0
++    vx = int(w * 0.75) if val_x is None else int(val_x)
++    if not 0 < vx < w: sys.exit(f'--val-x {vx}: outside the plate (0 < x < {w}, half px)')
++    val = np.zeros((h, w), np.uint8); val[:, vx:] = 1
++    counts = dict(size_half=[w, h], size_full=[W, H], ft_per_inch=ftpi, faces=len(P), blocks_taught=sum(b['narrow_px'] >= NARROW for b in sm['blocks']), narrow_faces_untaught=sum(b['narrow_px'] < NARROW for b in sm['blocks']),
++                  block=int((lab == 1).sum()), street=int((lab == 0).sum()), untaught=int((lab == 255).sum()), paper=int(ah.sum()),
++                  line_pos=int((t == 1).sum()), line_neg=int((t == 0).sum()), line_unscored=int((t == 255).sum()), lines_pos=len(pos), lines_blank=len(blank_l), lines_wrong=len(wrong), rays=rc,
++                  val_x_half=vx, val_block=int(((lab == 1) & (val == 1)).sum()), val_street=int(((lab == 0) & (val == 1)).sum()),
++                  val_line_pos=int((t[:, 2 * vx:] == 1).sum()), val_line_neg=int((t[:, 2 * vx:] == 0).sum()), val_paper_share=round(float(ah[:, vx:].sum() / max(1, ah.sum())), 4))
++    if verbose: print(N, 'map', json.dumps({k: v for k, v in counts.items() if k != 'rays'}), flush=True)
++    return img, lab, edge, t, val, sm, counts
++
++
++def make_map(N, out, val_x=None):
++    d = out + N + '/'; os.makedirs(d, exist_ok=True)
++    img, lab, edge, t, val, sm, counts = map_labels(N, val_x=val_x); F = {}
++    cv2.imwrite(d + 'img.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 92]); F['img.jpg'] = dict(made=f'cufp/22-{N}.jpg at half size (INTER_AREA), JPEG 92, as make_labels.py')
++    save_png(d + 'label.png', lab); F['label.png'] = dict(made='Ben\'s closed blocks 1; street by rays from his lines (street_rays); 255 elsewhere')
++    save_png(d + 'edge.png', edge); F['edge.png'] = dict(made='his printed and drawn lines, 1 px at half size')
++    save_png(d + 'lines.png', t); F['lines.png'] = dict(made='his printed and drawn lines positive (LINE 3, GAP 4 margin 255); sheet-edge and no-printed-line sides 255; negatives on taught ground and along his wrong lines')
++    save_png(d + 'valmask.png', val); F['valmask.png'] = dict(made=f'1 = validation: x >= {counts["val_x_half"]} half px' + (' (int(0.75 * width): the right-hand quarter of the image)' if val_x is None else ' (--val-x)'), val_x_half=counts['val_x_half'])
++    F['area_in.png'] = copy(U + f'{N}_pred_{AREA_IN}.png', d + 'area_in.png'); F['area_in.png']['note'] = f'out of sample: {AREA_IN} was not trained on {N} (the batch\'s own map)'
++    json.dump(sm, open(d + 'streetmap.json', 'w', encoding='utf8', newline='\n'), separators=(',', ':')); F['streetmap.json'] = dict(made='street_map.editor_lines + street_map.py\'s closing, from his edits')
++    srcs = {rel(SP + f'picks22_guided/22-{N}/edges_ben.json'): sha(SP + f'picks22_guided/22-{N}/edges_ben.json'), rel(U + f'{N}_edges.json'): sha(U + f'{N}_edges.json')}
++    return finish(N, out, 'map', F, dict(counts=counts, sources_sha256=srcs, edges_ben_saved_at=sm['source_saved_at'],
++                                          thresholds=dict(sm_tol=SM_TOL, min_face=SM_MIN_FACE, narrow_px=NARROW, poke=POKE, wmax_ft=WMAX_FT, wpair_ft=WPAIR_FT, par_deg=PAR_DEG, band_ft=BAND_FT, wrong_px=WRONG_PX, line=LINE, gap=GAP)))
++
++
++# ---------------------------------------------------------------- pseudo: a batch plate, the networks' confident guess
++def pseudo_inputs(N, outlines=None, edges=None, area=None, lines=None, mapground=None, masks=None):
++    """everything the pseudo labels need, loaded once (the tuner calls pseudo_labels many times on one of these)"""
++    import edit_server as es  # noqa: E402
++    full = scan(N); H, W = full.shape[:2]; img = half_img(full); h, w = img.shape[:2]
++    of = outlines or SP + f'picks22_guided/22-{N}/outlines.json'; ef = edges or U + f'{N}_edges.json'
++    af_ = area or U + f'{N}_pred_{AREA_IN}.png'; lf = lines or U + f'{N}_lines_{LINES_NET}.png'
++    mg = mapground if mapground is not None else U + f'{N}_mapground.png'
++    for f in (of, ef, af_, lf):
++        if not os.path.exists(f): sys.exit(f'plate {N}: missing {rel(f)} (the batch outputs)')
++    if os.path.exists(U + f'{N}_guide.png') and outlines is None: sys.exit(f'plate {N} is placed (unet_data/{N}_guide.png): its outlines.json is the guided one, not the batch\'s')
++    polys = json.load(open(of, encoding='utf8')); E = es.clean(json.load(open(ef, encoding='utf8')))
++    pa = cv2.imread(af_, 0); pl = cv2.imread(lf, 0)
++    if pa.shape != (h, w) or pl.shape != (H, W): sys.exit(f'plate {N}: map sizes {pa.shape} {pl.shape} do not fit the scan ({h}, {w}) / ({H}, {W})')
++    ah = alpha_half(N, w, h); af = alpha_full(N, W, H); ground_h = ah.copy(); mg_used = None
++    if mg and os.path.exists(mg):
++        m8 = cv2.imread(mg, 0) > 127; ground_h &= cv2.resize(m8.astype(np.uint8), (w, h), interpolation=cv2.INTER_NEAREST) > 0; mg_used = mg
++    blockg = block_ground(polys, h, w, 1.0 / K)
++    rings = [np.array([q['a'] for q in p_], float) for p_ in polys if p_ and not p_[0].get('hole') and len(p_) >= 3]
++    areas = np.array([abs(cv2.contourArea(r.astype(np.float32))) for r in rings]); med = float(np.median(areas)) if len(areas) else 1.0
++    ratio = np.zeros((h, w), np.float32)                                  # each block polygon's area over the plate's median block (outermost first, so a nested one paints over)
++    for k in np.argsort(-areas) if len(areas) else []: cv2.fillPoly(ratio, [np.round(rings[k] / K).astype(np.int32)], float(areas[k] / max(med, 1.0)))
++    din = cv2.distanceTransform(blockg, cv2.DIST_L2, 5); dout = cv2.distanceTransform((1 - blockg).astype(np.uint8), cv2.DIST_L2, 5)
++    sides = [(s['a'], s['b']) for p in polys for s in p] + [(e['a'], e['b']) for e in E if e['state'] != 'green']
++    dside = cv2.distanceTransform((raster(sides, (H, W)) == 0).astype(np.uint8), cv2.DIST_L2, 5)
++    green = [(e['a'], e['b']) for e in E if e['state'] == 'green']
++    hsv = cv2.cvtColor(full, cv2.COLOR_BGR2HSV); ink = (hsv[:, :, 2] < 120) | ((hsv[:, :, 1] < 90) & (hsv[:, :, 2] < 170)); del hsv, full
++    pxft = 300.0 / (scale_ft(N) or 100)
++    inner = cv2.dilate(cv2.resize(blockg, (W, H), interpolation=cv2.INTER_NEAREST), np.ones((9, 9), np.uint8)) > 0
++    longl = long_lines(ink & inner, pxft, ALLEY); del inner                           # long straight ink lines in the block ground (alleys, missed street sides, rear lot lines)
++    dedge = cv2.distanceTransform(af.astype(np.uint8), cv2.DIST_L2, 5)               # distance to the paper's edge
++    # integrator, 23 Nov: each block polygon's size in acres (half size, holes cut, as select/pseudo_area.py measures it),
++    # the printed KEY's box, and the map ground at full size (a little wider, so a street side drawn along it stays taught)
++    inst = np.zeros((h, w), np.int32); k_ = 0
++    for p_ in polys:
++        if p_ and not p_[0].get('hole') and len(p_) >= 3: k_ += 1; cv2.fillPoly(inst, [np.round(np.array([q['a'] for q in p_], float) / K).astype(np.int32)], k_)
++    for p_ in polys:
++        if p_ and p_[0].get('hole') and len(p_) >= 3: cv2.fillPoly(inst, [np.round(np.array([q['a'] for q in p_], float) / K).astype(np.int32)], 0)
++    acre_px = (K / pxft) ** 2 / 43560.0; acres = (np.bincount(inst.ravel(), minlength=k_ + 1) * acre_px).astype(np.float32); acres[0] = 0.0; acres = acres[inst]; del inst
++    key = (json.load(open(KEY_JSON, encoding='utf8')).get(N) or {}).get('key_box') if os.path.exists(KEY_JSON) else None
++    key_h = np.zeros((h, w), bool); key_f = np.zeros((H, W), bool)
++    if key:
++        x0, y0, x1, y1 = [int(v) for v in key]; key_f[max(0, y0 - KEY_PAD):y1 + KEY_PAD, max(0, x0 - KEY_PAD):x1 + KEY_PAD] = True
++        key_h[max(0, (y0 - KEY_PAD) // K):(y1 + KEY_PAD) // K + 1, max(0, (x0 - KEY_PAD) // K):(x1 + KEY_PAD) // K + 1] = True
++    hand_h = np.zeros((h, w), bool); hand_f = np.zeros((H, W), bool)                 # hand masks (--mask): ground seen by eye to be taught wrongly
++    for m_ in masks or []:
++        x0, y0, x1, y1 = [int(v) for v in m_['box']]; hand_f[max(0, y0):y1, max(0, x0):x1] = True; hand_h[max(0, y0 // K):y1 // K + 1, max(0, x0 // K):x1 // K + 1] = True
++    mg_f = None
++    if mg_used:
++        mg_f = cv2.dilate(cv2.resize((cv2.imread(mg_used, 0) > 127).astype(np.uint8), (W, H), interpolation=cv2.INTER_NEAREST), np.ones((2 * MG_PAD + 1,) * 2, np.uint8)) > 0
++    return dict(N=N, H=H, W=W, h=h, w=w, img=img, polys=polys, E=E, pa=pa, pl=pl, ah=ah, af=af, ground_h=ground_h, blockg=blockg, din=din, dout=dout, dside=dside, green=green, ink=ink,
++                pxft=pxft, longl=longl, dedge=dedge, ratio=ratio, acres=acres, key=key, key_h=key_h, key_f=key_f, mg_f=mg_f, hand=masks or [], hand_h=hand_h, hand_f=hand_f,
++                files={k: rel(v) for k, v in (('outlines', of), ('edges', ef), ('area', af_), ('lines', lf))} | ({'mapground': rel(mg_used)} if mg_used else {}) | ({'key': rel(KEY_JSON)} if key else {}),
++                sha={rel(v): sha(v) for v in (of, ef, af_, lf) + ((mg_used,) if mg_used else ()) + ((KEY_JSON,) if key else ())})
++
++
++def long_lines(m, pxft, A):
++    """long straight ink lines of mask m (full size): HoughLinesP pieces joined when they lie on one line (within ANG_JOIN
++    degrees and OFF_JOIN px) with a gap under GAP_FT ft, kept when at least min_len_ft long and on ink along CONT of
++    their length. Returns a list of (p, u, length): start point, unit direction, length"""
++    minlen = A['min_len_ft'] * pxft
++    segs = cv2.HoughLinesP(m.astype(np.uint8), 1, np.pi / 720, threshold=max(20, int(0.3 * minlen)), minLineLength=0.4 * minlen, maxLineGap=max(4, int(2 * pxft)))
++    segs = np.zeros((0, 4)) if segs is None else np.asarray(segs).reshape(-1, 4).astype(float)   # OpenCV 4 gives (n, 1, 4), OpenCV 5 (n, 4)
++    segs = segs[np.argsort(-np.hypot(segs[:, 2] - segs[:, 0], segs[:, 3] - segs[:, 1]))]
++    cj = np.cos(np.radians(A['ang_join'])); lines = []
++    for x0, y0, x1, y1 in segs:
++        a, b = np.array([x0, y0]), np.array([x1, y1]); L = np.hypot(*(b - a))
++        if L < 2: continue
++        u = (b - a) / L; hit = False
++        for ln in lines:
++            if abs(u @ ln['u']) < cj: continue
++            n = np.array([-ln['u'][1], ln['u'][0]])
++            if abs((a - ln['p']) @ n) > A['off_join'] or abs((b - ln['p']) @ n) > A['off_join']: continue
++            t0, t1 = sorted(((a - ln['p']) @ ln['u'], (b - ln['p']) @ ln['u']))
++            if t0 > ln['t1'] + A['gap_ft'] * pxft or t1 < ln['t0'] - A['gap_ft'] * pxft: continue
++            ln['t0'], ln['t1'] = min(ln['t0'], t0), max(ln['t1'], t1); hit = True; break
++        if not hit: lines.append(dict(p=a, u=u, t0=0.0, t1=L))
++    inkd = cv2.dilate(m.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0; H, W = m.shape; out = []
++    for ln in lines:
++        L = ln['t1'] - ln['t0']
++        if L < minlen: continue
++        p = ln['p'] + ln['u'] * ln['t0']; q = p + np.outer(np.arange(0, L, 2.0), ln['u'])
++        x = np.clip(q[:, 0].round().astype(int), 0, W - 1); y = np.clip(q[:, 1].round().astype(int), 0, H - 1)
++        if inkd[y, x].mean() >= A['cont']: out.append((p, ln['u'], L))
++    return out
++
++
++def alley_strips(I, ftpi):
++    """alleys and narrow streets the networks missed, inside their blocks (see the docstring): pairs of long straight
++    parallel ink lines min_ft..max_ft apart, overlapping over most of their length, little tint between them (no
++    buildings), and the strip runs across the block: carried on along its line it leaves the block ground within
++    reach_ft ft at both ends (in a second pass, or on a strip found in the first). Returns the half-size
++    mask (strip and its lines, padded) and the strips found (full-size px)"""
++    A = ALLEY; pxft = 300.0 / ftpi; H, W, h, w = I['H'], I['W'], I['h'], I['w']
++    lines = I['longl']
++    out = np.zeros((h, w), np.uint8); found = []
++    if len(lines) < 2: return out > 0, found
++    hink = cv2.resize(I['ink'].astype(np.uint8), (w, h), interpolation=cv2.INTER_NEAREST) > 0
++    lab_ = cv2.cvtColor(I['img'], cv2.COLOR_BGR2LAB)[:, :, 1:].astype(np.float32); open_ = I['ground_h'] & (I['blockg'] == 0) & ~hink
++    ref = np.median(lab_[open_], 0) if open_.sum() > 1000 else np.median(lab_[I['ah'] & ~hink], 0)       # the paper's colour (a*, b*): open ground outside the blocks
++    tint = (np.hypot(lab_[:, :, 0] - ref[0], lab_[:, :, 1] - ref[1]) > A['tint']) & ~hink                 # building tints (pink, yellow, ...): far from the paper's colour
++    inkf = I['ink']
++    lo, hi = A['min_ft'] * pxft, A['max_ft'] * pxft; ca = np.cos(np.radians(A['ang_deg'])); cands = []
++    for i in range(len(lines)):
++        p, u, L = lines[i]; n = np.array([-u[1], u[0]])
++        for j in range(i + 1, len(lines)):
++            p2, u2, L2 = lines[j]
++            if abs(u @ u2) < ca: continue
++            off = ((p2 + u2 * L2 / 2) - p) @ n
++            if not lo <= abs(off) <= hi: continue
++            t0, t1 = sorted(((p2 - p) @ u, (p2 + u2 * L2 - p) @ u)); s0, s1 = max(0.0, t0), min(L, t1)
++            if s1 - s0 < A['overlap'] * min(L, L2) or s1 - s0 < A['min_len_ft'] * pxft: continue
++            a0, a1 = p + u * s0, p + u * s1
++            g = a0[None, None] + np.linspace(0.05, 0.95, 24)[:, None, None] * (a1 - a0) + np.linspace(0.2, 0.8, 5)[None, :, None] * off * n
++            gx = np.clip((g[..., 0] / K).round().astype(int), 0, w - 1); gy = np.clip((g[..., 1] / K).round().astype(int), 0, h - 1)
++            if tint[gy, gx].mean() > A['tint_share']: continue                                                # buildings between: the two sides of a lot
++            if A['cross']:                         # a line right across the strip, from one side line to the other, closes it: a lot, not an alley (lettering stops short of the sides)
++                g = a0[None, None] + np.arange(0, s1 - s0, 2.0)[:, None, None] * u + np.linspace(0.03, 0.97, 12)[None, :, None] * off * n
++                gx = np.clip(g[..., 0].round().astype(int), 0, W - 1); gy = np.clip(g[..., 1].round().astype(int), 0, H - 1)
++                if (inkf[gy, gx].mean(1) >= 0.99).any(): continue
++            cands.append((a0, a1, off, n, u))
++    def reach(c, extra):
++        a0, a1, off, n, u = c; mid0, mid1 = a0 + n * off / 2, a1 + n * off / 2; ok = []; ends = []
++        for m0, d in ((mid0, -u), (mid1, u)):
++            q = m0 + np.outer(np.arange(0, A['reach_ft'] * pxft, 2.0), d); x = (q[:, 0] / K).round().astype(int); y = (q[:, 1] / K).round().astype(int)
++            ins = (x >= 0) & (x < w) & (y >= 0) & (y < h); xc, yc = np.clip(x, 0, w - 1), np.clip(y, 0, h - 1)
++            outb = ~ins | (I['blockg'][yc, xc] == 0) | (extra[yc, xc] > 0); k = int(outb.argmax()) if outb.any() else -1
++            ok.append(k >= 0); ends.append(q[k] if k >= 0 else q[-1])
++        return all(ok), ends
++    done = np.zeros(len(cands), bool)
++    for npass in range(A['passes']):                     # a later pass lets a strip end on one found before (an alley teed into a street the networks also missed)
++        for k, c in enumerate(cands):
++            if done[k]: continue
++            good, ends = reach(c, out)
++            if not good: continue
++            a0, a1, off, n, u = c; e0 = ends[0] - n * off / 2; e1 = ends[1] - n * off / 2; done[k] = True
++            quad = np.array([e0, e1, e1 + n * off, e0 + n * off]); cv2.fillPoly(out, [np.round(quad / K).astype(np.int32)], 1)
++            found.append(dict(a=e0.round(1).tolist(), b=e1.round(1).tolist(), width_px=round(float(abs(off)), 1), width_ft=round(float(abs(off) / pxft), 1), npass=npass + 1))
++    out = cv2.dilate(out, np.ones((2 * A['pad'] + 1,) * 2, np.uint8))
++    return out > 0, found
++
++
++def pseudo_labels(I, th, ftpi=100, alley=None):
++    """the pseudo labels from loaded inputs I and thresholds th: (label, lines, edge, counts)"""
++    h, w, H, W = I['h'], I['w'], I['H'], I['W']
++    pa = I['pa'].astype(np.float32) / 255.0
++    blk = (I['blockg'] > 0) & (pa > th['hi']) & (I['din'] >= th['d']) & I['ground_h']
++    if th.get('bigx', 0) > 0: blk &= I['ratio'] <= th['bigx']                  # off by default: a polygon many times the median block is often open land (a convention Ben has not settled)
++    capa = th.get('cap', 0) * CAP_ACRES.get(ftpi, 0) if 'acres' in I else 0
++    if capa > 0: blk &= I['acres'] <= capa                                     # integrator: a polygon bigger than the labelled plates' big blocks is a merge across streets, open land, the river or a rail yard: not taught
++    st = (I['blockg'] == 0) & (pa < th['lo']) & (I['dout'] >= th['ds']) & I['ground_h']
++    lab = np.full((h, w), 255, np.uint8); lab[st] = 0; lab[blk] = 1
++    if alley is not None: lab[alley] = 255
++    if 'key_h' in I: lab[I['key_h']] = 255                                    # integrator: the printed KEY is not map
++    if I.get('hand'): lab[I['hand_h']] = 255                                  # integrator: hand masks (--mask)
++    lab[~I['ah']] = 255
++    unsure = cv2.resize((lab == 255).astype(np.uint8), (W, H), interpolation=cv2.INTER_NEAREST)
++    dun = cv2.distanceTransform((unsure == 0).astype(np.uint8), cv2.DIST_L2, 5) if th['mu'] > 0 else None
++    resp = I['pl'] > th['tl'] * 255
++    dres = cv2.distanceTransform((~resp).astype(np.uint8), cv2.DIST_L2, 5)
++    neg = (I['dside'] >= th['ms']) & (dres >= th['mr']) & I['af']
++    neg &= (dun >= th['mu']) if dun is not None else (unsure == 0)
++    if th.get('me', 0) > 0: neg &= I['dedge'] >= th['me'] * I['pxft']                # a street side drawn along the paper's edge has no block on the plate to show it
++    blank = None
++    if th.get('ll', 0) > 0:                                                          # a long straight ink line in the block ground may be a block line the networks missed: not taught
++        ll = [(p, p + u * L) for p, u, L in I['longl'] if L >= th['ll'] * I['pxft']]
++        blank = cv2.dilate(raster(ll, (H, W), 1.0, LINE), np.ones((2 * (LINE + GAP) + 1,) * 2, np.uint8)) > 0 if ll else None
++    green = [(a, b) for a, b in I['green'] if np.hypot(b[0] - a[0], b[1] - a[1]) >= th.get('gmin', 0) * I['pxft']]   # a short green line is less often a block line: not taught (it is an outline side, so not negative either)
++    t = line_target(H, W, green, neg, I['af'], blank)
++    edge = raster(green, (h, w), 1.0 / K, 1, 255); edge[~I['ah']] = 0
++    off = None                                                                 # integrator: no line is taught in the KEY box or off the map ground (a green line in the margin or the KEY)
++    if I.get('key') is not None: off = I['key_f'].copy()
++    if I.get('mg_f') is not None: off = ~I['mg_f'] if off is None else (off | ~I['mg_f'])
++    if I.get('hand'): off = I['hand_f'].copy() if off is None else (off | I['hand_f'])
++    if off is not None:
++        t[off] = 255; edge[cv2.resize(off.astype(np.uint8), (w, h), interpolation=cv2.INTER_NEAREST) > 0] = 0
++    counts = dict(block=int((lab == 1).sum()), street=int((lab == 0).sum()), untaught=int((lab == 255).sum()), paper=int(I['ah'].sum()),
++                  line_pos=int((t == 1).sum()), line_neg=int((t == 0).sum()), line_unscored=int((t == 255).sum()), green_lines=len(green), alley_px=int(alley.sum()) if alley is not None else 0,
++                  cap_acres=round(capa, 2), capped_block_px=int(((I['blockg'] > 0) & (I['acres'] > capa) & I['ground_h']).sum()) if capa > 0 else 0,
++                  key_box=I.get('key'), hand_masks=len(I.get('hand') or []), hand_mask_half_px=int(I['hand_h'].sum()) if I.get('hand') else 0, full_px_off_map_or_key=int(off.sum()) if off is not None else 0)
++    return lab, t, edge, counts
++
++
++def make_pseudo(N, out, th, outlines=None, edges=None, mapground=None, mask_file=None):
++    d = out + N + '/'; os.makedirs(d, exist_ok=True)
++    masks = (json.load(open(mask_file, encoding='utf8')).get(N) or []) if mask_file else []
++    ftpi = scale_ft(N) or 100; I = pseudo_inputs(N, outlines, edges, mapground=mapground, masks=masks)
++    al, found = alley_strips(I, ftpi) if th.get('alley') else (None, [])
++    lab, t, edge, counts = pseudo_labels(I, th, ftpi, al); F = {}
++    cv2.imwrite(d + 'img.jpg', I['img'], [cv2.IMWRITE_JPEG_QUALITY, 92]); F['img.jpg'] = dict(made=f'cufp/22-{N}.jpg at half size (INTER_AREA), JPEG 92, as make_labels.py')
++    save_png(d + 'label.png', lab); F['label.png'] = dict(made='block: in a polygon, P > hi, d px in; street: outside, P < lo, ds px out, on the map ground; alley strips 255')
++    save_png(d + 'edge.png', edge); F['edge.png'] = dict(made='the green editor lines, 1 px at half size')
++    save_png(d + 'lines.png', t); F['lines.png'] = dict(made='green editor lines positive (LINE 3, GAP 4 margin 255); negatives ms px from every side and orange line, mr px from line-net response > tl, mu px from untaught area ground, me ft from the paper edge, off long straight ink lines (ll ft) in the block ground')
++    F['area_in.png'] = copy(U + f'{N}_pred_{AREA_IN}.png', d + 'area_in.png'); F['area_in.png']['note'] = f'out of sample: {AREA_IN} was not trained on {N} (the batch\'s own map)'
++    counts.update(size_half=[I['w'], I['h']], size_full=[I['W'], I['H']], ft_per_inch=ftpi, alley_pairs=len(found))
++    bf = U + f'{N}_blocks_ng.json'; qa = json.load(open(bf, encoding='utf8')) if os.path.exists(bf) else {}
++    warn = ([f'the batch flagged it suspect: {qa.get("suspect_why")}'] if qa.get('suspect') else []) + ([f'{ftpi} ft to the inch: the networks were trained at 100 and 200'] if ftpi not in (100, 200) else [])
++    print(N, 'pseudo', json.dumps(counts), ('| WARNING: ' + '; '.join(warn)) if warn else '', flush=True)
++    meta = finish(N, out, 'pseudo', F, dict(counts=counts, thresholds=dict(th, alley_cfg=ALLEY if th.get('alley') else None, line=LINE, gap=GAP), inputs=I['files'], sources_sha256=I['sha'],
++                                            alley_pairs=found, warnings=warn, hand_masks=dict(file=rel(mask_file), sha256=sha(mask_file), masks=masks) if mask_file else None, tuned_on='1A only (pseudo labels from its batch outputs against its map labels from Ben): data/sanborn/bench_2026-11-23/train/labels/tune/', note='the networks\' own guesses (area_ng1, lines_ng1, the merged outline step), confidence-filtered: not ground truth'))
++    return meta
++
++
++# ---------------------------------------------------------------- verify: label plates against today's loaders
++def verify(N, out):
++    """load plate N through the new folder and through unet.load / load_edge / edgenet.load (blank guide, area_ng1): every array equal"""
++    import unet as A, edgenet as E  # noqa: E402   (torch)
++    A.NOGUIDE = True; E.NOGUIDE = True; E.AREA = AREA_IN
++    d = out + N + '/'; res = {}
++    x0, l0 = A.load(N); w0, e0 = A.load_edge(N, l0)
++    im = cv2.imread(d + 'img.jpg')[:, :, ::-1]; z = np.zeros(im.shape[:2], np.uint8); x1 = np.dstack([im, z, z]); l1 = cv2.imread(d + 'label.png', 0)
++    e = cv2.imread(d + 'edge.png', 0); dd = cv2.distanceTransform((e == 0).astype(np.uint8), cv2.DIST_L2, 3)
++    w1 = (1.0 + A.EDGE_W * np.exp(-dd / A.EDGE_D)).astype(np.float32); e1 = (cv2.dilate(e, np.ones((3, 3), np.uint8)) > 0).astype(np.uint8); e1[(l1 == 255) & (e1 == 0)] = 255
++    eq = lambda p, q: bool(p.shape == q.shape and p.dtype == q.dtype and np.array_equal(p, q))
++    res['unet.load x'] = eq(x0, x1); res['unet.load label'] = eq(l0, l1); res['unet.load_edge weights'] = eq(w0, w1); res['unet.load_edge target'] = eq(e0, e1)
++    del x0, x1, w0, w1
++    X0, T0, G0 = E.load(N)
++    full = cv2.imread(SP + f'cufp/22-{N}.jpg'); H, W = full.shape[:2]; inkimg, ink = E.ink_image(full); Z = np.zeros((H, W), np.uint8)
++    sp = cv2.resize(cv2.imread(d + 'area_in.png', 0), (W, H), interpolation=cv2.INTER_LINEAR)
++    X1 = np.dstack([full[:, :, ::-1], inkimg, Z, Z, sp]); T1 = cv2.imread(d + 'lines.png', 0)
++    G1 = np.ones((H, W), np.float32); G1[ink & (T1 == 0)] = E.NEG_INK; G1[T1 == 1] = E.POS
++    res['edgenet.load x'] = eq(X0, X1); res['edgenet.load t'] = eq(T0, T1); res['edgenet.load weights'] = eq(G0, G1)
++    res['pixels'] = dict(half=int(l1.size), full=int(T1.size), line_pos=int((T1 == 1).sum()), line_neg=int((T1 == 0).sum()))
++    print(N, 'verify', json.dumps(res), flush=True)
++    return res
++
++
++# ---------------------------------------------------------------- compare: pseudo labels against a map plate's labels (how noisy they are)
++def compare(N, pdir, mdir, val=None):
++    """pseudo folder pdir/N against map folder mdir/N. Area: precision of taught block and street, coverage. Lines:
++    precision of the positives (within TOL px of Ben's printed/drawn lines), and Ben's lines (1 px samples along each)
++    taught positive, wrongly negative, or left 255. val: None whole plate, 'val' the right-hand quarter, 'train' the rest"""
++    vm = cv2.imread(mdir + N + '/valmask.png', 0) if os.path.exists(mdir + N + '/valmask.png') else None
++    return compare_arrays(N, cv2.imread(pdir + N + '/label.png', 0), cv2.imread(pdir + N + '/lines.png', 0), cv2.imread(mdir + N + '/label.png', 0),
++                          cv2.imread(mdir + N + '/lines.png', 0), json.load(open(mdir + N + '/streetmap.json', encoding='utf8')), val, vm)
++
++
++def compare_arrays(N, pl, pt, ml, mt, sm, val=None, vm=None):
++    h, w = ml.shape
++    roi = np.ones((h, w), bool)
++    if val:
++        if vm is not None: q = vm > 0                                     # the map folder's valmask.png (integrator, 23 Nov)
++        else: q = np.zeros((h, w), bool); q[:, int(w * 0.75):] = True
++        roi = q if val == 'val' else ~q
++    ah = alpha_half(N, w, h) & roi; dec = (ml != 255) & roi; tp = (pl != 255) & roi
++    r = dict(plate=N, part=val or 'whole')
++    r['area'] = dict(block_precision=round(float((ml[(pl == 1) & dec] == 1).mean()), 4) if ((pl == 1) & dec).any() else None,
++                     street_precision=round(float((ml[(pl == 0) & dec] == 0).mean()), 4) if ((pl == 0) & dec).any() else None,
++                     coverage_of_decided=round(float((tp & dec).sum() / max(1, dec.sum())), 4), coverage_of_decided_block=round(float(((pl == 1) & (ml == 1) & roi).sum() / max(1, ((ml == 1) & roi).sum())), 4),
++                     coverage_of_decided_street=round(float(((pl == 0) & (ml == 0) & roi).sum() / max(1, ((ml == 0) & roi).sum())), 4),
++                     taught_share_of_paper=round(float((tp & ah).sum() / max(1, ah.sum())), 4), taught_where_map_undecided=round(float((tp & ~dec & ah).sum() / max(1, tp.sum())), 4),
++                     block_px=int(((pl == 1) & roi).sum()), street_px=int(((pl == 0) & roi).sum()))
++    W, H = sm['size']
++    roif = cv2.resize(roi.astype(np.uint8), (W, H), interpolation=cv2.INTER_NEAREST) > 0
++    pos = [(l['a'], l['b'], l['kind']) for l in sm['lines'] if l['kind'] in ('printed', 'drawn')]
++    cen = raster([(a, b) for a, b, _ in pos], (H, W))
++    near = cv2.dilate(cen, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * TOL + 1, 2 * TOL + 1))) > 0
++    allc = raster([(l['a'], l['b']) for l in sm['lines']], (H, W)); near_all = cv2.dilate(allc, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * TOL + 1, 2 * TOL + 1))) > 0
++    pp = (pt == 1) & roif
++    lines = dict(pos_precision=round(float(near[pp].mean()), 4) if pp.any() else None, pos_precision_incl_sheet_edge=round(float(near_all[pp].mean()), 4) if pp.any() else None, pos_px=int(pp.sum()))
++    def samples(kinds):
++        xs, ys = [], []
++        for a, b, k in pos:
++            if k not in kinds: continue
++            a, b = np.array(a, float), np.array(b, float); n = max(2, int(np.hypot(*(b - a))) + 1); q = a + np.outer(np.linspace(0, 1, n), b - a)
++            x = np.clip(q[:, 0].round().astype(int), 0, W - 1); y = np.clip(q[:, 1].round().astype(int), 0, H - 1); k_ = roif[y, x]; xs.append(x[k_]); ys.append(y[k_])
++        return (np.concatenate(xs), np.concatenate(ys)) if xs else (np.zeros(0, int), np.zeros(0, int))
++    for nm, kinds in (('ben_lines', ('printed', 'drawn')), ('ben_printed', ('printed',)), ('ben_drawn', ('drawn',))):
++        x, y = samples(kinds); v = pt[y, x]
++        lines[nm] = dict(length_px=int(len(v)), taught_positive=round(float((v == 1).mean()), 4) if len(v) else None, wrongly_negative=round(float((v == 0).mean()), 4) if len(v) else None, left_255=round(float((v == 255).mean()), 4) if len(v) else None)
++    pn = (pt == 0) & roif
++    lines['neg_px'] = int(pn.sum()); lines['neg_within_tol_of_ben_line'] = round(float(near[pn].mean()), 5) if pn.any() else None
++    lines['neg_agree_with_map'] = round(float((mt[pn] == 0).sum() / max(1, (pn & (mt != 255)).sum())), 4)   # of pseudo negatives the map scores, share the map also calls negative
++    lines['neg_coverage_of_map_neg'] = round(float((pn & (mt == 0)).sum() / max(1, ((mt == 0) & roif).sum())), 4)
++    r['lines'] = lines
++    return r
++
++
++if __name__ == '__main__':
++    ap = argparse.ArgumentParser(description='training data for area_ng2 / lines_ng2 (see the docstring)', allow_abbrev=False)
++    ap.add_argument('mode', choices=('label', 'map', 'pseudo', 'verify', 'compare')); ap.add_argument('plates', nargs='+')
++    ap.add_argument('--out', default=OUT_DEFAULT, help='output folder (default data/sanborn/train_v2/)')
++    ap.add_argument('--outlines'); ap.add_argument('--edges'); ap.add_argument('--mapground', help="pseudo: another N_mapground.png, or 'none'")
++    for k, v in PSEUDO.items():
++        if k != 'alley': ap.add_argument('--' + k, type=float, default=v)
++    ap.add_argument('--no-alley', action='store_true'); ap.add_argument('--pseudo'); ap.add_argument('--map'); ap.add_argument('--json')
++    ap.add_argument('--val-x', type=int, help='map: the validation ground is x >= VAL_X (half px); default the right-hand quarter of the image')
++    ap.add_argument('--mask', help='pseudo: hand masks, json {plate: [{box: [x0, y0, x1, y1] (full px), why: ...}]}: not taught (label, lines and edge)')
++    a = ap.parse_args(); out = os.path.abspath(a.out).replace('\\', '/') + '/'
++    th = {k: getattr(a, k) for k in PSEUDO if k != 'alley'}; th['alley'] = not a.no_alley
++    res = []; plates = [p.upper() for p in a.plates]; LP = ('43', '45', '80', '82A')
++    if a.mode in ('label', 'map', 'pseudo'):          # every plate is checked before anything is written
++        for N in plates: check_out(out, N)
++        if a.mode == 'label' and set(plates) - set(LP): sys.exit(f'label: only the four labelled plates 43, 45, 80, 82A (not {sorted(set(plates) - set(LP))})')
++        if a.mode == 'map' and [N for N in plates if not os.path.exists(SP + f'picks22_guided/22-{N}/edges_ben.json')]: sys.exit('map: a plate without picks22_guided/22-N/edges_ben.json (Ben has not checked its lines)')
++        if a.mode == 'pseudo' and (a.outlines or a.edges) and len(plates) > 1: sys.exit('--outlines / --edges name the files of one plate: give one plate')
++        os.makedirs(out, exist_ok=True)
++    for N in plates:
++        if a.mode == 'label': make_label(N, out)
++        elif a.mode == 'map': make_map(N, out, a.val_x)
++        elif a.mode == 'pseudo': make_pseudo(N, out, th, a.outlines, a.edges, '' if (a.mapground or '').lower() == 'none' else a.mapground, os.path.abspath(a.mask) if a.mask else None)
++        elif a.mode == 'verify': res.append(verify(N, out))
++        else:
++            if not (a.pseudo and a.map): sys.exit('compare needs --pseudo DIR and --map DIR')
++            pd_, md_ = (os.path.abspath(x).replace('\\', '/') + '/' for x in (a.pseudo, a.map))
++            for part in (None, 'train', 'val'): r = compare(N, pd_, md_, part); res.append(r); print(json.dumps(r), flush=True)
++    if a.json and res: json.dump(res, open(a.json, 'w', encoding='utf8', newline='\n'), indent=1)
++    if a.mode == 'verify' and not all(all(v for k, v in r.items() if k != 'pixels') for r in res): sys.exit('verify: NOT equal (see above)')
+diff --git a/tools/sanborn/unet/train_v2.py b/tools/sanborn/unet/train_v2.py
+new file mode 100644
+index 0000000..c231772
+--- /dev/null
++++ b/tools/sanborn/unet/train_v2.py
+@@ -0,0 +1,334 @@
++"""Train the second blank-guide pair on data/sanborn/train_v2/ and test every pair end to end (24 November 2026).
++
++    From the repo folder (3D), in PowerShell:
++        python tools\\sanborn\\unet\\train_v2.py                 the whole run (about 6.5 hours on this machine: 8 trainings of about 47 min, 5 evals of 2-4 min)
++        python tools\\sanborn\\unet\\train_v2.py --dry-run       print the steps and their commands, run nothing
++        python tools\\sanborn\\unet\\train_v2.py --only V1S1     one step (baseline, V1S1, V2S1, V1S2, V2S2; comma-separated)
++        python tools\\sanborn\\unet\\train_v2.py --summary       rewrite the summary from what is there
++        options: --iters 4000, --out DIR, --data DIR, --baseline-runs DIR (see main())
++    It starts the networks' own Python (tools/sanborn/unet/.venv) by itself, as train_noguide.py does.
++
++Ben, 23 November 2026: "1A is done. let's try training on a number of them. you should choose them by complexity and
++size, with what you think are enough plates to teach the U-net sufficiently". The data folder data/sanborn/train_v2/
++(make_labels_v2.py; its manifest.json lists the plates) holds:
++  - the four labelled plates 43, 45, 80, 82A, with today's labels (source 'label');
++  - plate 1A from Ben's check of its lines (source 'map'), its ground right of Elm Street held out (valmask.png): the
++    checkpoints are chosen there and nowhere else;
++  - eleven pseudo-labelled plates (source 'pseudo'): 5, 54A, 53, 7, 51, 58 at 100 ft; 66, 68, 76 and the PDF sheets
++    79, 89 at 200 ft. Their labels are the batch's own outputs (area_ng1, lines_ng1, the merged outline step) kept only
++    where confident: the networks' guesses, filtered, not truth. (58, a low-tint 100-ft residential plate, was added
++    on 24 Nov: 15 of the batch's other 34 plates at 100 ft have a tint under 0.30 and none was in the first ten.)
++Plate 44 (the benchmark) and plate 90 (the next truth plate) are not in the data folder, and the trainers refuse them.
++
++The steps, in order (a step already finished is skipped, so after an interruption the same command carries on):
++  baseline  eval_v2.py on area_ng1 + lines_ng1 (the batch's pair): the reference row, and the baseline bench44 runs
++            (6 tile grids) every later eval is paired with.
++  V1S1      area_v2a_s1, lines_v2a_s1: the four labelled plates and 1A (outside its validation ground), seed 1; then
++            eval_v2.
++  V2S1      area_v2b_s1, lines_v2b_s1: V1 plus the eleven pseudo plates at weight 5/11 each, so half the crops come
++            from labelled ground and half from pseudo ground (5 x 1 against 11 x 5/11), seed 1; then eval_v2. The line
++            network gets 128 ('no area map') as its 7th input on the pseudo plates (edgenet.py --area-blank pseudo):
++            their line targets were made from the very map that is their area_in.png, so the target could be read
++            off that input (review-leak finding 1).
++  V1S2, V2S2  the same with seed 2: the spread between two seeds is the bar a difference between V1 and V2 must clear.
++Each network trains ITERS iterations (default 4000, as area_ng1 and lines_ng1), checks the 1A validation ground every
++250 and keeps the best checkpoint (NAME.pt) and the last (NAME_last.pt). The line network's 7th input is each plate's
++area_in.png (the batch's area_ng1 map; in sample on 43, 45, 80, 82A; 128 on the pseudo plates in V2), NOT the new
++area network's answer. eval_v2.py feeds it the new area network's map, as the batch would.
++
++A step that fails does not stop the run (review-code 2): a failed training skips that step's eval, a failed eval is
++logged, the run goes on to the next step, and at the end the failed steps are named and the exit code is 1. Running
++the same command again redoes only what is not finished.
++
++THE RULE FOR WHAT SHIPS (written down before the run; review-leak finding 3). Plate 44 only scores; it decides two
++things and nothing else, and every number below is the 6-grid mean PQ of bench44 with the merged outline step:
++  - noise = the larger of |V1S1 - V1S2| and |V2S1 - V2S2| (the seed-to-seed spread);
++  - V2 is preferred to V1 only if V2 beats V1 for EACH seed and the mean of the two differences is larger than noise;
++    otherwise V1 (the simpler one);
++  - the preferred variant replaces area_ng1 + lines_ng1 only if its paired gain over them is above 0 for EACH seed and
++    its mean is larger than noise; otherwise the batch pair stays;
++  - the seed of the pair that ships is chosen on the 1A validation region (its PQ there; a tie goes to seed 1), never
++    on 44.
++  summary.json and summary.md apply the rule once all four pairs are evaluated. The shipped pair's 44 numbers are then
++  a little optimistic (44 chose between V1, V2 and keeping the batch pair). Plate 90, once Ben has checked its lines,
++  is the untouched check of the pair that ships. The 1A region numbers are NOT a test: the checkpoints were chosen on
++  that ground, the pseudo-label thresholds were tuned on the whole of 1A, and it holds 9 of Ben's blocks (one block
++  moves its PQ by about 0.1).
++
++Files (OUT, default data/sanborn/train_v2_runs/):
++  models/NAME.pt, NAME_last.pt, NAME.json     the trainers' output (seed, data manifest sha256, git commit, history)
++  eval/STEP/eval_v2.json                      eval_v2.py's output (44 on 6 grids with the merged outline step, 1A region)
++  eval/runs_baseline44/                       the baseline's bench44 runs, shared by every eval
++  logs/STEP_*.log                             each command's own output
++  train_v2.log                                what ran, when, how long
++  summary.json, summary.md                    the table and the rule's decision (rewritten after every step)
++A model counts as finished when NAME_last.pt is there and NAME.json's history reaches ITERS with the data folder's
++current manifest, the step's seed, plates, weights and --area-blank; an eval when eval/STEP/eval_v2.json names the
++current model files (sha256). A training cut off part way starts again from the beginning (the trainers do not resume
++inside a run). Every eval scores 1A against train_v2/1A/streetmap.json and train_v2/1A/valmask.png (the files the
++checkpoints were chosen on), not against Ben's live edges_ben.json.
++"""
++import argparse, hashlib, json, os, subprocess, sys, time
++HERE = os.path.dirname(os.path.abspath(__file__))
++
++
++def _repo():
++    """the repo above this file (also when it runs from a staging folder)"""
++    d = HERE
++    while True:
++        if os.path.exists(os.path.join(d, 'tools', 'sanborn', '_ws.py')) and os.path.exists(os.path.join(d, 'configs', 'sanborn_paths.json')): return d
++        p = os.path.dirname(d)
++        if p == d: sys.exit('train_v2: no repo (tools/sanborn/_ws.py) above this file')
++        d = p
++
++
++REPO = _repo(); SP = os.path.join(REPO, 'data', 'sanborn'); TOOLS = os.path.join(REPO, 'tools', 'sanborn')
++PY = os.path.join(TOOLS, 'unet', '.venv', 'Scripts', 'python.exe')
++LABELLED = ['43', '45', '80', '82A', '1A']
++PSEUDO = ['5', '54A', '53', '7', '51', '58', '66', '68', '76', '79', '89']
++PSEUDO_W = round(len(LABELLED) / len(PSEUDO), 6)   # 11 x 5/11 = 5 x 1: labelled and pseudo crops 1:1
++AREA_BLANK = 'pseudo'                              # V2's line network: 128 as the 7th input on the pseudo plates (review-leak finding 1)
++FORBIDDEN = ('44', '90')
++GRIDS = '0,1,2,3,4,5'
++STEPS = [('baseline', None, None), ('V1S1', 'a', 1), ('V2S1', 'b', 1), ('V1S2', 'a', 2), ('V2S2', 'b', 2)]
++
++
++def sha(p):
++    if not os.path.exists(p): return None
++    h = hashlib.sha256()
++    with open(p, 'rb') as f:
++        for b in iter(lambda: f.read(1 << 20), b''): h.update(b)
++    return h.hexdigest()
++
++
++def jload(p):
++    """a json file, or None if it is missing or cut off (a run killed while writing it)"""
++    try:
++        with open(p, encoding='utf8') as f: return json.load(f)
++    except (OSError, ValueError): return None
++
++
++def jsave(p, obj, text=None):
++    tmp = p + f'.{os.getpid()}.tmp'
++    with open(tmp, 'w', encoding='utf8', newline='\n') as f:
++        if text is None: json.dump(obj, f, indent=1)
++        else: f.write(text)
++    for k in range(50):
++        try: os.replace(tmp, p); return
++        except PermissionError:
++            if k == 49: raise
++            time.sleep(0.2)
++
++
++class Log:
++    def __init__(self, path): self.path = path; os.makedirs(os.path.dirname(path), exist_ok=True)
++    def __call__(self, *a):
++        s = time.strftime('%Y-%m-%d %H:%M:%S') + ' ' + ' '.join(str(x) for x in a)
++        print(s, flush=True)
++        with open(self.path, 'a', encoding='utf8', newline='\n') as f: f.write(s + '\n')
++
++
++def run(cmd, logfile, log, dry):
++    """run a step's command; (ok, minutes). A failure is logged, not raised (review-code 2)"""
++    log('RUN', ' '.join(f'"{c}"' if ' ' in c else c for c in cmd))
++    if dry: return True, 0.0
++    t0 = time.time(); env = dict(os.environ, PYTHONDONTWRITEBYTECODE='1')
++    env['PYTHONPATH'] = os.pathsep.join([TOOLS, os.path.join(TOOLS, 'unet')] + ([env['PYTHONPATH']] if env.get('PYTHONPATH') else []))   # _ws and the pipeline's modules (the scripts beside this file come first)
++    try:
++        with open(logfile, 'a', encoding='utf8', newline='\n') as f:
++            f.write(f'===== {time.strftime("%Y-%m-%d %H:%M:%S")} {" ".join(cmd)}\n'); f.flush()
++            p = subprocess.Popen(cmd, cwd=SP, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding='utf8', errors='replace', env=env)
++            for line in p.stdout: f.write(line); f.flush(); print('   ' + line.rstrip()[:200], flush=True)
++            rc = p.wait()
++    except OSError as e:
++        log(f'FAILED to run ({e}); see {logfile}'); return False, round((time.time() - t0) / 60, 1)
++    if rc: log(f'FAILED (exit {rc}); see {logfile}')
++    return rc == 0, round((time.time() - t0) / 60, 1)
++
++
++def plates_of(variant):
++    """the plate specs, --weights and --area-blank (line network) of a variant"""
++    if variant == 'a': return list(LABELLED), None, None
++    return LABELLED + PSEUDO, ','.join(f'{p}={PSEUDO_W}' for p in PSEUDO), AREA_BLANK
++
++
++def model_done(models, name, iters, man_sha, seed, plates, weights, blank):
++    """finished with this data folder, seed, plates, weights and --area-blank (review-code 4); a cut-off json counts as
++    not finished (review-code 3); a finished model made otherwise stops the run (move it aside)"""
++    j = os.path.join(models, name + '.json')
++    if not (os.path.exists(j) and os.path.exists(os.path.join(models, name + '_last.pt')) and os.path.exists(os.path.join(models, name + '.pt'))): return False
++    d = jload(j)
++    if not isinstance(d, dict): return False
++    h = d.get('history') or []
++    if not h or h[-1].get('iter') != iters: return False
++    why = []
++    if d.get('manifest_sha256') != man_sha: why.append(f'data manifest {str(d.get("manifest_sha256"))[:12]}, now {man_sha[:12]}')
++    if d.get('seed') != seed: why.append(f'seed {d.get("seed")}, now {seed}')
++    have = [p.get('spec') for p in d.get('plates', []) if isinstance(p, dict)]
++    if have != list(plates): why.append(f'plates {have}, now {list(plates)}')
++    want_w = {p: float(v) for p, v in (kv.split('=') for kv in weights.split(','))} if weights else {}
++    have_w = {p.get('plate'): p.get('weight') for p in d.get('plates', []) if isinstance(p, dict)}
++    if any(abs(float(have_w.get(p, -1)) - want_w.get(p, 1.0)) > 1e-9 for p in have_w): why.append('other plate weights')
++    if name.startswith('lines') and sorted(d.get('area_blank') or []) != sorted(s.upper() for s in ([blank] if blank else [])): why.append(f'--area-blank {d.get("area_blank")}, now {blank}')
++    if why: sys.exit(f'{name} is finished but was trained otherwise ({"; ".join(why)}): move models/{name}.* aside to train it again')
++    return True
++
++
++def eval_done(edir, area_pt, lines_pt):
++    m = (jload(os.path.join(edir, 'eval_v2.json')) or {}).get('models', {})
++    return bool(m) and (m.get('area') or {}).get('sha256') == sha(area_pt) and (m.get('lines') or {}).get('sha256') == sha(lines_pt)
++
++
++def g(d, *ks):
++    for k in ks:
++        if not isinstance(d, dict) or k not in d: return None
++        d = d[k]
++    return d
++
++
++def mean(v):
++    v = [x for x in v if isinstance(x, (int, float))]
++    return round(sum(v) / len(v), 4) if v else None
++
++
++def decide(rows):
++    """THE RULE FOR WHAT SHIPS (see the docstring): None until all four pairs are evaluated"""
++    R = {r['step']: r for r in rows}
++    pq = {s: g(R.get(s), '44', 'PQ') for s in ('V1S1', 'V1S2', 'V2S1', 'V2S2')}
++    gain = {s: g(R.get(s), '44_paired_gain', 'PQ', 'mean') for s in pq}
++    vq = {s: g(R.get(s), '1A_region', 'PQ') for s in pq}
++    if any(v is None for v in list(pq.values()) + list(gain.values())): return dict(done=False, note='the rule is applied once V1S1, V2S1, V1S2 and V2S2 are all evaluated')
++    noise = max(abs(pq['V1S1'] - pq['V1S2']), abs(pq['V2S1'] - pq['V2S2']))
++    d21 = [pq['V2S1'] - pq['V1S1'], pq['V2S2'] - pq['V1S2']]
++    v2 = all(x > 0 for x in d21) and sum(d21) / 2 > noise; var = 'V2' if v2 else 'V1'
++    gs = [gain[f'{var}S1'], gain[f'{var}S2']]
++    ship = all(x > 0 for x in gs) and sum(gs) / 2 > noise
++    s1, s2 = vq[f'{var}S1'], vq[f'{var}S2']
++    seed = 2 if (s1 is not None and s2 is not None and s2 > s1) else 1
++    return dict(done=True, noise_pq=round(noise, 4), v2_minus_v1_by_seed=[round(x, 4) for x in d21], variant=var,
++                variant_why=('V2 beats V1 for both seeds by more than the noise on average' if v2 else 'V2 does not beat V1 for both seeds by more than the noise on average: V1, the simpler'),
++                paired_gain_by_seed=[round(x, 4) for x in gs], ships=ship,
++                ship_why=(f'{var} beats area_ng1 + lines_ng1 on 44 for both seeds by more than the noise on average' if ship else f'{var} does not beat area_ng1 + lines_ng1 on 44 for both seeds by more than the noise on average: the batch pair stays'),
++                seed=seed if ship else None, seed_why=(f'1A validation region PQ: seed 1 {s1}, seed 2 {s2} (not 44)' if ship else None),
++                pair=(f'area_v2{"b" if v2 else "a"}_s{seed}.pt + lines_v2{"b" if v2 else "a"}_s{seed}.pt' if ship else 'area_ng1 + lines_ng1 (unchanged)'),
++                caution='44 chose between V1, V2 and keeping the batch pair, so the shipped pair\'s 44 numbers are a little optimistic; plate 90, once Ben has checked its lines, is the untouched check')
++
++
++def summary(OUT, iters):
++    """summary.json and summary.md from what is there"""
++    rows = []
++    for step, var, seed in STEPS:
++        e = os.path.join(OUT, 'eval', step, 'eval_v2.json'); E = jload(e)
++        r = dict(step=step, variant={'a': 'V1', 'b': 'V2'}.get(var, 'baseline (area_ng1 + lines_ng1)'), seed=seed, eval=os.path.relpath(e, SP) if E else None)
++        if var:
++            for kind in ('area', 'lines'):
++                d = jload(os.path.join(OUT, 'models', f'{kind}_v2{var}_s{seed}.json'))
++                if isinstance(d, dict):
++                    b = d.get('best') or {}; hl = (d.get('history') or [{}])[-1]
++                    r[kind] = dict(best_iter=b.get('iter'), val=b.get('iou_street', b.get('f1')), last_val=g(hl, 'val_pooled', 'iou_street' if kind == 'area' else 'f1'),
++                                   minutes=d.get('minutes'), iters=hl.get('iter'), seed=d.get('seed'), manifest=str(d.get('manifest_sha256'))[:12], area_blank=d.get('area_blank'))
++        if isinstance(E, dict):
++            A = g(E, 'bench44', 'v2', 'all') or {}; P = g(E, 'bench44', 'paired', 'all') or {}
++            r['44'] = {k: (A.get(k) or {}).get('mean') for k in ('PQ', 'PQ_decided', 'recall_interior', 'precision', 'merges', 'fp', 'ben_blocks_closed')}
++            r['44']['PQ_sd_over_grids'] = (A.get('PQ') or {}).get('sd'); r['44']['grids'] = g(E, 'bench44', 'grids')
++            r['44_paired_gain'] = {k: dict(mean=(P.get(k) or {}).get('mean'), grids_up=(P.get(k) or {}).get('gains'), of=(P.get(k) or {}).get('of')) for k in ('PQ', 'recall_interior', 'precision')}
++            R = g(E, 'bench1A', 'v2', 'region') or {}
++            r['1A_region'] = {k: R.get(k) for k in ('PQ', 'PQ_decided', 'recall_interior', 'precision', 'merges', 'fp', 'ben_blocks_closed')}
++            r['1A_region_blocks'] = g(E, 'bench1A', 'region_blocks')
++        rows.append(r)
++    means = {}
++    for var in ('a', 'b'):
++        rs = [r for r in rows if r['step'].startswith('V1' if var == 'a' else 'V2') and r.get('44')]
++        if rs:
++            pq = [r['44']['PQ'] for r in rs if r['44'].get('PQ') is not None]
++            means['V1' if var == 'a' else 'V2'] = dict(seeds=len(rs), PQ_44_mean=mean(pq), PQ_44_seed_range=[min(pq), max(pq)] if pq else None,
++                                                     paired_gain_mean=mean([g(r, '44_paired_gain', 'PQ', 'mean') for r in rs]), PQ_1A_region_mean=mean([g(r, '1A_region', 'PQ') for r in rs]))
++    S = dict(made=time.strftime('%Y-%m-%d %H:%M:%S'), iters=iters, rows=rows, by_variant=means, decision=decide(rows),
++             note='44: mean over the 6 tile grids of bench44 with the merged outline step (eval_v2.py); paired gain = this pair minus area_ng1 + lines_ng1, grid by grid. 44 was never used to choose a checkpoint. '
++                  '1A region: the ground right of Elm Street (train_v2/1A/valmask.png). It is NOT a test: the checkpoints were chosen on it, the pseudo-label thresholds were tuned on the whole of 1A, and it holds 9 of Ben\'s blocks (one block moves its PQ by about 0.1). '
++                  'Ben\'s 1A lines started from the batch\'s, so the baseline starts ahead there.')
++    jsave(os.path.join(OUT, 'summary.json'), S)
++    f = lambda v, n=3: '-' if v is None else (f'{v:.{n}f}' if isinstance(v, float) else str(v))
++    L = ['# train_v2: the second blank-guide pair', '', f'Made {S["made"]}, {iters} iterations per network. {S["note"]}', '',
++         '| step | variant | seed | area best it / val IoU street | lines best it / val F1 | 44 PQ (sd over grids) | 44 paired gain PQ (grids up) | 44 recall | 44 precision | 44 merges | 44 fp | 1A region PQ (not a test) | 1A recall | 1A precision |',
++         '|---|---|---|---|---|---|---|---|---|---|---|---|---|---|']
++    for r in rows:
++        a, l_, q, p, v = r.get('area') or {}, r.get('lines') or {}, r.get('44') or {}, r.get('44_paired_gain') or {}, r.get('1A_region') or {}
++        L.append(f"| {r['step']} | {r['variant']} | {f(r['seed'])} | {f(a.get('best_iter'))} / {f(a.get('val'))} | {f(l_.get('best_iter'))} / {f(l_.get('val'))} | {f(q.get('PQ'))} ({f(q.get('PQ_sd_over_grids'))}) | "
++                 f"{f((p.get('PQ') or {}).get('mean'))} ({f((p.get('PQ') or {}).get('grids_up'))}/{f((p.get('PQ') or {}).get('of'))}) | {f(q.get('recall_interior'))} | {f(q.get('precision'))} | {f(q.get('merges'), 1)} | {f(q.get('fp'), 1)} | "
++                 f"{f(v.get('PQ'))} | {f(v.get('recall_interior'))} | {f(v.get('precision'))} |")
++    if means:
++        L += ['', '| variant | seeds | 44 PQ mean | 44 PQ by seed (min, max) | paired gain mean | 1A region PQ mean |', '|---|---|---|---|---|---|']
++        for k, m in means.items():
++            rg = m['PQ_44_seed_range'] or [None, None]
++            L.append(f"| {k} | {m['seeds']} | {f(m['PQ_44_mean'])} | {f(rg[0])}, {f(rg[1])} | {f(m['paired_gain_mean'])} | {f(m['PQ_1A_region_mean'])} |")
++    D = S['decision']; L += ['', '## The rule\'s decision (written down before the run; see train_v2.py)', '']
++    if not D.get('done'): L.append(D['note'])
++    else:
++        L += [f"- noise (largest seed-to-seed spread of 44 PQ): {f(D['noise_pq'], 4)}", f"- V2 minus V1 by seed: {D['v2_minus_v1_by_seed']} -> {D['variant']} ({D['variant_why']})",
++              f"- {D['variant']} paired gain over area_ng1 + lines_ng1 by seed: {D['paired_gain_by_seed']} -> {'ships' if D['ships'] else 'does not ship'} ({D['ship_why']})",
++              f"- the pair: {D['pair']}" + (f" (seed by {D['seed_why']})" if D['ships'] else ''), f"- {D['caution']}"]
++    jsave(os.path.join(OUT, 'summary.md'), None, '\n'.join(L) + '\n')
++    return S
++
++
++def main():
++    ap = argparse.ArgumentParser(description='train_v2 (see the docstring)', allow_abbrev=False)
++    ap.add_argument('--iters', type=int, default=4000); ap.add_argument('--out', default=os.path.join(SP, 'train_v2_runs'))
++    ap.add_argument('--data', default=os.path.join(SP, 'train_v2')); ap.add_argument('--only'); ap.add_argument('--dry-run', action='store_true'); ap.add_argument('--summary', action='store_true')
++    ap.add_argument('--baseline-runs', help='the baseline bench44 runs every eval is paired with (default OUT/eval/runs_baseline44; one already there for the same maps and code is reused)')
++    a = ap.parse_args(); OUT = os.path.abspath(a.out); DATA = os.path.abspath(a.data); MODELS = os.path.join(OUT, 'models'); LOGS = os.path.join(OUT, 'logs')
++    if a.summary: summary(OUT, a.iters); print(open(os.path.join(OUT, 'summary.md'), encoding='utf8').read()); return
++    only = {s.strip() for s in a.only.split(',')} if a.only else None
++    if only and only - {s for s, _, _ in STEPS}: sys.exit(f'--only: steps are {", ".join(s for s, _, _ in STEPS)}')
++    # checks before anything runs
++    if not os.path.exists(PY): sys.exit(f'the networks\' Python is not there: {PY}')
++    for f, w in (('unet.py', 'def train_data'), ('edgenet.py', '--area-blank'), ('eval_v2.py', 'def main'), ('bench_plate.py', 'def make_truth')):
++        p = os.path.join(HERE, f)
++        if not os.path.exists(p) or w not in open(p, encoding='utf8').read(): sys.exit(f'{p} is not the 24 Nov version ({w!r} missing): apply the staged code first')
++    mf = os.path.join(DATA, 'manifest.json')
++    if not os.path.exists(mf): sys.exit(f'no {mf}: build the data folder first (make_labels_v2.py)')
++    man = json.load(open(mf, encoding='utf8')); have = set(man.get('plates', {}))
++    if have & set(FORBIDDEN): sys.exit(f'the data folder holds {sorted(have & set(FORBIDDEN))}: never trained on')
++    if set(LABELLED + PSEUDO) - have: sys.exit(f'the data folder lacks {sorted(set(LABELLED + PSEUDO) - have)}')
++    truth, region = os.path.join(DATA, '1A', 'streetmap.json'), os.path.join(DATA, '1A', 'valmask.png')
++    for f_ in (truth, region):
++        if not os.path.exists(f_): sys.exit(f'{f_} is missing: the checkpoints are chosen on 1A\'s validation ground against it')
++    man_sha = sha(mf); os.makedirs(MODELS, exist_ok=True); os.makedirs(LOGS, exist_ok=True)
++    log = Log(os.path.join(OUT, 'train_v2.log'))
++    log(f'== train_v2 {"(dry run) " if a.dry_run else ""}iters {a.iters}, data {DATA} (manifest {man_sha[:12]}), out {OUT}')
++    un, en, ev = (os.path.join(HERE, f) for f in ('unet.py', 'edgenet.py', 'eval_v2.py'))
++    BR = os.path.abspath(a.baseline_runs) if a.baseline_runs else os.path.join(OUT, 'eval', 'runs_baseline44')
++    T0 = time.time(); failed = []
++    for step, var, seed in STEPS:
++        if only and step not in only: continue
++        edir = os.path.join(OUT, 'eval', step)
++        if var is None:
++            ap_, lp_ = os.path.join(SP, 'unet_data', 'models', 'area_ng1.pt'), os.path.join(SP, 'unet_data', 'models', 'lines_ng1.pt')
++        else:
++            plates, w, blank = plates_of(var); ok_all = True
++            for kind, script in (('area', un), ('lines', en)):
++                name = f'{kind}_v2{var}_s{seed}'
++                wa = (['--weights', w] if w else []) + (['--area-blank', blank] if blank and kind == 'lines' else [])
++                if model_done(MODELS, name, a.iters, man_sha, seed, plates, w, blank): log(f'{step}: {name} already trained, skipped'); continue
++                if os.path.exists(os.path.join(MODELS, name + '.json')): log(f'{step}: {name} was cut off part way: training it again from the start')
++                log(f'{step}: training {name} ({len(plates)} plates, seed {seed})')
++                ok, m = run([PY, '-B', '-W', 'ignore', script, 'train', name, '--data', DATA] + plates + ['--seed', str(seed), '--iters', str(a.iters), '--out', MODELS] + wa, os.path.join(LOGS, f'{step}_{name}.log'), log, a.dry_run)
++                if not ok: ok_all = False; failed.append(f'{step} {name}'); log(f'{step}: {name} FAILED after {m} min: the step\'s eval is skipped, the run goes on'); break
++                log(f'{step}: {name} done in {m} min')
++            if not ok_all: continue
++            ap_, lp_ = os.path.join(MODELS, f'area_v2{var}_s{seed}.pt'), os.path.join(MODELS, f'lines_v2{var}_s{seed}.pt')
++        if not a.dry_run and eval_done(edir, ap_, lp_): log(f'{step}: eval already there, skipped'); continue
++        cmd = [PY, '-B', '-W', 'ignore', ev, '--area-model', ap_, '--lines-model', lp_, '--out', edir, '--grids', GRIDS, '--baseline-runs', BR, '--truth-1a', truth, '--region-1a', region]
++        log(f'{step}: eval_v2'); ok, m = run(cmd, os.path.join(LOGS, f'{step}_eval.log'), log, a.dry_run)
++        if ok: log(f'{step}: eval done in {m} min')
++        else: failed.append(f'{step} eval'); log(f'{step}: eval FAILED after {m} min: the run goes on (a rerun redoes it)')
++        if not a.dry_run: summary(OUT, a.iters)
++    if not a.dry_run:
++        summary(OUT, a.iters); log(f'== finished in {(time.time() - T0) / 3600:.1f} h; table: {os.path.join(OUT, "summary.md")}' + (f'; FAILED: {", ".join(failed)} (run the same command again to redo them)' if failed else ''))
++        print(open(os.path.join(OUT, 'summary.md'), encoding='utf8').read())
++    if failed: sys.exit(1)
++
++
++if __name__ == '__main__':
++    main()
+diff --git a/tools/sanborn/unet/unet.py b/tools/sanborn/unet/unet.py
+index 43cf265..f8e7ed0 100644
+--- a/tools/sanborn/unet/unet.py
++++ b/tools/sanborn/unet/unet.py
+@@ -13,8 +13,44 @@ the picture. Each check also scores the held-out ground with the guide moved 5 m
+ quarter turns, colour jitter. Loss: cross-entropy over
+ the labelled pixels, streets weighted 3 to 1 and every pixel weighted by its nearness to a verified (green) edge, plus
+ a second task: the third output draws the verified edges (load_edge).
++
++23 November 2026 (Ben: "let's try training on a number of them"; data/sanborn/bench_2026-11-23/train). New options;
++without them the trainer does what it did before, except the --no-guide fix below and that an option it does not know
++is now an error (a slip such as --seeds would otherwise be read as a plate):
++
++    $PY unet.py train NAME --data DIR [PLATE[:val] ...] [--seed S] [--weights N=w[,N=w]] [--out MODELDIR]
++                [--iters 3000] [--val-every 250]
++
++  --data DIR   read the plates from a data folder (data/sanborn/train_v2/): DIR/N/img.jpg (half-size scan, as
++               make_labels.py's N_img.jpg), label.png (0 street, 1 block, 255 not taught), edge.png (the verified
++               edges, as N_edge.png; missing or empty: the third output is not taught on that plate), valmask.png
++               (optional, 1 = validation, never trained on) and meta.json; DIR/manifest.json lists them. No plate
++               given: every plate in the manifest. The guide is blank (the data folder has none): --data implies
++               --no-guide. Plates 44 and 90 are refused (44 is the benchmark, 90 the next truth plate).
++               PLATE (no suffix): trained on its pixels outside valmask.png, scored on those inside. PLATE:val: the
++               whole plate is validation. (PLATE:all is refused where a valmask.png exists.)
++  --seed S     seeds Python's random, numpy and torch (the weights' start), and the crop sampler. Without it the
++               sampler starts from 0 as before and torch is not seeded.
++  --weights    per-plate sampling weights, e.g. --weights 60B=0.5,79=0.5 (others 1): with --data each crop first
++               picks a plate with probability w / sum(w), then a crop on it, so the share of crops per plate is the
++               weight's share (default: equal per plate). The crops drawn per plate are in the model json.
++  keep-best    with --data the validation pixels are scored every --val-every iterations (default 250) and at the
++               end: NAME.pt is the best (by iou_street on the validation pixels pooled over the plates, then
++               accuracy), NAME_last.pt the last. A training crop never overlaps a validation pixel: a crop that
++               would is drawn again (integral image of valmask.png; checked in bench_2026-11-23/train/trainer).
++               Without validation pixels NAME.pt is the last.
++  --out DIR    where NAME.pt / NAME_last.pt / NAME.json go (default data/sanborn/train_v2_runs/models/; never inside
++               unet_data/, where the batch's own models are). The json and the .pt files go to a temporary file that
++               is then renamed, so a run killed part way never leaves a half-written file.
++  model json   seed, the data folder, its manifest.json sha256 (and content_sha256), the git commit (and whether tools/sanborn/unet has
++               changes), this file's sha256, every plate with its source (meta.json), weight, the sha256 of each
++               file read, the pixels trained and scored, the crops drawn, the best iteration and the val history.
++  --no-guide   (21 Nov) the guide channels blank. Fixed 23 Nov (ml_review M8): the guide is no longer moved and no
++               255 squares are pasted into it in training (in use it is always zeros). --legacy-noguide gives the
++               21 Nov recipe (only without --data).
++  Saved weights with --data are CPU tensors (torch.load(..., weights_only=True) loads them; ml_review M8).
+ """
+-import json, os, sys, time
++import hashlib, json, os, random, subprocess, sys, time
+ import numpy as np
+ import cv2
+ import torch, torch.nn as nn, torch.nn.functional as F
+@@ -22,14 +58,19 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, os.path.jo
+ import _ws  # noqa: E402
+ DATA = _ws.DATA + 'unet_data/'; CROP, BATCH = 384, 8
+ NOGUIDE = '--no-guide' in sys.argv   # 21 Nov 2026: a network for plates that were never placed; the guide channels are blank in training and in use
++LEGACY_NOGUIDE = '--legacy-noguide' in sys.argv   # 23 Nov 2026: the 21 Nov blank-guide recipe (guide moved, 255 squares pasted)
++FORBIDDEN = ('44', '90')   # 44: Ben's ground truth, the benchmark; 90: his planned second truth plate. Never trained on or used to choose a checkpoint
++VAL_EVERY, MAX_TRIES = 250, 20000
+ 
+ def device():
+     try:
+         import torch_directml as d
+         k = max(range(d.device_count()), key=lambda i: ('RX' in d.device_name(i)) + ('NVIDIA' in d.device_name(i)))
+-        print('device', d.device_name(k), flush=True); return d.device(k)
++        print('device', d.device_name(k), flush=True); device.name = d.device_name(k).strip('\x00'); return d.device(k)
+     except Exception:
+-        return torch.device('cuda' if torch.cuda.is_available() else 'cpu')
++        device.name = 'cuda' if torch.cuda.is_available() else 'cpu'
++        return torch.device(device.name)
++device.name = None
+ 
+ # GroupNorm, not BatchNorm: with BatchNorm on the DirectML backend the held-out score fell while the training loss fell (14 Nov 2026)
+ def block(i, o): return nn.Sequential(nn.Conv2d(i, o, 3, padding=1), nn.GroupNorm(8, o), nn.ReLU(inplace=True), nn.Conv2d(o, o, 3, padding=1), nn.GroupNorm(8, o), nn.ReLU(inplace=True))
+@@ -60,7 +101,9 @@ def load_edge(plate, lab):
+     1 + EDGE_W * exp(-d / EDGE_D), d its distance to the nearest verified edge, so a mistake at a block line costs
+     several times one in the middle of a block; and the network's third output must draw the verified edges (target:
+     the edge 3 px thick; 255 = not scored, where the label is blank and no verified edge runs)."""
+-    e = cv2.imread(DATA + f'{plate}_edge.png', 0)
++    return edge_maps(cv2.imread(DATA + f'{plate}_edge.png', 0), lab)
++def edge_maps(e, lab):
++    """load_edge's maps from the edge image e (None: no edges known)"""
+     if e is None: return np.ones(lab.shape, np.float32), np.full(lab.shape, 255, np.uint8)
+     d = cv2.distanceTransform((e == 0).astype(np.uint8), cv2.DIST_L2, 3)
+     wmap = (1.0 + EDGE_W * np.exp(-d / EDGE_D)).astype(np.float32)
+@@ -116,12 +159,13 @@ def train(name, plates, iters):
+             img, lab, wm, et = tr[rng.integers(len(tr))]; y = rng.integers(0, img.shape[0] - CROP); x = rng.integers(0, img.shape[1] - CROP)
+             a, b = img[y:y + CROP, x:x + CROP].copy(), lab[y:y + CROP, x:x + CROP]; c_, e_ = wm[y:y + CROP, x:x + CROP], et[y:y + CROP, x:x + CROP]
+             if (b != 255).mean() < 0.2: continue
+-            dx, dy = rng.integers(-SHIFT, SHIFT + 1, 2)            # the guide comes from a rough placement: move it, and erase a piece
+-            gy0, gx0 = np.clip(y + dy, 0, img.shape[0] - CROP), np.clip(x + dx, 0, img.shape[1] - CROP)
+-            a[:, :, 3:] = img[gy0:gy0 + CROP, gx0:gx0 + CROP, 3:]
+-            if rng.random() < 0.5:
+-                ey, ex, eh, ew = rng.integers(0, CROP - 64), rng.integers(0, CROP - 64), rng.integers(48, 160), rng.integers(48, 160)
+-                a[ey:ey + eh, ex:ex + ew, 3:] = 0 if rng.random() < 0.5 else 255
++            if not NOGUIDE or LEGACY_NOGUIDE:              # 23 Nov: a blank guide is not moved, and gets no 255 squares (in use it is all zeros)
++                dx, dy = rng.integers(-SHIFT, SHIFT + 1, 2)            # the guide comes from a rough placement: move it, and erase a piece
++                gy0, gx0 = np.clip(y + dy, 0, img.shape[0] - CROP), np.clip(x + dx, 0, img.shape[1] - CROP)
++                a[:, :, 3:] = img[gy0:gy0 + CROP, gx0:gx0 + CROP, 3:]
++                if rng.random() < 0.5:
++                    ey, ex, eh, ew = rng.integers(0, CROP - 64), rng.integers(0, CROP - 64), rng.integers(48, 160), rng.integers(48, 160)
++                    a[ey:ey + eh, ex:ex + ew, 3:] = 0 if rng.random() < 0.5 else 255
+             k = rng.integers(4); a, b, c_, e_ = np.rot90(a, k), np.rot90(b, k), np.rot90(c_, k), np.rot90(e_, k)
+             if rng.random() < 0.5: a, b, c_, e_ = a[:, ::-1], b[:, ::-1], c_[:, ::-1], e_[:, ::-1]
+             a = a.astype(np.float32); a[:, :, :3] = np.clip(a[:, :, :3] * rng.uniform(0.8, 1.2) + rng.uniform(-20, 20) + rng.normal(0, 3, 3), 0, 255)
+@@ -143,7 +187,294 @@ def train(name, plates, iters):
+             hist.append(dict(iter=it, loss=round(float(loss), 4), minutes=round((time.time() - t0) / 60, 1), val=sc)); print(json.dumps(hist[-1]), flush=True)
+     os.makedirs(DATA + 'models', exist_ok=True)
+     torch.save(net.state_dict(), DATA + f'models/{name}.pt')
+-    json.dump(dict(name=name, plates=plates, iters=iters, crop=CROP, batch=BATCH, history=hist), open(DATA + f'models/{name}.json', 'w', encoding='utf8', newline='\n'), indent=1)
++    json.dump(dict(name=name, plates=plates, iters=iters, crop=CROP, batch=BATCH, no_guide=NOGUIDE, legacy_noguide=LEGACY_NOGUIDE, history=hist), open(DATA + f'models/{name}.json', 'w', encoding='utf8', newline='\n'), indent=1)
++
++
++# ====================================================================== 23 Nov 2026: the data folder (--data), seeds, keep-best
++def sha256(path):
++    h = hashlib.sha256()
++    with open(path, 'rb') as f:
++        for b in iter(lambda: f.read(1 << 20), b''): h.update(b)
++    return h.hexdigest()
++
++def seed_all(s):
++    """Python's random, numpy's global state and torch's generator (the weights' start)"""
++    random.seed(s); np.random.seed(s); torch.manual_seed(s)
++
++def git_state():
++    """the repo's commit and the files of tools/sanborn/unet that differ from it (the staged code is not committed)"""
++    repo = os.path.normpath(os.path.join(_ws.CODE, '..', '..'))
++    def g(*a):
++        try: return subprocess.run(['git', '-C', repo] + list(a), capture_output=True, text=True, timeout=30).stdout.strip()
++        except Exception as e: return f'git failed: {e}'
++    return dict(commit=g('rev-parse', 'HEAD'), branch=g('rev-parse', '--abbrev-ref', 'HEAD'), unet_dir_changes=g('status', '--porcelain', '--', 'tools/sanborn/unet').splitlines())
++
++def parse_weights(specs):
++    """--weights 60B=0.5,79=0.5 (the option may be given more than once)"""
++    w = {}
++    for s in specs:
++        for part in s.split(','):
++            if not part.strip(): continue
++            k, _, v = part.partition('=')
++            if not _ or float(v) < 0: sys.exit(f'--weights: {part!r} is not N=w with w >= 0')
++            w[k.strip().upper()] = float(v)
++    return w
++
++def read_manifest(root):
++    f = os.path.join(root, 'manifest.json')
++    if not os.path.exists(f): return None, None
++    return json.load(open(f, encoding='utf8')), sha256(f)
++
++def content_sha(man):
++    """the manifest's content_sha256 (sha256 of json.dumps(plates, sort_keys=True)), checked against its plates"""
++    if not man or not isinstance(man.get('plates'), dict): return None
++    c = hashlib.sha256(json.dumps(man['plates'], sort_keys=True).encode()).hexdigest()
++    if man.get('content_sha256') not in (None, c): sys.exit(f'manifest.json: content_sha256 {str(man.get("content_sha256"))[:12]} is not that of its plates ({c[:12]}): it was edited by hand')
++    return c
++
++def write_json(path, obj):
++    """json written whole or not at all (integrator, 24 Nov; review-code 3): a temporary file, then os.replace, tried
++    again for up to 10 s if Windows refuses the replace (a reader has the file open)"""
++    tmp = f'{path}.{os.getpid()}.tmp'
++    with open(tmp, 'w', encoding='utf8', newline='\n') as f: json.dump(obj, f, indent=1)
++    replace_retry(tmp, path)
++
++def replace_retry(tmp, path):
++    for k in range(50):
++        try: os.replace(tmp, path); return
++        except PermissionError:
++            if k == 49: raise
++            time.sleep(0.2)
++
++def save_state(state, path):
++    """torch.save written whole or not at all (a temporary file, then os.replace)"""
++    tmp = f'{path}.{os.getpid()}.tmp'; torch.save(state, tmp); replace_retry(tmp, path)
++
++def out_dir(o):
++    """--out of a --data run (default data/sanborn/train_v2_runs/models); never inside unet_data, where the batch's own
++    models are (integrator, 24 Nov; review-code 6)"""
++    d = os.path.abspath(o['--out'][-1]) if '--out' in o else os.path.abspath(_ws.DATA + 'train_v2_runs/models')
++    u = os.path.normcase(os.path.abspath(DATA)).rstrip('\\/'); n = os.path.normcase(d).rstrip('\\/')
++    if n == u or n.startswith(u + os.sep): sys.exit(f'--out {d}: a --data run never writes into unet_data (the batch\'s own models are there)')
++    return d
++
++def val_every_arg(o, default):
++    v = int(o['--val-every'][-1]) if '--val-every' in o else default
++    if v < 1: sys.exit('--val-every must be 1 or more')
++    return v
++
++def manifest_entry(man, plate):
++    """the manifest's entry of a plate: {'plates': {N: {...}}} or {'plates': [{'plate': N, ...}]}"""
++    if not man: return None
++    P = man.get('plates', man)
++    if isinstance(P, dict): return P.get(plate)
++    if isinstance(P, list): return next((e for e in P if isinstance(e, dict) and str(e.get('plate')) == plate), None)
++    return None
++
++def manifest_sha(entry, fname):
++    """the sha256 the manifest gives a file: files: {name: sha} or {name: {sha256: ...}}, or [{name|file, sha256}]"""
++    if not entry: return None
++    if fname == 'meta.json' and isinstance(entry.get('meta_sha256'), str): return entry['meta_sha256']   # integrator, 24 Nov (review-code 7): make_labels_v2 keeps meta.json's hash here
++    F = entry.get('files', {})
++    if isinstance(F, dict):
++        v = F.get(fname); return v if isinstance(v, str) else (v or {}).get('sha256')
++    if isinstance(F, list):
++        e = next((e for e in F if isinstance(e, dict) and (e.get('name') == fname or e.get('file') == fname)), None)
++        return e.get('sha256') if e else None
++    return None
++
++def plate_files(root, plate, man, names):
++    """sha256 of each file read from DIR/plate, checked against the manifest (a mismatch stops the run: the data
++    folder changed after its manifest was made)"""
++    entry = manifest_entry(man, plate); out = {}
++    for n in names:
++        f = os.path.join(root, plate, n)
++        if not os.path.exists(f): continue
++        s = sha256(f); m = manifest_sha(entry, n)
++        if m is not None and m != s: sys.exit(f'{plate}/{n}: sha256 {s[:12]} is not the manifest\'s {m[:12]}: the data folder changed after its manifest; refusing to train')
++        out[n] = dict(sha256=s, in_manifest=m is not None)
++    return out, entry
++
++def plate_list(root, specs, man):
++    if not specs:
++        P = (man or {}).get('plates', {})
++        specs = list(P) if isinstance(P, dict) else [str(e.get('plate')) for e in P if isinstance(e, dict)]
++        if not specs: specs = sorted(d for d in os.listdir(root) if os.path.isdir(os.path.join(root, d)))
++    out = []
++    for s in specs:
++        p, _, how = s.partition(':'); p = p.upper()
++        if p in FORBIDDEN: sys.exit(f'plate {p} may not be used in training or to choose a checkpoint (FORBIDDEN = {FORBIDDEN})')
++        if how not in ('', 'val', 'all'): sys.exit(f'{s}: the suffix must be :val or :all')
++        if not os.path.isdir(os.path.join(root, p)): sys.exit(f'no plate folder {os.path.join(root, p)}')
++        out.append((p, how))
++    return out
++
++def box_sum(ii, y0, x0, y1, x1):
++    """sum of a mask over rows y0..y1-1, columns x0..x1-1 from its integral image (cv2.integral), clipped to the mask"""
++    H, W = ii.shape[0] - 1, ii.shape[1] - 1
++    y0, x0, y1, x1 = max(0, y0), max(0, x0), min(H, y1), min(W, x1)
++    if y0 >= y1 or x0 >= x1: return 0
++    return int(ii[y1, x1] - ii[y0, x1] - ii[y1, x0] + ii[y0, x0])
++
++def bbox(mask):
++    ys, xs = np.nonzero(mask.any(1))[0], np.nonzero(mask.any(0))[0]
++    return int(ys[0]), int(ys[-1]) + 1, int(xs[0]), int(xs[-1]) + 1
++
++def read_valmask(root, plate, shape):
++    f = os.path.join(root, plate, 'valmask.png')
++    if not os.path.exists(f): return None
++    v = cv2.imread(f, 0)
++    if v.shape != shape: sys.exit(f'{plate}/valmask.png is {v.shape}, the label {shape}')
++    v = v > 0
++    return v if v.any() else None
++
++def read_meta(root, plate):
++    f = os.path.join(root, plate, 'meta.json')
++    return json.load(open(f, encoding='utf8')) if os.path.exists(f) else {}
++
++def meta_scale(meta):
++    """the plate's scale in feet to the inch from its meta.json: scale_ft_per_inch, ft_per_inch, or scale (a number or {ft_per_inch})"""
++    for k in ('scale_ft_per_inch', 'ft_per_inch'):
++        if isinstance(meta.get(k), (int, float)): return meta[k]
++    s = meta.get('scale')
++    return s if isinstance(s, (int, float)) else (s.get('ft_per_inch') if isinstance(s, dict) else None)
++
++def load_data(root, plate):
++    """a plate of the data folder as load() + load_edge() give it: x (h, w, 5: R, G, B and the blank guide), the label,
++    the edge weight map and target. edge.png missing or empty: no verified edges known, so the third output is not
++    taught on the plate (weights 1, target 255), as load_edge does without N_edge.png"""
++    d = os.path.join(root, plate); im = cv2.imread(os.path.join(d, 'img.jpg')); lab = cv2.imread(os.path.join(d, 'label.png'), 0)
++    if im is None or lab is None: sys.exit(f'{plate}: img.jpg or label.png missing in {d}')
++    if lab.shape != im.shape[:2]: sys.exit(f'{plate}: label.png {lab.shape} and img.jpg {im.shape[:2]} differ in size')
++    bad = np.setdiff1d(np.unique(lab), [0, 1, 255])
++    if len(bad): sys.exit(f'{plate}/label.png has values {bad.tolist()} (only 0, 1, 255)')
++    e = cv2.imread(os.path.join(d, 'edge.png'), 0)
++    if e is not None and e.shape != lab.shape: sys.exit(f'{plate}: edge.png {e.shape} and label.png {lab.shape} differ in size')
++    edge_known = e is not None and bool(e.any())
++    wm, et = edge_maps(e if edge_known else None, lab)
++    z = np.zeros(lab.shape, np.uint8)
++    return np.dstack([im[:, :, ::-1], z, z]), lab, wm, et, edge_known
++
++def crop_ok_share(rng, lab, vint, n=2000):
++    """share of random crop positions the sampler accepts (>= 20% taught, no validation pixel)"""
++    H, W = lab.shape; ok = 0
++    for _ in range(n):
++        y, x = rng.integers(0, H - CROP), rng.integers(0, W - CROP)
++        if vint is not None and box_sum(vint, y, x, y + CROP, x + CROP): continue
++        ok += (lab[y:y + CROP, x:x + CROP] != 255).mean() >= 0.2
++    return ok / n
++
++def draw_crop(rng, P):
++    """(y, x) of a training crop on plate P: at least 20% taught pixels, and not one validation pixel (P['vint'], the
++    integral image of valmask; such a crop is drawn again, so a training crop cannot overlap the validation ground)"""
++    lab, vint = P['lab'], P['vint']; H, W = lab.shape
++    for _ in range(MAX_TRIES):
++        y = rng.integers(0, H - CROP); x = rng.integers(0, W - CROP)
++        if vint is not None and box_sum(vint, y, x, y + CROP, x + CROP): continue
++        if (lab[y:y + CROP, x:x + CROP] != 255).mean() < 0.2: continue
++        return y, x
++    raise RuntimeError(f'plate {P["plate"]}: no usable crop in {MAX_TRIES} tries')
++
++def counts(p, lab):
++    """pixel counts on the scored pixels (lab != 255) for pooling the score over plates"""
++    m = lab != 255; pr = p[m] > 0.5; gt = lab[m] == 1
++    return np.array([m.sum(), (pr == gt).sum(), (pr & gt).sum(), (pr | gt).sum(), (~pr & ~gt).sum(), (~pr | ~gt).sum()], np.int64)
++
++def pooled(c):
++    return dict(pixels=int(c[0]), accuracy=round(float(c[1] / max(1, c[0])), 6), iou_block=round(float(c[2] / max(1, c[3])), 6), iou_street=round(float(c[4] / max(1, c[5])), 6))
++
++def cpu_state(net): return {k: v.detach().to('cpu') for k, v in net.state_dict().items()}
++
++def train_data(name, root, specs, iters, seed, weights, outdir, val_every):
++    """--data: the plates of a data folder, keep-best on the validation pixels (see the docstring)"""
++    root = os.path.abspath(root); man, man_sha = read_manifest(root)
++    if man is None: print('WARNING: no manifest.json in', root, flush=True)
++    if seed is not None: seed_all(seed)
++    rng = np.random.default_rng(0 if seed is None else seed); dev = device(); tr, va, rec = [], [], []
++    for p, how in plate_list(root, specs, man):
++        x, lab, wm, et, edge_known = load_data(root, p); vm = read_valmask(root, p, lab.shape); meta = read_meta(root, p)
++        files, entry = plate_files(root, p, man, ('img.jpg', 'label.png', 'edge.png', 'valmask.png', 'meta.json'))
++        if how == 'all' and vm is not None: sys.exit(f'{p}:all: the plate has a valmask.png; refusing to train on its validation pixels')
++        if how == 'val': vm = np.ones(lab.shape, bool)
++        r = dict(plate=p, spec=p + (':' + how if how else ''), source=meta.get('source', (entry or {}).get('source', 'unknown')), weight=weights.get(p, 1.0),
++                 size=list(lab.shape[::-1]), taught_px=int((lab != 255).sum()), edge_target='edge.png' if edge_known else 'none (edge.png missing or empty)', files=files,
++                 scale_ft_per_inch=meta_scale(meta))
++        if vm is not None:
++            y0, y1, x0, x1 = bbox(vm); lv = lab[y0:y1, x0:x1].copy(); lv[~vm[y0:y1, x0:x1]] = 255; ev = et[y0:y1, x0:x1].copy(); ev[~vm[y0:y1, x0:x1]] = 255
++            va.append(dict(plate=p, x=np.ascontiguousarray(x[y0:y1, x0:x1]), lab=lv, et=ev)); r['val_box'] = [x0, y0, x1, y1]; r['val_px'] = int((lv != 255).sum())
++        if how != 'val':
++            vint = cv2.integral(vm.astype(np.uint8)) if vm is not None else None
++            tl = lab.copy()
++            if vm is not None: tl[vm] = 255   # (belt and braces: a crop never reaches them, see draw_crop)
++            P = dict(plate=p, x=x, lab=tl, wm=wm, et=et, vint=vint); r['train_px'] = int((tl != 255).sum())
++            r['crop_ok_share'] = round(crop_ok_share(np.random.default_rng(12345), tl, vint), 4)
++            if r['crop_ok_share'] == 0: sys.exit(f'plate {p}: no crop position has 20% taught pixels outside the validation ground')
++            if r['weight'] > 0: tr.append(P)
++            else: print(f'{p}: weight 0, not sampled', flush=True)
++        rec.append(r); print(json.dumps({k: v for k, v in r.items() if k != 'files'}), flush=True)
++    if not tr: sys.exit('no training plate')
++    unknown = set(weights) - {r['plate'] for r in rec}
++    if unknown: sys.exit(f'--weights names plates not in the run: {sorted(unknown)}')
++    w = np.array([weights.get(P['plate'], 1.0) for P in tr], float); prob = w / w.sum(); drawn = np.zeros(len(tr), int)
++    os.makedirs(outdir, exist_ok=True); mem_load = mem_now(); print(json.dumps(dict(stored_gb=round(sum(P['x'].nbytes + P['lab'].nbytes + P['wm'].nbytes + P['et'].nbytes for P in tr) / 1e9, 3), process=mem_load)), flush=True)
++    wt = torch.tensor([3.0, 1.0]).to(dev)
++    net = UNet().to(dev); opt = torch.optim.Adam(net.parameters(), 1e-3); t0 = time.time(); hist = []; best = None
++    info = dict(name=name, kind='area', mode='data', data=root, manifest_sha256=man_sha, manifest_content_sha256=content_sha(man), seed=seed, git=git_state(), trainer=dict(file=os.path.abspath(__file__), sha256=sha256(__file__)),
++                torch=torch.__version__, device=device.name, argv=sys.argv[1:], iters=iters, crop=CROP, batch=BATCH, no_guide=True, guide_moved_or_erased=False, val_every=val_every,
++                select_by='iou_street on the validation pixels pooled over the plates, then accuracy', sampling='plate first (probability weight / sum), then a crop on it',
++                val_scope='each plate\'s validation pixels predicted from their own bounding box (no scan beyond it); eval_v2 predicts the whole plate, which moved IoU street by about 0.01 on 1A (review-code test_valcontext): checkpoints closer than that are within tiling noise',
++                load=dict(stored_bytes=int(sum(P['x'].nbytes + P['lab'].nbytes + P['wm'].nbytes + P['et'].nbytes for P in tr)), process_after_load=mem_load), plates=rec)
++    def save_json():
++        info.update(crops_drawn={P['plate']: int(n) for P, n in zip(tr, drawn)}, best=best and dict(iter=best[0], iou_street=round(best[1][0], 6), accuracy=round(best[1][1], 6)), history=hist, minutes=round((time.time() - t0) / 60, 2), process_peak=mem_now())
++        write_json(os.path.join(outdir, name + '.json'), info)
++    tt, nt = 0.0, 0   # time in training steps (crops, forward, backward) since the last check
++    for it in range(1, iters + 1):
++        ti = time.time()
++        xs, ys, ws, es = [], [], [], []
++        while len(xs) < BATCH:
++            i = int(rng.integers(len(tr))) if np.all(w == w[0]) else int(rng.choice(len(tr), p=prob)); P = tr[i]; y, x = draw_crop(rng, P); drawn[i] += 1
++            a, b = P['x'][y:y + CROP, x:x + CROP].copy(), P['lab'][y:y + CROP, x:x + CROP]; c_, e_ = P['wm'][y:y + CROP, x:x + CROP], P['et'][y:y + CROP, x:x + CROP]
++            k = rng.integers(4); a, b, c_, e_ = np.rot90(a, k), np.rot90(b, k), np.rot90(c_, k), np.rot90(e_, k)
++            if rng.random() < 0.5: a, b, c_, e_ = a[:, ::-1], b[:, ::-1], c_[:, ::-1], e_[:, ::-1]
++            a = a.astype(np.float32); a[:, :, :3] = np.clip(a[:, :, :3] * rng.uniform(0.8, 1.2) + rng.uniform(-20, 20) + rng.normal(0, 3, 3), 0, 255)
++            xs.append(a); ys.append(b); ws.append(c_); es.append(e_)
++        for g in opt.param_groups: g['lr'] = 1e-3 * 0.5 * (1 + np.cos(np.pi * it / iters))
++        net.train(); out = net(norm(np.stack(xs)).to(dev))
++        yt = torch.from_numpy(np.stack(ys).astype(np.int64)).to(dev); wtm = torch.from_numpy(np.ascontiguousarray(np.stack(ws))).to(dev)
++        ce = F.cross_entropy(out[:, :2], yt, weight=wt, ignore_index=255, reduction='none'); ok = (yt != 255).float()
++        seg = (ce * wtm * ok).sum() / (wtm * ok).sum().clamp(min=1.0)
++        en = np.stack(es); ev = torch.from_numpy((en != 255).astype(np.float32)).to(dev); etn = torch.from_numpy((en == 1).astype(np.float32)).to(dev)
++        bce = F.binary_cross_entropy_with_logits(out[:, 2], etn, reduction='none') * (1.0 + (EDGE_POS - 1.0) * etn)
++        loss = seg + EDGE_LOSS * (bce * ev).sum() / ev.sum().clamp(min=1.0)
++        opt.zero_grad(); loss.backward(); opt.step(); tt += time.time() - ti; nt += 1
++        if it % val_every == 0 or it == iters:
++            h = dict(iter=it, loss=round(float(loss), 4), minutes=round((time.time() - t0) / 60, 2)); h['train_s_per_iter'] = round(tt / max(1, nt), 3); tv = time.time()
++            if va:
++                c = np.zeros(6, np.int64); sc = {}
++                for V in va:
++                    pp = predict_full(net, dev, V['x']); c += counts(pp, V['lab']); sc[V['plate']] = score(pp, V['lab'], V['et'], predict_full.edge)
++                h['val'] = sc; h['val_pooled'] = pooled(c); key = (c[4] / max(1, c[5]), c[1] / max(1, c[0]))
++                if best is None or key > best[1]:
++                    best = (it, (float(key[0]), float(key[1]))); save_state(cpu_state(net), os.path.join(outdir, name + '.pt')); h['best'] = True   # the key kept unrounded (review-code 12)
++            h['val_s'] = round(time.time() - tv, 2); hist.append(h); print(json.dumps(h), flush=True); save_json(); tt, nt = 0.0, 0
++    save_state(cpu_state(net), os.path.join(outdir, name + '_last.pt'))
++    if not va: save_state(cpu_state(net), os.path.join(outdir, name + '.pt')); info['note'] = 'no validation pixels: NAME.pt is the last'
++    save_json(); print('wrote', os.path.join(outdir, name + '.pt'), 'best', info['best'], flush=True)
++
++def mem_now():
++    """this process's memory (Windows: working set, its peak, and private bytes), GB"""
++    try:
++        import ctypes, ctypes.wintypes as wt
++        class PMC(ctypes.Structure):
++            _fields_ = [('cb', wt.DWORD), ('PageFaultCount', wt.DWORD), ('PeakWorkingSetSize', ctypes.c_size_t), ('WorkingSetSize', ctypes.c_size_t), ('QuotaPeakPagedPoolUsage', ctypes.c_size_t),
++                        ('QuotaPagedPoolUsage', ctypes.c_size_t), ('QuotaPeakNonPagedPoolUsage', ctypes.c_size_t), ('QuotaNonPagedPoolUsage', ctypes.c_size_t), ('PagefileUsage', ctypes.c_size_t),
++                        ('PeakPagefileUsage', ctypes.c_size_t), ('PrivateUsage', ctypes.c_size_t)]
++        c = PMC(); c.cb = ctypes.sizeof(PMC); k = ctypes.windll.kernel32; ps = ctypes.windll.psapi
++        ps.GetProcessMemoryInfo.argtypes = [wt.HANDLE, ctypes.POINTER(PMC), wt.DWORD]; k.GetCurrentProcess.restype = wt.HANDLE
++        ps.GetProcessMemoryInfo(k.GetCurrentProcess(), ctypes.byref(c), c.cb)
++        return dict(working_set_gb=round(c.WorkingSetSize / 1e9, 3), peak_working_set_gb=round(c.PeakWorkingSetSize / 1e9, 3), private_gb=round(c.PrivateUsage / 1e9, 3), peak_private_gb=round(c.PeakPagefileUsage / 1e9, 3))
++    except Exception as e:
++        return dict(error=str(e))
+ 
+ def predict(name, plate):
+     dev = device(); net = UNet(); net.load_state_dict(torch.load(DATA + f'models/{name}.pt', map_location='cpu')); net.to(dev)
+@@ -151,8 +482,31 @@ def predict(name, plate):
+     cv2.imwrite(DATA + f'{plate}_pred_{name}.png', (p * 255).astype(np.uint8)); cv2.imwrite(DATA + f'{plate}_edgepred_{name}.png', (predict_full.edge * 255).astype(np.uint8))
+     print('wrote', f'{plate}_pred_{name}.png', p.shape)
+ 
++VALUED = ('--iters', '--data', '--seed', '--weights', '--out', '--val-every')
++FLAGS = ('--no-guide', '--legacy-noguide')
++def parse(argv):
++    """positional words and options; an option this file does not know is an error"""
++    pos, opt, k = [], {}, 0
++    while k < len(argv):
++        a = argv[k]
++        if a in VALUED:
++            if k + 1 >= len(argv): sys.exit(f'{a} needs a value')
++            opt.setdefault(a, []).append(argv[k + 1]); k += 2
++        elif a in FLAGS: opt[a] = [True]; k += 1
++        elif a.startswith('--'): sys.exit(f'unknown option {a} (known: {", ".join(VALUED + FLAGS)})')
++        else: pos.append(a); k += 1
++    return pos, opt
++
+ if __name__ == '__main__':
+-    a = [x for x in sys.argv[1:] if not x.startswith('--')]
+-    it = int(sys.argv[sys.argv.index('--iters') + 1]) if '--iters' in sys.argv else 3000
+-    a = [x for x in a if x != str(it) or '--iters' not in sys.argv]
+-    train(a[1], a[2:], it) if a[0] == 'train' else predict(a[1], a[2])
++    a, o = parse(sys.argv[1:])
++    it = int(o['--iters'][-1]) if '--iters' in o else 3000
++    if not a or a[0] not in ('train', 'predict'): sys.exit(__doc__)
++    if '--data' in o:
++        if a[0] != 'train': sys.exit('--data is for train')
++        if LEGACY_NOGUIDE: sys.exit('--legacy-noguide is not for --data')
++        train_data(a[1], o['--data'][-1], a[2:], it, int(o['--seed'][-1]) if '--seed' in o else None, parse_weights(o.get('--weights', [])),
++                   out_dir(o), val_every_arg(o, VAL_EVERY))
++    else:
++        for k in ('--seed', '--weights', '--out', '--val-every'):
++            if k in o: sys.exit(f'{k} is for --data (the unet_data plates train as before)')
++        train(a[1], a[2:], it) if a[0] == 'train' else predict(a[1], a[2])

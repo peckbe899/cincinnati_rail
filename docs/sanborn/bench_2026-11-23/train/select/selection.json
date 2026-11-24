@@ -1,0 +1,617 @@
+{
+ "made_by": "data/sanborn/bench_2026-11-23/train/select/select.py",
+ "K": 10,
+ "plates": [
+  {
+   "plate": "5",
+   "kind": "dense downtown, 100 ft, tint 0.49",
+   "scale_ft": 100,
+   "source": "cut plate",
+   "W": 10076,
+   "H": 7150,
+   "full_mpx": 72.04,
+   "tint": 0.493,
+   "merged_blocks": 64,
+   "merged_holes": 10,
+   "area_conf_share": 0.7,
+   "taught_half_mpx_sketch": 10.78,
+   "taught_half_mpx_strict": 10.78,
+   "taught_acres_sketch": 109.9,
+   "taught_acres_strict": 109.9,
+   "big_block_share_strict": 0.0,
+   "key_box": false,
+   "line_net_gb_est": 0.81,
+   "why": "The cleanest 100-ft output in the batch: 64 blocks, one colour per printed block, CBD alleys (Shillito Pl, Opera Pl). 100 ft is the benchmark scale and has only 43 (+1A) in training.",
+   "risk": "Alleys the nets never see stay taught as block (on 1A: 1.1% of street ground)."
+  },
+  {
+   "plate": "54A",
+   "kind": "dense downtown (Over-the-Rhine north), 100 ft, heavy tint 0.65",
+   "scale_ft": 100,
+   "source": "cut plate",
+   "W": 10587,
+   "H": 7145,
+   "full_mpx": 75.64,
+   "tint": 0.648,
+   "merged_blocks": 56,
+   "merged_holes": 13,
+   "area_conf_share": 0.746,
+   "taught_half_mpx_sketch": 11.26,
+   "taught_half_mpx_strict": 11.26,
+   "taught_acres_sketch": 114.8,
+   "taught_acres_strict": 114.8,
+   "big_block_share_strict": 0.0,
+   "key_box": false,
+   "line_net_gb_est": 0.85,
+   "why": "Tint 0.65, against 0.15-0.20 on the four labelled plates. Many alleys come out as confident street. The merged blocks look right apart from a few joins at the top.",
+   "risk": "Heavy tint is where the area net is least sure, so a confident error there gets taught. Low on the eye check."
+  },
+  {
+   "plate": "53",
+   "kind": "dense downtown + rail fan + diagonal district, 100 ft, tint 0.59",
+   "scale_ft": 100,
+   "source": "cut plate",
+   "W": 10740,
+   "H": 7225,
+   "full_mpx": 77.6,
+   "tint": 0.585,
+   "merged_blocks": 63,
+   "merged_holes": 12,
+   "area_conf_share": 0.628,
+   "taught_half_mpx_sketch": 9.73,
+   "taught_half_mpx_strict": 9.73,
+   "taught_acres_sketch": 99.2,
+   "taught_acres_strict": 99.2,
+   "big_block_share_strict": 0.0,
+   "key_box": false,
+   "line_net_gb_est": 0.87,
+   "why": "CBD grid, the Eggleston/Broadway diagonal blocks, a rail fan at Court St, and large lettering (court house).",
+   "risk": "The rail fan comes out as one region: Ben has not decided the rail-ground rule."
+  },
+  {
+   "plate": "7",
+   "kind": "dense West End with mid-block alleys, 100 ft, tint 0.50",
+   "scale_ft": 100,
+   "source": "cut plate",
+   "W": 8067,
+   "H": 7230,
+   "full_mpx": 58.32,
+   "tint": 0.499,
+   "merged_blocks": 32,
+   "merged_holes": 26,
+   "area_conf_share": 0.761,
+   "taught_half_mpx_sketch": 8.34,
+   "taught_half_mpx_strict": 8.34,
+   "taught_acres_sketch": 85.1,
+   "taught_acres_strict": 85.1,
+   "big_block_share_strict": 0.0,
+   "key_box": false,
+   "line_net_gb_est": 0.65,
+   "why": "Grid with mid-block alleys, 26 of them found as street holes. A very clean output.",
+   "risk": "Alleys that were not found stay taught as block."
+  },
+  {
+   "plate": "51",
+   "kind": "downtown riverfront and wharves, 100 ft, tint 0.56",
+   "scale_ft": 100,
+   "source": "cut plate",
+   "W": 10692,
+   "H": 7183,
+   "full_mpx": 76.8,
+   "tint": 0.556,
+   "merged_blocks": 58,
+   "merged_holes": 2,
+   "area_conf_share": 0.611,
+   "taught_half_mpx_sketch": 9.66,
+   "taught_half_mpx_strict": 7.08,
+   "taught_acres_sketch": 98.5,
+   "taught_acres_strict": 72.2,
+   "big_block_share_strict": 0.202,
+   "key_box": false,
+   "line_net_gb_est": 0.86,
+   "why": "The only plate where the river and wharves could be handled safely: the merged step puts no block on the river, so with the AND rule the river is left untaught. Tinted downtown otherwise.",
+   "risk": "area_ng1 calls the river and the public landing CONFIDENT BLOCK. The pseudo label must keep block only inside merged blocks, or the river is taught as block. A few joins in the middle."
+  },
+  {
+   "plate": "66",
+   "kind": "dense 200-ft grid, tint 0.31",
+   "scale_ft": 200,
+   "source": "cut plate",
+   "W": 10068,
+   "H": 7114,
+   "full_mpx": 71.62,
+   "tint": 0.311,
+   "merged_blocks": 106,
+   "merged_holes": 5,
+   "area_conf_share": 0.817,
+   "taught_half_mpx_sketch": 10.9,
+   "taught_half_mpx_strict": 10.9,
+   "taught_acres_sketch": 444.8,
+   "taught_acres_strict": 444.8,
+   "big_block_share_strict": 0.0,
+   "key_box": false,
+   "line_net_gb_est": 0.8,
+   "why": "The most blocks of any plate (106): small blocks, each found on its own. A 200-ft cut grid with more tint than 45, 80 and 82A.",
+   "risk": "200-ft mid-block alleys are missed and taught as block, as on the labelled plates (a known limit)."
+  },
+  {
+   "plate": "68",
+   "kind": "200-ft grid + Zoo + irregular north edge, tint 0.54",
+   "scale_ft": 200,
+   "source": "cut plate",
+   "W": 10542,
+   "H": 7181,
+   "full_mpx": 75.7,
+   "tint": 0.541,
+   "merged_blocks": 57,
+   "merged_holes": 4,
+   "area_conf_share": 0.773,
+   "taught_half_mpx_sketch": 9.89,
+   "taught_half_mpx_strict": 8.93,
+   "taught_acres_sketch": 403.6,
+   "taught_acres_strict": 364.6,
+   "big_block_share_strict": 0.111,
+   "key_box": false,
+   "line_net_gb_est": 0.85,
+   "why": "Heavy tint at 200 ft. The Zoological Garden is one large real block. Mixed grid and irregular streets.",
+   "risk": "A few large joins at the top. The size cap drops 11% of the ground."
+  },
+  {
+   "plate": "76",
+   "kind": "200-ft diagonal grid + KEY + Duck Creek industrial, tint 0.20",
+   "scale_ft": 200,
+   "source": "cut plate",
+   "W": 10441,
+   "H": 7106,
+   "full_mpx": 74.19,
+   "tint": 0.204,
+   "merged_blocks": 98,
+   "merged_holes": 3,
+   "area_conf_share": 0.759,
+   "taught_half_mpx_sketch": 11.82,
+   "taught_half_mpx_strict": 10.16,
+   "taught_acres_sketch": 482.4,
+   "taught_acres_strict": 414.5,
+   "big_block_share_strict": 0.142,
+   "key_box": true,
+   "line_net_gb_est": 0.83,
+   "why": "98 blocks on two crossing grids (diagonal streets). Its KEY box is printed inside the map (box in census/rail_key.json).",
+   "risk": "The KEY and the industrial ground by Duck Creek are one merged block: mask the KEY box and drop big blocks (14% of the ground under the strict cap)."
+  },
+  {
+   "plate": "79",
+   "kind": "PDF sheet, 200 ft, 94 blocks",
+   "scale_ft": 200,
+   "source": "pdf sheet",
+   "W": 11200,
+   "H": 7433,
+   "full_mpx": 83.25,
+   "tint": 0.175,
+   "merged_blocks": 94,
+   "merged_holes": 1,
+   "area_conf_share": 0.781,
+   "taught_half_mpx_sketch": 12.21,
+   "taught_half_mpx_strict": 9.85,
+   "taught_acres_sketch": 498.3,
+   "taught_acres_strict": 402.2,
+   "big_block_share_strict": 0.179,
+   "key_box": true,
+   "line_net_gb_est": 0.93,
+   "why": "The best PDF-sheet output. Not one of the 24 PDF sheets at 200 ft is in training (90 is held out). PDF scan colour, margins, KEY and large lettering.",
+   "risk": "Off the map ground (the margins) is confident block: mask by N_mapground.png. Some joins on the left."
+  },
+  {
+   "plate": "89",
+   "kind": "PDF sheet, 200 ft, same-scale inset, estates/open land",
+   "scale_ft": 200,
+   "source": "pdf sheet",
+   "W": 11107,
+   "H": 7433,
+   "full_mpx": 82.56,
+   "tint": 0.175,
+   "merged_blocks": 56,
+   "merged_holes": 1,
+   "area_conf_share": 0.769,
+   "taught_half_mpx_sketch": 10.16,
+   "taught_half_mpx_strict": 6.24,
+   "taught_acres_sketch": 414.5,
+   "taught_acres_strict": 254.7,
+   "big_block_share_strict": 0.361,
+   "key_box": true,
+   "line_net_gb_est": 0.92,
+   "why": "A second PDF sheet: an inset (upper right), large estates with unbuilt subdivisions, and a clean grid on the right half.",
+   "risk": "Its big estate regions merge across roads (Iona Pl): 36% of the ground is dropped under the strict cap. The weakest of the ten; first to swap for a reserve."
+  }
+ ],
+ "reserve": [
+  {
+   "plate": "67",
+   "note": "200 ft, tint 0.54, clean grid (a twin of 68)"
+  },
+  {
+   "plate": "4",
+   "note": "100 ft, West End + rail terminal, tint 0.48"
+  },
+  {
+   "plate": "12",
+   "note": "100 ft, tint 0.58, Central Parkway median joined"
+  },
+  {
+   "plate": "28",
+   "note": "200 ft clean grid, 73 blocks, little tint"
+  },
+  {
+   "plate": "11",
+   "note": "100 ft clean grid, tint 0.44"
+  },
+  {
+   "plate": "60B",
+   "note": "200 ft clean grid, small; the 60B alley case (27 of ~30 missed)"
+  }
+ ],
+ "excluded": {
+  "rule: benchmark, never trained or used for checkpoints": [
+   "44"
+  ],
+  "rule: planned second truth plate": [
+   "90"
+  ],
+  "already labelled (current labels)": [
+   "43",
+   "45",
+   "80",
+   "82A"
+  ],
+  "Ben's check (3/4 train, quarter validation)": [
+   "1A"
+  ],
+  "400 ft: the area net calls almost the whole sheet block (viewed: 46-50, 92-95, 93A, 93B)": [
+   "46",
+   "47",
+   "48",
+   "49",
+   "50",
+   "92",
+   "93A",
+   "93B",
+   "94",
+   "95"
+  ],
+  "suspect in the merged step (Q1/Q2), and broken by eye": [
+   "2",
+   "3",
+   "41"
+  ],
+  "small piece (under 11 MP), little ground, mostly edge": [
+   "8B",
+   "15B",
+   "54B",
+   "55B",
+   "64B",
+   "82B",
+   "83B"
+  ],
+  "river or wharves inside a block": [
+   "1B",
+   "26A",
+   "52",
+   "59A",
+   "59B",
+   "60A",
+   "21",
+   "23"
+  ],
+  "rail yards joined into blocks": [
+   "13",
+   "37",
+   "40"
+  ],
+  "open land / hillside joined across roads (most of the plate)": [
+   "25",
+   "26B",
+   "31",
+   "35",
+   "39",
+   "61",
+   "64A",
+   "65",
+   "70",
+   "71",
+   "75",
+   "85A",
+   "19",
+   "22",
+   "24",
+   "27",
+   "30",
+   "32",
+   "73",
+   "74",
+   "81",
+   "88"
+  ],
+  "PDF sheet with an inset at another scale (400 ft)": [
+   "78"
+  ],
+  "KEY inside a block plus large joins": [
+   "29",
+   "34"
+  ],
+  "large joins across streets over a big share of the plate": [
+   "6",
+   "9",
+   "10",
+   "14",
+   "15A",
+   "16",
+   "17",
+   "55A",
+   "56",
+   "57",
+   "62",
+   "63"
+  ],
+  "fair, not needed (kind already covered by a better plate) or reserve": [
+   "4",
+   "11",
+   "12",
+   "8A",
+   "58",
+   "18A",
+   "18B",
+   "28",
+   "67",
+   "85B",
+   "60B",
+   "83A",
+   "84",
+   "38",
+   "69",
+   "33",
+   "87",
+   "20",
+   "36",
+   "42",
+   "72",
+   "77",
+   "86",
+   "91"
+  ]
+ },
+ "check_by_hand": [
+  {
+   "rank": 1,
+   "plate": "7",
+   "why": "Mid-block alleys at 100 ft are the main loss on 44 (all 32 misses there are joins). Pseudo labels cannot teach them: on 1A the line net misses them too, and a 12 px band round its lines catches 4.5% of the errors. 7 has the densest alley grid and a clean output, so the check is quick."
+  },
+  {
+   "rank": 2,
+   "plate": "54A",
+   "why": "Heavy tint (0.65) at 100 ft, which sits next to 1A (0.75) in the tint range, with 3x 1A's ground (75.6 MP against 24.3 MP). A clean output, so Ben has few edits."
+  },
+  {
+   "rank": 3,
+   "plate": "60B",
+   "why": "The 200-ft mid-block alley case (27 of ~30 missed). Small (18.9 MP, 40 blocks), so the quickest check of the list. Do it once Ben has decided whether 200-ft alleys are block sides."
+  },
+  {
+   "rank": 4,
+   "plate": "79",
+   "why": "The only way to teach the PDF-sheet look with true labels: 90 stays out, and no PDF sheet is labelled. 94 blocks."
+  },
+  {
+   "rank": 5,
+   "plate": "51",
+   "why": "Sets Ben's river and wharf rule on a tinted downtown plate. The pseudo label has to leave the river out."
+  },
+  {
+   "rank": 6,
+   "plate": "5",
+   "why": "CBD at 100 ft, 64 blocks with alleys. A clean output."
+  }
+ ],
+ "totals": {
+  "labelled_today": {
+   "taught_half_mpx": 52.44,
+   "taught_acres": 1632.7
+  },
+  "labelled_by_plate": {
+   "43": {
+    "ft_per_inch": 100,
+    "half_px": 19086291,
+    "taught_half_mpx": 16.57,
+    "taught_acres": 169.1,
+    "street_share_of_taught": 0.204,
+    "block_pieces": 48,
+    "block_piece_acres_median": 1.15,
+    "block_piece_acres_p90": 3.91,
+    "block_piece_acres_max": 45.3
+   },
+   "45": {
+    "ft_per_inch": 200,
+    "half_px": 16527300,
+    "taught_half_mpx": 11.97,
+    "taught_acres": 488.5,
+    "street_share_of_taught": 0.171,
+    "block_pieces": 94,
+    "block_piece_acres_median": 2.49,
+    "block_piece_acres_p90": 7.53,
+    "block_piece_acres_max": 99.6
+   },
+   "80": {
+    "ft_per_inch": 200,
+    "half_px": 16617672,
+    "taught_half_mpx": 10.23,
+    "taught_acres": 417.3,
+    "street_share_of_taught": 0.126,
+    "block_pieces": 71,
+    "block_piece_acres_median": 1.63,
+    "block_piece_acres_p90": 8.04,
+    "block_piece_acres_max": 121.5
+   },
+   "82A": {
+    "ft_per_inch": 200,
+    "half_px": 19003088,
+    "taught_half_mpx": 13.67,
+    "taught_acres": 557.8,
+    "street_share_of_taught": 0.17,
+    "block_pieces": 87,
+    "block_piece_acres_median": 2.27,
+    "block_piece_acres_p90": 6.03,
+    "block_piece_acres_max": 118.9
+   }
+  },
+  "selected_taught_half_mpx_sketch": 104.8,
+  "selected_taught_half_mpx_strict": 93.3,
+  "selected_taught_acres_sketch": 2751,
+  "selected_taught_acres_strict": 2362,
+  "selected_full_mpx": 747.7,
+  "labelled_plus_1A_full_mpx": 309.3,
+  "line_net_bytes_per_full_px_measured": 12.0,
+  "line_net_gb_labelled_plus_1A_est": 3.46,
+  "line_net_gb_selected_est": 8.36,
+  "area_net_gb_all_est": 2.71,
+  "load_seconds_measured": {
+   "79": 2.1,
+   "66": 1.8,
+   "5": 1.7,
+   "60B": 0.5
+  },
+  "scale_mix_after_V2": {
+   "100": [
+    "43",
+    "1A",
+    "5",
+    "54A",
+    "53",
+    "7",
+    "51"
+   ],
+   "200": [
+    "45",
+    "80",
+    "82A",
+    "66",
+    "68",
+    "76",
+    "79",
+    "89"
+   ]
+  }
+ },
+ "ben1a": {
+  "plate": "1A",
+  "edges_ben_saved_at": "2026-11-24T00:31:05.676Z",
+  "ben_lines": 151,
+  "ben_blocks": 21,
+  "half_size": [
+   2880,
+   2112
+  ],
+  "whole": {
+   "paper_half_px": 3723716,
+   "ben_block_share": 0.55,
+   "area_conf_share": 0.626,
+   "area_conf_accuracy": 0.9148,
+   "area_unsure_accuracy_at_0_5": 0.7508,
+   "ben_street_called_conf_block": 0.1115,
+   "ben_street_conf_street": 0.3636,
+   "ben_block_conf_block": 0.7429,
+   "merged_mask_accuracy": 0.8559,
+   "merged_street_called_block": 0.223
+  },
+  "val_quarter": {
+   "paper_half_px": 370040,
+   "ben_block_share": 0.57,
+   "area_conf_share": 0.499,
+   "area_conf_accuracy": 0.9875,
+   "area_unsure_accuracy_at_0_5": 0.7959,
+   "ben_street_called_conf_block": 0.0031,
+   "ben_street_conf_street": 0.3727,
+   "ben_block_conf_block": 0.5825,
+   "merged_mask_accuracy": 0.8863,
+   "merged_street_called_block": 0.0422
+  },
+  "train_3_4": {
+   "paper_half_px": 3353676,
+   "ben_block_share": 0.548,
+   "area_conf_share": 0.64,
+   "area_conf_accuracy": 0.9085,
+   "area_unsure_accuracy_at_0_5": 0.7439,
+   "ben_street_called_conf_block": 0.1229,
+   "ben_street_conf_street": 0.3626,
+   "ben_block_conf_block": 0.7613,
+   "merged_mask_accuracy": 0.8525,
+   "merged_street_called_block": 0.242
+  },
+  "pq_merged_vs_ben_whole": {
+   "gt": 21,
+   "pred": 15,
+   "tp": 5,
+   "fp": 10,
+   "fn": 16,
+   "pq": 0.21
+  },
+  "pq_merged_vs_ben_val_quarter": {
+   "gt": 1,
+   "pred": 4,
+   "tp": 0,
+   "fp": 4,
+   "fn": 1,
+   "pq": 0.0
+  },
+  "split_errors": {
+   "pieces": 114,
+   "largest": [
+    102979,
+    66694,
+    5847,
+    1915,
+    1689,
+    1504
+   ],
+   "big_unclosed_px": 169673,
+   "without_big_pieces": {
+    "area_conf_share": 0.608,
+    "area_conf_accuracy": 0.9866,
+    "ben_street_called_conf_block": 0.0114
+   }
+  }
+ },
+ "ben1a_lines": {
+  "small_error_px": 17093,
+  "conf_block_px": 1708634,
+  "R4": {
+   "errors_removed": 0.007,
+   "correct_block_blanked": 0.008
+  },
+  "R8": {
+   "errors_removed": 0.023,
+   "correct_block_blanked": 0.032
+  },
+  "R12": {
+   "errors_removed": 0.045,
+   "correct_block_blanked": 0.068
+  }
+ },
+ "val1a": {
+  "image_quarter": {
+   "x_half": 2160,
+   "x_full": 4320,
+   "x_share_of_width": 0.75,
+   "paper_share": 0.099,
+   "ben_blocks_by_centroid": 1,
+   "ben_block_px_right_of_cut": 210894,
+   "ben_blocks_cut_by_line": 0
+  },
+  "paper_quarter": {
+   "x_half": 1679,
+   "x_full": 3358,
+   "x_share_of_width": 0.583,
+   "paper_share": 0.25,
+   "ben_blocks_by_centroid": 6,
+   "ben_block_px_right_of_cut": 548684,
+   "ben_blocks_cut_by_line": 3
+  }
+ }
+}
