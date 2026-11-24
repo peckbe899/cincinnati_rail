@@ -37,9 +37,12 @@ from .inputs import (
     ERA_1_7,
     PREFIX,
     Chronology,
+    _on_grid,
     _param,
     _seed_structure,
     gather,
+    ground_info,
+    merge_ground,
     params_of,
     station_profile,
 )
@@ -723,7 +726,28 @@ def fill_levels(
     return out
 
 
+def lay_dem(
+    ssi: Mapping[str, Any], plan: Mapping[str, Any], region: Mapping[str, Any]
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """A SectionSolveInput with its ``dem`` (the surveyed ground on the section's grid, None where none) as
+    ``ground.source`` says: at ``region`` the region ground, each sample it lacks from the line file; at
+    ``line_file`` the line file's, each sample it lacks from the region ground. Same length as before. Returns the
+    input and ``inputs.ground_info``."""
+    dem = list(ssi["dem"])
+    n = len(dem)
+    step = float(ssi.get("step") or region["step_m"])
+    on = _on_grid(list(region["z"]), float(region["step_m"]), step)[:n]
+    if plan["source"] == "region":
+        z, filled = merge_ground(on, dem)
+    else:
+        z, filled = merge_ground(dem, on)
+    z = (z + [None] * n)[:n]
+    missing = sum(1 for v in z if v is None)
+    return {**ssi, "dem": z}, ground_info(plan, region, filled, missing)
+
+
 __all__ = [
+    "lay_dem",
     "fill_levels",
     "design_of",
     "frame_moved",
