@@ -142,8 +142,7 @@ Increment 2 (next, in order; spec section 11):
 - [ ] I2.1 Close the loop: `ground.profile` from `region.ground`, the railsim adapter (`route.assemble`, `railsim.run`,
   `railsim.attribution`), the run-time band and table on the sheet. Gate: edit a Line 6 PVI, see the run time change
   within 10 s, Line 6 within 1 % of `tests/baseline/runtimes.json`.
-  State (24 Nov, built, not ticked: the parity half of the gate waits on Ben's rulings, and the live budget fails
-  on a cold hub, below). Plan
+  State (24 Nov, built, not ticked: the parity half of the gate waits on Ben's rulings, below). Plan
   `claude/hub_maps/i21_plan.md`. Built: `ground.profile@1` (`region/ext/terrain`, the param `ground.source`, default
   `line_file` while unregistered, so every profiles output is as it was); `route.horizontal@1`, `route.assemble@1`,
   `railsim.run@1`, `railsim.attribution@1` and the draft run (`region/ext/railsim`, `POST
@@ -164,9 +163,32 @@ Increment 2 (next, in order; spec section 11):
   stays free for the panes' jobs (`test_reserved_slot.py`); the run band no longer takes the station names' top
   margin on the default layout (`stations.spec.ts` "plot keeps room"); Ctrl+Z pressed while a save is on its way
   waits for it and reverts it (`sheet_terms.test.ts`).
-  Not passing: `live.spec.ts` (a saved line file in the open sheet under 3 s). It holds once the sheet's run is warm
-  (2.0 to 2.2 s, 45 s after opening, the same as `0f562c4`), but on a fresh hub, while the sheet's first run chain is
-  still being computed, it takes 2.5 to 3.5 s alone and 3.1 to 4.3 s in the full suite (`0f562c4`: 2.0 to 2.2 s).
+  Fixed after integration (24 Nov): `live.spec.ts` (a saved line file in the open sheet under 3 s) failed on a fresh
+  hub, because the sheet's first run chain was planned and run while the file was imported (2.4 to 3.2 s alone,
+  median 2.7 s, 4 of 20 over 3 s; 3.1 s in both full suites). A live import now holds the scheduler's foreground: until
+  it and the invalidator are done, background work (priority 2 and up) neither plans nor starts, and no background job
+  starts while a pane's job (0 or 1) is queued or running; the invalidator and the job commits hand background work to
+  a background planner thread (`Scheduler.foreground`, `Planner.pause`, `tests/jobs/test_foreground.py`,
+  `tests/live/test_foreground.py`). The sheet asks for its run once its first solves have landed
+  (`sheet_runtime_pane.test.ts`). Now 2.03 to 2.56 s alone (median 2.11 s, 20 runs on fresh hubs) and 1.96 and 2.06 s
+  in two full suites, all 50 passing; `0f562c4` on the same container: 1.98 to 2.44 s. `runtime.spec.ts` now looks
+  for the change in either direction, on a bend point with a station between its neighbours, dragged 30 px (release
+  to the draft's trip time 0.8 to 1.5 s, save to the saved run 2.7 to 2.9 s). Open: a 60 px drag at some bend points
+  (Line 6 at 24.5, 26.0, 26.2 and 28.7 km) makes the draft run itself take 9 to 20 s, all of it in railsim's
+  `Simulator.run`; the gate's 10 s is not met for those edits.
+  Review of the foreground (24 Nov, `tests/jobs/test_foreground_bounds.py`, each failing first): the dispatcher no
+  longer picks again a queued job it handed to the background planner (it planned and handed it on in a loop until
+  the planner got to it); a restore that takes the outbox back no longer leaves the background waiting for a seq that
+  may never come; a background plan waits `BACKGROUND_WAIT_S` once in all, not at each step (a plan holding a lock the
+  foreground's own work needs could otherwise wait that long many times over). The sheet asks its run at the latest
+  10 s after it opens the line, so a whole solve that never lands cannot leave it without one
+  (`sheet_runtime_pane.test.ts`). Measured on fresh scratch hubs after these: `live.spec.ts` 2.00 to 2.30 s alone
+  (10 runs, median 2.10 s); `runtime.spec.ts` release to draft 1.38 to 1.45 s, save to saved run 2.72 to 2.87 s
+  (3 runs); five PVI drags with Save on Line 6: draft 0.77 to 1.29 s after release, saved run 2.07 to 2.48 s, no
+  request or job during a drag, each save ran only Line 6's four jobs. Flaky, not fixed: `sheet.spec.ts` "second
+  context updates within 1 s" (failed in 1 of 2 full suites here, as in the integration's and the pre-fix runs; the
+  two sheets' run chains of the new scenario are being planned at the moment of the save), and the 16 ms local
+  solve checks on a hub that has just started (as before I2.1).
   Parity, Line 6 against `runtimes.json` `cin_line_6`, from the records through the whole job chain
   (`tests/railsim/test_parity.py`): on the baseline's own design (G2, 33 stops) running -0.75 % / -0.95 %, trip
   -0.55 % / -0.67 % (37.24 against 37.52 min, 51.71 against 52.00 min forward); per station, the worst is 42.2 s at

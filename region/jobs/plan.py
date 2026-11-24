@@ -23,7 +23,8 @@ from __future__ import annotations
 import copy
 import threading
 from collections import OrderedDict
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -204,6 +205,7 @@ class PlanContext:
             self.__kinds[ref] = kind
 
     def read(self, kind: str, id: str) -> dict[str, Any] | None:
+        self.__planner._step()
         try:
             rec = self.__planner.store.get(kind, id, self.view)
         except NotFound:
@@ -212,6 +214,7 @@ class PlanContext:
         return rec
 
     def list(self, kind: str, **filters: Any) -> list[dict[str, Any]]:
+        self.__planner._step()
         recs = all_records(self.__planner.store, kind, self.view, **dict(filters))
         for r in recs:
             self._dep(ref_rec(r["id"]), r["hash"], r.get("kind") or kind)
@@ -275,12 +278,33 @@ class Planner:
         self.upstream_output = upstream_output
         self.engine_info = engine_info
         self.params: ParamResolver = params or resolve_param
+        self.pause: Callable[[tuple[str, ...]], None] | None = None
+        """Called before each step of a plan (the plan asked for, each upstream it plans, each record read and list)
+        with the job types whose plan locks this thread holds then: the scheduler's background work waits there while
+        a live import or a pane's work goes first (``Scheduler.foreground``)."""
+        self._held = threading.local()
 
     def plan(self, type_name: str, scope: str, view: View, stack: tuple = ()) -> Plan:
         """Plan ``type_name`` for ``scope`` in ``view``: run its ``plan`` and compute the key. A complete plan is kept
         for the upstream reads of later plans (``upstream``, see ``MEMO``)."""
-        with self._lock_of(type_name, scope, view):
+        self._step()
+        with self._lock_of(type_name, scope, view), self._holding(type_name):
             return self._plan_keep(type_name, scope, view, stack)
+
+    def _step(self) -> None:
+        if self.pause is not None:
+            self.pause(tuple(getattr(self._held, "types", ())))
+
+    @contextmanager
+    def _holding(self, type_name: str) -> Iterator[None]:
+        held = getattr(self._held, "types", None)
+        if held is None:
+            held = self._held.types = []
+        held.append(type_name)
+        try:
+            yield
+        finally:
+            held.pop()
 
     def _lock_of(self, type_name: str, scope: str, view: View) -> threading.Lock:
         """One lock per ``(type, scope, view)``: two threads planning the same job take turns, so the second reads the
@@ -378,7 +402,8 @@ class Planner:
         if (type_name, scope) in stack:
             chain = " -> ".join(f"{t}/{s}" for t, s in stack + ((type_name, scope),))
             raise Invalid(f"job dependency cycle: {chain}")
-        with self._lock_of(type_name, scope, view):
+        self._step()
+        with self._lock_of(type_name, scope, view), self._holding(type_name):
             up = self._kept(type_name, scope, view, self._state() if self._state is not None else None)
             if up is None:
                 up = self._plan_keep(type_name, scope, view, stack)

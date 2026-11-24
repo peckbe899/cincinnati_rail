@@ -295,6 +295,10 @@ each restriction only while it is open), the sources in plain words, and Export 
   is run while you drag. Undo back to the saved profile shows the saved run again.
 - When you save, the hub runs the saved records (2 to 3 s on Line 6) and the band takes that run. A change that
   leaves the rail, the tunnels and the stations as they were (a paint, a note) runs nothing.
+- The run comes after what you look at. The sheet asks for it once its first solves have landed (at the latest 10 s
+  after it opens the line), and while a saved line file is imported, and the section in front of you is solved
+  again, the hub holds the run's work back (for 10 s at most). So a line file you save reaches the open sheet in
+  about 2 s, even on a fresh hub still working out its first run.
 - The run reads only the hub's records and the files in the repo: the line config (`configs\metro`), the eras
   (`data\operations`) and the trains (`data\rollingstock`). No KMZ, no network, nothing is written.
 - The curves are fitted to the line's drawn path for now (no horizontal alignment of its own yet), so run times

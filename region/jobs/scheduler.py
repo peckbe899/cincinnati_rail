@@ -20,6 +20,16 @@ view's goal is left alone.
 **Hosts and priorities.** Queued jobs run in priority order (0 focused pane, 1 open panes, 5 goals, 9 maintenance),
 oldest first within a priority, on the host their type names (``hosts``). Each type has a timeout.
 
+**The foreground.** A live import holds the foreground (``foreground()``) while it runs. While it does, and until
+the invalidator has taken in what it wrote, the background (priority 2 and up: a sheet's run chain, the goals of
+every line) waits: no such job starts, and its planning stops at the next step of a plan (``Planner.pause``). No
+background job starts either while a job at the panes' priority (0 or 1) is queued or running. The invalidator, the
+job commits and the dispatcher never plan background work themselves: they hand it to the background planner thread,
+which takes the most urgent first. So the import and the focused section's solve always come first. A background
+plan waits ``BACKGROUND_WAIT_S`` at most in all (once its wait has run out it goes on), a job the dispatcher handed
+to the background planner is not picked again until the planner has dealt with it, and a restore that takes the
+outbox back forgets the seq the invalidator was to reach.
+
 **Commit.** ``run`` gets only what ``plan`` returned. After it, the scheduler plans again and compares keys: an
 unchanged key commits the result, its dependencies, blobs and issues in one cache.db transaction (blobs written
 first); a changed key stores the result as ``stale`` and re-queues the job with the new key. Every other goal that
@@ -49,12 +59,14 @@ from __future__ import annotations
 
 import collections
 import contextlib
+import heapq
+import itertools
 import json
 import logging
 import threading
 import time
 import traceback
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
@@ -78,6 +90,8 @@ if TYPE_CHECKING:
 log = logging.getLogger("region.jobs")
 
 ACTIVE = ("queued", "running")
+BACKGROUND_WAIT_S = 10.0
+"""The longest the background waits for the foreground at a time (a foreground that never frees cannot starve it)."""
 FINAL = ("done", "failed", "cancelled")
 EventSink = Callable[[str, dict[str, Any]], None]
 
@@ -208,6 +222,23 @@ class Scheduler:
         self._threads: list[threading.Thread] = []
         self._started = False
         self._closed = False
+        # the foreground (see the module doc): live imports holding it, the threads that do, the store's seq when the
+        # last one ended (the invalidator must pass it), and since when the dispatcher has held the background back
+        self._fg_lock = threading.Lock()
+        self._fg_holds = 0
+        self._fg_threads: collections.Counter[int] = collections.Counter()
+        self._fg_seq = 0
+        self._fg_busy_since: float | None = None
+        # background work handed to the background planner: a heap of (priority, n, item)
+        self._later: list[tuple[int, int, tuple]] = []
+        self._later_n = itertools.count()
+        self._later_cond = threading.Condition()
+        self._later_busy = False
+        self._later_thread: threading.Thread | None = None
+        # queued jobs the dispatcher handed to the background planner: not picked again until it has dealt with them
+        self._handed: set[str] = set()
+        self._bg = threading.local()
+        self.planner.pause = self._pause
 
     # ============================================================================================== lifecycle
 
@@ -225,8 +256,11 @@ class Scheduler:
             ("jobs-dispatch", self._dispatch_loop),
             ("jobs-invalidate", self._invalidate_loop),
             ("jobs-monitor", self._monitor_loop),
+            ("jobs-background", self._later_loop),
         ):
             t = threading.Thread(target=target, name=name, daemon=True)
+            if name == "jobs-background":
+                self._later_thread = t
             t.start()
             self._threads.append(t)
         rows = self.cache.query("SELECT * FROM job WHERE state = 'queued' AND key IS NULL")
@@ -248,6 +282,8 @@ class Scheduler:
         self._stopping.set()
         self._wake.set()
         self._inval_wake.set()
+        with self._later_cond:
+            self._later_cond.notify_all()
         for t in self._threads:
             t.join(timeout)
         with self._lock:
@@ -358,7 +394,8 @@ class Scheduler:
     def submit(self, type: str, scope: str, view: View, priority: int = 1) -> dict[str, Any]:
         """Plan now; return ``{"key", "state", "job"}`` with ``state`` ``hit``, ``queued`` or ``running``."""
         self.registry.get(type)
-        plan = self.planner.plan(type, scope, view)
+        with self._background(int(priority) > self.PANE_PRIORITY):
+            plan = self.planner.plan(type, scope, view)
         with self._lock, self.cache.tx() as con:
             goals.upsert(con, type, scope, view.token(), priority=priority)
         out = self._drain([("want", plan, int(priority), "submit", None)])
@@ -370,7 +407,8 @@ class Scheduler:
         eviction is never answered with an older result as if it were current; when the inputs cannot be planned
         (the engine down, the scope gone) the answer is ``None`` too."""
         try:
-            plan = self.planner.plan(type, scope, view)
+            with self._background(int(getattr(self.registry.get(type), "priority", 0)) > self.PANE_PRIORITY):
+                plan = self.planner.plan(type, scope, view)
         except HubError:
             return None
         key = getattr(plan, "key", None)
@@ -396,7 +434,8 @@ class Scheduler:
         with self._lock, self.cache.tx() as con:
             goals.upsert(con, type, scope, token, priority=priority, watch=True, expires=expires, pinned=pinned)
         try:
-            plan = self.planner.plan(type, scope, view)
+            with self._background(int(priority) > self.PANE_PRIORITY):
+                plan = self.planner.plan(type, scope, view)
         except Exception as e:
             with self._lock, self.cache.tx() as con:
                 goals.set_state(con, type, scope, token, state="error", error=str(e)[:2000])
@@ -515,13 +554,14 @@ class Scheduler:
         """Re-plan the watched goals that depend on ``refs`` (``file:`` refs after a file changed, for example)."""
         refs = set(refs)
         params = any(parse_ref(r)[0] == "param" for r in refs)
-        self._drain(self._affected(refs, set(), set(), params))
+        self._drain(self._affected(refs, set(), set(), params), defer=True)
 
-    def replan_all(self) -> None:
-        """Re-plan every watched goal (after the outbox was reset, a restore or a new server epoch)."""
+    def replan_all(self, *, defer: bool = False) -> None:
+        """Re-plan every watched goal (after the outbox was reset, a restore or a new server epoch). With ``defer``
+        (the invalidator) the background goals go to the background planner."""
         with self._lock, self.cache.tx() as con:
             found = goals.watched(con)
-        self._drain([("replan", g, "resync") for g in found])
+        self._drain([("replan", g, "resync") for g in found], defer=defer)
 
     def evict(self, max_bytes: int) -> dict[str, int]:
         """LRU eviction down to ``max_bytes`` of blobs, sparing pinned goals; then drop dependency rows of keys
@@ -586,6 +626,9 @@ class Scheduler:
         )
 
     def _idle(self) -> bool:
+        with self._later_cond:
+            if self._later or self._later_busy:
+                return False
         cursor = self.cache.cursor("invalidator") or 0
         try:
             if self.store.events_since(cursor, 1):
@@ -606,76 +649,280 @@ class Scheduler:
 
     # ---------------------------------------------------------------------------------------------- the work
 
-    def _drain(self, items: list[tuple]) -> dict[str, Any] | None:
+    def _drain(self, items: list[tuple], *, defer: bool = False, own: int = 0) -> dict[str, Any] | None:
         """Process a work list of plans to want, upstreams to plan, results that became ready and goals to
-        re-plan. Plans run outside the lock; cache changes inside it. Returns the first ``want``'s answer."""
+        re-plan. Plans run outside the lock; cache changes inside it. Returns the first ``want``'s answer.
+
+        Background items (priority 2 and up) are planned in the background mode, which stops while the foreground
+        is busy; with ``defer`` they are handed to the background planner instead (all but the first ``own``
+        items): the invalidator, the job commits and the dispatcher never plan background work themselves."""
         work = collections.deque(items)
         first: dict[str, Any] | None = None
         first_set = False
+        n = 0
         while work:
             item = work.popleft()
             kind = item[0]
+            n += 1
+            pr = self._item_priority(item)
+            if pr > self.PANE_PRIORITY and defer and n > own and self._later_on():
+                self._defer(pr, item)
+                continue
             try:
-                if kind == "want":
-                    _, plan, priority, reason, reuse = item
-                    with self._lock:
-                        if self._closed:
-                            break
-                        out, more = self._want(plan, priority, reason, reuse)
-                    if not first_set:
-                        first, first_set = out, True
-                    work.extend(more)
-                elif kind == "upstream":
-                    _, utype, uscope, view, priority, down = item
-                    try:
-                        up = self.planner.plan(utype, uscope, view)
-                    except Exception as e:
-                        work.append(("upfailed", utype, uscope, view, f"planning {utype}/{uscope} failed: {e}"))
-                        continue
-                    with self._lock, self.cache.tx() as con:
-                        dgoal = goals.get(con, down[0], down[1], down[2]) or {}
-                        watch = bool(dgoal.get("watch"))
-                        goals.upsert(
-                            con,
-                            utype,
-                            uscope,
-                            view.token(),
-                            priority=priority,
-                            watch=True if watch else None,
-                            expires=dgoal.get("expires") if watch else False,
-                            auto=True,
-                        )
-                    work.append(("want", up, priority, "upstream", None))
-                elif kind == "ready":
-                    _, rtype, rscope, changed, *rest = item
-                    work.extend(self._ready(rtype, rscope, changed, rest[0] if rest else None))
-                elif kind == "upfailed":
-                    _, utype, uscope, view, text = item
-                    self._fail_waiting(ref_job(utype, uscope), view.token() if view else None, text)
-                elif kind == "replan":
-                    _, g, reason = item
-                    view = View.parse(g["view"])
-                    try:
-                        plan = self.planner.plan(g["type"], g["scope"], view)
-                    except Exception as e:
-                        log.warning("re-planning %s/%s in %s failed: %s", g["type"], g["scope"], g["view"], e)
-                        with self._lock, self.cache.tx() as con:
-                            goals.set_state(con, g["type"], g["scope"], g["view"], state="error", error=str(e)[:2000])
-                        continue
-                    work.append(("want", plan, int(g["priority"]), reason, None))
-                elif kind == "replan_job":
-                    _, row = item
-                    try:
-                        plan = self.planner.plan(row["type"], row["scope"], View.parse(row["view"]))
-                    except Exception as e:
-                        self._fail_row(row["id"], f"planning failed: {e}", traceback.format_exc())
-                        continue
-                    work.append(("want", plan, int(row["priority"]), "upstream", row["id"]))
+                with self._background(pr > self.PANE_PRIORITY):
+                    if kind == "want":
+                        _, plan, priority, reason, reuse = item
+                        with self._lock:
+                            if self._closed:
+                                break
+                            out, more = self._want(plan, priority, reason, reuse)
+                        if not first_set:
+                            first, first_set = out, True
+                        work.extend(more)
+                    else:
+                        work.extend(self._work_item(item))
             except Exception:
                 log.exception("job work item %s failed", kind)
         self._flush()
         self._wake.set()
         return first
+
+    def _work_item(self, item: tuple) -> list[tuple]:
+        """One ``upstream``, ``ready``, ``upfailed``, ``replan`` or ``replan_job`` item of ``_drain``; returns the
+        items it leads to."""
+        kind = item[0]
+        if kind == "upstream":
+            _, utype, uscope, view, priority, down = item
+            try:
+                up = self.planner.plan(utype, uscope, view)
+            except Exception as e:
+                return [("upfailed", utype, uscope, view, f"planning {utype}/{uscope} failed: {e}")]
+            with self._lock, self.cache.tx() as con:
+                dgoal = goals.get(con, down[0], down[1], down[2]) or {}
+                watch = bool(dgoal.get("watch"))
+                goals.upsert(
+                    con,
+                    utype,
+                    uscope,
+                    view.token(),
+                    priority=priority,
+                    watch=True if watch else None,
+                    expires=dgoal.get("expires") if watch else False,
+                    auto=True,
+                )
+            return [("want", up, priority, "upstream", None)]
+        if kind == "ready":
+            _, rtype, rscope, changed, *rest = item
+            return self._ready(rtype, rscope, changed, rest[0] if rest else None)
+        if kind == "upfailed":
+            _, utype, uscope, view, text = item
+            self._fail_waiting(ref_job(utype, uscope), view.token() if view else None, text)
+            return []
+        if kind == "replan":
+            _, g, reason = item
+            view = View.parse(g["view"])
+            try:
+                plan = self.planner.plan(g["type"], g["scope"], view)
+            except Exception as e:
+                log.warning("re-planning %s/%s in %s failed: %s", g["type"], g["scope"], g["view"], e)
+                with self._lock, self.cache.tx() as con:
+                    goals.set_state(con, g["type"], g["scope"], g["view"], state="error", error=str(e)[:2000])
+                return []
+            return [("want", plan, int(g["priority"]), reason, None)]
+        if kind == "replan_job":
+            _, row = item
+            try:
+                plan = self.planner.plan(row["type"], row["scope"], View.parse(row["view"]))
+            except Exception as e:
+                self._fail_row(row["id"], f"planning failed: {e}", traceback.format_exc())
+                return []
+            return [("want", plan, int(row["priority"]), "upstream", row["id"])]
+        return []
+
+    @staticmethod
+    def _item_priority(item: tuple) -> int:
+        """The priority a work item is done at (a result that became ready, or a failure, at once)."""
+        kind = item[0]
+        if kind == "want":
+            return int(item[2])
+        if kind == "upstream":
+            return int(item[4])
+        if kind == "replan":
+            return int(item[1]["priority"])
+        if kind == "replan_job":
+            return int(item[1]["priority"])
+        return 0
+
+    # ------------------------------------------------------------------------------------------ the foreground
+
+    @contextlib.contextmanager
+    def foreground(self) -> Iterator[None]:
+        """Hold the foreground while a live import runs (see the module doc): the background waits till it ends,
+        the invalidator has taken in what it wrote, and the panes' jobs it led to have run."""
+        me = threading.get_ident()
+        with self._fg_lock:
+            self._fg_holds += 1
+            self._fg_threads[me] += 1
+        try:
+            yield
+        finally:
+            seq = 0
+            last_seq = getattr(self.store, "last_seq", None)
+            if callable(last_seq):
+                with contextlib.suppress(Exception):
+                    seq = int(last_seq())
+            with self._fg_lock:
+                self._fg_holds -= 1
+                self._fg_threads[me] -= 1
+                if self._fg_threads[me] <= 0:
+                    del self._fg_threads[me]
+                self._fg_seq = max(self._fg_seq, seq)
+            self._inval_wake.set()
+            self._wake.set()
+
+    def _fg_rewound(self, last: int) -> None:
+        """The outbox went back to ``last`` (a restore): the seq the last import ended at may never come again, so
+        the background no longer waits for the invalidator to reach it."""
+        with self._fg_lock:
+            if self._fg_seq > last:
+                self._fg_seq = 0
+
+    def _foreground_busy(self, *, jobs: bool = True) -> bool:
+        """Whether the background waits now: a live import holds the foreground, the invalidator has not yet taken
+        in what the last one wrote, or (``jobs``: for starting a job) a job at the panes' priority (0 or 1) is queued
+        or running."""
+        with self._fg_lock:
+            if self._fg_holds:
+                return True
+            seq = self._fg_seq
+        if seq and self._started and not self._stopping.is_set() and int(self.cache.cursor("invalidator") or 0) < seq:
+            return True
+        if not jobs:
+            return False
+        row = self.cache.one(
+            "SELECT 1 FROM job WHERE state IN ('queued', 'running') AND key IS NOT NULL AND priority <= ? LIMIT 1",
+            (self.PANE_PRIORITY,),
+        )
+        return row is not None
+
+    def _background_may_start(self) -> bool:
+        """Whether the dispatcher may start a background job now: the foreground is free, or it has been busy for
+        ``BACKGROUND_WAIT_S`` on end (then one starts, and the wait begins again)."""
+        if not self._foreground_busy():
+            self._fg_busy_since = None
+            return True
+        now = time.monotonic()
+        if self._fg_busy_since is None:
+            self._fg_busy_since = now
+            return False
+        if now - self._fg_busy_since >= BACKGROUND_WAIT_S:
+            self._fg_busy_since = now
+            return True
+        return False
+
+    def _wait_foreground(self) -> bool:
+        """Wait until no import holds the foreground and the invalidator has taken in what it wrote (at most
+        ``BACKGROUND_WAIT_S``). Planning does not wait for the panes' jobs: they run on hosts it does not take.
+        Returns whether the foreground is free (False: the wait ran out)."""
+        deadline = time.monotonic() + BACKGROUND_WAIT_S
+        while not self._stopping.is_set() and self._foreground_busy(jobs=False):
+            if time.monotonic() >= deadline:
+                return False
+            self._stopping.wait(0.02)
+        return True
+
+    @contextlib.contextmanager
+    def _background(self, on: bool) -> Iterator[None]:
+        """Plans made in this block are background work (they stop while the foreground is busy). A block whose wait
+        ran out once goes on without waiting again: it waits ``BACKGROUND_WAIT_S`` at most, not that at each step
+        (a plan that holds a lock the foreground's own work needs would otherwise keep the foreground busy too)."""
+        was, gave_up = getattr(self._bg, "on", False), getattr(self._bg, "gave_up", False)
+        self._bg.on, self._bg.gave_up = on, False
+        try:
+            yield
+        finally:
+            self._bg.on, self._bg.gave_up = was, gave_up
+
+    def _pause(self, held: tuple[str, ...]) -> None:
+        """``Planner.pause``: background planning waits here for the foreground, unless this thread holds it, or holds
+        the plan lock of a type the panes plan (a pane's plan would wait for that lock)."""
+        if not getattr(self._bg, "on", False) or getattr(self._bg, "gave_up", False):
+            return
+        with self._fg_lock:
+            if threading.get_ident() in self._fg_threads:
+                return
+        for t in held:
+            try:
+                if int(getattr(self.registry.get(t), "priority", 0)) <= self.PANE_PRIORITY:
+                    return
+            except Exception:  # noqa: BLE001 - an unknown type: do not wait
+                return
+        # a plan reads the store many times: the foreground found free is not asked again for 20 ms
+        if time.monotonic() - getattr(self._bg, "free_at", -1.0) < 0.02:
+            return
+        if not self._wait_foreground():
+            self._bg.gave_up = True
+        self._bg.free_at = time.monotonic()
+
+    def _later_on(self) -> bool:
+        t = self._later_thread
+        return t is not None and t.is_alive() and not self._stopping.is_set()
+
+    def _defer(self, priority: int, item: tuple) -> None:
+        with self._later_cond:
+            heapq.heappush(self._later, (int(priority), next(self._later_n), item))
+            self._later_cond.notify()
+
+    def _hand_on(self, item: tuple, jid: str) -> None:
+        """The dispatcher's own ``want`` (the job's key moved) or ``replan_job`` (an upstream output is gone) for the
+        queued job ``jid``. At the background's priority it goes to the background planner, and the dispatcher does
+        not pick the job again until that is done (else it would plan it and hand it on again, over and over)."""
+        pr = self._item_priority(item)
+        if pr > self.PANE_PRIORITY and self._later_on():
+            with self._later_cond:
+                self._handed.add(jid)
+            self._defer(pr, item)
+            self._wake.set()
+            return
+        self._drain([item])
+
+    @staticmethod
+    def _item_job(item: tuple) -> str | None:
+        """The queued job a work item is about, when the dispatcher handed it on (``_hand_on``)."""
+        if item[0] == "want":
+            return item[4]
+        if item[0] == "replan_job":
+            return item[1].get("id")
+        return None
+
+    def _later_loop(self) -> None:
+        """The background planner: the background work the invalidator, the commits and the dispatcher handed on,
+        most urgent first, each item once the foreground is free; what an item leads to goes back on the heap."""
+        while not self._stopping.is_set():
+            with self._later_cond:
+                while not self._later and not self._stopping.is_set():
+                    self._later_cond.wait(0.25)
+                if self._stopping.is_set():
+                    return
+                self._later_busy = True
+            try:
+                self._wait_foreground()
+                with self._later_cond:
+                    item = heapq.heappop(self._later)[2] if self._later else None
+                if item is not None:
+                    try:
+                        self._drain([item], defer=True, own=1)
+                    finally:
+                        jid = self._item_job(item)
+                        if jid is not None:
+                            with self._later_cond:
+                                self._handed.discard(jid)
+                        self._wake.set()
+            except Exception:
+                log.exception("the background planner failed; it carries on")
+            finally:
+                with self._later_cond:
+                    self._later_busy = False
 
     def _want(self, plan: Plan, priority: int, reason: str, reuse: str | None) -> tuple[dict[str, Any], list[tuple]]:
         """Make the plan's goal want its key: a hit, a link to an active job, a new or reused queued job, or a
@@ -961,7 +1208,17 @@ class Scheduler:
 
     def _pick(self) -> dict[str, Any] | None:
         rows = self.cache.query("SELECT * FROM job WHERE state = 'queued' AND key IS NOT NULL ORDER BY priority, id")
+        with self._later_cond:
+            handed = set(self._handed)
+        may: bool | None = None
         for r in rows:
+            if r["id"] in handed:
+                continue  # the background planner has it (_hand_on)
+            if int(r["priority"]) > self.PANE_PRIORITY:
+                if may is None:
+                    may = self._background_may_start()
+                if not may:
+                    return None  # the rows are in priority order: the rest are background too
             host = self.hosts.get(r["host"])
             if host is None:
                 continue
@@ -990,7 +1247,7 @@ class Scheduler:
                     cur = self._row(jid)
                     if cur is None or cur["state"] != "queued" or cur["key"] != pick["key"]:
                         return True
-                self._drain([("want", plan, int(pick["priority"]), "moved", jid)])
+                self._hand_on(("want", plan, int(pick["priority"]), "moved", jid), jid)
                 return True
         upstream: dict[str, Output] = {}
         try:
@@ -1004,7 +1261,7 @@ class Scheduler:
                         self.cache.drop_result(k)
                     raise
         except NotFound:
-            self._drain([("replan_job", pick)])
+            self._hand_on(("replan_job", pick), jid)
             return True
         jt = self.registry.get(pick["type"])
         host = self.hosts[pick["host"]]
@@ -1387,7 +1644,7 @@ class Scheduler:
             else:
                 follow.append(("want", replan, int(row["priority"]), "stale", jid))
         follow += [("want", p, pr, "stale", None) for p, pr in moved_others]
-        self._drain(follow)
+        self._drain(follow, defer=True)
 
     # --------------------------------------------------------------------------------------------- monitor
 
@@ -1567,7 +1824,8 @@ class Scheduler:
                 log.warning("the truth DB has a new epoch (%s, was %s); re-planning every goal", epoch, seen)
                 self.cache.set_cursor("invalidator", last)
                 cursor = last
-                self.replan_all()
+                self._fg_rewound(last)
+                self.replan_all(defer=True)
         if cursor and callable(last_seq):
             last = int(last_seq())
             if last < cursor:
@@ -1575,14 +1833,15 @@ class Scheduler:
                 log.warning("the outbox ends at %s, before the cache's cursor %s; re-planning every goal", last, cursor)
                 self.cache.set_cursor("invalidator", last)
                 cursor = last
-                self.replan_all()
+                self._fg_rewound(last)
+                self.replan_all(defer=True)
         min_seq = getattr(self.store, "min_seq", None)  # Store.min_seq, as above
         if cursor and callable(min_seq):
             first = int(min_seq())
             if first > cursor + 1:
                 # events after the cursor were pruned from the outbox: what they changed is unknown
                 log.warning("the outbox starts at %s, past the cursor %s; re-planning every goal", first, cursor)
-                self.replan_all()
+                self.replan_all(defer=True)
                 self.cache.set_cursor("invalidator", first - 1)
                 cursor = first - 1
         while not self._stopping.is_set():
@@ -1615,7 +1874,7 @@ class Scheduler:
             params = PARAM_KIND in kinds or PARAM_KIND in bulk
             items = self._affected(rec_refs, kinds, bulk, params, by_kind=by_kind, layers=layers)
             if items:
-                self._drain(items)
+                self._drain(items, defer=True)
             cursor = int(events[-1]["seq"])
             self.cache.set_cursor("invalidator", cursor)
             if len(events) < 1000:

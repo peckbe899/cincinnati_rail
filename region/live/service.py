@@ -24,7 +24,9 @@ one worker thread, which handles one source at a time, coalescing repeats:
 **Recompute.** Records an import changed invalidate, through the scheduler's outbox tail, exactly the results
 whose plans read them; an unchanged output stops the chain (early cutoff). Every section in ``main`` has a
 background goal (``profiles.solve_section``, priority 5); a pane asks for its own at priority 0 when it has the
-focus and 1 when it is open (``set_priority``), so the section in front of Ben is solved first.
+focus and 1 when it is open (``set_priority``), so the section in front of Ben is solved first. Each import and
+undo holds the scheduler's foreground (``Scheduler.foreground``): background work (a sheet's run chain at 2 and 3,
+the goals of every line) neither starts nor plans until the import, and the panes' solves it leads to, are done.
 
 **What Ben sees.** Each step sends a ``source`` event (``{source, label, state, text, at, run, changeset, review,
 sections, toast, undo}``), a ``live`` event (``{paused, pending, updated}``) when the summary moves, and a
@@ -460,7 +462,7 @@ class Live:
                 if source is None:
                     continue
                 self._applied_now = False
-                with self._busy:
+                with self._busy, self._foreground():
                     self.act(source, changed, reason)
                 if self._applied_now and self.yield_s > 0 and source.kind == "import" and self._next_is_import():
                     time.sleep(self.yield_s)
@@ -472,6 +474,12 @@ class Live:
             finally:
                 self._working = False
                 self._queue.task_done()
+
+    def _foreground(self) -> Any:
+        """The scheduler's foreground while an import or an undo runs: background work (a sheet's run chain, the
+        goals of every line) waits until it, and the focused section's solve it leads to, are done."""
+        hold = getattr(self.jobs, "foreground", None)
+        return hold() if callable(hold) else contextlib.nullcontext()
 
     def _next_is_import(self) -> bool:
         """Whether the next queued item is an importer's source (the old hub's after the line files')."""
@@ -1055,7 +1063,7 @@ class Live:
         source = self.by_id.get(sid)
         if source is None or source.kind != "import":
             raise NotFound(f"no live import source {sid!r}")
-        with self._busy:
+        with self._busy, self._foreground():
             # read under the worker's lock: an import of the same source that is running now lands first, and its
             # changeset is the one undone (never an older one under it)
             with self._lock:

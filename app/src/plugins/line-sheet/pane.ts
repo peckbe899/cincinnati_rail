@@ -109,7 +109,7 @@ import {
   toFloat64,
 } from "./model.ts";
 import { buildPanel, keepFocus } from "./panel.ts";
-import { type RunDirs, Runs } from "./runs.ts";
+import { type ReadyEdit, type RunDirs, Runs } from "./runs.ts";
 import { buildRunTable, whereOpen } from "./runtable.ts";
 import { buildSettings, type SettingParam } from "./settings.ts";
 import { issueAt, labelBoxes, levelExtent, resetLabels, type ShowMode, sampleAt, typeAtSample } from "./solved.ts";
@@ -136,6 +136,9 @@ import {
 export const SOLVE_JOB = "profiles.solve_section";
 /** The section's ground from the ground model (I2.1): the sheet reads its input again when it lands. */
 export const GROUND_JOB = "ground.profile";
+/** The sheet asks its run once its first solves have landed, and at the latest this long after it opens the section
+ * (a whole solve that never lands, from a read or a worker that hangs, must not leave the sheet without its run). */
+export const RUN_ASK = { latestMs: 10_000 };
 
 /** Record kinds the section's input is built from: a new revision of one reads the input again. */
 const INPUT_KINDS: ReadonlySet<string> = new Set(["section", "stop", "platform", "ground_profile", "param"]);
@@ -666,9 +669,25 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       const routeId = (sec.data as { route?: unknown } | undefined)?.route;
       if (gen !== generation || typeof routeId !== "string") return;
       runs.open({ sectionId, routeId, view, token: viewToken(view) }, ctx.isActive?.() ?? true);
+      // an edit made before the run was asked: its draft run goes now
+      if (lastReady?.dirty) runs.ready(lastReady);
     } catch {
       /* a line with no route has no run: the band stays folded */
     }
+  };
+  /** The run is asked once the sheet's first solves have landed (the rail's, then the whole solve where the hub
+   * gives its input): what Ben sees first, and a line file he saves meanwhile, never share the hub with the run's
+   * cold chain (the crossing lines, the structure, the fit and the run). */
+  let runsDue = -1;
+  let lastReady: ReadyEdit | null = null;
+  const solveReady = (x: ReadyEdit) => {
+    lastReady = x;
+    runs.ready(x);
+  };
+  const runsNow = (gen: number) => {
+    if (runsDue !== gen || gen !== generation) return;
+    runsDue = -1;
+    void openRuns(gen);
   };
   const setRunDirs = (d: RunDirs) => {
     runDirs = d;
@@ -924,7 +943,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
         fullSoon();
       }
       // no whole solve on this line (the hub gave no SectionSolveInput): the draft runs on the saved structure
-      if (!ssi) runs.ready({ rev: editRev, input: inp, typeRuns: null, dirty: profileDirty() });
+      if (!ssi) solveReady({ rev: editRev, input: inp, typeRuns: null, dirty: profileDirty() });
       // The panel and tables follow the facts solve that comes next; without one they follow the rail.
       if (!si && tableDue) {
         tableDue = false;
@@ -1110,12 +1129,13 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
         takeDesign(solved.design);
         // the whole solve of the current edit: the draft's run times may go (runs.ts waits out the pause and drags)
         if (rev === editRev && input)
-          runs.ready({
+          solveReady({
             rev,
             input: solveInput(input, data(), frame),
             typeRuns: solved.type_runs as unknown[],
             dirty: profileDirty(),
           });
+        runsNow(gen);
         solveInfo.dataset.fullMs = String(performance.now() - t0);
         solveInfo.dataset.fullEngineMs = String(out.ms);
         solveInfo.dataset.fullRev = String(Number(solveInfo.dataset.fullRev ?? 0) + 1);
@@ -1128,7 +1148,8 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       solveInfo.dataset.fullError = String((e as Error).message ?? e);
       // no whole solve for this edit: its run times go on the saved structure (the hub's answer says so)
       if (gen === generation && rev === editRev && input)
-        runs.ready({ rev, input: solveInput(input, data(), frame), typeRuns: null, dirty: profileDirty() });
+        solveReady({ rev, input: solveInput(input, data(), frame), typeRuns: null, dirty: profileDirty() });
+      runsNow(gen);
     } finally {
       fullBusy = false;
       if (fullAgain) {
@@ -1409,14 +1430,19 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       showChainage();
       if (!range || shownSection !== sectionId) range = [0, input.length_m];
       // the whole solve's input is the heaviest read: it follows on its own, so the rail and facts never wait
+      runsDue = gen;
+      lastReady = null;
+      setTimeout(() => runsNow(gen), RUN_ASK.latestMs);
       void host.api
         .solveInput(sectionId, view)
         .then((x) => {
           if (gen !== generation) return;
           ssi = x;
-          fullSoon();
+          if (ssi) fullSoon();
+          else runsNow(gen);
         })
-        .catch(() => undefined);
+        // no whole solve on this line: the run is asked now
+        .catch(() => runsNow(gen));
       shownSection = sectionId;
       if (popKind === "settings") void loadSettings().then(renderPop);
       if (target.profile) {
@@ -1443,7 +1469,6 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       void solve();
       void loadServer();
       void requestSolve();
-      void openRuns(gen);
     } catch (e) {
       solveInfo.textContent = `Could not load the section: ${String((e as Error).message ?? e)}`;
       draw();

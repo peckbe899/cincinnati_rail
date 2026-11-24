@@ -21,7 +21,7 @@ import { discover } from "../../src/core/registry.ts";
 import { createAppStore } from "../../src/core/store.ts";
 import { parseUrl } from "../../src/core/url.ts";
 import { createEngine } from "../../src/engine/client.ts";
-import { mountSheet } from "../../src/plugins/line-sheet/pane.ts";
+import { mountSheet, RUN_ASK } from "../../src/plugins/line-sheet/pane.ts";
 import { BASE, FakeHub } from "./fake_hub.ts";
 
 const RAW = JSON.parse(readFileSync(new NodeURL("./fixtures/run_result_line6.json", import.meta.url), "utf-8")) as {
@@ -215,5 +215,61 @@ describe("run times on the mounted sheet", () => {
     mounted = null;
     await until(() => focuses.some((f) => f.type === "railsim.run" && f.priority === 9));
     host.dispose();
+  });
+
+  it("asks the run only once the sheet's first solves have landed, never while the whole solve's input is read", async () => {
+    // a fresh hub: the run's chain is cold, and a line file Ben saves now must not share the hub with it
+    let answer: () => void = () => {};
+    const held = new Promise<void>((r) => {
+      answer = r;
+    });
+    server.use(
+      http.get(`${BASE}/x/profiles/sections/:id/solve`, async () => {
+        await held;
+        return HttpResponse.json({}, { status: 404 });
+      }),
+    );
+    hub.seed({ kind: "section", id: "SEC6", data: { route: "R6", length_m: 29539.6, step_m: 2 } });
+    hub.seed({ kind: "profile", id: "PR6", data: { section: "SEC6", pvi: [[5000, 160]] } });
+    const host = makeHost("/w/design?layer=main&sel=profile:PR6");
+    const el = document.createElement("div");
+    document.body.append(el);
+    const n = computes.length;
+    mounted = await mountSheet(el, ctxOf(host));
+    const asked = () => computes.slice(n).filter((c) => c.type === "railsim.run").length;
+    // the rail is solved and asked of the hub; the run waits for the whole solve
+    await until(() => computes.slice(n).some((c) => c.type === "profiles.solve_section"));
+    await tick(300);
+    expect(asked()).toBe(0);
+    answer();
+    await until(() => asked() === 1);
+    const card = () => el.querySelector('[data-testid="sheet-runs"]') as HTMLElement;
+    await until(() => !!card()?.textContent?.includes("Towne to Beechgrove"));
+    host.dispose();
+  });
+
+  it("asks the run all the same when the whole solve's input never comes", async () => {
+    // a whole solve that never lands (a read or a worker that hangs) must not leave the sheet without its run
+    const was = RUN_ASK.latestMs;
+    RUN_ASK.latestMs = 400;
+    server.use(http.get(`${BASE}/x/profiles/sections/:id/solve`, () => new Promise<Response>(() => {})));
+    try {
+      hub.seed({ kind: "section", id: "SEC6", data: { route: "R6", length_m: 29539.6, step_m: 2 } });
+      hub.seed({ kind: "profile", id: "PR6", data: { section: "SEC6", pvi: [[5000, 160]] } });
+      const host = makeHost("/w/design?layer=main&sel=profile:PR6");
+      const el = document.createElement("div");
+      document.body.append(el);
+      const n = computes.length;
+      mounted = await mountSheet(el, ctxOf(host));
+      const asked = () => computes.slice(n).filter((c) => c.type === "railsim.run").length;
+      await until(() => computes.slice(n).some((c) => c.type === "profiles.solve_section"));
+      expect(asked()).toBe(0);
+      await until(() => asked() === 1);
+      const card = () => el.querySelector('[data-testid="sheet-runs"]') as HTMLElement;
+      await until(() => !!card()?.textContent?.includes("Towne to Beechgrove"));
+      host.dispose();
+    } finally {
+      RUN_ASK.latestMs = was;
+    }
   });
 });
