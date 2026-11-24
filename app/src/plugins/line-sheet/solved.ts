@@ -1,0 +1,2147 @@
+// The line sheet's bands from section.solve@1 (claude/hub_maps/engine_port_plan.md, section 1): everything the old
+// Rail Profiles page drew between the stations (profiles.html 2276-2869), from the whole solve of the draft
+// (BandData.solved) and its input (BandData.solveInput):
+//
+//   water          the rivers: the pool line, its shading, the name and the bed it was given
+//   ground works   the finished ground against the surveyed one: street re-grades and drawn ground shaded, open cuts
+//                  hatched, the surveyed ground dashed (REGRADED, CUT)
+//   context        other systems' structures (CUT, Norwood Central) from the Deck, grey, dashed
+//   crossings      a dashed line at each crossing, the other line's structure as a box at its rail and "Line 3 box
+//                  7.3 m apart, needs 6.1" (red where short)
+//   locks          locked stretches shaded with "Locked"
+//   over grade     a red halo over a grade past its limit
+//   outlines       tunnel and box outlines by structure (roof or crown to floor or invert), the made-up bed over a
+//                  sunk box, the channel over it, the legal band dashed (tube colour: the shallowest a tube may run;
+//                  box colour: the deepest a box may go), the unbuildable hatch, viaducts with girders or trusses
+//                  and piers
+//   roads          the streets the line runs under (dotted, solid where built over the subway) and the roads it
+//                  crosses (a bar on the street in the road class's colour), named where there is room
+//   curve grade    grade plus curve allowance over the limit, dashed under the rail with "+15.7‰ with curve"
+//   drawn ground   Ben's drawn ground lines and their points
+//   shafts         a marker on the rail with "shaft"
+//   issues         every finding as a triangle along the bottom of the plot, in its severity's colour
+//   crossing ticks a tick on the plot's top edge at each crossing with the other line's tag ("L3", "E trunk")
+//   strips         the structure band along the whole line (with the unbuildable and misfit hatch and Ben's paints
+//                  marked under it), the Chronology band (year and phase), and the overview of the whole line
+//
+// The rail is the sheet's live one (BandData.rail): the outlines are the solve's offsets from the rail, so during a
+// drag they follow the rail at once and the structure is the last solve's, as the old page drew it (LAST_T, 1339).
+
+import type { SolvedSection } from "@cr/engine/contract";
+import { curveAllowance, radii } from "@cr/engine/curve";
+import type { BandData, BandDef, Handle, SheetView } from "../../core/plugin.ts";
+import { fmtCh, fmtG, fmtZ, SEV_COLOURS, TYPES, typeColour, valueAt } from "./drawing.ts";
+import type { ProfileData } from "./model.ts";
+import { stationStripBand } from "./stations.ts";
+import { groundLines } from "./tools.ts";
+
+export type ShowMode = "rail" | "railbox" | "box";
+
+const UI_FONT = "system-ui, sans-serif";
+const NUM_FONT = "ui-monospace, SFMono-Regular, Menlo, monospace";
+const PAPER = "#16181d";
+const INK = "#d8dbe2";
+const MUTED = "#8b919e";
+const GRID_MAJOR = "#4a505c";
+export const WATER = "#5aa9e0";
+export const WATER_FILL = "rgba(90, 169, 224, 0.16)";
+export const EARTH = "#b39c72";
+const WARN = SEV_COLOURS.error;
+const CAUTION = SEV_COLOURS.warn;
+/** Road classes, the old page's colours made lighter for the dark sheet (ROAD_COL, 450). */
+export const ROAD_COLOURS: Record<string, string> = { highway: "#e0675c", major: "#e09a3a", minor: "#a0a0a0" };
+/** The Chronology's phase colours (2799). */
+export const PHASE_COLOURS: Record<string, string> = {
+  "1": "#2f6fb3",
+  "2": "#c2571a",
+  "3": "#2e8b57",
+  later: "#8e5bb5",
+};
+
+const TUNNEL = new Set(["shield", "deep", "cutcover", "sunk"]);
+
+type Run<T> = readonly [T, number, number];
+type Struct = SolvedSection["struct_runs"][number][0];
+
+// ----------------------------------------------------------------------------------------------- pure helpers
+
+/** The run holding c (runs tile the line from 0 to its length), by binary search; the last one past the end. */
+export function runAt<T>(runs: readonly Run<T>[], c: number): Run<T> | null {
+  if (!runs.length) return null;
+  let lo = 0;
+  let hi = runs.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1;
+    if ((runs[mid] as Run<T>)[1] <= c) lo = mid;
+    else hi = mid - 1;
+  }
+  return runs[lo] as Run<T>;
+}
+
+/** A value per sample (null where none) at c, by straight lines between samples. */
+export function sampleAt(arr: ArrayLike<number | null> | undefined, step: number, c: number): number | null {
+  if (!arr?.length) return null;
+  const k = c / step;
+  const i = Math.max(0, Math.min(arr.length - 1, Math.floor(k)));
+  const a = arr[i];
+  const b = arr[Math.min(arr.length - 1, i + 1)];
+  if (a == null || !Number.isFinite(a)) return null;
+  if (b == null || !Number.isFinite(b)) return a;
+  return a + (b - a) * Math.min(1, Math.max(0, k - i));
+}
+
+/** The drawn type at c as the old typeAt read it: the type of the sample nearest c (T.t[round(c / step)], 1607), so
+ * a run's ends fall where the old page's did (its GeoJSON runs found every 5 m start on the same metre). */
+export function typeAtSample(
+  sv: Pick<SolvedSection, "type_runs" | "step_m"> | null | undefined,
+  c: number,
+): string | null {
+  if (!sv) return null;
+  return runAt(sv.type_runs, Math.round(c / sv.step_m) * sv.step_m)?.[0] ?? null;
+}
+
+/** The words for another line's structure at a crossing (the old label: "box", "type A tube (cast iron ...)"). */
+export function structWord(s: { k: string; tube?: string } | null, tubes?: Record<string, { label: string }>): string {
+  if (!s) return "";
+  if ((s.k === "tube" || s.k === "bore") && s.tube && tubes?.[s.tube])
+    return (tubes[s.tube] as { label: string }).label;
+  return (
+    (
+      {
+        box: "box",
+        tube: "tube",
+        bore: "bored tube",
+        sunk: "sunk box",
+        elevated: "viaduct",
+        atgrade: "at grade",
+        trough: "open trough",
+      } as Record<string, string>
+    )[s.k] ?? s.k
+  );
+}
+
+/** A crossing line's tag as the old page wrote it on the top edge (2829): "L3", "CVG", "RER-B" as "RB". */
+export const crossingTag = (w: string): string =>
+  w
+    .replace("CVG Express", "CVG")
+    .replace(/^Line /, "L")
+    .replace("RER-", "R");
+
+type Flag = SolvedSection["flags"][number];
+type SolveInput = import("@cr/engine/contract").SectionSolveInput;
+
+/** What the words of a finding read beside the finding itself: the units, the solve and its input. */
+export interface Words {
+  /** a length in the display unit to d decimals, no label (the old fmtZ) */
+  z(v: number, d?: number): string;
+  /** the display unit's label (the old uLbl) */
+  u: string;
+  input?: SolveInput | null;
+  solved?: SolvedSection | null;
+}
+
+/** Words for findings in a display unit, from the sheet's Units. */
+export function wordsIn(
+  units: { length: string; format(v: number, xunit: string, d?: number): string; label(x: string): string },
+  input?: SolveInput | null,
+  solved?: SolvedSection | null,
+): Words {
+  const ft = units.length === "ft";
+  return {
+    z: (v, d = 1) => (Number.isFinite(v) ? (ft ? v / 0.3048 : v).toFixed(d) : "–"),
+    u: units.label("m"),
+    input: input ?? null,
+    solved: solved ?? null,
+  };
+}
+
+/** A finding in plain words for its tooltip and the text layer: its kind, the old page's sentence, its rule id. */
+export function flagWords(f: Flag, w: Words): string {
+  return `${f.page}: ${issueText(f, w)} (${f.rule})`;
+}
+
+type Phase = "1" | "2" | "3" | "later";
+const phaseWord = (ph: unknown): string => (ph === "later" ? "later" : `Phase ${String(ph)}`);
+const typeWord = (t: unknown): string => TYPES[String(t)]?.label ?? String(t);
+
+/** A structure's name as the old page labelled it (structFor 1202, METRO_ST 1052, the tubes' labels). */
+function structLabel(s: unknown, w: Words): string {
+  const x = (s ?? {}) as { k?: string; tube?: string | null; label?: string };
+  if (x.label) return x.label;
+  const tubes = w.input?.structure?.tubes as Record<string, { label: string }> | undefined;
+  if ((x.k === "tube" || x.k === "bore") && x.tube && tubes?.[x.tube])
+    return (tubes[x.tube] as { label: string }).label;
+  return (
+    (
+      {
+        box: "box",
+        tube: "twin tube",
+        // an RER bored tube (structFor 1214); the Metro's double-track bore carries its tube key
+        bore: "bored tube",
+        sunk: "sunk box",
+        elevated: "viaduct",
+        atgrade: "at grade",
+        trough: "open trough",
+      } as Record<string, string>
+    )[x.k ?? ""] ?? String(x.k)
+  );
+}
+
+/** The grade limit's reason (gradeLimitAt 1142-1153): "Phase 1: a 582 m curve, 50‰". */
+function limitWhy(d: Record<string, unknown>, w: Words): string {
+  const why = d.why;
+  if (why === "rer" || why == null) return "";
+  const ph = (d.phase ?? "later") as Phase;
+  const pr = w.input?.structure?.phases?.[ph];
+  const pl = phaseWord(ph);
+  const lim = Number(d.lim);
+  const st = pr?.grade_straight ?? w.input?.structure?.grades.straight_underground_max ?? lim;
+  const R = typeof d.R === "number" && Number.isFinite(d.R) ? d.R : Number.POSITIVE_INFINITY;
+  if (why === "straight_underground") return `${pl}: straight underground up to ${st}‰ as a warning`;
+  if (why === "straight_open") return `${pl}: straight but not underground, ${lim}‰`;
+  if (why === "straight") return `${pl}: straight, up to ${lim}‰`;
+  if (why === "curve_long") return `${pl}: a curve over ${pr?.curve_radius || 500} m, up to ${lim}‰`;
+  return `${pl}: ${R < Number.POSITIVE_INFINITY ? `a ${Math.round(R)} m curve` : "curve"}, ${lim}‰`;
+}
+
+/** An anchor of a stretch by name (name 1455): a station, the line's end, a river box, a shaft, the portal or a box. */
+function anchorWord(a: unknown): string {
+  const x = (a ?? {}) as { kind?: string; station?: string; river?: string };
+  if (x.kind === "end") return "the line's end";
+  if (x.kind === "station") return String(x.station);
+  if (x.kind === "river") return `the ${x.river || "river"} box`;
+  if (x.kind === "shaft") return "a shaft";
+  if (x.kind === "portal") return "the portal";
+  return "the box";
+}
+
+/** Why a stretch is cut and cover or bored (1491-1506). */
+function stretchWhy(d: Record<string, unknown>, w: Words): string {
+  const n = (k: string) => Number(d[k]);
+  const box = d.method === "box";
+  switch (d.why) {
+    case "painted_cutcover":
+      return "painted cut and cover";
+    case "painted_bored":
+      return `painted ${typeWord(d.cls)}`;
+    case "bank_works":
+      return "too short for a drive beside the river box: the bank works (cut and cover in a cofferdam)";
+    case "canon_bored":
+      return "a canon bored section";
+    case "through_mined_station":
+      return "through a mined station";
+    case "both_feasible_phase_prefers":
+      return `both are possible; Phase ${String(d.phase)} prefers ${box ? "cut and cover" : "a bored drive"}`;
+    case "too_shallow_for_a_tube":
+      return "too shallow for a tube anywhere";
+    case "launch_boxes_past_limit":
+      return "the launch boxes would pass the cut-and-cover limit";
+    case "drive_too_short":
+      return `the drive with its cover would be ${Math.round(n("drive_m"))} m, under ${Math.round(n("min_drive_m"))} m`;
+    case "tube_lacks_half_cover":
+      return "the tube would lack half its cover somewhere";
+    case "deeper_than_limit": {
+      const cc = typeof d.cc_max_m === "number" ? d.cc_max_m : w.input?.structure?.phases?.[d.phase as Phase]?.cc_max;
+      return `deeper than the cut-and-cover limit (${w.z(Number(cc), 2)} ${w.u}) in places`;
+    }
+    case "neither_feasible":
+      return `neither can be built as drawn (${Math.round(n("box_bad_m"))} m past the cut-and-cover limit; ${Math.round(n("bore_bad_m"))} m where a tube cannot be bored): drawn as ${box ? "cut and cover" : "a bored drive"}`;
+    default:
+      return String(d.why ?? "").replace(/_/g, " ");
+  }
+}
+
+/** A station of the solve by its index (the deep-in-shallow-canon finding names it by index). */
+function stationName(i: unknown, w: Words): string {
+  const st = w.solved?.stations.find((s) => s.index === i) ?? w.solved?.stations[Number(i)];
+  return st?.name ?? `station ${String(i)}`;
+}
+
+/** A road the line crosses with its class and width, as the old road checks named it (2266). */
+function roadWho(i: unknown, w: Words): { who: string; name: string } {
+  const r = w.input?.context.roads[Number(i)] as [number, number, number, number, string, string] | undefined;
+  if (!r) return { who: `road ${String(i)}`, name: `road ${String(i)}` };
+  const [, , , width, name, cls] = r;
+  return { who: `${name} (${cls}${width ? `, ${w.z(width, 0)} ${w.u}` : ""})`, name };
+}
+
+/** The old page's misfit reasons (FIT_TEXT 1662). */
+function fitText(why: string, t: string, w: Words): string {
+  const S = w.input?.settings;
+  const boxTop = w.input?.structure?.box.top ?? 4.6;
+  switch (why) {
+    case "roof":
+      return `a box needs its roof under the ground (${w.z(boxTop, 1)} ${w.u} to the rail)`;
+    case "above":
+      return "an open trough has its rail under the ground";
+    case "dig":
+      return t === "trough"
+        ? "an open trough is no deeper than a dig (the cut-and-cover limit)"
+        : `deeper than a box's height (${w.z(boxTop, 1)} ${w.u}) is a trough or a box, not at grade`;
+    case "high":
+      return `higher than ${w.z((S?.elevAbove ?? 0) + (S?.deckDepth ?? 0), 1)} ${w.u} over the ground is elevated, not at grade`;
+    case "buried":
+      return "an elevated deck's underside is over the ground";
+    case "cover":
+      return "a mined station needs half a tube diameter of cover at least, even with ground treatment";
+    default:
+      return why;
+  }
+}
+
+/**
+ * A finding in the old page's words, word for word with its numbers (allIssues 2143-2178, designChecks 2080-2130,
+ * drawingFlags 2060, roadChecksNow 2263, gndChecks 1731, solveTypes 1401-1555, misfitText 1666): what the issue list
+ * shows after its kind. The ranges the old list wrote ("0+122 to 1+022: ...") are in the text as there.
+ */
+export function issueText(f: Flag, w: Words): string {
+  const d = f.data as Record<string, unknown>;
+  const n = (k: string) => (typeof d[k] === "number" ? (d[k] as number) : Number.NaN);
+  const z = (k: string, digits = 1) => w.z(n(k), digits);
+  const u = w.u;
+  const S = w.input?.settings;
+  const tubes = w.input?.structure?.tubes as Record<string, { label: string; spacing: number }> | undefined;
+  const range = `${fmtCh(f.c0)} to ${fmtCh(f.c1)}`;
+  const at = () =>
+    `${fmtCh(f.c)} (${n("lat").toFixed(5)}, ${n("lon").toFixed(5)}${d.piece ? `, ${String(d.piece)}` : ""})`;
+  const grade = () => {
+    const where = `${fmtG(n("g"))} from ${fmtCh(f.c0)} to ${fmtCh(f.c1)}`;
+    const avg = `${n("avg").toFixed(1)}‰ averaged over ${Math.round(n("W"))} m`;
+    return { where, avg, why: limitWhy(d, w) };
+  };
+  const words: Record<string, () => string> = {
+    // allIssues: the grades over the limit (2146-2153)
+    grade_over_local: () => {
+      const g = grade();
+      return `${g.where}: over ${n("lim")}‰ for ${Math.round(f.c1 - f.c0)} m only (localized; ${g.avg}; ${g.why})`;
+    },
+    grade_over_straight_underground: () => {
+      const g = grade();
+      return `${g.where}: over ${n("lim")}‰ (${g.why}; ${g.avg})`;
+    },
+    grade_over_sustained: () => {
+      const g = grade();
+      return `${g.where}: sustained over ${(d.warn as number | null) || n("lim")}‰ (${g.avg}${g.why ? `; ${g.why}` : ""})`;
+    },
+    // the clashes with other lines and the context (2154-2156)
+    crossing_level: () => `Crosses ${String(d.with)} at grade at ${fmtCh(f.c)}: needs a grade separation`,
+    context_level: () => `Crosses ${blockName()} at grade at ${fmtCh(f.c)}: needs a grade separation`,
+    crossing_short: () => clash(String(d.with), structLabel(d.to, w)),
+    context_short: () => clash(blockName(), blockName()),
+    // the river checks (2157-2164)
+    sunk_box_high: () =>
+      `Sunk box ${riverAt()}: roof up to ${riverBy()} higher than ${w.z(S?.riverRise ?? 0, 1)} ${u} above the bed (rail at most bed − ${(sunkTop() - (S?.riverRise ?? 0)).toFixed(1)} m)`,
+    sunk_box_low: () =>
+      `Sunk box ${riverAt()}: roof up to ${riverBy()} deeper than ${w.z(S?.riverSink ?? 0, 1)} ${u} into the bed on the flat bottom (rail at least bed − ${(sunkTop() + (S?.riverSink ?? 0)).toFixed(1)} m)`,
+    sunk_box_nav: () =>
+      `Sunk box ${riverAt()}: the made-up bed over its roof leaves less than ${w.z(S?.riverClearWater ?? 0, 2)} ${u} of water at normal pool in the navigable channel, short by ${riverBy()}`,
+    river_above_water: () =>
+      `Crosses the ${String(d.river)} above the water from ${fmtCh(f.c0)} to ${fmtCh(f.c1)}: every river crossing is a sunk box (only the CVG Express and Line 1, on the L&N bridge, bridge the Ohio)`,
+    bridge_below_clearance: () =>
+      `Bridge over the ${String(d.river)}: rail up to ${riverBy().replace(" (", " below the navigation clearance level (")}`,
+    // the road checks (roadChecksNow 2263-2276)
+    level_crossing: () =>
+      `level crossing with ${roadWho(d.road, w).who} at ${fmtCh(f.c)}: the Metro never crosses a street at grade: a bridge over it, a trough under it, or a box`,
+    trough_under_road: () =>
+      `an open trough under ${roadWho(d.road, w).who} at ${fmtCh(f.c)}: the street needs a bridge over it, ${z("need", 2)} ${u} from the rail to the street (the clear height plus a 0.8 m deck), and the rail is ${z("clear", 2)} down: lower the rail there (the trough becomes a box under the street), or raise the street`,
+    clearance_over_road: () =>
+      `${z("clear", 2)} ${u} over ${roadWho(d.road, w).who} at ${fmtCh(f.c)} (the ${d.truss ? "truss" : "girder"} underside to the street); needs ${z("need", 2)}: raise the rail`,
+    pier_in_road: () =>
+      `a viaduct pier stands in ${roadWho(d.road, w).name} at ${fmtCh(f.c)}: no span pattern keeps it out (the road is wider than a span, or two roads too close); set the spans by hand`,
+    // a station deeper than the shallow canon (2167)
+    deep_in_shallow_canon: () => `${stationName(d.station, w)} is ${z("d", 0)} ${u} down in a shallow-canon section`,
+    // designChecks (2085-2127)
+    vertical_curve_short: () =>
+      `Bend of ${fmtG(n("dg"))} at ${fmtCh(f.c)} needs a ${n("need").toFixed(0)} m curve; only ${n("got").toFixed(0)} m fits (radius ${n("radius")} m)`,
+    drainage_flat: () =>
+      `${fmtG(n("g"))} in tunnel for ${n("len").toFixed(0)} m from ${fmtCh(f.c0)}: under ${n("min")}‰, needs a falling track drain or pumping`,
+    curve_grade_sustained: () => curveGrade(true),
+    curve_grade_local: () => curveGrade(false),
+    tube_cover_short: () => {
+      const k = d.hall ? "hall over the box" : structLabel({ k: d.k, tube: d.tube }, w);
+      return `${k[0]?.toUpperCase() ?? ""}${k.slice(1)} cover down to ${z("cv", 1)} ${u} from ${fmtCh(f.c0)} to ${fmtCh(f.c1)}, needs ${z("need", 2)} ${u}`;
+    },
+    box_roof_above_ground: () => `Box roof ${w.z(-n("cv"), 1)} ${u} above ground from ${fmtCh(f.c0)} to ${fmtCh(f.c1)}`,
+    box_roof_forms_street: () =>
+      `Box roof forms the street: cover down to ${z("cv", 2)} ${u} from ${fmtCh(f.c0)} to ${fmtCh(f.c1)} (under ${z("need", 1)} ${u})`,
+    // drawingFlags (2060-2068)
+    path_doubles_back: () =>
+      `Path doubles back (${n("angle").toFixed(0)}°) at ${at()}: drawn pieces overlap or do not meet`,
+    path_kink: () =>
+      `Kink of ${n("angle").toFixed(0)}° beside a ${n("seg").toFixed(1)} m segment at ${at()}: drawn pieces do not meet cleanly`,
+    single_angle_corner: () => `Single-angle corner of ${n("angle").toFixed(0)}° at ${at()}: not yet drawn as a curve`,
+    // gndChecks (1731-1753)
+    ground_end_slope: () =>
+      `${range}: the drawn ground's side slope at its end is ${fmtG(n("g"))}, steeper than ${n("limit")}‰ (1 in ${(1000 / n("limit")).toFixed(1)}): move the end point out`,
+    ground_steep: () => `${range}: the drawn ground at ${fmtG(n("g"))}, steeper than ${n("limit")}‰ (a street)`,
+    ground_sustained: () =>
+      `${range}: the drawn ground averages up to ${fmtG(n("g"))} over ${Math.round(n("over"))} m, past ${n("limit")}‰ sustained`,
+    ground_from_crossing: () =>
+      `${range}: the ground is ${String(d.with ?? d.wid)}'s drawn ground (${z("z", 2)} ${u}) across ${d.street ? String(d.street) : "its line"} (${z("w", 1)} ${u})`,
+    // solveTypes (1401-1555), each "from to: ..." as allIssues wrote it (2170)
+    tbm_before_phase_3: () =>
+      `${range}: ${String(d.station)}: Bore (TBM) selected in Phase ${String(d.phase)}, before the tunnel boring machine (Phase 3 on); Shield for a mined station of this phase`,
+    box_station_past_limit: () =>
+      `${range}: ${String(d.station)} cut and cover ${z("depth_m", 1)} ${u} down, deeper than the cut-and-cover limit (${z("cc_max_m", 2)} ${u}, Phase ${String(d.phase)})`,
+    open_run_not_portal: () =>
+      `${range}: ${Math.round(n("length_m"))} m where the ground comes down to the rail inside the tunnel: too short for a portal (${Math.round(n("portal_min_m"))} m for the ramps), part of the stretch`,
+    approach_runs_into_station: () =>
+      `${range}: the approach box from ${d.from ? String(d.from) : "the box"} runs into ${String(d.into)} after ${Math.round(n("after_m"))} m (needs ${Math.round(n("needs_m"))} m): the stations are too close for the spacing change`,
+    two_paints_one_stretch: () => {
+      const p = (d.paints ?? {}) as Record<string, number>;
+      return `${range}: two paints in one stretch (${Object.entries(p)
+        .map(([k, m]) => `${typeWord(k)} ${Math.round(m)} m`)
+        .join(
+          ", ",
+        )}): a method changes only at a station, portal or shaft, so ${typeWord(d.taken)} takes the whole stretch; paint a Shaft where it should change`;
+    },
+    paint_snapped: () =>
+      `${range}: ${typeWord(d.paint)} painted over ${Math.round(n("painted_m"))} m of a ${Math.round(n("length_m"))} m stretch: snapped to the anchors (${anchorWord(d.from)} to ${anchorWord(d.to)}), the whole stretch is ${typeWord(d.paint)}; paint a Shaft to end it partway`,
+    bore_through_mined_station: () =>
+      `${range}: painted double-track bore through ${String(d.station)}, a mined station: no platforms fit in the running bore; the station is two platform tunnels (twin tubes), clear the paint`,
+    stretch_unbuildable: () =>
+      `${range}: ${Math.round(n("length_m"))} m from ${anchorWord(d.from)} to ${anchorWord(d.to)}: ${stretchWhy({ ...d, why: "neither_feasible" }, w)}. Lower the rail for a drive, raise it for a box, or paint a Shaft and decide each part`,
+    mined_in_box_stretch: () =>
+      `${range}: ${String(d.station)} is a mined station inside a cut-and-cover stretch: select Cut & cover for it, or paint the stretch bored`,
+    stretch: () => {
+      const b = (d.boxes ?? [0, 0]) as [number, number];
+      const boxesOn =
+        d.method !== "box" && (b[0] > 0 || b[1] > 0)
+          ? `, the boxes carrying on ${Math.round(b[0])} m and ${Math.round(b[1])} m until the tube has its cover`
+          : "";
+      const how =
+        d.method === "box" ? "cut and cover" : `one bored drive (${TYPES[String(d.cls)]?.label ?? "bored"}${boxesOn})`;
+      return `${range}: ${Math.round(n("length_m"))} m from ${anchorWord(d.from)} to ${anchorWord(d.to)}: ${how}: ${stretchWhy(d, w)}`;
+    },
+    paint_box_carries_on: () =>
+      `${range}: painted ${typeWord(d.paint)}: the box carries on over these ${Math.round(n("length_m"))} m (${d.because === "approach" ? "the spacing change" : d.because === "bank_works" ? "the bank works" : "until the tube has its cover"})`,
+    low_cover: () =>
+      `${range}: ${Math.round(n("length_m"))} m of tube with up to ${z("worst_m", 2)} ${u} less than one diameter of cover (bored with ground treatment): Propose fill, or lower the rail`,
+    approach_leaves_street: () => {
+      const parts = [
+        n("off_m") ? `leaves the street for about ${n("off_m")} m (under blocks or round a corner)` : "",
+        d.street != null
+          ? `is ${z("width_m", 1)} ${u} wide under ${String(d.street)} (${z("street_width_m", 1)} ${u})`
+          : "",
+      ].filter(Boolean);
+      return `${range}: the ${d.station ? `${String(d.station)} ` : ""}approach box ${parts.join(" and ")}: accepted (Ben)`;
+    },
+    twin_under_narrow_street: () =>
+      `${range}: twin tubes under ${String(d.street)} (${z("street_width_m", 1)} ${u}), narrower than their footprint (${z("footprint_m", 1)} ${u}): the double-track bore would stay under the street (paint it), else stacked tubes`,
+    spacing_change_in_tunnel: () => {
+      const a = tubes?.[String(d.from)];
+      const b = tubes?.[String(d.to)];
+      return `${range}: the tracks change spacing inside the tunnel (${a?.label ?? String(d.from)}, ${w.z(a?.spacing ?? Number.NaN, 2)} ${u}, to ${b?.label ?? String(d.to)}, ${w.z(b?.spacing ?? Number.NaN, 2)} ${u}) with no box to do it in: paint the same tube form on both sides, or end the bore at a box`;
+    },
+    bore_lacks_cover: () =>
+      `${range}: painted double-track bore where it lacks its cover (${z("need_m", 2)} ${u} to the rail): lower the profile, or paint twin tubes`,
+    // the paints that cannot be built (misfitText 1666) and the unbuildable stretches (2173-2175)
+    paint_misfit: () => {
+      const t = String(d.t);
+      const station = typeof d.si === "number" ? stationName(d.si, w) : null;
+      const step = w.input?.step ?? 2;
+      const how = ["roof", "above", "high", "cover"].includes(String(d.why)) ? "lower" : "raise";
+      return `${range}: ${station ? `${station}: selected` : "painted"} ${typeWord(t)}${station ? "" : ` over ${Math.round(f.c1 - f.c0 + step)} m`} where it cannot be built: ${fitText(String(d.why), t, w)}; ${how} the rail by up to ${z("worst", 1)} ${u}, or clear the ${station ? "selection" : "paint"}`;
+    },
+    unbuildable_cover: () =>
+      `${range}: a tube with less than ${w.input?.structure?.cost.cover_hard ?? 0.5} of a diameter of cover, too little to bore even with ground treatment (short of a full diameter by up to ${z("worst", 1)} ${u}): lower the rail (Lower)`,
+    unbuildable_roof: () =>
+      `${range}: a box station with its roof out of the ground (by up to ${z("worst", 1)} ${u}): lower the rail, draw the ground over it (Propose fill), or select an open type`,
+    unbuildable_box: () =>
+      `${range}: a box deeper than the cut-and-cover limit (by up to ${z("worst", 1)} ${u}): raise the rail to within it (Raise), or lower it for a whole drive`,
+    // new in the hub: the saved profile was laid on a re-drawn route (reframeDoc 1838), which the old page did silently
+    profile_reframed: () =>
+      `the saved profile was laid on the route as drawn now (${Math.round(n("from_length"))} m saved, ${Math.round(n("to_length"))} m now): the stations keep their centres`,
+  };
+  function blockName(): string {
+    const b = w.input?.context.blocks[Number(d.block)] as { l?: string; n?: string } | undefined;
+    return b?.l ?? b?.n ?? `block ${String(d.block)}`;
+  }
+  function clash(withName: string, otherLabel: string): string {
+    // a box station's crossing is checked over its hall (2241): "box and hall"
+    const me = d.hall != null ? "box and hall" : structLabel(d.t, w);
+    const up = !!d.meUp;
+    return `${w.z(n("clear"), 2)} ${u} ${up ? "over" : "under"} ${withName} at ${fmtCh(f.c)}; needs ${w.z(n("need"), 2)} ${u} (${up ? me : otherLabel} over ${up ? otherLabel : me})`;
+  }
+  function riverAt(): string {
+    return `under the ${String(d.river)} from ${fmtCh(f.c0)} to ${fmtCh(f.c1)}`;
+  }
+  function riverBy(): string {
+    return `${z("over", 2)} ${u} (worst at ${fmtCh(f.c)})`;
+  }
+  function sunkTop(): number {
+    const box = w.input?.structure?.box;
+    return (box?.roof_underside ?? 4.0) + (S?.riverRoof ?? 1.0);
+  }
+  function curveGrade(sustained: boolean): string {
+    const lim = n("lim");
+    const why = limitWhy(d, w);
+    const train = Math.round(S?.platform ?? 0);
+    const radius = Math.round((S?.curveK ?? 0) / n("add"));
+    return `${sustained ? "Sustained: " : "Localized (a warning): "}grade ${n("g").toFixed(1)}‰ plus ${n("add").toFixed(1)}‰ for the curve reaches ${n("worst").toFixed(1)}‰ from ${fmtCh(f.c0)} to ${fmtCh(f.c1)} (limit ${Number.isFinite(lim) ? lim : (S?.maxGrade ?? 0)}‰${why ? `, ${why}` : ""}; curve averaged over a ${train} m train, as a ${radius} m radius; ${n("avg").toFixed(1)}‰ with curve averaged over ${Math.round(n("W"))} m)`;
+  }
+  return words[f.kind]?.() ?? f.kind.replace(/_/g, " ");
+}
+
+// ---------------------------------------------------------------------------------------------------- level range
+
+/**
+ * What the level range takes in besides the ground and the rail, as the old page's (yRangeFor 2286-2297): under and
+ * over each bend point and platform end in view the deepest structure there can be (the double-track bore's bottom
+ * and top, maxBelow and maxTop 1221), the river from the pool down 12 m and up 4 m, each crossing line's structure
+ * at its rail, and each context structure. Null when there is nothing to add. So no outline's bottom is clipped.
+ */
+export function levelExtent(
+  o: {
+    dv?: readonly { c_m: number; z_m: number }[] | undefined;
+    solved?: SolvedSection | null | undefined;
+    solveInput?: SolveInput | null | undefined;
+  },
+  c0: number,
+  c1: number,
+): { lo: number; hi: number } | null {
+  let lo = Number.POSITIVE_INFINITY;
+  let hi = Number.NEGATIVE_INFINITY;
+  const take = (a: number, b: number) => {
+    if (Number.isFinite(a)) lo = Math.min(lo, a);
+    if (Number.isFinite(b)) hi = Math.max(hi, b);
+  };
+  const bore = o.solveInput?.structure?.tubes.bore;
+  const below = bore ? bore.rail_over_invert + (bore.outside - bore.inside) / 2 : 3.2;
+  const top = bore ? bore.inside - bore.rail_over_invert + (bore.outside - bore.inside) / 2 : 5.8;
+  for (const v of o.dv ?? []) if (v.c_m >= c0 && v.c_m <= c1) take(v.z_m - below, v.z_m + top);
+  const pool = o.solveInput?.settings.pool;
+  const rivers = o.solved?.rivers ?? o.solveInput?.rivers ?? [];
+  if (pool !== undefined && rivers.some((r) => r.c1 >= c0 && r.c0 <= c1)) take(pool - 12, pool + 4);
+  for (const x of o.solved?.crossings ?? [])
+    if (x.zo != null && x.to && x.c >= c0 && x.c <= c1) take(x.zo - x.to.below, x.zo + x.to.top);
+  for (const b of o.solveInput?.context.blocks ?? [])
+    if (b.c1 >= c0 && b.c0 <= c1) for (const [c, z] of b.p) if (c >= c0 && c <= c1) take(z - b.b, z + b.t);
+  return Number.isFinite(lo) && Number.isFinite(hi) ? { lo, hi } : null;
+}
+
+// ---------------------------------------------------------------------------------------------------- readout
+
+/** The curve allowance on its 10 m grid for an input (radii 1952, curveAllowance 1975), kept per input object. */
+const allowances = new WeakMap<object, { step: number; v: Float32Array }>();
+
+/** The curve allowance at c, per mille (allowanceAt 1985), from the solve's input; null without one. */
+export function allowanceAt(inp: SolveInput | null | undefined, c: number): number | null {
+  if (!inp?.path?.length || !inp.literals?.radii || !inp.settings) return null;
+  let a = allowances.get(inp);
+  if (!a) {
+    const R = radii(inp.path, inp.length, inp.literals);
+    a = { step: inp.literals.radii.step, v: curveAllowance(R, inp.settings) };
+    allowances.set(inp, a);
+  }
+  const v = a.v[Math.max(0, Math.min(a.v.length - 1, Math.round(c / a.step)))];
+  return v === undefined || !Number.isFinite(v) ? null : v;
+}
+
+/** One row of the hover readout, with the colour the old page gave it (the type, a road's class), if any. */
+export interface ReadoutRow {
+  text: string;
+  colour?: string;
+}
+
+const UNDER_T = new Set(["cutcover", "shield", "deep", "sunk"]);
+
+/**
+ * The hover readout at a chainage from the whole solve, row by row as the old page's (updateReadout 3495-3503): the
+ * river, water and bed, or the ground with its fill or cut from the survey; the rail; below or above; in a tunnel
+ * the top with its cover (or, in a sunk box, its roof against the bed and the made-up bed) and the bottom with the
+ * structure's name; on a viaduct the soffit and the span; the grade, with the curve allowance where it is over
+ * 0.5 per mille ("with curve"); the type ("painted" under a paint) in its colour; the street the line runs under,
+ * the roads it crosses and the context's structures there. Inside a platform the same rows, and the station's name.
+ * Null until the whole solve and the rail are in.
+ */
+export function readoutRows(
+  d: BandData,
+  c: number,
+  units: SheetView["units"],
+  railZ: number | null,
+  gradeG: number | null,
+): ReadoutRow[] | null {
+  const sv = d.solved ?? null;
+  const inp = d.solveInput ?? null;
+  if (!sv || railZ === null) return null;
+  const u = units.length;
+  const Z = (v: number, dd = 1) => fmtZ(v, units, dd);
+  const step = sv.step_m;
+  const g = sampleAt(sv.ground.finished, step, c);
+  // the survey as the solve read it (groundDemAt 647); the section's own ground before it has one
+  const dem = inp?.dem?.length
+    ? sampleAt(inp.dem, inp.step, c)
+    : d.input?.ground
+      ? sampleAt(d.input.ground.z_m, d.input.ground.step_m, c)
+      : null;
+  const river = (sv.rivers ?? []).find((r) => c >= r.c0 && c <= r.c1) ?? null;
+  const pool = inp?.settings.pool ?? null;
+  const sf = river && pool !== null ? pool : g;
+  const bed = river ? sampleAt(sv.ground.bed, step, c) : null;
+  const z = railZ;
+  const out: ReadoutRow[] = [{ text: river ? `${fmtCh(c)} · ${river.name}` : fmtCh(c) }];
+  if (river)
+    out.push({ text: `Water   ${pool !== null ? Z(pool, 2) : "–"} ${u} · bed ${bed !== null ? Z(bed, 2) : "–"}` });
+  else if (g !== null) {
+    out.push({ text: `Ground  ${Z(g, 2)} ${u}` });
+    if (dem !== null && Math.abs(g - dem) > 0.02)
+      out.push({
+        text: `${g > dem ? "Fill  " : "Cut   "}  ${Z(Math.abs(g - dem), 2)} ${u} from surveyed ${Z(dem, 2)}`,
+      });
+  }
+  out.push({ text: `Rail    ${Z(z, 2)} ${u}` });
+  if (sf !== null) out.push({ text: sf - z >= 0 ? `Below   ${Z(sf - z, 2)} ${u}` : `Above   ${Z(z - sf, 2)} ${u}` });
+  // the type and structure of the sample under the pointer, as typeAt read its sample (P[round(c / step)])
+  const cs = Math.round(c / step) * step;
+  const t = typeAtSample(sv, c);
+  const sc = runAt(sv.struct_runs, cs)?.[0] ?? null;
+  const tubes = inp?.structure?.tubes as Record<string, { label: string }> | undefined;
+  if (t && sc && UNDER_T.has(t)) {
+    const top = z + sc.top;
+    if (t === "sunk" && river && bed !== null) {
+      out.push({
+        text: `Roof    ${Z(top, 2)} ${u} · ${top >= bed ? `${Z(top - bed, 1)} above` : `${Z(bed - top, 1)} below`} the bed (${Z(bed, 1)})`,
+      });
+      const mbRun = (sv.made_bed ?? []).find((r) => c >= r.i0 * step && c <= (r.i0 + r.z.length - 1) * step);
+      const mb = mbRun ? sampleAt(mbRun.z, step, c - mbRun.i0 * step) : null;
+      if (mb !== null && pool !== null) out.push({ text: `Made-up bed ${Z(mb, 2)} ${u} · water ${Z(pool - mb, 1)}` });
+    } else if (sf !== null) out.push({ text: `Top     ${Z(top, 2)} ${u} · cover ${Z(sf - top, 1)}` });
+    out.push({ text: `Bottom  ${Z(z - sc.below, 2)} ${u} · ${structWord(sc, tubes)}` });
+  }
+  const sp = t === "elevated" ? (sv.spans ?? []).find((s) => c >= s.c0 && c <= s.c1) : undefined;
+  if (sp)
+    out.push({
+      text: `Soffit  ${Z(z - sp.below, 2)} ${u} · ${Z(sp.L, 1)} ${u} span, ${sp.truss ? `through truss ${Z(sp.above, 1)} ${u} over the rail` : `girder ${Z(sp.below, 2)} ${u} rail to soffit`}`,
+    });
+  if (gradeG !== null) {
+    const add = allowanceAt(inp, c);
+    out.push({
+      text: `Grade   ${fmtG(gradeG)}${add !== null && add > 0.5 ? ` · ${fmtG(Math.abs(gradeG) + add)} with curve` : ""}`,
+    });
+  }
+  if (t) {
+    // painted (overrideAt 833 on effOvr 837): inside a platform only the station's own selection counts, a paint
+    // across it paints the running line
+    const ovr = (d.draft?.ovr ?? inp?.doc?.ovr ?? []) as [number, number, string][];
+    const stt = (d.draft?.stt ?? inp?.doc?.stt ?? {}) as Record<string, string>;
+    const half = (inp?.settings.platform ?? 0) / 2;
+    const at = (sv.stations ?? []).find((s) => c >= s.c - half && c <= s.c + half);
+    const painted = at ? !!stt[at.key] : ovr.some((o) => c >= o[0] && c <= o[1]);
+    out.push({ text: `${TYPES[t]?.label ?? t}${painted ? " (painted)" : ""}`, colour: typeColour(t) });
+  }
+  const ctx = inp?.context;
+  const street = ctx?.streets.find((r) => c >= Number(r[0]) - 5 && c <= Number(r[1]) + 5);
+  if (street)
+    out.push({
+      text: `under ${String(street[3])} (${String(street[4])}, ${Z(Number(street[2]), 0)} ${u})`,
+      colour: ROAD_COLOURS[String(street[4])] ?? ROAD_COLOURS.minor,
+    });
+  for (const r of ctx?.roads ?? [])
+    if (Number(r[2]) >= c - 3 && Number(r[1]) <= c + 3)
+      out.push({
+        text: `crosses ${String(r[4])} (${String(r[5])}, ${Z(Number(r[3]), 0)} ${u})`,
+        colour: ROAD_COLOURS[String(r[5])] ?? ROAD_COLOURS.minor,
+      });
+  for (const b of ctx?.blocks ?? [])
+    if (c >= b.c0 && c <= b.c1)
+      out.push({
+        text: `${String((b as { l?: string }).l ?? b.n)} · rail ${Z(interpP(b.p, c), 2)} ${u}`,
+        colour: MUTED,
+      });
+  return out;
+}
+
+/** A level along a polyline of [c, z] points, held flat past its ends (interpP 2214). */
+function interpP(pp: readonly (readonly [number, number])[], c: number): number {
+  const first = pp[0];
+  if (!first) return Number.NaN;
+  if (c <= first[0]) return first[1];
+  for (let i = 1; i < pp.length; i++) {
+    const [b, zb] = pp[i] as readonly [number, number];
+    if (c <= b) {
+      const [a, za] = pp[i - 1] as readonly [number, number];
+      return b - a > 1e-9 ? za + ((zb - za) * (c - a)) / (b - a) : zb;
+    }
+  }
+  return (pp[pp.length - 1] as readonly [number, number])[1];
+}
+
+/** Whether a finding is drawn as a marker: everything but the stretch notes, which the old page listed apart. */
+export const markerShown = (f: { kind: string; sev: string }): boolean => f.kind !== "stretch";
+
+/** The text of a crossing's clearance label, as the old page wrote it (2399). */
+export function clearanceText(
+  x: { with: string; to: { k: string; tube?: string } | null; clear: number | null; need: number | null },
+  tubes: Record<string, { label: string }> | undefined,
+  fmt: (m: number) => string,
+): string {
+  return `${x.with} ${structWord(x.to, tubes)} · ${fmt(x.clear ?? 0)} apart, needs ${fmt(x.need ?? 0)}`;
+}
+
+// ---------------------------------------------------------------------------------------------------- drawing
+
+function clipPlot(g: CanvasRenderingContext2D, v: SheetView): void {
+  g.beginPath();
+  g.rect(v.plot.x, v.plot.y, v.plot.w, v.plot.h);
+  g.clip();
+}
+
+const railOf =
+  (d: BandData) =>
+  (c: number): number | null =>
+    d.rail ? valueAt(d.rail.rail_m, d.rail.step_m, c) : null;
+
+const fmtM = (v: SheetView, m: number, digits = 1): string => `${v.units.format(m, "m", digits)} ${v.units.label("m")}`;
+
+/** The pixel columns of the plot in view, with their chainage. */
+function* columns(v: SheetView, stride = 1): Generator<{ x: number; c: number }> {
+  const P = v.plot;
+  for (let k = 0; k <= Math.ceil(P.w); k += stride) {
+    const x = P.x + k;
+    yield { x, c: v.c(x) };
+  }
+}
+
+/** A crossing's colour on the plot: red when short of its clearance, whether or not the other line is set yet (the
+ * old page, 2440: the list holds a crossing with a line not set apart, the plot never greys it). */
+export function clearanceColour(x: { ok: boolean }): string {
+  return x.ok ? MUTED : WARN;
+}
+
+/** Where a label w px wide may go beside a mark at (px, ym), in order: right of it at its middle, one and two lines
+ * above or below, then the same on its left; only spots inside the plot. */
+export function labelSpots(
+  px: number,
+  ym: number,
+  w: number,
+  P: { x: number; y: number; w: number; h: number },
+): { x0: number; y0: number; x1: number; y1: number }[] {
+  const out: { x0: number; y0: number; x1: number; y1: number }[] = [];
+  for (const left of [false, true])
+    for (const dy of [0, -16, 16, -32, 32]) {
+      const x0 = left ? px - 8 - w : px + 6;
+      const b = { x0, y0: ym + dy - 7, x1: x0 + w + 2, y1: ym + dy + 7 };
+      if (b.x0 >= P.x && b.x1 <= P.x + P.w && b.y0 >= P.y && b.y1 <= P.y + P.h) out.push(b);
+    }
+  return out;
+}
+
+/** Labels kept apart: a box is drawn only where no earlier one is. */
+class Placer {
+  boxes: { x0: number; y0: number; x1: number; y1: number }[] = [];
+  free(b: { x0: number; y0: number; x1: number; y1: number }, pad = 2): boolean {
+    return !this.boxes.some((a) => a.x0 < b.x1 + pad && b.x0 < a.x1 + pad && a.y0 < b.y1 + pad && b.y0 < a.y1 + pad);
+  }
+  take(b: { x0: number; y0: number; x1: number; y1: number }): void {
+    this.boxes.push(b);
+  }
+}
+let placer = new Placer();
+
+/** The label boxes taken so far in this paint (the static layer keeps those of its bands, static_layer.ts). */
+export function labelBoxes(): { x0: number; y0: number; x1: number; y1: number }[] {
+  return placer.boxes.slice();
+}
+
+/** Start a paint's labels afresh from boxes already taken (a frame that copies the static bands' bitmap). */
+export function resetLabels(boxes: readonly { x0: number; y0: number; x1: number; y1: number }[] = []): void {
+  placer = new Placer();
+  placer.boxes.push(...boxes);
+}
+
+/** Keep a box clear for the later labels of this paint (the platform band's interchange tags). */
+export function reserveLabel(b: { x0: number; y0: number; x1: number; y1: number }): void {
+  placer.take(b);
+}
+
+/** The rivers: shaded from the pool down, the pool line, the name and what the bed is (2337-2349). */
+export const waterBand: BandDef = {
+  id: "water",
+  height: 0,
+  axis: "profile",
+  draw(g, v, d) {
+    placer = new Placer();
+    const ssi = d.solveInput;
+    const rivers = d.solved?.rivers ?? ssi?.rivers ?? [];
+    const pool = ssi?.settings.pool;
+    if (!rivers.length || pool === undefined) return;
+    const P = v.plot;
+    g.save();
+    clipPlot(g, v);
+    for (const r of rivers) {
+      if (r.c1 < v.c0 || r.c0 > v.c1) continue;
+      const x0 = v.x(r.c0);
+      const x1 = v.x(r.c1);
+      const yp = v.y(pool);
+      const grd = g.createLinearGradient(0, yp, 0, P.y + P.h);
+      grd.addColorStop(0, "rgba(90, 169, 224, 0.30)");
+      grd.addColorStop(1, "rgba(0, 0, 0, 0)");
+      g.fillStyle = grd;
+      g.fillRect(x0, yp, x1 - x0, P.y + P.h - yp);
+      g.strokeStyle = WATER;
+      g.lineWidth = 1.5;
+      g.beginPath();
+      g.moveTo(x0, yp);
+      g.lineTo(x1, yp);
+      g.stroke();
+      if (x1 - x0 > 30) {
+        const xm = (x0 + x1) / 2;
+        g.fillStyle = WATER;
+        g.beginPath();
+        g.moveTo(xm - 5, yp - 9);
+        g.lineTo(xm + 5, yp - 9);
+        g.lineTo(xm, yp - 2);
+        g.fill();
+        g.font = `600 11px ${UI_FONT}`;
+        g.textAlign = "center";
+        g.textBaseline = "bottom";
+        g.fillText(String(r.name), xm, yp - 12);
+        if (x1 - x0 > 120) {
+          g.font = `11px ${UI_FONT}`;
+          g.textBaseline = "top";
+          const bed = (r as { bed?: number | null }).bed;
+          g.fillText(
+            `normal pool ${fmtM(v, pool, 2)} · ${bed != null ? "bed given (no survey)" : "surveyed riverbed"}`,
+            xm,
+            yp + 6,
+          );
+        }
+      }
+      d.mark?.({ kind: "river", id: String(r.name), c0: r.c0, c1: r.c1, x0, x1, y: yp });
+    }
+    g.restore();
+    g.textAlign = "start";
+    g.textBaseline = "alphabetic";
+  },
+};
+
+/** The finished ground against the surveyed one (2378-2402): raised ground shaded, cuts hatched, the survey dashed. */
+export const groundWorksBand: BandDef = {
+  id: "ground-works",
+  height: 0,
+  axis: "profile",
+  draw(g, v, d) {
+    const s = d.solved;
+    const gr = d.input?.ground;
+    if (!s || !gr) return;
+    const fin = s.ground.finished;
+    const step = s.step_m;
+    const rivers = s.rivers;
+    g.save();
+    clipPlot(g, v);
+    let seg: [number, number, number][] = [];
+    const hatch = (() => {
+      const hc = document.createElement("canvas");
+      hc.width = hc.height = 8;
+      const hx = hc.getContext("2d");
+      if (!hx) return null;
+      hx.strokeStyle = EARTH;
+      hx.globalAlpha = 0.6;
+      hx.beginPath();
+      hx.moveTo(0, 8);
+      hx.lineTo(8, 0);
+      hx.stroke();
+      return g.createPattern(hc, "repeat");
+    })();
+    const flush = () => {
+      if (seg.length > 1) {
+        const first = seg[0] as [number, number, number];
+        const cut = first[1] < first[2];
+        g.globalAlpha = cut ? 1 : 0.32;
+        g.fillStyle = cut && hatch ? hatch : EARTH;
+        g.beginPath();
+        seg.forEach(([x, f], i) => {
+          if (i) g.lineTo(x, v.y(f));
+          else g.moveTo(x, v.y(f));
+        });
+        for (let j = seg.length - 1; j >= 0; j--) {
+          const p = seg[j] as [number, number, number];
+          g.lineTo(p[0], v.y(p[2]));
+        }
+        g.closePath();
+        g.fill();
+        g.globalAlpha = 1;
+        g.setLineDash([4, 3]);
+        g.strokeStyle = EARTH;
+        g.lineWidth = 1.2;
+        g.beginPath();
+        seg.forEach(([x, , o], i) => {
+          if (i) g.lineTo(x, v.y(o));
+          else g.moveTo(x, v.y(o));
+        });
+        g.stroke();
+        g.setLineDash([]);
+        if (seg.length > 60) {
+          const m = seg[Math.floor(seg.length / 2)] as [number, number, number];
+          g.font = `600 11px ${UI_FONT}`;
+          g.textAlign = "center";
+          g.textBaseline = "bottom";
+          g.fillStyle = EARTH;
+          g.fillText(m[1] > m[2] ? "REGRADED" : "CUT", m[0], v.y(Math.max(m[1], m[2])) - 4);
+        }
+      }
+      seg = [];
+    };
+    for (const { x, c } of columns(v)) {
+      if (c < 0 || c > s.length_m || rivers.some((r) => c >= r.c0 && c <= r.c1)) {
+        flush();
+        continue;
+      }
+      const f = sampleAt(fin, step, c);
+      const o = valueAt(gr.z_m, gr.step_m, c);
+      if (f !== null && o !== null && Math.abs(f - o) > 0.02) {
+        const last = seg[seg.length - 1];
+        if (last && last[1] > last[2] !== f > o) flush();
+        seg.push([x, f, o]);
+      } else flush();
+    }
+    flush();
+    g.restore();
+    g.textAlign = "start";
+    g.textBaseline = "alphabetic";
+  },
+};
+
+/** Other systems' structures from the Deck, grey and dashed, with their label and level (2404-2436). */
+export const contextBand: BandDef = {
+  id: "context",
+  height: 0,
+  axis: "profile",
+  draw(g, v, d) {
+    const blocks = d.solveInput?.context.blocks ?? [];
+    if (!blocks.length) return;
+    const bad = new Set((d.solved?.context ?? []).filter((x) => !x.ok).map((x) => x.block));
+    const P = v.plot;
+    g.save();
+    clipPlot(g, v);
+    blocks.forEach((b, bi) => {
+      if (b.c1 < v.c0 || b.c0 > v.c1 || !b.p.length) return;
+      const isBad = bad.has(bi);
+      const hi = b.o ? 0 : b.t;
+      const pp = b.p;
+      const line = (off: number) => {
+        g.beginPath();
+        pp.forEach(([c, z], i) => {
+          if (i) g.lineTo(v.x(c), v.y(z + off));
+          else g.moveTo(v.x(c), v.y(z + off));
+        });
+      };
+      g.beginPath();
+      pp.forEach(([c, z], i) => {
+        if (i) g.lineTo(v.x(c), v.y(z + hi));
+        else g.moveTo(v.x(c), v.y(z + hi));
+      });
+      for (let j = pp.length - 1; j >= 0; j--) {
+        const [c, z] = pp[j] as [number, number];
+        g.lineTo(v.x(c), v.y(z - b.b));
+      }
+      g.closePath();
+      g.fillStyle = INK;
+      g.globalAlpha = 0.1;
+      g.fill();
+      g.globalAlpha = 1;
+      g.strokeStyle = isBad ? WARN : MUTED;
+      g.lineWidth = isBad ? 1.6 : 1;
+      g.setLineDash(b.o ? [] : [5, 3]);
+      g.stroke();
+      g.setLineDash([]);
+      if (b.o) {
+        g.setLineDash([2, 3]);
+        g.globalAlpha = 0.7;
+        line(b.t);
+        g.stroke();
+        g.setLineDash([]);
+        g.globalAlpha = 1;
+      }
+      g.strokeStyle = INK;
+      g.globalAlpha = 0.55;
+      g.lineWidth = 1.2;
+      line(0);
+      g.stroke();
+      g.globalAlpha = 0.65;
+      g.fillStyle = INK;
+      for (const [u, w, z] of b.pl ?? []) g.fillRect(v.x(u), v.y(z) - 3, Math.max(1.5, v.x(w) - v.x(u)), 3);
+      g.globalAlpha = 1;
+      const xa = v.x(b.c0);
+      const xb = v.x(b.c1);
+      if (xb - xa > 46) {
+        const zs = pp.map((q) => q[1]);
+        const z0 = Math.min(...zs);
+        const z1 = Math.max(...zs);
+        const txt = `${b.l} · ${v.units.format(z0, "m", 1)}${z1 - z0 > 0.15 ? `–${v.units.format(z1, "m", 1)}` : ""} ${v.units.label("m")}`;
+        g.font = `600 11px ${UI_FONT}`;
+        g.textAlign = "center";
+        g.textBaseline = "bottom";
+        g.fillStyle = isBad ? WARN : MUTED;
+        const xm = Math.min(P.x + P.w - 60, Math.max(P.x + 60, (Math.max(xa, P.x) + Math.min(xb, P.x + P.w)) / 2));
+        g.fillText(txt, xm, v.y(z1 + (b.o ? b.t : hi)) - 3);
+      }
+      d.mark?.({ kind: "context", id: String(b.n), c0: b.c0, c1: b.c1, bad: isBad });
+    });
+    g.restore();
+    g.textAlign = "start";
+    g.textBaseline = "alphabetic";
+  },
+};
+
+/** Each crossing: a dashed line, the other line's structure as a box at its rail and its clearance (2438-2453). */
+export const crossingsBand: BandDef = {
+  id: "crossings",
+  height: 0,
+  axis: "profile",
+  draw(g, v, d) {
+    const xs = d.solveInput?.crossings ?? [];
+    const cl = d.solved?.crossings ?? [];
+    if (!xs.length && !cl.length) return;
+    const P = v.plot;
+    const tubes = d.solveInput?.structure?.tubes as Record<string, { label: string }> | undefined;
+    g.save();
+    clipPlot(g, v);
+    g.strokeStyle = GRID_MAJOR;
+    g.setLineDash([3, 4]);
+    g.lineWidth = 1;
+    for (const x of xs) {
+      if (x.c < v.c0 || x.c > v.c1) continue;
+      const px = Math.round(v.x(x.c)) + 0.5;
+      g.beginPath();
+      g.moveTo(px, P.y);
+      g.lineTo(px, P.y + P.h);
+      g.stroke();
+    }
+    g.setLineDash([]);
+    g.font = `600 11px ${UI_FONT}`;
+    g.textAlign = "left";
+    g.textBaseline = "middle";
+    // the short ones first, so their labels win the room
+    const order = [...cl].sort((a, b) => Number(a.ok) - Number(b.ok));
+    for (const x of order) {
+      if (x.zo == null || x.c < v.c0 || x.c > v.c1 || !x.to) continue;
+      const open = x.to.k === "elevated" || x.to.k === "atgrade";
+      const top = open ? 0.3 : x.to.top;
+      const px = v.x(x.c);
+      const y0 = v.y(x.zo + top);
+      const y1 = v.y(x.zo - x.to.below);
+      const colour = clearanceColour(x);
+      g.fillStyle = colour;
+      g.globalAlpha = 0.85;
+      g.fillRect(px - 4, y0, 8, Math.max(2, y1 - y0));
+      g.globalAlpha = 1;
+      // one decimal kept, as the old page wrote it (2443: toFixed(1)); the hub's units trim "9.0" to "9"
+      const text = clearanceText(x, tubes, (m) => `${v.units.toDisplay(m, "m").toFixed(1)} ${v.units.label("m")}`);
+      const w = g.measureText(text).width;
+      // beside the other line's box, else a line or two above or below it, else on its left: the old page drew
+      // every clearance (over each other where they met); a label that finds no room at all is left off
+      const box = labelSpots(px, (y0 + y1) / 2, w, P).find((b) => placer.free(b)) ?? null;
+      const shown = box !== null;
+      if (box) {
+        placer.take(box);
+        g.globalAlpha = 0.8;
+        g.fillStyle = PAPER;
+        g.fillRect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0);
+        g.globalAlpha = 1;
+        g.fillStyle = colour;
+        g.fillText(text, box.x0 + 1, (box.y0 + box.y1) / 2);
+      }
+      d.mark?.({
+        kind: "clearance",
+        id: x.wid,
+        c: x.c,
+        ok: x.ok,
+        pending: x.pending,
+        text,
+        drawn: shown,
+        x: px,
+        y0,
+        y1,
+      });
+      d.report?.({ kind: "clearance", id: x.wid, text, c: x.c, z: x.zo, drawn: shown });
+    }
+    g.restore();
+    g.textAlign = "start";
+    g.textBaseline = "alphabetic";
+  },
+};
+
+/** Locked stretches: shaded, edged with dashes, "Locked" along the top (2455-2462). */
+export const locksBand: BandDef = {
+  id: "locks",
+  height: 0,
+  axis: "profile",
+  draw(g, v, d) {
+    const locks = d.solved?.canon.locks ?? [];
+    if (!locks.length) return;
+    const P = v.plot;
+    g.save();
+    clipPlot(g, v);
+    for (const lk of locks) {
+      if (lk.hi < v.c0 || lk.lo > v.c1) continue;
+      const xa = Math.max(P.x, v.x(lk.lo));
+      const xb = Math.min(P.x + P.w, v.x(lk.hi));
+      g.fillStyle = INK;
+      g.globalAlpha = 0.05;
+      g.fillRect(xa, P.y, xb - xa, P.h);
+      g.globalAlpha = 1;
+      g.strokeStyle = MUTED;
+      g.setLineDash([3, 3]);
+      g.beginPath();
+      g.moveTo(Math.round(xa) + 0.5, P.y);
+      g.lineTo(Math.round(xa) + 0.5, P.y + P.h);
+      g.moveTo(Math.round(xb) - 0.5, P.y);
+      g.lineTo(Math.round(xb) - 0.5, P.y + P.h);
+      g.stroke();
+      g.setLineDash([]);
+      if (xb - xa > 60) {
+        g.fillStyle = MUTED;
+        g.font = `11px ${NUM_FONT}`;
+        g.textBaseline = "top";
+        g.fillText("Locked", xa + 4, P.y + 3);
+      }
+      d.mark?.({ kind: "lock", id: lk.name ?? "", c0: lk.lo, c1: lk.hi });
+    }
+    g.restore();
+    g.textBaseline = "alphabetic";
+  },
+};
+
+/** A grade past its limit: a red halo along the rail (2466-2471). */
+export const overGradeBand: BandDef = {
+  id: "over-grade",
+  height: 0,
+  axis: "profile",
+  draw(g, v, d) {
+    const over = d.solved?.over ?? [];
+    const rail = railOf(d);
+    if (!over.length || !d.rail) return;
+    g.save();
+    clipPlot(g, v);
+    g.strokeStyle = WARN;
+    g.globalAlpha = 0.28;
+    g.lineWidth = 10;
+    g.lineCap = "round";
+    for (const o of over) {
+      if (o.c1 < v.c0 || o.c0 > v.c1) continue;
+      const a = rail(o.c0);
+      const b = rail(o.c1);
+      if (a === null || b === null) continue;
+      g.beginPath();
+      g.moveTo(v.x(o.c0), v.y(a));
+      g.lineTo(v.x(o.c1), v.y(b));
+      g.stroke();
+      d.mark?.({ kind: "over", id: "", c0: o.c0, c1: o.c1, sev: o.sev });
+    }
+    g.restore();
+  },
+};
+
+interface Column {
+  x: number;
+  c: number;
+  z: number;
+  t: string;
+  sc: Struct;
+}
+
+/** The type and the structure at each pixel column, at the live rail. */
+function railColumns(v: SheetView, d: BandData, s: SolvedSection): Column[] {
+  const rail = railOf(d);
+  const out: Column[] = [];
+  for (const { x, c: c0 } of columns(v)) {
+    const c = Math.min(s.length_m, Math.max(0, c0));
+    const z = rail(c);
+    const t = runAt(s.type_runs, c);
+    const sc = runAt(s.struct_runs, c);
+    if (z === null || !t || !sc) continue;
+    out.push({ x, c, z, t: t[0], sc: sc[0] });
+  }
+  return out;
+}
+
+/**
+ * The structures (2473-2575): each run of one tunnel type outlined from roof or crown to floor or invert and
+ * filled, ends closed where it meets another; the made-up bed over a sunk box; the channel over it; the legal band;
+ * the unbuildable hatch; viaduct spans with their girders or trusses and piers. None in Show: Rail.
+ */
+export const outlinesBand: BandDef = {
+  id: "outlines",
+  height: 0,
+  axis: "profile",
+  draw(g, v, d) {
+    const s = d.solved;
+    if (!s || !d.rail || d.show === "rail") return;
+    const show = d.show ?? "railbox";
+    const rail = railOf(d);
+    const P = v.plot;
+    const pts = railColumns(v, d, s);
+    g.save();
+    clipPlot(g, v);
+    // tunnel and box outlines
+    const same = (a: Column, b: Column) =>
+      a.t === b.t && a.sc.k === b.sc.k && a.sc.below === b.sc.below && a.sc.top === b.sc.top;
+    for (let k0 = 0; k0 < pts.length - 1; ) {
+      let k1 = k0;
+      while (k1 + 1 < pts.length && same(pts[k1 + 1] as Column, pts[k0] as Column)) k1++;
+      const p0 = pts[k0] as Column;
+      if (TUNNEL.has(p0.t)) {
+        const run = pts.slice(k0, Math.min(k1 + 2, pts.length));
+        const eh = p0.sc.top;
+        const inv = p0.sc.below;
+        const colour = typeColour(p0.t);
+        g.fillStyle = colour;
+        g.globalAlpha = show === "box" ? 0.24 : 0.14;
+        g.beginPath();
+        run.forEach((p, j) => {
+          if (j) g.lineTo(p.x, v.y(p.z + eh));
+          else g.moveTo(p.x, v.y(p.z + eh));
+        });
+        for (let j = run.length - 1; j >= 0; j--) {
+          const p = run[j] as Column;
+          g.lineTo(p.x, v.y(p.z - inv));
+        }
+        g.closePath();
+        g.fill();
+        g.strokeStyle = colour;
+        g.globalAlpha = 0.8;
+        g.lineWidth = show === "box" ? 1.75 : 1.25;
+        for (const off of [eh, -inv]) {
+          g.beginPath();
+          run.forEach((p, j) => {
+            if (j) g.lineTo(p.x, v.y(p.z + off));
+            else g.moveTo(p.x, v.y(p.z + off));
+          });
+          g.stroke();
+        }
+        for (const p of [k0 > 0 ? run[0] : null, k1 + 1 < pts.length ? run[run.length - 1] : null]) {
+          if (!p) continue;
+          g.beginPath();
+          g.moveTo(p.x, v.y(p.z + eh));
+          g.lineTo(p.x, v.y(p.z - inv));
+          g.stroke();
+        }
+        g.globalAlpha = 1;
+        d.mark?.({ kind: "outline", id: "", type: p0.t, k: p0.sc.k, c0: p0.c, c1: (run[run.length - 1] as Column).c });
+      }
+      k0 = k1 + 1;
+    }
+    // the made-up bed over a sunk box roof that stands above the river bed
+    const bed = s.ground.bed;
+    for (const mb of s.made_bed) {
+      const c0 = mb.i0 * s.step_m;
+      const c1 = (mb.i0 + mb.z.length - 1) * s.step_m;
+      if (c1 < v.c0 || c0 > v.c1) continue;
+      g.fillStyle = EARTH;
+      g.globalAlpha = 0.45;
+      g.beginPath();
+      mb.z.forEach((z, j) => {
+        const x = v.x((mb.i0 + j) * s.step_m);
+        if (j) g.lineTo(x, v.y(z));
+        else g.moveTo(x, v.y(z));
+      });
+      for (let j = mb.z.length - 1; j >= 0; j--) {
+        const bj = bed[mb.i0 + j];
+        const b = bj != null && Number.isFinite(bj) ? bj : (mb.z[j] ?? 0);
+        g.lineTo(v.x((mb.i0 + j) * s.step_m), v.y(b));
+      }
+      g.closePath();
+      g.fill();
+      g.globalAlpha = 1;
+      d.mark?.({ kind: "made-bed", id: "", c0, c1 });
+    }
+    // the channel over each sunk box: the shallowest water from the pool to the bed over the box (2500-2524)
+    const ssi = d.solveInput;
+    const pool = ssi?.settings.pool;
+    if (pool !== undefined && ssi) {
+      for (const r of s.rivers) {
+        const band = (r as { band?: { low: number } | null }).band;
+        if (
+          r.c1 < v.c0 ||
+          r.c0 > v.c1 ||
+          !band ||
+          (r as { bridge?: unknown }).bridge ||
+          (r as { alongShore?: boolean }).alongShore
+        )
+          continue;
+        let best: { c: number; w: number; top: number; made: boolean } | null = null;
+        for (let i = Math.ceil(r.c0 / s.step_m); i * s.step_m <= r.c1; i++) {
+          const c = i * s.step_m;
+          const b = bed[i];
+          if (b == null || !Number.isFinite(b) || b >= pool) continue;
+          if (runAt(s.type_runs, c)?.[0] !== "sunk") continue;
+          const mb = s.made_bed.find((m) => i >= m.i0 && i < m.i0 + m.z.length);
+          const made = mb ? (mb.z[i - mb.i0] ?? null) : null;
+          if (made === null && b > band.low + ssi.settings.riverFlatTol) continue;
+          const top = made ?? b;
+          const w = pool - top;
+          if (!best || w < best.w) best = { c, w, top, made: made !== null };
+        }
+        if (!best) continue;
+        const nav = !!(r as { navigable?: boolean }).navigable;
+        const need = ssi.settings.riverClearWater;
+        const short = nav && best.w < need - 0.005;
+        const col = short ? WARN : WATER;
+        g.strokeStyle = col;
+        g.fillStyle = col;
+        g.lineWidth = 1.25;
+        if (nav) {
+          const yn = v.y(pool - need);
+          g.setLineDash([6, 4]);
+          g.globalAlpha = 0.8;
+          g.beginPath();
+          g.moveTo(v.x(r.c0), yn);
+          g.lineTo(v.x(r.c1), yn);
+          g.stroke();
+          g.setLineDash([]);
+          g.font = `10px ${UI_FONT}`;
+          g.textAlign = "left";
+          g.textBaseline = "bottom";
+          g.fillText(`navigation depth ${fmtM(v, need, 2)} (12 ft)`, v.x(r.c0) + 4, yn - 2);
+          g.globalAlpha = 1;
+        }
+        const x = v.x(best.c);
+        const y0 = v.y(pool);
+        const y1 = v.y(best.top);
+        g.beginPath();
+        g.moveTo(x, y0);
+        g.lineTo(x, y1);
+        g.moveTo(x - 5, y0);
+        g.lineTo(x + 5, y0);
+        g.moveTo(x - 5, y1);
+        g.lineTo(x + 5, y1);
+        g.stroke();
+        for (const [y, dd] of [
+          [y0, 1],
+          [y1, -1],
+        ] as const) {
+          g.beginPath();
+          g.moveTo(x, y);
+          g.lineTo(x - 3, y + 6 * dd);
+          g.lineTo(x + 3, y + 6 * dd);
+          g.closePath();
+          g.fill();
+        }
+        g.font = `600 11px ${UI_FONT}`;
+        g.textAlign = "left";
+        g.textBaseline = "middle";
+        const text = `channel over the box ${fmtM(v, best.w, 2)} (pool to the ${best.made ? "made-up bed" : "bed"})${short ? `: under ${fmtM(v, need, 2)}` : ""}`;
+        g.fillText(text, x + 8, (y0 + y1) / 2);
+        d.mark?.({ kind: "channel", id: String(r.name), c: best.c, w: best.w, short, text });
+      }
+    }
+    // the legal band: the shallowest a tube may run (tube colour) and the deepest a box may go (box colour)
+    const limit = (arr: ArrayLike<number | null>, colour: string, which: string) => {
+      g.save();
+      g.strokeStyle = colour;
+      g.lineWidth = 1.3;
+      g.setLineDash([6, 4]);
+      g.globalAlpha = 0.9;
+      g.beginPath();
+      let on = false;
+      const sub = Math.max(s.step_m, ((v.c1 - v.c0) / P.w) * 3);
+      for (let c = Math.max(0, v.c0); c <= Math.min(s.length_m, v.c1); c += sub) {
+        const i = Math.round(c / s.step_m);
+        const z = arr[i];
+        if (z == null || !Number.isFinite(z)) {
+          on = false;
+          continue;
+        }
+        const x = v.x(c);
+        const y = v.y(z);
+        if (on) g.lineTo(x, y);
+        else g.moveTo(x, y);
+        on = true;
+      }
+      g.stroke();
+      g.restore();
+      d.mark?.({ kind: "limit", id: which });
+    };
+    limit(s.limit_tube, typeColour("shield"), "tube");
+    limit(s.limit_box, typeColour("cutcover"), "box");
+    // unbuildable: hatched red over its structure
+    const sub = Math.max(2, ((v.c1 - v.c0) / P.w) * 3);
+    for (const b of s.bad) {
+      if (b.c1 < v.c0 || b.c0 > v.c1) continue;
+      const cs: number[] = [];
+      for (let c = Math.max(b.c0, v.c0); c < Math.min(b.c1, v.c1); c += sub) cs.push(c);
+      cs.push(Math.min(b.c1, v.c1));
+      const zs = cs.map((c) => rail(c));
+      if (zs.some((z) => z === null)) continue;
+      g.save();
+      g.beginPath();
+      cs.forEach((c, j) => {
+        const y = v.y((zs[j] as number) + 5.5);
+        if (j) g.lineTo(v.x(c), y);
+        else g.moveTo(v.x(c), y);
+      });
+      for (let j = cs.length - 1; j >= 0; j--) g.lineTo(v.x(cs[j] as number), v.y((zs[j] as number) - 1.5));
+      g.closePath();
+      g.fillStyle = WARN;
+      g.globalAlpha = 0.16;
+      g.fill();
+      g.clip();
+      g.globalAlpha = 0.85;
+      g.strokeStyle = WARN;
+      g.lineWidth = 1.2;
+      g.beginPath();
+      const xa = v.x(cs[0] as number) - 200;
+      const xb = v.x(cs[cs.length - 1] as number);
+      for (let x = xa; x < xb + 200; x += 7) {
+        g.moveTo(x, P.y + P.h);
+        g.lineTo(x + 200, P.y);
+      }
+      g.stroke();
+      g.restore();
+      d.mark?.({ kind: "unbuildable", id: b.why, c0: b.c0, c1: b.c1, worst: b.worst });
+    }
+    // viaducts: the deck and girders (or a through truss) by span, and the piers to the ground or river bed
+    const ecol = typeColour("elevated");
+    for (const sp of s.spans) {
+      if (sp.c1 < v.c0 || sp.c0 > v.c1) continue;
+      const cs: number[] = [];
+      for (let c = sp.c0; c < sp.c1; c += sub) cs.push(c);
+      cs.push(sp.c1);
+      const zs = cs.map((c) => rail(c));
+      if (zs.some((z) => z === null)) continue;
+      g.fillStyle = ecol;
+      g.globalAlpha = show === "box" ? 0.28 : 0.18;
+      g.beginPath();
+      cs.forEach((c, j) => {
+        const y = v.y((zs[j] as number) + 0.3);
+        if (j) g.lineTo(v.x(c), y);
+        else g.moveTo(v.x(c), y);
+      });
+      for (let j = cs.length - 1; j >= 0; j--) g.lineTo(v.x(cs[j] as number), v.y((zs[j] as number) - sp.below));
+      g.closePath();
+      g.fill();
+      g.globalAlpha = 0.85;
+      g.strokeStyle = ecol;
+      g.lineWidth = 1.25;
+      g.stroke();
+      if (sp.truss) {
+        const top = (c: number) => v.y((rail(c) ?? 0) + sp.above);
+        const bot = (c: number) => v.y(rail(c) ?? 0);
+        const n = Math.max(2, Math.round(sp.L / Math.max(6, sp.above)));
+        g.globalAlpha = 0.75;
+        g.beginPath();
+        g.moveTo(v.x(sp.c0), bot(sp.c0));
+        g.lineTo(v.x(sp.c0 + sp.L / n), top(sp.c0 + sp.L / n));
+        g.lineTo(v.x(sp.c1 - sp.L / n), top(sp.c1 - sp.L / n));
+        g.lineTo(v.x(sp.c1), bot(sp.c1));
+        for (let i = 1; i < n; i++) {
+          const c = sp.c0 + (sp.L * i) / n;
+          const cn = sp.c0 + (sp.L * (i + 1)) / n;
+          g.moveTo(v.x(c), top(c));
+          g.lineTo(v.x(c), bot(c));
+          if (i + 1 < n) {
+            g.moveTo(v.x(c), top(c));
+            g.lineTo(v.x(cn), bot(cn));
+          }
+        }
+        g.stroke();
+      }
+      g.globalAlpha = 1;
+      d.mark?.({ kind: "span", id: "", c0: sp.c0, c1: sp.c1, truss: sp.truss });
+    }
+    const pw = Math.max(2, Math.min(8, 1.6 / ((v.c1 - v.c0) / P.w)));
+    g.fillStyle = ecol;
+    g.globalAlpha = 0.55;
+    const seen = new Set<number>();
+    const fin = s.ground.finished;
+    for (const sp of s.spans)
+      for (const c of [sp.c0, sp.c1]) {
+        if (c < v.c0 || c > v.c1 || seen.has(c)) continue;
+        seen.add(c);
+        const river = s.rivers.find((r) => c >= r.c0 && c <= r.c1);
+        const g0 = sampleAt(fin, s.step_m, c);
+        const gz = river
+          ? g0 !== null && pool !== undefined && g0 < pool
+            ? g0
+            : (sampleAt(bed, s.step_m, c) ?? g0)
+          : g0;
+        const z = rail(c);
+        if (gz === null || z === null) continue;
+        const below = Math.max(...s.spans.filter((q) => q.c0 === c || q.c1 === c).map((q) => q.below));
+        const zt = z - below;
+        if (zt <= gz) continue;
+        g.fillRect(v.x(c) - pw / 2, v.y(zt), pw, v.y(gz) - v.y(zt));
+      }
+    g.restore();
+  },
+};
+
+/** The streets the line runs under (dotted; solid where built over the subway) and the roads it crosses (2577-2600). */
+export const roadsBand: BandDef = {
+  id: "roads",
+  height: 0,
+  axis: "profile",
+  draw(g, v, d) {
+    const ssi = d.solveInput;
+    if (!ssi) return;
+    const fin = d.solved?.ground.finished;
+    const step = d.solved?.step_m ?? ssi.step;
+    const gr = d.input?.ground;
+    const groundAt = (c: number) => sampleAt(fin, step, c) ?? (gr ? valueAt(gr.z_m, gr.step_m, c) : null);
+    const subway = (name: string) =>
+      (ssi.structure?.subway_streets ?? []).some((k) => name.toLowerCase().includes(k.toLowerCase()));
+    const P = v.plot;
+    g.save();
+    clipPlot(g, v);
+    g.font = `600 10px ${UI_FONT}`;
+    g.textBaseline = "bottom";
+    const sub = Math.max(2, ((v.c1 - v.c0) / P.w) * 3);
+    for (const r of ssi.context.streets) {
+      if (r[1] < v.c0 || r[0] > v.c1) continue;
+      const a = Math.max(r[0], v.c0);
+      const b = Math.min(r[1], v.c1);
+      const over = subway(r[3]);
+      const col = ROAD_COLOURS[r[4]] ?? (ROAD_COLOURS.minor as string);
+      g.strokeStyle = col;
+      g.lineWidth = over ? 2 : 1.2;
+      g.setLineDash(over ? [] : [2, 3]);
+      g.globalAlpha = 0.9;
+      g.beginPath();
+      let pen = false;
+      for (let c = a; c <= b + 1e-9; c += sub) {
+        const z = groundAt(c);
+        if (z === null) {
+          pen = false;
+          continue;
+        }
+        const x = v.x(c);
+        const y = v.y(z) - 3;
+        if (pen) g.lineTo(x, y);
+        else g.moveTo(x, y);
+        pen = true;
+      }
+      g.stroke();
+      g.setLineDash([]);
+      g.globalAlpha = 1;
+      if (v.x(b) - v.x(a) > 90) {
+        const gm = groundAt((a + b) / 2);
+        if (gm !== null) {
+          const text = `under ${r[3]}${over ? " (built over the subway)" : ""}`;
+          const w = g.measureText(text).width;
+          const xm = (v.x(a) + v.x(b)) / 2;
+          const box = { x0: xm - w / 2, y0: v.y(gm) - 17, x1: xm + w / 2, y1: v.y(gm) - 5 };
+          if (placer.free(box)) {
+            placer.take(box);
+            g.fillStyle = col;
+            g.textAlign = "center";
+            g.fillText(text, xm, v.y(gm) - 5);
+          }
+        }
+      }
+    }
+    for (const r of ssi.context.roads) {
+      if (r[2] < v.c0 || r[1] > v.c1) continue;
+      const z = groundAt(r[0]);
+      if (z === null) continue;
+      const x0 = v.x(Math.max(r[1], v.c0));
+      const x1 = v.x(Math.min(r[2], v.c1));
+      const y = v.y(z);
+      const col = ROAD_COLOURS[r[5]] ?? (ROAD_COLOURS.minor as string);
+      g.fillStyle = col;
+      g.fillRect(x0, y - 2.5, Math.max(2, x1 - x0), 4);
+      let shown = false;
+      if (r[5] !== "minor" || x1 - x0 > 24) {
+        const w = g.measureText(r[4]).width;
+        const xm = (x0 + x1) / 2;
+        // over the bar as the old page wrote it (2594); two roads at one crossing (the Inner Ring and the Inner Ring
+        // North, one bridge) were written over each other there: the second goes a line higher, readable
+        const at = (k: number) => ({ x0: xm - w / 2, y0: y - 17 - 12 * k, x1: xm + w / 2, y1: y - 5 - 12 * k });
+        const k = [0, 1, 2].find((j) => placer.free(at(j)));
+        if (k !== undefined) {
+          const box = at(k);
+          placer.take(box);
+          g.textAlign = "center";
+          g.fillText(r[4], xm, box.y1);
+          shown = true;
+        }
+      }
+      d.mark?.({ kind: "road", id: r[4], c: r[0], cls: r[5], drawn: shown });
+    }
+    g.restore();
+    g.textAlign = "start";
+    g.textBaseline = "alphabetic";
+  },
+};
+
+/** Grade plus curve allowance over the limit: dashed under the rail, "+15.7‰ with curve" above it (2634-2648). */
+export const curveGradeBand: BandDef = {
+  id: "curve-grade",
+  height: 0,
+  axis: "profile",
+  draw(g, v, d) {
+    const list = d.solved?.curve_grade ?? [];
+    const rail = railOf(d);
+    if (!list.length || !d.rail) return;
+    const P = v.plot;
+    g.save();
+    clipPlot(g, v);
+    g.lineWidth = 2;
+    g.font = `500 11px ${NUM_FONT}`;
+    for (const r of list) {
+      const xa = v.x(r.c0 - 5);
+      const xb = v.x(r.c1 + 5);
+      if (xb < P.x || xa > P.x + P.w) continue;
+      const col = r.sustained ? WARN : CAUTION;
+      g.strokeStyle = col;
+      g.setLineDash([5, 4]);
+      g.beginPath();
+      let pen = false;
+      for (let x = Math.max(xa, P.x); x <= Math.min(xb, P.x + P.w); x += 3) {
+        const z = rail(v.c(x));
+        if (z === null) continue;
+        if (pen) g.lineTo(x, v.y(z) + 7);
+        else g.moveTo(x, v.y(z) + 7);
+        pen = true;
+      }
+      g.stroke();
+      g.setLineDash([]);
+      const xm = (Math.max(xa, P.x) + Math.min(xb, P.x + P.w)) / 2;
+      const text = `${fmtG(r.worst)} with curve`;
+      const w = g.measureText(text).width + 8;
+      const ys = [xm - w / 2, xm, xm + w / 2].map((x) => rail(v.c(x))).filter((z): z is number => z !== null);
+      if (!ys.length) continue;
+      // the old page's spot (26 px over the rail, 2660); every label is drawn there as the old page drew it, or,
+      // where another label already stands, on the first free spot a line higher (up to five), so none is lost
+      const y0 = Math.min(...ys.map((z) => v.y(z))) - 26;
+      const at = (k: number) => ({ x0: xm - w / 2, y0: y0 - 16 * k - 14, x1: xm + w / 2, y1: y0 - 16 * k });
+      // clear of the crossing tags along the plot's top edge (P.y + 7 to + 19)
+      const top = P.y + 20;
+      let k = [0, 1, 2, 3, 4, 5].find((j) => at(j).y0 >= top && placer.free(at(j))) ?? 0;
+      if (at(k).y0 < top) k = 0;
+      const box = at(k);
+      placer.take(box);
+      g.globalAlpha = 0.85;
+      g.fillStyle = PAPER;
+      g.fillRect(box.x0, box.y0, w, 14);
+      g.globalAlpha = 1;
+      g.fillStyle = col;
+      g.textAlign = "center";
+      g.textBaseline = "bottom";
+      g.fillText(text, xm, box.y1);
+      d.report?.({ kind: "curve-grade", text, c: (r.c0 + r.c1) / 2, x: xm, y: box.y1, drawn: true });
+      d.mark?.({
+        kind: "curve-grade",
+        id: "",
+        c0: r.c0,
+        c1: r.c1,
+        worst: r.worst,
+        sustained: r.sustained,
+        drawn: true,
+        y: box.y1,
+      });
+    }
+    g.restore();
+    g.textAlign = "start";
+    g.textBaseline = "alphabetic";
+  },
+};
+
+/** The drawn ground's points as last drawn (CSS pixels), for the Ground tool's hit test. */
+let lastGround: { x: number; y: number; l: number; k: number; c: number; z: number }[] = [];
+let groundTool = false;
+
+/** Ben's drawn ground (its lines and points, and in Ground its grades) and the shafts (2702-2716). The lines come
+ * from the draft as it is now, so a point dragged in Ground moves at once; the solve's lines without a draft. */
+export const drawnGroundBand: BandDef = {
+  id: "drawn-ground",
+  height: 0,
+  axis: "profile",
+  draw(g, v, d) {
+    lastGround = [];
+    groundTool = d.tool === "ground";
+    const s = d.solved;
+    const lines = d.draft ? groundLines(d.draft as ProfileData).map((x) => x.pts) : (s?.ground.lines ?? []);
+    const rail = railOf(d);
+    const sel = d.selected?.kind === "gp" ? { l: Number(d.selected.id), k: d.selected.index } : null;
+    g.save();
+    clipPlot(g, v);
+    lines.forEach((L, l) => {
+      g.strokeStyle = EARTH;
+      g.lineWidth = groundTool ? 2 : 1.2;
+      g.beginPath();
+      L.forEach((p, k) => {
+        if (k) g.lineTo(v.x(p.c), v.y(p.z));
+        else g.moveTo(v.x(p.c), v.y(p.z));
+      });
+      g.stroke();
+      L.forEach((p, k) => {
+        const x = v.x(p.c);
+        const y = v.y(p.z);
+        lastGround.push({ x, y, l, k, c: p.c, z: p.z });
+        if (p.c < v.c0 || p.c > v.c1) return;
+        const on = !!sel && sel.l === l && sel.k === k;
+        const r = on ? 5 : groundTool ? 4 : 3;
+        g.beginPath();
+        g.rect(x - r, y - r, 2 * r, 2 * r);
+        if (on || k === 0 || k === L.length - 1) {
+          g.fillStyle = EARTH;
+          g.fill();
+        }
+        g.lineWidth = 1.5;
+        g.strokeStyle = EARTH;
+        g.stroke();
+        d.mark?.({ kind: "ground-point", id: "", l, k, c: p.c, z: p.z, x, y, selected: on });
+        // in Ground, the grade of each piece over it where there is room
+        const q = L[k - 1];
+        if (groundTool && q) {
+          const xa = v.x(q.c);
+          if (x - xa > 56 && p.c - q.c > 1e-6) {
+            g.font = `600 10px ${UI_FONT}`;
+            g.textAlign = "center";
+            g.textBaseline = "bottom";
+            g.fillStyle = EARTH;
+            g.fillText(fmtG(((p.z - q.z) / (p.c - q.c)) * 1000), (xa + x) / 2, Math.min(v.y(q.z), y) - 6);
+          }
+        }
+      });
+    });
+    const shafts =
+      d.draft && Array.isArray(d.draft.shafts) ? (d.draft.shafts as unknown[]).map(Number) : (s?.shafts ?? []);
+    for (const c of shafts) {
+      if (!Number.isFinite(c) || c < v.c0 || c > v.c1) continue;
+      const z = rail(c);
+      if (z === null) continue;
+      const x = v.x(c);
+      const y = v.y(z);
+      g.strokeStyle = MUTED;
+      g.lineWidth = 2;
+      g.beginPath();
+      g.moveTo(x, y - 14);
+      g.lineTo(x, y + 14);
+      g.moveTo(x - 5, y - 14);
+      g.lineTo(x + 5, y - 14);
+      g.stroke();
+      g.font = `600 10px ${UI_FONT}`;
+      g.textAlign = "center";
+      g.textBaseline = "bottom";
+      g.fillStyle = MUTED;
+      g.fillText("shaft", x, y - 16);
+      d.mark?.({ kind: "shaft", id: "", c });
+    }
+    g.restore();
+    g.textAlign = "start";
+    g.textBaseline = "alphabetic";
+  },
+  // only in Ground: a point within 8 px (hitTest 3409), the last drawn first
+  hit(x, y) {
+    if (!groundTool) return null;
+    for (let i = lastGround.length - 1; i >= 0; i--) {
+      const q = lastGround[i] as (typeof lastGround)[number];
+      if (Math.hypot(q.x - x, q.y - y) <= 8)
+        return { band: "drawn-ground", kind: "gp", index: q.k, id: String(q.l), c: q.c, z: q.z };
+    }
+    return null;
+  },
+};
+
+/** A paint being dragged: the stretch in the brush's colour over the plot's height (2720-2723). */
+export const paintPreviewBand: BandDef = {
+  id: "paint-preview",
+  height: 0,
+  axis: "profile",
+  draw(g, v, d) {
+    const p = d.paintPreview;
+    if (!p) return;
+    const a = Math.min(p.c0, p.c1);
+    const b = Math.max(p.c0, p.c1);
+    const P = v.plot;
+    g.save();
+    clipPlot(g, v);
+    g.fillStyle = p.colour;
+    g.globalAlpha = 0.18;
+    g.fillRect(v.x(a), P.y, Math.max(1, v.x(b) - v.x(a)), P.h);
+    g.restore();
+    d.mark?.({ kind: "paint-preview", id: "", c0: a, c1: b });
+  },
+};
+
+let lastIssues: { x: number; y: number; i: number; c: number; text: string }[] = [];
+
+/** The words of the issue marker under a point, as last drawn (the sheet's tooltip). */
+export function issueAt(x: number, y: number): string | null {
+  const hits = lastIssues.filter((q) => Math.abs(x - q.x) <= 5 && Math.abs(y - q.y) <= 6);
+  return hits.length ? hits.map((q) => q.text).join("\n") : null;
+}
+
+/** Every finding of the solve as a triangle along the bottom of the plot, in its severity's colour (2729-2733). */
+export const issuesBand: BandDef = {
+  id: "issues",
+  height: 0,
+  axis: "profile",
+  draw(g, v, d) {
+    lastIssues = [];
+    const flags = d.solved?.flags ?? [];
+    if (!flags.length) return;
+    const P = v.plot;
+    g.save();
+    clipPlot(g, v);
+    const rank = { info: 0, warn: 1, error: 2 } as const;
+    // the worst on top
+    const order = flags
+      .map((f, i) => ({ f, i }))
+      .filter(({ f }) => markerShown(f) && f.c >= v.c0 && f.c <= v.c1)
+      .sort((a, b) => rank[a.f.sev] - rank[b.f.sev]);
+    for (const { f, i } of order) {
+      const px = v.x(f.c);
+      g.fillStyle = f.sev === "error" ? WARN : f.sev === "warn" ? CAUTION : MUTED;
+      g.beginPath();
+      g.moveTo(px, P.y + P.h - 9);
+      g.lineTo(px - 4, P.y + P.h - 1);
+      g.lineTo(px + 4, P.y + P.h - 1);
+      g.closePath();
+      g.fill();
+      const text = flagWords(f, wordsIn(v.units, d.solveInput, d.solved));
+      lastIssues.push({ x: px, y: P.y + P.h - 5, i, c: f.c, text });
+      d.mark?.({ kind: "issue", id: f.kind, c: f.c, sev: f.sev, rule: f.rule, page: f.page, x: px });
+      d.report?.({ kind: "issue", text, c: f.c, x: px, y: P.y + P.h - 5, drawn: true });
+    }
+    g.restore();
+  },
+  hit(x, y) {
+    for (const q of lastIssues)
+      if (Math.abs(x - q.x) <= 5 && Math.abs(y - q.y) <= 6)
+        return { band: "issues", kind: "issue", index: q.i, c: q.c };
+    return null;
+  },
+};
+
+/** A tick on the plot's top edge at each crossing, with the other line's tag ("L3", "E trunk") where there is room
+ * (2823-2832); a station's own interchange tags (the platform band) keep their place. */
+export const crossingTicksBand: BandDef = {
+  id: "crossing-ticks",
+  height: 0,
+  axis: "profile",
+  draw(g, v, d) {
+    const xs = d.solveInput?.crossings ?? [];
+    if (!xs.length) return;
+    const P = v.plot;
+    g.save();
+    clipPlot(g, v);
+    g.font = `500 10px ${NUM_FONT}`;
+    g.textAlign = "center";
+    g.textBaseline = "top";
+    let lastTag = Number.NEGATIVE_INFINITY;
+    // a station tagged with its interchanges (the platform band) stands for the crossings at it
+    const tagged = (d.facts ?? []).filter((f) => !f.deleted && (f.interchanges ?? []).length > 0);
+    const atTagged = (c: number) => tagged.some((f) => Math.abs(c - f.c_m) <= f.half_m + 20);
+    for (const x of [...xs].sort((a, b) => a.c - b.c)) {
+      if (x.c < v.c0 || x.c > v.c1 || atTagged(x.c)) continue;
+      const px = v.x(x.c);
+      const tag = crossingTag(x.with);
+      g.fillStyle = x.kind.startsWith("rer") ? MUTED : INK;
+      g.beginPath();
+      g.moveTo(px - 4, P.y + 1);
+      g.lineTo(px + 4, P.y + 1);
+      g.lineTo(px, P.y + 6);
+      g.fill();
+      const w = g.measureText(tag).width;
+      const box = { x0: px - w / 2 - 2, y0: P.y + 7, x1: px + w / 2 + 2, y1: P.y + 19 };
+      const shown = px - w / 2 > lastTag + 4 && placer.free(box, 0);
+      if (shown) {
+        g.globalAlpha = 0.85;
+        g.fillStyle = PAPER;
+        g.fillRect(box.x0, box.y0, box.x1 - box.x0, 12);
+        g.globalAlpha = 1;
+        g.fillStyle = x.kind.startsWith("rer") ? MUTED : INK;
+        g.fillText(tag, px, P.y + 8);
+        lastTag = px + w / 2;
+      }
+      d.mark?.({ kind: "xtick", id: x.wid, c: x.c, text: tag, drawn: shown });
+    }
+    g.restore();
+    g.textAlign = "start";
+    g.textBaseline = "alphabetic";
+  },
+};
+
+// ----------------------------------------------------------------------------------------------------- strips
+
+/** The structure band along the whole line (2777-2792): each run of one type in its colour, named where it fits;
+ * the unbuildable stretches and the paints that do not fit hatched red over it; Ben's paints marked under it. */
+export const structureStripBand: BandDef = {
+  id: "structure-strip",
+  height: 18,
+  axis: "strip",
+  draw(g, v, d) {
+    const s = d.solved;
+    if (!s) {
+      stationStripBand.draw(g, v, d);
+      return;
+    }
+    const P = v.plot;
+    const top = v.top + 1;
+    const H = 14;
+    g.fillStyle = "#23262e";
+    g.fillRect(P.x, top, P.w, H);
+    g.save();
+    g.beginPath();
+    g.rect(P.x, top, P.w, H + 3);
+    g.clip();
+    g.font = `600 10px ${UI_FONT}`;
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    for (const [t, c0, c1] of s.type_runs) {
+      if (c1 < v.c0 || c0 > v.c1) continue;
+      const xa = Math.max(P.x, v.x(c0));
+      const xb = Math.min(P.x + P.w, v.x(c1));
+      g.fillStyle = typeColour(t);
+      g.fillRect(xa, top, Math.max(1, xb - xa), H);
+      const label = (TYPES[t]?.label ?? t).toUpperCase();
+      if (xb - xa > 70 && g.measureText(label).width + 8 < xb - xa) {
+        g.fillStyle = PAPER;
+        g.fillText(label, (xa + xb) / 2, top + H / 2 + 0.5);
+      }
+      d.mark?.({ kind: "band", id: t, c0, c1 });
+    }
+    for (const b of [...s.bad, ...s.misfits]) {
+      const xa = Math.max(P.x, v.x(b.c0));
+      const xb = Math.min(P.x + P.w, v.x(b.c1));
+      if (xb <= xa) continue;
+      g.save();
+      g.beginPath();
+      g.rect(xa, top, Math.max(2, xb - xa), H);
+      g.clip();
+      g.fillStyle = WARN;
+      g.globalAlpha = 0.55;
+      g.fillRect(xa, top, Math.max(2, xb - xa), H);
+      g.globalAlpha = 1;
+      g.strokeStyle = "#fff";
+      g.lineWidth = 1;
+      g.beginPath();
+      for (let x = xa - H; x < xb; x += 6) {
+        g.moveTo(x, top + H);
+        g.lineTo(x + H, top);
+      }
+      g.stroke();
+      g.restore();
+      d.mark?.({ kind: "band-hatch", id: b.why, c0: b.c0, c1: b.c1 });
+    }
+    // each station's type as station.facts@1 gives it, for the tests and the readers (the strip it stood for)
+    for (const f of d.facts ?? []) {
+      if (f.deleted || !f.type) continue;
+      const x0 = v.x(f.c_m - f.half_m);
+      const x1 = Math.max(x0 + 2, v.x(f.c_m + f.half_m));
+      d.mark?.({ kind: "strip", id: f.platform_id, type: f.type, x0, x1, solved: runAt(s.type_runs, f.c_m)?.[0] });
+    }
+    // Ben's paints, marked under the band
+    g.fillStyle = INK;
+    for (const o of d.solveInput?.doc?.ovr ?? []) {
+      const xa = v.x(o[0]);
+      const xb = v.x(o[1]);
+      if (xb < P.x || xa > P.x + P.w) continue;
+      g.fillRect(Math.max(xa, P.x), top + H + 1, Math.min(xb, P.x + P.w) - Math.max(xa, P.x), 2);
+    }
+    g.restore();
+    g.textAlign = "start";
+    g.textBaseline = "alphabetic";
+  },
+};
+
+/** The Chronology band (2793-2803): each segment's opening year and phase, in the phase's colour, "not set" faint. */
+export const chronologyStripBand: BandDef = {
+  id: "chronology-strip",
+  height: 17,
+  axis: "strip",
+  draw(g, v, d) {
+    const ssi = d.solveInput;
+    const segs = chronologyOf(ssi);
+    if (!segs.length) return;
+    const P = v.plot;
+    const top = v.top + 2;
+    const H = 13;
+    g.save();
+    g.beginPath();
+    g.rect(P.x, top, P.w, H);
+    g.clip();
+    g.font = `600 10px ${UI_FONT}`;
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    for (const sg of segs) {
+      const xa = Math.max(P.x, v.x(sg.c0));
+      const xb = Math.min(P.x + P.w, v.x(sg.c1));
+      if (xb <= xa) continue;
+      g.fillStyle = sg.phase ? (PHASE_COLOURS[sg.phase] ?? MUTED) : "#2a2e37";
+      g.globalAlpha = sg.set ? 0.9 : 0.35;
+      g.fillRect(xa + 0.5, top, xb - xa - 1, H);
+      g.globalAlpha = 1;
+      const label = sg.set
+        ? `${sg.year ?? ""}${sg.year != null && sg.phase ? " · " : ""}${sg.phase ? (sg.phase === "later" ? "later" : `P${sg.phase}`) : ""}`
+        : "not set";
+      if (xb - xa > g.measureText(label).width + 8) {
+        g.fillStyle = sg.set ? "#fff" : MUTED;
+        g.fillText(label, (xa + xb) / 2, top + H / 2 + 0.5);
+      }
+      d.mark?.({ kind: "chronology", id: sg.key, c0: sg.c0, c1: sg.c1, year: sg.year, phase: sg.phase, label });
+    }
+    g.restore();
+    g.textAlign = "start";
+    g.textBaseline = "alphabetic";
+  },
+};
+
+/** chrSegments (1077) from the solve input: the segments between the route's stations at their drawn points. */
+export function chronologyOf(
+  ssi: BandData["solveInput"],
+): { key: string; c0: number; c1: number; year: number | null; phase: string | null; set: boolean }[] {
+  const t = ssi?.chronologyTable;
+  if (!ssi || !t) return [];
+  const st = [...ssi.platforms].sort((a, b) => a.point_c - b.point_c || a.order - b.order);
+  const ofYear = (y: number | null) => {
+    if (y == null) return null;
+    for (const [a, b, p] of t.phase_years) if (y >= a && y <= b) return p;
+    return null;
+  };
+  const out = [];
+  for (let i = 0; i + 1 < st.length; i++) {
+    const a = st[i] as (typeof st)[number];
+    const b = st[i + 1] as (typeof st)[number];
+    const [x, y] = [a.name, b.name].sort();
+    const key = t.sys === "metro" ? `metro|${ssi.route}|${x}|${y}` : `${t.sys}|${x}|${y}`;
+    const e = t.segments[key] ?? {};
+    const yr = e.year == null || e.year === "" ? null : Number(e.year);
+    const phase = (e.phase as string | null | undefined) || ofYear(yr);
+    out.push({
+      key,
+      c0: i ? a.point_c : 0,
+      c1: i + 2 < st.length ? b.point_c : ssi.length,
+      year: yr,
+      phase,
+      set: !!(e.phase || yr != null),
+    });
+  }
+  return out;
+}
+
+let overviewMap: { x0: number; w: number; L: number; top: number; h: number } | null = null;
+
+/** The whole line, small (drawOverview 2856): ground, rivers, the rail, the stations, and the view as a box. A press
+ * there moves the view to that chainage. */
+export const overviewBand: BandDef = {
+  id: "overview",
+  height: 40,
+  axis: "strip",
+  draw(g, v, d) {
+    const inp = d.input;
+    overviewMap = null;
+    if (!inp) return;
+    const P = v.plot;
+    const top = v.top + 4;
+    const H = 34;
+    const L = inp.length_m;
+    g.fillStyle = PAPER;
+    g.fillRect(P.x, top, P.w, H);
+    const X = (c: number) => P.x + (c / L) * P.w;
+    const gr = inp.ground;
+    let lo = Number.POSITIVE_INFINITY;
+    let hi = Number.NEGATIVE_INFINITY;
+    const stride = gr ? Math.max(1, Math.floor(gr.z_m.length / P.w)) : 1;
+    if (gr)
+      for (let i = 0; i < gr.z_m.length; i += stride) {
+        const z = gr.z_m[i];
+        if (z !== undefined && Number.isFinite(z)) {
+          lo = Math.min(lo, z);
+          hi = Math.max(hi, z);
+        }
+      }
+    const rail = d.rail;
+    if (rail)
+      for (let i = 0; i < rail.rail_m.length; i += stride) {
+        const z = rail.rail_m[i];
+        if (z !== undefined && Number.isFinite(z)) {
+          lo = Math.min(lo, z);
+          hi = Math.max(hi, z);
+        }
+      }
+    if (!Number.isFinite(lo)) return;
+    const Y = (z: number) => top + 3 + ((hi - z) / (hi - lo || 1)) * (H - 6);
+    g.save();
+    g.beginPath();
+    g.rect(P.x, top, P.w, H);
+    g.clip();
+    if (gr) {
+      g.fillStyle = "rgba(179, 156, 114, 0.25)";
+      g.beginPath();
+      g.moveTo(X(0), top + H);
+      for (let i = 0; i < gr.z_m.length; i += stride) {
+        const z = gr.z_m[i];
+        if (z !== undefined && Number.isFinite(z)) g.lineTo(X(i * gr.step_m), Y(z));
+      }
+      g.lineTo(X(L), top + H);
+      g.closePath();
+      g.fill();
+    }
+    for (const r of d.solveInput?.rivers ?? []) {
+      g.fillStyle = WATER_FILL;
+      g.fillRect(X(r.c0), top, Math.max(2, X(r.c1) - X(r.c0)), H);
+    }
+    if (rail) {
+      g.strokeStyle = INK;
+      g.lineWidth = 1.5;
+      g.beginPath();
+      for (let i = 0; i < rail.rail_m.length; i += stride) {
+        const z = rail.rail_m[i];
+        if (z === undefined || !Number.isFinite(z)) continue;
+        if (i) g.lineTo(X(i * rail.step_m), Y(z));
+        else g.moveTo(X(i * rail.step_m), Y(z));
+      }
+      g.stroke();
+    }
+    g.fillStyle = INK;
+    for (const s of inp.stations) g.fillRect(X(s.c_m) - 0.5, top + H - 6, 1, 6);
+    const xa = X(Math.max(0, v.c0));
+    const xb = X(Math.min(L, v.c1));
+    g.fillStyle = "#2fb8a8";
+    g.globalAlpha = 0.14;
+    g.fillRect(xa, top, Math.max(3, xb - xa), H);
+    g.globalAlpha = 1;
+    g.strokeStyle = "#2fb8a8";
+    g.lineWidth = 1.5;
+    g.strokeRect(xa + 0.5, top + 0.75, Math.max(3, xb - xa) - 1, H - 1.5);
+    g.restore();
+    overviewMap = { x0: P.x, w: P.w, L, top, h: H };
+    d.mark?.({ kind: "overview", id: "", x0: xa, x1: xb });
+  },
+  hit(x, y): Handle | null {
+    const m = overviewMap;
+    if (!m || y < m.top || y > m.top + m.h || x < m.x0 || x > m.x0 + m.w) return null;
+    return { band: "overview", kind: "overview", index: 0, c: ((x - m.x0) / m.w) * m.L };
+  },
+};
+
+/** The rail coloured by the solve's structure (2602-2611), 3 px; in Show: Box the tunnels' rail is left to the
+ * outline. Null when there is no solve: the plain rail stands. */
+export function drawTypedRail(g: CanvasRenderingContext2D, v: SheetView, d: BandData): boolean {
+  const s = d.solved;
+  if (!s || !d.rail) return false;
+  const pts = railColumns(v, d, s);
+  g.lineWidth = 3;
+  g.lineJoin = "round";
+  let k0 = 0;
+  for (let k = 1; k <= pts.length; k++) {
+    const p0 = pts[k0] as Column | undefined;
+    if (!p0) break;
+    if (k === pts.length || (pts[k] as Column).t !== p0.t) {
+      if (!(d.show === "box" && TUNNEL.has(p0.t))) {
+        g.strokeStyle = typeColour(p0.t);
+        g.beginPath();
+        for (let j = k0; j < Math.min(k + 1, pts.length); j++) {
+          const p = pts[j] as Column;
+          if (j === k0) g.moveTo(p.x, v.y(p.z));
+          else g.lineTo(p.x, v.y(p.z));
+        }
+        g.stroke();
+      }
+      k0 = k;
+    }
+  }
+  return true;
+}
+
+/** The over-grade colour of a grade chord: red where sustained, amber where local, null where within its limit. */
+export function overColour(d: BandData, c0: number, c1: number): string | null {
+  const o = d.solved?.over.find((q) => Math.abs(q.c0 - c0) < 0.01 && Math.abs(q.c1 - c1) < 0.01);
+  if (!o) return null;
+  return o.sev === "error" ? WARN : CAUTION;
+}

@@ -1,0 +1,37 @@
+# The class of each known difference between the port and the old page's goldens (engine/test/port/report.ts;
+# claude/hub_maps/engine_port_plan.md, section 2). Reviewed like a golden update: a rule fix names its rule id of
+# rules/registry.yaml, an intended difference its item of the parity matrix (claude/hub_maps/profiles_parity.md).
+# Fields: package, line ("*" for all), output, class (same | rule_fix | intended), rule or item, note.
+
+classes:
+  - package: types
+    line: "*"
+    output: solve.flags.raw_count
+    class: rule_fix
+    rule: station.type.mined_in_box_stretch_flagged
+    note: >-
+      The page pushed "is a mined station inside a cut-and-cover stretch" once per 2 m sample of the platform
+      (profiles.html 1517: 61 copies for a 121.92 m platform; Lines 4, 6 and 12 on the seed). The port pushes it once
+      per station and stretch. The set of (kind, c0, c1, severity) is equal; only the raw count differs.
+
+  - package: checks
+    line: "*"
+    output: issues.raw_count
+    class: rule_fix
+    rule: station.type.mined_in_box_stretch_flagged
+    note: >-
+      allIssues listed every solve flag the page pushed, so "is a mined station inside a cut-and-cover stretch" came
+      once per 2 m sample of the platform (profiles.html 1517, 2171; Lines 4, 6 and 12). The port lists each finding
+      once (exact repeats removed). The multiset of (kind, severity) and every range are equal after the page's
+      repeats are removed; only the raw count differs.
+  - package: checks
+    line: Line_2b
+    output: levels.reframe
+    class: rule_fix
+    rule: platform.tie.saved_profile_own_frame
+    note: >-
+      The dump called reframeDoc on a copy of S.saved, which alignFromDoc had already reframed in place on load
+      (profiles.html 1873, 1839-1868): the page keeps the saved stations' old points, so a second call maps the bends
+      and paints again (Line 2b 242 m to 244.5 m on load, to 247 m on the second call). The port's reframe carries the
+      new frame, so a second call changes nothing; its single reframe equals the page's align on load (output
+      "align", equal), and two reframes with the old frame kept give the dump's values (named test).

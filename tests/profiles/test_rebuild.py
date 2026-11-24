@@ -60,9 +60,11 @@ def test_rebuild_leaves_git_clean_and_byte_identical(hub_var):
     assert first["seed"]["same"]  # git's region/seed rebuilds byte for byte
     for name, r in first["imports"].items():
         assert r["errors"] == [] and r["conflicts"] == 0, name
-    assert first["imports"]["profile_lines"]["counts"]["created"] == 1405
+    assert first["imports"]["profile_lines"]["counts"]["created"] == 1421
     assert first["imports"]["registry"]["counts"]["created"] == 300
-    assert first["layers"]["legacy:old_hub"]["records"] == 13 + 24 + 1 + 11
+    # 13 profiles, 24 roadmap items, a camera, 13 authorities; 436 platforms with their side, 436 station complexes
+    # and the Chronology
+    assert first["layers"]["legacy:old_hub"]["records"] == 13 + 24 + 1 + 13 + 436 + 436 + 1
     # a key the rebuild minted that git's ledger lacks is one the working tree's ledger already holds
     added = {f"{n} {ln}" for n, lg in first["ledgers"].items() for ln in lg["added"]}
     assert added <= _ledger_lines(REPO / "region" / "ids")
@@ -98,7 +100,7 @@ def test_a_seed_that_refers_to_imported_records_rebuilds(hub_var, monkeypatch):
     from region.model import seed as S
 
     first = R.rebuild(hub_var / "r1", working_tree=True)
-    assert first["imports"]["profile_lines"]["counts"]["created"] == 1405
+    assert first["imports"]["profile_lines"]["counts"]["created"] == 1421
     seed = hub_var / "seed"
     with open_store(hub_var / "r1" / "region.db") as store:
         section = store.legacy("section", "Line_6")

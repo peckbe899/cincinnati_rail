@@ -158,6 +158,31 @@ export interface BandData {
   stopC?(platformId: string): number | null;
   /** Bands report what they drew in words here (the sheet's text layer). */
   report?(item: SheetText): void;
+  /** station.facts@1 of the shown draft, one per platform, removed ones included; null until it has run. */
+  facts?: readonly import("@cr/engine/contract").StationFact[] | null;
+  /** Bands record what they drew as numbers here (a station's bar, outline, access, flag), for the tests. */
+  mark?(m: SheetMark): void;
+  /** section.solve@1 of the shown draft, the last that landed (the whole line's structure, crossings, issues). */
+  solved?: import("@cr/engine/contract").SolvedSection | null;
+  /** Its input: the context blocks, streets, roads, crossings and Chronology the bands draw from. */
+  solveInput?: import("@cr/engine/contract").SectionSolveInput | null;
+  /** Show: the rail alone, the rail with the structure outlines, or the structures (the old page's S.show). */
+  show?: "rail" | "railbox" | "box";
+  /** The profile's draft data as it is now (the drawn ground is drawn from it, live, while Ben edits it). */
+  draft?: Record<string, unknown> | null;
+  /** The sheet's tool: Move, Paint or Ground (the old page's S.tool). */
+  tool?: "move" | "paint" | "ground";
+  /** A paint being dragged: the stretch and the brush's colour (the old page's paint preview, 2720). */
+  paintPreview?: { c0: number; c1: number; colour: string } | null;
+}
+
+/** A thing a band drew, as numbers in metres and CSS pixels (claude/hub_maps/profiles_parity.md, check 1). */
+export interface SheetMark {
+  /** "bar", "point", "structure", "access", "dhall", "flag", "strip", "removed", "name". */
+  kind: string;
+  /** The platform id it belongs to. */
+  id: string;
+  [k: string]: unknown;
 }
 
 /** A thing a band drew, in words: the sheet lists them in a text layer for screen readers and tests. */

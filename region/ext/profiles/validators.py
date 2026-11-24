@@ -1,7 +1,7 @@
 """The profile feature's validator (section 4, validation step 7): a profile's platform keys belong to its section.
 
-Every key of ``st``, ``sg``, ``so``, ``stt`` and ``mode``, and every item of ``del`` and ``gapfill``, must be the id
-of a platform on the profile's own section, and a section has at most one profile.
+Every key of ``st``, ``sg``, ``so``, ``stt``, ``mode`` and ``access``, and every item of ``del`` and ``gapfill``,
+must be the id of a platform on the profile's own section, and a section has at most one profile.
 """
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ from typing import Any
 
 from region.core.protocols import ValidateCtx
 
-KEYED = ("st", "sg", "so", "stt", "mode")
+KEYED = ("st", "sg", "so", "stt", "mode", "access")
 LISTED = ("del", "gapfill")
 RULE = None
 

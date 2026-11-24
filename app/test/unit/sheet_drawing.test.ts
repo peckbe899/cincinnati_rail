@@ -28,12 +28,19 @@ describe("formats", () => {
     expect(fmtCh(2500)).toBe("2+500");
     expect(fmtCh(1999.6)).toBe("2+000");
     expect(fmtCh(12)).toBe("0+012");
+    // A platform start just before 0 (a station at 60.9 m, half 61.0) rounds to 0+000, not "−0+000".
+    expect(fmtCh(-0.04)).toBe("0+000");
+    expect(fmtCh(-0.4)).toBe("0+000");
+    expect(fmtCh(-61)).toBe("−0+061");
     expect(axisChainage(3048, new Units("ft"))).toBe("10000");
   });
   it("writes grades signed to one decimal with a true minus", () => {
     expect(fmtG(13.64)).toBe("+13.6‰");
     expect(fmtG(-0.2)).toBe("−0.2‰");
-    expect(fmtG(-0.01)).toBe("+0.0‰");
+    // a slight fall keeps its sign, as on the old page (fmtG 620): "−0.0‰ in tunnel" says which way it drains
+    expect(fmtG(-0.01)).toBe("−0.0‰");
+    expect(fmtG(0.01)).toBe("+0.0‰");
+    expect(fmtG(0)).toBe("+0.0‰");
   });
   it("writes levels in the display unit", () => {
     expect(fmtZ(162.71, new Units("m"))).toBe("162.7");
@@ -79,6 +86,9 @@ describe("axes", () => {
   it("keeps the old margins, smaller on a narrow or short sheet", () => {
     expect(margins(1200, 600)).toEqual({ l: 60, r: 14, t: 84, b: 4 });
     expect(margins(500, 600).l).toBe(46);
+    // A narrow plot (the sheet beside the map, the inspector and the station panel) keeps the full top margin, so
+    // a rotated name such as "Fountain Square" is not cut off at the top (parity review, 23 November).
+    expect(margins(500, 600).t).toBe(84);
     expect(margins(1200, 250).t).toBe(52);
   });
 });
@@ -136,6 +146,31 @@ describe("grade chords and curve ticks", () => {
     // A chord running out of view is labelled in the middle of its part in view.
     expect(labs[1]?.xm).toBeCloseTo(131);
     expect(gradeLabels(gradeChords(dv), x, 0, 150, 120)).toEqual([]);
+  });
+  it("runs the chords between the platforms' transition ends, as the old page's chords() (Line 6 Towne)", () => {
+    // vertical.rail@1's vertices of Line 6 from Towne to Bond Hill, and the curves at the two transition ends (x)
+    const l6: DesignVertex[] = [
+      { c_m: 0, z_m: 159.9, kind: "ps" },
+      { c_m: 121.5, z_m: 159.9, kind: "pe" },
+      { c_m: 357, z_m: 168.5, kind: "pvi" },
+      { c_m: 574, z_m: 173.2, kind: "pvi" },
+      { c_m: 1023.2, z_m: 163.07, kind: "ps" },
+      { c_m: 1145.2, z_m: 162.33, kind: "pe" },
+    ];
+    const curves = [
+      { c_m: 153.1, g_in: 0, g_out: 42.2, L_m: 63.2 },
+      { c_m: 357, g_in: 42.2, g_out: 21.7, L_m: 30.7 },
+      { c_m: 574, g_in: 21.7, g_out: -23.1, L_m: 67.2 },
+      { c_m: 1008, g_in: -23.1, g_out: -6.07, L_m: 30.4 },
+      { c_m: 1160.4, g_in: -6.07, g_out: 1.6, L_m: 30.4 },
+    ];
+    const ch = gradeChords(l6, curves);
+    // the old page labels +42.2‰ from the transition end, not +36.5‰ from the platform end
+    expect(ch.map((x) => fmtG(x.g))).toEqual(["+42.2‰", "+21.7‰", "−23.1‰", "−6.1‰", "−6.1‰", "−6.1‰"]);
+    expect(ch[0]?.c0).toBeCloseTo(153.1);
+    expect(ch[2]?.c1).toBeCloseTo(1008);
+    // without the curves, the vertices alone
+    expect(gradeChords(l6).map((x) => fmtG(x.g))[0]).toBe("+36.5‰");
   });
   it("ticks each curve at its start and end", () => {
     expect(
@@ -234,10 +269,13 @@ describe("station band", () => {
     d.report = (t) => report.push(t);
     const { g } = fakeContext();
     platformBand.draw(g, view(0, 30000), d);
-    const drawn = report.filter((r) => r.drawn).map((r) => r.id);
-    expect(drawn).toContain("P_B");
-    expect(drawn).toContain("P_D");
-    expect(drawn).not.toContain("P_A");
+    const drawn = report.filter((r) => r.kind === "station" && r.drawn).map((r) => r.id);
+    // the old page's rule (2770-2786): left to right, the selected one always; both ends of the line named
+    expect(drawn).toEqual(["P_A", "P_B", "P_D"]);
+    // and the names left out are counted, with the way to read them
+    expect(report.find((r) => r.kind === "hint")?.text).toBe(
+      "3 of 4 names shown: maximise (Shift+F) for more, zoom in for all",
+    );
   });
   it("hits a station on its bar and on its name", () => {
     const d = data([["P_Forest", 4000, 200]]);

@@ -15,6 +15,7 @@ export { cumulativeLength, lowerBound, type PathPoint, pathAt, segmentAt } from 
 export { gridChainage, gridIndex, gridSize } from "./grid.ts";
 export { METHODS, type MethodCtx, type MethodDef, methodRef } from "./methods.ts";
 export { isRuleId, RULE_IDS, RULE_STATUS, type RuleId } from "./rules.gen.ts";
+export { STATION_FACTS_RULES, stationFacts } from "./station/facts.ts";
 export type { Design, DesignVertex, ShortCurve } from "./vertical/design.ts";
 export { design } from "./vertical/design.ts";
 export { sectionDesign, verticalRail } from "./vertical/method.ts";

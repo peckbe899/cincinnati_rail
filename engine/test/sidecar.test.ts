@@ -61,7 +61,16 @@ describe("sidecar", () => {
       hello: {
         engine_version: ENGINE_VERSION,
         engine_build: engineBuild(),
-        contracts: { section_input: 0, vertical_rail: 0 },
+        contracts: {
+          section_input: 0,
+          vertical_rail: 0,
+          station_input: 0,
+          station_facts: 0,
+          section_solve_input: 0,
+          solved_section: 0,
+          section_propose_input: 0,
+          section_proposal: 0,
+        },
         methods: [...METHOD_REFS],
       },
     });

@@ -142,7 +142,7 @@ def make_env(
     # the whole process reads the tiers from the copies (the importers, the planner's file: refs, the tier scan)
     over = {
         "tiers": {"profile_lines": {"root": str(profile)}, "ground_1912_real": {"root": str(ground)}},
-        "live": {"old_hub_db": str(root / "hub.db") if hub_db else None},
+        "live": {"old_hub_db": str(root / "hub.db") if hub_db else None, "rails_delay_s": 0},
     }
     (root / "config.json").write_text(json.dumps(over), encoding="utf-8")
     os.environ[paths.CONFIG_ENV] = str(root / "config.json")

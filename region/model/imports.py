@@ -80,7 +80,14 @@ def _normalize(records: Iterable[dict[str, Any]]) -> tuple[list[dict[str, Any]],
     return out, errors
 
 
-def _unchanged_fast(store: SqliteStore, con: Any, chain: list[L.Layer], r: dict[str, Any]) -> bool:
+def _unchanged_fast(
+    store: SqliteStore,
+    con: Any,
+    chain: list[L.Layer],
+    r: dict[str, Any],
+    cur: Any = None,
+    hashes: dict[str, Any] | None = None,
+) -> bool:
     """Whether an incoming record holds exactly the content that resolves on the chain, found by hash alone.
 
     The full path validates every record against its kind's schema before hashing it, which costs about 1 ms a
@@ -97,18 +104,51 @@ def _unchanged_fast(store: SqliteStore, con: Any, chain: list[L.Layer], r: dict[
         return False
     if geom is not None and not isinstance(geom, str):
         return False
-    cur = L.resolve(con, chain, r["id"])
     if cur is None or cur.deleted or cur.kind != kind.name:
         return False
-    try:
-        h = content_hash(r["id"], kind.name, kind.version, geom, data)
-    except Invalid:
-        return False
+    seen = None
+    if hashes is not None:
+        try:
+            # Python's own JSON (in C) of the same content is the same text, so an equal text means an equal content
+            # hash; the canonical JSON the hash is taken of is written in Python, some ten times slower
+            seen = json.dumps([kind.name, kind.version, geom, data], sort_keys=True, separators=(",", ":"))
+        except (TypeError, ValueError):
+            seen = None
+    memo = hashes.get(r["id"]) if hashes is not None and seen is not None else None
+    if memo is not None and memo[0] == seen:
+        h = memo[1]
+    else:
+        try:
+            h = content_hash(r["id"], kind.name, kind.version, geom, data)
+        except Invalid:
+            return False
+        if hashes is not None and seen is not None:
+            hashes[r["id"]] = (seen, h)
     return h == cur.hash
 
 
+def prime_hashes(store: SqliteStore, layer: str, records: Iterable[dict[str, Any]], hashes: dict[str, Any]) -> int:
+    """Fill ``hashes`` (``apply_import``'s memo) for the records that hold what resolves on ``layer``'s chain now,
+    reading only: the live hub does this at its start, so the first import after it hashes only what changed.
+    Returns how many records were learned."""
+    incoming, _errors = _normalize(records)
+    con = store._reader()
+    chain = L.load(con).chain(layer)
+    learned = 0
+    for r in incoming:
+        cur = L.resolve(con, chain, r["id"])
+        if _unchanged_fast(store, con, chain, r, cur, hashes):
+            learned += 1
+    return learned
+
+
 def _plan(
-    store: SqliteStore, con: Any, layer: L.Layer, chain: list[L.Layer], incoming: list[dict[str, Any]]
+    store: SqliteStore,
+    con: Any,
+    layer: L.Layer,
+    chain: list[L.Layer],
+    incoming: list[dict[str, Any]],
+    hashes: dict[str, Any] | None = None,
 ) -> tuple[list[Any], list[dict[str, Any]], dict[str, int], list[dict[str, Any]]]:
     from .changesets import InternalOp
 
@@ -118,7 +158,10 @@ def _plan(
     unchanged: Counter[str] = Counter()
     slugs = L.load(con).slugs
     for r in incoming:
-        if _unchanged_fast(store, con, chain, r):
+        # one read per record, not one for all: each read lets a thread waiting for the interpreter (Ben's save on
+        # the writer) have it, which a bulk read and a loop of pure Python work did not (his saves took 2x longer)
+        cur = L.resolve(con, chain, r["id"])
+        if _unchanged_fast(store, con, chain, r, cur, hashes):
             unchanged[r["kind"]] += 1
             continue
         try:
@@ -130,7 +173,6 @@ def _plan(
             errs = getattr(e, "errors", None) or [{"path": "", "message": str(e)}]
             errors.extend({**err, "id": r["id"], "kind": r["kind"]} for err in errs)
             continue
-        cur = L.resolve(con, chain, r["id"])
         if cur is not None and cur.kind != kind.name:
             errors.append(
                 {"path": "/kind", "message": f"id {r['id']} belongs to a {cur.kind}", "id": r["id"], "kind": r["kind"]}
@@ -188,10 +230,13 @@ def apply_import(
     dry_run: bool,
     ids: IdLookupImpl | None = None,
     backup: bool = True,
+    hashes: dict[str, Any] | None = None,
 ) -> ImportReport:
     """See the module doc. ``ids``, when given, is flushed into the legacy index in the import's transaction.
     ``backup=False`` skips the ``pre-import`` backup (the live importer takes one at most hourly: each of its runs is
-    one revertible changeset)."""
+    one revertible changeset). ``hashes`` is a memo of content hashes by record id, each with the record's content as
+    Python's JSON writes it: a record whose content reads the same as when it was hashed is not hashed again. The live
+    importer keeps one per importer, so the dry run, the apply and the next run hash only what changed."""
     from .changesets import Part, Txn
     from .merge import rebase
 
@@ -246,7 +291,7 @@ def apply_import(
         def plan(
             c: Any, chain: list[L.Layer] = chain
         ) -> tuple[list[Any], list[dict[str, Any]], dict[str, int], list[dict[str, Any]]]:
-            return _plan(store, c, layer, chain, incoming)
+            return _plan(store, c, layer, chain, incoming, hashes)
 
         ops, changes, unchanged, errs = run_in_transaction(con, plan, begin="BEGIN")
         report.changes = changes

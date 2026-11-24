@@ -11,6 +11,7 @@ import {
   settled,
   solveRev,
   test,
+  untraced,
 } from "./helpers.ts";
 
 /** Open the Line 6 sheet in a layer; returns the section and profile ids. */
@@ -103,14 +104,13 @@ test("Line 6 sheet draws the station names and levels, and a station click selec
   const selectedLabel = labels.locator('li[data-kind="station"][data-selected="1"]');
   await expect(selectedLabel).toHaveAttribute("data-drawn", "1");
   await expect(selectedLabel).toContainText("Bond Hill, ");
-  // Zoomed in around it (a few km across, as Ben looks at a stretch): every station in view is named.
+  // Centred on it at most 2,500 m across (S16), as Ben looks at a stretch: every station in view is named.
   await canvas.focus();
-  for (let i = 0; i < 6; i++) await page.keyboard.press("+");
   await expect.poll(() => labels.locator('li[data-kind="station"][data-x]').count()).toBeGreaterThan(2);
   expect(await labels.locator('li[data-kind="station"][data-x][data-drawn="0"]').count()).toBe(0);
   // Esc clears the selection; a click on the station's bar on the canvas selects it again.
   await page.keyboard.press("Escape");
-  await expect(page.getByTestId("station-card")).toBeHidden();
+  await expect(page.getByTestId("station-panel-hint")).toBeVisible();
   const bond = labels.locator('li[data-kind="station"]', { hasText: "Bond Hill, " }).first();
   const x = Number(await bond.getAttribute("data-x"));
   const y = Number(await bond.getAttribute("data-y"));
@@ -131,8 +131,10 @@ test("PVI level edit re-solves locally under 16 ms and saves version 2", async (
   // Each keystroke re-solves in the worker (keystrokes that land during a solve coalesce into the next one); the
   // solve of the final value takes well under a frame.
   const z = Number(await firstPviLevel(page).inputValue()) + 1.25;
-  await typeLevel(page, z.toFixed(3));
-  const ms = await settled(page, before);
+  const ms = await untraced(page, async () => {
+    await typeLevel(page, z.toFixed(3));
+    return settled(page, before);
+  });
   expect(ms).toBeLessThan(16);
   await expect(firstPviLevel(page)).toHaveValue(z.toFixed(3));
 
@@ -269,4 +271,95 @@ test("browser rail bytes equal Node's on Line 6", async ({ page, request }) => {
   }, input);
   expect(browser.length).toBeGreaterThan(1000);
   expect(browser).toBe(node);
+});
+
+test("Line 10 is drawn on its default design, written only with the first edit, which one Ctrl+Z takes back", async ({
+  page,
+  request,
+  watch,
+}) => {
+  const sec = (await (await request.get(`${API}/legacy/section/Line_10`)).json()) as { id: string };
+  const layer = await scenario(request, "default-design");
+  const prof = await profileOf(request, sec.id, layer);
+  const pid = String(prof.id);
+  const v1 = await getRecord(request, "profile", pid, layer);
+  // Line 10 has no saved level and no bend point (the hub's /design says it is drawn on the default design)
+  expect((v1.data as { pvi?: unknown[] }).pvi ?? []).toEqual([]);
+  // every write the page sends
+  const writes: string[] = [];
+  page.on("request", (r) => {
+    if (r.method() !== "GET" && /\/api\/v1\/(k|records|changesets|layers)\b/.test(r.url()))
+      writes.push(`${r.method()} ${r.url()}`);
+  });
+  await openApp(page, `layer=${encodeURIComponent(layer)}&tl=canon&sel=profile:${pid}`);
+  const note = page.getByTestId("design-note");
+  await expect(note).toHaveText("default design (not saved)", { timeout: 30_000 });
+  await expect(note).toBeVisible();
+  const canvas = page.getByTestId("sheet-canvas");
+  await expect(page.getByTestId("solve-info")).toHaveAttribute("data-design-rev", /[1-9]/);
+  await settled(page, 0);
+  // the rail is drawn (the old page's defaultAlign: its river bend points), every station at a level, no
+  // "level not set" tag, and the old page's 4 "with curve" labels
+  type Mark = { kind: string; what?: string; unset?: boolean; drawn?: boolean };
+  const marks = async () =>
+    canvas.evaluate(async (c) => {
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      return (c as HTMLCanvasElement & { marks(): unknown[] }).marks();
+    }) as Promise<Mark[]>;
+  await expect
+    .poll(async () => (await marks()).filter((m) => m.kind === "curve-grade" && m.drawn !== false).length, {
+      timeout: 20_000,
+    })
+    .toBe(4);
+  const m = await marks();
+  expect(m.filter((x) => x.kind === "bar").length).toBe(29);
+  expect(m.filter((x) => x.kind === "bar" && x.unset).length).toBe(0);
+  expect(m.filter((x) => x.kind === "unset-tag").length).toBe(0);
+  expect(m.filter((x) => x.kind === "pvi").length).toBe(2);
+  const rail = await canvas.evaluate((c) => (c as HTMLCanvasElement & { rail(): { rail_m: number[] } | null }).rail());
+  expect(rail?.rail_m.length).toBeGreaterThan(10_000);
+  expect(Math.min(...(rail?.rail_m ?? [0]))).toBeGreaterThan(100);
+  await expect(page.getByLabel("PVI 1 level")).toHaveValue(/^126\.9/);
+  // exporting writes nothing either
+  const [dl] = await Promise.all([page.waitForEvent("download"), page.getByTestId("export-geojson").click()]);
+  expect(dl.suggestedFilename()).toBe("Line_10_profile.geojson");
+  // opening, viewing and exporting wrote nothing: no draft, no request, the record as it was
+  await expect(page.getByTestId("sheet-save")).toBeDisabled();
+  await expect(page.getByTestId("sheet-discard")).toBeDisabled();
+  expect(writes).toEqual([]);
+  expect((await getRecord(request, "profile", pid, layer)).version).toBe(v1.version);
+  // the first edit takes the design into the draft with it
+  const cell = page.getByLabel("PVI 1 level");
+  await cell.click();
+  await cell.fill("");
+  await cell.pressSequentially("125.9");
+  await expect(page.getByTestId("sheet-discard")).toBeEnabled();
+  await expect(note).toBeHidden();
+  const draft = await page.evaluate(
+    ([k, id, l]) =>
+      (
+        window as unknown as {
+          __cr: { host: { drafts: { get(k: string, i: string, v: unknown): { body: { data: unknown } } | null } } };
+        }
+      ).__cr.host.drafts.get(k, id, { layer: l, year: null, month: null, timeline: "canon" })?.body.data as {
+        pvi: number[][];
+        st: Record<string, number>;
+      },
+    ["profile", pid, layer] as const,
+  );
+  expect(draft.pvi.length).toBe(2);
+  expect(draft.pvi[0]?.[1]).toBeCloseTo(125.9, 6);
+  expect(Object.keys(draft.st).length).toBe(29);
+  // one Ctrl+Z: the untouched profile again, drawn on its default design, nothing written
+  await page.keyboard.press("Tab");
+  await canvas.focus();
+  await page.keyboard.press("Control+z");
+  await expect(page.getByTestId("sheet-discard")).toBeDisabled();
+  await expect(note).toHaveText("default design (not saved)");
+  await expect(page.getByLabel("PVI 1 level")).toHaveValue(/^126\.9/);
+  expect(writes).toEqual([]);
+  const v2 = await getRecord(request, "profile", pid, layer);
+  expect(v2.version).toBe(v1.version);
+  expect(v2.data).toEqual(v1.data);
+  expect(watch.consoleErrors).toEqual([]);
 });

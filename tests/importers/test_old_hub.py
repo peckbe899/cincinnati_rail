@@ -220,3 +220,33 @@ def test_unmatched_station_keys_keep_their_place(write_root):
     assert unmatched["del"] == [[0, "Gone Before"], [2, "Gone Between"]] and unmatched["st"] == {"Gone Before": 150.0}
     assert _doc_from_store(store, "Line_6") == without_derived(doc)
     store.close()
+
+
+def test_station_params_from_the_old_hub_db_reach_the_records(write_root):
+    """The old page writes Ben's access choice and the platforms' side straight to its params (station_access,
+    station_platforms); read live from his hub.db (the live watcher's path), each change is one record revision:
+    the route's profile (its ``access``) and the platform (its ``side``)."""
+    from region.ext.legacy.oldhub import read_seed
+
+    docs = read_seed(SEED)
+    live = write_root / "hub" / "hub.db"
+    live.parent.mkdir()
+    _old_hub_db(live, docs=docs)
+    store = fresh_copy(write_root)
+    access = json.loads(json.dumps(docs["params/station_access"]))
+    access["Line_6"] = {"Bond Hill": {"type": "mezzanine", "source": "Ben"}}
+    sides = json.loads(json.dumps(docs["params/station_platforms"]))
+    sides["Line_6"]["Bond Hill"] = "island" if sides["Line_6"]["Bond Hill"] == "side" else "side"
+    hub = sqlite3.connect(live)
+    hub.execute("UPDATE docs SET data = ? WHERE path = 'params/station_access'", (json.dumps(access),))
+    hub.execute("UPDATE docs SET data = ? WHERE path = 'params/station_platforms'", (json.dumps(sides),))
+    hub.commit()
+    hub.close()
+    run = import_all(store, write_root, ["old_hub"], hub_db=live)["old_hub"].report
+    assert run.errors == [] and run.counts["updated"] == 2 and run.counts["created"] == 0
+    plat = store.get("platform", store.legacy("alignment_station", "Line_6|Bond Hill"), MAIN)
+    assert plat["data"]["side"] == sides["Line_6"]["Bond Hill"]
+    prof = profile_of(store, "Line_6")
+    assert prof["data"]["access"] == {plat["id"]: {"type": "mezzanine", "source": "Ben"}}
+    assert _doc_from_store(store, "Line_6") == _seed_doc("Line_6")  # the alignment doc itself is unchanged
+    store.close()

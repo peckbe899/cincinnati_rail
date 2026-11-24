@@ -44,6 +44,7 @@ import json
 import logging
 import queue
 import sqlite3
+import sys
 import threading
 import time
 from collections.abc import Callable, Mapping
@@ -61,6 +62,10 @@ from .watch import Source, Watcher
 log = logging.getLogger("region.live")
 
 SOLVE_JOB = "profiles.solve_section"
+RAIL_JOB = "profiles.neighbour"
+"""Each section's rail as the lines crossing it read it (``region/ext/profiles/rails.py``)."""
+RAIL_PRIORITY = 6
+"""Behind the background solves (5): the rail the sheet draws first."""
 STATE_FILE = "live/state.json"
 RETRY_S = (1.0, 2.0, 5.0, 10.0, 30.0)
 """How long to wait before looking again at a source another program holds open (Windows: WinError 32, a file
@@ -103,6 +108,10 @@ def _locked(paths_: list[Path]) -> Path | None:
     return None
 
 
+SWITCH_INTERVAL_S = 0.001
+"""The interpreter's thread switch interval while the live hub runs (``Live.start``)."""
+
+
 class Live:
     """The live service of one server (see the module doc)."""
 
@@ -133,6 +142,14 @@ class Live:
         self.settle_s = float(settle_s if settle_s is not None else live_cfg.get("settle_s", 1.5))
         self.poll_s = float(poll_s if poll_s is not None else live_cfg.get("poll_s", 0.25))
         self.max_wait_s = float(max_wait_s if max_wait_s is not None else live_cfg.get("max_wait_s", 60.0))
+        self.yield_s = float(live_cfg.get("yield_s", 0.4))
+        """After an import that applied a change, the next queued import waits this long: the open sheets read their
+        inputs again as soon as the change is in, and an import right behind it (the old hub's, after the line
+        files') took the hub's time from those reads. A tier's change is not held up."""
+        self._applied_now = False
+        self._rails_pending: list[str] = []
+        self._rails_thread: threading.Thread | None = None
+        self.rails_delay_s = float(live_cfg.get("rails_delay_s", 60.0))
         if importers is None:
             from region.cli import imports as I
 
@@ -190,6 +207,9 @@ class Live:
         self._unsub: Callable[[], None] | None = None
         self._tiers: dict[str, Any] = {}
         self._docs_seen: dict[str, Any] = {}
+        self._hashes: dict[str, dict[str, Any]] = {}
+        """Per importer, the content hash of each record it gave and the content it was taken of (``apply_import``
+        ``hashes``): a run hashes only the records whose content changed."""
         self._started = False
         self._working = False
         self._deferred: set[str] = set()
@@ -216,6 +236,11 @@ class Live:
         if self._started:
             return self
         self._started = True
+        # The live imports are Python work beside Ben's saves and the sheet's reads in one process. At the default
+        # 5 ms a thread that makes many short database calls (a save on the writer) waits up to 5 ms for the
+        # interpreter after each one while an import hashes; 1 ms keeps a save under 200 ms during a Deck tie.
+        if sys.getswitchinterval() > SWITCH_INTERVAL_S:
+            sys.setswitchinterval(SWITCH_INTERVAL_S)
         self._stopping.clear()
         subscribe = getattr(self.jobs, "subscribe", None)
         if callable(subscribe):
@@ -238,6 +263,9 @@ class Live:
         if self._thread is not None:
             self._thread.join(timeout=30)
             self._thread = None
+        rails, self._rails_thread = self._rails_thread, None
+        if rails is not None:
+            rails.join(timeout=30)  # it reads the store, which the caller closes next
         if self._unsub is not None:
             with contextlib.suppress(Exception):
                 self._unsub()
@@ -252,6 +280,8 @@ class Live:
         while time.monotonic() < deadline:
             with self._lock:
                 busy = bool(self._queued) or self._queue.unfinished_tasks > 0 or self._working
+            rails = self._rails_thread
+            busy = busy or (rails is not None and rails.is_alive())
             if not busy and not self._busy.locked() and not any(self.watcher.changing(s.id) for s in self.sources):
                 return True
             time.sleep(0.02)
@@ -298,9 +328,16 @@ class Live:
             pending |= {sid for sid, st in self.state.items() if st["state"] in ("importing", "changing", "waiting")}
         return {"paused": self.paused, "pending": len(pending), "updated": self.updated}
 
-    def _source_event(self, sid: str, *, toast: bool = False, level: str = "info") -> None:
+    def _source_event(
+        self, sid: str, *, toast: bool = False, level: str = "info", sections: list[str] | None = None
+    ) -> None:
+        """Publish the source's state. ``sections`` are the sections this event's change touched (an applied import,
+        its undo); every other event names none, though the state keeps the last change's for the Sources pane: an
+        open sheet reads its inputs again on an event that names its section, and the "reading" event of the next
+        import, carrying the last one's sections, had it read them while the import ran."""
         with self._lock:
             st = dict(self.state[sid])
+        st["sections"] = list(sections or [])
         st["toast"] = toast
         st["level"] = level
         st["live"] = self.summary()
@@ -422,8 +459,11 @@ class Live:
                 source = self.by_id.get(sid)
                 if source is None:
                     continue
+                self._applied_now = False
                 with self._busy:
                     self.act(source, changed, reason)
+                if self._applied_now and self.yield_s > 0 and source.kind == "import" and self._next_is_import():
+                    time.sleep(self.yield_s)
             except Exception as e:
                 log.exception("live: acting on %s failed", sid)
                 if sid in self.state:
@@ -432,6 +472,13 @@ class Live:
             finally:
                 self._working = False
                 self._queue.task_done()
+
+    def _next_is_import(self) -> bool:
+        """Whether the next queued item is an importer's source (the old hub's after the line files')."""
+        with self._queue.mutex:
+            item = self._queue.queue[0] if self._queue.queue else None
+        src = self.by_id.get(item[0]) if item else None
+        return src is not None and src.kind == "import"
 
     def act(self, source: Source, changed: dict[str, list[str]], reason: str = "change") -> dict[str, Any]:
         """Act on one source now (the worker calls this; tests may too). Returns the source's new state."""
@@ -510,6 +557,51 @@ class Live:
                         self._set(s.id, state="error", text=f"failed: {type(e).__name__}: {e}", at=now_iso())
                         self._source_event(s.id, toast=True, level="error")
         self.watch_all_sections()
+        if not self.paused:
+            # the line files first: they are what Ben saves
+            for s in sorted(self.sources, key=lambda s: s.info.get("importer") != "profile_lines"):
+                if s.kind == "import" and not self._stopping.is_set() and self._queue.empty():
+                    self._prime(s)
+        ids, self._rails_pending = self._rails_pending, []
+        if ids:
+
+            def later() -> None:
+                # with a fresh job cache each of these lines is solved in full (with a kept cache, as on Ben's hub
+                # after its first run, the goals are hits): after a quiet spell, so the hub's first minute (the app
+                # loading, the first line file saved) is not slowed by it; till then a sheet crosses these lines
+                # without their levels, as before
+                if not self._stopping.wait(self.rails_delay_s):
+                    self.watch_rails(ids)
+
+            self._rails_thread = threading.Thread(target=later, name="live-rails", daemon=True)
+            self._rails_thread.start()
+
+    def _prime(self, source: Source) -> None:
+        """Learn the content hash of each record the importer gives now (``imports.prime_hashes``), so the first
+        import after the start hashes only what changed: without it, the first line file Ben saved took 0.3 s
+        more to reach his sheet than the next."""
+        from region.model.imports import prime_hashes
+
+        name = source.info["importer"]
+        if self._hashes.get(name):
+            return
+        try:
+            from region.cli import imports as I
+
+            imp, src = self._resolve(source)
+            ids = I.id_lookup(self.store, imp, ledger_dir=self.ledger_dir)
+            with self._busy:
+                n = prime_hashes(self.store, imp.layer, imp.records(src.local, ids), self._hashes.setdefault(name, {}))
+            log.debug("live: %s: %d records learned", source.id, n)
+        except Exception as e:  # noqa: BLE001 - the memo is a speed-up only; the import hashes what it must
+            log.info("live: learning the records of %s failed (%s)", source.id, plain(e))
+
+    def _has_job(self, name: str) -> bool:
+        try:
+            self.jobs.registry.get(name)
+        except Exception:  # noqa: BLE001 - a scheduler without the job type
+            return False
+        return True
 
     def watch_all_sections(self) -> int:
         """A background goal (priority 5, for ever) for every section in the view; returns how many were added."""
@@ -523,15 +615,46 @@ class Live:
         try:
             from region.jobs.plan import all_records
 
-            for rec in all_records(self.store, "section", self.view):
+            ids = [rec["id"] for rec in all_records(self.store, "section", self.view)]
+            for sid in ids:
                 try:
-                    if self.jobs.ensure_watched(SOLVE_JOB, rec["id"], self.view, priority=5):
+                    if self.jobs.ensure_watched(SOLVE_JOB, sid, self.view, priority=5):
                         added += 1
                 except HubError as e:
-                    log.info("live: no background solve of %s: %s", rec["id"], e.detail)
-                    break  # the engine is off: every section would say the same
+                    log.info("live: no background solve of %s: %s", sid, e.detail)
+                    return added  # the engine is off: every section would say the same
+            # the rails' goals (and the solves they start) come after the start's own work, on a thread of their own,
+            # so the first line file saved after the start is not held up behind them
+            self._rails_pending = ids
         except Exception:
             log.exception("live: watching the sections failed")
+        return added
+
+    def watch_rails(self, section_ids: list[str], *, reframe: bool = True) -> int:
+        """A background goal of ``profiles.neighbour`` for each of the sections whose rail, as the lines crossing them
+        read it, needs the level solver (``rails.needs_rail``: Lines 10, 11 and 13; with ``reframe``, at the start, a
+        profile saved against older stops too: Line 2b), so the sheets' solve inputs read it warm
+        (``rails.warm_view``). Returns how many were added."""
+        if not self.watch_sections or self.jobs is None or not self._has_job(RAIL_JOB):
+            return 0
+        from region.ext.profiles.rails import needs_rail
+
+        added = 0
+        for sid in section_ids:
+            if self._stopping.is_set():
+                break
+            try:
+                if not needs_rail(self.store, self.view, sid, reframe=reframe):
+                    continue
+                if self.jobs.ensure_watched(RAIL_JOB, sid, self.view, priority=RAIL_PRIORITY):
+                    added += 1
+            except HubError as e:
+                log.info("live: no rail kept for %s: %s", sid, e.detail)
+                break
+            except Exception:  # noqa: BLE001 - on its own thread at the start: say so and carry on
+                if self._stopping.is_set():
+                    break
+                log.exception("live: keeping the rail of %s failed", sid)
         return added
 
     # ------------------------------------------------------------------------------------------------- tiers
@@ -724,7 +847,9 @@ class Live:
 
         self._timing["records_ms"] = round((time.perf_counter() - t0) * 1000, 1)
         t0 = time.perf_counter()
-        dry = self.store.apply_import(make_run(), records, dry_run=True, ids=ids)
+        # each record hashed once: for the dry run and the apply, and again only when its content changes
+        hashes = self._hashes.setdefault(name, {})
+        dry = self.store.apply_import(make_run(), records, dry_run=True, ids=ids, hashes=hashes)
         self._timing["dry_run_ms"] = round((time.perf_counter() - t0) * 1000, 1)
         if dry.errors:
             first = dry.errors[0]
@@ -740,7 +865,7 @@ class Live:
         try:
             backup = time.monotonic() - self._last_backup >= self.backup_every_s and bool(changes)
             t0 = time.perf_counter()
-            rep = self.store.apply_import(make_run(), records, dry_run=False, ids=ids, backup=backup)
+            rep = self.store.apply_import(make_run(), records, dry_run=False, ids=ids, backup=backup, hashes=hashes)
             self._timing["apply_ms"] = round((time.perf_counter() - t0) * 1000, 1)
             if backup:
                 self._last_backup = time.monotonic()
@@ -761,6 +886,7 @@ class Live:
                 self._source_event(sid)
             return dict(self.state[sid])
         self.counts["applied"] += 1
+        self._applied_now = True
         applied = [c for c in rep.changes if c.get("op") in ("create", "put", "delete")]
         records_of = self._records_of([c["id"] for c in applied])
         sections = sorted(
@@ -801,10 +927,18 @@ class Live:
             failed=False,
         )
         self._remember(sid, said.text)
-        self._source_event(sid, toast=True, level="warn" if review else "info")
+        self._source_event(sid, toast=True, level="warn" if review else "info", sections=said.sections)
         log.info("live: %s %s (%s)", sid, said.text, self._timing)
         if any(c.get("kind") == "section" and c.get("op") == "create" for c in applied):
             self.watch_all_sections()
+            # only the start reads the list watch_all_sections leaves: a line added now has its rail kept below
+            self._rails_pending = []
+        if sections:
+            # a station added with no level, or a line added with none: its rail now needs the level solver. A stop
+            # the line file moved under a saved profile is not reframed here: that waits on a ruling
+            # (platform.tie.centre_kept), and a whole solve of the line after each save took the open sheet's update
+            # from 2.7 s to over 6 s
+            self.watch_rails(sections, reframe=False)
         return dict(self.state[sid])
 
     def _fail(self, sid: str, text: str) -> dict[str, Any]:
@@ -949,7 +1083,7 @@ class Live:
             run=last["run"] if last else None,
         )
         self._remember(sid, text)
-        self._source_event(sid, toast=True)
+        self._source_event(sid, toast=True, sections=list(st.get("sections") or []))
         return dict(self.state[sid])
 
 

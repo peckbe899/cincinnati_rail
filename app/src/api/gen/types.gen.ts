@@ -3631,6 +3631,40 @@ export type XProfilesGetRouteDocResponses = {
 
 export type XProfilesGetRouteDocResponse = XProfilesGetRouteDocResponses[keyof XProfilesGetRouteDocResponses];
 
+export type XProfilesGetDesignData = {
+    body?: never;
+    path: {
+        /**
+         * Section Id
+         */
+        section_id: string;
+    };
+    query?: never;
+    url: '/api/v1/x/profiles/sections/{section_id}/design';
+};
+
+export type XProfilesGetDesignErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type XProfilesGetDesignError = XProfilesGetDesignErrors[keyof XProfilesGetDesignErrors];
+
+export type XProfilesGetDesignResponses = {
+    /**
+     * Response X Profiles Get Design
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type XProfilesGetDesignResponse = XProfilesGetDesignResponses[keyof XProfilesGetDesignResponses];
+
 export type XProfilesGetSectionInputData = {
     body?: never;
     path: {
@@ -3664,3 +3698,71 @@ export type XProfilesGetSectionInputResponses = {
 };
 
 export type XProfilesGetSectionInputResponse = XProfilesGetSectionInputResponses[keyof XProfilesGetSectionInputResponses];
+
+export type XProfilesGetSolveInputData = {
+    body?: never;
+    path: {
+        /**
+         * Section Id
+         */
+        section_id: string;
+    };
+    query?: never;
+    url: '/api/v1/x/profiles/sections/{section_id}/solve';
+};
+
+export type XProfilesGetSolveInputErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type XProfilesGetSolveInputError = XProfilesGetSolveInputErrors[keyof XProfilesGetSolveInputErrors];
+
+export type XProfilesGetSolveInputResponses = {
+    /**
+     * Response X Profiles Get Solve Input
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type XProfilesGetSolveInputResponse = XProfilesGetSolveInputResponses[keyof XProfilesGetSolveInputResponses];
+
+export type XProfilesGetStationInputData = {
+    body?: never;
+    path: {
+        /**
+         * Section Id
+         */
+        section_id: string;
+    };
+    query?: never;
+    url: '/api/v1/x/profiles/sections/{section_id}/stations';
+};
+
+export type XProfilesGetStationInputErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type XProfilesGetStationInputError = XProfilesGetStationInputErrors[keyof XProfilesGetStationInputErrors];
+
+export type XProfilesGetStationInputResponses = {
+    /**
+     * Response X Profiles Get Station Input
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type XProfilesGetStationInputResponse = XProfilesGetStationInputResponses[keyof XProfilesGetStationInputResponses];

@@ -6348,6 +6348,7 @@
   },
   "/api/v1/x/profiles/routes/{route_id}/doc": {
    "get": {
+    "description": "The doc as the old page saved it: the profile's members, and, when the hub has its engine, the members the\npage derived on save (``stations``, ``summary``, ``updated``), from the line's solve as the records stand.",
     "operationId": "x_profiles_get_route_doc",
     "parameters": [
      {
@@ -6385,6 +6386,51 @@
      }
     },
     "summary": "The old alignment doc of a route, rebuilt from its records",
+    "tags": [
+     "profiles"
+    ]
+   }
+  },
+  "/api/v1/x/profiles/sections/{section_id}/design": {
+   "get": {
+    "description": "``{\"source\": \"saved\"}`` when the profile is drawn as saved; else the design its own solve made (``source``\ndefault or partial, ``note`` \"default design (not saved)\", ``reframed``, ``defaulted``, levels ``st`` and slid\ncentres ``c`` by platform id, bend points ``pvi``), read warm from the hub (``rails.warm_design``, never planned),\nor ``{\"source\": \"pending\"}`` while the hub has not solved it yet. Never written as Ben's record: the sheet draws\nit, and it becomes his only when he edits.",
+    "operationId": "x_profiles_get_design",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "section_id",
+      "required": true,
+      "schema": {
+       "title": "Section Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "title": "Response X Profiles Get Design",
+         "type": "object"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "The design a section's rail is drawn with, when not as saved",
     "tags": [
      "profiles"
     ]
@@ -6429,6 +6475,94 @@
      }
     },
     "summary": "SectionInput v0 of a section",
+    "tags": [
+     "profiles"
+    ]
+   }
+  },
+  "/api/v1/x/profiles/sections/{section_id}/solve": {
+   "get": {
+    "operationId": "x_profiles_get_solve_input",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "section_id",
+      "required": true,
+      "schema": {
+       "title": "Section Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "title": "Response X Profiles Get Solve Input",
+         "type": "object"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "SectionSolveInput v0 of a section (the input of section.solve@1)",
+    "tags": [
+     "profiles"
+    ]
+   }
+  },
+  "/api/v1/x/profiles/sections/{section_id}/stations": {
+   "get": {
+    "operationId": "x_profiles_get_station_input",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "section_id",
+      "required": true,
+      "schema": {
+       "title": "Section Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "title": "Response X Profiles Get Station Input",
+         "type": "object"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "StationInput v0 of a section (the input of station.facts@1)",
     "tags": [
      "profiles"
     ]

@@ -117,15 +117,10 @@ function TopBar({ host }: { host: AppHost }) {
         {host.units.length}
       </button>
       <span className="spacer" />
-      <button type="button" disabled={!host.undo.canUndo} onClick={() => void host.undoLast()} title="Undo (Ctrl+Z)">
+      <button type="button" disabled={!host.canUndo()} onClick={() => void host.undoLast()} title="Undo (Ctrl+Z)">
         Undo
       </button>
-      <button
-        type="button"
-        disabled={!host.undo.canRedo}
-        onClick={() => void host.redoLast()}
-        title="Redo (Ctrl+Shift+Z)"
-      >
+      <button type="button" disabled={!host.canRedo()} onClick={() => void host.redoLast()} title="Redo (Ctrl+Shift+Z)">
         Redo
       </button>
       <button

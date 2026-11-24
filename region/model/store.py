@@ -627,12 +627,14 @@ class SqliteStore:
         dry_run: bool,
         ids: LG.IdLookupImpl | None = None,
         backup: bool = True,
+        hashes: dict[str, Any] | None = None,
     ) -> ImportReport:
         """Diff an importer's records against its layer by hash; report, or commit in one transaction. ``ids`` (an
-        ``IdLookupImpl``) is flushed in that transaction; ``backup=False`` skips the pre-import backup."""
+        ``IdLookupImpl``) is flushed in that transaction; ``backup=False`` skips the pre-import backup; ``hashes`` is a
+        memo a dry run and the apply of the same record objects share (see ``imports.apply_import``)."""
         from .imports import apply_import
 
-        return apply_import(self, run, records, dry_run=dry_run, ids=ids, backup=backup)
+        return apply_import(self, run, records, dry_run=dry_run, ids=ids, backup=backup, hashes=hashes)
 
     def import_run(self, run_id: int) -> dict[str, Any]:
         """The stored report of one import run (``/imports/{run}``)."""

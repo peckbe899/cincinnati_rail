@@ -147,6 +147,16 @@ class IdLookupImpl:
         # the unclaimed records of each kind on the layer, read once per run (the layer does not change until the
         # run commits), so matching n keys against n records costs n list copies, not n queries
         self._orphans: dict[str, dict[str, dict[str, Any]]] = {}
+        # the legacy index of each old-key kind, read once per run on first use (it changes only when the run
+        # commits): the line files' importer asks for some 1,400 ids a run, one query each before
+        self._index: dict[str, dict[str, str]] = {}
+
+    def _legacy(self, lkind: str, key: str) -> str | None:
+        idx = self._index.get(lkind)
+        if idx is None:
+            rows = self.store._reader().execute("SELECT key, id FROM legacy WHERE lkind = ?", (lkind,)).fetchall()
+            idx = self._index[lkind] = {k: i for k, i in rows}
+        return idx.get(key)
 
     def _claim(self, id: str) -> None:
         self._claimed.add(id)
@@ -162,7 +172,7 @@ class IdLookupImpl:
         if pend is not None:
             self._claim(pend[0])
             return pend[0]
-        found = self.store.legacy(lkind, key)
+        found = self._legacy(lkind, key)
         if found is not None and (lkind, key) not in self._ledger and ids.namespace_of(found) == self.namespace:
             # in the legacy index but not in the ledger (a ledger write lost after its import committed): the line
             # is written again with this run's, so the ledger heals

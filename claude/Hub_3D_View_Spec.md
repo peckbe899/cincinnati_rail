@@ -1,6 +1,6 @@
 # The hub's 3D view: spec
 
-Status: draft for Ben, 22 Nov 2026. Branch `hub_region`. Sources: the nine pages in `design/3d_artifacts/`, `claude/Hub_Region_Architecture.md`, checklist items 2.0.12, 2.0.13, 2.3.4, 2.5.4, 2.5.5 and 2.5.6, the 6 Nov rulings (checklist section 5), and scrutiny section 4. No repository file was changed while writing this.
+Status: draft for Ben, 22 Nov 2026. Branch `hub_region`. Sources: the nine pages in `design/3d_artifacts/`, `claude/Hub_Region_Architecture.md`, checklist items 2.0.12, 2.0.13, 2.3.4, 2.5.4, 2.5.5 and 2.5.6, the 6 Nov rulings (checklist section 5), and scrutiny section 4. No repository file was changed while writing this. Section 7 (buildings) was added on 24 Nov 2026, after Ben's rulings of 23 and 24 Nov.
 
 Ben's aim: the hub's 3D view looks like these pages. Every bridge, viaduct, tunnel and station on every line and in every era is drawn from the model, and it moves when the design changes.
 
@@ -73,6 +73,7 @@ Ben named the artifacts as the end goal, so the structure look is the default, c
 - **Textures.** Only small procedural canvas textures, generated in the app (not shipped in GLBs), with UVs in metres:
   - Ashlar: one 2.4 × 1.2 m tile holding two 0.6 m courses of 1.2 m stones laid half-bond (A `ashlar` 128-136, W `ashlarT` 139-146, ST `ashlarTex`).
   - 1930s concrete: speckle, one joint line per 8 m tile, and 1 m lift lines on the deco variant only (W `concrete` 131-138). This is not board-marked.
+  - Windows (L1) and brick courses (L2), for buildings only (section 7).
   - Steel, Metro concrete and ballast stay flat colour.
 
 The palette is a `look.materials` param group: one entry per material id, holding hex, opacity, side and texture. Where pages disagree on one role, the table names the winner.
@@ -131,7 +132,7 @@ The palette is a `look.materials` param group: one entry per material id, holdin
   - R's full-rectangle plane under the detailed ground (R 721-722) z-fights near the banks, so it is not ported.
 - **Streets, blocks and plots.**
   - Draped as a texture from the map's tile layers. This is W's method: a 0.5 m/px street map (2784 × 2480 px) on the 4 m heightfield.
-  - Lots are extruded later (2.3.11).
+  - Lots stay draped. Buildings are drawn in 3D from `building` records (section 7).
   - ST's ribbons and flat block polygons lose, because they z-fight and cost draw calls.
 
 ### 1.5 Edges and line work
@@ -364,7 +365,7 @@ Only some of these come from the pages: R draws platforms, canopies and a buildi
 | `waterSurface` | level 139.62; mask where ground < level + 0.5 | water | R 726-758 |
 | `quayTerrace` (the Embankment) | bank polyline; river wall from 137.5 to quay + 0.35; quay 12 m at 142.0; terrace wall to 151.8 with string course 148.3-148.75; pilasters every 12 m; grilles 4.8 × 4.4 in alternate bays; balustrade (balusters at 0.55 opacity); terrace to 52 m | stone.quay, stone.quay_t, pave, grille | R 777-825 (`face`, `cap`) |
 | `streetSurface` | street polygon and levels; road 0.04 m and walks 0.16 m over the ground (a 0.12 m kerb, A); R lays roads 0.12 m over the street level | road, pave, kerb | R 692-697; A 446-478 |
-| `lotMass` | lot footprint, height | building | new (2.3.11) |
+| `lotMass` | replaced by section 7: `building` records drawn by `mesh.building@1` | | 2.3.11 |
 
 **Earthworks are not meshed here.** The trough cut, the made ground over the tunnel and the street re-grades change `region.ground` itself through earthwork records, so every pane sees the same ground. R edits the heightfield per vertex (708-717), and that is not ported.
 
@@ -402,6 +403,7 @@ Only some of these come from the pages: R draws platforms, canopies and a buildi
 | `terrainTile`, `waterSurface` | `region.ground` (existing) and `ground_layer` (9.15) | year, timeline |
 | `quayTerrace` | **new kind `earthwork`** (for the ground) plus a `structure` with form `quay_wall` (for the masonry) | |
 | `streetSurface` | streets of 2.3.8 to 2.3.10; until then **new kind `context_feature`** | polygon, levels[], lower_m, clearance_m |
+| buildings (`mesh.building@1`) | **new kinds `building`, `building_style`, `site` and `envelope`** | see section 7 |
 | look | **new param group `look.*`** | materials, scene, lights, labels, presets |
 
 ### 3.3 New kinds and new fields
@@ -584,7 +586,7 @@ three.js is bundled from npm: the current release, ESM, with addons. There is no
 - **Server.** Job type `glb.section` (already listed in architecture section 6). It runs in the `engine` host and calls `mesh.*`.
   - **Scope:** one section chunk of about 500 m of chainage, one structure, one bridge, or one station.
   - **Key:** `in` holds the structure and section record hashes, the `vertical.rail` output_hash, the `param:look.*` and `param:metro_structure.*` values, the ground tile hashes, and `engine_build`. The axes are year and timeline only where the ground is in the GLB.
-  - **Output:** a content-addressed GLB blob, served under `/api/v1/files` with ETag and Range.
+  - **Output:** a content-addressed GLB blob in `var/cache/blobs/` (9.18), served with ETag and Range by a new blob route (to add; today only `/api/v1/data/{tier}/{path}` serves files, `region/api/files.py`).
   - **Invalidation:** a PVI edit invalidates only the chunks whose rail changed. The result event carries the `changed` chainage ranges, and the pane refetches only those GLBs (scrutiny: "fetch only changed GLBs").
 - **Index endpoint.** `/api/v1/view3d/index?bbox&layer&year&lod` lists `{scope, bbox, lod, hash}`, so the pane loads only what is in view.
 - **Worker.** While Ben drags a PVI or edits a structure field, the app's engine worker runs the same `mesh.*` on the draft input and swaps the touched chunk within 100 ms. The server GLB replaces it when SSE confirms the save.
@@ -708,8 +710,690 @@ The current order is kept: increment 2 starts with I2.1 (closing the loop to run
 1. Signal side: the outer wall (box page) or the trip-stop side (handoff section 3, item 5).
 2. C&O steel colour (grey is marked "not ruled").
 3. Are R's `RT` and `KY` levels canon for the C&O pairs and the Covington line, or only a reference?
-4. The default mode for the region view: Model (lean), or Diagram for planning.
+4. ~~The default mode for the region view.~~ Ruled by Ben, 23 Nov 2026: **Model** is the default. The tunnels are already diagrammed; stations get the same treatment (their own Diagram drawings), so Diagram stays a mode, not the default.
 5. The host section and chainage basis for the arcade's straightened frame.
+6. Buildings and the city around the lines: the open questions in 7.12.
+
+---
+
+## 7. The city around the lines
+
+Every building in the 3D city is one record of a new kind, `building`. That holds for a building that stands today, one that was demolished, and one of Ben's proposals. Only the inputs differ by provenance. Every value of every building can be changed by Ben in his own layers. One pure engine method, `mesh.building@1`, turns any record into Model-look geometry, and it re-meshes one building at a time. A second kind, `building_style`, holds the style catalogue. A third, `site`, clears an area for a year and a timeline. This section replaces the `lotMass` row in 2.7 and proposes to close checklist 2.3.11 (lean (c), one record for the map and for 3D, now with roofs), for Ben to rule.
+
+Status: **proposed, not ruled**, except the rulings in 7.1. **On hold** until the rest of the hub is complete (Ben, 24 Nov 2026). Values marked *drawing value* are starting numbers for Ben to rule on. Facts marked *unconfirmed* have not been checked against their source.
+
+### 7.1 Ben's rulings
+
+**23 Nov 2026**
+1. **No Google and no Apple data.**
+   - So: no Photorealistic 3D Tiles, no Street View, no Google Open Buildings.
+   - Overture buildings are left out too, because Overture merges Google Open Buildings in places.
+   - `tools/overture_extract.py` already uses Overture for rail and water. Those themes are to be checked for Google-derived sources.
+2. **The Model look only.** There is no image-model or illustrated layer. Lost and proposed buildings come out of the same generator and palette as real ones (1.3).
+3. **Real buildings get roof shapes from lidar.**
+4. **The whole metro is the end goal.** Start downtown.
+5. **Large data lives on Ben's machine**, not in git.
+6. **A method for buildings that are not in the real world:** the demolished West End, new buildings on downtown parking lots, and the like.
+
+**24 Nov 2026**, in Ben's words: "The buildings should be able to be modified (height, footprint, type (residential, commercial, industrial), architectural style (based on age, material, etc.), and other things)".
+
+What this means here:
+- **Every building is editable**, real ones included.
+- **A measured building keeps its lidar solid** until Ben changes something the measured solid cannot show (7.6, step 2). It is then drawn by the generator from its parameters. The measured original stays underneath, in the import layer, and one action brings it back.
+- **Edits live in Ben's layers** (main or a scenario), never in import layers. They follow the hub's rules: copy-up versions, the three-way rebase that never overrides Ben (Architecture 9.11), drafts with undo, Enter saves.
+- **Always live.** A building edit re-meshes only that building, within the budgets in 7.9. No edit reruns lidar, roofer or a district job.
+- **Style is a first-class parameter set** (7.5): a catalogue whose defaults follow from era, material and use, which Ben can override per building.
+- **Type is the building's use:** residential, commercial, industrial, mixed, civic (and institutional), religious, transport, parking, other.
+- **"Other things"** include at least: stories and floor heights, roof form and pitch, setbacks, podium and tower, material and colour, ground-floor shopfront, year built and demolished, name and address, notes, and provenance.
+- **Every value shows its source** in the app, as the line sheet's station panel does.
+
+### 7.2 What the repository holds today
+
+Corrections to earlier notes. Question 1 in 7.12 follows from them.
+- **There is no 1912 Sanborn** in the repo or in `data/sanborn/manifest.json`. The repo's "1912" is the City Topographic Survey (`ground/1912/`), which gives ground levels, not buildings.
+- **1904.**
+  - 381 frames (365 sheets) of vols. 1-6 are placed (`hub/sites/deck/sheets.json`). Some sheets are split panels (13a and 13b, 161i and 161m), and 223 and 224 appear twice.
+  - The joint fit (Relief_Maps_Log 10n.4) covers 154 sheets of vols. 1-3 in 161 frames. Its residuals: ties median 0.63 m (p90 1.8), OSM corners median 1.05 m (p90 3.4), frame medians up to 3.9 m.
+  - The deck frames (vols. 1, 3, 5 and 6) and 223 and 224 were refitted in 10t.6-10t.7, with the Lower Price Hill spline in 10t.8.
+  - Vols. 4-6 and the rest of vol. 2 were placed later by other fits (10t, 10zzb, 10zzq), and the Northside frames were bent onto the 1922 splines in 10zzy.16. Their accuracy is not restated here.
+  - Vol. 2 carries later paste-overs: 1920s buildings and Central Parkway (10n.2).
+- **1922.**
+  - Five frames are tiled (16R, 34L, 34R, 37L, 37R), all north of N 4,333,500. They were refitted by thin-plate spline in 10zzy.16 (`data/sanborn/cuf_cw/<half>/model.npz`). Plates 35N and 38 are also on the 1922 layer (`tools/sanborn/cuf/plates.py`).
+  - Affine fits from October exist for vol. 1 halves 3, 6, 26 and 29 (10t.4, `data/sanborn/lph/tf22_aff.json`) and 31 and 33L (10u.4, `lph/tf22_cw.json`). They are not tiled and predate the thin-plate rule (`docs/sanborn/RULES.md` rule 12). 16L and 35L have splines (10zzy.16) but are not on the layer.
+  - The guided plates are 43, 44, 45, 80 and 82A, all north of N 4,336,600. Plate 44 is Northside and Cumminsville.
+- **The West End.**
+  - A box E 713,000-714,300 / N 4,331,300-4,332,800 holds 286 blocks (by centroid, `hub/sites/deck/basin.json`), all from the 1904 Sanborn, on 41 frames (27 of vol. 1, 14 of vol. 3). It holds no 1922 block.
+  - Of the 1922 vol. 1 sheets that reach the Mill Creek side (10k.1: 3, 6, 9, 16, 29, 31, 33), 16R is tiled, 16L has a spline, and 3, 6, 29, 31 and 33L have affine fits (10t.4, 10u.4). Sheet 9 has picks only (10t.3). All of them must be fitted by spline (rule 12) and tiled before 1904-1922 linking can run there.
+- **No building outlines, stories or materials have been read off any Sanborn yet.**
+  - The 1904 label readers were told to skip construction codes, on grey crops at 4 px/m (`docs/sanborn/workspace_notes/plots/labels/INSTRUCTIONS.md`).
+  - Ben rejected the generated lots on 15 Oct (10zg.4).
+  - So the lost-building path below is a new trace-and-read pass, checked sheet by sheet.
+- **Nothing for buildings exists in code**: no kind, no params, no mesh code, no tiers for lidar, footprints or models.
+
+### 7.3 Sources per provenance
+
+`origin.source` takes one of four values. Each has its own inputs and its own import layer or authoring path.
+
+**measured (standing today)**
+- **Footprints.** `tools/buildings/cagis_fetch.py`, modelled on `tools/sanborn/guided/parcels.py`.
+  - It pages the CAGIS / City of Cincinnati building-footprint layer per 1 km cell (`inSR`/`outSR` 26916). *Unconfirmed:* about 300,000 footprints with estimated heights and stories, mostly from 2011 imagery.
+  - It keeps the stable id, estimated height, stories, survey year, and name and address where the layer has them.
+  - *Unconfirmed:* the service URL (`parcels.py` only knows `COUNTYWIDE/Cadastral/MapServer/0`), the field names, whether ids are stable across releases, and the terms.
+  - It writes tier `bldg_footprints`: GeoJSONSeq per cell (no new dependency; FlatGeobuf would need pyogrio), `MANIFEST.csv` with sha256, and `STATUS.json`, the same handshake as tier `ground_1912_real` (`ground/1912/rebuild/manifest.py`, `status.py`; declared in `configs/hub_paths.json`).
+- **Parcels.** `tools/buildings/parcels_fetch.py` pages CAGIS `COUNTYWIDE/Cadastral/MapServer/0` per 1 km cell, as `tools/sanborn/guided/parcels.py` does per plate, into tier `parcels` (same handshake). Parcels carry the auditor join (dates, land use), the Sites list and parcel snapping. *Unconfirmed:* which auditor fields the layer or a second service carries.
+  - Importer `buildings_real@1` writes `import:bldg_real` with `method: cagis_extrude` until the cell has lidar. This gives downtown LoD1 blocks early.
+- **Lidar.** `tools/buildings/lidar/` holds `fetch.py`, `pdal_cell.json` and `run_cells.py`. It is lane B tooling, like `ground/1912/rebuild/`.
+  - Check Ben's own data first: he already holds USGS DEMs and LiDAR (checklist 2.0.14), and `ground/2026` is what the works ledger calls "today's LiDAR". Whether either is a classified point cloud recent enough for roofs is *unconfirmed*.
+  - Otherwise, USGS 3DEP for Ohio (project name, years and coverage *unconfirmed*; public domain). Prefer PDAL `readers.ept` on the USGS public EPT bucket per cell, if the project is there (*unconfirmed*), over storing LAZ.
+  - Before B2, `fetch.py --survey` prints the class histogram, CRS, vertical units and geoid of one tile per cell. The CRS and units (possibly State Plane feet) are *unconfirmed*.
+  - PDAL reprojects to EPSG:26916 and NAVD88. The geoid step is applied once and recorded in the manifest. It writes a 0.5 m DTM COG, used for checks only (7.8).
+  - The USGS base specification does not require class 6. If a project has no class 6, building points are class 1 points inside the buffered footprint, at least 2 m above the DTM, with a planarity filter for trees.
+- **Matching 2011 footprints to 2020-23 points.** Footprints from 2011 orthos lean on tall buildings, and rows may be one merged polygon.
+  - Per footprint, `run_cells.py` first fits a 2D shift that best covers the building points and records it in `measured.shift_m`.
+  - The shift is never written to the geometry, so it never conflicts with Ben's revisions (7.4, "Merge"). `bldg.resolve` draws the CAGIS footprint moved by the shift, unless Ben set a footprint.
+  - A shift over 1.5 m is a Review item.
+  - A footprint with several roof-height clusters along party lines is flagged "merged row?" for a split.
+- **Roofs.** roofer runs per cell as an external CLI and writes CityJSONSeq LoD1.2, 1.3 and 2.2, with per-building stats (h_50p, h_70p, RMSE, point count).
+  - roofer runs in WSL2 or Docker. `run_cells.py` translates tier roots (`C:\…` to `/mnt/c/…`) and records the roofer version and container digest in `MANIFEST.csv`. PDAL comes from conda-forge on Windows.
+  - *Unconfirmed:* roofer's licence.
+  - The live hub watches `STATUS.json` and re-imports changed cells (9.31). Their records gain a `measured.solid` and flip to `method: cagis_lidar_roofer`.
+  - If roofer fails on a building, it falls back to LoD1.2 from h_70p with a flat roof, plus a Review item.
+- **Change since 2011.** The same run raises Review items. None of them acts by itself. They are off until class 6, or the substitute above, is validated on the pilot.
+  - A footprint with almost no building points: "gone since 2011?".
+  - A building-point cluster over 30 m² outside every footprint: a candidate footprint (alpha shape, then rectangle regularisation), `method: lidar_new`.
+  - CAGIS and lidar heights more than 3 m apart. The lidar height wins.
+- **Dates.** The Hamilton County Auditor's year built per parcel, joined through the parcel (*unconfirmed* as a public field).
+  - The auditor's year is often a placeholder for old buildings, such as a blanket 1900.
+  - Where a Sanborn match says "standing by 1904", the Sanborn date wins, and `date_basis` says why.
+- **Outside Hamilton County** (metro growth):
+  - each county's own footprints (Boone, Kenton, Campbell, Butler, Warren, Clermont), or else footprints from building points;
+  - OSM (on Ben's disk) or Microsoft footprints only if Ben allows them (7.12);
+  - Kentucky lidar from KyFromAbove, not 3DEP Ohio.
+- **CAGIS geometry stays out of git** until its terms are checked (B0a gate, 7.11). Git holds ids and aliases only. See 7.4, "Seeds".
+
+**historic (lost buildings, the West End first)**
+- **Editions:** 1904 and 1922 (7.2). In the West End only 1904 is placed today.
+- **Footprints.** `tools/sanborn/bldg/trace.py`.
+  - It segments the building fills by colour at the scan's native resolution, with a colour calibration per sheet against the legend and against known samples. Aged paper and yellow frame fills are close in tone.
+  - It splits the fills along the skeleton of the outline ink, so party walls become shared edges. Polygons come from the fill regions, not from the outline ink.
+  - `tools/sanborn/unet/ink_bins.py` cannot be reused as it stands. It is a 1922-plate tool whose inputs (a street map, a placed plate's label, or the `blocks_noguide.py` outlines) do not exist for 1904 sheets. It finds only pink and yellow fills, and a party wall between two brick houses falls in its bin 3 (building outline), not bin 2 (lot line).
+  - It places the polygons through the existing frame fits: the 1904 fits (10n.4, 10t.6-10t.7, the Lower Price Hill spline `lph/tps.pkl` of 10t.8, 10zzb, 10zzq and the 10zzy.16 bends) and the 1922 splines (10zzy.16 for the tiled halves, rule 12 for the guided plates). A 1922 sheet with only an affine fit is refitted by spline first.
+  - Traces are clipped to their `basin.json` block. Duplicates across sheet overlaps are removed by the 10n.9 "deepest frame" rule.
+  - Ink is traced, never generated. That is the lesson of 10zg.4.
+  - Ben's plate 44 ground truth (`data/sanborn/streetmap/22-44.json`, `picks22_guided/22-44/edges_ben.json`, `rail_ben.json`) holds his 55 blocks, street sides and rail, not building outlines. It tests block clipping, not footprints.
+  - The first footprint gate is a new hand-checked set: a few blocks outlined twice, independently, on plate 44 and on one 1904 sheet, and accepted by Ben. The 99.3% building-outline figure in `ink_bins.py` compares two binnings, and is not a footprint accuracy.
+- **Material** comes from the fill colour, read against each edition's legend sheet (*to check against the legend*): pink brick, yellow frame, blue stone, brown fireproof, grey iron.
+- **Stories and codes.** A new reader pass, `docs/sanborn/workspace_notes/bldg/INSTRUCTIONS.md`, reads exactly what the label readers were told to skip.
+  - It works on native-resolution colour crops, 60 m square: 1904 CHPL about 11.4 px/m and LOC about 20 px/m; 1922 plates 5.2 px/m (200 ft to the inch) or 10.2 px/m (100 ft) (10t.4).
+  - What it reads: the stories numerals (1, 2, 2½, 3), D (dwelling), S (store), F (flat), B (basement), named uses (Ch., Sch., Wareho., Mfg., Saloon), skylights and roof notes.
+  - Each reading is assigned to the polygon under it. Two independent reads per building must agree, as `docs/sanborn/RULES.md` rule 12 asks of hand picks.
+  - Each sheet then becomes one Review item, with the crop under the outlines. Nothing counts as checked until Ben accepts the sheet.
+  - Roof form is not printed on a Sanborn. A historic roof is `inferred` from style and half-stories unless a photo fixes it.
+- **Output:** small vectors in git under `data/sanborn/buildings/<edition>/<sheet>.geojson`. Importer `buildings_sanborn@1` writes `import:bldg_sanborn`.
+- **Linking.**
+  - Within each block, the traces are first aligned rigidly to the CAGIS footprints of surviving buildings (ICP), and lost neighbours move with them. Control in the West End is weak: the joint fit used 167 corners of demolished streets from the 1912 layer at sigma 6 m (10n.4), and that layer was itself off OSM by up to 4.5 m before a per-sheet correction left 2.3-2.7 m MAD (10m.4).
+  - Then IoU of at least 0.6, or a Hausdorff distance under 2 m, proposes `same_as` in Review, and Ben confirms. One merged CAGIS row can match several Sanborn houses.
+  - 1904 to 1922: a match with the same stories makes one record with a longer life. Otherwise the 1904 record closes `circa` between the editions and a new one opens.
+  - This makes each OTR survivor one object across eras, so it is not drawn twice.
+- **Photos** are public-domain library collections Ben clears, or his own. They attach as `evidence` to fix stories, roofs and cornices. No photo goes into the look.
+- **Lots.** `hub/sites/deck/plots.json` is not used for footprints, because Ben rejected it. Its use labels (`u0`) may help choose a use.
+
+**proposed (Ben's designs)**
+- Authored `building` records in main, a scenario or a proposal layer. Most start from a use and a style and are fitted into an `envelope` (7.4).
+- **Candidate parking sites.** Job `bldg.sites@1` lists surface-parking parcels, from the auditor land-use codes (*unconfirmed*) plus paved parcels with no building points. It is a pick list and never builds anything.
+- **From `import:deck`** (Architecture 11, item 7):
+  - Only the palace and the Deck's building blocks come in, as canon `envelope`s (timeline canon, opened by 1913) carrying their block type as a use and style hint. deck.json has 274 blocks of type building today. Ben's block types from `hub/seed/deck/layout.json` come with them: today 3 landmark and 1 worship among 56 block edits; the page also offers tower, civic, school, hospital and industrial (`BLOCK_TYPES`).
+  - Station buildings stay `station_element`s with element `building` (3.3): the Deck's `cut_building` (Union Terminal) and `cut_headhouse`, the Norwood station building and the airport terminals.
+
+**model (hand-made landmarks)**
+- A glTF or GLB file that Ben saves in the read-only tier `models3d`. The record holds `tier://models3d/<file>` and its sha256. The hub never writes a tier.
+- The record keeps its parametric fields as the fallback when the tier is missing, for example in a cloud session.
+- Materials are mapped onto `look.materials` slots and drawn as Lambert. The model's own colours and textures are dropped, so landmarks keep the Model look.
+- A `model` record behaves as a measured solid (7.6, step 2). Identity, use, dates and slot colours edit live. A massing edit switches it to the generator, and **Back to model** is the one action that restores it.
+
+### 7.4 Records
+
+New feature folder **`region/ext/buildings/`**: `__init__.py`, `kinds/`, `importers.py`, `sources.py`, `validators.py` and `jobs.py` (the layout of `region/ext/terrain/` and `region/ext/profiles/`), plus `styles/` and `rules/`.
+- It sits beside the planned `region/ext/structures/` (3.3), which holds the rail structures, station elements, earthworks and context features. A station's own building stays a `station_element`.
+- All plan geometry is EPSG:26916, and every level is relative (3.1 rule 1).
+
+#### How a value is set, and where its source comes from
+
+- **Two kinds of field.**
+  - *Import blocks* (`measured`, `read`, `attrs`, `origin`, `confidence`) are written only by import runs. Ben never edits them. Authored records write their own `origin` and `confidence`.
+  - *Ben's fields* (everything else, except geometry) are null in an import revision. A value there is Ben's (or the author's, for a proposal). Null means "follow the sources".
+  - Ben's fields that are objects (`floor_h_m`, `roof`, `colour`, `facade`) are partial: each key resolves on its own, and a null key means "follow the sources" for that key.
+  - `checked {by, date} | null` is a top-level field of Ben's. Accept sets it. Authored records set it to their author on creation.
+  - `evidence[]` is Ben's. Import evidence lives in `measured.evidence[]` and `read.evidence[]`. The card shows the union.
+  - So an Accept, or a photo Ben adds, never collides with the next import run at the merge unit.
+  - Geometry is written by the import. Ben's footprint is his revision's geometry where it differs from the import revision below.
+- **Resolution order, per value:** Ben's field (or the author's), then lidar, then CAGIS and the auditor, then `read` (Sanborn), then the envelope (proposed buildings), then the Deck hint, then the style, then the use, then the global param. The seed varies a value only inside the style's `vary` range, and never a value Ben set.
+- **The resolver** returns each value with its source: `{v, src, ref, rule}`, where src is one of ben, author, lidar, cagis, auditor, sanborn, envelope, deck, style, use, rule, param or seed. For ben and author, the changeset's `by` and date are shown.
+  - The values and sources of one building are the engine method `bldg.values@1` (pure TS, in `engine/src/mesh/`). It reads the record, the import revision below, the styles in use and `style_defaults.yaml`.
+  - The app worker runs it for drafts, so a keystroke never waits on the server.
+  - The cell job `bldg.resolve@1` (7.8) calls the same method through the engine sidecar, and adds what needs neighbours and sites: dates, derived closes, edges and the element table. One implementation, so the draft and the saved building cannot drift apart.
+- **The card shows it** as the line sheet's station panel does (`app/src/plugins/line-sheet/panel.ts`): label, value, the source in words with a rule chip, and a "was" note while a draft differs. A value Ben set carries a reset mark. Examples:
+  - "18.4 m, lidar 2022 (h_70p, RMSE 0.21 m)";
+  - "4 stories, Sanborn 1904 vol. 1 sheet 27, read";
+  - "Italianate rowhouse, from era, material and use (rule bldg.style.default)";
+  - "3.4 m, Italianate rowhouse default";
+  - "6 stories, Ben, 24 Nov 2026".
+- **Merge.** The merge unit is the field (Architecture 9.11).
+  - A re-import that changes only import blocks or fields Ben did not set merges as a `rebase` changeset.
+  - A change to a field he set is a Review conflict. His revision stays on read.
+  - Any footprint change below one of his revisions is a conflict (9.11), even where his revision kept the import's footprint (a rename, a restyle, a Reset all). A CAGIS re-release would flood Review that way. So Review groups these per cell, with one action, "Take the new footprints where you kept the old one", which writes one changeset.
+  - `parts[]` is keyed by `id`, as `structure` sub-arrays are (3.3).
+
+#### `building` (geometry Polygon or MultiPolygon in 26916, the footprint at ground; `dates: open /opened, close /closed, timeline /timeline`; merge unit `field`, rebase auto)
+
+| Field | Values | How Ben edits it | Source when Ben has not set it |
+|---|---|---|---|
+| geometry | the footprint | drag vertices on the map; add or remove a vertex; draw | CAGIS, `lidar_new` or a Sanborn trace |
+| name, address | text; address may be a list | type | `measured` (CAGIS, auditor; *unconfirmed*) or `read` (Sanborn names and house numbers) |
+| notes | text | type | none |
+| use | `residential \| commercial \| industrial \| mixed \| civic \| religious \| transport \| parking \| other` | pick | Sanborn codes, auditor land use, the Deck use (below), else `other` |
+| use_detail | text: school, hospital, brewery, saloon, station | type | as read |
+| style | a `building_style` slug | pick from the catalogue (7.5) | rule `bldg.style.default` from era, material, use, stories and plan |
+| opened, closed | partial dates: year built and year demolished, with `opened_q`, `closed_q` (`exact \| before \| after \| circa \| assumed`) and `date_basis` | type, or "Set to view year" | Sanborn presence, auditor year built, a site, `replaces` (7.8) |
+| timeline | `canon \| real \| null` (null is both, as `region/ext/rules/kinds/era.yaml`) | pick | null, or the redevelopment rule (7.8) |
+| stories | number, halves allowed (2.5) | type, Up and Down; or drag in 3D | CAGIS stories, lidar height over floor heights, Sanborn numeral, style |
+| basement | bool | tick | Sanborn B, else style |
+| floor_h_m | `{ground, upper}` | type | style, then `bldg.floor_h.*` |
+| height_m | wall top above the base (eave or parapet) | type, or drag the top face in 3D | lidar h_70p per part, else stories × floor heights |
+| roof | `{form, pitch_deg, ridge_az_deg, overhang_m, parapet_m, dormers}` (the style's roof keys); forms `flat \| parapet \| shed \| gable \| hip \| mansard \| gambrel \| sawtooth \| monitor \| pyramid \| spire \| dome` | pick form; type pitch | the measured solid as drawn; `measured.roof` as the starting values; style |
+| parts[] | `{id, ring (null = the footprint), on: ground \| part:<id> \| rec:<structure id>, setback_m, stepbacks[{above_story, depth_m, faces: street \| all}], stories, floor_h_m, height_m, roof, material, use, facade}`; a null `use` or `facade` follows the building | Add tower, Add setback, Add wing; drag in 3D | measured LoD1.3 levels, else one part. The card shows GFA per use |
+| material | `brick \| frame \| stone \| iron \| concrete \| steel_glass \| metal \| mixed` | pick | Sanborn fill colour, style |
+| colour | `{main, secondary, trim, roof}` (the style's palette slots), each a `look.materials` id or a hex | pick | the style palette, drawn by seed |
+| facade | `{grammar, ground: shopfront \| stoop \| blank \| arcade \| lobby \| loading \| open, shopfront_h_m, bay_m, piers, string_courses, base, window {kind, w_m, h_m, hood, sill}, cornice {kind, h_m, proj_m}, ornament 0-3, plan_form, front_edges[]}` (the style's facade keys, 7.5) | pick and type; Shopfront tick | style, then use (commercial gets a shopfront) |
+| massing | `auto \| generated` | "Draw from parameters"; "Back to measured" ("Back to model") | auto: the measured solid where one exists and no massing field is set (7.6) |
+| seed | integer | Re-roll | from the id hash |
+| envelope | an `envelope` id | pick | none |
+| origin | `{source: measured \| historic \| proposed \| model, method: cagis_extrude \| cagis_lidar_roofer \| lidar_new \| sanborn_trace \| frontage_fill \| authored \| gltf, ref, run}` | never (import or author) | the import or the author |
+| checked | `{by, date} \| null` | Accept sets it | null for imports; the author for authored records |
+| confidence | `{footprint, height, roof, material, date, style}`, each `traced \| read \| inferred \| invented` | none: a value Ben sets shows "set by Ben" | the import |
+| evidence[] | `{kind: sanborn_1904 \| sanborn_1922 \| photo \| aerial \| auditor \| cagis \| lidar \| other, ref, date, note}` | add, remove | none; import evidence is in `measured.evidence[]` and `read.evidence[]`, and the card shows the union |
+| same_as[] | building, `station_element` or `structure` ids: the same physical thing in another source | confirm in Review | linking (7.3) |
+| replaces[] | building ids this one succeeds | "Replaces...", then click | none |
+| lots[] | lot or parcel refs (a reference, not ownership) | pick | none |
+| model | `{file: tier://models3d/<file>, sha256, anchor {E, N, z \| on_ground, az_deg, scale}, mat_map}` | gizmo (7.7 D) | none |
+| measured | `{name, address, height_cagis_m, stories, survey_year, year_built, year_built_q, land_use, parcel, eave_m, h_50p, h_70p, rmse_m, n_pts, shift_m, levels[], roof {form, pitch_deg, ridge_az_deg}, solid: tier://bldg_lidar/<cell file>#<id>, cell_sha, evidence[]}`; `year_built` and `land_use` are the auditor's, joined through `parcel` | never (import only) | |
+| read | `{edition, sheet, stories, codes[], fill, uses[], names[], crop, evidence[]}` | never (import only) | |
+| attrs | raw source fields; `fill_key` for frontage fills | never | |
+
+- **Use from the Deck codes** (`hub/sites/deck/index.html`, USES): r residential, m mixed, c commercial, i industrial, w religious, v civic, s civic (school), l civic (landmark), p parking. k (park) and o (open) are not building uses.
+- **One record per building per life.** A rebuild is a new record. The old one gets `closed`, and the new one lists it in `replaces`.
+  - **Split at this year** in the card makes an alteration the same way. On historic and proposed buildings the record closes at the view year, and a copy opens then with `replaces` set. Ben then changes the copy (two floors added, a cornice removed).
+  - On a measured building the copy is the earlier life instead: it keeps the original `opened` and closes at the view year. The measured record opens at the view year with `replaces` set to the copy. So the present life keeps its CAGIS link, its lidar solid and its re-import merges.
+- **A tombstone is only for a wrong trace**, because it hides the record in every year. Demolition is `closed`, `replaces` or a `site`.
+
+#### `building_style` (no geometry; seeded from `region/ext/buildings/styles/<slug>.yaml` by importer `bldg_styles@1`; merge unit `field`, rebase auto)
+
+The style catalogue. Its fields and starter set are in 7.5. Styles are data: a new style is a YAML file, or a record Ben authors. Ben's change to a style is a revision in the view's layer (main or a scenario), as for any record. A YAML update to a style Ben touched merges field by field. Only a new facade grammar needs code.
+
+#### `site` (geometry Polygon; `dates: open /opened, close /closed, timeline /timeline`; merge unit `field`, rebase auto)
+
+- Fields: name, timeline (`canon | real | null`), opened, closed, `mode: clear | keep`, `members[]` (building ids allowed inside), `rule: overlap>=0.5` (default) or `centroid`, `cause: urban_renewal | highway | parking | fire | flood | infill | other`, `redevelopment_timeline: real | null`, reason, evidence[].
+- Meaning: from `opened`, the site hides every building that is mostly inside its polygon, opened before the site, and is not a member. Buildings that open later show; they are the redevelopment.
+- Sites are for area clearances. A single replacement uses `replaces[]` on the new building (7.8).
+- **Seeds**, all `timeline: real`, with dates from Ben (*unconfirmed*): the Kenyon-Barr phases, the I-75 and Mill Creek expressway take, Queensgate, Fort Washington Way, Laurel Homes (about 1938), Lincoln Court (about 1942), and the Union Terminal site and approaches (1929-33).
+- **Works as implicit canon sites.** Dated canon works in `ground/works_ledger.json` can act this way. Downtown that means `mill_creek_deck` (by 1913) and `canon_interstates` (1940-1965, per stretch once the tracker's 4A-4D dates exist). The river and Lunken works (`ohio_embankment_1912`, `ohio_embankment_rest`, `ky_terraces`, `lunken_levees`, `lunken_airfield_lift`; 1903-1941) apply where they cover built land.
+  - Today those works are rasters. Each needs a vectorised footprint in `ground/zones/works_footprints.geojson`, made once by a lane B script and checked by Ben.
+  - `real_works_removed` is not a site. It is land that canon never built highways on (`apply: none`). Its footprints are already vectors: `ground/zones/zones_real_works_canon_removes.geojson` (16 polygons, the `minus` of `real_works_kept`). Measured buildings standing on them (the stadiums, Fort Washington Way) get timeline `real` (7.8).
+  - The real timeline's ground after 1912 is only `real_works_kept` (the dated zones of `ground/zones/zones_post1912_works.geojson`, 7.8). It carries no clearance of buildings. So every real clearance is an explicit `site` record.
+
+#### `envelope` (geometry Polygon: the lot union it governs; merge unit `field`, rebase auto)
+
+- Fields: `build_to_m`, `street_wall {min_m, max_m}`, `stepback {above_m, depth_m}`, `max_height_m`, `tower {max_floorplate_m2, min_spacing_m, min_setback_m}`, `far_max`, `ground_floor_active`, `parking: none | podium | wrapped | below`, `use_hint`, `style_hint`, rule ids.
+- Presets are params `bldg.envelope.<preset>.*`: `dd_a_core`, `otr_infill`, `west_end_rebuild`, `deck_frontage`. They are Ben's rules, not the zoning code, unless he rules otherwise (7.12).
+- An envelope guides; it never clips. A building that breaks its envelope is a Review item, and the card shows GFA and FAR.
+
+#### Validators (`region/ext/buildings/validators.py`)
+
+- `bldg.walls_by_rail`: no building may intersect a structure's solid (the arcade, the viaducts), or the kinematic envelope that 3.3's planned rule `struct.walls_below_track` keeps clear (rail − formation to rail + 5.5 m). A conflict is a Review item, never a silent cut.
+- `bldg.envelope` (above).
+- `bldg.overlap`: two buildings open in the same year and timeline that overlap by more than 15% is a Review item.
+- `bldg.ring`: the ring is valid and has no slivers.
+- `bldg.era`: the style's era against `opened`. A warning only.
+- `bldg.fit`: on a measured massing, stories × floor heights more than one floor away from the measured height is a note on the card, not an error (7.6).
+
+#### Store change
+
+- A `timeline` column on `rec`, by a migration under `region/model/migrations/`.
+- `dates.timeline` in `region/kinds/_meta.schema.json`. Today `dates` allows only `open` and `close`, and `columns` only name, system, parent, c0, c1, ord and phase.
+- The SQL clause in `region/model/query.py` (`x.timeline IS NULL OR x.timeline = ?`), next to the `open_lo` and `close_lo` test, and the same test in `Store._list_tag`. Tests for both paths.
+- `Store._list_tag` (a list as of a tag) reads every revision of the kind from `rec_hist` (`layers.as_of_rows`) and tests bboxes in Python. `rec_rtree` indexes only current `rec` rows, so tag views of 300,000 buildings need their own prefilter (rtree ids first, then the history).
+- Search (Ctrl+K) filters only the promoted `name` column (`x.name LIKE`). Search by address needs a new promoted column or a search index, a `_meta.schema.json` change like `timeline`.
+- The store does not know site-derived closes. Building lists by year (the map's Buildings layer, the card's derived close, search) come from `bldg.resolve` output, not from `/k/building`.
+
+#### Layers and id namespaces (`region/ids/namespaces.yaml`, the next free epochs)
+
+| Namespace | Epoch | Layer | Key |
+|---|---|---|---|
+| `bldg_real` | 2020-01-05 | `import:bldg_real` | `cagis:<id>`, `lidar:<cell>:<n>` |
+| `bldg_sanborn` | 2020-01-06 | `import:bldg_sanborn` | `1904:v<vol>:s<sheet>:<n>`, `1922:p<plate>:<n>` |
+| `bldg_styles` | 2020-01-07 | `import:bldg_styles` | style slug |
+
+- **Ledgers.** Ids are deterministic (sha256 of namespace:key), so the `bldg_real` ledger (300,000 to 1 M lines) can be rebuilt. The proposal: keep it in the hub's data folder beside region.db, and keep only the aliases (merges, splits, CAGIS re-releases) in git as `region/ids/bldg_real.tsv`. This bends the ledger rule and needs Ben's ruling (7.12).
+- `bldg_sanborn` and `bldg_styles` keep normal ledgers.
+- **Authored records** get random ULIDs (Architecture 9.17). Frontage fills carry `attrs.fill_key = <block>:<face>:<n>`, so a repeated fill is found and offered as an update.
+- **main:** Ben's checks and edits to real and historic buildings, canon buildings, canon sites, model records, style edits and frontage fills.
+- **Scenarios** have bare slugs (`cbd-infill-a`, as `fs-stacked`) and exist only on Ben's machine. **Proposals** (`proposal:cbd-infill`) are seeded to `region/seed/proposals/<name>/` (for `proposal:cbd-infill`, `region/seed/proposals/cbd-infill/`), which is how a cloud session hands work to Ben.
+- **Imports** are never seeded. They are rebuilt from the tiers and the Sanborn vectors.
+- **Seeds.** Copy-up is at record grain, so any edit Ben makes to a measured building would put the whole record, CAGIS footprint included, into `region/seed/main/`. Apply to selection on tens of thousands of buildings would then grow git past ruling 5.
+  - So seed export writes, for every `building` revision whose base is in an import layer, the changed fields only, with geometry left out when it equals the base. The import puts the base back. This is the rule whatever the CAGIS terms say, and it changes seed export (9.29).
+  - The CAGIS terms stay a B0a gate for any footprint Ben draws from CAGIS geometry.
+
+#### Params (`rules/registry.yaml`, status `drawing_value`: a new value, as 3.1 proposes; registry params carry `recorded` or `literal_in_code` today)
+
+- `bldg.floor_h.{ground_commercial 4.6, ground_res 3.8, upper_19c 3.4, upper_modern 3.2, office_1920 3.9}`.
+- `bldg.skirt_m` 0.5, `bldg.parapet_m`, `bldg.facade_min_wall_m`.
+- `bldg.roof.flat_max_deg` 5, `bldg.roof.fit_rmse_max_m` 0.5, `bldg.sanborn.half_story_pitch_deg`.
+- `bldg.before_floor_year` 1850: a building known only as "standing by 1904" opens here (7.8).
+- `bldg.undated_past: hide | show`: a measured building with no date. `show` departs from 9.16 and needs Ben's ruling.
+- `bldg.fill.street_wall_depth_m` 14.
+- `bldg.lod.*`, `bldg.budget.*` and `bldg.cache_gb` (7.9, 7.10).
+- New `look.materials`, each with a main and a secondary value (1.3: "Two values per material. Keep it."). Secondaries are *drawing values*, main × 0.82 until set, except where given:
+  - brick: `brick.red` #9c5a44 / #7d4636, `brick.buff` #b89a74, `brick.dark` #6e4a3c;
+  - other walls: `frame.white` #d8d2c4, `frame.grey` #a8a39a, `stone.limestone` #c9c0aa, `glass.curtain` #52636b; the 1930s and modern concrete reuse 1.3's `deco` and `apex`;
+  - roofs: `roof.tar` #4b4846, `roof.slate` #4e5458, `roof.tin` #7b7f80, `roof.copper` #5f8a78.
+- A hex colour Ben picks gets its secondary the same way, unless he gives both.
+- `building` #b9a68a stays as the fallback.
+
+### 7.5 The style catalogue
+
+A style is a full set of drawing parameters. A building's style is Ben's pick, or else the default from era, material and use.
+
+**Fields of a `building_style`:**
+- slug, title, `era [first, last]` (a guide for the default rule, and a warning only), `uses[]` and `materials[]` it fits, a reference note.
+- **Massing defaults:** stories range, `floor_h_m {ground, upper}`, plan form (`row | detached | corner | slab | tower_on_podium | shed`), frontage and depth range.
+- **Roof:** form and pitch; dormers yes or no.
+- **Facade:** grammar (`rowhouse, commercial, loft, industrial, civic, church, slab, curtain, garage, none`), bay width, piers (none, plain, brick, rusticated), string courses, base (plain, rusticated, granite).
+- **Windows:** kind (`flat | segmental | round | pointed | ribbon | curtain | steel_sash | none`), width and height, hood (`none | bracketed | pediment | label | lintel`), sill.
+- **Cornice:** kind (`bracketed | modillion | corbel_table | parapet | coping | stepped_crown | none`), height, projection.
+- **Ground floor:** `shopfront | stoop | blank | arcade | lobby | loading | open`, and its height.
+- **Palette:** slots `main, secondary, trim, roof`, each a weighted list of `look.materials` ids.
+- **Ornament** 0-3 (what L2 draws), and per-param `{default, min, max, vary}`.
+- `sanborn_match`: the codes the style answers to, used by `region/ext/buildings/rules/infer_sanborn.yaml`.
+
+**Per-building overrides.** Every style parameter can be overridden per building. The building's `facade`, `roof` and `colour` objects have the same keys as the style's (`grammar`, `piers`, `string_courses`, `base`, `window {kind, w_m, h_m, hood, sill}`, `cornice`, `ornament`, `plan_form`, `roof {…, dormers}`, the palette slots). A null key follows the style. The reset mark nulls one key.
+
+**Starter catalogue** (*drawing values*; era ranges are rough and *unconfirmed*; Ben to add, cut and rename):
+
+| Slug | Era | Typical | Roof | Cornice and windows |
+|---|---|---|---|---|
+| `federal_greek_revival` | 1815-1855 | brick, 2-3 stories, row or detached | gable, low pitch | plain frieze; flat stone lintels |
+| `italianate_row` | 1850-1890 | brick, 3-4 stories, 6-8 m frontage, rear ell | shed behind a parapet | bracketed; tall segmental windows with hoods |
+| `italianate_commercial` | 1855-1895 | brick or stone over an iron shopfront, 3-5 stories | flat | bracketed; arched windows in bays |
+| `second_empire` | 1865-1885 | brick or stone | mansard with dormers | bracketed; pedimented hoods |
+| `queen_anne` | 1880-1905 | brick or frame, detached or corner | gables, a turret | small; varied windows, bays |
+| `romanesque` | 1880-1900 | stone or brick, civic, churches, warehouses | hip or gable | corbel table; round arches, rusticated base |
+| `gothic_church` | 1840-1930 | stone or brick nave and tower | steep gable, spire | none; pointed windows |
+| `beaux_arts` | 1895-1930 | limestone, civic and banks | flat behind a balustrade | modillion; tall windows between pilasters |
+| `chicago_commercial` | 1890-1925 | brick or terracotta office, 6-16 stories | flat | deep cornice; wide windows between piers |
+| `art_deco` | 1925-1945 | limestone or brick, offices | flat, stepped setbacks | stepped crown; vertical piers, spandrel panels |
+| `warehouse_loft` | 1870-1930 | brick, 4-8 stories | flat | corbel table; segmental windows between brick piers |
+| `daylight_factory` | 1905-1940 | concrete frame | flat, sawtooth or monitor | coping; wide steel sash |
+| `worker_cottage` | 1840-1910 | frame or brick, 1-1½ stories, shotgun | gable | none; small flat-headed windows |
+| `tenement_flats` | 1870-1915 | brick, 4-5 stories, light wells | flat | pressed-metal; flat lintels |
+| `mid_century_modern` | 1945-1975 | concrete, metal, glass | flat | none; ribbon or curtain wall |
+| `brutalist` | 1960-1980 | concrete | flat | deep coping; deep-set windows |
+| `contemporary_infill` | 1990- | brick, panel and glass, often podium and mid-rise | flat | coping; large flat windows, shopfront |
+| `parking_garage` | 1950- | concrete decks | flat | open spandrel bands |
+| `generic` | any | the fallback for a building no rule places | from the measured solid or flat | plain |
+
+**The default rule** (`region/ext/buildings/rules/style_defaults.yaml`, rule `bldg.style.default`):
+- Ordered rows of `{use, material, era, stories, plan form, frontage}` to a style. The first row that matches wins. A row's era may be `any`.
+- Era comes from `opened`. An undated measured building uses the dating order of 7.8. A building with no date at all matches only rows with era `any`, and gets `generic` only when no row matches (outside Hamilton County most buildings are undated).
+- The card names the row ("rule bldg.style.default, row 4: brick, residential, 1850-1890, frontage under 9 m").
+- **Use adds to the style:** commercial and mixed get a shopfront; residential a stoop; industrial loading doors; parking open decks; religious and civic keep the style's own ground floor.
+- A style Ben picks against its era or use gives the `bldg.era` warning only. He may put a Queen Anne house in 2030.
+
+**Inference tables** (`region/ext/buildings/rules/`):
+- `infer_sanborn.yaml`: Sanborn codes, fills and named uses to use, `use_detail`, material, stories and basement.
+- `infer_real.yaml`: the auditor land-use codes and the CAGIS fields to use and `use_detail`.
+
+### 7.6 The generator and the Model look
+
+**Where.**
+- `engine/src/mesh/`, pure TS with no three.js (2.1).
+- New files `building.ts`, `roof.ts`, `facade.ts`, `footprint.ts` and `values.ts` (`bldg.values@1`, 7.4), built on the 2.2 kernel: `sweep`, `instances` and `toGlb` from Step 0, plus `prism`, which B0b adds.
+- Method `mesh.building@1`, contract `mesh_input/0`, registered in `engine/src/methods.ts`. The server job and the app's draft worker import the same file.
+- A building's mesh depends only on its own resolved record, the ground patch under it, its street-facing edges and its party edges. It never depends on its neighbours' heights or styles, so an edit re-meshes one building.
+- The engine never reads records (2.1). `mesh_input` for a cell carries the cell's ground patch, resolved values and edge lists. The app worker caches the patch for drafts.
+  - A date edit that crosses a ground change (a regrade year, a timeline switch) fetches that year's patch before the draft draws.
+
+**1. Resolve.** `bldg.values@1` (in the worker for drafts) and `bldg.resolve@1` (per cell on the server) resolve every value with its source (7.4). The cell job also works out the street-facing edges and the party edges.
+- Street-facing edges face the street set of the building's era: the 1904 and 1922 basin streets for historic buildings; for measured and proposed ones, today's streets from the OSM extracts already in the repo (`data/sanborn/basin/osm_basin.geojson`, `data/sanborn/lph/osm_*.geojson`) until the street model of 2.3.10 exists. Beyond those extracts there is no today's-street layer yet.
+- With no street layer (a cloud session), edges not shared with a neighbour count as faces.
+- Ben's `front_edges[]` wins over both.
+
+**2. Measured or generated massing.**
+- A measured building with a `measured.solid` is drawn from that solid, unless a massing field is set or `massing` is `generated`.
+- **Massing fields:** the footprint, `roof`, `parts` and their stepbacks. `height_m` is drawn on the solid (below).
+- **Kept on the measured solid:** name, address, notes, use, style, material, colour, facade, shopfront, dates, timeline, stories, floor heights and height.
+  - Facade, shopfront and cornice are laid on the solid's street-facing vertical walls, between the drawn ground and the measured eave of that wall.
+  - **Stories.** A count whose height (stories × floor heights) is within one floor of the measured height only re-divides the window rows on the solid. A count beyond that is a height edit (next bullet). Floor heights alone never change the massing.
+  - **Raised or lowered measured solid.** A `height_m` edit (typed, dragged, or from a stories count beyond the fit) keeps the solid. Every vertex above the lowest measured eave moves by the change, so the walls lengthen or shorten and the lidar roof is kept. The source reads "lidar 2022 roof, raised 6.8 m (Ben, 24 Nov 2026)". A lowering that would put the lowest eave under one story switches to the generator.
+- **Generated:** the first massing edit switches the building to the generator.
+  - Its starting values come from `measured`: the footprint, h_70p per LoD1.3 level as `parts`, and `measured.roof` as the roof form, pitch and ridge. So the generated building starts close to the measured one.
+  - The card's "Drawn from" row then reads "parameters (lidar solid kept; Back to measured)".
+  - While a generated measured building is selected, **Show measured** draws the lidar solid as a ghost (#c9c5ba at 0.15), so Ben sees what the parameters replaced.
+- A `model` record behaves the same way, with **Back to model** (7.3).
+- **Historic and proposed buildings** are always generated. A historic building's "Back to Sanborn" returns it to the traced footprint and read values.
+
+**3. Footprint.** `footprint.ts` fixes ring orientation, removes slivers and spikes, and finds the minimum-area rectangle.
+
+**4. Walls.** Each part is a closed `prism(slot, ring, z_base - bldg.skirt_m, z_top)`.
+- `z_base` is sampled from the same `region.ground` grid the terrain tile draws, per timeline. The element table holds `z_base_real` and `z_base_canon`, and the shader picks one by `uTimeline`. The lidar DTM is a check only.
+- Hillside rows step down as plinths.
+- A part can stand on another part, or on a structure (shops under a viaduct).
+- A part's height is `height_m`, or stories × floor heights. Stepbacks shrink the ring above their story.
+
+**5. Roofs** (`roof.ts`).
+- Forms: flat and parapet; shed; gable, hip and mansard by a straight skeleton; gambrel; sawtooth and monitor (Mill Creek industry); pyramid, spire and dome.
+- If the skeleton fails, the roof falls back to the oriented rectangle clipped to the ring. If that fails too, it falls back to flat with a Review flag.
+- **The measured solid** is roofer's whole LoD2.2 solid (walls and roof), stored relative to its own DTM base (`z - dtm_min`) and re-based on the drawn ground. It is never a prism plus a clipped roof, because real eaves vary.
+- **Roof reduction** (for `measured.roof`) runs per roofer height level: all planes under 5° is flat; one plane is shed; two opposing planes gable; four hip; two tiers of slope mansard. A building with more than one level, or a fit above `bldg.roof.fit_rmse_max_m`, records `form: null`. Expect that for most of the CBD.
+
+**6. Facades** (`facade.ts`). From A's `facade()` and its `faceM` frame (u along, v up, w out), with the same parameter style (frame 0.25, cornice 0.55, parapet 0.66).
+- A grammar of stories × bays: the ground floor (shopfront, stoop and door, blank, arcade, lobby, loading), upper windows with hoods or sills, string courses, cornice and parapet. The style gives every value; Ben's facade fields override them.
+- Full facades go only on street-facing walls longer than `bldg.facade_min_wall_m`. Party and rear walls stay plain.
+
+**Exaggeration.** Building vertices are stored relative to the base, so `_G` cannot be their own y. Instead they carry a flag in the element texture. The shader adds the timeline's `z_base` and then sets g = y for them, so exaggeration (1.8) leaves them unchanged. `pick.ts`, the BVH raycast and the label pass add the same `z_base` on the CPU. Buildings stand on true ground at every k.
+
+**Watertight.** Generated solids are closed and covered by the watertight test (5, item 3). The measured solid passes the same test or is left out of stencil caps.
+
+**LOD** (fits 4.3).
+
+| LOD | Distance | Content | Triangles per building |
+|---|---|---|---|
+| HLOD | 4 km and 16 km parents | one oriented-rectangle prism per building (12 triangles), with `_ERA` per building; tiles capped at 60,000 buildings; chosen by screen-space error; buildings under 2 px culled | 12 |
+| L0 | over 2 km | prism plus simplified roof (roofer LoD1.2, or eave plus half the rise) | 20-60 |
+| L1 | 300 m to 2 km | the measured solid decimated, or the full generated roof; cornice and ground-floor bands; windows as a procedural canvas tile in metre UVs | 100-300 |
+| L2 | under 300 m | recessed windows, hoods, shopfronts (`glass_lit` at night), cornice profiles by `sweep`, fire escapes and water tanks as `instances`; landmark models at full detail | 1,000-3,000 |
+
+- L0 and L1 are prebuilt. L2 is built on demand for cells within 300 m and kept in an LRU cache capped by `bldg.cache_gb`.
+
+**Model look.**
+- One palette for real, lost and proposed buildings. Lambert, with main and secondary values per material (1.3).
+- No photo textures, no lidar textures, no edges.
+- The windows (L1) and brick-course (L2) tiles in 1.3's list are for buildings.
+- **Labels.** Buildings with a name get labels of class `building`, the lowest priority in 1.6's collision pass (after station, structure, element), culled beyond 400 m (*drawing value*), through 1.6's collision and occlusion passes.
+- **Provenance views**, not a second look:
+  - **Tint by origin** (measured, historic, proposed, model): a toggle on the 3D pane.
+  - **Unchecked and invented mark:** a lighter value on historic buildings not yet accepted (`checked` null), on frontage fills, and on any building whose footprint or height confidence is `inferred` or `invented`. Measured buildings are marked only while they carry an open Review item (merged row, shift, gone since 2011). Authored records count as checked by their author. So the default view of today's city and of Ben's designs is not lightened. On by default until Ben rules (7.12), so invented history never passes for traced.
+- **Diagram mode:** buildings draw as one translucent neutral (#c9c5ba at 0.15, no depthWrite), or hide. A toggle, default hide.
+
+**GLB** (as 4.2, with these changes for buildings).
+- Each vertex carries a slot `_S` (uint8: wall, secondary, trim, roof, glass, frame, plinth), `_EL` (Uint32 for building GLBs, since 2.1's Uint16 caps at 65,535 elements), `_G` and `_ERA`.
+- **One shared Lambert material per LOD**, built by `look.ts`. It reads an element texture: per building, each slot's material id or hex, both intervals, the timeline bits, both `z_base` values and the exaggeration flag. So:
+  - a palette edit rebuilds nothing (4.1);
+  - a colour or material edit on one building rewrites one row of the texture, with no re-mesh.
+- **Draw calls.** About 200 cells of 250 m lie within L1's 2 km, so one draw per cell per LOD would break 7.9's cap. The cells of one LOD draw through one three.js `BatchedMesh` per LOD, with the one shared material, and `_EL` indexes one element texture for all loaded cells. Draw calls do not grow with cells. If `BatchedMesh` fails the parity tests, L0 and L1 are packed per 1 km district from the fragment memo instead.
+- **The element texture comes from its own blob.** `bldg.resolve@1` writes two outputs per cell (7.10): the mesh slice (the values the generator reads) and the element slice (names, sources, intervals, timeline bits, `z_base` and slot colours, as blob `bldg.elements`). The pane loads the element slice into the texture. A name, dates or colour save rebuilds no GLB.
+- 2.1's `Element` gains optional `open_real, close_real, open_canon, close_canon, z_base_real, z_base_canon`. 4.5 adds `uTimeline`.
+- A uniform `uHidden` (an element-id texture) hides the saved mesh of the building being edited while its draft draws, and the saved meshes of neighbours re-meshed by a footprint drag.
+- `pick.ts` and the label occlusion pass apply the same `_ERA`, `uTimeline` and `uHidden` tests on the CPU, so a hidden building cannot be picked.
+- `extras` hold the element table and a float64 origin taken from the content bounds, not from the cell name. Meshopt quantisation.
+- A 3D Tiles 1.1 export for other viewers, by a later `crhub tiles3d` command (a new name; `crhub export` is the seed export, `region/cli/export.py`), is an option, not the hub's own format.
+
+### 7.7 Editing a building in the app
+
+All of this happens on the map pane, the 3D pane (`app/src/plugins/view3d/`, planned) and the inspector, which share selection and drafts (Architecture 8).
+
+**The map's Buildings layer.**
+- Static PMTiles from the tile job `tiles.bldg@1` (7.10) for the overview, as 9.30 requires.
+- Full GeoJSON from the API for the cells in view at edit zoom (z 16 and up). That is what Ben selects and edits.
+- Both come from `bldg.resolve` output and carry each building's real and canon intervals and its timeline bit. The map filters by year and timeline on the client (9.30), so the slider never refetches.
+- Buildings changed in the view's layer since the last tile run draw from GeoJSON over the PMTiles at every zoom, with their tile features hidden by id. So a save shows on the overview at once.
+
+**Select.**
+- Click a building on the map or in 3D. Shift-click adds to the selection; a box drag on the map selects many. Ctrl+K finds a building by name (the `name` column). Search by address needs a new promoted column or a search index (7.4, "Store change").
+- Selection goes to the host (`sel=building:01K…`). The 3D pane outlines it (1.5), and the map draws it with its vertices.
+
+**The building card** (in the inspector). Collapsible groups:
+1. **Identity:** name, address, notes, use, use detail.
+2. **Style:** style (the list is ordered by fit to era, material and use, with the default marked), material, colours (main, secondary, trim, roof), ground floor and shopfront, piers, string courses, base, windows, cornice, ornament, plan form, dormers. Each is the style's value until Ben overrides it (7.5). **Edit style** and **Make style from this building** are here.
+3. **Massing:** Drawn from (measured solid or parameters), with **Show measured** while generated; footprint area and frontage (read-only), stories, floor heights, height, basement, roof form and pitch, parts (podium, tower, setbacks, wings, each with its use), GFA per use (read-only).
+4. **Dates:** year built, year demolished, their qualifiers, timeline, and the derived close with its cause (a site or `replaces`), read-only.
+5. **Provenance:** origin, checked (by and date), confidence per attribute, evidence, `same_as`, `replaces`, lots, and the raw source fields (collapsed).
+
+Each row:
+- label, value, source in words with a rule chip, a "was" note while the draft differs, and a reset mark where Ben's value hides a lower one (7.4);
+- number fields behave as the line sheet's: each visit to a field is one undo step, Enter saves and leaves the field, and lengths follow the m and ft switch.
+- In the stories field Up and Down step one story. In the height field and other lengths they step 0.1 m (Shift 1 m).
+
+For a multiple selection, the card shows shared values and "mixed" where they differ. Setting a value drafts it on every selected building, and Enter saves them in one changeset (Apply to selection). On a "mixed" number field Up and Down step every selected building by the same amount.
+
+**Change the footprint on the map.**
+- Edit footprint (F) shows the vertices as handles (terra-draw, 2.3.8). Drag a vertex; drag an edge midpoint to add one; Del removes one; or Draw footprint for a new building.
+- Snapping: neighbouring walls, the street sides of the building's era, parcel lines (tier `parcels`, 7.3), and right angles. Alt turns snapping off, for every handle, footprint and height alike.
+- Dragging a vertex moves this building only. Alt+Shift moves a shared party-wall vertex in both buildings. The hint names the neighbour ("also moves 1214 Vine St; it is drawn from parameters after this"). The neighbour's change is in the same changeset and the same undo step. `bldg.overlap` flags the rest.
+- A footprint edit is a massing edit, so a measured building switches to generated (7.6).
+
+**Change the height in 3D, or type it.**
+- The 3D pane gets a handle layer, `app/src/three/handles.ts` (new; 4.6 is pick-only today).
+- The selected building shows a top-face handle per part. Drag it up or down. It snaps to whole stories; Alt drags free. A label shows the height and stories.
+- On a measured building the drag raises or lowers the lidar solid and keeps its roof (7.6, step 2).
+- A stepback shows an edge handle for its depth.
+- Typing the height in the card does the same as the drag. Typing stories does the same as dragging the handle by that many stories.
+
+**Pick use and style.** From the card, for one building or the selection.
+- A building on the default style follows the default: change its use or date, and the style re-resolves, with the source saying so.
+- A style Ben picked stays picked.
+- **Edit style** opens the `building_style` record in the inspector with the same rows (value, source, "was", reset). While it is a draft, the worker redraws the visible buildings on that style, nearest first, up to `bldg.budget.style_draft` (200, *drawing value*). The rest follow after the save, with a pending mark.
+- **Make style from this building** creates a style draft from the building's overrides. Enter saves it as a new style in the view's layer.
+
+**Change parts, roof and facade.** Add tower, Add setback and Add wing make a part. The tower takes its ring as an inset of the podium (setback_m) or its own drawn ring. Roof form, pitch, shopfront, cornice and windows are fields in the card.
+
+**Back to the measured or historic original.**
+- **Per value:** the reset mark sets Ben's field back to null. The source then shows what the value follows.
+- **Back to measured** (or **Back to Sanborn**, **Back to model**): sets `massing`, `height_m`, `roof` and `parts` back to null and writes the import's geometry back, so the measured solid draws again. Identity, use, style, facade, colour and dates edits stay. It also works on a selection.
+- **Reset all:** writes a revision equal in content to the import below, as the store already does when a scenario's first edit is undone.
+- Each is a draft that draws at once, then one changeset and one undo step. The import revision underneath is never touched.
+
+**Drafts, saving and undo.**
+- Every change is a draft shared by the map, 3D and the card. That includes the one-click actions: Back to measured, Reset all, Apply to selection, Split at this year, Replaces..., Fill frontage, From Sanborn and Draw footprint. Each makes drafts that draw at once. Only the Review actions (Accept, Check sheet) write directly.
+- The worker re-meshes only the drafted buildings (7.9), and `uHidden` hides their saved meshes.
+- **Enter** or **Ctrl+S** (or Save) saves all drafts of the action as one changeset, with If-Match, to the view's layer, main or a scenario. The store refuses writes to import layers.
+  - The first write copies the record up with `base_hash`. In main its version is 1. In a scenario the version continues from the base (base + 1).
+  - The server re-meshes that building and swaps its cell over SSE. The draft then drops. If the job fails, the draft stays drawn with an error chip.
+- **Esc** drops the draft. **Ctrl+Z** steps back through the draft, and after a save undoes by a revert changeset.
+- A 412 offers Keep mine or Take theirs. On a changeset with several records it lists the stale buildings. Keep mine rebases each one three-way and sends the changeset again. Take theirs drops those buildings from it.
+- A re-import under Ben's revision merges what he did not change; the rest waits in Review, and his revision stays on read (7.4, "Merge").
+
+**A. A proposed building on a downtown parking lot**
+1. In the layer chip, pick or make the target layer, for example the scenario `cbd-infill-a`. Set the year (2032) and the timeline.
+2. Turn on **Sites** (the `bldg.sites@1` candidates) and click one. Or use **Draw footprint**.
+3. Pick an envelope preset (`dd_a_core`). Its values are edited in the card, and the volume draws in 3D as a translucent wire. 3D handles for envelopes reuse `handles.ts` later.
+4. Pick a use (mixed) and a style (`contemporary_infill`). The generator fills the envelope, and the draft shows at once.
+5. Adjust: drag the podium and tower heights, add a setback, tick shopfront, change the colour. The card shows GFA, FAR and stories. A broken envelope turns the building red and lists the Review item.
+6. Set the year built and the timeline. Press **Replaces...** and click the garage on the lot. That fills `replaces[]`, which closes the garage at this building's year built, on its timeline, in this layer. Nothing in `import:bldg_real` changes.
+7. Enter saves.
+8. Compare with `/layers/{slug}/diff` (records created, changed and deleted). Buildings that a new `replaces` or a site hides do not appear there, because their records are unchanged. They come from `bldg.resolve` output, and the 3D before and after uses that. A scenario lives only on Ben's machine; promote it to `proposal:cbd-infill` for a git copy, or to main when Ben decides. Alternatives are sibling scenarios.
+
+**B. A lost West End building**
+1. Layer main, year 1930, timeline real. Turn on the 1904 Sanborn tiles under the map (2.3.12).
+2. **Check sheet** steps through the Sanborn Review items with a trace/plate swipe. One key accepts the sheet, with per-building exceptions: A accepts, E edits, X rejects (a tombstone, for a wrong trace). Accepting sets `checked`. A progress counter runs per district. The West End box of 7.2 alone covers 41 frames.
+3. For a building the trace missed, use **From Sanborn**: click inside it on the plate. The traced fill there becomes the footprint, prefilled with the stories and material read there. Or draw it by hand, with `origin.ref` set to the sheet.
+4. Fix stories, roof or style in the card. This is a field revision in main that a re-import keeps.
+5. Add evidence: a photo ref with a date and a note.
+6. Set dates if they are known. Otherwise the Kenyon-Barr site closes the building on the real timeline, and the card shows the derived close.
+
+**C. A block with no traces yet: Fill frontage**
+1. Click a block face (a `basin.json` block). Choose a use, a style, a lot width, a depth (`bldg.fill.street_wall_depth_m`) and stories.
+2. The app makes drafts of `building` records with random ULIDs and `attrs.fill_key`, and Enter saves them in one changeset. They get `method: frontage_fill` and `confidence: inferred`, and carry the unchecked mark.
+3. **Apply to selection** changes many records in one changeset. **Re-roll** changes their seeds.
+4. Fill frontage works one block face at a time unless Ben rules otherwise (7.12).
+
+**D. A landmark model**
+1. Ben saves the .glb in the `models3d` tier folder. Ctrl+K "Place model" lists the tier's files.
+2. The hub checks it with `@gltf-transform`: metres, Y-up converted to the 26916 frame, and the triangle budget.
+3. Place it with a gizmo (E, N, on ground, azimuth), snapping to the footprint it stands for. Map its materials onto `look.materials` slots.
+4. The hub proposes `same_as` (it is the real building) or `replaces` (it stands where others stood).
+
+Cloud sessions can draft fills, envelopes, style edits and proposals as `region/seed/proposals/<name>/` on a branch. Ben pulls, imports and promotes. No artifacts are involved (CLAUDE.md).
+
+### 7.8 Eras, timelines and layers
+
+**Job `bldg.resolve@1`** (process host; scope one 250 m cell plus a 50 m margin; each cell's output has its own hash, so early cutoff limits an edit to its cell):
+1. Read the layer chain (scenario, main, legacy, imports) for every `building` and `site` whose bbox touches the cell, plus the works footprints and the styles in use.
+2. Resolve every value with its source (7.4) and the edges (7.6).
+3. For `same_as` pairs, the measured record gives the geometry from its `opened` date. Before that, the historic record shows. A `same_as` to a `station_element` or `structure` suppresses the building, so the CAGIS Union Terminal is not drawn over the station model.
+   - In a `same_as` pair, the historic record's unset name, address, notes, style, material and colour follow the measured record, with the source "same building, measured record". Ben edits them once, and a 2026 rename shows in 1930.
+4. Date undated measured buildings in this order: Ben's value; a Sanborn match (before 1904 or before 1922); the auditor's year built; else `bldg.undated_past`.
+   - `opened_q: before` opens at `bldg.before_floor_year` (1850). Otherwise `is_open` would hide every "standing by 1904" building in 1900.
+   - An undated measured building that overlaps an unmatched historic building opens `after` the last edition that shows the historic one, and the historic one closes then.
+5. Effective close is the earliest of `closed`, the `opened` of the first site that hides the building, and the `opened` of a building that lists it in `replaces` on the same timeline.
+6. **Redevelopment rule.** A building that opens after a real-only site's `opened`, and lies mostly inside it, defaults to timeline `real`. The redevelopment belongs to the history that cleared the land. The same holds inside the footprints of `real_works_removed` and the deck outline. Ben overrides it per building (timeline) or per site (`redevelopment_timeline`).
+7. Output, two slices per cell, each with its own hash:
+   - the **mesh slice**: the values the generator reads (footprint, parts, heights, roof, facade, edges, the solid ref);
+   - the **element slice** (blob `bldg.elements`): the element table `{id, rec hash, source, confidence, open_real, close_real, open_canon, close_canon, z_base_real, z_base_canon}`, names, slot colours and the values with sources for the card.
+
+Without step 4, 9.16 ("undated built records count only at the present") would empty every historical downtown view.
+
+**The slider.**
+- `_ERA` carries both intervals and a timeline bit. The shader discards against `uInstant` and `uTimeline` (4.5).
+- Year and timeline are not job axes, so moving the slider or switching timeline never rebuilds anything.
+
+**Layers.**
+- Edits to any building, real, historic or proposed, live in main or a scenario. Import layers hold only what the imports read.
+- An edit applies to the whole life of that record. A change from a given year is **Split at this year** (7.4).
+- The layer enters only through content, so main and an untouched scenario share every cell.
+- Eras stay records (`region/ext/rules/kinds/era.yaml`), never layers.
+
+**Canon and real.**
+- Kenyon-Barr and the I-75 take are `timeline: real` sites by default. With the redevelopment rule, canon shows the West End standing and not today's Queensgate on the same ground.
+- A canon West End rebuilt in a planned form is a scenario, such as `west-end-rebuilt`, with its own sites and buildings.
+
+**Ground under buildings.**
+- The base is sampled per timeline at `opened`.
+- Real ground today (`region/ground/compose.py`) is the 1912 survey less the 1912 riverworks delta, plus the 2026 ground (`ground_2026`, the map3 DEM) in the dated post-1912 works zones (`real_works_kept`: `ground/zones/zones_post1912_works.geojson`, `zone_years.json`) and outside the 1912 raster.
+- Elsewhere a real building after 1912 stands on 1912 levels. Whether buildings use `ground_2026` as real-present ground everywhere, or wait for the region tiers of checklist 2.0.14, is for Ben (7.12). B1 flags the gap.
+- A building that spans a regrade (the deck fill, a canon interstate) is split into two lives or re-based by Ben. The resolve job flags any base that moves more than 1 m across its life (*drawing value*).
+
+### 7.9 Budgets
+
+**Live editing** (warn-only tests in `tests/perf` and `app/e2e`, on Ben's machine; *drawing values* except the 1 s save, which is Architecture section 6's edit-to-SSE budget):
+
+| Edit | What runs | Budget |
+|---|---|---|
+| name, address, notes, timeline; dates where the style is set | no mesh; the card and the element texture | under 16 ms |
+| colour; material where the style is set | one element-texture row; no re-mesh | under 16 ms |
+| use, dates or material where the style follows the default | the style re-resolves (`bldg.values@1`), then the worker re-meshes that building | as the next row |
+| style, facade, shopfront, stories on a measured solid | the worker re-meshes that building | under 16 ms per draft step at L2 (3,000 triangles); under 50 ms for the largest generated building (10 parts) |
+| height drag, roof, parts | the worker re-meshes that building | as above |
+| footprint drag | that building, plus neighbours whose shared edges change (usually 0-2) | as above |
+| save, undo, Back to measured | `bldg.resolve` for one cell (under 200 ms), then `glb.bldg` re-meshes the changed buildings and re-packs the cell from the fragment memo; SSE swaps it | edit to swapped cell under 1 s |
+| Apply to selection (n buildings) | the worker re-meshes nearest first within 16 ms per frame, the rest over the following frames with a pending mark; on save each touched cell is re-packed in parallel | each cell swaps within 1 s of the save |
+| a style record edit | the draft redraws visible buildings on the style, nearest first, up to `bldg.budget.style_draft` (7.7); after the save every cell that uses the style, visible cells first, in the background | not a one-building edit; a pending mark shows progress |
+
+- While Ben drags, the worker takes the latest input and drops stale ones, so the frame never waits.
+- No edit reruns roofer, the lidar pass or an import.
+
+**Rendering** (a city share inside 4.3's totals):
+- at most 100 draw calls (one `BatchedMesh` per LOD, 7.6) and 1.5 M visible triangles for buildings;
+- L2 only within 300 m, capped by count, nearest first;
+- buildings cast shadows only in the 500 m cascade;
+- render on demand, 0 fps idle.
+- The city share (1.5 M) plus R's 2.39 M exceeds 4.3's 3 M. Either 4.3's total rises for city views, or the city share drops to 0.6 M within 1 km of a structure view. Ben to rule (7.12).
+
+**Tests:** downtown at 1 km altitude; the whole metro at HLOD; a height drag on one building that redraws in one frame and saves (version 1 in main, or base + 1 in a scenario) within 1 s; Back to measured that restores the lidar solid in one undo step.
+
+### 7.10 Whole-metro scale and storage
+
+**Grid.** Fixed EPSG:26916 cells.
+- Districts of 1 km, named `d<E_km>_<N_km>` (for example `d713_4331` for the West End), used for batch runs and bookmarks.
+- 250 m cells for resolve, L0, L1 and L2.
+- HLOD parents at 4 km and 16 km.
+- Named districts (CBD, West End, OTR, Queensgate) are only bookmarks.
+
+**Jobs.**
+
+| Job | Host | Scope | Key |
+|---|---|---|---|
+| `cagis_fetch`, `parcels_fetch`, `lidar/run_cells` | lane B batch (not a hub job) | 1 km cell, resumable | writes tiers with `MANIFEST.csv` and `STATUS.json` |
+| `bldg.resolve@1` | process | 250 m cell | building, site and style record hashes in the cell and margin; the hashes of structures and sections that a part stands on; works footprint hash; ground tile hashes; `bldg.floor_h.*`, `bldg.before_floor_year`, `bldg.undated_past`, `bldg.sanborn.*` |
+| `glb.bldg@1` | engine | 250 m cell × LOD | the resolve **mesh slice** hash for the cell (not the element slice), roofer cell file sha, model shas, `bldg.floor_h.*`, `bldg.skirt_m`, `bldg.parapet_m`, `bldg.facade_min_wall_m`, `bldg.roof.*`, `engine_build` |
+| `glb.bldg_hlod@1` | engine | 4 km and 16 km parents, background priority | the child cells' mesh slice hashes; until it ends, the old prism shows beyond 2 km |
+| `tiles.bldg@1` | process | 1 km district, background priority | the district's resolve outputs; writes the PMTiles overview |
+| `bldg.sites@1` | process | district | `parcels` tier and lidar hashes |
+
+- Keys hold only the params the plan reads (`region/jobs/registry.py`). Render and app params (`bldg.lod.*`, `bldg.budget.*`, `bldg.cache_gb`, `bldg.fill.*`) are in no key, so changing them rebuilds nothing.
+- `param:look.*` is not in the `glb.bldg` key, because the palette is a uniform.
+- The element slice is not in the `glb.bldg` key, so a name, dates or colour save rebuilds no GLB (7.6, "GLB").
+- The geometry jobs have no year or timeline axis.
+- A per-building fragment memo inside `glb.bldg` makes one edit cost about one building.
+- Roof fields reach `import:bldg_real` only through `buildings_real@1` re-imports of changed cells. Import layers are written by import runs only.
+- `/api/v1/view3d/index?bbox&layer&year&lod` lists scope `bldg_cell` beside the section GLBs. A new blob route (to add; today only `/api/v1/data/{tier}/{path}` serves files, `region/api/files.py`) serves the content-addressed GLBs and `bldg.elements` blobs from `var/cache/blobs/` (9.18).
+
+**Imports at scale.**
+- Each cell's import is one changeset, so a cell of more than 200 changed records emits one summary event (9.28). Unchanged records are no-ops: no version, no event.
+- A record is about 1.5 KB (an estimate, not measured), and each revision writes `rec` and `rec_hist` rows, so about 3 KB.
+
+**Growth.** Each step is only a larger cell list.
+1. Pilot box E 712,000-716,000 / N 4,330,000-4,333,000 (12 districts): downtown to Fountain Square (E 715,202) and the riverfront, OTR to McMicken, Queensgate and the West End.
+2. The basin, E 711-721 km / N 4,330-4,340 km, where the 1904 and 1922 work is (the 1904 frames reach E 718.3 and N 4,339.5 km; the guided 1922 plates reach further east).
+3. The City of Cincinnati, then Hamilton County (about 1,100 districts).
+4. Northern Kentucky and the Ohio counties, with the footprint sources Ben approves.
+
+**Storage on Ben's machine.**
+- New tiers in `configs/hub_paths.json`: `bldg_footprints`, `parcels`, `bldg_lidar` and `models3d`, all `mount: true`, `required: false`. The hub reads them and never writes them.
+- A missing tier is a status chip. Cloud sessions get the parametric fallback.
+- `configs/local.json` can move a tier root onto an external drive.
+- The sizes below are estimates, to check against the USGS listing before buying disk.
+
+| Data | Hamilton County | Metro |
+|---|---|---|
+| LAZ (optional to keep after a cell is processed; none with EPT) | 30-60 GB | 150-300 GB |
+| DTM COG 0.5 m | 5-10 GB | not estimated |
+| roofer output | 1-2 GB | 2-5 GB |
+| footprints and parcels | under 1 GB | not estimated |
+| GLB cells, L0 and L1 (a rebuildable cache) | 0.5-1 GB | 1-2 GB per distinct layer content |
+| L2 cache | capped by `bldg.cache_gb` | same |
+| SQLite (rec plus rec_hist, about 3 KB per building) | 300-400k measured, 40-60k Sanborn: about 1-1.5 GB | about 1 M: about 3 GB |
+
+**In git:** the kinds, styles, rules tables in `region/ext/buildings/rules/` (`style_defaults.yaml`, `infer_sanborn.yaml`, `infer_real.yaml`), params, tools, the Sanborn vectors, the `bldg_real` aliases, and Ben's main and proposal seeds. Never LAZ, roofer output, GLBs, models or CAGIS geometry (unless its terms allow, 7.4).
+
+### 7.11 Order of work
+
+**On hold (Ben, 24 Nov 2026):** no building work starts until the rest of the hub is complete. The open questions in 7.12 wait until then too.
+
+Buildings follow section 6, Step 0 (the kernel and the `view3d` pane) and reuse its kernel.
+
+| Step | Work | Needs | Gate Ben sees |
+|---|---|---|---|
+| **B0a** (no kernel needed) | Kind `building` (7.4), namespace `bldg_real`, tier `bldg_footprints`, `cagis_fetch.py` on the pilot box, importer with `method: cagis_extrude`, the map's Buildings layer, the timeline column and store filter | CAGIS URL, fields and terms checked (the seed gate, 7.4) | CAGIS LoD1 heights for downtown, OTR and the West End on the map; the card shows the CAGIS fields with their sources |
+| **B0b** (after Step 0) | `building.ts`, `roof.ts` (flat, parapet, shed, gable, hip, mansard), `facade.ts` (rowhouse and commercial grammars), `mesh.building@1`; about 15 hand-written fixture records on one block (each roof form, a podium and tower, an OTR row, a church) in `engine/test/mesh/fixtures/buildings/`; golden tests on 50 hard synthetic or Sanborn-traced footprints (no CAGIS geometry in git) | Step 0 | That block in the 3D pane in the Model look, with the era slider and the timeline bit working |
+| B1 | Kinds `building_style`, `site`, `envelope`; the starter catalogue and the default rule; `look.materials` and `bldg.*` params; `bldg.values@1`; jobs `bldg.resolve@1`, `glb.bldg@1`, `tiles.bldg@1` and `glb.bldg_hlod@1`; the building card with sources; Edit style; edits that need no massing (identity, use, style, material, colour, facade, dates) live through the worker | Ben's ruling on real-present ground (7.8), or the gap flagged | The pilot box in 3D at L0 and L1; Ben renames a building and changes its style and colour, live |
+| B2 | Lidar pilot: first a check of Ben's own LiDAR (7.3); `tools/buildings/lidar/` and roofer on 4 cells (CBD, Queensgate and West End, OTR, one hillside); the survey print; the shift fit; measured solids; roof reduction; change detection once validated | roofer in WSL2 or Docker; disk | Lidar solids downtown; counts of roof forms, fit RMSE, the mismatch list |
+| B3 | Massing edits: `handles.ts` (height drag, the raised measured solid), footprint vertices on the map, parts and stepbacks, roof, Draw from parameters, Back to measured, Show measured, Reset all; proposed infill: Sites, Draw footprint, envelope presets, Replaces..., diff and promote, on one real parking lot in `cbd-infill-a` | 2.3.8 (terra-draw); tier `parcels` and auditor land use for Sites (*unconfirmed*) | Ben raises a measured building two stories and puts it back; Ben designs one infill building end to end |
+| B4 | Historic pilot: `trace.py` and the new reader instructions on plate 44 first (a test of the method, not the West End; Ben's plate 44 lines check block clipping, and a new hand-checked outline set checks footprints, 7.3), then on one 1904 Kenyon-Barr sheet; Check sheet; From Sanborn; the Kenyon-Barr site records; `same_as` proposals | 2.3.12 (1904 tiles on the map; today only the 1922 overview) | That 1904 sheet in 3D at 1930 and gone at 1962 on real |
+| B5 | Fill frontage, Apply to selection, `region/ext/buildings/rules/infer_sanborn.yaml`; one landmark model through the tier path; the Deck envelopes | `import:deck` (Architecture 11, item 7) | A filled West End block and one landmark model in 3D |
+| B6 | Grow: the basin, the city, the county, then the metro; the vectorised works footprints as implicit canon sites; perf tests | tier `parcels` beyond the pilot box (7.3) | Each new extent in 3D, within the budgets |
+
+### 7.12 Open questions for Ben
+
+1. **Sanborn edition.** The repo has 1904 and 1922 only. Do you have 1912 Sanborn scans, or a 1922 edition corrected to about 1950 (rights after 1929 *unconfirmed*)? If not, the West End is dated "by 1904", and changes up to clearance are missed unless photos fill them.
+2. **Canon West End.** Does it stand in canon (the default here), get rebuilt in a planned form as a scenario, or get cleared on canon too? What dates should the Kenyon-Barr phases, the I-75 take and the other clearances carry?
+3. **Today's buildings in canon.** All of them outside the divergence zones (the redevelopment rule, 7.8), or only those you mark?
+4. **Dates for real buildings.** May the auditor's year built date measured buildings, with Sanborn presence winning? Should an undated building be hidden or shown in past years (`bldg.undated_past`; showing departs from 9.16)?
+5. **The Sanborn check.** Must every traced sheet pass Check sheet before it shows, or show with the unchecked mark until you check it?
+6. **Placeholders.** May Fill frontage stand in for untraced West End blocks (`inferred`, marked), or should they stay empty until traced?
+7. **Marking.** Should unchecked and invented buildings carry the lighter value by default?
+8. **Styles and colours.** Is the starter catalogue right, and which Cincinnati styles are missing (breweries, hillside stacked houses)? May you pick any hex colour, or only `look.materials` colours?
+9. **Envelopes.** The downtown zoning (DD-A, DD-B) as written, or your own rules?
+10. **Proposals.** One proposal layer per district shared through git, machine-local scenarios you promote, or straight into main with opening dates?
+11. **Footprints beyond Hamilton County.** Each county's GIS only, or also OSM or Microsoft footprints (both ODbL)? KyFromAbove lidar for Kentucky?
+12. **Ledger and seeds.** Is an alias-only `bldg_real` ledger in git acceptable? May seed export write only the changed fields of a building revision over an import, leaving unchanged geometry out, whatever the CAGIS terms say (7.4)?
+13. **Budgets.** Raise 4.3's 3 M triangles for city views, or cap the city at 0.6 M near a structure view?
+14. **Landmarks.** Which should be hand-made models (Union Terminal, Music Hall, Carew Tower, the Palace, lost West End churches), and in what tool?
+15. **Disk and tools.** Where should the tiers live, and how much disk? Keep the LAZ after each cell? Is WSL2 or Docker acceptable for roofer?
+16. **Photo sources.** Which collections may be cited as evidence (LOC HABS/HAER, the public library's digital collections, your own)?
+17. **Height edits on measured buildings.** May a height edit keep the lidar roof by raising or lowering the measured solid (the default here, 7.6 step 2), or should every height edit switch the building to parameters?
+18. **New footprints under your edits.** Any import footprint change under one of your revisions is a Review conflict (9.11), even where you kept the old footprint. Is the grouped Review action enough (7.4, "Merge"), or may a building revision whose geometry equals its base take a new import footprint on its own (a bend of 9.11 for this kind)?
+19. **Real ground after 1912.** Should real-timeline buildings stand on the 2026 ground (`ground_2026`) wherever the 1912 ground is out of date, or wait for the region tiers of checklist 2.0.14 (7.8)?
+20. **Lidar.** Is the LiDAR you already hold (checklist 2.0.14, `ground/2026`) a classified point cloud, and from which year? If not, may B2 fetch USGS 3DEP for Ohio?
 
 ---
 

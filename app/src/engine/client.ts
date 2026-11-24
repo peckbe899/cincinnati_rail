@@ -6,7 +6,7 @@
 // without local solves: saves still work and the server's result arrives over SSE.
 
 import { type Remote, wrap } from "comlink";
-import type { EngineWorkerApi, WorkerHello, WorkerSolve } from "./worker.ts";
+import type { EngineWorkerApi, SolveOpts, WorkerHello, WorkerSolve } from "./worker.ts";
 
 export type EngineState = "loading" | "ready" | "unavailable";
 
@@ -23,7 +23,9 @@ export interface EngineHandle {
   hello(): WorkerHello | null;
   /** Resolves true once the engine answered its hello, false when it is unavailable. */
   ready(): Promise<boolean>;
-  solve(method: string, input: unknown, opts?: { engineBuild?: string; checkOutput?: boolean }): Promise<WorkerSolve>;
+  solve(method: string, input: unknown, opts?: SolveOpts): Promise<WorkerSolve>;
+  /** Keep a value in the worker under a key (solve's base). */
+  stash(key: string, value: unknown): Promise<void>;
   onChange(fn: (s: EngineState) => void): () => void;
   dispose(): void;
 }
@@ -114,6 +116,12 @@ export function createEngine(o: EngineOptions = {}): EngineHandle {
     async solve(method, input, opts) {
       if (!(await ready)) throw new EngineUnavailableError(reason ?? "The local engine is unavailable.");
       return (await api).solve(method, input, opts);
+    },
+    async stash(key, value) {
+      if (!(await ready)) throw new EngineUnavailableError(reason ?? "The local engine is unavailable.");
+      const a = (await api) as EngineWorkerApi;
+      if (typeof a.stash !== "function") throw new EngineUnavailableError("This engine keeps no stash.");
+      await a.stash(key, value);
     },
     onChange(fn) {
       subs.add(fn);

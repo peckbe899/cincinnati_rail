@@ -1,0 +1,899 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cincinnati-rail.invalid/engine/schema/v0/station_facts.json",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "station_facts/0"
+    },
+    "engine_build": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 of engine/src/** and engine/package.json."
+    },
+    "input_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 of the canonical JSON (RFC 8785) of the StationInput."
+    },
+    "stations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "platform_id": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "deleted": {
+            "type": "boolean"
+          },
+          "index": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Index among the live stations; null when deleted."
+          },
+          "point_c_m": {
+            "type": "number",
+            "x-unit": "m"
+          },
+          "slide_m": {
+            "type": "number",
+            "x-unit": "m",
+            "description": "so, as saved (never clamped)."
+          },
+          "c_m": {
+            "type": "number",
+            "x-unit": "m",
+            "description": "Platform centre."
+          },
+          "half_m": {
+            "type": "number",
+            "x-unit": "m"
+          },
+          "level_set": {
+            "type": "boolean"
+          },
+          "level_m": {
+            "x-unit": "m",
+            "description": "st as saved.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "rail_m": {
+            "x-unit": "m",
+            "description": "Rail at the centre (the design line).",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "rail_ends_m": {
+            "anyOf": [
+              {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "items": false,
+                "minItems": 2,
+                "maxItems": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Rail at c - half and c + half."
+          },
+          "default_level_m": {
+            "x-unit": "m",
+            "description": "Ground minus settings.defDepth.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "ground_m": {
+            "x-unit": "m",
+            "description": "Finished ground at the centre.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "ground_dem_m": {
+            "x-unit": "m",
+            "description": "Surveyed ground at the centre.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "depth_m": {
+            "x-unit": "m",
+            "description": "Ground minus rail (negative above ground).",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "grade_in_permille": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "grade_out_permille": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "platform_grade_permille": {
+            "type": "number"
+          },
+          "grade_limit_permille": {
+            "type": "number"
+          },
+          "grade_limit_param": {
+            "type": "string"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "elevated",
+                  "atgrade",
+                  "trough",
+                  "cutcover",
+                  "shield",
+                  "deep",
+                  "sunk"
+                ],
+                "description": "A structure type, as the Profiles page names them (profiles.html 256)."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "type_source": {
+            "type": "string",
+            "enum": [
+              "ben",
+              "rule"
+            ]
+          },
+          "type_why": {
+            "type": "string",
+            "description": "selected (Ben), open (by level), river, canon_box (the canon's canal bed), box_within_limit, mined_past_limit, drive_paint (a mined station takes its drive's painted method), or no_rail (deleted)."
+          },
+          "selected": {
+            "description": "stt as saved, null when none.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "box",
+                  "mined",
+                  "open"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "phase": {
+            "type": "string"
+          },
+          "phase_source": {
+            "type": "string"
+          },
+          "cc_max_m": {
+            "x-unit": "m",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "side",
+              "island"
+            ]
+          },
+          "side_source": {
+            "type": "string",
+            "enum": [
+              "import",
+              "ben",
+              "default"
+            ]
+          },
+          "structure": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "top_m": {
+                    "type": "number"
+                  },
+                  "bottom_m": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "top_m",
+                  "bottom_m"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The outline to draw: box, tube A/C/bore or deck, from the rail."
+          },
+          "elevated_rail_min_m": {
+            "x-unit": "m",
+            "description": "Ground plus deck and mezzanine clear height.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "access": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "surface",
+                      "platform_level",
+                      "platform_level_xu",
+                      "end_halls",
+                      "mezzanine",
+                      "mezzanine_full",
+                      "mined_hall",
+                      "deep",
+                      "elevated_mezzanine"
+                    ],
+                    "description": "A station access type (profiles.html 467-477)."
+                  },
+                  "rule": {
+                    "type": "string",
+                    "enum": [
+                      "surface",
+                      "platform_level",
+                      "platform_level_xu",
+                      "end_halls",
+                      "mezzanine",
+                      "mezzanine_full",
+                      "mined_hall",
+                      "deep",
+                      "elevated_mezzanine"
+                    ],
+                    "description": "What the rules give (the select's 'Rules: X')."
+                  },
+                  "source": {
+                    "type": "string",
+                    "enum": [
+                      "ben",
+                      "rule"
+                    ]
+                  },
+                  "rule_id": {
+                    "type": "string"
+                  },
+                  "d_hall_m": {
+                    "x-unit": "m",
+                    "description": "Least rail depth for a hall over the box (D_HALL).",
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "depth_m": {
+                    "x-unit": "m",
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "island": {
+                    "type": "boolean"
+                  },
+                  "year": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "phase": {
+                    "type": "string"
+                  },
+                  "dashed": {
+                    "type": "boolean",
+                    "description": "No opening year: drawn dashed (access.year.fallback_to_line_phase)."
+                  },
+                  "at_open": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "line": {
+                          "type": "string"
+                        },
+                        "station": {
+                          "type": "string"
+                        },
+                        "sys": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "The member line's name for the text (Line 5)."
+                        },
+                        "year": {
+                          "x-unit": "year",
+                          "description": "Opening year from the Chronology, null when none.",
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "line",
+                        "station",
+                        "sys",
+                        "name",
+                        "year"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Another line's station this one is one station with (station_complex records)."
+                    }
+                  },
+                  "later": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "line": {
+                          "type": "string"
+                        },
+                        "station": {
+                          "type": "string"
+                        },
+                        "sys": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "The member line's name for the text (Line 5)."
+                        },
+                        "year": {
+                          "x-unit": "year",
+                          "description": "Opening year from the Chronology, null when none.",
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "line",
+                        "station",
+                        "sys",
+                        "name",
+                        "year"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Another line's station this one is one station with (station_complex records)."
+                    }
+                  },
+                  "halls": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ],
+                      "items": false,
+                      "minItems": 2,
+                      "maxItems": 2
+                    }
+                  },
+                  "passage": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "items": false,
+                        "minItems": 2,
+                        "maxItems": 2
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "shaft": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "items": false,
+                        "minItems": 2,
+                        "maxItems": 2
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "hall_bottom_m": {
+                    "type": "number",
+                    "x-unit": "m"
+                  },
+                  "hall_top_m": {
+                    "type": "number",
+                    "x-unit": "m"
+                  },
+                  "mezz": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "halls": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "prefixItems": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ],
+                              "items": false,
+                              "minItems": 2,
+                              "maxItems": 2
+                            }
+                          },
+                          "bottom_m": {
+                            "type": "number"
+                          },
+                          "top_m": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "halls",
+                          "bottom_m",
+                          "top_m"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The street-level mezzanine under an elevated station."
+                  },
+                  "stages": {
+                    "type": "array",
+                    "items": {}
+                  }
+                },
+                "required": [
+                  "type",
+                  "rule",
+                  "source",
+                  "rule_id",
+                  "d_hall_m",
+                  "depth_m",
+                  "island",
+                  "year",
+                  "phase",
+                  "dashed",
+                  "at_open",
+                  "later",
+                  "halls",
+                  "passage",
+                  "shaft",
+                  "hall_bottom_m",
+                  "hall_top_m",
+                  "mezz",
+                  "stages"
+                ],
+                "additionalProperties": false,
+                "description": "The station's access (stationAccess, profiles.html 503-535)."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "curve": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "R_m": {
+                    "x-unit": "m",
+                    "description": "Fitted radius; null is straight.",
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "out_m": {
+                    "type": "number",
+                    "x-unit": "m",
+                    "description": "Extra gap, outside face."
+                  },
+                  "inn_m": {
+                    "type": "number",
+                    "x-unit": "m",
+                    "description": "Extra gap, inside face."
+                  },
+                  "level": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "error",
+                          "warning"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "gapfill": {
+                    "type": "boolean"
+                  },
+                  "turns": {
+                    "type": "object",
+                    "properties": {
+                      "pos": {
+                        "type": "number"
+                      },
+                      "neg": {
+                        "type": "number"
+                      },
+                      "s": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "error",
+                              "warning"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "pos",
+                      "neg",
+                      "s"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "R_m",
+                  "out_m",
+                  "inn_m",
+                  "level",
+                  "gapfill",
+                  "turns"
+                ],
+                "additionalProperties": false,
+                "description": "The platform curve (platformCurve, profiles.html 2030)."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "street": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "street": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "subway": {
+                "type": "boolean"
+              },
+              "roads": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "text",
+              "street",
+              "subway",
+              "roads"
+            ],
+            "additionalProperties": false
+          },
+          "gapfill": {
+            "type": "boolean"
+          },
+          "interchanges": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The other lines this station is one station with (its complex), by their names (Line 3, A trunk), once each in the complex's order: the sheet tags the station with them as the old page tagged its crossings."
+          },
+          "flags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "What was found, a stable slug (grade_over_limit)."
+                },
+                "sev": {
+                  "type": "string",
+                  "enum": [
+                    "info",
+                    "warn",
+                    "error"
+                  ]
+                },
+                "c0": {
+                  "type": "number",
+                  "x-unit": "m",
+                  "description": "Start chainage of the range."
+                },
+                "c1": {
+                  "type": "number",
+                  "x-unit": "m",
+                  "description": "End chainage of the range (equal to c0 for a point)."
+                },
+                "rule": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*){1,3}$",
+                  "description": "A rule id of rules/registry.yaml, e.g. geometry.method.per_stretch."
+                },
+                "data": {
+                  "description": "The numbers behind the flag, shaped by its kind."
+                }
+              },
+              "required": [
+                "kind",
+                "sev",
+                "c0",
+                "c1",
+                "rule",
+                "data"
+              ],
+              "additionalProperties": false,
+              "title": "Flag",
+              "description": "A finding over a chainage range, citing the rule that raised it."
+            }
+          }
+        },
+        "required": [
+          "platform_id",
+          "key",
+          "name",
+          "order",
+          "deleted",
+          "index",
+          "point_c_m",
+          "slide_m",
+          "c_m",
+          "half_m",
+          "level_set",
+          "level_m",
+          "rail_m",
+          "rail_ends_m",
+          "default_level_m",
+          "ground_m",
+          "ground_dem_m",
+          "depth_m",
+          "grade_in_permille",
+          "grade_out_permille",
+          "platform_grade_permille",
+          "grade_limit_permille",
+          "grade_limit_param",
+          "type",
+          "type_source",
+          "type_why",
+          "selected",
+          "role",
+          "phase",
+          "phase_source",
+          "cc_max_m",
+          "side",
+          "side_source",
+          "structure",
+          "elevated_rail_min_m",
+          "access",
+          "curve",
+          "street",
+          "gapfill",
+          "interchanges",
+          "flags"
+        ],
+        "additionalProperties": false,
+        "description": "Everything the sheet shows about one platform."
+      }
+    },
+    "flags": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What was found, a stable slug (grade_over_limit)."
+          },
+          "sev": {
+            "type": "string",
+            "enum": [
+              "info",
+              "warn",
+              "error"
+            ]
+          },
+          "c0": {
+            "type": "number",
+            "x-unit": "m",
+            "description": "Start chainage of the range."
+          },
+          "c1": {
+            "type": "number",
+            "x-unit": "m",
+            "description": "End chainage of the range (equal to c0 for a point)."
+          },
+          "rule": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*){1,3}$",
+            "description": "A rule id of rules/registry.yaml, e.g. geometry.method.per_stretch."
+          },
+          "data": {
+            "description": "The numbers behind the flag, shaped by its kind."
+          }
+        },
+        "required": [
+          "kind",
+          "sev",
+          "c0",
+          "c1",
+          "rule",
+          "data"
+        ],
+        "additionalProperties": false,
+        "title": "Flag",
+        "description": "A finding over a chainage range, citing the rule that raised it."
+      }
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "live": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "removed": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "errors": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "warnings": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "live",
+        "removed",
+        "errors",
+        "warnings"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "contract",
+    "engine_build",
+    "input_hash",
+    "stations",
+    "flags",
+    "summary"
+  ],
+  "additionalProperties": false,
+  "title": "StationFacts",
+  "description": "Contract station_facts/0: the output of station.facts@1."
+}

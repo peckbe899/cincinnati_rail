@@ -334,6 +334,16 @@ export class Api {
     return this.get(`/x/profiles/sections/${encodeURIComponent(sectionId)}/input`, viewQuery(view));
   }
 
+  /** The section's StationInput v0, the input of station.facts@1 (claude/hub_maps/profiles_parity.md 0.2). */
+  stationInput(sectionId: string, view: View): Promise<import("@cr/engine/contract").StationInput> {
+    return this.get(`/x/profiles/sections/${encodeURIComponent(sectionId)}/stations`, viewQuery(view));
+  }
+
+  /** The section's SectionSolveInput v0, the input of section.solve@1 (claude/hub_maps/engine_port_plan.md, 3). */
+  solveInput(sectionId: string, view: View): Promise<import("@cr/engine/contract").SectionSolveInput> {
+    return this.get(`/x/profiles/sections/${encodeURIComponent(sectionId)}/solve`, viewQuery(view));
+  }
+
   /** Best effort: a browser error into the hub's log (never throws). */
   async clientLog(entry: Record<string, unknown>): Promise<void> {
     try {

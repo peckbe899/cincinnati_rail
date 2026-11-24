@@ -7,6 +7,16 @@ import { DockviewReact, themeDark } from "dockview-react";
 import { useCallback, useEffect, useRef } from "react";
 import type { AppHost } from "../core/host.ts";
 import type { MountedPane, PaneContext } from "../core/plugin.ts";
+import { layoutSaver, type SaveApi } from "./layout_save.ts";
+import {
+  isMaximiseKey,
+  keepMaximised,
+  keptMaximised,
+  MAXIMISE_ACTIVE,
+  MAXIMISE_REQUEST,
+  MAXIMISED_EVENT,
+  withoutMaximised,
+} from "./maximise.ts";
 
 interface PaneParams {
   paneId: string;
@@ -14,7 +24,8 @@ interface PaneParams {
   [k: string]: unknown;
 }
 
-const LAYOUT_VERSION = 1;
+// 2: the line sheet takes about half the width, so its stations can be told apart (profiles_parity.md A.1).
+const LAYOUT_VERSION = 2;
 
 function layoutKey(workspace: string): string {
   return `cr.layout.v${LAYOUT_VERSION}.${workspace}`;
@@ -22,7 +33,7 @@ function layoutKey(workspace: string): string {
 
 /**
  * The default design workspace: the map on the left, the line sheet in the middle with the whole column's height
- * (its table needs the rows), the inspector on the right with Jobs, Review, Old hub and Sources as tabs below it.
+ * (its table needs the rows) and about two thirds of the width, the inspector on the right with Jobs, Review, Old hub and Sources as tabs below it.
  */
 export function defaultLayout(api: DockviewApi, has: (id: string) => boolean): void {
   const add = (paneId: string, position?: Parameters<DockviewApi["addPanel"]>[0]["position"]) => {
@@ -41,11 +52,23 @@ export function defaultLayout(api: DockviewApi, has: (id: string) => boolean): v
   api.getPanel("jobs")?.api.setActive();
   api.getPanel("inspector")?.api.setActive();
   api.getPanel("line-sheet")?.api.setActive();
+  // The line sheet gets about two thirds of the width, the map and the inspector a sixth each: with the station
+  // panel beside it the plot keeps about 650 px on a 1600 px screen (at half the width it had 490, too few to tell
+  // the downtown stations apart).
+  const w = api.width;
+  if (w > 900) {
+    try {
+      api.getPanel("map")?.api.setSize({ width: Math.round(w * 0.18) });
+      api.getPanel("inspector")?.api.setSize({ width: Math.round(w * 0.18) });
+    } catch {
+      /* a layout without these panes keeps dockview's split */
+    }
+  }
 }
 
 function PaneHost(props: IDockviewPanelProps<PaneParams> & { host: AppHost }) {
   const ref = useRef<HTMLDivElement>(null);
-  const { host, api } = props;
+  const { host, api, containerApi } = props;
   const paneId = props.params.paneId;
   // The pane mounts once per pane id; later parameter changes reach it through ctx.params, not a remount.
   const params = useRef(props.params);
@@ -65,6 +88,23 @@ function PaneHost(props: IDockviewPanelProps<PaneParams> & { host: AppHost }) {
     const sub = api.onDidDimensionsChange(() => {
       for (const fn of resizers) fn();
     });
+    // Maximise (maximise.ts): the pane's own button asks from inside its element; the dock says whether it is.
+    const toggle = (e: Event) => {
+      e.stopPropagation();
+      if (api.isMaximized()) api.exitMaximized();
+      else api.maximize();
+    };
+    el?.addEventListener(MAXIMISE_REQUEST, toggle);
+    const tell = () => {
+      if (!el) return;
+      const on = api.isMaximized();
+      if ((el.dataset.maximised === "1") === on) return;
+      if (on) el.dataset.maximised = "1";
+      else delete el.dataset.maximised;
+      el.dispatchEvent(new CustomEvent(MAXIMISED_EVENT, { detail: on }));
+    };
+    tell();
+    const maxSub = containerApi.onDidMaximizedGroupChange(tell);
     const ctx: PaneContext = {
       host,
       // A getter, so params set later (openPane on a pane already open) are what the pane reads.
@@ -97,10 +137,12 @@ function PaneHost(props: IDockviewPanelProps<PaneParams> & { host: AppHost }) {
     return () => {
       gone = true;
       sub.dispose();
+      maxSub.dispose();
+      el.removeEventListener(MAXIMISE_REQUEST, toggle);
       mounted?.dispose();
       el.replaceChildren();
     };
-  }, [host, api, paneId]);
+  }, [host, api, containerApi, paneId]);
   return <div ref={ref} className="pane-root" data-pane={paneId} />;
 }
 
@@ -108,22 +150,30 @@ export function Dock({ host, workspace }: { host: AppHost; workspace: string }) 
   const apiRef = useRef<DockviewApi | null>(null);
   const saveTimer = useRef<number | undefined>(undefined);
 
-  const saveLayout = useCallback(() => {
-    const api = apiRef.current;
-    if (!api) return;
-    for (const p of api.panels) {
-      const el = document.querySelector(`[data-pane="${CSS.escape(String(p.params?.paneId ?? ""))}"]`) as
-        | (HTMLElement & { __serialize?: () => unknown })
-        | null;
-      const state = el?.__serialize?.();
-      if (state !== undefined) p.api.updateParameters({ ...(p.params ?? {}), state });
-    }
-    try {
-      localStorage.setItem(layoutKey(workspace), JSON.stringify(api.toJSON()));
-    } catch {
-      /* storage full or denied: the default layout comes back next time */
-    }
-  }, [workspace]);
+  // A save writes only what changed and never lays a maximised dock out (layout_save.ts): before, each save fired
+  // the next one, every 500 ms, and each laid the whole dock out twice while a pane was maximised.
+  const ws = useRef(workspace);
+  ws.current = workspace;
+  const saver = useRef(
+    layoutSaver({
+      api: () => apiRef.current as SaveApi | null,
+      stateOf: (p) => {
+        const el = document.querySelector(`[data-pane="${CSS.escape(String(p.params?.paneId ?? ""))}"]`) as
+          | (HTMLElement & { __serialize?: () => unknown })
+          | null;
+        return el?.__serialize?.();
+      },
+      clean: withoutMaximised,
+      write: (text) => {
+        try {
+          localStorage.setItem(layoutKey(ws.current), text);
+        } catch {
+          /* storage full or denied: the default layout comes back next time */
+        }
+      },
+    }),
+  );
+  const saveLayout = useCallback(() => saver.current.save(), []);
 
   const onReady = useCallback(
     (event: DockviewReadyEvent) => {
@@ -141,6 +191,15 @@ export function Dock({ host, workspace }: { host: AppHost; workspace: string }) 
         event.api.clear();
       }
       if (!restored) defaultLayout(event.api, has);
+      // A pane maximised earlier in this session is maximised again (a reload keeps it; a new session does not).
+      const kept = keptMaximised(workspace);
+      const keptPanel = kept ? event.api.getPanel(kept) : undefined;
+      saver.current.prime();
+      if (keptPanel && !keptPanel.api.isMaximized()) keptPanel.api.maximize();
+      event.api.onDidMaximizedGroupChange(() => {
+        const on = event.api.panels.find((p) => p.api.isMaximized());
+        keepMaximised(workspace, on ? on.id : null);
+      });
       event.api.onDidLayoutChange(() => {
         window.clearTimeout(saveTimer.current);
         saveTimer.current = window.setTimeout(saveLayout, 500);
@@ -157,6 +216,7 @@ export function Dock({ host, workspace }: { host: AppHost; workspace: string }) 
           const api = apiRef.current;
           if (!api) return;
           api.clear();
+          keepMaximised(workspace, null);
           defaultLayout(api, (id) => host.registry.panes.has(id));
           host.toast({ text: "The pane layout is back to the default.", level: "info", ttl: 3000 });
           return;
@@ -178,8 +238,35 @@ export function Dock({ host, workspace }: { host: AppHost; workspace: string }) 
           params: { paneId: m.pane, ...m.params },
         });
       }),
-    [host],
+    [host, workspace],
   );
+
+  // Shift+F (outside a text field), a double-click on a tab, and the palette's command toggle the pane in focus.
+  useEffect(() => {
+    const toggleActive = () => {
+      const p = apiRef.current?.activePanel;
+      if (!p) return;
+      if (p.api.isMaximized()) p.api.exitMaximized();
+      else p.api.maximize();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (!isMaximiseKey(e)) return;
+      e.preventDefault();
+      toggleActive();
+    };
+    const onDbl = (e: MouseEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t?.closest?.(".dock .dv-tab")) toggleActive();
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("dblclick", onDbl);
+    window.addEventListener(MAXIMISE_ACTIVE, toggleActive);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("dblclick", onDbl);
+      window.removeEventListener(MAXIMISE_ACTIVE, toggleActive);
+    };
+  }, []);
 
   useEffect(() => {
     window.addEventListener("pagehide", saveLayout);

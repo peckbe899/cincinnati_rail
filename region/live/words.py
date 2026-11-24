@@ -17,7 +17,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
-SECTION_CHILDREN = frozenset({"stop", "platform", "ground_profile", "profile", "track"})
+SECTION_CHILDREN = frozenset({"stop", "platform", "ground_profile", "profile", "track", "section_context"})
 """Kinds whose ``parent`` column is their section (the line sheet's inputs)."""
 
 
@@ -39,7 +39,7 @@ def _keys_changed(a: Any, b: Any) -> int:
 
 
 def profile_phrases(before: Mapping[str, Any] | None, after: Mapping[str, Any] | None) -> list[str]:
-    """What changed in a profile, station by station: levels (``st``), slides (``so``), grades, PVIs."""
+    """What changed in a profile, station by station: levels (``st``), slides (``so``), access choices, PVIs."""
     b, a = before or {}, after or {}
     out: list[str] = []
     moved = _keys_changed(b.get("so"), a.get("so"))
@@ -48,6 +48,9 @@ def profile_phrases(before: Mapping[str, Any] | None, after: Mapping[str, Any] |
     levels = _keys_changed(b.get("st"), a.get("st"))
     if levels:
         out.append(f"{_n(levels, 'station level')} changed")
+    access = _keys_changed(b.get("access"), a.get("access"))
+    if access:
+        out.append(f"{_n(access, 'station access choice')} changed")
     if (b.get("pvi") or []) != (a.get("pvi") or []):
         nb, na = len(b.get("pvi") or []), len(a.get("pvi") or [])
         out.append(f"PVIs changed ({nb} to {na})" if nb != na else "PVIs changed")
@@ -96,6 +99,12 @@ def _phrases(items: list[dict[str, Any]], bodies: Mapping[str, tuple[Any, Any]])
             count["stations renamed" if "data.name" in fields else "station details changed"] += 1
         elif kind == "ground_layer":
             count["ground layers changed"] += 1
+        elif kind == "section_context":
+            count["streets changed"] += 1
+        elif kind == "chronology":
+            count["chronology changed"] += 1
+        elif kind == "station_complex":
+            count["station complexes changed"] += 1
         elif kind in ("route", "node"):
             continue  # follows the section's own change
         else:
@@ -124,8 +133,8 @@ def _phrases(items: list[dict[str, Any]], bodies: Mapping[str, tuple[Any, Any]])
             continue
         noun, _, verb = key.partition(" ")
         singular = noun[:-1] if noun.endswith("s") else noun
-        if key == "ground changed":
-            out.append("ground changed")
+        if key in ("ground changed", "streets changed", "chronology changed", "station complexes changed"):
+            out.append(key)
         elif key == "track moved":
             out.append("track moved")
         else:

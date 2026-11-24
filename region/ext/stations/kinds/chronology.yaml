@@ -1,0 +1,53 @@
+# The Chronology: when each segment and station opened, and the phase of each year (read only until I2.4).
+kind: chronology
+version: 1
+title: Chronology
+description: >-
+  The old hub's Chronology (chronology/segments) with the routes it is read along (data/profile/chronology_lines.json):
+  segments keyed metro|Line_x|A|B (names sorted) or tri|A|B, each {year, month, phase, src}; stations keyed sys|name;
+  phase_years [[from, to, phase]]; routes [{id, sys, stations [{name, c}], segments [key]}]. One record. The station
+  rules read a station's opening year and phase from it (chrStationYear, profiles.html 483); I2.4 replaces it with
+  the full Chronology.
+geometry: none
+columns:
+  name: /key
+merge:
+  unit: atomic
+  rebase: auto
+legacy: [chronology]
+seeded: false
+schema:
+  type: object
+  additionalProperties: false
+  required: [key, segments, stations, phase_years, routes]
+  properties:
+    key:
+      type: string
+      enum: [chronology]
+    segments:
+      type: object
+      additionalProperties: {type: object}
+    stations:
+      type: object
+      additionalProperties: {type: object}
+    phase_years:
+      type: array
+      items:
+        type: array
+        prefixItems:
+          - {type: number, x-unit: year}
+          - {type: number, x-unit: year}
+          - {type: string}
+    routes:
+      description: The Chronology's routes (chronology_lines.json), without their plan paths.
+      type: array
+      items: {type: object}
+    attrs:
+      description: The record's other members as the old hub wrote them (core, notes, about), and the routes' file.
+      type: object
+  examples:
+    - key: chronology
+      segments: {"metro|Line_1|8th|Lincoln Court": {year: 1905, month: 11, src: Ben}}
+      stations: {"metro|Paycor": {year: 2000, month: 8, src: Ben}}
+      phase_years: [[1800, 1933, "1"], [1934, 1949, "2"]]
+      routes: [{id: Line_1, sys: metro, stations: [{name: Finneytown, c: 60.5}], segments: []}]

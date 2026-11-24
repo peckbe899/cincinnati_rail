@@ -207,8 +207,9 @@ table.grid input {
 
 .sheet {
   display: grid;
-  grid-template-rows: auto auto minmax(220px, 1fr) auto auto;
+  grid-template-rows: auto auto auto minmax(220px, 1fr) auto auto;
   height: 100%;
+  position: relative;
 }
 
 .sheet-bar {
@@ -217,6 +218,10 @@ table.grid input {
   align-items: center;
   padding: 4px 8px;
   border-bottom: 1px solid var(--line);
+  /* one line: text that changes with an edit must never move the plot under the pointer mid-drag */
+  flex-wrap: nowrap;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .sheet-canvas {
@@ -524,6 +529,12 @@ a {
   font-size: 12px;
 }
 
+.design-mark {
+  color: var(--warn);
+  font-size: 12px;
+  font-style: italic;
+}
+
 .sources-head {
   display: flex;
   gap: 12px;
@@ -533,4 +544,584 @@ a {
 
 .sources-history {
   font-size: 12px;
+}
+
+/* The station panel (line sheet, A.3): the selected station's settings in groups, each row value, source, rule. */
+.sheet-card:has(.sp) {
+  display: block;
+  padding: 0;
+  max-height: 44vh;
+  overflow: auto;
+}
+.sheet.with-panel .sheet-table {
+  max-height: 24vh;
+}
+/* A wide sheet keeps the plot tall: the panel is a column on the right, as the old page's card was. */
+.sheet.wide.with-panel {
+  grid-template-columns: minmax(0, 1fr) 360px;
+  grid-template-rows: auto auto auto minmax(260px, 1fr) auto;
+  grid-template-areas: "bar bar" "tools tools" "notice notice" "canvas panel" "tables panel";
+}
+.sheet.wide.with-panel > .sheet-bar {
+  grid-area: bar;
+}
+.sheet.wide.with-panel > .sheet-notice {
+  grid-area: notice;
+}
+.sheet.wide.with-panel > .sheet-canvas {
+  grid-area: canvas;
+}
+.sheet.wide.with-panel > .sheet-table {
+  grid-area: tables;
+  max-height: 36vh;
+}
+.sp-head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 4px 8px;
+  position: sticky;
+  top: 0;
+  background: var(--panel, #1e2128);
+  border-bottom: 1px solid var(--line);
+  z-index: 1;
+}
+.sp-head strong {
+  color: #e6b450;
+  font-size: 1.05em;
+}
+.sp-head .spacer {
+  flex: 1;
+}
+.sp-square,
+.type-chip,
+.sp-chip {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+.type-chip {
+  margin-right: 6px;
+}
+.sp-note {
+  padding: 3px 8px;
+  color: var(--warn, #e6b450);
+}
+.sp-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 2px 14px;
+  padding: 4px 8px 8px;
+}
+.sp-group h4 {
+  margin: 6px 0 2px;
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8b919e;
+}
+.sp-row {
+  display: grid;
+  grid-template-columns: 9.5em 1fr auto;
+  gap: 6px;
+  align-items: center;
+  padding: 1px 0;
+  font-variant-numeric: tabular-nums;
+}
+.sp-row.changed .sp-label::before {
+  content: "• ";
+  color: #e6b450;
+}
+.sp-label {
+  color: #8b919e;
+}
+.sp-src {
+  color: #6f7582;
+  font-size: 0.8em;
+  line-height: 1.2;
+  max-width: 14em;
+  min-width: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.sp-was {
+  margin-left: 6px;
+  color: #e6b450;
+  font-size: 0.85em;
+}
+.sp-input {
+  width: 7em;
+  text-align: right;
+}
+.sp-input.bad {
+  outline: 1px solid #f07178;
+}
+.sp-select {
+  max-width: 100%;
+  min-width: 0;
+  width: 100%;
+}
+.sp-head {
+  flex-wrap: wrap;
+}
+.sp-head .sp-line {
+  flex-basis: 100%;
+  order: 5;
+}
+.sp-head button {
+  padding: 1px 6px;
+}
+.sp-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 3px 0;
+}
+.sp-hint {
+  margin: 2px 0;
+  color: #8b919e;
+  font-size: 0.85em;
+}
+.sp-param {
+  color: #8fb8e6;
+  font-size: 0.9em;
+}
+.sp-flag {
+  display: grid;
+  grid-template-columns: 3.6em minmax(0, 1fr);
+  gap: 6px;
+  align-items: start;
+  padding: 2px 0;
+  font-size: 0.95em;
+}
+.sp-flag-foot {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.sp-flag-foot .sp-src {
+  flex: 1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.sp-flag-foot button {
+  padding: 0 6px;
+  flex-shrink: 0;
+}
+.sp-sev {
+  font-weight: 600;
+  font-size: 0.85em;
+}
+.sheet-table td.street {
+  max-width: 12em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #8b919e;
+}
+.sheet-table td.num {
+  text-align: right;
+}
+.flag-dot {
+  font-size: 0.8em;
+}
+
+/* The panel's column on a wide sheet: one group under the other. */
+.sheet.wide .sp-groups {
+  grid-template-columns: minmax(0, 1fr);
+}
+.sheet.wide .sp-row {
+  grid-template-columns: 7.6em minmax(0, 1fr) 6.8em;
+  font-size: 0.95em;
+}
+
+/* The sheet's bar keeps one line: text that changes with an edit ("unsaved changes", "Save (2 stations)") must
+   never move the plot under the pointer in the middle of a drag. */
+.sheet-bar > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+}
+.sheet-bar > button,
+.sheet-bar > strong {
+  flex-shrink: 0;
+}
+.sheet-bar > span[data-testid="station-summary"] {
+  flex-shrink: 0;
+}
+
+/* Maximised (Shift+F, the Maximise button, a double-click on the tab): the plot fills the window with the bands
+   under it, the panel a narrower column beside it, as the old page's card was (a 1,200 px plot at 1,600 px). */
+.sheet.wide.with-panel.maximised {
+  grid-template-columns: minmax(0, 1fr) 290px;
+}
+.sheet.maximised .sp-row {
+  grid-template-columns: 7.2em minmax(0, 1fr) 5.6em;
+}
+.sheet-bar > button[aria-pressed="true"] {
+  background: rgba(47, 184, 168, 0.18);
+  border-color: #2fb8a8;
+}
+/* The panel's groups fold: the heading is a summary with a digest of the group, one line. */
+.sp-group {
+  min-width: 0;
+}
+.sp-group > summary {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+  padding: 2px 0;
+  border-top: 1px solid var(--line);
+}
+.sp-group > summary::-webkit-details-marker {
+  display: none;
+}
+.sp-group > summary::before {
+  content: "▸";
+  color: #8b919e;
+  font-size: 0.8em;
+}
+.sp-group[open] > summary::before {
+  content: "▾";
+}
+.sp-group > summary h4 {
+  margin: 2px 0;
+  flex-shrink: 0;
+}
+.sp-digest {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #8b919e;
+  font-size: 0.85em;
+}
+.sp-group[open] .sp-digest {
+  display: none;
+}
+/* The source and its rule, one short line each: the rule id in full on hover. */
+.sp-src .sp-rule {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Show: Rail, Rail + box, Box (the old page's S.show), one group of three that keeps its width. */
+.sheet-bar > span.sheet-show {
+  display: inline-flex;
+  flex-shrink: 0;
+  overflow: visible;
+}
+.sheet-show > button {
+  border-radius: 0;
+}
+.sheet-show > button:first-child {
+  border-radius: 4px 0 0 4px;
+}
+.sheet-show > button:last-child {
+  border-radius: 0 4px 4px 0;
+}
+.sheet-show > button + button {
+  margin-left: -1px;
+}
+.sheet-show > button[aria-pressed="true"] {
+  background: rgba(47, 184, 168, 0.18);
+  border-color: #2fb8a8;
+  position: relative;
+}
+
+/* The tools row (the old page's toolbar): the line picker, Move / Paint / Ground, the brushes, undo, zoom, the
+   exports, the settings and the help. It wraps rather than hides a button. */
+.sheet-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: center;
+  padding: 3px 8px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+}
+.sheet-group {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+}
+.sheet-group + .sheet-group {
+  padding-left: 8px;
+  border-left: 1px solid var(--line);
+}
+.sheet .sheet-tools button {
+  padding: 1px 6px;
+  font-size: 12px;
+}
+.sheet .sheet-tools button[aria-pressed="true"] {
+  background: rgba(47, 184, 168, 0.18);
+  border-color: #2fb8a8;
+}
+.sheet-tools .swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 4px;
+}
+.sheet .sheet-tools select {
+  font-size: 12px;
+  max-width: 14em;
+}
+/* The settings and the help over the sheet's top right, as the old page's pop. */
+.sheet-popover {
+  position: absolute;
+  right: 12px;
+  top: 64px;
+  z-index: 5;
+  width: min(380px, calc(100% - 24px));
+  max-height: calc(100% - 80px);
+  overflow-y: auto;
+  background: var(--panel, #1c1f26);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+.sheet-popover[hidden] {
+  display: none;
+}
+.sheet-popover h3,
+.sheet-line h3 {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8b919e;
+  display: inline;
+}
+.sheet .sheet-popover .lp-kv input {
+  width: 6.5em;
+  text-align: right;
+}
+.sheet-popover dt.changed::before {
+  content: "• ";
+  color: #e6b450;
+}
+/* The line panel under the station panel (the old page's side cards). */
+.sheet-line {
+  border-top: 1px solid var(--line);
+  padding: 4px 8px 8px;
+  font-size: 12.5px;
+}
+.lp-group {
+  border-top: 1px solid var(--line);
+  padding: 2px 0;
+}
+.lp-group > summary {
+  cursor: pointer;
+  padding: 3px 0;
+}
+.lp-kv {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  margin: 4px 0;
+}
+.lp-kv dt {
+  color: #8b919e;
+}
+.lp-kv dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.lp-types {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 1px 10px;
+}
+.lp-types .n {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.lp-ready {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin: 6px 0 2px;
+}
+.lp-hint {
+  color: #8b919e;
+  margin: 4px 0;
+}
+.lp-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 6px 0;
+}
+.iss-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 4px 0;
+}
+.iss-chip {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+.iss-chip[aria-pressed="false"] {
+  opacity: 0.42;
+  text-decoration: line-through;
+}
+.iss-chip .n {
+  color: #8b919e;
+}
+.iss-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.iss-list {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-height: 340px;
+  overflow-y: auto;
+}
+.iss {
+  display: grid;
+  grid-template-columns: 4px auto 1fr;
+  gap: 0 8px;
+  align-items: start;
+  line-height: 1.35;
+}
+.iss::before {
+  content: "";
+  grid-row: 1 / span 2;
+  align-self: stretch;
+  border-radius: 2px;
+  background: var(--sev);
+}
+.iss .ch {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+  text-decoration: underline dotted;
+}
+.iss .tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-right: 5px;
+}
+.iss.sev-note .tx {
+  color: #8b919e;
+}
+.iss .act {
+  grid-column: 3;
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+}
+.iss .act button {
+  font-size: 11px;
+  padding: 0 6px;
+}
+.paint-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: center;
+}
+.paint-row .muted {
+  color: #8b919e;
+}
+.paint-row .bad,
+.sheet .sheet-line table.chk tr td.bad {
+  color: #f07178;
+  font-weight: 600;
+}
+.chk {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.sheet .sheet-line table.chk th,
+.sheet .sheet-line table.chk tr td {
+  padding: 2px 4px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+}
+.sheet .sheet-line table.chk th:first-child,
+.sheet .sheet-line table.chk tr td:first-child {
+  text-align: left;
+}
+.lp-canon {
+  margin: 4px 0;
+  padding-left: 16px;
+  color: #8b919e;
+}
+.lp-canon b {
+  color: inherit;
+}
+.sel-card .sel-title {
+  font-size: 17px;
+  font-weight: 700;
+}
+.sel-card {
+  padding: 6px 8px;
+}
+.sheet .sel-card .lp-kv input {
+  width: 7em;
+  text-align: right;
+}
+.sp kbd,
+.sheet-popover kbd {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0 4px;
+}
+.sheet-side {
+  min-width: 0;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+/* The wide sheet's areas for the tools row and the side column (after their own rules). */
+.sheet.wide.with-panel > .sheet-tools {
+  grid-area: tools;
+}
+.sheet.wide.with-panel > .sheet-side {
+  grid-area: panel;
+  min-height: 0;
+  overflow-y: auto;
+  border-left: 1px solid var(--line);
+  max-height: none;
+}
+.sheet.wide.with-panel > .sheet-side > .sheet-card {
+  max-height: none;
+  border-top: none;
 }

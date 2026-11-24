@@ -5,6 +5,7 @@
 
 import type { AppHost } from "../core/host.ts";
 import type { Plugin } from "../core/plugin.ts";
+import { MAXIMISE_ACTIVE } from "./maximise.ts";
 
 export function corePlugin(host: AppHost): Plugin {
   return {
@@ -12,11 +13,11 @@ export function corePlugin(host: AppHost): Plugin {
     commands: [
       {
         id: "core.undo",
-        title: "Undo the last saved change",
+        title: "Undo the last change (an unsaved step first, then the last save)",
         run: () => host.undoLast(),
-        when: () => host.undo.canUndo,
+        when: () => host.canUndo(),
       },
-      { id: "core.redo", title: "Redo", run: () => host.redoLast(), when: () => host.undo.canRedo },
+      { id: "core.redo", title: "Redo", run: () => host.redoLast(), when: () => host.canRedo() },
       { id: "core.save", title: "Save every draft", run: () => void host.saveAll() },
       { id: "core.units", title: "Switch units (m, ft)", run: () => host.units.toggle() },
       {
@@ -25,6 +26,14 @@ export function corePlugin(host: AppHost): Plugin {
         run: () => {
           const s = host.store.getState();
           s.update({ tl: s.tl === "canon" ? "real" : "canon" });
+        },
+      },
+      {
+        id: "core.maximise",
+        title: "Maximise the pane in focus, or put it back (Shift+F, or double-click its tab)",
+        // The dock does it (maximise.ts); the key is the dock's own, so typing an F in a field never maximises.
+        run: () => {
+          window.dispatchEvent(new Event(MAXIMISE_ACTIVE));
         },
       },
       {

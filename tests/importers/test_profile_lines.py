@@ -40,6 +40,7 @@ COUNTS = {
     "stop": 436,
     "platform": 436,
     "param": 1,
+    "section_context": 16,
 }
 
 
@@ -208,7 +209,7 @@ def test_renamed_route_keeps_every_id(write_root):
         sid = store.legacy("section", route)
         sec = store.get("section", sid, MAIN)["data"]
         out = {"section": sid, "route": sec["route"], "a": sec["a"], "b": sec["b"]}
-        for kind in ("stop", "platform", "ground_profile", "profile"):
+        for kind in ("stop", "platform", "ground_profile", "profile", "section_context"):
             out[kind] = sorted(r["id"] for r in all_records(store, kind, parent=sid))
         out["station"] = sorted(r["data"]["station"] for r in all_records(store, "stop", parent=sid))
         return out
@@ -224,7 +225,12 @@ def test_renamed_route_keeps_every_id(write_root):
     (folder / "index.json").write_text(
         json.dumps([{**e, "id": "Line_6x"} if e["id"] == "Line_6" else e for e in index]), encoding="utf-8"
     )
-    report = import_all(store, write_root, ["profile_lines"], overrides={"lines": folder})["profile_lines"].report
+    context = json.loads((LINES.parent / "context" / "lines.json").read_text(encoding="utf-8"))
+    context["lines"]["Line_6x"] = context["lines"].pop("Line_6")
+    ctx_file = write_root / "context.json"
+    ctx_file.write_text(json.dumps(context), encoding="utf-8")
+    overrides = {"lines": folder, "context": ctx_file}
+    report = import_all(store, write_root, ["profile_lines"], overrides=overrides)["profile_lines"].report
     assert report.errors == [] and report.counts["created"] == 0 and report.counts["deleted"] == 0
     assert ids_of("Line_6x") == before
     assert store.legacy("stop", "stop:Line_6x|Towne") == store.legacy("stop", "stop:Line_6|Towne")

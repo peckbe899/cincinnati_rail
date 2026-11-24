@@ -760,7 +760,16 @@ def test_engine_schemas_validate_in_python():
     schema_dir = REPO / "engine" / "schema" / "v0"
     with open(schema_dir / "contracts.json", encoding="utf-8") as f:
         contracts = json.load(f)
-    assert contracts["contracts"] == {"section_input": 0, "vertical_rail": 0}
+    assert contracts["contracts"] == {
+        "section_input": 0,
+        "vertical_rail": 0,
+        "station_input": 0,
+        "station_facts": 0,
+        "section_solve_input": 0,
+        "solved_section": 0,
+        "section_propose_input": 0,
+        "section_proposal": 0,
+    }
     with open(schema_dir / "section_input.json", encoding="utf-8") as f:
         schema = json.load(f)
     Draft202012Validator.check_schema(schema)

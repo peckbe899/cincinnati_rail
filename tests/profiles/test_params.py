@@ -239,9 +239,16 @@ def test_a_param_change_is_one_record_edit(write_root):
         tv = View(layer="try")
         sections = [section_of(store, r)["id"] for r in METRO]
         sched = Scheduler(store, write_root / "c" / "cache.db", Hello(), params=resolve)
+
+        def key(s: str, view: View) -> str | None:
+            # a line drawn on its solve's design (no saved level, or another frame) waits on its rail job, whose
+            # key reads the param as well
+            plan = sched.planner.plan("profiles.solve_section", s, view)
+            return plan.key or sched.planner.plan("profiles.neighbour", s, view).key
+
         try:
-            before = {s: sched.planner.plan("profiles.solve_section", s, tv).key for s in sections}
-            main_before = {s: sched.planner.plan("profiles.solve_section", s, MAIN).key for s in sections}
+            before = {s: key(s, tv) for s in sections}
+            main_before = {s: key(s, MAIN) for s in sections}
             from region.core.protocols import etag
             from tests.importers.helpers import all_records
 
@@ -254,9 +261,9 @@ def test_a_param_change_is_one_record_edit(write_root):
             )  # fmt: skip
             (cs,) = store.changesets(since=seq)
             assert len(store.changeset(cs["id"])["records"]) == 1 and rec["layer"] == "try"
-            after = {s: sched.planner.plan("profiles.solve_section", s, tv).key for s in sections}
-            assert all(after[s] != before[s] for s in sections)
-            assert {s: sched.planner.plan("profiles.solve_section", s, MAIN).key for s in sections} == main_before
+            after = {s: key(s, tv) for s in sections}
+            assert all(after[s] != before[s] and after[s] for s in sections)
+            assert {s: key(s, MAIN) for s in sections} == main_before
         finally:
             sched.stop()
     finally:
@@ -302,3 +309,70 @@ def test_a_pvi_off_the_line_is_listed_as_an_issue():
     got = pvi_issues(inputs)
     assert [(i["msg"], i["data"]["index"]) for i in got] == [("pvi_off_line", 1), ("pvi_out_of_order", 2)]
     assert pvi_issues({"length_m": 100.0, "pvi": [{"c_m": 0.0, "z_m": 1}, {"c_m": 100.0, "z_m": 2}]}) == []
+
+
+def test_param_records_are_read_once_per_change_not_once_per_param(write_root):
+    """Speed (the line file budget): building one SectionSolveInput resolves some 200 params, and the router builds
+    one per crossing line. The param records are read once while none changes (a count of ``store.list`` calls),
+    and a new or edited param is seen at once by the next resolve (no stale value)."""
+    store = fresh_copy(write_root)
+    try:
+        store.create_layer("try", by="ben")
+        sec = section_of(store, "Line_6")
+        view = View(layer="try")
+        calls = {"param": 0}
+        real = store.list
+
+        def counting(kind, *a, **k):
+            if kind == "param":
+                calls["param"] += 1
+            return real(kind, *a, **k)
+
+        store.list = counting  # type: ignore[method-assign]
+        for _ in range(3):
+            for path in ("settings.platform", "settings.maxGrade", "settings.defDepth", "settings.vcRadius"):
+                resolve(store, view, path, sec["id"])
+        assert calls["param"] <= 1, calls
+        assert resolve(store, view, "settings.platform", sec["id"]) == 121.92
+        _param(store, "settings.platform", 180.0, scope={"kind": "section", "id": sec["id"]})
+        assert resolve(store, view, "settings.platform", sec["id"]) == 180.0
+        assert resolve(store, MAIN, "settings.platform", sec["id"]) == 121.92
+        rec = next(r for r in store.layer_records("try", "param") if r["data"]["path"] == "settings.platform")
+        from region.core.protocols import etag
+
+        store.put(
+            {**rec, "data": {**rec["data"], "value": 150.0}}, view, if_match=etag("try", rec["version"]), by="ben"
+        )
+        assert resolve(store, view, "settings.platform", sec["id"]) == 150.0
+        store.delete("param", rec["id"], view, if_match=etag("try", rec["version"] + 1), by="ben")
+        assert resolve(store, view, "settings.platform", sec["id"]) == 121.92
+    finally:
+        store.close()
+
+
+def test_one_request_resolves_each_param_once(write_root):
+    """Speed: the router's SectionSolveInput reads the section's params, then each crossing line's (its neighbour
+    view), each through ``StoreReads``. One request resolves each (path, scope) once; the values are copies, so a
+    caller that changes one does not change the next caller's."""
+    from region.ext.profiles.router import _reads  # noqa: F401 (the router builds one StoreReads per request)
+    from region.ext.profiles.solve_input import section_solve_input
+
+    store = fresh_copy(write_root)
+    try:
+        sec = section_of(store, "Line_6")
+        asked: list[tuple[str, str | None]] = []
+
+        def counting(st, view, path, scope=None):
+            asked.append((path, scope))
+            return resolve(st, view, path, scope)
+
+        ctx = StoreReads(store, MAIN, counting)
+        section_solve_input(ctx, sec["id"])
+        section_solve_input(ctx, sec["id"])
+        assert len(asked) == len(set(asked)), [k for k in set(asked) if asked.count(k) > 1][:5]
+        subway = ctx.param("metro_structure.subway_streets", sec["id"])
+        if isinstance(subway, list):
+            subway.append("changed")
+            assert "changed" not in ctx.param("metro_structure.subway_streets", sec["id"])
+    finally:
+        store.close()

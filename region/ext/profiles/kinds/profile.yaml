@@ -1,6 +1,6 @@
 # A profile: Ben's vertical design of one section, merged whole.
 kind: profile
-version: 1
+version: 2
 title: Profile
 description: >-
   The vertical design of one section (section 4 of the spec): one record per section, merged whole (atomic, the
@@ -69,6 +69,23 @@ schema:
       description: Station structure type set by Ben.
       type: object
       additionalProperties: {type: string, enum: [cutcover, shield, deep, elevated]}
+    access:
+      description: >-
+        Ben's access choice per platform (version 2): the type, and the stages and source the old hub kept with it.
+        Absent means the rules decide (access.type.*).
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties: false
+        required: [type]
+        properties:
+          type:
+            enum: [surface, platform_level, platform_level_xu, end_halls, mezzanine, mezzanine_full, mined_hall, deep,
+              elevated_mezzanine]
+          stages:
+            type: array
+          source:
+            type: string
     mode:
       description: RER station mode.
       type: object
