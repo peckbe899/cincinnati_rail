@@ -720,7 +720,7 @@ The current order is kept: increment 2 starts with I2.1 (closing the loop to run
 
 Every building in the 3D city is one record of a new kind, `building`. That holds for a building that stands today, one that was demolished, and one of Ben's proposals. Only the inputs differ by provenance. Every value of every building can be changed by Ben in his own layers. One pure engine method, `mesh.building@1`, turns any record into Model-look geometry, and it re-meshes one building at a time. A second kind, `building_style`, holds the style catalogue. A third, `site`, clears an area for a year and a timeline. This section replaces the `lotMass` row in 2.7 and proposes to close checklist 2.3.11 (lean (c), one record for the map and for 3D, now with roofs), for Ben to rule.
 
-Status: **proposed, not ruled**, except the rulings in 7.1. Values marked *drawing value* are starting numbers for Ben to rule on. Facts marked *unconfirmed* have not been checked against their source.
+Status: **proposed, not ruled**, except the rulings in 7.1. **On hold** until the rest of the hub is complete (Ben, 24 Nov 2026). Values marked *drawing value* are starting numbers for Ben to rule on. Facts marked *unconfirmed* have not been checked against their source.
 
 ### 7.1 Ben's rulings
 
@@ -1356,6 +1356,8 @@ Without step 4, 9.16 ("undated built records count only at the present") would e
 **In git:** the kinds, styles, rules tables in `region/ext/buildings/rules/` (`style_defaults.yaml`, `infer_sanborn.yaml`, `infer_real.yaml`), params, tools, the Sanborn vectors, the `bldg_real` aliases, and Ben's main and proposal seeds. Never LAZ, roofer output, GLBs, models or CAGIS geometry (unless its terms allow, 7.4).
 
 ### 7.11 Order of work
+
+**On hold (Ben, 24 Nov 2026):** no building work starts until the rest of the hub is complete. The open questions in 7.12 wait until then too.
 
 Buildings follow section 6, Step 0 (the kernel and the `view3d` pane) and reuse its kernel.
 
