@@ -346,7 +346,23 @@ export class AppHost implements Host {
    * there, so Save on a scenario never re-sends a draft main refused. A stale one raises the Keep mine / Take theirs
    * banner; each save says what it saved, and as which version.
    */
-  async saveAll(label?: string, layer: string = this.view().layer): Promise<SaveOutcome[]> {
+  saveAll(label?: string, layer: string = this.view().layer): Promise<SaveOutcome[]> {
+    // Kept until it ends, so a Ctrl+Z pressed meanwhile undoes this save, not the step it is writing (undoLast).
+    const p = this.saveAllNow(label, layer);
+    this.saving.add(p);
+    const done = () => void this.saving.delete(p);
+    p.then(done, done);
+    return p;
+  }
+
+  /** Saves on their way (saveAll): Ctrl+Z and Ctrl+Shift+Z wait for them. */
+  private readonly saving = new Set<Promise<unknown>>();
+
+  private async settleSaves(): Promise<void> {
+    while (this.saving.size) await Promise.allSettled([...this.saving]);
+  }
+
+  private async saveAllNow(label: string | undefined, layer: string): Promise<SaveOutcome[]> {
     const out: SaveOutcome[] = [];
     for (const d of this.dirtyDrafts(layer)) {
       const what = label ?? this.draftLabel(d);
@@ -374,6 +390,7 @@ export class AppHost implements Host {
 
   /** Ctrl+Z: the last unsaved step of this layer first (profiles_parity.md 0.4), else the last saved changeset. */
   async undoLast(): Promise<void> {
+    await this.settleSaves();
     const step = this.drafts.stepBack(this.view().layer);
     if (step) {
       this.toast({ text: `Undone: ${step.label} (not saved yet).`, level: "info", ttl: 2500 });
@@ -389,6 +406,7 @@ export class AppHost implements Host {
   }
 
   async redoLast(): Promise<void> {
+    await this.settleSaves();
     const step = this.drafts.stepForward(this.view().layer);
     if (step) {
       this.toast({ text: `Redone: ${step.label} (not saved yet).`, level: "info", ttl: 2500 });

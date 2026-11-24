@@ -364,3 +364,19 @@ export function download(filename: string, data: Blob): void {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }
+
+/** One direction's stations as railsim's stations_<dir>.csv (I2.1): station, km, arrive_s, depart_s, dwell_s,
+ * scheduled_arrive_s. A name with a comma or a quote is quoted. */
+export function runStationsCsv(run: import("./runs.ts").Run, dir: 1 | -1): string {
+  const d = run.meta.directions.find((x) => x.dir === dir);
+  const q = (s: string) => (/[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s);
+  const n = (v: number | null | undefined, k: number) => (v == null || !Number.isFinite(v) ? "" : v.toFixed(k));
+  const rows = ["station,km,arrive_s,depart_s,dwell_s,scheduled_arrive_s"];
+  for (const s of d?.stations ?? [])
+    rows.push(
+      [q(s.name), n(s.km, 3), n(s.arrive_s, 1), n(s.depart_s, 1), n(s.dwell_s, 1), n(s.scheduled_arrive_s, 1)].join(
+        ",",
+      ),
+    );
+  return `${rows.join("\n")}\n`;
+}

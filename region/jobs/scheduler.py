@@ -647,8 +647,8 @@ class Scheduler:
                         )
                     work.append(("want", up, priority, "upstream", None))
                 elif kind == "ready":
-                    _, rtype, rscope, changed = item
-                    work.extend(self._ready(rtype, rscope, changed))
+                    _, rtype, rscope, changed, *rest = item
+                    work.extend(self._ready(rtype, rscope, changed, rest[0] if rest else None))
                 elif kind == "upfailed":
                     _, utype, uscope, view, text = item
                     self._fail_waiting(ref_job(utype, uscope), view.token() if view else None, text)
@@ -702,7 +702,10 @@ class Scheduler:
                 for ref in plan.missing:
                     utype, uscope = plan.needs[ref]
                     more.append(("upstream", utype, uscope, plan.view, priority, down))
+                more += self._watch_upstreams(con, plan, goal, priority, skip=set(plan.missing))
                 return {"key": None, "state": "queued", "job": jid}, more
+
+            more += self._watch_upstreams(con, plan, goal, priority)
 
             key = plan.key
             res = con.execute("SELECT status, output_hash FROM result WHERE key = ?", (key,)).fetchone()
@@ -720,7 +723,7 @@ class Scheduler:
                         r = con.execute("SELECT output_hash FROM result WHERE key = ?", (prev,)).fetchone()
                         prev_hash = r[0] if r else None
                     self._result_event(t, s, v, key, "ok", prev)
-                    more.append(("ready", t, s, prev_hash != res["output_hash"]))
+                    more.append(("ready", t, s, prev_hash != res["output_hash"], {v}))
                 return {"key": key, "state": "hit", "job": None}, more
 
             active = con.execute(
@@ -760,6 +763,41 @@ class Scheduler:
             goals.set_state(con, t, s, v, want_key=key, state="queued", error=None)
         self._wake.set()
         return {"key": key, "state": "queued", "job": jid}, more
+
+    def _watch_upstreams(
+        self,
+        con: Any,
+        plan: Plan,
+        goal: dict[str, Any],
+        priority: int,
+        *,
+        skip: set[str] | frozenset[str] = frozenset(),
+    ) -> list[tuple]:
+        """``upstream`` items for the needs of a watched goal whose own goal is not watched as long. A watched goal is
+        re-planned when a ref its own result read changes, or when a watched upstream's output changes (``_ready``);
+        a chain that was computed before (for another view, by a submit) has no upstream goals, so without this an
+        edit of an upstream's records would never reach the watched goal. An upstream already watched keeps its own
+        priority (the pane in focus watches the rail at 0, the run at 2)."""
+        if not goal.get("watch"):
+            return []
+        token = plan.view.token()
+        expires = goal.get("expires")
+        down = (plan.type, plan.scope, token)
+        out: list[tuple] = []
+        for ref, (utype, uscope) in plan.needs.items():
+            if ref in skip:
+                continue
+            ug = goals.get(con, utype, uscope, token)
+            if ug is not None and ug["watch"]:
+                if ug["expires"] is not None and (expires is None or ug["expires"] < expires):
+                    # watched for less long: kept as long as the goal that needs it, its priority as it is
+                    con.execute(
+                        "UPDATE goal SET expires = ?, updated = ? WHERE type = ? AND scope = ? AND view = ?",
+                        (expires, now_iso(), utype, uscope, token),
+                    )
+                continue
+            out.append(("upstream", utype, uscope, plan.view, priority, down))
+        return out
 
     def _insert_job(
         self, con: Any, plan: Plan, priority: int, reason: str, *, key: str | None, waiting: str | None = None
@@ -837,22 +875,44 @@ class Scheduler:
                     continue
             self._cancel_row(con, r, "superseded by newer inputs")
 
-    def _ready(self, t: str, s: str, changed: bool) -> list[tuple]:
+    def _ready(self, t: str, s: str, changed: bool, views: set[str] | None = None) -> list[tuple]:
         """Work after a result of ``(t, s)`` became current: plan waiting jobs again, and when its output changed,
-        re-plan the watched goals that depend on it."""
+        re-plan the watched goals that depend on it. ``views``: the views whose goal of ``(t, s)`` changed its
+        output (None: unknown, every view). Keys are by content, so a downstream goal in another view, whose own
+        ``(t, s)`` did not move, keeps its plan: a save in one scenario never re-plans the chains of the others."""
         ref = ref_job(t, s)
         items: list[tuple] = []
         pattern = "%" + json.dumps(ref)[1:-1] + "%"
         rows = self.cache.query(
             "SELECT * FROM job WHERE state = 'queued' AND key IS NULL AND waiting LIKE ?", (pattern,)
         )
-        items += [("replan_job", dict(r)) for r in rows]
+        for r in rows:
+            others = [x for x in (json.loads(r["waiting"]) if r["waiting"] else []) if x != ref]
+            if others and self._still_coming(others, r["view"]):
+                continue  # the last of its upstreams to land plans it (once, not once per upstream)
+            items.append(("replan_job", dict(r)))
         if changed:
             keys = {r[0] for r in self.cache.query("SELECT DISTINCT key FROM result_dep WHERE ref = ?", (ref,))}
             with self._lock, self.cache.tx() as con:
                 found = goals.watched(con, keys=keys) if keys else []
+            if views is not None:
+                found = [g for g in found if g["view"] in views]
             items += [("replan", g, "upstream") for g in found]
         return items
+
+    def _still_coming(self, refs: list[str], view: str) -> bool:
+        """Whether any of these ``job:`` refs is still being worked on in ``view`` (its goal queued, running or
+        waiting). A ref with no goal, or a goal done or failed, is not (its failure fails the waiting job)."""
+        with self._lock, self.cache.tx() as con:
+            for ref in refs:
+                kind, rest = parse_ref(ref)
+                if kind != "job" or "/" not in rest:
+                    continue
+                utype, uscope = rest.split("/", 1)
+                g = goals.get(con, utype, uscope, view)
+                if g is not None and g["state"] in ("queued", "running", "waiting"):
+                    return True
+        return False
 
     def _fail_waiting(self, ref: str, view: str | None, text: str) -> None:
         pattern = "%" + json.dumps(ref)[1:-1] + "%"
@@ -894,13 +954,19 @@ class Scheduler:
             except Exception:
                 log.exception("the job dispatcher failed; it carries on")
 
+    PANE_PRIORITY = 1
+    """Jobs at this priority or more urgent (0 the pane in focus, 1 an open pane) may take a host's last free slot;
+    the others (a sheet's run chain at 2 and 3, background goals at 5 and up) leave it free, so the panes' rail
+    never waits behind them (a host with one slot is not held back)."""
+
     def _pick(self) -> dict[str, Any] | None:
         rows = self.cache.query("SELECT * FROM job WHERE state = 'queued' AND key IS NOT NULL ORDER BY priority, id")
         for r in rows:
             host = self.hosts.get(r["host"])
             if host is None:
                 continue
-            if host.free() > 0:
+            keep = 1 if int(r["priority"]) > self.PANE_PRIORITY and getattr(host, "capacity", 1) > 1 else 0
+            if host.free() > keep:
                 return dict(r)
         return None
 
@@ -948,7 +1014,8 @@ class Scheduler:
             cur = self._row(jid)
             if cur is None or cur["state"] != "queued" or cur["key"] != pick["key"]:
                 return True
-            if host.free() <= 0:
+            keep = 1 if int(pick["priority"]) > self.PANE_PRIORITY and getattr(host, "capacity", 1) > 1 else 0
+            if host.free() <= keep:
                 return False
             t = now_s()
             with self.cache.tx() as con:
@@ -1309,11 +1376,14 @@ class Scheduler:
                     self._log(con, jid, "info", f"inputs moved during the run (now {replan.key}); result stored stale")
             if valid:
                 changed_output = False
+                moved_views: set[str] = set()
                 for g, prev, prev_hash in updated:
                     if prev != key:
                         self._result_event(g["type"], g["scope"], g["view"], key, "ok", prev)
-                        changed_output = changed_output or prev_hash != enc.output_hash
-                follow.append(("ready", t, s, changed_output or not updated))
+                        if prev_hash != enc.output_hash:
+                            changed_output = True
+                            moved_views.add(g["view"])
+                follow.append(("ready", t, s, changed_output or not updated, moved_views if updated else None))
             else:
                 follow.append(("want", replan, int(row["priority"]), "stale", jid))
         follow += [("want", p, pr, "stale", None) for p, pr in moved_others]
@@ -1524,16 +1594,26 @@ class Scheduler:
             bulk: set[str] = set()
             by_kind: dict[str, set[str]] = {}
             params = False
+            # the layers written (None when an event does not say): only views that read one of them can change
+            layers: set[str] | None = set()
             for ev in events:
                 data = ev.get("data") or {}
+                counted = False
                 if ev.get("type") == "record":
                     rec_refs.add(f"rec:{data.get('id')}")
                     kinds.add(str(data.get("kind")))
                     by_kind.setdefault(str(data.get("kind")), set()).add(str(data.get("id")))
+                    counted = True
                 elif ev.get("type") == "changeset" and data.get("summary"):
                     bulk.update((data.get("kinds") or {}).keys())
+                    counted = True
+                if counted and layers is not None:
+                    if data.get("layer"):
+                        layers.add(str(data["layer"]))
+                    else:
+                        layers = None
             params = PARAM_KIND in kinds or PARAM_KIND in bulk
-            items = self._affected(rec_refs, kinds, bulk, params, by_kind=by_kind)
+            items = self._affected(rec_refs, kinds, bulk, params, by_kind=by_kind, layers=layers)
             if items:
                 self._drain(items)
             cursor = int(events[-1]["seq"])
@@ -1593,8 +1673,12 @@ class Scheduler:
         params: bool,
         *,
         by_kind: dict[str, set[str]] | None = None,
+        layers: set[str] | None = None,
     ) -> list[tuple]:
-        """The watched goals whose wanted or latest key depends on any changed ref, as ``replan`` items."""
+        """The watched goals whose wanted or latest key depends on any changed ref, as ``replan`` items. With
+        ``layers`` (the layers the changes were written in), only the goals of views whose layer chain holds one of
+        them: results are keyed by content, so scenarios holding the same records share keys, and a write in one
+        scenario cannot change what another reads."""
         found: set[str] = set()
         ref_list = sorted(refs)
         for i in range(0, len(ref_list), 400):
@@ -1617,7 +1701,25 @@ class Scheduler:
             )
         with self._lock, self.cache.tx() as con:
             hit = goals.watched(con, keys=found, errors=True)
+        if layers is not None:
+            seen: dict[str, bool] = {}
+            hit = [g for g in hit if self._sees(g["view"], layers, seen)]
         return [("replan", g, "invalidated") for g in hit]
+
+    def _sees(self, token: str, layers: set[str], seen: dict[str, bool]) -> bool:
+        """Whether a read in the view ``token`` looks through any of ``layers`` (True when the store cannot say);
+        ``seen`` keeps the answers of one pass."""
+        if token in seen:
+            return seen[token]
+        chain = getattr(self.store, "chain", None)
+        ok = True
+        if callable(chain):
+            try:
+                ok = not layers.isdisjoint(chain(View.parse(token).layer))
+            except Exception:  # noqa: BLE001 - a view the store cannot resolve now: plan it, which says why
+                ok = True
+        seen[token] = ok
+        return ok
 
 
 class _NoPlan:

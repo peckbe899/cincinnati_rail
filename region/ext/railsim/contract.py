@@ -20,7 +20,7 @@ class _Open(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
-class Leg(_Open):
+class RunLeg(_Open):
     run_s: float = Field(description="Seconds from the departure before to this arrival.")
     vmax_kmh: float
     accel_s: float
@@ -29,7 +29,7 @@ class Leg(_Open):
     brake_s: float
 
 
-class StationRow(_Open):
+class RunStation(_Open):
     platform_id: str | None
     name: str
     c_m: float | None = Field(description="Section chainage of the platform centre.")
@@ -39,10 +39,10 @@ class StationRow(_Open):
     depart_s: float
     dwell_s: float
     scheduled_arrive_s: float | None
-    leg: Leg | None
+    leg: RunLeg | None
 
 
-class Direction(_Open):
+class RunDirection(_Open):
     dir: int = Field(description="1 is rising section chainage, -1 falling.")
     label: str
     from_: str = Field(alias="from")
@@ -57,10 +57,10 @@ class Direction(_Open):
     max_kmh: float
     energy_traction_kwh: float
     energy_regen_kwh: float
-    stations: list[StationRow]
+    stations: list[RunStation]
 
 
-class Train(_Open):
+class RunTrain(_Open):
     key: str
     name: str
     cars: int
@@ -71,14 +71,14 @@ class Train(_Open):
     max_kmh: float
 
 
-class Era(_Open):
+class RunEra(_Open):
     name: str | None
     goa: int | None
     years: list[int]
     signalling: str | None
 
 
-class Zone(_Open):
+class RunZone(_Open):
     c0_m: float
     c1_m: float
     kmh: float
@@ -86,7 +86,7 @@ class Zone(_Open):
     rule: str | None
 
 
-class CurveLimit(_Open):
+class RunCurveLimit(_Open):
     c0_m: float
     c1_m: float
     radius_m: float
@@ -94,7 +94,7 @@ class CurveLimit(_Open):
     limit_kmh: float
 
 
-class Grid(_Open):
+class RunGrid(_Open):
     c0: float
     step_m: float
     n: int
@@ -109,20 +109,22 @@ class RunResult(_Open):
     config: str | None
     year: int | None
     year_source: str | None
-    era: Era | None
-    train: Train
+    era: RunEra | None
+    train: RunTrain
     padding: dict[str, float]
-    directions: list[Direction]
+    directions: list[RunDirection]
     round_trip_s: float
     turnback_s: list[float]
-    speed_zones: list[Zone]
-    curves: list[CurveLimit]
-    grid: Grid = Field(description="The section grid of the result's arrays (limit_ms, v_fwd_ms, v_rev_ms, t_fwd_s, t_rev_s).")
+    speed_zones: list[RunZone]
+    curves: list[RunCurveLimit]
+    grid: RunGrid = Field(
+        description="The section grid of the result's arrays (limit_ms, v_fwd_ms, v_rev_ms, t_fwd_s, t_rev_s)."
+    )
     warnings: list[str]
     sources: dict[str, str]
 
 
-class Stop(_Open):
+class RouteStop(_Open):
     platform_id: str | None
     name: str
     c_m: float
@@ -137,7 +139,7 @@ class Stop(_Open):
     reverse: bool = False
 
 
-class Removed(_Open):
+class RouteRemoved(_Open):
     platform_id: str
     name: str
     c_m: float
@@ -154,11 +156,11 @@ class RouteInput(_Open):
     name: str | None
     config: str
     section: dict[str, Any]
-    run_grid: Grid
+    run_grid: RunGrid
     length_m: float
     curves: list[dict[str, Any]]
-    stops: list[Stop]
-    removed: list[Removed]
+    stops: list[RouteStop]
+    removed: list[RouteRemoved]
     restrictions: list[dict[str, Any]]
     sources: dict[str, str]
     warnings: list[str]
@@ -192,6 +194,10 @@ class DraftOut(RunResult):
     types: str = Field(description="draft or saved")
     base: DraftBase
     edit_rev: int | None = None
+    arrays: dict[str, list[float | None]] = Field(
+        description="limit_ms, v_fwd_ms, v_rev_ms, t_fwd_s, t_rev_s on the section grid of grid "
+        "(null where the train never is)."
+    )
 
 
 __all__ = ["DraftIn", "DraftOut", "ROUTE_INPUT", "RUN_RESULT", "RouteInput", "RunResult"]

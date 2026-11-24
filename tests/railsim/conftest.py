@@ -18,6 +18,7 @@ from region.core.protocols import Output
 from region.core.view import View
 
 REPO = paths.repo_root()
+MAIN_VIEW = View()
 RUNTIMES = REPO / "tests" / "baseline" / "runtimes.json"
 BASELINE_ALIGN = REPO / "data" / "profile" / "alignments"
 LINES = REPO / "data" / "profile" / "lines"
@@ -43,17 +44,27 @@ def registry() -> Any:
     return Registry([*PROFILES, *RAILSIM])
 
 
+def registry_with_ground() -> Any:
+    """``registry`` and the terrain feature's ``ground.profile`` (for ``ground.source = region``)."""
+    from region.ext.profiles.jobs import JOB_TYPES as PROFILES
+    from region.ext.railsim.jobs import JOB_TYPES as RAILSIM
+    from region.ext.terrain.jobs import JOB_TYPES as TERRAIN
+    from region.jobs.registry import Registry
+
+    return Registry([*PROFILES, *RAILSIM, *TERRAIN])
+
+
 class Chain:
     """Plan and run ``(type, scope, view)`` and every upstream it needs, in this process (process and thread jobs
     run here too: they are pure). ``results`` holds each output by key; ``runs`` counts the runs by type."""
 
-    def __init__(self, store: Any, engine: Any, *, file_hash: Any = None) -> None:
+    def __init__(self, store: Any, engine: Any, *, file_hash: Any = None, reg: Any = None) -> None:
         from region.jobs.cache import output_hash
         from region.jobs.plan import Planner
 
         self.store = store
         self.engine = engine
-        self.reg = registry()
+        self.reg = reg if reg is not None else registry()
         self.outputs: dict[str, str] = {}
         self.results: dict[str, Output] = {}
         self.runs: dict[str, int] = {}
@@ -108,14 +119,14 @@ def runtimes(stem: str) -> dict[str, Any]:
     return json.loads(RUNTIMES.read_text(encoding="utf-8"))[stem]
 
 
-def route_of(store: Any, route_key: str, view: View = View()) -> dict[str, Any]:
+def route_of(store: Any, route_key: str, view: View = MAIN_VIEW) -> dict[str, Any]:
     from tests.importers.helpers import section_of
 
     sec = section_of(store, route_key)
     return store.get("route", sec["data"]["route"], view)
 
 
-def baseline_profile(store: Any, route_key: str, view: View = View()) -> dict[str, Any]:
+def baseline_profile(store: Any, route_key: str, view: View = MAIN_VIEW) -> dict[str, Any]:
     """The profile record's data for the baseline's own design (``data/profile/alignments/<route>.json``, the doc
     ``tests/baseline/runtimes.json`` was captured on), keyed to the hub's platforms; the access and the other
     record-only members of the current profile are kept."""

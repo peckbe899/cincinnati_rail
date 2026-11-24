@@ -12,7 +12,8 @@ import numpy as np
 import pytest
 
 from region.core.view import View
-from tests.railsim.conftest import REPO, runtimes
+from tests.railsim import parity as P
+from tests.railsim.conftest import runtimes
 
 ROUTE = "Line_6"
 STEM = "cin_line_6"
@@ -34,103 +35,12 @@ class Files:
         raise NotFound(path)
 
 
-@cache
 def legacy_route() -> Any:
-    """railsim's ``build_route`` on the line config, as ``python -m railsim.metro`` builds it (no files written)."""
-    import yaml
-    from railsim import app, metro
-    from railsim.line import build_route
-    from railsim.operations import load_era
-
-    user = yaml.safe_load((REPO / "configs" / "metro" / f"{STEM}.yaml").read_text())
-    era, key, _year = load_era(REPO / user["operations"], None)
-    cfg = app.deep_merge(app.deep_merge(metro.DEFAULTS, era.get("overlay", {})), user)
-    train = app.load_library(metro.SPEC.library)[key].with_load(0.5, "dry")
-    return build_route(
-        cfg,
-        REPO,
-        app.curve_design_from(cfg, train),
-        app.speed_policy_from(cfg, train),
-        app.profile_design_from(cfg),
-        log=lambda *a: None,
-    )
+    return P.legacy_route(STEM)
 
 
 def legacy_route_input(route: Any) -> tuple[dict[str, Any], dict[str, np.ndarray]]:
-    """A RouteInput (``route_input/0``) of railsim's own route: its fit, its rail and structures sampled on the run
-    grid as ``Route.track_data`` samples them, its stations as they stop."""
-    from railsim.metro_profile import STRUCTURE, TUNNEL_STRUCTURES, TYPES
-
-    L = route.length
-    s = np.arange(0.0, L + 2.0, 2.0)
-    s[-1] = L
-    rail = route.profile.elevation_at(s)
-    names = np.array(route.profile.structure)
-    idx = np.clip(np.searchsorted(route.profile.s, s), 0, len(names) - 1)
-    at = names[idx]
-    inverse = {v: i for i, v in enumerate(STRUCTURE[t] for t in TYPES)}
-    tunnel = np.isin(at, list(TUNNEL_STRUCTURES))
-    kind = np.array([inverse.get(n, TYPES.index("cutcover") if t else TYPES.index("atgrade")) for n, t in zip(at, tunnel)])
-    curves = [
-        {
-            "s_ts": c.s_ts,
-            "s_sc": c.s_sc,
-            "s_cs": c.s_cs,
-            "s_st": c.s_st,
-            "c_ts": c.s_ts,
-            "c_st": c.s_st,
-            "radius_m": c.radius,
-            "spiral_m": c.spiral,
-            "cant_m": c.cant,
-            "deflection_rad": c.deflection,
-            "direction": int(c.direction),
-            "tangent_m": c.tangent,
-        }
-        for c in route.horizontal.curves
-    ]
-    stops = [
-        {
-            "platform_id": st.name,
-            "name": st.name,
-            "c_m": st.s,
-            "s_m": st.s,
-            "platform_m": st.platform_length,
-            "class": st.cls,
-            "class_source": "legacy",
-            "psd": st.psd,
-            "dwell_s": st.dwell_override,
-            "terminal": k in (0, len(route.stations) - 1),
-            "reverse": st.reverse,
-        }
-        for k, st in enumerate(route.stations)
-        if st.stop
-    ]
-    meta = {
-        "contract": "route_input/0",
-        "route_id": None,
-        "route_key": ROUTE,
-        "name": route.name,
-        "config": STEM,
-        "section": {"section_id": None, "length_m": L, "step_m": 2.0},
-        "run_grid": {"c0": 0.0, "step_m": 2.0, "n": len(s)},
-        "length_m": L,
-        "proj": {"lat0": route.proj.lat0, "lon0": route.proj.lon0},
-        "curves": curves,
-        "stops": stops,
-        "removed": [],
-        "restrictions": [],
-        "warnings": [],
-        "sources": {"curves": "legacy KMZ fit"},
-    }
-    arrays = {
-        "s_m": s,
-        "c_m": s.copy(),
-        "rail_z_m": rail,
-        "curvature_per_m": np.abs(route.horizontal.curvature(s)),
-        "tunnel": tunnel.astype("u1"),
-        "type": kind.astype("u1"),
-    }
-    return meta, arrays
+    return P.legacy_route_input(route, ROUTE, STEM)
 
 
 @cache
@@ -184,7 +94,9 @@ def test_g1_the_run_reports_era_train_and_legs():
         assert parts == pytest.approx(leg["run_s"], abs=0.5), st["name"]
         assert 0 < leg["vmax_kmh"] <= got["train"]["max_kmh"] + 0.1
     assert sum(s["leg"]["run_s"] for s in fwd["stations"][1:]) == pytest.approx(fwd["running_s"], abs=1e-6)
-    assert got["round_trip_s"] == pytest.approx(sum(d["scheduled_s"] for d in got["directions"]) + sum(got["turnback_s"]))
+    assert got["round_trip_s"] == pytest.approx(
+        sum(d["scheduled_s"] for d in got["directions"]) + sum(got["turnback_s"])
+    )
 
 
 def test_g1_arrays_on_the_section_grid():
@@ -218,7 +130,6 @@ def test_the_adapter_is_deterministic_and_writes_nothing(tmp_path, monkeypatch):
     import railsim.kml as K
     import railsim.line as L
     import railsim.report as R
-
     from region.ext.railsim import adapter
     from region.ext.railsim.legacy import run_settings
 

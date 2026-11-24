@@ -10,7 +10,8 @@
 - the curvature of the fit (``route.horizontal``), spirals included;
 - the stops: the live stations of the section (the stops' platforms less the profile's ``del``, each at its stop's
   point plus the profile's slide, rules ``run.station.removed_leaves_service`` and ``run.station.slide_moves_stop``)
-  in chainage order; a removed terminal stays a stop, as railsim kept it. Forward is rising chainage.
+  in chainage order; a removed terminal stays a stop, as railsim kept it; two live stops of one name within
+  ``TWIN_M`` are one stop, as railsim keeps one. Forward is rising chainage.
 - each stop's dwell class and PSD from the line config (the declared fallback until they are records), the
   platform length from the line config or the ``settings.platform`` param;
 - the fixed restrictions of the line config (none on any Cincinnati Metro line today): by station names, or by km
@@ -30,6 +31,8 @@ CONTRACT = "route_input/0"
 GRID_M = 2.0
 TYPES = ("elevated", "atgrade", "trough", "cutcover", "shield", "deep", "sunk")
 """The structure types of ``section.solve@1``; the ``type`` array holds their index."""
+TWIN_M = 50.0
+"""Two live stops of one name closer than this are one stop on the run (railsim's ``build_route`` rule)."""
 
 
 def _tunnel_types() -> set[str]:
@@ -71,7 +74,12 @@ def stops_of(parts: Mapping[str, Any], s_of_c: np.ndarray, step_m: float) -> tup
         terminal = k in (0, n - 1)
         if r.get("removed") and not terminal:
             removed.append(
-                {"platform_id": r["platform_id"], "name": r["name"], "c_m": float(r["c_m"]), "why": "removed on the profile"}
+                {
+                    "platform_id": r["platform_id"],
+                    "name": r["name"],
+                    "c_m": float(r["c_m"]),
+                    "why": "removed on the profile",
+                }
             )
             continue
         d = dict(defaults)
@@ -80,6 +88,12 @@ def stops_of(parts: Mapping[str, Any], s_of_c: np.ndarray, step_m: float) -> tup
         source = "config" if "class" in (info.get(r["name"]) or {}) else "default"
         if terminal and cls == "standard":
             cls, source = "terminal", "terminal"
+        prev = stops[-1] if stops else None
+        if prev is not None and prev["name"] == r["name"] and abs(float(r["c_m"]) - prev["c_m"]) < TWIN_M:
+            # railsim's build_route keeps one stop of a name within 50 m (a station drawn twice)
+            prev["terminal"] = prev["terminal"] or terminal
+            warnings.append(f"{r['name']} is drawn twice at {prev['c_m']:.0f} m; the run makes one stop there")
+            continue
         plat = _length_of(d, "platform_length")
         stops.append(
             {
@@ -166,8 +180,22 @@ def _restrictions(parts: Mapping[str, Any], stops: list[dict], length: float) ->
             )
     for name in ("operating_zones", "neutral_sections", "supply_zones"):
         if parts.get(name):
-            warnings.append(f"the line config's {name} are not carried on the records yet (I2.4); the run leaves them out")
+            warnings.append(
+                f"the line config's {name} are not carried on the records yet (I2.4); the run leaves them out"
+            )
     return out, warnings
+
+
+def ground_text(info: Mapping[str, Any] | None) -> str:
+    """The ground the structure solve's types were made on, in plain words (``meta.ground_source`` of
+    ``profiles.solve_structure``; None is the line file's ground as it is, the default of ``ground.source``)."""
+    if not info:
+        return "line file"
+    n = int(info.get("filled") or 0)
+    if info.get("source") == "region":
+        text = f"ground model {info.get('year')} ({info.get('timeline') or 'canon'})"
+        return text + (f", {n} samples from the line file" if n else "")
+    return "line file" + (f", {n} samples from the ground model" if n else "")
 
 
 def route_input(
@@ -180,7 +208,8 @@ def route_input(
 
     ``parts``: what the plan read (route, section, stations, the config's station block and restrictions, the
     platform length); ``rail``: ``{c0, step_m, rail_m}`` on the section grid; ``types``: ``type_runs``; ``fit``: the
-    ``route.horizontal`` output as ``{meta, arrays}``."""
+    ``route.horizontal`` output as ``{meta, arrays}``. ``meta.parts`` keeps ``parts``, so a draft (``draft.py``) can
+    lay its own rail, types and stations on the same route."""
     from railsim.horizontal import Curve, HorizontalAlignment
 
     fm, fa = fit["meta"], fit["arrays"]
@@ -224,7 +253,10 @@ def route_input(
                 f"({ends[0]} to {ends[1]})"
             )
         elif terminals[0] != ends[0] or terminals[-1] != ends[1]:
-            warnings.append(f"the line config's service runs {terminals[0]} to {terminals[-1]}; the records' ends are {ends[0]} and {ends[1]}")
+            warnings.append(
+                f"the line config's service runs {terminals[0]} to {terminals[-1]}; "
+                f"the records' ends are {ends[0]} and {ends[1]}"
+            )
     meta = {
         "contract": CONTRACT,
         "route_id": route["id"],
@@ -250,11 +282,13 @@ def route_input(
         "sources": {
             "rail": str(parts.get("rail_source") or "profiles.solve_section"),
             "types": "profiles.solve_structure",
+            "ground": ground_text(parts.get("ground_source")),
             "curves": "fitted to the section path",
             "stations": "records",
             "classes": f"configs/metro/{parts['config']}.yaml",
         },
         "warnings": warnings,
+        "parts": {k: v for k, v in parts.items()},
     }
     arrays = {
         "s_m": s.astype("<f8"),
@@ -267,4 +301,4 @@ def route_input(
     return meta, arrays
 
 
-__all__ = ["CONTRACT", "GRID_M", "TYPES", "route_input", "stops_of", "types_at"]
+__all__ = ["CONTRACT", "GRID_M", "TWIN_M", "TYPES", "ground_text", "route_input", "stops_of", "types_at"]

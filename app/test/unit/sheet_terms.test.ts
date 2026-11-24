@@ -254,6 +254,24 @@ describe("the line sheet in Ben's terms", () => {
     host.dispose();
   });
 
+  it("Ctrl+Z while the save is still on its way undoes the save, not the step being saved", async () => {
+    // On a busy hub the answer to a save can come after Ben's next Ctrl+Z: that Ctrl+Z waits for it, then reverts
+    // the saved changeset, rather than taking the unsaved step back out of a save already written.
+    seed();
+    const { host, cell } = await openSheet(`/w/design?layer=try&sel=profile:${PROF}`);
+    const z = cell("PVI 1 level") as HTMLInputElement;
+    z.focus();
+    z.value = "169";
+    z.dispatchEvent(new Event("input"));
+    z.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    await host.undoLast();
+    const now = hub.resolve("try", "profile", PROF) as Rec;
+    expect(now.version).toBe(3);
+    expect((now.data.pvi as number[][])[0]).toEqual([357, 168.5]);
+    expect(host.dirtyDrafts("try")).toEqual([]);
+    host.dispose();
+  });
+
   it("reads 4+233.8 as a chainage and refuses a bad one in words, without saving", async () => {
     seed();
     const { host, cell, toasts, el } = await openSheet(`/w/design?layer=try&sel=profile:${PROF}`);

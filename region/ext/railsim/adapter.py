@@ -128,7 +128,9 @@ def build(meta: Mapping[str, Any], arrays: Mapping[str, np.ndarray], settings: M
     return {"route": route, "train": train, "driver": driver, "dwell_of": dwell_of, "cfg": cfg}
 
 
-def run_directions(parts: Mapping[str, Any], options: Mapping[str, Any], *, driver: Any = None, route: Any = None) -> list[Any]:
+def run_directions(
+    parts: Mapping[str, Any], options: Mapping[str, Any], *, driver: Any = None, route: Any = None
+) -> list[Any]:
     """Both directions through ``app.run_direction`` (forward is rising chainage), padded (``app.apply_padding``)."""
     from railsim import app
 
@@ -186,15 +188,16 @@ def _passes(trace_s: np.ndarray, values: np.ndarray, at: np.ndarray) -> np.ndarr
     return out
 
 
-def _direction(meta: Mapping[str, Any], dr: Any, d: int, s_of: Callable[[float], float]) -> dict[str, Any]:
+def _direction(dr: Any, d: int, rec_of: Mapping[int, Mapping[str, Any]]) -> dict[str, Any]:
+    """One direction's numbers; ``rec_of`` is the RouteInput stop of each ``StationInfo`` (by ``id``), so a row
+    names its own stop even when another stop has its name."""
     run = dr.run
-    stops = {str(st["name"]): st for st in meta["stops"]}
     total = float(run.arrivals[-1])
     dist = float(dr.stop_s[-1] - dr.stop_s[0])
     moving = float(sum(run.leg_times()))
     rows = []
     for k, st in enumerate(dr.stations):
-        rec = stops.get(st.name) or {}
+        rec = rec_of.get(id(st)) or {}
         leg = None
         if k > 0:
             leg = {"run_s": float(run.arrivals[k] - run.departures[k - 1]), "vmax_kmh": _vmax(dr, k) * KMH}
@@ -289,7 +292,8 @@ def run_route(
         return np.interp(c, c_grid + np.arange(len(c_grid)) * 1e-9, s_grid)
 
     drs = run_directions(parts, options)
-    directions = [_direction(meta, dr, d, lambda x: x) for dr, d in zip(drs, (1, -1), strict=True)]
+    rec_of = {id(info): st for info, st in zip(route.stations, meta["stops"], strict=True)}
+    directions = [_direction(dr, d, rec_of) for dr, d in zip(drs, (1, -1), strict=True)]
     tb = parts["cfg"].get("turnback_min", 0) or 0
     ends = [route.stations[0].name, route.stations[-1].name] if route.stations else ["", ""]
     turns = (
@@ -309,9 +313,7 @@ def run_route(
         s_route = (L - front) if dr.reverse else front
         out_arrays[f"v_{tag}_ms"] = _passes(front, np.asarray(run.v, dtype=float), (L - s10) if dr.reverse else s10)
         out_arrays[f"t_{tag}_s"] = _passes(front, np.asarray(run.t, dtype=float), (L - s10) if dr.reverse else s10)
-        out_arrays[f"trace_{tag}"] = np.column_stack(
-            [run.t, s_to_c(s_route), run.v, run.a]
-        ).astype("<f4")
+        out_arrays[f"trace_{tag}"] = np.column_stack([run.t, s_to_c(s_route), run.v, run.a]).astype("<f4")
     for k in list(out_arrays):
         if out_arrays[k].ndim == 1:
             out_arrays[k] = out_arrays[k].astype("<f8")
@@ -323,7 +325,13 @@ def run_route(
         v = curve_speed(c.radius, c.cant, c.spiral, pol, c.deflection)
         c0, c1 = (float(x) for x in s_to_c(np.array([c.s_ts, c.s_st])))
         policy_curves.append(
-            {"c0_m": c0, "c1_m": c1, "radius_m": c.radius, "spiral_m": c.spiral, "limit_kmh": min(v, pol.line_speed) * KMH}
+            {
+                "c0_m": c0,
+                "c1_m": c1,
+                "radius_m": c.radius,
+                "spiral_m": c.spiral,
+                "limit_kmh": min(v, pol.line_speed) * KMH,
+            }
         )
     out_meta = {
         "contract": RESULT_CONTRACT,
@@ -355,7 +363,10 @@ def run_route(
         "curves": policy_curves,
         "grid": {"c0": 0.0, "step_m": RESULT_STEP_M, "n": n10},
         "warnings": warnings,
-        "sources": {**dict(settings.get("sources") or {}), **{k: v for k, v in (meta.get("sources") or {}).items() if k == "curves"}},
+        "sources": {
+            **dict(settings.get("sources") or {}),
+            **{k: v for k, v in (meta.get("sources") or {}).items() if k in ("curves", "ground")},
+        },
     }
     if out_meta["headway_min"]:
         out_meta["trains_needed"] = math.ceil(out_meta["round_trip_s"] / 60 / float(out_meta["headway_min"]))

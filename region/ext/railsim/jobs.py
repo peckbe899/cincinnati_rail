@@ -187,14 +187,14 @@ class RouteAssemble:
             out = rt.engine.call(VERTICAL, si)
             rail = {"c0": out["grid"]["c0"], "step_m": out["grid"]["step_m"], "rail_m": out["rail_m"]}
             centres = {s["platform_id"]: float(s["c_m"]) for s in si["stations"]}
-            parts["stations"] = [
-                {**s, "c_m": centres.get(s["platform_id"], s["c_m"])} for s in parts["stations"]
-            ]
+            parts["stations"] = [{**s, "c_m": centres.get(s["platform_id"], s["c_m"])} for s in parts["stations"]]
         else:
             up = rt.upstream(inputs["rail"])
             grid = up.meta["grid"]
             rail = {"c0": grid["c0"], "step_m": grid["step_m"], "rail_m": up.arrays["rail_m"]}
-        types = (rt.upstream(inputs["types"]).meta or {}).get("type_runs") or []
+        tmeta = rt.upstream(inputs["types"]).meta or {}
+        types = tmeta.get("type_runs") or []
+        parts["ground_source"] = tmeta.get("ground_source")
         fit = rt.upstream(inputs["fit"])
         rt.progress(0.6, "assemble")
         meta, arrays = route_input(parts, rail, types, {"meta": fit.meta, "arrays": fit.arrays})

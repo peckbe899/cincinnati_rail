@@ -21,6 +21,8 @@ write with ``JobWriteRefused``. ``PlanContext`` and ``hosts.RunContext`` have no
 from __future__ import annotations
 
 import copy
+import threading
+from collections import OrderedDict
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -28,7 +30,7 @@ from typing import Any
 
 from region.core import fsio, paths
 from region.core.errors import EngineUnavailable, Invalid, NotFound
-from region.core.protocols import Store, ref_file, ref_job, ref_param, ref_rec
+from region.core.protocols import Store, parse_ref, ref_file, ref_job, ref_param, ref_rec
 from region.core.view import AXES, View
 
 from . import keys
@@ -47,9 +49,11 @@ _WRITE_METHODS = ("write", "put", "patch", "delete", "revert", "restore", "apply
 class ReadOnlyStore:
     """The only face of the ``Store`` a plan sees: ``get``, ``list``, ``hash_of``, ``legacy`` and ``history`` are
     forwarded; ``write``, ``put``, ``patch``, ``delete``, ``revert``, ``restore`` and ``apply_import`` raise
-    ``JobWriteRefused``. The real store is held in closures, not in an attribute."""
+    ``JobWriteRefused``. The real store is held in closures, not in an attribute. ``_reader`` forwards the store's
+    thread reader when it has one: the param resolver keys its per-write cache on it (``region.ext.rules.params``),
+    and a reader is ``query_only``, so nothing can be written through it."""
 
-    __slots__ = ("get", "list", "hash_of", "legacy", "history")
+    __slots__ = ("get", "list", "hash_of", "legacy", "history", "_reader")
 
     def __init__(self, store: Store) -> None:
         def get(kind: str, id: str, view: View, *, at: int | None = None) -> dict[str, Any]:
@@ -72,6 +76,9 @@ class ReadOnlyStore:
         object.__setattr__(self, "hash_of", hash_of)
         object.__setattr__(self, "legacy", legacy)
         object.__setattr__(self, "history", history)
+        reader = getattr(store, "_reader", None)
+        if callable(reader):
+            object.__setattr__(self, "_reader", reader)
 
     def __setattr__(self, name: str, value: Any) -> None:
         raise JobWriteRefused("a job's store is read-only")
@@ -259,6 +266,10 @@ class Planner:
         params: ParamResolver | None = None,
     ) -> None:
         self.store = ReadOnlyStore(store)
+        self._state = _store_state(store)
+        self._memo: OrderedDict[tuple[str, str, str], tuple[Plan, Any]] = OrderedDict()
+        self._memo_lock = threading.Lock()
+        self._locks: dict[tuple[str, str, str], threading.Lock] = {}
         self.registry = registry
         self.file_hash = file_hash
         self.upstream_output = upstream_output
@@ -266,7 +277,66 @@ class Planner:
         self.params: ParamResolver = params or resolve_param
 
     def plan(self, type_name: str, scope: str, view: View, stack: tuple = ()) -> Plan:
-        """Plan ``type_name`` for ``scope`` in ``view``: run its ``plan`` and compute the key."""
+        """Plan ``type_name`` for ``scope`` in ``view``: run its ``plan`` and compute the key. A complete plan is kept
+        for the upstream reads of later plans (``upstream``, see ``MEMO``)."""
+        with self._lock_of(type_name, scope, view):
+            return self._plan_keep(type_name, scope, view, stack)
+
+    def _lock_of(self, type_name: str, scope: str, view: View) -> threading.Lock:
+        """One lock per ``(type, scope, view)``: two threads planning the same job take turns, so the second reads the
+        first's kept plan in ``upstream`` instead of planning it again at the same time (the scheduler's dispatcher,
+        invalidator and host threads all plan). The jobs form a DAG, so the locks are always taken upstream-ward."""
+        k = (type_name, scope, view.token())
+        with self._memo_lock:
+            lock = self._locks.get(k)
+            if lock is None:
+                lock = self._locks[k] = threading.Lock()
+            return lock
+
+    def _plan_keep(self, type_name: str, scope: str, view: View, stack: tuple) -> Plan:
+        state = self._state() if self._state is not None else None
+        out = self._plan(type_name, scope, view, stack)
+        if state is not None and out.key is not None:
+            with self._memo_lock:
+                k = (out.type, out.scope, view.token())
+                self._memo[k] = (out, state)
+                self._memo.move_to_end(k)
+                while len(self._memo) > MEMO:
+                    self._memo.popitem(last=False)
+        return out
+
+    def _kept(self, type_name: str, scope: str, view: View, state: Any, depth: int = 0) -> Plan | None:
+        """The kept plan of ``(type, scope, view)`` while everything it read is as it was, else None: the store's
+        seq and epoch, the hash of each file it read, the engine build (engine jobs), and for each upstream its kept
+        plan (recursively) with the same key and the output hash this plan saw."""
+        if state is None or depth > 64:
+            return None
+        with self._memo_lock:
+            hit = self._memo.get((type_name, scope, view.token()))
+        if hit is None:
+            return None
+        plan, seen = hit
+        if seen != state:
+            return None
+        if plan.host == "engine":
+            try:
+                if self.engine_info()[0] != plan.engine_build:
+                    return None
+            except Exception:  # noqa: BLE001 - no engine now: plan again, which says so
+                return None
+        for ref, h in plan.deps:
+            kind, rest = parse_ref(ref)
+            if kind == "file":
+                if self.file_hash(paths.resolve(rest)) != h:
+                    return None
+            elif kind == "job":
+                utype, uscope = plan.needs[ref]
+                up = self._kept(utype, uscope, view, state, depth + 1)
+                if up is None or up.key != plan.upstream_keys.get(ref) or self.upstream_output(up.key) != h:
+                    return None
+        return plan
+
+    def _plan(self, type_name: str, scope: str, view: View, stack: tuple = ()) -> Plan:
         jt = self.registry.get(type_name)
         ctx = PlanContext(self, jt, scope, view, stack)
         inputs = jt.plan(ctx, scope)
@@ -308,10 +378,31 @@ class Planner:
         if (type_name, scope) in stack:
             chain = " -> ".join(f"{t}/{s}" for t, s in stack + ((type_name, scope),))
             raise Invalid(f"job dependency cycle: {chain}")
-        up = self.plan(type_name, scope, view, stack)
+        with self._lock_of(type_name, scope, view):
+            up = self._kept(type_name, scope, view, self._state() if self._state is not None else None)
+            if up is None:
+                up = self._plan_keep(type_name, scope, view, stack)
         if up.key is None:
             return None, None
         return up.key, self.upstream_output(up.key)
+
+
+MEMO = 256
+"""How many complete plans the planner keeps for upstream reads (each holds its inputs)."""
+
+
+def _store_state(store: Any) -> Callable[[], Any] | None:
+    """A function giving the store's state as plans see it (its newest seq and its epoch), or None when the store
+    cannot tell (then nothing is kept)."""
+    seq = getattr(store, "last_seq", None)
+    if not callable(seq):
+        return None
+    epoch = getattr(store, "epoch", None)
+
+    def state() -> Any:
+        return (seq(), epoch() if callable(epoch) else None)
+
+    return state
 
 
 def no_engine_info() -> tuple[str, dict[str, Any]]:

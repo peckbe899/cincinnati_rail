@@ -142,6 +142,45 @@ Increment 2 (next, in order; spec section 11):
 - [ ] I2.1 Close the loop: `ground.profile` from `region.ground`, the railsim adapter (`route.assemble`, `railsim.run`,
   `railsim.attribution`), the run-time band and table on the sheet. Gate: edit a Line 6 PVI, see the run time change
   within 10 s, Line 6 within 1 % of `tests/baseline/runtimes.json`.
+  State (24 Nov, built, not ticked: the parity half of the gate waits on Ben's rulings, and the live budget fails
+  on a cold hub, below). Plan
+  `claude/hub_maps/i21_plan.md`. Built: `ground.profile@1` (`region/ext/terrain`, the param `ground.source`, default
+  `line_file` while unregistered, so every profiles output is as it was); `route.horizontal@1`, `route.assemble@1`,
+  `railsim.run@1`, `railsim.attribution@1` and the draft run (`region/ext/railsim`, `POST
+  /x/railsim/sections/{id}/draft`); the run-time band and the Run times card on the sheet. The RouteInput and the run
+  name the ground the structure types were made on. Live proof (24 Nov, a scratch copy of the tree, its own var,
+  Playwright `runtime.spec.ts` on Line 6, five runs in a row on the final code): a bend point drag released to the
+  draft's new trip time on the band in 0.5 to 1.8 s, no draft asked between pointer down and up, Ctrl+Z back to the
+  saved numbers with no new run, Save to the saved run over SSE in 1.6 to 3.0 s and equal to the draft, an idle page
+  makes no requests. Idle server 1.22 to 1.27 % of a CPU, the same as the hub at `0f562c4` beside it on the same
+  container (1.25 to 1.33 %; 0.75 to 0.98 % was measured for I2.0 on a quieter machine).
+  Fixed at integration, each with a test that failed first: a save in one scenario re-planned the run chains of every
+  other scenario (the saved run took 6 s, then 10, 15, 20 and up to 47 s as scenarios piled up): invalidation now
+  stops at views whose layer chain holds the write, and an upstream result moves only its own view's downstream
+  goals (`tests/jobs/test_invalidate_layers.py`); params resolved through a plan's read-only store skipped the
+  per-write cache, so one structure-solve plan took 2.5 to 2.8 s (now 0.35 s) and a cold chain behind another
+  scenario timed out the crossing lines' solves (`tests/jobs/test_plan_params.py`); a job waiting on several
+  upstreams is planned again once the last lands, not after each (`test_wait_for_all.py`); one slot of each host
+  stays free for the panes' jobs (`test_reserved_slot.py`); the run band no longer takes the station names' top
+  margin on the default layout (`stations.spec.ts` "plot keeps room"); Ctrl+Z pressed while a save is on its way
+  waits for it and reverts it (`sheet_terms.test.ts`).
+  Not passing: `live.spec.ts` (a saved line file in the open sheet under 3 s). It holds once the sheet's run is warm
+  (2.0 to 2.2 s, 45 s after opening, the same as `0f562c4`), but on a fresh hub, while the sheet's first run chain is
+  still being computed, it takes 2.5 to 3.5 s alone and 3.1 to 4.3 s in the full suite (`0f562c4`: 2.0 to 2.2 s).
+  Parity, Line 6 against `runtimes.json` `cin_line_6`, from the records through the whole job chain
+  (`tests/railsim/test_parity.py`): on the baseline's own design (G2, 33 stops) running -0.75 % / -0.95 %, trip
+  -0.55 % / -0.67 % (37.24 against 37.52 min, 51.71 against 52.00 min forward); per station, the worst is 42.2 s at
+  Fort Mitchell forward and Kyles Lane is also over 1 % of the trip (31.2 s), on the hub's own curves only: with the
+  KMZ fit's curves laid on the same RouteInput the worst is 9.1 s, and in the KMZ frame 2.4 s, running +0.01 % /
+  +0.08 % (class geometry D3: the drawn path is up to 13 m off the KMZ near Kyles Lane). On Ben's records in main
+  (G3) running -2.22 % / -2.41 %, trip -2.72 % / -2.84 %, because his saved profile removes Greenlee and Lytle Park
+  (class design D2); with them restored, running -0.52 % / -0.82 %, trip -0.38 % / -0.58 %. All 16 Metro lines are
+  classed with nothing unexplained (`test_every_metro_line_is_explained`). Open, for Ben: (1) which design the 1 % is
+  held on (his records cannot meet it while the baseline predates his two removals; or refresh the capture on his
+  design); (2) the per-station tolerance (plan: 1 % of the trip, not 1 % of the station's own arrival); (3) whether
+  the hub's curves may stay fitted to the drawn path until 2.1.14 (Line 1 is -5.2 % on them, +0.6 % on the KMZ's);
+  (4) register `ground.source`, `ground.sample_window_m` and the `railsim.*` params and `run.*` rule ids of plan
+  section 5.
 - [ ] I2.2 Engine ports: `reframeDoc`, `defaultAlign`, the level solver rewritten, the structure solver from the
   registry with rule ids, flags as data; zero unexplained differences on the 16 Metro routes.
 - [ ] I2.3 Review-queue actions in the app (resolve, rebase, promote); the three params the

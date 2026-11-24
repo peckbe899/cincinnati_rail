@@ -63,6 +63,8 @@ export interface PanelCtx {
   rail: number | null;
   ground: number | null;
   groundDem: number | null;
+  /** Which ground the section's input carried (the hub's X-CR-Ground: "line_file", "region", ...), when known. */
+  groundSource?: string | null;
   gradeIn: number | null;
   gradeOut: number | null;
   side: { now: "side" | "island"; was: "side" | "island"; source: string };
@@ -142,6 +144,35 @@ export function fieldSource(
   if (changed) return { text: "Ben, not saved", rule, changed, was };
   if (was !== undefined && was !== false) return { text: byWord(savedBy), rule, changed, was };
   return { text: rule ? "rule" : "not set", rule, changed, was };
+}
+
+/** The ground row's source in plain words (I2.1, the param ground.source): the line file's survey, the ground model
+ * at the view's year and timeline, the survey while the model is still being sampled, or the survey with its gaps
+ * from the model. ``finished`` when the Deck's re-grades or the drawn ground change it at that point. */
+export function groundSourceText(source: string | null | undefined, finished: boolean): Source {
+  const survey = "The line file's survey (the map 3 ground the profiles were drawn on)";
+  const model =
+    "The ground model at the view's year and timeline: the 1912 ground with each work built by then (region.ground)";
+  const fin = "; the Deck's street re-grades and the drawn ground change it here";
+  switch (source) {
+    case "region":
+      return {
+        text: finished ? "finished ground, ground model" : "ground model",
+        title: model + (finished ? fin : ""),
+      };
+    case "line_file (region pending)":
+      return {
+        text: finished ? "finished ground (ground model pending)" : "survey (ground model pending)",
+        title: `${survey}, until the ground model for this view is ready${finished ? fin : ""}`,
+      };
+    case "line_file (gaps from region)":
+      return {
+        text: finished ? "finished ground, gaps from ground model" : "survey, gaps from ground model",
+        title: `${survey}, with the samples it lacks from the ground model${finished ? fin : ""}`,
+      };
+    default:
+      return { text: finished ? "finished ground" : "survey", title: survey + (finished ? fin : "") };
+  }
 }
 
 /** Build the panel for one station. Returns the element; the pane puts it in place of the old card. */
@@ -436,7 +467,7 @@ export function buildPanel(c: PanelCtx): HTMLElement {
     lv,
     "Ground at centre",
     `${fmtZ(c.ground, u, 2)} ${ul}${fill ? ` (${(c.ground as number) > (c.groundDem as number) ? "fill" : "cut"} ${fmtZ(Math.abs((c.ground as number) - (c.groundDem as number)), u)})` : ""}`,
-    { text: fill ? "finished ground" : "survey" },
+    groundSourceText(c.groundSource, fill),
     "ground",
   );
   const gIn = f?.grade_in_permille ?? c.gradeIn;

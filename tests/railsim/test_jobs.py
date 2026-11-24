@@ -240,3 +240,44 @@ def test_attribution_on_line_6(pool):
             assert z["reason"]
         assert d["tunnel_drag_s"] > 0
         assert d["grades_s"] != 0
+
+
+def test_the_route_input_names_its_ground(pool, write_root):
+    """The ground reaches the run only through the structure solve's types (plan 2.7, D11). At ``line_file`` (the
+    default) the RouteInput and the run say so; with ``ground.source = region`` in a scenario the chain runs
+    ``ground.profile`` upstream of ``profiles.solve_structure``, and the RouteInput and the run name the ground
+    model with its year and timeline. Line 2b is short, so the ground is sampled quickly."""
+    from tests.railsim.conftest import registry_with_ground
+
+    store = fresh_copy(write_root)
+    try:
+        store.create_layer("try", tier="scenario", parent="main", by="ben")
+        view = View(layer="try")
+        rid = route_of(store, "Line_2b", view)["id"]
+        sid = section_of(store, "Line_2b")["id"]
+        ch = Chain(store, pool, reg=registry_with_ground())
+        _, a_line = ch.compute("route.assemble", rid, view)
+        _, r_line = ch.compute("railsim.run", rid, view)
+        assert a_line.meta["sources"]["ground"] == "line file"
+        assert r_line.meta["sources"]["ground"] == "line file"
+        assert ch.runs.get("ground.profile") is None
+        store.put(
+            {
+                "kind": "param",
+                "id": None,
+                "data": {"path": "ground.source", "value": "region", "unit": "enum", "scope": None, "years": None},
+                "geom": None,
+            },
+            view,
+            if_match=None,
+            by="ben",
+        )
+        p, a_region = ch.compute("route.assemble", rid, view)
+        _, r_region = ch.compute("railsim.run", rid, view)
+        assert ch.runs.get("ground.profile", 0) >= 1  # its own, and a crossing line's drawn on a design
+        st = ch.plan("profiles.solve_structure", sid, view)
+        assert f"job:ground.profile/{sid}" in st.upstream_keys
+        assert a_region.meta["sources"]["ground"] == "ground model 2026 (canon)"
+        assert r_region.meta["sources"]["ground"] == "ground model 2026 (canon)"
+    finally:
+        store.close()

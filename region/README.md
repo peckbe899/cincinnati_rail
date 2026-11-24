@@ -282,6 +282,26 @@ It is never written to the profile; it becomes the design only when the line is 
 older stop points (Line 2b) is solved, and read by the lines crossing it, mapped onto the current stops, as the old
 page read it; its rail result is still the profile as saved.
 
+### Run times on the line sheet
+
+Under the structure strip the sheet draws the **run times** of the line's route (railsim, run by the hub): the speed
+each way against the posted limit, the run time of each leg, and in the header the trip time each way, the era and
+the train. The **Run times** card under the line panel has the station table both ways (run, dwell, arrive, depart,
+scheduled, top speed), the totals, the round trip, "Where the time goes" (folded; it asks the hub for the cost of
+each restriction only while it is open), the sources in plain words, and Export CSV.
+
+- While you edit, the sheet runs your **unsaved** edit (a draft run) once your drag is over and the solve has
+  landed: the new times show within a second or two, marked "draft", with the change against the saved run. Nothing
+  is run while you drag. Undo back to the saved profile shows the saved run again.
+- When you save, the hub runs the saved records (2 to 3 s on Line 6) and the band takes that run. A change that
+  leaves the rail, the tunnels and the stations as they were (a paint, a note) runs nothing.
+- The run reads only the hub's records and the files in the repo: the line config (`configs\metro`), the eras
+  (`data\operations`) and the trains (`data\rollingstock`). No KMZ, no network, nothing is written.
+- The curves are fitted to the line's drawn path for now (no horizontal alignment of its own yet), so run times
+  differ from railsim's own KMZ runs by the curves: on Line 6 under 1 % on the trip, up to about 40 s at a station.
+- `ground.source` (not registered yet: `line_file`) picks the ground the profiles read: the line file's, or the
+  ground model's (`region`) for the view's year. The station panel's ground row and the run's sources say which.
+
 ## Commands
 
 | Command | What it does |

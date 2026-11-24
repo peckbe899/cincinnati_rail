@@ -18,5 +18,12 @@ padding and turnback) is read from railsim's own files through ``ctx.file`` (``l
 in the key. No job reads a KMZ, a DEM or the network, and none writes: ``run`` returns outputs only.
 
 ``draft.py`` runs an unsaved edit of the line sheet in a worker of its own (``POST /x/railsim/sections/{id}/draft``,
-``router.py``), so a draft never takes the scheduler's process slots.
+``router.py``), so a draft never takes the scheduler's process slots; ``GET /x/railsim/routes/{id}/input`` reads the
+warm RouteInput. ``contract.py`` holds the pydantic models of ``route_input/0``, ``run_result/0`` and the draft
+route (the router's response models, so ``openapi.json`` and the app's generated types carry them); ``sources.py``
+lists the declared fallback files for doctor.
+
+Parity with ``tests/baseline/runtimes.json`` is in ``tests/railsim``: ``test_adapter.py`` (railsim's own route
+through the adapter gives the baseline exactly), ``test_parity.py`` (Line 6 within 1 % from the records, and every
+Metro line's difference classed) and ``parity.py`` (the decomposition).
 """

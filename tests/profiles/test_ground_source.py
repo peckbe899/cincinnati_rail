@@ -233,6 +233,11 @@ class _FakeJobs:
     def __init__(self, outputs: dict[tuple[str, str], Output]) -> None:
         self.outputs = outputs
         self.asked: list[tuple[str, str, str]] = []
+        self.submitted: list[tuple[str, str, str, int]] = []
+
+    def submit(self, type: str, scope: str, view: View, priority: int = 5) -> dict[str, Any]:
+        self.submitted.append((type, scope, view.token(), int(priority)))
+        return {"key": "k", "state": "queued", "job": "j"}
 
     def result(self, type: str, scope: str, view: View) -> str | None:
         self.asked.append((type, scope, view.token()))
@@ -297,3 +302,85 @@ def test_the_router_answers_with_the_source_it_used(region_store):
     # main is untouched by the scenario's choice
     m = c.get(f"/x/profiles/sections/{sid}/stations", params={"layer": "main"})
     assert m.headers["x-cr-ground"] == "line_file" and m.json() == station_input(StoreReads(store, MAIN), sid)
+
+
+def test_a_pending_region_ground_is_asked_for(region_store):
+    """While the region ground is pending the router asks the hub for it once per read (``submit`` at priority 2,
+    behind the sheet's rail at 0 and 1; one active job per key, so asking again queues nothing new), and the sheet
+    re-reads on its ``result`` event. At ``line_file`` nothing is asked: the region ground is not read at all."""
+    store = region_store
+    sid = section_of(store, "Line_6")["id"]
+    jobs = _FakeJobs({})
+    c = _client(store, jobs)
+    for path in ("input", "stations", "solve"):
+        r = c.get(f"/x/profiles/sections/{sid}/{path}", params={"layer": "try"})
+        assert r.status_code == 200 and r.headers["x-cr-ground"] == "line_file (region pending)", path
+    assert jobs.submitted == [("ground.profile", sid, TRY.token(), 2)] * 3
+    jobs.submitted.clear()
+    for path in ("input", "stations", "solve"):
+        assert c.get(f"/x/profiles/sections/{sid}/{path}", params={"layer": "main"}).headers["x-cr-ground"] == (
+            "line_file"
+        )
+    assert jobs.submitted == [] and all(a[2] != MAIN.token() for a in jobs.asked)
+
+
+# --------------------------------------------------------------------------------------- the real scheduler
+
+
+def test_through_the_scheduler_at_region(region_store, pool, write_root):
+    """The hub's loop without the server: at ``region`` in scenario try, the sheet's first read answers pending and
+    asks for ``ground.profile`` (a process job), which arrives; the whole solve needs it upstream and finds it
+    done. The router then answers with the region ground (``X-CR-Ground: region``), read from the scheduler's own
+    ``result``. A PVI edit makes a new solve key but leaves the ground's key as it was (the ground reads the section
+    record and the ground files only), so the ground is not sampled again. Main stays at the line file."""
+    from region.jobs import Scheduler
+
+    store = region_store
+    sid = section_of(store, "Line_2b")["id"]
+    with Scheduler(store, write_root / "cache" / "cache.db", pool, params=resolve) as sched:
+        c = _client(store, sched)
+        # the sheet reads first: pending, and the router has asked for the ground, which then arrives
+        r = c.get(f"/x/profiles/sections/{sid}/input", params={"layer": "try"})
+        assert r.headers["x-cr-ground"] == "line_file (region pending)"
+        (job,) = [j for j in sched.jobs(active=False) if j["type"] == "ground.profile" and j["scope"] == sid]
+        assert job["priority"] == 2
+        assert sched.wait_job(job["id"], timeout=180)["state"] == "done"
+        assert c.get(f"/x/profiles/sections/{sid}/input", params={"layer": "try"}).headers["x-cr-ground"] == "region"
+        a = sched.submit("profiles.solve_structure", sid, TRY, priority=0)
+        if a["job"]:
+            assert sched.wait_job(a["job"], timeout=180)["state"] == "done"
+        gkey = sched.result("ground.profile", sid, TRY)
+        assert gkey is not None
+        meta = sched.result_meta(gkey)["meta"]
+        assert meta["contract"] == "ground_profile/0" and meta["year"] == 2026
+        skey = sched.result("profiles.solve_structure", sid, TRY)
+        smeta = sched.result_meta(skey)["meta"]
+        assert smeta["ground_source"]["source"] == "region"
+        assert sched.result("ground.profile", sid, MAIN) == gkey  # the same content: one key (a layer is no axis)
+        r = c.get(f"/x/profiles/sections/{sid}/input", params={"layer": "try"})
+        assert r.status_code == 200 and r.headers["x-cr-ground"] == "region"
+        z = sched.read_array(gkey, "ground_m")
+        assert np.allclose(r.json()["ground"]["z_m"], z[: len(r.json()["ground"]["z_m"])])
+        assert c.get(f"/x/profiles/sections/{sid}/input", params={"layer": "main"}).headers["x-cr-ground"] == (
+            "line_file"
+        )
+        # a PVI edit: a new solve, the same ground
+        prof = all_records(store, "profile", TRY, parent=sid)[0]
+        pvi = prof["data"]["pvi"]
+        if pvi:
+            store.patch(
+                "profile",
+                prof["id"],
+                [{"op": "replace", "path": "/data/pvi/0/1", "value": pvi[0][1] + 1.0}],
+                TRY,
+                if_match=f'"{prof["layer"]}:{prof["version"]}"',
+                by="ben",
+            )
+            sched.notify()
+            b = sched.submit("profiles.solve_structure", sid, TRY, priority=0)
+            assert b["key"] != skey
+            if b["job"]:
+                assert sched.wait_job(b["job"], timeout=180)["state"] == "done"
+        assert sched.result("ground.profile", sid, TRY) == gkey
+        runs = sched.cache.query("SELECT key FROM job WHERE type = 'ground.profile' AND scope = ?", (sid,))
+        assert [r["key"] for r in runs] == [gkey]  # sampled once (a crossing line's own solve samples its own)

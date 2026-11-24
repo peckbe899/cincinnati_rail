@@ -21,11 +21,16 @@
 **The ground** (I2.1). ``/input``, ``/stations`` and ``/solve`` carry the ground the param ``ground.source`` names
 (``inputs.ground_source``) and say which in the header ``X-CR-Ground``: ``line_file`` (the line file's ground, as
 before; the default while the param is not registered), ``region`` (the section's ``ground.profile`` result at the
-view's year and timeline, each sample it lacks from the line file), or ``line_file (region pending)`` while the hub
-has no current result for it. The result is asked for as it stands now (``Scheduler.result``: its key from the
-section record and the ground files, no job queued); the jobs that read the ground need it and keep it computed.
+view's year and timeline, each sample it lacks from the line file), ``line_file (gaps from region)`` (the line file's
+ground with the samples it lacks from the region ground; no Metro line file has a gap today), or ``line_file (region
+pending)`` while the hub has no current result for it. The sheet's station panel names the source in its ground
+row. The result is read as it stands now (``Scheduler.result``: its key from the section record and the ground
+files); while it is pending the router asks the hub for it (``Scheduler.submit`` at priority 2, behind the sheet's
+rail), and the sheet reads the input again on the ``ground.profile`` result event. At ``line_file`` (with no gap)
+the region ground is neither read nor asked for.
 
-Both read in the view of the query (``layer``, ``year``, ``month``, ``tl``) and only read. The store is the app's
+Both read in the view of the query (``layer``, ``year``, ``month``, ``tl``) and only read records (a pending region
+ground is the one job they ask for). The store is the app's
 ``request.app.state.store`` (WP2 sets it); params resolve through ``app.state.params`` when the app sets one, else
 ``region.ext.rules.params.resolve``. Errors are ``region.core.errors``, which the app answers as problem JSON.
 """
@@ -45,6 +50,8 @@ from .rails import warm_design, warm_view
 from .solve_input import lay_dem, needs_design, neighbour_view, section_solve_input
 
 GROUND_HEADER = "X-CR-Ground"
+GROUND_PRIORITY = 2
+"""The priority a pending region ground is asked at: behind the sheet's rail (0 focused, 1 open)."""
 
 router = APIRouter(tags=["profiles"])
 
@@ -74,6 +81,21 @@ def _warm_ground(request: Request, ctx: StoreReads, section_id: str) -> dict[str
     return region_ground({"meta": meta, "arrays": {"ground_m": z}})
 
 
+def _ask_ground(request: Request, ctx: StoreReads, section_id: str) -> None:
+    """Ask the hub for the section's ``ground.profile`` in the view (``Scheduler.submit`` at ``GROUND_PRIORITY``),
+    so a pending region ground arrives and the sheet, on its ``result`` event, reads the input again. Asking again
+    while it runs queues nothing new (one active job per key). Best effort: a hub with no scheduler, or one that
+    cannot plan it now, answers with the line file's ground all the same."""
+    jobs = getattr(request.app.state, "jobs", None)
+    submit = getattr(jobs, "submit", None)
+    if not callable(submit):
+        return
+    try:
+        submit(GROUND_JOB, section_id, ctx.view, priority=GROUND_PRIORITY)
+    except Exception:  # noqa: BLE001 - the answer never waits on it
+        return
+
+
 def _ground(request: Request, ctx: StoreReads, section_id: str) -> tuple[dict[str, Any] | None, Any, str]:
     """``(plan, region ground, X-CR-Ground)``: what to lay in (None and None for the line file as it is)."""
     gp = ground_plan(ctx, section_id)
@@ -81,6 +103,7 @@ def _ground(request: Request, ctx: StoreReads, section_id: str) -> tuple[dict[st
         return None, None, "line_file"
     region = _warm_ground(request, ctx, section_id)
     if region is None:
+        _ask_ground(request, ctx, section_id)
         return None, None, "line_file (region pending)"
     return gp, region, "region" if gp["source"] == "region" else "line_file (gaps from region)"
 
@@ -211,6 +234,7 @@ def get_route_doc(route_id: str, request: Request) -> dict[str, Any]:
 
 __all__ = [
     "GROUND_HEADER",
+    "GROUND_PRIORITY",
     "get_design",
     "get_route_doc",
     "get_section_input",

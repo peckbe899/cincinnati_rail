@@ -66,7 +66,7 @@ def attribute(
         stops = [Stop(s, st.name, dw, j) for s, st, dw, j in zip(stop_s, seq, dwell, jumps, strict=True)]
         L = float(td.s[-1])
 
-        def run_on(t: Any) -> float:
+        def run_on(t: Any, stops: list[Any] = stops) -> float:
             return _running(Simulator(train, t, driver).run(stops))
 
         base = run_on(td)
@@ -78,7 +78,13 @@ def attribute(
             lim = td.limit.copy()
             m = (td.s >= a - 1e-6) & (td.s <= b + 1e-6)
             lim[m] = np.maximum(lim[m], line_v)
-            rows.append({**{k: z[k] for k in ("c0_m", "c1_m", "reason", "rule", "kmh")}, "lost_s": base - run_on(replace(td, limit=lim))})
+            rows.append(
+                {
+                    **{k: z[k] for k in ("c0_m", "c1_m", "reason", "rule", "kmh")},
+                    "limit_kmh": z["kmh"],
+                    "lost_s": base - run_on(replace(td, limit=lim)),
+                }
+            )
             done += 1
             progress(done / total, "forward" if not rev else "reverse")
         level = run_on(replace(td, elevation=np.full_like(td.elevation, float(np.mean(td.elevation)))))
