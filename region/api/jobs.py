@@ -41,9 +41,11 @@ def compute(request: Request, body: M.ComputeIn) -> Response:
     writer_of(request)
     jobs = hub_of(request).jobs
     view = parse_view(body.view)
-    out = jobs.submit(body.type, body.scope, view, priority=body.priority)
     if body.watch_s is not None:
-        jobs.watch_goal(body.type, body.scope, view, priority=body.priority, ttl_s=body.watch_s)
+        # the watch plans and wants the job itself: one plan of it, not a submit's and then the watch's
+        out = jobs.watch_goal(body.type, body.scope, view, priority=body.priority, ttl_s=body.watch_s)
+    else:
+        out = jobs.submit(body.type, body.scope, view, priority=body.priority)
     return json_response({"key": out.get("key"), "state": out.get("state"), "job": out.get("job")})
 
 

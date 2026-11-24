@@ -480,8 +480,11 @@ class Scheduler(Protocol):
         """The latest result key for the goal ``(type, scope, view)``, or ``None``."""
         ...
 
-    def watch_goal(self, type: str, scope: str, view: View, priority: int = 5, ttl_s: float | None = None) -> None:
-        """Keep ``(type, scope, view)`` fresh: re-plan it whenever its dependencies change, until ``ttl_s``."""
+    def watch_goal(
+        self, type: str, scope: str, view: View, priority: int = 5, ttl_s: float | None = None
+    ) -> dict[str, Any]:
+        """Keep ``(type, scope, view)`` fresh: re-plan it whenever its dependencies change, until ``ttl_s``. Plans it
+        now and returns what ``submit`` would."""
         ...
 
     def cancel(self, job_id: str) -> None:

@@ -35,7 +35,7 @@ from region.core.protocols import etag as record_etag
 from region.core.view import View
 
 from . import models as M
-from .context import KIND_RE, fingerprint, hub_of, view_of, writer_of
+from .context import KIND_RE, fingerprint, foreground, hub_of, view_of, writer_of
 from .http import etag_matches, json_response, not_modified
 
 router = APIRouter(tags=["records"])
@@ -217,7 +217,8 @@ def list_records(
     }
     if tag:
         kw["tag"] = tag
-    items, nxt = hub.store.list(kind, view, **kw)
+    with foreground(request):
+        items, nxt = hub.store.list(kind, view, **kw)
     keep = _fields(fields)
     if format == "geojson":
         body: dict[str, Any] = {
@@ -250,7 +251,8 @@ def get_record(
     kw: dict[str, Any] = {"at": at}
     if tag:
         kw["tag"] = tag
-    rec = hub.store.get(kind, id, view, **kw)
+    with foreground(request):
+        rec = hub.store.get(kind, id, view, **kw)
     tag_ = record_etag(rec["layer"], rec["version"])
     if etag_matches(request.headers.get("if-none-match"), tag_):
         return not_modified(tag_)
@@ -338,11 +340,12 @@ def create_record(
         return res.records[0]
 
     replayed = False
-    if idempotency_key:
-        fp = fingerprint("create", kind, view.token(), rid, op_body)
-        replayed, rec = hub.idempotency.run(w.client or "", idempotency_key, fp, do)
-    else:
-        rec = do()
+    with foreground(request):
+        if idempotency_key:
+            fp = fingerprint("create", kind, view.token(), rid, op_body)
+            replayed, rec = hub.idempotency.run(w.client or "", idempotency_key, fp, do)
+        else:
+            rec = do()
     headers = {"Location": f"/api/v1/k/{kind}/{rec['id']}?layer={rec['layer']}"}
     if replayed:
         headers["Idempotent-Replayed"] = "true"
@@ -369,7 +372,8 @@ def put_record(
     check_id(id)
     tag = _require_if_match(if_match, f"PUT of {kind} {id}")
     rec = {"kind": kind, "id": id, **_body(body)}
-    return _record_response(hub.store.put(rec, view, if_match=tag, by=w.by, client=w.client))
+    with foreground(request):
+        return _record_response(hub.store.put(rec, view, if_match=tag, by=w.by, client=w.client))
 
 
 @router.patch(
@@ -393,7 +397,8 @@ def patch_record(
     check_id(id)
     tag = _require_if_match(if_match, f"PATCH of {kind} {id}")
     patch = [o.raw() for o in ops]
-    return _record_response(hub.store.patch(kind, id, patch, view, if_match=tag, by=w.by, client=w.client))
+    with foreground(request):
+        return _record_response(hub.store.patch(kind, id, patch, view, if_match=tag, by=w.by, client=w.client))
 
 
 @router.delete(
@@ -414,7 +419,8 @@ def delete_record(
     check_kind(request, kind)
     check_id(id)
     tag = _require_if_match(if_match, f"DELETE of {kind} {id}")
-    return _record_response(hub.store.delete(kind, id, view, if_match=tag, by=w.by, client=w.client))
+    with foreground(request):
+        return _record_response(hub.store.delete(kind, id, view, if_match=tag, by=w.by, client=w.client))
 
 
 @router.post(
@@ -436,7 +442,8 @@ def restore(
     check_kind(request, kind)
     check_id(id)
     tag = _require_if_match(if_match, f"restore of {kind} {id}")
-    return _record_response(hub.store.restore(kind, id, version, view, if_match=tag, by=w.by, client=w.client))
+    with foreground(request):
+        return _record_response(hub.store.restore(kind, id, version, view, if_match=tag, by=w.by, client=w.client))
 
 
 __all__ = ["UnsupportedMediaType", "check_id", "check_kind", "router"]

@@ -163,8 +163,11 @@ test("second context updates within 1 s", async ({ page, browser, request }) => 
   await typeLevel(page, z.toFixed(3));
   await page.keyboard.press("Enter");
   const t0 = Date.now();
-  // The other tab's table shows the saved level (formatted its own way) within a second of the save.
-  await expect.poll(async () => Number(await firstPviLevel(other).inputValue()), { timeout: 1000 }).toBeCloseTo(z, 3);
+  // The other tab's table shows the saved level (formatted its own way) within a second of the save. It is looked at
+  // every 25 ms: at the poll's default steps (0, 0.1, 0.35 and 0.85 s) a level shown at 0.9 s failed the 1 s budget.
+  await expect
+    .poll(async () => Number(await firstPviLevel(other).inputValue()), { timeout: 1000, intervals: [25] })
+    .toBeCloseTo(z, 3);
   expect(Date.now() - t0).toBeLessThan(1000);
   await other.context().close();
 });

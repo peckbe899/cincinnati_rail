@@ -83,6 +83,7 @@ describe("plugin registry", () => {
       "paint-preview",
       "frame",
       "structure-strip",
+      "runtime",
       "chainage",
       "chronology-strip",
       "overview",

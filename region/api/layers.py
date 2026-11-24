@@ -8,7 +8,7 @@ from fastapi.responses import Response
 
 from . import models as M
 from .changesets import write_result
-from .context import hub_of, writer_of
+from .context import foreground, hub_of, writer_of
 from .http import json_response
 
 router = APIRouter(tags=["layers"])
@@ -38,7 +38,8 @@ def get_layer(request: Request, slug: str) -> Response:
 def promote(request: Request, slug: str, body: M.PromoteIn | None = None) -> Response:
     """Write the layer's revisions to its parent as one changeset; 409 lists every record changed there since."""
     w = writer_of(request)
-    res = hub_of(request).store.promote(slug, by=w.by, message=(body.message if body else ""), client=w.client)
+    with foreground(request):
+        res = hub_of(request).store.promote(slug, by=w.by, message=(body.message if body else ""), client=w.client)
     return json_response(write_result(res))
 
 
@@ -87,7 +88,8 @@ def resolve(request: Request, id: str, body: M.ResolveIn) -> Response:
     """Take ``ours``, ``theirs`` or a ``merged`` body."""
     w = writer_of(request)
     merged = body.body.model_dump(exclude_unset=True) if body.body is not None else None
-    return json_response(hub_of(request).store.resolve_conflict(id, body.take, merged, by=w.by))
+    with foreground(request):
+        return json_response(hub_of(request).store.resolve_conflict(id, body.take, merged, by=w.by))
 
 
 __all__ = ["router"]

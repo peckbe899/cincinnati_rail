@@ -213,4 +213,26 @@ describe("record cache", () => {
     // A resync invalidates everything.
     expect(cache.apply({ type: "resync", seq: 9, data: { reason: "epoch", seq: 9 } })).toBe(2);
   });
+
+  it("tells a watcher of a new revision once, not of each refetch it starts (a sheet re-solved on both)", async () => {
+    let served = rec("main", 3);
+    const api = { getRecord: async () => served } as unknown as Api;
+    const cache = new RecordCache(api);
+    const main = makeView();
+    cache.set(rec("main", 3), main);
+    const seen: (number | undefined)[] = [];
+    const stop = cache.watch("profile", "P1", main, (r) => seen.push(r.data?.version));
+    expect(seen).toEqual([3]);
+    served = rec("main", 4);
+    const ev = {
+      type: "record",
+      seq: 2,
+      data: { seq: 2, op: "patch", kind: "profile", id: "P1", layer: "main", version: 4, hash: "h", by: "b" },
+    } as unknown as HubEvent;
+    expect(cache.apply(ev)).toBe(1);
+    await new Promise((r) => setTimeout(r, 20));
+    // the refetch's start (still version 3) is not reported; version 4 is, once
+    expect(seen).toEqual([3, 4]);
+    stop();
+  });
 });

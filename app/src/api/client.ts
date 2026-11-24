@@ -84,6 +84,8 @@ export class Api {
   readonly clientId: string;
   private readonly fetchFn: typeof fetch;
   private readonly etags = new Map<string, { etag: string; data: unknown }>();
+  /** The ground source of each section input read, by its URL (``groundSource``). */
+  private readonly grounds = new Map<string, string | null>();
 
   constructor(opts: ApiOptions = {}) {
     this.base = (opts.base ?? "/api/v1").replace(/\/$/, "");
@@ -330,8 +332,19 @@ export class Api {
     return listOf<TierStatus>(r, "tiers");
   }
 
-  sectionInput(sectionId: string, view: View): Promise<import("@cr/engine/contract").SectionInput> {
-    return this.get(`/x/profiles/sections/${encodeURIComponent(sectionId)}/input`, viewQuery(view));
+  async sectionInput(sectionId: string, view: View): Promise<import("@cr/engine/contract").SectionInput> {
+    const path = `/x/profiles/sections/${encodeURIComponent(sectionId)}/input`;
+    const r = await this.send<import("@cr/engine/contract").SectionInput>("GET", path, { query: viewQuery(view) });
+    this.grounds.set(this.url(path, viewQuery(view)), r.headers.get("X-CR-Ground"));
+    return r.data;
+  }
+
+  /** Which ground the section's input carried when last read in this view (the header X-CR-Ground: "line_file",
+   * "region", "line_file (region pending)", "line_file (gaps from region)"); null before a read, or when the hub did
+   * not say. */
+  groundSource(sectionId: string, view: View): string | null {
+    const path = `/x/profiles/sections/${encodeURIComponent(sectionId)}/input`;
+    return this.grounds.get(this.url(path, viewQuery(view))) ?? null;
   }
 
   /** The section's StationInput v0, the input of station.facts@1 (claude/hub_maps/profiles_parity.md 0.2). */
@@ -342,6 +355,30 @@ export class Api {
   /** The section's SectionSolveInput v0, the input of section.solve@1 (claude/hub_maps/engine_port_plan.md, 3). */
   solveInput(sectionId: string, view: View): Promise<import("@cr/engine/contract").SectionSolveInput> {
     return this.get(`/x/profiles/sections/${encodeURIComponent(sectionId)}/solve`, viewQuery(view));
+  }
+
+  /** Run times of the sheet's unsaved edit of a section (POST /x/railsim/sections/{id}/draft, I2.1): the RunResult
+   * of the draft, or ApiError 409 "pending" (the route has no assemble yet) or "superseded" (a newer draft). */
+  async railsimDraft(
+    sectionId: string,
+    view: View,
+    body: { section_input: unknown; type_runs?: unknown[] | null; edit_rev?: number | null },
+    signal?: AbortSignal,
+  ): Promise<import("../plugins/line-sheet/runs.ts").DraftOut> {
+    const path = `/x/railsim/sections/${encodeURIComponent(sectionId)}/draft`;
+    return (
+      await this.send<import("../plugins/line-sheet/runs.ts").DraftOut>("POST", path, {
+        query: viewQuery(view),
+        json: body,
+        cache: false,
+        signal,
+      })
+    ).data;
+  }
+
+  /** The route's warm RouteInput (GET /x/railsim/routes/{id}/input): the run's curves, stops and structures. */
+  railsimInput(routeId: string, view: View): Promise<Record<string, unknown>> {
+    return this.get(`/x/railsim/routes/${encodeURIComponent(routeId)}/input`, viewQuery(view));
   }
 
   /** Best effort: a browser error into the hub's log (never throws). */

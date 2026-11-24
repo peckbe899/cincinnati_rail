@@ -46,11 +46,14 @@ export class RecordCache {
     this.qc.setQueryData(RecordCache.key(rec.kind, rec.id, view), rec);
   }
 
-  /** Follow one record: fn runs now with what is cached and again on every change. */
+  /** Follow one record: fn runs now with what is cached and again on every change of the record or its error. The
+   * refetch an event starts is not a change: a sheet that re-solved on it as well as on the new revision did the
+   * work twice, while another tab's save was to reach its table within a second. */
   watch(kind: string, id: string, view: View, fn: (r: RecordResult) => void): () => void {
     const obs = new QueryObserver<Rec, Error>(this.qc, {
       queryKey: RecordCache.key(kind, id, view),
       queryFn: () => this.api.getRecord(kind, id, view),
+      notifyOnChangeProps: ["data", "error"],
     });
     const unsub = obs.subscribe(fn);
     // subscribe() reports changes only; a record already cached is reported now.

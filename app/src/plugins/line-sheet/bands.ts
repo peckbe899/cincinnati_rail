@@ -27,6 +27,7 @@ import {
   verticalExaggeration,
   worstSeverity,
 } from "./drawing.ts";
+import { runtimeBand } from "./runtime_band.ts";
 import {
   chronologyStripBand,
   contextBand,
@@ -990,6 +991,7 @@ export const BANDS: BandDef[] = [
   paintPreviewBand,
   frameBand,
   structureStripBand,
+  runtimeBand,
   chainageBand,
   chronologyStripBand,
   overviewBand,

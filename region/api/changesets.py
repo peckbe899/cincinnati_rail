@@ -14,7 +14,7 @@ from region.core.protocols import Op
 from region.core.view import View
 
 from . import models as M
-from .context import fingerprint, hub_of, writer_of
+from .context import fingerprint, foreground, hub_of, writer_of
 from .http import json_response
 from .records import check_kind
 
@@ -64,11 +64,12 @@ def post_changeset(
         res = hub.store.write(ops, view, by=w.by, message=cs.message or f"{len(ops)} op(s)", client=w.client)
         return write_result(res)
 
-    if idempotency_key:
-        fp = fingerprint("changeset", cs.model_dump(by_alias=True, exclude_unset=True))
-        _replayed, out = hub.idempotency.run(w.client or "", idempotency_key, fp, do)
-    else:
-        out = do()
+    with foreground(request):
+        if idempotency_key:
+            fp = fingerprint("changeset", cs.model_dump(by_alias=True, exclude_unset=True))
+            _replayed, out = hub.idempotency.run(w.client or "", idempotency_key, fp, do)
+        else:
+            out = do()
     return json_response(out)
 
 
@@ -103,7 +104,8 @@ def get_changeset(request: Request, id: str) -> Response:
 def revert(request: Request, id: str) -> Response:
     hub = hub_of(request)
     w = writer_of(request)
-    return json_response(write_result(hub.store.revert(id, by=w.by, client=w.client)))
+    with foreground(request):
+        return json_response(write_result(hub.store.revert(id, by=w.by, client=w.client)))
 
 
 __all__ = ["router", "write_result"]
