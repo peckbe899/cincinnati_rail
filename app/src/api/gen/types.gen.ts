@@ -301,6 +301,162 @@ export type Diff = {
 };
 
 /**
+ * DraftBase
+ */
+export type DraftBase = {
+    /**
+     * Assemble
+     */
+    assemble: string | null;
+    /**
+     * Run
+     */
+    run: string | null;
+    [key: string]: unknown;
+};
+
+/**
+ * DraftIn
+ *
+ * A draft run: the sheet's SectionInput of its draft, the draft's structure types when it has them, and its edit
+ * revision (echoed).
+ */
+export type DraftIn = {
+    /**
+     * Edit Rev
+     */
+    edit_rev?: number | null;
+    /**
+     * Section Input
+     *
+     * SectionInput v0 of the draft (the sheet's worker input).
+     */
+    section_input: {
+        [key: string]: unknown;
+    };
+    /**
+     * Type Runs
+     *
+     * section.solve@1's type_runs for this edit; absent, the saved structure solve's are used.
+     */
+    type_runs?: Array<Array<unknown>> | null;
+};
+
+/**
+ * DraftOut
+ *
+ * A draft's RunResult and where it came from.
+ */
+export type DraftOut = {
+    /**
+     * Arrays
+     *
+     * limit_ms, v_fwd_ms, v_rev_ms, t_fwd_s, t_rev_s on the section grid of grid (null where the train never is).
+     */
+    arrays: {
+        [key: string]: Array<number | null>;
+    };
+    base: DraftBase;
+    /**
+     * Cached
+     */
+    cached: boolean;
+    /**
+     * Config
+     */
+    config: string | null;
+    /**
+     * Contract
+     *
+     * run_result/0
+     */
+    contract?: string;
+    /**
+     * Curves
+     */
+    curves: Array<RunCurveLimit>;
+    /**
+     * Directions
+     */
+    directions: Array<RunDirection>;
+    /**
+     * Draft
+     */
+    draft?: boolean;
+    /**
+     * Edit Rev
+     */
+    edit_rev?: number | null;
+    era: RunEra | null;
+    /**
+     * The section grid of the result's arrays (limit_ms, v_fwd_ms, v_rev_ms, t_fwd_s, t_rev_s).
+     */
+    grid: RunGrid;
+    /**
+     * Key
+     *
+     * sha256 of the run's code, its files, the year and the draft RouteInput.
+     */
+    key: string;
+    /**
+     * Ms
+     */
+    ms: number;
+    /**
+     * Padding
+     */
+    padding: {
+        [key: string]: number;
+    };
+    /**
+     * Round Trip S
+     */
+    round_trip_s: number;
+    /**
+     * Route Id
+     */
+    route_id: string | null;
+    /**
+     * Route Key
+     */
+    route_key: string | null;
+    /**
+     * Sources
+     */
+    sources: {
+        [key: string]: string;
+    };
+    /**
+     * Speed Zones
+     */
+    speed_zones: Array<RunZone>;
+    train: RunTrain;
+    /**
+     * Turnback S
+     */
+    turnback_s: Array<number>;
+    /**
+     * Types
+     *
+     * draft or saved
+     */
+    types: string;
+    /**
+     * Warnings
+     */
+    warnings: Array<string>;
+    /**
+     * Year
+     */
+    year: number | null;
+    /**
+     * Year Source
+     */
+    year_source: string | null;
+    [key: string]: unknown;
+};
+
+/**
  * FocusIn
  *
  * How urgent a pane's goal is: 0 for the pane in focus, 1 for an open pane, 5 when the pane closed.
@@ -1182,6 +1338,452 @@ export type ResultMeta = {
      * Type
      */
     type: string;
+    [key: string]: unknown;
+};
+
+/**
+ * RouteInput
+ *
+ * ``route_input/0``: one route on the run grid (meta; the arrays ``s_m``, ``c_m``, ``rail_z_m``,
+ * ``curvature_per_m``, ``tunnel``, ``type`` are in the result's arrays, or lists in the input route).
+ */
+export type RouteInput = {
+    /**
+     * Arrays
+     *
+     * The run grid arrays (the input route only).
+     */
+    arrays?: {
+        [key: string]: Array<number>;
+    } | null;
+    /**
+     * Config
+     */
+    config: string;
+    /**
+     * Contract
+     *
+     * route_input/0
+     */
+    contract?: string;
+    /**
+     * Curves
+     */
+    curves: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Length M
+     */
+    length_m: number;
+    /**
+     * Name
+     */
+    name: string | null;
+    /**
+     * Removed
+     */
+    removed: Array<RouteRemoved>;
+    /**
+     * Restrictions
+     */
+    restrictions: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Route Id
+     */
+    route_id: string | null;
+    /**
+     * Route Key
+     */
+    route_key: string | null;
+    run_grid: RunGrid;
+    /**
+     * Section
+     */
+    section: {
+        [key: string]: unknown;
+    };
+    /**
+     * Sources
+     */
+    sources: {
+        [key: string]: string;
+    };
+    /**
+     * Stops
+     */
+    stops: Array<RouteStop>;
+    /**
+     * Warnings
+     */
+    warnings: Array<string>;
+    [key: string]: unknown;
+};
+
+/**
+ * RouteRemoved
+ */
+export type RouteRemoved = {
+    /**
+     * C M
+     */
+    c_m: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Platform Id
+     */
+    platform_id: string;
+    /**
+     * Why
+     */
+    why: string;
+    [key: string]: unknown;
+};
+
+/**
+ * RouteStop
+ */
+export type RouteStop = {
+    /**
+     * C M
+     */
+    c_m: number;
+    /**
+     * Class
+     */
+    class: string;
+    /**
+     * Class Source
+     */
+    class_source: string;
+    /**
+     * Dwell S
+     */
+    dwell_s?: number | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Platform Id
+     */
+    platform_id: string | null;
+    /**
+     * Platform M
+     */
+    platform_m: number;
+    /**
+     * Psd
+     */
+    psd: boolean | null;
+    /**
+     * Removed
+     */
+    removed?: boolean;
+    /**
+     * Reverse
+     */
+    reverse?: boolean;
+    /**
+     * S M
+     */
+    s_m: number;
+    /**
+     * Terminal
+     */
+    terminal: boolean;
+    [key: string]: unknown;
+};
+
+/**
+ * RunCurveLimit
+ */
+export type RunCurveLimit = {
+    /**
+     * C0 M
+     */
+    c0_m: number;
+    /**
+     * C1 M
+     */
+    c1_m: number;
+    /**
+     * Limit Kmh
+     */
+    limit_kmh: number;
+    /**
+     * Radius M
+     */
+    radius_m: number;
+    /**
+     * Spiral M
+     */
+    spiral_m: number;
+    [key: string]: unknown;
+};
+
+/**
+ * RunDirection
+ */
+export type RunDirection = {
+    /**
+     * Average Kmh
+     */
+    average_kmh: number;
+    /**
+     * Dir
+     *
+     * 1 is rising section chainage, -1 falling.
+     */
+    dir: number;
+    /**
+     * Distance M
+     */
+    distance_m: number;
+    /**
+     * Dwell S
+     */
+    dwell_s: number;
+    /**
+     * Energy Regen Kwh
+     */
+    energy_regen_kwh: number;
+    /**
+     * Energy Traction Kwh
+     */
+    energy_traction_kwh: number;
+    /**
+     * From
+     */
+    from: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Max Kmh
+     */
+    max_kmh: number;
+    /**
+     * Running S
+     */
+    running_s: number;
+    /**
+     * Scheduled S
+     */
+    scheduled_s: number | null;
+    /**
+     * Stations
+     */
+    stations: Array<RunStation>;
+    /**
+     * Stops
+     */
+    stops: number;
+    /**
+     * To
+     */
+    to: string;
+    /**
+     * Trip S
+     */
+    trip_s: number;
+    [key: string]: unknown;
+};
+
+/**
+ * RunEra
+ */
+export type RunEra = {
+    /**
+     * Goa
+     */
+    goa: number | null;
+    /**
+     * Name
+     */
+    name: string | null;
+    /**
+     * Signalling
+     */
+    signalling: string | null;
+    /**
+     * Years
+     */
+    years: Array<number>;
+    [key: string]: unknown;
+};
+
+/**
+ * RunGrid
+ */
+export type RunGrid = {
+    /**
+     * C0
+     */
+    c0: number;
+    /**
+     * N
+     */
+    n: number;
+    /**
+     * Step M
+     */
+    step_m: number;
+    [key: string]: unknown;
+};
+
+/**
+ * RunLeg
+ */
+export type RunLeg = {
+    /**
+     * Accel S
+     */
+    accel_s: number;
+    /**
+     * Brake S
+     */
+    brake_s: number;
+    /**
+     * Coast S
+     */
+    coast_s: number;
+    /**
+     * Cruise S
+     */
+    cruise_s: number;
+    /**
+     * Run S
+     *
+     * Seconds from the departure before to this arrival.
+     */
+    run_s: number;
+    /**
+     * Vmax Kmh
+     */
+    vmax_kmh: number;
+    [key: string]: unknown;
+};
+
+/**
+ * RunStation
+ */
+export type RunStation = {
+    /**
+     * Arrive S
+     */
+    arrive_s: number;
+    /**
+     * C M
+     *
+     * Section chainage of the platform centre.
+     */
+    c_m: number | null;
+    /**
+     * Depart S
+     */
+    depart_s: number;
+    /**
+     * Dwell S
+     */
+    dwell_s: number;
+    /**
+     * Km
+     *
+     * Km from the first stop marker of the direction, as railsim reports it.
+     */
+    km: number;
+    leg: RunLeg | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Platform Id
+     */
+    platform_id: string | null;
+    /**
+     * S M
+     *
+     * Run chainage of the platform centre (along the fit).
+     */
+    s_m: number;
+    /**
+     * Scheduled Arrive S
+     */
+    scheduled_arrive_s: number | null;
+    [key: string]: unknown;
+};
+
+/**
+ * RunTrain
+ */
+export type RunTrain = {
+    /**
+     * Cars
+     */
+    cars: number;
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Length M
+     */
+    length_m: number;
+    /**
+     * Load Factor
+     */
+    load_factor: number;
+    /**
+     * Mass T
+     */
+    mass_t: number;
+    /**
+     * Max Kmh
+     */
+    max_kmh: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Rail Condition
+     */
+    rail_condition: string;
+    [key: string]: unknown;
+};
+
+/**
+ * RunZone
+ */
+export type RunZone = {
+    /**
+     * C0 M
+     */
+    c0_m: number;
+    /**
+     * C1 M
+     */
+    c1_m: number;
+    /**
+     * Kmh
+     */
+    kmh: number;
+    /**
+     * Reason
+     */
+    reason: string;
+    /**
+     * Rule
+     */
+    rule: string | null;
     [key: string]: unknown;
 };
 
@@ -3766,3 +4368,63 @@ export type XProfilesGetStationInputResponses = {
 };
 
 export type XProfilesGetStationInputResponse = XProfilesGetStationInputResponses[keyof XProfilesGetStationInputResponses];
+
+export type XRailsimGetRouteInputData = {
+    body?: never;
+    path: {
+        /**
+         * Route Id
+         */
+        route_id: string;
+    };
+    query?: never;
+    url: '/api/v1/x/railsim/routes/{route_id}/input';
+};
+
+export type XRailsimGetRouteInputErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type XRailsimGetRouteInputError = XRailsimGetRouteInputErrors[keyof XRailsimGetRouteInputErrors];
+
+export type XRailsimGetRouteInputResponses = {
+    /**
+     * Successful Response
+     */
+    200: RouteInput;
+};
+
+export type XRailsimGetRouteInputResponse = XRailsimGetRouteInputResponses[keyof XRailsimGetRouteInputResponses];
+
+export type XRailsimPostDraftData = {
+    body: DraftIn;
+    path: {
+        /**
+         * Section Id
+         */
+        section_id: string;
+    };
+    query?: never;
+    url: '/api/v1/x/railsim/sections/{section_id}/draft';
+};
+
+export type XRailsimPostDraftErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type XRailsimPostDraftError = XRailsimPostDraftErrors[keyof XRailsimPostDraftErrors];
+
+export type XRailsimPostDraftResponses = {
+    /**
+     * Successful Response
+     */
+    200: DraftOut;
+};
+
+export type XRailsimPostDraftResponse = XRailsimPostDraftResponses[keyof XRailsimPostDraftResponses];

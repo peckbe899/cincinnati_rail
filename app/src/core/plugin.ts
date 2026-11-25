@@ -174,6 +174,9 @@ export interface BandData {
   tool?: "move" | "paint" | "ground";
   /** A paint being dragged: the stretch and the brush's colour (the old page's paint preview, 2720). */
   paintPreview?: { c0: number; c1: number; colour: string } | null;
+  /** The run times of the section's route (I2.1): the saved run, the draft's, and how the band shows them; null
+   * when the line has no run (the band folds away). */
+  run?: import("../plugins/line-sheet/runs.ts").RunBandData | null;
 }
 
 /** A thing a band drew, as numbers in metres and CSS pixels (claude/hub_maps/profiles_parity.md, check 1). */
@@ -220,6 +223,8 @@ export interface BandDef {
   axis?: "profile" | "strip";
   draw(g: CanvasRenderingContext2D, view: SheetView, data: BandData): void;
   hit?(x: number, y: number): Handle | null;
+  /** A strip band whose height follows what it shows (the run-time band folds away on a line with no run). */
+  heightFor?(data: Pick<BandData, "run">): number;
 }
 
 // --------------------------------------------------------------------------------------------- commands and keys

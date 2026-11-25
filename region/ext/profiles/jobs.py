@@ -22,6 +22,15 @@ input on the baseline's 5 m grid; ``run`` solves it and classes the difference (
 neighbour view of a line (what the lines crossing it read) and the whole solve of a section (``section.solve@1``);
 see their class docs.
 
+**The ground** (I2.1). ``station_facts``, ``solve_structure`` and a ``neighbour`` that solves its own design read the
+ground the param ``ground.source`` names (``inputs.ground_source``): at ``line_file`` (the default while the param is
+not registered) the line file's ``ground_profile``, exactly as before; at ``region`` the ``ground.profile`` result of
+the section at the view's year and timeline (``ctx.need``), which ``run`` lays in (``inputs.lay_ground``,
+``solve_input.lay_dem``), each sample it lacks from the line file. The plan leaves ``ground_from`` in the input for
+that, also at ``line_file`` where the line file has a gap (the region ground fills it); ``meta.ground_source`` then
+says which ground was read and how many samples the other filled. ``solve_section`` and ``golden_diff`` read no
+ground.
+
 Neither copies its scope into its inputs or outputs beyond what it read: the section record (whose content hash
 includes its id) is read first, and a scope that names no section raises ``NotFound``.
 
@@ -38,11 +47,22 @@ from region.core import fsio
 from region.core.protocols import Output
 
 from . import golden as G
-from .inputs import build, gather, params_of, section_input, station_input
+from .inputs import (
+    GROUND_FROM,
+    build,
+    gather,
+    ground_plan,
+    lay_ground,
+    params_of,
+    region_ground,
+    section_input,
+    station_input,
+)
 from .solve_input import (
     design_of,
     fill_levels,
     frame_moved,
+    lay_dem,
     needs_levels,
     neighbour_view,
     section_solve_input,
@@ -134,6 +154,26 @@ def _drawn_on(inputs: dict[str, Any], rt: Any) -> tuple[dict[str, Any], dict[str
     return with_design(si, design), design
 
 
+def _station_ground(inputs: dict[str, Any], rt: Any) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    """A StationInput less ``ground_from``, its section's ground laid in as ``ground.source`` says
+    (``inputs.lay_ground``); and what the output says of its ground, or None when the plan read no region ground."""
+    gp = inputs.get(GROUND_FROM)
+    si = {k: v for k, v in inputs.items() if k != GROUND_FROM}
+    if not gp:
+        return si, None
+    section, info = lay_ground(si["section"], gp, region_ground(rt.upstream(gp["ref"])))
+    return {**si, "section": section}, info
+
+
+def _solve_ground(inputs: dict[str, Any], rt: Any) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    """The SectionSolveInput of ``inputs["input"]`` with its ``dem`` as ``ground.source`` says
+    (``solve_input.lay_dem``), and what the output says of its ground (None as above)."""
+    gp = inputs.get(GROUND_FROM)
+    if not gp:
+        return inputs["input"], None
+    return lay_dem(inputs["input"], gp, region_ground(rt.upstream(gp["ref"])))
+
+
 def pvi_issues(inputs: dict[str, Any]) -> list[dict[str, Any]]:
     """Issues for PVIs the sheet saved off the line (a chainage below 0 or past ``length_m``, 40000 typed for
     4000.0, say) or out of chainage order: the canvas never shows them, so they are listed rather than refused (a
@@ -181,10 +221,13 @@ class StationFacts:
     code_files = CODE_FILES
 
     def plan(self, ctx: Any, scope_id: str) -> dict[str, Any]:
-        return station_input(ctx, scope_id)
+        si = station_input(ctx, scope_id)
+        gp = ground_plan(ctx, scope_id)
+        return si if gp is None else {**si, GROUND_FROM: gp}
 
     def run(self, inputs: dict[str, Any], rt: Any) -> Output:
         rt.progress(0.1, "stations")
+        inputs, ground = _station_ground(inputs, rt)
         out = rt.engine.call(STATION_METHOD, inputs)
         meta = {
             "contract": out["contract"],
@@ -192,6 +235,8 @@ class StationFacts:
             "stations": out["stations"],
             "summary": out["summary"],
         }
+        if ground is not None:
+            meta["ground_source"] = ground
         issues = [
             {"rule": f["rule"], "sev": f["sev"], "c0": f["c0"], "c1": f["c1"], "msg": f["kind"], "data": f["data"]}
             for f in out["flags"]
@@ -310,17 +355,20 @@ class Neighbour:
         view = neighbour_view(ctx, scope_id)
         if view is not None and not frame_moved(ctx, scope_id):
             return {"view": view, "template": None, "input": None}
-        return {
+        out = {
             "view": None,
             "template": neighbour_view(ctx, scope_id, template=True),
             "input": section_solve_input(ctx, scope_id),
         }
+        gp = ground_plan(ctx, scope_id)
+        return out if gp is None else {**out, GROUND_FROM: gp}
 
     def run(self, inputs: dict[str, Any], rt: Any) -> Output:
         if inputs["view"] is not None:
             return Output(meta={"neighbour": inputs["view"]})
         rt.progress(0.1, "levels")
-        out = rt.engine.call(SOLVE_METHOD, inputs["input"])
+        solve_in, _ground = _solve_ground(inputs, rt)
+        out = rt.engine.call(SOLVE_METHOD, solve_in)
         levels = {s["platform_id"]: s["level"] for s in out["stations"]}
         design = design_of(out)
         rt.progress(1.0, "done")
@@ -365,7 +413,9 @@ class SolveStructure:
             other = x.get("other")
             if other and other != scope_id and x["wid"] not in refs:
                 refs[x["wid"]] = ctx.need(NEIGHBOUR_JOB, other)
-        return {"input": inp, "neighbours": refs}
+        gp = ground_plan(ctx, scope_id)
+        out = {"input": inp, "neighbours": refs}
+        return out if gp is None else {**out, GROUND_FROM: gp}
 
     def run(self, inputs: dict[str, Any], rt: Any) -> Output:
         neighbours: dict[str, Any] = {}
@@ -374,7 +424,8 @@ class SolveStructure:
             if view is not None:
                 neighbours[wid] = view
         rt.progress(0.1, "structure")
-        out = rt.engine.call(SOLVE_METHOD, {**inputs["input"], "neighbours": neighbours})
+        solve_in, laid = _solve_ground(inputs, rt)
+        out = rt.engine.call(SOLVE_METHOD, {**solve_in, "neighbours": neighbours})
         ground = out.get("ground") or {}
         arrays = {name: _f8n(out[name]) for name in SOLVED_ARRAYS}
         for layer in ("finished", "surface", "bed"):
@@ -382,6 +433,8 @@ class SolveStructure:
         skip = {"engine_build", "input_hash", *SOLVED_ARRAYS}
         meta = {k: v for k, v in out.items() if k not in skip}
         meta["ground"] = {k: v for k, v in ground.items() if k not in ("finished", "surface", "bed")}
+        if laid is not None:
+            meta["ground_source"] = laid
         issues = [
             {
                 "rule": f["rule"],

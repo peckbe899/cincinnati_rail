@@ -142,6 +142,96 @@ Increment 2 (next, in order; spec section 11):
 - [ ] I2.1 Close the loop: `ground.profile` from `region.ground`, the railsim adapter (`route.assemble`, `railsim.run`,
   `railsim.attribution`), the run-time band and table on the sheet. Gate: edit a Line 6 PVI, see the run time change
   within 10 s, Line 6 within 1 % of `tests/baseline/runtimes.json`.
+  State (24 Nov, built, not ticked: the parity half of the gate waits on Ben's rulings, below). Plan
+  `claude/hub_maps/i21_plan.md`. Built: `ground.profile@1` (`region/ext/terrain`, the param `ground.source`, default
+  `line_file` while unregistered, so every profiles output is as it was); `route.horizontal@1`, `route.assemble@1`,
+  `railsim.run@1`, `railsim.attribution@1` and the draft run (`region/ext/railsim`, `POST
+  /x/railsim/sections/{id}/draft`); the run-time band and the Run times card on the sheet. The RouteInput and the run
+  name the ground the structure types were made on. Live proof (24 Nov, a scratch copy of the tree, its own var,
+  Playwright `runtime.spec.ts` on Line 6, five runs in a row on the final code): a bend point drag released to the
+  draft's new trip time on the band in 0.5 to 1.8 s, no draft asked between pointer down and up, Ctrl+Z back to the
+  saved numbers with no new run, Save to the saved run over SSE in 1.6 to 3.0 s and equal to the draft, an idle page
+  makes no requests. Idle server 1.22 to 1.27 % of a CPU, the same as the hub at `0f562c4` beside it on the same
+  container (1.25 to 1.33 %; 0.75 to 0.98 % was measured for I2.0 on a quieter machine).
+  Fixed at integration, each with a test that failed first: a save in one scenario re-planned the run chains of every
+  other scenario (the saved run took 6 s, then 10, 15, 20 and up to 47 s as scenarios piled up): invalidation now
+  stops at views whose layer chain holds the write, and an upstream result moves only its own view's downstream
+  goals (`tests/jobs/test_invalidate_layers.py`); params resolved through a plan's read-only store skipped the
+  per-write cache, so one structure-solve plan took 2.5 to 2.8 s (now 0.35 s) and a cold chain behind another
+  scenario timed out the crossing lines' solves (`tests/jobs/test_plan_params.py`); a job waiting on several
+  upstreams is planned again once the last lands, not after each (`test_wait_for_all.py`); one slot of each host
+  stays free for the panes' jobs (`test_reserved_slot.py`); the run band no longer takes the station names' top
+  margin on the default layout (`stations.spec.ts` "plot keeps room"); Ctrl+Z pressed while a save is on its way
+  waits for it and reverts it (`sheet_terms.test.ts`).
+  Fixed after integration (24 Nov): `live.spec.ts` (a saved line file in the open sheet under 3 s) failed on a fresh
+  hub, because the sheet's first run chain was planned and run while the file was imported (2.4 to 3.2 s alone,
+  median 2.7 s, 4 of 20 over 3 s; 3.1 s in both full suites). A live import now holds the scheduler's foreground: until
+  it and the invalidator are done, background work (priority 2 and up) neither plans nor starts, and no background job
+  starts while a pane's job (0 or 1) is queued or running; the invalidator and the job commits hand background work to
+  a background planner thread (`Scheduler.foreground`, `Planner.pause`, `tests/jobs/test_foreground.py`,
+  `tests/live/test_foreground.py`). The sheet asks for its run once its first solves have landed
+  (`sheet_runtime_pane.test.ts`). Now 2.03 to 2.56 s alone (median 2.11 s, 20 runs on fresh hubs) and 1.96 and 2.06 s
+  in two full suites, all 50 passing; `0f562c4` on the same container: 1.98 to 2.44 s. `runtime.spec.ts` now looks
+  for the change in either direction, on a bend point with a station between its neighbours, dragged 30 px (release
+  to the draft's trip time 0.8 to 1.5 s, save to the saved run 2.7 to 2.9 s). Open: a 60 px drag at some bend points
+  (Line 6 at 24.5, 26.0, 26.2 and 28.7 km) makes the draft run itself take 9 to 20 s, all of it in railsim's
+  `Simulator.run`; the gate's 10 s is not met for those edits.
+  Review of the foreground (24 Nov, `tests/jobs/test_foreground_bounds.py`, each failing first): the dispatcher no
+  longer picks again a queued job it handed to the background planner (it planned and handed it on in a loop until
+  the planner got to it); a restore that takes the outbox back no longer leaves the background waiting for a seq that
+  may never come; a background plan waits `BACKGROUND_WAIT_S` once in all, not at each step (a plan holding a lock the
+  foreground's own work needs could otherwise wait that long many times over). The sheet asks its run at the latest
+  10 s after it opens the line, so a whole solve that never lands cannot leave it without one
+  (`sheet_runtime_pane.test.ts`). Measured on fresh scratch hubs after these: `live.spec.ts` 2.00 to 2.30 s alone
+  (10 runs, median 2.10 s); `runtime.spec.ts` release to draft 1.38 to 1.45 s, save to saved run 2.72 to 2.87 s
+  (3 runs); five PVI drags with Save on Line 6: draft 0.77 to 1.29 s after release, saved run 2.07 to 2.48 s, no
+  request or job during a drag, each save ran only Line 6's four jobs. Flaky then: `sheet.spec.ts` "second
+  context updates within 1 s" (fixed below), and the 16 ms local solve checks on a hub that has just started (as
+  before I2.1).
+  Fixed (24 Nov): `sheet.spec.ts` "second context updates within 1 s" failed in 2 of 4 full suites on the I2.1 code
+  and in 0 of 4 on `0f562c4` (same container, fresh scratch hubs), so I2.1 brought it in. Measured with request logs,
+  a thread sampler and the other tab's CPU profile, it had two causes. On the hub, both tabs' asks for the new
+  scenario's run (`POST /compute` with a watch) planned the cold chain on request threads, a submit and a watch each,
+  for seconds and right through the save, so the save and the other tab's reads shared the hub with them. In the
+  other tab, the record cache told the sheet of the refetch the save's event started as well as of the new revision,
+  so it re-solved and redrew twice, and its table showed the level 0.4 to 1.0 s after the save. Now a record write
+  (records, changesets, revert, promote, conflict resolve) and a sheet's reads of records and of a section's inputs
+  hold the scheduler's foreground as a live import does (`region.api.context.foreground`); a watch plans its job
+  once and answers as a submit does, and a second ask finds the plan kept while nothing it read has moved
+  (`Planner.plan(reuse=True)`); `RecordCache.watch` reports only a change of the record or its error. The test now
+  looks every 25 ms within its 1 s (at the poll's default steps of 0, 0.1, 0.35 and 0.85 s, a level shown at 0.9 s
+  failed). With the save's work faster, the run band, which took its 110 px only when the run was asked after the
+  whole solve, moved every bar under a drag or click the stations checks had aimed just before ("drags and keys"
+  then failed in 3 of 3 full suites); the band now keeps its room, as "updating", from the moment the line opens
+  (`sheet_runtime_pane.test.ts`). Tests, each failing first: `tests/api/test_foreground_api.py`,
+  `tests/jobs/test_plan_once.py`, `tests/profiles/test_router_foreground.py`, `core.test.ts`,
+  `sheet_runtime_pane.test.ts`. After, on scratch hubs: the other tab shows the level 0.33 to 0.78 s after the save
+  (4 full suites, measured in the page), the test passed in 21 of 22 full suites (8 of 8 since the 25 ms polling,
+  4 of them in the checkout) and 3 of 3 runs of `sheet.spec.ts` alone; "drags and keys" passed in 11 of 11 full
+  suites since the band change; `live.spec.ts` 1.99 to 2.52 s alone (10 runs, median 2.14 s); `runtime.spec.ts` release to draft 1.38
+  to 1.49 s, save to saved run 2.62 to 2.64 s (3 runs); five PVI drags with Save: draft 0.81 to 1.44 s after release,
+  saved run 1.98 to 2.28 s, no request or job during a drag. `stations.spec.ts` "a station with no level is a
+  dashed bar" (check 9) was a race: the dashed bar is the state before the line's whole solve lands its design
+  (S57), and the faster section reads brought that solve in before the test looked (6 of 15 runs alone failed, 1 of
+  15 on `b6df7b0`); the test now holds the whole solve's input while it looks at that state, then checks the drawn
+  default level once the solve is in (15 of 15 alone, 4 of 4 full suites). Still flaky, as before this fix: the
+  16 ms local solve check of a PVI edit (`sheet.spec.ts` alone, alternating fresh hubs: 3 of 8 failed with this fix,
+  3 of 8 on `b6df7b0`), "flags ... a click on a triangle selects its station", and once in 22 suites a 53 ms long
+  task in `speed.spec.ts`'s idle sheet.
+  Parity, Line 6 against `runtimes.json` `cin_line_6`, from the records through the whole job chain
+  (`tests/railsim/test_parity.py`): on the baseline's own design (G2, 33 stops) running -0.75 % / -0.95 %, trip
+  -0.55 % / -0.67 % (37.24 against 37.52 min, 51.71 against 52.00 min forward); per station, the worst is 42.2 s at
+  Fort Mitchell forward and Kyles Lane is also over 1 % of the trip (31.2 s), on the hub's own curves only: with the
+  KMZ fit's curves laid on the same RouteInput the worst is 9.1 s, and in the KMZ frame 2.4 s, running +0.01 % /
+  +0.08 % (class geometry D3: the drawn path is up to 13 m off the KMZ near Kyles Lane). On Ben's records in main
+  (G3) running -2.22 % / -2.41 %, trip -2.72 % / -2.84 %, because his saved profile removes Greenlee and Lytle Park
+  (class design D2); with them restored, running -0.52 % / -0.82 %, trip -0.38 % / -0.58 %. All 16 Metro lines are
+  classed with nothing unexplained (`test_every_metro_line_is_explained`). Open, for Ben: (1) which design the 1 % is
+  held on (his records cannot meet it while the baseline predates his two removals; or refresh the capture on his
+  design); (2) the per-station tolerance (plan: 1 % of the trip, not 1 % of the station's own arrival); (3) whether
+  the hub's curves may stay fitted to the drawn path until 2.1.14 (Line 1 is -5.2 % on them, +0.6 % on the KMZ's);
+  (4) register `ground.source`, `ground.sample_window_m` and the `railsim.*` params and `run.*` rule ids of plan
+  section 5.
 - [ ] I2.2 Engine ports: `reframeDoc`, `defaultAlign`, the level solver rewritten, the structure solver from the
   registry with rule ids, flags as data; zero unexplained differences on the 16 Metro routes.
 - [ ] I2.3 Review-queue actions in the app (resolve, rebase, promote); the three params the

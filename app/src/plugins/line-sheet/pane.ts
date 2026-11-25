@@ -72,6 +72,7 @@ import {
   exportJson,
   exportKmz,
   profileByKey,
+  runStationsCsv,
   stationTypeAt,
 } from "./exports.ts";
 import { buildLinePanel, type CheckRow, type IssueRow, type PaintRowView } from "./linepanel.ts";
@@ -108,6 +109,8 @@ import {
   toFloat64,
 } from "./model.ts";
 import { buildPanel, keepFocus } from "./panel.ts";
+import { type ReadyEdit, type RunBandData, type RunDirs, Runs } from "./runs.ts";
+import { buildRunTable, whereOpen } from "./runtable.ts";
 import { buildSettings, type SettingParam } from "./settings.ts";
 import { issueAt, labelBoxes, levelExtent, resetLabels, type ShowMode, sampleAt, typeAtSample } from "./solved.ts";
 import { StaticLayer, sameKey, staticPrefix } from "./static_layer.ts";
@@ -131,6 +134,11 @@ import {
 } from "./tools.ts";
 
 export const SOLVE_JOB = "profiles.solve_section";
+/** The section's ground from the ground model (I2.1): the sheet reads its input again when it lands. */
+export const GROUND_JOB = "ground.profile";
+/** The sheet asks its run once its first solves have landed, and at the latest this long after it opens the section
+ * (a whole solve that never lands, from a read or a worker that hangs, must not leave the sheet without its run). */
+export const RUN_ASK = { latestMs: 10_000 };
 
 /** Record kinds the section's input is built from: a new revision of one reads the input again. */
 const INPUT_KINDS: ReadonlySet<string> = new Set(["section", "stop", "platform", "ground_profile", "param"]);
@@ -462,7 +470,16 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   linePanel.className = "sheet-line";
   const side = Object.assign(document.createElement("div"), { className: "sheet-side" });
   side.dataset.testid = "sheet-side";
-  side.append(card, linePanel);
+  // the run times of the line's route (I2.1): a card under the line panel, and the band's direction toggle
+  const runPanel = document.createElement("div");
+  runPanel.className = "sheet-line sheet-runs";
+  runPanel.dataset.testid = "sheet-runs";
+  side.append(card, linePanel, runPanel);
+  const runToggle = document.createElement("div");
+  runToggle.className = "run-toggle";
+  runToggle.dataset.testid = "run-toggle";
+  runToggle.hidden = true;
+  canvasWrap.append(runToggle);
   root.append(bar, toolsRow, notice, canvasWrap, side, tables, pop);
   el.append(root);
 
@@ -608,6 +625,175 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   const release = () => {
     if (focused) void host.api.focus(SOLVE_JOB, focused.sectionId, focused.token, 5);
     focused = null;
+  };
+
+  // ---- run times (I2.1, runs.ts): the saved run of the line's route at priority 2 or 3, and a draft run of the
+  // unsaved edit once its whole solve has landed (never between pointer down and up)
+  const RUN_DIRS_KEY = "cr.sheet.runDirs";
+  let runDirs: RunDirs = (() => {
+    try {
+      const d = sessionStorage.getItem(RUN_DIRS_KEY);
+      return d === "fwd" || d === "rev" ? d : "both";
+    } catch {
+      return "both";
+    }
+  })();
+  /** A leg lit from the run table (its direction and its arrival's index). */
+  let runLit: { dir: 1 | -1; k: number } | null = null;
+  let runsTimer: ReturnType<typeof setTimeout> | null = null;
+  const runs = new Runs({
+    api: host.api,
+    onChange: () => {
+      draw();
+      renderRunsSoon();
+    },
+    dragging: () => !!drag && drag.kind !== "pan" && drag.kind !== "overview",
+  });
+  /** The draft of the profile differs from its record (a draft equal to it is never run). */
+  const profileDirty = () => {
+    const k = draftKey();
+    return !!k && host.drafts.dirty(k);
+  };
+  /** The removed stations, for the band's faint lines and the table's grey rows. */
+  const removedStations = () =>
+    (facts ?? []).filter((f) => f.deleted).map((f) => ({ c: f.c_m, name: platformName(f.platform_id) }));
+  /** The generation whose run is due (asked once the first solves land) or being opened: the band keeps its room
+   * meanwhile, as "updating", so the plot never moves 110 px under a click or a drag Ben has started when the run is
+   * asked (and the bars a test read before it are where it clicks). */
+  let runsHeld = -1;
+  const runBand = (): RunBandData | null =>
+    runs.band(runDirs, removedStations(), runLit) ??
+    (runsHeld === generation && target
+      ? {
+          saved: null,
+          draft: null,
+          updating: true,
+          error: null,
+          note: null,
+          dirs: runDirs,
+          removed: removedStations(),
+          lit: runLit,
+        }
+      : null);
+  /** A strip band's height now (the run band folds away on a line with no run). */
+  const stripH = (b: BandDef) => (b.heightFor ? b.heightFor({ run: runBand() }) : b.height);
+  /** Open the run of the line's route in this view (the section's route record names it). */
+  const openRuns = async (gen: number) => {
+    if (!target) return;
+    const sectionId = target.sectionId;
+    try {
+      const sec = await host.records.get("section", sectionId, view);
+      const routeId = (sec.data as { route?: unknown } | undefined)?.route;
+      if (gen !== generation || typeof routeId !== "string") return;
+      runs.open({ sectionId, routeId, view, token: viewToken(view) }, ctx.isActive?.() ?? true);
+      // an edit made before the run was asked: its draft run goes now
+      if (lastReady?.dirty) runs.ready(lastReady);
+    } catch {
+      /* a line with no route has no run: the band folds */
+    } finally {
+      if (runsHeld === gen) {
+        runsHeld = -1;
+        draw();
+      }
+    }
+  };
+  /** The run is asked once the sheet's first solves have landed (the rail's, then the whole solve where the hub
+   * gives its input): what Ben sees first, and a line file he saves meanwhile, never share the hub with the run's
+   * cold chain (the crossing lines, the structure, the fit and the run). */
+  let runsDue = -1;
+  let lastReady: ReadyEdit | null = null;
+  const solveReady = (x: ReadyEdit) => {
+    lastReady = x;
+    runs.ready(x);
+  };
+  const runsNow = (gen: number) => {
+    if (runsDue !== gen || gen !== generation) return;
+    runsDue = -1;
+    void openRuns(gen);
+  };
+  const setRunDirs = (d: RunDirs) => {
+    runDirs = d;
+    try {
+      sessionStorage.setItem(RUN_DIRS_KEY, d);
+    } catch {
+      /* kept for this sheet only */
+    }
+    showRunToggle();
+    draw();
+    renderRuns();
+  };
+  const runToggleBtns = (["both", "fwd", "rev"] as const).map((k) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = k === "both" ? "Both" : k === "fwd" ? "Forward" : "Back";
+    b.dataset.dirs = k;
+    b.onclick = () => setRunDirs(k);
+    return b;
+  });
+  runToggle.append(...runToggleBtns);
+  /** The direction toggle over the band's header, at the right of the plot. */
+  const showRunToggle = (top: number | null = null, right = 0) => {
+    for (const b of runToggleBtns) b.setAttribute("aria-pressed", String(b.dataset.dirs === runDirs));
+    if (top === null) return;
+    runToggle.style.top = `${top + 1}px`;
+    runToggle.style.right = `${right}px`;
+  };
+  const renderRunsSoon = () => {
+    if (runsTimer) return;
+    runsTimer = setTimeout(() => {
+      runsTimer = null;
+      // not while the rail solves or Ben drags: it lays the side panel out (speed); the drag's end draws it
+      if (solving || solveDue || editingDrag()) renderRunsSoon();
+      else renderRuns();
+    }, 60);
+  };
+  const renderRuns = () => {
+    const b = runBand();
+    if (!b) {
+      runPanel.replaceChildren();
+      return;
+    }
+    const st = runs.status();
+    runPanel.replaceChildren(
+      buildRunTable({
+        units: host.units,
+        line: sectionName,
+        saved: runs.saved,
+        draft: runs.draft,
+        updating: st.updating,
+        error: st.error,
+        note: st.note,
+        removed: removedStations(),
+        dirs: runDirs,
+        narrow: (root.clientWidth || 1600) < 1000,
+        attribution: runs.attribution,
+        attributionOpen: whereOpen(),
+        act: {
+          select: (pid, c) => {
+            if (pid && platformRecs.has(pid)) selectStation(pid, true, 1500);
+            else if (c !== null && range) {
+              const span = Math.min(range[1] - range[0], 1500);
+              range = clampRange([c - span / 2, c + span / 2]);
+              setChainage(host.store, c);
+              draw();
+            }
+          },
+          hover: (dir, k) => {
+            runLit = k === null ? null : { dir, k };
+            draw();
+          },
+          dirs: setRunDirs,
+          attribution: (on) => runs.wantAttribution(on),
+          exportCsv: () => {
+            const r = runs.shown();
+            if (!r) return;
+            const stem = (sectionName || "line").replace(/[^A-Za-z0-9]+/g, "_");
+            download(`${stem}_stations_forward.csv`, new Blob([runStationsCsv(r, 1)], { type: "text/csv" }));
+            download(`${stem}_stations_back.csv`, new Blob([runStationsCsv(r, -1)], { type: "text/csv" }));
+          },
+        },
+      }),
+    );
   };
   const showPending = () => {
     const what = target ? liveBoard.pendingFor(target.sectionId, viewToken(view)) : null;
@@ -778,6 +964,8 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
         showSummary();
         fullSoon();
       }
+      // no whole solve on this line (the hub gave no SectionSolveInput): the draft runs on the saved structure
+      if (!ssi) solveReady({ rev: editRev, input: inp, typeRuns: null, dirty: profileDirty() });
       // The panel and tables follow the facts solve that comes next; without one they follow the rail.
       if (!si && tableDue) {
         tableDue = false;
@@ -961,6 +1149,15 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
         if (gen !== generation) return;
         solved = out.result as SolvedSection;
         takeDesign(solved.design);
+        // the whole solve of the current edit: the draft's run times may go (runs.ts waits out the pause and drags)
+        if (rev === editRev && input)
+          solveReady({
+            rev,
+            input: solveInput(input, data(), frame),
+            typeRuns: solved.type_runs as unknown[],
+            dirty: profileDirty(),
+          });
+        runsNow(gen);
         solveInfo.dataset.fullMs = String(performance.now() - t0);
         solveInfo.dataset.fullEngineMs = String(out.ms);
         solveInfo.dataset.fullRev = String(Number(solveInfo.dataset.fullRev ?? 0) + 1);
@@ -971,6 +1168,10 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       });
     } catch (e) {
       solveInfo.dataset.fullError = String((e as Error).message ?? e);
+      // no whole solve for this edit: its run times go on the saved structure (the hub's answer says so)
+      if (gen === generation && rev === editRev && input)
+        solveReady({ rev, input: solveInput(input, data(), frame), typeRuns: null, dirty: profileDirty() });
+      runsNow(gen);
     } finally {
       fullBusy = false;
       if (fullAgain) {
@@ -1196,6 +1397,9 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     checkRows = null;
     checkNote = null;
     linePanel.replaceChildren();
+    runs.close();
+    runLit = null;
+    runPanel.replaceChildren();
     card.hidden = true;
     editable = "Loading…";
     timeNote = null;
@@ -1248,14 +1452,20 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       showChainage();
       if (!range || shownSection !== sectionId) range = [0, input.length_m];
       // the whole solve's input is the heaviest read: it follows on its own, so the rail and facts never wait
+      runsDue = gen;
+      runsHeld = gen;
+      lastReady = null;
+      setTimeout(() => runsNow(gen), RUN_ASK.latestMs);
       void host.api
         .solveInput(sectionId, view)
         .then((x) => {
           if (gen !== generation) return;
           ssi = x;
-          fullSoon();
+          if (ssi) fullSoon();
+          else runsNow(gen);
         })
-        .catch(() => undefined);
+        // no whole solve on this line: the run is asked now
+        .catch(() => runsNow(gen));
       shownSection = sectionId;
       if (popKind === "settings") void loadSettings().then(renderPop);
       if (target.profile) {
@@ -1264,7 +1474,11 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
           if (!r.data || !target || gen !== generation) return;
           const was = target.profile;
           target.profile = r.data;
-          if (was && was.version !== r.data.version) scheduleRefresh();
+          if (was && was.version !== r.data.version) {
+            scheduleRefresh();
+            // a save: the draft's run stays shown until the run of the saved records arrives
+            runs.profileSaved();
+          }
           showProfile();
           refreshTable();
           void solve();
@@ -1735,6 +1949,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     // design's rail, which is 0 m on a line with no design.
     const z = s.level_m === null && f?.rail_m != null ? f.rail_m : stationLevel(s, rail);
     const groundDem = input.ground ? valueAt(input.ground.z_m, input.ground.step_m, s.c_m) : null;
+    const groundSource = host.api.groundSource?.(input.section_id, view) ?? null;
     const point = stopOf(s.platform_id) ?? f?.point_c_m ?? s.c_m;
     const pd = (target?.profile?.data ?? {}) as ProfileData;
     const prec = platformRecs.get(s.platform_id);
@@ -1766,6 +1981,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
         rail: z,
         ground: f?.ground_m ?? groundDem,
         groundDem: f?.ground_dem_m ?? groundDem,
+        groundSource,
         gradeIn: local ? valueAt(local.grade_permille, local.grid.step_m, s.c_m - half - 1) : null,
         gradeOut: local ? valueAt(local.grade_permille, local.grid.step_m, s.c_m + half + 1) : null,
         side: {
@@ -2662,12 +2878,12 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
 
   const sheetView = (w: number, h: number): SheetView => {
     const [c0, c1] = range ?? [0, input?.length_m ?? 1000];
-    const profileH =
-      h -
-      bands()
-        .filter((b) => b.axis === "strip")
-        .reduce((s, b) => s + b.height, 0);
-    const M = margins(w, profileH);
+    const strips = bands().filter((b) => b.axis === "strip");
+    const profileH = h - strips.reduce((s, b) => s + stripH(b), 0);
+    // A band that folds away (the run times) makes the plot shorter, never the station names' room: the short
+    // margins are for a short sheet, decided as if the band were folded.
+    const folding = strips.filter((b) => b.heightFor).reduce((s, b) => s + stripH(b), 0);
+    const M = margins(w, profileH + folding);
     const plot = { x: M.l, y: M.t, w: Math.max(10, w - M.l - M.r), h: Math.max(10, profileH - M.t - M.b) };
     let z0 = Number.POSITIVE_INFINITY;
     let z1 = Number.NEGATIVE_INFINITY;
@@ -2844,6 +3060,10 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     lastView = v;
     showText(texts);
     lastMarks = marks;
+    // the run band's direction toggle sits over its header, at the right of the plot
+    const rb = marks.find((m) => m.kind === "runtime-band") as { y0: number } | undefined;
+    runToggle.hidden = !rb;
+    if (rb) showRunToggle(rb.y0, Math.max(0, w - (v.plot.x + v.plot.w)));
   };
   /** What the last frame on the canvas was drawn from, for the next drag step's regions. */
   let painted: {
@@ -2966,6 +3186,7 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     const marks: SheetMark[] = [];
     const li = input ? localInput(input, data(), frame) : null;
     const bd: BandData = {
+      run: runBand(),
       sectionId: target?.sectionId ?? "",
       input: li,
       // no rail on a line with no design yet (hasDesign): the stations stand at ground - the default depth instead
@@ -3021,8 +3242,9 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     for (const b of list.slice(head)) {
       const t0 = performance.now();
       if (b.axis === "strip") {
-        if (!only || only(b)) b.draw(g, { ...v, top }, bd);
-        top += b.height;
+        const bh = stripH(b);
+        if ((bh > 0 || !b.heightFor) && (!only || only(b))) b.draw(g, { ...v, top }, bd);
+        top += bh;
       } else if (!only || only(b)) {
         b.draw(g, v, bd);
       }
@@ -3049,6 +3271,17 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
     staticLayer.reset();
     paintNow();
   };
+  // and the run times' state (runs.ts), for a test or a script
+  (canvas as HTMLCanvasElement & { runs?: () => unknown }).runs = () => ({
+    ...runs.status(),
+    band: runBand() !== null,
+    posts: runs.posts,
+    readies: runs.readies,
+    saved: runs.saved?.key ?? null,
+    draft: runs.draft?.key ?? null,
+    dirty: profileDirty(),
+    editRev,
+  });
   // and the frame they were drawn in, so a test can turn metres into pixels
   (canvas as HTMLCanvasElement & { frame?: () => unknown }).frame = () =>
     lastView && {
@@ -3564,6 +3797,9 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       return;
     }
     if (key !== draftKey()) return;
+    // the draft changed: a draft run in flight is aborted; back to the record, the saved run shows
+    if (d === null || !host.drafts.dirty(key)) runs.clean();
+    else runs.edited();
     if (paintRows !== null) {
       paintRows = null;
       setTimeout(() => void reviewPaints(), 200);
@@ -3602,10 +3838,14 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   const unsubEvents = host.events.subscribe((m) => {
     if (m.type === "status") {
       // Result events sent while the stream was down are gone (section 5): read the latest result again.
-      if (m.state === "open" && m.reconnected && target) void loadServer();
+      if (m.state === "open" && m.reconnected && target) {
+        void loadServer();
+        runs.reload();
+      }
       return;
     }
     const ev = m.event;
+    if (ev.type === "result" || ev.type === "job") runs.event(ev);
     if (
       ev.type === "result" &&
       target &&
@@ -3614,6 +3854,17 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       ev.data.view === viewToken(view)
     ) {
       if (ev.data.status === "ok") void loadServer(ev.data.key);
+    } else if (
+      ev.type === "result" &&
+      target &&
+      ev.data.type === GROUND_JOB &&
+      ev.data.status === "ok" &&
+      ev.data.scope === target.sectionId &&
+      ev.data.view === viewToken(view) &&
+      (host.api.groundSource?.(target.sectionId, view) ?? "line_file") !== "line_file"
+    ) {
+      // the ground model this line reads (ground.source region), or was waiting for, has landed: read it now
+      void refreshInput();
     } else if (ev.type === "resync") {
       void load();
     } else if (target && ev.type === "source" && (ev.data.sections ?? []).includes(target.sectionId)) {
@@ -3640,10 +3891,12 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
   const unsubLive = liveBoard.subscribe(showPending);
   const active = ctx.onActive?.((on) => {
     if (focused) void host.api.focus(SOLVE_JOB, focused.sectionId, focused.token, on ? 0 : 1);
+    runs.active(on);
   });
   renewTimer = setInterval(
     () => {
       if (focused && target) void requestSolve();
+      runs.renew();
     },
     (WATCH_S / 2) * 1000,
   );
@@ -3680,6 +3933,8 @@ export async function mountSheet(el: HTMLElement, ctx: PaneContext): Promise<Mou
       unsubLive();
       active?.dispose();
       if (renewTimer) clearInterval(renewTimer);
+      if (runsTimer) clearTimeout(runsTimer);
+      runs.close();
       release();
     },
     serialize: () => ({ range, section: shownSection }),

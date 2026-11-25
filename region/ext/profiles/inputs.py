@@ -81,6 +81,15 @@ class StoreReads:
 
         return paths.resolve(uri)
 
+    def axis(self, name: str) -> Any:
+        """The view's value of an axis (``PlanCtx.axis``): ``year``, ``month`` or ``timeline``."""
+        from region.core.errors import Invalid
+        from region.core.view import AXES
+
+        if name not in AXES:
+            raise Invalid(f"{name!r} is not a view axis ({', '.join(AXES)})")
+        return getattr(self.view, name)
+
     def need(self, job_type: str, scope_id: str) -> str:
         """The reference a job's plan names an upstream result by (``PlanCtx.need``); nothing is planned here."""
         from region.core.protocols import ref_job
@@ -161,14 +170,20 @@ def params_of(ctx: Any, section: Mapping[str, Any]) -> dict[str, float]:
 def ground_levels(z_dm: list[int | None]) -> list[float]:
     """Metres from decimetres; a missing level takes the straight line between its nearest neighbours (or the
     nearest one at an end)."""
-    known = [(i, v / 10) for i, v in enumerate(z_dm) if v is not None]
+    return fill_gaps([None if v is None else v / 10 for v in z_dm])
+
+
+def fill_gaps(z: list[float | None]) -> list[float]:
+    """Levels with each missing one on the straight line between its nearest neighbours (or the nearest one at an
+    end); ``[]`` when none is known."""
+    known = [(i, v) for i, v in enumerate(z) if v is not None]
     if not known:
         return []
     out: list[float] = []
     k = 0
-    for i, v in enumerate(z_dm):
+    for i, v in enumerate(z):
         if v is not None:
-            out.append(v / 10)
+            out.append(v)
             continue
         while k + 1 < len(known) and known[k + 1][0] < i:
             k += 1
@@ -229,6 +244,185 @@ def section_input(ctx: Any, section_id: str, *, step_m: float | None = None, gro
     """The SectionInput v0 of one section, read through ``ctx`` (see the module doc)."""
     g = gather(ctx, section_id, ground=ground)
     return build(g, params_of(ctx, g.section), step_m=step_m)
+
+
+# ------------------------------------------------------------------------------------------------ ground source
+
+GROUND_SOURCE = "ground.source"
+"""The param naming the ground the profiles read: ``line_file`` (the ``ground_profile`` record, the ground Ben's
+designs and the old page were made on) or ``region`` (the ``ground.profile`` result: region.ground at the view's
+year and timeline). Until the registry has it, ``line_file``."""
+GROUND_SOURCES = ("line_file", "region")
+GROUND_DEFAULT = "line_file"
+GROUND_JOB = "ground.profile"
+GROUND_FROM = "ground_from"
+"""The input member naming the ``ground.profile`` result a job's ``run`` lays in (``lay_ground``, ``lay_dem``), with
+the source chosen and the line file's gaps: ``{"ref", "source", "line_missing": [[i0, i1], ...]}``."""
+
+
+def ground_source(ctx: Any, scope: str | None) -> str:
+    """The value of ``ground.source`` for ``scope`` (``line_file`` while the param is not registered); ``Invalid``
+    for any other value."""
+    from region.core.errors import Invalid
+
+    try:
+        value = ctx.param(GROUND_SOURCE, scope)
+    except NotFound:
+        return GROUND_DEFAULT
+    if value not in GROUND_SOURCES:
+        raise Invalid(f"{GROUND_SOURCE} is {value!r}; it is one of {', '.join(GROUND_SOURCES)}")
+    return str(value)
+
+
+def _missing_ranges(ground: Mapping[str, Any] | None, n: int) -> list[list[int]]:
+    """``[[i0, i1], ...]`` (inclusive) of the section's first ``n`` samples the line-file ground lacks."""
+    z = list(((ground or {}).get("data") or {}).get("z_dm") or [])
+    out: list[list[int]] = []
+    for i in range(n):
+        if i < len(z) and z[i] is not None:
+            continue
+        if out and out[-1][1] == i - 1:
+            out[-1][1] = i
+        else:
+            out.append([i, i])
+    return out
+
+
+def ground_plan(ctx: Any, section_id: str) -> dict[str, Any] | None:
+    """What a job's plan adds as ``ground_from``: the ``ground.profile`` result it needs, the source chosen and the
+    line file's gaps on the section's grid. None at ``line_file`` when the line file has no gap (every Metro line
+    today): the input is then exactly as before and the region ground is not read."""
+    import math
+
+    sec = ctx.read("section", section_id)
+    if sec is None:
+        raise NotFound(f"no section {section_id}", kind="section", id=section_id)
+    d = sec.get("data") or {}
+    source = ground_source(ctx, section_id)
+    n = int(math.floor(float(d["length_m"]) / float(d["step_m"]) + 1e-9)) + 1
+    grounds = sorted(ctx.list("ground_profile", parent=section_id), key=lambda r: r["id"])
+    missing = _missing_ranges(grounds[0] if grounds else None, n)
+    if source == "line_file" and not missing:
+        return None
+    return {"ref": ctx.need(GROUND_JOB, section_id), "source": source, "line_missing": missing}
+
+
+def _level(v: Any) -> float | None:
+    if v is None:
+        return None
+    f = float(v)
+    return None if f != f else f
+
+
+def _on_grid(z: list[float | None], step_from: float, step_to: float) -> list[float | None]:
+    """Levels every ``step_from`` taken onto a grid every ``step_to`` (straight lines between known neighbours)."""
+    if not z or step_from == step_to:
+        return list(z)
+    span = (len(z) - 1) * step_from
+    out: list[float | None] = []
+    n = int(span / step_to + 1e-9) + 1
+    for i in range(n):
+        x = i * step_to / step_from
+        j = int(x)
+        t = x - j
+        a = z[j]
+        b = z[j + 1] if j + 1 < len(z) else a
+        if t < 1e-9:
+            out.append(a)
+        elif a is None or b is None:
+            out.append(None)
+        else:
+            out.append(a + t * (b - a))
+    return out
+
+
+def merge_ground(
+    primary: list[Any],
+    fallback: list[Any],
+    *,
+    step_m: float | None = None,
+    fallback_step_m: float | None = None,
+) -> tuple[list[float | None], int]:
+    """The chosen ground with each sample it lacks (None or NaN) taken from the other, the other first taken onto
+    the chosen grid when its step differs; and how many samples were taken. As long as the longer of the two."""
+    p = [_level(v) for v in primary]
+    f = [_level(v) for v in fallback]
+    if step_m is not None and fallback_step_m is not None:
+        f = _on_grid(f, float(fallback_step_m), float(step_m))
+    out: list[float | None] = []
+    filled = 0
+    for i in range(max(len(p), len(f))):
+        v = p[i] if i < len(p) else None
+        if v is None and i < len(f) and f[i] is not None:
+            v = f[i]
+            filled += 1
+        out.append(v)
+    return out, filled
+
+
+def region_ground(output: Any) -> dict[str, Any]:
+    """A ``ground.profile`` result as ``{"step_m", "z", "year", "timeline"}`` (``z`` with None where NaN)."""
+    meta = getattr(output, "meta", None)
+    arrays = getattr(output, "arrays", None)
+    if meta is None and isinstance(output, Mapping):
+        meta, arrays = output.get("meta") or {}, output.get("arrays") or {}
+    z = arrays["ground_m"]
+    return {
+        "step_m": float((meta.get("grid") or {}).get("step_m") or meta["step_m"]),
+        "z": [_level(v) for v in (z.tolist() if hasattr(z, "tolist") else z)],
+        "year": meta.get("year"),
+        "timeline": meta.get("timeline"),
+    }
+
+
+def ground_info(plan: Mapping[str, Any], region: Mapping[str, Any], filled: int, missing: int) -> dict[str, Any]:
+    """What an output says of its ground: the source, how many samples the other source filled, how many neither
+    had, and the region ground's year and timeline."""
+    src = str(plan["source"])
+    return {
+        "source": src,
+        "filled": int(filled),
+        "filled_from": "line_file" if src == "region" else "region",
+        "missing": int(missing),
+        "year": region.get("year"),
+        "timeline": region.get("timeline"),
+    }
+
+
+def lay_ground(
+    si: Mapping[str, Any], plan: Mapping[str, Any], region: Mapping[str, Any]
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """A SectionInput (or StationInput's ``section``) with its ``ground`` as ``ground.source`` says: at ``region``
+    the region ground on its grid, each sample it lacks from the line file; at ``line_file`` the line file's ground
+    with each of its gaps (``line_missing``) from the region ground. A sample neither has takes the straight line
+    between its neighbours (as the line file's own gaps always did). Returns the input and ``ground_info``."""
+    line = si.get("ground")
+    rz, rstep = list(region["z"]), float(region["step_m"])
+    if plan["source"] == "region":
+        z, filled = merge_ground(
+            rz, list(line["z_m"]) if line else [], step_m=rstep, fallback_step_m=float(line["step_m"]) if line else None
+        )
+        step = rstep
+    else:
+        step = float(line["step_m"]) if line else rstep
+        z = [_level(v) for v in (line["z_m"] if line else [])]
+        on = _on_grid(rz, rstep, step)
+        filled = 0
+        for i0, i1 in plan.get("line_missing") or []:
+            for i in range(int(i0), int(i1) + 1):
+                v = on[i] if i < len(on) else None
+                if v is None:
+                    continue
+                while len(z) <= i:
+                    z.append(None)
+                z[i] = v
+                filled += 1
+    missing = sum(1 for v in z if v is None)
+    out = {k: v for k, v in si.items() if k != "ground"}
+    levels = fill_gaps(z)
+    if levels:
+        out["ground"] = {"step_m": step, "z_m": levels}
+    return out, ground_info(plan, region, filled, missing)
 
 
 # ------------------------------------------------------------------------------------------------- station input
@@ -771,6 +965,11 @@ def station_input(ctx: Any, section_id: str, *, step_m: float | None = None, cro
 
 __all__ = [
     "CONTRACT",
+    "GROUND_DEFAULT",
+    "GROUND_FROM",
+    "GROUND_JOB",
+    "GROUND_SOURCE",
+    "GROUND_SOURCES",
     "PARAMS",
     "STATION_CONTRACT",
     "Chronology",
@@ -778,9 +977,16 @@ __all__ = [
     "StoreReads",
     "build",
     "cross_ground",
+    "fill_gaps",
     "gather",
+    "ground_info",
     "ground_levels",
+    "ground_plan",
+    "ground_source",
+    "lay_ground",
+    "merge_ground",
     "params_of",
+    "region_ground",
     "section_input",
     "station_input",
     "station_profile",

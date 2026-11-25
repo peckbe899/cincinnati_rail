@@ -15,11 +15,13 @@ can skip its own echo.
 from __future__ import annotations
 
 import collections
+import contextlib
 import datetime as dt
 import json
 import re
 import threading
 import time
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
@@ -178,6 +180,18 @@ def writer_of(request: Request) -> Writer:
     return Writer(by=by, client=request.headers.get("x-cr-client"))
 
 
+@contextlib.contextmanager
+def foreground(request: Request) -> Iterator[None]:
+    """Hold the scheduler's foreground (``Scheduler.foreground``) while a request Ben waits for runs: a record write,
+    and the reads a pane makes to follow one. Background work (a sheet's run chain, the goals of every line) stops at
+    the next step of its plans and starts no job until the request is done and the invalidator has taken in what it
+    wrote, so a save, its events and the other tabs' reads never share the hub's time with it. Hold it in the route's
+    own body: a plan the request makes itself is then never held back by it."""
+    hold = getattr(getattr(request.app.state, "jobs", None), "foreground", None)
+    with hold() if callable(hold) else contextlib.nullcontext():
+        yield
+
+
 def fingerprint(*parts: Any) -> str:
     """The hash of a request for ``Idempotency``."""
     return fsio.sha256_hex(json.dumps(list(parts), sort_keys=True, ensure_ascii=False, default=str))
@@ -190,6 +204,7 @@ __all__ = [
     "KIND_RE",
     "Writer",
     "fingerprint",
+    "foreground",
     "get_hub",
     "hub_of",
     "now_iso",

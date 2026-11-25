@@ -18,26 +18,51 @@
   seed doc, with the members the old page derived on save (``stations``, ``summary``, ``updated``) from the line's
   solve when the hub has its engine (R6).
 
-Both read in the view of the query (``layer``, ``year``, ``month``, ``tl``) and only read. The store is the app's
+**The ground** (I2.1). ``/input``, ``/stations`` and ``/solve`` carry the ground the param ``ground.source`` names
+(``inputs.ground_source``) and say which in the header ``X-CR-Ground``: ``line_file`` (the line file's ground, as
+before; the default while the param is not registered), ``region`` (the section's ``ground.profile`` result at the
+view's year and timeline, each sample it lacks from the line file), ``line_file (gaps from region)`` (the line file's
+ground with the samples it lacks from the region ground; no Metro line file has a gap today), or ``line_file (region
+pending)`` while the hub has no current result for it. The sheet's station panel names the source in its ground
+row. The result is read as it stands now (``Scheduler.result``: its key from the section record and the ground
+files); while it is pending the router asks the hub for it (``Scheduler.submit`` at priority 2, behind the sheet's
+rail), and the sheet reads the input again on the ``ground.profile`` result event. At ``line_file`` (with no gap)
+the region ground is neither read nor asked for.
+
+Both read in the view of the query (``layer``, ``year``, ``month``, ``tl``) and only read records (a pending region
+ground is the one job they ask for). The store is the app's
 ``request.app.state.store`` (WP2 sets it); params resolve through ``app.state.params`` when the app sets one, else
 ``region.ext.rules.params.resolve``. Errors are ``region.core.errors``, which the app answers as problem JSON.
 """
 
 from __future__ import annotations
 
+import contextlib
 from typing import Any
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Response
 
 from region.core.errors import Invalid, NotFound
 from region.core.view import View
 
 from .doc import doc_of
-from .inputs import StoreReads, section_input, station_input
+from .inputs import GROUND_JOB, StoreReads, ground_plan, lay_ground, region_ground, section_input, station_input
 from .rails import warm_design, warm_view
-from .solve_input import needs_design, neighbour_view, section_solve_input
+from .solve_input import lay_dem, needs_design, neighbour_view, section_solve_input
+
+GROUND_HEADER = "X-CR-Ground"
+GROUND_PRIORITY = 2
+"""The priority a pending region ground is asked at: behind the sheet's rail (0 focused, 1 open)."""
 
 router = APIRouter(tags=["profiles"])
+
+
+def _foreground(request: Request) -> Any:
+    """The scheduler's foreground while a read the sheet waits for runs (``region.api.context.foreground``): the
+    background stops at the next step of its plans meanwhile. Held over the store reads only, never over a plan or an
+    ask (``_ground``), so a plan this request makes is never held back by a background plan that waits for it."""
+    hold = getattr(getattr(request.app.state, "jobs", None), "foreground", None)
+    return hold() if callable(hold) else contextlib.nullcontext()
 
 
 def _reads(request: Request) -> StoreReads:
@@ -48,24 +73,99 @@ def _reads(request: Request) -> StoreReads:
     return StoreReads(store, View.from_query(request.query_params), getattr(state, "params", None))
 
 
+def _warm_ground(request: Request, ctx: StoreReads, section_id: str) -> dict[str, Any] | None:
+    """The section's current ``ground.profile`` result in the view (``inputs.region_ground``), or None while the hub
+    has none (or no scheduler). No job is queued: the jobs that read the ground need it."""
+    jobs = getattr(request.app.state, "jobs", None)
+    if jobs is None or not callable(getattr(jobs, "result", None)):
+        return None
+    try:
+        key = jobs.result(GROUND_JOB, section_id, ctx.view)
+        if not key:
+            return None
+        meta = (jobs.result_meta(key) or {}).get("meta") or {}
+        z = jobs.read_array(key, "ground_m")
+    except Exception:  # noqa: BLE001 - a result this cannot read: the answer keeps the line file's ground
+        return None
+    return region_ground({"meta": meta, "arrays": {"ground_m": z}})
+
+
+def _ask_ground(request: Request, ctx: StoreReads, section_id: str) -> None:
+    """Ask the hub for the section's ``ground.profile`` in the view (``Scheduler.submit`` at ``GROUND_PRIORITY``),
+    so a pending region ground arrives and the sheet, on its ``result`` event, reads the input again. Asking again
+    while it runs queues nothing new (one active job per key). Best effort: a hub with no scheduler, or one that
+    cannot plan it now, answers with the line file's ground all the same."""
+    jobs = getattr(request.app.state, "jobs", None)
+    submit = getattr(jobs, "submit", None)
+    if not callable(submit):
+        return
+    try:
+        submit(GROUND_JOB, section_id, ctx.view, priority=GROUND_PRIORITY)
+    except Exception:  # noqa: BLE001 - the answer never waits on it
+        return
+
+
+def _ground(request: Request, ctx: StoreReads, section_id: str) -> tuple[dict[str, Any] | None, Any, str]:
+    """``(plan, region ground, X-CR-Ground)``: what to lay in (None and None for the line file as it is)."""
+    gp = ground_plan(ctx, section_id)
+    if gp is None:
+        return None, None, "line_file"
+    region = _warm_ground(request, ctx, section_id)
+    if region is None:
+        _ask_ground(request, ctx, section_id)
+        return None, None, "line_file (region pending)"
+    return gp, region, "region" if gp["source"] == "region" else "line_file (gaps from region)"
+
+
 @router.get("/sections/{section_id}/input", summary="SectionInput v0 of a section")
-def get_section_input(section_id: str, request: Request) -> dict[str, Any]:
-    return section_input(_reads(request), section_id, ground=True)
+def get_section_input(section_id: str, request: Request, response: Response) -> dict[str, Any]:
+    ctx = _reads(request)
+    with _foreground(request):
+        si = section_input(ctx, section_id, ground=True)
+    gp, region, label = _ground(request, ctx, section_id)
+    if gp is not None:
+        si, _info = lay_ground(si, gp, region)
+    response.headers[GROUND_HEADER] = label
+    return si
 
 
 @router.get("/sections/{section_id}/stations", summary="StationInput v0 of a section (the input of station.facts@1)")
-def get_station_input(section_id: str, request: Request) -> dict[str, Any]:
-    return station_input(_reads(request), section_id)
+def get_station_input(section_id: str, request: Request, response: Response) -> dict[str, Any]:
+    ctx = _reads(request)
+    with _foreground(request):
+        st = station_input(ctx, section_id)
+    gp, region, label = _ground(request, ctx, section_id)
+    if gp is not None:
+        st = {**st, "section": lay_ground(st["section"], gp, region)[0]}
+    response.headers[GROUND_HEADER] = label
+    return st
 
 
 @router.get("/sections/{section_id}/solve", summary="SectionSolveInput v0 of a section (the input of section.solve@1)")
-def get_solve_input(section_id: str, request: Request) -> dict[str, Any]:
-    return _solve_input(request, _reads(request), section_id)
+def get_solve_input(section_id: str, request: Request, response: Response) -> dict[str, Any]:
+    inp, label = _solve_input_ground(request, _reads(request), section_id)
+    response.headers[GROUND_HEADER] = label
+    return inp
 
 
 def _solve_input(request: Request, ctx: StoreReads, section_id: str) -> dict[str, Any]:
-    inp = section_solve_input(ctx, section_id)
+    return _solve_input_ground(request, ctx, section_id)[0]
+
+
+def _solve_input_ground(request: Request, ctx: StoreReads, section_id: str) -> tuple[dict[str, Any], str]:
+    with _foreground(request):
+        inp = section_solve_input(ctx, section_id)
+    gp, region, label = _ground(request, ctx, section_id)
+    if gp is not None:
+        inp, _info = lay_dem(inp, gp, region)
     jobs = getattr(request.app.state, "jobs", None)
+    with _foreground(request):
+        inp["neighbours"] = _neighbours(ctx, jobs, inp, section_id)
+    return inp, label
+
+
+def _neighbours(ctx: StoreReads, jobs: Any, inp: dict[str, Any], section_id: str) -> dict[str, Any]:
+    """The crossing lines' rails, read from their records or warm from the cache (never planned)."""
     neighbours: dict[str, Any] = {}
     for x in inp["crossings"]:
         other, wid = x.get("other"), x["wid"]
@@ -79,8 +179,7 @@ def _solve_input(request: Request, ctx: StoreReads, section_id: str) -> dict[str
             view = neighbour_view(ctx, other)
         if view is not None:
             neighbours[wid] = view
-    inp["neighbours"] = neighbours
-    return inp
+    return neighbours
 
 
 @router.get("/sections/{section_id}/design", summary="The design a section's rail is drawn with, when not as saved")
@@ -152,6 +251,8 @@ def get_route_doc(route_id: str, request: Request) -> dict[str, Any]:
 
 
 __all__ = [
+    "GROUND_HEADER",
+    "GROUND_PRIORITY",
     "get_design",
     "get_route_doc",
     "get_section_input",

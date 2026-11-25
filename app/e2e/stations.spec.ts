@@ -589,6 +589,18 @@ test("a station with no level is a dashed bar marked level not set, with the def
   request,
 }) => {
   const layer = await scenario(request, "stunset");
+  // The dashed bar is the state before the line's whole solve lands its design (profiles_parity.md S57): the solve
+  // then gives a station with no level the level solver's level, drawn as "default level (not saved)". The whole
+  // solve's input is held back here until that state has been looked at: it used to come in about 0.1 s after the
+  // edit, so whether the test saw the dashed bar at all was a race (failed in 6 of 15 runs alone on a fast hub).
+  let release = () => {};
+  const held = new Promise<void>((r) => {
+    release = r;
+  });
+  await page.route(/\/x\/profiles\/sections\/[^/]+\/solve(\?|$)/, async (route) => {
+    await held;
+    await route.continue();
+  });
   await openLine(page, request, "Line_3", layer);
   await pick(page, "Ross");
   await edits(page, () => page.getByLabel("Ross rail level").fill(""));
@@ -598,6 +610,16 @@ test("a station with no level is a dashed bar marked level not set, with the def
   await edits(page, () => page.getByTestId("sp-set-default").click());
   await expect(page.getByLabel("Ross rail level")).toHaveValue((187 - 7.62).toFixed(2));
   expect((await selectedBar(page)).unset).toBe(false);
+  // Once the whole solve is in, a station with no level is drawn at the level solver's level, marked as not saved.
+  release();
+  await expect
+    .poll(async () => Number((await page.getByTestId("solve-info").getAttribute("data-full-rev")) ?? 0))
+    .toBeGreaterThan(0);
+  await pick(page, "Ross");
+  await edits(page, () => page.getByLabel("Ross rail level").fill(""));
+  await expect(page.getByTestId("design-note")).toHaveText("default level (not saved) where no level is set");
+  expect((await selectedBar(page)).unset).toBe(false);
+  await expect(page.getByLabel("Ross rail level")).toHaveValue("");
 });
 
 test("side or island: the box, D_HALL and the hall room follow it; saved on the platform record (S63)", async ({

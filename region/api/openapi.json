@@ -561,6 +561,301 @@
     "title": "Diff",
     "type": "object"
    },
+   "DraftBase": {
+    "additionalProperties": true,
+    "properties": {
+     "assemble": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Assemble"
+     },
+     "run": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Run"
+     }
+    },
+    "required": [
+     "assemble",
+     "run"
+    ],
+    "title": "DraftBase",
+    "type": "object"
+   },
+   "DraftIn": {
+    "additionalProperties": false,
+    "description": "A draft run: the sheet's SectionInput of its draft, the draft's structure types when it has them, and its edit\nrevision (echoed).",
+    "properties": {
+     "edit_rev": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Edit Rev"
+     },
+     "section_input": {
+      "additionalProperties": true,
+      "description": "SectionInput v0 of the draft (the sheet's worker input).",
+      "title": "Section Input",
+      "type": "object"
+     },
+     "type_runs": {
+      "anyOf": [
+       {
+        "items": {
+         "items": {},
+         "type": "array"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "section.solve@1's type_runs for this edit; absent, the saved structure solve's are used.",
+      "title": "Type Runs"
+     }
+    },
+    "required": [
+     "section_input"
+    ],
+    "title": "DraftIn",
+    "type": "object"
+   },
+   "DraftOut": {
+    "additionalProperties": true,
+    "description": "A draft's RunResult and where it came from.",
+    "properties": {
+     "arrays": {
+      "additionalProperties": {
+       "items": {
+        "anyOf": [
+         {
+          "type": "number"
+         },
+         {
+          "type": "null"
+         }
+        ]
+       },
+       "type": "array"
+      },
+      "description": "limit_ms, v_fwd_ms, v_rev_ms, t_fwd_s, t_rev_s on the section grid of grid (null where the train never is).",
+      "title": "Arrays",
+      "type": "object"
+     },
+     "base": {
+      "$ref": "#/components/schemas/DraftBase"
+     },
+     "cached": {
+      "title": "Cached",
+      "type": "boolean"
+     },
+     "config": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Config"
+     },
+     "contract": {
+      "default": "run_result/0",
+      "description": "run_result/0",
+      "title": "Contract",
+      "type": "string"
+     },
+     "curves": {
+      "items": {
+       "$ref": "#/components/schemas/RunCurveLimit"
+      },
+      "title": "Curves",
+      "type": "array"
+     },
+     "directions": {
+      "items": {
+       "$ref": "#/components/schemas/RunDirection"
+      },
+      "title": "Directions",
+      "type": "array"
+     },
+     "draft": {
+      "default": true,
+      "title": "Draft",
+      "type": "boolean"
+     },
+     "edit_rev": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Edit Rev"
+     },
+     "era": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/RunEra"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "grid": {
+      "$ref": "#/components/schemas/RunGrid",
+      "description": "The section grid of the result's arrays (limit_ms, v_fwd_ms, v_rev_ms, t_fwd_s, t_rev_s)."
+     },
+     "key": {
+      "description": "sha256 of the run's code, its files, the year and the draft RouteInput.",
+      "title": "Key",
+      "type": "string"
+     },
+     "ms": {
+      "title": "Ms",
+      "type": "number"
+     },
+     "padding": {
+      "additionalProperties": {
+       "type": "number"
+      },
+      "title": "Padding",
+      "type": "object"
+     },
+     "round_trip_s": {
+      "title": "Round Trip S",
+      "type": "number"
+     },
+     "route_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Route Id"
+     },
+     "route_key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Route Key"
+     },
+     "sources": {
+      "additionalProperties": {
+       "type": "string"
+      },
+      "title": "Sources",
+      "type": "object"
+     },
+     "speed_zones": {
+      "items": {
+       "$ref": "#/components/schemas/RunZone"
+      },
+      "title": "Speed Zones",
+      "type": "array"
+     },
+     "train": {
+      "$ref": "#/components/schemas/RunTrain"
+     },
+     "turnback_s": {
+      "items": {
+       "type": "number"
+      },
+      "title": "Turnback S",
+      "type": "array"
+     },
+     "types": {
+      "description": "draft or saved",
+      "title": "Types",
+      "type": "string"
+     },
+     "warnings": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+     },
+     "year": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Year"
+     },
+     "year_source": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Year Source"
+     }
+    },
+    "required": [
+     "route_id",
+     "route_key",
+     "config",
+     "year",
+     "year_source",
+     "era",
+     "train",
+     "padding",
+     "directions",
+     "round_trip_s",
+     "turnback_s",
+     "speed_zones",
+     "curves",
+     "grid",
+     "warnings",
+     "sources",
+     "key",
+     "cached",
+     "ms",
+     "types",
+     "base",
+     "arrays"
+    ],
+    "title": "DraftOut",
+    "type": "object"
+   },
    "FocusIn": {
     "additionalProperties": false,
     "description": "How urgent a pane's goal is: 0 for the pane in focus, 1 for an open pane, 5 when the pane closed.",
@@ -1956,6 +2251,689 @@
      "status"
     ],
     "title": "ResultMeta",
+    "type": "object"
+   },
+   "RouteInput": {
+    "additionalProperties": true,
+    "description": "``route_input/0``: one route on the run grid (meta; the arrays ``s_m``, ``c_m``, ``rail_z_m``,\n``curvature_per_m``, ``tunnel``, ``type`` are in the result's arrays, or lists in the input route).",
+    "properties": {
+     "arrays": {
+      "anyOf": [
+       {
+        "additionalProperties": {
+         "items": {
+          "type": "number"
+         },
+         "type": "array"
+        },
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "The run grid arrays (the input route only).",
+      "title": "Arrays"
+     },
+     "config": {
+      "title": "Config",
+      "type": "string"
+     },
+     "contract": {
+      "default": "route_input/0",
+      "description": "route_input/0",
+      "title": "Contract",
+      "type": "string"
+     },
+     "curves": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "title": "Curves",
+      "type": "array"
+     },
+     "length_m": {
+      "title": "Length M",
+      "type": "number"
+     },
+     "name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name"
+     },
+     "removed": {
+      "items": {
+       "$ref": "#/components/schemas/RouteRemoved"
+      },
+      "title": "Removed",
+      "type": "array"
+     },
+     "restrictions": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "title": "Restrictions",
+      "type": "array"
+     },
+     "route_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Route Id"
+     },
+     "route_key": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Route Key"
+     },
+     "run_grid": {
+      "$ref": "#/components/schemas/RunGrid"
+     },
+     "section": {
+      "additionalProperties": true,
+      "title": "Section",
+      "type": "object"
+     },
+     "sources": {
+      "additionalProperties": {
+       "type": "string"
+      },
+      "title": "Sources",
+      "type": "object"
+     },
+     "stops": {
+      "items": {
+       "$ref": "#/components/schemas/RouteStop"
+      },
+      "title": "Stops",
+      "type": "array"
+     },
+     "warnings": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+     }
+    },
+    "required": [
+     "route_id",
+     "route_key",
+     "name",
+     "config",
+     "section",
+     "run_grid",
+     "length_m",
+     "curves",
+     "stops",
+     "removed",
+     "restrictions",
+     "sources",
+     "warnings"
+    ],
+    "title": "RouteInput",
+    "type": "object"
+   },
+   "RouteRemoved": {
+    "additionalProperties": true,
+    "properties": {
+     "c_m": {
+      "title": "C M",
+      "type": "number"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "platform_id": {
+      "title": "Platform Id",
+      "type": "string"
+     },
+     "why": {
+      "title": "Why",
+      "type": "string"
+     }
+    },
+    "required": [
+     "platform_id",
+     "name",
+     "c_m",
+     "why"
+    ],
+    "title": "RouteRemoved",
+    "type": "object"
+   },
+   "RouteStop": {
+    "additionalProperties": true,
+    "properties": {
+     "c_m": {
+      "title": "C M",
+      "type": "number"
+     },
+     "class": {
+      "title": "Class",
+      "type": "string"
+     },
+     "class_source": {
+      "title": "Class Source",
+      "type": "string"
+     },
+     "dwell_s": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Dwell S"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "platform_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Platform Id"
+     },
+     "platform_m": {
+      "title": "Platform M",
+      "type": "number"
+     },
+     "psd": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Psd"
+     },
+     "removed": {
+      "default": false,
+      "title": "Removed",
+      "type": "boolean"
+     },
+     "reverse": {
+      "default": false,
+      "title": "Reverse",
+      "type": "boolean"
+     },
+     "s_m": {
+      "title": "S M",
+      "type": "number"
+     },
+     "terminal": {
+      "title": "Terminal",
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "platform_id",
+     "name",
+     "c_m",
+     "s_m",
+     "platform_m",
+     "class",
+     "class_source",
+     "psd",
+     "terminal"
+    ],
+    "title": "RouteStop",
+    "type": "object"
+   },
+   "RunCurveLimit": {
+    "additionalProperties": true,
+    "properties": {
+     "c0_m": {
+      "title": "C0 M",
+      "type": "number"
+     },
+     "c1_m": {
+      "title": "C1 M",
+      "type": "number"
+     },
+     "limit_kmh": {
+      "title": "Limit Kmh",
+      "type": "number"
+     },
+     "radius_m": {
+      "title": "Radius M",
+      "type": "number"
+     },
+     "spiral_m": {
+      "title": "Spiral M",
+      "type": "number"
+     }
+    },
+    "required": [
+     "c0_m",
+     "c1_m",
+     "radius_m",
+     "spiral_m",
+     "limit_kmh"
+    ],
+    "title": "RunCurveLimit",
+    "type": "object"
+   },
+   "RunDirection": {
+    "additionalProperties": true,
+    "properties": {
+     "average_kmh": {
+      "title": "Average Kmh",
+      "type": "number"
+     },
+     "dir": {
+      "description": "1 is rising section chainage, -1 falling.",
+      "title": "Dir",
+      "type": "integer"
+     },
+     "distance_m": {
+      "title": "Distance M",
+      "type": "number"
+     },
+     "dwell_s": {
+      "title": "Dwell S",
+      "type": "number"
+     },
+     "energy_regen_kwh": {
+      "title": "Energy Regen Kwh",
+      "type": "number"
+     },
+     "energy_traction_kwh": {
+      "title": "Energy Traction Kwh",
+      "type": "number"
+     },
+     "from": {
+      "title": "From",
+      "type": "string"
+     },
+     "label": {
+      "title": "Label",
+      "type": "string"
+     },
+     "max_kmh": {
+      "title": "Max Kmh",
+      "type": "number"
+     },
+     "running_s": {
+      "title": "Running S",
+      "type": "number"
+     },
+     "scheduled_s": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Scheduled S"
+     },
+     "stations": {
+      "items": {
+       "$ref": "#/components/schemas/RunStation"
+      },
+      "title": "Stations",
+      "type": "array"
+     },
+     "stops": {
+      "title": "Stops",
+      "type": "integer"
+     },
+     "to": {
+      "title": "To",
+      "type": "string"
+     },
+     "trip_s": {
+      "title": "Trip S",
+      "type": "number"
+     }
+    },
+    "required": [
+     "dir",
+     "label",
+     "from",
+     "to",
+     "distance_m",
+     "stops",
+     "running_s",
+     "dwell_s",
+     "trip_s",
+     "scheduled_s",
+     "average_kmh",
+     "max_kmh",
+     "energy_traction_kwh",
+     "energy_regen_kwh",
+     "stations"
+    ],
+    "title": "RunDirection",
+    "type": "object"
+   },
+   "RunEra": {
+    "additionalProperties": true,
+    "properties": {
+     "goa": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Goa"
+     },
+     "name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name"
+     },
+     "signalling": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Signalling"
+     },
+     "years": {
+      "items": {
+       "type": "integer"
+      },
+      "title": "Years",
+      "type": "array"
+     }
+    },
+    "required": [
+     "name",
+     "goa",
+     "years",
+     "signalling"
+    ],
+    "title": "RunEra",
+    "type": "object"
+   },
+   "RunGrid": {
+    "additionalProperties": true,
+    "properties": {
+     "c0": {
+      "title": "C0",
+      "type": "number"
+     },
+     "n": {
+      "title": "N",
+      "type": "integer"
+     },
+     "step_m": {
+      "title": "Step M",
+      "type": "number"
+     }
+    },
+    "required": [
+     "c0",
+     "step_m",
+     "n"
+    ],
+    "title": "RunGrid",
+    "type": "object"
+   },
+   "RunLeg": {
+    "additionalProperties": true,
+    "properties": {
+     "accel_s": {
+      "title": "Accel S",
+      "type": "number"
+     },
+     "brake_s": {
+      "title": "Brake S",
+      "type": "number"
+     },
+     "coast_s": {
+      "title": "Coast S",
+      "type": "number"
+     },
+     "cruise_s": {
+      "title": "Cruise S",
+      "type": "number"
+     },
+     "run_s": {
+      "description": "Seconds from the departure before to this arrival.",
+      "title": "Run S",
+      "type": "number"
+     },
+     "vmax_kmh": {
+      "title": "Vmax Kmh",
+      "type": "number"
+     }
+    },
+    "required": [
+     "run_s",
+     "vmax_kmh",
+     "accel_s",
+     "cruise_s",
+     "coast_s",
+     "brake_s"
+    ],
+    "title": "RunLeg",
+    "type": "object"
+   },
+   "RunStation": {
+    "additionalProperties": true,
+    "properties": {
+     "arrive_s": {
+      "title": "Arrive S",
+      "type": "number"
+     },
+     "c_m": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Section chainage of the platform centre.",
+      "title": "C M"
+     },
+     "depart_s": {
+      "title": "Depart S",
+      "type": "number"
+     },
+     "dwell_s": {
+      "title": "Dwell S",
+      "type": "number"
+     },
+     "km": {
+      "description": "Km from the first stop marker of the direction, as railsim reports it.",
+      "title": "Km",
+      "type": "number"
+     },
+     "leg": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/RunLeg"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "platform_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Platform Id"
+     },
+     "s_m": {
+      "description": "Run chainage of the platform centre (along the fit).",
+      "title": "S M",
+      "type": "number"
+     },
+     "scheduled_arrive_s": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Scheduled Arrive S"
+     }
+    },
+    "required": [
+     "platform_id",
+     "name",
+     "c_m",
+     "s_m",
+     "km",
+     "arrive_s",
+     "depart_s",
+     "dwell_s",
+     "scheduled_arrive_s",
+     "leg"
+    ],
+    "title": "RunStation",
+    "type": "object"
+   },
+   "RunTrain": {
+    "additionalProperties": true,
+    "properties": {
+     "cars": {
+      "title": "Cars",
+      "type": "integer"
+     },
+     "key": {
+      "title": "Key",
+      "type": "string"
+     },
+     "length_m": {
+      "title": "Length M",
+      "type": "number"
+     },
+     "load_factor": {
+      "title": "Load Factor",
+      "type": "number"
+     },
+     "mass_t": {
+      "title": "Mass T",
+      "type": "number"
+     },
+     "max_kmh": {
+      "title": "Max Kmh",
+      "type": "number"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "rail_condition": {
+      "title": "Rail Condition",
+      "type": "string"
+     }
+    },
+    "required": [
+     "key",
+     "name",
+     "cars",
+     "length_m",
+     "load_factor",
+     "mass_t",
+     "rail_condition",
+     "max_kmh"
+    ],
+    "title": "RunTrain",
+    "type": "object"
+   },
+   "RunZone": {
+    "additionalProperties": true,
+    "properties": {
+     "c0_m": {
+      "title": "C0 M",
+      "type": "number"
+     },
+     "c1_m": {
+      "title": "C1 M",
+      "type": "number"
+     },
+     "kmh": {
+      "title": "Kmh",
+      "type": "number"
+     },
+     "reason": {
+      "title": "Reason",
+      "type": "string"
+     },
+     "rule": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rule"
+     }
+    },
+    "required": [
+     "c0_m",
+     "c1_m",
+     "kmh",
+     "reason",
+     "rule"
+    ],
+    "title": "RunZone",
     "type": "object"
    },
    "StateIn": {
@@ -6565,6 +7543,100 @@
     "summary": "StationInput v0 of a section (the input of station.facts@1)",
     "tags": [
      "profiles"
+    ]
+   }
+  },
+  "/api/v1/x/railsim/routes/{route_id}/input": {
+   "get": {
+    "operationId": "x_railsim_get_route_input",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "route_id",
+      "required": true,
+      "schema": {
+       "title": "Route Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RouteInput"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "The warm RouteInput of a route (route.assemble), never planned",
+    "tags": [
+     "railsim"
+    ]
+   }
+  },
+  "/api/v1/x/railsim/sections/{section_id}/draft": {
+   "post": {
+    "operationId": "x_railsim_post_draft",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "section_id",
+      "required": true,
+      "schema": {
+       "title": "Section Id",
+       "type": "string"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DraftIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/DraftOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Run times of the sheet's unsaved edit of a section",
+    "tags": [
+     "railsim"
     ]
    }
   }

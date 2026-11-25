@@ -138,3 +138,37 @@ export function parseChainage(text: string, units: Units): number | null {
 
 /** Why a typed chainage was refused, for the cell's title and the sheet's notice. */
 export const CHAINAGE_HELP = "Type a chainage as 4+233.8, 4233.8 or 4,233.8 (metres), or add ft for feet.";
+
+export const KMH_PER_MPH = 1.609344;
+
+/** A speed in km/h as the display shows it: km/h with metres, mph with feet. */
+export function formatSpeed(kmh: number | null | undefined, units: Units, digits = 0): string {
+  if (kmh === null || kmh === undefined || !Number.isFinite(kmh)) return "–";
+  const v = units.length === "ft" ? kmh / KMH_PER_MPH : kmh;
+  return v.toFixed(digits);
+}
+
+/** The speed unit's label for the display unit: "km/h" or "mph". */
+export const speedLabel = (units: Units): string => (units.length === "ft" ? "mph" : "km/h");
+
+/** A duration as m:ss (52:00, 1:07), rounded to the second; h:mm:ss from an hour; "–" when there is none. A
+ * negative one (a change) keeps its sign. */
+export function formatDuration(s: number | null | undefined): string {
+  if (s === null || s === undefined || !Number.isFinite(s)) return "–";
+  const neg = s < 0;
+  let t = Math.round(Math.abs(s));
+  const h = Math.floor(t / 3600);
+  t -= h * 3600;
+  const m = Math.floor(t / 60);
+  const sec = t - m * 60;
+  const ss = String(sec).padStart(2, "0");
+  const body = h ? `${h}:${String(m).padStart(2, "0")}:${ss}` : `${m}:${ss}`;
+  return neg ? `-${body}` : body;
+}
+
+/** A change of duration with its sign: "+0:12", "-1:05", "0:00". */
+export function formatChange(s: number | null | undefined): string {
+  if (s === null || s === undefined || !Number.isFinite(s)) return "–";
+  if (Math.round(s) === 0) return "0:00";
+  return s > 0 ? `+${formatDuration(s)}` : formatDuration(s);
+}
