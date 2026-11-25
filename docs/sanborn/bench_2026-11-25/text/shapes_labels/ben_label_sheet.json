@@ -1,0 +1,8506 @@
+{
+"note": "Make the cluster label sheet for Ben (shapes prototype, 25 Nov 2026).\n\n    python -B bench_2026-11-25/text/shapes/scripts/label_sheet.py      (from data/sanborn)\n\nWrites labels/ben_label_sheet.json: one entry per cluster of round 1 (clusters.npz, montage/) and round 2\n(clusters2.npz, montage2/), in the order of the montage sheets, with the sheet file and row, the cluster size and\nmedian glyph size, and Claude's label where Claude gave one. 'ben' is empty for Ben to fill:\n  a character (0-9, A-Z, a-z, ' \" . - &) when nearly every glyph in the row (about 24 of 26 or more) is that\n  character; 'junk' when no glyph in the row is lettering; 'pair' for two touching figures; leave empty if mixed.\nRound 2 holds only the glyphs the round-1 reader did not call junk, so it is the more useful sheet for digits.\n",
+"n_rows": 850,
+"rows": [
+{
+"cluster": 0,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 1,
+"n": 131,
+"median_px": 0,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 2,
+"n": 4491,
+"median_px": 10,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 3,
+"n": 3385,
+"median_px": 10,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 4,
+"n": 1202,
+"median_px": 9,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 5,
+"n": 1057,
+"median_px": 9,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 5,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 6,
+"n": 1577,
+"median_px": 10,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 6,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 7,
+"n": 2086,
+"median_px": 7,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 7,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 8,
+"n": 1534,
+"median_px": 9,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 8,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 9,
+"n": 2064,
+"median_px": 8,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 9,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 10,
+"n": 1468,
+"median_px": 9,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 10,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 11,
+"n": 1805,
+"median_px": 7,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 11,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 12,
+"n": 1779,
+"median_px": 9,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 12,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 13,
+"n": 1636,
+"median_px": 10,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 13,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 14,
+"n": 1239,
+"median_px": 10,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 14,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 15,
+"n": 1145,
+"median_px": 10,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 15,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 16,
+"n": 1164,
+"median_px": 9,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 16,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 17,
+"n": 1242,
+"median_px": 9,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 17,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 18,
+"n": 1007,
+"median_px": 8,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 18,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 19,
+"n": 1830,
+"median_px": 7,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 19,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_00.png",
+"row": 20,
+"n": 1747,
+"median_px": 9,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 20,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_01.png",
+"row": 1,
+"n": 1422,
+"median_px": 5,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 21,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_01.png",
+"row": 2,
+"n": 1546,
+"median_px": 7,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 22,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_01.png",
+"row": 3,
+"n": 1580,
+"median_px": 8,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 23,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_01.png",
+"row": 4,
+"n": 1452,
+"median_px": 5,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 24,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_01.png",
+"row": 5,
+"n": 1447,
+"median_px": 5,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 25,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_01.png",
+"row": 6,
+"n": 1702,
+"median_px": 5,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 26,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_01.png",
+"row": 7,
+"n": 1020,
+"median_px": 8,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 27,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_01.png",
+"row": 8,
+"n": 2250,
+"median_px": 9,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 28,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_01.png",
+"row": 9,
+"n": 2155,
+"median_px": 10,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 29,
+"clusters_file": "clusters.npz",
+"sheet": "montage/tiny_01.png",
+"row": 10,
+"n": 1626,
+"median_px": 10,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1000,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 1,
+"n": 2382,
+"median_px": 12,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1001,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 2,
+"n": 3097,
+"median_px": 15,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1002,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 3,
+"n": 1613,
+"median_px": 21,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1003,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 4,
+"n": 1198,
+"median_px": 26,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1004,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 5,
+"n": 146,
+"median_px": 15,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1005,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 6,
+"n": 150,
+"median_px": 26,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1006,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 7,
+"n": 568,
+"median_px": 14,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1007,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 8,
+"n": 403,
+"median_px": 26,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1008,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 9,
+"n": 578,
+"median_px": 19,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1009,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 10,
+"n": 766,
+"median_px": 17,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1010,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 11,
+"n": 675,
+"median_px": 26,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1011,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 12,
+"n": 333,
+"median_px": 14,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1012,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 13,
+"n": 458,
+"median_px": 13,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1013,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 14,
+"n": 761,
+"median_px": 16,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1014,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 15,
+"n": 516,
+"median_px": 14,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1015,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 16,
+"n": 399,
+"median_px": 30,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1016,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 17,
+"n": 535,
+"median_px": 28,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1017,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 18,
+"n": 718,
+"median_px": 21,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1018,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 19,
+"n": 735,
+"median_px": 21,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1019,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_00.png",
+"row": 20,
+"n": 768,
+"median_px": 30,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1020,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 1,
+"n": 747,
+"median_px": 26,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1021,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 2,
+"n": 278,
+"median_px": 13,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1022,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 3,
+"n": 371,
+"median_px": 27,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1023,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 4,
+"n": 424,
+"median_px": 17,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1024,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 5,
+"n": 361,
+"median_px": 20,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1025,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 6,
+"n": 296,
+"median_px": 13,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1026,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 7,
+"n": 2812,
+"median_px": 12,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1027,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 8,
+"n": 254,
+"median_px": 21,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1028,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 9,
+"n": 544,
+"median_px": 15,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1029,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 10,
+"n": 566,
+"median_px": 15,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1030,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 11,
+"n": 415,
+"median_px": 14,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1031,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 12,
+"n": 584,
+"median_px": 13,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1032,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 13,
+"n": 564,
+"median_px": 14,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1033,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 14,
+"n": 746,
+"median_px": 22,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1034,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 15,
+"n": 208,
+"median_px": 26,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1035,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 16,
+"n": 254,
+"median_px": 24,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1036,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 17,
+"n": 408,
+"median_px": 20,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1037,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 18,
+"n": 792,
+"median_px": 32,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1038,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 19,
+"n": 778,
+"median_px": 24,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1039,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_01.png",
+"row": 20,
+"n": 857,
+"median_px": 21,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1040,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 1,
+"n": 956,
+"median_px": 25,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1041,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 2,
+"n": 403,
+"median_px": 20,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1042,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 3,
+"n": 510,
+"median_px": 28,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1043,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 4,
+"n": 335,
+"median_px": 15,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1044,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 5,
+"n": 760,
+"median_px": 15,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1045,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 6,
+"n": 585,
+"median_px": 14,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1046,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 7,
+"n": 340,
+"median_px": 15,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1047,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 8,
+"n": 345,
+"median_px": 14,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1048,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 9,
+"n": 281,
+"median_px": 27,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1049,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 10,
+"n": 331,
+"median_px": 29,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1050,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 11,
+"n": 333,
+"median_px": 25,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1051,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 12,
+"n": 319,
+"median_px": 14,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1052,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 13,
+"n": 405,
+"median_px": 27,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1053,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 14,
+"n": 376,
+"median_px": 22,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1054,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 15,
+"n": 488,
+"median_px": 15,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1055,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 16,
+"n": 296,
+"median_px": 16,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1056,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 17,
+"n": 371,
+"median_px": 16,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1057,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 18,
+"n": 110,
+"median_px": 19,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1058,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 19,
+"n": 108,
+"median_px": 30,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1059,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_02.png",
+"row": 20,
+"n": 116,
+"median_px": 23,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1060,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 1,
+"n": 258,
+"median_px": 31,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1061,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 2,
+"n": 378,
+"median_px": 24,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1062,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 3,
+"n": 284,
+"median_px": 30,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1063,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 4,
+"n": 452,
+"median_px": 14,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1064,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 5,
+"n": 388,
+"median_px": 16,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1065,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 6,
+"n": 418,
+"median_px": 14,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1066,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 7,
+"n": 231,
+"median_px": 14,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1067,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 8,
+"n": 360,
+"median_px": 15,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1068,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 9,
+"n": 156,
+"median_px": 24,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1069,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 10,
+"n": 209,
+"median_px": 26,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1070,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 11,
+"n": 209,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1071,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 12,
+"n": 149,
+"median_px": 22,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1072,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 13,
+"n": 294,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1073,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 14,
+"n": 264,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1074,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 15,
+"n": 590,
+"median_px": 13,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1075,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 16,
+"n": 243,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1076,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 17,
+"n": 165,
+"median_px": 27,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1077,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 18,
+"n": 488,
+"median_px": 20,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1078,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 19,
+"n": 278,
+"median_px": 20,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1079,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_03.png",
+"row": 20,
+"n": 325,
+"median_px": 31,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1080,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 1,
+"n": 79,
+"median_px": 26,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1081,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 2,
+"n": 98,
+"median_px": 20,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1082,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 3,
+"n": 143,
+"median_px": 28,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1083,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 4,
+"n": 129,
+"median_px": 20,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1084,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 5,
+"n": 160,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1085,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 6,
+"n": 467,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1086,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 7,
+"n": 205,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1087,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 8,
+"n": 435,
+"median_px": 17,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1088,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 9,
+"n": 312,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1089,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 10,
+"n": 460,
+"median_px": 23,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1090,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 11,
+"n": 555,
+"median_px": 25,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1091,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 12,
+"n": 464,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1092,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 13,
+"n": 596,
+"median_px": 27,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1093,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 14,
+"n": 571,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1094,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 15,
+"n": 402,
+"median_px": 18,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1095,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 16,
+"n": 372,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1096,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 17,
+"n": 530,
+"median_px": 13,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1097,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 18,
+"n": 528,
+"median_px": 18,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1098,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 19,
+"n": 486,
+"median_px": 17,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1099,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_04.png",
+"row": 20,
+"n": 403,
+"median_px": 16,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1100,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 1,
+"n": 525,
+"median_px": 27,
+"claude": "7",
+"ben": ""
+},
+{
+"cluster": 1101,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 2,
+"n": 388,
+"median_px": 26,
+"claude": "7",
+"ben": ""
+},
+{
+"cluster": 1102,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 3,
+"n": 565,
+"median_px": 24,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1103,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 4,
+"n": 1036,
+"median_px": 26,
+"claude": "1",
+"ben": ""
+},
+{
+"cluster": 1104,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 5,
+"n": 1054,
+"median_px": 26,
+"claude": "1",
+"ben": ""
+},
+{
+"cluster": 1105,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 6,
+"n": 978,
+"median_px": 27,
+"claude": "1",
+"ben": ""
+},
+{
+"cluster": 1106,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 7,
+"n": 605,
+"median_px": 25,
+"claude": "1",
+"ben": ""
+},
+{
+"cluster": 1107,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 8,
+"n": 867,
+"median_px": 26,
+"claude": "1",
+"ben": ""
+},
+{
+"cluster": 1108,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 9,
+"n": 278,
+"median_px": 13,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1109,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 10,
+"n": 466,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1110,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 11,
+"n": 568,
+"median_px": 19,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1111,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 12,
+"n": 733,
+"median_px": 19,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1112,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 13,
+"n": 520,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1113,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 14,
+"n": 356,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1114,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 15,
+"n": 477,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1115,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 16,
+"n": 107,
+"median_px": 20,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1116,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 17,
+"n": 125,
+"median_px": 33,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1117,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 18,
+"n": 136,
+"median_px": 23,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1118,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 19,
+"n": 138,
+"median_px": 26,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1119,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_05.png",
+"row": 20,
+"n": 159,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1120,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 1,
+"n": 168,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1121,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 2,
+"n": 200,
+"median_px": 16,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1122,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 3,
+"n": 279,
+"median_px": 17,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1123,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 4,
+"n": 211,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1124,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 5,
+"n": 190,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1125,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 6,
+"n": 266,
+"median_px": 16,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1126,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 7,
+"n": 178,
+"median_px": 23,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1127,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 8,
+"n": 220,
+"median_px": 16,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1128,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 9,
+"n": 270,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1129,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 10,
+"n": 214,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1130,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 11,
+"n": 227,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1131,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 12,
+"n": 282,
+"median_px": 25,
+"claude": "T",
+"ben": ""
+},
+{
+"cluster": 1132,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 13,
+"n": 367,
+"median_px": 22,
+"claude": "P",
+"ben": ""
+},
+{
+"cluster": 1133,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 14,
+"n": 252,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1134,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 15,
+"n": 260,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1135,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 16,
+"n": 192,
+"median_px": 24,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1136,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 17,
+"n": 658,
+"median_px": 27,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 1137,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 18,
+"n": 463,
+"median_px": 28,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 1138,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 19,
+"n": 614,
+"median_px": 27,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 1139,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_06.png",
+"row": 20,
+"n": 662,
+"median_px": 28,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 1140,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 1,
+"n": 333,
+"median_px": 26,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 1141,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 2,
+"n": 457,
+"median_px": 28,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 1142,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 3,
+"n": 258,
+"median_px": 20,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1143,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 4,
+"n": 631,
+"median_px": 18,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 1144,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 5,
+"n": 447,
+"median_px": 20,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 1145,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 6,
+"n": 362,
+"median_px": 26,
+"claude": "7",
+"ben": ""
+},
+{
+"cluster": 1146,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 7,
+"n": 230,
+"median_px": 23,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1147,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 8,
+"n": 241,
+"median_px": 24,
+"claude": "L",
+"ben": ""
+},
+{
+"cluster": 1148,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 9,
+"n": 278,
+"median_px": 26,
+"claude": "L",
+"ben": ""
+},
+{
+"cluster": 1149,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 10,
+"n": 330,
+"median_px": 19,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1150,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 11,
+"n": 200,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1151,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 12,
+"n": 162,
+"median_px": 28,
+"claude": "C",
+"ben": ""
+},
+{
+"cluster": 1152,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 13,
+"n": 240,
+"median_px": 20,
+"claude": "E",
+"ben": ""
+},
+{
+"cluster": 1153,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 14,
+"n": 267,
+"median_px": 23,
+"claude": "E",
+"ben": ""
+},
+{
+"cluster": 1154,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 15,
+"n": 357,
+"median_px": 23,
+"claude": "E",
+"ben": ""
+},
+{
+"cluster": 1155,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 16,
+"n": 400,
+"median_px": 27,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1156,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 17,
+"n": 482,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1157,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 18,
+"n": 462,
+"median_px": 28,
+"claude": "8",
+"ben": ""
+},
+{
+"cluster": 1158,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 19,
+"n": 260,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1159,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_07.png",
+"row": 20,
+"n": 692,
+"median_px": 28,
+"claude": "5",
+"ben": ""
+},
+{
+"cluster": 1160,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 1,
+"n": 692,
+"median_px": 26,
+"claude": "5",
+"ben": ""
+},
+{
+"cluster": 1161,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 2,
+"n": 556,
+"median_px": 26,
+"claude": "6",
+"ben": ""
+},
+{
+"cluster": 1162,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 3,
+"n": 597,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1163,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 4,
+"n": 546,
+"median_px": 27,
+"claude": "9",
+"ben": ""
+},
+{
+"cluster": 1164,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 5,
+"n": 286,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1165,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 6,
+"n": 394,
+"median_px": 26,
+"claude": "9",
+"ben": ""
+},
+{
+"cluster": 1166,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 7,
+"n": 399,
+"median_px": 30,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1167,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 8,
+"n": 757,
+"median_px": 27,
+"claude": "3",
+"ben": ""
+},
+{
+"cluster": 1168,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 9,
+"n": 761,
+"median_px": 28,
+"claude": "3",
+"ben": ""
+},
+{
+"cluster": 1169,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 10,
+"n": 724,
+"median_px": 28,
+"claude": "3",
+"ben": ""
+},
+{
+"cluster": 1170,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 11,
+"n": 211,
+"median_px": 24,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1171,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 12,
+"n": 462,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1172,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 13,
+"n": 247,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1173,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 14,
+"n": 504,
+"median_px": 13,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1174,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 15,
+"n": 392,
+"median_px": 18,
+"claude": "0",
+"ben": ""
+},
+{
+"cluster": 1175,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 16,
+"n": 387,
+"median_px": 17,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1176,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 17,
+"n": 445,
+"median_px": 25,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1177,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 18,
+"n": 519,
+"median_px": 18,
+"claude": "0",
+"ben": ""
+},
+{
+"cluster": 1178,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 19,
+"n": 779,
+"median_px": 26,
+"claude": "0",
+"ben": ""
+},
+{
+"cluster": 1179,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_08.png",
+"row": 20,
+"n": 668,
+"median_px": 27,
+"claude": "0",
+"ben": ""
+},
+{
+"cluster": 1180,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 1,
+"n": 267,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1181,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 2,
+"n": 263,
+"median_px": 18,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1182,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 3,
+"n": 230,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1183,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 4,
+"n": 287,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1184,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 5,
+"n": 278,
+"median_px": 22,
+"claude": "5",
+"ben": ""
+},
+{
+"cluster": 1185,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 6,
+"n": 386,
+"median_px": 22,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1186,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 7,
+"n": 483,
+"median_px": 18,
+"claude": "5",
+"ben": ""
+},
+{
+"cluster": 1187,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 8,
+"n": 436,
+"median_px": 18,
+"claude": "6",
+"ben": ""
+},
+{
+"cluster": 1188,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 9,
+"n": 367,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1189,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 10,
+"n": 376,
+"median_px": 18,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1190,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 11,
+"n": 451,
+"median_px": 18,
+"claude": "3",
+"ben": ""
+},
+{
+"cluster": 1191,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 12,
+"n": 501,
+"median_px": 18,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1192,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 13,
+"n": 365,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1193,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 14,
+"n": 352,
+"median_px": 19,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1194,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 15,
+"n": 315,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1195,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 16,
+"n": 189,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1196,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 17,
+"n": 193,
+"median_px": 30,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1197,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 18,
+"n": 237,
+"median_px": 24,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1198,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 19,
+"n": 196,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1199,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_09.png",
+"row": 20,
+"n": 128,
+"median_px": 27,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1200,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 1,
+"n": 339,
+"median_px": 25,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1201,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 2,
+"n": 293,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1202,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 3,
+"n": 219,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1203,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 4,
+"n": 501,
+"median_px": 29,
+"claude": "4",
+"ben": ""
+},
+{
+"cluster": 1204,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 5,
+"n": 539,
+"median_px": 28,
+"claude": "4",
+"ben": ""
+},
+{
+"cluster": 1205,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 6,
+"n": 540,
+"median_px": 27,
+"claude": "4",
+"ben": ""
+},
+{
+"cluster": 1206,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 7,
+"n": 329,
+"median_px": 23,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1207,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 8,
+"n": 266,
+"median_px": 17,
+"claude": "4",
+"ben": ""
+},
+{
+"cluster": 1208,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 9,
+"n": 326,
+"median_px": 18,
+"claude": "4",
+"ben": ""
+},
+{
+"cluster": 1209,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 10,
+"n": 330,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1210,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 11,
+"n": 478,
+"median_px": 24,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1211,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 12,
+"n": 326,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1212,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 13,
+"n": 659,
+"median_px": 34,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1213,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 14,
+"n": 406,
+"median_px": 31,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1214,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 15,
+"n": 499,
+"median_px": 35,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1215,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 16,
+"n": 377,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1216,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 17,
+"n": 403,
+"median_px": 34,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1217,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 18,
+"n": 363,
+"median_px": 22,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1218,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 19,
+"n": 339,
+"median_px": 27,
+"claude": "W",
+"ben": ""
+},
+{
+"cluster": 1219,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_10.png",
+"row": 20,
+"n": 143,
+"median_px": 32,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1220,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 1,
+"n": 264,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1221,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 2,
+"n": 463,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1222,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 3,
+"n": 305,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1223,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 4,
+"n": 263,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1224,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 5,
+"n": 225,
+"median_px": 24,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 1225,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 6,
+"n": 261,
+"median_px": 20,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1226,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 7,
+"n": 274,
+"median_px": 23,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1227,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 8,
+"n": 256,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1228,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 9,
+"n": 101,
+"median_px": 16,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1229,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 10,
+"n": 217,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1230,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 11,
+"n": 216,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1231,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 12,
+"n": 143,
+"median_px": 31,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1232,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 13,
+"n": 158,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1233,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 14,
+"n": 170,
+"median_px": 27,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1234,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 15,
+"n": 289,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1235,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 16,
+"n": 331,
+"median_px": 19,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1236,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 17,
+"n": 355,
+"median_px": 32,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1237,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 18,
+"n": 292,
+"median_px": 23,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1238,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 19,
+"n": 282,
+"median_px": 24,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1239,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_11.png",
+"row": 20,
+"n": 222,
+"median_px": 20,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1240,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 1,
+"n": 346,
+"median_px": 30,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1241,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 2,
+"n": 157,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1242,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 3,
+"n": 267,
+"median_px": 24,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1243,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 4,
+"n": 306,
+"median_px": 27,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1244,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 5,
+"n": 221,
+"median_px": 26,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 1245,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 6,
+"n": 307,
+"median_px": 21,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1246,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 7,
+"n": 304,
+"median_px": 32,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1247,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 8,
+"n": 346,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1248,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 9,
+"n": 377,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1249,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 10,
+"n": 319,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1250,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 11,
+"n": 281,
+"median_px": 16,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1251,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 12,
+"n": 381,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1252,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 13,
+"n": 250,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1253,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 14,
+"n": 420,
+"median_px": 13,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1254,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 15,
+"n": 236,
+"median_px": 16,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1255,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 16,
+"n": 318,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1256,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 17,
+"n": 398,
+"median_px": 13,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1257,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 18,
+"n": 309,
+"median_px": 18,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1258,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 19,
+"n": 352,
+"median_px": 21,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1259,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_12.png",
+"row": 20,
+"n": 384,
+"median_px": 19,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1260,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 1,
+"n": 314,
+"median_px": 16,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1261,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 2,
+"n": 332,
+"median_px": 19,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1262,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 3,
+"n": 301,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1263,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 4,
+"n": 252,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1264,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 5,
+"n": 266,
+"median_px": 16,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1265,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 6,
+"n": 360,
+"median_px": 13,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1266,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 7,
+"n": 315,
+"median_px": 24,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1267,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 8,
+"n": 368,
+"median_px": 23,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1268,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 9,
+"n": 386,
+"median_px": 15,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1269,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 10,
+"n": 294,
+"median_px": 15,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1270,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 11,
+"n": 255,
+"median_px": 14,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1271,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 12,
+"n": 317,
+"median_px": 17,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1272,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 13,
+"n": 390,
+"median_px": 24,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1273,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 14,
+"n": 364,
+"median_px": 25,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1274,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 15,
+"n": 257,
+"median_px": 32,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1275,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 16,
+"n": 211,
+"median_px": 29,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 1276,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 17,
+"n": 268,
+"median_px": 24,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1277,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 18,
+"n": 225,
+"median_px": 25,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1278,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 19,
+"n": 269,
+"median_px": 32,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1279,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_13.png",
+"row": 20,
+"n": 209,
+"median_px": 30,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1280,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 1,
+"n": 332,
+"median_px": 21,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 1281,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 2,
+"n": 176,
+"median_px": 20,
+"claude": "7",
+"ben": ""
+},
+{
+"cluster": 1282,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 3,
+"n": 425,
+"median_px": 18,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1283,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 4,
+"n": 257,
+"median_px": 22,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1284,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 5,
+"n": 538,
+"median_px": 22,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1285,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 6,
+"n": 296,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1286,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 7,
+"n": 273,
+"median_px": 25,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1287,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 8,
+"n": 343,
+"median_px": 19,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1288,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 9,
+"n": 173,
+"median_px": 30,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1289,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 10,
+"n": 176,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1290,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 11,
+"n": 196,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1291,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 12,
+"n": 191,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1292,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 13,
+"n": 207,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1293,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 14,
+"n": 163,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1294,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 15,
+"n": 359,
+"median_px": 31,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1295,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 16,
+"n": 366,
+"median_px": 33,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1296,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 17,
+"n": 345,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1297,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 18,
+"n": 262,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1298,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 19,
+"n": 335,
+"median_px": 20,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 1299,
+"clusters_file": "clusters.npz",
+"sheet": "montage/small_14.png",
+"row": 20,
+"n": 270,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2000,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 1,
+"n": 97,
+"median_px": 50,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2001,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 2,
+"n": 91,
+"median_px": 51,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2002,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 3,
+"n": 97,
+"median_px": 76,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2003,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 4,
+"n": 128,
+"median_px": 46,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2004,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 5,
+"n": 77,
+"median_px": 45,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2005,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 6,
+"n": 72,
+"median_px": 48,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2006,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 7,
+"n": 83,
+"median_px": 46,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2007,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 8,
+"n": 50,
+"median_px": 46,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2008,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 9,
+"n": 101,
+"median_px": 46,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2009,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 10,
+"n": 237,
+"median_px": 44,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2010,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 11,
+"n": 463,
+"median_px": 58,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2011,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 12,
+"n": 211,
+"median_px": 72,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2012,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 13,
+"n": 86,
+"median_px": 49,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2013,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 14,
+"n": 102,
+"median_px": 49,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2014,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 15,
+"n": 54,
+"median_px": 49,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2015,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 16,
+"n": 92,
+"median_px": 84,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2016,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 17,
+"n": 90,
+"median_px": 45,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2017,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 18,
+"n": 71,
+"median_px": 45,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2018,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 19,
+"n": 162,
+"median_px": 58,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2019,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_00.png",
+"row": 20,
+"n": 66,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2020,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 1,
+"n": 86,
+"median_px": 46,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2021,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 2,
+"n": 145,
+"median_px": 46,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2022,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 3,
+"n": 134,
+"median_px": 47,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2023,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 4,
+"n": 224,
+"median_px": 44,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2024,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 5,
+"n": 121,
+"median_px": 43,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2025,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 6,
+"n": 107,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2026,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 7,
+"n": 100,
+"median_px": 91,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2027,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 8,
+"n": 268,
+"median_px": 57,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2028,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 9,
+"n": 63,
+"median_px": 45,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2029,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 10,
+"n": 72,
+"median_px": 49,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2030,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 11,
+"n": 80,
+"median_px": 53,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2031,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 12,
+"n": 93,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2032,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 13,
+"n": 60,
+"median_px": 46,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2033,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 14,
+"n": 81,
+"median_px": 47,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2034,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 15,
+"n": 77,
+"median_px": 53,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2035,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 16,
+"n": 80,
+"median_px": 43,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2036,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 17,
+"n": 95,
+"median_px": 67,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2037,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 18,
+"n": 53,
+"median_px": 49,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2038,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 19,
+"n": 108,
+"median_px": 50,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2039,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_01.png",
+"row": 20,
+"n": 99,
+"median_px": 57,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2040,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 1,
+"n": 106,
+"median_px": 53,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2041,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 2,
+"n": 104,
+"median_px": 55,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2042,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 3,
+"n": 130,
+"median_px": 60,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2043,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 4,
+"n": 51,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2044,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 5,
+"n": 73,
+"median_px": 53,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2045,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 6,
+"n": 43,
+"median_px": 49,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2046,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 7,
+"n": 76,
+"median_px": 45,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2047,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 8,
+"n": 81,
+"median_px": 48,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2048,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 9,
+"n": 115,
+"median_px": 50,
+"claude": "T",
+"ben": ""
+},
+{
+"cluster": 2049,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 10,
+"n": 80,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2050,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 11,
+"n": 91,
+"median_px": 75,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2051,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 12,
+"n": 105,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2052,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 13,
+"n": 86,
+"median_px": 49,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2053,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 14,
+"n": 68,
+"median_px": 51,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2054,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 15,
+"n": 89,
+"median_px": 57,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2055,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 16,
+"n": 109,
+"median_px": 71,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2056,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 17,
+"n": 97,
+"median_px": 56,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2057,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 18,
+"n": 195,
+"median_px": 42,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2058,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 19,
+"n": 166,
+"median_px": 43,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2059,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_02.png",
+"row": 20,
+"n": 246,
+"median_px": 43,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2060,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 1,
+"n": 102,
+"median_px": 47,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2061,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 2,
+"n": 272,
+"median_px": 51,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2062,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 3,
+"n": 71,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2063,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 4,
+"n": 131,
+"median_px": 75,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2064,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 5,
+"n": 134,
+"median_px": 44,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2065,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 6,
+"n": 64,
+"median_px": 52,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2066,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 7,
+"n": 68,
+"median_px": 51,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2067,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 8,
+"n": 63,
+"median_px": 50,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2068,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 9,
+"n": 80,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2069,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 10,
+"n": 74,
+"median_px": 86,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2070,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 11,
+"n": 106,
+"median_px": 85,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2071,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 12,
+"n": 161,
+"median_px": 45,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2072,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 13,
+"n": 115,
+"median_px": 43,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2073,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 14,
+"n": 175,
+"median_px": 51,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2074,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 15,
+"n": 127,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2075,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 16,
+"n": 94,
+"median_px": 51,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2076,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 17,
+"n": 92,
+"median_px": 66,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2077,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 18,
+"n": 140,
+"median_px": 88,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2078,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 19,
+"n": 104,
+"median_px": 46,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2079,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_03.png",
+"row": 20,
+"n": 105,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2080,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 1,
+"n": 122,
+"median_px": 56,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2081,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 2,
+"n": 130,
+"median_px": 62,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2082,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 3,
+"n": 182,
+"median_px": 47,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2083,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 4,
+"n": 152,
+"median_px": 50,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2084,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 5,
+"n": 148,
+"median_px": 43,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2085,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 6,
+"n": 112,
+"median_px": 44,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2086,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 7,
+"n": 106,
+"median_px": 61,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2087,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 8,
+"n": 158,
+"median_px": 51,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2088,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 9,
+"n": 80,
+"median_px": 47,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2089,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 10,
+"n": 197,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2090,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 11,
+"n": 49,
+"median_px": 55,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2091,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 12,
+"n": 70,
+"median_px": 53,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2092,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 13,
+"n": 81,
+"median_px": 47,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2093,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 14,
+"n": 43,
+"median_px": 57,
+"claude": "W",
+"ben": ""
+},
+{
+"cluster": 2094,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 15,
+"n": 94,
+"median_px": 46,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2095,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 16,
+"n": 59,
+"median_px": 59,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2096,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 17,
+"n": 113,
+"median_px": 49,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2097,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 18,
+"n": 69,
+"median_px": 52,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2098,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 19,
+"n": 68,
+"median_px": 78,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2099,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_04.png",
+"row": 20,
+"n": 75,
+"median_px": 44,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2100,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 1,
+"n": 73,
+"median_px": 46,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2101,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 2,
+"n": 76,
+"median_px": 50,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2102,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 3,
+"n": 136,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2103,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 4,
+"n": 104,
+"median_px": 63,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2104,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 5,
+"n": 65,
+"median_px": 50,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2105,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 6,
+"n": 57,
+"median_px": 47,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2106,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 7,
+"n": 71,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2107,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 8,
+"n": 76,
+"median_px": 51,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2108,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 9,
+"n": 71,
+"median_px": 53,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2109,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 10,
+"n": 89,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2110,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 11,
+"n": 69,
+"median_px": 47,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2111,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 12,
+"n": 56,
+"median_px": 47,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2112,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 13,
+"n": 79,
+"median_px": 60,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2113,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 14,
+"n": 75,
+"median_px": 58,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2114,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 15,
+"n": 107,
+"median_px": 49,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 2115,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 16,
+"n": 55,
+"median_px": 47,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2116,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 17,
+"n": 102,
+"median_px": 48,
+"claude": "E",
+"ben": ""
+},
+{
+"cluster": 2117,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 18,
+"n": 56,
+"median_px": 50,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2118,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 19,
+"n": 48,
+"median_px": 47,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 2119,
+"clusters_file": "clusters.npz",
+"sheet": "montage/large_05.png",
+"row": 20,
+"n": 65,
+"median_px": 46,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 3000,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 1,
+"n": 172,
+"median_px": 17,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3001,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 2,
+"n": 132,
+"median_px": 19,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3002,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 3,
+"n": 126,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3003,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 4,
+"n": 132,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3004,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 5,
+"n": 381,
+"median_px": 22,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3005,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 6,
+"n": 135,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3006,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 7,
+"n": 141,
+"median_px": 25,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3007,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 8,
+"n": 225,
+"median_px": 27,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3008,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 9,
+"n": 260,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3009,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 10,
+"n": 167,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3010,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 11,
+"n": 185,
+"median_px": 16,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3011,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 12,
+"n": 160,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3012,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 13,
+"n": 469,
+"median_px": 26,
+"claude": "1",
+"ben": ""
+},
+{
+"cluster": 3013,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 14,
+"n": 378,
+"median_px": 24,
+"claude": "1",
+"ben": ""
+},
+{
+"cluster": 3014,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 15,
+"n": 663,
+"median_px": 23,
+"claude": "1",
+"ben": ""
+},
+{
+"cluster": 3015,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 16,
+"n": 592,
+"median_px": 30,
+"claude": "1",
+"ben": ""
+},
+{
+"cluster": 3016,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 17,
+"n": 630,
+"median_px": 24,
+"claude": "1",
+"ben": ""
+},
+{
+"cluster": 3017,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 18,
+"n": 446,
+"median_px": 26,
+"claude": "1",
+"ben": ""
+},
+{
+"cluster": 3018,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 19,
+"n": 771,
+"median_px": 26,
+"claude": "1",
+"ben": ""
+},
+{
+"cluster": 3019,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_00.png",
+"row": 20,
+"n": 402,
+"median_px": 23,
+"claude": "1",
+"ben": ""
+},
+{
+"cluster": 3020,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 1,
+"n": 478,
+"median_px": 30,
+"claude": "1",
+"ben": ""
+},
+{
+"cluster": 3021,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 2,
+"n": 402,
+"median_px": 26,
+"claude": "1",
+"ben": ""
+},
+{
+"cluster": 3022,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 3,
+"n": 757,
+"median_px": 27,
+"claude": "1",
+"ben": ""
+},
+{
+"cluster": 3023,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 4,
+"n": 537,
+"median_px": 27,
+"claude": "1",
+"ben": ""
+},
+{
+"cluster": 3024,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 5,
+"n": 321,
+"median_px": 24,
+"claude": "1",
+"ben": ""
+},
+{
+"cluster": 3025,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 6,
+"n": 227,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3026,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 7,
+"n": 342,
+"median_px": 17,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3027,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 8,
+"n": 359,
+"median_px": 13,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3028,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 9,
+"n": 324,
+"median_px": 12,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3029,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 10,
+"n": 296,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3030,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 11,
+"n": 444,
+"median_px": 19,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3031,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 12,
+"n": 539,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3032,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 13,
+"n": 340,
+"median_px": 18,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3033,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 14,
+"n": 206,
+"median_px": 13,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3034,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 15,
+"n": 292,
+"median_px": 13,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3035,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 16,
+"n": 183,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3036,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 17,
+"n": 411,
+"median_px": 19,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3037,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 18,
+"n": 490,
+"median_px": 19,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3038,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 19,
+"n": 245,
+"median_px": 13,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3039,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_01.png",
+"row": 20,
+"n": 382,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3040,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 1,
+"n": 113,
+"median_px": 20,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3041,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 2,
+"n": 165,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3042,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 3,
+"n": 125,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3043,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 4,
+"n": 210,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3044,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 5,
+"n": 143,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3045,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 6,
+"n": 202,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3046,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 7,
+"n": 160,
+"median_px": 16,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3047,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 8,
+"n": 109,
+"median_px": 24,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3048,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 9,
+"n": 94,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3049,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 10,
+"n": 133,
+"median_px": 31,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3050,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 11,
+"n": 134,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3051,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 12,
+"n": 220,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3052,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 13,
+"n": 113,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3053,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 14,
+"n": 143,
+"median_px": 27,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3054,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 15,
+"n": 124,
+"median_px": 16,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3055,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 16,
+"n": 180,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3056,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 17,
+"n": 165,
+"median_px": 17,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3057,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 18,
+"n": 218,
+"median_px": 16,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3058,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 19,
+"n": 221,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3059,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_02.png",
+"row": 20,
+"n": 140,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3060,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 1,
+"n": 219,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3061,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 2,
+"n": 172,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3062,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 3,
+"n": 118,
+"median_px": 30,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3063,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 4,
+"n": 177,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3064,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 5,
+"n": 167,
+"median_px": 22,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3065,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 6,
+"n": 124,
+"median_px": 24,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3066,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 7,
+"n": 373,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3067,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 8,
+"n": 369,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3068,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 9,
+"n": 193,
+"median_px": 32,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3069,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 10,
+"n": 223,
+"median_px": 30,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3070,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 11,
+"n": 168,
+"median_px": 20,
+"claude": "0",
+"ben": ""
+},
+{
+"cluster": 3071,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 12,
+"n": 218,
+"median_px": 18,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3072,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 13,
+"n": 209,
+"median_px": 21,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3073,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 14,
+"n": 213,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3074,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 15,
+"n": 120,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3075,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 16,
+"n": 160,
+"median_px": 30,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3076,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 17,
+"n": 252,
+"median_px": 20,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3077,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 18,
+"n": 210,
+"median_px": 23,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3078,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 19,
+"n": 140,
+"median_px": 23,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3079,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_03.png",
+"row": 20,
+"n": 164,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3080,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 1,
+"n": 151,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3081,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 2,
+"n": 143,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3082,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 3,
+"n": 137,
+"median_px": 22,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3083,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 4,
+"n": 167,
+"median_px": 31,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3084,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 5,
+"n": 85,
+"median_px": 32,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3085,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 6,
+"n": 157,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3086,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 7,
+"n": 95,
+"median_px": 27,
+"claude": "R",
+"ben": ""
+},
+{
+"cluster": 3087,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 8,
+"n": 240,
+"median_px": 31,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3088,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 9,
+"n": 158,
+"median_px": 28,
+"claude": "E",
+"ben": ""
+},
+{
+"cluster": 3089,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 10,
+"n": 119,
+"median_px": 32,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3090,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 11,
+"n": 158,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3091,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 12,
+"n": 73,
+"median_px": 30,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3092,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 13,
+"n": 192,
+"median_px": 25,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3093,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 14,
+"n": 208,
+"median_px": 31,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3094,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 15,
+"n": 182,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3095,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 16,
+"n": 144,
+"median_px": 22,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3096,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 17,
+"n": 171,
+"median_px": 30,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3097,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 18,
+"n": 170,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3098,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 19,
+"n": 204,
+"median_px": 25,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3099,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_04.png",
+"row": 20,
+"n": 318,
+"median_px": 21,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3100,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 1,
+"n": 208,
+"median_px": 24,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3101,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 2,
+"n": 276,
+"median_px": 20,
+"claude": "4",
+"ben": ""
+},
+{
+"cluster": 3102,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 3,
+"n": 164,
+"median_px": 19,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3103,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 4,
+"n": 230,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3104,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 5,
+"n": 218,
+"median_px": 31,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3105,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 6,
+"n": 134,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3106,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 7,
+"n": 245,
+"median_px": 32,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3107,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 8,
+"n": 304,
+"median_px": 31,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3108,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 9,
+"n": 130,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3109,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 10,
+"n": 123,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3110,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 11,
+"n": 133,
+"median_px": 20,
+"claude": "E",
+"ben": ""
+},
+{
+"cluster": 3111,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 12,
+"n": 119,
+"median_px": 21,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3112,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 13,
+"n": 212,
+"median_px": 20,
+"claude": "0",
+"ben": ""
+},
+{
+"cluster": 3113,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 14,
+"n": 219,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3114,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 15,
+"n": 272,
+"median_px": 21,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3115,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 16,
+"n": 231,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3116,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 17,
+"n": 234,
+"median_px": 19,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3117,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 18,
+"n": 195,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3118,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 19,
+"n": 221,
+"median_px": 16,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3119,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_05.png",
+"row": 20,
+"n": 208,
+"median_px": 16,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3120,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 1,
+"n": 186,
+"median_px": 18,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3121,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 2,
+"n": 213,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3122,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 3,
+"n": 263,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3123,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 4,
+"n": 168,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3124,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 5,
+"n": 149,
+"median_px": 24,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3125,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 6,
+"n": 166,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3126,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 7,
+"n": 241,
+"median_px": 25,
+"claude": "T",
+"ben": ""
+},
+{
+"cluster": 3127,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 8,
+"n": 239,
+"median_px": 23,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3128,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 9,
+"n": 199,
+"median_px": 20,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3129,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 10,
+"n": 193,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3130,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 11,
+"n": 180,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3131,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 12,
+"n": 111,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3132,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 13,
+"n": 192,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3133,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 14,
+"n": 111,
+"median_px": 22,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3134,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 15,
+"n": 236,
+"median_px": 17,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3135,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 16,
+"n": 173,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3136,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 17,
+"n": 365,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3137,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 18,
+"n": 336,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3138,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 19,
+"n": 408,
+"median_px": 19,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3139,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_06.png",
+"row": 20,
+"n": 434,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3140,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 1,
+"n": 106,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3141,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 2,
+"n": 180,
+"median_px": 25,
+"claude": "L",
+"ben": ""
+},
+{
+"cluster": 3142,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 3,
+"n": 115,
+"median_px": 27,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3143,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 4,
+"n": 215,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3144,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 5,
+"n": 339,
+"median_px": 26,
+"claude": "7",
+"ben": ""
+},
+{
+"cluster": 3145,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 6,
+"n": 331,
+"median_px": 27,
+"claude": "7",
+"ben": ""
+},
+{
+"cluster": 3146,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 7,
+"n": 264,
+"median_px": 27,
+"claude": "7",
+"ben": ""
+},
+{
+"cluster": 3147,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 8,
+"n": 187,
+"median_px": 16,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3148,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 9,
+"n": 250,
+"median_px": 16,
+"claude": "7",
+"ben": ""
+},
+{
+"cluster": 3149,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 10,
+"n": 196,
+"median_px": 17,
+"claude": "7",
+"ben": ""
+},
+{
+"cluster": 3150,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 11,
+"n": 221,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3151,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 12,
+"n": 220,
+"median_px": 20,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3152,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 13,
+"n": 180,
+"median_px": 24,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3153,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 14,
+"n": 169,
+"median_px": 22,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3154,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 15,
+"n": 255,
+"median_px": 20,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 3155,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 16,
+"n": 312,
+"median_px": 27,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 3156,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 17,
+"n": 246,
+"median_px": 26,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 3157,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 18,
+"n": 351,
+"median_px": 29,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 3158,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 19,
+"n": 318,
+"median_px": 26,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 3159,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_07.png",
+"row": 20,
+"n": 461,
+"median_px": 29,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 3160,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 1,
+"n": 612,
+"median_px": 28,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 3161,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 2,
+"n": 458,
+"median_px": 27,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 3162,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 3,
+"n": 528,
+"median_px": 19,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 3163,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 4,
+"n": 351,
+"median_px": 26,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 3164,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 5,
+"n": 192,
+"median_px": 25,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3165,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 6,
+"n": 244,
+"median_px": 26,
+"claude": "7",
+"ben": ""
+},
+{
+"cluster": 3166,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 7,
+"n": 163,
+"median_px": 27,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3167,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 8,
+"n": 164,
+"median_px": 25,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3168,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 9,
+"n": 338,
+"median_px": 30,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3169,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 10,
+"n": 223,
+"median_px": 13,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3170,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 11,
+"n": 124,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3171,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 12,
+"n": 255,
+"median_px": 20,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3172,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 13,
+"n": 223,
+"median_px": 27,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3173,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 14,
+"n": 163,
+"median_px": 29,
+"claude": "A",
+"ben": ""
+},
+{
+"cluster": 3174,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 15,
+"n": 142,
+"median_px": 25,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3175,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 16,
+"n": 161,
+"median_px": 30,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3176,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 17,
+"n": 129,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3177,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 18,
+"n": 186,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3178,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 19,
+"n": 217,
+"median_px": 19,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3179,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_08.png",
+"row": 20,
+"n": 188,
+"median_px": 27,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3180,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 1,
+"n": 297,
+"median_px": 31,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3181,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 2,
+"n": 313,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3182,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 3,
+"n": 330,
+"median_px": 32,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3183,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 4,
+"n": 201,
+"median_px": 21,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3184,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 5,
+"n": 204,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3185,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 6,
+"n": 218,
+"median_px": 26,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 3186,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 7,
+"n": 241,
+"median_px": 21,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3187,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 8,
+"n": 294,
+"median_px": 31,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3188,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 9,
+"n": 234,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3189,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 10,
+"n": 258,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3190,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 11,
+"n": 169,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3191,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 12,
+"n": 146,
+"median_px": 28,
+"claude": "T",
+"ben": ""
+},
+{
+"cluster": 3192,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 13,
+"n": 130,
+"median_px": 31,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3193,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 14,
+"n": 147,
+"median_px": 32,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3194,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 15,
+"n": 231,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3195,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 16,
+"n": 228,
+"median_px": 25,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3196,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 17,
+"n": 205,
+"median_px": 16,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3197,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 18,
+"n": 147,
+"median_px": 16,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3198,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 19,
+"n": 209,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3199,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_09.png",
+"row": 20,
+"n": 207,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3200,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 1,
+"n": 351,
+"median_px": 13,
+"claude": "0",
+"ben": ""
+},
+{
+"cluster": 3201,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 2,
+"n": 264,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3202,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 3,
+"n": 229,
+"median_px": 15,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 3203,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 4,
+"n": 298,
+"median_px": 18,
+"claude": "2",
+"ben": ""
+},
+{
+"cluster": 3204,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 5,
+"n": 196,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3205,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 6,
+"n": 242,
+"median_px": 17,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3206,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 7,
+"n": 190,
+"median_px": 22,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3207,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 8,
+"n": 161,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3208,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 9,
+"n": 323,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3209,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 10,
+"n": 239,
+"median_px": 16,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3210,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 11,
+"n": 371,
+"median_px": 18,
+"claude": "4",
+"ben": ""
+},
+{
+"cluster": 3211,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 12,
+"n": 244,
+"median_px": 22,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3212,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 13,
+"n": 306,
+"median_px": 16,
+"claude": "5",
+"ben": ""
+},
+{
+"cluster": 3213,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 14,
+"n": 371,
+"median_px": 18,
+"claude": "6",
+"ben": ""
+},
+{
+"cluster": 3214,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 15,
+"n": 241,
+"median_px": 17,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3215,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 16,
+"n": 328,
+"median_px": 18,
+"claude": "3",
+"ben": ""
+},
+{
+"cluster": 3216,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 17,
+"n": 323,
+"median_px": 18,
+"claude": "9",
+"ben": ""
+},
+{
+"cluster": 3217,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 18,
+"n": 223,
+"median_px": 20,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3218,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 19,
+"n": 292,
+"median_px": 18,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3219,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_10.png",
+"row": 20,
+"n": 319,
+"median_px": 17,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3220,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 1,
+"n": 262,
+"median_px": 17,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3221,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 2,
+"n": 246,
+"median_px": 19,
+"claude": "8",
+"ben": ""
+},
+{
+"cluster": 3222,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 3,
+"n": 174,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3223,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 4,
+"n": 188,
+"median_px": 18,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3224,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 5,
+"n": 270,
+"median_px": 19,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 3225,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 6,
+"n": 289,
+"median_px": 16,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 3226,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 7,
+"n": 346,
+"median_px": 13,
+"claude": "junk",
+"ben": ""
+},
+{
+"cluster": 3227,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 8,
+"n": 177,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3228,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 9,
+"n": 265,
+"median_px": 18,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3229,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 10,
+"n": 236,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3230,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 11,
+"n": 292,
+"median_px": 13,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3231,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 12,
+"n": 227,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3232,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 13,
+"n": 288,
+"median_px": 15,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3233,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 14,
+"n": 234,
+"median_px": 13,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3234,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 15,
+"n": 297,
+"median_px": 14,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3235,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 16,
+"n": 151,
+"median_px": 29,
+"claude": "C",
+"ben": ""
+},
+{
+"cluster": 3236,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 17,
+"n": 491,
+"median_px": 23,
+"claude": "E",
+"ben": ""
+},
+{
+"cluster": 3237,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 18,
+"n": 274,
+"median_px": 21,
+"claude": "E",
+"ben": ""
+},
+{
+"cluster": 3238,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 19,
+"n": 504,
+"median_px": 29,
+"claude": "3",
+"ben": ""
+},
+{
+"cluster": 3239,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_11.png",
+"row": 20,
+"n": 628,
+"median_px": 28,
+"claude": "3",
+"ben": ""
+},
+{
+"cluster": 3240,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 1,
+"n": 759,
+"median_px": 28,
+"claude": "3",
+"ben": ""
+},
+{
+"cluster": 3241,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 2,
+"n": 431,
+"median_px": 27,
+"claude": "3",
+"ben": ""
+},
+{
+"cluster": 3242,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 3,
+"n": 314,
+"median_px": 22,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3243,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 4,
+"n": 178,
+"median_px": 24,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3244,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 5,
+"n": 427,
+"median_px": 26,
+"claude": "9",
+"ben": ""
+},
+{
+"cluster": 3245,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 6,
+"n": 583,
+"median_px": 28,
+"claude": "9",
+"ben": ""
+},
+{
+"cluster": 3246,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 7,
+"n": 289,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3247,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 8,
+"n": 318,
+"median_px": 27,
+"claude": "6",
+"ben": ""
+},
+{
+"cluster": 3248,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 9,
+"n": 330,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3249,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 10,
+"n": 186,
+"median_px": 27,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3250,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 11,
+"n": 358,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3251,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 12,
+"n": 441,
+"median_px": 27,
+"claude": "8",
+"ben": ""
+},
+{
+"cluster": 3252,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 13,
+"n": 302,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3253,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 14,
+"n": 343,
+"median_px": 19,
+"claude": "5",
+"ben": ""
+},
+{
+"cluster": 3254,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 15,
+"n": 416,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3255,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 16,
+"n": 461,
+"median_px": 26,
+"claude": "5",
+"ben": ""
+},
+{
+"cluster": 3256,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 17,
+"n": 343,
+"median_px": 27,
+"claude": "5",
+"ben": ""
+},
+{
+"cluster": 3257,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 18,
+"n": 428,
+"median_px": 29,
+"claude": "5",
+"ben": ""
+},
+{
+"cluster": 3258,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 19,
+"n": 203,
+"median_px": 22,
+"claude": "5",
+"ben": ""
+},
+{
+"cluster": 3259,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_12.png",
+"row": 20,
+"n": 306,
+"median_px": 22,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3260,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 1,
+"n": 440,
+"median_px": 27,
+"claude": "6",
+"ben": ""
+},
+{
+"cluster": 3261,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 2,
+"n": 283,
+"median_px": 23,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3262,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 3,
+"n": 168,
+"median_px": 23,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3263,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 4,
+"n": 196,
+"median_px": 28,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3264,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 5,
+"n": 450,
+"median_px": 18,
+"claude": "0",
+"ben": ""
+},
+{
+"cluster": 3265,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 6,
+"n": 336,
+"median_px": 17,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3266,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 7,
+"n": 397,
+"median_px": 18,
+"claude": "0",
+"ben": ""
+},
+{
+"cluster": 3267,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 8,
+"n": 395,
+"median_px": 25,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3268,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 9,
+"n": 570,
+"median_px": 27,
+"claude": "0",
+"ben": ""
+},
+{
+"cluster": 3269,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 10,
+"n": 452,
+"median_px": 25,
+"claude": "0",
+"ben": ""
+},
+{
+"cluster": 3270,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 11,
+"n": 516,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3271,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 12,
+"n": 193,
+"median_px": 28,
+"claude": "4",
+"ben": ""
+},
+{
+"cluster": 3272,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 13,
+"n": 435,
+"median_px": 27,
+"claude": "4",
+"ben": ""
+},
+{
+"cluster": 3273,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 14,
+"n": 318,
+"median_px": 28,
+"claude": "4",
+"ben": ""
+},
+{
+"cluster": 3274,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 15,
+"n": 348,
+"median_px": 29,
+"claude": "4",
+"ben": ""
+},
+{
+"cluster": 3275,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 16,
+"n": 421,
+"median_px": 28,
+"claude": "4",
+"ben": ""
+},
+{
+"cluster": 3276,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 17,
+"n": 152,
+"median_px": 23,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3277,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 18,
+"n": 149,
+"median_px": 25,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3278,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 19,
+"n": 183,
+"median_px": 29,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3279,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_13.png",
+"row": 20,
+"n": 188,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3280,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 1,
+"n": 203,
+"median_px": 32,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3281,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 2,
+"n": 114,
+"median_px": 32,
+"claude": "M",
+"ben": ""
+},
+{
+"cluster": 3282,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 3,
+"n": 352,
+"median_px": 26,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3283,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 4,
+"n": 327,
+"median_px": 33,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3284,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 5,
+"n": 335,
+"median_px": 36,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3285,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 6,
+"n": 171,
+"median_px": 32,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3286,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 7,
+"n": 247,
+"median_px": 34,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3287,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 8,
+"n": 361,
+"median_px": 34,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3288,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 9,
+"n": 339,
+"median_px": 33,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3289,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 10,
+"n": 308,
+"median_px": 27,
+"claude": "W",
+"ben": ""
+},
+{
+"cluster": 3290,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 11,
+"n": 201,
+"median_px": 31,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3291,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 12,
+"n": 172,
+"median_px": 27,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3292,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 13,
+"n": 277,
+"median_px": 23,
+"claude": "R",
+"ben": ""
+},
+{
+"cluster": 3293,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 14,
+"n": 253,
+"median_px": 25,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3294,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 15,
+"n": 267,
+"median_px": 27,
+"claude": "N",
+"ben": ""
+},
+{
+"cluster": 3295,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 16,
+"n": 145,
+"median_px": 30,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3296,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 17,
+"n": 179,
+"median_px": 25,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3297,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 18,
+"n": 177,
+"median_px": 24,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3298,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 19,
+"n": 165,
+"median_px": 30,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 3299,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/small_14.png",
+"row": 20,
+"n": 116,
+"median_px": 23,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4000,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 1,
+"n": 105,
+"median_px": 82,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4001,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 2,
+"n": 118,
+"median_px": 45,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4002,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 3,
+"n": 66,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4003,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 4,
+"n": 62,
+"median_px": 46,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4004,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 5,
+"n": 61,
+"median_px": 44,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4005,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 6,
+"n": 103,
+"median_px": 56,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4006,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 7,
+"n": 69,
+"median_px": 49,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4007,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 8,
+"n": 74,
+"median_px": 45,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4008,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 9,
+"n": 127,
+"median_px": 45,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4009,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 10,
+"n": 142,
+"median_px": 47,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4010,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 11,
+"n": 74,
+"median_px": 46,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4011,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 12,
+"n": 108,
+"median_px": 47,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4012,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 13,
+"n": 89,
+"median_px": 49,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4013,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 14,
+"n": 115,
+"median_px": 49,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4014,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 15,
+"n": 91,
+"median_px": 92,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4015,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 16,
+"n": 92,
+"median_px": 58,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4016,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 17,
+"n": 55,
+"median_px": 50,
+"claude": "T",
+"ben": ""
+},
+{
+"cluster": 4017,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 18,
+"n": 69,
+"median_px": 50,
+"claude": "T",
+"ben": ""
+},
+{
+"cluster": 4018,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 19,
+"n": 71,
+"median_px": 50,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4019,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_00.png",
+"row": 20,
+"n": 98,
+"median_px": 53,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4020,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 1,
+"n": 76,
+"median_px": 53,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4021,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 2,
+"n": 68,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4022,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 3,
+"n": 90,
+"median_px": 45,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4023,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 4,
+"n": 61,
+"median_px": 49,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4024,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 5,
+"n": 84,
+"median_px": 51,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4025,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 6,
+"n": 109,
+"median_px": 48,
+"claude": "E",
+"ben": ""
+},
+{
+"cluster": 4026,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 7,
+"n": 53,
+"median_px": 47,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4027,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 8,
+"n": 63,
+"median_px": 86,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4028,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 9,
+"n": 89,
+"median_px": 61,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4029,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 10,
+"n": 68,
+"median_px": 66,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4030,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 11,
+"n": 75,
+"median_px": 44,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4031,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 12,
+"n": 90,
+"median_px": 50,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4032,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 13,
+"n": 81,
+"median_px": 52,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4033,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 14,
+"n": 82,
+"median_px": 45,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4034,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 15,
+"n": 71,
+"median_px": 73,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4035,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 16,
+"n": 69,
+"median_px": 46,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4036,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 17,
+"n": 51,
+"median_px": 51,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4037,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 18,
+"n": 52,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4038,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 19,
+"n": 74,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4039,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_01.png",
+"row": 20,
+"n": 78,
+"median_px": 51,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4040,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 1,
+"n": 169,
+"median_px": 50,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4041,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 2,
+"n": 93,
+"median_px": 46,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4042,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 3,
+"n": 119,
+"median_px": 53,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4043,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 4,
+"n": 130,
+"median_px": 46,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4044,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 5,
+"n": 200,
+"median_px": 43,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4045,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 6,
+"n": 159,
+"median_px": 43,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4046,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 7,
+"n": 119,
+"median_px": 46,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4047,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 8,
+"n": 184,
+"median_px": 42,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4048,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 9,
+"n": 92,
+"median_px": 56,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4049,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 10,
+"n": 82,
+"median_px": 46,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4050,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 11,
+"n": 220,
+"median_px": 51,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4051,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 12,
+"n": 104,
+"median_px": 60,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4052,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 13,
+"n": 81,
+"median_px": 44,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4053,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 14,
+"n": 60,
+"median_px": 77,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4054,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 15,
+"n": 116,
+"median_px": 83,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4055,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 16,
+"n": 103,
+"median_px": 77,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4056,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 17,
+"n": 102,
+"median_px": 81,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4057,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 18,
+"n": 76,
+"median_px": 90,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4058,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 19,
+"n": 75,
+"median_px": 52,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4059,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_02.png",
+"row": 20,
+"n": 57,
+"median_px": 55,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4060,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 1,
+"n": 65,
+"median_px": 60,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4061,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 2,
+"n": 73,
+"median_px": 45,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4062,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 3,
+"n": 76,
+"median_px": 58,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4063,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 4,
+"n": 44,
+"median_px": 55,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4064,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 5,
+"n": 39,
+"median_px": 53,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4065,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 6,
+"n": 74,
+"median_px": 51,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4066,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 7,
+"n": 53,
+"median_px": 47,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4067,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 8,
+"n": 93,
+"median_px": 47,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4068,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 9,
+"n": 78,
+"median_px": 51,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4069,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 10,
+"n": 92,
+"median_px": 50,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4070,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 11,
+"n": 116,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4071,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 12,
+"n": 89,
+"median_px": 51,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4072,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 13,
+"n": 120,
+"median_px": 60,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4073,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 14,
+"n": 160,
+"median_px": 90,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4074,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 15,
+"n": 74,
+"median_px": 54,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4075,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 16,
+"n": 95,
+"median_px": 72,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4076,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 17,
+"n": 96,
+"median_px": 54,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4077,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 18,
+"n": 116,
+"median_px": 57,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4078,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 19,
+"n": 88,
+"median_px": 50,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4079,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_03.png",
+"row": 20,
+"n": 191,
+"median_px": 47,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4080,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 1,
+"n": 132,
+"median_px": 44,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4081,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 2,
+"n": 58,
+"median_px": 50,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4082,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 3,
+"n": 86,
+"median_px": 47,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4083,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 4,
+"n": 82,
+"median_px": 43,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4084,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 5,
+"n": 81,
+"median_px": 43,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4085,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 6,
+"n": 108,
+"median_px": 42,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4086,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 7,
+"n": 152,
+"median_px": 50,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4087,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 8,
+"n": 151,
+"median_px": 50,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4088,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 9,
+"n": 136,
+"median_px": 45,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4089,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 10,
+"n": 102,
+"median_px": 47,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4090,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 11,
+"n": 175,
+"median_px": 46,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4091,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 12,
+"n": 125,
+"median_px": 50,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4092,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 13,
+"n": 59,
+"median_px": 47,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4093,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 14,
+"n": 67,
+"median_px": 60,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4094,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 15,
+"n": 66,
+"median_px": 53,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4095,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 16,
+"n": 65,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4096,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 17,
+"n": 61,
+"median_px": 48,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4097,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 18,
+"n": 71,
+"median_px": 52,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4098,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 19,
+"n": 73,
+"median_px": 47,
+"claude": "",
+"ben": ""
+},
+{
+"cluster": 4099,
+"clusters_file": "clusters2.npz",
+"sheet": "montage2/large_04.png",
+"row": 20,
+"n": 88,
+"median_px": 48,
+"claude": "",
+"ben": ""
+}
+]
+}
