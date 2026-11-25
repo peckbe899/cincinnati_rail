@@ -1,0 +1,1153 @@
+{
+ "name": "lines_v2b_s1",
+ "kind": "lines",
+ "mode": "data",
+ "data": "C:\\Users\\peckb\\Documents\\_Personal\\_Cincinnati Rail\\3D\\data\\sanborn\\train_v2",
+ "manifest_sha256": "60e8907456bcc2af9d06739ce5e8120b17a60f9c34fb26fb0ca28a113c940948",
+ "manifest_content_sha256": "59175f6722827f6fbf56d29f96f960701dc2bfcdba369cf6329fb3e3b00373cd",
+ "seed": 1,
+ "git": {
+  "commit": "35a2a8969963de0bbe7d74baeb34174451ceaa59",
+  "branch": "hub_region",
+  "unet_dir_changes": []
+ },
+ "trainer": {
+  "file": "C:\\Users\\peckb\\Documents\\_Personal\\_Cincinnati Rail\\3D\\tools\\sanborn\\unet\\edgenet.py",
+  "sha256": "5d2f49dc634cabd5283a1008176ee3b82cfdb045557cf45682d4e0d637b140dc",
+  "unet": "C:\\Users\\peckb\\Documents\\_Personal\\_Cincinnati Rail\\3D\\tools\\sanborn\\unet\\unet.py",
+  "unet_sha256": "d90f2c4e40cc3516155b24f6201c6f0107339a69f0586c46e2a9ea3abd7a2375"
+ },
+ "torch": "2.4.1+cpu",
+ "device": "AMD Radeon RX 7900 XTX",
+ "argv": [
+  "train",
+  "lines_v2b_s1",
+  "--data",
+  "C:\\Users\\peckb\\Documents\\_Personal\\_Cincinnati Rail\\3D\\data\\sanborn\\train_v2",
+  "43",
+  "45",
+  "80",
+  "82A",
+  "1A",
+  "5",
+  "54A",
+  "53",
+  "7",
+  "51",
+  "58",
+  "66",
+  "68",
+  "76",
+  "79",
+  "89",
+  "--seed",
+  "1",
+  "--iters",
+  "4000",
+  "--out",
+  "C:\\Users\\peckb\\Documents\\_Personal\\_Cincinnati Rail\\3D\\data\\sanborn\\train_v2_runs\\models",
+  "--weights",
+  "5=0.454545,54A=0.454545,53=0.454545,7=0.454545,51=0.454545,58=0.454545,66=0.454545,68=0.454545,76=0.454545,79=0.454545,89=0.454545",
+  "--area-blank",
+  "pseudo"
+ ],
+ "iters": 4000,
+ "crop": 448,
+ "batch": 6,
+ "line_px": 3,
+ "tol_px": 3,
+ "no_guide": true,
+ "guide_moved_or_blanked": false,
+ "area_blank": [
+  "PSEUDO"
+ ],
+ "area_blank_plates": [
+  "5",
+  "54A",
+  "53",
+  "7",
+  "51",
+  "58",
+  "66",
+  "68",
+  "76",
+  "79",
+  "89"
+ ],
+ "val_every": 250,
+ "select_by": "F1 of precision and recall (score()) on the validation pixels pooled over the plates",
+ "sampling": "plate first (probability weight / sum), then a crop on it",
+ "val_scope": "the validation pixels predicted from their own bounding box, with area_in.png (area_ng1's map) as the 7th input; eval_v2 predicts the whole plate with the new area network's map",
+ "load": {
+  "seconds": 21.6,
+  "stored_bytes": 5667972430,
+  "process_after_load": {
+   "working_set_gb": 6.16,
+   "peak_working_set_gb": 6.491,
+   "private_gb": 6.726,
+   "peak_private_gb": 7.057
+  }
+ },
+ "plates": [
+  {
+   "plate": "43",
+   "spec": "43",
+   "source": "label",
+   "weight": 1.0,
+   "size": [
+    10543,
+    7243
+   ],
+   "line_px": 932895,
+   "scored_share": 0.8433,
+   "area_in": "area_in.png",
+   "area_blank": false,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/43_pred_area_ng1.png",
+    "source_sha256": "4eab8493855d974f369ddde218b184c5dde04733dc8802a957a1932d6898e32f",
+    "note": "IN SAMPLE: area_ng1 was trained on this plate (train_noguide.py: 82A, 80, 43, 45)",
+    "sha256": "4eab8493855d974f369ddde218b184c5dde04733dc8802a957a1932d6898e32f"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "fda87473662a2a73de9fb0b9be6df282c0892c6b32a8a5f85203883f6431678c",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "4eab8493855d974f369ddde218b184c5dde04733dc8802a957a1932d6898e32f",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "1fc188779d0e7d023467a0a963c6287089690e2e26aaa4a4cce9697f9d1c0568",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-43.jpg",
+     "sha256": "12e667cb4b39243ab34a9e406bed0d4dbfdaebdf8c68372339c22aa341996a72"
+    }
+   },
+   "scale_ft_per_inch": 100,
+   "train_line_px": 932895
+  },
+  {
+   "plate": "45",
+   "spec": "45",
+   "source": "label",
+   "weight": 1.0,
+   "size": [
+    10681,
+    6190
+   ],
+   "line_px": 1230588,
+   "scored_share": 0.693,
+   "area_in": "area_in.png",
+   "area_blank": false,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/45_pred_area_ng1.png",
+    "source_sha256": "649677e8c304a13fb41eac9fd7929418feac323dc8a5164ae1eff1ee22c98d25",
+    "note": "IN SAMPLE: area_ng1 was trained on this plate (train_noguide.py: 82A, 80, 43, 45)",
+    "sha256": "649677e8c304a13fb41eac9fd7929418feac323dc8a5164ae1eff1ee22c98d25"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "ad7994f1ba2961594b792a9497d869ccf9382ee50306d31019b8d7a3e21a8156",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "649677e8c304a13fb41eac9fd7929418feac323dc8a5164ae1eff1ee22c98d25",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "ae49ec77d097631e79c94fae7a555f19482e9550c4c0f41e4fe3a01e6975ab48",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-45.jpg",
+     "sha256": "880c53b0addb7d1beb18cb5efadde0b2840b7136bb90a889df6a3125e68a2b35"
+    }
+   },
+   "scale_ft_per_inch": 200,
+   "train_line_px": 1230588
+  },
+  {
+   "plate": "80",
+   "spec": "80",
+   "source": "label",
+   "weight": 1.0,
+   "size": [
+    9295,
+    7152
+   ],
+   "line_px": 765032,
+   "scored_share": 0.5967,
+   "area_in": "area_in.png",
+   "area_blank": false,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/80_pred_area_ng1.png",
+    "source_sha256": "1967d356934374d50e3e2fa0a75019260fbe694cb2de6e165af13138984cab55",
+    "note": "IN SAMPLE: area_ng1 was trained on this plate (train_noguide.py: 82A, 80, 43, 45)",
+    "sha256": "1967d356934374d50e3e2fa0a75019260fbe694cb2de6e165af13138984cab55"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "76f2257befa15bc160ab10f84b97904f53b388d8ffe41f6b86636bbb61ca7653",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "1967d356934374d50e3e2fa0a75019260fbe694cb2de6e165af13138984cab55",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "4383ca225829459f15cb1f2b1caa517be8af4f215819284cfc5fdc4aa82ed014",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-80.jpg",
+     "sha256": "2b880e681b7f10126ce27025dc754cc8e46c589d534777527e1bde6d5745847a"
+    }
+   },
+   "scale_ft_per_inch": 200,
+   "train_line_px": 765032
+  },
+  {
+   "plate": "82A",
+   "spec": "82A",
+   "source": "label",
+   "weight": 1.0,
+   "size": [
+    10713,
+    7097
+   ],
+   "line_px": 1149688,
+   "scored_share": 0.6957,
+   "area_in": "area_in.png",
+   "area_blank": false,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/82A_pred_area_ng1.png",
+    "source_sha256": "3da4419bfb7d794ca191905ed738b88732dc5822d7f62d1e944257de1087654b",
+    "note": "IN SAMPLE: area_ng1 was trained on this plate (train_noguide.py: 82A, 80, 43, 45)",
+    "sha256": "3da4419bfb7d794ca191905ed738b88732dc5822d7f62d1e944257de1087654b"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "6fa0e5055bab52c3a61a842e00ddd2e1e4faa7e9784e2cf754dada6c674a3bb3",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "3da4419bfb7d794ca191905ed738b88732dc5822d7f62d1e944257de1087654b",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "479f70249a92fe5d0a53c972edd6ef72da0059df30ae8e022aa25f46577d653a",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-82A.jpg",
+     "sha256": "bb7c54ac396bc03b46643024a253420286a297a5d067ce92db85293a4c114a65"
+    }
+   },
+   "scale_ft_per_inch": 200,
+   "train_line_px": 1149688
+  },
+  {
+   "plate": "1A",
+   "spec": "1A",
+   "source": "map",
+   "weight": 1.0,
+   "size": [
+    5761,
+    4224
+   ],
+   "line_px": 354163,
+   "scored_share": 0.4989,
+   "area_in": "area_in.png",
+   "area_blank": false,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/1A_pred_area_ng1.png",
+    "source_sha256": "e43577972a3f8a8e80776829eab183f66bdc385f3268232cbf2479b895ecedc0",
+    "note": "out of sample: area_ng1 was not trained on 1A (the batch's own map)",
+    "sha256": "e43577972a3f8a8e80776829eab183f66bdc385f3268232cbf2479b895ecedc0"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "2ac533c0867d103c28442ed3ac9f2e320ae7bca33e90729a300097c4df9d6ded",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "e43577972a3f8a8e80776829eab183f66bdc385f3268232cbf2479b895ecedc0",
+     "in_manifest": true
+    },
+    "valmask.png": {
+     "sha256": "4b3bdd5d47772e6604f21cb2eba18bad660db4c1b614cf0ca13b03a4e6c014ad",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "acc0bbc4721b152f7cf4b650c292088dfee34d3324366214da2fd75172efa58d",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-1A.jpg",
+     "sha256": "ecb416deec8bb7ad12413b925d7a3e71fb47383096a63d6d4fbc408109b5dc9a"
+    }
+   },
+   "scale_ft_per_inch": 100,
+   "val_box": [
+    2841,
+    0,
+    5761,
+    4224
+   ],
+   "val_line_px": 123863,
+   "val_scored_px": 4530411,
+   "train_line_px": 230300
+  },
+  {
+   "plate": "5",
+   "spec": "5",
+   "source": "pseudo",
+   "weight": 0.454545,
+   "size": [
+    10076,
+    7150
+   ],
+   "line_px": 987314,
+   "scored_share": 0.4802,
+   "area_in": "blank (128): --area-blank",
+   "area_blank": true,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/5_pred_area_ng1.png",
+    "source_sha256": "8faccfedafd0e28fa2be9f8a16c7029fb33aa24d0c62dc6fa35943d4d55da627",
+    "note": "out of sample: area_ng1 was not trained on 5 (the batch's own map)",
+    "sha256": "8faccfedafd0e28fa2be9f8a16c7029fb33aa24d0c62dc6fa35943d4d55da627"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "73f357f1d1682bf032297f16646301050f40ad075150942e9b695d3b7a297123",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "8faccfedafd0e28fa2be9f8a16c7029fb33aa24d0c62dc6fa35943d4d55da627",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "70d14233bcb9001e608a08c6764297e5ca83283fc6de069df11cb5e2eb18d8e5",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-5.jpg",
+     "sha256": "839ff5a30f59413b930e4cbf08199bd013dffebfa011e67034a9e70b6ecf9ae6"
+    }
+   },
+   "scale_ft_per_inch": 100,
+   "train_line_px": 987314
+  },
+  {
+   "plate": "54A",
+   "spec": "54A",
+   "source": "pseudo",
+   "weight": 0.454545,
+   "size": [
+    10587,
+    7145
+   ],
+   "line_px": 1078375,
+   "scored_share": 0.445,
+   "area_in": "blank (128): --area-blank",
+   "area_blank": true,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/54A_pred_area_ng1.png",
+    "source_sha256": "d800835994ea6f9504592b7c589848edbe53d1f5fb8f2e54bc3d5224b086da10",
+    "note": "out of sample: area_ng1 was not trained on 54A (the batch's own map)",
+    "sha256": "d800835994ea6f9504592b7c589848edbe53d1f5fb8f2e54bc3d5224b086da10"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "55aed33e179eda8aa2797f24b9e2468944e92d27a50e63f459a4361f38d7a217",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "d800835994ea6f9504592b7c589848edbe53d1f5fb8f2e54bc3d5224b086da10",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "62db356fb115f5c0db3fdf411312c5ad4fe9ae708471d0c227b17d81cd199b86",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-54A.jpg",
+     "sha256": "75bc499140b5df1a865c22e24151b58d528ac82ac9543fb1c11d7646478504ed"
+    }
+   },
+   "scale_ft_per_inch": 100,
+   "train_line_px": 1078375
+  },
+  {
+   "plate": "53",
+   "spec": "53",
+   "source": "pseudo",
+   "weight": 0.454545,
+   "size": [
+    10740,
+    7225
+   ],
+   "line_px": 795152,
+   "scored_share": 0.3789,
+   "area_in": "blank (128): --area-blank",
+   "area_blank": true,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/53_pred_area_ng1.png",
+    "source_sha256": "e555f052a57ea8db9baec9b4af6dafefe17d1019a1ff512df872c592f04ed88f",
+    "note": "out of sample: area_ng1 was not trained on 53 (the batch's own map)",
+    "sha256": "e555f052a57ea8db9baec9b4af6dafefe17d1019a1ff512df872c592f04ed88f"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "8d8fcd7f50371c55d4e587872f9148a1e4f925df44245f225e100fa7013bd9e9",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "e555f052a57ea8db9baec9b4af6dafefe17d1019a1ff512df872c592f04ed88f",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "e77d2e2acda0bd3428102d67e820da3c5afe1613ec8c4166f98efd1bc2413e78",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-53.jpg",
+     "sha256": "1c41ff1efae7e1b3c07c23ea94b641cd913e5bed1fce270bcf5768d95f75a671"
+    }
+   },
+   "scale_ft_per_inch": 100,
+   "train_line_px": 795152
+  },
+  {
+   "plate": "7",
+   "spec": "7",
+   "source": "pseudo",
+   "weight": 0.454545,
+   "size": [
+    8067,
+    7230
+   ],
+   "line_px": 831141,
+   "scored_share": 0.436,
+   "area_in": "blank (128): --area-blank",
+   "area_blank": true,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/7_pred_area_ng1.png",
+    "source_sha256": "580d051c6f518a0f43dcb72fe6d4b0cce6e1b60d6c2ebf4688a80956066a9b1d",
+    "note": "out of sample: area_ng1 was not trained on 7 (the batch's own map)",
+    "sha256": "580d051c6f518a0f43dcb72fe6d4b0cce6e1b60d6c2ebf4688a80956066a9b1d"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "a27caaed3148c44df393abc532b83a9cd29305e3bdb7f8cdc6b8e453210e0479",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "580d051c6f518a0f43dcb72fe6d4b0cce6e1b60d6c2ebf4688a80956066a9b1d",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "e5edb0f38ec0132fc1d22937700e449b6c392199ae77abf14ce7350eda86137e",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-7.jpg",
+     "sha256": "26233661bf13a780e75a150668768170062703e754e887316a3b368b01090c4c"
+    }
+   },
+   "scale_ft_per_inch": 100,
+   "train_line_px": 831141
+  },
+  {
+   "plate": "51",
+   "spec": "51",
+   "source": "pseudo",
+   "weight": 0.454545,
+   "size": [
+    10692,
+    7183
+   ],
+   "line_px": 743724,
+   "scored_share": 0.2856,
+   "area_in": "blank (128): --area-blank",
+   "area_blank": true,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/51_pred_area_ng1.png",
+    "source_sha256": "b68c29449f1cf676c23cefe15bcc437b9ee22ef0c9ff309af7f5c4cf9def6711",
+    "note": "out of sample: area_ng1 was not trained on 51 (the batch's own map)",
+    "sha256": "b68c29449f1cf676c23cefe15bcc437b9ee22ef0c9ff309af7f5c4cf9def6711"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "36a7486bd799b0322fa811c2457247f2a959fb79b3cb00fd541f4baccb325444",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "b68c29449f1cf676c23cefe15bcc437b9ee22ef0c9ff309af7f5c4cf9def6711",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "4e008a9c0f75706f585b8c3ca8d82be71dc9f2182ed48f4d2344f5b90ae11f03",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-51.jpg",
+     "sha256": "f9bcc172bb1bc7c84f5a136c8e1cf578cdafb979b2b9b6cfa8ff2d1620ebef05"
+    }
+   },
+   "scale_ft_per_inch": 100,
+   "train_line_px": 743724
+  },
+  {
+   "plate": "58",
+   "spec": "58",
+   "source": "pseudo",
+   "weight": 0.454545,
+   "size": [
+    10730,
+    7133
+   ],
+   "line_px": 1042000,
+   "scored_share": 0.4664,
+   "area_in": "blank (128): --area-blank",
+   "area_blank": true,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/58_pred_area_ng1.png",
+    "source_sha256": "693ea04cb235cc9a908b373fd9a493488267d66a60f0ccd583d4dc9474d6d7b0",
+    "note": "out of sample: area_ng1 was not trained on 58 (the batch's own map)",
+    "sha256": "693ea04cb235cc9a908b373fd9a493488267d66a60f0ccd583d4dc9474d6d7b0"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "78f40425e86fcf3ecb5eff387e2585bf67ae0b3d5d3347eabaea60a12a7f4257",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "693ea04cb235cc9a908b373fd9a493488267d66a60f0ccd583d4dc9474d6d7b0",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "89e4fcac92ab3fd8be542c4533b9605a94a4a503ac4b4eb1158287b76a821978",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-58.jpg",
+     "sha256": "4ac1a8f01d6244a3f478ad57243b1472557ac2614e4181eab697cac7dd6a534a"
+    }
+   },
+   "scale_ft_per_inch": 100,
+   "train_line_px": 1042000
+  },
+  {
+   "plate": "66",
+   "spec": "66",
+   "source": "pseudo",
+   "weight": 0.454545,
+   "size": [
+    10068,
+    7114
+   ],
+   "line_px": 1288063,
+   "scored_share": 0.4783,
+   "area_in": "blank (128): --area-blank",
+   "area_blank": true,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/66_pred_area_ng1.png",
+    "source_sha256": "2b009a7db0583df0d93424ff68c427baa04b1db7228ffc55e024a2a86e2b3776",
+    "note": "out of sample: area_ng1 was not trained on 66 (the batch's own map)",
+    "sha256": "2b009a7db0583df0d93424ff68c427baa04b1db7228ffc55e024a2a86e2b3776"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "c8915951c6944ce4540c87d04b54682f9438e8387e645883e8bce5472e042f06",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "2b009a7db0583df0d93424ff68c427baa04b1db7228ffc55e024a2a86e2b3776",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "2ae36abd56ebf01d34cdaa585cc4372a55cc9883fd3cf87a9bc774d7b53a036e",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-66.jpg",
+     "sha256": "debe805e6af89ccd78d165f3d30a806c8ca3c8108a16b877e6801339133c6703"
+    }
+   },
+   "scale_ft_per_inch": 200,
+   "train_line_px": 1288063
+  },
+  {
+   "plate": "68",
+   "spec": "68",
+   "source": "pseudo",
+   "weight": 0.454545,
+   "size": [
+    10542,
+    7181
+   ],
+   "line_px": 1000206,
+   "scored_share": 0.387,
+   "area_in": "blank (128): --area-blank",
+   "area_blank": true,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/68_pred_area_ng1.png",
+    "source_sha256": "da129e7afba9279383c1d5fcd59263325d847c09e6d7f7bb3312a8f242999bdf",
+    "note": "out of sample: area_ng1 was not trained on 68 (the batch's own map)",
+    "sha256": "da129e7afba9279383c1d5fcd59263325d847c09e6d7f7bb3312a8f242999bdf"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "09f3ae39a5da06d1068b4390d3eefe7426c6c378d131cac252f095ffc123ac0e",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "da129e7afba9279383c1d5fcd59263325d847c09e6d7f7bb3312a8f242999bdf",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "911c5455d45e1f64fed030576f6c2ee388193cb93a46ef5430662871f96cbf87",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-68.jpg",
+     "sha256": "b9451c679b0706730667062a4c7608e8af062638641223c195969b02d0cbdae0"
+    }
+   },
+   "scale_ft_per_inch": 200,
+   "train_line_px": 1000206
+  },
+  {
+   "plate": "76",
+   "spec": "76",
+   "source": "pseudo",
+   "weight": 0.454545,
+   "size": [
+    10441,
+    7106
+   ],
+   "line_px": 1261610,
+   "scored_share": 0.4444,
+   "area_in": "blank (128): --area-blank",
+   "area_blank": true,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/76_pred_area_ng1.png",
+    "source_sha256": "ce0565b31083c9f8721012820377dbeb071b62eb1fd7627729b5a47ae5a3bfc6",
+    "note": "out of sample: area_ng1 was not trained on 76 (the batch's own map)",
+    "sha256": "ce0565b31083c9f8721012820377dbeb071b62eb1fd7627729b5a47ae5a3bfc6"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "18bf05a5d6bcb53f0bc5e4ef9705f9f26bfd3b00e72a7d7a812b9682498ed933",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "ce0565b31083c9f8721012820377dbeb071b62eb1fd7627729b5a47ae5a3bfc6",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "c7695a789cda043b0e1e5066b6a467aee327fa15c2fc5b4197c873c281ec6603",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-76.jpg",
+     "sha256": "c387f1b110ceca6129f541a8c84f171609aa40087cfd9a2c8e9690932f1b69b5"
+    }
+   },
+   "scale_ft_per_inch": 200,
+   "train_line_px": 1261610
+  },
+  {
+   "plate": "79",
+   "spec": "79",
+   "source": "pseudo",
+   "weight": 0.454545,
+   "size": [
+    11200,
+    7433
+   ],
+   "line_px": 1242046,
+   "scored_share": 0.3788,
+   "area_in": "blank (128): --area-blank",
+   "area_blank": true,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/79_pred_area_ng1.png",
+    "source_sha256": "d4110e335a01bf3561ff1195670775f9ebb92179e15953a4ff8af0245b80d6f6",
+    "note": "out of sample: area_ng1 was not trained on 79 (the batch's own map)",
+    "sha256": "d4110e335a01bf3561ff1195670775f9ebb92179e15953a4ff8af0245b80d6f6"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "d7994dae4554fb3c2ecc13217e732e5aaf8b2f1322c4020c5c8669b51c0d6d56",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "d4110e335a01bf3561ff1195670775f9ebb92179e15953a4ff8af0245b80d6f6",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "5ba383d88ff706e6884bb324b3cfce21370a0321c1aab277d45a3ad6b1621944",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-79.jpg",
+     "sha256": "8f01f65462c1c0e432852604351852dc06be25cd8f9fba4a0f1106a32a646b3d"
+    }
+   },
+   "scale_ft_per_inch": 200,
+   "train_line_px": 1242046
+  },
+  {
+   "plate": "89",
+   "spec": "89",
+   "source": "pseudo",
+   "weight": 0.454545,
+   "size": [
+    11107,
+    7433
+   ],
+   "line_px": 792243,
+   "scored_share": 0.2317,
+   "area_in": "blank (128): --area-blank",
+   "area_blank": true,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/89_pred_area_ng1.png",
+    "source_sha256": "bfa0af142f95ec376a2b86179fba68e71c12db42bc0ac63eb7fbe1a92c361234",
+    "note": "out of sample: area_ng1 was not trained on 89 (the batch's own map)",
+    "sha256": "bfa0af142f95ec376a2b86179fba68e71c12db42bc0ac63eb7fbe1a92c361234"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "6d88acf791c0c4b5e4d37ebcb1b9a64a7703476ac32e7e8051d253562dc11f0f",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "bfa0af142f95ec376a2b86179fba68e71c12db42bc0ac63eb7fbe1a92c361234",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "f775a9e43344888be873d2fdbf569492ba29a988d8acd9fdefe11adfe2aa6cf6",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-89.jpg",
+     "sha256": "1610000199d0df2e819da75c834c0461152659c08951b7ae51523ba49de5cc21"
+    }
+   },
+   "scale_ft_per_inch": 200,
+   "train_line_px": 792243
+  }
+ ],
+ "crops_drawn": {
+  "43": 2440,
+  "45": 2404,
+  "80": 2380,
+  "82A": 2299,
+  "1A": 2385,
+  "5": 1114,
+  "54A": 1077,
+  "53": 1130,
+  "7": 1057,
+  "51": 1065,
+  "58": 1050,
+  "66": 1121,
+  "68": 1104,
+  "76": 1131,
+  "79": 1154,
+  "89": 1089
+ },
+ "best": {
+  "iter": 3750,
+  "f1": 0.787243
+ },
+ "history": [
+  {
+   "iter": 250,
+   "loss": 0.7015,
+   "minutes": 2.9,
+   "train_s_per_iter": 0.696,
+   "val": {
+    "1A": {
+     "precision": 0.617368,
+     "recall": 0.702026,
+     "f1": 0.656981,
+     "drawn_px": 178775,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.617368,
+    "recall": 0.702026,
+    "f1": 0.656981,
+    "drawn_px": 178775,
+    "line_px": 123863
+   },
+   "best": true,
+   "val_s": 0.94
+  },
+  {
+   "iter": 500,
+   "loss": 0.7257,
+   "minutes": 5.81,
+   "train_s_per_iter": 0.695,
+   "val": {
+    "1A": {
+     "precision": 0.482067,
+     "recall": 0.745808,
+     "f1": 0.585612,
+     "drawn_px": 283666,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.482067,
+    "recall": 0.745808,
+    "f1": 0.585612,
+    "drawn_px": 283666,
+    "line_px": 123863
+   },
+   "val_s": 0.9
+  },
+  {
+   "iter": 750,
+   "loss": 0.7647,
+   "minutes": 8.73,
+   "train_s_per_iter": 0.695,
+   "val": {
+    "1A": {
+     "precision": 0.637785,
+     "recall": 0.708888,
+     "f1": 0.67146,
+     "drawn_px": 194727,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.637785,
+    "recall": 0.708888,
+    "f1": 0.67146,
+    "drawn_px": 194727,
+    "line_px": 123863
+   },
+   "best": true,
+   "val_s": 0.92
+  },
+  {
+   "iter": 1000,
+   "loss": 0.7405,
+   "minutes": 11.63,
+   "train_s_per_iter": 0.693,
+   "val": {
+    "1A": {
+     "precision": 0.481258,
+     "recall": 0.765346,
+     "f1": 0.590932,
+     "drawn_px": 307440,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.481258,
+    "recall": 0.765346,
+    "f1": 0.590932,
+    "drawn_px": 307440,
+    "line_px": 123863
+   },
+   "val_s": 0.9
+  },
+  {
+   "iter": 1250,
+   "loss": 0.4058,
+   "minutes": 14.53,
+   "train_s_per_iter": 0.693,
+   "val": {
+    "1A": {
+     "precision": 0.657309,
+     "recall": 0.737064,
+     "f1": 0.694906,
+     "drawn_px": 202252,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.657309,
+    "recall": 0.737064,
+    "f1": 0.694906,
+    "drawn_px": 202252,
+    "line_px": 123863
+   },
+   "best": true,
+   "val_s": 0.97
+  },
+  {
+   "iter": 1500,
+   "loss": 0.5787,
+   "minutes": 17.44,
+   "train_s_per_iter": 0.693,
+   "val": {
+    "1A": {
+     "precision": 0.720404,
+     "recall": 0.657476,
+     "f1": 0.687503,
+     "drawn_px": 151222,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.720404,
+    "recall": 0.657476,
+    "f1": 0.687503,
+    "drawn_px": 151222,
+    "line_px": 123863
+   },
+   "val_s": 0.88
+  },
+  {
+   "iter": 1750,
+   "loss": 0.8412,
+   "minutes": 20.34,
+   "train_s_per_iter": 0.692,
+   "val": {
+    "1A": {
+     "precision": 0.657336,
+     "recall": 0.703172,
+     "f1": 0.679482,
+     "drawn_px": 199300,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.657336,
+    "recall": 0.703172,
+    "f1": 0.679482,
+    "drawn_px": 199300,
+    "line_px": 123863
+   },
+   "val_s": 0.9
+  },
+  {
+   "iter": 2000,
+   "loss": 0.5212,
+   "minutes": 23.24,
+   "train_s_per_iter": 0.693,
+   "val": {
+    "1A": {
+     "precision": 0.788538,
+     "recall": 0.70402,
+     "f1": 0.743886,
+     "drawn_px": 159565,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.788538,
+    "recall": 0.70402,
+    "f1": 0.743886,
+    "drawn_px": 159565,
+    "line_px": 123863
+   },
+   "best": true,
+   "val_s": 0.92
+  },
+  {
+   "iter": 2250,
+   "loss": 0.3636,
+   "minutes": 26.14,
+   "train_s_per_iter": 0.693,
+   "val": {
+    "1A": {
+     "precision": 0.720874,
+     "recall": 0.743806,
+     "f1": 0.73216,
+     "drawn_px": 201013,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.720874,
+    "recall": 0.743806,
+    "f1": 0.73216,
+    "drawn_px": 201013,
+    "line_px": 123863
+   },
+   "val_s": 0.92
+  },
+  {
+   "iter": 2500,
+   "loss": 0.3793,
+   "minutes": 29.05,
+   "train_s_per_iter": 0.693,
+   "val": {
+    "1A": {
+     "precision": 0.804704,
+     "recall": 0.746882,
+     "f1": 0.774715,
+     "drawn_px": 176148,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.804704,
+    "recall": 0.746882,
+    "f1": 0.774715,
+    "drawn_px": 176148,
+    "line_px": 123863
+   },
+   "best": true,
+   "val_s": 0.93
+  },
+  {
+   "iter": 2750,
+   "loss": 0.4273,
+   "minutes": 31.95,
+   "train_s_per_iter": 0.693,
+   "val": {
+    "1A": {
+     "precision": 0.817049,
+     "recall": 0.745541,
+     "f1": 0.779659,
+     "drawn_px": 175654,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.817049,
+    "recall": 0.745541,
+    "f1": 0.779659,
+    "drawn_px": 175654,
+    "line_px": 123863
+   },
+   "best": true,
+   "val_s": 0.94
+  },
+  {
+   "iter": 3000,
+   "loss": 0.4837,
+   "minutes": 34.86,
+   "train_s_per_iter": 0.694,
+   "val": {
+    "1A": {
+     "precision": 0.765493,
+     "recall": 0.762124,
+     "f1": 0.763805,
+     "drawn_px": 198715,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.765493,
+    "recall": 0.762124,
+    "f1": 0.763805,
+    "drawn_px": 198715,
+    "line_px": 123863
+   },
+   "val_s": 0.89
+  },
+  {
+   "iter": 3250,
+   "loss": 0.4143,
+   "minutes": 37.77,
+   "train_s_per_iter": 0.695,
+   "val": {
+    "1A": {
+     "precision": 0.837496,
+     "recall": 0.739543,
+     "f1": 0.785477,
+     "drawn_px": 170051,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.837496,
+    "recall": 0.739543,
+    "f1": 0.785477,
+    "drawn_px": 170051,
+    "line_px": 123863
+   },
+   "best": true,
+   "val_s": 0.94
+  },
+  {
+   "iter": 3500,
+   "loss": 0.4351,
+   "minutes": 40.67,
+   "train_s_per_iter": 0.694,
+   "val": {
+    "1A": {
+     "precision": 0.819347,
+     "recall": 0.755125,
+     "f1": 0.785926,
+     "drawn_px": 180451,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.819347,
+    "recall": 0.755125,
+    "f1": 0.785926,
+    "drawn_px": 180451,
+    "line_px": 123863
+   },
+   "best": true,
+   "val_s": 0.95
+  },
+  {
+   "iter": 3750,
+   "loss": 0.5807,
+   "minutes": 43.59,
+   "train_s_per_iter": 0.695,
+   "val": {
+    "1A": {
+     "precision": 0.83666,
+     "recall": 0.743337,
+     "f1": 0.787243,
+     "drawn_px": 169205,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.83666,
+    "recall": 0.743337,
+    "f1": 0.787243,
+    "drawn_px": 169205,
+    "line_px": 123863
+   },
+   "best": true,
+   "val_s": 0.95
+  },
+  {
+   "iter": 4000,
+   "loss": 0.4571,
+   "minutes": 46.5,
+   "train_s_per_iter": 0.697,
+   "val": {
+    "1A": {
+     "precision": 0.832196,
+     "recall": 0.746228,
+     "f1": 0.786871,
+     "drawn_px": 171086,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.832196,
+    "recall": 0.746228,
+    "f1": 0.786871,
+    "drawn_px": 171086,
+    "line_px": 123863
+   },
+   "val_s": 0.91
+  }
+ ],
+ "minutes": 46.52,
+ "process_peak": {
+  "working_set_gb": 8.177,
+  "peak_working_set_gb": 8.391,
+  "private_gb": 13.863,
+  "peak_private_gb": 14.077
+ }
+}

@@ -1,0 +1,670 @@
+{
+ "name": "lines_v2a_s1",
+ "kind": "lines",
+ "mode": "data",
+ "data": "C:\\Users\\peckb\\Documents\\_Personal\\_Cincinnati Rail\\3D\\data\\sanborn\\train_v2",
+ "manifest_sha256": "60e8907456bcc2af9d06739ce5e8120b17a60f9c34fb26fb0ca28a113c940948",
+ "manifest_content_sha256": "59175f6722827f6fbf56d29f96f960701dc2bfcdba369cf6329fb3e3b00373cd",
+ "seed": 1,
+ "git": {
+  "commit": "35a2a8969963de0bbe7d74baeb34174451ceaa59",
+  "branch": "hub_region",
+  "unet_dir_changes": []
+ },
+ "trainer": {
+  "file": "C:\\Users\\peckb\\Documents\\_Personal\\_Cincinnati Rail\\3D\\tools\\sanborn\\unet\\edgenet.py",
+  "sha256": "5d2f49dc634cabd5283a1008176ee3b82cfdb045557cf45682d4e0d637b140dc",
+  "unet": "C:\\Users\\peckb\\Documents\\_Personal\\_Cincinnati Rail\\3D\\tools\\sanborn\\unet\\unet.py",
+  "unet_sha256": "d90f2c4e40cc3516155b24f6201c6f0107339a69f0586c46e2a9ea3abd7a2375"
+ },
+ "torch": "2.4.1+cpu",
+ "device": "AMD Radeon RX 7900 XTX",
+ "argv": [
+  "train",
+  "lines_v2a_s1",
+  "--data",
+  "C:\\Users\\peckb\\Documents\\_Personal\\_Cincinnati Rail\\3D\\data\\sanborn\\train_v2",
+  "43",
+  "45",
+  "80",
+  "82A",
+  "1A",
+  "--seed",
+  "1",
+  "--iters",
+  "4000",
+  "--out",
+  "C:\\Users\\peckb\\Documents\\_Personal\\_Cincinnati Rail\\3D\\data\\sanborn\\train_v2_runs\\models"
+ ],
+ "iters": 4000,
+ "crop": 448,
+ "batch": 6,
+ "line_px": 3,
+ "tol_px": 3,
+ "no_guide": true,
+ "guide_moved_or_blanked": false,
+ "area_blank": [],
+ "area_blank_plates": [],
+ "val_every": 250,
+ "select_by": "F1 of precision and recall (score()) on the validation pixels pooled over the plates",
+ "sampling": "plate first (probability weight / sum), then a crop on it",
+ "val_scope": "the validation pixels predicted from their own bounding box, with area_in.png (area_ng1's map) as the 7th input; eval_v2 predicts the whole plate with the new area network's map",
+ "load": {
+  "seconds": 5.8,
+  "stored_bytes": 1546604020,
+  "process_after_load": {
+   "working_set_gb": 2.03,
+   "peak_working_set_gb": 2.105,
+   "private_gb": 2.604,
+   "peak_private_gb": 2.679
+  }
+ },
+ "plates": [
+  {
+   "plate": "43",
+   "spec": "43",
+   "source": "label",
+   "weight": 1.0,
+   "size": [
+    10543,
+    7243
+   ],
+   "line_px": 932895,
+   "scored_share": 0.8433,
+   "area_in": "area_in.png",
+   "area_blank": false,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/43_pred_area_ng1.png",
+    "source_sha256": "4eab8493855d974f369ddde218b184c5dde04733dc8802a957a1932d6898e32f",
+    "note": "IN SAMPLE: area_ng1 was trained on this plate (train_noguide.py: 82A, 80, 43, 45)",
+    "sha256": "4eab8493855d974f369ddde218b184c5dde04733dc8802a957a1932d6898e32f"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "fda87473662a2a73de9fb0b9be6df282c0892c6b32a8a5f85203883f6431678c",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "4eab8493855d974f369ddde218b184c5dde04733dc8802a957a1932d6898e32f",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "1fc188779d0e7d023467a0a963c6287089690e2e26aaa4a4cce9697f9d1c0568",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-43.jpg",
+     "sha256": "12e667cb4b39243ab34a9e406bed0d4dbfdaebdf8c68372339c22aa341996a72"
+    }
+   },
+   "scale_ft_per_inch": 100,
+   "train_line_px": 932895
+  },
+  {
+   "plate": "45",
+   "spec": "45",
+   "source": "label",
+   "weight": 1.0,
+   "size": [
+    10681,
+    6190
+   ],
+   "line_px": 1230588,
+   "scored_share": 0.693,
+   "area_in": "area_in.png",
+   "area_blank": false,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/45_pred_area_ng1.png",
+    "source_sha256": "649677e8c304a13fb41eac9fd7929418feac323dc8a5164ae1eff1ee22c98d25",
+    "note": "IN SAMPLE: area_ng1 was trained on this plate (train_noguide.py: 82A, 80, 43, 45)",
+    "sha256": "649677e8c304a13fb41eac9fd7929418feac323dc8a5164ae1eff1ee22c98d25"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "ad7994f1ba2961594b792a9497d869ccf9382ee50306d31019b8d7a3e21a8156",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "649677e8c304a13fb41eac9fd7929418feac323dc8a5164ae1eff1ee22c98d25",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "ae49ec77d097631e79c94fae7a555f19482e9550c4c0f41e4fe3a01e6975ab48",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-45.jpg",
+     "sha256": "880c53b0addb7d1beb18cb5efadde0b2840b7136bb90a889df6a3125e68a2b35"
+    }
+   },
+   "scale_ft_per_inch": 200,
+   "train_line_px": 1230588
+  },
+  {
+   "plate": "80",
+   "spec": "80",
+   "source": "label",
+   "weight": 1.0,
+   "size": [
+    9295,
+    7152
+   ],
+   "line_px": 765032,
+   "scored_share": 0.5967,
+   "area_in": "area_in.png",
+   "area_blank": false,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/80_pred_area_ng1.png",
+    "source_sha256": "1967d356934374d50e3e2fa0a75019260fbe694cb2de6e165af13138984cab55",
+    "note": "IN SAMPLE: area_ng1 was trained on this plate (train_noguide.py: 82A, 80, 43, 45)",
+    "sha256": "1967d356934374d50e3e2fa0a75019260fbe694cb2de6e165af13138984cab55"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "76f2257befa15bc160ab10f84b97904f53b388d8ffe41f6b86636bbb61ca7653",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "1967d356934374d50e3e2fa0a75019260fbe694cb2de6e165af13138984cab55",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "4383ca225829459f15cb1f2b1caa517be8af4f215819284cfc5fdc4aa82ed014",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-80.jpg",
+     "sha256": "2b880e681b7f10126ce27025dc754cc8e46c589d534777527e1bde6d5745847a"
+    }
+   },
+   "scale_ft_per_inch": 200,
+   "train_line_px": 765032
+  },
+  {
+   "plate": "82A",
+   "spec": "82A",
+   "source": "label",
+   "weight": 1.0,
+   "size": [
+    10713,
+    7097
+   ],
+   "line_px": 1149688,
+   "scored_share": 0.6957,
+   "area_in": "area_in.png",
+   "area_blank": false,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/82A_pred_area_ng1.png",
+    "source_sha256": "3da4419bfb7d794ca191905ed738b88732dc5822d7f62d1e944257de1087654b",
+    "note": "IN SAMPLE: area_ng1 was trained on this plate (train_noguide.py: 82A, 80, 43, 45)",
+    "sha256": "3da4419bfb7d794ca191905ed738b88732dc5822d7f62d1e944257de1087654b"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "6fa0e5055bab52c3a61a842e00ddd2e1e4faa7e9784e2cf754dada6c674a3bb3",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "3da4419bfb7d794ca191905ed738b88732dc5822d7f62d1e944257de1087654b",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "479f70249a92fe5d0a53c972edd6ef72da0059df30ae8e022aa25f46577d653a",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-82A.jpg",
+     "sha256": "bb7c54ac396bc03b46643024a253420286a297a5d067ce92db85293a4c114a65"
+    }
+   },
+   "scale_ft_per_inch": 200,
+   "train_line_px": 1149688
+  },
+  {
+   "plate": "1A",
+   "spec": "1A",
+   "source": "map",
+   "weight": 1.0,
+   "size": [
+    5761,
+    4224
+   ],
+   "line_px": 354163,
+   "scored_share": 0.4989,
+   "area_in": "area_in.png",
+   "area_blank": false,
+   "area_in_meta": {
+    "made": "copied byte for byte from data/sanborn/unet_data/1A_pred_area_ng1.png",
+    "source_sha256": "e43577972a3f8a8e80776829eab183f66bdc385f3268232cbf2479b895ecedc0",
+    "note": "out of sample: area_ng1 was not trained on 1A (the batch's own map)",
+    "sha256": "e43577972a3f8a8e80776829eab183f66bdc385f3268232cbf2479b895ecedc0"
+   },
+   "files": {
+    "lines.png": {
+     "sha256": "2ac533c0867d103c28442ed3ac9f2e320ae7bca33e90729a300097c4df9d6ded",
+     "in_manifest": true
+    },
+    "area_in.png": {
+     "sha256": "e43577972a3f8a8e80776829eab183f66bdc385f3268232cbf2479b895ecedc0",
+     "in_manifest": true
+    },
+    "valmask.png": {
+     "sha256": "4b3bdd5d47772e6604f21cb2eba18bad660db4c1b614cf0ca13b03a4e6c014ad",
+     "in_manifest": true
+    },
+    "meta.json": {
+     "sha256": "acc0bbc4721b152f7cf4b650c292088dfee34d3324366214da2fd75172efa58d",
+     "in_manifest": true
+    },
+    "scan": {
+     "path": "C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn/cufp/22-1A.jpg",
+     "sha256": "ecb416deec8bb7ad12413b925d7a3e71fb47383096a63d6d4fbc408109b5dc9a"
+    }
+   },
+   "scale_ft_per_inch": 100,
+   "val_box": [
+    2841,
+    0,
+    5761,
+    4224
+   ],
+   "val_line_px": 123863,
+   "val_scored_px": 4530411,
+   "train_line_px": 230300
+  }
+ ],
+ "crops_drawn": {
+  "43": 4846,
+  "45": 4798,
+  "80": 4805,
+  "82A": 4760,
+  "1A": 4791
+ },
+ "best": {
+  "iter": 3750,
+  "f1": 0.766469
+ },
+ "history": [
+  {
+   "iter": 250,
+   "loss": 0.6364,
+   "minutes": 2.91,
+   "train_s_per_iter": 0.699,
+   "val": {
+    "1A": {
+     "precision": 0.792986,
+     "recall": 0.671322,
+     "f1": 0.7271,
+     "drawn_px": 130305,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.792986,
+    "recall": 0.671322,
+    "f1": 0.7271,
+    "drawn_px": 130305,
+    "line_px": 123863
+   },
+   "best": true,
+   "val_s": 0.93
+  },
+  {
+   "iter": 500,
+   "loss": 0.5814,
+   "minutes": 5.84,
+   "train_s_per_iter": 0.699,
+   "val": {
+    "1A": {
+     "precision": 0.622085,
+     "recall": 0.710115,
+     "f1": 0.663191,
+     "drawn_px": 175534,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.622085,
+    "recall": 0.710115,
+    "f1": 0.663191,
+    "drawn_px": 175534,
+    "line_px": 123863
+   },
+   "val_s": 0.91
+  },
+  {
+   "iter": 750,
+   "loss": 0.3198,
+   "minutes": 8.76,
+   "train_s_per_iter": 0.697,
+   "val": {
+    "1A": {
+     "precision": 0.738311,
+     "recall": 0.685992,
+     "f1": 0.71119,
+     "drawn_px": 147595,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.738311,
+    "recall": 0.685992,
+    "f1": 0.71119,
+    "drawn_px": 147595,
+    "line_px": 123863
+   },
+   "val_s": 0.91
+  },
+  {
+   "iter": 1000,
+   "loss": 0.5111,
+   "minutes": 11.65,
+   "train_s_per_iter": 0.689,
+   "val": {
+    "1A": {
+     "precision": 0.776584,
+     "recall": 0.608624,
+     "f1": 0.682421,
+     "drawn_px": 125761,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.776584,
+    "recall": 0.608624,
+    "f1": 0.682421,
+    "drawn_px": 125761,
+    "line_px": 123863
+   },
+   "val_s": 0.92
+  },
+  {
+   "iter": 1250,
+   "loss": 0.7168,
+   "minutes": 14.56,
+   "train_s_per_iter": 0.696,
+   "val": {
+    "1A": {
+     "precision": 0.791405,
+     "recall": 0.707596,
+     "f1": 0.747158,
+     "drawn_px": 146921,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.791405,
+    "recall": 0.707596,
+    "f1": 0.747158,
+    "drawn_px": 146921,
+    "line_px": 123863
+   },
+   "best": true,
+   "val_s": 0.94
+  },
+  {
+   "iter": 1500,
+   "loss": 0.1935,
+   "minutes": 17.47,
+   "train_s_per_iter": 0.693,
+   "val": {
+    "1A": {
+     "precision": 0.728178,
+     "recall": 0.700258,
+     "f1": 0.713945,
+     "drawn_px": 158313,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.728178,
+    "recall": 0.700258,
+    "f1": 0.713945,
+    "drawn_px": 158313,
+    "line_px": 123863
+   },
+   "val_s": 0.95
+  },
+  {
+   "iter": 1750,
+   "loss": 0.341,
+   "minutes": 20.33,
+   "train_s_per_iter": 0.683,
+   "val": {
+    "1A": {
+     "precision": 0.771421,
+     "recall": 0.704238,
+     "f1": 0.7363,
+     "drawn_px": 154008,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.771421,
+    "recall": 0.704238,
+    "f1": 0.7363,
+    "drawn_px": 154008,
+    "line_px": 123863
+   },
+   "val_s": 0.88
+  },
+  {
+   "iter": 2000,
+   "loss": 0.6418,
+   "minutes": 23.16,
+   "train_s_per_iter": 0.677,
+   "val": {
+    "1A": {
+     "precision": 0.745436,
+     "recall": 0.744508,
+     "f1": 0.744972,
+     "drawn_px": 165880,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.745436,
+    "recall": 0.744508,
+    "f1": 0.744972,
+    "drawn_px": 165880,
+    "line_px": 123863
+   },
+   "val_s": 0.89
+  },
+  {
+   "iter": 2250,
+   "loss": 0.3029,
+   "minutes": 26.07,
+   "train_s_per_iter": 0.694,
+   "val": {
+    "1A": {
+     "precision": 0.75501,
+     "recall": 0.732083,
+     "f1": 0.74337,
+     "drawn_px": 162688,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.75501,
+    "recall": 0.732083,
+    "f1": 0.74337,
+    "drawn_px": 162688,
+    "line_px": 123863
+   },
+   "val_s": 0.9
+  },
+  {
+   "iter": 2500,
+   "loss": 0.4743,
+   "minutes": 28.98,
+   "train_s_per_iter": 0.695,
+   "val": {
+    "1A": {
+     "precision": 0.802518,
+     "recall": 0.69857,
+     "f1": 0.746945,
+     "drawn_px": 136397,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.802518,
+    "recall": 0.69857,
+    "f1": 0.746945,
+    "drawn_px": 136397,
+    "line_px": 123863
+   },
+   "val_s": 0.87
+  },
+  {
+   "iter": 2750,
+   "loss": 0.4493,
+   "minutes": 31.89,
+   "train_s_per_iter": 0.695,
+   "val": {
+    "1A": {
+     "precision": 0.788689,
+     "recall": 0.727828,
+     "f1": 0.757037,
+     "drawn_px": 168680,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.788689,
+    "recall": 0.727828,
+    "f1": 0.757037,
+    "drawn_px": 168680,
+    "line_px": 123863
+   },
+   "best": true,
+   "val_s": 0.91
+  },
+  {
+   "iter": 3000,
+   "loss": 0.5977,
+   "minutes": 34.8,
+   "train_s_per_iter": 0.695,
+   "val": {
+    "1A": {
+     "precision": 0.780563,
+     "recall": 0.72602,
+     "f1": 0.752304,
+     "drawn_px": 158191,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.780563,
+    "recall": 0.72602,
+    "f1": 0.752304,
+    "drawn_px": 158191,
+    "line_px": 123863
+   },
+   "val_s": 0.87
+  },
+  {
+   "iter": 3250,
+   "loss": 0.5684,
+   "minutes": 37.7,
+   "train_s_per_iter": 0.692,
+   "val": {
+    "1A": {
+     "precision": 0.806108,
+     "recall": 0.71768,
+     "f1": 0.759328,
+     "drawn_px": 155963,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.806108,
+    "recall": 0.71768,
+    "f1": 0.759328,
+    "drawn_px": 155963,
+    "line_px": 123863
+   },
+   "best": true,
+   "val_s": 0.96
+  },
+  {
+   "iter": 3500,
+   "loss": 0.528,
+   "minutes": 40.61,
+   "train_s_per_iter": 0.695,
+   "val": {
+    "1A": {
+     "precision": 0.774582,
+     "recall": 0.748367,
+     "f1": 0.761249,
+     "drawn_px": 171082,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.774582,
+    "recall": 0.748367,
+    "f1": 0.761249,
+    "drawn_px": 171082,
+    "line_px": 123863
+   },
+   "best": true,
+   "val_s": 0.93
+  },
+  {
+   "iter": 3750,
+   "loss": 0.1524,
+   "minutes": 43.51,
+   "train_s_per_iter": 0.693,
+   "val": {
+    "1A": {
+     "precision": 0.801842,
+     "recall": 0.734085,
+     "f1": 0.766469,
+     "drawn_px": 161316,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.801842,
+    "recall": 0.734085,
+    "f1": 0.766469,
+    "drawn_px": 161316,
+    "line_px": 123863
+   },
+   "best": true,
+   "val_s": 0.92
+  },
+  {
+   "iter": 4000,
+   "loss": 0.3632,
+   "minutes": 46.42,
+   "train_s_per_iter": 0.694,
+   "val": {
+    "1A": {
+     "precision": 0.792905,
+     "recall": 0.73742,
+     "f1": 0.764156,
+     "drawn_px": 162621,
+     "line_px": 123863
+    }
+   },
+   "val_pooled": {
+    "precision": 0.792905,
+    "recall": 0.73742,
+    "f1": 0.764156,
+    "drawn_px": 162621,
+    "line_px": 123863
+   },
+   "val_s": 0.94
+  }
+ ],
+ "minutes": 46.44,
+ "process_peak": {
+  "working_set_gb": 3.416,
+  "peak_working_set_gb": 4.193,
+  "private_gb": 9.894,
+  "peak_private_gb": 10.109
+ }
+}

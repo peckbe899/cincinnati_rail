@@ -1,0 +1,388 @@
+{
+ "made": "2026-11-24 15:31:20",
+ "iters": 4000,
+ "rows": [
+  {
+   "step": "baseline",
+   "variant": "baseline (area_ng1 + lines_ng1)",
+   "seed": null,
+   "eval": "train_v2_runs\\eval\\baseline\\eval_v2.json",
+   "44": {
+    "PQ": 0.5106,
+    "PQ_decided": 0.5381,
+    "recall_interior": 0.6256,
+    "precision": 0.8333,
+    "merges": 12.1667,
+    "fp": 10.8333,
+    "ben_blocks_closed": 4.8333,
+    "PQ_sd_over_grids": 0.0288,
+    "grids": [
+     "grid0",
+     "grid1",
+     "grid2",
+     "grid3",
+     "grid4",
+     "grid5"
+    ]
+   },
+   "44_paired_gain": {
+    "PQ": {
+     "mean": 0.0,
+     "grids_up": 0,
+     "of": 6
+    },
+    "recall_interior": {
+     "mean": 0.0,
+     "grids_up": 0,
+     "of": 6
+    },
+    "precision": {
+     "mean": 0.0,
+     "grids_up": 0,
+     "of": 6
+    }
+   },
+   "1A_region": {
+    "PQ": 0.0928,
+    "PQ_decided": 0.0928,
+    "recall_interior": 0.6629,
+    "precision": 0.8872,
+    "merges": 3,
+    "fp": 6,
+    "ben_blocks_closed": 0
+   },
+   "1A_region_blocks": 9
+  },
+  {
+   "step": "V1S1",
+   "variant": "V1",
+   "seed": 1,
+   "eval": "train_v2_runs\\eval\\V1S1\\eval_v2.json",
+   "area": {
+    "best_iter": 3500,
+    "val": 0.869114,
+    "last_val": 0.863791,
+    "minutes": 45.15,
+    "iters": 4000,
+    "seed": 1,
+    "manifest": "60e8907456bc",
+    "area_blank": null
+   },
+   "lines": {
+    "best_iter": 3750,
+    "val": 0.766469,
+    "last_val": 0.764156,
+    "minutes": 46.44,
+    "iters": 4000,
+    "seed": 1,
+    "manifest": "60e8907456bc",
+    "area_blank": []
+   },
+   "44": {
+    "PQ": 0.3684,
+    "PQ_decided": 0.4392,
+    "recall_interior": 0.4581,
+    "precision": 0.6327,
+    "merges": 12.6667,
+    "fp": 22.1667,
+    "ben_blocks_closed": 0.1667,
+    "PQ_sd_over_grids": 0.0262,
+    "grids": [
+     "grid0",
+     "grid1",
+     "grid2",
+     "grid3",
+     "grid4",
+     "grid5"
+    ]
+   },
+   "44_paired_gain": {
+    "PQ": {
+     "mean": -0.1421,
+     "grids_up": 0,
+     "of": 6
+    },
+    "recall_interior": {
+     "mean": -0.1676,
+     "grids_up": 0,
+     "of": 6
+    },
+    "precision": {
+     "mean": -0.2006,
+     "grids_up": 0,
+     "of": 6
+    }
+   },
+   "1A_region": {
+    "PQ": 0.1042,
+    "PQ_decided": 0.1042,
+    "recall_interior": 0.6999,
+    "precision": 0.8839,
+    "merges": 3,
+    "fp": 4,
+    "ben_blocks_closed": 0
+   },
+   "1A_region_blocks": 9
+  },
+  {
+   "step": "V2S1",
+   "variant": "V2",
+   "seed": 1,
+   "eval": "train_v2_runs\\eval\\V2S1\\eval_v2.json",
+   "area": {
+    "best_iter": 3000,
+    "val": 0.876257,
+    "last_val": 0.873559,
+    "minutes": 45.36,
+    "iters": 4000,
+    "seed": 1,
+    "manifest": "60e8907456bc",
+    "area_blank": null
+   },
+   "lines": {
+    "best_iter": 3750,
+    "val": 0.787243,
+    "last_val": 0.786871,
+    "minutes": 46.52,
+    "iters": 4000,
+    "seed": 1,
+    "manifest": "60e8907456bc",
+    "area_blank": [
+     "PSEUDO"
+    ]
+   },
+   "44": {
+    "PQ": 0.4384,
+    "PQ_decided": 0.498,
+    "recall_interior": 0.3951,
+    "precision": 0.7112,
+    "merges": 9.8333,
+    "fp": 18.5,
+    "ben_blocks_closed": 1.0,
+    "PQ_sd_over_grids": 0.0133,
+    "grids": [
+     "grid0",
+     "grid1",
+     "grid2",
+     "grid3",
+     "grid4",
+     "grid5"
+    ]
+   },
+   "44_paired_gain": {
+    "PQ": {
+     "mean": -0.0722,
+     "grids_up": 0,
+     "of": 6
+    },
+    "recall_interior": {
+     "mean": -0.2306,
+     "grids_up": 0,
+     "of": 6
+    },
+    "precision": {
+     "mean": -0.1221,
+     "grids_up": 0,
+     "of": 6
+    }
+   },
+   "1A_region": {
+    "PQ": 0.2559,
+    "PQ_decided": 0.2567,
+    "recall_interior": 0.6291,
+    "precision": 0.9218,
+    "merges": 3,
+    "fp": 2,
+    "ben_blocks_closed": 0
+   },
+   "1A_region_blocks": 9
+  },
+  {
+   "step": "V1S2",
+   "variant": "V1",
+   "seed": 2,
+   "eval": "train_v2_runs\\eval\\V1S2\\eval_v2.json",
+   "area": {
+    "best_iter": 3500,
+    "val": 0.912278,
+    "last_val": 0.909289,
+    "minutes": 44.72,
+    "iters": 4000,
+    "seed": 2,
+    "manifest": "60e8907456bc",
+    "area_blank": null
+   },
+   "lines": {
+    "best_iter": 4000,
+    "val": 0.767978,
+    "last_val": 0.767978,
+    "minutes": 46.03,
+    "iters": 4000,
+    "seed": 2,
+    "manifest": "60e8907456bc",
+    "area_blank": []
+   },
+   "44": {
+    "PQ": 0.4705,
+    "PQ_decided": 0.5111,
+    "recall_interior": 0.5306,
+    "precision": 0.6778,
+    "merges": 10.3333,
+    "fp": 13.6667,
+    "ben_blocks_closed": 0.6667,
+    "PQ_sd_over_grids": 0.0194,
+    "grids": [
+     "grid0",
+     "grid1",
+     "grid2",
+     "grid3",
+     "grid4",
+     "grid5"
+    ]
+   },
+   "44_paired_gain": {
+    "PQ": {
+     "mean": -0.0401,
+     "grids_up": 1,
+     "of": 6
+    },
+    "recall_interior": {
+     "mean": -0.095,
+     "grids_up": 0,
+     "of": 6
+    },
+    "precision": {
+     "mean": -0.1555,
+     "grids_up": 0,
+     "of": 6
+    }
+   },
+   "1A_region": {
+    "PQ": 0.3557,
+    "PQ_decided": 0.3561,
+    "recall_interior": 0.734,
+    "precision": 0.9651,
+    "merges": 3,
+    "fp": 3,
+    "ben_blocks_closed": 1
+   },
+   "1A_region_blocks": 9
+  },
+  {
+   "step": "V2S2",
+   "variant": "V2",
+   "seed": 2,
+   "eval": "train_v2_runs\\eval\\V2S2\\eval_v2.json",
+   "area": {
+    "best_iter": 3000,
+    "val": 0.92548,
+    "last_val": 0.895512,
+    "minutes": 45.17,
+    "iters": 4000,
+    "seed": 2,
+    "manifest": "60e8907456bc",
+    "area_blank": null
+   },
+   "lines": {
+    "best_iter": 3000,
+    "val": 0.760244,
+    "last_val": 0.759284,
+    "minutes": 46.48,
+    "iters": 4000,
+    "seed": 2,
+    "manifest": "60e8907456bc",
+    "area_blank": [
+     "PSEUDO"
+    ]
+   },
+   "44": {
+    "PQ": 0.4823,
+    "PQ_decided": 0.5475,
+    "recall_interior": 0.6122,
+    "precision": 0.779,
+    "merges": 12.0,
+    "fp": 18.1667,
+    "ben_blocks_closed": 5.8333,
+    "PQ_sd_over_grids": 0.0099,
+    "grids": [
+     "grid0",
+     "grid1",
+     "grid2",
+     "grid3",
+     "grid4",
+     "grid5"
+    ]
+   },
+   "44_paired_gain": {
+    "PQ": {
+     "mean": -0.0283,
+     "grids_up": 1,
+     "of": 6
+    },
+    "recall_interior": {
+     "mean": -0.0135,
+     "grids_up": 1,
+     "of": 6
+    },
+    "precision": {
+     "mean": -0.0543,
+     "grids_up": 0,
+     "of": 6
+    }
+   },
+   "1A_region": {
+    "PQ": 0.263,
+    "PQ_decided": 0.2631,
+    "recall_interior": 0.7667,
+    "precision": 0.9566,
+    "merges": 3,
+    "fp": 2,
+    "ben_blocks_closed": 0
+   },
+   "1A_region_blocks": 9
+  }
+ ],
+ "by_variant": {
+  "V1": {
+   "seeds": 2,
+   "PQ_44_mean": 0.4194,
+   "PQ_44_seed_range": [
+    0.3684,
+    0.4705
+   ],
+   "paired_gain_mean": -0.0911,
+   "PQ_1A_region_mean": 0.23
+  },
+  "V2": {
+   "seeds": 2,
+   "PQ_44_mean": 0.4604,
+   "PQ_44_seed_range": [
+    0.4384,
+    0.4823
+   ],
+   "paired_gain_mean": -0.0503,
+   "PQ_1A_region_mean": 0.2595
+  }
+ },
+ "decision": {
+  "done": true,
+  "noise_pq": 0.1021,
+  "v2_minus_v1_by_seed": [
+   0.07,
+   0.0118
+  ],
+  "variant": "V1",
+  "variant_why": "V2 does not beat V1 for both seeds by more than the noise on average: V1, the simpler",
+  "paired_gain_by_seed": [
+   -0.1421,
+   -0.0401
+  ],
+  "ships": false,
+  "ship_why": "V1 does not beat area_ng1 + lines_ng1 on 44 for both seeds by more than the noise on average: the batch pair stays",
+  "seed": null,
+  "seed_why": null,
+  "pair": "area_ng1 + lines_ng1 (unchanged)",
+  "caution": "44 chose between V1, V2 and keeping the batch pair, so the shipped pair's 44 numbers are a little optimistic; plate 90, once Ben has checked its lines, is the untouched check"
+ },
+ "note": "44: mean over the 6 tile grids of bench44 with the merged outline step (eval_v2.py); paired gain = this pair minus area_ng1 + lines_ng1, grid by grid. 44 was never used to choose a checkpoint. 1A region: the ground right of Elm Street (train_v2/1A/valmask.png). It is NOT a test: the checkpoints were chosen on it, the pseudo-label thresholds were tuned on the whole of 1A, and it holds 9 of Ben's blocks (one block moves its PQ by about 0.1). Ben's 1A lines started from the batch's, so the baseline starts ahead there."
+}
