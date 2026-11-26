@@ -46,6 +46,7 @@ class DrcClient:
             self.n_requests = 0
         self.last = 0.0
         self.stopped = ""
+        self.login_run = 0  # item pages in a row that showed a log-in form instead of the record
         self.offline = offline
         self.robots = urllib.robotparser.RobotFileParser()
         rp = os.path.join(raw_dir, "robots.txt")
@@ -146,6 +147,18 @@ class DrcClient:
             raise Refused(self.stopped)
         with open(p, "w", encoding="utf-8") as f:
             f.write(text)
+        # A single record that is not public renders a log-in form in place of
+        # the record; that page is kept and reported. Three in a row is read as
+        # the host declining this client, and the run stops.
+        if "/items/" in url:
+            st = state(text)
+            if st is not None and not objects(st, "item"):
+                self.login_run += 1
+                if self.login_run >= 3:
+                    self.stopped = "three item pages in a row came back without a public record, last " + url
+                    raise Refused(self.stopped)
+            else:
+                self.login_run = 0
         return text
 
 
