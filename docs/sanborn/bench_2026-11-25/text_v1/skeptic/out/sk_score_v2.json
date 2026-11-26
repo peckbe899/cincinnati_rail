@@ -1,0 +1,500 @@
+{
+ "truth": "bench_2026-11-25/text_v1/truth",
+ "methods": {
+  "bin8": {
+   "crops": [
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T6",
+    "T7"
+   ],
+   "P": 0.8608,
+   "R": 0.8546,
+   "F1": 0.8577,
+   "nontext_called": 0.10355,
+   "crop_F1": {
+    "T1": 0.854,
+    "T2": 0.8694,
+    "T3": 0.9011,
+    "T4": 0.8442,
+    "T6": 0.8768,
+    "T7": 0.8388
+   },
+   "mean_crop_F1": 0.864,
+   "leave_one_out_F1": {
+    "without_T1": 0.8589,
+    "without_T2": 0.856,
+    "without_T3": 0.8524,
+    "without_T4": 0.8607,
+    "without_T6": 0.8557,
+    "without_T7": 0.8638
+   },
+   "street": {
+    "words_found": "21/22",
+    "word_recall": 0.9545,
+    "px_recall": 0.9855,
+    "mean_word_px_recall": 0.9649,
+    "weak": [
+     [
+      "T4",
+      "ALLEY",
+      0.402
+     ]
+    ]
+   },
+   "block": {
+    "words_found": "7/7",
+    "word_recall": 1.0,
+    "px_recall": 0.8932,
+    "mean_word_px_recall": 0.8843,
+    "weak": [
+     [
+      "T1",
+      "4",
+      0.757
+     ],
+     [
+      "T1",
+      "14",
+      0.696
+     ],
+     [
+      "T7",
+      "28",
+      0.742
+     ]
+    ]
+   },
+   "line_proxy": {
+    "big_px": 549814,
+    "big_called": 27106,
+    "str_px": 343967,
+    "str_called": 16185,
+    "big_share": 0.0493,
+    "straight_share": 0.04705,
+    "by_crop": {
+     "T1": {
+      "big": 0.06924,
+      "straight": 0.09877
+     },
+     "T2": {
+      "big": 0.04178,
+      "straight": 0.04741
+     },
+     "T3": {
+      "big": 0.03548,
+      "straight": 0.03802
+     },
+     "T4": {
+      "big": 0.06638,
+      "straight": 0.05523
+     },
+     "T6": {
+      "big": 0.02038,
+      "straight": 0.01211
+     },
+     "T7": {
+      "big": 0.05185,
+      "straight": 0.04577
+     }
+    }
+   },
+   "boot_F1": {
+    "p2_5": 0.8446,
+    "p50": 0.8573,
+    "p97_5": 0.8701,
+    "share_ge_0_92": 0.0
+   }
+  },
+  "v1": {
+   "crops": [
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T6",
+    "T7"
+   ],
+   "P": 0.96,
+   "R": 0.8804,
+   "F1": 0.9185,
+   "nontext_called": 0.0275,
+   "crop_F1": {
+    "T1": 0.9558,
+    "T2": 0.9505,
+    "T3": 0.9166,
+    "T4": 0.8628,
+    "T6": 0.9188,
+    "T7": 0.9089
+   },
+   "mean_crop_F1": 0.9189,
+   "leave_one_out_F1": {
+    "without_T1": 0.9069,
+    "without_T2": 0.9139,
+    "without_T3": 0.9187,
+    "without_T4": 0.9309,
+    "without_T6": 0.9184,
+    "without_T7": 0.9218
+   },
+   "street": {
+    "words_found": "20/22",
+    "word_recall": 0.9091,
+    "px_recall": 0.8098,
+    "mean_word_px_recall": 0.822,
+    "weak": [
+     [
+      "T2",
+      "CT.",
+      0.713
+     ],
+     [
+      "T3",
+      "AVENUE",
+      0.353
+     ],
+     [
+      "T4",
+      "ALLEY",
+      0.509
+     ],
+     [
+      "T4",
+      "W.",
+      0.626
+     ],
+     [
+      "T4",
+      "McMICKEN",
+      0.882
+     ],
+     [
+      "T4",
+      "STREET",
+      0.285
+     ],
+     [
+      "T4",
+      "ALLEY",
+      0.625
+     ],
+     [
+      "T7",
+      "W.",
+      0.708
+     ],
+     [
+      "T7",
+      "SIXTH",
+      0.654
+     ]
+    ]
+   },
+   "block": {
+    "words_found": "5/7",
+    "word_recall": 0.7143,
+    "px_recall": 0.7178,
+    "mean_word_px_recall": 0.7297,
+    "weak": [
+     [
+      "T1",
+      "4",
+      0.847
+     ],
+     [
+      "T1",
+      "14",
+      0.096
+     ],
+     [
+      "T7",
+      "28",
+      0.165
+     ]
+    ]
+   },
+   "line_proxy": {
+    "big_px": 549814,
+    "big_called": 8232,
+    "str_px": 343967,
+    "str_called": 303,
+    "big_share": 0.01497,
+    "straight_share": 0.00088,
+    "by_crop": {
+     "T1": {
+      "big": 0.01004,
+      "straight": 0.0
+     },
+     "T2": {
+      "big": 0.01408,
+      "straight": 0.0
+     },
+     "T3": {
+      "big": 0.00033,
+      "straight": 0.0
+     },
+     "T4": {
+      "big": 0.02656,
+      "straight": 0.003
+     },
+     "T6": {
+      "big": 0.01831,
+      "straight": 0.0
+     },
+     "T7": {
+      "big": 0.01351,
+      "straight": 0.00095
+     }
+    }
+   },
+   "boot_F1": {
+    "p2_5": 0.9052,
+    "p50": 0.9182,
+    "p97_5": 0.9294,
+    "share_ge_0_92": 0.39
+   }
+  },
+  "v2": {
+   "crops": [
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T6",
+    "T7"
+   ],
+   "P": 0.9579,
+   "R": 0.9165,
+   "F1": 0.9367,
+   "nontext_called": 0.03021,
+   "crop_F1": {
+    "T1": 0.958,
+    "T2": 0.9553,
+    "T3": 0.9736,
+    "T4": 0.8956,
+    "T6": 0.9207,
+    "T7": 0.9292
+   },
+   "mean_crop_F1": 0.9387,
+   "leave_one_out_F1": {
+    "without_T1": 0.9303,
+    "without_T2": 0.9341,
+    "without_T3": 0.9323,
+    "without_T4": 0.9462,
+    "without_T6": 0.9385,
+    "without_T7": 0.9393
+   },
+   "street": {
+    "words_found": "22/22",
+    "word_recall": 1.0,
+    "px_recall": 0.9588,
+    "mean_word_px_recall": 0.9284,
+    "weak": [
+     [
+      "T2",
+      "CT.",
+      0.713
+     ],
+     [
+      "T4",
+      "ALLEY",
+      0.541
+     ],
+     [
+      "T4",
+      "ALLEY",
+      0.64
+     ]
+    ]
+   },
+   "block": {
+    "words_found": "6/7",
+    "word_recall": 0.8571,
+    "px_recall": 0.8433,
+    "mean_word_px_recall": 0.8274,
+    "weak": [
+     [
+      "T1",
+      "4",
+      0.847
+     ],
+     [
+      "T1",
+      "14",
+      0.319
+     ],
+     [
+      "T7",
+      "28",
+      0.626
+     ]
+    ]
+   },
+   "line_proxy": {
+    "big_px": 549814,
+    "big_called": 8863,
+    "str_px": 343967,
+    "str_called": 363,
+    "big_share": 0.01612,
+    "straight_share": 0.00106,
+    "by_crop": {
+     "T1": {
+      "big": 0.01202,
+      "straight": 0.0
+     },
+     "T2": {
+      "big": 0.01415,
+      "straight": 0.0
+     },
+     "T3": {
+      "big": 0.00033,
+      "straight": 0.0
+     },
+     "T4": {
+      "big": 0.0301,
+      "straight": 0.00383
+     },
+     "T6": {
+      "big": 0.01852,
+      "straight": 0.0
+     },
+     "T7": {
+      "big": 0.01385,
+      "straight": 0.00095
+     }
+    }
+   },
+   "boot_F1": {
+    "p2_5": 0.9289,
+    "p50": 0.9365,
+    "p97_5": 0.9438,
+    "share_ge_0_92": 1.0
+   }
+  },
+  "v3": {
+   "crops": [
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T6",
+    "T7"
+   ],
+   "P": 0.9684,
+   "R": 0.9218,
+   "F1": 0.9445,
+   "nontext_called": 0.02257,
+   "crop_F1": {
+    "T1": 0.9637,
+    "T2": 0.96,
+    "T3": 0.9761,
+    "T4": 0.908,
+    "T6": 0.9411,
+    "T7": 0.9343
+   },
+   "mean_crop_F1": 0.9472,
+   "leave_one_out_F1": {
+    "without_T1": 0.9387,
+    "without_T2": 0.9423,
+    "without_T3": 0.9407,
+    "without_T4": 0.9529,
+    "without_T6": 0.9449,
+    "without_T7": 0.948
+   },
+   "street": {
+    "words_found": "22/22",
+    "word_recall": 1.0,
+    "px_recall": 0.9686,
+    "mean_word_px_recall": 0.9518,
+    "weak": [
+     [
+      "T2",
+      "CT.",
+      0.713
+     ],
+     [
+      "T4",
+      "ALLEY",
+      0.566
+     ]
+    ]
+   },
+   "block": {
+    "words_found": "6/7",
+    "word_recall": 0.8571,
+    "px_recall": 0.8433,
+    "mean_word_px_recall": 0.8274,
+    "weak": [
+     [
+      "T1",
+      "4",
+      0.847
+     ],
+     [
+      "T1",
+      "14",
+      0.319
+     ],
+     [
+      "T7",
+      "28",
+      0.626
+     ]
+    ]
+   },
+   "line_proxy": {
+    "big_px": 549814,
+    "big_called": 5133,
+    "str_px": 343967,
+    "str_called": 60,
+    "big_share": 0.00934,
+    "straight_share": 0.00017,
+    "by_crop": {
+     "T1": {
+      "big": 0.00694,
+      "straight": 0.0
+     },
+     "T2": {
+      "big": 0.00996,
+      "straight": 0.0
+     },
+     "T3": {
+      "big": 0.00033,
+      "straight": 0.0
+     },
+     "T4": {
+      "big": 0.02169,
+      "straight": 0.00084
+     },
+     "T6": {
+      "big": 0.00576,
+      "straight": 0.0
+     },
+     "T7": {
+      "big": 0.00725,
+      "straight": 0.0
+     }
+    }
+   },
+   "boot_F1": {
+    "p2_5": 0.9369,
+    "p50": 0.9444,
+    "p97_5": 0.9511,
+    "share_ge_0_92": 1.0
+   }
+  }
+ },
+ "boot_v3_minus_v2": {
+  "p2_5": 0.0055,
+  "p50": 0.0079,
+  "p97_5": 0.0105,
+  "share_gt_0": 1.0
+ },
+ "boot_v2_minus_v1": {
+  "p2_5": 0.0111,
+  "p50": 0.0181,
+  "p97_5": 0.0274,
+  "share_gt_0": 1.0
+ }
+}

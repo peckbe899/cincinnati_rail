@@ -1,0 +1,14547 @@
+{
+ "crop": "H2",
+ "plate": "90",
+ "win": [
+  880,
+  2100,
+  2380,
+  3100
+ ],
+ "why": "Straight Curzon and Wiswell with house numbers along both faces, AVENUE (vertical), blocks 8 and 10, 4\" W. PIPE and 8\" SEWER labels, spaced owner letters, dense lot numbers and story heights",
+ "held_out": true,
+ "n_words": 365,
+ "mask": "H2_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (glyph and line share ink; CARE boxes)"
+ },
+ "counts": {
+  "paper": 1273922,
+  "ink_not_text": 117233,
+  "text": 101984,
+  "dont_care": 6861
+ },
+ "boxes": [
+  {
+   "op": "EXCLLINE",
+   "seg": [
+    983,
+    2187,
+    1017,
+    2195
+   ],
+   "width": 4,
+   "note": "sewer dash under WER",
+   "line": 14
+  },
+  {
+   "op": "EXCLLINE",
+   "seg": [
+    1135,
+    2211,
+    1185,
+    2213
+   ],
+   "width": 4,
+   "note": "sewer dash over 8457",
+   "line": 31
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    1235,
+    2227,
+    1295,
+    2232
+   ],
+   "width": 4,
+   "note": "sewer dash touching the tops of 8453",
+   "line": 33
+  },
+  {
+   "op": "FORCE",
+   "box": [
+    1128,
+    2328,
+    1150,
+    2350
+   ],
+   "note": "second 2 of 22, peeled in line with the building edge",
+   "line": 43
+  },
+  {
+   "op": "CARE",
+   "box": [
+    1350,
+    2352,
+    1376,
+    2361
+   ],
+   "note": "building edge over the top of the 5",
+   "line": 47
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    879,
+    2557,
+    890,
+    2557
+   ],
+   "width": 4,
+   "note": "inner dashed line through the 2",
+   "line": 66
+  },
+  {
+   "op": "CARE",
+   "box": [
+    1810,
+    2132,
+    1827,
+    2165
+   ],
+   "note": "building corner through the 5 of 52",
+   "line": 87
+  },
+  {
+   "op": "FORCE",
+   "box": [
+    1620,
+    2401,
+    1650,
+    2424
+   ],
+   "note": "the 2 of 29, peeled in line with the building edge",
+   "line": 114
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    2033,
+    2168,
+    2062,
+    2168
+   ],
+   "width": 4,
+   "note": "building top edge through the tops of 55",
+   "line": 144
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    2063,
+    2165,
+    2063,
+    2200
+   ],
+   "width": 4,
+   "note": "building right edge through the second 5",
+   "line": 145
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    2126,
+    2165,
+    2126,
+    2210
+   ],
+   "width": 4,
+   "note": "building right edge through the 6",
+   "line": 148
+  },
+  {
+   "op": "CARE",
+   "box": [
+    2304,
+    2122,
+    2356,
+    2154
+   ],
+   "note": "pink building whose outline runs through 8, 1 and 2",
+   "line": 161
+  },
+  {
+   "op": "CARE",
+   "box": [
+    1932,
+    2439,
+    1943,
+    2449
+   ],
+   "note": "loop at the building corner on the 3",
+   "line": 183
+  },
+  {
+   "op": "CARE",
+   "box": [
+    2002,
+    2450,
+    2014,
+    2461
+   ],
+   "note": "loop at the building corner on the 3",
+   "line": 186
+  },
+  {
+   "op": "EXCLLINE",
+   "seg": [
+    930,
+    2692,
+    957,
+    2694
+   ],
+   "width": 5,
+   "note": "sewer dash under 8\"",
+   "line": 212
+  },
+  {
+   "op": "EXCLLINE",
+   "seg": [
+    975,
+    2697,
+    1001,
+    2699
+   ],
+   "width": 6,
+   "note": "sewer dash under SEWER",
+   "line": 213
+  },
+  {
+   "op": "EXCLLINE",
+   "seg": [
+    1012,
+    2703,
+    1052,
+    2706
+   ],
+   "width": 6,
+   "note": "sewer dash under SEWER",
+   "line": 214
+  },
+  {
+   "op": "EXCLLINE",
+   "seg": [
+    1138,
+    2721,
+    1165,
+    2724
+   ],
+   "width": 5,
+   "note": "sewer dash over 59",
+   "line": 216
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    1070,
+    2715,
+    1125,
+    2719
+   ],
+   "width": 5,
+   "note": "sewer dash over 463, touching the 4",
+   "line": 217
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    884,
+    2805,
+    884,
+    2845
+   ],
+   "width": 3,
+   "note": "building left edge by the 2",
+   "line": 225
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    884,
+    2806,
+    938,
+    2806
+   ],
+   "width": 3,
+   "note": "building top edge under 125.41'",
+   "line": 226
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    900,
+    2838,
+    940,
+    2838
+   ],
+   "width": 4,
+   "note": "building bottom edge through 63",
+   "line": 228
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    936,
+    2805,
+    936,
+    2840
+   ],
+   "width": 4,
+   "note": "building right edge through 63",
+   "line": 229
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    1095,
+    2848,
+    1132,
+    2848
+   ],
+   "width": 5,
+   "note": "building bottom edge on 66",
+   "line": 235
+  },
+  {
+   "op": "EXCLLINE",
+   "seg": [
+    1187,
+    2731,
+    1232,
+    2736
+   ],
+   "width": 4,
+   "note": "sewer dash over 8455",
+   "line": 246
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    1326,
+    2750,
+    1410,
+    2755
+   ],
+   "width": 6,
+   "note": "sewer dash touching the tops of 8445",
+   "line": 248
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    1170,
+    2878,
+    1200,
+    2878
+   ],
+   "width": 4,
+   "note": "building bottom edge through 67",
+   "line": 276
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    1320,
+    2890,
+    1350,
+    2890
+   ],
+   "width": 4,
+   "note": "building bottom edge through 69",
+   "line": 279
+  },
+  {
+   "op": "EXCL",
+   "box": [
+    1363,
+    2956,
+    1382,
+    2980
+   ],
+   "note": "hook mark after 235",
+   "line": 283
+  },
+  {
+   "op": "CARE",
+   "box": [
+    1560,
+    2905,
+    1574,
+    2935
+   ],
+   "note": "building right edge along the stroke of the 7",
+   "line": 326
+  },
+  {
+   "op": "EXCL",
+   "box": [
+    1437,
+    2965,
+    1450,
+    2995
+   ],
+   "note": "hook mark after 236",
+   "line": 328
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    1615,
+    2950,
+    1660,
+    2950
+   ],
+   "width": 4,
+   "note": "building bottom edge under 73",
+   "line": 341
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    1650,
+    2924,
+    1672,
+    2924
+   ],
+   "width": 4,
+   "note": "building edge at the 3",
+   "line": 342
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    1695,
+    2932,
+    1722,
+    2932
+   ],
+   "width": 4,
+   "note": "building bottom edge at 74",
+   "line": 345
+  },
+  {
+   "op": "CARE",
+   "box": [
+    1812,
+    2938,
+    1828,
+    2972
+   ],
+   "note": "building right edge at 75",
+   "line": 348
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    1785,
+    2964,
+    1822,
+    2964
+   ],
+   "width": 4,
+   "note": "building bottom edge through 75",
+   "line": 349
+  },
+  {
+   "op": "EXCL",
+   "box": [
+    1652,
+    3005,
+    1668,
+    3030
+   ],
+   "note": "hook mark after 243",
+   "line": 352
+  },
+  {
+   "op": "EXCL",
+   "box": [
+    1731,
+    3018,
+    1748,
+    3042
+   ],
+   "note": "hook mark after 244",
+   "line": 354
+  },
+  {
+   "op": "EXCL",
+   "box": [
+    1752,
+    3015,
+    1764,
+    3045
+   ],
+   "note": "dashed line before 247",
+   "line": 356
+  },
+  {
+   "op": "CARE",
+   "box": [
+    2305,
+    2703,
+    2314,
+    2752
+   ],
+   "note": "building left edge through the 1s of 118",
+   "line": 387
+  },
+  {
+   "op": "EXCLLINE",
+   "seg": [
+    2124,
+    2869,
+    2152,
+    2872
+   ],
+   "width": 4,
+   "note": "sewer dash over 05",
+   "line": 395
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    1912,
+    2961,
+    1958,
+    2961
+   ],
+   "width": 4,
+   "note": "building step edge along the tops of 77",
+   "line": 401
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    1953,
+    2960,
+    1953,
+    2992
+   ],
+   "width": 4,
+   "note": "building right edge at 77",
+   "line": 402
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    1912,
+    2989,
+    1958,
+    2989
+   ],
+   "width": 4,
+   "note": "building bottom edge under 77",
+   "line": 403
+  },
+  {
+   "op": "EXCLLINE",
+   "seg": [
+    2264,
+    2888,
+    2280,
+    2892
+   ],
+   "width": 4,
+   "note": "sewer dash after the L",
+   "line": 412
+  },
+  {
+   "op": "EXCLLINE",
+   "seg": [
+    2340,
+    2903,
+    2382,
+    2905
+   ],
+   "width": 4,
+   "note": "sewer dash over 8381",
+   "line": 414
+  }
+ ],
+ "words": [
+  {
+   "id": "H2-001",
+   "reading": "123.24'",
+   "kind": "lotdim",
+   "flags": [
+    "partial"
+   ],
+   "angle": 3.1,
+   "height": 22.1,
+   "length": 79.8,
+   "poly": [
+    [
+     872.7,
+     2099.0
+    ],
+    [
+     952.4,
+     2103.4
+    ],
+    [
+     951.2,
+     2125.4
+    ],
+    [
+     871.5,
+     2121.0
+    ]
+   ],
+   "aabb": [
+    871,
+    2098,
+    953,
+    2126
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 355,
+   "annot_line": 8
+  },
+  {
+   "id": "H2-002",
+   "reading": "6",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 21.0,
+   "length": 22.0,
+   "poly": [
+    [
+     996.0,
+     2090.0
+    ],
+    [
+     1018.0,
+     2090.0
+    ],
+    [
+     1018.0,
+     2111.0
+    ],
+    [
+     996.0,
+     2111.0
+    ]
+   ],
+   "aabb": [
+    996,
+    2090,
+    1018,
+    2111
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 60,
+   "annot_line": 9
+  },
+  {
+   "id": "H2-003",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 17.0,
+   "length": 30.0,
+   "poly": [
+    [
+     985.0,
+     2116.0
+    ],
+    [
+     1015.0,
+     2116.0
+    ],
+    [
+     1015.0,
+     2133.0
+    ],
+    [
+     985.0,
+     2133.0
+    ]
+   ],
+   "aabb": [
+    985,
+    2116,
+    1015,
+    2133
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 153,
+   "annot_line": 10
+  },
+  {
+   "id": "H2-004",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 19.0,
+   "length": 41.0,
+   "poly": [
+    [
+     1061.0,
+     2124.0
+    ],
+    [
+     1102.0,
+     2124.0
+    ],
+    [
+     1102.0,
+     2143.0
+    ],
+    [
+     1061.0,
+     2143.0
+    ]
+   ],
+   "aabb": [
+    1061,
+    2124,
+    1102,
+    2143
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 185,
+   "annot_line": 11
+  },
+  {
+   "id": "H2-005",
+   "reading": "4\"W.PIPE",
+   "kind": "pipe",
+   "flags": [],
+   "angle": 5.3,
+   "height": 23.2,
+   "length": 124.9,
+   "poly": [
+    [
+     897.4,
+     2132.2
+    ],
+    [
+     1021.8,
+     2143.8
+    ],
+    [
+     1019.6,
+     2166.8
+    ],
+    [
+     895.2,
+     2155.2
+    ]
+   ],
+   "aabb": [
+    895,
+    2132,
+    1022,
+    2167
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 623,
+   "annot_line": 12
+  },
+  {
+   "id": "H2-006",
+   "reading": "8\"SEWER",
+   "kind": "sewer",
+   "flags": [],
+   "angle": 4.8,
+   "height": 27.8,
+   "length": 115.8,
+   "poly": [
+    [
+     898.8,
+     2158.0
+    ],
+    [
+     1014.2,
+     2167.7
+    ],
+    [
+     1011.9,
+     2195.4
+    ],
+    [
+     896.5,
+     2185.7
+    ]
+   ],
+   "aabb": [
+    896,
+    2157,
+    1015,
+    2196
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 606,
+   "annot_line": 13
+  },
+  {
+   "id": "H2-007",
+   "reading": "8460-56",
+   "kind": "house",
+   "flags": [],
+   "angle": 9.0,
+   "height": 22.9,
+   "length": 106.7,
+   "poly": [
+    [
+     1050.2,
+     2150.0
+    ],
+    [
+     1155.5,
+     2166.7
+    ],
+    [
+     1152.0,
+     2189.3
+    ],
+    [
+     1046.6,
+     2172.6
+    ]
+   ],
+   "aabb": [
+    1046,
+    2150,
+    1156,
+    2190
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 645,
+   "annot_line": 15
+  },
+  {
+   "id": "H2-008",
+   "reading": "8473",
+   "kind": "house",
+   "flags": [
+    "partial"
+   ],
+   "angle": 10.5,
+   "height": 20.0,
+   "length": 53.1,
+   "poly": [
+    [
+     866.3,
+     2171.5
+    ],
+    [
+     918.5,
+     2181.2
+    ],
+    [
+     914.9,
+     2200.9
+    ],
+    [
+     862.7,
+     2191.2
+    ]
+   ],
+   "aabb": [
+    862,
+    2171,
+    919,
+    2201
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 213,
+   "annot_line": 16
+  },
+  {
+   "id": "H2-009",
+   "reading": "84'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 19.0,
+   "length": 39.0,
+   "poly": [
+    [
+     951.0,
+     2212.0
+    ],
+    [
+     990.0,
+     2212.0
+    ],
+    [
+     990.0,
+     2231.0
+    ],
+    [
+     951.0,
+     2231.0
+    ]
+   ],
+   "aabb": [
+    951,
+    2212,
+    990,
+    2231
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 195,
+   "annot_line": 17
+  },
+  {
+   "id": "H2-010",
+   "reading": "216",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 46.0,
+   "poly": [
+    [
+     952.0,
+     2235.0
+    ],
+    [
+     998.0,
+     2235.0
+    ],
+    [
+     998.0,
+     2265.0
+    ],
+    [
+     952.0,
+     2265.0
+    ]
+   ],
+   "aabb": [
+    952,
+    2235,
+    998,
+    2265
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 297,
+   "annot_line": 18
+  },
+  {
+   "id": "H2-011",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 20.0,
+   "length": 38.0,
+   "poly": [
+    [
+     1050.0,
+     2229.0
+    ],
+    [
+     1088.0,
+     2229.0
+    ],
+    [
+     1088.0,
+     2249.0
+    ],
+    [
+     1050.0,
+     2249.0
+    ]
+   ],
+   "aabb": [
+    1050,
+    2229,
+    1088,
+    2249
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 181,
+   "annot_line": 19
+  },
+  {
+   "id": "H2-012",
+   "reading": "150'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -85.5,
+   "height": 16.0,
+   "length": 41.6,
+   "poly": [
+    [
+     891.4,
+     2324.1
+    ],
+    [
+     894.7,
+     2282.7
+    ],
+    [
+     910.7,
+     2283.9
+    ],
+    [
+     907.4,
+     2325.4
+    ]
+   ],
+   "aabb": [
+    891,
+    2282,
+    911,
+    2326
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 165,
+   "annot_line": 20
+  },
+  {
+   "id": "H2-013",
+   "reading": "5",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 36.0,
+   "length": 30.0,
+   "poly": [
+    [
+     941.0,
+     2284.0
+    ],
+    [
+     971.0,
+     2284.0
+    ],
+    [
+     971.0,
+     2320.0
+    ],
+    [
+     941.0,
+     2320.0
+    ]
+   ],
+   "aabb": [
+    941,
+    2284,
+    971,
+    2320
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 239,
+   "annot_line": 21
+  },
+  {
+   "id": "H2-014",
+   "reading": "217",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 46.0,
+   "poly": [
+    [
+     957.0,
+     2310.0
+    ],
+    [
+     1003.0,
+     2310.0
+    ],
+    [
+     1003.0,
+     2339.0
+    ],
+    [
+     957.0,
+     2339.0
+    ]
+   ],
+   "aabb": [
+    957,
+    2310,
+    1003,
+    2339
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 248,
+   "annot_line": 22
+  },
+  {
+   "id": "H2-015",
+   "reading": "150'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -85.1,
+   "height": 14.3,
+   "length": 42.8,
+   "poly": [
+    [
+     1017.2,
+     2347.3
+    ],
+    [
+     1020.8,
+     2304.7
+    ],
+    [
+     1035.1,
+     2305.9
+    ],
+    [
+     1031.4,
+     2348.6
+    ]
+   ],
+   "aabb": [
+    1017,
+    2304,
+    1036,
+    2349
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 191,
+   "annot_line": 23
+  },
+  {
+   "id": "H2-016",
+   "reading": "6",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 26.0,
+   "poly": [
+    [
+     1039.0,
+     2304.0
+    ],
+    [
+     1065.0,
+     2304.0
+    ],
+    [
+     1065.0,
+     2333.0
+    ],
+    [
+     1039.0,
+     2333.0
+    ]
+   ],
+   "aabb": [
+    1039,
+    2304,
+    1065,
+    2333
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 207,
+   "annot_line": 24
+  },
+  {
+   "id": "H2-017",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 6.8,
+   "length": 12.0,
+   "poly": [
+    [
+     1149.0,
+     2146.0
+    ],
+    [
+     1161.0,
+     2146.0
+    ],
+    [
+     1161.0,
+     2152.8
+    ],
+    [
+     1149.0,
+     2152.8
+    ]
+   ],
+   "aabb": [
+    1149,
+    2146,
+    1161,
+    2153
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 22,
+   "annot_line": 25
+  },
+  {
+   "id": "H2-018",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 16.0,
+   "length": 30.0,
+   "poly": [
+    [
+     1208.0,
+     2149.0
+    ],
+    [
+     1238.0,
+     2149.0
+    ],
+    [
+     1238.0,
+     2165.0
+    ],
+    [
+     1208.0,
+     2165.0
+    ]
+   ],
+   "aabb": [
+    1208,
+    2149,
+    1238,
+    2165
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 181,
+   "annot_line": 26
+  },
+  {
+   "id": "H2-019",
+   "reading": "25'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 36.0,
+   "poly": [
+    [
+     1267.0,
+     2153.0
+    ],
+    [
+     1303.0,
+     2153.0
+    ],
+    [
+     1303.0,
+     2179.0
+    ],
+    [
+     1267.0,
+     2179.0
+    ]
+   ],
+   "aabb": [
+    1267,
+    2153,
+    1303,
+    2179
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 230,
+   "annot_line": 27
+  },
+  {
+   "id": "H2-020",
+   "reading": "25'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 33.0,
+   "poly": [
+    [
+     1303.0,
+     2161.0
+    ],
+    [
+     1336.0,
+     2161.0
+    ],
+    [
+     1336.0,
+     2183.0
+    ],
+    [
+     1303.0,
+     2183.0
+    ]
+   ],
+   "aabb": [
+    1303,
+    2161,
+    1336,
+    2183
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 174,
+   "annot_line": 28
+  },
+  {
+   "id": "H2-021",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 17.0,
+   "length": 33.0,
+   "poly": [
+    [
+     1358.0,
+     2173.0
+    ],
+    [
+     1391.0,
+     2173.0
+    ],
+    [
+     1391.0,
+     2190.0
+    ],
+    [
+     1358.0,
+     2190.0
+    ]
+   ],
+   "aabb": [
+    1358,
+    2173,
+    1391,
+    2190
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 182,
+   "annot_line": 29
+  },
+  {
+   "id": "H2-022",
+   "reading": "8457",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 66.0,
+   "poly": [
+    [
+     1131.0,
+     2210.0
+    ],
+    [
+     1197.0,
+     2210.0
+    ],
+    [
+     1197.0,
+     2236.0
+    ],
+    [
+     1131.0,
+     2236.0
+    ]
+   ],
+   "aabb": [
+    1131,
+    2210,
+    1197,
+    2236
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 304,
+   "annot_line": 30
+  },
+  {
+   "id": "H2-023",
+   "reading": "8453",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 62.0,
+   "poly": [
+    [
+     1234.0,
+     2229.0
+    ],
+    [
+     1296.0,
+     2229.0
+    ],
+    [
+     1296.0,
+     2253.0
+    ],
+    [
+     1234.0,
+     2253.0
+    ]
+   ],
+   "aabb": [
+    1234,
+    2229,
+    1296,
+    2253
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 403,
+   "annot_line": 32
+  },
+  {
+   "id": "H2-024",
+   "reading": "8443",
+   "kind": "house",
+   "flags": [
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 47.0,
+   "poly": [
+    [
+     1347.0,
+     2243.0
+    ],
+    [
+     1394.0,
+     2243.0
+    ],
+    [
+     1394.0,
+     2267.0
+    ],
+    [
+     1347.0,
+     2267.0
+    ]
+   ],
+   "aabb": [
+    1347,
+    2243,
+    1394,
+    2267
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 385,
+   "annot_line": 34
+  },
+  {
+   "id": "H2-025",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 6.8,
+   "length": 6.5,
+   "poly": [
+    [
+     1143.0,
+     2243.0
+    ],
+    [
+     1149.5,
+     2243.0
+    ],
+    [
+     1149.5,
+     2249.8
+    ],
+    [
+     1143.0,
+     2249.8
+    ]
+   ],
+   "aabb": [
+    1143,
+    2243,
+    1150,
+    2250
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 8,
+   "annot_line": 35
+  },
+  {
+   "id": "H2-026",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 7.8,
+   "length": 12.0,
+   "poly": [
+    [
+     1207.0,
+     2253.0
+    ],
+    [
+     1219.0,
+     2253.0
+    ],
+    [
+     1219.0,
+     2260.8
+    ],
+    [
+     1207.0,
+     2260.8
+    ]
+   ],
+   "aabb": [
+    1207,
+    2253,
+    1219,
+    2261
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 24,
+   "annot_line": 36
+  },
+  {
+   "id": "H2-027",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 6.8,
+   "length": 13.0,
+   "poly": [
+    [
+     1283.0,
+     2265.0
+    ],
+    [
+     1296.0,
+     2265.0
+    ],
+    [
+     1296.0,
+     2271.8
+    ],
+    [
+     1283.0,
+     2271.8
+    ]
+   ],
+   "aabb": [
+    1283,
+    2265,
+    1296,
+    2272
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 31,
+   "annot_line": 37
+  },
+  {
+   "id": "H2-028",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 6.0,
+   "length": 12.0,
+   "poly": [
+    [
+     1358.0,
+     2274.0
+    ],
+    [
+     1370.0,
+     2274.0
+    ],
+    [
+     1370.0,
+     2280.0
+    ],
+    [
+     1358.0,
+     2280.0
+    ]
+   ],
+   "aabb": [
+    1358,
+    2274,
+    1370,
+    2280
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 24,
+   "annot_line": 38
+  },
+  {
+   "id": "H2-029",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 21.0,
+   "length": 18.0,
+   "poly": [
+    [
+     1129.0,
+     2283.0
+    ],
+    [
+     1147.0,
+     2283.0
+    ],
+    [
+     1147.0,
+     2304.0
+    ],
+    [
+     1129.0,
+     2304.0
+    ]
+   ],
+   "aabb": [
+    1129,
+    2283,
+    1147,
+    2304
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 95,
+   "annot_line": 39
+  },
+  {
+   "id": "H2-030",
+   "reading": "2",
+   "kind": "story",
+   "flags": [
+    "nosnap"
+   ],
+   "angle": 0.0,
+   "height": 20.0,
+   "length": 15.0,
+   "poly": [
+    [
+     1226.0,
+     2298.0
+    ],
+    [
+     1241.0,
+     2298.0
+    ],
+    [
+     1241.0,
+     2318.0
+    ],
+    [
+     1226.0,
+     2318.0
+    ]
+   ],
+   "aabb": [
+    1226,
+    2298,
+    1241,
+    2318
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 118,
+   "annot_line": 40
+  },
+  {
+   "id": "H2-031",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 21.0,
+   "length": 20.0,
+   "poly": [
+    [
+     1340.0,
+     2315.0
+    ],
+    [
+     1360.0,
+     2315.0
+    ],
+    [
+     1360.0,
+     2336.0
+    ],
+    [
+     1340.0,
+     2336.0
+    ]
+   ],
+   "aabb": [
+    1340,
+    2315,
+    1360,
+    2336
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 109,
+   "annot_line": 41
+  },
+  {
+   "id": "H2-032",
+   "reading": "22",
+   "kind": "lot",
+   "flags": [
+    "nosnap"
+   ],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 39.0,
+   "poly": [
+    [
+     1111.0,
+     2320.0
+    ],
+    [
+     1150.0,
+     2320.0
+    ],
+    [
+     1150.0,
+     2346.0
+    ],
+    [
+     1111.0,
+     2346.0
+    ]
+   ],
+   "aabb": [
+    1111,
+    2320,
+    1150,
+    2346
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 321,
+   "annot_line": 42
+  },
+  {
+   "id": "H2-033",
+   "reading": "23",
+   "kind": "lot",
+   "flags": [
+    "nosnap"
+   ],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 35.0,
+   "poly": [
+    [
+     1177.0,
+     2327.0
+    ],
+    [
+     1212.0,
+     2327.0
+    ],
+    [
+     1212.0,
+     2357.0
+    ],
+    [
+     1177.0,
+     2357.0
+    ]
+   ],
+   "aabb": [
+    1177,
+    2327,
+    1212,
+    2357
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 328,
+   "annot_line": 44
+  },
+  {
+   "id": "H2-034",
+   "reading": "24",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 32.0,
+   "length": 42.0,
+   "poly": [
+    [
+     1260.0,
+     2338.0
+    ],
+    [
+     1302.0,
+     2338.0
+    ],
+    [
+     1302.0,
+     2370.0
+    ],
+    [
+     1260.0,
+     2370.0
+    ]
+   ],
+   "aabb": [
+    1260,
+    2338,
+    1302,
+    2370
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 447,
+   "annot_line": 45
+  },
+  {
+   "id": "H2-035",
+   "reading": "25",
+   "kind": "lot",
+   "flags": [
+    "nosnap"
+   ],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 43.0,
+   "poly": [
+    [
+     1332.0,
+     2354.0
+    ],
+    [
+     1375.0,
+     2354.0
+    ],
+    [
+     1375.0,
+     2382.0
+    ],
+    [
+     1332.0,
+     2382.0
+    ]
+   ],
+   "aabb": [
+    1332,
+    2354,
+    1375,
+    2382
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 339,
+   "annot_line": 46
+  },
+  {
+   "id": "H2-036",
+   "reading": "218",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 39.0,
+   "length": 41.0,
+   "poly": [
+    [
+     933.0,
+     2369.0
+    ],
+    [
+     974.0,
+     2369.0
+    ],
+    [
+     974.0,
+     2408.0
+    ],
+    [
+     933.0,
+     2408.0
+    ]
+   ],
+   "aabb": [
+    933,
+    2369,
+    974,
+    2408
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 376,
+   "annot_line": 48
+  },
+  {
+   "id": "H2-037",
+   "reading": "84'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 19.0,
+   "length": 32.2,
+   "poly": [
+    [
+     918.0,
+     2400.0
+    ],
+    [
+     950.2,
+     2400.0
+    ],
+    [
+     950.2,
+     2419.0
+    ],
+    [
+     918.0,
+     2419.0
+    ]
+   ],
+   "aabb": [
+    918,
+    2400,
+    951,
+    2419
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 182,
+   "annot_line": 49
+  },
+  {
+   "id": "H2-038",
+   "reading": "215",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 42.0,
+   "poly": [
+    [
+     1026.0,
+     2387.0
+    ],
+    [
+     1068.0,
+     2387.0
+    ],
+    [
+     1068.0,
+     2415.0
+    ],
+    [
+     1026.0,
+     2415.0
+    ]
+   ],
+   "aabb": [
+    1026,
+    2387,
+    1068,
+    2415
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 279,
+   "annot_line": 50
+  },
+  {
+   "id": "H2-039",
+   "reading": "214",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 46.0,
+   "poly": [
+    [
+     1090.0,
+     2397.0
+    ],
+    [
+     1136.0,
+     2397.0
+    ],
+    [
+     1136.0,
+     2426.0
+    ],
+    [
+     1090.0,
+     2426.0
+    ]
+   ],
+   "aabb": [
+    1090,
+    2397,
+    1136,
+    2426
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 359,
+   "annot_line": 51
+  },
+  {
+   "id": "H2-040",
+   "reading": "211",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 40.0,
+   "poly": [
+    [
+     1165.0,
+     2407.0
+    ],
+    [
+     1205.0,
+     2407.0
+    ],
+    [
+     1205.0,
+     2436.0
+    ],
+    [
+     1165.0,
+     2436.0
+    ]
+   ],
+   "aabb": [
+    1165,
+    2407,
+    1205,
+    2436
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 275,
+   "annot_line": 52
+  },
+  {
+   "id": "H2-041",
+   "reading": "210",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 49.0,
+   "poly": [
+    [
+     1238.0,
+     2419.0
+    ],
+    [
+     1287.0,
+     2419.0
+    ],
+    [
+     1287.0,
+     2447.0
+    ],
+    [
+     1238.0,
+     2447.0
+    ]
+   ],
+   "aabb": [
+    1238,
+    2419,
+    1287,
+    2447
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 381,
+   "annot_line": 53
+  },
+  {
+   "id": "H2-042",
+   "reading": "207",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 51.0,
+   "poly": [
+    [
+     1314.0,
+     2429.0
+    ],
+    [
+     1365.0,
+     2429.0
+    ],
+    [
+     1365.0,
+     2458.0
+    ],
+    [
+     1314.0,
+     2458.0
+    ]
+   ],
+   "aabb": [
+    1314,
+    2429,
+    1365,
+    2458
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 370,
+   "annot_line": 54
+  },
+  {
+   "id": "H2-043",
+   "reading": "179.76'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 8.6,
+   "height": 18.5,
+   "length": 79.0,
+   "poly": [
+    [
+     897.2,
+     2419.3
+    ],
+    [
+     975.3,
+     2431.2
+    ],
+    [
+     972.5,
+     2449.4
+    ],
+    [
+     894.4,
+     2437.6
+    ]
+   ],
+   "aabb": [
+    894,
+    2419,
+    976,
+    2450
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 341,
+   "annot_line": 55
+  },
+  {
+   "id": "H2-044",
+   "reading": "3",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 24.0,
+   "poly": [
+    [
+     894.0,
+     2442.0
+    ],
+    [
+     918.0,
+     2442.0
+    ],
+    [
+     918.0,
+     2470.0
+    ],
+    [
+     894.0,
+     2470.0
+    ]
+   ],
+   "aabb": [
+    894,
+    2442,
+    918,
+    2470
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 182,
+   "annot_line": 56
+  },
+  {
+   "id": "H2-045",
+   "reading": "219",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 46.0,
+   "poly": [
+    [
+     992.0,
+     2455.0
+    ],
+    [
+     1038.0,
+     2455.0
+    ],
+    [
+     1038.0,
+     2484.0
+    ],
+    [
+     992.0,
+     2484.0
+    ]
+   ],
+   "aabb": [
+    992,
+    2455,
+    1038,
+    2484
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 281,
+   "annot_line": 57
+  },
+  {
+   "id": "H2-046",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -88.6,
+   "height": 15.8,
+   "length": 37.7,
+   "poly": [
+    [
+     1045.1,
+     2493.7
+    ],
+    [
+     1046.0,
+     2456.0
+    ],
+    [
+     1061.8,
+     2456.3
+    ],
+    [
+     1060.9,
+     2494.1
+    ]
+   ],
+   "aabb": [
+    1045,
+    2455,
+    1062,
+    2495
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 150,
+   "annot_line": 58
+  },
+  {
+   "id": "H2-047",
+   "reading": "213",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 44.0,
+   "poly": [
+    [
+     1085.0,
+     2473.0
+    ],
+    [
+     1129.0,
+     2473.0
+    ],
+    [
+     1129.0,
+     2501.0
+    ],
+    [
+     1085.0,
+     2501.0
+    ]
+   ],
+   "aabb": [
+    1085,
+    2473,
+    1129,
+    2501
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 334,
+   "annot_line": 59
+  },
+  {
+   "id": "H2-048",
+   "reading": "212",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 45.0,
+   "poly": [
+    [
+     1160.0,
+     2483.0
+    ],
+    [
+     1205.0,
+     2483.0
+    ],
+    [
+     1205.0,
+     2511.0
+    ],
+    [
+     1160.0,
+     2511.0
+    ]
+   ],
+   "aabb": [
+    1160,
+    2483,
+    1205,
+    2511
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 293,
+   "annot_line": 60
+  },
+  {
+   "id": "H2-049",
+   "reading": "209",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 51.0,
+   "poly": [
+    [
+     1228.0,
+     2494.0
+    ],
+    [
+     1279.0,
+     2494.0
+    ],
+    [
+     1279.0,
+     2522.0
+    ],
+    [
+     1228.0,
+     2522.0
+    ]
+   ],
+   "aabb": [
+    1228,
+    2494,
+    1279,
+    2522
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 387,
+   "annot_line": 61
+  },
+  {
+   "id": "H2-050",
+   "reading": "208",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 46.0,
+   "poly": [
+    [
+     1306.0,
+     2505.0
+    ],
+    [
+     1352.0,
+     2505.0
+    ],
+    [
+     1352.0,
+     2535.0
+    ],
+    [
+     1306.0,
+     2535.0
+    ]
+   ],
+   "aabb": [
+    1306,
+    2505,
+    1352,
+    2535
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 414,
+   "annot_line": 62
+  },
+  {
+   "id": "H2-051",
+   "reading": "168.89'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 2.9,
+   "height": 19.8,
+   "length": 78.9,
+   "poly": [
+    [
+     927.6,
+     2499.5
+    ],
+    [
+     1006.4,
+     2503.5
+    ],
+    [
+     1005.4,
+     2523.3
+    ],
+    [
+     926.6,
+     2519.2
+    ]
+   ],
+   "aabb": [
+    926,
+    2499,
+    1007,
+    2524
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 376,
+   "annot_line": 63
+  },
+  {
+   "id": "H2-052",
+   "reading": "2",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 22.0,
+   "poly": [
+    [
+     903.0,
+     2512.0
+    ],
+    [
+     925.0,
+     2512.0
+    ],
+    [
+     925.0,
+     2536.0
+    ],
+    [
+     903.0,
+     2536.0
+    ]
+   ],
+   "aabb": [
+    903,
+    2512,
+    925,
+    2536
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 143,
+   "annot_line": 64
+  },
+  {
+   "id": "H2-053",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 25.0,
+   "poly": [
+    [
+     879.0,
+     2543.0
+    ],
+    [
+     904.0,
+     2543.0
+    ],
+    [
+     904.0,
+     2567.0
+    ],
+    [
+     879.0,
+     2567.0
+    ]
+   ],
+   "aabb": [
+    879,
+    2543,
+    904,
+    2567
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 127,
+   "annot_line": 65
+  },
+  {
+   "id": "H2-054",
+   "reading": "220",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 48.0,
+   "poly": [
+    [
+     986.0,
+     2526.0
+    ],
+    [
+     1034.0,
+     2526.0
+    ],
+    [
+     1034.0,
+     2555.0
+    ],
+    [
+     986.0,
+     2555.0
+    ]
+   ],
+   "aabb": [
+    986,
+    2526,
+    1034,
+    2555
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 263,
+   "annot_line": 67
+  },
+  {
+   "id": "H2-055",
+   "reading": "150'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -87.3,
+   "height": 14.3,
+   "length": 45.7,
+   "poly": [
+    [
+     1061.6,
+     2570.5
+    ],
+    [
+     1063.7,
+     2524.8
+    ],
+    [
+     1078.0,
+     2525.5
+    ],
+    [
+     1075.9,
+     2571.1
+    ]
+   ],
+   "aabb": [
+    1061,
+    2524,
+    1079,
+    2572
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 201,
+   "annot_line": 68
+  },
+  {
+   "id": "H2-056",
+   "reading": "7",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 24.0,
+   "poly": [
+    [
+     1085.0,
+     2543.0
+    ],
+    [
+     1109.0,
+     2543.0
+    ],
+    [
+     1109.0,
+     2573.0
+    ],
+    [
+     1085.0,
+     2573.0
+    ]
+   ],
+   "aabb": [
+    1085,
+    2543,
+    1109,
+    2573
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 159,
+   "annot_line": 69
+  },
+  {
+   "id": "H2-057",
+   "reading": "158.02'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 6.0,
+   "height": 18.6,
+   "length": 74.5,
+   "poly": [
+    [
+     936.4,
+     2568.9
+    ],
+    [
+     1010.5,
+     2576.7
+    ],
+    [
+     1008.5,
+     2595.2
+    ],
+    [
+     934.4,
+     2587.4
+    ]
+   ],
+   "aabb": [
+    934,
+    2568,
+    1011,
+    2596
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 280,
+   "annot_line": 70
+  },
+  {
+   "id": "H2-058",
+   "reading": "8",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 25.0,
+   "poly": [
+    [
+     1153.0,
+     2552.0
+    ],
+    [
+     1178.0,
+     2552.0
+    ],
+    [
+     1178.0,
+     2582.0
+    ],
+    [
+     1153.0,
+     2582.0
+    ]
+   ],
+   "aabb": [
+    1153,
+    2552,
+    1178,
+    2582
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 230,
+   "annot_line": 71
+  },
+  {
+   "id": "H2-059",
+   "reading": "9",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 27.0,
+   "poly": [
+    [
+     1227.0,
+     2564.0
+    ],
+    [
+     1254.0,
+     2564.0
+    ],
+    [
+     1254.0,
+     2592.0
+    ],
+    [
+     1227.0,
+     2592.0
+    ]
+   ],
+   "aabb": [
+    1227,
+    2564,
+    1254,
+    2592
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 244,
+   "annot_line": 72
+  },
+  {
+   "id": "H2-060",
+   "reading": "10",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 34.0,
+   "poly": [
+    [
+     1295.0,
+     2573.0
+    ],
+    [
+     1329.0,
+     2573.0
+    ],
+    [
+     1329.0,
+     2601.0
+    ],
+    [
+     1295.0,
+     2601.0
+    ]
+   ],
+   "aabb": [
+    1295,
+    2573,
+    1329,
+    2601
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 295,
+   "annot_line": 73
+  },
+  {
+   "id": "H2-061",
+   "reading": "F.",
+   "kind": "owner",
+   "flags": [
+    "g:J.F.MILLS",
+    "unsure"
+   ],
+   "angle": -26.9,
+   "height": 41.8,
+   "length": 69.8,
+   "poly": [
+    [
+     1297.4,
+     2126.2
+    ],
+    [
+     1359.7,
+     2094.6
+    ],
+    [
+     1378.6,
+     2131.9
+    ],
+    [
+     1316.4,
+     2163.5
+    ]
+   ],
+   "aabb": [
+    1297,
+    2094,
+    1379,
+    2164
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 541,
+   "annot_line": 75
+  },
+  {
+   "id": "H2-062",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 21.0,
+   "poly": [
+    [
+     1406.0,
+     2102.0
+    ],
+    [
+     1427.0,
+     2102.0
+    ],
+    [
+     1427.0,
+     2129.0
+    ],
+    [
+     1406.0,
+     2129.0
+    ]
+   ],
+   "aabb": [
+    1406,
+    2102,
+    1427,
+    2129
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 169,
+   "annot_line": 76
+  },
+  {
+   "id": "H2-063",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 23.0,
+   "length": 21.0,
+   "poly": [
+    [
+     1516.0,
+     2121.0
+    ],
+    [
+     1537.0,
+     2121.0
+    ],
+    [
+     1537.0,
+     2144.0
+    ],
+    [
+     1516.0,
+     2144.0
+    ]
+   ],
+   "aabb": [
+    1516,
+    2121,
+    1537,
+    2144
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 129,
+   "annot_line": 77
+  },
+  {
+   "id": "H2-064",
+   "reading": "49",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 41.0,
+   "poly": [
+    [
+     1587.0,
+     2099.0
+    ],
+    [
+     1628.0,
+     2099.0
+    ],
+    [
+     1628.0,
+     2129.0
+    ],
+    [
+     1587.0,
+     2129.0
+    ]
+   ],
+   "aabb": [
+    1587,
+    2099,
+    1628,
+    2129
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 314,
+   "annot_line": 78
+  },
+  {
+   "id": "H2-065",
+   "reading": "48",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 44.0,
+   "poly": [
+    [
+     1520.0,
+     2092.0
+    ],
+    [
+     1564.0,
+     2092.0
+    ],
+    [
+     1564.0,
+     2119.0
+    ],
+    [
+     1520.0,
+     2119.0
+    ]
+   ],
+   "aabb": [
+    1520,
+    2092,
+    1564,
+    2119
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 261,
+   "annot_line": 79
+  },
+  {
+   "id": "H2-066",
+   "reading": "47",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 44.0,
+   "poly": [
+    [
+     1446.0,
+     2083.0
+    ],
+    [
+     1490.0,
+     2083.0
+    ],
+    [
+     1490.0,
+     2109.0
+    ],
+    [
+     1446.0,
+     2109.0
+    ]
+   ],
+   "aabb": [
+    1446,
+    2083,
+    1490,
+    2109
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 59,
+   "annot_line": 80
+  },
+  {
+   "id": "H2-067",
+   "reading": "1",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 21.0,
+   "length": 15.0,
+   "poly": [
+    [
+     1586.0,
+     2130.0
+    ],
+    [
+     1601.0,
+     2130.0
+    ],
+    [
+     1601.0,
+     2151.0
+    ],
+    [
+     1586.0,
+     2151.0
+    ]
+   ],
+   "aabb": [
+    1586,
+    2130,
+    1601,
+    2151
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 77,
+   "annot_line": 81
+  },
+  {
+   "id": "H2-068",
+   "reading": "50",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 40.0,
+   "poly": [
+    [
+     1661.0,
+     2109.0
+    ],
+    [
+     1701.0,
+     2109.0
+    ],
+    [
+     1701.0,
+     2140.0
+    ],
+    [
+     1661.0,
+     2140.0
+    ]
+   ],
+   "aabb": [
+    1661,
+    2109,
+    1701,
+    2140
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 352,
+   "annot_line": 82
+  },
+  {
+   "id": "H2-069",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 20.0,
+   "poly": [
+    [
+     1649.0,
+     2141.0
+    ],
+    [
+     1669.0,
+     2141.0
+    ],
+    [
+     1669.0,
+     2166.0
+    ],
+    [
+     1649.0,
+     2166.0
+    ]
+   ],
+   "aabb": [
+    1649,
+    2141,
+    1669,
+    2166
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 114,
+   "annot_line": 83
+  },
+  {
+   "id": "H2-070",
+   "reading": "51",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 42.0,
+   "poly": [
+    [
+     1739.0,
+     2121.0
+    ],
+    [
+     1781.0,
+     2121.0
+    ],
+    [
+     1781.0,
+     2152.0
+    ],
+    [
+     1739.0,
+     2152.0
+    ]
+   ],
+   "aabb": [
+    1739,
+    2121,
+    1781,
+    2152
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 331,
+   "annot_line": 84
+  },
+  {
+   "id": "H2-071",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 21.0,
+   "poly": [
+    [
+     1719.0,
+     2150.0
+    ],
+    [
+     1740.0,
+     2150.0
+    ],
+    [
+     1740.0,
+     2174.0
+    ],
+    [
+     1719.0,
+     2174.0
+    ]
+   ],
+   "aabb": [
+    1719,
+    2150,
+    1740,
+    2174
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 128,
+   "annot_line": 85
+  },
+  {
+   "id": "H2-072",
+   "reading": "52",
+   "kind": "lot",
+   "flags": [
+    "nosnap"
+   ],
+   "angle": 0.0,
+   "height": 32.0,
+   "length": 40.0,
+   "poly": [
+    [
+     1812.0,
+     2132.0
+    ],
+    [
+     1852.0,
+     2132.0
+    ],
+    [
+     1852.0,
+     2164.0
+    ],
+    [
+     1812.0,
+     2164.0
+    ]
+   ],
+   "aabb": [
+    1812,
+    2132,
+    1852,
+    2164
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 353,
+   "annot_line": 86
+  },
+  {
+   "id": "H2-073",
+   "reading": "2",
+   "kind": "story",
+   "flags": [
+    "nosnap"
+   ],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 18.0,
+   "poly": [
+    [
+     1796.0,
+     2150.0
+    ],
+    [
+     1814.0,
+     2150.0
+    ],
+    [
+     1814.0,
+     2176.0
+    ],
+    [
+     1796.0,
+     2176.0
+    ]
+   ],
+   "aabb": [
+    1796,
+    2150,
+    1814,
+    2176
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 158,
+   "annot_line": 88
+  },
+  {
+   "id": "H2-074",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 11.0,
+   "poly": [
+    [
+     1442.0,
+     2188.0
+    ],
+    [
+     1453.0,
+     2188.0
+    ],
+    [
+     1453.0,
+     2196.0
+    ],
+    [
+     1442.0,
+     2196.0
+    ]
+   ],
+   "aabb": [
+    1442,
+    2188,
+    1453,
+    2196
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 33,
+   "annot_line": 89
+  },
+  {
+   "id": "H2-075",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 6.8,
+   "length": 10.0,
+   "poly": [
+    [
+     1524.0,
+     2203.0
+    ],
+    [
+     1534.0,
+     2203.0
+    ],
+    [
+     1534.0,
+     2209.8
+    ],
+    [
+     1524.0,
+     2209.8
+    ]
+   ],
+   "aabb": [
+    1524,
+    2203,
+    1534,
+    2210
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 23,
+   "annot_line": 90
+  },
+  {
+   "id": "H2-076",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 11.0,
+   "poly": [
+    [
+     1592.0,
+     2211.0
+    ],
+    [
+     1603.0,
+     2211.0
+    ],
+    [
+     1603.0,
+     2219.0
+    ],
+    [
+     1592.0,
+     2219.0
+    ]
+   ],
+   "aabb": [
+    1592,
+    2211,
+    1603,
+    2219
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 32,
+   "annot_line": 91
+  },
+  {
+   "id": "H2-077",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 7.8,
+   "length": 9.0,
+   "poly": [
+    [
+     1659.0,
+     2221.0
+    ],
+    [
+     1668.0,
+     2221.0
+    ],
+    [
+     1668.0,
+     2228.8
+    ],
+    [
+     1659.0,
+     2228.8
+    ]
+   ],
+   "aabb": [
+    1659,
+    2221,
+    1668,
+    2229
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 23,
+   "annot_line": 92
+  },
+  {
+   "id": "H2-078",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 6.8,
+   "length": 11.0,
+   "poly": [
+    [
+     1729.0,
+     2229.2
+    ],
+    [
+     1740.0,
+     2229.2
+    ],
+    [
+     1740.0,
+     2236.0
+    ],
+    [
+     1729.0,
+     2236.0
+    ]
+   ],
+   "aabb": [
+    1729,
+    2229,
+    1740,
+    2236
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 24,
+   "annot_line": 93
+  },
+  {
+   "id": "H2-079",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 7.8,
+   "length": 11.0,
+   "poly": [
+    [
+     1816.0,
+     2240.2
+    ],
+    [
+     1827.0,
+     2240.2
+    ],
+    [
+     1827.0,
+     2248.0
+    ],
+    [
+     1816.0,
+     2248.0
+    ]
+   ],
+   "aabb": [
+    1816,
+    2240,
+    1827,
+    2248
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 29,
+   "annot_line": 94
+  },
+  {
+   "id": "H2-080",
+   "reading": "8442",
+   "kind": "house",
+   "flags": [],
+   "angle": 5.4,
+   "height": 24.2,
+   "length": 67.2,
+   "poly": [
+    [
+     1377.6,
+     2200.0
+    ],
+    [
+     1444.5,
+     2206.3
+    ],
+    [
+     1442.3,
+     2230.3
+    ],
+    [
+     1375.3,
+     2224.1
+    ]
+   ],
+   "aabb": [
+    1375,
+    2200,
+    1445,
+    2231
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 446,
+   "annot_line": 95
+  },
+  {
+   "id": "H2-081",
+   "reading": "8436-32-28",
+   "kind": "house",
+   "flags": [],
+   "angle": 7.4,
+   "height": 28.0,
+   "length": 159.6,
+   "poly": [
+    [
+     1495.3,
+     2216.2
+    ],
+    [
+     1653.6,
+     2236.6
+    ],
+    [
+     1650.0,
+     2264.4
+    ],
+    [
+     1491.7,
+     2244.0
+    ]
+   ],
+   "aabb": [
+    1491,
+    2216,
+    1654,
+    2265
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1256,
+   "annot_line": 96
+  },
+  {
+   "id": "H2-082",
+   "reading": "CURZON",
+   "kind": "street",
+   "flags": [],
+   "angle": 6.9,
+   "height": 60.0,
+   "length": 267.6,
+   "poly": [
+    [
+     1518.0,
+     2227.9
+    ],
+    [
+     1783.6,
+     2260.2
+    ],
+    [
+     1776.4,
+     2319.7
+    ],
+    [
+     1510.7,
+     2287.5
+    ]
+   ],
+   "aabb": [
+    1510,
+    2227,
+    1784,
+    2320
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 4470,
+   "annot_line": 97
+  },
+  {
+   "id": "H2-083",
+   "reading": "8424-20",
+   "kind": "house",
+   "flags": [],
+   "angle": 4.5,
+   "height": 24.5,
+   "length": 108.3,
+   "poly": [
+    [
+     1708.7,
+     2250.1
+    ],
+    [
+     1816.7,
+     2258.6
+    ],
+    [
+     1814.7,
+     2283.0
+    ],
+    [
+     1706.8,
+     2274.5
+    ]
+   ],
+   "aabb": [
+    1706,
+    2250,
+    1817,
+    2284
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 738,
+   "annot_line": 98
+  },
+  {
+   "id": "H2-084",
+   "reading": "8435",
+   "kind": "house",
+   "flags": [],
+   "angle": 4.4,
+   "height": 22.9,
+   "length": 58.6,
+   "poly": [
+    [
+     1507.3,
+     2266.3
+    ],
+    [
+     1565.7,
+     2270.8
+    ],
+    [
+     1564.0,
+     2293.6
+    ],
+    [
+     1505.5,
+     2289.1
+    ]
+   ],
+   "aabb": [
+    1505,
+    2266,
+    1566,
+    2294
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 456,
+   "annot_line": 99
+  },
+  {
+   "id": "H2-085",
+   "reading": "8429",
+   "kind": "house",
+   "flags": [],
+   "angle": 4.3,
+   "height": 22.1,
+   "length": 63.2,
+   "poly": [
+    [
+     1623.1,
+     2284.7
+    ],
+    [
+     1686.1,
+     2289.5
+    ],
+    [
+     1684.4,
+     2311.5
+    ],
+    [
+     1621.4,
+     2306.7
+    ]
+   ],
+   "aabb": [
+    1621,
+    2284,
+    1687,
+    2312
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 478,
+   "annot_line": 100
+  },
+  {
+   "id": "H2-086",
+   "reading": "8421",
+   "kind": "house",
+   "flags": [],
+   "angle": 8.0,
+   "height": 19.9,
+   "length": 57.5,
+   "poly": [
+    [
+     1780.1,
+     2305.9
+    ],
+    [
+     1837.0,
+     2313.9
+    ],
+    [
+     1834.3,
+     2333.6
+    ],
+    [
+     1777.3,
+     2325.6
+    ]
+   ],
+   "aabb": [
+    1777,
+    2305,
+    1838,
+    2334
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 463,
+   "annot_line": 101
+  },
+  {
+   "id": "H2-087",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 13.0,
+   "poly": [
+    [
+     1430.0,
+     2287.0
+    ],
+    [
+     1443.0,
+     2287.0
+    ],
+    [
+     1443.0,
+     2295.0
+    ],
+    [
+     1430.0,
+     2295.0
+    ]
+   ],
+   "aabb": [
+    1430,
+    2287,
+    1443,
+    2295
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 32,
+   "annot_line": 102
+  },
+  {
+   "id": "H2-088",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 7.0,
+   "length": 12.0,
+   "poly": [
+    [
+     1513.0,
+     2299.0
+    ],
+    [
+     1525.0,
+     2299.0
+    ],
+    [
+     1525.0,
+     2306.0
+    ],
+    [
+     1513.0,
+     2306.0
+    ]
+   ],
+   "aabb": [
+    1513,
+    2299,
+    1525,
+    2306
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 33,
+   "annot_line": 103
+  },
+  {
+   "id": "H2-089",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 7.0,
+   "length": 12.0,
+   "poly": [
+    [
+     1579.0,
+     2308.0
+    ],
+    [
+     1591.0,
+     2308.0
+    ],
+    [
+     1591.0,
+     2315.0
+    ],
+    [
+     1579.0,
+     2315.0
+    ]
+   ],
+   "aabb": [
+    1579,
+    2308,
+    1591,
+    2315
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 25,
+   "annot_line": 104
+  },
+  {
+   "id": "H2-090",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 11.0,
+   "poly": [
+    [
+     1650.0,
+     2319.0
+    ],
+    [
+     1661.0,
+     2319.0
+    ],
+    [
+     1661.0,
+     2327.0
+    ],
+    [
+     1650.0,
+     2327.0
+    ]
+   ],
+   "aabb": [
+    1650,
+    2319,
+    1661,
+    2327
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 33,
+   "annot_line": 105
+  },
+  {
+   "id": "H2-091",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 6.0,
+   "length": 12.0,
+   "poly": [
+    [
+     1728.0,
+     2329.0
+    ],
+    [
+     1740.0,
+     2329.0
+    ],
+    [
+     1740.0,
+     2335.0
+    ],
+    [
+     1728.0,
+     2335.0
+    ]
+   ],
+   "aabb": [
+    1728,
+    2329,
+    1740,
+    2335
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 21,
+   "annot_line": 106
+  },
+  {
+   "id": "H2-092",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 7.0,
+   "length": 11.5,
+   "poly": [
+    [
+     1803.0,
+     2340.0
+    ],
+    [
+     1814.5,
+     2340.0
+    ],
+    [
+     1814.5,
+     2347.0
+    ],
+    [
+     1803.0,
+     2347.0
+    ]
+   ],
+   "aabb": [
+    1803,
+    2340,
+    1815,
+    2347
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 26,
+   "annot_line": 107
+  },
+  {
+   "id": "H2-093",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 20.0,
+   "poly": [
+    [
+     1503.0,
+     2324.0
+    ],
+    [
+     1523.0,
+     2324.0
+    ],
+    [
+     1523.0,
+     2355.0
+    ],
+    [
+     1503.0,
+     2355.0
+    ]
+   ],
+   "aabb": [
+    1503,
+    2324,
+    1523,
+    2355
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 186,
+   "annot_line": 108
+  },
+  {
+   "id": "H2-094",
+   "reading": "26",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 32.0,
+   "length": 43.0,
+   "poly": [
+    [
+     1397.0,
+     2359.0
+    ],
+    [
+     1440.0,
+     2359.0
+    ],
+    [
+     1440.0,
+     2391.0
+    ],
+    [
+     1397.0,
+     2391.0
+    ]
+   ],
+   "aabb": [
+    1397,
+    2359,
+    1440,
+    2391
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 414,
+   "annot_line": 109
+  },
+  {
+   "id": "H2-095",
+   "reading": "27",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 42.0,
+   "poly": [
+    [
+     1471.0,
+     2373.0
+    ],
+    [
+     1513.0,
+     2373.0
+    ],
+    [
+     1513.0,
+     2400.0
+    ],
+    [
+     1471.0,
+     2400.0
+    ]
+   ],
+   "aabb": [
+    1471,
+    2373,
+    1513,
+    2400
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 204,
+   "annot_line": 110
+  },
+  {
+   "id": "H2-096",
+   "reading": "28",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 33.0,
+   "length": 43.0,
+   "poly": [
+    [
+     1546.0,
+     2381.0
+    ],
+    [
+     1589.0,
+     2381.0
+    ],
+    [
+     1589.0,
+     2414.0
+    ],
+    [
+     1546.0,
+     2414.0
+    ]
+   ],
+   "aabb": [
+    1546,
+    2381,
+    1589,
+    2414
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 474,
+   "annot_line": 111
+  },
+  {
+   "id": "H2-097",
+   "reading": "1",
+   "kind": "story",
+   "flags": [
+    "nosnap"
+   ],
+   "angle": 0.0,
+   "height": 20.0,
+   "length": 18.0,
+   "poly": [
+    [
+     1629.0,
+     2351.0
+    ],
+    [
+     1647.0,
+     2351.0
+    ],
+    [
+     1647.0,
+     2371.0
+    ],
+    [
+     1629.0,
+     2371.0
+    ]
+   ],
+   "aabb": [
+    1629,
+    2351,
+    1647,
+    2371
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 88,
+   "annot_line": 112
+  },
+  {
+   "id": "H2-098",
+   "reading": "29",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 32.0,
+   "length": 40.5,
+   "poly": [
+    [
+     1625.5,
+     2393.0
+    ],
+    [
+     1666.0,
+     2393.0
+    ],
+    [
+     1666.0,
+     2425.0
+    ],
+    [
+     1625.5,
+     2425.0
+    ]
+   ],
+   "aabb": [
+    1625,
+    2393,
+    1666,
+    2425
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 437,
+   "annot_line": 113
+  },
+  {
+   "id": "H2-099",
+   "reading": "30",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 46.0,
+   "poly": [
+    [
+     1687.0,
+     2405.0
+    ],
+    [
+     1733.0,
+     2405.0
+    ],
+    [
+     1733.0,
+     2435.0
+    ],
+    [
+     1687.0,
+     2435.0
+    ]
+   ],
+   "aabb": [
+    1687,
+    2405,
+    1733,
+    2435
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 457,
+   "annot_line": 115
+  },
+  {
+   "id": "H2-100",
+   "reading": "1",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 19.0,
+   "poly": [
+    [
+     1761.0,
+     2376.0
+    ],
+    [
+     1780.0,
+     2376.0
+    ],
+    [
+     1780.0,
+     2400.0
+    ],
+    [
+     1761.0,
+     2400.0
+    ]
+   ],
+   "aabb": [
+    1761,
+    2376,
+    1780,
+    2400
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 79,
+   "annot_line": 116
+  },
+  {
+   "id": "H2-101",
+   "reading": "31",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 38.0,
+   "poly": [
+    [
+     1773.0,
+     2418.0
+    ],
+    [
+     1811.0,
+     2418.0
+    ],
+    [
+     1811.0,
+     2447.0
+    ],
+    [
+     1773.0,
+     2447.0
+    ]
+   ],
+   "aabb": [
+    1773,
+    2418,
+    1811,
+    2447
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 202,
+   "annot_line": 117
+  },
+  {
+   "id": "H2-102",
+   "reading": "1",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 20.0,
+   "poly": [
+    [
+     1836.0,
+     2385.0
+    ],
+    [
+     1856.0,
+     2385.0
+    ],
+    [
+     1856.0,
+     2407.0
+    ],
+    [
+     1836.0,
+     2407.0
+    ]
+   ],
+   "aabb": [
+    1836,
+    2385,
+    1856,
+    2407
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 73,
+   "annot_line": 118
+  },
+  {
+   "id": "H2-103",
+   "reading": "32",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 44.0,
+   "poly": [
+    [
+     1842.0,
+     2430.0
+    ],
+    [
+     1886.0,
+     2430.0
+    ],
+    [
+     1886.0,
+     2459.0
+    ],
+    [
+     1842.0,
+     2459.0
+    ]
+   ],
+   "aabb": [
+    1842,
+    2430,
+    1886,
+    2459
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 273,
+   "annot_line": 119
+  },
+  {
+   "id": "H2-104",
+   "reading": "206",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 54.0,
+   "poly": [
+    [
+     1381.0,
+     2441.0
+    ],
+    [
+     1435.0,
+     2441.0
+    ],
+    [
+     1435.0,
+     2469.0
+    ],
+    [
+     1381.0,
+     2469.0
+    ]
+   ],
+   "aabb": [
+    1381,
+    2441,
+    1435,
+    2469
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 448,
+   "annot_line": 120
+  },
+  {
+   "id": "H2-105",
+   "reading": "203",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 53.0,
+   "poly": [
+    [
+     1456.0,
+     2451.0
+    ],
+    [
+     1509.0,
+     2451.0
+    ],
+    [
+     1509.0,
+     2481.0
+    ],
+    [
+     1456.0,
+     2481.0
+    ]
+   ],
+   "aabb": [
+    1456,
+    2451,
+    1509,
+    2481
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 480,
+   "annot_line": 121
+  },
+  {
+   "id": "H2-106",
+   "reading": "202",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 55.0,
+   "poly": [
+    [
+     1532.0,
+     2462.0
+    ],
+    [
+     1587.0,
+     2462.0
+    ],
+    [
+     1587.0,
+     2493.0
+    ],
+    [
+     1532.0,
+     2493.0
+    ]
+   ],
+   "aabb": [
+    1532,
+    2462,
+    1587,
+    2493
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 467,
+   "annot_line": 122
+  },
+  {
+   "id": "H2-107",
+   "reading": "199",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 47.0,
+   "poly": [
+    [
+     1607.0,
+     2476.0
+    ],
+    [
+     1654.0,
+     2476.0
+    ],
+    [
+     1654.0,
+     2503.0
+    ],
+    [
+     1607.0,
+     2503.0
+    ]
+   ],
+   "aabb": [
+    1607,
+    2476,
+    1654,
+    2503
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 414,
+   "annot_line": 123
+  },
+  {
+   "id": "H2-108",
+   "reading": "198",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 48.0,
+   "poly": [
+    [
+     1679.0,
+     2486.0
+    ],
+    [
+     1727.0,
+     2486.0
+    ],
+    [
+     1727.0,
+     2514.0
+    ],
+    [
+     1679.0,
+     2514.0
+    ]
+   ],
+   "aabb": [
+    1679,
+    2486,
+    1727,
+    2514
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 392,
+   "annot_line": 124
+  },
+  {
+   "id": "H2-109",
+   "reading": "195",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 48.0,
+   "poly": [
+    [
+     1760.0,
+     2499.0
+    ],
+    [
+     1808.0,
+     2499.0
+    ],
+    [
+     1808.0,
+     2525.0
+    ],
+    [
+     1760.0,
+     2525.0
+    ]
+   ],
+   "aabb": [
+    1760,
+    2499,
+    1808,
+    2525
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 351,
+   "annot_line": 125
+  },
+  {
+   "id": "H2-110",
+   "reading": "194",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 43.0,
+   "poly": [
+    [
+     1843.0,
+     2510.0
+    ],
+    [
+     1886.0,
+     2510.0
+    ],
+    [
+     1886.0,
+     2536.0
+    ],
+    [
+     1843.0,
+     2536.0
+    ]
+   ],
+   "aabb": [
+    1843,
+    2510,
+    1886,
+    2536
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 331,
+   "annot_line": 126
+  },
+  {
+   "id": "H2-111",
+   "reading": "8",
+   "kind": "block",
+   "flags": [],
+   "angle": 0.0,
+   "height": 67.0,
+   "length": 39.0,
+   "poly": [
+    [
+     1574.0,
+     2494.0
+    ],
+    [
+     1613.0,
+     2494.0
+    ],
+    [
+     1613.0,
+     2561.0
+    ],
+    [
+     1574.0,
+     2561.0
+    ]
+   ],
+   "aabb": [
+    1574,
+    2494,
+    1613,
+    2561
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 758,
+   "annot_line": 127
+  },
+  {
+   "id": "H2-112",
+   "reading": "M",
+   "kind": "owner",
+   "flags": [
+    "g:J.F.MILLS"
+   ],
+   "angle": -23.9,
+   "height": 61.5,
+   "length": 95.7,
+   "poly": [
+    [
+     1758.7,
+     2521.4
+    ],
+    [
+     1846.2,
+     2482.7
+    ],
+    [
+     1871.2,
+     2538.9
+    ],
+    [
+     1783.7,
+     2577.7
+    ]
+   ],
+   "aabb": [
+    1758,
+    2482,
+    1872,
+    2578
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1069,
+   "annot_line": 128
+  },
+  {
+   "id": "H2-113",
+   "reading": "205",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 50.0,
+   "poly": [
+    [
+     1377.0,
+     2516.0
+    ],
+    [
+     1427.0,
+     2516.0
+    ],
+    [
+     1427.0,
+     2544.0
+    ],
+    [
+     1377.0,
+     2544.0
+    ]
+   ],
+   "aabb": [
+    1377,
+    2516,
+    1427,
+    2544
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 333,
+   "annot_line": 129
+  },
+  {
+   "id": "H2-114",
+   "reading": "204",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 55.0,
+   "poly": [
+    [
+     1451.0,
+     2526.0
+    ],
+    [
+     1506.0,
+     2526.0
+    ],
+    [
+     1506.0,
+     2555.0
+    ],
+    [
+     1451.0,
+     2555.0
+    ]
+   ],
+   "aabb": [
+    1451,
+    2526,
+    1506,
+    2555
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 402,
+   "annot_line": 130
+  },
+  {
+   "id": "H2-115",
+   "reading": "201",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 45.0,
+   "poly": [
+    [
+     1528.0,
+     2539.0
+    ],
+    [
+     1573.0,
+     2539.0
+    ],
+    [
+     1573.0,
+     2566.0
+    ],
+    [
+     1528.0,
+     2566.0
+    ]
+   ],
+   "aabb": [
+    1528,
+    2539,
+    1573,
+    2566
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 272,
+   "annot_line": 131
+  },
+  {
+   "id": "H2-116",
+   "reading": "200",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 50.0,
+   "poly": [
+    [
+     1599.0,
+     2548.0
+    ],
+    [
+     1649.0,
+     2548.0
+    ],
+    [
+     1649.0,
+     2577.0
+    ],
+    [
+     1599.0,
+     2577.0
+    ]
+   ],
+   "aabb": [
+    1599,
+    2548,
+    1649,
+    2577
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 359,
+   "annot_line": 132
+  },
+  {
+   "id": "H2-117",
+   "reading": "197",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 48.0,
+   "poly": [
+    [
+     1676.0,
+     2561.0
+    ],
+    [
+     1724.0,
+     2561.0
+    ],
+    [
+     1724.0,
+     2590.0
+    ],
+    [
+     1676.0,
+     2590.0
+    ]
+   ],
+   "aabb": [
+    1676,
+    2561,
+    1724,
+    2590
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 257,
+   "annot_line": 133
+  },
+  {
+   "id": "H2-118",
+   "reading": "196",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 54.0,
+   "poly": [
+    [
+     1749.0,
+     2571.0
+    ],
+    [
+     1803.0,
+     2571.0
+    ],
+    [
+     1803.0,
+     2596.0
+    ],
+    [
+     1749.0,
+     2596.0
+    ]
+   ],
+   "aabb": [
+    1749,
+    2571,
+    1803,
+    2596
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 339,
+   "annot_line": 134
+  },
+  {
+   "id": "H2-119",
+   "reading": "193",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 45.5,
+   "poly": [
+    [
+     1824.0,
+     2583.0
+    ],
+    [
+     1869.5,
+     2583.0
+    ],
+    [
+     1869.5,
+     2610.0
+    ],
+    [
+     1824.0,
+     2610.0
+    ]
+   ],
+   "aabb": [
+    1824,
+    2583,
+    1870,
+    2610
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 313,
+   "annot_line": 135
+  },
+  {
+   "id": "H2-120",
+   "reading": "33",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 37.0,
+   "poly": [
+    [
+     1970.0,
+     2088.0
+    ],
+    [
+     2007.0,
+     2088.0
+    ],
+    [
+     2007.0,
+     2112.0
+    ],
+    [
+     1970.0,
+     2112.0
+    ]
+   ],
+   "aabb": [
+    1970,
+    2088,
+    2007,
+    2112
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 113,
+   "annot_line": 137
+  },
+  {
+   "id": "H2-121",
+   "reading": "34",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 42.0,
+   "poly": [
+    [
+     2039.0,
+     2098.0
+    ],
+    [
+     2081.0,
+     2098.0
+    ],
+    [
+     2081.0,
+     2122.0
+    ],
+    [
+     2039.0,
+     2122.0
+    ]
+   ],
+   "aabb": [
+    2039,
+    2098,
+    2081,
+    2122
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 239,
+   "annot_line": 138
+  },
+  {
+   "id": "H2-122",
+   "reading": "35",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 23.0,
+   "length": 37.0,
+   "poly": [
+    [
+     2105.0,
+     2110.0
+    ],
+    [
+     2142.0,
+     2110.0
+    ],
+    [
+     2142.0,
+     2133.0
+    ],
+    [
+     2105.0,
+     2133.0
+    ]
+   ],
+   "aabb": [
+    2105,
+    2110,
+    2142,
+    2133
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 199,
+   "annot_line": 139
+  },
+  {
+   "id": "H2-123",
+   "reading": "53",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 32.0,
+   "length": 48.0,
+   "poly": [
+    [
+     1882.0,
+     2141.0
+    ],
+    [
+     1930.0,
+     2141.0
+    ],
+    [
+     1930.0,
+     2173.0
+    ],
+    [
+     1882.0,
+     2173.0
+    ]
+   ],
+   "aabb": [
+    1882,
+    2141,
+    1930,
+    2173
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 502,
+   "annot_line": 140
+  },
+  {
+   "id": "H2-124",
+   "reading": "54",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 52.0,
+   "poly": [
+    [
+     1953.0,
+     2154.0
+    ],
+    [
+     2005.0,
+     2154.0
+    ],
+    [
+     2005.0,
+     2182.0
+    ],
+    [
+     1953.0,
+     2182.0
+    ]
+   ],
+   "aabb": [
+    1953,
+    2154,
+    2005,
+    2182
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 487,
+   "annot_line": 141
+  },
+  {
+   "id": "H2-125",
+   "reading": "150'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -88.3,
+   "height": 15.8,
+   "length": 37.8,
+   "poly": [
+    [
+     2068.5,
+     2165.7
+    ],
+    [
+     2069.6,
+     2127.8
+    ],
+    [
+     2085.4,
+     2128.3
+    ],
+    [
+     2084.3,
+     2166.1
+    ]
+   ],
+   "aabb": [
+    2068,
+    2127,
+    2086,
+    2167
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 163,
+   "annot_line": 142
+  },
+  {
+   "id": "H2-126",
+   "reading": "55",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 25.4,
+   "length": 22.0,
+   "poly": [
+    [
+     2045.0,
+     2165.0
+    ],
+    [
+     2067.0,
+     2165.0
+    ],
+    [
+     2067.0,
+     2190.4
+    ],
+    [
+     2045.0,
+     2190.4
+    ]
+   ],
+   "aabb": [
+    2045,
+    2165,
+    2067,
+    2191
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 166,
+   "annot_line": 143
+  },
+  {
+   "id": "H2-127",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 23.6,
+   "length": 18.0,
+   "poly": [
+    [
+     2033.0,
+     2200.4
+    ],
+    [
+     2051.0,
+     2200.4
+    ],
+    [
+     2051.0,
+     2224.0
+    ],
+    [
+     2033.0,
+     2224.0
+    ]
+   ],
+   "aabb": [
+    2033,
+    2200,
+    2051,
+    2224
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 120,
+   "annot_line": 146
+  },
+  {
+   "id": "H2-128",
+   "reading": "56",
+   "kind": "lot",
+   "flags": [
+    "nosnap"
+   ],
+   "angle": 0.0,
+   "height": 34.0,
+   "length": 43.0,
+   "poly": [
+    [
+     2100.0,
+     2171.0
+    ],
+    [
+     2143.0,
+     2171.0
+    ],
+    [
+     2143.0,
+     2205.0
+    ],
+    [
+     2100.0,
+     2205.0
+    ]
+   ],
+   "aabb": [
+    2100,
+    2171,
+    2143,
+    2205
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 413,
+   "annot_line": 147
+  },
+  {
+   "id": "H2-129",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 23.0,
+   "length": 20.0,
+   "poly": [
+    [
+     2090.0,
+     2207.0
+    ],
+    [
+     2110.0,
+     2207.0
+    ],
+    [
+     2110.0,
+     2230.0
+    ],
+    [
+     2090.0,
+     2230.0
+    ]
+   ],
+   "aabb": [
+    2090,
+    2207,
+    2110,
+    2230
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 114,
+   "annot_line": 149
+  },
+  {
+   "id": "H2-130",
+   "reading": "153.06'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 26.0,
+   "length": 76.0,
+   "poly": [
+    [
+     2141.0,
+     2236.0
+    ],
+    [
+     2141.0,
+     2160.0
+    ],
+    [
+     2167.0,
+     2160.0
+    ],
+    [
+     2167.0,
+     2236.0
+    ]
+   ],
+   "aabb": [
+    2141,
+    2160,
+    2167,
+    2236
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 355,
+   "annot_line": 150
+  },
+  {
+   "id": "H2-131",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 6.8,
+   "length": 11.0,
+   "poly": [
+    [
+     1884.0,
+     2253.0
+    ],
+    [
+     1895.0,
+     2253.0
+    ],
+    [
+     1895.0,
+     2259.8
+    ],
+    [
+     1884.0,
+     2259.8
+    ]
+   ],
+   "aabb": [
+    1884,
+    2253,
+    1895,
+    2260
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 24,
+   "annot_line": 151
+  },
+  {
+   "id": "H2-132",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 6.0,
+   "length": 10.0,
+   "poly": [
+    [
+     1961.0,
+     2264.0
+    ],
+    [
+     1971.0,
+     2264.0
+    ],
+    [
+     1971.0,
+     2270.0
+    ],
+    [
+     1961.0,
+     2270.0
+    ]
+   ],
+   "aabb": [
+    1961,
+    2264,
+    1971,
+    2270
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 23,
+   "annot_line": 152
+  },
+  {
+   "id": "H2-133",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 19.0,
+   "length": 40.0,
+   "poly": [
+    [
+     2015.0,
+     2266.0
+    ],
+    [
+     2055.0,
+     2266.0
+    ],
+    [
+     2055.0,
+     2285.0
+    ],
+    [
+     2015.0,
+     2285.0
+    ]
+   ],
+   "aabb": [
+    2015,
+    2266,
+    2055,
+    2285
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 147,
+   "annot_line": 153
+  },
+  {
+   "id": "H2-134",
+   "reading": "75.26'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 5.1,
+   "height": 19.6,
+   "length": 58.6,
+   "poly": [
+    [
+     2097.2,
+     2276.4
+    ],
+    [
+     2155.6,
+     2281.6
+    ],
+    [
+     2153.8,
+     2301.1
+    ],
+    [
+     2095.5,
+     2295.9
+    ]
+   ],
+   "aabb": [
+    2095,
+    2276,
+    2156,
+    2302
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 317,
+   "annot_line": 154
+  },
+  {
+   "id": "H2-135",
+   "reading": "8410-02",
+   "kind": "house",
+   "flags": [],
+   "angle": 2.7,
+   "height": 30.1,
+   "length": 110.0,
+   "poly": [
+    [
+     2007.8,
+     2292.4
+    ],
+    [
+     2117.6,
+     2297.5
+    ],
+    [
+     2116.2,
+     2327.6
+    ],
+    [
+     2006.4,
+     2322.4
+    ]
+   ],
+   "aabb": [
+    2006,
+    2292,
+    2118,
+    2328
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 585,
+   "annot_line": 155
+  },
+  {
+   "id": "H2-136",
+   "reading": "8417",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 60.0,
+   "poly": [
+    [
+     1851.0,
+     2316.0
+    ],
+    [
+     1911.0,
+     2316.0
+    ],
+    [
+     1911.0,
+     2342.0
+    ],
+    [
+     1851.0,
+     2342.0
+    ]
+   ],
+   "aabb": [
+    1851,
+    2316,
+    1911,
+    2342
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 349,
+   "annot_line": 156
+  },
+  {
+   "id": "H2-137",
+   "reading": "8413-09",
+   "kind": "house",
+   "flags": [],
+   "angle": 1.2,
+   "height": 26.4,
+   "length": 101.0,
+   "poly": [
+    [
+     1931.3,
+     2331.7
+    ],
+    [
+     2032.2,
+     2333.8
+    ],
+    [
+     2031.7,
+     2360.2
+    ],
+    [
+     1930.7,
+     2358.1
+    ]
+   ],
+   "aabb": [
+    1930,
+    2331,
+    2033,
+    2361
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 684,
+   "annot_line": 157
+  },
+  {
+   "id": "H2-138",
+   "reading": "AVENUE",
+   "kind": "street",
+   "flags": [
+    "partial"
+   ],
+   "angle": -91.1,
+   "height": 57.2,
+   "length": 155.2,
+   "poly": [
+    [
+     2187.0,
+     2244.8
+    ],
+    [
+     2183.9,
+     2089.7
+    ],
+    [
+     2241.1,
+     2088.5
+    ],
+    [
+     2244.2,
+     2243.7
+    ]
+   ],
+   "aabb": [
+    2183,
+    2088,
+    2245,
+    2245
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 2082,
+   "annot_line": 158
+  },
+  {
+   "id": "H2-139",
+   "reading": "265",
+   "kind": "house",
+   "flags": [
+    "unsure"
+   ],
+   "angle": -90.0,
+   "height": 20.0,
+   "length": 43.0,
+   "poly": [
+    [
+     2222.0,
+     2140.0
+    ],
+    [
+     2222.0,
+     2097.0
+    ],
+    [
+     2242.0,
+     2097.0
+    ],
+    [
+     2242.0,
+     2140.0
+    ]
+   ],
+   "aabb": [
+    2222,
+    2097,
+    2242,
+    2140
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 276,
+   "annot_line": 159
+  },
+  {
+   "id": "H2-140",
+   "reading": "94.03'",
+   "kind": "lotdim",
+   "flags": [
+    "unsure",
+    "nosnap"
+   ],
+   "angle": 0.0,
+   "height": 18.0,
+   "length": 68.0,
+   "poly": [
+    [
+     2286.0,
+     2108.0
+    ],
+    [
+     2354.0,
+     2108.0
+    ],
+    [
+     2354.0,
+     2126.0
+    ],
+    [
+     2286.0,
+     2126.0
+    ]
+   ],
+   "aabb": [
+    2286,
+    2108,
+    2354,
+    2126
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 166,
+   "annot_line": 160
+  },
+  {
+   "id": "H2-141",
+   "reading": "68",
+   "kind": "lot",
+   "flags": [
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 42.0,
+   "poly": [
+    [
+     2281.0,
+     2126.0
+    ],
+    [
+     2323.0,
+     2126.0
+    ],
+    [
+     2323.0,
+     2151.0
+    ],
+    [
+     2281.0,
+     2151.0
+    ]
+   ],
+   "aabb": [
+    2281,
+    2126,
+    2323,
+    2151
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 155,
+   "annot_line": 162
+  },
+  {
+   "id": "H2-142",
+   "reading": "29",
+   "kind": "lot",
+   "flags": [
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 33.0,
+   "length": 37.0,
+   "poly": [
+    [
+     2332.0,
+     2133.0
+    ],
+    [
+     2369.0,
+     2133.0
+    ],
+    [
+     2369.0,
+     2166.0
+    ],
+    [
+     2332.0,
+     2166.0
+    ]
+   ],
+   "aabb": [
+    2332,
+    2133,
+    2369,
+    2166
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 129,
+   "annot_line": 163
+  },
+  {
+   "id": "H2-143",
+   "reading": "1",
+   "kind": "story",
+   "flags": [
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 22.0,
+   "poly": [
+    [
+     2311.0,
+     2126.0
+    ],
+    [
+     2333.0,
+     2126.0
+    ],
+    [
+     2333.0,
+     2148.0
+    ],
+    [
+     2311.0,
+     2148.0
+    ]
+   ],
+   "aabb": [
+    2311,
+    2126,
+    2333,
+    2148
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 0,
+   "annot_line": 164
+  },
+  {
+   "id": "H2-144",
+   "reading": "153.06'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 19.0,
+   "length": 75.0,
+   "poly": [
+    [
+     2251.0,
+     2226.0
+    ],
+    [
+     2251.0,
+     2151.0
+    ],
+    [
+     2270.0,
+     2151.0
+    ],
+    [
+     2270.0,
+     2226.0
+    ]
+   ],
+   "aabb": [
+    2251,
+    2151,
+    2270,
+    2226
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 358,
+   "annot_line": 165
+  },
+  {
+   "id": "H2-145",
+   "reading": "84.75",
+   "kind": "lotdim",
+   "flags": [
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 21.0,
+   "length": 46.5,
+   "poly": [
+    [
+     2285.0,
+     2171.0
+    ],
+    [
+     2331.5,
+     2171.0
+    ],
+    [
+     2331.5,
+     2192.0
+    ],
+    [
+     2285.0,
+     2192.0
+    ]
+   ],
+   "aabb": [
+    2285,
+    2171,
+    2332,
+    2192
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 273,
+   "annot_line": 166
+  },
+  {
+   "id": "H2-146",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 19.0,
+   "poly": [
+    [
+     2318.0,
+     2197.0
+    ],
+    [
+     2337.0,
+     2197.0
+    ],
+    [
+     2337.0,
+     2219.0
+    ],
+    [
+     2318.0,
+     2219.0
+    ]
+   ],
+   "aabb": [
+    2318,
+    2197,
+    2337,
+    2219
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 91,
+   "annot_line": 167
+  },
+  {
+   "id": "H2-147",
+   "reading": "27",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 49.0,
+   "poly": [
+    [
+     2286.0,
+     2248.0
+    ],
+    [
+     2335.0,
+     2248.0
+    ],
+    [
+     2335.0,
+     2277.0
+    ],
+    [
+     2286.0,
+     2277.0
+    ]
+   ],
+   "aabb": [
+    2286,
+    2248,
+    2335,
+    2277
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 342,
+   "annot_line": 168
+  },
+  {
+   "id": "H2-148",
+   "reading": "150'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 15.0,
+   "length": 33.2,
+   "poly": [
+    [
+     2341.0,
+     2272.0
+    ],
+    [
+     2341.0,
+     2238.8
+    ],
+    [
+     2356.0,
+     2238.8
+    ],
+    [
+     2356.0,
+     2272.0
+    ]
+   ],
+   "aabb": [
+    2341,
+    2238,
+    2356,
+    2272
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 159,
+   "annot_line": 169
+  },
+  {
+   "id": "H2-149",
+   "reading": "63.50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 23.0,
+   "length": 71.0,
+   "poly": [
+    [
+     2276.0,
+     2306.0
+    ],
+    [
+     2347.0,
+     2306.0
+    ],
+    [
+     2347.0,
+     2329.0
+    ],
+    [
+     2276.0,
+     2329.0
+    ]
+   ],
+   "aabb": [
+    2276,
+    2306,
+    2347,
+    2329
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 398,
+   "annot_line": 170
+  },
+  {
+   "id": "H2-150",
+   "reading": "8378",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 60.0,
+   "poly": [
+    [
+     2278.0,
+     2334.0
+    ],
+    [
+     2338.0,
+     2334.0
+    ],
+    [
+     2338.0,
+     2360.0
+    ],
+    [
+     2278.0,
+     2360.0
+    ]
+   ],
+   "aabb": [
+    2278,
+    2334,
+    2338,
+    2360
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 411,
+   "annot_line": 171
+  },
+  {
+   "id": "H2-151",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 17.0,
+   "length": 21.0,
+   "poly": [
+    [
+     2365.0,
+     2320.0
+    ],
+    [
+     2386.0,
+     2320.0
+    ],
+    [
+     2386.0,
+     2337.0
+    ],
+    [
+     2365.0,
+     2337.0
+    ]
+   ],
+   "aabb": [
+    2365,
+    2320,
+    2386,
+    2337
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 74,
+   "annot_line": 172
+  },
+  {
+   "id": "H2-152",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 7.8,
+   "length": 14.5,
+   "poly": [
+    [
+     1877.0,
+     2348.2
+    ],
+    [
+     1891.5,
+     2348.2
+    ],
+    [
+     1891.5,
+     2356.0
+    ],
+    [
+     1877.0,
+     2356.0
+    ]
+   ],
+   "aabb": [
+    1877,
+    2348,
+    1892,
+    2356
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 15,
+   "annot_line": 173
+  },
+  {
+   "id": "H2-153",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 6.8,
+   "length": 14.5,
+   "poly": [
+    [
+     1947.0,
+     2361.0
+    ],
+    [
+     1961.5,
+     2361.0
+    ],
+    [
+     1961.5,
+     2367.8
+    ],
+    [
+     1947.0,
+     2367.8
+    ]
+   ],
+   "aabb": [
+    1947,
+    2361,
+    1962,
+    2368
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 31,
+   "annot_line": 174
+  },
+  {
+   "id": "H2-154",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 11.0,
+   "poly": [
+    [
+     2020.0,
+     2369.0
+    ],
+    [
+     2031.0,
+     2369.0
+    ],
+    [
+     2031.0,
+     2379.0
+    ],
+    [
+     2020.0,
+     2379.0
+    ]
+   ],
+   "aabb": [
+    2020,
+    2369,
+    2031,
+    2379
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 29,
+   "annot_line": 175
+  },
+  {
+   "id": "H2-155",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 16.0,
+   "length": 35.0,
+   "poly": [
+    [
+     2076.0,
+     2379.0
+    ],
+    [
+     2111.0,
+     2379.0
+    ],
+    [
+     2111.0,
+     2395.0
+    ],
+    [
+     2076.0,
+     2395.0
+    ]
+   ],
+   "aabb": [
+    2076,
+    2379,
+    2111,
+    2395
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 148,
+   "annot_line": 176
+  },
+  {
+   "id": "H2-156",
+   "reading": "35.42'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 21.0,
+   "length": 58.0,
+   "poly": [
+    [
+     2130.0,
+     2387.0
+    ],
+    [
+     2188.0,
+     2387.0
+    ],
+    [
+     2188.0,
+     2408.0
+    ],
+    [
+     2130.0,
+     2408.0
+    ]
+   ],
+   "aabb": [
+    2130,
+    2387,
+    2188,
+    2408
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 292,
+   "annot_line": 177
+  },
+  {
+   "id": "H2-157",
+   "reading": "53.40'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 23.0,
+   "length": 67.0,
+   "poly": [
+    [
+     2270.0,
+     2406.0
+    ],
+    [
+     2337.0,
+     2406.0
+    ],
+    [
+     2337.0,
+     2429.0
+    ],
+    [
+     2270.0,
+     2429.0
+    ]
+   ],
+   "aabb": [
+    2270,
+    2406,
+    2337,
+    2429
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 336,
+   "annot_line": 178
+  },
+  {
+   "id": "H2-158",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 17.0,
+   "length": 31.0,
+   "poly": [
+    [
+     2355.0,
+     2418.0
+    ],
+    [
+     2386.0,
+     2418.0
+    ],
+    [
+     2386.0,
+     2435.0
+    ],
+    [
+     2355.0,
+     2435.0
+    ]
+   ],
+   "aabb": [
+    2355,
+    2418,
+    2386,
+    2435
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 127,
+   "annot_line": 179
+  },
+  {
+   "id": "H2-159",
+   "reading": "837",
+   "kind": "house",
+   "flags": [
+    "partial",
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 15.0,
+   "length": 17.0,
+   "poly": [
+    [
+     2368.0,
+     2395.5
+    ],
+    [
+     2385.0,
+     2395.5
+    ],
+    [
+     2385.0,
+     2410.5
+    ],
+    [
+     2368.0,
+     2410.5
+    ]
+   ],
+   "aabb": [
+    2368,
+    2395,
+    2385,
+    2411
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 78,
+   "annot_line": 180
+  },
+  {
+   "id": "H2-160",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 24.0,
+   "poly": [
+    [
+     1912.0,
+     2393.0
+    ],
+    [
+     1936.0,
+     2393.0
+    ],
+    [
+     1936.0,
+     2418.0
+    ],
+    [
+     1912.0,
+     2418.0
+    ]
+   ],
+   "aabb": [
+    1912,
+    2393,
+    1936,
+    2418
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 119,
+   "annot_line": 181
+  },
+  {
+   "id": "H2-161",
+   "reading": "33",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 42.0,
+   "poly": [
+    [
+     1920.0,
+     2440.0
+    ],
+    [
+     1962.0,
+     2440.0
+    ],
+    [
+     1962.0,
+     2470.0
+    ],
+    [
+     1920.0,
+     2470.0
+    ]
+   ],
+   "aabb": [
+    1920,
+    2440,
+    1962,
+    2470
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 300,
+   "annot_line": 182
+  },
+  {
+   "id": "H2-162",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 22.0,
+   "poly": [
+    [
+     1983.0,
+     2406.0
+    ],
+    [
+     2005.0,
+     2406.0
+    ],
+    [
+     2005.0,
+     2430.0
+    ],
+    [
+     1983.0,
+     2430.0
+    ]
+   ],
+   "aabb": [
+    1983,
+    2406,
+    2005,
+    2430
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 121,
+   "annot_line": 184
+  },
+  {
+   "id": "H2-163",
+   "reading": "34",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 47.0,
+   "poly": [
+    [
+     1991.0,
+     2451.0
+    ],
+    [
+     2038.0,
+     2451.0
+    ],
+    [
+     2038.0,
+     2482.0
+    ],
+    [
+     1991.0,
+     2482.0
+    ]
+   ],
+   "aabb": [
+    1991,
+    2451,
+    2038,
+    2482
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 254,
+   "annot_line": 185
+  },
+  {
+   "id": "H2-164",
+   "reading": "35.",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 32.0,
+   "length": 48.0,
+   "poly": [
+    [
+     2054.0,
+     2461.0
+    ],
+    [
+     2102.0,
+     2461.0
+    ],
+    [
+     2102.0,
+     2493.0
+    ],
+    [
+     2054.0,
+     2493.0
+    ]
+   ],
+   "aabb": [
+    2054,
+    2461,
+    2102,
+    2493
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 448,
+   "annot_line": 187
+  },
+  {
+   "id": "H2-165",
+   "reading": "36.",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 42.0,
+   "poly": [
+    [
+     2128.0,
+     2471.0
+    ],
+    [
+     2170.0,
+     2471.0
+    ],
+    [
+     2170.0,
+     2501.0
+    ],
+    [
+     2128.0,
+     2501.0
+    ]
+   ],
+   "aabb": [
+    2128,
+    2471,
+    2170,
+    2501
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 446,
+   "annot_line": 188
+  },
+  {
+   "id": "H2-166",
+   "reading": "150'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 18.0,
+   "length": 42.0,
+   "poly": [
+    [
+     2089.0,
+     2531.0
+    ],
+    [
+     2089.0,
+     2489.0
+    ],
+    [
+     2107.0,
+     2489.0
+    ],
+    [
+     2107.0,
+     2531.0
+    ]
+   ],
+   "aabb": [
+    2089,
+    2489,
+    2107,
+    2531
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 176,
+   "annot_line": 189
+  },
+  {
+   "id": "H2-167",
+   "reading": "153.06'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 18.0,
+   "length": 63.0,
+   "poly": [
+    [
+     2168.0,
+     2558.0
+    ],
+    [
+     2168.0,
+     2495.0
+    ],
+    [
+     2186.0,
+     2495.0
+    ],
+    [
+     2186.0,
+     2558.0
+    ]
+   ],
+   "aabb": [
+    2168,
+    2495,
+    2186,
+    2558
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 313,
+   "annot_line": 190
+  },
+  {
+   "id": "H2-168",
+   "reading": "153.06'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 19.0,
+   "length": 75.0,
+   "poly": [
+    [
+     2266.0,
+     2495.0
+    ],
+    [
+     2266.0,
+     2420.0
+    ],
+    [
+     2285.0,
+     2420.0
+    ],
+    [
+     2285.0,
+     2495.0
+    ]
+   ],
+   "aabb": [
+    2266,
+    2420,
+    2285,
+    2495
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 333,
+   "annot_line": 191
+  },
+  {
+   "id": "H2-169",
+   "reading": "150'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 17.0,
+   "length": 42.0,
+   "poly": [
+    [
+     2310.0,
+     2486.0
+    ],
+    [
+     2310.0,
+     2444.0
+    ],
+    [
+     2327.0,
+     2444.0
+    ],
+    [
+     2327.0,
+     2486.0
+    ]
+   ],
+   "aabb": [
+    2310,
+    2444,
+    2327,
+    2486
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 178,
+   "annot_line": 192
+  },
+  {
+   "id": "H2-170",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 33.0,
+   "length": 21.0,
+   "poly": [
+    [
+     2337.0,
+     2447.0
+    ],
+    [
+     2358.0,
+     2447.0
+    ],
+    [
+     2358.0,
+     2480.0
+    ],
+    [
+     2337.0,
+     2480.0
+    ]
+   ],
+   "aabb": [
+    2337,
+    2447,
+    2358,
+    2480
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 206,
+   "annot_line": 193
+  },
+  {
+   "id": "H2-171",
+   "reading": "131",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 44.0,
+   "poly": [
+    [
+     2276.0,
+     2493.0
+    ],
+    [
+     2320.0,
+     2493.0
+    ],
+    [
+     2320.0,
+     2524.0
+    ],
+    [
+     2276.0,
+     2524.0
+    ]
+   ],
+   "aabb": [
+    2276,
+    2493,
+    2320,
+    2524
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 387,
+   "annot_line": 194
+  },
+  {
+   "id": "H2-172",
+   "reading": "132",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 55.0,
+   "poly": [
+    [
+     2335.0,
+     2502.0
+    ],
+    [
+     2390.0,
+     2502.0
+    ],
+    [
+     2390.0,
+     2532.0
+    ],
+    [
+     2335.0,
+     2532.0
+    ]
+   ],
+   "aabb": [
+    2335,
+    2502,
+    2390,
+    2532
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 401,
+   "annot_line": 195
+  },
+  {
+   "id": "H2-173",
+   "reading": "191",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 40.0,
+   "poly": [
+    [
+     1900.0,
+     2519.0
+    ],
+    [
+     1940.0,
+     2519.0
+    ],
+    [
+     1940.0,
+     2544.0
+    ],
+    [
+     1900.0,
+     2544.0
+    ]
+   ],
+   "aabb": [
+    1900,
+    2519,
+    1940,
+    2544
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 258,
+   "annot_line": 196
+  },
+  {
+   "id": "H2-174",
+   "reading": "190",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 50.0,
+   "poly": [
+    [
+     1972.0,
+     2529.0
+    ],
+    [
+     2022.0,
+     2529.0
+    ],
+    [
+     2022.0,
+     2556.0
+    ],
+    [
+     1972.0,
+     2556.0
+    ]
+   ],
+   "aabb": [
+    1972,
+    2529,
+    2022,
+    2556
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 314,
+   "annot_line": 197
+  },
+  {
+   "id": "H2-175",
+   "reading": "187",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 50.0,
+   "poly": [
+    [
+     2045.0,
+     2540.0
+    ],
+    [
+     2095.0,
+     2540.0
+    ],
+    [
+     2095.0,
+     2566.0
+    ],
+    [
+     2045.0,
+     2566.0
+    ]
+   ],
+   "aabb": [
+    2045,
+    2540,
+    2095,
+    2566
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 249,
+   "annot_line": 198
+  },
+  {
+   "id": "H2-176",
+   "reading": "186",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 47.0,
+   "poly": [
+    [
+     2122.0,
+     2551.0
+    ],
+    [
+     2169.0,
+     2551.0
+    ],
+    [
+     2169.0,
+     2579.0
+    ],
+    [
+     2122.0,
+     2579.0
+    ]
+   ],
+   "aabb": [
+    2122,
+    2551,
+    2169,
+    2579
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 337,
+   "annot_line": 199
+  },
+  {
+   "id": "H2-177",
+   "reading": "65.88'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 20.0,
+   "length": 68.0,
+   "poly": [
+    [
+     2118.0,
+     2579.0
+    ],
+    [
+     2186.0,
+     2579.0
+    ],
+    [
+     2186.0,
+     2599.0
+    ],
+    [
+     2118.0,
+     2599.0
+    ]
+   ],
+   "aabb": [
+    2118,
+    2579,
+    2186,
+    2599
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 269,
+   "annot_line": 200
+  },
+  {
+   "id": "H2-178",
+   "reading": "184",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 23.0,
+   "length": 36.0,
+   "poly": [
+    [
+     2276.0,
+     2577.0
+    ],
+    [
+     2312.0,
+     2577.0
+    ],
+    [
+     2312.0,
+     2600.0
+    ],
+    [
+     2276.0,
+     2600.0
+    ]
+   ],
+   "aabb": [
+    2276,
+    2577,
+    2312,
+    2600
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 257,
+   "annot_line": 201
+  },
+  {
+   "id": "H2-179",
+   "reading": "183",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 42.0,
+   "poly": [
+    [
+     2327.0,
+     2582.0
+    ],
+    [
+     2369.0,
+     2582.0
+    ],
+    [
+     2369.0,
+     2609.0
+    ],
+    [
+     2327.0,
+     2609.0
+    ]
+   ],
+   "aabb": [
+    2327,
+    2582,
+    2369,
+    2609
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 251,
+   "annot_line": 202
+  },
+  {
+   "id": "H2-180",
+   "reading": "221",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 42.0,
+   "length": 45.0,
+   "poly": [
+    [
+     971.0,
+     2588.0
+    ],
+    [
+     1016.0,
+     2588.0
+    ],
+    [
+     1016.0,
+     2630.0
+    ],
+    [
+     971.0,
+     2630.0
+    ]
+   ],
+   "aabb": [
+    971,
+    2588,
+    1016,
+    2630
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 277,
+   "annot_line": 204
+  },
+  {
+   "id": "H2-181",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 17.0,
+   "length": 37.0,
+   "poly": [
+    [
+     1025.0,
+     2631.0
+    ],
+    [
+     1025.0,
+     2594.0
+    ],
+    [
+     1042.0,
+     2594.0
+    ],
+    [
+     1042.0,
+     2631.0
+    ]
+   ],
+   "aabb": [
+    1025,
+    2594,
+    1042,
+    2631
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 152,
+   "annot_line": 205
+  },
+  {
+   "id": "H2-182",
+   "reading": "1",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 20.0,
+   "poly": [
+    [
+     903.0,
+     2591.0
+    ],
+    [
+     923.0,
+     2591.0
+    ],
+    [
+     923.0,
+     2617.0
+    ],
+    [
+     903.0,
+     2617.0
+    ]
+   ],
+   "aabb": [
+    903,
+    2591,
+    923,
+    2617
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 91,
+   "annot_line": 206
+  },
+  {
+   "id": "H2-183",
+   "reading": "147.15'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 3.5,
+   "height": 22.6,
+   "length": 65.1,
+   "poly": [
+    [
+     918.9,
+     2612.6
+    ],
+    [
+     983.9,
+     2616.5
+    ],
+    [
+     982.5,
+     2639.1
+    ],
+    [
+     917.6,
+     2635.2
+    ]
+   ],
+   "aabb": [
+    917,
+    2612,
+    984,
+    2640
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 245,
+   "annot_line": 207
+  },
+  {
+   "id": "H2-184",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 18.0,
+   "length": 40.0,
+   "poly": [
+    [
+     1063.0,
+     2636.0
+    ],
+    [
+     1103.0,
+     2636.0
+    ],
+    [
+     1103.0,
+     2654.0
+    ],
+    [
+     1063.0,
+     2654.0
+    ]
+   ],
+   "aabb": [
+    1063,
+    2636,
+    1103,
+    2654
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 151,
+   "annot_line": 208
+  },
+  {
+   "id": "H2-185",
+   "reading": "8470",
+   "kind": "house",
+   "flags": [
+    "partial"
+   ],
+   "angle": 4.5,
+   "height": 25.6,
+   "length": 65.8,
+   "poly": [
+    [
+     870.2,
+     2634.1
+    ],
+    [
+     935.8,
+     2639.3
+    ],
+    [
+     933.8,
+     2664.8
+    ],
+    [
+     868.2,
+     2659.7
+    ]
+   ],
+   "aabb": [
+    868,
+    2634,
+    936,
+    2665
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 356,
+   "annot_line": 209
+  },
+  {
+   "id": "H2-186",
+   "reading": "4\"W.PIPE",
+   "kind": "pipe",
+   "flags": [],
+   "angle": 3.7,
+   "height": 26.8,
+   "length": 122.2,
+   "poly": [
+    [
+     953.9,
+     2649.6
+    ],
+    [
+     1075.9,
+     2657.4
+    ],
+    [
+     1074.2,
+     2684.2
+    ],
+    [
+     952.2,
+     2676.4
+    ]
+   ],
+   "aabb": [
+    952,
+    2649,
+    1076,
+    2685
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 543,
+   "annot_line": 210
+  },
+  {
+   "id": "H2-187",
+   "reading": "8\"SEWER",
+   "kind": "sewer",
+   "flags": [],
+   "angle": 5.0,
+   "height": 25.3,
+   "length": 123.2,
+   "poly": [
+    [
+     935.3,
+     2674.5
+    ],
+    [
+     1057.9,
+     2685.1
+    ],
+    [
+     1055.8,
+     2710.4
+    ],
+    [
+     933.1,
+     2699.7
+    ]
+   ],
+   "aabb": [
+    933,
+    2674,
+    1058,
+    2711
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 444,
+   "annot_line": 211
+  },
+  {
+   "id": "H2-188",
+   "reading": "8463-59",
+   "kind": "house",
+   "flags": [],
+   "angle": 8.1,
+   "height": 27.4,
+   "length": 119.7,
+   "poly": [
+    [
+     1047.2,
+     2705.1
+    ],
+    [
+     1165.7,
+     2721.8
+    ],
+    [
+     1161.9,
+     2749.0
+    ],
+    [
+     1043.4,
+     2732.2
+    ]
+   ],
+   "aabb": [
+    1043,
+    2705,
+    1166,
+    2749
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 597,
+   "annot_line": 215
+  },
+  {
+   "id": "H2-189",
+   "reading": "136.28'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 3.6,
+   "height": 19.6,
+   "length": 77.9,
+   "poly": [
+    [
+     909.7,
+     2718.1
+    ],
+    [
+     987.4,
+     2723.0
+    ],
+    [
+     986.2,
+     2742.6
+    ],
+    [
+     908.4,
+     2737.7
+    ]
+   ],
+   "aabb": [
+    908,
+    2718,
+    988,
+    2743
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 288,
+   "annot_line": 218
+  },
+  {
+   "id": "H2-190",
+   "reading": "64",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 33.0,
+   "length": 43.0,
+   "poly": [
+    [
+     893.0,
+     2737.0
+    ],
+    [
+     936.0,
+     2737.0
+    ],
+    [
+     936.0,
+     2770.0
+    ],
+    [
+     893.0,
+     2770.0
+    ]
+   ],
+   "aabb": [
+    893,
+    2737,
+    936,
+    2770
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 340,
+   "annot_line": 219
+  },
+  {
+   "id": "H2-191",
+   "reading": "222",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 34.0,
+   "length": 52.0,
+   "poly": [
+    [
+     962.0,
+     2745.0
+    ],
+    [
+     1014.0,
+     2745.0
+    ],
+    [
+     1014.0,
+     2779.0
+    ],
+    [
+     962.0,
+     2779.0
+    ]
+   ],
+   "aabb": [
+    962,
+    2745,
+    1014,
+    2779
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 285,
+   "annot_line": 220
+  },
+  {
+   "id": "H2-192",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 15.0,
+   "length": 39.0,
+   "poly": [
+    [
+     1008.0,
+     2784.0
+    ],
+    [
+     1008.0,
+     2745.0
+    ],
+    [
+     1023.0,
+     2745.0
+    ],
+    [
+     1023.0,
+     2784.0
+    ]
+   ],
+   "aabb": [
+    1008,
+    2745,
+    1023,
+    2784
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 122,
+   "annot_line": 221
+  },
+  {
+   "id": "H2-193",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 16.0,
+   "length": 41.0,
+   "poly": [
+    [
+     1050.0,
+     2742.0
+    ],
+    [
+     1091.0,
+     2742.0
+    ],
+    [
+     1091.0,
+     2758.0
+    ],
+    [
+     1050.0,
+     2758.0
+    ]
+   ],
+   "aabb": [
+    1050,
+    2742,
+    1091,
+    2758
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 135,
+   "annot_line": 222
+  },
+  {
+   "id": "H2-194",
+   "reading": "125.41'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 1.5,
+   "height": 21.6,
+   "length": 78.9,
+   "poly": [
+    [
+     888.4,
+     2788.7
+    ],
+    [
+     967.3,
+     2790.8
+    ],
+    [
+     966.7,
+     2812.4
+    ],
+    [
+     887.8,
+     2810.3
+    ]
+   ],
+   "aabb": [
+    887,
+    2788,
+    968,
+    2813
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 260,
+   "annot_line": 223
+  },
+  {
+   "id": "H2-195",
+   "reading": "2",
+   "kind": "story",
+   "flags": [
+    "nosnap"
+   ],
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 19.0,
+   "poly": [
+    [
+     886.0,
+     2811.0
+    ],
+    [
+     905.0,
+     2811.0
+    ],
+    [
+     905.0,
+     2833.0
+    ],
+    [
+     886.0,
+     2833.0
+    ]
+   ],
+   "aabb": [
+    886,
+    2811,
+    905,
+    2833
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 103,
+   "annot_line": 224
+  },
+  {
+   "id": "H2-196",
+   "reading": "63",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 33.0,
+   "length": 39.0,
+   "poly": [
+    [
+     900.0,
+     2817.0
+    ],
+    [
+     939.0,
+     2817.0
+    ],
+    [
+     939.0,
+     2850.0
+    ],
+    [
+     900.0,
+     2850.0
+    ]
+   ],
+   "aabb": [
+    900,
+    2817,
+    939,
+    2850
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 258,
+   "annot_line": 227
+  },
+  {
+   "id": "H2-197",
+   "reading": "223",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 32.0,
+   "length": 59.0,
+   "poly": [
+    [
+     952.0,
+     2820.0
+    ],
+    [
+     1011.0,
+     2820.0
+    ],
+    [
+     1011.0,
+     2852.0
+    ],
+    [
+     952.0,
+     2852.0
+    ]
+   ],
+   "aabb": [
+    952,
+    2820,
+    1011,
+    2852
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 286,
+   "annot_line": 230
+  },
+  {
+   "id": "H2-198",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 20.0,
+   "poly": [
+    [
+     1028.0,
+     2787.0
+    ],
+    [
+     1048.0,
+     2787.0
+    ],
+    [
+     1048.0,
+     2811.0
+    ],
+    [
+     1028.0,
+     2811.0
+    ]
+   ],
+   "aabb": [
+    1028,
+    2787,
+    1048,
+    2811
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 106,
+   "annot_line": 231
+  },
+  {
+   "id": "H2-199",
+   "reading": "65",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 46.0,
+   "poly": [
+    [
+     1034.0,
+     2827.0
+    ],
+    [
+     1080.0,
+     2827.0
+    ],
+    [
+     1080.0,
+     2858.0
+    ],
+    [
+     1034.0,
+     2858.0
+    ]
+   ],
+   "aabb": [
+    1034,
+    2827,
+    1080,
+    2858
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 276,
+   "annot_line": 232
+  },
+  {
+   "id": "H2-200",
+   "reading": "2",
+   "kind": "story",
+   "flags": [
+    "nosnap"
+   ],
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 18.0,
+   "poly": [
+    [
+     1102.0,
+     2796.0
+    ],
+    [
+     1120.0,
+     2796.0
+    ],
+    [
+     1120.0,
+     2818.0
+    ],
+    [
+     1102.0,
+     2818.0
+    ]
+   ],
+   "aabb": [
+    1102,
+    2796,
+    1120,
+    2818
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 110,
+   "annot_line": 233
+  },
+  {
+   "id": "H2-201",
+   "reading": "66",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 50.0,
+   "poly": [
+    [
+     1100.0,
+     2838.0
+    ],
+    [
+     1150.0,
+     2838.0
+    ],
+    [
+     1150.0,
+     2868.0
+    ],
+    [
+     1100.0,
+     2868.0
+    ]
+   ],
+   "aabb": [
+    1100,
+    2838,
+    1150,
+    2868
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 290,
+   "annot_line": 234
+  },
+  {
+   "id": "H2-202",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 20.0,
+   "poly": [
+    [
+     1172.0,
+     2598.0
+    ],
+    [
+     1192.0,
+     2598.0
+    ],
+    [
+     1192.0,
+     2622.0
+    ],
+    [
+     1172.0,
+     2622.0
+    ]
+   ],
+   "aabb": [
+    1172,
+    2598,
+    1192,
+    2622
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 124,
+   "annot_line": 236
+  },
+  {
+   "id": "H2-203",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 22.0,
+   "poly": [
+    [
+     1306.0,
+     2618.0
+    ],
+    [
+     1328.0,
+     2618.0
+    ],
+    [
+     1328.0,
+     2644.0
+    ],
+    [
+     1306.0,
+     2644.0
+    ]
+   ],
+   "aabb": [
+    1306,
+    2618,
+    1328,
+    2644
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 147,
+   "annot_line": 237
+  },
+  {
+   "id": "H2-204",
+   "reading": "11",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 27.0,
+   "poly": [
+    [
+     1371.0,
+     2587.0
+    ],
+    [
+     1398.0,
+     2587.0
+    ],
+    [
+     1398.0,
+     2614.0
+    ],
+    [
+     1371.0,
+     2614.0
+    ]
+   ],
+   "aabb": [
+    1371,
+    2587,
+    1398,
+    2614
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 197,
+   "annot_line": 238
+  },
+  {
+   "id": "H2-205",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 5.8,
+   "length": 10.0,
+   "poly": [
+    [
+     1154.0,
+     2655.0
+    ],
+    [
+     1164.0,
+     2655.0
+    ],
+    [
+     1164.0,
+     2660.8
+    ],
+    [
+     1154.0,
+     2660.8
+    ]
+   ],
+   "aabb": [
+    1154,
+    2655,
+    1164,
+    2661
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 11,
+   "annot_line": 239
+  },
+  {
+   "id": "H2-206",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 11.0,
+   "poly": [
+    [
+     1218.0,
+     2662.0
+    ],
+    [
+     1229.0,
+     2662.0
+    ],
+    [
+     1229.0,
+     2670.0
+    ],
+    [
+     1218.0,
+     2670.0
+    ]
+   ],
+   "aabb": [
+    1218,
+    2662,
+    1229,
+    2670
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 29,
+   "annot_line": 240
+  },
+  {
+   "id": "H2-207",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 12.0,
+   "poly": [
+    [
+     1294.0,
+     2674.0
+    ],
+    [
+     1306.0,
+     2674.0
+    ],
+    [
+     1306.0,
+     2682.0
+    ],
+    [
+     1294.0,
+     2682.0
+    ]
+   ],
+   "aabb": [
+    1294,
+    2674,
+    1306,
+    2682
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 27,
+   "annot_line": 241
+  },
+  {
+   "id": "H2-208",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 6.0,
+   "length": 13.0,
+   "poly": [
+    [
+     1374.0,
+     2685.0
+    ],
+    [
+     1387.0,
+     2685.0
+    ],
+    [
+     1387.0,
+     2691.0
+    ],
+    [
+     1374.0,
+     2691.0
+    ]
+   ],
+   "aabb": [
+    1374,
+    2685,
+    1387,
+    2691
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 22,
+   "annot_line": 242
+  },
+  {
+   "id": "H2-209",
+   "reading": "8466",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 61.0,
+   "poly": [
+    [
+     1154.0,
+     2678.0
+    ],
+    [
+     1215.0,
+     2678.0
+    ],
+    [
+     1215.0,
+     2705.0
+    ],
+    [
+     1154.0,
+     2705.0
+    ]
+   ],
+   "aabb": [
+    1154,
+    2678,
+    1215,
+    2705
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 485,
+   "annot_line": 243
+  },
+  {
+   "id": "H2-210",
+   "reading": "8448",
+   "kind": "house",
+   "flags": [],
+   "angle": 3.6,
+   "height": 28.9,
+   "length": 65.6,
+   "poly": [
+    [
+     1276.3,
+     2694.1
+    ],
+    [
+     1341.8,
+     2698.2
+    ],
+    [
+     1340.0,
+     2727.1
+    ],
+    [
+     1274.5,
+     2723.0
+    ]
+   ],
+   "aabb": [
+    1274,
+    2694,
+    1342,
+    2728
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 460,
+   "annot_line": 244
+  },
+  {
+   "id": "H2-211",
+   "reading": "8455",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 34.0,
+   "length": 69.0,
+   "poly": [
+    [
+     1188.0,
+     2727.0
+    ],
+    [
+     1257.0,
+     2727.0
+    ],
+    [
+     1257.0,
+     2761.0
+    ],
+    [
+     1188.0,
+     2761.0
+    ]
+   ],
+   "aabb": [
+    1188,
+    2727,
+    1257,
+    2761
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 426,
+   "annot_line": 245
+  },
+  {
+   "id": "H2-212",
+   "reading": "8445",
+   "kind": "house",
+   "flags": [],
+   "angle": 4.7,
+   "height": 31.3,
+   "length": 90.0,
+   "poly": [
+    [
+     1329.1,
+     2747.7
+    ],
+    [
+     1418.8,
+     2755.1
+    ],
+    [
+     1416.3,
+     2786.2
+    ],
+    [
+     1326.5,
+     2778.9
+    ]
+   ],
+   "aabb": [
+    1326,
+    2747,
+    1419,
+    2787
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 411,
+   "annot_line": 247
+  },
+  {
+   "id": "H2-213",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 6.0,
+   "length": 9.5,
+   "poly": [
+    [
+     1136.5,
+     2757.0
+    ],
+    [
+     1146.0,
+     2757.0
+    ],
+    [
+     1146.0,
+     2763.0
+    ],
+    [
+     1136.5,
+     2763.0
+    ]
+   ],
+   "aabb": [
+    1136,
+    2757,
+    1146,
+    2763
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 22,
+   "annot_line": 249
+  },
+  {
+   "id": "H2-214",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 6.8,
+   "length": 12.0,
+   "poly": [
+    [
+     1209.0,
+     2769.2
+    ],
+    [
+     1221.0,
+     2769.2
+    ],
+    [
+     1221.0,
+     2776.0
+    ],
+    [
+     1209.0,
+     2776.0
+    ]
+   ],
+   "aabb": [
+    1209,
+    2769,
+    1221,
+    2776
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 24,
+   "annot_line": 250
+  },
+  {
+   "id": "H2-215",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 17.0,
+   "length": 40.0,
+   "poly": [
+    [
+     1274.0,
+     2778.0
+    ],
+    [
+     1314.0,
+     2778.0
+    ],
+    [
+     1314.0,
+     2795.0
+    ],
+    [
+     1274.0,
+     2795.0
+    ]
+   ],
+   "aabb": [
+    1274,
+    2778,
+    1314,
+    2795
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 170,
+   "annot_line": 251
+  },
+  {
+   "id": "H2-216",
+   "reading": "78",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 18.0,
+   "length": 28.0,
+   "poly": [
+    [
+     1360.0,
+     2789.0
+    ],
+    [
+     1388.0,
+     2789.0
+    ],
+    [
+     1388.0,
+     2807.0
+    ],
+    [
+     1360.0,
+     2807.0
+    ]
+   ],
+   "aabb": [
+    1360,
+    2789,
+    1388,
+    2807
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 161,
+   "annot_line": 252
+  },
+  {
+   "id": "H2-217",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 20.0,
+   "poly": [
+    [
+     1181.0,
+     2810.0
+    ],
+    [
+     1201.0,
+     2810.0
+    ],
+    [
+     1201.0,
+     2835.0
+    ],
+    [
+     1181.0,
+     2835.0
+    ]
+   ],
+   "aabb": [
+    1181,
+    2810,
+    1201,
+    2835
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 117,
+   "annot_line": 253
+  },
+  {
+   "id": "H2-218",
+   "reading": "2",
+   "kind": "story",
+   "flags": [
+    "nosnap"
+   ],
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 18.0,
+   "poly": [
+    [
+     1330.0,
+     2832.0
+    ],
+    [
+     1348.0,
+     2832.0
+    ],
+    [
+     1348.0,
+     2854.0
+    ],
+    [
+     1330.0,
+     2854.0
+    ]
+   ],
+   "aabb": [
+    1330,
+    2832,
+    1348,
+    2854
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 106,
+   "annot_line": 254
+  },
+  {
+   "id": "H2-219",
+   "reading": "150'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 14.0,
+   "length": 33.5,
+   "poly": [
+    [
+     1016.0,
+     2887.0
+    ],
+    [
+     1016.0,
+     2853.5
+    ],
+    [
+     1030.0,
+     2853.5
+    ],
+    [
+     1030.0,
+     2887.0
+    ]
+   ],
+   "aabb": [
+    1016,
+    2853,
+    1030,
+    2887
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 137,
+   "annot_line": 255
+  },
+  {
+   "id": "H2-220",
+   "reading": "114.54'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 20.0,
+   "length": 75.0,
+   "poly": [
+    [
+     888.0,
+     2867.0
+    ],
+    [
+     963.0,
+     2867.0
+    ],
+    [
+     963.0,
+     2887.0
+    ],
+    [
+     888.0,
+     2887.0
+    ]
+   ],
+   "aabb": [
+    888,
+    2867,
+    963,
+    2887
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 251,
+   "annot_line": 256
+  },
+  {
+   "id": "H2-221",
+   "reading": "62",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 37.0,
+   "length": 40.0,
+   "poly": [
+    [
+     893.0,
+     2882.0
+    ],
+    [
+     933.0,
+     2882.0
+    ],
+    [
+     933.0,
+     2919.0
+    ],
+    [
+     893.0,
+     2919.0
+    ]
+   ],
+   "aabb": [
+    893,
+    2882,
+    933,
+    2919
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 317,
+   "annot_line": 257
+  },
+  {
+   "id": "H2-222",
+   "reading": "224",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 52.0,
+   "poly": [
+    [
+     941.0,
+     2893.0
+    ],
+    [
+     993.0,
+     2893.0
+    ],
+    [
+     993.0,
+     2924.0
+    ],
+    [
+     941.0,
+     2924.0
+    ]
+   ],
+   "aabb": [
+    941,
+    2893,
+    993,
+    2924
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 364,
+   "annot_line": 258
+  },
+  {
+   "id": "H2-223",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 14.0,
+   "length": 28.0,
+   "poly": [
+    [
+     987.0,
+     2932.0
+    ],
+    [
+     987.0,
+     2904.0
+    ],
+    [
+     1001.0,
+     2904.0
+    ],
+    [
+     1001.0,
+     2932.0
+    ]
+   ],
+   "aabb": [
+    987,
+    2904,
+    1001,
+    2932
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 112,
+   "annot_line": 259
+  },
+  {
+   "id": "H2-224",
+   "reading": "227",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 52.0,
+   "poly": [
+    [
+     1018.0,
+     2906.0
+    ],
+    [
+     1070.0,
+     2906.0
+    ],
+    [
+     1070.0,
+     2934.0
+    ],
+    [
+     1018.0,
+     2934.0
+    ]
+   ],
+   "aabb": [
+    1018,
+    2906,
+    1070,
+    2934
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 300,
+   "annot_line": 260
+  },
+  {
+   "id": "H2-225",
+   "reading": "228",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 52.0,
+   "poly": [
+    [
+     1091.0,
+     2916.0
+    ],
+    [
+     1143.0,
+     2916.0
+    ],
+    [
+     1143.0,
+     2947.0
+    ],
+    [
+     1091.0,
+     2947.0
+    ]
+   ],
+   "aabb": [
+    1091,
+    2916,
+    1143,
+    2947
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 403,
+   "annot_line": 261
+  },
+  {
+   "id": "H2-226",
+   "reading": "103.67'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 2.5,
+   "height": 18.1,
+   "length": 73.9,
+   "poly": [
+    [
+     903.4,
+     2922.7
+    ],
+    [
+     977.2,
+     2925.9
+    ],
+    [
+     976.4,
+     2944.0
+    ],
+    [
+     902.6,
+     2940.7
+    ]
+   ],
+   "aabb": [
+    902,
+    2922,
+    978,
+    2944
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 267,
+   "annot_line": 262
+  },
+  {
+   "id": "H2-227",
+   "reading": "153.67'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 2.2,
+   "height": 19.2,
+   "length": 78.0,
+   "poly": [
+    [
+     920.4,
+     2945.7
+    ],
+    [
+     998.4,
+     2948.6
+    ],
+    [
+     997.6,
+     2967.8
+    ],
+    [
+     919.7,
+     2964.9
+    ]
+   ],
+   "aabb": [
+    919,
+    2945,
+    999,
+    2968
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 253,
+   "annot_line": 263
+  },
+  {
+   "id": "H2-228",
+   "reading": "43",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 34.0,
+   "length": 44.0,
+   "poly": [
+    [
+     918.0,
+     2967.0
+    ],
+    [
+     962.0,
+     2967.0
+    ],
+    [
+     962.0,
+     3001.0
+    ],
+    [
+     918.0,
+     3001.0
+    ]
+   ],
+   "aabb": [
+    918,
+    2967,
+    962,
+    3001
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 407,
+   "annot_line": 264
+  },
+  {
+   "id": "H2-229",
+   "reading": "225",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 34.0,
+   "length": 56.0,
+   "poly": [
+    [
+     1001.0,
+     2980.0
+    ],
+    [
+     1057.0,
+     2980.0
+    ],
+    [
+     1057.0,
+     3014.0
+    ],
+    [
+     1001.0,
+     3014.0
+    ]
+   ],
+   "aabb": [
+    1001,
+    2980,
+    1057,
+    3014
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 361,
+   "annot_line": 265
+  },
+  {
+   "id": "H2-230",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 19.0,
+   "length": 35.0,
+   "poly": [
+    [
+     1046.0,
+     3019.0
+    ],
+    [
+     1046.0,
+     2984.0
+    ],
+    [
+     1065.0,
+     2984.0
+    ],
+    [
+     1065.0,
+     3019.0
+    ]
+   ],
+   "aabb": [
+    1046,
+    2984,
+    1065,
+    3019
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 172,
+   "annot_line": 266
+  },
+  {
+   "id": "H2-231",
+   "reading": "108.88'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 20.0,
+   "length": 71.0,
+   "poly": [
+    [
+     1066.0,
+     3061.0
+    ],
+    [
+     1066.0,
+     2990.0
+    ],
+    [
+     1086.0,
+     2990.0
+    ],
+    [
+     1086.0,
+     3061.0
+    ]
+   ],
+   "aabb": [
+    1066,
+    2990,
+    1086,
+    3061
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 331,
+   "annot_line": 267
+  },
+  {
+   "id": "H2-232",
+   "reading": "229",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 34.0,
+   "length": 52.0,
+   "poly": [
+    [
+     1085.0,
+     2992.0
+    ],
+    [
+     1137.0,
+     2992.0
+    ],
+    [
+     1137.0,
+     3026.0
+    ],
+    [
+     1085.0,
+     3026.0
+    ]
+   ],
+   "aabb": [
+    1085,
+    2992,
+    1137,
+    3026
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 462,
+   "annot_line": 268
+  },
+  {
+   "id": "H2-233",
+   "reading": "142.80'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 2.5,
+   "height": 20.0,
+   "length": 69.0,
+   "poly": [
+    [
+     912.5,
+     3017.5
+    ],
+    [
+     981.4,
+     3020.6
+    ],
+    [
+     980.5,
+     3040.5
+    ],
+    [
+     911.6,
+     3037.5
+    ]
+   ],
+   "aabb": [
+    911,
+    3017,
+    982,
+    3041
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 350,
+   "annot_line": 269
+  },
+  {
+   "id": "H2-234",
+   "reading": "42",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 39.0,
+   "length": 49.0,
+   "poly": [
+    [
+     919.0,
+     3028.0
+    ],
+    [
+     968.0,
+     3028.0
+    ],
+    [
+     968.0,
+     3067.0
+    ],
+    [
+     919.0,
+     3067.0
+    ]
+   ],
+   "aabb": [
+    919,
+    3028,
+    968,
+    3067
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 531,
+   "annot_line": 270
+  },
+  {
+   "id": "H2-235",
+   "reading": "226",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 52.0,
+   "poly": [
+    [
+     991.0,
+     3051.0
+    ],
+    [
+     1043.0,
+     3051.0
+    ],
+    [
+     1043.0,
+     3079.0
+    ],
+    [
+     991.0,
+     3079.0
+    ]
+   ],
+   "aabb": [
+    991,
+    3051,
+    1043,
+    3079
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 375,
+   "annot_line": 271
+  },
+  {
+   "id": "H2-236",
+   "reading": "58'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 17.0,
+   "length": 28.8,
+   "poly": [
+    [
+     1037.0,
+     3089.0
+    ],
+    [
+     1037.0,
+     3060.2
+    ],
+    [
+     1054.0,
+     3060.2
+    ],
+    [
+     1054.0,
+     3089.0
+    ]
+   ],
+   "aabb": [
+    1037,
+    3060,
+    1054,
+    3089
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 137,
+   "annot_line": 272
+  },
+  {
+   "id": "H2-237",
+   "reading": "44",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 37.0,
+   "length": 57.0,
+   "poly": [
+    [
+     1068.0,
+     3052.0
+    ],
+    [
+     1125.0,
+     3052.0
+    ],
+    [
+     1125.0,
+     3089.0
+    ],
+    [
+     1068.0,
+     3089.0
+    ]
+   ],
+   "aabb": [
+    1068,
+    3052,
+    1125,
+    3089
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 503,
+   "annot_line": 273
+  },
+  {
+   "id": "H2-238",
+   "reading": "133.64'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 2.4,
+   "height": 25.0,
+   "length": 78.2,
+   "poly": [
+    [
+     923.5,
+     3070.6
+    ],
+    [
+     1001.7,
+     3073.8
+    ],
+    [
+     1000.6,
+     3098.8
+    ],
+    [
+     922.5,
+     3095.5
+    ]
+   ],
+   "aabb": [
+    922,
+    3070,
+    1002,
+    3099
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 353,
+   "annot_line": 274
+  },
+  {
+   "id": "H2-239",
+   "reading": "67",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 32.0,
+   "length": 57.0,
+   "poly": [
+    [
+     1173.0,
+     2851.0
+    ],
+    [
+     1230.0,
+     2851.0
+    ],
+    [
+     1230.0,
+     2883.0
+    ],
+    [
+     1173.0,
+     2883.0
+    ]
+   ],
+   "aabb": [
+    1173,
+    2851,
+    1230,
+    2883
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 263,
+   "annot_line": 275
+  },
+  {
+   "id": "H2-240",
+   "reading": "68",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 32.0,
+   "length": 40.0,
+   "poly": [
+    [
+     1249.0,
+     2858.0
+    ],
+    [
+     1289.0,
+     2858.0
+    ],
+    [
+     1289.0,
+     2890.0
+    ],
+    [
+     1249.0,
+     2890.0
+    ]
+   ],
+   "aabb": [
+    1249,
+    2858,
+    1289,
+    2890
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 430,
+   "annot_line": 277
+  },
+  {
+   "id": "H2-241",
+   "reading": "69",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 48.0,
+   "poly": [
+    [
+     1323.0,
+     2872.0
+    ],
+    [
+     1371.0,
+     2872.0
+    ],
+    [
+     1371.0,
+     2902.0
+    ],
+    [
+     1323.0,
+     2902.0
+    ]
+   ],
+   "aabb": [
+    1323,
+    2872,
+    1371,
+    2902
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 317,
+   "annot_line": 278
+  },
+  {
+   "id": "H2-242",
+   "reading": "231",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 46.0,
+   "poly": [
+    [
+     1166.0,
+     2928.0
+    ],
+    [
+     1212.0,
+     2928.0
+    ],
+    [
+     1212.0,
+     2956.0
+    ],
+    [
+     1166.0,
+     2956.0
+    ]
+   ],
+   "aabb": [
+    1166,
+    2928,
+    1212,
+    2956
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 315,
+   "annot_line": 280
+  },
+  {
+   "id": "H2-243",
+   "reading": "232",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 52.0,
+   "poly": [
+    [
+     1237.0,
+     2939.0
+    ],
+    [
+     1289.0,
+     2939.0
+    ],
+    [
+     1289.0,
+     2967.0
+    ],
+    [
+     1237.0,
+     2967.0
+    ]
+   ],
+   "aabb": [
+    1237,
+    2939,
+    1289,
+    2967
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 389,
+   "annot_line": 281
+  },
+  {
+   "id": "H2-244",
+   "reading": "235",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 51.0,
+   "poly": [
+    [
+     1316.0,
+     2949.0
+    ],
+    [
+     1367.0,
+     2949.0
+    ],
+    [
+     1367.0,
+     2978.0
+    ],
+    [
+     1316.0,
+     2978.0
+    ]
+   ],
+   "aabb": [
+    1316,
+    2949,
+    1367,
+    2978
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 404,
+   "annot_line": 282
+  },
+  {
+   "id": "H2-245",
+   "reading": "230",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 51.0,
+   "poly": [
+    [
+     1155.0,
+     3001.0
+    ],
+    [
+     1206.0,
+     3001.0
+    ],
+    [
+     1206.0,
+     3032.0
+    ],
+    [
+     1155.0,
+     3032.0
+    ]
+   ],
+   "aabb": [
+    1155,
+    3001,
+    1206,
+    3032
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 431,
+   "annot_line": 284
+  },
+  {
+   "id": "H2-246",
+   "reading": "233",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 51.0,
+   "poly": [
+    [
+     1226.0,
+     3012.0
+    ],
+    [
+     1277.0,
+     3012.0
+    ],
+    [
+     1277.0,
+     3041.0
+    ],
+    [
+     1226.0,
+     3041.0
+    ]
+   ],
+   "aabb": [
+    1226,
+    3012,
+    1277,
+    3041
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 369,
+   "annot_line": 285
+  },
+  {
+   "id": "H2-247",
+   "reading": "234",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 56.0,
+   "poly": [
+    [
+     1301.0,
+     3024.0
+    ],
+    [
+     1357.0,
+     3024.0
+    ],
+    [
+     1357.0,
+     3053.0
+    ],
+    [
+     1301.0,
+     3053.0
+    ]
+   ],
+   "aabb": [
+    1301,
+    3024,
+    1357,
+    3053
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 421,
+   "annot_line": 286
+  },
+  {
+   "id": "H2-248",
+   "reading": "46",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 44.0,
+   "poly": [
+    [
+     1151.0,
+     3044.0
+    ],
+    [
+     1195.0,
+     3044.0
+    ],
+    [
+     1195.0,
+     3074.0
+    ],
+    [
+     1151.0,
+     3074.0
+    ]
+   ],
+   "aabb": [
+    1151,
+    3044,
+    1195,
+    3074
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 398,
+   "annot_line": 287
+  },
+  {
+   "id": "H2-249",
+   "reading": "47",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 43.0,
+   "poly": [
+    [
+     1223.0,
+     3062.0
+    ],
+    [
+     1266.0,
+     3062.0
+    ],
+    [
+     1266.0,
+     3091.0
+    ],
+    [
+     1223.0,
+     3091.0
+    ]
+   ],
+   "aabb": [
+    1223,
+    3062,
+    1266,
+    3091
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 342,
+   "annot_line": 288
+  },
+  {
+   "id": "H2-250",
+   "reading": "48",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 36.0,
+   "poly": [
+    [
+     1297.0,
+     3087.0
+    ],
+    [
+     1333.0,
+     3087.0
+    ],
+    [
+     1333.0,
+     3113.0
+    ],
+    [
+     1297.0,
+     3113.0
+    ]
+   ],
+   "aabb": [
+    1297,
+    3087,
+    1333,
+    3113
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 130,
+   "annot_line": 289
+  },
+  {
+   "id": "H2-251",
+   "reading": "75'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 16.0,
+   "length": 23.0,
+   "poly": [
+    [
+     1139.0,
+     3050.0
+    ],
+    [
+     1139.0,
+     3027.0
+    ],
+    [
+     1155.0,
+     3027.0
+    ],
+    [
+     1155.0,
+     3050.0
+    ]
+   ],
+   "aabb": [
+    1139,
+    3027,
+    1155,
+    3050
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 94,
+   "annot_line": 290
+  },
+  {
+   "id": "H2-252",
+   "reading": "114.02'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 26.0,
+   "length": 60.0,
+   "poly": [
+    [
+     1119.0,
+     3057.0
+    ],
+    [
+     1119.0,
+     2997.0
+    ],
+    [
+     1145.0,
+     2997.0
+    ],
+    [
+     1145.0,
+     3057.0
+    ]
+   ],
+   "aabb": [
+    1119,
+    2997,
+    1145,
+    3057
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 421,
+   "annot_line": 291
+  },
+  {
+   "id": "H2-253",
+   "reading": "12",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 32.0,
+   "length": 36.0,
+   "poly": [
+    [
+     1446.0,
+     2598.0
+    ],
+    [
+     1482.0,
+     2598.0
+    ],
+    [
+     1482.0,
+     2630.0
+    ],
+    [
+     1446.0,
+     2630.0
+    ]
+   ],
+   "aabb": [
+    1446,
+    2598,
+    1482,
+    2630
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 328,
+   "annot_line": 293
+  },
+  {
+   "id": "H2-254",
+   "reading": "13",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 34.0,
+   "poly": [
+    [
+     1520.0,
+     2609.0
+    ],
+    [
+     1554.0,
+     2609.0
+    ],
+    [
+     1554.0,
+     2640.0
+    ],
+    [
+     1520.0,
+     2640.0
+    ]
+   ],
+   "aabb": [
+    1520,
+    2609,
+    1554,
+    2640
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 254,
+   "annot_line": 294
+  },
+  {
+   "id": "H2-255",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 23.0,
+   "poly": [
+    [
+     1500.0,
+     2644.0
+    ],
+    [
+     1523.0,
+     2644.0
+    ],
+    [
+     1523.0,
+     2669.0
+    ],
+    [
+     1500.0,
+     2669.0
+    ]
+   ],
+   "aabb": [
+    1500,
+    2644,
+    1523,
+    2669
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 139,
+   "annot_line": 295
+  },
+  {
+   "id": "H2-256",
+   "reading": "14",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 35.0,
+   "poly": [
+    [
+     1587.0,
+     2619.0
+    ],
+    [
+     1622.0,
+     2619.0
+    ],
+    [
+     1622.0,
+     2648.0
+    ],
+    [
+     1587.0,
+     2648.0
+    ]
+   ],
+   "aabb": [
+    1587,
+    2619,
+    1622,
+    2648
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 328,
+   "annot_line": 296
+  },
+  {
+   "id": "H2-257",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 6.0,
+   "length": 13.0,
+   "poly": [
+    [
+     1374.0,
+     2685.0
+    ],
+    [
+     1387.0,
+     2685.0
+    ],
+    [
+     1387.0,
+     2691.0
+    ],
+    [
+     1374.0,
+     2691.0
+    ]
+   ],
+   "aabb": [
+    1374,
+    2685,
+    1387,
+    2691
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 22,
+   "annot_line": 297
+  },
+  {
+   "id": "H2-258",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 6.0,
+   "length": 11.0,
+   "poly": [
+    [
+     1447.0,
+     2696.0
+    ],
+    [
+     1458.0,
+     2696.0
+    ],
+    [
+     1458.0,
+     2702.0
+    ],
+    [
+     1447.0,
+     2702.0
+    ]
+   ],
+   "aabb": [
+    1447,
+    2696,
+    1458,
+    2702
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 19,
+   "annot_line": 298
+  },
+  {
+   "id": "H2-259",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 17.0,
+   "length": 39.0,
+   "poly": [
+    [
+     1505.0,
+     2701.0
+    ],
+    [
+     1544.0,
+     2701.0
+    ],
+    [
+     1544.0,
+     2718.0
+    ],
+    [
+     1505.0,
+     2718.0
+    ]
+   ],
+   "aabb": [
+    1505,
+    2701,
+    1544,
+    2718
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 151,
+   "annot_line": 299
+  },
+  {
+   "id": "H2-260",
+   "reading": "62.6'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 20.0,
+   "length": 58.0,
+   "poly": [
+    [
+     1569.0,
+     2710.0
+    ],
+    [
+     1627.0,
+     2710.0
+    ],
+    [
+     1627.0,
+     2730.0
+    ],
+    [
+     1569.0,
+     2730.0
+    ]
+   ],
+   "aabb": [
+    1569,
+    2710,
+    1627,
+    2730
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 261,
+   "annot_line": 300
+  },
+  {
+   "id": "H2-261",
+   "reading": "8438",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 22.6,
+   "length": 63.0,
+   "poly": [
+    [
+     1479.0,
+     2725.0
+    ],
+    [
+     1542.0,
+     2725.0
+    ],
+    [
+     1542.0,
+     2747.6
+    ],
+    [
+     1479.0,
+     2747.6
+    ]
+   ],
+   "aabb": [
+    1479,
+    2725,
+    1542,
+    2748
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 402,
+   "annot_line": 301
+  },
+  {
+   "id": "H2-262",
+   "reading": "WISWELL",
+   "kind": "street",
+   "flags": [],
+   "angle": 6.6,
+   "height": 65.1,
+   "length": 310.8,
+   "poly": [
+    [
+     1497.4,
+     2738.4
+    ],
+    [
+     1806.2,
+     2774.0
+    ],
+    [
+     1798.8,
+     2838.6
+    ],
+    [
+     1490.0,
+     2803.0
+    ]
+   ],
+   "aabb": [
+    1489,
+    2738,
+    1807,
+    2839
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 5164,
+   "annot_line": 302
+  },
+  {
+   "id": "H2-263",
+   "reading": "8439",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 60.0,
+   "poly": [
+    [
+     1476.0,
+     2775.0
+    ],
+    [
+     1536.0,
+     2775.0
+    ],
+    [
+     1536.0,
+     2803.0
+    ],
+    [
+     1476.0,
+     2803.0
+    ]
+   ],
+   "aabb": [
+    1476,
+    2775,
+    1536,
+    2803
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 442,
+   "annot_line": 303
+  },
+  {
+   "id": "H2-264",
+   "reading": "8435-29",
+   "kind": "house",
+   "flags": [],
+   "angle": 10.0,
+   "height": 29.7,
+   "length": 116.0,
+   "poly": [
+    [
+     1560.1,
+     2788.5
+    ],
+    [
+     1674.3,
+     2808.7
+    ],
+    [
+     1669.1,
+     2838.0
+    ],
+    [
+     1554.9,
+     2817.8
+    ]
+   ],
+   "aabb": [
+    1554,
+    2788,
+    1675,
+    2839
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 723,
+   "annot_line": 304
+  },
+  {
+   "id": "H2-265",
+   "reading": "58'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 19.0,
+   "length": 39.0,
+   "poly": [
+    [
+     1484.0,
+     2807.0
+    ],
+    [
+     1523.0,
+     2807.0
+    ],
+    [
+     1523.0,
+     2826.0
+    ],
+    [
+     1484.0,
+     2826.0
+    ]
+   ],
+   "aabb": [
+    1484,
+    2807,
+    1523,
+    2826
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 178,
+   "annot_line": 305
+  },
+  {
+   "id": "H2-266",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 16.0,
+   "length": 28.5,
+   "poly": [
+    [
+     1571.0,
+     2822.0
+    ],
+    [
+     1599.5,
+     2822.0
+    ],
+    [
+     1599.5,
+     2838.0
+    ],
+    [
+     1571.0,
+     2838.0
+    ]
+   ],
+   "aabb": [
+    1571,
+    2822,
+    1600,
+    2838
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 140,
+   "annot_line": 306
+  },
+  {
+   "id": "H2-267",
+   "reading": "15",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 31.0,
+   "poly": [
+    [
+     1675.0,
+     2633.0
+    ],
+    [
+     1706.0,
+     2633.0
+    ],
+    [
+     1706.0,
+     2662.0
+    ],
+    [
+     1675.0,
+     2662.0
+    ]
+   ],
+   "aabb": [
+    1675,
+    2633,
+    1706,
+    2662
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 219,
+   "annot_line": 307
+  },
+  {
+   "id": "H2-268",
+   "reading": "1",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 37.0,
+   "length": 19.0,
+   "poly": [
+    [
+     1648.0,
+     2660.0
+    ],
+    [
+     1667.0,
+     2660.0
+    ],
+    [
+     1667.0,
+     2697.0
+    ],
+    [
+     1648.0,
+     2697.0
+    ]
+   ],
+   "aabb": [
+    1648,
+    2660,
+    1667,
+    2697
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 133,
+   "annot_line": 308
+  },
+  {
+   "id": "H2-269",
+   "reading": "16",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 23.4,
+   "length": 31.0,
+   "poly": [
+    [
+     1749.0,
+     2642.0
+    ],
+    [
+     1780.0,
+     2642.0
+    ],
+    [
+     1780.0,
+     2665.4
+    ],
+    [
+     1749.0,
+     2665.4
+    ]
+   ],
+   "aabb": [
+    1749,
+    2642,
+    1780,
+    2666
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 242,
+   "annot_line": 309
+  },
+  {
+   "id": "H2-270",
+   "reading": "1",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 18.0,
+   "poly": [
+    [
+     1720.0,
+     2680.0
+    ],
+    [
+     1738.0,
+     2680.0
+    ],
+    [
+     1738.0,
+     2705.0
+    ],
+    [
+     1720.0,
+     2705.0
+    ]
+   ],
+   "aabb": [
+    1720,
+    2680,
+    1738,
+    2705
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 68,
+   "annot_line": 310
+  },
+  {
+   "id": "H2-271",
+   "reading": "17",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 41.0,
+   "poly": [
+    [
+     1807.0,
+     2655.0
+    ],
+    [
+     1848.0,
+     2655.0
+    ],
+    [
+     1848.0,
+     2683.0
+    ],
+    [
+     1807.0,
+     2683.0
+    ]
+   ],
+   "aabb": [
+    1807,
+    2655,
+    1848,
+    2683
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 227,
+   "annot_line": 311
+  },
+  {
+   "id": "H2-272",
+   "reading": "37.6'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 21.0,
+   "length": 47.0,
+   "poly": [
+    [
+     1657.0,
+     2723.0
+    ],
+    [
+     1704.0,
+     2723.0
+    ],
+    [
+     1704.0,
+     2744.0
+    ],
+    [
+     1657.0,
+     2744.0
+    ]
+   ],
+   "aabb": [
+    1657,
+    2723,
+    1704,
+    2744
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 216,
+   "annot_line": 312
+  },
+  {
+   "id": "H2-273",
+   "reading": "25'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 20.0,
+   "length": 26.0,
+   "poly": [
+    [
+     1711.0,
+     2731.0
+    ],
+    [
+     1737.0,
+     2731.0
+    ],
+    [
+     1737.0,
+     2751.0
+    ],
+    [
+     1711.0,
+     2751.0
+    ]
+   ],
+   "aabb": [
+    1711,
+    2731,
+    1737,
+    2751
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 136,
+   "annot_line": 313
+  },
+  {
+   "id": "H2-274",
+   "reading": "25'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 35.0,
+   "poly": [
+    [
+     1746.0,
+     2735.0
+    ],
+    [
+     1781.0,
+     2735.0
+    ],
+    [
+     1781.0,
+     2757.0
+    ],
+    [
+     1746.0,
+     2757.0
+    ]
+   ],
+   "aabb": [
+    1746,
+    2735,
+    1781,
+    2757
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 150,
+   "annot_line": 314
+  },
+  {
+   "id": "H2-275",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 19.0,
+   "length": 39.0,
+   "poly": [
+    [
+     1802.0,
+     2745.0
+    ],
+    [
+     1841.0,
+     2745.0
+    ],
+    [
+     1841.0,
+     2764.0
+    ],
+    [
+     1802.0,
+     2764.0
+    ]
+   ],
+   "aabb": [
+    1802,
+    2745,
+    1841,
+    2764
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 167,
+   "annot_line": 315
+  },
+  {
+   "id": "H2-276",
+   "reading": "8428-20",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 40.0,
+   "length": 105.0,
+   "poly": [
+    [
+     1630.0,
+     2739.0
+    ],
+    [
+     1735.0,
+     2739.0
+    ],
+    [
+     1735.0,
+     2779.0
+    ],
+    [
+     1630.0,
+     2779.0
+    ]
+   ],
+   "aabb": [
+    1630,
+    2739,
+    1735,
+    2779
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 894,
+   "annot_line": 316
+  },
+  {
+   "id": "H2-277",
+   "reading": "8427",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 20.0,
+   "length": 64.0,
+   "poly": [
+    [
+     1716.0,
+     2820.0
+    ],
+    [
+     1780.0,
+     2820.0
+    ],
+    [
+     1780.0,
+     2840.0
+    ],
+    [
+     1716.0,
+     2840.0
+    ]
+   ],
+   "aabb": [
+    1716,
+    2820,
+    1780,
+    2840
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 398,
+   "annot_line": 317
+  },
+  {
+   "id": "H2-278",
+   "reading": "8421",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 54.0,
+   "poly": [
+    [
+     1795.0,
+     2828.0
+    ],
+    [
+     1849.0,
+     2828.0
+    ],
+    [
+     1849.0,
+     2850.0
+    ],
+    [
+     1795.0,
+     2850.0
+    ]
+   ],
+   "aabb": [
+    1795,
+    2828,
+    1849,
+    2850
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 344,
+   "annot_line": 318
+  },
+  {
+   "id": "H2-279",
+   "reading": "60'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 35.0,
+   "poly": [
+    [
+     1646.0,
+     2829.0
+    ],
+    [
+     1681.0,
+     2829.0
+    ],
+    [
+     1681.0,
+     2851.0
+    ],
+    [
+     1646.0,
+     2851.0
+    ]
+   ],
+   "aabb": [
+    1646,
+    2829,
+    1681,
+    2851
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 167,
+   "annot_line": 319
+  },
+  {
+   "id": "H2-280",
+   "reading": "60'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 16.0,
+   "length": 34.0,
+   "poly": [
+    [
+     1729.0,
+     2845.0
+    ],
+    [
+     1763.0,
+     2845.0
+    ],
+    [
+     1763.0,
+     2861.0
+    ],
+    [
+     1729.0,
+     2861.0
+    ]
+   ],
+   "aabb": [
+    1729,
+    2845,
+    1763,
+    2861
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 163,
+   "annot_line": 320
+  },
+  {
+   "id": "H2-281",
+   "reading": "70'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 26.0,
+   "length": 33.0,
+   "poly": [
+    [
+     1425.0,
+     2901.0
+    ],
+    [
+     1425.0,
+     2868.0
+    ],
+    [
+     1451.0,
+     2868.0
+    ],
+    [
+     1451.0,
+     2901.0
+    ]
+   ],
+   "aabb": [
+    1425,
+    2868,
+    1451,
+    2901
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 246,
+   "annot_line": 321
+  },
+  {
+   "id": "H2-282",
+   "reading": "1",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 23.0,
+   "length": 18.0,
+   "poly": [
+    [
+     1462.0,
+     2852.0
+    ],
+    [
+     1480.0,
+     2852.0
+    ],
+    [
+     1480.0,
+     2875.0
+    ],
+    [
+     1462.0,
+     2875.0
+    ]
+   ],
+   "aabb": [
+    1462,
+    2852,
+    1480,
+    2875
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 78,
+   "annot_line": 322
+  },
+  {
+   "id": "H2-283",
+   "reading": "71",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 26.4,
+   "length": 31.0,
+   "poly": [
+    [
+     1471.0,
+     2893.6
+    ],
+    [
+     1502.0,
+     2893.6
+    ],
+    [
+     1502.0,
+     2920.0
+    ],
+    [
+     1471.0,
+     2920.0
+    ]
+   ],
+   "aabb": [
+    1471,
+    2893,
+    1502,
+    2920
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 187,
+   "annot_line": 323
+  },
+  {
+   "id": "H2-284",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 23.0,
+   "poly": [
+    [
+     1548.0,
+     2865.0
+    ],
+    [
+     1571.0,
+     2865.0
+    ],
+    [
+     1571.0,
+     2891.0
+    ],
+    [
+     1548.0,
+     2891.0
+    ]
+   ],
+   "aabb": [
+    1548,
+    2865,
+    1571,
+    2891
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 143,
+   "annot_line": 324
+  },
+  {
+   "id": "H2-285",
+   "reading": "72",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 30.0,
+   "poly": [
+    [
+     1558.0,
+     2906.0
+    ],
+    [
+     1588.0,
+     2906.0
+    ],
+    [
+     1588.0,
+     2934.0
+    ],
+    [
+     1558.0,
+     2934.0
+    ]
+   ],
+   "aabb": [
+    1558,
+    2906,
+    1588,
+    2934
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 98,
+   "annot_line": 325
+  },
+  {
+   "id": "H2-286",
+   "reading": "236",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 39.0,
+   "length": 52.0,
+   "poly": [
+    [
+     1389.0,
+     2958.0
+    ],
+    [
+     1441.0,
+     2958.0
+    ],
+    [
+     1441.0,
+     2997.0
+    ],
+    [
+     1389.0,
+     2997.0
+    ]
+   ],
+   "aabb": [
+    1389,
+    2958,
+    1441,
+    2997
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 470,
+   "annot_line": 327
+  },
+  {
+   "id": "H2-287",
+   "reading": "239",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 50.0,
+   "poly": [
+    [
+     1461.0,
+     2970.0
+    ],
+    [
+     1511.0,
+     2970.0
+    ],
+    [
+     1511.0,
+     2999.0
+    ],
+    [
+     1461.0,
+     2999.0
+    ]
+   ],
+   "aabb": [
+    1461,
+    2970,
+    1511,
+    2999
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 367,
+   "annot_line": 329
+  },
+  {
+   "id": "H2-288",
+   "reading": "240",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 53.0,
+   "poly": [
+    [
+     1532.0,
+     2980.0
+    ],
+    [
+     1585.0,
+     2980.0
+    ],
+    [
+     1585.0,
+     3008.0
+    ],
+    [
+     1532.0,
+     3008.0
+    ]
+   ],
+   "aabb": [
+    1532,
+    2980,
+    1585,
+    3008
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 371,
+   "annot_line": 330
+  },
+  {
+   "id": "H2-289",
+   "reading": "10",
+   "kind": "block",
+   "flags": [],
+   "angle": 0.0,
+   "height": 61.0,
+   "length": 67.0,
+   "poly": [
+    [
+     1563.0,
+     2999.0
+    ],
+    [
+     1630.0,
+     2999.0
+    ],
+    [
+     1630.0,
+     3060.0
+    ],
+    [
+     1563.0,
+     3060.0
+    ]
+   ],
+   "aabb": [
+    1563,
+    2999,
+    1630,
+    3060
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1026,
+   "annot_line": 331
+  },
+  {
+   "id": "H2-290",
+   "reading": "237",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 52.0,
+   "poly": [
+    [
+     1376.0,
+     3036.0
+    ],
+    [
+     1428.0,
+     3036.0
+    ],
+    [
+     1428.0,
+     3064.0
+    ],
+    [
+     1376.0,
+     3064.0
+    ]
+   ],
+   "aabb": [
+    1376,
+    3036,
+    1428,
+    3064
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 304,
+   "annot_line": 332
+  },
+  {
+   "id": "H2-291",
+   "reading": "238",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 32.0,
+   "length": 55.0,
+   "poly": [
+    [
+     1448.0,
+     3044.0
+    ],
+    [
+     1503.0,
+     3044.0
+    ],
+    [
+     1503.0,
+     3076.0
+    ],
+    [
+     1448.0,
+     3076.0
+    ]
+   ],
+   "aabb": [
+    1448,
+    3044,
+    1503,
+    3076
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 436,
+   "annot_line": 333
+  },
+  {
+   "id": "H2-292",
+   "reading": "241",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 42.0,
+   "poly": [
+    [
+     1527.0,
+     3058.0
+    ],
+    [
+     1569.0,
+     3058.0
+    ],
+    [
+     1569.0,
+     3085.0
+    ],
+    [
+     1527.0,
+     3085.0
+    ]
+   ],
+   "aabb": [
+    1527,
+    3058,
+    1569,
+    3085
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 297,
+   "annot_line": 334
+  },
+  {
+   "id": "H2-293",
+   "reading": "242",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 32.0,
+   "length": 56.0,
+   "poly": [
+    [
+     1594.0,
+     3068.0
+    ],
+    [
+     1650.0,
+     3068.0
+    ],
+    [
+     1650.0,
+     3100.0
+    ],
+    [
+     1594.0,
+     3100.0
+    ]
+   ],
+   "aabb": [
+    1594,
+    3068,
+    1650,
+    3100
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 424,
+   "annot_line": 335
+  },
+  {
+   "id": "H2-294",
+   "reading": "72'",
+   "kind": "lotdim",
+   "flags": [
+    "partial",
+    "unsure"
+   ],
+   "angle": -90.0,
+   "height": 16.0,
+   "length": 29.0,
+   "poly": [
+    [
+     1479.0,
+     3107.0
+    ],
+    [
+     1479.0,
+     3078.0
+    ],
+    [
+     1495.0,
+     3078.0
+    ],
+    [
+     1495.0,
+     3107.0
+    ]
+   ],
+   "aabb": [
+    1479,
+    3078,
+    1495,
+    3107
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 91,
+   "annot_line": 336
+  },
+  {
+   "id": "H2-295",
+   "reading": "40'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 16.0,
+   "length": 37.0,
+   "poly": [
+    [
+     1797.0,
+     2856.0
+    ],
+    [
+     1834.0,
+     2856.0
+    ],
+    [
+     1834.0,
+     2872.0
+    ],
+    [
+     1797.0,
+     2872.0
+    ]
+   ],
+   "aabb": [
+    1797,
+    2856,
+    1834,
+    2872
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 165,
+   "annot_line": 337
+  },
+  {
+   "id": "H2-296",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 17.0,
+   "length": 41.0,
+   "poly": [
+    [
+     1860.0,
+     2866.0
+    ],
+    [
+     1901.0,
+     2866.0
+    ],
+    [
+     1901.0,
+     2883.0
+    ],
+    [
+     1860.0,
+     2883.0
+    ]
+   ],
+   "aabb": [
+    1860,
+    2866,
+    1901,
+    2883
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 160,
+   "annot_line": 338
+  },
+  {
+   "id": "H2-297",
+   "reading": "2",
+   "kind": "story",
+   "flags": [
+    "nosnap"
+   ],
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 16.0,
+   "poly": [
+    [
+     1652.0,
+     2889.0
+    ],
+    [
+     1668.0,
+     2889.0
+    ],
+    [
+     1668.0,
+     2911.0
+    ],
+    [
+     1652.0,
+     2911.0
+    ]
+   ],
+   "aabb": [
+    1652,
+    2889,
+    1668,
+    2911
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 93,
+   "annot_line": 339
+  },
+  {
+   "id": "H2-298",
+   "reading": "73",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 34.0,
+   "length": 51.0,
+   "poly": [
+    [
+     1617.0,
+     2916.0
+    ],
+    [
+     1668.0,
+     2916.0
+    ],
+    [
+     1668.0,
+     2950.0
+    ],
+    [
+     1617.0,
+     2950.0
+    ]
+   ],
+   "aabb": [
+    1617,
+    2916,
+    1668,
+    2950
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 406,
+   "annot_line": 340
+  },
+  {
+   "id": "H2-299",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 23.0,
+   "length": 21.0,
+   "poly": [
+    [
+     1703.0,
+     2888.0
+    ],
+    [
+     1724.0,
+     2888.0
+    ],
+    [
+     1724.0,
+     2911.0
+    ],
+    [
+     1703.0,
+     2911.0
+    ]
+   ],
+   "aabb": [
+    1703,
+    2888,
+    1724,
+    2911
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 124,
+   "annot_line": 343
+  },
+  {
+   "id": "H2-300",
+   "reading": "74",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 48.0,
+   "poly": [
+    [
+     1698.0,
+     2928.0
+    ],
+    [
+     1746.0,
+     2928.0
+    ],
+    [
+     1746.0,
+     2958.0
+    ],
+    [
+     1698.0,
+     2958.0
+    ]
+   ],
+   "aabb": [
+    1698,
+    2928,
+    1746,
+    2958
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 250,
+   "annot_line": 344
+  },
+  {
+   "id": "H2-301",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 19.0,
+   "poly": [
+    [
+     1792.0,
+     2903.0
+    ],
+    [
+     1811.0,
+     2903.0
+    ],
+    [
+     1811.0,
+     2928.0
+    ],
+    [
+     1792.0,
+     2928.0
+    ]
+   ],
+   "aabb": [
+    1792,
+    2903,
+    1811,
+    2928
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 129,
+   "annot_line": 346
+  },
+  {
+   "id": "H2-302",
+   "reading": "75",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 38.0,
+   "poly": [
+    [
+     1785.0,
+     2940.0
+    ],
+    [
+     1823.0,
+     2940.0
+    ],
+    [
+     1823.0,
+     2971.0
+    ],
+    [
+     1785.0,
+     2971.0
+    ]
+   ],
+   "aabb": [
+    1785,
+    2940,
+    1823,
+    2971
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 129,
+   "annot_line": 347
+  },
+  {
+   "id": "H2-303",
+   "reading": "76",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 36.0,
+   "poly": [
+    [
+     1844.0,
+     2949.0
+    ],
+    [
+     1880.0,
+     2949.0
+    ],
+    [
+     1880.0,
+     2978.0
+    ],
+    [
+     1844.0,
+     2978.0
+    ]
+   ],
+   "aabb": [
+    1844,
+    2949,
+    1880,
+    2978
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 356,
+   "annot_line": 350
+  },
+  {
+   "id": "H2-304",
+   "reading": "243",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 50.0,
+   "poly": [
+    [
+     1612.0,
+     2992.0
+    ],
+    [
+     1662.0,
+     2992.0
+    ],
+    [
+     1662.0,
+     3020.0
+    ],
+    [
+     1612.0,
+     3020.0
+    ]
+   ],
+   "aabb": [
+    1612,
+    2992,
+    1662,
+    3020
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 367,
+   "annot_line": 351
+  },
+  {
+   "id": "H2-305",
+   "reading": "244",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 53.0,
+   "poly": [
+    [
+     1686.0,
+     3005.0
+    ],
+    [
+     1739.0,
+     3005.0
+    ],
+    [
+     1739.0,
+     3033.0
+    ],
+    [
+     1686.0,
+     3033.0
+    ]
+   ],
+   "aabb": [
+    1686,
+    3005,
+    1739,
+    3033
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 397,
+   "annot_line": 353
+  },
+  {
+   "id": "H2-306",
+   "reading": "247",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 56.0,
+   "poly": [
+    [
+     1756.0,
+     3015.0
+    ],
+    [
+     1812.0,
+     3015.0
+    ],
+    [
+     1812.0,
+     3046.0
+    ],
+    [
+     1756.0,
+     3046.0
+    ]
+   ],
+   "aabb": [
+    1756,
+    3015,
+    1812,
+    3046
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 358,
+   "annot_line": 355
+  },
+  {
+   "id": "H2-307",
+   "reading": "248",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 51.0,
+   "poly": [
+    [
+     1827.0,
+     3024.0
+    ],
+    [
+     1878.0,
+     3024.0
+    ],
+    [
+     1878.0,
+     3054.0
+    ],
+    [
+     1827.0,
+     3054.0
+    ]
+   ],
+   "aabb": [
+    1827,
+    3024,
+    1878,
+    3054
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 414,
+   "annot_line": 357
+  },
+  {
+   "id": "H2-308",
+   "reading": "245",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 51.0,
+   "poly": [
+    [
+     1673.0,
+     3079.0
+    ],
+    [
+     1724.0,
+     3079.0
+    ],
+    [
+     1724.0,
+     3109.0
+    ],
+    [
+     1673.0,
+     3109.0
+    ]
+   ],
+   "aabb": [
+    1673,
+    3079,
+    1724,
+    3109
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 251,
+   "annot_line": 358
+  },
+  {
+   "id": "H2-309",
+   "reading": "246",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 51.0,
+   "poly": [
+    [
+     1748.0,
+     3090.0
+    ],
+    [
+     1799.0,
+     3090.0
+    ],
+    [
+     1799.0,
+     3115.0
+    ],
+    [
+     1748.0,
+     3115.0
+    ]
+   ],
+   "aabb": [
+    1748,
+    3090,
+    1799,
+    3115
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 123,
+   "annot_line": 359
+  },
+  {
+   "id": "H2-310",
+   "reading": "192",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 50.0,
+   "poly": [
+    [
+     1891.0,
+     2594.0
+    ],
+    [
+     1941.0,
+     2594.0
+    ],
+    [
+     1941.0,
+     2620.0
+    ],
+    [
+     1891.0,
+     2620.0
+    ]
+   ],
+   "aabb": [
+    1891,
+    2594,
+    1941,
+    2620
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 278,
+   "annot_line": 361
+  },
+  {
+   "id": "H2-311",
+   "reading": "189",
+   "kind": "lot",
+   "flags": [
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 42.0,
+   "poly": [
+    [
+     1965.0,
+     2603.0
+    ],
+    [
+     2007.0,
+     2603.0
+    ],
+    [
+     2007.0,
+     2630.0
+    ],
+    [
+     1965.0,
+     2630.0
+    ]
+   ],
+   "aabb": [
+    1965,
+    2603,
+    2007,
+    2630
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 253,
+   "annot_line": 362
+  },
+  {
+   "id": "H2-312",
+   "reading": "188",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 46.0,
+   "poly": [
+    [
+     2039.0,
+     2612.0
+    ],
+    [
+     2085.0,
+     2612.0
+    ],
+    [
+     2085.0,
+     2642.0
+    ],
+    [
+     2039.0,
+     2642.0
+    ]
+   ],
+   "aabb": [
+    2039,
+    2612,
+    2085,
+    2642
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 315,
+   "annot_line": 363
+  },
+  {
+   "id": "H2-313",
+   "reading": "150'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 16.2,
+   "length": 42.0,
+   "poly": [
+    [
+     2069.0,
+     2687.0
+    ],
+    [
+     2069.0,
+     2645.0
+    ],
+    [
+     2085.2,
+     2645.0
+    ],
+    [
+     2085.2,
+     2687.0
+    ]
+   ],
+   "aabb": [
+    2069,
+    2645,
+    2086,
+    2687
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 168,
+   "annot_line": 364
+  },
+  {
+   "id": "H2-314",
+   "reading": "18",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 33.0,
+   "poly": [
+    [
+     1884.0,
+     2663.0
+    ],
+    [
+     1917.0,
+     2663.0
+    ],
+    [
+     1917.0,
+     2690.0
+    ],
+    [
+     1884.0,
+     2690.0
+    ]
+   ],
+   "aabb": [
+    1884,
+    2663,
+    1917,
+    2690
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 273,
+   "annot_line": 365
+  },
+  {
+   "id": "H2-315",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 23.0,
+   "length": 21.0,
+   "poly": [
+    [
+     1898.0,
+     2708.0
+    ],
+    [
+     1919.0,
+     2708.0
+    ],
+    [
+     1919.0,
+     2731.0
+    ],
+    [
+     1898.0,
+     2731.0
+    ]
+   ],
+   "aabb": [
+    1898,
+    2708,
+    1919,
+    2731
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 104,
+   "annot_line": 366
+  },
+  {
+   "id": "H2-316",
+   "reading": "19",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 36.0,
+   "poly": [
+    [
+     1957.0,
+     2675.0
+    ],
+    [
+     1993.0,
+     2675.0
+    ],
+    [
+     1993.0,
+     2702.0
+    ],
+    [
+     1957.0,
+     2702.0
+    ]
+   ],
+   "aabb": [
+    1957,
+    2675,
+    1993,
+    2702
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 269,
+   "annot_line": 367
+  },
+  {
+   "id": "H2-317",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 24.2,
+   "length": 20.0,
+   "poly": [
+    [
+     1971.0,
+     2719.8
+    ],
+    [
+     1991.0,
+     2719.8
+    ],
+    [
+     1991.0,
+     2744.0
+    ],
+    [
+     1971.0,
+     2744.0
+    ]
+   ],
+   "aabb": [
+    1971,
+    2719,
+    1991,
+    2744
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 121,
+   "annot_line": 368
+  },
+  {
+   "id": "H2-318",
+   "reading": "20",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 32.0,
+   "length": 38.0,
+   "poly": [
+    [
+     2031.0,
+     2683.0
+    ],
+    [
+     2069.0,
+     2683.0
+    ],
+    [
+     2069.0,
+     2715.0
+    ],
+    [
+     2031.0,
+     2715.0
+    ]
+   ],
+   "aabb": [
+    2031,
+    2683,
+    2069,
+    2715
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 377,
+   "annot_line": 369
+  },
+  {
+   "id": "H2-319",
+   "reading": "I",
+   "kind": "owner",
+   "flags": [
+    "g:J.F.MILLS"
+   ],
+   "angle": -26.0,
+   "height": 18.0,
+   "length": 47.9,
+   "poly": [
+    [
+     2023.1,
+     2732.9
+    ],
+    [
+     2066.1,
+     2711.9
+    ],
+    [
+     2073.9,
+     2728.1
+    ],
+    [
+     2030.9,
+     2749.1
+    ]
+   ],
+   "aabb": [
+    2023,
+    2711,
+    2074,
+    2750
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 307,
+   "annot_line": 370
+  },
+  {
+   "id": "H2-320",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 21.0,
+   "poly": [
+    [
+     2094.0,
+     2738.0
+    ],
+    [
+     2115.0,
+     2738.0
+    ],
+    [
+     2115.0,
+     2763.0
+    ],
+    [
+     2094.0,
+     2763.0
+    ]
+   ],
+   "aabb": [
+    2094,
+    2738,
+    2115,
+    2763
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 116,
+   "annot_line": 371
+  },
+  {
+   "id": "H2-321",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 6.8,
+   "length": 13.0,
+   "poly": [
+    [
+     1881.0,
+     2765.0
+    ],
+    [
+     1894.0,
+     2765.0
+    ],
+    [
+     1894.0,
+     2771.8
+    ],
+    [
+     1881.0,
+     2771.8
+    ]
+   ],
+   "aabb": [
+    1881,
+    2765,
+    1894,
+    2772
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 17,
+   "annot_line": 372
+  },
+  {
+   "id": "H2-322",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 6.8,
+   "length": 11.0,
+   "poly": [
+    [
+     1957.0,
+     2772.0
+    ],
+    [
+     1968.0,
+     2772.0
+    ],
+    [
+     1968.0,
+     2778.8
+    ],
+    [
+     1957.0,
+     2778.8
+    ]
+   ],
+   "aabb": [
+    1957,
+    2772,
+    1968,
+    2779
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 18,
+   "annot_line": 373
+  },
+  {
+   "id": "H2-323",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 17.0,
+   "length": 42.0,
+   "poly": [
+    [
+     2012.0,
+     2777.0
+    ],
+    [
+     2054.0,
+     2777.0
+    ],
+    [
+     2054.0,
+     2794.0
+    ],
+    [
+     2012.0,
+     2794.0
+    ]
+   ],
+   "aabb": [
+    2012,
+    2777,
+    2054,
+    2794
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 147,
+   "annot_line": 374
+  },
+  {
+   "id": "H2-324",
+   "reading": "96.34'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 3.5,
+   "height": 22.8,
+   "length": 72.6,
+   "poly": [
+    [
+     2102.8,
+     2782.1
+    ],
+    [
+     2175.3,
+     2786.5
+    ],
+    [
+     2173.9,
+     2809.3
+    ],
+    [
+     2101.5,
+     2804.9
+    ]
+   ],
+   "aabb": [
+    2101,
+    2782,
+    2176,
+    2810
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 357,
+   "annot_line": 375
+  },
+  {
+   "id": "H2-325",
+   "reading": "8414",
+   "kind": "house",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 58.0,
+   "poly": [
+    [
+     1866.0,
+     2783.0
+    ],
+    [
+     1924.0,
+     2783.0
+    ],
+    [
+     1924.0,
+     2809.0
+    ],
+    [
+     1866.0,
+     2809.0
+    ]
+   ],
+   "aabb": [
+    1866,
+    2783,
+    1924,
+    2809
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 360,
+   "annot_line": 376
+  },
+  {
+   "id": "H2-326",
+   "reading": "8410",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 54.0,
+   "poly": [
+    [
+     1943.0,
+     2796.0
+    ],
+    [
+     1997.0,
+     2796.0
+    ],
+    [
+     1997.0,
+     2820.0
+    ],
+    [
+     1943.0,
+     2820.0
+    ]
+   ],
+   "aabb": [
+    1943,
+    2796,
+    1997,
+    2820
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 352,
+   "annot_line": 377
+  },
+  {
+   "id": "H2-327",
+   "reading": "8404",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 55.0,
+   "poly": [
+    [
+     2067.0,
+     2813.0
+    ],
+    [
+     2122.0,
+     2813.0
+    ],
+    [
+     2122.0,
+     2843.0
+    ],
+    [
+     2067.0,
+     2843.0
+    ]
+   ],
+   "aabb": [
+    2067,
+    2813,
+    2122,
+    2843
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 362,
+   "annot_line": 378
+  },
+  {
+   "id": "H2-328",
+   "reading": "185.",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 57.0,
+   "poly": [
+    [
+     2120.0,
+     2625.0
+    ],
+    [
+     2177.0,
+     2625.0
+    ],
+    [
+     2177.0,
+     2652.0
+    ],
+    [
+     2120.0,
+     2652.0
+    ]
+   ],
+   "aabb": [
+    2120,
+    2625,
+    2177,
+    2652
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 292,
+   "annot_line": 379
+  },
+  {
+   "id": "H2-329",
+   "reading": "153.06'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 19.0,
+   "length": 68.0,
+   "poly": [
+    [
+     2175.0,
+     2718.0
+    ],
+    [
+     2175.0,
+     2650.0
+    ],
+    [
+     2194.0,
+     2650.0
+    ],
+    [
+     2194.0,
+     2718.0
+    ]
+   ],
+   "aabb": [
+    2175,
+    2650,
+    2194,
+    2718
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 314,
+   "annot_line": 380
+  },
+  {
+   "id": "H2-330",
+   "reading": "21",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 43.0,
+   "poly": [
+    [
+     2118.0,
+     2699.0
+    ],
+    [
+     2161.0,
+     2699.0
+    ],
+    [
+     2161.0,
+     2729.0
+    ],
+    [
+     2118.0,
+     2729.0
+    ]
+   ],
+   "aabb": [
+    2118,
+    2699,
+    2161,
+    2729
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 232,
+   "annot_line": 381
+  },
+  {
+   "id": "H2-331",
+   "reading": "22.49'",
+   "kind": "lotdim",
+   "flags": [
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 18.0,
+   "length": 32.0,
+   "poly": [
+    [
+     2277.0,
+     2600.0
+    ],
+    [
+     2309.0,
+     2600.0
+    ],
+    [
+     2309.0,
+     2618.0
+    ],
+    [
+     2277.0,
+     2618.0
+    ]
+   ],
+   "aabb": [
+    2277,
+    2600,
+    2309,
+    2618
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 170,
+   "annot_line": 382
+  },
+  {
+   "id": "H2-332",
+   "reading": "72.94'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 57.0,
+   "poly": [
+    [
+     2299.0,
+     2624.0
+    ],
+    [
+     2356.0,
+     2624.0
+    ],
+    [
+     2356.0,
+     2646.0
+    ],
+    [
+     2299.0,
+     2646.0
+    ]
+   ],
+   "aabb": [
+    2299,
+    2624,
+    2356,
+    2646
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 300,
+   "annot_line": 383
+  },
+  {
+   "id": "H2-333",
+   "reading": "182",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 49.0,
+   "poly": [
+    [
+     2309.0,
+     2654.0
+    ],
+    [
+     2358.0,
+     2654.0
+    ],
+    [
+     2358.0,
+     2681.0
+    ],
+    [
+     2309.0,
+     2681.0
+    ]
+   ],
+   "aabb": [
+    2309,
+    2654,
+    2358,
+    2681
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 308,
+   "annot_line": 384
+  },
+  {
+   "id": "H2-334",
+   "reading": "153.06'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 19.0,
+   "length": 76.0,
+   "poly": [
+    [
+     2279.0,
+     2724.0
+    ],
+    [
+     2279.0,
+     2648.0
+    ],
+    [
+     2298.0,
+     2648.0
+    ],
+    [
+     2298.0,
+     2724.0
+    ]
+   ],
+   "aabb": [
+    2279,
+    2648,
+    2298,
+    2724
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 313,
+   "annot_line": 385
+  },
+  {
+   "id": "H2-335",
+   "reading": "118",
+   "kind": "lot",
+   "flags": [
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 36.0,
+   "length": 42.0,
+   "poly": [
+    [
+     2297.0,
+     2720.0
+    ],
+    [
+     2339.0,
+     2720.0
+    ],
+    [
+     2339.0,
+     2756.0
+    ],
+    [
+     2297.0,
+     2756.0
+    ]
+   ],
+   "aabb": [
+    2297,
+    2720,
+    2339,
+    2756
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 465,
+   "annot_line": 386
+  },
+  {
+   "id": "H2-336",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 17.0,
+   "poly": [
+    [
+     2335.0,
+     2725.0
+    ],
+    [
+     2352.0,
+     2725.0
+    ],
+    [
+     2352.0,
+     2749.0
+    ],
+    [
+     2335.0,
+     2749.0
+    ]
+   ],
+   "aabb": [
+    2335,
+    2725,
+    2352,
+    2749
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 126,
+   "annot_line": 388
+  },
+  {
+   "id": "H2-337",
+   "reading": "150'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 19.0,
+   "length": 39.0,
+   "poly": [
+    [
+     2333.0,
+     2803.0
+    ],
+    [
+     2333.0,
+     2764.0
+    ],
+    [
+     2352.0,
+     2764.0
+    ],
+    [
+     2352.0,
+     2803.0
+    ]
+   ],
+   "aabb": [
+    2333,
+    2764,
+    2352,
+    2803
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 190,
+   "annot_line": 389
+  },
+  {
+   "id": "H2-338",
+   "reading": "48.4'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 20.0,
+   "length": 43.0,
+   "poly": [
+    [
+     2297.0,
+     2819.0
+    ],
+    [
+     2340.0,
+     2819.0
+    ],
+    [
+     2340.0,
+     2839.0
+    ],
+    [
+     2297.0,
+     2839.0
+    ]
+   ],
+   "aabb": [
+    2297,
+    2819,
+    2340,
+    2839
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 188,
+   "annot_line": 390
+  },
+  {
+   "id": "H2-339",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 15.0,
+   "length": 29.0,
+   "poly": [
+    [
+     2367.0,
+     2832.0
+    ],
+    [
+     2396.0,
+     2832.0
+    ],
+    [
+     2396.0,
+     2847.0
+    ],
+    [
+     2367.0,
+     2847.0
+    ]
+   ],
+   "aabb": [
+    2367,
+    2832,
+    2396,
+    2847
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 46,
+   "annot_line": 391
+  },
+  {
+   "id": "H2-340",
+   "reading": "8384-80",
+   "kind": "house",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 38.0,
+   "length": 98.0,
+   "poly": [
+    [
+     2300.0,
+     2842.0
+    ],
+    [
+     2398.0,
+     2842.0
+    ],
+    [
+     2398.0,
+     2880.0
+    ],
+    [
+     2300.0,
+     2880.0
+    ]
+   ],
+   "aabb": [
+    2300,
+    2842,
+    2398,
+    2880
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 514,
+   "annot_line": 392
+  },
+  {
+   "id": "H2-341",
+   "reading": "8411",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 48.0,
+   "poly": [
+    [
+     1937.0,
+     2846.0
+    ],
+    [
+     1985.0,
+     2846.0
+    ],
+    [
+     1985.0,
+     2870.0
+    ],
+    [
+     1937.0,
+     2870.0
+    ]
+   ],
+   "aabb": [
+    1937,
+    2846,
+    1985,
+    2870
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 305,
+   "annot_line": 393
+  },
+  {
+   "id": "H2-342",
+   "reading": "8405",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 34.0,
+   "length": 66.0,
+   "poly": [
+    [
+     2082.0,
+     2867.0
+    ],
+    [
+     2148.0,
+     2867.0
+    ],
+    [
+     2148.0,
+     2901.0
+    ],
+    [
+     2082.0,
+     2901.0
+    ]
+   ],
+   "aabb": [
+    2082,
+    2867,
+    2148,
+    2901
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 487,
+   "annot_line": 394
+  },
+  {
+   "id": "H2-343",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 7.0,
+   "length": 12.5,
+   "poly": [
+    [
+     1945.0,
+     2881.0
+    ],
+    [
+     1957.5,
+     2881.0
+    ],
+    [
+     1957.5,
+     2888.0
+    ],
+    [
+     1945.0,
+     2888.0
+    ]
+   ],
+   "aabb": [
+    1945,
+    2881,
+    1958,
+    2888
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 29,
+   "annot_line": 396
+  },
+  {
+   "id": "H2-344",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 7.0,
+   "length": 12.0,
+   "poly": [
+    [
+     2020.0,
+     2894.0
+    ],
+    [
+     2032.0,
+     2894.0
+    ],
+    [
+     2032.0,
+     2901.0
+    ],
+    [
+     2020.0,
+     2901.0
+    ]
+   ],
+   "aabb": [
+    2020,
+    2894,
+    2032,
+    2901
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 26,
+   "annot_line": 397
+  },
+  {
+   "id": "H2-345",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 16.2,
+   "length": 44.0,
+   "poly": [
+    [
+     2074.0,
+     2897.0
+    ],
+    [
+     2118.0,
+     2897.0
+    ],
+    [
+     2118.0,
+     2913.2
+    ],
+    [
+     2074.0,
+     2913.2
+    ]
+   ],
+   "aabb": [
+    2074,
+    2897,
+    2118,
+    2914
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 171,
+   "annot_line": 398
+  },
+  {
+   "id": "H2-346",
+   "reading": "2",
+   "kind": "story",
+   "flags": [
+    "nosnap"
+   ],
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 18.0,
+   "poly": [
+    [
+     1928.0,
+     2925.0
+    ],
+    [
+     1946.0,
+     2925.0
+    ],
+    [
+     1946.0,
+     2947.0
+    ],
+    [
+     1928.0,
+     2947.0
+    ]
+   ],
+   "aabb": [
+    1928,
+    2925,
+    1946,
+    2947
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 114,
+   "annot_line": 399
+  },
+  {
+   "id": "H2-347",
+   "reading": "77",
+   "kind": "lot",
+   "flags": [
+    "nosnap"
+   ],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 43.0,
+   "poly": [
+    [
+     1913.0,
+     2960.0
+    ],
+    [
+     1956.0,
+     2960.0
+    ],
+    [
+     1956.0,
+     2990.0
+    ],
+    [
+     1913.0,
+     2990.0
+    ]
+   ],
+   "aabb": [
+    1913,
+    2960,
+    1956,
+    2990
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 151,
+   "annot_line": 400
+  },
+  {
+   "id": "H2-348",
+   "reading": "78",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 44.0,
+   "poly": [
+    [
+     1984.0,
+     2970.0
+    ],
+    [
+     2028.0,
+     2970.0
+    ],
+    [
+     2028.0,
+     2999.0
+    ],
+    [
+     1984.0,
+     2999.0
+    ]
+   ],
+   "aabb": [
+    1984,
+    2970,
+    2028,
+    2999
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 353,
+   "annot_line": 404
+  },
+  {
+   "id": "H2-349",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 20.0,
+   "poly": [
+    [
+     2081.0,
+     2945.0
+    ],
+    [
+     2101.0,
+     2945.0
+    ],
+    [
+     2101.0,
+     2967.0
+    ],
+    [
+     2081.0,
+     2967.0
+    ]
+   ],
+   "aabb": [
+    2081,
+    2945,
+    2101,
+    2967
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 99,
+   "annot_line": 405
+  },
+  {
+   "id": "H2-350",
+   "reading": "79.",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 37.0,
+   "poly": [
+    [
+     2068.0,
+     2986.0
+    ],
+    [
+     2105.0,
+     2986.0
+    ],
+    [
+     2105.0,
+     3013.0
+    ],
+    [
+     2068.0,
+     3013.0
+    ]
+   ],
+   "aabb": [
+    2068,
+    2986,
+    2105,
+    3013
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 334,
+   "annot_line": 406
+  },
+  {
+   "id": "H2-351",
+   "reading": "150'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 18.2,
+   "length": 39.0,
+   "poly": [
+    [
+     2094.0,
+     3044.0
+    ],
+    [
+     2094.0,
+     3005.0
+    ],
+    [
+     2112.2,
+     3005.0
+    ],
+    [
+     2112.2,
+     3044.0
+    ]
+   ],
+   "aabb": [
+    2094,
+    3005,
+    2113,
+    3044
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 168,
+   "annot_line": 407
+  },
+  {
+   "id": "H2-352",
+   "reading": "251",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 49.0,
+   "poly": [
+    [
+     1901.0,
+     3037.0
+    ],
+    [
+     1950.0,
+     3037.0
+    ],
+    [
+     1950.0,
+     3064.0
+    ],
+    [
+     1901.0,
+     3064.0
+    ]
+   ],
+   "aabb": [
+    1901,
+    3037,
+    1950,
+    3064
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 279,
+   "annot_line": 408
+  },
+  {
+   "id": "H2-353",
+   "reading": "252",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 57.0,
+   "poly": [
+    [
+     1972.0,
+     3045.0
+    ],
+    [
+     2029.0,
+     3045.0
+    ],
+    [
+     2029.0,
+     3076.0
+    ],
+    [
+     1972.0,
+     3076.0
+    ]
+   ],
+   "aabb": [
+    1972,
+    3045,
+    2029,
+    3076
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 358,
+   "annot_line": 409
+  },
+  {
+   "id": "H2-354",
+   "reading": "255",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 56.0,
+   "poly": [
+    [
+     2050.0,
+     3056.0
+    ],
+    [
+     2106.0,
+     3056.0
+    ],
+    [
+     2106.0,
+     3086.0
+    ],
+    [
+     2050.0,
+     3086.0
+    ]
+   ],
+   "aabb": [
+    2050,
+    3056,
+    2106,
+    3086
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 375,
+   "annot_line": 410
+  },
+  {
+   "id": "H2-355",
+   "reading": "L",
+   "kind": "owner",
+   "flags": [
+    "g:J.F.MILLS"
+   ],
+   "angle": -32.1,
+   "height": 47.0,
+   "length": 51.0,
+   "poly": [
+    [
+     2211.0,
+     2891.0
+    ],
+    [
+     2254.2,
+     2863.9
+    ],
+    [
+     2279.2,
+     2903.7
+    ],
+    [
+     2236.0,
+     2930.8
+    ]
+   ],
+   "aabb": [
+    2211,
+    2863,
+    2280,
+    2931
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 535,
+   "annot_line": 411
+  },
+  {
+   "id": "H2-356",
+   "reading": "8381",
+   "kind": "house",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 58.0,
+   "poly": [
+    [
+     2338.0,
+     2900.0
+    ],
+    [
+     2396.0,
+     2900.0
+    ],
+    [
+     2396.0,
+     2930.0
+    ],
+    [
+     2338.0,
+     2930.0
+    ]
+   ],
+   "aabb": [
+    2338,
+    2900,
+    2396,
+    2930
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 295,
+   "annot_line": 413
+  },
+  {
+   "id": "H2-357",
+   "reading": "82.32'",
+   "kind": "lotdim",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 32.0,
+   "length": 68.0,
+   "poly": [
+    [
+     2327.0,
+     2921.0
+    ],
+    [
+     2395.0,
+     2921.0
+    ],
+    [
+     2395.0,
+     2953.0
+    ],
+    [
+     2327.0,
+     2953.0
+    ]
+   ],
+   "aabb": [
+    2327,
+    2921,
+    2395,
+    2953
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 366,
+   "annot_line": 415
+  },
+  {
+   "id": "H2-358",
+   "reading": "56.50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 69.0,
+   "poly": [
+    [
+     2140.0,
+     2906.0
+    ],
+    [
+     2209.0,
+     2906.0
+    ],
+    [
+     2209.0,
+     2928.0
+    ],
+    [
+     2140.0,
+     2928.0
+    ]
+   ],
+   "aabb": [
+    2140,
+    2906,
+    2209,
+    2928
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 347,
+   "annot_line": 416
+  },
+  {
+   "id": "H2-359",
+   "reading": "80",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 41.0,
+   "poly": [
+    [
+     2141.0,
+     2993.0
+    ],
+    [
+     2182.0,
+     2993.0
+    ],
+    [
+     2182.0,
+     3023.0
+    ],
+    [
+     2141.0,
+     3023.0
+    ]
+   ],
+   "aabb": [
+    2141,
+    2993,
+    2182,
+    3023
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 433,
+   "annot_line": 417
+  },
+  {
+   "id": "H2-360",
+   "reading": "153.06'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 23.0,
+   "length": 74.0,
+   "poly": [
+    [
+     2190.0,
+     3049.0
+    ],
+    [
+     2190.0,
+     2975.0
+    ],
+    [
+     2213.0,
+     2975.0
+    ],
+    [
+     2213.0,
+     3049.0
+    ]
+   ],
+   "aabb": [
+    2190,
+    2975,
+    2213,
+    3049
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 331,
+   "annot_line": 418
+  },
+  {
+   "id": "H2-361",
+   "reading": "133.06'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 24.0,
+   "length": 79.0,
+   "poly": [
+    [
+     2266.0,
+     3042.0
+    ],
+    [
+     2266.0,
+     2963.0
+    ],
+    [
+     2290.0,
+     2963.0
+    ],
+    [
+     2290.0,
+     3042.0
+    ]
+   ],
+   "aabb": [
+    2266,
+    2963,
+    2290,
+    3042
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 385,
+   "annot_line": 419
+  },
+  {
+   "id": "H2-362",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 21.0,
+   "poly": [
+    [
+     2337.0,
+     2987.0
+    ],
+    [
+     2358.0,
+     2987.0
+    ],
+    [
+     2358.0,
+     3013.0
+    ],
+    [
+     2337.0,
+     3013.0
+    ]
+   ],
+   "aabb": [
+    2337,
+    2987,
+    2358,
+    3013
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 119,
+   "annot_line": 420
+  },
+  {
+   "id": "H2-363",
+   "reading": "102",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 36.0,
+   "length": 48.0,
+   "poly": [
+    [
+     2331.0,
+     3021.0
+    ],
+    [
+     2379.0,
+     3021.0
+    ],
+    [
+     2379.0,
+     3057.0
+    ],
+    [
+     2331.0,
+     3057.0
+    ]
+   ],
+   "aabb": [
+    2331,
+    3021,
+    2379,
+    3057
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 340,
+   "annot_line": 421
+  },
+  {
+   "id": "H2-364",
+   "reading": "150'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -90.0,
+   "height": 15.0,
+   "length": 31.0,
+   "poly": [
+    [
+     2366.0,
+     3095.0
+    ],
+    [
+     2366.0,
+     3064.0
+    ],
+    [
+     2381.0,
+     3064.0
+    ],
+    [
+     2381.0,
+     3095.0
+    ]
+   ],
+   "aabb": [
+    2366,
+    3064,
+    2381,
+    3095
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 150,
+   "annot_line": 422
+  },
+  {
+   "id": "H2-365",
+   "reading": "256",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 57.0,
+   "poly": [
+    [
+     2140.0,
+     3070.0
+    ],
+    [
+     2197.0,
+     3070.0
+    ],
+    [
+     2197.0,
+     3098.0
+    ],
+    [
+     2140.0,
+     3098.0
+    ]
+   ],
+   "aabb": [
+    2140,
+    3070,
+    2197,
+    3098
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 397,
+   "annot_line": 423
+  }
+ ],
+ "truth_check": [
+  {
+   "op": "STRIP",
+   "line": 24,
+   "text": "STRIP H2 5 2 1 1137 2213 1168 2217 | sewer dash over 8457 was text (the hand EXCLLINE sat 3-5 px too high)",
+   "px": 89,
+   "frm": [
+    2
+   ],
+   "to": 1,
+   "note": "sewer dash over 8457 was text (the hand EXCLLINE sat 3-5 px too high)"
+  },
+  {
+   "op": "STRIP",
+   "line": 25,
+   "text": "STRIP H2 5 2 3 1168 2217 1193 2220 | where the same dash runs into the top bar of the 7 of 8457: shared ink",
+   "px": 70,
+   "frm": [
+    2
+   ],
+   "to": 3,
+   "note": "where the same dash runs into the top bar of the 7 of 8457: shared ink"
+  },
+  {
+   "op": "STRIP",
+   "line": 26,
+   "text": "STRIP H2 5 2 1 1193 2220 1203 2222 | end of the sewer dash over 8457",
+   "px": 7,
+   "frm": [
+    2
+   ],
+   "to": 1,
+   "note": "end of the sewer dash over 8457"
+  },
+  {
+   "op": "STRIP",
+   "line": 27,
+   "text": "STRIP H2 4 2 1 931 2186 975 2189 | sewer dash under S-E-W of 8\"SEWER was text",
+   "px": 20,
+   "frm": [
+    2
+   ],
+   "to": 1,
+   "note": "sewer dash under S-E-W of 8\"SEWER was text"
+  },
+  {
+   "op": "STRIP",
+   "line": 28,
+   "text": "STRIP H2 2 2 3 931 2183 975 2186 | top edge of that dash where it touches the S and E: shared ink",
+   "px": 60,
+   "frm": [
+    2
+   ],
+   "to": 3,
+   "note": "top edge of that dash where it touches the S and E: shared ink"
+  },
+  {
+   "op": "BOX",
+   "line": 29,
+   "text": "BOX H2 1 2 1396 2254 1408 2267 | the last 3 of 8443 outside its box (left as not text)",
+   "px": 76,
+   "frm": [
+    1
+   ],
+   "to": 2,
+   "note": "the last 3 of 8443 outside its box (left as not text)"
+  },
+  {
+   "op": "BOX",
+   "line": 30,
+   "text": "BOX H2 1 3 1396 2251 1410 2253 | where that 3 touches the dash at its top: shared ink",
+   "px": 32,
+   "frm": [
+    1
+   ],
+   "to": 3,
+   "note": "where that 3 touches the dash at its top: shared ink"
+  },
+  {
+   "op": "BOX",
+   "line": 31,
+   "text": "BOX H2 1 3 1393 2268 1406 2270 | where that 3 touches the street line at its bottom: shared ink",
+   "px": 20,
+   "frm": [
+    1
+   ],
+   "to": 3,
+   "note": "where that 3 touches the street line at its bottom: shared ink"
+  },
+  {
+   "op": "STRIP",
+   "line": 32,
+   "text": "STRIP H2 11 1 2 1306 2144 1336 2120 | stem of the heavy F of J. F. MILLS (a 45 degree F: stem, top arm, middle arm, period) was taken as a straight run",
+   "px": 274,
+   "frm": [
+    1
+   ],
+   "to": 2,
+   "note": "stem of the heavy F of J. F. MILLS (a 45 degree F: stem, top arm, middle arm, period) was taken as a straight run"
+  },
+  {
+   "op": "BOX",
+   "line": 33,
+   "text": "BOX H2 1 3 1336 2104 1356 2121 | apex of that F where its stem, its top arm and the lot line meet: shared ink",
+   "px": 163,
+   "frm": [
+    1
+   ],
+   "to": 3,
+   "note": "apex of that F where its stem, its top arm and the lot line meet: shared ink"
+  },
+  {
+   "op": "BOX",
+   "line": 34,
+   "text": "BOX H2 1 2 1394 2169 1401 2180 | prime of 50' (1361-1390, 2182) left out of its box",
+   "px": 11,
+   "frm": [
+    1
+   ],
+   "to": 2,
+   "note": "prime of 50' (1361-1390, 2182) left out of its box"
+  },
+  {
+   "op": "BOX",
+   "line": 35,
+   "text": "BOX H2 2 1 1846 2316 1866 2323 | sewer dash over 8417 was text",
+   "px": 65,
+   "frm": [
+    2
+   ],
+   "to": 1,
+   "note": "sewer dash over 8417 was text"
+  },
+  {
+   "op": "BOX",
+   "line": 36,
+   "text": "BOX H2 2 3 1867 2320 1876 2323 | where that dash meets the top of the 8 of 8417: shared ink",
+   "px": 28,
+   "frm": [
+    2
+   ],
+   "to": 3,
+   "note": "where that dash meets the top of the 8 of 8417: shared ink"
+  },
+  {
+   "op": "BOX",
+   "line": 37,
+   "text": "BOX H2 1 2 2158 2281 2165 2289 | prime of 75.26' left out of its box",
+   "px": 7,
+   "frm": [
+    1
+   ],
+   "to": 2,
+   "note": "prime of 75.26' left out of its box"
+  },
+  {
+   "op": "BOX",
+   "line": 38,
+   "text": "BOX H2 1 2 1494 2393 1506 2403 | foot of the 7 of lot 27 below the building corner, left as not text",
+   "px": 43,
+   "frm": [
+    1
+   ],
+   "to": 2,
+   "note": "foot of the 7 of lot 27 below the building corner, left as not text"
+  },
+  {
+   "op": "BOX",
+   "line": 39,
+   "text": "BOX H2 2 1 1363 2755 1394 2761 | sewer dash over the 44 of 8445 was text (the hand CARELINE covered only the dash over the 8)",
+   "px": 78,
+   "frm": [
+    2
+   ],
+   "to": 1,
+   "note": "sewer dash over the 44 of 8445 was text (the hand CARELINE covered only the dash over the 8)"
+  },
+  {
+   "op": "BOX",
+   "line": 40,
+   "text": "BOX H2 2 1 1400 2761 1422 2766 | sewer dash over the last 5 of 8445 was text",
+   "px": 61,
+   "frm": [
+    2
+   ],
+   "to": 1,
+   "note": "sewer dash over the last 5 of 8445 was text"
+  },
+  {
+   "op": "BOX",
+   "line": 41,
+   "text": "BOX H2 2 1 1398 2987 1405 3000 | dash of the dashed line under the 2 of 236 was text",
+   "px": 48,
+   "frm": [
+    2
+   ],
+   "to": 1,
+   "note": "dash of the dashed line under the 2 of 236 was text"
+  },
+  {
+   "op": "BOX",
+   "line": 42,
+   "text": "BOX H2 2 1 1428 2991 1435 3000 | dash of the second dashed line under the 6 of 236 was text",
+   "px": 22,
+   "frm": [
+    2
+   ],
+   "to": 1,
+   "note": "dash of the second dashed line under the 6 of 236 was text"
+  },
+  {
+   "op": "BOX",
+   "line": 43,
+   "text": "BOX H2 2 1 1752 3044 1762 3054 | foot of the dash before 247 below the hand EXCL box, was text",
+   "px": 9,
+   "frm": [
+    2
+   ],
+   "to": 1,
+   "note": "foot of the dash before 247 below the hand EXCL box, was text"
+  },
+  {
+   "op": "BOX",
+   "line": 56,
+   "text": "BOX H2 1 2 1850 2133 1859 2150 | top right of the 2 of lot 52 outside its box",
+   "px": 63,
+   "frm": [
+    1
+   ],
+   "to": 2,
+   "note": "top right of the 2 of lot 52 outside its box"
+  },
+  {
+   "op": "BOX",
+   "line": 57,
+   "text": "BOX H2 1 2 1020 2118 1026 2124 | prime of 50' (985-1015, 2116-2133) left out of its box",
+   "px": 9,
+   "frm": [
+    1
+   ],
+   "to": 2,
+   "note": "prime of 50' (985-1015, 2116-2133) left out of its box"
+  },
+  {
+   "op": "BOX",
+   "line": 58,
+   "text": "BOX H2 1 2 1241 2146 1247 2153 | prime of 50' (1208-1238, 2149-2165) left out of its box",
+   "px": 13,
+   "frm": [
+    1
+   ],
+   "to": 2,
+   "note": "prime of 50' (1208-1238, 2149-2165) left out of its box"
+  },
+  {
+   "op": "PIECE",
+   "line": 74,
+   "text": "PIECE H2 1137 2243 2 | first tick of the ditto under 8457 left out of its box",
+   "px": 14,
+   "frm": [
+    1
+   ],
+   "to": 2,
+   "note": "first tick of the ditto under 8457 left out of its box"
+  },
+  {
+   "op": "PIECE",
+   "line": 75,
+   "text": "PIECE H2 1870 2350 2 | first tick of the ditto under 8417 left out of its box",
+   "px": 13,
+   "frm": [
+    1
+   ],
+   "to": 2,
+   "note": "first tick of the ditto under 8417 left out of its box"
+  },
+  {
+   "op": "PIECE",
+   "line": 76,
+   "text": "PIECE H2 1020 2843 2 | prime of 150' (reads upwards)",
+   "px": 8,
+   "frm": [
+    1
+   ],
+   "to": 2,
+   "note": "prime of 150' (reads upwards)"
+  },
+  {
+   "op": "PIECE",
+   "line": 77,
+   "text": "PIECE H2 985 3028 2 | prime of 142.80'",
+   "px": 13,
+   "frm": [
+    1
+   ],
+   "to": 2,
+   "note": "prime of 142.80'"
+  },
+  {
+   "op": "PIECE",
+   "line": 78,
+   "text": "PIECE H2 1737 2728 2 | prime of 25'",
+   "px": 6,
+   "frm": [
+    1
+   ],
+   "to": 2,
+   "note": "prime of 25'"
+  },
+  {
+   "op": "PIECE",
+   "line": 79,
+   "text": "PIECE H2 2362 2634 2 | prime of 72.94'",
+   "px": 9,
+   "frm": [
+    1
+   ],
+   "to": 2,
+   "note": "prime of 72.94'"
+  },
+  {
+   "op": "INK",
+   "line": 99,
+   "text": "INK H2 1745 2573 1 2 | pixels of 198",
+   "px": 7,
+   "frm": [
+    1
+   ],
+   "to": 2,
+   "note": "pixels of 198"
+  },
+  {
+   "op": "INK",
+   "line": 100,
+   "text": "INK H2 2324 2583 1 2 | pixels of .183",
+   "px": 4,
+   "frm": [
+    1
+   ],
+   "to": 2,
+   "note": "pixels of .183"
+  },
+  {
+   "op": "INK",
+   "line": 101,
+   "text": "INK H2 1103 2797 1 2 | foot of the story 2 in the building",
+   "px": 9,
+   "frm": [
+    1
+   ],
+   "to": 2,
+   "note": "foot of the story 2 in the building"
+  },
+  {
+   "op": "INK",
+   "line": 102,
+   "text": "INK H2 1330 2834 1 2 | foot of the story 2 in the building",
+   "px": 9,
+   "frm": [
+    1
+   ],
+   "to": 2,
+   "note": "foot of the story 2 in the building"
+  }
+ ],
+ "counts_before_truth_check": {
+  "paper": 1273922,
+  "ink_not_text": 117637,
+  "text": 101953,
+  "dont_care": 6488
+ }
+}

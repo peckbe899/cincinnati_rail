@@ -1,0 +1,161 @@
+# Truth-check fixes to the held-out crops (25 Nov 2026). Plate coordinates. Applied by scripts/apply_fixes.py to copies of
+# heldout/H#_mask.png and H#_words.json, written to heldout_fixed/. The originals in heldout/ are not touched.
+# STRIP crop width from to x1 y1 x2 y2 [x3 y3 ...] | note   pixels of value `from` within a polyline strip become `to`
+# BOX   crop from to x0 y0 x1 y1 | note                     the same in a box (x1, y1 inclusive)
+# POLY  crop from to x1 y1 x2 y2 x3 y3 ... | note          the same in a polygon
+# INK   crop x y from to | note     in the ink piece (any value) whose bounding box starts at x,y, `from` pixels become `to`
+# PIECE crop x y to | note           the not-text piece whose bounding box starts at x,y becomes `to`
+# RELABEL crop L x1 y1 ... | note   in a polygon: ink on straight runs >= L px is 1, other ink 2, run ink within 2 px of it 3
+# READ  crop word_id | new reading | note
+# FLAG  crop word_id +flag or -flag | note
+# REBOX crop word_id x1 y1 x2 y2 h | note    the word box becomes the typed centre line and height (padded 2 px)
+# WORD  crop x1 y1 x2 y2 h | reading | kind | flags | note  a missed word (box only; its pixels are set by STRIP/BOX lines)
+# `from` may be a list such as 1,3. Every op prints how many pixels it changed (fixes_log.txt).
+STRIP H1 8 2 1 6663 4066 6651 4102 | pipe dash right of the house number 230 was text
+BOX H1 1 2 6158 4287 6173 4300 | prime of the rotated 50' (6172,4343-6184,4303) left out of its box
+BOX H1 1 2 6604 4396 6618 4435 | the 10 of 102.85' (vertical, in the brown band) was outside its typed box and left as not text
+BOX H1 1 2 6576 4355 6587 4367 | prime of 245' left out of its box
+BOX H1 1 2 6420 4281 6470 4334 | edges of 216 and the N of AVALON taken as a straight run (6 of 216 lines up with the N stem)
+BOX H1 1 2 7012 4325 7032 4345 | right half of the 4 of 175.4' cut off by its box
+BOX H1 1 2 7036 4332 7049 4352 | prime of 175.4' (two dots, set high after the 4) left out of its box
+STRIP H1 9 1 2 6186 4434 6325 4508 6460 4560 | tops of W O O D B I N of WOODBINE above its box (letters 42 px tall, box typed 36)
+BOX H1 1 2 6626 4587 6642 4606 | the 8 of 87' outside its box (left as not text)
+BOX H1 1 2 6137 4794 6146 4801 | tip of the 1 of lot 14 above its box
+STRIP H2 5 2 1 1137 2213 1168 2217 | sewer dash over 8457 was text (the hand EXCLLINE sat 3-5 px too high)
+STRIP H2 5 2 3 1168 2217 1193 2220 | where the same dash runs into the top bar of the 7 of 8457: shared ink
+STRIP H2 5 2 1 1193 2220 1203 2222 | end of the sewer dash over 8457
+STRIP H2 4 2 1 931 2186 975 2189 | sewer dash under S-E-W of 8"SEWER was text
+STRIP H2 2 2 3 931 2183 975 2186 | top edge of that dash where it touches the S and E: shared ink
+BOX H2 1 2 1396 2254 1408 2267 | the last 3 of 8443 outside its box (left as not text)
+BOX H2 1 3 1396 2251 1410 2253 | where that 3 touches the dash at its top: shared ink
+BOX H2 1 3 1393 2268 1406 2270 | where that 3 touches the street line at its bottom: shared ink
+STRIP H2 11 1 2 1306 2144 1336 2120 | stem of the heavy F of J. F. MILLS (a 45 degree F: stem, top arm, middle arm, period) was taken as a straight run
+BOX H2 1 3 1336 2104 1356 2121 | apex of that F where its stem, its top arm and the lot line meet: shared ink
+BOX H2 1 2 1394 2169 1401 2180 | prime of 50' (1361-1390, 2182) left out of its box
+BOX H2 2 1 1846 2316 1866 2323 | sewer dash over 8417 was text
+BOX H2 2 3 1867 2320 1876 2323 | where that dash meets the top of the 8 of 8417: shared ink
+BOX H2 1 2 2158 2281 2165 2289 | prime of 75.26' left out of its box
+BOX H2 1 2 1494 2393 1506 2403 | foot of the 7 of lot 27 below the building corner, left as not text
+BOX H2 2 1 1363 2755 1394 2761 | sewer dash over the 44 of 8445 was text (the hand CARELINE covered only the dash over the 8)
+BOX H2 2 1 1400 2761 1422 2766 | sewer dash over the last 5 of 8445 was text
+BOX H2 2 1 1398 2987 1405 3000 | dash of the dashed line under the 2 of 236 was text
+BOX H2 2 1 1428 2991 1435 3000 | dash of the second dashed line under the 6 of 236 was text
+BOX H2 2 1 1752 3044 1762 3054 | foot of the dash before 247 below the hand EXCL box, was text
+POLY H3 1,2 3 7091 5381 7146 5437 7176 5449 7184 5428 7135 5371 7118 5372 | N-A-U-G-H of KAVANAUGH straddle the street line: letter strokes were mostly not text, mixed with line; cannot be split at 1:1, so don't care (as the builder did for other such places)
+BOX H4 1 2 7518 4745 7533 4758 | top of the story 1 above 45' outside its box (left as not text)
+STRIP H1 5 2 1 6015 4435 6027 4447 | sewer dash under the 8" of 8"SEWER (6006,4425) was text (the hand EXCLLINE was set 8 px off it)
+STRIP H1 5 2 3 6028 4448 6034 4455 | where that dash touches the S: shared ink
+BOX H1 1 2 6456 4563 6463 4572 | serif tip of the top arm of the E of WOODBINE outside its box
+BOX H1 1 2 6447 4589 6455 4598 | serif tip of the bottom arm of the same E
+STRIP H1 3 1 2 6899 4873 6917 4897 | outer edge of the E of DECAMP left as not text
+STRIP H1 3 1 2 6225 4679 6234 4696 | outer edge of a D of WILDWOOD left as not text
+BOX H1 1 2 6686 4767 6693 4773 | prime of 100' left out of its box
+BOX H1 1 2 7046 4650 7058 4657 | prime of 185.35' (reads downwards, so the prime lies east of the last 5) left out of its box
+BOX H1 1 2 5974 4335 5979 4343 | lower left of the 8 of the second 8"SEWER outside its box
+BOX H1 1 2 6266 4673 6273 4681 | prime of 238' (a round dot) left out of its box
+BOX H2 1 2 1850 2133 1859 2150 | top right of the 2 of lot 52 outside its box
+BOX H2 1 2 1020 2118 1026 2124 | prime of 50' (985-1015, 2116-2133) left out of its box
+BOX H2 1 2 1241 2146 1247 2153 | prime of 50' (1208-1238, 2149-2165) left out of its box
+# --- primes and small glyph parts found by scripts/prime_check.py and scripts/orphans.py, each checked by eye on the sheet
+PIECE H1 6543 4125 2 | prime of 129.7'
+PIECE H1 6562 4174 2 | prime of 113.10' (reads upwards; the prime is past the top end)
+PIECE H1 6860 4026 2 | prime of 158'
+PIECE H1 6608 4040 2 | prime of 90' (reads upwards)
+PIECE H1 7033 4331 2 | end of the right arm of the 4 of 175.4'
+PIECE H1 6026 4660 2 | prime of 230' (reads upwards)
+PIECE H1 6396 4482 2 | prime of 325'
+PIECE H1 6337 4572 2 | prime of 245' (the one under WOODBINE)
+PIECE H1 6552 4677 2 | prime of 120'
+PIECE H1 6481 4743 2 | prime of 250'
+PIECE H1 7128 4550 2 | prime of 180.15' (reads downwards; the prime lies east of the last 5)
+PIECE H1 7041 4785 2 | prime of 57.30'
+PIECE H1 7023 4887 2 | prime of 79.8'
+PIECE H1 6775 4836 2 | prime of 57.5'
+PIECE H2 1137 2243 2 | first tick of the ditto under 8457 left out of its box
+PIECE H2 1870 2350 2 | first tick of the ditto under 8417 left out of its box
+PIECE H2 1020 2843 2 | prime of 150' (reads upwards)
+PIECE H2 985 3028 2 | prime of 142.80'
+PIECE H2 1737 2728 2 | prime of 25'
+PIECE H2 2362 2634 2 | prime of 72.94'
+BOX H4 1,3 2 8216 4796 8238 4816 | the 5 of 25' (8205-8250, 4790-4815) was cut into not text and don't care, though no line touches it
+PIECE H4 8038 4794 2 | prime of 30'
+PIECE H4 8150 4792 2 | prime of 40'
+# --- glyph pieces wholly inside a word box, touching no line, that carried not text or don't care (scripts/mixed_check.py),
+#     each checked by eye on the sheet; the line-run rule had clipped letter edges or italic strokes
+INK H1 6363 4302 1 2 | edge pixels of the L of AVALON
+INK H1 6285 4305 1 2 | edge pixels of the V of AVALON
+INK H1 6322 4304 1 2 | edge pixels of an A of AVALON
+INK H1 6256 4309 1 2 | edge pixels of the first A of AVALON
+INK H1 6009 4418 1 2 | top loop of the 8 of the curved 8"SEWER by Woodbine
+INK H1 6174 4438 1 2 | top of the left stem of the W of WOODBINE (above its box)
+INK H1 5768 4437 1 2 | top of the R of the curved 8"SEWER (above its box)
+INK H1 6428 4556 1 2 | rest of the serifs of the E of WOODBINE
+INK H1 6890 4571 1 2 | pixels of the 6 of 169.75'
+INK H1 6907 4590 1 2 | top bar of the 7 of 169.75'
+INK H1 6900 4600 1 2 | pixels of the 75 of 169.75'
+INK H1 6563 4605 1 2 | pixels of the R of 10"SEWER
+INK H1 6194 4676 1 2 | edge pixels of a D of WILDWOOD
+INK H1 6853 4882 1 2 | lower stroke of the 5 of 58
+INK H2 1745 2573 1 2 | pixels of 198
+INK H2 2324 2583 1 2 | pixels of .183
+INK H2 1103 2797 1 2 | foot of the story 2 in the building
+INK H2 1330 2834 1 2 | foot of the story 2 in the building
+INK H4 7500 4109 3 2 | the 0 of 508-10
+INK H4 8023 4114 3 2 | the 22 of 522
+INK H4 8357 4121 1,3 2 | top of the 5 of 532
+INK H4 8383 4121 1,3 2 | top of the 3 of 532
+INK H4 8394 4121 3 2 | top of the 2 of 532
+INK H4 8587 4124 3 2 | top of the 3 of -38
+INK H4 7790 4196 1,3 2 | stroke of the 7 of 515-17 (italic stroke taken as a dotted line)
+INK H4 8672 4209 1,3 2 | the 1 of 539-41
+INK H4 7772 4230 1,3 2 | pixels of 25'
+INK H4 8495 4699 3 2 | the 8 of 188 (left)
+INK H4 8505 4699 3 2 | the 8s of 188
+INK H4 8017 4799 1,3 2 | right side of the 0 of 30'
+INK H4 7706 4819 1,3 2 | stem of the 4 of 514
+INK H4 7923 4821 1,3 2 | the 20 of 520
+INK H4 7938 4824 1,3 2 | the 20 of 520 (second piece)
+INK H4 8136 4824 3 2 | the 6 of -26
+INK H4 8151 4829 1,3 2 | the 26 of -26
+# --- readings (scripts/read_sample.py, 30 random words per crop, and plate zooms)
+FLAG H1 H1-153 +unsure | 170': the middle figure has a cross stroke and reads more like a 4 (140'); flagged, reading kept
+READ H3 H3-049 | 634.26 | was 524.26 (unsure); the second figure is a clear 3 and the first has a closed lower loop (6)
+READ H3 H3-054 | 174.5 | was 174.3 (unsure); the last figure is a 5 (also on the 2x tile)
+FLAG H3 H3-084 +disputed | 134: the scan reads more like 142 or 144; reading kept, still unsure
+FLAG H3 H3-081 +disputed | 136: the box holds figures that read like 4.78; reading kept, still unsure
+# --- truth v2 (text_v1/truth, made by truth-fix): primes left outside their word boxes, found by scripts/prime_check.py and
+#     checked by eye on the sheets. Written to truth-check/truth_v2_fixed/ only; text_v1/truth is not touched.
+PIECE T1 2265 1533 2 | prime of 120' (T1-039)
+PIECE T1 2717 1545 2 | prime of 110' (T1-068)
+PIECE T1 1757 1847 2 | prime of 121.43' (T1-089)
+PIECE T1 1826 2009 2 | prime of 78.8' (T1-107)
+PIECE T1 1846 2277 2 | prime of 39' (T1-174)
+PIECE T2 2724 2500 2 | prime of 94' (T2-001)
+PIECE T2 2859 2637 2 | prime of 25' (T2-012)
+PIECE T2 4128 3467 2 | prime of 33.0' (T2-143)
+PIECE T3 9144 2400 2 | prime of 25' (T3-001)
+PIECE T3 10314 2773 2 | prime of 68' (T3-041)
+PIECE T4 2205 953 2 | prime of 40' (T4-002)
+PIECE T4 2294 1296 2 | prime of 30' (T4-044)
+PIECE T4 2556 1531 2 | prime of 18.72' (T4-092)
+PIECE T4 3147 1634 2 | prime of 30' (T4-113)
+PIECE T4 2999 1814 2 | prime of 25' (T4-161)
+PIECE T4 3074 1814 2 | prime of 25' (T4-176)
+PIECE T7 1884 3548 2 | prime of 17' (T7-007)
+PIECE T7 2080 3542 2 | prime of 26.5' (T7-009)
+PIECE T7 2141 3551 2 | prime of 21' (T7-010)
+PIECE T7 2032 3708 2 | prime of 22' (T7-027)
+PIECE T7 2331 3711 2 | prime of 25' (T7-058)
+PIECE T7 2629 4016 2 | prime of 95' (T7-171)
+PIECE T7 2717 4144 2 | prime of 25' (T7-191)
+PIECE T7 2817 4151 2 | first tick of the inch mark of 33'6" (T7-202)
+PIECE T7 2821 4152 2 | second tick of the inch mark of 33'6" (T7-202)
+PIECE T7 2113 4374 2 | prime of 25' (T7-228)
+PIECE T7 2522 4374 2 | prime of 34' (T7-243)
+PIECE T7 2856 4466 2 | prime of 59' (T7-271)
+BOX T6 1,3 2 4046 2243 4064 2257 | top loop of the 8 of 6'8" (T6-069) left as not text and don't care
+BOX T6 1 2 4038 2276 4049 2296 | left side of the first 6 of 66'8" (T6-072) left as not text
+READ T6 T6-079 | 18' | was 16'; both figures after the 1 are closed loops (rotated zoom, pics/pz_t6_079.png)
+FLAG T1 T1-033 +disputed | 25.45 (unsure): the scan reads 25.43' (last figure 3, with a prime); reading kept
+FLAG T3 T3-020 +disputed | N 22deg 30' W.: the scan prints N 22deg - 30deg W. (a dash, and a degree sign after 30); reading kept
+REBOX H3 H3-034 7350 4718 7388 4718 24 | (32): the builder had moved its box to y 4687-4694 (6 px tall), onto the ink of 04 and 6; back to the typed place, which is don't care

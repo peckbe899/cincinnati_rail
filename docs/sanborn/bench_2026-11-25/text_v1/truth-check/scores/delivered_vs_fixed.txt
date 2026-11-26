@@ -1,0 +1,12 @@
+$ -B bench_2026-11-25\text_v1\code\score_text.py bench_2026-11-25\text_v1\heldout\{crop}_mask.png --codes 2 --truth bench_2026-11-25\text_v1\truth-check\heldout_fixed --out bench_2026-11-25\text_v1\truth-check\scores\delivered_vs_fixed.json --group H1H2=H1,H2 --group H3H4=H3,H4
+H1     90  P 0.9976  R 0.9804  F1 0.9890   non-text ink called text 0.0014   don't care skipped 4217 (called text 31)
+H2     90  P 0.9961  R 0.9942  F1 0.9952   non-text ink called text 0.0034   don't care skipped 6861 (called text 158)
+H3     47  P 1.0000  R 1.0000  F1 1.0000   non-text ink called text 0.0000   don't care skipped 23467 (called text 223)
+H4    54A  P 1.0000  R 0.9913  F1 0.9956   non-text ink called text 0.0000   don't care skipped 2620 (called text 0)
+ALL                    P 0.9979  R 0.9910  F1 0.9945   non-text ink called text 0.0014   don't care skipped 37165
+plate_90               P 0.9967  R 0.9888  F1 0.9927   non-text ink called text 0.0024   don't care skipped 11078
+plate_47               P 1.0000  R 1.0000  F1 1.0000   non-text ink called text 0.0000   don't care skipped 23467
+plate_54A              P 1.0000  R 0.9913  F1 0.9956   non-text ink called text 0.0000   don't care skipped 2620
+H1H2                   P 0.9967  R 0.9888  F1 0.9927   non-text ink called text 0.0024   don't care skipped 11078
+H3H4                   P 1.0000  R 0.9945  F1 0.9972   non-text ink called text 0.0000   don't care skipped 26087
+recall by kind (ALL):  bldg 1.000 (2/2 words)  block 1.000 (6/6 words)  ditto 1.000 (78/78 words)  house 0.989 (98/98 words)  lot 0.999 (322/322 words)  lotdim 0.997 (262/262 words)  other 1.000 (8/8 words)  owner 0.985 (43/44 words)  pipe 1.000 (11/11 words)  sewer 0.995 (10/10 words)  story 1.000 (129/129 words)  street 0.987 (16/16 words)

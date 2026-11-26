@@ -1,0 +1,7252 @@
+{
+ "methods": {
+  "bin8": [
+   "unet_data/{plate}_bins.png",
+   [
+    8
+   ]
+  ],
+  "v1": [
+   "bench_2026-11-25/text/finder/out/{plate}_finder.png",
+   [
+    2,
+    3,
+    4
+   ]
+  ],
+  "v2": [
+   "bench_2026-11-25/text_v1/finder2/out/final/{plate}_text.png",
+   [
+    2,
+    3
+   ]
+  ],
+  "v3": [
+   "bench_2026-11-25/text_v1/classifier/out/finder3/{plate}_text.png",
+   [
+    2,
+    3
+   ]
+  ]
+ },
+ "mask_out": {
+  "47": [
+   [
+    8360,
+    5400,
+    9160,
+    6100
+   ],
+   [
+    7040,
+    5000,
+    7220,
+    5100
+   ],
+   [
+    6600,
+    5000,
+    7200,
+    5400
+   ]
+  ]
+ },
+ "res": {
+  "bin8": {
+   "heldfix": {
+    "crops": {
+     "H1": {
+      "tp": 56853,
+      "fp": 24756,
+      "fn": 8559,
+      "n1": 107584,
+      "kinds": {
+       "bldg": [
+        2,
+        689,
+        689,
+        2
+       ],
+       "story": [
+        26,
+        2496,
+        2052,
+        21
+       ],
+       "lotdim": [
+        85,
+        18875,
+        16092,
+        81
+       ],
+       "lot": [
+        54,
+        12242,
+        10091,
+        47
+       ],
+       "other": [
+        2,
+        489,
+        488,
+        2
+       ],
+       "block": [
+        2,
+        2614,
+        2177,
+        2
+       ],
+       "pipe": [
+        6,
+        2697,
+        1985,
+        5
+       ],
+       "sewer": [
+        6,
+        3113,
+        2946,
+        6
+       ],
+       "house": [
+        21,
+        5751,
+        4930,
+        20
+       ],
+       "street": [
+        5,
+        12898,
+        12858,
+        5
+       ],
+       "ditto": [
+        5,
+        114,
+        114,
+        5
+       ],
+       "owner": [
+        11,
+        3595,
+        2602,
+        8
+       ]
+      },
+      "words": [
+       {
+        "kind": "block",
+        "reading": "30",
+        "text_px": 1469,
+        "found": 1463,
+        "recall": 0.996,
+        "aabb": [
+         5655,
+         4214,
+         5744,
+         4273
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVALON",
+        "text_px": 2470,
+        "found": 2470,
+        "recall": 1.0,
+        "aabb": [
+         6255,
+         4285,
+         6481,
+         4347
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "OAKMONT",
+        "text_px": 815,
+        "found": 815,
+        "recall": 1.0,
+        "aabb": [
+         6666,
+         3927,
+         6727,
+         4015
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "WOODBINE",
+        "text_px": 3856,
+        "found": 3823,
+        "recall": 0.991,
+        "aabb": [
+         6163,
+         4435,
+         6464,
+         4609
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "WILDWOOD",
+        "text_px": 4353,
+        "found": 4349,
+        "recall": 0.999,
+        "aabb": [
+         6128,
+         4559,
+         6329,
+         4902
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "19",
+        "text_px": 1145,
+        "found": 714,
+        "recall": 0.624,
+        "aabb": [
+         7045,
+         4816,
+         7097,
+         4875
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "DECAMP",
+        "text_px": 1404,
+        "found": 1401,
+        "recall": 0.998,
+        "aabb": [
+         6835,
+         4829,
+         6951,
+         4966
+        ]
+       }
+      ]
+     },
+     "H2": {
+      "tp": 91014,
+      "fp": 18041,
+      "fn": 10970,
+      "n1": 117233,
+      "kinds": {
+       "lotdim": [
+        87,
+        19193,
+        17030,
+        84
+       ],
+       "lot": [
+        152,
+        48074,
+        42008,
+        141
+       ],
+       "pipe": [
+        2,
+        1166,
+        943,
+        2
+       ],
+       "sewer": [
+        2,
+        1041,
+        994,
+        2
+       ],
+       "house": [
+        36,
+        16763,
+        15596,
+        36
+       ],
+       "ditto": [
+        34,
+        831,
+        823,
+        34
+       ],
+       "story": [
+        42,
+        4940,
+        4177,
+        34
+       ],
+       "owner": [
+        4,
+        2458,
+        1793,
+        3
+       ],
+       "street": [
+        3,
+        11629,
+        11440,
+        3
+       ],
+       "block": [
+        2,
+        1784,
+        1706,
+        2
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "CURZON",
+        "text_px": 4438,
+        "found": 4319,
+        "recall": 0.973,
+        "aabb": [
+         1510,
+         2227,
+         1784,
+         2320
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "8",
+        "text_px": 758,
+        "found": 731,
+        "recall": 0.964,
+        "aabb": [
+         1574,
+         2494,
+         1613,
+         2561
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVENUE",
+        "text_px": 2082,
+        "found": 2059,
+        "recall": 0.989,
+        "aabb": [
+         2183,
+         2088,
+         2245,
+         2245
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "WISWELL",
+        "text_px": 5109,
+        "found": 5062,
+        "recall": 0.991,
+        "aabb": [
+         1489,
+         2738,
+         1807,
+         2839
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "10",
+        "text_px": 1026,
+        "found": 975,
+        "recall": 0.95,
+        "aabb": [
+         1563,
+         2999,
+         1630,
+         3060
+        ]
+       }
+      ]
+     },
+     "H3": {
+      "tp": 28160,
+      "fp": 20607,
+      "fn": 4928,
+      "n1": 50140,
+      "kinds": {
+       "lot": [
+        59,
+        14815,
+        13062,
+        58
+       ],
+       "story": [
+        11,
+        491,
+        255,
+        3
+       ],
+       "lotdim": [
+        67,
+        8485,
+        7019,
+        61
+       ],
+       "owner": [
+        28,
+        10119,
+        8701,
+        26
+       ],
+       "other": [
+        5,
+        906,
+        859,
+        5
+       ],
+       "block": [
+        1,
+        738,
+        738,
+        1
+       ],
+       "street": [
+        5,
+        1124,
+        862,
+        3
+       ],
+       "ditto": [
+        4,
+        79,
+        76,
+        4
+       ],
+       "pipe": [
+        1,
+        447,
+        356,
+        1
+       ]
+      },
+      "words": [
+       {
+        "kind": "block",
+        "reading": "27",
+        "text_px": 738,
+        "found": 738,
+        "recall": 1.0,
+        "aabb": [
+         8320,
+         4540,
+         8379,
+         4605
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "SAFFER",
+        "text_px": 316,
+        "found": 117,
+        "recall": 0.37,
+        "aabb": [
+         7262,
+         4939,
+         7334,
+         4972
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "FYFFE",
+        "text_px": 1,
+        "found": 1,
+        "recall": 1.0,
+        "aabb": [
+         7066,
+         5016,
+         7215,
+         5114
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVE.",
+        "text_px": 688,
+        "found": 684,
+        "recall": 0.994,
+        "aabb": [
+         7562,
+         5251,
+         7651,
+         5324
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "KAVANAUGH",
+        "text_px": 12,
+        "found": 12,
+        "recall": 1.0,
+        "aabb": [
+         7053,
+         5319,
+         7181,
+         5443
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "SCHMANN",
+        "text_px": 107,
+        "found": 48,
+        "recall": 0.449,
+        "aabb": [
+         8454,
+         5369,
+         8548,
+         5384
+        ]
+       }
+      ]
+     },
+     "H4": {
+      "tp": 53386,
+      "fp": 11764,
+      "fn": 12286,
+      "n1": 112338,
+      "kinds": {
+       "story": [
+        49,
+        6562,
+        6021,
+        43
+       ],
+       "lot": [
+        53,
+        24119,
+        13515,
+        36
+       ],
+       "lotdim": [
+        19,
+        3422,
+        2924,
+        17
+       ],
+       "ditto": [
+        33,
+        992,
+        990,
+        33
+       ],
+       "house": [
+        41,
+        16220,
+        15830,
+        41
+       ],
+       "sewer": [
+        2,
+        1250,
+        1099,
+        2
+       ],
+       "pipe": [
+        2,
+        1312,
+        1291,
+        2
+       ],
+       "street": [
+        3,
+        11173,
+        11141,
+        3
+       ],
+       "block": [
+        1,
+        1315,
+        1201,
+        1
+       ],
+       "other": [
+        1,
+        84,
+        84,
+        1
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "DANDRIDGE",
+        "text_px": 6243,
+        "found": 6216,
+        "recall": 0.996,
+        "aabb": [
+         7397,
+         4127,
+         7765,
+         4191
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "NOAH",
+        "text_px": 867,
+        "found": 867,
+        "recall": 1.0,
+        "aabb": [
+         7401,
+         4497,
+         7514,
+         4526
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "36",
+        "text_px": 1315,
+        "found": 1201,
+        "recall": 0.913,
+        "aabb": [
+         8091,
+         4483,
+         8172,
+         4531
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "STREET",
+        "text_px": 4063,
+        "found": 4058,
+        "recall": 0.999,
+        "aabb": [
+         8394,
+         4881,
+         8678,
+         4932
+        ]
+       }
+      ]
+     }
+    },
+    "ALL": {
+     "P": 0.7532,
+     "R": 0.8619,
+     "F1": 0.8039,
+     "nontext": 0.1941,
+     "kinds": {
+      "bldg": {
+       "words": 2,
+       "text_px": 689,
+       "recall": 1.0,
+       "words_found": 2
+      },
+      "block": {
+       "words": 6,
+       "text_px": 6451,
+       "recall": 0.9025,
+       "words_found": 6
+      },
+      "ditto": {
+       "words": 76,
+       "text_px": 2016,
+       "recall": 0.9936,
+       "words_found": 76
+      },
+      "house": {
+       "words": 98,
+       "text_px": 38734,
+       "recall": 0.9386,
+       "words_found": 97
+      },
+      "lot": {
+       "words": 318,
+       "text_px": 99250,
+       "recall": 0.7927,
+       "words_found": 282
+      },
+      "lotdim": {
+       "words": 258,
+       "text_px": 49975,
+       "recall": 0.8617,
+       "words_found": 243
+      },
+      "other": {
+       "words": 8,
+       "text_px": 1479,
+       "recall": 0.9675,
+       "words_found": 8
+      },
+      "owner": {
+       "words": 43,
+       "text_px": 16172,
+       "recall": 0.8098,
+       "words_found": 37
+      },
+      "pipe": {
+       "words": 11,
+       "text_px": 5622,
+       "recall": 0.8138,
+       "words_found": 10
+      },
+      "sewer": {
+       "words": 10,
+       "text_px": 5404,
+       "recall": 0.9325,
+       "words_found": 10
+      },
+      "story": {
+       "words": 128,
+       "text_px": 14489,
+       "recall": 0.8631,
+       "words_found": 101
+      },
+      "street": {
+       "words": 16,
+       "text_px": 36824,
+       "recall": 0.9858,
+       "words_found": 14
+      }
+     },
+     "tp": 229413,
+     "fp": 75168,
+     "fn": 36743,
+     "n1": 387295
+    },
+    "noH3": {
+     "P": 0.7867,
+     "R": 0.8635,
+     "F1": 0.8233,
+     "nontext": 0.1618,
+     "kinds": {
+      "bldg": {
+       "words": 2,
+       "text_px": 689,
+       "recall": 1.0,
+       "words_found": 2
+      },
+      "block": {
+       "words": 5,
+       "text_px": 5713,
+       "recall": 0.8899,
+       "words_found": 5
+      },
+      "ditto": {
+       "words": 72,
+       "text_px": 1937,
+       "recall": 0.9948,
+       "words_found": 72
+      },
+      "house": {
+       "words": 98,
+       "text_px": 38734,
+       "recall": 0.9386,
+       "words_found": 97
+      },
+      "lot": {
+       "words": 259,
+       "text_px": 84435,
+       "recall": 0.7771,
+       "words_found": 224
+      },
+      "lotdim": {
+       "words": 191,
+       "text_px": 41490,
+       "recall": 0.8688,
+       "words_found": 182
+      },
+      "other": {
+       "words": 3,
+       "text_px": 573,
+       "recall": 0.9983,
+       "words_found": 3
+      },
+      "owner": {
+       "words": 15,
+       "text_px": 6053,
+       "recall": 0.7261,
+       "words_found": 11
+      },
+      "pipe": {
+       "words": 10,
+       "text_px": 5175,
+       "recall": 0.8153,
+       "words_found": 9
+      },
+      "sewer": {
+       "words": 10,
+       "text_px": 5404,
+       "recall": 0.9325,
+       "words_found": 10
+      },
+      "story": {
+       "words": 117,
+       "text_px": 13998,
+       "recall": 0.8751,
+       "words_found": 98
+      },
+      "street": {
+       "words": 11,
+       "text_px": 35700,
+       "recall": 0.9927,
+       "words_found": 11
+      }
+     },
+     "tp": 201253,
+     "fp": 54561,
+     "fn": 31815,
+     "n1": 337155
+    },
+    "H3": {
+     "P": 0.5774,
+     "R": 0.8511,
+     "F1": 0.688,
+     "nontext": 0.411,
+     "kinds": {
+      "block": {
+       "words": 1,
+       "text_px": 738,
+       "recall": 1.0,
+       "words_found": 1
+      },
+      "ditto": {
+       "words": 4,
+       "text_px": 79,
+       "recall": 0.962,
+       "words_found": 4
+      },
+      "lot": {
+       "words": 59,
+       "text_px": 14815,
+       "recall": 0.8817,
+       "words_found": 58
+      },
+      "lotdim": {
+       "words": 67,
+       "text_px": 8485,
+       "recall": 0.8272,
+       "words_found": 61
+      },
+      "other": {
+       "words": 5,
+       "text_px": 906,
+       "recall": 0.9481,
+       "words_found": 5
+      },
+      "owner": {
+       "words": 28,
+       "text_px": 10119,
+       "recall": 0.8599,
+       "words_found": 26
+      },
+      "pipe": {
+       "words": 1,
+       "text_px": 447,
+       "recall": 0.7964,
+       "words_found": 1
+      },
+      "story": {
+       "words": 11,
+       "text_px": 491,
+       "recall": 0.5193,
+       "words_found": 3
+      },
+      "street": {
+       "words": 5,
+       "text_px": 1124,
+       "recall": 0.7669,
+       "words_found": 3
+      }
+     },
+     "tp": 28160,
+     "fp": 20607,
+     "fn": 4928,
+     "n1": 50140
+    }
+   },
+   "v2": {
+    "crops": {
+     "T1": {
+      "tp": 102361,
+      "fp": 25070,
+      "fn": 9929,
+      "n1": 128849,
+      "kinds": {
+       "lotdim": [
+        57,
+        19248,
+        16535,
+        54
+       ],
+       "lot": [
+        78,
+        39740,
+        35828,
+        72
+       ],
+       "owner": [
+        9,
+        4426,
+        3488,
+        8
+       ],
+       "story": [
+        32,
+        5338,
+        4362,
+        22
+       ],
+       "house": [
+        31,
+        21646,
+        21275,
+        31
+       ],
+       "ditto": [
+        14,
+        1022,
+        459,
+        7
+       ],
+       "block": [
+        2,
+        1507,
+        1096,
+        2
+       ],
+       "street": [
+        6,
+        13911,
+        13875,
+        6
+       ],
+       "pipe": [
+        6,
+        3915,
+        3555,
+        6
+       ],
+       "sewer": [
+        3,
+        2804,
+        2767,
+        3
+       ]
+      },
+      "words": [
+       {
+        "kind": "block",
+        "reading": "4",
+        "text_px": 770,
+        "found": 583,
+        "recall": 0.757,
+        "aabb": [
+         2458,
+         1562,
+         2505,
+         1610
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "ALLEY",
+        "text_px": 1163,
+        "found": 1156,
+        "recall": 0.994,
+        "aabb": [
+         2422,
+         1777,
+         2479,
+         1938
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "KENDALL",
+        "text_px": 1737,
+        "found": 1736,
+        "recall": 0.999,
+        "aabb": [
+         2562,
+         1585,
+         2815,
+         1611
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "ST.",
+        "text_px": 1360,
+        "found": 1357,
+        "recall": 0.998,
+        "aabb": [
+         1572,
+         1935,
+         1665,
+         1975
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "KNOWLTON",
+        "text_px": 6415,
+        "found": 6390,
+        "recall": 0.996,
+        "aabb": [
+         2124,
+         2045,
+         2545,
+         2098
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "14",
+        "text_px": 737,
+        "found": 513,
+        "recall": 0.696,
+        "aabb": [
+         2510,
+         2294,
+         2576,
+         2366
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVE.",
+        "text_px": 1908,
+        "found": 1908,
+        "recall": 1.0,
+        "aabb": [
+         2038,
+         2202,
+         2124,
+         2378
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "LANGLAND",
+        "text_px": 1328,
+        "found": 1328,
+        "recall": 1.0,
+        "aabb": [
+         2908,
+         2390,
+         2958,
+         2533
+        ]
+       }
+      ]
+     },
+     "T2": {
+      "tp": 52917,
+      "fp": 9542,
+      "fn": 6357,
+      "n1": 81499,
+      "kinds": {
+       "lotdim": [
+        35,
+        12860,
+        10689,
+        33
+       ],
+       "lot": [
+        44,
+        18385,
+        15863,
+        41
+       ],
+       "street": [
+        2,
+        4425,
+        4424,
+        2
+       ],
+       "house": [
+        5,
+        1771,
+        1769,
+        5
+       ],
+       "pipe": [
+        1,
+        438,
+        438,
+        1
+       ],
+       "ditto": [
+        10,
+        614,
+        358,
+        8
+       ],
+       "story": [
+        8,
+        1361,
+        725,
+        4
+       ],
+       "owner": [
+        11,
+        8973,
+        8160,
+        11
+       ],
+       "rail": [
+        26,
+        11146,
+        10806,
+        24
+       ],
+       "block": [
+        2,
+        2508,
+        2508,
+        2
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "CT.",
+        "text_px": 1075,
+        "found": 1075,
+        "recall": 1.0,
+        "aabb": [
+         2750,
+         2536,
+         2842,
+         2580
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "LANGLAND",
+        "text_px": 3350,
+        "found": 3349,
+        "recall": 1.0,
+        "aabb": [
+         2900,
+         2379,
+         2961,
+         2721
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "17",
+        "text_px": 1093,
+        "found": 1093,
+        "recall": 1.0,
+        "aabb": [
+         3053,
+         2861,
+         3107,
+         2912
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "18",
+        "text_px": 1415,
+        "found": 1415,
+        "recall": 1.0,
+        "aabb": [
+         3655,
+         3220,
+         3714,
+         3276
+        ]
+       }
+      ]
+     },
+     "T3": {
+      "tp": 48327,
+      "fp": 6381,
+      "fn": 4225,
+      "n1": 72011,
+      "kinds": {
+       "lotdim": [
+        18,
+        9282,
+        8196,
+        17
+       ],
+       "block": [
+        1,
+        1050,
+        1044,
+        1
+       ],
+       "owner": [
+        19,
+        22080,
+        21270,
+        18
+       ],
+       "story": [
+        6,
+        1005,
+        721,
+        4
+       ],
+       "lot": [
+        12,
+        3862,
+        2957,
+        11
+       ],
+       "pipe": [
+        2,
+        2018,
+        1573,
+        2
+       ],
+       "adj": [
+        1,
+        4227,
+        3887,
+        1
+       ],
+       "sewer": [
+        1,
+        1245,
+        1245,
+        1
+       ],
+       "house": [
+        4,
+        3736,
+        3649,
+        4
+       ],
+       "ditto": [
+        5,
+        382,
+        181,
+        2
+       ],
+       "street": [
+        1,
+        4645,
+        4539,
+        1
+       ]
+      },
+      "words": [
+       {
+        "kind": "block",
+        "reading": "24",
+        "text_px": 1050,
+        "found": 1044,
+        "recall": 0.994,
+        "aabb": [
+         8961,
+         2525,
+         9045,
+         2591
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVENUE",
+        "text_px": 4645,
+        "found": 4539,
+        "recall": 0.977,
+        "aabb": [
+         9395,
+         3059,
+         9659,
+         3295
+        ]
+       }
+      ]
+     },
+     "T4": {
+      "tp": 75353,
+      "fp": 9137,
+      "fn": 18683,
+      "n1": 112913,
+      "kinds": {
+       "pipe": [
+        5,
+        4846,
+        3799,
+        5
+       ],
+       "lotdim": [
+        55,
+        14668,
+        11252,
+        44
+       ],
+       "house": [
+        23,
+        24472,
+        22770,
+        22
+       ],
+       "sewer": [
+        4,
+        2831,
+        2266,
+        4
+       ],
+       "story": [
+        26,
+        4429,
+        3653,
+        20
+       ],
+       "lot": [
+        55,
+        18212,
+        12679,
+        40
+       ],
+       "owner": [
+        7,
+        13488,
+        5860,
+        2
+       ],
+       "street": [
+        6,
+        19350,
+        18564,
+        5
+       ],
+       "ditto": [
+        3,
+        133,
+        55,
+        0
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "ALLEY",
+        "text_px": 793,
+        "found": 319,
+        "recall": 0.402,
+        "aabb": [
+         2424,
+         1472,
+         2463,
+         1651
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "W.",
+        "text_px": 1384,
+        "found": 1323,
+        "recall": 0.956,
+        "aabb": [
+         3033,
+         1429,
+         3117,
+         1527
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "McMICKEN",
+        "text_px": 6943,
+        "found": 6750,
+        "recall": 0.972,
+        "aabb": [
+         3122,
+         1493,
+         3545,
+         1817
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "STREET",
+        "text_px": 5762,
+        "found": 5762,
+        "recall": 1.0,
+        "aabb": [
+         2035,
+         1694,
+         2095,
+         1980
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "STREET",
+        "text_px": 3555,
+        "found": 3555,
+        "recall": 1.0,
+        "aabb": [
+         2813,
+         1735,
+         2862,
+         1964
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "ALLEY",
+        "text_px": 913,
+        "found": 855,
+        "recall": 0.936,
+        "aabb": [
+         3275,
+         1822,
+         3313,
+         1968
+        ]
+       }
+      ]
+     },
+     "T6": {
+      "tp": 40381,
+      "fp": 5831,
+      "fn": 5517,
+      "n1": 104425,
+      "kinds": {
+       "story": [
+        30,
+        5504,
+        3852,
+        18
+       ],
+       "lotdim": [
+        28,
+        6995,
+        5902,
+        24
+       ],
+       "lot": [
+        16,
+        6250,
+        4727,
+        11
+       ],
+       "house": [
+        9,
+        7374,
+        7272,
+        9
+       ],
+       "sewer": [
+        2,
+        1449,
+        1437,
+        2
+       ],
+       "pipe": [
+        3,
+        2732,
+        1780,
+        2
+       ],
+       "street": [
+        2,
+        6819,
+        6819,
+        2
+       ],
+       "other": [
+        3,
+        1541,
+        1531,
+        3
+       ],
+       "bldg": [
+        5,
+        6131,
+        5935,
+        5
+       ],
+       "block": [
+        1,
+        1738,
+        1738,
+        1
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "W.",
+        "text_px": 1538,
+        "found": 1538,
+        "recall": 1.0,
+        "aabb": [
+         4547,
+         1843,
+         4627,
+         1891
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "EIGHTH",
+        "text_px": 5281,
+        "found": 5281,
+        "recall": 1.0,
+        "aabb": [
+         4671,
+         1845,
+         4967,
+         1897
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "15",
+        "text_px": 1738,
+        "found": 1738,
+        "recall": 1.0,
+        "aabb": [
+         4813,
+         2395,
+         4880,
+         2454
+        ]
+       }
+      ]
+     },
+     "T7": {
+      "tp": 100382,
+      "fp": 11912,
+      "fn": 26677,
+      "n1": 155766,
+      "kinds": {
+       "story": [
+        86,
+        16261,
+        10706,
+        52
+       ],
+       "lotdim": [
+        90,
+        24404,
+        16354,
+        68
+       ],
+       "street": [
+        5,
+        15747,
+        15738,
+        5
+       ],
+       "house": [
+        26,
+        42908,
+        41987,
+        26
+       ],
+       "lot": [
+        52,
+        22266,
+        11222,
+        28
+       ],
+       "owner": [
+        5,
+        7848,
+        5314,
+        3
+       ],
+       "ditto": [
+        6,
+        408,
+        136,
+        1
+       ],
+       "sewer": [
+        4,
+        3309,
+        2380,
+        3
+       ],
+       "block": [
+        1,
+        2053,
+        1524,
+        1
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "ST",
+        "text_px": 1666,
+        "found": 1665,
+        "recall": 0.999,
+        "aabb": [
+         1774,
+         3485,
+         1829,
+         3603
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "GEORGE",
+        "text_px": 6637,
+        "found": 6633,
+        "recall": 0.999,
+        "aabb": [
+         1948,
+         3603,
+         2288,
+         3667
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "ST",
+        "text_px": 1718,
+        "found": 1718,
+        "recall": 1.0,
+        "aabb": [
+         2938,
+         3492,
+         2989,
+         3594
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "28",
+        "text_px": 2053,
+        "found": 1524,
+        "recall": 0.742,
+        "aabb": [
+         2385,
+         3872,
+         2495,
+         3954
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "W.",
+        "text_px": 1474,
+        "found": 1470,
+        "recall": 0.997,
+        "aabb": [
+         1914,
+         4247,
+         2000,
+         4310
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "SIXTH",
+        "text_px": 4252,
+        "found": 4252,
+        "recall": 1.0,
+        "aabb": [
+         2041,
+         4249,
+         2303,
+         4300
+        ]
+       }
+      ]
+     }
+    },
+    "ALL": {
+     "P": 0.8608,
+     "R": 0.8546,
+     "F1": 0.8577,
+     "nontext": 0.1035,
+     "kinds": {
+      "adj": {
+       "words": 1,
+       "text_px": 4227,
+       "recall": 0.9196,
+       "words_found": 1
+      },
+      "bldg": {
+       "words": 5,
+       "text_px": 6131,
+       "recall": 0.968,
+       "words_found": 5
+      },
+      "block": {
+       "words": 7,
+       "text_px": 8856,
+       "recall": 0.8932,
+       "words_found": 7
+      },
+      "ditto": {
+       "words": 38,
+       "text_px": 2559,
+       "recall": 0.4646,
+       "words_found": 18
+      },
+      "house": {
+       "words": 98,
+       "text_px": 101907,
+       "recall": 0.9687,
+       "words_found": 97
+      },
+      "lot": {
+       "words": 257,
+       "text_px": 108715,
+       "recall": 0.766,
+       "words_found": 203
+      },
+      "lotdim": {
+       "words": 283,
+       "text_px": 87457,
+       "recall": 0.7881,
+       "words_found": 240
+      },
+      "other": {
+       "words": 3,
+       "text_px": 1541,
+       "recall": 0.9935,
+       "words_found": 3
+      },
+      "owner": {
+       "words": 51,
+       "text_px": 56815,
+       "recall": 0.7761,
+       "words_found": 42
+      },
+      "pipe": {
+       "words": 17,
+       "text_px": 13949,
+       "recall": 0.799,
+       "words_found": 16
+      },
+      "rail": {
+       "words": 26,
+       "text_px": 11146,
+       "recall": 0.9695,
+       "words_found": 24
+      },
+      "sewer": {
+       "words": 14,
+       "text_px": 11638,
+       "recall": 0.8674,
+       "words_found": 13
+      },
+      "story": {
+       "words": 188,
+       "text_px": 33898,
+       "recall": 0.7086,
+       "words_found": 120
+      },
+      "street": {
+       "words": 22,
+       "text_px": 64897,
+       "recall": 0.9855,
+       "words_found": 21
+      }
+     },
+     "tp": 419721,
+     "fp": 67873,
+     "fn": 71388,
+     "n1": 655463
+    },
+    "noH3": {
+     "P": 0.8608,
+     "R": 0.8546,
+     "F1": 0.8577,
+     "nontext": 0.1035,
+     "kinds": {
+      "adj": {
+       "words": 1,
+       "text_px": 4227,
+       "recall": 0.9196,
+       "words_found": 1
+      },
+      "bldg": {
+       "words": 5,
+       "text_px": 6131,
+       "recall": 0.968,
+       "words_found": 5
+      },
+      "block": {
+       "words": 7,
+       "text_px": 8856,
+       "recall": 0.8932,
+       "words_found": 7
+      },
+      "ditto": {
+       "words": 38,
+       "text_px": 2559,
+       "recall": 0.4646,
+       "words_found": 18
+      },
+      "house": {
+       "words": 98,
+       "text_px": 101907,
+       "recall": 0.9687,
+       "words_found": 97
+      },
+      "lot": {
+       "words": 257,
+       "text_px": 108715,
+       "recall": 0.766,
+       "words_found": 203
+      },
+      "lotdim": {
+       "words": 283,
+       "text_px": 87457,
+       "recall": 0.7881,
+       "words_found": 240
+      },
+      "other": {
+       "words": 3,
+       "text_px": 1541,
+       "recall": 0.9935,
+       "words_found": 3
+      },
+      "owner": {
+       "words": 51,
+       "text_px": 56815,
+       "recall": 0.7761,
+       "words_found": 42
+      },
+      "pipe": {
+       "words": 17,
+       "text_px": 13949,
+       "recall": 0.799,
+       "words_found": 16
+      },
+      "rail": {
+       "words": 26,
+       "text_px": 11146,
+       "recall": 0.9695,
+       "words_found": 24
+      },
+      "sewer": {
+       "words": 14,
+       "text_px": 11638,
+       "recall": 0.8674,
+       "words_found": 13
+      },
+      "story": {
+       "words": 188,
+       "text_px": 33898,
+       "recall": 0.7086,
+       "words_found": 120
+      },
+      "street": {
+       "words": 22,
+       "text_px": 64897,
+       "recall": 0.9855,
+       "words_found": 21
+      }
+     },
+     "tp": 419721,
+     "fp": 67873,
+     "fn": 71388,
+     "n1": 655463
+    }
+   }
+  },
+  "v1": {
+   "heldfix": {
+    "crops": {
+     "H1": {
+      "tp": 61590,
+      "fp": 8202,
+      "fn": 3822,
+      "n1": 107584,
+      "kinds": {
+       "bldg": [
+        2,
+        689,
+        689,
+        2
+       ],
+       "story": [
+        26,
+        2496,
+        2164,
+        22
+       ],
+       "lotdim": [
+        85,
+        18875,
+        17869,
+        82
+       ],
+       "lot": [
+        54,
+        12242,
+        11377,
+        50
+       ],
+       "other": [
+        2,
+        489,
+        489,
+        2
+       ],
+       "block": [
+        2,
+        2614,
+        2505,
+        2
+       ],
+       "pipe": [
+        6,
+        2697,
+        2304,
+        5
+       ],
+       "sewer": [
+        6,
+        3113,
+        2965,
+        6
+       ],
+       "house": [
+        21,
+        5751,
+        5366,
+        21
+       ],
+       "street": [
+        5,
+        12898,
+        12590,
+        5
+       ],
+       "ditto": [
+        5,
+        114,
+        0,
+        0
+       ],
+       "owner": [
+        11,
+        3595,
+        3569,
+        11
+       ]
+      },
+      "words": [
+       {
+        "kind": "block",
+        "reading": "30",
+        "text_px": 1469,
+        "found": 1469,
+        "recall": 1.0,
+        "aabb": [
+         5655,
+         4214,
+         5744,
+         4273
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVALON",
+        "text_px": 2470,
+        "found": 2330,
+        "recall": 0.943,
+        "aabb": [
+         6255,
+         4285,
+         6481,
+         4347
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "OAKMONT",
+        "text_px": 815,
+        "found": 733,
+        "recall": 0.899,
+        "aabb": [
+         6666,
+         3927,
+         6727,
+         4015
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "WOODBINE",
+        "text_px": 3856,
+        "found": 3843,
+        "recall": 0.997,
+        "aabb": [
+         6163,
+         4435,
+         6464,
+         4609
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "WILDWOOD",
+        "text_px": 4353,
+        "found": 4353,
+        "recall": 1.0,
+        "aabb": [
+         6128,
+         4559,
+         6329,
+         4902
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "19",
+        "text_px": 1145,
+        "found": 1036,
+        "recall": 0.905,
+        "aabb": [
+         7045,
+         4816,
+         7097,
+         4875
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "DECAMP",
+        "text_px": 1404,
+        "found": 1331,
+        "recall": 0.948,
+        "aabb": [
+         6835,
+         4829,
+         6951,
+         4966
+        ]
+       }
+      ]
+     },
+     "H2": {
+      "tp": 92754,
+      "fp": 10193,
+      "fn": 9230,
+      "n1": 117233,
+      "kinds": {
+       "lotdim": [
+        87,
+        19193,
+        18546,
+        85
+       ],
+       "lot": [
+        152,
+        48074,
+        45757,
+        143
+       ],
+       "pipe": [
+        2,
+        1166,
+        1161,
+        2
+       ],
+       "sewer": [
+        2,
+        1041,
+        877,
+        2
+       ],
+       "house": [
+        36,
+        16763,
+        14682,
+        34
+       ],
+       "ditto": [
+        34,
+        831,
+        185,
+        6
+       ],
+       "story": [
+        42,
+        4940,
+        4747,
+        41
+       ],
+       "owner": [
+        4,
+        2458,
+        1120,
+        2
+       ],
+       "street": [
+        3,
+        11629,
+        8941,
+        3
+       ],
+       "block": [
+        2,
+        1784,
+        1453,
+        2
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "CURZON",
+        "text_px": 4438,
+        "found": 2911,
+        "recall": 0.656,
+        "aabb": [
+         1510,
+         2227,
+         1784,
+         2320
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "8",
+        "text_px": 758,
+        "found": 502,
+        "recall": 0.662,
+        "aabb": [
+         1574,
+         2494,
+         1613,
+         2561
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVENUE",
+        "text_px": 2082,
+        "found": 2072,
+        "recall": 0.995,
+        "aabb": [
+         2183,
+         2088,
+         2245,
+         2245
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "WISWELL",
+        "text_px": 5109,
+        "found": 3958,
+        "recall": 0.775,
+        "aabb": [
+         1489,
+         2738,
+         1807,
+         2839
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "10",
+        "text_px": 1026,
+        "found": 951,
+        "recall": 0.927,
+        "aabb": [
+         1563,
+         2999,
+         1630,
+         3060
+        ]
+       }
+      ]
+     },
+     "H3": {
+      "tp": 28280,
+      "fp": 4081,
+      "fn": 4808,
+      "n1": 50140,
+      "kinds": {
+       "lot": [
+        59,
+        14815,
+        14191,
+        57
+       ],
+       "story": [
+        11,
+        491,
+        382,
+        8
+       ],
+       "lotdim": [
+        67,
+        8485,
+        6452,
+        50
+       ],
+       "owner": [
+        28,
+        10119,
+        8590,
+        25
+       ],
+       "other": [
+        5,
+        906,
+        670,
+        4
+       ],
+       "block": [
+        1,
+        738,
+        635,
+        1
+       ],
+       "street": [
+        5,
+        1124,
+        773,
+        3
+       ],
+       "ditto": [
+        4,
+        79,
+        2,
+        0
+       ],
+       "pipe": [
+        1,
+        447,
+        442,
+        1
+       ]
+      },
+      "words": [
+       {
+        "kind": "block",
+        "reading": "27",
+        "text_px": 738,
+        "found": 635,
+        "recall": 0.86,
+        "aabb": [
+         8320,
+         4540,
+         8379,
+         4605
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "SAFFER",
+        "text_px": 316,
+        "found": 60,
+        "recall": 0.19,
+        "aabb": [
+         7262,
+         4939,
+         7334,
+         4972
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "FYFFE",
+        "text_px": 1,
+        "found": 0,
+        "recall": 0.0,
+        "aabb": [
+         7066,
+         5016,
+         7215,
+         5114
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVE.",
+        "text_px": 688,
+        "found": 626,
+        "recall": 0.91,
+        "aabb": [
+         7562,
+         5251,
+         7651,
+         5324
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "KAVANAUGH",
+        "text_px": 12,
+        "found": 12,
+        "recall": 1.0,
+        "aabb": [
+         7053,
+         5319,
+         7181,
+         5443
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "SCHMANN",
+        "text_px": 107,
+        "found": 75,
+        "recall": 0.701,
+        "aabb": [
+         8454,
+         5369,
+         8548,
+         5384
+        ]
+       }
+      ]
+     },
+     "H4": {
+      "tp": 62186,
+      "fp": 2359,
+      "fn": 3486,
+      "n1": 112338,
+      "kinds": {
+       "story": [
+        49,
+        6562,
+        6542,
+        49
+       ],
+       "lot": [
+        53,
+        24119,
+        22929,
+        53
+       ],
+       "lotdim": [
+        19,
+        3422,
+        3168,
+        18
+       ],
+       "ditto": [
+        33,
+        992,
+        504,
+        15
+       ],
+       "house": [
+        41,
+        16220,
+        15574,
+        41
+       ],
+       "sewer": [
+        2,
+        1250,
+        1125,
+        2
+       ],
+       "pipe": [
+        2,
+        1312,
+        1312,
+        2
+       ],
+       "street": [
+        3,
+        11173,
+        11128,
+        3
+       ],
+       "block": [
+        1,
+        1315,
+        578,
+        0
+       ],
+       "other": [
+        1,
+        84,
+        84,
+        1
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "DANDRIDGE",
+        "text_px": 6243,
+        "found": 6243,
+        "recall": 1.0,
+        "aabb": [
+         7397,
+         4127,
+         7765,
+         4191
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "NOAH",
+        "text_px": 867,
+        "found": 867,
+        "recall": 1.0,
+        "aabb": [
+         7401,
+         4497,
+         7514,
+         4526
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "36",
+        "text_px": 1315,
+        "found": 578,
+        "recall": 0.44,
+        "aabb": [
+         8091,
+         4483,
+         8172,
+         4531
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "STREET",
+        "text_px": 4063,
+        "found": 4018,
+        "recall": 0.989,
+        "aabb": [
+         8394,
+         4881,
+         8678,
+         4932
+        ]
+       }
+      ]
+     }
+    },
+    "ALL": {
+     "P": 0.9079,
+     "R": 0.9198,
+     "F1": 0.9138,
+     "nontext": 0.0641,
+     "kinds": {
+      "bldg": {
+       "words": 2,
+       "text_px": 689,
+       "recall": 1.0,
+       "words_found": 2
+      },
+      "block": {
+       "words": 6,
+       "text_px": 6451,
+       "recall": 0.8016,
+       "words_found": 5
+      },
+      "ditto": {
+       "words": 76,
+       "text_px": 2016,
+       "recall": 0.3428,
+       "words_found": 21
+      },
+      "house": {
+       "words": 98,
+       "text_px": 38734,
+       "recall": 0.9197,
+       "words_found": 96
+      },
+      "lot": {
+       "words": 318,
+       "text_px": 99250,
+       "recall": 0.9497,
+       "words_found": 303
+      },
+      "lotdim": {
+       "words": 258,
+       "text_px": 49975,
+       "recall": 0.9212,
+       "words_found": 235
+      },
+      "other": {
+       "words": 8,
+       "text_px": 1479,
+       "recall": 0.8404,
+       "words_found": 7
+      },
+      "owner": {
+       "words": 43,
+       "text_px": 16172,
+       "recall": 0.8211,
+       "words_found": 38
+      },
+      "pipe": {
+       "words": 11,
+       "text_px": 5622,
+       "recall": 0.9283,
+       "words_found": 10
+      },
+      "sewer": {
+       "words": 10,
+       "text_px": 5404,
+       "recall": 0.9191,
+       "words_found": 10
+      },
+      "story": {
+       "words": 128,
+       "text_px": 14489,
+       "recall": 0.9549,
+       "words_found": 120
+      },
+      "street": {
+       "words": 16,
+       "text_px": 36824,
+       "recall": 0.9079,
+       "words_found": 14
+      }
+     },
+     "tp": 244810,
+     "fp": 24835,
+     "fn": 21346,
+     "n1": 387295
+    },
+    "noH3": {
+     "P": 0.9125,
+     "R": 0.929,
+     "F1": 0.9207,
+     "nontext": 0.0616,
+     "kinds": {
+      "bldg": {
+       "words": 2,
+       "text_px": 689,
+       "recall": 1.0,
+       "words_found": 2
+      },
+      "block": {
+       "words": 5,
+       "text_px": 5713,
+       "recall": 0.794,
+       "words_found": 4
+      },
+      "ditto": {
+       "words": 72,
+       "text_px": 1937,
+       "recall": 0.3557,
+       "words_found": 21
+      },
+      "house": {
+       "words": 98,
+       "text_px": 38734,
+       "recall": 0.9197,
+       "words_found": 96
+      },
+      "lot": {
+       "words": 259,
+       "text_px": 84435,
+       "recall": 0.9482,
+       "words_found": 246
+      },
+      "lotdim": {
+       "words": 191,
+       "text_px": 41490,
+       "recall": 0.954,
+       "words_found": 185
+      },
+      "other": {
+       "words": 3,
+       "text_px": 573,
+       "recall": 1.0,
+       "words_found": 3
+      },
+      "owner": {
+       "words": 15,
+       "text_px": 6053,
+       "recall": 0.7747,
+       "words_found": 13
+      },
+      "pipe": {
+       "words": 10,
+       "text_px": 5175,
+       "recall": 0.9231,
+       "words_found": 9
+      },
+      "sewer": {
+       "words": 10,
+       "text_px": 5404,
+       "recall": 0.9191,
+       "words_found": 10
+      },
+      "story": {
+       "words": 117,
+       "text_px": 13998,
+       "recall": 0.9611,
+       "words_found": 112
+      },
+      "street": {
+       "words": 11,
+       "text_px": 35700,
+       "recall": 0.9148,
+       "words_found": 11
+      }
+     },
+     "tp": 216530,
+     "fp": 20754,
+     "fn": 16538,
+     "n1": 337155
+    },
+    "H3": {
+     "P": 0.8739,
+     "R": 0.8547,
+     "F1": 0.8642,
+     "nontext": 0.0814,
+     "kinds": {
+      "block": {
+       "words": 1,
+       "text_px": 738,
+       "recall": 0.8604,
+       "words_found": 1
+      },
+      "ditto": {
+       "words": 4,
+       "text_px": 79,
+       "recall": 0.0253,
+       "words_found": 0
+      },
+      "lot": {
+       "words": 59,
+       "text_px": 14815,
+       "recall": 0.9579,
+       "words_found": 57
+      },
+      "lotdim": {
+       "words": 67,
+       "text_px": 8485,
+       "recall": 0.7604,
+       "words_found": 50
+      },
+      "other": {
+       "words": 5,
+       "text_px": 906,
+       "recall": 0.7395,
+       "words_found": 4
+      },
+      "owner": {
+       "words": 28,
+       "text_px": 10119,
+       "recall": 0.8489,
+       "words_found": 25
+      },
+      "pipe": {
+       "words": 1,
+       "text_px": 447,
+       "recall": 0.9888,
+       "words_found": 1
+      },
+      "story": {
+       "words": 11,
+       "text_px": 491,
+       "recall": 0.778,
+       "words_found": 8
+      },
+      "street": {
+       "words": 5,
+       "text_px": 1124,
+       "recall": 0.6877,
+       "words_found": 3
+      }
+     },
+     "tp": 28280,
+     "fp": 4081,
+     "fn": 4808,
+     "n1": 50140
+    }
+   },
+   "v2": {
+    "crops": {
+     "T1": {
+      "tp": 106018,
+      "fp": 3526,
+      "fn": 6272,
+      "n1": 128849,
+      "kinds": {
+       "lotdim": [
+        57,
+        19248,
+        18754,
+        57
+       ],
+       "lot": [
+        78,
+        39740,
+        38245,
+        78
+       ],
+       "owner": [
+        9,
+        4426,
+        3829,
+        8
+       ],
+       "story": [
+        32,
+        5338,
+        5199,
+        31
+       ],
+       "house": [
+        31,
+        21646,
+        20488,
+        30
+       ],
+       "ditto": [
+        14,
+        1022,
+        897,
+        12
+       ],
+       "block": [
+        2,
+        1507,
+        723,
+        1
+       ],
+       "street": [
+        6,
+        13911,
+        13488,
+        6
+       ],
+       "pipe": [
+        6,
+        3915,
+        2716,
+        5
+       ],
+       "sewer": [
+        3,
+        2804,
+        2804,
+        3
+       ]
+      },
+      "words": [
+       {
+        "kind": "block",
+        "reading": "4",
+        "text_px": 770,
+        "found": 652,
+        "recall": 0.847,
+        "aabb": [
+         2458,
+         1562,
+         2505,
+         1610
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "ALLEY",
+        "text_px": 1163,
+        "found": 1156,
+        "recall": 0.994,
+        "aabb": [
+         2422,
+         1777,
+         2479,
+         1938
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "KENDALL",
+        "text_px": 1737,
+        "found": 1737,
+        "recall": 1.0,
+        "aabb": [
+         2562,
+         1585,
+         2815,
+         1611
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "ST.",
+        "text_px": 1360,
+        "found": 1360,
+        "recall": 1.0,
+        "aabb": [
+         1572,
+         1935,
+         1665,
+         1975
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "KNOWLTON",
+        "text_px": 6415,
+        "found": 6114,
+        "recall": 0.953,
+        "aabb": [
+         2124,
+         2045,
+         2545,
+         2098
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "14",
+        "text_px": 737,
+        "found": 71,
+        "recall": 0.096,
+        "aabb": [
+         2510,
+         2294,
+         2576,
+         2366
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVE.",
+        "text_px": 1908,
+        "found": 1793,
+        "recall": 0.94,
+        "aabb": [
+         2038,
+         2202,
+         2124,
+         2378
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "LANGLAND",
+        "text_px": 1328,
+        "found": 1328,
+        "recall": 1.0,
+        "aabb": [
+         2908,
+         2390,
+         2958,
+         2533
+        ]
+       }
+      ]
+     },
+     "T2": {
+      "tp": 55627,
+      "fp": 2145,
+      "fn": 3647,
+      "n1": 81499,
+      "kinds": {
+       "lotdim": [
+        35,
+        12860,
+        12444,
+        35
+       ],
+       "lot": [
+        44,
+        18385,
+        17581,
+        43
+       ],
+       "street": [
+        2,
+        4425,
+        4117,
+        2
+       ],
+       "house": [
+        5,
+        1771,
+        1771,
+        5
+       ],
+       "pipe": [
+        1,
+        438,
+        438,
+        1
+       ],
+       "ditto": [
+        10,
+        614,
+        473,
+        8
+       ],
+       "story": [
+        8,
+        1361,
+        1234,
+        8
+       ],
+       "owner": [
+        11,
+        8973,
+        7644,
+        10
+       ],
+       "rail": [
+        26,
+        11146,
+        10040,
+        25
+       ],
+       "block": [
+        2,
+        2508,
+        2508,
+        2
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "CT.",
+        "text_px": 1075,
+        "found": 767,
+        "recall": 0.713,
+        "aabb": [
+         2750,
+         2536,
+         2842,
+         2580
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "LANGLAND",
+        "text_px": 3350,
+        "found": 3350,
+        "recall": 1.0,
+        "aabb": [
+         2900,
+         2379,
+         2961,
+         2721
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "17",
+        "text_px": 1093,
+        "found": 1093,
+        "recall": 1.0,
+        "aabb": [
+         3053,
+         2861,
+         3107,
+         2912
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "18",
+        "text_px": 1415,
+        "found": 1415,
+        "recall": 1.0,
+        "aabb": [
+         3655,
+         3220,
+         3714,
+         3276
+        ]
+       }
+      ]
+     },
+     "T3": {
+      "tp": 44853,
+      "fp": 465,
+      "fn": 7699,
+      "n1": 72011,
+      "kinds": {
+       "lotdim": [
+        18,
+        9282,
+        8650,
+        17
+       ],
+       "block": [
+        1,
+        1050,
+        1050,
+        1
+       ],
+       "owner": [
+        19,
+        22080,
+        21643,
+        18
+       ],
+       "story": [
+        6,
+        1005,
+        828,
+        4
+       ],
+       "lot": [
+        12,
+        3862,
+        3862,
+        12
+       ],
+       "pipe": [
+        2,
+        2018,
+        1998,
+        2
+       ],
+       "adj": [
+        1,
+        4227,
+        1117,
+        0
+       ],
+       "sewer": [
+        1,
+        1245,
+        1245,
+        1
+       ],
+       "house": [
+        4,
+        3736,
+        3425,
+        4
+       ],
+       "ditto": [
+        5,
+        382,
+        238,
+        3
+       ],
+       "street": [
+        1,
+        4645,
+        1640,
+        0
+       ]
+      },
+      "words": [
+       {
+        "kind": "block",
+        "reading": "24",
+        "text_px": 1050,
+        "found": 1050,
+        "recall": 1.0,
+        "aabb": [
+         8961,
+         2525,
+         9045,
+         2591
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVENUE",
+        "text_px": 4645,
+        "found": 1640,
+        "recall": 0.353,
+        "aabb": [
+         9395,
+         3059,
+         9659,
+         3295
+        ]
+       }
+      ]
+     },
+     "T4": {
+      "tp": 74265,
+      "fp": 3845,
+      "fn": 19771,
+      "n1": 112913,
+      "kinds": {
+       "pipe": [
+        5,
+        4846,
+        4196,
+        5
+       ],
+       "lotdim": [
+        55,
+        14668,
+        13065,
+        51
+       ],
+       "house": [
+        23,
+        24472,
+        19354,
+        23
+       ],
+       "sewer": [
+        4,
+        2831,
+        1156,
+        2
+       ],
+       "story": [
+        26,
+        4429,
+        3944,
+        24
+       ],
+       "lot": [
+        55,
+        18212,
+        17120,
+        55
+       ],
+       "owner": [
+        7,
+        13488,
+        8328,
+        4
+       ],
+       "street": [
+        6,
+        19350,
+        13160,
+        5
+       ],
+       "ditto": [
+        3,
+        133,
+        133,
+        3
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "ALLEY",
+        "text_px": 793,
+        "found": 404,
+        "recall": 0.509,
+        "aabb": [
+         2424,
+         1472,
+         2463,
+         1651
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "W.",
+        "text_px": 1384,
+        "found": 866,
+        "recall": 0.626,
+        "aabb": [
+         3033,
+         1429,
+         3117,
+         1527
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "McMICKEN",
+        "text_px": 6943,
+        "found": 6123,
+        "recall": 0.882,
+        "aabb": [
+         3122,
+         1493,
+         3545,
+         1817
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "STREET",
+        "text_px": 5762,
+        "found": 1641,
+        "recall": 0.285,
+        "aabb": [
+         2035,
+         1694,
+         2095,
+         1980
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "STREET",
+        "text_px": 3555,
+        "found": 3555,
+        "recall": 1.0,
+        "aabb": [
+         2813,
+         1735,
+         2862,
+         1964
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "ALLEY",
+        "text_px": 913,
+        "found": 571,
+        "recall": 0.625,
+        "aabb": [
+         3275,
+         1822,
+         3313,
+         1968
+        ]
+       }
+      ]
+     },
+     "T6": {
+      "tp": 42207,
+      "fp": 3766,
+      "fn": 3691,
+      "n1": 104425,
+      "kinds": {
+       "story": [
+        30,
+        5504,
+        5157,
+        28
+       ],
+       "lotdim": [
+        28,
+        6995,
+        6204,
+        26
+       ],
+       "lot": [
+        16,
+        6250,
+        5360,
+        14
+       ],
+       "house": [
+        9,
+        7374,
+        6213,
+        9
+       ],
+       "sewer": [
+        2,
+        1449,
+        1437,
+        2
+       ],
+       "pipe": [
+        3,
+        2732,
+        2665,
+        3
+       ],
+       "street": [
+        2,
+        6819,
+        6355,
+        2
+       ],
+       "other": [
+        3,
+        1541,
+        1490,
+        3
+       ],
+       "bldg": [
+        5,
+        6131,
+        6131,
+        5
+       ],
+       "block": [
+        1,
+        1738,
+        1738,
+        1
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "W.",
+        "text_px": 1538,
+        "found": 1405,
+        "recall": 0.914,
+        "aabb": [
+         4547,
+         1843,
+         4627,
+         1891
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "EIGHTH",
+        "text_px": 5281,
+        "found": 4950,
+        "recall": 0.937,
+        "aabb": [
+         4671,
+         1845,
+         4967,
+         1897
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "15",
+        "text_px": 1738,
+        "found": 1738,
+        "recall": 1.0,
+        "aabb": [
+         4813,
+         2395,
+         4880,
+         2454
+        ]
+       }
+      ]
+     },
+     "T7": {
+      "tp": 109399,
+      "fp": 4280,
+      "fn": 17660,
+      "n1": 155766,
+      "kinds": {
+       "story": [
+        86,
+        16261,
+        15547,
+        83
+       ],
+       "lotdim": [
+        90,
+        24404,
+        20312,
+        82
+       ],
+       "street": [
+        5,
+        15747,
+        13795,
+        5
+       ],
+       "house": [
+        26,
+        42908,
+        38988,
+        25
+       ],
+       "lot": [
+        52,
+        22266,
+        19651,
+        49
+       ],
+       "owner": [
+        5,
+        7848,
+        2535,
+        2
+       ],
+       "ditto": [
+        6,
+        408,
+        177,
+        2
+       ],
+       "sewer": [
+        4,
+        3309,
+        2889,
+        4
+       ],
+       "block": [
+        1,
+        2053,
+        338,
+        0
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "ST",
+        "text_px": 1666,
+        "found": 1661,
+        "recall": 0.997,
+        "aabb": [
+         1774,
+         3485,
+         1829,
+         3603
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "GEORGE",
+        "text_px": 6637,
+        "found": 6592,
+        "recall": 0.993,
+        "aabb": [
+         1948,
+         3603,
+         2288,
+         3667
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "ST",
+        "text_px": 1718,
+        "found": 1718,
+        "recall": 1.0,
+        "aabb": [
+         2938,
+         3492,
+         2989,
+         3594
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "28",
+        "text_px": 2053,
+        "found": 338,
+        "recall": 0.165,
+        "aabb": [
+         2385,
+         3872,
+         2495,
+         3954
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "W.",
+        "text_px": 1474,
+        "found": 1044,
+        "recall": 0.708,
+        "aabb": [
+         1914,
+         4247,
+         2000,
+         4310
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "SIXTH",
+        "text_px": 4252,
+        "found": 2780,
+        "recall": 0.654,
+        "aabb": [
+         2041,
+         4249,
+         2303,
+         4300
+        ]
+       }
+      ]
+     }
+    },
+    "ALL": {
+     "P": 0.96,
+     "R": 0.8804,
+     "F1": 0.9185,
+     "nontext": 0.0275,
+     "kinds": {
+      "adj": {
+       "words": 1,
+       "text_px": 4227,
+       "recall": 0.2643,
+       "words_found": 0
+      },
+      "bldg": {
+       "words": 5,
+       "text_px": 6131,
+       "recall": 1.0,
+       "words_found": 5
+      },
+      "block": {
+       "words": 7,
+       "text_px": 8856,
+       "recall": 0.7178,
+       "words_found": 5
+      },
+      "ditto": {
+       "words": 38,
+       "text_px": 2559,
+       "recall": 0.7495,
+       "words_found": 28
+      },
+      "house": {
+       "words": 98,
+       "text_px": 101907,
+       "recall": 0.8855,
+       "words_found": 96
+      },
+      "lot": {
+       "words": 257,
+       "text_px": 108715,
+       "recall": 0.9366,
+       "words_found": 251
+      },
+      "lotdim": {
+       "words": 283,
+       "text_px": 87457,
+       "recall": 0.9082,
+       "words_found": 268
+      },
+      "other": {
+       "words": 3,
+       "text_px": 1541,
+       "recall": 0.9669,
+       "words_found": 3
+      },
+      "owner": {
+       "words": 51,
+       "text_px": 56815,
+       "recall": 0.7741,
+       "words_found": 42
+      },
+      "pipe": {
+       "words": 17,
+       "text_px": 13949,
+       "recall": 0.8612,
+       "words_found": 16
+      },
+      "rail": {
+       "words": 26,
+       "text_px": 11146,
+       "recall": 0.9008,
+       "words_found": 25
+      },
+      "sewer": {
+       "words": 14,
+       "text_px": 11638,
+       "recall": 0.819,
+       "words_found": 12
+      },
+      "story": {
+       "words": 188,
+       "text_px": 33898,
+       "recall": 0.9413,
+       "words_found": 178
+      },
+      "street": {
+       "words": 22,
+       "text_px": 64897,
+       "recall": 0.8098,
+       "words_found": 20
+      }
+     },
+     "tp": 432369,
+     "fp": 18027,
+     "fn": 58740,
+     "n1": 655463
+    },
+    "noH3": {
+     "P": 0.96,
+     "R": 0.8804,
+     "F1": 0.9185,
+     "nontext": 0.0275,
+     "kinds": {
+      "adj": {
+       "words": 1,
+       "text_px": 4227,
+       "recall": 0.2643,
+       "words_found": 0
+      },
+      "bldg": {
+       "words": 5,
+       "text_px": 6131,
+       "recall": 1.0,
+       "words_found": 5
+      },
+      "block": {
+       "words": 7,
+       "text_px": 8856,
+       "recall": 0.7178,
+       "words_found": 5
+      },
+      "ditto": {
+       "words": 38,
+       "text_px": 2559,
+       "recall": 0.7495,
+       "words_found": 28
+      },
+      "house": {
+       "words": 98,
+       "text_px": 101907,
+       "recall": 0.8855,
+       "words_found": 96
+      },
+      "lot": {
+       "words": 257,
+       "text_px": 108715,
+       "recall": 0.9366,
+       "words_found": 251
+      },
+      "lotdim": {
+       "words": 283,
+       "text_px": 87457,
+       "recall": 0.9082,
+       "words_found": 268
+      },
+      "other": {
+       "words": 3,
+       "text_px": 1541,
+       "recall": 0.9669,
+       "words_found": 3
+      },
+      "owner": {
+       "words": 51,
+       "text_px": 56815,
+       "recall": 0.7741,
+       "words_found": 42
+      },
+      "pipe": {
+       "words": 17,
+       "text_px": 13949,
+       "recall": 0.8612,
+       "words_found": 16
+      },
+      "rail": {
+       "words": 26,
+       "text_px": 11146,
+       "recall": 0.9008,
+       "words_found": 25
+      },
+      "sewer": {
+       "words": 14,
+       "text_px": 11638,
+       "recall": 0.819,
+       "words_found": 12
+      },
+      "story": {
+       "words": 188,
+       "text_px": 33898,
+       "recall": 0.9413,
+       "words_found": 178
+      },
+      "street": {
+       "words": 22,
+       "text_px": 64897,
+       "recall": 0.8098,
+       "words_found": 20
+      }
+     },
+     "tp": 432369,
+     "fp": 18027,
+     "fn": 58740,
+     "n1": 655463
+    }
+   }
+  },
+  "v2": {
+   "heldfix": {
+    "crops": {
+     "H1": {
+      "tp": 62070,
+      "fp": 8590,
+      "fn": 3342,
+      "n1": 107584,
+      "kinds": {
+       "bldg": [
+        2,
+        689,
+        689,
+        2
+       ],
+       "story": [
+        26,
+        2496,
+        2241,
+        23
+       ],
+       "lotdim": [
+        85,
+        18875,
+        17869,
+        82
+       ],
+       "lot": [
+        54,
+        12242,
+        11377,
+        50
+       ],
+       "other": [
+        2,
+        489,
+        489,
+        2
+       ],
+       "block": [
+        2,
+        2614,
+        2607,
+        2
+       ],
+       "pipe": [
+        6,
+        2697,
+        2304,
+        5
+       ],
+       "sewer": [
+        6,
+        3113,
+        2965,
+        6
+       ],
+       "house": [
+        21,
+        5751,
+        5415,
+        21
+       ],
+       "street": [
+        5,
+        12898,
+        12854,
+        5
+       ],
+       "ditto": [
+        5,
+        114,
+        0,
+        0
+       ],
+       "owner": [
+        11,
+        3595,
+        3575,
+        11
+       ]
+      },
+      "words": [
+       {
+        "kind": "block",
+        "reading": "30",
+        "text_px": 1469,
+        "found": 1469,
+        "recall": 1.0,
+        "aabb": [
+         5655,
+         4214,
+         5744,
+         4273
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVALON",
+        "text_px": 2470,
+        "found": 2434,
+        "recall": 0.985,
+        "aabb": [
+         6255,
+         4285,
+         6481,
+         4347
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "OAKMONT",
+        "text_px": 815,
+        "found": 815,
+        "recall": 1.0,
+        "aabb": [
+         6666,
+         3927,
+         6727,
+         4015
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "WOODBINE",
+        "text_px": 3856,
+        "found": 3853,
+        "recall": 0.999,
+        "aabb": [
+         6163,
+         4435,
+         6464,
+         4609
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "WILDWOOD",
+        "text_px": 4353,
+        "found": 4353,
+        "recall": 1.0,
+        "aabb": [
+         6128,
+         4559,
+         6329,
+         4902
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "19",
+        "text_px": 1145,
+        "found": 1138,
+        "recall": 0.994,
+        "aabb": [
+         7045,
+         4816,
+         7097,
+         4875
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "DECAMP",
+        "text_px": 1404,
+        "found": 1399,
+        "recall": 0.996,
+        "aabb": [
+         6835,
+         4829,
+         6951,
+         4966
+        ]
+       }
+      ]
+     },
+     "H2": {
+      "tp": 96089,
+      "fp": 11039,
+      "fn": 5895,
+      "n1": 117233,
+      "kinds": {
+       "lotdim": [
+        87,
+        19193,
+        18548,
+        85
+       ],
+       "lot": [
+        152,
+        48074,
+        46115,
+        145
+       ],
+       "pipe": [
+        2,
+        1166,
+        1161,
+        2
+       ],
+       "sewer": [
+        2,
+        1041,
+        877,
+        2
+       ],
+       "house": [
+        36,
+        16763,
+        15676,
+        35
+       ],
+       "ditto": [
+        34,
+        831,
+        185,
+        6
+       ],
+       "story": [
+        42,
+        4940,
+        4747,
+        41
+       ],
+       "owner": [
+        4,
+        2458,
+        1496,
+        3
+       ],
+       "street": [
+        3,
+        11629,
+        11461,
+        3
+       ],
+       "block": [
+        2,
+        1784,
+        1522,
+        2
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "CURZON",
+        "text_px": 4438,
+        "found": 4391,
+        "recall": 0.989,
+        "aabb": [
+         1510,
+         2227,
+         1784,
+         2320
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "8",
+        "text_px": 758,
+        "found": 560,
+        "recall": 0.739,
+        "aabb": [
+         1574,
+         2494,
+         1613,
+         2561
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVENUE",
+        "text_px": 2082,
+        "found": 2082,
+        "recall": 1.0,
+        "aabb": [
+         2183,
+         2088,
+         2245,
+         2245
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "WISWELL",
+        "text_px": 5109,
+        "found": 4988,
+        "recall": 0.976,
+        "aabb": [
+         1489,
+         2738,
+         1807,
+         2839
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "10",
+        "text_px": 1026,
+        "found": 962,
+        "recall": 0.938,
+        "aabb": [
+         1563,
+         2999,
+         1630,
+         3060
+        ]
+       }
+      ]
+     },
+     "H3": {
+      "tp": 28861,
+      "fp": 4253,
+      "fn": 4227,
+      "n1": 50140,
+      "kinds": {
+       "lot": [
+        59,
+        14815,
+        14342,
+        59
+       ],
+       "story": [
+        11,
+        491,
+        360,
+        8
+       ],
+       "lotdim": [
+        67,
+        8485,
+        6720,
+        54
+       ],
+       "owner": [
+        28,
+        10119,
+        8780,
+        26
+       ],
+       "other": [
+        5,
+        906,
+        670,
+        4
+       ],
+       "block": [
+        1,
+        738,
+        635,
+        1
+       ],
+       "street": [
+        5,
+        1124,
+        773,
+        3
+       ],
+       "ditto": [
+        4,
+        79,
+        2,
+        0
+       ],
+       "pipe": [
+        1,
+        447,
+        442,
+        1
+       ]
+      },
+      "words": [
+       {
+        "kind": "block",
+        "reading": "27",
+        "text_px": 738,
+        "found": 635,
+        "recall": 0.86,
+        "aabb": [
+         8320,
+         4540,
+         8379,
+         4605
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "SAFFER",
+        "text_px": 316,
+        "found": 60,
+        "recall": 0.19,
+        "aabb": [
+         7262,
+         4939,
+         7334,
+         4972
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "FYFFE",
+        "text_px": 1,
+        "found": 0,
+        "recall": 0.0,
+        "aabb": [
+         7066,
+         5016,
+         7215,
+         5114
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVE.",
+        "text_px": 688,
+        "found": 626,
+        "recall": 0.91,
+        "aabb": [
+         7562,
+         5251,
+         7651,
+         5324
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "KAVANAUGH",
+        "text_px": 12,
+        "found": 12,
+        "recall": 1.0,
+        "aabb": [
+         7053,
+         5319,
+         7181,
+         5443
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "SCHMANN",
+        "text_px": 107,
+        "found": 75,
+        "recall": 0.701,
+        "aabb": [
+         8454,
+         5369,
+         8548,
+         5384
+        ]
+       }
+      ]
+     },
+     "H4": {
+      "tp": 62470,
+      "fp": 2365,
+      "fn": 3202,
+      "n1": 112338,
+      "kinds": {
+       "story": [
+        49,
+        6562,
+        6542,
+        49
+       ],
+       "lot": [
+        53,
+        24119,
+        22929,
+        53
+       ],
+       "lotdim": [
+        19,
+        3422,
+        3168,
+        18
+       ],
+       "ditto": [
+        33,
+        992,
+        504,
+        15
+       ],
+       "house": [
+        41,
+        16220,
+        15596,
+        41
+       ],
+       "sewer": [
+        2,
+        1250,
+        1125,
+        2
+       ],
+       "pipe": [
+        2,
+        1312,
+        1312,
+        2
+       ],
+       "street": [
+        3,
+        11173,
+        11134,
+        3
+       ],
+       "block": [
+        1,
+        1315,
+        834,
+        1
+       ],
+       "other": [
+        1,
+        84,
+        84,
+        1
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "DANDRIDGE",
+        "text_px": 6243,
+        "found": 6243,
+        "recall": 1.0,
+        "aabb": [
+         7397,
+         4127,
+         7765,
+         4191
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "NOAH",
+        "text_px": 867,
+        "found": 867,
+        "recall": 1.0,
+        "aabb": [
+         7401,
+         4497,
+         7514,
+         4526
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "36",
+        "text_px": 1315,
+        "found": 834,
+        "recall": 0.634,
+        "aabb": [
+         8091,
+         4483,
+         8172,
+         4531
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "STREET",
+        "text_px": 4063,
+        "found": 4024,
+        "recall": 0.99,
+        "aabb": [
+         8394,
+         4881,
+         8678,
+         4932
+        ]
+       }
+      ]
+     }
+    },
+    "ALL": {
+     "P": 0.9048,
+     "R": 0.9374,
+     "F1": 0.9208,
+     "nontext": 0.0678,
+     "kinds": {
+      "bldg": {
+       "words": 2,
+       "text_px": 689,
+       "recall": 1.0,
+       "words_found": 2
+      },
+      "block": {
+       "words": 6,
+       "text_px": 6451,
+       "recall": 0.8678,
+       "words_found": 6
+      },
+      "ditto": {
+       "words": 76,
+       "text_px": 2016,
+       "recall": 0.3428,
+       "words_found": 21
+      },
+      "house": {
+       "words": 98,
+       "text_px": 38734,
+       "recall": 0.9472,
+       "words_found": 97
+      },
+      "lot": {
+       "words": 318,
+       "text_px": 99250,
+       "recall": 0.9548,
+       "words_found": 307
+      },
+      "lotdim": {
+       "words": 258,
+       "text_px": 49975,
+       "recall": 0.9266,
+       "words_found": 239
+      },
+      "other": {
+       "words": 8,
+       "text_px": 1479,
+       "recall": 0.8404,
+       "words_found": 7
+      },
+      "owner": {
+       "words": 43,
+       "text_px": 16172,
+       "recall": 0.8565,
+       "words_found": 40
+      },
+      "pipe": {
+       "words": 11,
+       "text_px": 5622,
+       "recall": 0.9283,
+       "words_found": 10
+      },
+      "sewer": {
+       "words": 10,
+       "text_px": 5404,
+       "recall": 0.9191,
+       "words_found": 10
+      },
+      "story": {
+       "words": 128,
+       "text_px": 14489,
+       "recall": 0.9587,
+       "words_found": 121
+      },
+      "street": {
+       "words": 16,
+       "text_px": 36824,
+       "recall": 0.9837,
+       "words_found": 14
+      }
+     },
+     "tp": 249490,
+     "fp": 26247,
+     "fn": 16666,
+     "n1": 387295
+    },
+    "noH3": {
+     "P": 0.9093,
+     "R": 0.9466,
+     "F1": 0.9276,
+     "nontext": 0.0652,
+     "kinds": {
+      "bldg": {
+       "words": 2,
+       "text_px": 689,
+       "recall": 1.0,
+       "words_found": 2
+      },
+      "block": {
+       "words": 5,
+       "text_px": 5713,
+       "recall": 0.8687,
+       "words_found": 5
+      },
+      "ditto": {
+       "words": 72,
+       "text_px": 1937,
+       "recall": 0.3557,
+       "words_found": 21
+      },
+      "house": {
+       "words": 98,
+       "text_px": 38734,
+       "recall": 0.9472,
+       "words_found": 97
+      },
+      "lot": {
+       "words": 259,
+       "text_px": 84435,
+       "recall": 0.9525,
+       "words_found": 248
+      },
+      "lotdim": {
+       "words": 191,
+       "text_px": 41490,
+       "recall": 0.9541,
+       "words_found": 185
+      },
+      "other": {
+       "words": 3,
+       "text_px": 573,
+       "recall": 1.0,
+       "words_found": 3
+      },
+      "owner": {
+       "words": 15,
+       "text_px": 6053,
+       "recall": 0.8378,
+       "words_found": 14
+      },
+      "pipe": {
+       "words": 10,
+       "text_px": 5175,
+       "recall": 0.9231,
+       "words_found": 9
+      },
+      "sewer": {
+       "words": 10,
+       "text_px": 5404,
+       "recall": 0.9191,
+       "words_found": 10
+      },
+      "story": {
+       "words": 117,
+       "text_px": 13998,
+       "recall": 0.9666,
+       "words_found": 113
+      },
+      "street": {
+       "words": 11,
+       "text_px": 35700,
+       "recall": 0.993,
+       "words_found": 11
+      }
+     },
+     "tp": 220629,
+     "fp": 21994,
+     "fn": 12439,
+     "n1": 337155
+    },
+    "H3": {
+     "P": 0.8716,
+     "R": 0.8722,
+     "F1": 0.8719,
+     "nontext": 0.0848,
+     "kinds": {
+      "block": {
+       "words": 1,
+       "text_px": 738,
+       "recall": 0.8604,
+       "words_found": 1
+      },
+      "ditto": {
+       "words": 4,
+       "text_px": 79,
+       "recall": 0.0253,
+       "words_found": 0
+      },
+      "lot": {
+       "words": 59,
+       "text_px": 14815,
+       "recall": 0.9681,
+       "words_found": 59
+      },
+      "lotdim": {
+       "words": 67,
+       "text_px": 8485,
+       "recall": 0.792,
+       "words_found": 54
+      },
+      "other": {
+       "words": 5,
+       "text_px": 906,
+       "recall": 0.7395,
+       "words_found": 4
+      },
+      "owner": {
+       "words": 28,
+       "text_px": 10119,
+       "recall": 0.8677,
+       "words_found": 26
+      },
+      "pipe": {
+       "words": 1,
+       "text_px": 447,
+       "recall": 0.9888,
+       "words_found": 1
+      },
+      "story": {
+       "words": 11,
+       "text_px": 491,
+       "recall": 0.7332,
+       "words_found": 8
+      },
+      "street": {
+       "words": 5,
+       "text_px": 1124,
+       "recall": 0.6877,
+       "words_found": 3
+      }
+     },
+     "tp": 28861,
+     "fp": 4253,
+     "fn": 4227,
+     "n1": 50140
+    }
+   },
+   "v2": {
+    "crops": {
+     "T1": {
+      "tp": 106654,
+      "fp": 3711,
+      "fn": 5636,
+      "n1": 128849,
+      "kinds": {
+       "lotdim": [
+        57,
+        19248,
+        18754,
+        57
+       ],
+       "lot": [
+        78,
+        39740,
+        38425,
+        78
+       ],
+       "owner": [
+        9,
+        4426,
+        3944,
+        8
+       ],
+       "story": [
+        32,
+        5338,
+        5199,
+        31
+       ],
+       "house": [
+        31,
+        21646,
+        20488,
+        30
+       ],
+       "ditto": [
+        14,
+        1022,
+        897,
+        12
+       ],
+       "block": [
+        2,
+        1507,
+        887,
+        1
+       ],
+       "street": [
+        6,
+        13911,
+        13697,
+        6
+       ],
+       "pipe": [
+        6,
+        3915,
+        2716,
+        5
+       ],
+       "sewer": [
+        3,
+        2804,
+        2804,
+        3
+       ]
+      },
+      "words": [
+       {
+        "kind": "block",
+        "reading": "4",
+        "text_px": 770,
+        "found": 652,
+        "recall": 0.847,
+        "aabb": [
+         2458,
+         1562,
+         2505,
+         1610
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "ALLEY",
+        "text_px": 1163,
+        "found": 1156,
+        "recall": 0.994,
+        "aabb": [
+         2422,
+         1777,
+         2479,
+         1938
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "KENDALL",
+        "text_px": 1737,
+        "found": 1737,
+        "recall": 1.0,
+        "aabb": [
+         2562,
+         1585,
+         2815,
+         1611
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "ST.",
+        "text_px": 1360,
+        "found": 1360,
+        "recall": 1.0,
+        "aabb": [
+         1572,
+         1935,
+         1665,
+         1975
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "KNOWLTON",
+        "text_px": 6415,
+        "found": 6323,
+        "recall": 0.986,
+        "aabb": [
+         2124,
+         2045,
+         2545,
+         2098
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "14",
+        "text_px": 737,
+        "found": 235,
+        "recall": 0.319,
+        "aabb": [
+         2510,
+         2294,
+         2576,
+         2366
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVE.",
+        "text_px": 1908,
+        "found": 1793,
+        "recall": 0.94,
+        "aabb": [
+         2038,
+         2202,
+         2124,
+         2378
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "LANGLAND",
+        "text_px": 1328,
+        "found": 1328,
+        "recall": 1.0,
+        "aabb": [
+         2908,
+         2390,
+         2958,
+         2533
+        ]
+       }
+      ]
+     },
+     "T2": {
+      "tp": 56168,
+      "fp": 2149,
+      "fn": 3106,
+      "n1": 81499,
+      "kinds": {
+       "lotdim": [
+        35,
+        12860,
+        12444,
+        35
+       ],
+       "lot": [
+        44,
+        18385,
+        17581,
+        43
+       ],
+       "street": [
+        2,
+        4425,
+        4117,
+        2
+       ],
+       "house": [
+        5,
+        1771,
+        1771,
+        5
+       ],
+       "pipe": [
+        1,
+        438,
+        438,
+        1
+       ],
+       "ditto": [
+        10,
+        614,
+        473,
+        8
+       ],
+       "story": [
+        8,
+        1361,
+        1234,
+        8
+       ],
+       "owner": [
+        11,
+        8973,
+        7644,
+        10
+       ],
+       "rail": [
+        26,
+        11146,
+        10589,
+        25
+       ],
+       "block": [
+        2,
+        2508,
+        2508,
+        2
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "CT.",
+        "text_px": 1075,
+        "found": 767,
+        "recall": 0.713,
+        "aabb": [
+         2750,
+         2536,
+         2842,
+         2580
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "LANGLAND",
+        "text_px": 3350,
+        "found": 3350,
+        "recall": 1.0,
+        "aabb": [
+         2900,
+         2379,
+         2961,
+         2721
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "17",
+        "text_px": 1093,
+        "found": 1093,
+        "recall": 1.0,
+        "aabb": [
+         3053,
+         2861,
+         3107,
+         2912
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "18",
+        "text_px": 1415,
+        "found": 1415,
+        "recall": 1.0,
+        "aabb": [
+         3655,
+         3220,
+         3714,
+         3276
+        ]
+       }
+      ]
+     },
+     "T3": {
+      "tp": 50285,
+      "fp": 465,
+      "fn": 2267,
+      "n1": 72011,
+      "kinds": {
+       "lotdim": [
+        18,
+        9282,
+        8650,
+        17
+       ],
+       "block": [
+        1,
+        1050,
+        1050,
+        1
+       ],
+       "owner": [
+        19,
+        22080,
+        21643,
+        18
+       ],
+       "story": [
+        6,
+        1005,
+        828,
+        4
+       ],
+       "lot": [
+        12,
+        3862,
+        3862,
+        12
+       ],
+       "pipe": [
+        2,
+        2018,
+        1998,
+        2
+       ],
+       "adj": [
+        1,
+        4227,
+        3949,
+        1
+       ],
+       "sewer": [
+        1,
+        1245,
+        1245,
+        1
+       ],
+       "house": [
+        4,
+        3736,
+        3425,
+        4
+       ],
+       "ditto": [
+        5,
+        382,
+        238,
+        3
+       ],
+       "street": [
+        1,
+        4645,
+        4240,
+        1
+       ]
+      },
+      "words": [
+       {
+        "kind": "block",
+        "reading": "24",
+        "text_px": 1050,
+        "found": 1050,
+        "recall": 1.0,
+        "aabb": [
+         8961,
+         2525,
+         9045,
+         2591
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVENUE",
+        "text_px": 4645,
+        "found": 4240,
+        "recall": 0.913,
+        "aabb": [
+         9395,
+         3059,
+         9659,
+         3295
+        ]
+       }
+      ]
+     },
+     "T4": {
+      "tp": 80309,
+      "fp": 4995,
+      "fn": 13727,
+      "n1": 112913,
+      "kinds": {
+       "pipe": [
+        5,
+        4846,
+        4197,
+        5
+       ],
+       "lotdim": [
+        55,
+        14668,
+        13170,
+        51
+       ],
+       "house": [
+        23,
+        24472,
+        19681,
+        23
+       ],
+       "sewer": [
+        4,
+        2831,
+        1245,
+        2
+       ],
+       "story": [
+        26,
+        4429,
+        3944,
+        24
+       ],
+       "lot": [
+        55,
+        18212,
+        17165,
+        55
+       ],
+       "owner": [
+        7,
+        13488,
+        9535,
+        6
+       ],
+       "street": [
+        6,
+        19350,
+        17786,
+        6
+       ],
+       "ditto": [
+        3,
+        133,
+        133,
+        3
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "ALLEY",
+        "text_px": 793,
+        "found": 429,
+        "recall": 0.541,
+        "aabb": [
+         2424,
+         1472,
+         2463,
+         1651
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "W.",
+        "text_px": 1384,
+        "found": 1275,
+        "recall": 0.921,
+        "aabb": [
+         3033,
+         1429,
+         3117,
+         1527
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "McMICKEN",
+        "text_px": 6943,
+        "found": 6754,
+        "recall": 0.973,
+        "aabb": [
+         3122,
+         1493,
+         3545,
+         1817
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "STREET",
+        "text_px": 5762,
+        "found": 5189,
+        "recall": 0.901,
+        "aabb": [
+         2035,
+         1694,
+         2095,
+         1980
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "STREET",
+        "text_px": 3555,
+        "found": 3555,
+        "recall": 1.0,
+        "aabb": [
+         2813,
+         1735,
+         2862,
+         1964
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "ALLEY",
+        "text_px": 913,
+        "found": 584,
+        "recall": 0.64,
+        "aabb": [
+         3275,
+         1822,
+         3313,
+         1968
+        ]
+       }
+      ]
+     },
+     "T6": {
+      "tp": 42538,
+      "fp": 3972,
+      "fn": 3360,
+      "n1": 104425,
+      "kinds": {
+       "story": [
+        30,
+        5504,
+        5157,
+        28
+       ],
+       "lotdim": [
+        28,
+        6995,
+        6204,
+        26
+       ],
+       "lot": [
+        16,
+        6250,
+        5360,
+        14
+       ],
+       "house": [
+        9,
+        7374,
+        6213,
+        9
+       ],
+       "sewer": [
+        2,
+        1449,
+        1437,
+        2
+       ],
+       "pipe": [
+        3,
+        2732,
+        2665,
+        3
+       ],
+       "street": [
+        2,
+        6819,
+        6686,
+        2
+       ],
+       "other": [
+        3,
+        1541,
+        1490,
+        3
+       ],
+       "bldg": [
+        5,
+        6131,
+        6131,
+        5
+       ],
+       "block": [
+        1,
+        1738,
+        1738,
+        1
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "W.",
+        "text_px": 1538,
+        "found": 1405,
+        "recall": 0.914,
+        "aabb": [
+         4547,
+         1843,
+         4627,
+         1891
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "EIGHTH",
+        "text_px": 5281,
+        "found": 5281,
+        "recall": 1.0,
+        "aabb": [
+         4671,
+         1845,
+         4967,
+         1897
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "15",
+        "text_px": 1738,
+        "found": 1738,
+        "recall": 1.0,
+        "aabb": [
+         4813,
+         2395,
+         4880,
+         2454
+        ]
+       }
+      ]
+     },
+     "T7": {
+      "tp": 114160,
+      "fp": 4508,
+      "fn": 12899,
+      "n1": 155766,
+      "kinds": {
+       "story": [
+        86,
+        16261,
+        15547,
+        83
+       ],
+       "lotdim": [
+        90,
+        24404,
+        20312,
+        82
+       ],
+       "street": [
+        5,
+        15747,
+        15698,
+        5
+       ],
+       "house": [
+        26,
+        42908,
+        39349,
+        25
+       ],
+       "lot": [
+        52,
+        22266,
+        19651,
+        49
+       ],
+       "owner": [
+        5,
+        7848,
+        4918,
+        3
+       ],
+       "ditto": [
+        6,
+        408,
+        177,
+        2
+       ],
+       "sewer": [
+        4,
+        3309,
+        2889,
+        4
+       ],
+       "block": [
+        1,
+        2053,
+        1285,
+        1
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "ST",
+        "text_px": 1666,
+        "found": 1666,
+        "recall": 1.0,
+        "aabb": [
+         1774,
+         3485,
+         1829,
+         3603
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "GEORGE",
+        "text_px": 6637,
+        "found": 6592,
+        "recall": 0.993,
+        "aabb": [
+         1948,
+         3603,
+         2288,
+         3667
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "ST",
+        "text_px": 1718,
+        "found": 1718,
+        "recall": 1.0,
+        "aabb": [
+         2938,
+         3492,
+         2989,
+         3594
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "28",
+        "text_px": 2053,
+        "found": 1285,
+        "recall": 0.626,
+        "aabb": [
+         2385,
+         3872,
+         2495,
+         3954
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "W.",
+        "text_px": 1474,
+        "found": 1470,
+        "recall": 0.997,
+        "aabb": [
+         1914,
+         4247,
+         2000,
+         4310
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "SIXTH",
+        "text_px": 4252,
+        "found": 4252,
+        "recall": 1.0,
+        "aabb": [
+         2041,
+         4249,
+         2303,
+         4300
+        ]
+       }
+      ]
+     }
+    },
+    "ALL": {
+     "P": 0.9579,
+     "R": 0.9165,
+     "F1": 0.9367,
+     "nontext": 0.0302,
+     "kinds": {
+      "adj": {
+       "words": 1,
+       "text_px": 4227,
+       "recall": 0.9342,
+       "words_found": 1
+      },
+      "bldg": {
+       "words": 5,
+       "text_px": 6131,
+       "recall": 1.0,
+       "words_found": 5
+      },
+      "block": {
+       "words": 7,
+       "text_px": 8856,
+       "recall": 0.8433,
+       "words_found": 6
+      },
+      "ditto": {
+       "words": 38,
+       "text_px": 2559,
+       "recall": 0.7495,
+       "words_found": 28
+      },
+      "house": {
+       "words": 98,
+       "text_px": 101907,
+       "recall": 0.8923,
+       "words_found": 96
+      },
+      "lot": {
+       "words": 257,
+       "text_px": 108715,
+       "recall": 0.9386,
+       "words_found": 251
+      },
+      "lotdim": {
+       "words": 283,
+       "text_px": 87457,
+       "recall": 0.9094,
+       "words_found": 268
+      },
+      "other": {
+       "words": 3,
+       "text_px": 1541,
+       "recall": 0.9669,
+       "words_found": 3
+      },
+      "owner": {
+       "words": 51,
+       "text_px": 56815,
+       "recall": 0.8393,
+       "words_found": 45
+      },
+      "pipe": {
+       "words": 17,
+       "text_px": 13949,
+       "recall": 0.8613,
+       "words_found": 16
+      },
+      "rail": {
+       "words": 26,
+       "text_px": 11146,
+       "recall": 0.95,
+       "words_found": 25
+      },
+      "sewer": {
+       "words": 14,
+       "text_px": 11638,
+       "recall": 0.8266,
+       "words_found": 12
+      },
+      "story": {
+       "words": 188,
+       "text_px": 33898,
+       "recall": 0.9413,
+       "words_found": 178
+      },
+      "street": {
+       "words": 22,
+       "text_px": 64897,
+       "recall": 0.9588,
+       "words_found": 22
+      }
+     },
+     "tp": 450114,
+     "fp": 19800,
+     "fn": 40995,
+     "n1": 655463
+    },
+    "noH3": {
+     "P": 0.9579,
+     "R": 0.9165,
+     "F1": 0.9367,
+     "nontext": 0.0302,
+     "kinds": {
+      "adj": {
+       "words": 1,
+       "text_px": 4227,
+       "recall": 0.9342,
+       "words_found": 1
+      },
+      "bldg": {
+       "words": 5,
+       "text_px": 6131,
+       "recall": 1.0,
+       "words_found": 5
+      },
+      "block": {
+       "words": 7,
+       "text_px": 8856,
+       "recall": 0.8433,
+       "words_found": 6
+      },
+      "ditto": {
+       "words": 38,
+       "text_px": 2559,
+       "recall": 0.7495,
+       "words_found": 28
+      },
+      "house": {
+       "words": 98,
+       "text_px": 101907,
+       "recall": 0.8923,
+       "words_found": 96
+      },
+      "lot": {
+       "words": 257,
+       "text_px": 108715,
+       "recall": 0.9386,
+       "words_found": 251
+      },
+      "lotdim": {
+       "words": 283,
+       "text_px": 87457,
+       "recall": 0.9094,
+       "words_found": 268
+      },
+      "other": {
+       "words": 3,
+       "text_px": 1541,
+       "recall": 0.9669,
+       "words_found": 3
+      },
+      "owner": {
+       "words": 51,
+       "text_px": 56815,
+       "recall": 0.8393,
+       "words_found": 45
+      },
+      "pipe": {
+       "words": 17,
+       "text_px": 13949,
+       "recall": 0.8613,
+       "words_found": 16
+      },
+      "rail": {
+       "words": 26,
+       "text_px": 11146,
+       "recall": 0.95,
+       "words_found": 25
+      },
+      "sewer": {
+       "words": 14,
+       "text_px": 11638,
+       "recall": 0.8266,
+       "words_found": 12
+      },
+      "story": {
+       "words": 188,
+       "text_px": 33898,
+       "recall": 0.9413,
+       "words_found": 178
+      },
+      "street": {
+       "words": 22,
+       "text_px": 64897,
+       "recall": 0.9588,
+       "words_found": 22
+      }
+     },
+     "tp": 450114,
+     "fp": 19800,
+     "fn": 40995,
+     "n1": 655463
+    }
+   }
+  },
+  "v3": {
+   "heldfix": {
+    "crops": {
+     "H1": {
+      "tp": 61422,
+      "fp": 6823,
+      "fn": 3990,
+      "n1": 107584,
+      "kinds": {
+       "bldg": [
+        2,
+        689,
+        689,
+        2
+       ],
+       "story": [
+        26,
+        2496,
+        2243,
+        23
+       ],
+       "lotdim": [
+        85,
+        18875,
+        17919,
+        82
+       ],
+       "lot": [
+        54,
+        12242,
+        10856,
+        47
+       ],
+       "other": [
+        2,
+        489,
+        489,
+        2
+       ],
+       "block": [
+        2,
+        2614,
+        2607,
+        2
+       ],
+       "pipe": [
+        6,
+        2697,
+        2304,
+        5
+       ],
+       "sewer": [
+        6,
+        3113,
+        3000,
+        6
+       ],
+       "house": [
+        21,
+        5751,
+        5415,
+        21
+       ],
+       "street": [
+        5,
+        12898,
+        12854,
+        5
+       ],
+       "ditto": [
+        5,
+        114,
+        0,
+        0
+       ],
+       "owner": [
+        11,
+        3595,
+        3361,
+        10
+       ]
+      },
+      "words": [
+       {
+        "kind": "block",
+        "reading": "30",
+        "text_px": 1469,
+        "found": 1469,
+        "recall": 1.0,
+        "aabb": [
+         5655,
+         4214,
+         5744,
+         4273
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVALON",
+        "text_px": 2470,
+        "found": 2434,
+        "recall": 0.985,
+        "aabb": [
+         6255,
+         4285,
+         6481,
+         4347
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "OAKMONT",
+        "text_px": 815,
+        "found": 815,
+        "recall": 1.0,
+        "aabb": [
+         6666,
+         3927,
+         6727,
+         4015
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "WOODBINE",
+        "text_px": 3856,
+        "found": 3853,
+        "recall": 0.999,
+        "aabb": [
+         6163,
+         4435,
+         6464,
+         4609
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "WILDWOOD",
+        "text_px": 4353,
+        "found": 4353,
+        "recall": 1.0,
+        "aabb": [
+         6128,
+         4559,
+         6329,
+         4902
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "19",
+        "text_px": 1145,
+        "found": 1138,
+        "recall": 0.994,
+        "aabb": [
+         7045,
+         4816,
+         7097,
+         4875
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "DECAMP",
+        "text_px": 1404,
+        "found": 1399,
+        "recall": 0.996,
+        "aabb": [
+         6835,
+         4829,
+         6951,
+         4966
+        ]
+       }
+      ]
+     },
+     "H2": {
+      "tp": 94554,
+      "fp": 7517,
+      "fn": 7430,
+      "n1": 117233,
+      "kinds": {
+       "lotdim": [
+        87,
+        19193,
+        18627,
+        86
+       ],
+       "lot": [
+        152,
+        48074,
+        44381,
+        140
+       ],
+       "pipe": [
+        2,
+        1166,
+        1161,
+        2
+       ],
+       "sewer": [
+        2,
+        1041,
+        934,
+        2
+       ],
+       "house": [
+        36,
+        16763,
+        15676,
+        35
+       ],
+       "ditto": [
+        34,
+        831,
+        185,
+        6
+       ],
+       "story": [
+        42,
+        4940,
+        4825,
+        42
+       ],
+       "owner": [
+        4,
+        2458,
+        1496,
+        3
+       ],
+       "street": [
+        3,
+        11629,
+        11461,
+        3
+       ],
+       "block": [
+        2,
+        1784,
+        1522,
+        2
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "CURZON",
+        "text_px": 4438,
+        "found": 4391,
+        "recall": 0.989,
+        "aabb": [
+         1510,
+         2227,
+         1784,
+         2320
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "8",
+        "text_px": 758,
+        "found": 560,
+        "recall": 0.739,
+        "aabb": [
+         1574,
+         2494,
+         1613,
+         2561
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVENUE",
+        "text_px": 2082,
+        "found": 2082,
+        "recall": 1.0,
+        "aabb": [
+         2183,
+         2088,
+         2245,
+         2245
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "WISWELL",
+        "text_px": 5109,
+        "found": 4988,
+        "recall": 0.976,
+        "aabb": [
+         1489,
+         2738,
+         1807,
+         2839
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "10",
+        "text_px": 1026,
+        "found": 962,
+        "recall": 0.938,
+        "aabb": [
+         1563,
+         2999,
+         1630,
+         3060
+        ]
+       }
+      ]
+     },
+     "H3": {
+      "tp": 28972,
+      "fp": 4515,
+      "fn": 4116,
+      "n1": 50140,
+      "kinds": {
+       "lot": [
+        59,
+        14815,
+        14342,
+        59
+       ],
+       "story": [
+        11,
+        491,
+        414,
+        10
+       ],
+       "lotdim": [
+        67,
+        8485,
+        6776,
+        53
+       ],
+       "owner": [
+        28,
+        10119,
+        8780,
+        26
+       ],
+       "other": [
+        5,
+        906,
+        670,
+        4
+       ],
+       "block": [
+        1,
+        738,
+        635,
+        1
+       ],
+       "street": [
+        5,
+        1124,
+        774,
+        4
+       ],
+       "ditto": [
+        4,
+        79,
+        2,
+        0
+       ],
+       "pipe": [
+        1,
+        447,
+        442,
+        1
+       ]
+      },
+      "words": [
+       {
+        "kind": "block",
+        "reading": "27",
+        "text_px": 738,
+        "found": 635,
+        "recall": 0.86,
+        "aabb": [
+         8320,
+         4540,
+         8379,
+         4605
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "SAFFER",
+        "text_px": 316,
+        "found": 60,
+        "recall": 0.19,
+        "aabb": [
+         7262,
+         4939,
+         7334,
+         4972
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "FYFFE",
+        "text_px": 1,
+        "found": 1,
+        "recall": 1.0,
+        "aabb": [
+         7066,
+         5016,
+         7215,
+         5114
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVE.",
+        "text_px": 688,
+        "found": 626,
+        "recall": 0.91,
+        "aabb": [
+         7562,
+         5251,
+         7651,
+         5324
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "KAVANAUGH",
+        "text_px": 12,
+        "found": 12,
+        "recall": 1.0,
+        "aabb": [
+         7053,
+         5319,
+         7181,
+         5443
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "SCHMANN",
+        "text_px": 107,
+        "found": 75,
+        "recall": 0.701,
+        "aabb": [
+         8454,
+         5369,
+         8548,
+         5384
+        ]
+       }
+      ]
+     },
+     "H4": {
+      "tp": 62798,
+      "fp": 1011,
+      "fn": 2874,
+      "n1": 112338,
+      "kinds": {
+       "story": [
+        49,
+        6562,
+        6542,
+        49
+       ],
+       "lot": [
+        53,
+        24119,
+        23048,
+        53
+       ],
+       "lotdim": [
+        19,
+        3422,
+        3168,
+        18
+       ],
+       "ditto": [
+        33,
+        992,
+        504,
+        15
+       ],
+       "house": [
+        41,
+        16220,
+        15652,
+        41
+       ],
+       "sewer": [
+        2,
+        1250,
+        1125,
+        2
+       ],
+       "pipe": [
+        2,
+        1312,
+        1312,
+        2
+       ],
+       "street": [
+        3,
+        11173,
+        11134,
+        3
+       ],
+       "block": [
+        1,
+        1315,
+        987,
+        1
+       ],
+       "other": [
+        1,
+        84,
+        84,
+        1
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "DANDRIDGE",
+        "text_px": 6243,
+        "found": 6243,
+        "recall": 1.0,
+        "aabb": [
+         7397,
+         4127,
+         7765,
+         4191
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "NOAH",
+        "text_px": 867,
+        "found": 867,
+        "recall": 1.0,
+        "aabb": [
+         7401,
+         4497,
+         7514,
+         4526
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "36",
+        "text_px": 1315,
+        "found": 987,
+        "recall": 0.751,
+        "aabb": [
+         8091,
+         4483,
+         8172,
+         4531
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "STREET",
+        "text_px": 4063,
+        "found": 4024,
+        "recall": 0.99,
+        "aabb": [
+         8394,
+         4881,
+         8678,
+         4932
+        ]
+       }
+      ]
+     }
+    },
+    "ALL": {
+     "P": 0.9258,
+     "R": 0.9308,
+     "F1": 0.9283,
+     "nontext": 0.0513,
+     "kinds": {
+      "bldg": {
+       "words": 2,
+       "text_px": 689,
+       "recall": 1.0,
+       "words_found": 2
+      },
+      "block": {
+       "words": 6,
+       "text_px": 6451,
+       "recall": 0.8915,
+       "words_found": 6
+      },
+      "ditto": {
+       "words": 76,
+       "text_px": 2016,
+       "recall": 0.3428,
+       "words_found": 21
+      },
+      "house": {
+       "words": 98,
+       "text_px": 38734,
+       "recall": 0.9486,
+       "words_found": 97
+      },
+      "lot": {
+       "words": 318,
+       "text_px": 99250,
+       "recall": 0.9333,
+       "words_found": 299
+      },
+      "lotdim": {
+       "words": 258,
+       "text_px": 49975,
+       "recall": 0.9303,
+       "words_found": 239
+      },
+      "other": {
+       "words": 8,
+       "text_px": 1479,
+       "recall": 0.8404,
+       "words_found": 7
+      },
+      "owner": {
+       "words": 43,
+       "text_px": 16172,
+       "recall": 0.8432,
+       "words_found": 39
+      },
+      "pipe": {
+       "words": 11,
+       "text_px": 5622,
+       "recall": 0.9283,
+       "words_found": 10
+      },
+      "sewer": {
+       "words": 10,
+       "text_px": 5404,
+       "recall": 0.9362,
+       "words_found": 10
+      },
+      "story": {
+       "words": 128,
+       "text_px": 14489,
+       "recall": 0.9679,
+       "words_found": 124
+      },
+      "street": {
+       "words": 16,
+       "text_px": 36824,
+       "recall": 0.9837,
+       "words_found": 15
+      }
+     },
+     "tp": 247746,
+     "fp": 19866,
+     "fn": 18410,
+     "n1": 387295
+    },
+    "noH3": {
+     "P": 0.9344,
+     "R": 0.9387,
+     "F1": 0.9365,
+     "nontext": 0.0455,
+     "kinds": {
+      "bldg": {
+       "words": 2,
+       "text_px": 689,
+       "recall": 1.0,
+       "words_found": 2
+      },
+      "block": {
+       "words": 5,
+       "text_px": 5713,
+       "recall": 0.8955,
+       "words_found": 5
+      },
+      "ditto": {
+       "words": 72,
+       "text_px": 1937,
+       "recall": 0.3557,
+       "words_found": 21
+      },
+      "house": {
+       "words": 98,
+       "text_px": 38734,
+       "recall": 0.9486,
+       "words_found": 97
+      },
+      "lot": {
+       "words": 259,
+       "text_px": 84435,
+       "recall": 0.9272,
+       "words_found": 240
+      },
+      "lotdim": {
+       "words": 191,
+       "text_px": 41490,
+       "recall": 0.9572,
+       "words_found": 186
+      },
+      "other": {
+       "words": 3,
+       "text_px": 573,
+       "recall": 1.0,
+       "words_found": 3
+      },
+      "owner": {
+       "words": 15,
+       "text_px": 6053,
+       "recall": 0.8024,
+       "words_found": 13
+      },
+      "pipe": {
+       "words": 10,
+       "text_px": 5175,
+       "recall": 0.9231,
+       "words_found": 9
+      },
+      "sewer": {
+       "words": 10,
+       "text_px": 5404,
+       "recall": 0.9362,
+       "words_found": 10
+      },
+      "story": {
+       "words": 117,
+       "text_px": 13998,
+       "recall": 0.9723,
+       "words_found": 114
+      },
+      "street": {
+       "words": 11,
+       "text_px": 35700,
+       "recall": 0.993,
+       "words_found": 11
+      }
+     },
+     "tp": 218774,
+     "fp": 15351,
+     "fn": 14294,
+     "n1": 337155
+    },
+    "H3": {
+     "P": 0.8652,
+     "R": 0.8756,
+     "F1": 0.8704,
+     "nontext": 0.09,
+     "kinds": {
+      "block": {
+       "words": 1,
+       "text_px": 738,
+       "recall": 0.8604,
+       "words_found": 1
+      },
+      "ditto": {
+       "words": 4,
+       "text_px": 79,
+       "recall": 0.0253,
+       "words_found": 0
+      },
+      "lot": {
+       "words": 59,
+       "text_px": 14815,
+       "recall": 0.9681,
+       "words_found": 59
+      },
+      "lotdim": {
+       "words": 67,
+       "text_px": 8485,
+       "recall": 0.7986,
+       "words_found": 53
+      },
+      "other": {
+       "words": 5,
+       "text_px": 906,
+       "recall": 0.7395,
+       "words_found": 4
+      },
+      "owner": {
+       "words": 28,
+       "text_px": 10119,
+       "recall": 0.8677,
+       "words_found": 26
+      },
+      "pipe": {
+       "words": 1,
+       "text_px": 447,
+       "recall": 0.9888,
+       "words_found": 1
+      },
+      "story": {
+       "words": 11,
+       "text_px": 491,
+       "recall": 0.8432,
+       "words_found": 10
+      },
+      "street": {
+       "words": 5,
+       "text_px": 1124,
+       "recall": 0.6886,
+       "words_found": 4
+      }
+     },
+     "tp": 28972,
+     "fp": 4515,
+     "fn": 4116,
+     "n1": 50140
+    }
+   },
+   "v2": {
+    "crops": {
+     "T1": {
+      "tp": 107017,
+      "fp": 2797,
+      "fn": 5273,
+      "n1": 128849,
+      "kinds": {
+       "lotdim": [
+        57,
+        19248,
+        18594,
+        57
+       ],
+       "lot": [
+        78,
+        39740,
+        38526,
+        78
+       ],
+       "owner": [
+        9,
+        4426,
+        4103,
+        9
+       ],
+       "story": [
+        32,
+        5338,
+        5199,
+        31
+       ],
+       "house": [
+        31,
+        21646,
+        20568,
+        30
+       ],
+       "ditto": [
+        14,
+        1022,
+        897,
+        12
+       ],
+       "block": [
+        2,
+        1507,
+        887,
+        1
+       ],
+       "street": [
+        6,
+        13911,
+        13764,
+        6
+       ],
+       "pipe": [
+        6,
+        3915,
+        2832,
+        5
+       ],
+       "sewer": [
+        3,
+        2804,
+        2804,
+        3
+       ]
+      },
+      "words": [
+       {
+        "kind": "block",
+        "reading": "4",
+        "text_px": 770,
+        "found": 652,
+        "recall": 0.847,
+        "aabb": [
+         2458,
+         1562,
+         2505,
+         1610
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "ALLEY",
+        "text_px": 1163,
+        "found": 1156,
+        "recall": 0.994,
+        "aabb": [
+         2422,
+         1777,
+         2479,
+         1938
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "KENDALL",
+        "text_px": 1737,
+        "found": 1737,
+        "recall": 1.0,
+        "aabb": [
+         2562,
+         1585,
+         2815,
+         1611
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "ST.",
+        "text_px": 1360,
+        "found": 1360,
+        "recall": 1.0,
+        "aabb": [
+         1572,
+         1935,
+         1665,
+         1975
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "KNOWLTON",
+        "text_px": 6415,
+        "found": 6323,
+        "recall": 0.986,
+        "aabb": [
+         2124,
+         2045,
+         2545,
+         2098
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "14",
+        "text_px": 737,
+        "found": 235,
+        "recall": 0.319,
+        "aabb": [
+         2510,
+         2294,
+         2576,
+         2366
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVE.",
+        "text_px": 1908,
+        "found": 1860,
+        "recall": 0.975,
+        "aabb": [
+         2038,
+         2202,
+         2124,
+         2378
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "LANGLAND",
+        "text_px": 1328,
+        "found": 1328,
+        "recall": 1.0,
+        "aabb": [
+         2908,
+         2390,
+         2958,
+         2533
+        ]
+       }
+      ]
+     },
+     "T2": {
+      "tp": 56395,
+      "fp": 1824,
+      "fn": 2879,
+      "n1": 81499,
+      "kinds": {
+       "lotdim": [
+        35,
+        12860,
+        12444,
+        35
+       ],
+       "lot": [
+        44,
+        18385,
+        17581,
+        43
+       ],
+       "street": [
+        2,
+        4425,
+        4117,
+        2
+       ],
+       "house": [
+        5,
+        1771,
+        1771,
+        5
+       ],
+       "pipe": [
+        1,
+        438,
+        438,
+        1
+       ],
+       "ditto": [
+        10,
+        614,
+        473,
+        8
+       ],
+       "story": [
+        8,
+        1361,
+        1234,
+        8
+       ],
+       "owner": [
+        11,
+        8973,
+        7871,
+        10
+       ],
+       "rail": [
+        26,
+        11146,
+        10589,
+        25
+       ],
+       "block": [
+        2,
+        2508,
+        2508,
+        2
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "CT.",
+        "text_px": 1075,
+        "found": 767,
+        "recall": 0.713,
+        "aabb": [
+         2750,
+         2536,
+         2842,
+         2580
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "LANGLAND",
+        "text_px": 3350,
+        "found": 3350,
+        "recall": 1.0,
+        "aabb": [
+         2900,
+         2379,
+         2961,
+         2721
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "17",
+        "text_px": 1093,
+        "found": 1093,
+        "recall": 1.0,
+        "aabb": [
+         3053,
+         2861,
+         3107,
+         2912
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "18",
+        "text_px": 1415,
+        "found": 1415,
+        "recall": 1.0,
+        "aabb": [
+         3655,
+         3220,
+         3714,
+         3276
+        ]
+       }
+      ]
+     },
+     "T3": {
+      "tp": 50543,
+      "fp": 465,
+      "fn": 2009,
+      "n1": 72011,
+      "kinds": {
+       "lotdim": [
+        18,
+        9282,
+        8838,
+        18
+       ],
+       "block": [
+        1,
+        1050,
+        1050,
+        1
+       ],
+       "owner": [
+        19,
+        22080,
+        21643,
+        18
+       ],
+       "story": [
+        6,
+        1005,
+        828,
+        4
+       ],
+       "lot": [
+        12,
+        3862,
+        3862,
+        12
+       ],
+       "pipe": [
+        2,
+        2018,
+        1998,
+        2
+       ],
+       "adj": [
+        1,
+        4227,
+        4033,
+        1
+       ],
+       "sewer": [
+        1,
+        1245,
+        1245,
+        1
+       ],
+       "house": [
+        4,
+        3736,
+        3425,
+        4
+       ],
+       "ditto": [
+        5,
+        382,
+        238,
+        3
+       ],
+       "street": [
+        1,
+        4645,
+        4310,
+        1
+       ]
+      },
+      "words": [
+       {
+        "kind": "block",
+        "reading": "24",
+        "text_px": 1050,
+        "found": 1050,
+        "recall": 1.0,
+        "aabb": [
+         8961,
+         2525,
+         9045,
+         2591
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "AVENUE",
+        "text_px": 4645,
+        "found": 4310,
+        "recall": 0.928,
+        "aabb": [
+         9395,
+         3059,
+         9659,
+         3295
+        ]
+       }
+      ]
+     },
+     "T4": {
+      "tp": 81297,
+      "fp": 3735,
+      "fn": 12739,
+      "n1": 112913,
+      "kinds": {
+       "pipe": [
+        5,
+        4846,
+        4215,
+        5
+       ],
+       "lotdim": [
+        55,
+        14668,
+        13285,
+        51
+       ],
+       "house": [
+        23,
+        24472,
+        19822,
+        23
+       ],
+       "sewer": [
+        4,
+        2831,
+        1221,
+        2
+       ],
+       "story": [
+        26,
+        4429,
+        3944,
+        24
+       ],
+       "lot": [
+        55,
+        18212,
+        16893,
+        54
+       ],
+       "owner": [
+        7,
+        13488,
+        10218,
+        6
+       ],
+       "street": [
+        6,
+        19350,
+        18151,
+        6
+       ],
+       "ditto": [
+        3,
+        133,
+        133,
+        3
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "ALLEY",
+        "text_px": 793,
+        "found": 449,
+        "recall": 0.566,
+        "aabb": [
+         2424,
+         1472,
+         2463,
+         1651
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "W.",
+        "text_px": 1384,
+        "found": 1344,
+        "recall": 0.971,
+        "aabb": [
+         3033,
+         1429,
+         3117,
+         1527
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "McMICKEN",
+        "text_px": 6943,
+        "found": 6754,
+        "recall": 0.973,
+        "aabb": [
+         3122,
+         1493,
+         3545,
+         1817
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "STREET",
+        "text_px": 5762,
+        "found": 5189,
+        "recall": 0.901,
+        "aabb": [
+         2035,
+         1694,
+         2095,
+         1980
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "STREET",
+        "text_px": 3555,
+        "found": 3555,
+        "recall": 1.0,
+        "aabb": [
+         2813,
+         1735,
+         2862,
+         1964
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "ALLEY",
+        "text_px": 913,
+        "found": 860,
+        "recall": 0.942,
+        "aabb": [
+         3275,
+         1822,
+         3313,
+         1968
+        ]
+       }
+      ]
+     },
+     "T6": {
+      "tp": 43258,
+      "fp": 2775,
+      "fn": 2640,
+      "n1": 104425,
+      "kinds": {
+       "story": [
+        30,
+        5504,
+        5344,
+        30
+       ],
+       "lotdim": [
+        28,
+        6995,
+        6335,
+        26
+       ],
+       "lot": [
+        16,
+        6250,
+        5533,
+        14
+       ],
+       "house": [
+        9,
+        7374,
+        6350,
+        9
+       ],
+       "sewer": [
+        2,
+        1449,
+        1437,
+        2
+       ],
+       "pipe": [
+        3,
+        2732,
+        2665,
+        3
+       ],
+       "street": [
+        2,
+        6819,
+        6819,
+        2
+       ],
+       "other": [
+        3,
+        1541,
+        1490,
+        3
+       ],
+       "bldg": [
+        5,
+        6131,
+        6131,
+        5
+       ],
+       "block": [
+        1,
+        1738,
+        1738,
+        1
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "W.",
+        "text_px": 1538,
+        "found": 1538,
+        "recall": 1.0,
+        "aabb": [
+         4547,
+         1843,
+         4627,
+         1891
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "EIGHTH",
+        "text_px": 5281,
+        "found": 5281,
+        "recall": 1.0,
+        "aabb": [
+         4671,
+         1845,
+         4967,
+         1897
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "15",
+        "text_px": 1738,
+        "found": 1738,
+        "recall": 1.0,
+        "aabb": [
+         4813,
+         2395,
+         4880,
+         2454
+        ]
+       }
+      ]
+     },
+     "T7": {
+      "tp": 114195,
+      "fp": 3199,
+      "fn": 12864,
+      "n1": 155766,
+      "kinds": {
+       "story": [
+        86,
+        16261,
+        15774,
+        85
+       ],
+       "lotdim": [
+        90,
+        24404,
+        20428,
+        82
+       ],
+       "street": [
+        5,
+        15747,
+        15698,
+        5
+       ],
+       "house": [
+        26,
+        42908,
+        39311,
+        25
+       ],
+       "lot": [
+        52,
+        22266,
+        19291,
+        48
+       ],
+       "owner": [
+        5,
+        7848,
+        5021,
+        4
+       ],
+       "ditto": [
+        6,
+        408,
+        248,
+        4
+       ],
+       "sewer": [
+        4,
+        3309,
+        2889,
+        4
+       ],
+       "block": [
+        1,
+        2053,
+        1285,
+        1
+       ]
+      },
+      "words": [
+       {
+        "kind": "street",
+        "reading": "ST",
+        "text_px": 1666,
+        "found": 1666,
+        "recall": 1.0,
+        "aabb": [
+         1774,
+         3485,
+         1829,
+         3603
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "GEORGE",
+        "text_px": 6637,
+        "found": 6592,
+        "recall": 0.993,
+        "aabb": [
+         1948,
+         3603,
+         2288,
+         3667
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "ST",
+        "text_px": 1718,
+        "found": 1718,
+        "recall": 1.0,
+        "aabb": [
+         2938,
+         3492,
+         2989,
+         3594
+        ]
+       },
+       {
+        "kind": "block",
+        "reading": "28",
+        "text_px": 2053,
+        "found": 1285,
+        "recall": 0.626,
+        "aabb": [
+         2385,
+         3872,
+         2495,
+         3954
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "W.",
+        "text_px": 1474,
+        "found": 1470,
+        "recall": 0.997,
+        "aabb": [
+         1914,
+         4247,
+         2000,
+         4310
+        ]
+       },
+       {
+        "kind": "street",
+        "reading": "SIXTH",
+        "text_px": 4252,
+        "found": 4252,
+        "recall": 1.0,
+        "aabb": [
+         2041,
+         4249,
+         2303,
+         4300
+        ]
+       }
+      ]
+     }
+    },
+    "ALL": {
+     "P": 0.9684,
+     "R": 0.9218,
+     "F1": 0.9445,
+     "nontext": 0.0226,
+     "kinds": {
+      "adj": {
+       "words": 1,
+       "text_px": 4227,
+       "recall": 0.9541,
+       "words_found": 1
+      },
+      "bldg": {
+       "words": 5,
+       "text_px": 6131,
+       "recall": 1.0,
+       "words_found": 5
+      },
+      "block": {
+       "words": 7,
+       "text_px": 8856,
+       "recall": 0.8433,
+       "words_found": 6
+      },
+      "ditto": {
+       "words": 38,
+       "text_px": 2559,
+       "recall": 0.7773,
+       "words_found": 30
+      },
+      "house": {
+       "words": 98,
+       "text_px": 101907,
+       "recall": 0.8954,
+       "words_found": 96
+      },
+      "lot": {
+       "words": 257,
+       "text_px": 108715,
+       "recall": 0.9353,
+       "words_found": 249
+      },
+      "lotdim": {
+       "words": 283,
+       "text_px": 87457,
+       "recall": 0.9139,
+       "words_found": 269
+      },
+      "other": {
+       "words": 3,
+       "text_px": 1541,
+       "recall": 0.9669,
+       "words_found": 3
+      },
+      "owner": {
+       "words": 51,
+       "text_px": 56815,
+       "recall": 0.8599,
+       "words_found": 47
+      },
+      "pipe": {
+       "words": 17,
+       "text_px": 13949,
+       "recall": 0.8709,
+       "words_found": 16
+      },
+      "rail": {
+       "words": 26,
+       "text_px": 11146,
+       "recall": 0.95,
+       "words_found": 25
+      },
+      "sewer": {
+       "words": 14,
+       "text_px": 11638,
+       "recall": 0.8245,
+       "words_found": 12
+      },
+      "story": {
+       "words": 188,
+       "text_px": 33898,
+       "recall": 0.9535,
+       "words_found": 182
+      },
+      "street": {
+       "words": 22,
+       "text_px": 64897,
+       "recall": 0.9686,
+       "words_found": 22
+      }
+     },
+     "tp": 452705,
+     "fp": 14795,
+     "fn": 38404,
+     "n1": 655463
+    },
+    "noH3": {
+     "P": 0.9684,
+     "R": 0.9218,
+     "F1": 0.9445,
+     "nontext": 0.0226,
+     "kinds": {
+      "adj": {
+       "words": 1,
+       "text_px": 4227,
+       "recall": 0.9541,
+       "words_found": 1
+      },
+      "bldg": {
+       "words": 5,
+       "text_px": 6131,
+       "recall": 1.0,
+       "words_found": 5
+      },
+      "block": {
+       "words": 7,
+       "text_px": 8856,
+       "recall": 0.8433,
+       "words_found": 6
+      },
+      "ditto": {
+       "words": 38,
+       "text_px": 2559,
+       "recall": 0.7773,
+       "words_found": 30
+      },
+      "house": {
+       "words": 98,
+       "text_px": 101907,
+       "recall": 0.8954,
+       "words_found": 96
+      },
+      "lot": {
+       "words": 257,
+       "text_px": 108715,
+       "recall": 0.9353,
+       "words_found": 249
+      },
+      "lotdim": {
+       "words": 283,
+       "text_px": 87457,
+       "recall": 0.9139,
+       "words_found": 269
+      },
+      "other": {
+       "words": 3,
+       "text_px": 1541,
+       "recall": 0.9669,
+       "words_found": 3
+      },
+      "owner": {
+       "words": 51,
+       "text_px": 56815,
+       "recall": 0.8599,
+       "words_found": 47
+      },
+      "pipe": {
+       "words": 17,
+       "text_px": 13949,
+       "recall": 0.8709,
+       "words_found": 16
+      },
+      "rail": {
+       "words": 26,
+       "text_px": 11146,
+       "recall": 0.95,
+       "words_found": 25
+      },
+      "sewer": {
+       "words": 14,
+       "text_px": 11638,
+       "recall": 0.8245,
+       "words_found": 12
+      },
+      "story": {
+       "words": 188,
+       "text_px": 33898,
+       "recall": 0.9535,
+       "words_found": 182
+      },
+      "street": {
+       "words": 22,
+       "text_px": 64897,
+       "recall": 0.9686,
+       "words_found": 22
+      }
+     },
+     "tp": 452705,
+     "fp": 14795,
+     "fn": 38404,
+     "n1": 655463
+    }
+   }
+  }
+ }
+}

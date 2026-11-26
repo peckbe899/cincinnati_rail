@@ -1,0 +1,40 @@
+44 control       PQ +0 (0/6 up) | precision +0 (0/6 up) | recall_interior +0 (0/6 up) | precision_green +0 (0/6 up) | precision_orange +0 (0/6 up) | ben_blocks_closed +0 (0/6 up) | intact_rings +0 (0/6 up) | delete_len +0 (0/6 up) | draw_len +0 (0/6 up)
+                 worse on some grid: nothing
+44 ink           PQ -0.0008 (5/6 up) | precision +0.0063 (6/6 up) | recall_interior +0.0043 (6/6 up) | precision_green +0.0015 (5/6 up) | precision_orange +0.0316 (6/6 up) | ben_blocks_closed +1.333 (6/6 up) | intact_rings +1.333 (6/6 up) | delete_len -859.8 (0/6 up) | draw_len -8 (3/6 up)
+                 worse on some grid: {'PQ': -0.0104, 'PQ_decided': -0.0109, 'matched': -1.0, 'fp': 1.0, 'precision_green': -0.0003, 'draw_len': 1531.0}
+44 inkdrop       PQ -0.0008 (5/6 up) | precision +0.0064 (6/6 up) | recall_interior +0.0043 (6/6 up) | precision_green +0.0015 (5/6 up) | precision_orange +0.0321 (6/6 up) | ben_blocks_closed +1.333 (6/6 up) | intact_rings +1.167 (5/6 up) | delete_len -877.3 (0/6 up) | draw_len -8 (3/6 up)
+                 worse on some grid: {'PQ': -0.0104, 'PQ_decided': -0.0109, 'matched': -1.0, 'fp': 1.0, 'precision_green': -0.0003, 'draw_len': 1531.0}
+44 states        PQ +0 (0/6 up) | precision +0.0055 (6/6 up) | recall_interior +0 (1/6 up) | precision_green +0.0011 (5/6 up) | precision_orange +0.0224 (6/6 up) | ben_blocks_closed +0 (0/6 up) | intact_rings -0.1667 (0/6 up) | delete_len -966.7 (0/6 up) | draw_len +0 (0/6 up)
+                 worse on some grid: {'recall_interior': -0.0003, 'intact_rings': -1.0}
+44 states0       PQ +0 (0/6 up) | precision +0.0046 (6/6 up) | recall_interior +0 (1/6 up) | precision_green +0.0011 (5/6 up) | precision_orange +0.0183 (6/6 up) | ben_blocks_closed +0 (0/6 up) | intact_rings +0 (0/6 up) | delete_len -820.7 (0/6 up) | draw_len +0 (0/6 up)
+                 worse on some grid: {'recall_interior': -0.0002}
+44 V2S1_control  PQ +0 (0/6 up) | precision +0 (0/6 up) | recall_interior +0 (0/6 up) | precision_green +0 (0/6 up) | precision_orange +0 (0/6 up) | ben_blocks_closed +0 (0/6 up) | intact_rings +0 (0/6 up) | delete_len +0 (0/6 up) | draw_len +0 (0/6 up)
+                 worse on some grid: nothing
+44 V2S1_inkdrop  PQ +0.0033 (4/6 up) | precision +0.0408 (6/6 up) | recall_interior +0.0218 (6/6 up) | precision_green +0.0215 (6/6 up) | precision_orange +0.0936 (6/6 up) | ben_blocks_closed +0.6667 (2/6 up) | intact_rings +1 (4/6 up) | delete_len -4132 (0/6 up) | draw_len -4979 (1/6 up)
+                 worse on some grid: {'PQ': -0.0091, 'PQ_decided': -0.0121, 'fp': 1.0, 'draw_len': 198.0}
+44 V2S1_states   PQ +0 (0/6 up) | precision +0.031 (6/6 up) | recall_interior -0.0003 (1/6 up) | precision_green +0.0135 (6/6 up) | precision_orange +0.0615 (6/6 up) | ben_blocks_closed -0.1667 (0/6 up) | intact_rings -0.1667 (0/6 up) | delete_len -4382 (0/6 up) | draw_len +358.5 (2/6 up)
+                 worse on some grid: {'recall_interior': -0.0014, 'ben_blocks_closed': -1.0, 'intact_rings': -1.0, 'draw_len': 1648.0}
+5 all    ink      PQ +0.0003 | precision +0.0023 | recall_interior +0.0039 | precision_green -0.0011 | precision_orange +0.0472 | ben_blocks_closed +2 | intact_rings +5 | delete_len -721 | draw_len -357
+                   worse: {'precision_green': -0.0011}
+5 all    inkdrop  PQ +0.0003 | precision +0.0027 | recall_interior +0.0037 | precision_green -0.0011 | precision_orange +0.0508 | ben_blocks_closed +2 | intact_rings +5 | delete_len -874 | draw_len -357
+                   worse: {'precision_green': -0.0011}
+5 all    states   PQ +0 | precision +0.0045 | recall_interior +0.0002 | precision_green +0.0003 | precision_orange +0.0393 | ben_blocks_closed -1 | intact_rings -1 | delete_len -1335 | draw_len -242
+                   worse: {'ben_blocks_closed': -1, 'intact_rings': -1}
+5 all    states0  PQ +0 | precision +0.0027 | recall_interior +0.0006 | precision_green +0.0003 | precision_orange +0.0244 | ben_blocks_closed -1 | intact_rings -1 | delete_len -766 | draw_len -242
+                   worse: {'ben_blocks_closed': -1, 'intact_rings': -1}
+1A region ink      PQ +0 | precision +0.0181 | recall_interior +0.0068 | precision_green +0.0012 | precision_orange +0.0475 | ben_blocks_closed +0 | intact_rings +0 | delete_len -549 | draw_len -1852
+                   worse: nothing
+1A all    ink      PQ +0.0001 | precision +0.0084 | recall_interior +0.0054 | precision_green +0.0008 | precision_orange +0.0398 | ben_blocks_closed +0 | intact_rings +0 | delete_len -619 | draw_len -3114
+                   worse: nothing
+1A region inkdrop  PQ +0 | precision +0.0181 | recall_interior +0.0068 | precision_green +0.0012 | precision_orange +0.0475 | ben_blocks_closed +0 | intact_rings +0 | delete_len -549 | draw_len -1852
+                   worse: nothing
+1A all    inkdrop  PQ +0.0001 | precision +0.0084 | recall_interior +0.0054 | precision_green +0.0008 | precision_orange +0.0398 | ben_blocks_closed +0 | intact_rings +0 | delete_len -619 | draw_len -3114
+                   worse: nothing
+1A region states   PQ +0 | precision +0.006 | recall_interior +0 | precision_green +0 | precision_orange +0.0228 | ben_blocks_closed +0 | intact_rings +0 | delete_len -123 | draw_len +0
+                   worse: nothing
+1A all    states   PQ +0 | precision +0.0032 | recall_interior -0.0009 | precision_green +0 | precision_orange +0.0133 | ben_blocks_closed +0 | intact_rings +0 | delete_len -193 | draw_len +63
+                   worse: {'recall_interior': -0.0009, 'draw_len': 63}
+1A region states0  PQ +0 | precision +0.006 | recall_interior +0 | precision_green +0 | precision_orange +0.0228 | ben_blocks_closed +0 | intact_rings +0 | delete_len -123 | draw_len +0
+                   worse: nothing
+1A all    states0  PQ +0 | precision +0.0032 | recall_interior -0.0009 | precision_green +0 | precision_orange +0.0133 | ben_blocks_closed +0 | intact_rings +0 | delete_len -193 | draw_len +63
+                   worse: {'recall_interior': -0.0009, 'draw_len': 63}
