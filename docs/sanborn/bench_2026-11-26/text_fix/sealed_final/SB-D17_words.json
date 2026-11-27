@@ -1,0 +1,129 @@
+{
+ "crop": "SB-D17",
+ "plate": "88",
+ "win": [
+  6818,
+  2665,
+  7398,
+  3145
+ ],
+ "scale_ft_per_inch": 200,
+ "half": "B",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   6879,
+   2956,
+   6938,
+   3016
+  ],
+  [
+   6877,
+   3019,
+   6937,
+   3081
+  ]
+ ],
+ "scope_px": 7503,
+ "why": "ditto window 88 window 2 drawn with random.Random('ditto-88') in built-up cells: every ditto mark inside",
+ "n_words": 2,
+ "mask": "SB-D17_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 6887,
+  "ink_not_text": 538,
+  "text": 78,
+  "dont_care": 270897
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SB-D17-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 9.0,
+   "poly": [
+    [
+     6904.0,
+     2981.0
+    ],
+    [
+     6913.0,
+     2981.0
+    ],
+    [
+     6913.0,
+     2991.0
+    ],
+    [
+     6904.0,
+     2991.0
+    ]
+   ],
+   "aabb": [
+    6904,
+    2981,
+    6913,
+    2991
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 33,
+   "annot_line": 2,
+   "ink_px": 33,
+   "text_px_final": 33
+  },
+  {
+   "id": "SB-D17-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 12.0,
+   "length": 10.0,
+   "poly": [
+    [
+     6902.0,
+     3044.0
+    ],
+    [
+     6912.0,
+     3044.0
+    ],
+    [
+     6912.0,
+     3056.0
+    ],
+    [
+     6902.0,
+     3056.0
+    ]
+   ],
+   "aabb": [
+    6902,
+    3044,
+    6912,
+    3056
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 45,
+   "annot_line": 3,
+   "ink_px": 45,
+   "text_px_final": 45
+  }
+ ],
+ "dropped_outside_scope": []
+}

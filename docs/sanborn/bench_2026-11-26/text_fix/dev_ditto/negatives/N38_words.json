@@ -1,0 +1,179 @@
+{
+ "crop": "N38",
+ "plate": "30",
+ "win": [
+  4662,
+  5928,
+  4726,
+  5992
+ ],
+ "kind": "targeted",
+ "target": "negative",
+ "scope_pad": 0,
+ "scope": [
+  [
+   4662,
+   5928,
+   4726,
+   5992
+  ]
+ ],
+ "n_words": 3,
+ "n_targets": 0,
+ "mask": "N38_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 3153,
+  "ink_not_text": 612,
+  "text": 299,
+  "dont_care": 32
+ },
+ "counts_in_scope": {
+  "ink_not_text": 612,
+  "text": 299,
+  "dont_care": 32
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "N38-001",
+   "reading": "-",
+   "kind": "negative",
+   "flags": [
+    "neg:dash"
+   ],
+   "angle": 0.0,
+   "height": 4.0,
+   "length": 13.0,
+   "poly": [
+    [
+     4688.0,
+     5959.0
+    ],
+    [
+     4701.0,
+     5959.0
+    ],
+    [
+     4701.0,
+     5963.0
+    ],
+    [
+     4688.0,
+     5963.0
+    ]
+   ],
+   "aabb": [
+    4688,
+    5959,
+    4701,
+    5963
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": false,
+   "box_word": true,
+   "text_px": 0,
+   "in_scope": true,
+   "ink_px": 35,
+   "care_px": 0,
+   "pieces": 1,
+   "piece_px": [
+    35
+   ],
+   "style": "",
+   "neg_type": "dash"
+  },
+  {
+   "id": "N38-002",
+   "reading": "382",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 37.0,
+   "poly": [
+    [
+     4690.0,
+     5928.0
+    ],
+    [
+     4727.0,
+     5928.0
+    ],
+    [
+     4727.0,
+     5958.0
+    ],
+    [
+     4690.0,
+     5958.0
+    ]
+   ],
+   "aabb": [
+    4690,
+    5928,
+    4727,
+    5958
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 4,
+   "target": false,
+   "box_word": true,
+   "text_px": 152,
+   "in_scope": true
+  },
+  {
+   "id": "N38-003",
+   "reading": "70 53",
+   "kind": "lot",
+   "flags": [
+    "partial",
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 20.0,
+   "length": 65.0,
+   "poly": [
+    [
+     4662.0,
+     5973.0
+    ],
+    [
+     4727.0,
+     5973.0
+    ],
+    [
+     4727.0,
+     5993.0
+    ],
+    [
+     4662.0,
+     5993.0
+    ]
+   ],
+   "aabb": [
+    4662,
+    5973,
+    4727,
+    5993
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 5,
+   "target": false,
+   "box_word": true,
+   "text_px": 147,
+   "in_scope": true
+  }
+ ]
+}

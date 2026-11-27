@@ -1,0 +1,138 @@
+{
+ "crop": "DB09",
+ "plate": "54A",
+ "win": [
+  8981,
+  2098,
+  9135,
+  2283
+ ],
+ "why": "block number 8 on plate 54A (100 ft), drawn at random (candidates/draw.json)",
+ "n_words": 2,
+ "mask": "DB09_mask.png",
+ "mask_values": {
+  "0": "paper (in scope)",
+  "1": "ink, not text (in scope)",
+  "2": "text ink (in scope)",
+  "3": "don't care (glyph and line share ink; CARE boxes; everything outside the scope)"
+ },
+ "counts": {
+  "paper": 8121,
+  "ink_not_text": 683,
+  "text": 952,
+  "dont_care": 18734
+ },
+ "scope_px": 9860,
+ "scope_counts": {
+  "paper": 8121,
+  "ink_not_text": 683,
+  "text": 952,
+  "dont_care": 104
+ },
+ "boxes": [
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    9010,
+    2212,
+    9053,
+    2223
+   ],
+   "width": 5,
+   "note": "end of the brick building's top line by its corner was text (inside the box of 74)",
+   "line": 5
+  }
+ ],
+ "words": [
+  {
+   "id": "DB09-001",
+   "reading": "8",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 65.0,
+   "length": 34.0,
+   "poly": [
+    [
+     9041.0,
+     2158.0
+    ],
+    [
+     9075.0,
+     2158.0
+    ],
+    [
+     9075.0,
+     2223.0
+    ],
+    [
+     9041.0,
+     2223.0
+    ]
+   ],
+   "aabb": [
+    9041,
+    2158,
+    9075,
+    2223
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 893,
+   "annot_line": 3,
+   "in_scope": {
+    "text_px": 874,
+    "dont_care_px": 64,
+    "ink_px": 1047
+   },
+   "target": true,
+   "ink_size_px": 938
+  },
+  {
+   "id": "DB09-002",
+   "reading": "74",
+   "kind": "lot",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 14.7,
+   "height": 30.2,
+   "length": 40.7,
+   "poly": [
+    [
+     8991.0,
+     2208.3
+    ],
+    [
+     9030.4,
+     2218.6
+    ],
+    [
+     9022.7,
+     2247.9
+    ],
+    [
+     8983.3,
+     2237.5
+    ]
+   ],
+   "aabb": [
+    8983,
+    2208,
+    9031,
+    2248
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 432,
+   "annot_line": 4,
+   "in_scope": {
+    "text_px": 78,
+    "dont_care_px": 28,
+    "ink_px": 106
+   }
+  }
+ ]
+}

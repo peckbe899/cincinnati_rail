@@ -1,0 +1,1053 @@
+{
+ "crop": "SB-B24",
+ "plate": "92",
+ "win": [
+  5980,
+  3178,
+  6280,
+  3438
+ ],
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   6067,
+   3235,
+   6185,
+   3373
+  ]
+ ],
+ "why": "block 8 on plate 92, drawn with random.Random('92') from the plate list (annot/selection.json)",
+ "n_words": 22,
+ "mask": "SB-B24_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope)"
+ },
+ "counts": {
+  "paper": 9472,
+  "ink_not_text": 1966,
+  "text": 3234,
+  "dont_care": 63328
+ },
+ "boxes": [
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    6125,
+    3235,
+    6125,
+    3380
+   ],
+   "width": 4,
+   "note": "lot line down the middle of the 8",
+   "line": 25
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    6075,
+    3265,
+    6195,
+    3254
+   ],
+   "width": 4,
+   "note": "row line",
+   "line": 26
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    6075,
+    3282,
+    6195,
+    3280
+   ],
+   "width": 4,
+   "note": "row line through the top of the 8",
+   "line": 27
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    6075,
+    3304,
+    6195,
+    3306
+   ],
+   "width": 4,
+   "note": "row line through the waist of the 8",
+   "line": 28
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    6075,
+    3327,
+    6195,
+    3329
+   ],
+   "width": 4,
+   "note": "row line through the foot of the 8",
+   "line": 29
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    6075,
+    3352,
+    6195,
+    3355
+   ],
+   "width": 4,
+   "note": "row line",
+   "line": 30
+  },
+  {
+   "op": "CARE",
+   "box": [
+    6148,
+    3258,
+    6168,
+    3278
+   ],
+   "note": "arrow between 174 and 136",
+   "line": 31
+  },
+  {
+   "op": "CARE",
+   "box": [
+    6150,
+    3336,
+    6170,
+    3356
+   ],
+   "note": "arrow between 177 and 139",
+   "line": 32
+  },
+  {
+   "op": "CARE",
+   "box": [
+    6150,
+    3356,
+    6168,
+    3378
+   ],
+   "note": "curved arrow between 178 and 140",
+   "line": 33
+  }
+ ],
+ "words": [
+  {
+   "id": "SB-B24-001",
+   "reading": "8",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 88.0,
+   "length": 68.0,
+   "poly": [
+    [
+     6092.0,
+     3260.0
+    ],
+    [
+     6160.0,
+     3260.0
+    ],
+    [
+     6160.0,
+     3348.0
+    ],
+    [
+     6092.0,
+     3348.0
+    ]
+   ],
+   "aabb": [
+    6092,
+    3260,
+    6160,
+    3348
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 2662,
+   "annot_line": 2,
+   "ink_px": 2827,
+   "text_px_final": 1524
+  },
+  {
+   "id": "SB-B24-002",
+   "reading": "232",
+   "kind": "lot",
+   "flags": [
+    "unsure"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 18.8,
+   "length": 30.0,
+   "poly": [
+    [
+     6092.0,
+     3235.0
+    ],
+    [
+     6122.0,
+     3235.0
+    ],
+    [
+     6122.0,
+     3253.8
+    ],
+    [
+     6092.0,
+     3253.8
+    ]
+   ],
+   "aabb": [
+    6092,
+    3235,
+    6122,
+    3254
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 171,
+   "annot_line": 3,
+   "ink_px": 179,
+   "text_px_final": 166
+  },
+  {
+   "id": "SB-B24-003",
+   "reading": "173",
+   "kind": "lot",
+   "flags": [
+    "unsure"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 17.8,
+   "length": 19.0,
+   "poly": [
+    [
+     6128.0,
+     3236.0
+    ],
+    [
+     6147.0,
+     3236.0
+    ],
+    [
+     6147.0,
+     3253.8
+    ],
+    [
+     6128.0,
+     3253.8
+    ]
+   ],
+   "aabb": [
+    6128,
+    3236,
+    6147,
+    3254
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 104,
+   "annot_line": 4,
+   "ink_px": 133,
+   "text_px_final": 104
+  },
+  {
+   "id": "SB-B24-004",
+   "reading": "185",
+   "kind": "lot",
+   "flags": [
+    "unsure"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 18.0,
+   "length": 43.0,
+   "poly": [
+    [
+     6159.0,
+     3237.0
+    ],
+    [
+     6202.0,
+     3237.0
+    ],
+    [
+     6202.0,
+     3255.0
+    ],
+    [
+     6159.0,
+     3255.0
+    ]
+   ],
+   "aabb": [
+    6159,
+    3237,
+    6202,
+    3255
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 246,
+   "annot_line": 5,
+   "ink_px": 301,
+   "text_px_final": 121
+  },
+  {
+   "id": "SB-B24-005",
+   "reading": "231",
+   "kind": "lot",
+   "flags": [
+    "unsure"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 15.5,
+   "length": 25.2,
+   "poly": [
+    [
+     6092.0,
+     3260.0
+    ],
+    [
+     6117.2,
+     3260.0
+    ],
+    [
+     6117.2,
+     3275.5
+    ],
+    [
+     6092.0,
+     3275.5
+    ]
+   ],
+   "aabb": [
+    6092,
+    3260,
+    6118,
+    3276
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 70,
+   "annot_line": 6,
+   "ink_px": 122,
+   "text_px_final": 92
+  },
+  {
+   "id": "SB-B24-006",
+   "reading": "174",
+   "kind": "lot",
+   "flags": [
+    "unsure"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 17.0,
+   "length": 16.2,
+   "poly": [
+    [
+     6132.8,
+     3259.0
+    ],
+    [
+     6149.0,
+     3259.0
+    ],
+    [
+     6149.0,
+     3276.0
+    ],
+    [
+     6132.8,
+     3276.0
+    ]
+   ],
+   "aabb": [
+    6132,
+    3259,
+    6149,
+    3276
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 119,
+   "annot_line": 7,
+   "ink_px": 129,
+   "text_px_final": 83
+  },
+  {
+   "id": "SB-B24-007",
+   "reading": "136",
+   "kind": "lot",
+   "flags": [
+    "unsure"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 18.0,
+   "length": 34.0,
+   "poly": [
+    [
+     6168.0,
+     3260.0
+    ],
+    [
+     6202.0,
+     3260.0
+    ],
+    [
+     6202.0,
+     3278.0
+    ],
+    [
+     6168.0,
+     3278.0
+    ]
+   ],
+   "aabb": [
+    6168,
+    3260,
+    6202,
+    3278
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 244,
+   "annot_line": 8,
+   "ink_px": 262,
+   "text_px_final": 97
+  },
+  {
+   "id": "SB-B24-008",
+   "reading": "230",
+   "kind": "lot",
+   "flags": [
+    "partial",
+    "unsure"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 18.2,
+   "length": 23.5,
+   "poly": [
+    [
+     6086.0,
+     3280.0
+    ],
+    [
+     6109.5,
+     3280.0
+    ],
+    [
+     6109.5,
+     3298.2
+    ],
+    [
+     6086.0,
+     3298.2
+    ]
+   ],
+   "aabb": [
+    6086,
+    3280,
+    6110,
+    3299
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 58,
+   "annot_line": 9,
+   "ink_px": 233,
+   "text_px_final": 188
+  },
+  {
+   "id": "SB-B24-009",
+   "reading": "175",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 19.0,
+   "length": 26.0,
+   "poly": [
+    [
+     6146.0,
+     3284.0
+    ],
+    [
+     6172.0,
+     3284.0
+    ],
+    [
+     6172.0,
+     3303.0
+    ],
+    [
+     6146.0,
+     3303.0
+    ]
+   ],
+   "aabb": [
+    6146,
+    3284,
+    6172,
+    3303
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 158,
+   "annot_line": 10,
+   "ink_px": 188,
+   "text_px_final": 162
+  },
+  {
+   "id": "SB-B24-010",
+   "reading": "137",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 19.0,
+   "length": 30.8,
+   "poly": [
+    [
+     6171.2,
+     3285.0
+    ],
+    [
+     6202.0,
+     3285.0
+    ],
+    [
+     6202.0,
+     3304.0
+    ],
+    [
+     6171.2,
+     3304.0
+    ]
+   ],
+   "aabb": [
+    6171,
+    3285,
+    6202,
+    3304
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 221,
+   "annot_line": 11,
+   "ink_px": 234,
+   "text_px_final": 103
+  },
+  {
+   "id": "SB-B24-011",
+   "reading": "229",
+   "kind": "lot",
+   "flags": [
+    "partial",
+    "unsure"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 14.0,
+   "length": 25.0,
+   "poly": [
+    [
+     6085.0,
+     3310.0
+    ],
+    [
+     6110.0,
+     3310.0
+    ],
+    [
+     6110.0,
+     3324.0
+    ],
+    [
+     6085.0,
+     3324.0
+    ]
+   ],
+   "aabb": [
+    6085,
+    3310,
+    6110,
+    3324
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 121,
+   "annot_line": 12,
+   "ink_px": 210,
+   "text_px_final": 208
+  },
+  {
+   "id": "SB-B24-012",
+   "reading": "176",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 17.0,
+   "length": 29.0,
+   "poly": [
+    [
+     6139.0,
+     3309.0
+    ],
+    [
+     6168.0,
+     3309.0
+    ],
+    [
+     6168.0,
+     3326.0
+    ],
+    [
+     6139.0,
+     3326.0
+    ]
+   ],
+   "aabb": [
+    6139,
+    3309,
+    6168,
+    3326
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 155,
+   "annot_line": 13,
+   "ink_px": 205,
+   "text_px_final": 184
+  },
+  {
+   "id": "SB-B24-013",
+   "reading": "138",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 18.0,
+   "length": 36.0,
+   "poly": [
+    [
+     6166.0,
+     3309.0
+    ],
+    [
+     6202.0,
+     3309.0
+    ],
+    [
+     6202.0,
+     3327.0
+    ],
+    [
+     6166.0,
+     3327.0
+    ]
+   ],
+   "aabb": [
+    6166,
+    3309,
+    6202,
+    3327
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 280,
+   "annot_line": 14,
+   "ink_px": 293,
+   "text_px_final": 139
+  },
+  {
+   "id": "SB-B24-014",
+   "reading": "228",
+   "kind": "lot",
+   "flags": [
+    "unsure"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 28.0,
+   "poly": [
+    [
+     6094.0,
+     3328.0
+    ],
+    [
+     6122.0,
+     3328.0
+    ],
+    [
+     6122.0,
+     3350.0
+    ],
+    [
+     6094.0,
+     3350.0
+    ]
+   ],
+   "aabb": [
+    6094,
+    3328,
+    6122,
+    3350
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 231,
+   "annot_line": 15,
+   "ink_px": 246,
+   "text_px_final": 210
+  },
+  {
+   "id": "SB-B24-015",
+   "reading": "177",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 15.0,
+   "length": 28.8,
+   "poly": [
+    [
+     6129.0,
+     3332.0
+    ],
+    [
+     6157.8,
+     3332.0
+    ],
+    [
+     6157.8,
+     3347.0
+    ],
+    [
+     6129.0,
+     3347.0
+    ]
+   ],
+   "aabb": [
+    6129,
+    3332,
+    6158,
+    3347
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 106,
+   "annot_line": 16,
+   "ink_px": 101,
+   "text_px_final": 77
+  },
+  {
+   "id": "SB-B24-016",
+   "reading": "139",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 18.0,
+   "length": 29.2,
+   "poly": [
+    [
+     6172.8,
+     3334.0
+    ],
+    [
+     6202.0,
+     3334.0
+    ],
+    [
+     6202.0,
+     3352.0
+    ],
+    [
+     6172.8,
+     3352.0
+    ]
+   ],
+   "aabb": [
+    6172,
+    3334,
+    6202,
+    3352
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 215,
+   "annot_line": 17,
+   "ink_px": 266,
+   "text_px_final": 90
+  },
+  {
+   "id": "SB-B24-017",
+   "reading": "225",
+   "kind": "lot",
+   "flags": [
+    "unsure"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 20.0,
+   "length": 34.2,
+   "poly": [
+    [
+     6088.0,
+     3357.0
+    ],
+    [
+     6122.2,
+     3357.0
+    ],
+    [
+     6122.2,
+     3377.0
+    ],
+    [
+     6088.0,
+     3377.0
+    ]
+   ],
+   "aabb": [
+    6088,
+    3357,
+    6123,
+    3377
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 197,
+   "annot_line": 18,
+   "ink_px": 244,
+   "text_px_final": 144
+  },
+  {
+   "id": "SB-B24-018",
+   "reading": "178",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 15.5,
+   "length": 26.2,
+   "poly": [
+    [
+     6129.0,
+     3357.0
+    ],
+    [
+     6155.2,
+     3357.0
+    ],
+    [
+     6155.2,
+     3372.5
+    ],
+    [
+     6129.0,
+     3372.5
+    ]
+   ],
+   "aabb": [
+    6129,
+    3357,
+    6156,
+    3373
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 171,
+   "annot_line": 19,
+   "ink_px": 162,
+   "text_px_final": 109
+  },
+  {
+   "id": "SB-B24-019",
+   "reading": "140",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 20.0,
+   "length": 30.0,
+   "poly": [
+    [
+     6172.0,
+     3357.0
+    ],
+    [
+     6202.0,
+     3357.0
+    ],
+    [
+     6202.0,
+     3377.0
+    ],
+    [
+     6172.0,
+     3377.0
+    ]
+   ],
+   "aabb": [
+    6172,
+    3357,
+    6202,
+    3377
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 46,
+   "annot_line": 20,
+   "ink_px": 340,
+   "text_px_final": 21
+  },
+  {
+   "id": "SB-B24-020",
+   "reading": "103",
+   "kind": "lot",
+   "flags": [
+    "unsure"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 38.0,
+   "poly": [
+    [
+     6064.0,
+     3302.0
+    ],
+    [
+     6102.0,
+     3302.0
+    ],
+    [
+     6102.0,
+     3324.0
+    ],
+    [
+     6064.0,
+     3324.0
+    ]
+   ],
+   "aabb": [
+    6064,
+    3302,
+    6102,
+    3324
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 407,
+   "annot_line": 21,
+   "ink_px": 411,
+   "text_px_final": 258
+  },
+  {
+   "id": "SB-B24-021",
+   "reading": "102",
+   "kind": "lot",
+   "flags": [
+    "unsure"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 21.0,
+   "length": 23.2,
+   "poly": [
+    [
+     6072.8,
+     3279.0
+    ],
+    [
+     6096.0,
+     3279.0
+    ],
+    [
+     6096.0,
+     3300.0
+    ],
+    [
+     6072.8,
+     3300.0
+    ]
+   ],
+   "aabb": [
+    6072,
+    3279,
+    6096,
+    3300
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 201,
+   "annot_line": 22,
+   "ink_px": 207,
+   "text_px_final": 135
+  },
+  {
+   "id": "SB-B24-022",
+   "reading": "104",
+   "kind": "lot",
+   "flags": [
+    "unsure"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 21.0,
+   "length": 32.0,
+   "poly": [
+    [
+     6063.0,
+     3328.0
+    ],
+    [
+     6095.0,
+     3328.0
+    ],
+    [
+     6095.0,
+     3349.0
+    ],
+    [
+     6063.0,
+     3349.0
+    ]
+   ],
+   "aabb": [
+    6063,
+    3328,
+    6095,
+    3349
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 301,
+   "annot_line": 23,
+   "ink_px": 294,
+   "text_px_final": 249
+  }
+ ]
+}

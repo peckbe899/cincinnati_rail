@@ -1,0 +1,483 @@
+{
+ "crop": "DD17",
+ "plate": "44",
+ "win": [
+  1134,
+  1667,
+  1534,
+  1967
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   1157,
+   1830,
+   1218,
+   1890
+  ],
+  [
+   1232,
+   1830,
+   1295,
+   1891
+  ],
+  [
+   1309,
+   1829,
+   1370,
+   1888
+  ],
+  [
+   1379,
+   1831,
+   1440,
+   1892
+  ],
+  [
+   1503,
+   1664,
+   1563,
+   1727
+  ]
+ ],
+ "n_words": 9,
+ "n_targets": 5,
+ "mask": "DD17_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 96995,
+  "ink_not_text": 2412,
+  "text": 541,
+  "dont_care": 20052
+ },
+ "counts_in_scope": {
+  "ink_not_text": 2412,
+  "text": 541,
+  "dont_care": 0
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DD17-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:quote"
+   ],
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 11.0,
+   "poly": [
+    [
+     1182.0,
+     1855.0
+    ],
+    [
+     1193.0,
+     1855.0
+    ],
+    [
+     1193.0,
+     1865.0
+    ],
+    [
+     1182.0,
+     1865.0
+    ]
+   ],
+   "aabb": [
+    1182,
+    1855,
+    1193,
+    1865
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": true,
+   "box_word": true,
+   "text_px": 57,
+   "in_scope": true,
+   "ink_px": 57,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    36,
+    21
+   ],
+   "style": "quote",
+   "neg_type": ""
+  },
+  {
+   "id": "DD17-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:quote"
+   ],
+   "angle": 0.0,
+   "height": 11.0,
+   "length": 13.0,
+   "poly": [
+    [
+     1257.0,
+     1855.0
+    ],
+    [
+     1270.0,
+     1855.0
+    ],
+    [
+     1270.0,
+     1866.0
+    ],
+    [
+     1257.0,
+     1866.0
+    ]
+   ],
+   "aabb": [
+    1257,
+    1855,
+    1270,
+    1866
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 3,
+   "target": true,
+   "box_word": true,
+   "text_px": 54,
+   "in_scope": true,
+   "ink_px": 54,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    30,
+    24
+   ],
+   "style": "quote",
+   "neg_type": ""
+  },
+  {
+   "id": "DD17-003",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:quote"
+   ],
+   "angle": 0.0,
+   "height": 9.0,
+   "length": 11.0,
+   "poly": [
+    [
+     1334.0,
+     1854.0
+    ],
+    [
+     1345.0,
+     1854.0
+    ],
+    [
+     1345.0,
+     1863.0
+    ],
+    [
+     1334.0,
+     1863.0
+    ]
+   ],
+   "aabb": [
+    1334,
+    1854,
+    1345,
+    1863
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 4,
+   "target": true,
+   "box_word": true,
+   "text_px": 61,
+   "in_scope": true,
+   "ink_px": 61,
+   "care_px": 0,
+   "pieces": 1,
+   "piece_px": [
+    61
+   ],
+   "style": "quote",
+   "neg_type": ""
+  },
+  {
+   "id": "DD17-004",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:quote"
+   ],
+   "angle": 0.0,
+   "height": 11.0,
+   "length": 11.0,
+   "poly": [
+    [
+     1404.0,
+     1856.0
+    ],
+    [
+     1415.0,
+     1856.0
+    ],
+    [
+     1415.0,
+     1867.0
+    ],
+    [
+     1404.0,
+     1867.0
+    ]
+   ],
+   "aabb": [
+    1404,
+    1856,
+    1415,
+    1867
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 5,
+   "target": true,
+   "box_word": true,
+   "text_px": 63,
+   "in_scope": true,
+   "ink_px": 63,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    38,
+    25
+   ],
+   "style": "quote",
+   "neg_type": ""
+  },
+  {
+   "id": "DD17-005",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 37.0,
+   "length": 30.0,
+   "poly": [
+    [
+     1166.0,
+     1798.0
+    ],
+    [
+     1196.0,
+     1798.0
+    ],
+    [
+     1196.0,
+     1835.0
+    ],
+    [
+     1166.0,
+     1835.0
+    ]
+   ],
+   "aabb": [
+    1166,
+    1798,
+    1196,
+    1835
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 7,
+   "target": false,
+   "box_word": true,
+   "text_px": 43,
+   "in_scope": true
+  },
+  {
+   "id": "DD17-006",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 25.0,
+   "poly": [
+    [
+     1328.0,
+     1810.0
+    ],
+    [
+     1353.0,
+     1810.0
+    ],
+    [
+     1353.0,
+     1835.0
+    ],
+    [
+     1328.0,
+     1835.0
+    ]
+   ],
+   "aabb": [
+    1328,
+    1810,
+    1353,
+    1835
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 8,
+   "target": false,
+   "box_word": true,
+   "text_px": 45,
+   "in_scope": true
+  },
+  {
+   "id": "DD17-007",
+   "reading": "1620",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 73.0,
+   "poly": [
+    [
+     1145.0,
+     1884.0
+    ],
+    [
+     1218.0,
+     1884.0
+    ],
+    [
+     1218.0,
+     1914.0
+    ],
+    [
+     1145.0,
+     1914.0
+    ]
+   ],
+   "aabb": [
+    1145,
+    1884,
+    1218,
+    1914
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 9,
+   "target": false,
+   "box_word": true,
+   "text_px": 105,
+   "in_scope": true
+  },
+  {
+   "id": "DD17-008",
+   "reading": "1616",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 66.0,
+   "poly": [
+    [
+     1331.0,
+     1884.0
+    ],
+    [
+     1397.0,
+     1884.0
+    ],
+    [
+     1397.0,
+     1914.0
+    ],
+    [
+     1331.0,
+     1914.0
+    ]
+   ],
+   "aabb": [
+    1331,
+    1884,
+    1397,
+    1914
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 10,
+   "target": false,
+   "box_word": true,
+   "text_px": 66,
+   "in_scope": true
+  },
+  {
+   "id": "DD17-009",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair",
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 13.0,
+   "length": 10.0,
+   "poly": [
+    [
+     1528.0,
+     1689.0
+    ],
+    [
+     1538.0,
+     1689.0
+    ],
+    [
+     1538.0,
+     1702.0
+    ],
+    [
+     1528.0,
+     1702.0
+    ]
+   ],
+   "aabb": [
+    1528,
+    1689,
+    1538,
+    1702
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 12,
+   "target": true,
+   "box_word": true,
+   "text_px": 47,
+   "in_scope": true,
+   "ink_px": 47,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    25,
+    22
+   ],
+   "style": "pair",
+   "neg_type": ""
+  }
+ ]
+}

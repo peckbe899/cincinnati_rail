@@ -1,0 +1,137 @@
+{
+ "crop": "SB-B04",
+ "plate": "58",
+ "win": [
+  5522,
+  2200,
+  5822,
+  2460
+ ],
+ "scale_ft_per_inch": 100,
+ "half": "B",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   5615,
+   2273,
+   5734,
+   2388
+  ]
+ ],
+ "scope_px": 13920,
+ "why": "block 36 on plate 58, drawn with random.Random('58') from the plate list (annot/selection.json)",
+ "n_words": 2,
+ "mask": "SB-B04_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 11582,
+  "ink_not_text": 926,
+  "text": 1184,
+  "dont_care": 64308
+ },
+ "boxes": [
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    5700,
+    2255,
+    5698,
+    2370
+   ],
+   "width": 4,
+   "note": "lot line right of the 6",
+   "line": 5,
+   "effect_px": 205
+  }
+ ],
+ "words": [
+  {
+   "id": "SB-B04-001",
+   "reading": "36",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 65.0,
+   "length": 69.0,
+   "poly": [
+    [
+     5640.0,
+     2298.0
+    ],
+    [
+     5709.0,
+     2298.0
+    ],
+    [
+     5709.0,
+     2363.0
+    ],
+    [
+     5640.0,
+     2363.0
+    ]
+   ],
+   "aabb": [
+    5640,
+    2298,
+    5709,
+    2363
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1436,
+   "annot_line": 2,
+   "ink_px": 1691,
+   "text_px_final": 1184
+  },
+  {
+   "id": "SB-B04-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 12.4,
+   "length": 10.0,
+   "poly": [
+    [
+     5700.0,
+     2316.6
+    ],
+    [
+     5710.0,
+     2316.6
+    ],
+    [
+     5710.0,
+     2329.0
+    ],
+    [
+     5700.0,
+     2329.0
+    ]
+   ],
+   "aabb": [
+    5700,
+    2316,
+    5710,
+    2329
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 34,
+   "annot_line": 3,
+   "ink_px": 40,
+   "text_px_final": 34
+  }
+ ],
+ "dropped_outside_scope": []
+}

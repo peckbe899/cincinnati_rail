@@ -1,0 +1,194 @@
+{
+ "crop": "DD30",
+ "plate": "26A",
+ "win": [
+  2107,
+  3818,
+  2507,
+  4118
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   2134,
+   4007,
+   2192,
+   4068
+  ],
+  [
+   2134,
+   4071,
+   2192,
+   4127
+  ]
+ ],
+ "n_words": 3,
+ "n_targets": 2,
+ "mask": "DD30_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 111919,
+  "ink_not_text": 504,
+  "text": 131,
+  "dont_care": 7446
+ },
+ "counts_in_scope": {
+  "ink_not_text": 504,
+  "text": 131,
+  "dont_care": 12
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DD30-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 11.0,
+   "length": 8.0,
+   "poly": [
+    [
+     2159.0,
+     4032.0
+    ],
+    [
+     2167.0,
+     4032.0
+    ],
+    [
+     2167.0,
+     4043.0
+    ],
+    [
+     2159.0,
+     4043.0
+    ]
+   ],
+   "aabb": [
+    2159,
+    4032,
+    2167,
+    4043
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": true,
+   "box_word": true,
+   "text_px": 34,
+   "in_scope": true,
+   "ink_px": 34,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    18,
+    16
+   ],
+   "style": "pair",
+   "neg_type": ""
+  },
+  {
+   "id": "DD30-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:other"
+   ],
+   "angle": 0.0,
+   "height": 6.0,
+   "length": 8.0,
+   "poly": [
+    [
+     2159.0,
+     4096.0
+    ],
+    [
+     2167.0,
+     4096.0
+    ],
+    [
+     2167.0,
+     4102.0
+    ],
+    [
+     2159.0,
+     4102.0
+    ]
+   ],
+   "aabb": [
+    2159,
+    4096,
+    2167,
+    4102
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 3,
+   "target": true,
+   "box_word": true,
+   "text_px": 17,
+   "in_scope": true,
+   "ink_px": 21,
+   "care_px": 4,
+   "pieces": 2,
+   "piece_px": [
+    15,
+    2
+   ],
+   "style": "other",
+   "neg_type": ""
+  },
+  {
+   "id": "DD30-003",
+   "reading": "18",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 50.0,
+   "length": 30.0,
+   "poly": [
+    [
+     2116.0,
+     4068.0
+    ],
+    [
+     2146.0,
+     4068.0
+    ],
+    [
+     2146.0,
+     4118.0
+    ],
+    [
+     2116.0,
+     4118.0
+    ]
+   ],
+   "aabb": [
+    2116,
+    4068,
+    2146,
+    4118
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 4,
+   "target": false,
+   "box_word": true,
+   "text_px": 80,
+   "in_scope": true
+  }
+ ]
+}

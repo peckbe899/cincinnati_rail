@@ -1,0 +1,123 @@
+{
+ "crop": "SA-B07",
+ "plate": "52",
+ "win": [
+  2615,
+  2211,
+  2835,
+  2431
+ ],
+ "scale_ft_per_inch": 100,
+ "half": "A",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   2677,
+   2271,
+   2771,
+   2377
+  ]
+ ],
+ "scope_px": 10165,
+ "why": "block number 6 on plate 52 (100 ft), drawn at random (seed: plate name) from the plate list",
+ "n_words": 2,
+ "mask": "SA-B07_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 8818,
+  "ink_not_text": 244,
+  "text": 1016,
+  "dont_care": 38322
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-B07-001",
+   "reading": "6",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 56.0,
+   "length": 44.0,
+   "poly": [
+    [
+     2702.0,
+     2296.0
+    ],
+    [
+     2746.0,
+     2296.0
+    ],
+    [
+     2746.0,
+     2352.0
+    ],
+    [
+     2702.0,
+     2352.0
+    ]
+   ],
+   "aabb": [
+    2702,
+    2296,
+    2746,
+    2352
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 924,
+   "annot_line": 2,
+   "ink_px": 1115,
+   "text_px_final": 924
+  },
+  {
+   "id": "SA-B07-002",
+   "reading": "6",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 14.0,
+   "poly": [
+    [
+     2672.0,
+     2329.0
+    ],
+    [
+     2686.0,
+     2329.0
+    ],
+    [
+     2686.0,
+     2358.0
+    ],
+    [
+     2672.0,
+     2358.0
+    ]
+   ],
+   "aabb": [
+    2672,
+    2329,
+    2686,
+    2358
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 158,
+   "annot_line": 3,
+   "ink_px": 158,
+   "text_px_final": 92
+  }
+ ],
+ "dropped_outside_scope": []
+}

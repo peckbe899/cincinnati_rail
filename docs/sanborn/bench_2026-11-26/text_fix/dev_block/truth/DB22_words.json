@@ -1,0 +1,171 @@
+{
+ "crop": "DB22",
+ "plate": "19",
+ "win": [
+  3365,
+  5344,
+  3534,
+  5510
+ ],
+ "why": "block number 14 on plate 19 (200 ft), drawn at random (candidates/draw.json)",
+ "n_words": 3,
+ "mask": "DB22_mask.png",
+ "mask_values": {
+  "0": "paper (in scope)",
+  "1": "ink, not text (in scope)",
+  "2": "text ink (in scope)",
+  "3": "don't care (glyph and line share ink; CARE boxes; everything outside the scope)"
+ },
+ "counts": {
+  "paper": 8078,
+  "ink_not_text": 235,
+  "text": 1387,
+  "dont_care": 18354
+ },
+ "scope_px": 9700,
+ "scope_counts": {
+  "paper": 8078,
+  "ink_not_text": 235,
+  "text": 1387,
+  "dont_care": 0
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DB22-001",
+   "reading": "14",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 46.0,
+   "length": 49.0,
+   "poly": [
+    [
+     3425.0,
+     5404.0
+    ],
+    [
+     3474.0,
+     5404.0
+    ],
+    [
+     3474.0,
+     5450.0
+    ],
+    [
+     3425.0,
+     5450.0
+    ]
+   ],
+   "aabb": [
+    3425,
+    5404,
+    3474,
+    5450
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 863,
+   "annot_line": 4,
+   "in_scope": {
+    "text_px": 863,
+    "dont_care_px": 0,
+    "ink_px": 863
+   },
+   "target": true,
+   "ink_size_px": 863
+  },
+  {
+   "id": "DB22-002",
+   "reading": "DAVIS",
+   "kind": "owner",
+   "flags": [
+    "g:JOHN_W._DAVIS",
+    "cut_by_scope"
+   ],
+   "angle": -90.0,
+   "height": 25.0,
+   "length": 110.0,
+   "poly": [
+    [
+     3475.0,
+     5449.0
+    ],
+    [
+     3475.0,
+     5339.0
+    ],
+    [
+     3500.0,
+     5339.0
+    ],
+    [
+     3500.0,
+     5449.0
+    ]
+   ],
+   "aabb": [
+    3475,
+    5339,
+    3500,
+    5449
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 471,
+   "annot_line": 5,
+   "in_scope": {
+    "text_px": 337,
+    "dont_care_px": 0,
+    "ink_px": 337
+   }
+  },
+  {
+   "id": "DB22-003",
+   "reading": "W.",
+   "kind": "owner",
+   "flags": [
+    "g:JOHN_W._DAVIS",
+    "cut_by_scope"
+   ],
+   "angle": -90.0,
+   "height": 23.0,
+   "length": 30.5,
+   "poly": [
+    [
+     3479.0,
+     5475.5
+    ],
+    [
+     3479.0,
+     5445.0
+    ],
+    [
+     3502.0,
+     5445.0
+    ],
+    [
+     3502.0,
+     5475.5
+    ]
+   ],
+   "aabb": [
+    3479,
+    5445,
+    3502,
+    5476
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 205,
+   "annot_line": 6,
+   "in_scope": {
+    "text_px": 194,
+    "dont_care_px": 0,
+    "ink_px": 194
+   }
+  }
+ ]
+}

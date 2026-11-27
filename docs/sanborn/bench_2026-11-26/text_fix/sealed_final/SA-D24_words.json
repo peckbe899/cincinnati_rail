@@ -1,0 +1,174 @@
+{
+ "crop": "SA-D24",
+ "plate": "46",
+ "win": [
+  2586,
+  4662,
+  2709,
+  4787
+ ],
+ "scale_ft_per_inch": 200,
+ "half": "A",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   2618,
+   4693,
+   2676,
+   4755
+  ]
+ ],
+ "scope_px": 3717,
+ "why": "1 ditto mark(s) found in the seeded random built-up window [2330, 4674, 2830, 5174] of plate 46 (round 1)",
+ "n_words": 2,
+ "mask": "SA-D24_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 2894,
+  "ink_not_text": 519,
+  "text": 296,
+  "dont_care": 11666
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-D24-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 11.0,
+   "length": 8.0,
+   "poly": [
+    [
+     2643.0,
+     4718.5
+    ],
+    [
+     2651.0,
+     4718.5
+    ],
+    [
+     2651.0,
+     4729.5
+    ],
+    [
+     2643.0,
+     4729.5
+    ]
+   ],
+   "aabb": [
+    2643,
+    4718,
+    2651,
+    4730
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 55,
+   "annot_line": 4,
+   "ink_px": 55,
+   "text_px_final": 55
+  },
+  {
+   "id": "SA-D24-008",
+   "reading": "26",
+   "kind": "house",
+   "flags": [],
+   "target": false,
+   "angle": 90.0,
+   "height": 23.0,
+   "length": 40.0,
+   "poly": [
+    [
+     2632.0,
+     4702.0
+    ],
+    [
+     2632.0,
+     4742.0
+    ],
+    [
+     2609.0,
+     4742.0
+    ],
+    [
+     2609.0,
+     4702.0
+    ]
+   ],
+   "aabb": [
+    2609,
+    4702,
+    2632,
+    4742
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 350,
+   "annot_line": 15,
+   "ink_px": 360,
+   "text_px_final": 241
+  }
+ ],
+ "dropped_outside_scope": [
+  {
+   "id": "SA-D24-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 5
+  },
+  {
+   "id": "SA-D24-003",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 6
+  },
+  {
+   "id": "SA-D24-004",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 7
+  },
+  {
+   "id": "SA-D24-005",
+   "reading": "14",
+   "kind": "lot",
+   "annot_line": 11
+  },
+  {
+   "id": "SA-D24-006",
+   "reading": "29",
+   "kind": "house",
+   "annot_line": 12
+  },
+  {
+   "id": "SA-D24-007",
+   "reading": "27",
+   "kind": "house",
+   "annot_line": 13
+  },
+  {
+   "id": "SA-D24-009",
+   "reading": "22",
+   "kind": "house",
+   "annot_line": 16
+  },
+  {
+   "id": "SA-D24-010",
+   "reading": "33",
+   "kind": "lot",
+   "annot_line": 19
+  }
+ ]
+}

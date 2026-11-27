@@ -1,0 +1,83 @@
+{
+ "crop": "SB-B23",
+ "plate": "92",
+ "win": [
+  3697,
+  4685,
+  3997,
+  4945
+ ],
+ "scale_ft_per_inch": 400,
+ "half": "B",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   3792,
+   4760,
+   3902,
+   4869
+  ]
+ ],
+ "scope_px": 12210,
+ "why": "block 13 on plate 92, drawn with random.Random('92') from the plate list (annot/selection.json)",
+ "n_words": 1,
+ "mask": "SB-B23_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 10629,
+  "ink_not_text": 0,
+  "text": 1581,
+  "dont_care": 65790
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SB-B23-001",
+   "reading": "13",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 59.0,
+   "length": 60.0,
+   "poly": [
+    [
+     3817.0,
+     4785.0
+    ],
+    [
+     3877.0,
+     4785.0
+    ],
+    [
+     3877.0,
+     4844.0
+    ],
+    [
+     3817.0,
+     4844.0
+    ]
+   ],
+   "aabb": [
+    3817,
+    4785,
+    3877,
+    4844
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 1581,
+   "annot_line": 2,
+   "ink_px": 1581,
+   "text_px_final": 1581
+  }
+ ],
+ "dropped_outside_scope": []
+}

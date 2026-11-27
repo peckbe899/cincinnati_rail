@@ -1,0 +1,95 @@
+{
+ "crop": "DD11",
+ "plate": "60B",
+ "win": [
+  1766,
+  3173,
+  2166,
+  3473
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   1825,
+   3189,
+   1882,
+   3245
+  ]
+ ],
+ "n_words": 1,
+ "n_targets": 1,
+ "mask": "DD11_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 106017,
+  "ink_not_text": 175,
+  "text": 20,
+  "dont_care": 13788
+ },
+ "counts_in_scope": {
+  "ink_not_text": 175,
+  "text": 20,
+  "dont_care": 0
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DD11-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 6.0,
+   "length": 7.0,
+   "poly": [
+    [
+     1850.0,
+     3214.0
+    ],
+    [
+     1857.0,
+     3214.0
+    ],
+    [
+     1857.0,
+     3220.0
+    ],
+    [
+     1850.0,
+     3220.0
+    ]
+   ],
+   "aabb": [
+    1850,
+    3214,
+    1857,
+    3220
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": true,
+   "box_word": true,
+   "text_px": 20,
+   "in_scope": true,
+   "ink_px": 20,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    13,
+    7
+   ],
+   "style": "pair",
+   "neg_type": ""
+  }
+ ]
+}

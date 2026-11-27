@@ -1,0 +1,98 @@
+{
+ "crop": "SA-D03",
+ "plate": "6",
+ "win": [
+  703,
+  4904,
+  827,
+  5027
+ ],
+ "scale_ft_per_inch": 100,
+ "half": "A",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   735,
+   4935,
+   794,
+   4995
+  ]
+ ],
+ "scope_px": 3660,
+ "why": "1 ditto mark(s) found in the seeded random built-up window [668, 4902, 1168, 5402] of plate 6 (round 1)",
+ "n_words": 1,
+ "mask": "SA-D03_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 3175,
+  "ink_not_text": 436,
+  "text": 49,
+  "dont_care": 11592
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-D03-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 9.0,
+   "length": 9.0,
+   "poly": [
+    [
+     760.0,
+     4960.5
+    ],
+    [
+     769.0,
+     4960.5
+    ],
+    [
+     769.0,
+     4969.5
+    ],
+    [
+     760.0,
+     4969.5
+    ]
+   ],
+   "aabb": [
+    760,
+    4960,
+    769,
+    4970
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 49,
+   "annot_line": 5,
+   "ink_px": 49,
+   "text_px_final": 49
+  }
+ ],
+ "dropped_outside_scope": [
+  {
+   "id": "SA-D03-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 4
+  },
+  {
+   "id": "SA-D03-003",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 7
+  }
+ ]
+}

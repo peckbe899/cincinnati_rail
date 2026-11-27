@@ -1,0 +1,136 @@
+{
+ "crop": "N37",
+ "plate": "30",
+ "win": [
+  8872,
+  3706,
+  8936,
+  3770
+ ],
+ "kind": "targeted",
+ "target": "negative",
+ "scope_pad": 0,
+ "scope": [
+  [
+   8872,
+   3706,
+   8936,
+   3770
+  ]
+ ],
+ "n_words": 2,
+ "n_targets": 0,
+ "mask": "N37_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 3982,
+  "ink_not_text": 84,
+  "text": 26,
+  "dont_care": 4
+ },
+ "counts_in_scope": {
+  "ink_not_text": 84,
+  "text": 26,
+  "dont_care": 4
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "N37-001",
+   "reading": "-",
+   "kind": "negative",
+   "flags": [
+    "neg:dash"
+   ],
+   "angle": 0.0,
+   "height": 5.0,
+   "length": 24.0,
+   "poly": [
+    [
+     8892.0,
+     3736.0
+    ],
+    [
+     8916.0,
+     3736.0
+    ],
+    [
+     8916.0,
+     3741.0
+    ],
+    [
+     8892.0,
+     3741.0
+    ]
+   ],
+   "aabb": [
+    8892,
+    3736,
+    8916,
+    3741
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": false,
+   "box_word": true,
+   "text_px": 0,
+   "in_scope": true,
+   "ink_px": 84,
+   "care_px": 0,
+   "pieces": 1,
+   "piece_px": [
+    84
+   ],
+   "style": "",
+   "neg_type": "dash"
+  },
+  {
+   "id": "N37-002",
+   "reading": "5'",
+   "kind": "lotdim",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 16.0,
+   "length": 13.0,
+   "poly": [
+    [
+     8872.0,
+     3715.0
+    ],
+    [
+     8885.0,
+     3715.0
+    ],
+    [
+     8885.0,
+     3731.0
+    ],
+    [
+     8872.0,
+     3731.0
+    ]
+   ],
+   "aabb": [
+    8872,
+    3715,
+    8885,
+    3731
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 4,
+   "target": false,
+   "box_word": true,
+   "text_px": 26,
+   "in_scope": true
+  }
+ ]
+}

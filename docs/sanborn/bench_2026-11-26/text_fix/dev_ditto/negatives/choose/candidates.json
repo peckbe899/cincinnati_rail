@@ -1,0 +1,3410 @@
+{
+ "note": "Draw candidate NEGATIVE marks (tick-like marks that are not ditto marks), seeded, scan only (dev_ditto, 26 Nov 2026).\n\n    cd data/sanborn\n    python -B bench_2026-11-26/text_fix/dev_ditto/scripts/neg_sample.py\n\nFive samplers, each seeded with random.Random('neg-' + SAMPLER + '-' + plate), every draw kept in order with its\nreason; the candidates are then looked at by eye (negatives/choose/sheet_*.png) and each is kept as a negative or\ndropped (text, ditto, nothing tick-like) in that order, never chosen by how a finder treats it:\n  rail      plates 44 and 5: Ben's railroad tracks (picks22_guided/22-N/rail_ben.json, read only). Along each track,\n            every 1 px, the ink extent across the track within +-16 px; runs where it is 11 px or more (the line is\n            4-7 px) are crossings: rail ticks. A random crossing is drawn (track chosen with weight by length).\n  streetcar plates 44 and 5: Ben's streetcar tracks; a random point along a track, snapped to the nearest separate\n            small ink piece (6-200 px) within 12 px: a dash or tick of the streetcar symbol.\n  isolated  12 plates: a random separate ink piece of 6-80 px, 5-18 px long, elongated (length / width 2 or more from\n            second moments): a free tick, dash, hook, prime, figure 1, speck ...\n  dash      12 plates: as isolated, 8-40 px long, with a second piece of about its length (0.5-2x) within 45 px along\n            its own axis (to 15 deg): a dash of a dashed line.\n  lineend   12 plates: a random end point of the skeleton of a large ink piece (1000 px or more): a line end or stub.\nNever within 60 px of a ditto truth word, inside H1-H4, or on a sealed plate. Writes negatives/choose/candidates.json.\n",
+ "draws": [
+  {
+   "sampler": "rail",
+   "plate": "44",
+   "draw": 0,
+   "at": [
+    685.3,
+    4278.0
+   ],
+   "how": "crossing",
+   "centre": [
+    693,
+    4274
+   ],
+   "verdict": "candidate",
+   "cid": "C001"
+  },
+  {
+   "sampler": "rail",
+   "plate": "44",
+   "draw": 1,
+   "at": [
+    1351.1,
+    4053.2
+   ],
+   "how": "crossing",
+   "centre": [
+    1343,
+    4057
+   ],
+   "verdict": "candidate",
+   "cid": "C002"
+  },
+  {
+   "sampler": "rail",
+   "plate": "44",
+   "draw": 2,
+   "at": [
+    5248.9,
+    6045.7
+   ],
+   "how": "crossing",
+   "centre": [
+    5255,
+    6039
+   ],
+   "verdict": "candidate",
+   "cid": "C003"
+  },
+  {
+   "sampler": "rail",
+   "plate": "44",
+   "draw": 3,
+   "at": [
+    9530.0,
+    4152.3
+   ],
+   "how": "crossing",
+   "centre": [
+    9542,
+    4148
+   ],
+   "verdict": "candidate",
+   "cid": "C004"
+  },
+  {
+   "sampler": "rail",
+   "plate": "44",
+   "draw": 4,
+   "at": [
+    855.8,
+    4307.3
+   ],
+   "how": "crossing",
+   "centre": [
+    857,
+    4307
+   ],
+   "verdict": "candidate",
+   "cid": "C005"
+  },
+  {
+   "sampler": "rail",
+   "plate": "44",
+   "draw": 5,
+   "at": [
+    4854.0,
+    6528.0
+   ],
+   "how": "crossing",
+   "centre": [
+    4876,
+    6502
+   ],
+   "verdict": "candidate",
+   "cid": "C006"
+  },
+  {
+   "sampler": "rail",
+   "plate": "44",
+   "draw": 6,
+   "at": [
+    4893.3,
+    6443.7
+   ],
+   "how": "crossing",
+   "centre": [
+    4882,
+    6456
+   ],
+   "verdict": "candidate",
+   "cid": "C007"
+  },
+  {
+   "sampler": "rail",
+   "plate": "44",
+   "draw": 7,
+   "at": [
+    4562.4,
+    6889.4
+   ],
+   "how": "crossing",
+   "centre": [
+    4550,
+    6905
+   ],
+   "verdict": "candidate",
+   "cid": "C008"
+  },
+  {
+   "sampler": "rail",
+   "plate": "44",
+   "draw": 8,
+   "at": [
+    784.2,
+    4344.0
+   ],
+   "how": "crossing",
+   "centre": [
+    784,
+    4344
+   ],
+   "verdict": "candidate",
+   "cid": "C009"
+  },
+  {
+   "sampler": "rail",
+   "plate": "44",
+   "draw": 9,
+   "at": [
+    8630.2,
+    4452.3
+   ],
+   "how": "crossing",
+   "centre": [
+    8624,
+    4454
+   ],
+   "verdict": "candidate",
+   "cid": "C010"
+  },
+  {
+   "sampler": "rail",
+   "plate": "44",
+   "draw": 10,
+   "at": [
+    731.5,
+    4385.7
+   ],
+   "how": "crossing",
+   "centre": [
+    732,
+    4386
+   ],
+   "verdict": "candidate",
+   "cid": "C011"
+  },
+  {
+   "sampler": "rail",
+   "plate": "44",
+   "draw": 11,
+   "at": [
+    937.8,
+    4142.6
+   ],
+   "how": "crossing",
+   "centre": [
+    960,
+    4131
+   ],
+   "verdict": "candidate",
+   "cid": "C012"
+  },
+  {
+   "sampler": "rail",
+   "plate": "44",
+   "draw": 12,
+   "at": [
+    3747.4,
+    2854.5
+   ],
+   "how": "crossing",
+   "centre": [
+    3725,
+    2867
+   ],
+   "verdict": "candidate",
+   "cid": "C013"
+  },
+  {
+   "sampler": "rail",
+   "plate": "44",
+   "draw": 13,
+   "at": [
+    6338.9,
+    1329.0
+   ],
+   "how": "crossing",
+   "centre": [
+    6339,
+    1329
+   ],
+   "verdict": "candidate",
+   "cid": "C014"
+  },
+  {
+   "sampler": "rail",
+   "plate": "44",
+   "draw": 14,
+   "at": [
+    710.7,
+    4320.5
+   ],
+   "how": "crossing",
+   "centre": [
+    684,
+    4335
+   ],
+   "verdict": "candidate",
+   "cid": "C015"
+  },
+  {
+   "sampler": "rail",
+   "plate": "44",
+   "draw": 15,
+   "at": [
+    7688.2,
+    4850.8
+   ],
+   "how": "crossing",
+   "centre": [
+    7688,
+    4851
+   ],
+   "verdict": "candidate",
+   "cid": "C016"
+  },
+  {
+   "sampler": "streetcar",
+   "plate": "44",
+   "draw": 0,
+   "at": [
+    9184.7,
+    3479.7
+   ],
+   "how": "separate piece",
+   "centre": [
+    9192,
+    3481
+   ],
+   "verdict": "candidate",
+   "cid": "C017"
+  },
+  {
+   "sampler": "streetcar",
+   "plate": "44",
+   "draw": 1,
+   "at": [
+    2183.6,
+    3863.9
+   ],
+   "how": "separate piece",
+   "centre": [
+    2187,
+    3869
+   ],
+   "verdict": "candidate",
+   "cid": "C018"
+  },
+  {
+   "sampler": "streetcar",
+   "plate": "44",
+   "draw": 2,
+   "at": [
+    1378.2,
+    156.2
+   ],
+   "how": "crossing",
+   "centre": [
+    1378,
+    156
+   ],
+   "verdict": "candidate",
+   "cid": "C019"
+  },
+  {
+   "sampler": "streetcar",
+   "plate": "44",
+   "draw": 3,
+   "at": [
+    2159.3,
+    3267.6
+   ],
+   "how": "crossing",
+   "centre": [
+    2159,
+    3268
+   ],
+   "verdict": "candidate",
+   "cid": "C020"
+  },
+  {
+   "sampler": "streetcar",
+   "plate": "44",
+   "draw": 4,
+   "at": [
+    2199.0,
+    4239.9
+   ],
+   "how": "crossing",
+   "centre": [
+    2199,
+    4240
+   ],
+   "verdict": "candidate",
+   "cid": "C021"
+  },
+  {
+   "sampler": "streetcar",
+   "plate": "44",
+   "draw": 5,
+   "at": [
+    6425.1,
+    3638.5
+   ],
+   "how": "separate piece",
+   "centre": [
+    6437,
+    3629
+   ],
+   "verdict": "candidate",
+   "cid": "C022"
+  },
+  {
+   "sampler": "railroad",
+   "plate": "5",
+   "verdict": "no railroad track in rail_ben.json"
+  },
+  {
+   "sampler": "streetcar",
+   "plate": "5",
+   "draw": 0,
+   "at": [
+    4152.6,
+    6947.3
+   ],
+   "how": "crossing",
+   "centre": [
+    4153,
+    6947
+   ],
+   "verdict": "candidate",
+   "cid": "C023"
+  },
+  {
+   "sampler": "streetcar",
+   "plate": "5",
+   "draw": 1,
+   "at": [
+    3285.0,
+    5649.1
+   ],
+   "how": "crossing",
+   "centre": [
+    3261,
+    5649
+   ],
+   "verdict": "candidate",
+   "cid": "C024"
+  },
+  {
+   "sampler": "streetcar",
+   "plate": "5",
+   "draw": 2,
+   "at": [
+    8042.7,
+    7020.2
+   ],
+   "how": "crossing",
+   "centre": [
+    8044,
+    7020
+   ],
+   "verdict": "candidate",
+   "cid": "C025"
+  },
+  {
+   "sampler": "streetcar",
+   "plate": "5",
+   "draw": 3,
+   "at": [
+    6850.1,
+    5601.5
+   ],
+   "how": "crossing",
+   "centre": [
+    6850,
+    5602
+   ],
+   "verdict": "candidate",
+   "cid": "C026"
+  },
+  {
+   "sampler": "streetcar",
+   "plate": "5",
+   "draw": 4,
+   "at": [
+    7138.6,
+    4304.5
+   ],
+   "how": "crossing",
+   "centre": [
+    7137,
+    4304
+   ],
+   "verdict": "candidate",
+   "cid": "C027"
+  },
+  {
+   "sampler": "streetcar",
+   "plate": "5",
+   "draw": 5,
+   "at": [
+    6851.3,
+    5397.5
+   ],
+   "how": "crossing",
+   "centre": [
+    6851,
+    5398
+   ],
+   "verdict": "candidate",
+   "cid": "C028"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "30",
+   "draw": 1,
+   "piece_box": [
+    5174,
+    6494,
+    5180,
+    6496
+   ],
+   "centre": [
+    5177,
+    6495
+   ],
+   "verdict": "candidate",
+   "cid": "C029"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "30",
+   "draw": 2,
+   "piece_box": [
+    4454,
+    4635,
+    4459,
+    4638
+   ],
+   "centre": [
+    4457,
+    4637
+   ],
+   "verdict": "candidate",
+   "cid": "C030"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "30",
+   "draw": 3,
+   "piece_box": [
+    6580,
+    627,
+    6589,
+    642
+   ],
+   "verdict": "not elongated (2.0)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "30",
+   "draw": 4,
+   "piece_box": [
+    5674,
+    4202,
+    5687,
+    4213
+   ],
+   "centre": [
+    5680,
+    4208
+   ],
+   "verdict": "candidate",
+   "cid": "C031"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "30",
+   "draw": 5,
+   "piece_box": [
+    4552,
+    4000,
+    4564,
+    4008
+   ],
+   "centre": [
+    4557,
+    4004
+   ],
+   "verdict": "candidate",
+   "cid": "C032"
+  },
+  {
+   "sampler": "dash",
+   "plate": "30",
+   "draw": 1,
+   "piece_box": [
+    4159,
+    6869,
+    4173,
+    6883
+   ],
+   "verdict": "not elongated (1.3)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "30",
+   "draw": 2,
+   "piece_box": [
+    3535,
+    6417,
+    3543,
+    6431
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "30",
+   "draw": 3,
+   "piece_box": [
+    9020,
+    2223,
+    9035,
+    2238
+   ],
+   "verdict": "not elongated (1.5)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "30",
+   "draw": 4,
+   "piece_box": [
+    4137,
+    5558,
+    4144,
+    5561
+   ],
+   "centre": [
+    4141,
+    5560
+   ],
+   "verdict": "candidate",
+   "cid": "C033"
+  },
+  {
+   "sampler": "dash",
+   "plate": "30",
+   "draw": 5,
+   "piece_box": [
+    9729,
+    3500,
+    9747,
+    3514
+   ],
+   "verdict": "not elongated (1.7)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "30",
+   "draw": 6,
+   "piece_box": [
+    7665,
+    3676,
+    7671,
+    3688
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "30",
+   "draw": 7,
+   "piece_box": [
+    9190,
+    1084,
+    9209,
+    1104
+   ],
+   "verdict": "not elongated (1.5)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "30",
+   "draw": 8,
+   "piece_box": [
+    10085,
+    1439,
+    10099,
+    1452
+   ],
+   "verdict": "not elongated (1.7)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "30",
+   "draw": 9,
+   "piece_box": [
+    3223,
+    4872,
+    3242,
+    4887
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "30",
+   "draw": 10,
+   "piece_box": [
+    4123,
+    6010,
+    4145,
+    6033
+   ],
+   "verdict": "not elongated (1.5)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "30",
+   "draw": 11,
+   "piece_box": [
+    4347,
+    5992,
+    4354,
+    5999
+   ],
+   "centre": [
+    4351,
+    5996
+   ],
+   "verdict": "candidate",
+   "cid": "C034"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "30",
+   "draw": 1,
+   "piece_box": [
+    2896,
+    2304,
+    2931,
+    2937
+   ],
+   "centre": [
+    2909,
+    2862
+   ],
+   "verdict": "candidate",
+   "cid": "C035"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "30",
+   "draw": 2,
+   "piece_box": [
+    2842,
+    6314,
+    3176,
+    6387
+   ],
+   "centre": [
+    3174,
+    6316
+   ],
+   "verdict": "candidate",
+   "cid": "C036"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "90",
+   "draw": 1,
+   "piece_box": [
+    8879,
+    4274,
+    8893,
+    4285
+   ],
+   "centre": [
+    8888,
+    4279
+   ],
+   "verdict": "candidate",
+   "cid": "C037"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "90",
+   "draw": 2,
+   "piece_box": [
+    10380,
+    2547,
+    10391,
+    2555
+   ],
+   "verdict": "not elongated (1.7)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "90",
+   "draw": 3,
+   "piece_box": [
+    877,
+    4322,
+    892,
+    4338
+   ],
+   "centre": [
+    884,
+    4331
+   ],
+   "verdict": "candidate",
+   "cid": "C038"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "90",
+   "draw": 4,
+   "piece_box": [
+    5254,
+    3438,
+    5266,
+    3445
+   ],
+   "verdict": "not elongated (1.4)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "90",
+   "draw": 5,
+   "piece_box": [
+    2479,
+    3201,
+    2483,
+    3205
+   ],
+   "centre": [
+    2481,
+    3204
+   ],
+   "verdict": "candidate",
+   "cid": "C039"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "90",
+   "draw": 6,
+   "piece_box": [
+    2129,
+    1546,
+    2141,
+    1551
+   ],
+   "centre": [
+    2134,
+    1549
+   ],
+   "verdict": "candidate",
+   "cid": "C040"
+  },
+  {
+   "sampler": "dash",
+   "plate": "90",
+   "draw": 1,
+   "piece_box": [
+    5950,
+    2995,
+    5957,
+    3000
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "90",
+   "draw": 2,
+   "piece_box": [
+    10326,
+    5153,
+    10353,
+    5174
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "90",
+   "draw": 3,
+   "piece_box": [
+    2756,
+    3593,
+    2760,
+    3606
+   ],
+   "centre": [
+    2758,
+    3599
+   ],
+   "verdict": "candidate",
+   "cid": "C041"
+  },
+  {
+   "sampler": "dash",
+   "plate": "90",
+   "draw": 4,
+   "piece_box": [
+    1824,
+    4269,
+    1842,
+    4293
+   ],
+   "centre": [
+    1833,
+    4281
+   ],
+   "verdict": "candidate",
+   "cid": "C042"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "90",
+   "draw": 1,
+   "piece_box": [
+    7385,
+    4828,
+    7724,
+    5171
+   ],
+   "centre": [
+    7552,
+    4995
+   ],
+   "verdict": "candidate",
+   "cid": "C043"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "90",
+   "draw": 2,
+   "piece_box": [
+    383,
+    5199,
+    672,
+    5429
+   ],
+   "centre": [
+    662,
+    5221
+   ],
+   "verdict": "candidate",
+   "cid": "C044"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "60B",
+   "draw": 1,
+   "piece_box": [
+    3590,
+    1769,
+    3598,
+    1776
+   ],
+   "verdict": "not elongated (1.5)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "60B",
+   "draw": 2,
+   "piece_box": [
+    2610,
+    1905,
+    2616,
+    1911
+   ],
+   "verdict": "not elongated (1.1)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "60B",
+   "draw": 3,
+   "piece_box": [
+    3903,
+    1198,
+    3907,
+    1208
+   ],
+   "centre": [
+    3905,
+    1203
+   ],
+   "verdict": "candidate",
+   "cid": "C045"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "60B",
+   "draw": 4,
+   "piece_box": [
+    3886,
+    1347,
+    3890,
+    1355
+   ],
+   "centre": [
+    3888,
+    1351
+   ],
+   "verdict": "candidate",
+   "cid": "C046"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "60B",
+   "draw": 5,
+   "piece_box": [
+    1964,
+    3578,
+    1965,
+    3582
+   ],
+   "centre": [
+    1965,
+    3580
+   ],
+   "verdict": "candidate",
+   "cid": "C047"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "60B",
+   "draw": 6,
+   "piece_box": [
+    2960,
+    2383,
+    2969,
+    2399
+   ],
+   "centre": [
+    2963,
+    2391
+   ],
+   "verdict": "candidate",
+   "cid": "C048"
+  },
+  {
+   "sampler": "dash",
+   "plate": "60B",
+   "draw": 1,
+   "piece_box": [
+    2223,
+    2762,
+    2236,
+    2784
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "60B",
+   "draw": 2,
+   "piece_box": [
+    2383,
+    1976,
+    2401,
+    1989
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "60B",
+   "draw": 3,
+   "piece_box": [
+    1233,
+    464,
+    1249,
+    490
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "60B",
+   "draw": 4,
+   "piece_box": [
+    2050,
+    2426,
+    2059,
+    2440
+   ],
+   "centre": [
+    2054,
+    2433
+   ],
+   "verdict": "candidate",
+   "cid": "C049"
+  },
+  {
+   "sampler": "dash",
+   "plate": "60B",
+   "draw": 5,
+   "piece_box": [
+    2526,
+    901,
+    2543,
+    926
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "60B",
+   "draw": 6,
+   "piece_box": [
+    2354,
+    3185,
+    2361,
+    3199
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "60B",
+   "draw": 7,
+   "piece_box": [
+    1535,
+    596,
+    1552,
+    606
+   ],
+   "centre": [
+    1543,
+    602
+   ],
+   "verdict": "candidate",
+   "cid": "C050"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "60B",
+   "draw": 1,
+   "piece_box": [
+    3798,
+    187,
+    4494,
+    1044
+   ],
+   "centre": [
+    3995,
+    277
+   ],
+   "verdict": "candidate",
+   "cid": "C051"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "60B",
+   "draw": 2,
+   "piece_box": [
+    3265,
+    2354,
+    3488,
+    3042
+   ],
+   "centre": [
+    3359,
+    3035
+   ],
+   "verdict": "candidate",
+   "cid": "C052"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "19",
+   "draw": 1,
+   "piece_box": [
+    6557,
+    4740,
+    6572,
+    4755
+   ],
+   "verdict": "not elongated (1.8)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "19",
+   "draw": 2,
+   "piece_box": [
+    7786,
+    4588,
+    7789,
+    4593
+   ],
+   "verdict": "not elongated (1.7)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "19",
+   "draw": 3,
+   "piece_box": [
+    4417,
+    4885,
+    4419,
+    4889
+   ],
+   "verdict": "not elongated (1.8)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "19",
+   "draw": 4,
+   "piece_box": [
+    5012,
+    4191,
+    5017,
+    4199
+   ],
+   "centre": [
+    5014,
+    4195
+   ],
+   "verdict": "candidate",
+   "cid": "C053"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "19",
+   "draw": 5,
+   "piece_box": [
+    5115,
+    3638,
+    5123,
+    3652
+   ],
+   "centre": [
+    5118,
+    3645
+   ],
+   "verdict": "candidate",
+   "cid": "C054"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "19",
+   "draw": 6,
+   "piece_box": [
+    5523,
+    4384,
+    5536,
+    4395
+   ],
+   "verdict": "not elongated (1.7)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "19",
+   "draw": 7,
+   "piece_box": [
+    1567,
+    5703,
+    1575,
+    5713
+   ],
+   "verdict": "not elongated (1.1)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "19",
+   "draw": 8,
+   "piece_box": [
+    1244,
+    4694,
+    1248,
+    4698
+   ],
+   "verdict": "not elongated (1.4)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "19",
+   "draw": 9,
+   "piece_box": [
+    8603,
+    4770,
+    8616,
+    4779
+   ],
+   "verdict": "not elongated (1.5)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "19",
+   "draw": 10,
+   "piece_box": [
+    7556,
+    6611,
+    7565,
+    6614
+   ],
+   "centre": [
+    7560,
+    6612
+   ],
+   "verdict": "candidate",
+   "cid": "C055"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "19",
+   "draw": 11,
+   "piece_box": [
+    6001,
+    3317,
+    6004,
+    3322
+   ],
+   "centre": [
+    6003,
+    3320
+   ],
+   "verdict": "candidate",
+   "cid": "C056"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 1,
+   "piece_box": [
+    8065,
+    3155,
+    8081,
+    3169
+   ],
+   "verdict": "not elongated (1.7)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 2,
+   "piece_box": [
+    10130,
+    3099,
+    10148,
+    3117
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 3,
+   "piece_box": [
+    6883,
+    5471,
+    6900,
+    5492
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 4,
+   "piece_box": [
+    2379,
+    5606,
+    2398,
+    5621
+   ],
+   "verdict": "not elongated (2.0)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 5,
+   "piece_box": [
+    4475,
+    1496,
+    4494,
+    1523
+   ],
+   "verdict": "not elongated (1.9)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 6,
+   "piece_box": [
+    2212,
+    1410,
+    2233,
+    1433
+   ],
+   "verdict": "not elongated (1.6)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 7,
+   "piece_box": [
+    2226,
+    2217,
+    2238,
+    2219
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 8,
+   "piece_box": [
+    9115,
+    5460,
+    9136,
+    5479
+   ],
+   "verdict": "not elongated (1.3)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 9,
+   "piece_box": [
+    2305,
+    2093,
+    2322,
+    2109
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 10,
+   "piece_box": [
+    10771,
+    3097,
+    10778,
+    3101
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 11,
+   "piece_box": [
+    8558,
+    5353,
+    8576,
+    5378
+   ],
+   "verdict": "not elongated (1.6)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 12,
+   "piece_box": [
+    976,
+    4639,
+    983,
+    4651
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 13,
+   "piece_box": [
+    9234,
+    3487,
+    9247,
+    3505
+   ],
+   "verdict": "not elongated (1.5)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 14,
+   "piece_box": [
+    4538,
+    5259,
+    4550,
+    5278
+   ],
+   "verdict": "not elongated (1.9)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 15,
+   "piece_box": [
+    8569,
+    3287,
+    8578,
+    3305
+   ],
+   "centre": [
+    8574,
+    3296
+   ],
+   "verdict": "candidate",
+   "cid": "C057"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 16,
+   "piece_box": [
+    5063,
+    4521,
+    5076,
+    4537
+   ],
+   "verdict": "not elongated (1.7)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 17,
+   "piece_box": [
+    6217,
+    4163,
+    6234,
+    4191
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 18,
+   "piece_box": [
+    6945,
+    4025,
+    6960,
+    4035
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 19,
+   "piece_box": [
+    7188,
+    3812,
+    7205,
+    3826
+   ],
+   "verdict": "not elongated (1.6)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 20,
+   "piece_box": [
+    5591,
+    4797,
+    5602,
+    4808
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "19",
+   "draw": 21,
+   "piece_box": [
+    3388,
+    1843,
+    3399,
+    1865
+   ],
+   "centre": [
+    3393,
+    1855
+   ],
+   "verdict": "candidate",
+   "cid": "C058"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "19",
+   "draw": 1,
+   "piece_box": [
+    8275,
+    3789,
+    8379,
+    3880
+   ],
+   "centre": [
+    8344,
+    3843
+   ],
+   "verdict": "candidate",
+   "cid": "C059"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "19",
+   "draw": 2,
+   "piece_box": [
+    10717,
+    726,
+    10777,
+    782
+   ],
+   "centre": [
+    10750,
+    777
+   ],
+   "verdict": "candidate",
+   "cid": "C060"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "64A",
+   "draw": 1,
+   "piece_box": [
+    6212,
+    6791,
+    6226,
+    6791
+   ],
+   "centre": [
+    6219,
+    6791
+   ],
+   "verdict": "candidate",
+   "cid": "C061"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "64A",
+   "draw": 2,
+   "piece_box": [
+    2325,
+    5292,
+    2334,
+    5295
+   ],
+   "centre": [
+    2330,
+    5294
+   ],
+   "verdict": "candidate",
+   "cid": "C062"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "64A",
+   "draw": 3,
+   "piece_box": [
+    9120,
+    3337,
+    9124,
+    3346
+   ],
+   "centre": [
+    9122,
+    3341
+   ],
+   "verdict": "candidate",
+   "cid": "C063"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "64A",
+   "draw": 4,
+   "piece_box": [
+    8238,
+    2938,
+    8244,
+    2940
+   ],
+   "centre": [
+    8241,
+    2939
+   ],
+   "verdict": "candidate",
+   "cid": "C064"
+  },
+  {
+   "sampler": "dash",
+   "plate": "64A",
+   "draw": 1,
+   "piece_box": [
+    8960,
+    1599,
+    8995,
+    1607
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "64A",
+   "draw": 2,
+   "piece_box": [
+    1095,
+    4090,
+    1102,
+    4097
+   ],
+   "verdict": "not elongated (1.1)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "64A",
+   "draw": 3,
+   "piece_box": [
+    2807,
+    6199,
+    2814,
+    6204
+   ],
+   "centre": [
+    2811,
+    6201
+   ],
+   "verdict": "candidate",
+   "cid": "C065"
+  },
+  {
+   "sampler": "dash",
+   "plate": "64A",
+   "draw": 4,
+   "piece_box": [
+    3332,
+    4858,
+    3349,
+    4885
+   ],
+   "centre": [
+    3342,
+    4870
+   ],
+   "verdict": "candidate",
+   "cid": "C066"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "64A",
+   "draw": 1,
+   "piece_box": [
+    1544,
+    285,
+    1610,
+    346
+   ],
+   "centre": [
+    1556,
+    290
+   ],
+   "verdict": "candidate",
+   "cid": "C067"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "64A",
+   "draw": 2,
+   "piece_box": [
+    1092,
+    2847,
+    1589,
+    3568
+   ],
+   "centre": [
+    1483,
+    3050
+   ],
+   "verdict": "candidate",
+   "cid": "C068"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "86",
+   "draw": 1,
+   "piece_box": [
+    3433,
+    4095,
+    3448,
+    4099
+   ],
+   "centre": [
+    3440,
+    4097
+   ],
+   "verdict": "candidate",
+   "cid": "C069"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "86",
+   "draw": 2,
+   "piece_box": [
+    10538,
+    3640,
+    10552,
+    3650
+   ],
+   "verdict": "not elongated (1.8)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "86",
+   "draw": 3,
+   "piece_box": [
+    2722,
+    3945,
+    2725,
+    3949
+   ],
+   "centre": [
+    2724,
+    3947
+   ],
+   "verdict": "candidate",
+   "cid": "C070"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "86",
+   "draw": 4,
+   "piece_box": [
+    2448,
+    776,
+    2460,
+    793
+   ],
+   "centre": [
+    2456,
+    786
+   ],
+   "verdict": "candidate",
+   "cid": "C071"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "86",
+   "draw": 5,
+   "piece_box": [
+    5813,
+    6323,
+    5818,
+    6326
+   ],
+   "verdict": "not elongated (1.6)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "86",
+   "draw": 6,
+   "piece_box": [
+    8350,
+    4203,
+    8364,
+    4213
+   ],
+   "centre": [
+    8357,
+    4208
+   ],
+   "verdict": "candidate",
+   "cid": "C072"
+  },
+  {
+   "sampler": "dash",
+   "plate": "86",
+   "draw": 1,
+   "piece_box": [
+    5712,
+    5667,
+    5721,
+    5683
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "86",
+   "draw": 2,
+   "piece_box": [
+    765,
+    4605,
+    780,
+    4625
+   ],
+   "verdict": "not elongated (1.6)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "86",
+   "draw": 3,
+   "piece_box": [
+    6904,
+    6586,
+    6924,
+    6593
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "86",
+   "draw": 4,
+   "piece_box": [
+    6437,
+    4064,
+    6451,
+    4094
+   ],
+   "verdict": "not elongated (1.9)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "86",
+   "draw": 5,
+   "piece_box": [
+    10291,
+    2851,
+    10300,
+    2870
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "86",
+   "draw": 6,
+   "piece_box": [
+    3740,
+    766,
+    3755,
+    787
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "86",
+   "draw": 7,
+   "piece_box": [
+    10473,
+    4665,
+    10493,
+    4690
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "86",
+   "draw": 8,
+   "piece_box": [
+    9438,
+    3988,
+    9445,
+    4002
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "86",
+   "draw": 9,
+   "piece_box": [
+    2505,
+    5237,
+    2511,
+    5268
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "86",
+   "draw": 10,
+   "piece_box": [
+    3024,
+    4051,
+    3044,
+    4065
+   ],
+   "verdict": "not elongated (1.9)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "86",
+   "draw": 11,
+   "piece_box": [
+    7965,
+    5091,
+    7982,
+    5107
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "86",
+   "draw": 12,
+   "piece_box": [
+    6026,
+    5115,
+    6046,
+    5137
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "86",
+   "draw": 13,
+   "piece_box": [
+    8641,
+    4463,
+    8653,
+    4483
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "86",
+   "draw": 14,
+   "piece_box": [
+    7951,
+    4369,
+    7954,
+    4401
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "86",
+   "draw": 15,
+   "piece_box": [
+    3351,
+    3893,
+    3358,
+    3899
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "86",
+   "draw": 16,
+   "piece_box": [
+    10148,
+    2229,
+    10166,
+    2252
+   ],
+   "centre": [
+    10156,
+    2240
+   ],
+   "verdict": "candidate",
+   "cid": "C073"
+  },
+  {
+   "sampler": "dash",
+   "plate": "86",
+   "draw": 17,
+   "piece_box": [
+    10102,
+    2133,
+    10119,
+    2152
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "86",
+   "draw": 18,
+   "piece_box": [
+    7527,
+    5633,
+    7535,
+    5645
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "86",
+   "draw": 19,
+   "piece_box": [
+    10095,
+    3328,
+    10105,
+    3340
+   ],
+   "centre": [
+    10101,
+    3334
+   ],
+   "verdict": "candidate",
+   "cid": "C074"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "86",
+   "draw": 1,
+   "piece_box": [
+    2159,
+    2901,
+    2279,
+    3063
+   ],
+   "centre": [
+    2251,
+    2990
+   ],
+   "verdict": "candidate",
+   "cid": "C075"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "86",
+   "draw": 2,
+   "piece_box": [
+    8076,
+    3643,
+    8129,
+    3703
+   ],
+   "centre": [
+    8110,
+    3651
+   ],
+   "verdict": "candidate",
+   "cid": "C076"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "3",
+   "draw": 1,
+   "piece_box": [
+    7461,
+    5772,
+    7462,
+    5777
+   ],
+   "centre": [
+    7462,
+    5774
+   ],
+   "verdict": "candidate",
+   "cid": "C077"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "3",
+   "draw": 2,
+   "piece_box": [
+    6046,
+    1633,
+    6048,
+    1638
+   ],
+   "centre": [
+    6047,
+    1636
+   ],
+   "verdict": "candidate",
+   "cid": "C078"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "3",
+   "draw": 3,
+   "piece_box": [
+    8543,
+    3201,
+    8555,
+    3204
+   ],
+   "centre": [
+    8549,
+    3203
+   ],
+   "verdict": "candidate",
+   "cid": "C079"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "3",
+   "draw": 4,
+   "piece_box": [
+    8895,
+    361,
+    8900,
+    370
+   ],
+   "centre": [
+    8898,
+    366
+   ],
+   "verdict": "candidate",
+   "cid": "C080"
+  },
+  {
+   "sampler": "dash",
+   "plate": "3",
+   "draw": 1,
+   "piece_box": [
+    5811,
+    377,
+    5827,
+    397
+   ],
+   "verdict": "not elongated (2.0)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "3",
+   "draw": 2,
+   "piece_box": [
+    7484,
+    973,
+    7509,
+    983
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "3",
+   "draw": 3,
+   "piece_box": [
+    1433,
+    692,
+    1442,
+    713
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "3",
+   "draw": 4,
+   "piece_box": [
+    8978,
+    722,
+    9004,
+    725
+   ],
+   "centre": [
+    8992,
+    724
+   ],
+   "verdict": "candidate",
+   "cid": "C081"
+  },
+  {
+   "sampler": "dash",
+   "plate": "3",
+   "draw": 5,
+   "piece_box": [
+    6408,
+    3049,
+    6423,
+    3068
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "3",
+   "draw": 6,
+   "piece_box": [
+    3542,
+    1115,
+    3558,
+    1132
+   ],
+   "centre": [
+    3548,
+    1124
+   ],
+   "verdict": "candidate",
+   "cid": "C082"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "3",
+   "draw": 1,
+   "piece_box": [
+    270,
+    2831,
+    342,
+    2971
+   ],
+   "centre": [
+    275,
+    2932
+   ],
+   "verdict": "candidate",
+   "cid": "C083"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "3",
+   "draw": 2,
+   "piece_box": [
+    5248,
+    4077,
+    5368,
+    4422
+   ],
+   "centre": [
+    5278,
+    4078
+   ],
+   "verdict": "candidate",
+   "cid": "C084"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "12",
+   "draw": 1,
+   "piece_box": [
+    5105,
+    5542,
+    5107,
+    5549
+   ],
+   "centre": [
+    5106,
+    5546
+   ],
+   "verdict": "candidate",
+   "cid": "C085"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "12",
+   "draw": 2,
+   "piece_box": [
+    4639,
+    3070,
+    4643,
+    3078
+   ],
+   "centre": [
+    4642,
+    3074
+   ],
+   "verdict": "candidate",
+   "cid": "C086"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "12",
+   "draw": 3,
+   "piece_box": [
+    3146,
+    5458,
+    3151,
+    5461
+   ],
+   "centre": [
+    3148,
+    5459
+   ],
+   "verdict": "candidate",
+   "cid": "C087"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "12",
+   "draw": 4,
+   "piece_box": [
+    3276,
+    6426,
+    3279,
+    6433
+   ],
+   "centre": [
+    3278,
+    6430
+   ],
+   "verdict": "candidate",
+   "cid": "C088"
+  },
+  {
+   "sampler": "dash",
+   "plate": "12",
+   "draw": 1,
+   "piece_box": [
+    1364,
+    6244,
+    1366,
+    6258
+   ],
+   "centre": [
+    1365,
+    6251
+   ],
+   "verdict": "candidate",
+   "cid": "C089"
+  },
+  {
+   "sampler": "dash",
+   "plate": "12",
+   "draw": 2,
+   "piece_box": [
+    4271,
+    3595,
+    4291,
+    3616
+   ],
+   "verdict": "not elongated (1.3)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "12",
+   "draw": 3,
+   "piece_box": [
+    8594,
+    2043,
+    8620,
+    2059
+   ],
+   "verdict": "not elongated (1.8)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "12",
+   "draw": 4,
+   "piece_box": [
+    9416,
+    5255,
+    9440,
+    5260
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "12",
+   "draw": 5,
+   "piece_box": [
+    140,
+    5397,
+    162,
+    5414
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "12",
+   "draw": 6,
+   "piece_box": [
+    3020,
+    5644,
+    3036,
+    5659
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "12",
+   "draw": 7,
+   "piece_box": [
+    764,
+    1178,
+    789,
+    1206
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "12",
+   "draw": 8,
+   "piece_box": [
+    2690,
+    1299,
+    2700,
+    1303
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "12",
+   "draw": 9,
+   "piece_box": [
+    7784,
+    4150,
+    7796,
+    4174
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "12",
+   "draw": 10,
+   "piece_box": [
+    9481,
+    4226,
+    9489,
+    4234
+   ],
+   "verdict": "not elongated (1.1)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "12",
+   "draw": 11,
+   "piece_box": [
+    8556,
+    447,
+    8574,
+    453
+   ],
+   "centre": [
+    8566,
+    450
+   ],
+   "verdict": "candidate",
+   "cid": "C090"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "12",
+   "draw": 1,
+   "piece_box": [
+    3039,
+    3569,
+    3079,
+    3617
+   ],
+   "centre": [
+    3078,
+    3581
+   ],
+   "verdict": "candidate",
+   "cid": "C091"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "12",
+   "draw": 2,
+   "piece_box": [
+    1171,
+    1635,
+    1212,
+    1684
+   ],
+   "verdict": "no skeleton end"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "12",
+   "draw": 3,
+   "piece_box": [
+    7676,
+    1749,
+    7746,
+    1805
+   ],
+   "centre": [
+    7738,
+    1778
+   ],
+   "verdict": "candidate",
+   "cid": "C092"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "57",
+   "draw": 1,
+   "piece_box": [
+    5450,
+    1832,
+    5453,
+    1836
+   ],
+   "verdict": "not elongated (1.3)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "57",
+   "draw": 2,
+   "piece_box": [
+    9588,
+    2943,
+    9592,
+    2948
+   ],
+   "verdict": "not elongated (1.8)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "57",
+   "draw": 3,
+   "piece_box": [
+    5848,
+    655,
+    5855,
+    660
+   ],
+   "verdict": "not elongated (1.4)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "57",
+   "draw": 4,
+   "piece_box": [
+    187,
+    1756,
+    190,
+    1760
+   ],
+   "verdict": "not elongated (1.4)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "57",
+   "draw": 5,
+   "piece_box": [
+    2368,
+    688,
+    2378,
+    700
+   ],
+   "centre": [
+    2373,
+    693
+   ],
+   "verdict": "candidate",
+   "cid": "C093"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "57",
+   "draw": 6,
+   "piece_box": [
+    6907,
+    4425,
+    6913,
+    4433
+   ],
+   "centre": [
+    6910,
+    4429
+   ],
+   "verdict": "candidate",
+   "cid": "C094"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "57",
+   "draw": 7,
+   "piece_box": [
+    1681,
+    7003,
+    1696,
+    7017
+   ],
+   "centre": [
+    1687,
+    7009
+   ],
+   "verdict": "candidate",
+   "cid": "C095"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "57",
+   "draw": 8,
+   "piece_box": [
+    9696,
+    5760,
+    9702,
+    5764
+   ],
+   "centre": [
+    9699,
+    5762
+   ],
+   "verdict": "candidate",
+   "cid": "C096"
+  },
+  {
+   "sampler": "dash",
+   "plate": "57",
+   "draw": 1,
+   "piece_box": [
+    9578,
+    2815,
+    9588,
+    2833
+   ],
+   "centre": [
+    9583,
+    2824
+   ],
+   "verdict": "candidate",
+   "cid": "C097"
+  },
+  {
+   "sampler": "dash",
+   "plate": "57",
+   "draw": 2,
+   "piece_box": [
+    8450,
+    1967,
+    8458,
+    1979
+   ],
+   "verdict": "not elongated (1.7)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "57",
+   "draw": 3,
+   "piece_box": [
+    4227,
+    4363,
+    4252,
+    4366
+   ],
+   "centre": [
+    4240,
+    4365
+   ],
+   "verdict": "candidate",
+   "cid": "C098"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "57",
+   "draw": 1,
+   "piece_box": [
+    4206,
+    6841,
+    4293,
+    6884
+   ],
+   "centre": [
+    4220,
+    6845
+   ],
+   "verdict": "candidate",
+   "cid": "C099"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "57",
+   "draw": 2,
+   "piece_box": [
+    5407,
+    5575,
+    5511,
+    5688
+   ],
+   "centre": [
+    5447,
+    5664
+   ],
+   "verdict": "candidate",
+   "cid": "C100"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "47",
+   "draw": 1,
+   "piece_box": [
+    3052,
+    3901,
+    3056,
+    3909
+   ],
+   "centre": [
+    3054,
+    3906
+   ],
+   "verdict": "candidate",
+   "cid": "C101"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "47",
+   "draw": 2,
+   "piece_box": [
+    2455,
+    6351,
+    2459,
+    6357
+   ],
+   "verdict": "not elongated (1.7)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "47",
+   "draw": 3,
+   "piece_box": [
+    1952,
+    1993,
+    1964,
+    2003
+   ],
+   "verdict": "not elongated (1.9)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "47",
+   "draw": 4,
+   "piece_box": [
+    6415,
+    6610,
+    6427,
+    6622
+   ],
+   "centre": [
+    6421,
+    6617
+   ],
+   "verdict": "candidate",
+   "cid": "C102"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "47",
+   "draw": 5,
+   "piece_box": [
+    5640,
+    1746,
+    5655,
+    1757
+   ],
+   "centre": [
+    5647,
+    1751
+   ],
+   "verdict": "candidate",
+   "cid": "C103"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "47",
+   "draw": 6,
+   "piece_box": [
+    9815,
+    6311,
+    9823,
+    6318
+   ],
+   "verdict": "not elongated (1.2)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "47",
+   "draw": 7,
+   "piece_box": [
+    3127,
+    4305,
+    3128,
+    4315
+   ],
+   "centre": [
+    3128,
+    4310
+   ],
+   "verdict": "candidate",
+   "cid": "C104"
+  },
+  {
+   "sampler": "dash",
+   "plate": "47",
+   "draw": 1,
+   "piece_box": [
+    4347,
+    3505,
+    4372,
+    3518
+   ],
+   "verdict": "not elongated (1.9)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "47",
+   "draw": 2,
+   "piece_box": [
+    6888,
+    5183,
+    6896,
+    5190
+   ],
+   "centre": [
+    6891,
+    5186
+   ],
+   "verdict": "candidate",
+   "cid": "C105"
+  },
+  {
+   "sampler": "dash",
+   "plate": "47",
+   "draw": 3,
+   "piece_box": [
+    10512,
+    2362,
+    10524,
+    2383
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "47",
+   "draw": 4,
+   "piece_box": [
+    2936,
+    1736,
+    2954,
+    1748
+   ],
+   "verdict": "not elongated (1.8)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "47",
+   "draw": 5,
+   "piece_box": [
+    7168,
+    6131,
+    7193,
+    6137
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "47",
+   "draw": 6,
+   "piece_box": [
+    10386,
+    1195,
+    10398,
+    1206
+   ],
+   "verdict": "not elongated (1.9)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "47",
+   "draw": 7,
+   "piece_box": [
+    6151,
+    2969,
+    6161,
+    2979
+   ],
+   "verdict": "not elongated (1.6)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "47",
+   "draw": 8,
+   "piece_box": [
+    4580,
+    3064,
+    4590,
+    3073
+   ],
+   "verdict": "not elongated (1.3)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "47",
+   "draw": 9,
+   "piece_box": [
+    8750,
+    5678,
+    8759,
+    5684
+   ],
+   "centre": [
+    8755,
+    5681
+   ],
+   "verdict": "candidate",
+   "cid": "C106"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "47",
+   "draw": 1,
+   "piece_box": [
+    1236,
+    5251,
+    1379,
+    5823
+   ],
+   "centre": [
+    1355,
+    5601
+   ],
+   "verdict": "candidate",
+   "cid": "C107"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "47",
+   "draw": 2,
+   "piece_box": [
+    2207,
+    4124,
+    2643,
+    4406
+   ],
+   "centre": [
+    2470,
+    4372
+   ],
+   "verdict": "candidate",
+   "cid": "C108"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "48",
+   "draw": 1,
+   "piece_box": [
+    6549,
+    1595,
+    6558,
+    1600
+   ],
+   "centre": [
+    6553,
+    1598
+   ],
+   "verdict": "candidate",
+   "cid": "C109"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "48",
+   "draw": 2,
+   "piece_box": [
+    7518,
+    1681,
+    7527,
+    1691
+   ],
+   "verdict": "not elongated (1.5)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "48",
+   "draw": 3,
+   "piece_box": [
+    5227,
+    3952,
+    5232,
+    3955
+   ],
+   "centre": [
+    5229,
+    3953
+   ],
+   "verdict": "candidate",
+   "cid": "C110"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "48",
+   "draw": 4,
+   "piece_box": [
+    4228,
+    1058,
+    4232,
+    1060
+   ],
+   "centre": [
+    4230,
+    1059
+   ],
+   "verdict": "candidate",
+   "cid": "C111"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "48",
+   "draw": 5,
+   "piece_box": [
+    3575,
+    3503,
+    3580,
+    3507
+   ],
+   "centre": [
+    3578,
+    3505
+   ],
+   "verdict": "candidate",
+   "cid": "C112"
+  },
+  {
+   "sampler": "dash",
+   "plate": "48",
+   "draw": 1,
+   "piece_box": [
+    4113,
+    991,
+    4128,
+    999
+   ],
+   "verdict": "not elongated (1.8)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "48",
+   "draw": 2,
+   "piece_box": [
+    8688,
+    6704,
+    8710,
+    6721
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "48",
+   "draw": 3,
+   "piece_box": [
+    6077,
+    1160,
+    6092,
+    1199
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "48",
+   "draw": 4,
+   "piece_box": [
+    8086,
+    1751,
+    8096,
+    1762
+   ],
+   "verdict": "not elongated (1.8)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "48",
+   "draw": 5,
+   "piece_box": [
+    6335,
+    6564,
+    6337,
+    6571
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "48",
+   "draw": 6,
+   "piece_box": [
+    3793,
+    5124,
+    3797,
+    5134
+   ],
+   "centre": [
+    3795,
+    5128
+   ],
+   "verdict": "candidate",
+   "cid": "C113"
+  },
+  {
+   "sampler": "dash",
+   "plate": "48",
+   "draw": 7,
+   "piece_box": [
+    6544,
+    6560,
+    6548,
+    6567
+   ],
+   "centre": [
+    6547,
+    6563
+   ],
+   "verdict": "candidate",
+   "cid": "C114"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "48",
+   "draw": 1,
+   "piece_box": [
+    7416,
+    6332,
+    7619,
+    6469
+   ],
+   "centre": [
+    7447,
+    6444
+   ],
+   "verdict": "candidate",
+   "cid": "C115"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "48",
+   "draw": 2,
+   "piece_box": [
+    7489,
+    5491,
+    8091,
+    5553
+   ],
+   "centre": [
+    7518,
+    5506
+   ],
+   "verdict": "candidate",
+   "cid": "C116"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "93A",
+   "draw": 1,
+   "piece_box": [
+    99,
+    3060,
+    114,
+    3070
+   ],
+   "centre": [
+    107,
+    3065
+   ],
+   "verdict": "candidate",
+   "cid": "C117"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "93A",
+   "draw": 2,
+   "piece_box": [
+    1527,
+    2214,
+    1540,
+    2220
+   ],
+   "centre": [
+    1533,
+    2217
+   ],
+   "verdict": "candidate",
+   "cid": "C118"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "93A",
+   "draw": 3,
+   "piece_box": [
+    774,
+    2979,
+    783,
+    2994
+   ],
+   "verdict": "not elongated (1.6)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "93A",
+   "draw": 4,
+   "piece_box": [
+    2521,
+    2991,
+    2531,
+    3007
+   ],
+   "centre": [
+    2525,
+    2999
+   ],
+   "verdict": "candidate",
+   "cid": "C119"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "93A",
+   "draw": 5,
+   "piece_box": [
+    4080,
+    1629,
+    4083,
+    1633
+   ],
+   "verdict": "not elongated (1.9)"
+  },
+  {
+   "sampler": "isolated",
+   "plate": "93A",
+   "draw": 6,
+   "piece_box": [
+    1313,
+    1448,
+    1317,
+    1463
+   ],
+   "centre": [
+    1315,
+    1455
+   ],
+   "verdict": "candidate",
+   "cid": "C120"
+  },
+  {
+   "sampler": "dash",
+   "plate": "93A",
+   "draw": 1,
+   "piece_box": [
+    864,
+    2540,
+    880,
+    2555
+   ],
+   "verdict": "not elongated (1.5)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "93A",
+   "draw": 2,
+   "piece_box": [
+    3984,
+    2683,
+    3988,
+    2690
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "93A",
+   "draw": 3,
+   "piece_box": [
+    3836,
+    2685,
+    3858,
+    2713
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "93A",
+   "draw": 4,
+   "piece_box": [
+    4272,
+    2744,
+    4277,
+    2756
+   ],
+   "centre": [
+    4274,
+    2751
+   ],
+   "verdict": "candidate",
+   "cid": "C121"
+  },
+  {
+   "sampler": "dash",
+   "plate": "93A",
+   "draw": 5,
+   "piece_box": [
+    2966,
+    2794,
+    2988,
+    2819
+   ],
+   "verdict": "no collinear partner"
+  },
+  {
+   "sampler": "dash",
+   "plate": "93A",
+   "draw": 6,
+   "piece_box": [
+    925,
+    2319,
+    936,
+    2334
+   ],
+   "verdict": "not elongated (1.8)"
+  },
+  {
+   "sampler": "dash",
+   "plate": "93A",
+   "draw": 7,
+   "piece_box": [
+    4064,
+    1924,
+    4082,
+    1947
+   ],
+   "centre": [
+    4074,
+    1935
+   ],
+   "verdict": "candidate",
+   "cid": "C122"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "93A",
+   "draw": 1,
+   "piece_box": [
+    1798,
+    1661,
+    2404,
+    1915
+   ],
+   "centre": [
+    1944,
+    1857
+   ],
+   "verdict": "candidate",
+   "cid": "C123"
+  },
+  {
+   "sampler": "lineend",
+   "plate": "93A",
+   "draw": 2,
+   "piece_box": [
+    3136,
+    3220,
+    3888,
+    3422
+   ],
+   "centre": [
+    3385,
+    3278
+   ],
+   "verdict": "candidate",
+   "cid": "C124"
+  }
+ ]
+}

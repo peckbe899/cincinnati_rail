@@ -1,0 +1,125 @@
+{
+ "crop": "DB34",
+ "plate": "74",
+ "win": [
+  7210,
+  4098,
+  7390,
+  4272
+ ],
+ "why": "block number 14 on plate 74 (200 ft), drawn at random (candidates/draw.json)",
+ "n_words": 2,
+ "mask": "DB34_mask.png",
+ "mask_values": {
+  "0": "paper (in scope)",
+  "1": "ink, not text (in scope)",
+  "2": "text ink (in scope)",
+  "3": "don't care (glyph and line share ink; CARE boxes; everything outside the scope)"
+ },
+ "counts": {
+  "paper": 10205,
+  "ink_not_text": 104,
+  "text": 1346,
+  "dont_care": 19665
+ },
+ "scope_px": 11655,
+ "scope_counts": {
+  "paper": 10205,
+  "ink_not_text": 104,
+  "text": 1346,
+  "dont_care": 0
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DB34-001",
+   "reading": "14",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 54.0,
+   "length": 60.0,
+   "poly": [
+    [
+     7270.0,
+     4158.0
+    ],
+    [
+     7330.0,
+     4158.0
+    ],
+    [
+     7330.0,
+     4212.0
+    ],
+    [
+     7270.0,
+     4212.0
+    ]
+   ],
+   "aabb": [
+    7270,
+    4158,
+    7330,
+    4212
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 1321,
+   "annot_line": 3,
+   "in_scope": {
+    "text_px": 1321,
+    "dont_care_px": 0,
+    "ink_px": 1321
+   },
+   "target": true,
+   "ink_size_px": 1321
+  },
+  {
+   "id": "DB34-002",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 43.6,
+   "height": 16.4,
+   "length": 26.6,
+   "poly": [
+    [
+     7354.5,
+     4131.8
+    ],
+    [
+     7373.7,
+     4150.1
+    ],
+    [
+     7362.4,
+     4162.0
+    ],
+    [
+     7343.2,
+     4143.6
+    ]
+   ],
+   "aabb": [
+    7343,
+    4131,
+    7374,
+    4162
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 127,
+   "annot_line": 4,
+   "in_scope": {
+    "text_px": 25,
+    "dont_care_px": 0,
+    "ink_px": 45
+   }
+  }
+ ]
+}

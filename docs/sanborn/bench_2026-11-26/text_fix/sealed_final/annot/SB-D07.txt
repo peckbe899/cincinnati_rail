@@ -1,0 +1,23 @@
+# ditto window 71/5 (1810,1102-2310,1502)
+2047 1150 2057 1150 8 | " | ditto | target
+2123 1150 2131 1150 8 | " | ditto | target
+2196 1150 2203 1150 8 | " | ditto | target
+2271 1148 2280 1148 8 | " | ditto | target
+1837 1271 1846 1271 8 | " | ditto | target
+2142 1267 2151 1267 8 | " | ditto | target
+2208 1268 2218 1268 9 | " | ditto | target
+2286 1267 2297 1267 8 | " | ditto | target
+# other words in the scopes (pics/sv_D07.jpg); hydrant after 3551 is not text
+2008 1180 2140 1180 23 | 3566-64-60 | house
+2166 1180 2234 1180 22 | 3556 | house
+2244 1177 2316 1177 24 | 3552 | house
+2121 1241 2182 1241 23 | 3559 | house
+2189 1241 2256 1241 22 | 3555 | house
+2261 1240 2322 1240 24 | 3551 | house
+EXCLCIRC 2340 1238 13 hydrant
+
+# ===== sealed-check fixes (26 Nov 2026)
+# F12: the diagonal of the 2 of house 3552 was not text
+FORCE 2298 1172 2308 1180
+# F33: story height cut by the scope edge was not typed
+2246 1103 2260 1103 22 | 2 | story | partial

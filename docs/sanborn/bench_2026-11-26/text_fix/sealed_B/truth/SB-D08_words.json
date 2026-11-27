@@ -1,0 +1,121 @@
+{
+ "crop": "SB-D08",
+ "plate": "71",
+ "win": [
+  3125,
+  2770,
+  3705,
+  3250
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   3614,
+   2849,
+   3672,
+   2907
+  ]
+ ],
+ "why": "ditto window 71 window 6 drawn with random.Random('ditto-71') in built-up cells: every ditto mark inside",
+ "n_words": 2,
+ "mask": "SB-D08_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope)"
+ },
+ "counts": {
+  "paper": 2880,
+  "ink_not_text": 155,
+  "text": 329,
+  "dont_care": 275036
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SB-D08-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 7.1,
+   "length": 8.0,
+   "poly": [
+    [
+     3639.0,
+     2874.9
+    ],
+    [
+     3647.0,
+     2874.9
+    ],
+    [
+     3647.0,
+     2882.0
+    ],
+    [
+     3639.0,
+     2882.0
+    ]
+   ],
+   "aabb": [
+    3639,
+    2874,
+    3647,
+    2882
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 24,
+   "annot_line": 2,
+   "ink_px": 24,
+   "text_px_final": 24
+  },
+  {
+   "id": "SB-D08-002",
+   "reading": "3447",
+   "kind": "house",
+   "flags": [
+    "unsure"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 67.0,
+   "poly": [
+    [
+     3615.0,
+     2840.0
+    ],
+    [
+     3682.0,
+     2840.0
+    ],
+    [
+     3682.0,
+     2866.0
+    ],
+    [
+     3615.0,
+     2866.0
+    ]
+   ],
+   "aabb": [
+    3615,
+    2840,
+    3682,
+    2866
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 503,
+   "annot_line": 4,
+   "ink_px": 491,
+   "text_px_final": 305
+  }
+ ]
+}

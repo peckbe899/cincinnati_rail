@@ -1,0 +1,176 @@
+{
+ "crop": "SA-D37",
+ "plate": "6",
+ "win": [
+  7994,
+  1786,
+  8171,
+  1911
+ ],
+ "scale_ft_per_inch": 100,
+ "half": "A",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   8026,
+   1818,
+   8085,
+   1879
+  ],
+  [
+   8080,
+   1817,
+   8138,
+   1876
+  ]
+ ],
+ "scope_px": 6906,
+ "why": "2 ditto mark(s) found in the seeded random built-up window [7822, 1464, 8322, 1964] of plate 6 (round 3)",
+ "n_words": 2,
+ "mask": "SA-D37_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 6180,
+  "ink_not_text": 620,
+  "text": 103,
+  "dont_care": 15222
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-D37-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 9.0,
+   "poly": [
+    [
+     8051.0,
+     1843.5
+    ],
+    [
+     8060.0,
+     1843.5
+    ],
+    [
+     8060.0,
+     1853.5
+    ],
+    [
+     8051.0,
+     1853.5
+    ]
+   ],
+   "aabb": [
+    8051,
+    1843,
+    8060,
+    1854
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 60,
+   "annot_line": 15,
+   "ink_px": 60,
+   "text_px_final": 60
+  },
+  {
+   "id": "SA-D37-003",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 8.0,
+   "poly": [
+    [
+     8105.0,
+     1842.5
+    ],
+    [
+     8113.0,
+     1842.5
+    ],
+    [
+     8113.0,
+     1850.5
+    ],
+    [
+     8105.0,
+     1850.5
+    ]
+   ],
+   "aabb": [
+    8105,
+    1842,
+    8113,
+    1851
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 43,
+   "annot_line": 16,
+   "ink_px": 43,
+   "text_px_final": 43
+  }
+ ],
+ "dropped_outside_scope": [
+  {
+   "id": "SA-D37-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 13
+  },
+  {
+   "id": "SA-D37-004",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 17
+  },
+  {
+   "id": "SA-D37-005",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 18
+  },
+  {
+   "id": "SA-D37-006",
+   "reading": "1026-24-22-20-18",
+   "kind": "house",
+   "annot_line": 20
+  },
+  {
+   "id": "SA-D37-007",
+   "reading": "1016",
+   "kind": "house",
+   "annot_line": 21
+  },
+  {
+   "id": "SA-D37-008",
+   "reading": "12\"SEWER",
+   "kind": "sewer",
+   "annot_line": 22
+  },
+  {
+   "id": "SA-D37-009",
+   "reading": "3",
+   "kind": "story",
+   "annot_line": 25
+  }
+ ]
+}

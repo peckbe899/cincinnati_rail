@@ -1,0 +1,28 @@
+# block 5 on plate 92 (400 ft): printed over a dense grid of small numbers and lot lines
+5458 3197 5495 3197 46 | 5 | block | target
+5437 3156 5463 3156 16 | 300 | lot
+5480 3157 5512 3157 16 | 285 | lot
+5437 3182 5462 3182 16 | 299 | lot
+5488 3185 5515 3185 15 | 286 | lot
+5436 3205 5460 3205 16 | 298 | lot
+5490 3207 5517 3207 15 | 287 | lot
+# F06 was: 5440 3230 5465 3230 16 | 297 | lot
+# F06: box missed the 2 of 297 (86 px not text)
+5426 3226 5462 3226 16 | 297 | lot
+5490 3232 5515 3232 15 | 288 | lot
+5440 3251 5465 3251 14 | 296 | lot | partial
+5485 3252 5512 3252 13 | 289 | lot | partial
+
+# ===== sealed-check fixes (26 Nov 2026)
+# F37: right-hand column of the dense grid: the first figures (in scope) were not text
+5517 3157 5545 3157 18 | 14? | lot | partial unsure
+# F38: right-hand column of the dense grid: the first figures (in scope) were not text
+5517 3182 5545 3182 16 | 44? | lot | partial unsure
+# F39: right-hand column of the dense grid: the first figures (in scope) were not text
+5517 3203 5545 3203 16 | 45? | lot | partial unsure
+# F40: right-hand column of the dense grid: the first figures (in scope) were not text
+5517 3224 5545 3224 16 | 46? | lot | partial unsure
+# F41: right-hand column of the dense grid: the first figures (in scope) were not text
+5517 3244 5545 3244 16 | 47? | lot | partial unsure
+# F84: SB-B25: a 40 px dash or wall piece inside the box of lot '287' was text (dash_in_box #50: a dash of a dashed line, or the wall of a small building)
+EXCL 5483 3210 5499 3214

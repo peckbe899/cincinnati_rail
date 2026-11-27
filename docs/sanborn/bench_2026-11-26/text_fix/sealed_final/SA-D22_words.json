@@ -1,0 +1,238 @@
+{
+ "crop": "SA-D22",
+ "plate": "38",
+ "win": [
+  3346,
+  3849,
+  3474,
+  4026
+ ],
+ "scale_ft_per_inch": 200,
+ "half": "A",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   3378,
+   3880,
+   3435,
+   3942
+  ],
+  [
+   3378,
+   3929,
+   3441,
+   3994
+  ]
+ ],
+ "scope_px": 7066,
+ "why": "2 ditto mark(s) found in the seeded random built-up window [3020, 3750, 3520, 4250] of plate 38 (round 1)",
+ "n_words": 4,
+ "mask": "SA-D22_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 6127,
+  "ink_not_text": 637,
+  "text": 277,
+  "dont_care": 15615
+ },
+ "boxes": [
+  {
+   "op": "CARE",
+   "box": [
+    3402,
+    3906,
+    3406,
+    3914
+   ],
+   "note": "upper ditto: contact with the lot line (the line rule took the tick as line ink)",
+   "line": 10,
+   "effect_px": 14
+  },
+  {
+   "op": "FORCE",
+   "box": [
+    3406,
+    3906,
+    3412,
+    3914
+   ],
+   "note": "upper ditto: the tick right of the contact is text",
+   "line": 11,
+   "effect_px": 12
+  }
+ ],
+ "words": [
+  {
+   "id": "SA-D22-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 11.0,
+   "length": 7.0,
+   "poly": [
+    [
+     3403.0,
+     3905.5
+    ],
+    [
+     3410.0,
+     3905.5
+    ],
+    [
+     3410.0,
+     3916.5
+    ],
+    [
+     3403.0,
+     3916.5
+    ]
+   ],
+   "aabb": [
+    3403,
+    3905,
+    3410,
+    3917
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 19,
+   "annot_line": 5,
+   "ink_px": 41,
+   "text_px_final": 30
+  },
+  {
+   "id": "SA-D22-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 14.0,
+   "length": 13.0,
+   "poly": [
+    [
+     3403.0,
+     3954.5
+    ],
+    [
+     3416.0,
+     3954.5
+    ],
+    [
+     3416.0,
+     3968.5
+    ],
+    [
+     3403.0,
+     3968.5
+    ]
+   ],
+   "aabb": [
+    3403,
+    3954,
+    3416,
+    3969
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 55,
+   "annot_line": 7,
+   "ink_px": 63,
+   "text_px_final": 55
+  },
+  {
+   "id": "SA-D22-003",
+   "reading": "5",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 14.0,
+   "poly": [
+    [
+     3426.0,
+     3893.0
+    ],
+    [
+     3440.0,
+     3893.0
+    ],
+    [
+     3440.0,
+     3918.0
+    ],
+    [
+     3426.0,
+     3918.0
+    ]
+   ],
+   "aabb": [
+    3426,
+    3893,
+    3440,
+    3918
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 80,
+   "annot_line": 8,
+   "ink_px": 80,
+   "text_px_final": 69
+  },
+  {
+   "id": "SA-D22-004",
+   "reading": "6",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 11.0,
+   "poly": [
+    [
+     3427.0,
+     3943.0
+    ],
+    [
+     3438.0,
+     3943.0
+    ],
+    [
+     3438.0,
+     3969.0
+    ],
+    [
+     3427.0,
+     3969.0
+    ]
+   ],
+   "aabb": [
+    3427,
+    3943,
+    3438,
+    3969
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 123,
+   "annot_line": 9,
+   "ink_px": 123,
+   "text_px_final": 123
+  }
+ ],
+ "dropped_outside_scope": []
+}

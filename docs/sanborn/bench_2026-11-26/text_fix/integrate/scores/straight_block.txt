@@ -1,0 +1,6 @@
+[ WARN:0@13.154] global loadsave.cpp:278 cv::findDecoder imread_('bench_2026-11-26/text_fix/integrate/out/dev/Bx/1A_text.png'): can't open/read file: check file path/integrity
+Traceback (most recent call last):
+  File "C:\Users\peckb\Documents\_Personal\_Cincinnati Rail\3D\data\sanborn\bench_2026-11-26\text_fix\integrate\code\straight.py", line 46, in <module>
+    a = np.isin(code(pat.replace('{plate}', c['plate']))[y0:y1, x0:x1], tc); r[n] = int((st & a).sum())
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+TypeError: 'NoneType' object is not subscriptable

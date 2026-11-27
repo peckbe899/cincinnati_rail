@@ -1,0 +1,149 @@
+{
+ "crop": "N65",
+ "plate": "48",
+ "win": [
+  6300,
+  2300,
+  6364,
+  2364
+ ],
+ "kind": "targeted",
+ "target": "negative",
+ "scope_pad": 0,
+ "scope": [
+  [
+   6300,
+   2300,
+   6364,
+   2364
+  ]
+ ],
+ "n_words": 2,
+ "n_targets": 0,
+ "mask": "N65_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 3760,
+  "ink_not_text": 91,
+  "text": 245,
+  "dont_care": 0
+ },
+ "counts_in_scope": {
+  "ink_not_text": 91,
+  "text": 245,
+  "dont_care": 0
+ },
+ "boxes": [
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    6333,
+    2300,
+    6333,
+    2364
+   ],
+   "width": 6,
+   "note": "",
+   "line": 6
+  }
+ ],
+ "words": [
+  {
+   "id": "N65-001",
+   "reading": "-",
+   "kind": "negative",
+   "flags": [
+    "neg:dash"
+   ],
+   "angle": 0.0,
+   "height": 9.0,
+   "length": 3.0,
+   "poly": [
+    [
+     6331.0,
+     2328.0
+    ],
+    [
+     6334.0,
+     2328.0
+    ],
+    [
+     6334.0,
+     2337.0
+    ],
+    [
+     6331.0,
+     2337.0
+    ]
+   ],
+   "aabb": [
+    6331,
+    2328,
+    6334,
+    2337
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": false,
+   "box_word": true,
+   "text_px": 0,
+   "in_scope": true,
+   "ink_px": 21,
+   "care_px": 0,
+   "pieces": 1,
+   "piece_px": [
+    21
+   ],
+   "style": "",
+   "neg_type": "dash"
+  },
+  {
+   "id": "N65-002",
+   "reading": "34.90",
+   "kind": "lotdim",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 65.0,
+   "length": 15.0,
+   "poly": [
+    [
+     6338.0,
+     2300.0
+    ],
+    [
+     6353.0,
+     2300.0
+    ],
+    [
+     6353.0,
+     2365.0
+    ],
+    [
+     6338.0,
+     2365.0
+    ]
+   ],
+   "aabb": [
+    6338,
+    2300,
+    6353,
+    2365
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 4,
+   "target": false,
+   "box_word": true,
+   "text_px": 245,
+   "in_scope": true
+  }
+ ]
+}

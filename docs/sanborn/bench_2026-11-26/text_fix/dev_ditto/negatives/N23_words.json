@@ -1,0 +1,106 @@
+{
+ "crop": "N23",
+ "plate": "93A",
+ "win": [
+  1283,
+  1423,
+  1347,
+  1487
+ ],
+ "kind": "targeted",
+ "target": "negative",
+ "scope_pad": 0,
+ "scope": [
+  [
+   1283,
+   1423,
+   1347,
+   1487
+  ]
+ ],
+ "n_words": 1,
+ "n_targets": 0,
+ "mask": "N23_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 3847,
+  "ink_not_text": 95,
+  "text": 0,
+  "dont_care": 154
+ },
+ "counts_in_scope": {
+  "ink_not_text": 95,
+  "text": 0,
+  "dont_care": 154
+ },
+ "boxes": [
+  {
+   "op": "CARE",
+   "box": [
+    1299,
+    1423,
+    1326,
+    1444
+   ],
+   "note": "curl at the top of the dashed line: hook or figure 2, cannot tell",
+   "line": 3
+  }
+ ],
+ "words": [
+  {
+   "id": "N23-001",
+   "reading": "-",
+   "kind": "negative",
+   "flags": [
+    "neg:dash"
+   ],
+   "angle": 0.0,
+   "height": 16.0,
+   "length": 5.0,
+   "poly": [
+    [
+     1313.0,
+     1448.0
+    ],
+    [
+     1318.0,
+     1448.0
+    ],
+    [
+     1318.0,
+     1464.0
+    ],
+    [
+     1313.0,
+     1464.0
+    ]
+   ],
+   "aabb": [
+    1313,
+    1448,
+    1318,
+    1464
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": false,
+   "box_word": true,
+   "text_px": 0,
+   "in_scope": true,
+   "ink_px": 43,
+   "care_px": 0,
+   "pieces": 1,
+   "piece_px": [
+    43
+   ],
+   "style": "",
+   "neg_type": "dash"
+  }
+ ]
+}

@@ -1,0 +1,48 @@
+finder4 FROZEN 2026-11-27 00:03 (integrate, text_fix). No change to any file below after this.
+
+Command (run from data/sanborn = C:/Users/peckb/Documents/_Personal/_Cincinnati Rail/3D/data/sanborn):
+    python -B bench_2026-11-26/text_fix/integrate/code/finder4.py N --out DIR
+    (optional: --win X0 Y0 X1 Y1 for a window. A sealed plate is refused unless --sealed-ok is given: that flag is
+     for the final gate only. --finder3-mask is a dev shortcut and is not part of the frozen command.)
+Writes DIR/N_text.png (codes 0-5; text = codes 2,3), DIR/N_text.json, DIR/N_blocks.json.
+Settings inside finder4.py: S4 = block Upix (B, plus A where B changed nothing), order ditto_then_block, pad 8.
+Software: python 3.12.10, numpy 2.4.2, opencv 4.13.0, scipy 1.18.1 (system python).
+
+sha256 of every file finder4 imports or loads (paths from data/sanborn):
+  eeb9915bdb199cbfb2e266d09541816c1e36f5ac429781d3b2567c83ee479c67  bench_2026-11-26/text_fix/integrate/code/finder4.py    [finder4 (this tool)]
+  ca24772bece875442ab80cfb11293167288a7ae103927d0f617286760d47df18  bench_2026-11-26/text_fix/integrate/code/dittofix.py    [ditto step, byte-identical copy of fix_ditto/code/dittofix.py]
+  29dcf5b6557baf6838448deb3b5c69fd1f947118588a4efce96488b74520d3db  bench_2026-11-26/text_fix/integrate/code/blockfix_a.py    [block step A, byte-identical copy of fix_block_a/code/blockfix.py]
+  511c6fe2de0966f0420f037dcc13ddeec0dd040df2e0b05ca146d6e72f8be145  bench_2026-11-26/text_fix/integrate/code/blockfix_b.py    [block step B, byte-identical copy of fix_block_b/code/blockfix.py]
+  58f9e860480242d806f6cf3a7bfa31906e571d1c668c159d27a645899da079e6  bench_2026-11-26/text_fix/integrate/models/tmpl_real_all.npz    [block step B digit models (copy of fix_block_b/models/tmpl_real_all.npz)]
+  10bc6f27fa0b20d901b8cc348e2061229df601299dc53051d0df83b7cdfb5c78  bench_2026-11-26/text_fix/integrate/models/cls_all.npz    [block step B figure classifier (copy of fix_block_b/models/cls_all.npz)]
+  b2855b9030011f78c767dfd934d58dd6c6edb8e1b47a274a8da09a84145c9d7a  bench_2026-11-26/text_fix/integrate/models/num_all.npz    [block step B number model (copy of fix_block_b/models/num_all.npz)]
+  28cf91c57d9305b537d8f5f37a42b357977dc3f9d039dafcb683425511d0118c  bench_2026-11-25/text_v1/code/finder3.py    [finder3, imported read-only]
+  33b4ecdcdc21dd1ed7857b849351280c965b42671d0fe72af81fb6531816faab  bench_2026-11-25/text_v1/code/finder2.py    [finder2, imported by finder3, blockfix_a and blockfix_b]
+  447a25f091f37e8ad35ac723333961d596d718b336442d622e51e468855fbc72  bench_2026-11-25/text_v1/classifier/scripts/common.py    [classifier piece features, imported by finder3]
+  5f7a4139282ab29e6d7424de0cbd71a73eda6f7bf5a0870ffc42ca7226e04fde  bench_2026-11-25/text_v1/classifier/scripts/model_np.py    [classifier net, imported by finder3]
+  e40bc78f800546b18de3338c9f5bb98351ed4a1d050b9d534c1b544c0fcc43ca  bench_2026-11-25/text_v1/classifier/scripts/stack.py    [combiner, imported by finder3 at run time]
+  092d98ef1ed2922324664683080a1c105dc22a7b753a9e633a7d1c165e64b7c1  bench_2026-11-25/text_v1/classifier/out/model_cnn2.npz    [finder3 CNN weights]
+  9536b48e61e66beab0f3aebbdfc9563cf87cbea07eda9eababde73913b2b5fee  bench_2026-11-25/text_v1/classifier/out/combiner_cnn2.npz    [finder3 combiner weights]
+  6e54c5080d448cf4c74bad6cd76c817c2866dd3abcf58297382cd6be61c5dc48  scale_table.json    [scale table, read by finder4, finder2 and dittofix]
+
+The copies are byte-identical to their sources (sha256 of the source, same as above):
+  SAME  bench_2026-11-26/text_fix/fix_ditto/code/dittofix.py  ca24772bece875442ab80cfb11293167288a7ae103927d0f617286760d47df18
+  SAME  bench_2026-11-26/text_fix/fix_block_a/code/blockfix.py  29dcf5b6557baf6838448deb3b5c69fd1f947118588a4efce96488b74520d3db
+  SAME  bench_2026-11-26/text_fix/fix_block_b/code/blockfix.py  511c6fe2de0966f0420f037dcc13ddeec0dd040df2e0b05ca146d6e72f8be145
+  SAME  bench_2026-11-26/text_fix/fix_block_b/models/tmpl_real_all.npz  58f9e860480242d806f6cf3a7bfa31906e571d1c668c159d27a645899da079e6
+  SAME  bench_2026-11-26/text_fix/fix_block_b/models/cls_all.npz  10bc6f27fa0b20d901b8cc348e2061229df601299dc53051d0df83b7cdfb5c78
+  SAME  bench_2026-11-26/text_fix/fix_block_b/models/num_all.npz  b2855b9030011f78c767dfd934d58dd6c6edb8e1b47a274a8da09a84145c9d7a
+
+Per plate it also reads the scan cufp/22-N.jpg and the paper mask cufp/N/png_alpha_s4.npy (not listed).
+
+Outputs made with exactly these files before the freeze (out/finder4, whole plates; sha256 of N_text.png):
+  33a96d0ebccad5d878476977b2bef3c4f096b75a7031eb054ab0b8bc626f8b2b  1A_text.png
+  c220999dca1cd9234f3b9b18032254c0af4caefb88f00ab3c56c9652887c0656  30_text.png
+  8a4ad422bf74032e17c82cb508f29b6042f6a8e33e7d64f4be501be8083a76ec  44_text.png
+  6c820093f020d80496407515d6ae23998e08f3b43d45546f78a36c7602582bea  47_text.png
+  42bd536884461d6bca5b95d60aa04236b9ee9848225fef091a8fabd842faa6fe  49_text.png
+  eb83de7b2af632880858d8a7f9be8078398a1c37ea0375fe56e77346601064dd  54A_text.png
+  9e0a56381e23c0ac0e4e620ee40f605f75234cbccd4494cd2819d4f6fd3afef4  5_text.png
+  4171a443f14fda9d4d2e0683c6c9b0b4212b3b2b05e796acd290de55f5fe7d28  60B_text.png
+  9d489b3fd44cf3ca0b581a8f00c4722ec67877781b753f4871bc7c2cc3595c20  90_text.png
+  70a2aab0e60805c4f55733dd6db68b15327318ebbcd22a66228aaacb2b2013db  93A_text.png

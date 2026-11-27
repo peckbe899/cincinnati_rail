@@ -1,0 +1,18 @@
+#plate 26A
+# DB25: block 18 on plate 26A (200 ft), in dense brick rows: the 1 is a bold bar under a building wall, with a dashed line
+# just right of it; the 8 sits between that dashed line and a lot line, lot numbers 30 above and 32 below touch it
+5576 1170 5625 1170 43 | 18 | block | target
+5598 1136 5621 1136 14 | 30 | lot
+5597 1197 5614 1197 13 | 32 | lot
+5564 1141 5586 1141 14 | 29 | lot
+5543 1146 5562 1146 14 | 105 | lot
+5546 1174 5572 1174 13 | 14.5 | lotdim | unsure
+5525 1191 5567 1191 16 | 104 | lot
+5565 1195 5577 1195 14 | 3 | story
+5630 1148 5655 1148 25 | 109 | lot
+5633 1200 5655 1200 25 | 108 | lot
+FORCE 5575 1151 5585 1193 the 1 of 18 is a bold bar collinear with the wall above it; the line rule took it as line ink
+CARE 5575 1163 5585 1169 where the block line (y 1166) crosses the 1 (shared ink)
+NOTTEXT 5545 1151 5575 1151 5 building bottom line between 105, 29 and the 1 was text
+# added after the blue-piece check: the dimension above 105 was not boxed
+5543 1124 5574 1124 12 | 56.3' | lotdim | unsure

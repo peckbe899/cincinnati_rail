@@ -1,0 +1,32 @@
+block all {'f3': {'words': 52, 'text_px': 51745, 'pixel_recall': 0.7601, 'words_found': 39, 'word_share': 0.75}, 'f4': {'words': 52, 'text_px': 51745, 'pixel_recall': 0.9169, 'words_found': 49, 'word_share': 0.9423}} 
+   centre fill {'f3': {'words': 52, 'text_px': 51745, 'pixel_recall': 0.7601, 'words_found': 39, 'word_share': 0.75}, 'f4': {'words': 52, 'text_px': 51745, 'pixel_recall': 0.9169, 'words_found': 49, 'word_share': 0.9423}}
+   100 {'f3': (0.8569, '16/18'), 'f4': (0.9363, '17/18')}
+   200 {'f3': (0.7375, '17/24'), 'f4': (0.9204, '23/24')}
+   400 {'f3': (0.5926, '6/10'), 'f4': (0.8653, '9/10')}
+   scopes {'f3': {'nontext': 35158, 'called': 1123, 'share': 0.03194, 'F1': 0.8474}, 'f4': {'nontext': 35158, 'called': 1628, 'share': 0.04631, 'F1': 0.9196}}
+ditto all {'f3': {'words': 151, 'text_px': 5308, 'pixel_recall': 0.6253, 'words_found': 87, 'word_share': 0.5762}, 'f4': {'words': 151, 'text_px': 5308, 'pixel_recall': 0.822, 'words_found': 127, 'word_share': 0.8411}} 
+   centre fill {'f3': {'words': 151, 'text_px': 5304, 'pixel_recall': 0.6258, 'words_found': 87, 'word_share': 0.5762}, 'f4': {'words': 151, 'text_px': 5304, 'pixel_recall': 0.8226, 'words_found': 127, 'word_share': 0.8411}}
+   100 {'f3': (0.6703, '38/59'), 'f4': (0.746, '44/59')}
+   200 {'f3': (0.5903, '49/92'), 'f4': (0.8811, '83/92')}
+   scopes {'f3': {'nontext': 54617, 'called': 1495, 'share': 0.02737, 'F1': 0.8607}, 'f4': {'nontext': 54617, 'called': 1495, 'share': 0.02737, 'F1': 0.8801}}
+full SA-F1 {'f3': {'tp': 97490, 'fp': 5813, 'fn': 20708, 'P': 0.9437, 'R': 0.8248, 'F1': 0.8803, 'nontext_share': 0.04222, 'street_pixel_recall': 0.9037, 'street_pixel_recall_centre_fill': 0.9037, 'street_words': '7/7', 'straight_px': 46446, 'straight_called': 297}, 'f4': {'tp': 97756, 'fp': 6001, 'fn': 20442, 'P': 0.9422, 'R': 0.8271, 'F1': 0.8809, 'nontext_share': 0.04358, 'street_pixel_recall': 0.9142, 'street_pixel_recall_centre_fill': 0.9142, 'street_words': '7/7', 'straight_px': 46446, 'straight_called': 306}}
+full SB-F1 {'f3': {'tp': 41528, 'fp': 4033, 'fn': 3784, 'P': 0.9115, 'R': 0.9165, 'F1': 0.914, 'nontext_share': 0.04708, 'street_pixel_recall': 0.9941, 'street_pixel_recall_centre_fill': 0.9941, 'street_words': '2/2', 'straight_px': 12133, 'straight_called': 0}, 'f4': {'tp': 41624, 'fp': 4033, 'fn': 3688, 'P': 0.9117, 'R': 0.9186, 'F1': 0.9151, 'nontext_share': 0.04708, 'street_pixel_recall': 0.9941, 'street_pixel_recall_centre_fill': 0.9941, 'street_words': '2/2', 'straight_px': 12133, 'straight_called': 0}}
+full both {'f3': {'tp': 139018, 'fp': 9846, 'fn': 24492, 'P': 0.9339, 'R': 0.8502, 'F1': 0.8901, 'nontext_share': 0.04408, 'street_pixel_recall': 0.9206, 'street_pixel_recall_centre_fill': 0.9206, 'street_words': '9/9', 'straight_px': 58579, 'straight_called': 297}, 'f4': {'tp': 139380, 'fp': 10034, 'fn': 24130, 'P': 0.9328, 'R': 0.8524, 'F1': 0.8908, 'nontext_share': 0.04492, 'street_pixel_recall': 0.9291, 'street_pixel_recall_centre_fill': 0.9291, 'street_words': '9/9', 'straight_px': 58579, 'straight_called': 306}}
+all crops {'f3': {'F1': 0.8762, 'P': 0.9453, 'R': 0.8165}, 'f4': {'F1': 0.8965, 'P': 0.9448, 'R': 0.8529}}
+COMPARE (mine, gate):
+   block_px (0.9169, 0.9169)
+   block_words ('49/52', '49/52')
+   ditto_px (0.822, 0.822)
+   ditto_words ('127/151', '127/151')
+   block_100 {'mine_f4': (0.9363, 17), 'target_recall_f4': (0.9363, 17), 'mine_f3': (0.8569, 16), 'target_recall_f3': (0.8569, 16)}
+   block_200 {'mine_f4': (0.9204, 23), 'target_recall_f4': (0.9204, 23), 'mine_f3': (0.7375, 17), 'target_recall_f3': (0.7375, 17)}
+   block_400 {'mine_f4': (0.8653, 9), 'target_recall_f4': (0.8653, 9), 'mine_f3': (0.5926, 6), 'target_recall_f3': (0.5926, 6)}
+   ditto_100 {'mine_f4': (0.746, 44), 'target_recall_f4': (0.746, 44), 'mine_f3': (0.6703, 38), 'target_recall_f3': (0.6703, 38)}
+   ditto_200 {'mine_f4': (0.8811, 83), 'target_recall_f4': (0.8811, 83), 'mine_f3': (0.5903, 49), 'target_recall_f3': (0.5903, 49)}
+   full_F1 ([0.8901, 0.8908], [0.8901, 0.8908])
+   full_nontext_pct ([4.408, 4.492], [4.408, 4.492])
+   full_street ([0.9206, 0.9291], [0.9206, 0.9291])
+   full_street_words (['9/9', '9/9'], ['9/9', '9/9'])
+   full_straight ([297, 306, 58579], [474, 504, 60821])
+   block_scope_nontext ([0.03194, 0.04631], [0.03194, 0.04631])
+   ditto_scope_nontext ([0.02737, 0.02737], [0.02737, 0.02737])

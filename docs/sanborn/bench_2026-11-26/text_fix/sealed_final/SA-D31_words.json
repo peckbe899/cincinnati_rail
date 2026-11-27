@@ -1,0 +1,181 @@
+{
+ "crop": "SA-D31",
+ "plate": "9",
+ "win": [
+  5486,
+  2157,
+  5613,
+  2284
+ ],
+ "scale_ft_per_inch": 100,
+ "half": "A",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   5518,
+   2188,
+   5580,
+   2252
+  ]
+ ],
+ "scope_px": 4095,
+ "why": "1 ditto mark(s) found in the seeded random built-up window [5139, 1722, 5639, 2222] of plate 9 (round 2)",
+ "n_words": 3,
+ "mask": "SA-D31_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 3375,
+  "ink_not_text": 363,
+  "text": 357,
+  "dont_care": 12034
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-D31-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 13.0,
+   "length": 12.0,
+   "poly": [
+    [
+     5543.0,
+     2213.5
+    ],
+    [
+     5555.0,
+     2213.5
+    ],
+    [
+     5555.0,
+     2226.5
+    ],
+    [
+     5543.0,
+     2226.5
+    ]
+   ],
+   "aabb": [
+    5543,
+    2213,
+    5555,
+    2227
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 72,
+   "annot_line": 7,
+   "ink_px": 72,
+   "text_px_final": 72
+  },
+  {
+   "id": "SA-D31-003",
+   "reading": "3",
+   "kind": "story",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 23.0,
+   "poly": [
+    [
+     5517.0,
+     2184.0
+    ],
+    [
+     5540.0,
+     2184.0
+    ],
+    [
+     5540.0,
+     2215.0
+    ],
+    [
+     5517.0,
+     2215.0
+    ]
+   ],
+   "aabb": [
+    5517,
+    2184,
+    5540,
+    2215
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 229,
+   "annot_line": 11,
+   "ink_px": 229,
+   "text_px_final": 204
+  },
+  {
+   "id": "SA-D31-005",
+   "reading": "86-84",
+   "kind": "house",
+   "flags": [
+    "run",
+    "partial"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 121.0,
+   "poly": [
+    [
+     5514.0,
+     2246.0
+    ],
+    [
+     5635.0,
+     2246.0
+    ],
+    [
+     5635.0,
+     2274.0
+    ],
+    [
+     5514.0,
+     2274.0
+    ]
+   ],
+   "aabb": [
+    5514,
+    2246,
+    5635,
+    2274
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 1106,
+   "annot_line": 13,
+   "ink_px": 841,
+   "text_px_final": 81
+  }
+ ],
+ "dropped_outside_scope": [
+  {
+   "id": "SA-D31-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 8
+  },
+  {
+   "id": "SA-D31-004",
+   "reading": "3",
+   "kind": "story",
+   "annot_line": 12
+  }
+ ]
+}

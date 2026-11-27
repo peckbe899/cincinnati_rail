@@ -1,0 +1,209 @@
+{
+ "crop": "DD14",
+ "plate": "19",
+ "win": [
+  8038,
+  4854,
+  8438,
+  5154
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   8159,
+   4956,
+   8220,
+   5014
+  ],
+  [
+   8367,
+   4956,
+   8428,
+   5013
+  ],
+  [
+   8058,
+   5074,
+   8119,
+   5132
+  ]
+ ],
+ "n_words": 3,
+ "n_targets": 3,
+ "mask": "DD14_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 107356,
+  "ink_not_text": 957,
+  "text": 115,
+  "dont_care": 11572
+ },
+ "counts_in_scope": {
+  "ink_not_text": 957,
+  "text": 115,
+  "dont_care": 0
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DD14-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:quote"
+   ],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 11.0,
+   "poly": [
+    [
+     8184.0,
+     4981.0
+    ],
+    [
+     8195.0,
+     4981.0
+    ],
+    [
+     8195.0,
+     4989.0
+    ],
+    [
+     8184.0,
+     4989.0
+    ]
+   ],
+   "aabb": [
+    8184,
+    4981,
+    8195,
+    4989
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": true,
+   "box_word": true,
+   "text_px": 42,
+   "in_scope": true,
+   "ink_px": 42,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    22,
+    20
+   ],
+   "style": "quote",
+   "neg_type": ""
+  },
+  {
+   "id": "DD14-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:quote"
+   ],
+   "angle": 0.0,
+   "height": 7.0,
+   "length": 11.0,
+   "poly": [
+    [
+     8392.0,
+     4981.0
+    ],
+    [
+     8403.0,
+     4981.0
+    ],
+    [
+     8403.0,
+     4988.0
+    ],
+    [
+     8392.0,
+     4988.0
+    ]
+   ],
+   "aabb": [
+    8392,
+    4981,
+    8403,
+    4988
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 3,
+   "target": true,
+   "box_word": true,
+   "text_px": 41,
+   "in_scope": true,
+   "ink_px": 41,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    22,
+    19
+   ],
+   "style": "quote",
+   "neg_type": ""
+  },
+  {
+   "id": "DD14-003",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:quote"
+   ],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 11.0,
+   "poly": [
+    [
+     8083.0,
+     5099.0
+    ],
+    [
+     8094.0,
+     5099.0
+    ],
+    [
+     8094.0,
+     5107.0
+    ],
+    [
+     8083.0,
+     5107.0
+    ]
+   ],
+   "aabb": [
+    8083,
+    5099,
+    8094,
+    5107
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 4,
+   "target": true,
+   "box_word": true,
+   "text_px": 32,
+   "in_scope": true,
+   "ink_px": 32,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    17,
+    15
+   ],
+   "style": "quote",
+   "neg_type": ""
+  }
+ ]
+}

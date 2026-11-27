@@ -1,0 +1,208 @@
+{
+ "crop": "SA-D39",
+ "plate": "9",
+ "win": [
+  7485,
+  869,
+  7608,
+  993
+ ],
+ "scale_ft_per_inch": 100,
+ "half": "A",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   7517,
+   900,
+   7575,
+   961
+  ]
+ ],
+ "scope_px": 3658,
+ "why": "1 ditto mark(s) found in the seeded random built-up window [7518, 622, 8018, 1122] of plate 9 (round 3)",
+ "n_words": 4,
+ "mask": "SA-D39_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 2392,
+  "ink_not_text": 662,
+  "text": 535,
+  "dont_care": 11663
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-D39-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 8.0,
+   "poly": [
+    [
+     7542.0,
+     925.5
+    ],
+    [
+     7550.0,
+     925.5
+    ],
+    [
+     7550.0,
+     935.5
+    ],
+    [
+     7542.0,
+     935.5
+    ]
+   ],
+   "aabb": [
+    7542,
+    925,
+    7550,
+    936
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 37,
+   "annot_line": 5,
+   "ink_px": 63,
+   "text_px_final": 29
+  },
+  {
+   "id": "SA-D39-002",
+   "reading": "3",
+   "kind": "story",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 19.0,
+   "poly": [
+    [
+     7514.0,
+     899.0
+    ],
+    [
+     7533.0,
+     899.0
+    ],
+    [
+     7533.0,
+     928.0
+    ],
+    [
+     7514.0,
+     928.0
+    ]
+   ],
+   "aabb": [
+    7514,
+    899,
+    7533,
+    928
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 189,
+   "annot_line": 7,
+   "ink_px": 181,
+   "text_px_final": 160
+  },
+  {
+   "id": "SA-D39-003",
+   "reading": "3",
+   "kind": "story",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 33.0,
+   "length": 20.0,
+   "poly": [
+    [
+     7559.0,
+     893.0
+    ],
+    [
+     7579.0,
+     893.0
+    ],
+    [
+     7579.0,
+     926.0
+    ],
+    [
+     7559.0,
+     926.0
+    ]
+   ],
+   "aabb": [
+    7559,
+    893,
+    7579,
+    926
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 198,
+   "annot_line": 8,
+   "ink_px": 200,
+   "text_px_final": 134
+  },
+  {
+   "id": "SA-D39-004",
+   "reading": "28-26-1024",
+   "kind": "house",
+   "flags": [
+    "run",
+    "partial"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 100.0,
+   "poly": [
+    [
+     7507.0,
+     950.0
+    ],
+    [
+     7607.0,
+     950.0
+    ],
+    [
+     7607.0,
+     977.0
+    ],
+    [
+     7507.0,
+     977.0
+    ]
+   ],
+   "aabb": [
+    7507,
+    950,
+    7607,
+    977
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 694,
+   "annot_line": 9,
+   "ink_px": 687,
+   "text_px_final": 210
+  }
+ ],
+ "dropped_outside_scope": []
+}

@@ -1,0 +1,95 @@
+{
+ "crop": "DD25",
+ "plate": "12",
+ "win": [
+  198,
+  3377,
+  598,
+  3677
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   434,
+   3630,
+   495,
+   3688
+  ]
+ ],
+ "n_words": 1,
+ "n_targets": 1,
+ "mask": "DD25_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 103358,
+  "ink_not_text": 166,
+  "text": 47,
+  "dont_care": 16429
+ },
+ "counts_in_scope": {
+  "ink_not_text": 166,
+  "text": 47,
+  "dont_care": 0
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DD25-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:quote"
+   ],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 11.0,
+   "poly": [
+    [
+     459.0,
+     3655.0
+    ],
+    [
+     470.0,
+     3655.0
+    ],
+    [
+     470.0,
+     3663.0
+    ],
+    [
+     459.0,
+     3663.0
+    ]
+   ],
+   "aabb": [
+    459,
+    3655,
+    470,
+    3663
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": true,
+   "box_word": true,
+   "text_px": 47,
+   "in_scope": true,
+   "ink_px": 47,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    24,
+    23
+   ],
+   "style": "quote",
+   "neg_type": ""
+  }
+ ]
+}

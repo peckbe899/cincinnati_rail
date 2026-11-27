@@ -1,0 +1,312 @@
+{
+ "crop": "SB-B17",
+ "plate": "84",
+ "win": [
+  4425,
+  5049,
+  4725,
+  5309
+ ],
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   4526,
+   5122,
+   4631,
+   5227
+  ]
+ ],
+ "why": "block 21 on plate 84, drawn with random.Random('84') from the plate list (annot/selection.json)",
+ "n_words": 5,
+ "mask": "SB-B17_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope)"
+ },
+ "counts": {
+  "paper": 8629,
+  "ink_not_text": 1030,
+  "text": 1167,
+  "dont_care": 67174
+ },
+ "boxes": [
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    4578,
+    5108,
+    4582,
+    5250
+   ],
+   "width": 4,
+   "note": "lot line between the 2 and the 1",
+   "line": 8
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    4583,
+    5189,
+    4587,
+    5189
+   ],
+   "width": 4,
+   "note": "lot line left of the 1",
+   "line": 9
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    4587,
+    5189,
+    4596,
+    5189
+   ],
+   "width": 4,
+   "note": "lot line through the 1",
+   "line": 10
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    4596,
+    5189,
+    4606,
+    5188
+   ],
+   "width": 4,
+   "note": "lot line right of the 1",
+   "line": 11
+  },
+  {
+   "op": "CARELINE",
+   "seg": [
+    4606,
+    5188,
+    4634,
+    5187
+   ],
+   "width": 4,
+   "note": "lot line through 51",
+   "line": 12
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    4634,
+    5187,
+    4660,
+    5186
+   ],
+   "width": 4,
+   "note": "lot line right of 51",
+   "line": 13
+  }
+ ],
+ "words": [
+  {
+   "id": "SB-B17-001",
+   "reading": "21",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 55.0,
+   "length": 55.0,
+   "poly": [
+    [
+     4551.0,
+     5147.0
+    ],
+    [
+     4606.0,
+     5147.0
+    ],
+    [
+     4606.0,
+     5202.0
+    ],
+    [
+     4551.0,
+     5202.0
+    ]
+   ],
+   "aabb": [
+    4551,
+    5147,
+    4606,
+    5202
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1144,
+   "annot_line": 2,
+   "ink_px": 1156,
+   "text_px_final": 878
+  },
+  {
+   "id": "SB-B17-002",
+   "reading": "72",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 33.0,
+   "length": 40.0,
+   "poly": [
+    [
+     4542.0,
+     5125.0
+    ],
+    [
+     4582.0,
+     5125.0
+    ],
+    [
+     4582.0,
+     5158.0
+    ],
+    [
+     4542.0,
+     5158.0
+    ]
+   ],
+   "aabb": [
+    4542,
+    5125,
+    4582,
+    5158
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 263,
+   "annot_line": 3,
+   "ink_px": 267,
+   "text_px_final": 185
+  },
+  {
+   "id": "SB-B17-003",
+   "reading": "73",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 29.0,
+   "poly": [
+    [
+     4511.0,
+     5180.0
+    ],
+    [
+     4540.0,
+     5180.0
+    ],
+    [
+     4540.0,
+     5202.0
+    ],
+    [
+     4511.0,
+     5202.0
+    ]
+   ],
+   "aabb": [
+    4511,
+    5180,
+    4540,
+    5202
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 190,
+   "annot_line": 4,
+   "ink_px": 190,
+   "text_px_final": 97
+  },
+  {
+   "id": "SB-B17-004",
+   "reading": "50",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 30.0,
+   "poly": [
+    [
+     4583.0,
+     5131.0
+    ],
+    [
+     4613.0,
+     5131.0
+    ],
+    [
+     4613.0,
+     5153.0
+    ],
+    [
+     4583.0,
+     5153.0
+    ]
+   ],
+   "aabb": [
+    4583,
+    5131,
+    4613,
+    5153
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 139,
+   "annot_line": 5,
+   "ink_px": 275,
+   "text_px_final": 139
+  },
+  {
+   "id": "SB-B17-005",
+   "reading": "51",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 14.0,
+   "length": 21.0,
+   "poly": [
+    [
+     4611.0,
+     5183.0
+    ],
+    [
+     4632.0,
+     5183.0
+    ],
+    [
+     4632.0,
+     5197.0
+    ],
+    [
+     4611.0,
+     5197.0
+    ]
+   ],
+   "aabb": [
+    4611,
+    5183,
+    4632,
+    5197
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 22,
+   "annot_line": 6,
+   "ink_px": 126,
+   "text_px_final": 7
+  }
+ ]
+}

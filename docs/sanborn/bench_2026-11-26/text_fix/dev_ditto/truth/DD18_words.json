@@ -1,0 +1,189 @@
+{
+ "crop": "DD18",
+ "plate": "1A",
+ "win": [
+  145,
+  3920,
+  545,
+  4220
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   208,
+   3909,
+   271,
+   3973
+  ]
+ ],
+ "n_words": 3,
+ "n_targets": 1,
+ "mask": "DD18_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 91502,
+  "ink_not_text": 464,
+  "text": 443,
+  "dont_care": 27591
+ },
+ "counts_in_scope": {
+  "ink_not_text": 464,
+  "text": 443,
+  "dont_care": 30
+ },
+ "boxes": [
+  {
+   "op": "CARE",
+   "box": [
+    252,
+    3945,
+    259,
+    3951
+   ],
+   "note": "dot beside the ditto: period or speck",
+   "line": 6
+  }
+ ],
+ "words": [
+  {
+   "id": "DD18-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:quote"
+   ],
+   "angle": 0.0,
+   "height": 14.0,
+   "length": 13.0,
+   "poly": [
+    [
+     233.0,
+     3934.0
+    ],
+    [
+     246.0,
+     3934.0
+    ],
+    [
+     246.0,
+     3948.0
+    ],
+    [
+     233.0,
+     3948.0
+    ]
+   ],
+   "aabb": [
+    233,
+    3934,
+    246,
+    3948
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 2,
+   "target": true,
+   "box_word": true,
+   "text_px": 92,
+   "in_scope": true,
+   "ink_px": 94,
+   "care_px": 2,
+   "pieces": 1,
+   "piece_px": [
+    92
+   ],
+   "style": "quote",
+   "neg_type": ""
+  },
+  {
+   "id": "DD18-002",
+   "reading": "4",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 45.0,
+   "length": 39.0,
+   "poly": [
+    [
+     252.0,
+     3890.0
+    ],
+    [
+     291.0,
+     3890.0
+    ],
+    [
+     291.0,
+     3935.0
+    ],
+    [
+     252.0,
+     3935.0
+    ]
+   ],
+   "aabb": [
+    252,
+    3890,
+    291,
+    3935
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 4,
+   "target": false,
+   "box_word": true,
+   "text_px": 65,
+   "in_scope": true
+  },
+  {
+   "id": "DD18-003",
+   "reading": "?",
+   "kind": "lotdim",
+   "flags": [
+    "partial",
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 43.0,
+   "length": 31.0,
+   "poly": [
+    [
+     196.0,
+     3918.0
+    ],
+    [
+     227.0,
+     3918.0
+    ],
+    [
+     227.0,
+     3961.0
+    ],
+    [
+     196.0,
+     3961.0
+    ]
+   ],
+   "aabb": [
+    196,
+    3918,
+    227,
+    3961
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 5,
+   "target": false,
+   "box_word": true,
+   "text_px": 286,
+   "in_scope": true
+  }
+ ]
+}

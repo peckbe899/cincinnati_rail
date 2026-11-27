@@ -1,0 +1,81 @@
+{
+ "crop": "DB44",
+ "plate": "48",
+ "win": [
+  4406,
+  2632,
+  4560,
+  2801
+ ],
+ "why": "block number 5 on plate 48 (400 ft), drawn at random (candidates/draw.json)",
+ "n_words": 1,
+ "mask": "DB44_mask.png",
+ "mask_values": {
+  "0": "paper (in scope)",
+  "1": "ink, not text (in scope)",
+  "2": "text ink (in scope)",
+  "3": "don't care (glyph and line share ink; CARE boxes; everything outside the scope)"
+ },
+ "counts": {
+  "paper": 7722,
+  "ink_not_text": 0,
+  "text": 778,
+  "dont_care": 17526
+ },
+ "scope_px": 8500,
+ "scope_counts": {
+  "paper": 7722,
+  "ink_not_text": 0,
+  "text": 778,
+  "dont_care": 0
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DB44-001",
+   "reading": "5",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 49.0,
+   "length": 34.0,
+   "poly": [
+    [
+     4466.0,
+     2692.0
+    ],
+    [
+     4500.0,
+     2692.0
+    ],
+    [
+     4500.0,
+     2741.0
+    ],
+    [
+     4466.0,
+     2741.0
+    ]
+   ],
+   "aabb": [
+    4466,
+    2692,
+    4500,
+    2741
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 778,
+   "annot_line": 3,
+   "in_scope": {
+    "text_px": 778,
+    "dont_care_px": 0,
+    "ink_px": 778
+   },
+   "target": true,
+   "ink_size_px": 778
+  }
+ ]
+}

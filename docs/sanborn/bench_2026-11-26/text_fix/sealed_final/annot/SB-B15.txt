@@ -1,0 +1,23 @@
+# block 5 on plate 76 (200 ft); lot lines and many lot dimensions round it
+2137 1724 2177 1724 50 | 5 | block | target
+2083 1684 2101 1684 22 | 82 | lot
+2116 1697 2116 1664 16 | 50 | lotdim
+2155 1689 2197 1689 18 | 31.01' | lotdim
+2085 1736 2134 1736 15 | 50.84 | lotdim
+2144 1761 2181 1761 16 | 37.5' | lotdim
+2090 1767 2111 1767 22 | 86 | lot
+2124 1768 2134 1768 15 | 1 | story
+# check fixes: curved marks right of 31.01' and down to the 5 (arc or bracket: cannot tell), the arrow tip left of the 5
+CARE 2171 1682 2189 1700 curved mark between 31.01' and the 5
+CARE 2185 1660 2198 1679 curved mark after 31.01'
+EXCL 2124 1696 2136 1714 arrow tip from 82 to the lot line
+
+# ===== sealed-check fixes (26 Nov 2026)
+# F21: lot dimension cut by the scope edge was not typed (the 37 was not text)
+2186 1702 2240 1722 18 | 37.19' | lotdim | partial unsure
+# F22: owner letter cut by the scope edge was not typed
+2200 1773 2222 1773 46 | E | owner | partial unsure
+# F23: lot number cut by the scope edge was not typed
+2152 1786 2180 1786 24 | 66 | lot | partial
+# F83: SB-B15: a 49 px dash or wall piece inside the box of block '5' was text (dash_in_box #48: a dash of a dashed line, or the wall of a small building)
+EXCL 2136 1751 2155 1755

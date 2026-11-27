@@ -1,0 +1,137 @@
+{
+ "crop": "DD34",
+ "plate": "64A",
+ "win": [
+  4633,
+  4632,
+  5033,
+  4932
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   4631,
+   4795,
+   4689,
+   4855
+  ]
+ ],
+ "n_words": 2,
+ "n_targets": 1,
+ "mask": "DD34_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 112293,
+  "ink_not_text": 449,
+  "text": 35,
+  "dont_care": 7223
+ },
+ "counts_in_scope": {
+  "ink_not_text": 449,
+  "text": 35,
+  "dont_care": 4
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DD34-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 8.0,
+   "poly": [
+    [
+     4656.0,
+     4820.0
+    ],
+    [
+     4664.0,
+     4820.0
+    ],
+    [
+     4664.0,
+     4830.0
+    ],
+    [
+     4656.0,
+     4830.0
+    ]
+   ],
+   "aabb": [
+    4656,
+    4820,
+    4664,
+    4830
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 2,
+   "target": true,
+   "box_word": true,
+   "text_px": 32,
+   "in_scope": true,
+   "ink_px": 37,
+   "care_px": 3,
+   "pieces": 2,
+   "piece_px": [
+    18,
+    14
+   ],
+   "style": "pair",
+   "neg_type": ""
+  },
+  {
+   "id": "DD34-002",
+   "reading": "38",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 16.0,
+   "length": 8.0,
+   "poly": [
+    [
+     4633.0,
+     4780.0
+    ],
+    [
+     4641.0,
+     4780.0
+    ],
+    [
+     4641.0,
+     4796.0
+    ],
+    [
+     4633.0,
+     4796.0
+    ]
+   ],
+   "aabb": [
+    4633,
+    4780,
+    4641,
+    4796
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 3,
+   "target": false,
+   "box_word": true,
+   "text_px": 3,
+   "in_scope": true
+  }
+ ]
+}

@@ -1,0 +1,19 @@
+# block 21 on plate 84 (200 ft); the 1 stands on a lot line
+4555 5179 4596 5179 44 | 21 | block | target
+4550 5141 4575 5141 20 | 72 | lot
+4517 5191 4544 5191 20 | 73 | lot
+4587 5143 4612 5143 18 | 50 | lot
+# F05 was: 4611 5190 4632 5190 14 | 51 | lot
+# F05: box lay 10 px below the glyphs of 51 (they were not text)
+4611 5180 4632 5180 18 | 51 | lot | unsure
+# check fixes: the faint lot lines left of the 1 and through it were text
+NOTTEXT 4578 5108 4582 5250 4 lot line between the 2 and the 1
+NOTTEXT 4583 5189 4587 5189 4 lot line left of the 1
+CARELINE 4587 5189 4596 5189 4 lot line through the 1
+NOTTEXT 4596 5189 4606 5188 4 lot line right of the 1
+CARELINE 4606 5188 4634 5187 4 lot line through 51
+NOTTEXT 4634 5187 4660 5186 4 lot line right of 51
+
+# ===== sealed-check fixes (26 Nov 2026)
+# F26: lot dimension cut by the scope edge was not typed
+4511 5235 4568 5233 15 | 161.62' | lotdim | partial

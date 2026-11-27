@@ -1,0 +1,134 @@
+{
+ "crop": "SB-B02",
+ "plate": "56",
+ "win": [
+  1835,
+  5834,
+  2135,
+  6094
+ ],
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   1923,
+   5906,
+   2042,
+   6013
+  ]
+ ],
+ "why": "block 17 on plate 56, drawn with random.Random('56') from the plate list (annot/selection.json)",
+ "n_words": 2,
+ "mask": "SB-B02_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope)"
+ },
+ "counts": {
+  "paper": 11355,
+  "ink_not_text": 509,
+  "text": 833,
+  "dont_care": 65303
+ },
+ "boxes": [
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    1945,
+    5934,
+    2060,
+    5931
+   ],
+   "width": 4,
+   "note": "lot line over the 17",
+   "line": 5
+  }
+ ],
+ "words": [
+  {
+   "id": "SB-B02-001",
+   "reading": "17",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 57.0,
+   "length": 69.0,
+   "poly": [
+    [
+     1948.0,
+     5931.0
+    ],
+    [
+     2017.0,
+     5931.0
+    ],
+    [
+     2017.0,
+     5988.0
+    ],
+    [
+     1948.0,
+     5988.0
+    ]
+   ],
+   "aabb": [
+    1948,
+    5931,
+    2017,
+    5988
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 882,
+   "annot_line": 2,
+   "ink_px": 873,
+   "text_px_final": 723
+  },
+  {
+   "id": "SB-B02-002",
+   "reading": "1901",
+   "kind": "house",
+   "flags": [
+    "partial"
+   ],
+   "target": false,
+   "angle": -90.0,
+   "height": 24.0,
+   "length": 46.0,
+   "poly": [
+    [
+     1951.0,
+     5926.0
+    ],
+    [
+     1951.0,
+     5880.0
+    ],
+    [
+     1975.0,
+     5880.0
+    ],
+    [
+     1975.0,
+     5926.0
+    ]
+   ],
+   "aabb": [
+    1951,
+    5880,
+    1975,
+    5926
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 258,
+   "annot_line": 3,
+   "ink_px": 258,
+   "text_px_final": 110
+  }
+ ]
+}

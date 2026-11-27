@@ -1,0 +1,215 @@
+{
+ "crop": "DB43",
+ "plate": "93A",
+ "win": [
+  1388,
+  1207,
+  1546,
+  1381
+ ],
+ "why": "block number 8 on plate 93A (400 ft), drawn at random (candidates/draw.json)",
+ "n_words": 4,
+ "mask": "DB43_mask.png",
+ "mask_values": {
+  "0": "paper (in scope)",
+  "1": "ink, not text (in scope)",
+  "2": "text ink (in scope)",
+  "3": "don't care (glyph and line share ink; CARE boxes; everything outside the scope)"
+ },
+ "counts": {
+  "paper": 7838,
+  "ink_not_text": 368,
+  "text": 1014,
+  "dont_care": 18272
+ },
+ "scope_px": 9345,
+ "scope_counts": {
+  "paper": 7838,
+  "ink_not_text": 368,
+  "text": 1014,
+  "dont_care": 125
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DB43-001",
+   "reading": "8",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 54.0,
+   "length": 38.0,
+   "poly": [
+    [
+     1448.0,
+     1267.0
+    ],
+    [
+     1486.0,
+     1267.0
+    ],
+    [
+     1486.0,
+     1321.0
+    ],
+    [
+     1448.0,
+     1321.0
+    ]
+   ],
+   "aabb": [
+    1448,
+    1267,
+    1486,
+    1321
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 807,
+   "annot_line": 4,
+   "in_scope": {
+    "text_px": 806,
+    "dont_care_px": 108,
+    "ink_px": 1047
+   },
+   "target": true,
+   "ink_size_px": 914
+  },
+  {
+   "id": "DB43-002",
+   "reading": "340.64'",
+   "kind": "lotdim",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": -10.7,
+   "height": 34.3,
+   "length": 85.9,
+   "poly": [
+    [
+     1485.2,
+     1261.6
+    ],
+    [
+     1569.6,
+     1245.7
+    ],
+    [
+     1575.9,
+     1279.4
+    ],
+    [
+     1491.6,
+     1295.3
+    ]
+   ],
+   "aabb": [
+    1485,
+    1245,
+    1576,
+    1296
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 587,
+   "annot_line": 5,
+   "in_scope": {
+    "text_px": 157,
+    "dont_care_px": 7,
+    "ink_px": 253
+   }
+  },
+  {
+   "id": "DB43-003",
+   "reading": "Z",
+   "kind": "owner",
+   "flags": [
+    "unsure",
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 12.8,
+   "length": 20.5,
+   "poly": [
+    [
+     1419.5,
+     1293.6
+    ],
+    [
+     1440.0,
+     1293.6
+    ],
+    [
+     1440.0,
+     1306.4
+    ],
+    [
+     1419.5,
+     1306.4
+    ]
+   ],
+   "aabb": [
+    1419,
+    1293,
+    1440,
+    1307
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 51,
+   "annot_line": 6,
+   "in_scope": {
+    "text_px": 51,
+    "dont_care_px": 4,
+    "ink_px": 68
+   }
+  },
+  {
+   "id": "DB43-004",
+   "reading": "W.",
+   "kind": "owner",
+   "flags": [
+    "g:MARY_W._LUCKETT'S",
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 72.0,
+   "length": 62.0,
+   "poly": [
+    [
+     1494.0,
+     1333.0
+    ],
+    [
+     1556.0,
+     1333.0
+    ],
+    [
+     1556.0,
+     1405.0
+    ],
+    [
+     1494.0,
+     1405.0
+    ]
+   ],
+   "aabb": [
+    1494,
+    1333,
+    1556,
+    1405
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 1096,
+   "annot_line": 7,
+   "in_scope": {
+    "text_px": 0,
+    "dont_care_px": 0,
+    "ink_px": 0
+   }
+  }
+ ]
+}

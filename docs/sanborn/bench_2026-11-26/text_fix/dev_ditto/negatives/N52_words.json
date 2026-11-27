@@ -1,0 +1,94 @@
+{
+ "crop": "N52",
+ "plate": "3",
+ "win": [
+  8423,
+  540,
+  8487,
+  604
+ ],
+ "kind": "targeted",
+ "target": "negative",
+ "scope_pad": 0,
+ "scope": [
+  [
+   8423,
+   540,
+   8487,
+   604
+  ]
+ ],
+ "n_words": 1,
+ "n_targets": 0,
+ "mask": "N52_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 3548,
+  "ink_not_text": 548,
+  "text": 0,
+  "dont_care": 0
+ },
+ "counts_in_scope": {
+  "ink_not_text": 548,
+  "text": 0,
+  "dont_care": 0
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "N52-001",
+   "reading": "-",
+   "kind": "negative",
+   "flags": [
+    "neg:dash"
+   ],
+   "angle": 0.0,
+   "height": 13.0,
+   "length": 4.0,
+   "poly": [
+    [
+     8454.0,
+     566.0
+    ],
+    [
+     8458.0,
+     566.0
+    ],
+    [
+     8458.0,
+     579.0
+    ],
+    [
+     8454.0,
+     579.0
+    ]
+   ],
+   "aabb": [
+    8454,
+    566,
+    8458,
+    579
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": false,
+   "box_word": true,
+   "text_px": 0,
+   "in_scope": true,
+   "ink_px": 44,
+   "care_px": 0,
+   "pieces": 1,
+   "piece_px": [
+    44
+   ],
+   "style": "",
+   "neg_type": "dash"
+  }
+ ]
+}

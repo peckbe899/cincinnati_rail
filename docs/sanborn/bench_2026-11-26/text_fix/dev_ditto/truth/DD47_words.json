@@ -1,0 +1,97 @@
+{
+ "crop": "DD47",
+ "plate": "26A",
+ "win": [
+  984,
+  2887,
+  1384,
+  3187
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   1236,
+   2871,
+   1292,
+   2931
+  ]
+ ],
+ "n_words": 1,
+ "n_targets": 1,
+ "mask": "DD47_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 106008,
+  "ink_not_text": 140,
+  "text": 18,
+  "dont_care": 13834
+ },
+ "counts_in_scope": {
+  "ink_not_text": 140,
+  "text": 18,
+  "dont_care": 0
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DD47-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 6.0,
+   "poly": [
+    [
+     1261.0,
+     2896.0
+    ],
+    [
+     1267.0,
+     2896.0
+    ],
+    [
+     1267.0,
+     2906.0
+    ],
+    [
+     1261.0,
+     2906.0
+    ]
+   ],
+   "aabb": [
+    1261,
+    2896,
+    1267,
+    2906
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": true,
+   "box_word": true,
+   "text_px": 18,
+   "in_scope": true,
+   "ink_px": 18,
+   "care_px": 0,
+   "pieces": 4,
+   "piece_px": [
+    7,
+    6,
+    3,
+    2
+   ],
+   "style": "pair",
+   "neg_type": ""
+  }
+ ]
+}

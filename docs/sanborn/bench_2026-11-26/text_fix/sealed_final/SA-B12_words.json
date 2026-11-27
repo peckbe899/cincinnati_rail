@@ -1,0 +1,328 @@
+{
+ "crop": "SA-B12",
+ "plate": "35",
+ "win": [
+  250,
+  3815,
+  470,
+  4035
+ ],
+ "scale_ft_per_inch": 200,
+ "half": "A",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   312,
+   3878,
+   405,
+   3968
+  ]
+ ],
+ "scope_px": 8554,
+ "why": "block number 4 on plate 35 (200 ft), drawn at random (seed: plate name) from the plate list",
+ "n_words": 7,
+ "mask": "SA-B12_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 5541,
+  "ink_not_text": 1414,
+  "text": 1222,
+  "dont_care": 40223
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-B12-001",
+   "reading": "4",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 40.0,
+   "length": 43.0,
+   "poly": [
+    [
+     337.0,
+     3903.0
+    ],
+    [
+     380.0,
+     3903.0
+    ],
+    [
+     380.0,
+     3943.0
+    ],
+    [
+     337.0,
+     3943.0
+    ]
+   ],
+   "aabb": [
+    337,
+    3903,
+    380,
+    3943
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 542,
+   "annot_line": 2,
+   "ink_px": 860,
+   "text_px_final": 479
+  },
+  {
+   "id": "SA-B12-002",
+   "reading": "133",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 34.0,
+   "length": 26.0,
+   "poly": [
+    [
+     319.0,
+     3911.0
+    ],
+    [
+     345.0,
+     3911.0
+    ],
+    [
+     345.0,
+     3945.0
+    ],
+    [
+     319.0,
+     3945.0
+    ]
+   ],
+   "aabb": [
+    319,
+    3911,
+    345,
+    3945
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 245,
+   "annot_line": 3,
+   "ink_px": 357,
+   "text_px_final": 302
+  },
+  {
+   "id": "SA-B12-003",
+   "reading": "145",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 30.0,
+   "poly": [
+    [
+     383.0,
+     3898.0
+    ],
+    [
+     413.0,
+     3898.0
+    ],
+    [
+     413.0,
+     3924.0
+    ],
+    [
+     383.0,
+     3924.0
+    ]
+   ],
+   "aabb": [
+    383,
+    3898,
+    413,
+    3924
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 235,
+   "annot_line": 4,
+   "ink_px": 292,
+   "text_px_final": 181
+  },
+  {
+   "id": "SA-B12-004",
+   "reading": "134",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 32.0,
+   "length": 31.0,
+   "poly": [
+    [
+     303.0,
+     3864.0
+    ],
+    [
+     334.0,
+     3864.0
+    ],
+    [
+     334.0,
+     3896.0
+    ],
+    [
+     303.0,
+     3896.0
+    ]
+   ],
+   "aabb": [
+    303,
+    3864,
+    334,
+    3896
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 257,
+   "annot_line": 5,
+   "ink_px": 257,
+   "text_px_final": 110
+  },
+  {
+   "id": "SA-B12-005",
+   "reading": "3",
+   "kind": "story",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 20.0,
+   "length": 13.0,
+   "poly": [
+    [
+     353.0,
+     3950.0
+    ],
+    [
+     366.0,
+     3950.0
+    ],
+    [
+     366.0,
+     3970.0
+    ],
+    [
+     353.0,
+     3970.0
+    ]
+   ],
+   "aabb": [
+    353,
+    3950,
+    366,
+    3970
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 88,
+   "annot_line": 6,
+   "ink_px": 92,
+   "text_px_final": 82
+  },
+  {
+   "id": "SA-B12-006",
+   "reading": "132",
+   "kind": "lot",
+   "flags": [
+    "partial",
+    "unsure"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 23.0,
+   "poly": [
+    [
+     326.0,
+     3958.0
+    ],
+    [
+     349.0,
+     3958.0
+    ],
+    [
+     349.0,
+     3986.0
+    ],
+    [
+     326.0,
+     3986.0
+    ]
+   ],
+   "aabb": [
+    326,
+    3958,
+    349,
+    3986
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 283,
+   "annot_line": 7,
+   "ink_px": 389,
+   "text_px_final": 121
+  },
+  {
+   "id": "SA-B12-007",
+   "reading": "144",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 37.0,
+   "length": 33.0,
+   "poly": [
+    [
+     398.0,
+     3935.0
+    ],
+    [
+     431.0,
+     3935.0
+    ],
+    [
+     431.0,
+     3972.0
+    ],
+    [
+     398.0,
+     3972.0
+    ]
+   ],
+   "aabb": [
+    398,
+    3935,
+    431,
+    3972
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 232,
+   "annot_line": 8,
+   "ink_px": 410,
+   "text_px_final": 46
+  }
+ ],
+ "dropped_outside_scope": []
+}

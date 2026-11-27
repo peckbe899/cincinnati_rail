@@ -1,0 +1,172 @@
+{
+ "crop": "SA-D20",
+ "plate": "52",
+ "win": [
+  5655,
+  2633,
+  5780,
+  2756
+ ],
+ "scale_ft_per_inch": 100,
+ "half": "A",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   5687,
+   2664,
+   5747,
+   2724
+  ]
+ ],
+ "scope_px": 3721,
+ "why": "1 ditto mark(s) found in the seeded random built-up window [5295, 2216, 5795, 2716] of plate 52 (round 1)",
+ "n_words": 3,
+ "mask": "SA-D20_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 2963,
+  "ink_not_text": 375,
+  "text": 382,
+  "dont_care": 11655
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-D20-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 9.0,
+   "length": 10.0,
+   "poly": [
+    [
+     5712.0,
+     2689.5
+    ],
+    [
+     5722.0,
+     2689.5
+    ],
+    [
+     5722.0,
+     2698.5
+    ],
+    [
+     5712.0,
+     2698.5
+    ]
+   ],
+   "aabb": [
+    5712,
+    2689,
+    5722,
+    2699
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 36,
+   "annot_line": 10,
+   "ink_px": 37,
+   "text_px_final": 36
+  },
+  {
+   "id": "SA-D20-003",
+   "reading": "1",
+   "kind": "story",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 33.0,
+   "length": 10.0,
+   "poly": [
+    [
+     5691.0,
+     2673.0
+    ],
+    [
+     5701.0,
+     2673.0
+    ],
+    [
+     5701.0,
+     2706.0
+    ],
+    [
+     5691.0,
+     2706.0
+    ]
+   ],
+   "aabb": [
+    5691,
+    2673,
+    5701,
+    2706
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 77,
+   "annot_line": 20,
+   "ink_px": 77,
+   "text_px_final": 77
+  },
+  {
+   "id": "SA-D20-004",
+   "reading": "321",
+   "kind": "house",
+   "flags": [],
+   "target": false,
+   "angle": 90.0,
+   "height": 30.0,
+   "length": 45.5,
+   "poly": [
+    [
+     5756.0,
+     2659.5
+    ],
+    [
+     5756.0,
+     2705.0
+    ],
+    [
+     5726.0,
+     2705.0
+    ],
+    [
+     5726.0,
+     2659.5
+    ]
+   ],
+   "aabb": [
+    5726,
+    2659,
+    5756,
+    2705
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 365,
+   "annot_line": 21,
+   "ink_px": 426,
+   "text_px_final": 269
+  }
+ ],
+ "dropped_outside_scope": [
+  {
+   "id": "SA-D20-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 9
+  }
+ ]
+}

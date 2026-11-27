@@ -1,0 +1,1530 @@
+{
+ "methods": [
+  "finder3",
+  "finder4"
+ ],
+ "draws": 2000,
+ "seed": 20261127,
+ "full": {
+  "H1": {
+   "finder3": {
+    "tp": 61422,
+    "fp": 6823,
+    "fn": 3990,
+    "nontext_px": 107584,
+    "P": 0.9,
+    "R": 0.939,
+    "F1": 0.9191,
+    "nontext_share": 0.06342,
+    "street_pixel_recall": 0.9965,
+    "street_words": "5/5",
+    "straight_px": 50714,
+    "straight_called_text": 396,
+    "by_kind": {
+     "bldg": {
+      "words": 2,
+      "text_px": 687,
+      "found_px": 687,
+      "words_found": 2,
+      "recall": 1.0
+     },
+     "block": {
+      "words": 2,
+      "text_px": 2614,
+      "found_px": 2607,
+      "words_found": 2,
+      "recall": 0.9973
+     },
+     "ditto": {
+      "words": 5,
+      "text_px": 114,
+      "found_px": 0,
+      "words_found": 0,
+      "recall": 0.0
+     },
+     "house": {
+      "words": 21,
+      "text_px": 5786,
+      "found_px": 5453,
+      "words_found": 21,
+      "recall": 0.9424
+     },
+     "lot": {
+      "words": 54,
+      "text_px": 12253,
+      "found_px": 10867,
+      "words_found": 47,
+      "recall": 0.8869
+     },
+     "lotdim": {
+      "words": 85,
+      "text_px": 18941,
+      "found_px": 17971,
+      "words_found": 82,
+      "recall": 0.9488
+     },
+     "other": {
+      "words": 2,
+      "text_px": 489,
+      "found_px": 489,
+      "words_found": 2,
+      "recall": 1.0
+     },
+     "owner": {
+      "words": 11,
+      "text_px": 3591,
+      "found_px": 3357,
+      "words_found": 10,
+      "recall": 0.9348
+     },
+     "pipe": {
+      "words": 6,
+      "text_px": 2686,
+      "found_px": 2292,
+      "words_found": 5,
+      "recall": 0.8533
+     },
+     "sewer": {
+      "words": 6,
+      "text_px": 3143,
+      "found_px": 3030,
+      "words_found": 6,
+      "recall": 0.964
+     },
+     "story": {
+      "words": 26,
+      "text_px": 2496,
+      "found_px": 2243,
+      "words_found": 23,
+      "recall": 0.8986
+     },
+     "street": {
+      "words": 5,
+      "text_px": 12933,
+      "found_px": 12888,
+      "words_found": 5,
+      "recall": 0.9965
+     }
+    }
+   },
+   "finder4": {
+    "tp": 61627,
+    "fp": 6823,
+    "fn": 3785,
+    "nontext_px": 107584,
+    "P": 0.9003,
+    "R": 0.9421,
+    "F1": 0.9208,
+    "nontext_share": 0.06342,
+    "street_pixel_recall": 0.9989,
+    "street_words": "5/5",
+    "straight_px": 50714,
+    "straight_called_text": 396,
+    "by_kind": {
+     "bldg": {
+      "words": 2,
+      "text_px": 687,
+      "found_px": 687,
+      "words_found": 2,
+      "recall": 1.0
+     },
+     "block": {
+      "words": 2,
+      "text_px": 2614,
+      "found_px": 2610,
+      "words_found": 2,
+      "recall": 0.9985
+     },
+     "ditto": {
+      "words": 5,
+      "text_px": 114,
+      "found_px": 114,
+      "words_found": 5,
+      "recall": 1.0
+     },
+     "house": {
+      "words": 21,
+      "text_px": 5786,
+      "found_px": 5476,
+      "words_found": 21,
+      "recall": 0.9464
+     },
+     "lot": {
+      "words": 54,
+      "text_px": 12253,
+      "found_px": 10867,
+      "words_found": 47,
+      "recall": 0.8869
+     },
+     "lotdim": {
+      "words": 85,
+      "text_px": 18941,
+      "found_px": 17989,
+      "words_found": 82,
+      "recall": 0.9497
+     },
+     "other": {
+      "words": 2,
+      "text_px": 489,
+      "found_px": 489,
+      "words_found": 2,
+      "recall": 1.0
+     },
+     "owner": {
+      "words": 11,
+      "text_px": 3591,
+      "found_px": 3357,
+      "words_found": 10,
+      "recall": 0.9348
+     },
+     "pipe": {
+      "words": 6,
+      "text_px": 2686,
+      "found_px": 2292,
+      "words_found": 5,
+      "recall": 0.8533
+     },
+     "sewer": {
+      "words": 6,
+      "text_px": 3143,
+      "found_px": 3030,
+      "words_found": 6,
+      "recall": 0.964
+     },
+     "story": {
+      "words": 26,
+      "text_px": 2496,
+      "found_px": 2282,
+      "words_found": 24,
+      "recall": 0.9143
+     },
+     "street": {
+      "words": 5,
+      "text_px": 12933,
+      "found_px": 12919,
+      "words_found": 5,
+      "recall": 0.9989
+     }
+    }
+   },
+   "boot_tile": {
+    "tiles": 150,
+    "finder3": {
+     "F1": [
+      0.8967,
+      0.9395
+     ],
+     "nontext": [
+      0.0416,
+      0.0863
+     ],
+     "street": [
+      0.989,
+      1.0
+     ],
+     "straight": [
+      41.0,
+      934.025
+     ]
+    },
+    "finder4": {
+     "F1": [
+      0.8986,
+      0.9409
+     ],
+     "nontext": [
+      0.0416,
+      0.0863
+     ],
+     "street": [
+      0.9976,
+      1.0
+     ],
+     "straight": [
+      41.0,
+      934.025
+     ]
+    },
+    "diff_B_minus_A": {
+     "F1": [
+      0.0005,
+      0.0033
+     ],
+     "nontext": [
+      0.0,
+      0.0
+     ],
+     "street": [
+      0.0,
+      0.0088
+     ],
+     "straight": [
+      0.0,
+      0.0
+     ]
+    },
+    "share_draws_F1_ok": 1.0,
+    "share_draws_nontext_ok": 1.0,
+    "share_draws_straight_ok": 1.0
+   },
+   "street_words_boot": {
+    "finder4": {
+     "pixel_recall": [
+      0.9977,
+      0.9997
+     ],
+     "word_share": [
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "street_words": [
+    {
+     "id": "H1-045",
+     "reading": "AVALON",
+     "n": 2497,
+     "fA": 2461,
+     "fB": 2492
+    },
+    {
+     "id": "H1-054",
+     "reading": "OAKMONT",
+     "n": 808,
+     "fA": 808,
+     "fB": 808
+    },
+    {
+     "id": "H1-127",
+     "reading": "WOODBINE",
+     "n": 3878,
+     "fA": 3874,
+     "fB": 3874
+    },
+    {
+     "id": "H1-136",
+     "reading": "WILDWOOD",
+     "n": 4346,
+     "fA": 4346,
+     "fB": 4346
+    },
+    {
+     "id": "H1-225",
+     "reading": "DECAMP",
+     "n": 1404,
+     "fA": 1399,
+     "fB": 1399
+    }
+   ]
+  },
+  "H2": {
+   "finder3": {
+    "tp": 94554,
+    "fp": 7517,
+    "fn": 7430,
+    "nontext_px": 117233,
+    "P": 0.9264,
+    "R": 0.9271,
+    "F1": 0.9268,
+    "nontext_share": 0.06412,
+    "street_pixel_recall": 0.9842,
+    "street_words": "3/3",
+    "straight_px": 71874,
+    "straight_called_text": 754,
+    "by_kind": {
+     "block": {
+      "words": 2,
+      "text_px": 1784,
+      "found_px": 1522,
+      "words_found": 2,
+      "recall": 0.8531
+     },
+     "ditto": {
+      "words": 34,
+      "text_px": 831,
+      "found_px": 185,
+      "words_found": 6,
+      "recall": 0.2226
+     },
+     "house": {
+      "words": 36,
+      "text_px": 16783,
+      "found_px": 15701,
+      "words_found": 36,
+      "recall": 0.9355
+     },
+     "lot": {
+      "words": 152,
+      "text_px": 48065,
+      "found_px": 44372,
+      "words_found": 140,
+      "recall": 0.9232
+     },
+     "lotdim": {
+      "words": 87,
+      "text_px": 19207,
+      "found_px": 18641,
+      "words_found": 86,
+      "recall": 0.9705
+     },
+     "owner": {
+      "words": 4,
+      "text_px": 2452,
+      "found_px": 1493,
+      "words_found": 3,
+      "recall": 0.6089
+     },
+     "pipe": {
+      "words": 2,
+      "text_px": 1166,
+      "found_px": 1161,
+      "words_found": 2,
+      "recall": 0.9957
+     },
+     "sewer": {
+      "words": 2,
+      "text_px": 1050,
+      "found_px": 942,
+      "words_found": 2,
+      "recall": 0.8971
+     },
+     "story": {
+      "words": 42,
+      "text_px": 4940,
+      "found_px": 4825,
+      "words_found": 42,
+      "recall": 0.9767
+     },
+     "street": {
+      "words": 3,
+      "text_px": 11716,
+      "found_px": 11531,
+      "words_found": 3,
+      "recall": 0.9842
+     }
+    }
+   },
+   "finder4": {
+    "tp": 95550,
+    "fp": 7574,
+    "fn": 6434,
+    "nontext_px": 117233,
+    "P": 0.9266,
+    "R": 0.9369,
+    "F1": 0.9317,
+    "nontext_share": 0.06461,
+    "street_pixel_recall": 0.9842,
+    "street_words": "3/3",
+    "straight_px": 71874,
+    "straight_called_text": 754,
+    "by_kind": {
+     "block": {
+      "words": 2,
+      "text_px": 1784,
+      "found_px": 1685,
+      "words_found": 2,
+      "recall": 0.9445
+     },
+     "ditto": {
+      "words": 34,
+      "text_px": 831,
+      "found_px": 831,
+      "words_found": 34,
+      "recall": 1.0
+     },
+     "house": {
+      "words": 36,
+      "text_px": 16783,
+      "found_px": 15701,
+      "words_found": 36,
+      "recall": 0.9355
+     },
+     "lot": {
+      "words": 152,
+      "text_px": 48065,
+      "found_px": 44414,
+      "words_found": 140,
+      "recall": 0.924
+     },
+     "lotdim": {
+      "words": 87,
+      "text_px": 19207,
+      "found_px": 18641,
+      "words_found": 86,
+      "recall": 0.9705
+     },
+     "owner": {
+      "words": 4,
+      "text_px": 2452,
+      "found_px": 1674,
+      "words_found": 3,
+      "recall": 0.6827
+     },
+     "pipe": {
+      "words": 2,
+      "text_px": 1166,
+      "found_px": 1161,
+      "words_found": 2,
+      "recall": 0.9957
+     },
+     "sewer": {
+      "words": 2,
+      "text_px": 1050,
+      "found_px": 942,
+      "words_found": 2,
+      "recall": 0.8971
+     },
+     "story": {
+      "words": 42,
+      "text_px": 4940,
+      "found_px": 4825,
+      "words_found": 42,
+      "recall": 0.9767
+     },
+     "street": {
+      "words": 3,
+      "text_px": 11716,
+      "found_px": 11531,
+      "words_found": 3,
+      "recall": 0.9842
+     }
+    }
+   },
+   "boot_tile": {
+    "tiles": 150,
+    "finder3": {
+     "F1": [
+      0.9097,
+      0.9421
+     ],
+     "nontext": [
+      0.0441,
+      0.0862
+     ],
+     "street": [
+      0.9709,
+      0.9956
+     ],
+     "straight": [
+      22.0,
+      1737.0
+     ]
+    },
+    "finder4": {
+     "F1": [
+      0.915,
+      0.9466
+     ],
+     "nontext": [
+      0.0446,
+      0.0868
+     ],
+     "street": [
+      0.9709,
+      0.9956
+     ],
+     "straight": [
+      22.0,
+      1737.0
+     ]
+    },
+    "diff_B_minus_A": {
+     "F1": [
+      0.0029,
+      0.0073
+     ],
+     "nontext": [
+      0.0,
+      0.0011
+     ],
+     "street": [
+      0.0,
+      0.0
+     ],
+     "straight": [
+      0.0,
+      0.0
+     ]
+    },
+    "share_draws_F1_ok": 1.0,
+    "share_draws_nontext_ok": 1.0,
+    "share_draws_straight_ok": 1.0
+   },
+   "street_words_boot": {
+    "finder4": {
+     "pixel_recall": [
+      0.9752,
+      1.0
+     ],
+     "word_share": [
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "street_words": [
+    {
+     "id": "H2-082",
+     "reading": "CURZON",
+     "n": 4470,
+     "fA": 4413,
+     "fB": 4413
+    },
+    {
+     "id": "H2-138",
+     "reading": "AVENUE",
+     "n": 2082,
+     "fA": 2082,
+     "fB": 2082
+    },
+    {
+     "id": "H2-262",
+     "reading": "WISWELL",
+     "n": 5164,
+     "fA": 5036,
+     "fB": 5036
+    }
+   ]
+  },
+  "H3": {
+   "finder3": {
+    "tp": 32865,
+    "fp": 5392,
+    "fn": 4636,
+    "nontext_px": 54441,
+    "P": 0.8591,
+    "R": 0.8764,
+    "F1": 0.8676,
+    "nontext_share": 0.09904,
+    "street_pixel_recall": 0.7889,
+    "street_words": "4/5",
+    "straight_px": 7417,
+    "straight_called_text": 0,
+    "by_kind": {
+     "block": {
+      "words": 1,
+      "text_px": 738,
+      "found_px": 635,
+      "words_found": 1,
+      "recall": 0.8604
+     },
+     "ditto": {
+      "words": 6,
+      "text_px": 123,
+      "found_px": 2,
+      "words_found": 0,
+      "recall": 0.0163
+     },
+     "lot": {
+      "words": 63,
+      "text_px": 15679,
+      "found_px": 15202,
+      "words_found": 63,
+      "recall": 0.9696
+     },
+     "lotdim": {
+      "words": 71,
+      "text_px": 9321,
+      "found_px": 7593,
+      "words_found": 57,
+      "recall": 0.8146
+     },
+     "other": {
+      "words": 5,
+      "text_px": 976,
+      "found_px": 745,
+      "words_found": 4,
+      "recall": 0.7633
+     },
+     "owner": {
+      "words": 29,
+      "text_px": 11684,
+      "found_px": 10049,
+      "words_found": 27,
+      "recall": 0.8601
+     },
+     "pipe": {
+      "words": 1,
+      "text_px": 447,
+      "found_px": 442,
+      "words_found": 1,
+      "recall": 0.9888
+     },
+     "story": {
+      "words": 12,
+      "text_px": 617,
+      "found_px": 542,
+      "words_found": 11,
+      "recall": 0.8784
+     },
+     "street": {
+      "words": 5,
+      "text_px": 2658,
+      "found_px": 2097,
+      "words_found": 4,
+      "recall": 0.7889
+     }
+    }
+   },
+   "finder4": {
+    "tp": 33030,
+    "fp": 5611,
+    "fn": 4471,
+    "nontext_px": 54441,
+    "P": 0.8548,
+    "R": 0.8808,
+    "F1": 0.8676,
+    "nontext_share": 0.10307,
+    "street_pixel_recall": 0.7991,
+    "street_words": "4/5",
+    "straight_px": 7417,
+    "straight_called_text": 0,
+    "by_kind": {
+     "block": {
+      "words": 1,
+      "text_px": 738,
+      "found_px": 700,
+      "words_found": 1,
+      "recall": 0.9485
+     },
+     "ditto": {
+      "words": 6,
+      "text_px": 123,
+      "found_px": 102,
+      "words_found": 5,
+      "recall": 0.8293
+     },
+     "lot": {
+      "words": 63,
+      "text_px": 15679,
+      "found_px": 15202,
+      "words_found": 63,
+      "recall": 0.9696
+     },
+     "lotdim": {
+      "words": 71,
+      "text_px": 9321,
+      "found_px": 7593,
+      "words_found": 57,
+      "recall": 0.8146
+     },
+     "other": {
+      "words": 5,
+      "text_px": 976,
+      "found_px": 745,
+      "words_found": 4,
+      "recall": 0.7633
+     },
+     "owner": {
+      "words": 29,
+      "text_px": 11684,
+      "found_px": 10049,
+      "words_found": 27,
+      "recall": 0.8601
+     },
+     "pipe": {
+      "words": 1,
+      "text_px": 447,
+      "found_px": 442,
+      "words_found": 1,
+      "recall": 0.9888
+     },
+     "story": {
+      "words": 12,
+      "text_px": 617,
+      "found_px": 542,
+      "words_found": 11,
+      "recall": 0.8784
+     },
+     "street": {
+      "words": 5,
+      "text_px": 2658,
+      "found_px": 2124,
+      "words_found": 4,
+      "recall": 0.7991
+     }
+    }
+   },
+   "boot_tile": {
+    "tiles": 150,
+    "finder3": {
+     "F1": [
+      0.8341,
+      0.8944
+     ],
+     "nontext": [
+      0.071,
+      0.1299
+     ],
+     "street": [
+      0.5608,
+      0.9158
+     ],
+     "straight": [
+      0.0,
+      0.0
+     ]
+    },
+    "finder4": {
+     "F1": [
+      0.8336,
+      0.8954
+     ],
+     "nontext": [
+      0.0751,
+      0.1341
+     ],
+     "street": [
+      0.5666,
+      0.924
+     ],
+     "straight": [
+      0.0,
+      0.0
+     ]
+    },
+    "diff_B_minus_A": {
+     "F1": [
+      -0.0025,
+      0.0025
+     ],
+     "nontext": [
+      0.0016,
+      0.0068
+     ],
+     "street": [
+      0.0,
+      0.0208
+     ],
+     "straight": [
+      0.0,
+      0.0
+     ]
+    },
+    "share_draws_F1_ok": 0.935,
+    "share_draws_nontext_ok": 0.256,
+    "share_draws_straight_ok": 1.0
+   },
+   "street_words_boot": {
+    "finder4": {
+     "pixel_recall": [
+      0.5061,
+      0.904
+     ],
+     "word_share": [
+      0.4,
+      1.0
+     ]
+    }
+   },
+   "street_words": [
+    {
+     "id": "H3-098",
+     "reading": "SAFFER",
+     "n": 317,
+     "fA": 60,
+     "fB": 60
+    },
+    {
+     "id": "H3-111",
+     "reading": "FYFFE",
+     "n": 1163,
+     "fA": 983,
+     "fB": 1010
+    },
+    {
+     "id": "H3-170",
+     "reading": "AVE.",
+     "n": 688,
+     "fA": 626,
+     "fB": 626
+    },
+    {
+     "id": "H3-182",
+     "reading": "KAVANAUGH",
+     "n": 383,
+     "fA": 353,
+     "fB": 353
+    },
+    {
+     "id": "H3-194",
+     "reading": "SCHMANN",
+     "n": 107,
+     "fA": 75,
+     "fB": 75
+    }
+   ]
+  },
+  "H4": {
+   "finder3": {
+    "tp": 62798,
+    "fp": 1011,
+    "fn": 2874,
+    "nontext_px": 112338,
+    "P": 0.9842,
+    "R": 0.9562,
+    "F1": 0.97,
+    "nontext_share": 0.009,
+    "street_pixel_recall": 0.9965,
+    "street_words": "3/3",
+    "straight_px": 48870,
+    "straight_called_text": 0,
+    "by_kind": {
+     "block": {
+      "words": 1,
+      "text_px": 1315,
+      "found_px": 987,
+      "words_found": 1,
+      "recall": 0.7506
+     },
+     "ditto": {
+      "words": 33,
+      "text_px": 981,
+      "found_px": 493,
+      "words_found": 15,
+      "recall": 0.5025
+     },
+     "house": {
+      "words": 41,
+      "text_px": 16216,
+      "found_px": 15648,
+      "words_found": 41,
+      "recall": 0.965
+     },
+     "lot": {
+      "words": 53,
+      "text_px": 24127,
+      "found_px": 23052,
+      "words_found": 53,
+      "recall": 0.9554
+     },
+     "lotdim": {
+      "words": 19,
+      "text_px": 3422,
+      "found_px": 3169,
+      "words_found": 18,
+      "recall": 0.9261
+     },
+     "other": {
+      "words": 1,
+      "text_px": 84,
+      "found_px": 84,
+      "words_found": 1,
+      "recall": 1.0
+     },
+     "pipe": {
+      "words": 2,
+      "text_px": 1312,
+      "found_px": 1312,
+      "words_found": 2,
+      "recall": 1.0
+     },
+     "sewer": {
+      "words": 2,
+      "text_px": 1250,
+      "found_px": 1125,
+      "words_found": 2,
+      "recall": 0.9
+     },
+     "story": {
+      "words": 49,
+      "text_px": 6551,
+      "found_px": 6536,
+      "words_found": 49,
+      "recall": 0.9977
+     },
+     "street": {
+      "words": 3,
+      "text_px": 11132,
+      "found_px": 11093,
+      "words_found": 3,
+      "recall": 0.9965
+     }
+    }
+   },
+   "finder4": {
+    "tp": 63382,
+    "fp": 1053,
+    "fn": 2290,
+    "nontext_px": 112338,
+    "P": 0.9837,
+    "R": 0.9651,
+    "F1": 0.9743,
+    "nontext_share": 0.00937,
+    "street_pixel_recall": 0.9965,
+    "street_words": "3/3",
+    "straight_px": 48870,
+    "straight_called_text": 0,
+    "by_kind": {
+     "block": {
+      "words": 1,
+      "text_px": 1315,
+      "found_px": 1152,
+      "words_found": 1,
+      "recall": 0.876
+     },
+     "ditto": {
+      "words": 33,
+      "text_px": 981,
+      "found_px": 912,
+      "words_found": 30,
+      "recall": 0.9297
+     },
+     "house": {
+      "words": 41,
+      "text_px": 16216,
+      "found_px": 15648,
+      "words_found": 41,
+      "recall": 0.965
+     },
+     "lot": {
+      "words": 53,
+      "text_px": 24127,
+      "found_px": 23052,
+      "words_found": 53,
+      "recall": 0.9554
+     },
+     "lotdim": {
+      "words": 19,
+      "text_px": 3422,
+      "found_px": 3169,
+      "words_found": 18,
+      "recall": 0.9261
+     },
+     "other": {
+      "words": 1,
+      "text_px": 84,
+      "found_px": 84,
+      "words_found": 1,
+      "recall": 1.0
+     },
+     "pipe": {
+      "words": 2,
+      "text_px": 1312,
+      "found_px": 1312,
+      "words_found": 2,
+      "recall": 1.0
+     },
+     "sewer": {
+      "words": 2,
+      "text_px": 1250,
+      "found_px": 1125,
+      "words_found": 2,
+      "recall": 0.9
+     },
+     "story": {
+      "words": 49,
+      "text_px": 6551,
+      "found_px": 6536,
+      "words_found": 49,
+      "recall": 0.9977
+     },
+     "street": {
+      "words": 3,
+      "text_px": 11132,
+      "found_px": 11093,
+      "words_found": 3,
+      "recall": 0.9965
+     }
+    }
+   },
+   "boot_tile": {
+    "tiles": 150,
+    "finder3": {
+     "F1": [
+      0.9606,
+      0.9781
+     ],
+     "nontext": [
+      0.0046,
+      0.0145
+     ],
+     "street": [
+      0.9892,
+      1.0
+     ],
+     "straight": [
+      0.0,
+      0.0
+     ]
+    },
+    "finder4": {
+     "F1": [
+      0.966,
+      0.9814
+     ],
+     "nontext": [
+      0.0048,
+      0.0151
+     ],
+     "street": [
+      0.9892,
+      1.0
+     ],
+     "straight": [
+      0.0,
+      0.0
+     ]
+    },
+    "diff_B_minus_A": {
+     "F1": [
+      0.002,
+      0.0072
+     ],
+     "nontext": [
+      0.0,
+      0.0012
+     ],
+     "street": [
+      0.0,
+      0.0
+     ],
+     "straight": [
+      0.0,
+      0.0
+     ]
+    },
+    "share_draws_F1_ok": 1.0,
+    "share_draws_nontext_ok": 1.0,
+    "share_draws_straight_ok": 1.0
+   },
+   "street_words_boot": {
+    "finder4": {
+     "pixel_recall": [
+      0.9904,
+      1.0
+     ],
+     "word_share": [
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "street_words": [
+    {
+     "id": "H4-062",
+     "reading": "DANDRIDGE",
+     "n": 6202,
+     "fA": 6202,
+     "fB": 6202
+    },
+    {
+     "id": "H4-132",
+     "reading": "NOAH",
+     "n": 867,
+     "fA": 867,
+     "fB": 867
+    },
+    {
+     "id": "H4-201",
+     "reading": "STREET",
+     "n": 4063,
+     "fA": 4024,
+     "fB": 4024
+    }
+   ]
+  },
+  "both": {
+   "finder3": {
+    "tp": 251639,
+    "fp": 20743,
+    "fn": 18930,
+    "nontext_px": 391596,
+    "P": 0.9238,
+    "R": 0.93,
+    "F1": 0.9269,
+    "nontext_share": 0.05297,
+    "street_pixel_recall": 0.9784,
+    "street_words": "15/16",
+    "straight_px": 178875,
+    "straight_called_text": 1150,
+    "by_kind": {
+     "bldg": {
+      "words": 2,
+      "text_px": 687,
+      "found_px": 687,
+      "words_found": 2,
+      "recall": 1.0
+     },
+     "block": {
+      "words": 6,
+      "text_px": 6451,
+      "found_px": 5751,
+      "words_found": 6,
+      "recall": 0.8915
+     },
+     "ditto": {
+      "words": 78,
+      "text_px": 2049,
+      "found_px": 680,
+      "words_found": 21,
+      "recall": 0.3319
+     },
+     "house": {
+      "words": 98,
+      "text_px": 38785,
+      "found_px": 36802,
+      "words_found": 98,
+      "recall": 0.9489
+     },
+     "lot": {
+      "words": 322,
+      "text_px": 100124,
+      "found_px": 93493,
+      "words_found": 303,
+      "recall": 0.9338
+     },
+     "lotdim": {
+      "words": 262,
+      "text_px": 50891,
+      "found_px": 47374,
+      "words_found": 243,
+      "recall": 0.9309
+     },
+     "other": {
+      "words": 8,
+      "text_px": 1549,
+      "found_px": 1318,
+      "words_found": 7,
+      "recall": 0.8509
+     },
+     "owner": {
+      "words": 44,
+      "text_px": 17727,
+      "found_px": 14899,
+      "words_found": 40,
+      "recall": 0.8405
+     },
+     "pipe": {
+      "words": 11,
+      "text_px": 5611,
+      "found_px": 5207,
+      "words_found": 10,
+      "recall": 0.928
+     },
+     "sewer": {
+      "words": 10,
+      "text_px": 5443,
+      "found_px": 5097,
+      "words_found": 10,
+      "recall": 0.9364
+     },
+     "story": {
+      "words": 129,
+      "text_px": 14604,
+      "found_px": 14146,
+      "words_found": 125,
+      "recall": 0.9686
+     },
+     "street": {
+      "words": 16,
+      "text_px": 38439,
+      "found_px": 37609,
+      "words_found": 15,
+      "recall": 0.9784
+     }
+    }
+   },
+   "finder4": {
+    "tp": 253589,
+    "fp": 21061,
+    "fn": 16980,
+    "nontext_px": 391596,
+    "P": 0.9233,
+    "R": 0.9372,
+    "F1": 0.9302,
+    "nontext_share": 0.05378,
+    "street_pixel_recall": 0.9799,
+    "street_words": "15/16",
+    "straight_px": 178875,
+    "straight_called_text": 1150,
+    "by_kind": {
+     "bldg": {
+      "words": 2,
+      "text_px": 687,
+      "found_px": 687,
+      "words_found": 2,
+      "recall": 1.0
+     },
+     "block": {
+      "words": 6,
+      "text_px": 6451,
+      "found_px": 6147,
+      "words_found": 6,
+      "recall": 0.9529
+     },
+     "ditto": {
+      "words": 78,
+      "text_px": 2049,
+      "found_px": 1959,
+      "words_found": 74,
+      "recall": 0.9561
+     },
+     "house": {
+      "words": 98,
+      "text_px": 38785,
+      "found_px": 36825,
+      "words_found": 98,
+      "recall": 0.9495
+     },
+     "lot": {
+      "words": 322,
+      "text_px": 100124,
+      "found_px": 93535,
+      "words_found": 303,
+      "recall": 0.9342
+     },
+     "lotdim": {
+      "words": 262,
+      "text_px": 50891,
+      "found_px": 47392,
+      "words_found": 243,
+      "recall": 0.9312
+     },
+     "other": {
+      "words": 8,
+      "text_px": 1549,
+      "found_px": 1318,
+      "words_found": 7,
+      "recall": 0.8509
+     },
+     "owner": {
+      "words": 44,
+      "text_px": 17727,
+      "found_px": 15080,
+      "words_found": 40,
+      "recall": 0.8507
+     },
+     "pipe": {
+      "words": 11,
+      "text_px": 5611,
+      "found_px": 5207,
+      "words_found": 10,
+      "recall": 0.928
+     },
+     "sewer": {
+      "words": 10,
+      "text_px": 5443,
+      "found_px": 5097,
+      "words_found": 10,
+      "recall": 0.9364
+     },
+     "story": {
+      "words": 129,
+      "text_px": 14604,
+      "found_px": 14185,
+      "words_found": 126,
+      "recall": 0.9713
+     },
+     "street": {
+      "words": 16,
+      "text_px": 38439,
+      "found_px": 37667,
+      "words_found": 15,
+      "recall": 0.9799
+     }
+    }
+   },
+   "boot_tile": {
+    "tiles": 600,
+    "finder3": {
+     "F1": [
+      0.9175,
+      0.9357
+     ],
+     "nontext": [
+      0.0437,
+      0.0639
+     ],
+     "street": [
+      0.9601,
+      0.9908
+     ],
+     "straight": [
+      289.0,
+      2357.3
+     ]
+    },
+    "finder4": {
+     "F1": [
+      0.9209,
+      0.9388
+     ],
+     "nontext": [
+      0.0445,
+      0.0645
+     ],
+     "street": [
+      0.9626,
+      0.992
+     ],
+     "straight": [
+      289.0,
+      2357.3
+     ]
+    },
+    "diff_B_minus_A": {
+     "F1": [
+      0.0022,
+      0.0045
+     ],
+     "nontext": [
+      0.0004,
+      0.0013
+     ],
+     "street": [
+      0.0,
+      0.0038
+     ],
+     "straight": [
+      0.0,
+      0.0
+     ]
+    },
+    "share_draws_F1_ok": 1.0,
+    "share_draws_nontext_ok": 1.0,
+    "share_draws_straight_ok": 1.0
+   },
+   "street_words_boot": {
+    "finder4": {
+     "pixel_recall": [
+      0.9546,
+      0.9926
+     ],
+     "word_share": [
+      0.8125,
+      1.0
+     ]
+    }
+   },
+   "street_words": [
+    {
+     "id": "H3-098",
+     "reading": "SAFFER",
+     "n": 317,
+     "fA": 60,
+     "fB": 60
+    },
+    {
+     "id": "H3-111",
+     "reading": "FYFFE",
+     "n": 1163,
+     "fA": 983,
+     "fB": 1010
+    },
+    {
+     "id": "H3-170",
+     "reading": "AVE.",
+     "n": 688,
+     "fA": 626,
+     "fB": 626
+    },
+    {
+     "id": "H3-182",
+     "reading": "KAVANAUGH",
+     "n": 383,
+     "fA": 353,
+     "fB": 353
+    },
+    {
+     "id": "H3-194",
+     "reading": "SCHMANN",
+     "n": 107,
+     "fA": 75,
+     "fB": 75
+    },
+    {
+     "id": "H4-062",
+     "reading": "DANDRIDGE",
+     "n": 6202,
+     "fA": 6202,
+     "fB": 6202
+    },
+    {
+     "id": "H4-132",
+     "reading": "NOAH",
+     "n": 867,
+     "fA": 867,
+     "fB": 867
+    },
+    {
+     "id": "H4-201",
+     "reading": "STREET",
+     "n": 4063,
+     "fA": 4024,
+     "fB": 4024
+    },
+    {
+     "id": "H1-045",
+     "reading": "AVALON",
+     "n": 2497,
+     "fA": 2461,
+     "fB": 2492
+    },
+    {
+     "id": "H1-054",
+     "reading": "OAKMONT",
+     "n": 808,
+     "fA": 808,
+     "fB": 808
+    },
+    {
+     "id": "H1-127",
+     "reading": "WOODBINE",
+     "n": 3878,
+     "fA": 3874,
+     "fB": 3874
+    },
+    {
+     "id": "H1-136",
+     "reading": "WILDWOOD",
+     "n": 4346,
+     "fA": 4346,
+     "fB": 4346
+    },
+    {
+     "id": "H1-225",
+     "reading": "DECAMP",
+     "n": 1404,
+     "fA": 1399,
+     "fB": 1399
+    },
+    {
+     "id": "H2-082",
+     "reading": "CURZON",
+     "n": 4470,
+     "fA": 4413,
+     "fB": 4413
+    },
+    {
+     "id": "H2-138",
+     "reading": "AVENUE",
+     "n": 2082,
+     "fA": 2082,
+     "fB": 2082
+    },
+    {
+     "id": "H2-262",
+     "reading": "WISWELL",
+     "n": 5164,
+     "fA": 5036,
+     "fB": 5036
+    }
+   ]
+  }
+ },
+ "all_crops_pooled": {
+  "finder3": {
+   "tp": 251639,
+   "fp": 20743,
+   "fn": 18930,
+   "F1": 0.9269
+  },
+  "finder4": {
+   "tp": 253589,
+   "fp": 21061,
+   "fn": 16980,
+   "F1": 0.9302
+  }
+ }
+}

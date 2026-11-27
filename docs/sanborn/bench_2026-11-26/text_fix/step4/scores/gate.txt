@@ -1,0 +1,120 @@
+RAIL: masked against no mask (before). Track-level losses, then ink-level changes for the record.
+  f3 after        1A_now      losses: ['streetcar precision 0.9992 -> 0.9837'] | ink: ['streetcar ink far 9 -> 1160 px']
+  f3 after        44_map      losses: ['railroad recall 0.9823 -> 0.9814', 'streetcar precision 1.0 -> 0.9997'] | ink: ['railroad ink found 0.9884 -> 0.987', 'streetcar ink far 1086 -> 3625 px']
+  f3 after        44_map_ben  losses: ['railroad precision 0.9984 -> 0.9967', 'streetcar recall 0.1561 -> 0.1007', 'streetcar precision 0.9749 -> 0.9612', 'streetcar found/partial/missed [1, 0, 6] -> [0, 1, 6]'] | ink: ['railroad ink found 1.0 -> 0.9971', 'streetcar ink found 1.0 -> 0.9935']
+  f3 after        44_nets44   losses: ['railroad recall 0.9823 -> 0.9814', 'streetcar precision 1.0 -> 0.9997'] | ink: ['railroad ink found 0.9884 -> 0.987', 'streetcar ink far 1086 -> 3625 px']
+  f3 after        44_nomap    losses: ['railroad recall 0.9823 -> 0.9814', 'streetcar precision 1.0 -> 0.9997'] | ink: ['railroad ink found 0.9884 -> 0.987', 'streetcar ink far 1086 -> 3585 px']
+  f3 after        5_nets21    losses: ['streetcar precision 1.0 -> 0.9999'] | ink: ['streetcar ink far 1448 -> 2878 px']
+  f3 after        5_none      losses: ['streetcar precision 1.0 -> 0.9967', 'streetcar false tracks 0 (0 px) -> 1 (188 px)'] | ink: ['streetcar ink far 2205 -> 3635 px']
+  f3 after        5_now       losses: ['streetcar precision 1.0 -> 0.9999'] | ink: ['streetcar ink far 948 -> 1998 px']
+  f3 after_nojoin 1A_now      losses: ['streetcar precision 0.9992 -> 0.9837'] | ink: ['streetcar ink far 9 -> 1160 px']
+  f3 after_nojoin 44_map      losses: ['railroad recall 0.9823 -> 0.981', 'streetcar precision 1.0 -> 0.9997'] | ink: ['railroad ink found 0.9884 -> 0.987', 'streetcar ink far 1086 -> 3625 px']
+  f3 after_nojoin 44_map_ben  losses: ['streetcar recall 0.1561 -> 0.1007', 'streetcar precision 0.9749 -> 0.9612', 'streetcar found/partial/missed [1, 0, 6] -> [0, 1, 6]'] | ink: ['railroad ink found 1.0 -> 0.9971', 'streetcar ink found 1.0 -> 0.9935']
+  f3 after_nojoin 44_nets44   losses: ['railroad recall 0.9823 -> 0.981', 'streetcar precision 1.0 -> 0.9997'] | ink: ['railroad ink found 0.9884 -> 0.987', 'streetcar ink far 1086 -> 3625 px']
+  f3 after_nojoin 44_nomap    losses: ['railroad recall 0.9823 -> 0.981', 'streetcar precision 1.0 -> 0.9997'] | ink: ['railroad ink found 0.9884 -> 0.987', 'streetcar ink far 1086 -> 3585 px']
+  f3 after_nojoin 5_nets21    losses: ['streetcar precision 1.0 -> 0.9999'] | ink: ['streetcar ink far 1448 -> 2878 px']
+  f3 after_nojoin 5_none      losses: ['streetcar precision 1.0 -> 0.9967', 'streetcar false tracks 0 (0 px) -> 1 (188 px)'] | ink: ['streetcar ink far 2205 -> 3635 px']
+  f3 after_nojoin 5_now       losses: ['streetcar precision 1.0 -> 0.9999'] | ink: ['streetcar ink far 948 -> 1998 px']
+  f3 afterstrict  1A_now      losses: ['streetcar precision 0.9992 -> 0.9837'] | ink: ['streetcar ink far 9 -> 1160 px']
+  f3 afterstrict  44_map      losses: ['railroad recall 0.9823 -> 0.9688', 'railroad found/partial/missed [17, 2, 0] -> [16, 3, 0]', 'streetcar precision 1.0 -> 0.9997'] | ink: ['railroad ink found 0.9884 -> 0.974', 'streetcar ink far 1086 -> 3625 px']
+  f3 afterstrict  44_map_ben  losses: ['streetcar recall 0.1561 -> 0.1007', 'streetcar precision 0.9749 -> 0.9612', 'streetcar found/partial/missed [1, 0, 6] -> [0, 1, 6]'] | ink: ['railroad ink found 1.0 -> 0.9971', 'streetcar ink found 1.0 -> 0.9935']
+  f3 afterstrict  44_nets44   losses: ['railroad recall 0.9823 -> 0.9688', 'railroad found/partial/missed [17, 2, 0] -> [16, 3, 0]', 'streetcar precision 1.0 -> 0.9997'] | ink: ['railroad ink found 0.9884 -> 0.974', 'streetcar ink far 1086 -> 3625 px']
+  f3 afterstrict  44_nomap    losses: ['railroad recall 0.9823 -> 0.9688', 'railroad found/partial/missed [17, 2, 0] -> [16, 3, 0]', 'streetcar precision 1.0 -> 0.9997'] | ink: ['railroad ink found 0.9884 -> 0.974', 'streetcar ink far 1086 -> 3585 px']
+  f3 afterstrict  5_nets21    losses: ['streetcar precision 1.0 -> 0.9999'] | ink: ['streetcar ink far 1448 -> 2878 px']
+  f3 afterstrict  5_none      losses: ['streetcar precision 1.0 -> 0.9967', 'streetcar false tracks 0 (0 px) -> 1 (188 px)'] | ink: ['streetcar ink far 2205 -> 3635 px']
+  f3 afterstrict  5_now       losses: ['streetcar precision 1.0 -> 0.9999'] | ink: ['streetcar ink far 948 -> 1998 px']
+  f4 after        1A_now      losses: ['streetcar precision 0.9992 -> 0.9837'] | ink: ['streetcar ink far 9 -> 1107 px']
+  f4 after        44_map      losses: ['railroad recall 0.9823 -> 0.9814', 'streetcar precision 1.0 -> 0.9997'] | ink: ['railroad ink found 0.9884 -> 0.987', 'streetcar ink far 1086 -> 3625 px']
+  f4 after        44_map_ben  losses: ['railroad precision 0.9984 -> 0.9967', 'streetcar recall 0.1561 -> 0.1007', 'streetcar precision 0.9749 -> 0.9612', 'streetcar found/partial/missed [1, 0, 6] -> [0, 1, 6]'] | ink: ['railroad ink found 1.0 -> 0.9971', 'streetcar ink found 1.0 -> 0.9935']
+  f4 after        44_nets44   losses: ['railroad recall 0.9823 -> 0.9814', 'streetcar precision 1.0 -> 0.9997'] | ink: ['railroad ink found 0.9884 -> 0.987', 'streetcar ink far 1086 -> 3625 px']
+  f4 after        44_nomap    losses: ['railroad recall 0.9823 -> 0.9814', 'streetcar precision 1.0 -> 0.9997'] | ink: ['railroad ink found 0.9884 -> 0.987', 'streetcar ink far 1086 -> 3585 px']
+  f4 after        5_nets21    losses: ['streetcar precision 1.0 -> 0.9999'] | ink: ['streetcar ink far 1448 -> 2546 px']
+  f4 after        5_none      losses: ['streetcar precision 1.0 -> 0.9967', 'streetcar false tracks 0 (0 px) -> 1 (188 px)'] | ink: ['streetcar ink far 2205 -> 3303 px']
+  f4 after        5_now       losses: ['streetcar precision 1.0 -> 0.9999'] | ink: ['streetcar ink far 948 -> 950 px']
+  f4 after_nojoin 1A_now      losses: ['streetcar precision 0.9992 -> 0.9837'] | ink: ['streetcar ink far 9 -> 1107 px']
+  f4 after_nojoin 44_map      losses: ['railroad recall 0.9823 -> 0.981', 'streetcar precision 1.0 -> 0.9997'] | ink: ['railroad ink found 0.9884 -> 0.987', 'streetcar ink far 1086 -> 3625 px']
+  f4 after_nojoin 44_map_ben  losses: ['streetcar recall 0.1561 -> 0.1007', 'streetcar precision 0.9749 -> 0.9612', 'streetcar found/partial/missed [1, 0, 6] -> [0, 1, 6]'] | ink: ['railroad ink found 1.0 -> 0.9971', 'streetcar ink found 1.0 -> 0.9935']
+  f4 after_nojoin 44_nets44   losses: ['railroad recall 0.9823 -> 0.981', 'streetcar precision 1.0 -> 0.9997'] | ink: ['railroad ink found 0.9884 -> 0.987', 'streetcar ink far 1086 -> 3625 px']
+  f4 after_nojoin 44_nomap    losses: ['railroad recall 0.9823 -> 0.981', 'streetcar precision 1.0 -> 0.9997'] | ink: ['railroad ink found 0.9884 -> 0.987', 'streetcar ink far 1086 -> 3585 px']
+  f4 after_nojoin 5_nets21    losses: ['streetcar precision 1.0 -> 0.9999'] | ink: ['streetcar ink far 1448 -> 2546 px']
+  f4 after_nojoin 5_none      losses: ['streetcar precision 1.0 -> 0.9967', 'streetcar false tracks 0 (0 px) -> 1 (188 px)'] | ink: ['streetcar ink far 2205 -> 3303 px']
+  f4 after_nojoin 5_now       losses: ['streetcar precision 1.0 -> 0.9999'] | ink: ['streetcar ink far 948 -> 950 px']
+  f4 afterstrict  1A_now      losses: ['streetcar precision 0.9992 -> 0.9837'] | ink: ['streetcar ink far 9 -> 1107 px']
+  f4 afterstrict  44_map      losses: ['railroad recall 0.9823 -> 0.9688', 'railroad found/partial/missed [17, 2, 0] -> [16, 3, 0]', 'streetcar precision 1.0 -> 0.9997'] | ink: ['railroad ink found 0.9884 -> 0.974', 'streetcar ink far 1086 -> 3625 px']
+  f4 afterstrict  44_map_ben  losses: ['streetcar recall 0.1561 -> 0.1007', 'streetcar precision 0.9749 -> 0.9612', 'streetcar found/partial/missed [1, 0, 6] -> [0, 1, 6]'] | ink: ['railroad ink found 1.0 -> 0.9971', 'streetcar ink found 1.0 -> 0.9935']
+  f4 afterstrict  44_nets44   losses: ['railroad recall 0.9823 -> 0.9688', 'railroad found/partial/missed [17, 2, 0] -> [16, 3, 0]', 'streetcar precision 1.0 -> 0.9997'] | ink: ['railroad ink found 0.9884 -> 0.974', 'streetcar ink far 1086 -> 3625 px']
+  f4 afterstrict  44_nomap    losses: ['railroad recall 0.9823 -> 0.9688', 'railroad found/partial/missed [17, 2, 0] -> [16, 3, 0]', 'streetcar precision 1.0 -> 0.9997'] | ink: ['railroad ink found 0.9884 -> 0.974', 'streetcar ink far 1086 -> 3585 px']
+  f4 afterstrict  5_nets21    losses: ['streetcar precision 1.0 -> 0.9999'] | ink: ['streetcar ink far 1448 -> 2546 px']
+  f4 afterstrict  5_none      losses: ['streetcar precision 1.0 -> 0.9967', 'streetcar false tracks 0 (0 px) -> 1 (188 px)'] | ink: ['streetcar ink far 2205 -> 3303 px']
+  f4 afterstrict  5_now       losses: ['streetcar precision 1.0 -> 0.9999'] | ink: ['streetcar ink far 948 -> 950 px']
+RAIL: finder4 against finder3 (same rules). Track-level losses, then ink-level.
+  f4vf3 after        1A_now      worse: none | better: none
+  f4vf3 after        44_map      worse: ['streetcar recall 0.8647 -> 0.8644'] | better: none | ink worse: ['streetcar ink found 0.9166 -> 0.9163']
+  f4vf3 after        44_map_ben  worse: none | better: none
+  f4vf3 after        44_nets44   worse: ['streetcar recall 0.8651 -> 0.8648'] | better: none | ink worse: ['streetcar ink found 0.9166 -> 0.9163']
+  f4vf3 after        44_nomap    worse: ['streetcar recall 0.8652 -> 0.865'] | better: none | ink worse: ['streetcar ink found 0.9166 -> 0.916']
+  f4vf3 after        5_nets21    worse: ['railroad false tracks 2 (1000 px) -> 2 (1002 px)'] | better: none
+  f4vf3 after        5_none      worse: ['railroad false tracks 8 (4432 px) -> 8 (4434 px)'] | better: none
+  f4vf3 after        5_now       worse: ['railroad false tracks 2 (1000 px) -> 2 (1002 px)'] | better: none
+  f4vf3 after_nojoin 1A_now      worse: none | better: none
+  f4vf3 after_nojoin 44_map      worse: ['streetcar recall 0.8647 -> 0.8644'] | better: none | ink worse: ['streetcar ink found 0.9166 -> 0.9163']
+  f4vf3 after_nojoin 44_map_ben  worse: none | better: none
+  f4vf3 after_nojoin 44_nets44   worse: ['streetcar recall 0.8651 -> 0.8648'] | better: none | ink worse: ['streetcar ink found 0.9166 -> 0.9163']
+  f4vf3 after_nojoin 44_nomap    worse: ['streetcar recall 0.8652 -> 0.865'] | better: none | ink worse: ['streetcar ink found 0.9166 -> 0.916']
+  f4vf3 after_nojoin 5_nets21    worse: ['railroad false tracks 2 (1000 px) -> 2 (1002 px)'] | better: none
+  f4vf3 after_nojoin 5_none      worse: ['railroad false tracks 8 (4432 px) -> 8 (4434 px)'] | better: none
+  f4vf3 after_nojoin 5_now       worse: ['railroad false tracks 2 (1000 px) -> 2 (1002 px)'] | better: none
+  f4vf3 afterstrict  1A_now      worse: none | better: none
+  f4vf3 afterstrict  44_map      worse: ['streetcar recall 0.8647 -> 0.8644'] | better: none | ink worse: ['streetcar ink found 0.9166 -> 0.9163']
+  f4vf3 afterstrict  44_map_ben  worse: none | better: none
+  f4vf3 afterstrict  44_nets44   worse: ['streetcar recall 0.8651 -> 0.8648'] | better: none | ink worse: ['streetcar ink found 0.9166 -> 0.9163']
+  f4vf3 afterstrict  44_nomap    worse: ['streetcar recall 0.8652 -> 0.865'] | better: none | ink worse: ['streetcar ink found 0.9166 -> 0.916']
+  f4vf3 afterstrict  5_nets21    worse: ['railroad false tracks 2 (1000 px) -> 2 (1002 px)'] | better: none
+  f4vf3 afterstrict  5_none      worse: ['railroad false tracks 8 (4432 px) -> 8 (4434 px)'] | better: none
+  f4vf3 afterstrict  5_now       worse: ['railroad false tracks 2 (1000 px) -> 2 (1002 px)'] | better: none
+LINES: masked against control (44: worse on some grid; 5 and 1A: worse on the plate)
+  44:control             worse: nothing
+  44:f3_ink              worse: {'PQ': -0.0104, 'PQ_decided': -0.0109, 'matched': -1.0, 'fp': 1.0, 'precision_green': -0.0003, 'draw_len': 1531.0}
+  44:f3_states0          worse: {'recall_interior': -0.0002}
+  44:f4_ink              worse: {'PQ': -0.0104, 'PQ_decided': -0.0109, 'matched': -1.0, 'fp': 1.0, 'precision_green': -0.0003, 'draw_len': 1531.0}
+  44:f4_states0          worse: {'recall_interior': -0.0002}
+  5:all:f3_ink           worse: {'precision_green': -0.0011}
+  5:all:f3_states0       worse: {'ben_blocks_closed': -1, 'intact_rings': -1}
+  5:all:f4_ink           worse: {'precision_green': -0.0011}
+  5:all:f4_states0       worse: {'ben_blocks_closed': -1, 'intact_rings': -1}
+  1A:region:f3_ink       worse: nothing
+  1A:all:f3_ink          worse: nothing
+  1A:region:f3_states0   worse: nothing
+  1A:all:f3_states0      worse: {'recall_interior': -0.0009, 'draw_len': 63}
+  1A:region:f4_ink       worse: nothing
+  1A:all:f4_ink          worse: nothing
+  1A:region:f4_states0   worse: nothing
+  1A:all:f4_states0      worse: {'recall_interior': -0.0009, 'draw_len': 63}
+LINES: finder4 against finder3
+  44:f4-f3:ink           worse: nothing
+  44:f4-f3:states0       worse: nothing
+  5:all:f4-f3:ink        worse: nothing
+  5:all:f4-f3:states0    worse: nothing
+  1A:region:f4-f3:ink    worse: nothing
+  1A:all:f4-f3:ink       worse: nothing
+  1A:region:f4-f3:states0 worse: nothing
+  1A:all:f4-f3:states0   worse: nothing
+BEN LINES LOST / GAINED (lines_compare.py)
+  f3_ink_grid1         lost 2: [('printed', 777, [2446, 5501]), ('printed', 1108, [5514, 1864])] | gained 1: [('printed', 368)]
+  f3_ink_grid2         lost 0: [] | gained 2: [('printed', 375), ('printed', 503)]
+  f3_ink_grid3         lost 1: [('drawn', 44, [4412, 2202])] | gained 0: []
+  f3_ink_grid4         lost 1: [('drawn', 44, [4412, 2202])] | gained 2: [('printed', 600), ('printed', 599)]
+  f3_ink_grid5         lost 1: [('printed', 1532, [2590, 5397])] | gained 0: []
+  5_f3_ink             lost 0: [] | gained 2: [('drawn', 242), ('drawn', 116)]
+  1A_f3_ink            lost 1: [('printed', 64, [658, 582])] | gained 2: [('printed', 1326), ('printed', 1852)]
+  5_f3_states0         lost 0: [] | gained 1: [('drawn', 242)]
+  1A_f3_states0        lost 1: [('printed', 64, [658, 582])] | gained 0: []
+  f4_ink_grid1         lost 2: [('printed', 777, [2446, 5501]), ('printed', 1108, [5514, 1864])] | gained 1: [('printed', 368)]
+  f4_ink_grid2         lost 0: [] | gained 2: [('printed', 375), ('printed', 503)]
+  f4_ink_grid3         lost 1: [('drawn', 44, [4412, 2202])] | gained 0: []
+  f4_ink_grid4         lost 1: [('drawn', 44, [4412, 2202])] | gained 2: [('printed', 600), ('printed', 599)]
+  f4_ink_grid5         lost 1: [('printed', 1532, [2590, 5397])] | gained 0: []
+  5_f4_ink             lost 0: [] | gained 2: [('drawn', 242), ('drawn', 116)]
+  1A_f4_ink            lost 1: [('printed', 64, [658, 582])] | gained 2: [('printed', 1326), ('printed', 1852)]
+  5_f4_states0         lost 0: [] | gained 1: [('drawn', 242)]
+  1A_f4_states0        lost 1: [('printed', 64, [658, 582])] | gained 0: []

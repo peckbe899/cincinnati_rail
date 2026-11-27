@@ -1,0 +1,404 @@
+{
+ "crop": "DB13",
+ "plate": "12",
+ "win": [
+  3906,
+  6403,
+  4122,
+  6573
+ ],
+ "why": "block number 47 on plate 12 (100 ft), drawn at random (candidates/draw.json)",
+ "n_words": 6,
+ "mask": "DB13_mask.png",
+ "mask_values": {
+  "0": "paper (in scope)",
+  "1": "ink, not text (in scope)",
+  "2": "text ink (in scope)",
+  "3": "don't care (glyph and line share ink; CARE boxes; everything outside the scope)"
+ },
+ "counts": {
+  "paper": 10418,
+  "ink_not_text": 2155,
+  "text": 1723,
+  "dont_care": 22424
+ },
+ "scope_px": 14847,
+ "scope_counts": {
+  "paper": 10418,
+  "ink_not_text": 2155,
+  "text": 1723,
+  "dont_care": 551
+ },
+ "boxes": [
+  {
+   "op": "FORCE",
+   "box": [
+    3966,
+    6466,
+    3979,
+    6488
+   ],
+   "note": "the 4's left stroke was taken into the wall's line (it is collinear with the second 1 of 11 and the wall)",
+   "line": 12
+  },
+  {
+   "op": "CARE",
+   "box": [
+    3966,
+    6487,
+    4017,
+    6493
+   ],
+   "note": "the lot line along the top of the 4's crossbar: line and bar share these rows (don't care)",
+   "line": 13
+  },
+  {
+   "op": "FORCE",
+   "box": [
+    3966,
+    6493,
+    4016,
+    6500
+   ],
+   "note": "the 4's crossbar under the lot line was line ink (the line rule took the whole bold bar)",
+   "line": 14
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    3979,
+    6517,
+    3998,
+    6516
+   ],
+   "width": 6,
+   "note": "top of the narrow building under the 4 was text",
+   "line": 15
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    3982,
+    6519,
+    3982,
+    6560
+   ],
+   "width": 5,
+   "note": "left wall of the narrow building (through the 3 of 23)",
+   "line": 16
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    3995,
+    6519,
+    3995,
+    6560
+   ],
+   "width": 5,
+   "note": "right wall of the narrow building was text",
+   "line": 17
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    3942,
+    6542,
+    3978,
+    6542
+   ],
+   "width": 4,
+   "note": "building line through the 2 of 23 was text",
+   "line": 18
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    4020,
+    6523,
+    4066,
+    6524
+   ],
+   "width": 5,
+   "note": "building top line under the 7 was don't care",
+   "line": 19
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    4041,
+    6512,
+    4041,
+    6522
+   ],
+   "width": 4,
+   "note": "wall from the 7's foot down to the building top was text",
+   "line": 20
+  }
+ ],
+ "words": [
+  {
+   "id": "DB13-001",
+   "reading": "47",
+   "kind": "block",
+   "flags": [
+    "target",
+    "nosnap"
+   ],
+   "angle": 0.0,
+   "height": 50.0,
+   "length": 96.0,
+   "poly": [
+    [
+     3966.0,
+     6463.0
+    ],
+    [
+     4062.0,
+     6463.0
+    ],
+    [
+     4062.0,
+     6513.0
+    ],
+    [
+     3966.0,
+     6513.0
+    ]
+   ],
+   "aabb": [
+    3966,
+    6463,
+    4062,
+    6513
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 1301,
+   "annot_line": 5,
+   "in_scope": {
+    "text_px": 1465,
+    "dont_care_px": 412,
+    "ink_px": 2268
+   },
+   "target": true,
+   "ink_size_px": 1877
+  },
+  {
+   "id": "DB13-002",
+   "reading": "11",
+   "kind": "lot",
+   "flags": [
+    "nosnap"
+   ],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 17.0,
+   "poly": [
+    [
+     3966.0,
+     6442.0
+    ],
+    [
+     3983.0,
+     6442.0
+    ],
+    [
+     3983.0,
+     6466.0
+    ],
+    [
+     3966.0,
+     6466.0
+    ]
+   ],
+   "aabb": [
+    3966,
+    6442,
+    3983,
+    6466
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 61,
+   "annot_line": 7,
+   "in_scope": {
+    "text_px": 58,
+    "dont_care_px": 28,
+    "ink_px": 165
+   }
+  },
+  {
+   "id": "DB13-003",
+   "reading": "10",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 17.0,
+   "length": 21.0,
+   "poly": [
+    [
+     4034.0,
+     6446.0
+    ],
+    [
+     4055.0,
+     6446.0
+    ],
+    [
+     4055.0,
+     6463.0
+    ],
+    [
+     4034.0,
+     6463.0
+    ]
+   ],
+   "aabb": [
+    4034,
+    6446,
+    4055,
+    6463
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 62,
+   "annot_line": 8,
+   "in_scope": {
+    "text_px": 49,
+    "dont_care_px": 61,
+    "ink_px": 173
+   }
+  },
+  {
+   "id": "DB13-004",
+   "reading": "1",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 9.0,
+   "poly": [
+    [
+     3955.0,
+     6497.0
+    ],
+    [
+     3964.0,
+     6497.0
+    ],
+    [
+     3964.0,
+     6521.0
+    ],
+    [
+     3955.0,
+     6521.0
+    ]
+   ],
+   "aabb": [
+    3955,
+    6497,
+    3964,
+    6521
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 72,
+   "annot_line": 9,
+   "in_scope": {
+    "text_px": 72,
+    "dont_care_px": 0,
+    "ink_px": 72
+   }
+  },
+  {
+   "id": "DB13-005",
+   "reading": "23",
+   "kind": "lot",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 45.0,
+   "poly": [
+    [
+     3946.0,
+     6532.0
+    ],
+    [
+     3991.0,
+     6532.0
+    ],
+    [
+     3991.0,
+     6559.0
+    ],
+    [
+     3946.0,
+     6559.0
+    ]
+   ],
+   "aabb": [
+    3946,
+    6532,
+    3991,
+    6559
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 254,
+   "annot_line": 10,
+   "in_scope": {
+    "text_px": 37,
+    "dont_care_px": 18,
+    "ink_px": 80
+   }
+  },
+  {
+   "id": "DB13-006",
+   "reading": "24",
+   "kind": "lot",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 33.0,
+   "poly": [
+    [
+     4029.0,
+     6532.0
+    ],
+    [
+     4062.0,
+     6532.0
+    ],
+    [
+     4062.0,
+     6559.0
+    ],
+    [
+     4029.0,
+     6559.0
+    ]
+   ],
+   "aabb": [
+    4029,
+    6532,
+    4062,
+    6559
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 246,
+   "annot_line": 11,
+   "in_scope": {
+    "text_px": 55,
+    "dont_care_px": 2,
+    "ink_px": 57
+   }
+  }
+ ]
+}

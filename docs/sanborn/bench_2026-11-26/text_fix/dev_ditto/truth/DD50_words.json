@@ -1,0 +1,347 @@
+{
+ "crop": "DD50",
+ "plate": "48",
+ "win": [
+  6388,
+  752,
+  6788,
+  1052
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   6576,
+   969,
+   6629,
+   1027
+  ],
+  [
+   6576,
+   993,
+   6629,
+   1050
+  ],
+  [
+   6576,
+   1014,
+   6630,
+   1071
+  ]
+ ],
+ "n_words": 6,
+ "n_targets": 3,
+ "mask": "DD50_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 86605,
+  "ink_not_text": 933,
+  "text": 294,
+  "dont_care": 32168
+ },
+ "counts_in_scope": {
+  "ink_not_text": 933,
+  "text": 294,
+  "dont_care": 15
+ },
+ "boxes": [
+  {
+   "op": "CARE",
+   "box": [
+    6575,
+    1017,
+    6579,
+    1023
+   ],
+   "note": "small mark left in the lot: tick or speck, cannot tell",
+   "line": 8
+  }
+ ],
+ "words": [
+  {
+   "id": "DD50-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 3.0,
+   "poly": [
+    [
+     6601.0,
+     994.0
+    ],
+    [
+     6604.0,
+     994.0
+    ],
+    [
+     6604.0,
+     1002.0
+    ],
+    [
+     6601.0,
+     1002.0
+    ]
+   ],
+   "aabb": [
+    6601,
+    994,
+    6604,
+    1002
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": true,
+   "box_word": true,
+   "text_px": 18,
+   "in_scope": true,
+   "ink_px": 18,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    10,
+    8
+   ],
+   "style": "pair",
+   "neg_type": ""
+  },
+  {
+   "id": "DD50-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 7.0,
+   "length": 3.0,
+   "poly": [
+    [
+     6601.0,
+     1018.0
+    ],
+    [
+     6604.0,
+     1018.0
+    ],
+    [
+     6604.0,
+     1025.0
+    ],
+    [
+     6601.0,
+     1025.0
+    ]
+   ],
+   "aabb": [
+    6601,
+    1018,
+    6604,
+    1025
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 3,
+   "target": true,
+   "box_word": true,
+   "text_px": 14,
+   "in_scope": true,
+   "ink_px": 14,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    8,
+    6
+   ],
+   "style": "pair",
+   "neg_type": ""
+  },
+  {
+   "id": "DD50-003",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 7.0,
+   "length": 4.0,
+   "poly": [
+    [
+     6601.0,
+     1039.0
+    ],
+    [
+     6605.0,
+     1039.0
+    ],
+    [
+     6605.0,
+     1046.0
+    ],
+    [
+     6601.0,
+     1046.0
+    ]
+   ],
+   "aabb": [
+    6601,
+    1039,
+    6605,
+    1046
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 4,
+   "target": true,
+   "box_word": true,
+   "text_px": 13,
+   "in_scope": true,
+   "ink_px": 13,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    7,
+    6
+   ],
+   "style": "pair",
+   "neg_type": ""
+  },
+  {
+   "id": "DD50-004",
+   "reading": "30'",
+   "kind": "lotdim",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 17.0,
+   "length": 13.0,
+   "poly": [
+    [
+     6594.0,
+     967.0
+    ],
+    [
+     6607.0,
+     967.0
+    ],
+    [
+     6607.0,
+     984.0
+    ],
+    [
+     6594.0,
+     984.0
+    ]
+   ],
+   "aabb": [
+    6594,
+    967,
+    6607,
+    984
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 5,
+   "target": false,
+   "box_word": true,
+   "text_px": 91,
+   "in_scope": true
+  },
+  {
+   "id": "DD50-005",
+   "reading": "WARD",
+   "kind": "street",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 32.0,
+   "length": 23.0,
+   "poly": [
+    [
+     6621.0,
+     1020.0
+    ],
+    [
+     6644.0,
+     1020.0
+    ],
+    [
+     6644.0,
+     1052.0
+    ],
+    [
+     6621.0,
+     1052.0
+    ]
+   ],
+   "aabb": [
+    6621,
+    1020,
+    6644,
+    1052
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 6,
+   "target": false,
+   "box_word": true,
+   "text_px": 95,
+   "in_scope": true
+  },
+  {
+   "id": "DD50-006",
+   "reading": "26",
+   "kind": "lotdim",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 14.0,
+   "length": 27.0,
+   "poly": [
+    [
+     6569.0,
+     1038.0
+    ],
+    [
+     6596.0,
+     1038.0
+    ],
+    [
+     6596.0,
+     1052.0
+    ],
+    [
+     6569.0,
+     1052.0
+    ]
+   ],
+   "aabb": [
+    6569,
+    1038,
+    6596,
+    1052
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 7,
+   "target": false,
+   "box_word": true,
+   "text_px": 63,
+   "in_scope": true
+  }
+ ]
+}

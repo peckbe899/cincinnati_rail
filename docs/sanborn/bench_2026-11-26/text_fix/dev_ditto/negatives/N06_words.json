@@ -1,0 +1,94 @@
+{
+ "crop": "N06",
+ "plate": "44",
+ "win": [
+  4844,
+  6470,
+  4908,
+  6534
+ ],
+ "kind": "targeted",
+ "target": "negative",
+ "scope_pad": 0,
+ "scope": [
+  [
+   4844,
+   6470,
+   4908,
+   6534
+  ]
+ ],
+ "n_words": 1,
+ "n_targets": 0,
+ "mask": "N06_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 3227,
+  "ink_not_text": 869,
+  "text": 0,
+  "dont_care": 0
+ },
+ "counts_in_scope": {
+  "ink_not_text": 869,
+  "text": 0,
+  "dont_care": 0
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "N06-001",
+   "reading": "-",
+   "kind": "negative",
+   "flags": [
+    "neg:rail_tick"
+   ],
+   "angle": 0.0,
+   "height": 17.0,
+   "length": 17.0,
+   "poly": [
+    [
+     4868.0,
+     6494.0
+    ],
+    [
+     4885.0,
+     6494.0
+    ],
+    [
+     4885.0,
+     6511.0
+    ],
+    [
+     4868.0,
+     6511.0
+    ]
+   ],
+   "aabb": [
+    4868,
+    6494,
+    4885,
+    6511
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": false,
+   "box_word": true,
+   "text_px": 0,
+   "in_scope": true,
+   "ink_px": 145,
+   "care_px": 0,
+   "pieces": 1,
+   "piece_px": [
+    145
+   ],
+   "style": "",
+   "neg_type": "rail_tick"
+  }
+ ]
+}

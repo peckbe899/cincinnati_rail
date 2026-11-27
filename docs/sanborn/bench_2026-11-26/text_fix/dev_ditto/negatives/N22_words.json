@@ -1,0 +1,94 @@
+{
+ "crop": "N22",
+ "plate": "57",
+ "win": [
+  4208,
+  4333,
+  4272,
+  4397
+ ],
+ "kind": "targeted",
+ "target": "negative",
+ "scope_pad": 0,
+ "scope": [
+  [
+   4208,
+   4333,
+   4272,
+   4397
+  ]
+ ],
+ "n_words": 1,
+ "n_targets": 0,
+ "mask": "N22_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 4015,
+  "ink_not_text": 81,
+  "text": 0,
+  "dont_care": 0
+ },
+ "counts_in_scope": {
+  "ink_not_text": 81,
+  "text": 0,
+  "dont_care": 0
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "N22-001",
+   "reading": "-",
+   "kind": "negative",
+   "flags": [
+    "neg:dash"
+   ],
+   "angle": 0.0,
+   "height": 4.0,
+   "length": 26.0,
+   "poly": [
+    [
+     4227.0,
+     4363.0
+    ],
+    [
+     4253.0,
+     4363.0
+    ],
+    [
+     4253.0,
+     4367.0
+    ],
+    [
+     4227.0,
+     4367.0
+    ]
+   ],
+   "aabb": [
+    4227,
+    4363,
+    4253,
+    4367
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": false,
+   "box_word": true,
+   "text_px": 0,
+   "in_scope": true,
+   "ink_px": 81,
+   "care_px": 0,
+   "pieces": 1,
+   "piece_px": [
+    81
+   ],
+   "style": "",
+   "neg_type": "dash"
+  }
+ ]
+}

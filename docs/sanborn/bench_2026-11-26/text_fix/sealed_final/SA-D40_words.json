@@ -1,0 +1,168 @@
+{
+ "crop": "SA-D40",
+ "plate": "9",
+ "win": [
+  7486,
+  1041,
+  7611,
+  1164
+ ],
+ "scale_ft_per_inch": 100,
+ "half": "A",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   7518,
+   1072,
+   7578,
+   1132
+  ]
+ ],
+ "scope_px": 3721,
+ "why": "1 ditto mark(s) found in the seeded random built-up window [7518, 622, 8018, 1122] of plate 9 (round 3)",
+ "n_words": 3,
+ "mask": "SA-D40_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 2994,
+  "ink_not_text": 440,
+  "text": 287,
+  "dont_care": 11654
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-D40-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 9.0,
+   "length": 10.0,
+   "poly": [
+    [
+     7543.0,
+     1097.5
+    ],
+    [
+     7553.0,
+     1097.5
+    ],
+    [
+     7553.0,
+     1106.5
+    ],
+    [
+     7543.0,
+     1106.5
+    ]
+   ],
+   "aabb": [
+    7543,
+    1097,
+    7553,
+    1107
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 63,
+   "annot_line": 6,
+   "ink_px": 63,
+   "text_px_final": 63
+  },
+  {
+   "id": "SA-D40-002",
+   "reading": "29-27",
+   "kind": "house",
+   "flags": [
+    "run",
+    "partial"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 82.0,
+   "poly": [
+    [
+     7477.0,
+     1062.0
+    ],
+    [
+     7559.0,
+     1062.0
+    ],
+    [
+     7559.0,
+     1087.0
+    ],
+    [
+     7477.0,
+     1087.0
+    ]
+   ],
+   "aabb": [
+    7477,
+    1062,
+    7559,
+    1087
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 533,
+   "annot_line": 10,
+   "ink_px": 457,
+   "text_px_final": 141
+  },
+  {
+   "id": "SA-D40-003",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 22.0,
+   "poly": [
+    [
+     7516.0,
+     1121.0
+    ],
+    [
+     7538.0,
+     1121.0
+    ],
+    [
+     7538.0,
+     1151.0
+    ],
+    [
+     7516.0,
+     1151.0
+    ]
+   ],
+   "aabb": [
+    7516,
+    1121,
+    7538,
+    1151
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 195,
+   "annot_line": 11,
+   "ink_px": 195,
+   "text_px_final": 83
+  }
+ ],
+ "dropped_outside_scope": []
+}

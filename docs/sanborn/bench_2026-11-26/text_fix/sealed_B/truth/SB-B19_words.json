@@ -1,0 +1,159 @@
+{
+ "crop": "SB-B19",
+ "plate": "88",
+ "win": [
+  4313,
+  804,
+  4613,
+  1064
+ ],
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   4419,
+   884,
+   4507,
+   984
+  ]
+ ],
+ "why": "block 6 on plate 88, drawn with random.Random('88') from the plate list (annot/selection.json)",
+ "n_words": 3,
+ "mask": "SB-B19_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope)"
+ },
+ "counts": {
+  "paper": 7260,
+  "ink_not_text": 520,
+  "text": 930,
+  "dont_care": 69290
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SB-B19-001",
+   "reading": "6",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 50.0,
+   "length": 38.0,
+   "poly": [
+    [
+     4444.0,
+     909.0
+    ],
+    [
+     4482.0,
+     909.0
+    ],
+    [
+     4482.0,
+     959.0
+    ],
+    [
+     4444.0,
+     959.0
+    ]
+   ],
+   "aabb": [
+    4444,
+    909,
+    4482,
+    959
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 759,
+   "annot_line": 2,
+   "ink_px": 971,
+   "text_px_final": 759
+  },
+  {
+   "id": "SB-B19-002",
+   "reading": "51",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 23.0,
+   "length": 37.0,
+   "poly": [
+    [
+     4398.0,
+     923.0
+    ],
+    [
+     4435.0,
+     923.0
+    ],
+    [
+     4435.0,
+     946.0
+    ],
+    [
+     4398.0,
+     946.0
+    ]
+   ],
+   "aabb": [
+    4398,
+    923,
+    4435,
+    946
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 175,
+   "annot_line": 3,
+   "ink_px": 175,
+   "text_px_final": 64
+  },
+  {
+   "id": "SB-B19-003",
+   "reading": "52",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 31.0,
+   "poly": [
+    [
+     4491.0,
+     920.0
+    ],
+    [
+     4522.0,
+     920.0
+    ],
+    [
+     4522.0,
+     946.0
+    ],
+    [
+     4491.0,
+     946.0
+    ]
+   ],
+   "aabb": [
+    4491,
+    920,
+    4522,
+    946
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 223,
+   "annot_line": 4,
+   "ink_px": 223,
+   "text_px_final": 107
+  }
+ ]
+}

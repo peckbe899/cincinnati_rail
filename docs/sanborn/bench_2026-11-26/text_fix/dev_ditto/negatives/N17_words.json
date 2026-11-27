@@ -1,0 +1,94 @@
+{
+ "crop": "N17",
+ "plate": "86",
+ "win": [
+  2692,
+  3915,
+  2756,
+  3979
+ ],
+ "kind": "targeted",
+ "target": "negative",
+ "scope_pad": 0,
+ "scope": [
+  [
+   2692,
+   3915,
+   2756,
+   3979
+  ]
+ ],
+ "n_words": 1,
+ "n_targets": 0,
+ "mask": "N17_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 4043,
+  "ink_not_text": 53,
+  "text": 0,
+  "dont_care": 0
+ },
+ "counts_in_scope": {
+  "ink_not_text": 53,
+  "text": 0,
+  "dont_care": 0
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "N17-001",
+   "reading": "-",
+   "kind": "negative",
+   "flags": [
+    "neg:dash"
+   ],
+   "angle": 0.0,
+   "height": 5.0,
+   "length": 4.0,
+   "poly": [
+    [
+     2722.0,
+     3945.0
+    ],
+    [
+     2726.0,
+     3945.0
+    ],
+    [
+     2726.0,
+     3950.0
+    ],
+    [
+     2722.0,
+     3950.0
+    ]
+   ],
+   "aabb": [
+    2722,
+    3945,
+    2726,
+    3950
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": false,
+   "box_word": true,
+   "text_px": 0,
+   "in_scope": true,
+   "ink_px": 11,
+   "care_px": 0,
+   "pieces": 1,
+   "piece_px": [
+    11
+   ],
+   "style": "",
+   "neg_type": "dash"
+  }
+ ]
+}

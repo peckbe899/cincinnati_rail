@@ -1,0 +1,68 @@
+{
+ "note": "Skeptic eye checks, 27 Nov 2026. right = finder4's new text is text; wrong = it is not text; unsure = cannot tell. Pictures in skeptic/pics (scan | finder3 | finder4 with new text magenta | truth where a sealed crop covers it).",
+ "straight_edge.png": {
+  "what": "the 30 px of the straight-run rise on SA-F1 (plate 38), gate's measure",
+  "verdict": "All 30 px lie within 16 px of the crop's right edge (x 5736). With cv2's default border (outside = ink) short strokes at the edge count as 61 px runs. With the real plate ink beyond the edge the rise is 11 px; with outside = paper it is 9 px. The px are real false text (the arc of a round symbol with pink fill, and a bit of a thick vertical line by a small box), but tiny."
+ },
+ "ring_0..3.png": {
+  "what": "all 19 pieces of finder4-only text in the 25-60 px rings round the 203 targets, outside every labelled area (599 px)",
+  "pieces": {
+   "R00": ["76", 122, "wrong", "wall of a yellow building under a big italic figure; a few px at the figure foot"],
+   "R01": ["76", 82, "wrong", "corner of a pink building outline beside a story height 2"],
+   "R02": ["76", 47, "wrong", "same building corner"],
+   "R03": ["92", 39, "unsure", "small mark after lot 44 in the dense grid (quote or ditto?)"],
+   "R04": ["76", 36, "wrong", "building corner by a big italic figure"],
+   "R05": ["92", 35, "unsure", "small mark after lot 46/47 in the grid"],
+   "R06": ["84", 32, "unsure", "small dash mark in a lot"],
+   "R07": ["92", 29, "unsure", "small mark after lot 45 in the grid"],
+   "R08": ["66", 26, "wrong", "one dash of a dashed line"],
+   "R09": ["76", 26, "wrong", "wall under a big figure (same place as R00)"],
+   "R10": ["38", 19, "right", "curl of a big 3"],
+   "R11": ["84", 19, "right", "the point of story height '1.'"],
+   "R12": ["58", 17, "right", "ditto pair"],
+   "R13": ["76", 16, "right", "ditto pair"],
+   "R14": ["71", 14, "right", "ditto pair"],
+   "R15": ["84", 14, "right", "the point of story height '1.'"],
+   "R16": ["76", 13, "right", "hyphen in '5-07'"],
+   "R17": ["76", 9, "wrong", "wall under a big figure (same place as R00)"],
+   "R18": ["6", 4, "right", "bits of a figure crossed by lines"]
+  },
+  "totals": {"right": [8, 116], "wrong": [7, 348], "unsure": [4, 135], "unit": "[pieces, px]"}
+ },
+ "wide_px_0..2.png": {
+  "what": "24 pieces of finder4-only text OUTSIDE every labelled area of the 16 sealed plates, drawn with chance in proportion to their px (random.Random('skeptic-wide'))",
+  "pieces": {
+   "P00": ["A", 236, "right", "big italic figure strokes"], "P01": ["A", 35, "right", "script letters crossed by lines"],
+   "P02": ["A", 647, "right", "base and diagonal of a big 2"], "P03": ["ditto", 23, "unsure", "small mark by a hatched band"],
+   "P04": ["ditto", 30, "right", "ditto pair in a building"], "P05": ["ditto", 20, "right", "ditto pair"],
+   "P06": ["A", 724, "wrong", "curved creek bank outline and line bits beside CREEK lettering"], "P07": ["A", 270, "right", "big 24 crossed by a line"],
+   "P08": ["B", 108, "right", "big 6 crossed by lines"], "P09": ["B", 217, "unsure", "big 7 over the plate-92 grid; part is grid line"],
+   "P10": ["A", 33, "wrong", "ornament scroll round a circle symbol"], "P11": ["A", 25, "unsure", "line junction in a dense corner"],
+   "P12": ["A", 570, "right", "top bar of a big T"], "P13": ["A", 142, "wrong", "building wall pieces in a pink building"],
+   "P14": ["ditto", 9, "right", "small pair"], "P15": ["B", 329, "right", "big 33 crossed by a line"],
+   "P16": ["ditto", 12, "right", "ditto pair"], "P17": ["ditto", 18, "right", "ditto under a line"],
+   "P18": ["ditto", 17, "unsure", "small mark beside a 2"], "P19": ["B", 153, "right", "big 10 crossed by lines"],
+   "P20": ["ditto", 11, "right", "ditto pair"], "P21": ["A", 85, "unsure", "4 of a story height crossing a building outline"],
+   "P22": ["ditto", 22, "unsure", "lone short mark by a thick curve"], "P23": ["ditto", 7, "right", "small mark (ditto)"]
+  },
+  "totals": {"right": 15, "wrong": 3, "unsure": 6, "share_of_px_wrong_estimate": "3/24 = 12.5% (e); 9/24 = 37.5% (e) if every unsure is wrong"}
+ },
+ "wide_even_0..2.png": {
+  "what": "24 pieces of finder4-only text outside every labelled area, drawn evenly (each piece the same chance)",
+  "pieces": {
+   "E00": ["ditto", 8, "right"], "E01": ["ditto", 11, "right"], "E02": ["ditto", 10, "right"],
+   "E03": ["B", 81, "wrong", "line pieces at a crossing beside a big 9"], "E04": ["B", 6, "right"], "E05": ["ditto", 30, "right"],
+   "E06": ["ditto", 8, "right"], "E07": ["B", 18, "unsure", "vertical line where it crosses a big 2"], "E08": ["B", 7, "right"],
+   "E09": ["ditto", 9, "right"], "E10": ["ditto", 10, "right"], "E11": ["ditto", 17, "right"], "E12": ["ditto", 19, "right"],
+   "E13": ["ditto", 15, "right"], "E14": ["ditto", 9, "unsure", "mark inside a turned lot number"], "E15": ["ditto", 17, "right"],
+   "E16": ["A", 4, "right"], "E17": ["A", 11, "unsure", "line through the 9 of 169"], "E18": ["ditto", 9, "right"],
+   "E19": ["A", 6, "right"], "E20": ["ditto", 5, "right"], "E21": ["B", 4, "right"],
+   "E22": ["A", 214, "wrong", "building outline and hatching round a big italic letter"], "E23": ["ditto", 9, "right"]
+  },
+  "totals": {"right": 19, "wrong": 2, "unsure": 3}
+ },
+ "miss_0..3.png": {
+  "what": "every target finder4 misses (3 block numbers, 24 dittos)",
+  "verdict": "The truth is fair for most. Doubtful: SA-D04-002, SA-D07-002, SA-D08-002 (marks beside the plate-6 railroad with cross ticks; p6_rail_dittos.png), SB-D16-011 (an x-shaped mark, flagged unsure by its builder), SA-D38-002 (a square blob, could be a dot). The plate-6 one-blob marks in brick buildings (SA-D34-004, D36-004, D37-002, D37-003, D38-002) are single blobs near the top wall: plausible merged dittos, but a ruling is needed. Clear misses: SA-D26-003, SB-D04-001, SB-D01-006, SB-D02-002, SB-D06-003, SB-D07-001, SB-D13-007, SA-D21-007, SB-D03-006, SB-D02-003, SA-D22-001, SA-D39-001. Block misses SA-B08 (thin 19 on a lot-line crossing), SA-B20 (1 against a vertical line), SB-B25 (5 over the plate-92 grid) are real misses; SB-B25 is doubtful truth."
+ }
+}

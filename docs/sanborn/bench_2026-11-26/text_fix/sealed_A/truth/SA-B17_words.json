@@ -1,0 +1,88 @@
+{
+ "crop": "SA-B17",
+ "plate": "41",
+ "win": [
+  5324,
+  1324,
+  5544,
+  1544
+ ],
+ "why": "block number 2 on plate 41 (200 ft), drawn at random (seed: plate name) from the plate list",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope_px": 8670,
+ "n_words": 1,
+ "mask": "SA-B17_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (glyph and line share ink; CARE boxes; outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 7249,
+  "ink_not_text": 546,
+  "text": 473,
+  "dont_care": 40132
+ },
+ "boxes": [
+  {
+   "op": "CARESTRIP",
+   "seg": [
+    5444,
+    1418,
+    5420,
+    1464
+   ],
+   "width": 6,
+   "note": "lot line on the diagonal of the 2 (shared ink)",
+   "line": 4
+  }
+ ],
+ "words": [
+  {
+   "id": "SA-B17-001",
+   "reading": "2",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 51.0,
+   "length": 34.0,
+   "poly": [
+    [
+     5416.0,
+     1409.0
+    ],
+    [
+     5450.0,
+     1409.0
+    ],
+    [
+     5450.0,
+     1460.0
+    ],
+    [
+     5416.0,
+     1460.0
+    ]
+   ],
+   "aabb": [
+    5416,
+    1409,
+    5450,
+    1460
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 474,
+   "annot_line": 2,
+   "target": true,
+   "ink_px": 904,
+   "scored_text_px": 473
+  }
+ ],
+ "dropped_outside_scope": []
+}

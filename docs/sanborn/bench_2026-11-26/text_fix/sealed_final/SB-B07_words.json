@@ -1,0 +1,130 @@
+{
+ "crop": "SB-B07",
+ "plate": "63",
+ "win": [
+  8790,
+  2398,
+  9090,
+  2658
+ ],
+ "scale_ft_per_inch": 100,
+ "half": "B",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   8891,
+   2480,
+   8987,
+   2577
+  ]
+ ],
+ "scope_px": 9506,
+ "why": "block 15 on plate 63, drawn with random.Random('63') from the plate list (annot/selection.json)",
+ "n_words": 2,
+ "mask": "SB-B07_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 7383,
+  "ink_not_text": 967,
+  "text": 1108,
+  "dont_care": 68542
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SB-B07-001",
+   "reading": "15",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 47.0,
+   "length": 46.0,
+   "poly": [
+    [
+     8916.0,
+     2505.0
+    ],
+    [
+     8962.0,
+     2505.0
+    ],
+    [
+     8962.0,
+     2552.0
+    ],
+    [
+     8916.0,
+     2552.0
+    ]
+   ],
+   "aabb": [
+    8916,
+    2505,
+    8962,
+    2552
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 936,
+   "annot_line": 2,
+   "ink_px": 958,
+   "text_px_final": 936
+  },
+  {
+   "id": "SB-B07-002",
+   "reading": "229",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 54.0,
+   "poly": [
+    [
+     8946.0,
+     2467.0
+    ],
+    [
+     9000.0,
+     2467.0
+    ],
+    [
+     9000.0,
+     2494.0
+    ],
+    [
+     8946.0,
+     2494.0
+    ]
+   ],
+   "aabb": [
+    8946,
+    2467,
+    9000,
+    2494
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 487,
+   "annot_line": 3,
+   "ink_px": 607,
+   "text_px_final": 172
+  }
+ ],
+ "dropped_outside_scope": [
+  {
+   "id": "SB-B07-003",
+   "reading": "B",
+   "kind": "story",
+   "annot_line": 4
+  }
+ ]
+}

@@ -1,0 +1,152 @@
+{
+ "crop": "DD36",
+ "plate": "74",
+ "win": [
+  9304,
+  3848,
+  9704,
+  4148
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   9295,
+   3836,
+   9358,
+   3896
+  ],
+  [
+   9449,
+   3839,
+   9510,
+   3897
+  ]
+ ],
+ "n_words": 2,
+ "n_targets": 2,
+ "mask": "DD36_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 104511,
+  "ink_not_text": 421,
+  "text": 101,
+  "dont_care": 14967
+ },
+ "counts_in_scope": {
+  "ink_not_text": 421,
+  "text": 101,
+  "dont_care": 0
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DD36-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:quote"
+   ],
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 13.0,
+   "poly": [
+    [
+     9320.0,
+     3861.0
+    ],
+    [
+     9333.0,
+     3861.0
+    ],
+    [
+     9333.0,
+     3871.0
+    ],
+    [
+     9320.0,
+     3871.0
+    ]
+   ],
+   "aabb": [
+    9320,
+    3861,
+    9333,
+    3871
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": true,
+   "box_word": true,
+   "text_px": 54,
+   "in_scope": true,
+   "ink_px": 54,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    31,
+    23
+   ],
+   "style": "quote",
+   "neg_type": ""
+  },
+  {
+   "id": "DD36-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:quote"
+   ],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 11.0,
+   "poly": [
+    [
+     9474.0,
+     3864.0
+    ],
+    [
+     9485.0,
+     3864.0
+    ],
+    [
+     9485.0,
+     3872.0
+    ],
+    [
+     9474.0,
+     3872.0
+    ]
+   ],
+   "aabb": [
+    9474,
+    3864,
+    9485,
+    3872
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 3,
+   "target": true,
+   "box_word": true,
+   "text_px": 47,
+   "in_scope": true,
+   "ink_px": 47,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    26,
+    21
+   ],
+   "style": "quote",
+   "neg_type": ""
+  }
+ ]
+}

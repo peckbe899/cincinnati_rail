@@ -1,0 +1,28 @@
+C:\Users\peckb\AppData\Local\Programs\Python\Python312\python.exe -B bench_2026-11-25\text_v1\code\score_text.py bench_2026-11-26/text_fix/fix_ditto/out/dittofix\{plate}_text.png --codes 2,3 --truth bench_2026-11-26\text_fix\dev_ditto\truth --quiet --out bench_2026-11-26/text_fix/fix_ditto/scores/score_text\ditto_dittofix.json --group foldA=DD01,DD02,DD03,DD04,DD05,DD06,DD07,DD08,DD09,DD10,DD11,DD12,DD16,DD17,DD19,DD20,DD21,DD36,DD41,DD42,DD43,DD44,DD45,DD46,DD49,DD50 --group foldB=DD13,DD14,DD15,DD18,DD22,DD23,DD24,DD25,DD26,DD27,DD28,DD29,DD30,DD31,DD32,DD33,DD34,DD35,DD37,DD38,DD39,DD40,DD47,DD48,DD51 --group ft200=DD01,DD02,DD03,DD04,DD05,DD06,DD07,DD08,DD09,DD10,DD11,DD12,DD13,DD14,DD15,DD27,DD28,DD29,DD30,DD31,DD32,DD33,DD34,DD35,DD36,DD37,DD47 --group ft100=DD16,DD17,DD18,DD19,DD20,DD21,DD22,DD23,DD24,DD25,DD26,DD43,DD44,DD45,DD46 --group ft400=DD38,DD39,DD40,DD41,DD42,DD48,DD49,DD50,DD51
+ALL                    P 0.7989  R 0.7519  F1 0.7747   non-text ink called text 0.0681   don't care skipped 931766
+plate_30               P 0.8943  R 0.8950  F1 0.8947   non-text ink called text 0.0264   don't care skipped 96187
+plate_90               P 0.9691  R 0.9228  F1 0.9454   non-text ink called text 0.0111   don't care skipped 37589
+plate_60B              P 0.7119  R 1.0000  F1 0.8317   non-text ink called text 0.1408   don't care skipped 73438
+plate_19               P 0.9284  R 0.9860  F1 0.9564   non-text ink called text 0.0139   don't care skipped 41739
+plate_44               P 0.8434  R 0.9942  F1 0.9126   non-text ink called text 0.0562   don't care skipped 69270
+plate_1A               P 0.9050  R 0.9887  F1 0.9450   non-text ink called text 0.0991   don't care skipped 27591
+plate_3                P 1.0000  R 1.0000  F1 1.0000   non-text ink called text 0.0000   don't care skipped 7722
+plate_2                P 1.0000  R 0.9759  F1 0.9878   non-text ink called text 0.0000   don't care skipped 31642
+plate_4                P 0.5894  R 0.9649  F1 0.7318   non-text ink called text 0.2060   don't care skipped 35217
+plate_12               P 0.9986  R 0.9541  F1 0.9758   non-text ink called text 0.0008   don't care skipped 30941
+plate_57               P 1.0000  R 1.0000  F1 1.0000   non-text ink called text 0.0000   don't care skipped 12589
+plate_64A              P 0.7220  R 0.5747  F1 0.6400   non-text ink called text 0.1218   don't care skipped 94605
+plate_26A              P 0.9244  R 0.6363  F1 0.7538   non-text ink called text 0.0373   don't care skipped 103795
+plate_74               P 1.0000  R 1.0000  F1 1.0000   non-text ink called text 0.0000   don't care skipped 14967
+plate_86               P 0.4862  R 0.8627  F1 0.6219   non-text ink called text 0.1422   don't care skipped 20766
+plate_47               P 0.9912  R 0.2043  F1 0.3388   non-text ink called text 0.0008   don't care skipped 27999
+plate_49               P 0.4658  R 0.6065  F1 0.5269   non-text ink called text 0.1313   don't care skipped 54776
+plate_93A              P 0.9022  R 0.7250  F1 0.8039   non-text ink called text 0.0330   don't care skipped 36543
+plate_48               P 0.6766  R 0.7981  F1 0.7323   non-text ink called text 0.0604   don't care skipped 73794
+plate_54A              P 1.0000  R 1.0000  F1 1.0000   non-text ink called text 0.0000   don't care skipped 40596
+foldA                  P 0.8504  R 0.9293  F1 0.8881   non-text ink called text 0.0446   don't care skipped 445205
+foldB                  P 0.7622  R 0.6527  F1 0.7033   non-text ink called text 0.0890   don't care skipped 486561
+ft200                  P 0.8269  R 0.7097  F1 0.7638   non-text ink called text 0.0631   don't care skipped 483086
+ft100                  P 0.8472  R 0.9799  F1 0.9087   non-text ink called text 0.0696   don't care skipped 255568
+ft400                  P 0.6290  R 0.5761  F1 0.6014   non-text ink called text 0.0753   don't care skipped 193112
+recall by kind (ALL):  ditto 0.891 (172/200 words)  house 0.717 (38/53 words)  lot 0.707 (54/71 words)  lotdim 0.776 (14/18 words)  other 0.176 (1/2 words)  pipe 1.000 (1/1 words)  sewer 0.127 (1/2 words)  story 0.906 (15/17 words)  street 0.614 (10/13 words)

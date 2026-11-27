@@ -1,0 +1,81 @@
+{
+ "crop": "DB24",
+ "plate": "26A",
+ "win": [
+  947,
+  5086,
+  1175,
+  5267
+ ],
+ "why": "block number 39½ on plate 26A (200 ft), drawn at random (candidates/draw.json)",
+ "n_words": 1,
+ "mask": "DB24_mask.png",
+ "mask_values": {
+  "0": "paper (in scope)",
+  "1": "ink, not text (in scope)",
+  "2": "text ink (in scope)",
+  "3": "don't care (glyph and line share ink; CARE boxes; everything outside the scope)"
+ },
+ "counts": {
+  "paper": 15731,
+  "ink_not_text": 131,
+  "text": 1946,
+  "dont_care": 23460
+ },
+ "scope_px": 17808,
+ "scope_counts": {
+  "paper": 15731,
+  "ink_not_text": 131,
+  "text": 1946,
+  "dont_care": 0
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DB24-001",
+   "reading": "39½",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 61.0,
+   "length": 108.0,
+   "poly": [
+    [
+     1007.0,
+     5146.0
+    ],
+    [
+     1115.0,
+     5146.0
+    ],
+    [
+     1115.0,
+     5207.0
+    ],
+    [
+     1007.0,
+     5207.0
+    ]
+   ],
+   "aabb": [
+    1007,
+    5146,
+    1115,
+    5207
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 1946,
+   "annot_line": 3,
+   "in_scope": {
+    "text_px": 1946,
+    "dont_care_px": 0,
+    "ink_px": 1946
+   },
+   "target": true,
+   "ink_size_px": 1946
+  }
+ ]
+}

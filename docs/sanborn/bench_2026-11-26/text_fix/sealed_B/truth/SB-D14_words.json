@@ -1,0 +1,371 @@
+{
+ "crop": "SB-D14",
+ "plate": "84",
+ "win": [
+  5206,
+  3972,
+  5786,
+  4452
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   5231,
+   4204,
+   5290,
+   4264
+  ],
+  [
+   5228,
+   4140,
+   5287,
+   4200
+  ]
+ ],
+ "why": "ditto window 84 window 1 drawn with random.Random('ditto-84') in built-up cells: every ditto mark inside",
+ "n_words": 8,
+ "mask": "SB-D14_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope)"
+ },
+ "counts": {
+  "paper": 5715,
+  "ink_not_text": 738,
+  "text": 575,
+  "dont_care": 271372
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SB-D14-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 9.0,
+   "poly": [
+    [
+     5256.0,
+     4229.0
+    ],
+    [
+     5265.0,
+     4229.0
+    ],
+    [
+     5265.0,
+     4239.0
+    ],
+    [
+     5256.0,
+     4239.0
+    ]
+   ],
+   "aabb": [
+    5256,
+    4229,
+    5265,
+    4239
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 39,
+   "annot_line": 2,
+   "ink_px": 39,
+   "text_px_final": 39
+  },
+  {
+   "id": "SB-D14-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "unsure"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 9.0,
+   "poly": [
+    [
+     5253.0,
+     4165.0
+    ],
+    [
+     5262.0,
+     4165.0
+    ],
+    [
+     5262.0,
+     4175.0
+    ],
+    [
+     5253.0,
+     4175.0
+    ]
+   ],
+   "aabb": [
+    5253,
+    4165,
+    5262,
+    4175
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 34,
+   "annot_line": 3,
+   "ink_px": 34,
+   "text_px_final": 34
+  },
+  {
+   "id": "SB-D14-003",
+   "reading": "-18",
+   "kind": "house",
+   "flags": [],
+   "target": false,
+   "angle": -90.0,
+   "height": 19.0,
+   "length": 35.0,
+   "poly": [
+    [
+     5222.0,
+     4188.0
+    ],
+    [
+     5222.0,
+     4153.0
+    ],
+    [
+     5241.0,
+     4153.0
+    ],
+    [
+     5241.0,
+     4188.0
+    ]
+   ],
+   "aabb": [
+    5222,
+    4153,
+    5241,
+    4188
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 215,
+   "annot_line": 5,
+   "ink_px": 215,
+   "text_px_final": 171
+  },
+  {
+   "id": "SB-D14-004",
+   "reading": "4\"W.P.",
+   "kind": "pipe",
+   "flags": [
+    "partial"
+   ],
+   "target": false,
+   "angle": -87.9,
+   "height": 28.3,
+   "length": 53.6,
+   "poly": [
+    [
+     5230.1,
+     4146.5
+    ],
+    [
+     5232.1,
+     4092.9
+    ],
+    [
+     5260.3,
+     4093.9
+    ],
+    [
+     5258.4,
+     4147.5
+    ]
+   ],
+   "aabb": [
+    5230,
+    4092,
+    5261,
+    4148
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 469,
+   "annot_line": 6,
+   "ink_px": 471,
+   "text_px_final": 61
+  },
+  {
+   "id": "SB-D14-005",
+   "reading": "1.",
+   "kind": "story",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 21.0,
+   "poly": [
+    [
+     5250.0,
+     4180.0
+    ],
+    [
+     5271.0,
+     4180.0
+    ],
+    [
+     5271.0,
+     4202.0
+    ],
+    [
+     5250.0,
+     4202.0
+    ]
+   ],
+   "aabb": [
+    5250,
+    4180,
+    5271,
+    4202
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 122,
+   "annot_line": 7,
+   "ink_px": 133,
+   "text_px_final": 77
+  },
+  {
+   "id": "SB-D14-006",
+   "reading": "S",
+   "kind": "other",
+   "flags": [
+    "unsure"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 38.0,
+   "length": 38.0,
+   "poly": [
+    [
+     5257.0,
+     4180.0
+    ],
+    [
+     5295.0,
+     4180.0
+    ],
+    [
+     5295.0,
+     4218.0
+    ],
+    [
+     5257.0,
+     4218.0
+    ]
+   ],
+   "aabb": [
+    5257,
+    4180,
+    5295,
+    4218
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 390,
+   "annot_line": 8,
+   "ink_px": 595,
+   "text_px_final": 254
+  },
+  {
+   "id": "SB-D14-007",
+   "reading": "103",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 35.0,
+   "poly": [
+    [
+     5291.0,
+     4159.0
+    ],
+    [
+     5326.0,
+     4159.0
+    ],
+    [
+     5326.0,
+     4185.0
+    ],
+    [
+     5291.0,
+     4185.0
+    ]
+   ],
+   "aabb": [
+    5291,
+    4159,
+    5326,
+    4185
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 415,
+   "annot_line": 9,
+   "ink_px": 414,
+   "text_px_final": 0
+  },
+  {
+   "id": "SB-D14-008",
+   "reading": "104",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 36.0,
+   "poly": [
+    [
+     5289.0,
+     4220.0
+    ],
+    [
+     5325.0,
+     4220.0
+    ],
+    [
+     5325.0,
+     4248.0
+    ],
+    [
+     5289.0,
+     4248.0
+    ]
+   ],
+   "aabb": [
+    5289,
+    4220,
+    5325,
+    4248
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 396,
+   "annot_line": 10,
+   "ink_px": 396,
+   "text_px_final": 0
+  }
+ ]
+}

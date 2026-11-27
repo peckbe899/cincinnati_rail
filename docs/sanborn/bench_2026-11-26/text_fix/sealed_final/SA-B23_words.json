@@ -1,0 +1,181 @@
+{
+ "crop": "SA-B23",
+ "plate": "46",
+ "win": [
+  5499,
+  1564,
+  5719,
+  1784
+ ],
+ "scale_ft_per_inch": 400,
+ "half": "A",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   5563,
+   1627,
+   5652,
+   1729
+  ]
+ ],
+ "scope_px": 9270,
+ "why": "block number 6 on plate 46 (400 ft), drawn at random (seed: plate name) from the plate list",
+ "n_words": 3,
+ "mask": "SA-B23_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 7905,
+  "ink_not_text": 313,
+  "text": 886,
+  "dont_care": 39296
+ },
+ "boxes": [
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    5605,
+    1640,
+    5604,
+    1712
+   ],
+   "width": 6,
+   "note": "lot line through the 6 (snapline)",
+   "line": 6,
+   "effect_px": 114
+  }
+ ],
+ "words": [
+  {
+   "id": "SA-B23-001",
+   "reading": "6",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 52.0,
+   "length": 39.0,
+   "poly": [
+    [
+     5588.0,
+     1652.0
+    ],
+    [
+     5627.0,
+     1652.0
+    ],
+    [
+     5627.0,
+     1704.0
+    ],
+    [
+     5588.0,
+     1704.0
+    ]
+   ],
+   "aabb": [
+    5588,
+    1652,
+    5627,
+    1704
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 761,
+   "annot_line": 2,
+   "ink_px": 974,
+   "text_px_final": 665
+  },
+  {
+   "id": "SA-B23-002",
+   "reading": "6\"SEWER",
+   "kind": "sewer",
+   "flags": [
+    "partial"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 177.0,
+   "poly": [
+    [
+     5415.0,
+     1696.0
+    ],
+    [
+     5592.0,
+     1696.0
+    ],
+    [
+     5592.0,
+     1722.0
+    ],
+    [
+     5415.0,
+     1722.0
+    ]
+   ],
+   "aabb": [
+    5415,
+    1696,
+    5592,
+    1722
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 1059,
+   "annot_line": 3,
+   "ink_px": 514,
+   "text_px_final": 184
+  },
+  {
+   "id": "SA-B23-003",
+   "reading": "305.50'",
+   "kind": "lotdim",
+   "flags": [
+    "partial"
+   ],
+   "target": false,
+   "angle": -90.0,
+   "height": 20.0,
+   "length": 87.0,
+   "poly": [
+    [
+     5582.0,
+     1802.0
+    ],
+    [
+     5582.0,
+     1715.0
+    ],
+    [
+     5602.0,
+     1715.0
+    ],
+    [
+     5602.0,
+     1802.0
+    ]
+   ],
+   "aabb": [
+    5582,
+    1715,
+    5602,
+    1802
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 545,
+   "annot_line": 4,
+   "ink_px": 515,
+   "text_px_final": 75
+  }
+ ],
+ "dropped_outside_scope": []
+}

@@ -1,0 +1,194 @@
+{
+ "crop": "SB-B09",
+ "plate": "63",
+ "win": [
+  7564,
+  3248,
+  7864,
+  3508
+ ],
+ "scale_ft_per_inch": 100,
+ "half": "B",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   7653,
+   3321,
+   7770,
+   3430
+  ]
+ ],
+ "scope_px": 12980,
+ "why": "block 21 on plate 63, drawn with random.Random('63') from the plate list (annot/selection.json)",
+ "n_words": 3,
+ "mask": "SB-B09_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 11098,
+  "ink_not_text": 932,
+  "text": 813,
+  "dont_care": 65157
+ },
+ "boxes": [
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    7640,
+    3367,
+    7689,
+    3366
+   ],
+   "width": 4,
+   "note": "lot line from the left to the 2",
+   "line": 4,
+   "effect_px": 43
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    7714,
+    3315,
+    7713,
+    3352
+   ],
+   "width": 5,
+   "note": "lot line down to the top of the 2",
+   "line": 5,
+   "effect_px": 21
+  }
+ ],
+ "words": [
+  {
+   "id": "SB-B09-001",
+   "reading": "21",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 59.0,
+   "length": 67.0,
+   "poly": [
+    [
+     7678.0,
+     3346.0
+    ],
+    [
+     7745.0,
+     3346.0
+    ],
+    [
+     7745.0,
+     3405.0
+    ],
+    [
+     7678.0,
+     3405.0
+    ]
+   ],
+   "aabb": [
+    7678,
+    3346,
+    7745,
+    3405
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 924,
+   "annot_line": 2,
+   "ink_px": 1103,
+   "text_px_final": 794
+  },
+  {
+   "id": "SB-B09-002",
+   "reading": "98",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 37.0,
+   "length": 38.0,
+   "poly": [
+    [
+     7654.0,
+     3286.0
+    ],
+    [
+     7692.0,
+     3286.0
+    ],
+    [
+     7692.0,
+     3323.0
+    ],
+    [
+     7654.0,
+     3323.0
+    ]
+   ],
+   "aabb": [
+    7654,
+    3286,
+    7692,
+    3323
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 508,
+   "annot_line": 9,
+   "ink_px": 508,
+   "text_px_final": 8
+  },
+  {
+   "id": "SB-B09-003",
+   "reading": "1",
+   "kind": "story",
+   "flags": [
+    "partial"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 9.0,
+   "poly": [
+    [
+     7762.0,
+     3304.0
+    ],
+    [
+     7771.0,
+     3304.0
+    ],
+    [
+     7771.0,
+     3326.0
+    ],
+    [
+     7762.0,
+     3326.0
+    ]
+   ],
+   "aabb": [
+    7762,
+    3304,
+    7771,
+    3326
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 42,
+   "annot_line": 11,
+   "ink_px": 42,
+   "text_px_final": 10
+  }
+ ],
+ "dropped_outside_scope": []
+}

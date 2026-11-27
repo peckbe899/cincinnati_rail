@@ -1,0 +1,2741 @@
+{
+ "bin8": {
+  "pools": {
+   "100": {
+    "words": 15,
+    "words_found": 15,
+    "text_px": 17149,
+    "found_px": 14665,
+    "recall": 0.8552,
+    "miss_at_line": 637,
+    "miss_rim": 443,
+    "miss_stroke": 1404,
+    "nontext_called_share": 0.242,
+    "words_under_09": 8
+   },
+   "200": {
+    "words": 22,
+    "words_found": 21,
+    "text_px": 27098,
+    "found_px": 24367,
+    "recall": 0.8992,
+    "miss_at_line": 303,
+    "miss_rim": 306,
+    "miss_stroke": 2122,
+    "nontext_called_share": 0.3602,
+    "words_under_09": 6
+   },
+   "400": {
+    "words": 8,
+    "words_found": 8,
+    "text_px": 6400,
+    "found_px": 5816,
+    "recall": 0.9087,
+    "miss_at_line": 83,
+    "miss_rim": 36,
+    "miss_stroke": 465,
+    "nontext_called_share": 0.3676,
+    "words_under_09": 3
+   },
+   "all": {
+    "words": 45,
+    "words_found": 44,
+    "text_px": 50647,
+    "found_px": 44848,
+    "recall": 0.8855,
+    "miss_at_line": 1023,
+    "miss_rim": 785,
+    "miss_stroke": 3991,
+    "nontext_called_share": 0.3092,
+    "words_under_09": 17
+   }
+  },
+  "words": [
+   {
+    "crop": "DB01",
+    "plate": "3",
+    "scale": 100,
+    "reading": "15",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1199,
+    "found_px": 1000,
+    "recall": 0.834,
+    "found": true,
+    "miss_at_line": 27,
+    "miss_rim": 129,
+    "miss_stroke": 43,
+    "nontext_px": 1191,
+    "nontext_called": 0,
+    "mask": "unet_data/3_bins.png"
+   },
+   {
+    "crop": "DB02",
+    "plate": "3",
+    "scale": 100,
+    "reading": "19",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1043,
+    "found_px": 781,
+    "recall": 0.7488,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 262,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "unet_data/3_bins.png"
+   },
+   {
+    "crop": "DB03",
+    "plate": "3",
+    "scale": 100,
+    "reading": "9",
+    "flags": [
+     "target"
+    ],
+    "text_px": 792,
+    "found_px": 792,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "unet_data/3_bins.png"
+   },
+   {
+    "crop": "DB04",
+    "plate": "3",
+    "scale": 100,
+    "reading": "8",
+    "flags": [
+     "target"
+    ],
+    "text_px": 745,
+    "found_px": 745,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 537,
+    "nontext_called": 254,
+    "mask": "unet_data/3_bins.png"
+   },
+   {
+    "crop": "DB05",
+    "plate": "3",
+    "scale": 100,
+    "reading": "2",
+    "flags": [
+     "target"
+    ],
+    "text_px": 477,
+    "found_px": 452,
+    "recall": 0.9476,
+    "found": true,
+    "miss_at_line": 23,
+    "miss_rim": 2,
+    "miss_stroke": 0,
+    "nontext_px": 1103,
+    "nontext_called": 163,
+    "mask": "unet_data/3_bins.png"
+   },
+   {
+    "crop": "DB06",
+    "plate": "54A",
+    "scale": 100,
+    "reading": "4",
+    "flags": [
+     "target"
+    ],
+    "text_px": 771,
+    "found_px": 771,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "unet_data/54A_bins.png"
+   },
+   {
+    "crop": "DB07",
+    "plate": "54A",
+    "scale": 100,
+    "reading": "28",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1236,
+    "found_px": 1052,
+    "recall": 0.8511,
+    "found": true,
+    "miss_at_line": 77,
+    "miss_rim": 36,
+    "miss_stroke": 71,
+    "nontext_px": 1375,
+    "nontext_called": 290,
+    "mask": "unet_data/54A_bins.png"
+   },
+   {
+    "crop": "DB08",
+    "plate": "54A",
+    "scale": 100,
+    "reading": "5",
+    "flags": [
+     "target"
+    ],
+    "text_px": 668,
+    "found_px": 668,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 995,
+    "nontext_called": 224,
+    "mask": "unet_data/54A_bins.png"
+   },
+   {
+    "crop": "DB09",
+    "plate": "54A",
+    "scale": 100,
+    "reading": "8",
+    "flags": [
+     "target"
+    ],
+    "text_px": 874,
+    "found_px": 869,
+    "recall": 0.9943,
+    "found": true,
+    "miss_at_line": 5,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 683,
+    "nontext_called": 144,
+    "mask": "unet_data/54A_bins.png"
+   },
+   {
+    "crop": "DB10",
+    "plate": "54A",
+    "scale": 100,
+    "reading": "30",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1605,
+    "found_px": 1294,
+    "recall": 0.8062,
+    "found": true,
+    "miss_at_line": 148,
+    "miss_rim": 43,
+    "miss_stroke": 120,
+    "nontext_px": 730,
+    "nontext_called": 4,
+    "mask": "unet_data/54A_bins.png"
+   },
+   {
+    "crop": "DB11",
+    "plate": "12",
+    "scale": 100,
+    "reading": "38",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1745,
+    "found_px": 1289,
+    "recall": 0.7387,
+    "found": true,
+    "miss_at_line": 76,
+    "miss_rim": 61,
+    "miss_stroke": 319,
+    "nontext_px": 1421,
+    "nontext_called": 689,
+    "mask": "unet_data/12_bins.png"
+   },
+   {
+    "crop": "DB12",
+    "plate": "12",
+    "scale": 100,
+    "reading": "9",
+    "flags": [
+     "target"
+    ],
+    "text_px": 887,
+    "found_px": 619,
+    "recall": 0.6979,
+    "found": true,
+    "miss_at_line": 36,
+    "miss_rim": 60,
+    "miss_stroke": 172,
+    "nontext_px": 1247,
+    "nontext_called": 374,
+    "mask": "unet_data/12_bins.png"
+   },
+   {
+    "crop": "DB13",
+    "plate": "12",
+    "scale": 100,
+    "reading": "47",
+    "flags": [
+     "target",
+     "nosnap"
+    ],
+    "text_px": 1465,
+    "found_px": 1308,
+    "recall": 0.8928,
+    "found": true,
+    "miss_at_line": 72,
+    "miss_rim": 27,
+    "miss_stroke": 58,
+    "nontext_px": 2155,
+    "nontext_called": 487,
+    "mask": "unet_data/12_bins.png"
+   },
+   {
+    "crop": "DB14",
+    "plate": "12",
+    "scale": 100,
+    "reading": "55",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1427,
+    "found_px": 817,
+    "recall": 0.5725,
+    "found": true,
+    "miss_at_line": 166,
+    "miss_rim": 85,
+    "miss_stroke": 359,
+    "nontext_px": 1635,
+    "nontext_called": 529,
+    "mask": "unet_data/12_bins.png"
+   },
+   {
+    "crop": "DB15",
+    "plate": "12",
+    "scale": 100,
+    "reading": "20",
+    "flags": [
+     "target"
+    ],
+    "text_px": 2215,
+    "found_px": 2208,
+    "recall": 0.9968,
+    "found": true,
+    "miss_at_line": 7,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 632,
+    "nontext_called": 158,
+    "mask": "unet_data/12_bins.png"
+   },
+   {
+    "crop": "DB16",
+    "plate": "30",
+    "scale": 200,
+    "reading": "23",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1461,
+    "found_px": 1400,
+    "recall": 0.9582,
+    "found": true,
+    "miss_at_line": 5,
+    "miss_rim": 8,
+    "miss_stroke": 48,
+    "nontext_px": 1746,
+    "nontext_called": 515,
+    "mask": "unet_data/30_bins.png"
+   },
+   {
+    "crop": "DB17",
+    "plate": "30",
+    "scale": 200,
+    "reading": "15",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1043,
+    "found_px": 935,
+    "recall": 0.8965,
+    "found": true,
+    "miss_at_line": 13,
+    "miss_rim": 24,
+    "miss_stroke": 71,
+    "nontext_px": 1357,
+    "nontext_called": 229,
+    "mask": "unet_data/30_bins.png"
+   },
+   {
+    "crop": "DB18",
+    "plate": "30",
+    "scale": 200,
+    "reading": "6½",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1827,
+    "found_px": 1639,
+    "recall": 0.8971,
+    "found": true,
+    "miss_at_line": 10,
+    "miss_rim": 35,
+    "miss_stroke": 143,
+    "nontext_px": 751,
+    "nontext_called": 304,
+    "mask": "unet_data/30_bins.png"
+   },
+   {
+    "crop": "DB19",
+    "plate": "30",
+    "scale": 200,
+    "reading": "2",
+    "flags": [
+     "target"
+    ],
+    "text_px": 900,
+    "found_px": 900,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "unet_data/30_bins.png"
+   },
+   {
+    "crop": "DB20",
+    "plate": "19",
+    "scale": 200,
+    "reading": "28",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1472,
+    "found_px": 1346,
+    "recall": 0.9144,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 14,
+    "miss_stroke": 112,
+    "nontext_px": 327,
+    "nontext_called": 172,
+    "mask": "unet_data/19_bins.png"
+   },
+   {
+    "crop": "DB21",
+    "plate": "19",
+    "scale": 200,
+    "reading": "41",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1067,
+    "found_px": 1067,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "unet_data/19_bins.png"
+   },
+   {
+    "crop": "DB22",
+    "plate": "19",
+    "scale": 200,
+    "reading": "14",
+    "flags": [
+     "target"
+    ],
+    "text_px": 863,
+    "found_px": 632,
+    "recall": 0.7323,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 231,
+    "nontext_px": 235,
+    "nontext_called": 0,
+    "mask": "unet_data/19_bins.png"
+   },
+   {
+    "crop": "DB23",
+    "plate": "19",
+    "scale": 200,
+    "reading": "34",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1483,
+    "found_px": 1483,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "unet_data/19_bins.png"
+   },
+   {
+    "crop": "DB24",
+    "plate": "26A",
+    "scale": 200,
+    "reading": "39½",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1946,
+    "found_px": 1845,
+    "recall": 0.9481,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 101,
+    "nontext_px": 131,
+    "nontext_called": 117,
+    "mask": "unet_data/26A_bins.png"
+   },
+   {
+    "crop": "DB25",
+    "plate": "26A",
+    "scale": 200,
+    "reading": "18",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1288,
+    "found_px": 744,
+    "recall": 0.5776,
+    "found": true,
+    "miss_at_line": 127,
+    "miss_rim": 80,
+    "miss_stroke": 337,
+    "nontext_px": 1626,
+    "nontext_called": 494,
+    "mask": "unet_data/26A_bins.png"
+   },
+   {
+    "crop": "DB26",
+    "plate": "26A",
+    "scale": 200,
+    "reading": "24",
+    "flags": [
+     "target",
+     "unsure"
+    ],
+    "text_px": 1174,
+    "found_px": 562,
+    "recall": 0.4787,
+    "found": false,
+    "miss_at_line": 86,
+    "miss_rim": 78,
+    "miss_stroke": 448,
+    "nontext_px": 2020,
+    "nontext_called": 1030,
+    "mask": "unet_data/26A_bins.png"
+   },
+   {
+    "crop": "DB27",
+    "plate": "26A",
+    "scale": 200,
+    "reading": "46",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1723,
+    "found_px": 1612,
+    "recall": 0.9356,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 17,
+    "miss_stroke": 94,
+    "nontext_px": 687,
+    "nontext_called": 153,
+    "mask": "unet_data/26A_bins.png"
+   },
+   {
+    "crop": "DB28",
+    "plate": "64A",
+    "scale": 200,
+    "reading": "10",
+    "flags": [
+     "target"
+    ],
+    "text_px": 757,
+    "found_px": 682,
+    "recall": 0.9009,
+    "found": true,
+    "miss_at_line": 42,
+    "miss_rim": 23,
+    "miss_stroke": 10,
+    "nontext_px": 1515,
+    "nontext_called": 778,
+    "mask": "unet_data/64A_bins.png"
+   },
+   {
+    "crop": "DB29",
+    "plate": "64A",
+    "scale": 200,
+    "reading": "9",
+    "flags": [
+     "target"
+    ],
+    "text_px": 725,
+    "found_px": 725,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 585,
+    "nontext_called": 0,
+    "mask": "unet_data/64A_bins.png"
+   },
+   {
+    "crop": "DB30",
+    "plate": "64A",
+    "scale": 200,
+    "reading": "21",
+    "flags": [
+     "target"
+    ],
+    "text_px": 941,
+    "found_px": 938,
+    "recall": 0.9968,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 3,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "unet_data/64A_bins.png"
+   },
+   {
+    "crop": "DB31",
+    "plate": "64A",
+    "scale": 200,
+    "reading": "2",
+    "flags": [
+     "target"
+    ],
+    "text_px": 652,
+    "found_px": 652,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 307,
+    "nontext_called": 90,
+    "mask": "unet_data/64A_bins.png"
+   },
+   {
+    "crop": "DB32",
+    "plate": "74",
+    "scale": 200,
+    "reading": "8",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1377,
+    "found_px": 1376,
+    "recall": 0.9993,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 1,
+    "nontext_px": 6,
+    "nontext_called": 0,
+    "mask": "unet_data/74_bins.png"
+   },
+   {
+    "crop": "DB33",
+    "plate": "74",
+    "scale": 200,
+    "reading": "2",
+    "flags": [
+     "target"
+    ],
+    "text_px": 800,
+    "found_px": 800,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 792,
+    "nontext_called": 326,
+    "mask": "unet_data/74_bins.png"
+   },
+   {
+    "crop": "DB34",
+    "plate": "74",
+    "scale": 200,
+    "reading": "14",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1321,
+    "found_px": 956,
+    "recall": 0.7237,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 3,
+    "miss_stroke": 362,
+    "nontext_px": 104,
+    "nontext_called": 0,
+    "mask": "unet_data/74_bins.png"
+   },
+   {
+    "crop": "DB35",
+    "plate": "60B",
+    "scale": 200,
+    "reading": "85",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1436,
+    "found_px": 1363,
+    "recall": 0.9492,
+    "found": true,
+    "miss_at_line": 18,
+    "miss_rim": 4,
+    "miss_stroke": 51,
+    "nontext_px": 1491,
+    "nontext_called": 561,
+    "mask": "unet_data/60B_bins.png"
+   },
+   {
+    "crop": "DB36",
+    "plate": "60B",
+    "scale": 200,
+    "reading": "86",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1522,
+    "found_px": 1522,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "unet_data/60B_bins.png"
+   },
+   {
+    "crop": "DB37",
+    "plate": "60B",
+    "scale": 200,
+    "reading": "79",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1320,
+    "found_px": 1188,
+    "recall": 0.9,
+    "found": true,
+    "miss_at_line": 2,
+    "miss_rim": 20,
+    "miss_stroke": 110,
+    "nontext_px": 736,
+    "nontext_called": 423,
+    "mask": "unet_data/60B_bins.png"
+   },
+   {
+    "crop": "DB38",
+    "plate": "49",
+    "scale": 400,
+    "reading": "2",
+    "flags": [
+     "target"
+    ],
+    "text_px": 615,
+    "found_px": 615,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 354,
+    "nontext_called": 194,
+    "mask": "unet_data/49_bins.png"
+   },
+   {
+    "crop": "DB39",
+    "plate": "49",
+    "scale": 400,
+    "reading": "5",
+    "flags": [
+     "target"
+    ],
+    "text_px": 666,
+    "found_px": 465,
+    "recall": 0.6982,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 20,
+    "miss_stroke": 181,
+    "nontext_px": 214,
+    "nontext_called": 30,
+    "mask": "unet_data/49_bins.png"
+   },
+   {
+    "crop": "DB40",
+    "plate": "49",
+    "scale": 400,
+    "reading": "4½",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1038,
+    "found_px": 925,
+    "recall": 0.8911,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 2,
+    "miss_stroke": 111,
+    "nontext_px": 335,
+    "nontext_called": 0,
+    "mask": "unet_data/49_bins.png"
+   },
+   {
+    "crop": "DB41",
+    "plate": "49",
+    "scale": 400,
+    "reading": "15",
+    "flags": [
+     "target",
+     "unsure"
+    ],
+    "text_px": 1249,
+    "found_px": 1028,
+    "recall": 0.8231,
+    "found": true,
+    "miss_at_line": 50,
+    "miss_rim": 2,
+    "miss_stroke": 169,
+    "nontext_px": 1635,
+    "nontext_called": 809,
+    "mask": "unet_data/49_bins.png"
+   },
+   {
+    "crop": "DB42",
+    "plate": "93A",
+    "scale": 400,
+    "reading": "13",
+    "flags": [
+     "target"
+    ],
+    "text_px": 878,
+    "found_px": 829,
+    "recall": 0.9442,
+    "found": true,
+    "miss_at_line": 33,
+    "miss_rim": 12,
+    "miss_stroke": 4,
+    "nontext_px": 290,
+    "nontext_called": 7,
+    "mask": "unet_data/93A_bins.png"
+   },
+   {
+    "crop": "DB43",
+    "plate": "93A",
+    "scale": 400,
+    "reading": "8",
+    "flags": [
+     "target"
+    ],
+    "text_px": 806,
+    "found_px": 806,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 368,
+    "nontext_called": 135,
+    "mask": "unet_data/93A_bins.png"
+   },
+   {
+    "crop": "DB44",
+    "plate": "48",
+    "scale": 400,
+    "reading": "5",
+    "flags": [
+     "target"
+    ],
+    "text_px": 778,
+    "found_px": 778,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "unet_data/48_bins.png"
+   },
+   {
+    "crop": "DB45",
+    "plate": "48",
+    "scale": 400,
+    "reading": "1",
+    "flags": [
+     "target"
+    ],
+    "text_px": 370,
+    "found_px": 370,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "unet_data/48_bins.png"
+   }
+  ],
+  "missing": []
+ },
+ "finder2": {
+  "pools": {
+   "100": {
+    "words": 15,
+    "words_found": 8,
+    "text_px": 17149,
+    "found_px": 12060,
+    "recall": 0.7032,
+    "miss_at_line": 1699,
+    "miss_rim": 396,
+    "miss_stroke": 2994,
+    "nontext_called_share": 0.0794,
+    "words_under_09": 8
+   },
+   "200": {
+    "words": 22,
+    "words_found": 17,
+    "text_px": 27098,
+    "found_px": 21563,
+    "recall": 0.7957,
+    "miss_at_line": 1547,
+    "miss_rim": 457,
+    "miss_stroke": 3531,
+    "nontext_called_share": 0.0372,
+    "words_under_09": 10
+   },
+   "400": {
+    "words": 8,
+    "words_found": 7,
+    "text_px": 6400,
+    "found_px": 5061,
+    "recall": 0.7908,
+    "miss_at_line": 404,
+    "miss_rim": 82,
+    "miss_stroke": 853,
+    "nontext_called_share": 0.0485,
+    "words_under_09": 4
+   },
+   "all": {
+    "words": 45,
+    "words_found": 32,
+    "text_px": 50647,
+    "found_px": 38684,
+    "recall": 0.7638,
+    "miss_at_line": 3650,
+    "miss_rim": 935,
+    "miss_stroke": 7378,
+    "nontext_called_share": 0.0568,
+    "words_under_09": 22
+   }
+  },
+  "words": [
+   {
+    "crop": "DB01",
+    "plate": "3",
+    "scale": 100,
+    "reading": "15",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1199,
+    "found_px": 1199,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 1191,
+    "nontext_called": 1,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/3_text.png"
+   },
+   {
+    "crop": "DB02",
+    "plate": "3",
+    "scale": 100,
+    "reading": "19",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1043,
+    "found_px": 1043,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/3_text.png"
+   },
+   {
+    "crop": "DB03",
+    "plate": "3",
+    "scale": 100,
+    "reading": "9",
+    "flags": [
+     "target"
+    ],
+    "text_px": 792,
+    "found_px": 792,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/3_text.png"
+   },
+   {
+    "crop": "DB04",
+    "plate": "3",
+    "scale": 100,
+    "reading": "8",
+    "flags": [
+     "target"
+    ],
+    "text_px": 745,
+    "found_px": 264,
+    "recall": 0.3544,
+    "found": false,
+    "miss_at_line": 170,
+    "miss_rim": 30,
+    "miss_stroke": 281,
+    "nontext_px": 537,
+    "nontext_called": 2,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/3_text.png"
+   },
+   {
+    "crop": "DB05",
+    "plate": "3",
+    "scale": 100,
+    "reading": "2",
+    "flags": [
+     "target"
+    ],
+    "text_px": 477,
+    "found_px": 96,
+    "recall": 0.2013,
+    "found": false,
+    "miss_at_line": 161,
+    "miss_rim": 12,
+    "miss_stroke": 208,
+    "nontext_px": 1103,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/3_text.png"
+   },
+   {
+    "crop": "DB06",
+    "plate": "54A",
+    "scale": 100,
+    "reading": "4",
+    "flags": [
+     "target"
+    ],
+    "text_px": 771,
+    "found_px": 771,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/finder2/out/final/54A_text.png"
+   },
+   {
+    "crop": "DB07",
+    "plate": "54A",
+    "scale": 100,
+    "reading": "28",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1236,
+    "found_px": 600,
+    "recall": 0.4854,
+    "found": false,
+    "miss_at_line": 262,
+    "miss_rim": 112,
+    "miss_stroke": 262,
+    "nontext_px": 1375,
+    "nontext_called": 151,
+    "mask": "bench_2026-11-25/text_v1/finder2/out/final/54A_text.png"
+   },
+   {
+    "crop": "DB08",
+    "plate": "54A",
+    "scale": 100,
+    "reading": "5",
+    "flags": [
+     "target"
+    ],
+    "text_px": 668,
+    "found_px": 594,
+    "recall": 0.8892,
+    "found": true,
+    "miss_at_line": 73,
+    "miss_rim": 0,
+    "miss_stroke": 1,
+    "nontext_px": 995,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/finder2/out/final/54A_text.png"
+   },
+   {
+    "crop": "DB09",
+    "plate": "54A",
+    "scale": 100,
+    "reading": "8",
+    "flags": [
+     "target"
+    ],
+    "text_px": 874,
+    "found_px": 869,
+    "recall": 0.9943,
+    "found": true,
+    "miss_at_line": 5,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 683,
+    "nontext_called": 67,
+    "mask": "bench_2026-11-25/text_v1/finder2/out/final/54A_text.png"
+   },
+   {
+    "crop": "DB10",
+    "plate": "54A",
+    "scale": 100,
+    "reading": "30",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1605,
+    "found_px": 521,
+    "recall": 0.3246,
+    "found": false,
+    "miss_at_line": 205,
+    "miss_rim": 161,
+    "miss_stroke": 718,
+    "nontext_px": 730,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/finder2/out/final/54A_text.png"
+   },
+   {
+    "crop": "DB11",
+    "plate": "12",
+    "scale": 100,
+    "reading": "38",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1745,
+    "found_px": 1732,
+    "recall": 0.9926,
+    "found": true,
+    "miss_at_line": 13,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 1421,
+    "nontext_called": 218,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/12_text.png"
+   },
+   {
+    "crop": "DB12",
+    "plate": "12",
+    "scale": 100,
+    "reading": "9",
+    "flags": [
+     "target"
+    ],
+    "text_px": 887,
+    "found_px": 250,
+    "recall": 0.2818,
+    "found": false,
+    "miss_at_line": 196,
+    "miss_rim": 15,
+    "miss_stroke": 426,
+    "nontext_px": 1247,
+    "nontext_called": 33,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/12_text.png"
+   },
+   {
+    "crop": "DB13",
+    "plate": "12",
+    "scale": 100,
+    "reading": "47",
+    "flags": [
+     "target",
+     "nosnap"
+    ],
+    "text_px": 1465,
+    "found_px": 606,
+    "recall": 0.4137,
+    "found": false,
+    "miss_at_line": 310,
+    "miss_rim": 66,
+    "miss_stroke": 483,
+    "nontext_px": 2155,
+    "nontext_called": 278,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/12_text.png"
+   },
+   {
+    "crop": "DB14",
+    "plate": "12",
+    "scale": 100,
+    "reading": "55",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1427,
+    "found_px": 508,
+    "recall": 0.356,
+    "found": false,
+    "miss_at_line": 304,
+    "miss_rim": 0,
+    "miss_stroke": 615,
+    "nontext_px": 1635,
+    "nontext_called": 45,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/12_text.png"
+   },
+   {
+    "crop": "DB15",
+    "plate": "12",
+    "scale": 100,
+    "reading": "20",
+    "flags": [
+     "target"
+    ],
+    "text_px": 2215,
+    "found_px": 2215,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 632,
+    "nontext_called": 293,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/12_text.png"
+   },
+   {
+    "crop": "DB16",
+    "plate": "30",
+    "scale": 200,
+    "reading": "23",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1461,
+    "found_px": 620,
+    "recall": 0.4244,
+    "found": false,
+    "miss_at_line": 193,
+    "miss_rim": 75,
+    "miss_stroke": 573,
+    "nontext_px": 1746,
+    "nontext_called": 155,
+    "mask": "bench_2026-11-25/text_v1/finder2/out/final/30_text.png"
+   },
+   {
+    "crop": "DB17",
+    "plate": "30",
+    "scale": 200,
+    "reading": "15",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1043,
+    "found_px": 929,
+    "recall": 0.8907,
+    "found": true,
+    "miss_at_line": 114,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 1357,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/finder2/out/final/30_text.png"
+   },
+   {
+    "crop": "DB18",
+    "plate": "30",
+    "scale": 200,
+    "reading": "6½",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1827,
+    "found_px": 860,
+    "recall": 0.4707,
+    "found": false,
+    "miss_at_line": 227,
+    "miss_rim": 22,
+    "miss_stroke": 718,
+    "nontext_px": 751,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/finder2/out/final/30_text.png"
+   },
+   {
+    "crop": "DB19",
+    "plate": "30",
+    "scale": 200,
+    "reading": "2",
+    "flags": [
+     "target"
+    ],
+    "text_px": 900,
+    "found_px": 900,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/finder2/out/final/30_text.png"
+   },
+   {
+    "crop": "DB20",
+    "plate": "19",
+    "scale": 200,
+    "reading": "28",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1472,
+    "found_px": 1466,
+    "recall": 0.9959,
+    "found": true,
+    "miss_at_line": 6,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 327,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/19_text.png"
+   },
+   {
+    "crop": "DB21",
+    "plate": "19",
+    "scale": 200,
+    "reading": "41",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1067,
+    "found_px": 1067,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/19_text.png"
+   },
+   {
+    "crop": "DB22",
+    "plate": "19",
+    "scale": 200,
+    "reading": "14",
+    "flags": [
+     "target"
+    ],
+    "text_px": 863,
+    "found_px": 863,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 235,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/19_text.png"
+   },
+   {
+    "crop": "DB23",
+    "plate": "19",
+    "scale": 200,
+    "reading": "34",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1483,
+    "found_px": 1483,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/19_text.png"
+   },
+   {
+    "crop": "DB24",
+    "plate": "26A",
+    "scale": 200,
+    "reading": "39½",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1946,
+    "found_px": 1946,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 131,
+    "nontext_called": 110,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/26A_text.png"
+   },
+   {
+    "crop": "DB25",
+    "plate": "26A",
+    "scale": 200,
+    "reading": "18",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1288,
+    "found_px": 879,
+    "recall": 0.6825,
+    "found": true,
+    "miss_at_line": 136,
+    "miss_rim": 25,
+    "miss_stroke": 248,
+    "nontext_px": 1626,
+    "nontext_called": 195,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/26A_text.png"
+   },
+   {
+    "crop": "DB26",
+    "plate": "26A",
+    "scale": 200,
+    "reading": "24",
+    "flags": [
+     "target",
+     "unsure"
+    ],
+    "text_px": 1174,
+    "found_px": 37,
+    "recall": 0.0315,
+    "found": false,
+    "miss_at_line": 226,
+    "miss_rim": 21,
+    "miss_stroke": 890,
+    "nontext_px": 2020,
+    "nontext_called": 49,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/26A_text.png"
+   },
+   {
+    "crop": "DB27",
+    "plate": "26A",
+    "scale": 200,
+    "reading": "46",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1723,
+    "found_px": 1409,
+    "recall": 0.8178,
+    "found": true,
+    "miss_at_line": 87,
+    "miss_rim": 88,
+    "miss_stroke": 139,
+    "nontext_px": 687,
+    "nontext_called": 1,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/26A_text.png"
+   },
+   {
+    "crop": "DB28",
+    "plate": "64A",
+    "scale": 200,
+    "reading": "10",
+    "flags": [
+     "target"
+    ],
+    "text_px": 757,
+    "found_px": 603,
+    "recall": 0.7966,
+    "found": true,
+    "miss_at_line": 90,
+    "miss_rim": 10,
+    "miss_stroke": 54,
+    "nontext_px": 1515,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/64A_text.png"
+   },
+   {
+    "crop": "DB29",
+    "plate": "64A",
+    "scale": 200,
+    "reading": "9",
+    "flags": [
+     "target"
+    ],
+    "text_px": 725,
+    "found_px": 720,
+    "recall": 0.9931,
+    "found": true,
+    "miss_at_line": 5,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 585,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/64A_text.png"
+   },
+   {
+    "crop": "DB30",
+    "plate": "64A",
+    "scale": 200,
+    "reading": "21",
+    "flags": [
+     "target"
+    ],
+    "text_px": 941,
+    "found_px": 941,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/64A_text.png"
+   },
+   {
+    "crop": "DB31",
+    "plate": "64A",
+    "scale": 200,
+    "reading": "2",
+    "flags": [
+     "target"
+    ],
+    "text_px": 652,
+    "found_px": 636,
+    "recall": 0.9755,
+    "found": true,
+    "miss_at_line": 16,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 307,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/64A_text.png"
+   },
+   {
+    "crop": "DB32",
+    "plate": "74",
+    "scale": 200,
+    "reading": "8",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1377,
+    "found_px": 1377,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 6,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/74_text.png"
+   },
+   {
+    "crop": "DB33",
+    "plate": "74",
+    "scale": 200,
+    "reading": "2",
+    "flags": [
+     "target"
+    ],
+    "text_px": 800,
+    "found_px": 249,
+    "recall": 0.3113,
+    "found": false,
+    "miss_at_line": 123,
+    "miss_rim": 0,
+    "miss_stroke": 428,
+    "nontext_px": 792,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/74_text.png"
+   },
+   {
+    "crop": "DB34",
+    "plate": "74",
+    "scale": 200,
+    "reading": "14",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1321,
+    "found_px": 1321,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 104,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/74_text.png"
+   },
+   {
+    "crop": "DB35",
+    "plate": "60B",
+    "scale": 200,
+    "reading": "85",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1436,
+    "found_px": 685,
+    "recall": 0.477,
+    "found": false,
+    "miss_at_line": 239,
+    "miss_rim": 156,
+    "miss_stroke": 356,
+    "nontext_px": 1491,
+    "nontext_called": 26,
+    "mask": "bench_2026-11-25/text_v1/finder2/out/final/60B_text.png"
+   },
+   {
+    "crop": "DB36",
+    "plate": "60B",
+    "scale": 200,
+    "reading": "86",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1522,
+    "found_px": 1522,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/finder2/out/final/60B_text.png"
+   },
+   {
+    "crop": "DB37",
+    "plate": "60B",
+    "scale": 200,
+    "reading": "79",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1320,
+    "found_px": 1050,
+    "recall": 0.7955,
+    "found": true,
+    "miss_at_line": 85,
+    "miss_rim": 60,
+    "miss_stroke": 125,
+    "nontext_px": 736,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/finder2/out/final/60B_text.png"
+   },
+   {
+    "crop": "DB38",
+    "plate": "49",
+    "scale": 400,
+    "reading": "2",
+    "flags": [
+     "target"
+    ],
+    "text_px": 615,
+    "found_px": 606,
+    "recall": 0.9854,
+    "found": true,
+    "miss_at_line": 9,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 354,
+    "nontext_called": 13,
+    "mask": "bench_2026-11-25/text_v1/finder2/out/final/49_text.png"
+   },
+   {
+    "crop": "DB39",
+    "plate": "49",
+    "scale": 400,
+    "reading": "5",
+    "flags": [
+     "target"
+    ],
+    "text_px": 666,
+    "found_px": 660,
+    "recall": 0.991,
+    "found": true,
+    "miss_at_line": 6,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 214,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/finder2/out/final/49_text.png"
+   },
+   {
+    "crop": "DB40",
+    "plate": "49",
+    "scale": 400,
+    "reading": "4½",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1038,
+    "found_px": 998,
+    "recall": 0.9615,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 32,
+    "miss_stroke": 8,
+    "nontext_px": 335,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/finder2/out/final/49_text.png"
+   },
+   {
+    "crop": "DB41",
+    "plate": "49",
+    "scale": 400,
+    "reading": "15",
+    "flags": [
+     "target",
+     "unsure"
+    ],
+    "text_px": 1249,
+    "found_px": 794,
+    "recall": 0.6357,
+    "found": true,
+    "miss_at_line": 277,
+    "miss_rim": 16,
+    "miss_stroke": 162,
+    "nontext_px": 1635,
+    "nontext_called": 92,
+    "mask": "bench_2026-11-25/text_v1/finder2/out/final/49_text.png"
+   },
+   {
+    "crop": "DB42",
+    "plate": "93A",
+    "scale": 400,
+    "reading": "13",
+    "flags": [
+     "target"
+    ],
+    "text_px": 878,
+    "found_px": 558,
+    "recall": 0.6355,
+    "found": true,
+    "miss_at_line": 23,
+    "miss_rim": 0,
+    "miss_stroke": 297,
+    "nontext_px": 290,
+    "nontext_called": 2,
+    "mask": "bench_2026-11-25/text_v1/finder2/out/final/93A_text.png"
+   },
+   {
+    "crop": "DB43",
+    "plate": "93A",
+    "scale": 400,
+    "reading": "8",
+    "flags": [
+     "target"
+    ],
+    "text_px": 806,
+    "found_px": 667,
+    "recall": 0.8275,
+    "found": true,
+    "miss_at_line": 89,
+    "miss_rim": 34,
+    "miss_stroke": 16,
+    "nontext_px": 368,
+    "nontext_called": 48,
+    "mask": "bench_2026-11-25/text_v1/finder2/out/final/93A_text.png"
+   },
+   {
+    "crop": "DB44",
+    "plate": "48",
+    "scale": 400,
+    "reading": "5",
+    "flags": [
+     "target"
+    ],
+    "text_px": 778,
+    "found_px": 778,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/48_text.png"
+   },
+   {
+    "crop": "DB45",
+    "plate": "48",
+    "scale": 400,
+    "reading": "1",
+    "flags": [
+     "target"
+    ],
+    "text_px": 370,
+    "found_px": 0,
+    "recall": 0.0,
+    "found": false,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 370,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder2_off/48_text.png"
+   }
+  ],
+  "missing": []
+ },
+ "finder3": {
+  "pools": {
+   "100": {
+    "words": 15,
+    "words_found": 11,
+    "text_px": 17149,
+    "found_px": 12686,
+    "recall": 0.7398,
+    "miss_at_line": 1553,
+    "miss_rim": 517,
+    "miss_stroke": 2393,
+    "nontext_called_share": 0.0692,
+    "words_under_09": 9
+   },
+   "200": {
+    "words": 22,
+    "words_found": 20,
+    "text_px": 27098,
+    "found_px": 22377,
+    "recall": 0.8258,
+    "miss_at_line": 1487,
+    "miss_rim": 515,
+    "miss_stroke": 2719,
+    "nontext_called_share": 0.0302,
+    "words_under_09": 10
+   },
+   "400": {
+    "words": 8,
+    "words_found": 7,
+    "text_px": 6400,
+    "found_px": 5061,
+    "recall": 0.7908,
+    "miss_at_line": 404,
+    "miss_rim": 82,
+    "miss_stroke": 853,
+    "nontext_called_share": 0.0494,
+    "words_under_09": 4
+   },
+   "all": {
+    "words": 45,
+    "words_found": 38,
+    "text_px": 50647,
+    "found_px": 40124,
+    "recall": 0.7922,
+    "miss_at_line": 3444,
+    "miss_rim": 1114,
+    "miss_stroke": 5965,
+    "nontext_called_share": 0.0493,
+    "words_under_09": 23
+   }
+  },
+  "words": [
+   {
+    "crop": "DB01",
+    "plate": "3",
+    "scale": 100,
+    "reading": "15",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1199,
+    "found_px": 866,
+    "recall": 0.7223,
+    "found": true,
+    "miss_at_line": 8,
+    "miss_rim": 0,
+    "miss_stroke": 325,
+    "nontext_px": 1191,
+    "nontext_called": 1,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/3_text.png"
+   },
+   {
+    "crop": "DB02",
+    "plate": "3",
+    "scale": 100,
+    "reading": "19",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1043,
+    "found_px": 1043,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/3_text.png"
+   },
+   {
+    "crop": "DB03",
+    "plate": "3",
+    "scale": 100,
+    "reading": "9",
+    "flags": [
+     "target"
+    ],
+    "text_px": 792,
+    "found_px": 792,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/3_text.png"
+   },
+   {
+    "crop": "DB04",
+    "plate": "3",
+    "scale": 100,
+    "reading": "8",
+    "flags": [
+     "target"
+    ],
+    "text_px": 745,
+    "found_px": 544,
+    "recall": 0.7302,
+    "found": true,
+    "miss_at_line": 143,
+    "miss_rim": 52,
+    "miss_stroke": 6,
+    "nontext_px": 537,
+    "nontext_called": 2,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/3_text.png"
+   },
+   {
+    "crop": "DB05",
+    "plate": "3",
+    "scale": 100,
+    "reading": "2",
+    "flags": [
+     "target"
+    ],
+    "text_px": 477,
+    "found_px": 96,
+    "recall": 0.2013,
+    "found": false,
+    "miss_at_line": 161,
+    "miss_rim": 12,
+    "miss_stroke": 208,
+    "nontext_px": 1103,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/3_text.png"
+   },
+   {
+    "crop": "DB06",
+    "plate": "54A",
+    "scale": 100,
+    "reading": "4",
+    "flags": [
+     "target"
+    ],
+    "text_px": 771,
+    "found_px": 771,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/classifier/out/finder3/54A_text.png"
+   },
+   {
+    "crop": "DB07",
+    "plate": "54A",
+    "scale": 100,
+    "reading": "28",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1236,
+    "found_px": 600,
+    "recall": 0.4854,
+    "found": false,
+    "miss_at_line": 262,
+    "miss_rim": 112,
+    "miss_stroke": 262,
+    "nontext_px": 1375,
+    "nontext_called": 12,
+    "mask": "bench_2026-11-25/text_v1/classifier/out/finder3/54A_text.png"
+   },
+   {
+    "crop": "DB08",
+    "plate": "54A",
+    "scale": 100,
+    "reading": "5",
+    "flags": [
+     "target"
+    ],
+    "text_px": 668,
+    "found_px": 594,
+    "recall": 0.8892,
+    "found": true,
+    "miss_at_line": 73,
+    "miss_rim": 0,
+    "miss_stroke": 1,
+    "nontext_px": 995,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/classifier/out/finder3/54A_text.png"
+   },
+   {
+    "crop": "DB09",
+    "plate": "54A",
+    "scale": 100,
+    "reading": "8",
+    "flags": [
+     "target"
+    ],
+    "text_px": 874,
+    "found_px": 869,
+    "recall": 0.9943,
+    "found": true,
+    "miss_at_line": 5,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 683,
+    "nontext_called": 67,
+    "mask": "bench_2026-11-25/text_v1/classifier/out/finder3/54A_text.png"
+   },
+   {
+    "crop": "DB10",
+    "plate": "54A",
+    "scale": 100,
+    "reading": "30",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1605,
+    "found_px": 521,
+    "recall": 0.3246,
+    "found": false,
+    "miss_at_line": 205,
+    "miss_rim": 161,
+    "miss_stroke": 718,
+    "nontext_px": 730,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/classifier/out/finder3/54A_text.png"
+   },
+   {
+    "crop": "DB11",
+    "plate": "12",
+    "scale": 100,
+    "reading": "38",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1745,
+    "found_px": 1732,
+    "recall": 0.9926,
+    "found": true,
+    "miss_at_line": 13,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 1421,
+    "nontext_called": 218,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/12_text.png"
+   },
+   {
+    "crop": "DB12",
+    "plate": "12",
+    "scale": 100,
+    "reading": "9",
+    "flags": [
+     "target"
+    ],
+    "text_px": 887,
+    "found_px": 485,
+    "recall": 0.5468,
+    "found": true,
+    "miss_at_line": 136,
+    "miss_rim": 49,
+    "miss_stroke": 217,
+    "nontext_px": 1247,
+    "nontext_called": 33,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/12_text.png"
+   },
+   {
+    "crop": "DB13",
+    "plate": "12",
+    "scale": 100,
+    "reading": "47",
+    "flags": [
+     "target",
+     "nosnap"
+    ],
+    "text_px": 1465,
+    "found_px": 606,
+    "recall": 0.4137,
+    "found": false,
+    "miss_at_line": 310,
+    "miss_rim": 66,
+    "miss_stroke": 483,
+    "nontext_px": 2155,
+    "nontext_called": 278,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/12_text.png"
+   },
+   {
+    "crop": "DB14",
+    "plate": "12",
+    "scale": 100,
+    "reading": "55",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1427,
+    "found_px": 952,
+    "recall": 0.6671,
+    "found": true,
+    "miss_at_line": 237,
+    "miss_rim": 65,
+    "miss_stroke": 173,
+    "nontext_px": 1635,
+    "nontext_called": 45,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/12_text.png"
+   },
+   {
+    "crop": "DB15",
+    "plate": "12",
+    "scale": 100,
+    "reading": "20",
+    "flags": [
+     "target"
+    ],
+    "text_px": 2215,
+    "found_px": 2215,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 632,
+    "nontext_called": 293,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/12_text.png"
+   },
+   {
+    "crop": "DB16",
+    "plate": "30",
+    "scale": 200,
+    "reading": "23",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1461,
+    "found_px": 620,
+    "recall": 0.4244,
+    "found": false,
+    "miss_at_line": 193,
+    "miss_rim": 75,
+    "miss_stroke": 573,
+    "nontext_px": 1746,
+    "nontext_called": 155,
+    "mask": "bench_2026-11-25/text_v1/classifier/out/finder3/30_text.png"
+   },
+   {
+    "crop": "DB17",
+    "plate": "30",
+    "scale": 200,
+    "reading": "15",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1043,
+    "found_px": 929,
+    "recall": 0.8907,
+    "found": true,
+    "miss_at_line": 114,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 1357,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/classifier/out/finder3/30_text.png"
+   },
+   {
+    "crop": "DB18",
+    "plate": "30",
+    "scale": 200,
+    "reading": "6½",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1827,
+    "found_px": 1002,
+    "recall": 0.5484,
+    "found": true,
+    "miss_at_line": 227,
+    "miss_rim": 23,
+    "miss_stroke": 575,
+    "nontext_px": 751,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/classifier/out/finder3/30_text.png"
+   },
+   {
+    "crop": "DB19",
+    "plate": "30",
+    "scale": 200,
+    "reading": "2",
+    "flags": [
+     "target"
+    ],
+    "text_px": 900,
+    "found_px": 900,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/classifier/out/finder3/30_text.png"
+   },
+   {
+    "crop": "DB20",
+    "plate": "19",
+    "scale": 200,
+    "reading": "28",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1472,
+    "found_px": 1466,
+    "recall": 0.9959,
+    "found": true,
+    "miss_at_line": 6,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 327,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/19_text.png"
+   },
+   {
+    "crop": "DB21",
+    "plate": "19",
+    "scale": 200,
+    "reading": "41",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1067,
+    "found_px": 1067,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/19_text.png"
+   },
+   {
+    "crop": "DB22",
+    "plate": "19",
+    "scale": 200,
+    "reading": "14",
+    "flags": [
+     "target"
+    ],
+    "text_px": 863,
+    "found_px": 863,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 235,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/19_text.png"
+   },
+   {
+    "crop": "DB23",
+    "plate": "19",
+    "scale": 200,
+    "reading": "34",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1483,
+    "found_px": 1483,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/19_text.png"
+   },
+   {
+    "crop": "DB24",
+    "plate": "26A",
+    "scale": 200,
+    "reading": "39½",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1946,
+    "found_px": 1946,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 131,
+    "nontext_called": 10,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/26A_text.png"
+   },
+   {
+    "crop": "DB25",
+    "plate": "26A",
+    "scale": 200,
+    "reading": "18",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1288,
+    "found_px": 879,
+    "recall": 0.6825,
+    "found": true,
+    "miss_at_line": 136,
+    "miss_rim": 25,
+    "miss_stroke": 248,
+    "nontext_px": 1626,
+    "nontext_called": 194,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/26A_text.png"
+   },
+   {
+    "crop": "DB26",
+    "plate": "26A",
+    "scale": 200,
+    "reading": "24",
+    "flags": [
+     "target",
+     "unsure"
+    ],
+    "text_px": 1174,
+    "found_px": 84,
+    "recall": 0.0716,
+    "found": false,
+    "miss_at_line": 226,
+    "miss_rim": 55,
+    "miss_stroke": 809,
+    "nontext_px": 2020,
+    "nontext_called": 50,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/26A_text.png"
+   },
+   {
+    "crop": "DB27",
+    "plate": "26A",
+    "scale": 200,
+    "reading": "46",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1723,
+    "found_px": 1409,
+    "recall": 0.8178,
+    "found": true,
+    "miss_at_line": 87,
+    "miss_rim": 88,
+    "miss_stroke": 139,
+    "nontext_px": 687,
+    "nontext_called": 1,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/26A_text.png"
+   },
+   {
+    "crop": "DB28",
+    "plate": "64A",
+    "scale": 200,
+    "reading": "10",
+    "flags": [
+     "target"
+    ],
+    "text_px": 757,
+    "found_px": 670,
+    "recall": 0.8851,
+    "found": true,
+    "miss_at_line": 56,
+    "miss_rim": 11,
+    "miss_stroke": 20,
+    "nontext_px": 1515,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/64A_text.png"
+   },
+   {
+    "crop": "DB29",
+    "plate": "64A",
+    "scale": 200,
+    "reading": "9",
+    "flags": [
+     "target"
+    ],
+    "text_px": 725,
+    "found_px": 720,
+    "recall": 0.9931,
+    "found": true,
+    "miss_at_line": 5,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 585,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/64A_text.png"
+   },
+   {
+    "crop": "DB30",
+    "plate": "64A",
+    "scale": 200,
+    "reading": "21",
+    "flags": [
+     "target"
+    ],
+    "text_px": 941,
+    "found_px": 941,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/64A_text.png"
+   },
+   {
+    "crop": "DB31",
+    "plate": "64A",
+    "scale": 200,
+    "reading": "2",
+    "flags": [
+     "target"
+    ],
+    "text_px": 652,
+    "found_px": 636,
+    "recall": 0.9755,
+    "found": true,
+    "miss_at_line": 16,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 307,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/64A_text.png"
+   },
+   {
+    "crop": "DB32",
+    "plate": "74",
+    "scale": 200,
+    "reading": "8",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1377,
+    "found_px": 1377,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 6,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/74_text.png"
+   },
+   {
+    "crop": "DB33",
+    "plate": "74",
+    "scale": 200,
+    "reading": "2",
+    "flags": [
+     "target"
+    ],
+    "text_px": 800,
+    "found_px": 592,
+    "recall": 0.74,
+    "found": true,
+    "miss_at_line": 115,
+    "miss_rim": 0,
+    "miss_stroke": 93,
+    "nontext_px": 792,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/74_text.png"
+   },
+   {
+    "crop": "DB34",
+    "plate": "74",
+    "scale": 200,
+    "reading": "14",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1321,
+    "found_px": 1321,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 104,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/74_text.png"
+   },
+   {
+    "crop": "DB35",
+    "plate": "60B",
+    "scale": 200,
+    "reading": "85",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1436,
+    "found_px": 900,
+    "recall": 0.6267,
+    "found": true,
+    "miss_at_line": 221,
+    "miss_rim": 178,
+    "miss_stroke": 137,
+    "nontext_px": 1491,
+    "nontext_called": 26,
+    "mask": "bench_2026-11-25/text_v1/classifier/out/finder3/60B_text.png"
+   },
+   {
+    "crop": "DB36",
+    "plate": "60B",
+    "scale": 200,
+    "reading": "86",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1522,
+    "found_px": 1522,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/classifier/out/finder3/60B_text.png"
+   },
+   {
+    "crop": "DB37",
+    "plate": "60B",
+    "scale": 200,
+    "reading": "79",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1320,
+    "found_px": 1050,
+    "recall": 0.7955,
+    "found": true,
+    "miss_at_line": 85,
+    "miss_rim": 60,
+    "miss_stroke": 125,
+    "nontext_px": 736,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/classifier/out/finder3/60B_text.png"
+   },
+   {
+    "crop": "DB38",
+    "plate": "49",
+    "scale": 400,
+    "reading": "2",
+    "flags": [
+     "target"
+    ],
+    "text_px": 615,
+    "found_px": 606,
+    "recall": 0.9854,
+    "found": true,
+    "miss_at_line": 9,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 354,
+    "nontext_called": 13,
+    "mask": "bench_2026-11-25/text_v1/classifier/out/finder3/49_text.png"
+   },
+   {
+    "crop": "DB39",
+    "plate": "49",
+    "scale": 400,
+    "reading": "5",
+    "flags": [
+     "target"
+    ],
+    "text_px": 666,
+    "found_px": 660,
+    "recall": 0.991,
+    "found": true,
+    "miss_at_line": 6,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 214,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/classifier/out/finder3/49_text.png"
+   },
+   {
+    "crop": "DB40",
+    "plate": "49",
+    "scale": 400,
+    "reading": "4½",
+    "flags": [
+     "target"
+    ],
+    "text_px": 1038,
+    "found_px": 998,
+    "recall": 0.9615,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 32,
+    "miss_stroke": 8,
+    "nontext_px": 335,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-25/text_v1/classifier/out/finder3/49_text.png"
+   },
+   {
+    "crop": "DB41",
+    "plate": "49",
+    "scale": 400,
+    "reading": "15",
+    "flags": [
+     "target",
+     "unsure"
+    ],
+    "text_px": 1249,
+    "found_px": 794,
+    "recall": 0.6357,
+    "found": true,
+    "miss_at_line": 277,
+    "miss_rim": 16,
+    "miss_stroke": 162,
+    "nontext_px": 1635,
+    "nontext_called": 95,
+    "mask": "bench_2026-11-25/text_v1/classifier/out/finder3/49_text.png"
+   },
+   {
+    "crop": "DB42",
+    "plate": "93A",
+    "scale": 400,
+    "reading": "13",
+    "flags": [
+     "target"
+    ],
+    "text_px": 878,
+    "found_px": 558,
+    "recall": 0.6355,
+    "found": true,
+    "miss_at_line": 23,
+    "miss_rim": 0,
+    "miss_stroke": 297,
+    "nontext_px": 290,
+    "nontext_called": 2,
+    "mask": "bench_2026-11-25/text_v1/classifier/out/finder3/93A_text.png"
+   },
+   {
+    "crop": "DB43",
+    "plate": "93A",
+    "scale": 400,
+    "reading": "8",
+    "flags": [
+     "target"
+    ],
+    "text_px": 806,
+    "found_px": 667,
+    "recall": 0.8275,
+    "found": true,
+    "miss_at_line": 89,
+    "miss_rim": 34,
+    "miss_stroke": 16,
+    "nontext_px": 368,
+    "nontext_called": 48,
+    "mask": "bench_2026-11-25/text_v1/classifier/out/finder3/93A_text.png"
+   },
+   {
+    "crop": "DB44",
+    "plate": "48",
+    "scale": 400,
+    "reading": "5",
+    "flags": [
+     "target"
+    ],
+    "text_px": 778,
+    "found_px": 778,
+    "recall": 1.0,
+    "found": true,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 0,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/48_text.png"
+   },
+   {
+    "crop": "DB45",
+    "plate": "48",
+    "scale": 400,
+    "reading": "1",
+    "flags": [
+     "target"
+    ],
+    "text_px": 370,
+    "found_px": 0,
+    "recall": 0.0,
+    "found": false,
+    "miss_at_line": 0,
+    "miss_rim": 0,
+    "miss_stroke": 370,
+    "nontext_px": 0,
+    "nontext_called": 0,
+    "mask": "bench_2026-11-26/text_fix/dev_block/finders/finder3/48_text.png"
+   }
+  ],
+  "missing": []
+ }
+}

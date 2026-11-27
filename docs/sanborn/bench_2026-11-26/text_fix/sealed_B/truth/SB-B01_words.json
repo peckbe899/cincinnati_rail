@@ -1,0 +1,92 @@
+{
+ "crop": "SB-B01",
+ "plate": "56",
+ "win": [
+  497,
+  5399,
+  797,
+  5659
+ ],
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   597,
+   5474,
+   696,
+   5580
+  ]
+ ],
+ "why": "block 16 on plate 56, drawn with random.Random('56') from the plate list (annot/selection.json)",
+ "n_words": 1,
+ "mask": "SB-B01_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope)"
+ },
+ "counts": {
+  "paper": 8426,
+  "ink_not_text": 943,
+  "text": 776,
+  "dont_care": 67855
+ },
+ "boxes": [
+  {
+   "op": "CARELINE",
+   "seg": [
+    645,
+    5455,
+    643,
+    5600
+   ],
+   "width": 7,
+   "note": "dashed lot line through the 6 of 16 (dashes too short for the line rule)",
+   "line": 4
+  }
+ ],
+ "words": [
+  {
+   "id": "SB-B01-001",
+   "reading": "16",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 56.0,
+   "length": 49.0,
+   "poly": [
+    [
+     622.0,
+     5499.0
+    ],
+    [
+     671.0,
+     5499.0
+    ],
+    [
+     671.0,
+     5555.0
+    ],
+    [
+     622.0,
+     5555.0
+    ]
+   ],
+   "aabb": [
+    622,
+    5499,
+    671,
+    5555
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1109,
+   "annot_line": 3,
+   "ink_px": 1150,
+   "text_px_final": 776
+  }
+ ]
+}

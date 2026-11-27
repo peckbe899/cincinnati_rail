@@ -1,0 +1,172 @@
+{
+ "crop": "SA-D32",
+ "plate": "9",
+ "win": [
+  5560,
+  2157,
+  5688,
+  2283
+ ],
+ "why": "1 ditto mark(s) found in the seeded random built-up window [5139, 1722, 5639, 2222] of plate 9 (round 2)",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope_px": 4096,
+ "n_words": 3,
+ "mask": "SA-D32_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (glyph and line share ink; CARE boxes; outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 3344,
+  "ink_not_text": 368,
+  "text": 384,
+  "dont_care": 12032
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-D32-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap",
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 12.0,
+   "length": 13.0,
+   "poly": [
+    [
+     5617.0,
+     2213.5
+    ],
+    [
+     5630.0,
+     2213.5
+    ],
+    [
+     5630.0,
+     2225.5
+    ],
+    [
+     5617.0,
+     2225.5
+    ]
+   ],
+   "aabb": [
+    5617,
+    2213,
+    5630,
+    2226
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 77,
+   "annot_line": 8,
+   "target": true,
+   "ink_px": 77,
+   "scored_text_px": 77
+  },
+  {
+   "id": "SA-D32-004",
+   "reading": "3",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 35.0,
+   "length": 22.0,
+   "poly": [
+    [
+     5600.0,
+     2181.0
+    ],
+    [
+     5622.0,
+     2181.0
+    ],
+    [
+     5622.0,
+     2216.0
+    ],
+    [
+     5600.0,
+     2216.0
+    ]
+   ],
+   "aabb": [
+    5600,
+    2181,
+    5622,
+    2216
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 277,
+   "annot_line": 12,
+   "target": false,
+   "ink_px": 277,
+   "scored_text_px": 242
+  },
+  {
+   "id": "SA-D32-005",
+   "reading": "86-84",
+   "kind": "house",
+   "flags": [
+    "run",
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 121.0,
+   "poly": [
+    [
+     5514.0,
+     2246.0
+    ],
+    [
+     5635.0,
+     2246.0
+    ],
+    [
+     5635.0,
+     2274.0
+    ],
+    [
+     5514.0,
+     2274.0
+    ]
+   ],
+   "aabb": [
+    5514,
+    2246,
+    5635,
+    2274
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 1106,
+   "annot_line": 13,
+   "target": false,
+   "ink_px": 1106,
+   "scored_text_px": 68
+  }
+ ],
+ "dropped_outside_scope": [
+  {
+   "id": "SA-D32-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 7
+  },
+  {
+   "id": "SA-D32-003",
+   "reading": "3",
+   "kind": "story",
+   "annot_line": 11
+  }
+ ]
+}

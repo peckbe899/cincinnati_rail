@@ -1,0 +1,75 @@
+{
+ "crop": "SA-B03",
+ "plate": "6",
+ "win": [
+  4405,
+  732,
+  4625,
+  952
+ ],
+ "why": "block number 2 on plate 6 (100 ft), drawn at random (seed: plate name) from the plate list",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope_px": 9800,
+ "n_words": 1,
+ "mask": "SA-B03_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (glyph and line share ink; CARE boxes; outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 7950,
+  "ink_not_text": 630,
+  "text": 1061,
+  "dont_care": 38759
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-B03-001",
+   "reading": "2",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 49.0,
+   "length": 47.0,
+   "poly": [
+    [
+     4490.0,
+     820.0
+    ],
+    [
+     4537.0,
+     820.0
+    ],
+    [
+     4537.0,
+     869.0
+    ],
+    [
+     4490.0,
+     869.0
+    ]
+   ],
+   "aabb": [
+    4490,
+    820,
+    4537,
+    869
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1061,
+   "annot_line": 2,
+   "target": true,
+   "ink_px": 1500,
+   "scored_text_px": 1061
+  }
+ ],
+ "dropped_outside_scope": []
+}

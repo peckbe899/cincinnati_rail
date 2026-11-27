@@ -1,0 +1,964 @@
+{
+ "crop": "DB41",
+ "plate": "49",
+ "win": [
+  8555,
+  1273,
+  8754,
+  1465
+ ],
+ "why": "block number 15 on plate 49 (400 ft), drawn at random (candidates/draw.json)",
+ "n_words": 19,
+ "mask": "DB41_mask.png",
+ "mask_values": {
+  "0": "paper (in scope)",
+  "1": "ink, not text (in scope)",
+  "2": "text ink (in scope)",
+  "3": "don't care (glyph and line share ink; CARE boxes; everything outside the scope)"
+ },
+ "counts": {
+  "paper": 10537,
+  "ink_not_text": 1635,
+  "text": 2979,
+  "dont_care": 23057
+ },
+ "scope_px": 15990,
+ "scope_counts": {
+  "paper": 10537,
+  "ink_not_text": 1635,
+  "text": 2979,
+  "dont_care": 839
+ },
+ "boxes": [
+  {
+   "op": "FORCE",
+   "box": [
+    8632,
+    1346,
+    8641,
+    1392
+   ],
+   "note": "the 1 of 15 (a bold bar beside the vertical lot line; the line rule took it)",
+   "line": 15
+  },
+  {
+   "op": "CARE",
+   "box": [
+    8641,
+    1338,
+    8645,
+    1400
+   ],
+   "note": "the thin vertical lot line touching the 1's right side (shared ink)",
+   "line": 16
+  },
+  {
+   "op": "CARE",
+   "box": [
+    8648,
+    1346,
+    8674,
+    1353
+   ],
+   "note": "the 5's top bar lies along the horizontal lot line (shared ink)",
+   "line": 17
+  },
+  {
+   "op": "EXCL",
+   "box": [
+    8611,
+    1340,
+    8626,
+    1358
+   ],
+   "note": "diagonal lot lines meeting left of the 9 (a '<' shape), not text",
+   "line": 18
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    8619,
+    1355,
+    8634,
+    1376
+   ],
+   "width": 4,
+   "note": "diagonal lot line running down to the 1's left side, was text",
+   "line": 19
+  },
+  {
+   "op": "EXCL",
+   "box": [
+    8649,
+    1318,
+    8664,
+    1346
+   ],
+   "note": "diagonal lot lines meeting the vertical line above the 5 (a 'Y' shape), not text",
+   "line": 20
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    8644,
+    1318,
+    8643,
+    1340
+   ],
+   "width": 4,
+   "note": "vertical lot line above the 1 was text",
+   "line": 21
+  },
+  {
+   "op": "CARE",
+   "box": [
+    8632,
+    1340,
+    8646,
+    1347
+   ],
+   "note": "junction of the 1's flag, the 9's tail and the lot lines: cannot tell",
+   "line": 22
+  }
+ ],
+ "words": [
+  {
+   "id": "DB41-001",
+   "reading": "15",
+   "kind": "block",
+   "flags": [
+    "target",
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 72.0,
+   "length": 79.0,
+   "poly": [
+    [
+     8615.0,
+     1333.0
+    ],
+    [
+     8694.0,
+     1333.0
+    ],
+    [
+     8694.0,
+     1405.0
+    ],
+    [
+     8615.0,
+     1405.0
+    ]
+   ],
+   "aabb": [
+    8615,
+    1333,
+    8694,
+    1405
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1666,
+   "annot_line": 5,
+   "in_scope": {
+    "text_px": 1249,
+    "dont_care_px": 558,
+    "ink_px": 2304
+   },
+   "target": true,
+   "ink_size_px": 1807
+  },
+  {
+   "id": "DB41-002",
+   "reading": "9",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 12.6,
+   "length": 10.0,
+   "poly": [
+    [
+     8628.0,
+     1330.4
+    ],
+    [
+     8638.0,
+     1330.4
+    ],
+    [
+     8638.0,
+     1343.0
+    ],
+    [
+     8628.0,
+     1343.0
+    ]
+   ],
+   "aabb": [
+    8628,
+    1330,
+    8638,
+    1343
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 36,
+   "annot_line": 6,
+   "in_scope": {
+    "text_px": 31,
+    "dont_care_px": 8,
+    "ink_px": 39
+   }
+  },
+  {
+   "id": "DB41-003",
+   "reading": "10",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 18.2,
+   "length": 16.0,
+   "poly": [
+    [
+     8665.0,
+     1331.8
+    ],
+    [
+     8681.0,
+     1331.8
+    ],
+    [
+     8681.0,
+     1350.0
+    ],
+    [
+     8665.0,
+     1350.0
+    ]
+   ],
+   "aabb": [
+    8665,
+    1331,
+    8681,
+    1350
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 68,
+   "annot_line": 7,
+   "in_scope": {
+    "text_px": 64,
+    "dont_care_px": 26,
+    "ink_px": 90
+   }
+  },
+  {
+   "id": "DB41-004",
+   "reading": "11",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 18.8,
+   "length": 14.0,
+   "poly": [
+    [
+     8610.0,
+     1369.2
+    ],
+    [
+     8624.0,
+     1369.2
+    ],
+    [
+     8624.0,
+     1388.0
+    ],
+    [
+     8610.0,
+     1388.0
+    ]
+   ],
+   "aabb": [
+    8610,
+    1369,
+    8624,
+    1388
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 61,
+   "annot_line": 8,
+   "in_scope": {
+    "text_px": 61,
+    "dont_care_px": 0,
+    "ink_px": 61
+   }
+  },
+  {
+   "id": "DB41-005",
+   "reading": "12",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 17.8,
+   "length": 18.0,
+   "poly": [
+    [
+     8676.0,
+     1365.2
+    ],
+    [
+     8694.0,
+     1365.2
+    ],
+    [
+     8694.0,
+     1383.0
+    ],
+    [
+     8676.0,
+     1383.0
+    ]
+   ],
+   "aabb": [
+    8676,
+    1365,
+    8694,
+    1383
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 86,
+   "annot_line": 9,
+   "in_scope": {
+    "text_px": 86,
+    "dont_care_px": 0,
+    "ink_px": 86
+   }
+  },
+  {
+   "id": "DB41-006",
+   "reading": "53",
+   "kind": "lot",
+   "flags": [
+    "unsure",
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 43.0,
+   "poly": [
+    [
+     8687.0,
+     1333.0
+    ],
+    [
+     8730.0,
+     1333.0
+    ],
+    [
+     8730.0,
+     1357.0
+    ],
+    [
+     8687.0,
+     1357.0
+    ]
+   ],
+   "aabb": [
+    8687,
+    1333,
+    8730,
+    1357
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 468,
+   "annot_line": 10,
+   "in_scope": {
+    "text_px": 390,
+    "dont_care_px": 9,
+    "ink_px": 399
+   }
+  },
+  {
+   "id": "DB41-007",
+   "reading": "54",
+   "kind": "lot",
+   "flags": [
+    "unsure",
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 48.0,
+   "poly": [
+    [
+     8684.0,
+     1366.0
+    ],
+    [
+     8732.0,
+     1366.0
+    ],
+    [
+     8732.0,
+     1397.0
+    ],
+    [
+     8684.0,
+     1397.0
+    ]
+   ],
+   "aabb": [
+    8684,
+    1366,
+    8732,
+    1397
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 380,
+   "annot_line": 11,
+   "in_scope": {
+    "text_px": 241,
+    "dont_care_px": 54,
+    "ink_px": 353
+   }
+  },
+  {
+   "id": "DB41-008",
+   "reading": "2.4",
+   "kind": "lotdim",
+   "flags": [
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 15.6,
+   "length": 22.0,
+   "poly": [
+    [
+     8612.0,
+     1397.4
+    ],
+    [
+     8634.0,
+     1397.4
+    ],
+    [
+     8634.0,
+     1413.0
+    ],
+    [
+     8612.0,
+     1413.0
+    ]
+   ],
+   "aabb": [
+    8612,
+    1397,
+    8634,
+    1413
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 75,
+   "annot_line": 12,
+   "in_scope": {
+    "text_px": 72,
+    "dont_care_px": 25,
+    "ink_px": 142
+   }
+  },
+  {
+   "id": "DB41-009",
+   "reading": "24",
+   "kind": "lot",
+   "flags": [
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 16.2,
+   "length": 13.5,
+   "poly": [
+    [
+     8629.0,
+     1397.8
+    ],
+    [
+     8642.5,
+     1397.8
+    ],
+    [
+     8642.5,
+     1414.0
+    ],
+    [
+     8629.0,
+     1414.0
+    ]
+   ],
+   "aabb": [
+    8629,
+    1397,
+    8643,
+    1414
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 60,
+   "annot_line": 13,
+   "in_scope": {
+    "text_px": 63,
+    "dont_care_px": 19,
+    "ink_px": 82
+   }
+  },
+  {
+   "id": "DB41-010",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 21.0,
+   "length": 26.0,
+   "poly": [
+    [
+     8650.0,
+     1394.0
+    ],
+    [
+     8676.0,
+     1394.0
+    ],
+    [
+     8676.0,
+     1415.0
+    ],
+    [
+     8650.0,
+     1415.0
+    ]
+   ],
+   "aabb": [
+    8650,
+    1394,
+    8676,
+    1415
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 154,
+   "annot_line": 14,
+   "in_scope": {
+    "text_px": 154,
+    "dont_care_px": 7,
+    "ink_px": 198
+   }
+  },
+  {
+   "id": "DB41-011",
+   "reading": "R",
+   "kind": "other",
+   "flags": [
+    "unsure",
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 14.0,
+   "poly": [
+    [
+     8654.0,
+     1301.0
+    ],
+    [
+     8668.0,
+     1301.0
+    ],
+    [
+     8668.0,
+     1323.0
+    ],
+    [
+     8654.0,
+     1323.0
+    ]
+   ],
+   "aabb": [
+    8654,
+    1301,
+    8668,
+    1323
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 105,
+   "annot_line": 24,
+   "in_scope": {
+    "text_px": 53,
+    "dont_care_px": 0,
+    "ink_px": 53
+   }
+  },
+  {
+   "id": "DB41-012",
+   "reading": "8.52",
+   "kind": "lotdim",
+   "flags": [
+    "unsure",
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 50.0,
+   "poly": [
+    [
+     8662.0,
+     1296.0
+    ],
+    [
+     8712.0,
+     1296.0
+    ],
+    [
+     8712.0,
+     1323.0
+    ],
+    [
+     8662.0,
+     1323.0
+    ]
+   ],
+   "aabb": [
+    8662,
+    1296,
+    8712,
+    1323
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 561,
+   "annot_line": 25,
+   "in_scope": {
+    "text_px": 327,
+    "dont_care_px": 13,
+    "ink_px": 340
+   }
+  },
+  {
+   "id": "DB41-013",
+   "reading": "60",
+   "kind": "lot",
+   "flags": [
+    "partial",
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 27.0,
+   "poly": [
+    [
+     8582.0,
+     1325.0
+    ],
+    [
+     8609.0,
+     1325.0
+    ],
+    [
+     8609.0,
+     1350.0
+    ],
+    [
+     8582.0,
+     1350.0
+    ]
+   ],
+   "aabb": [
+    8582,
+    1325,
+    8609,
+    1350
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 368,
+   "annot_line": 26,
+   "in_scope": {
+    "text_px": 254,
+    "dont_care_px": 16,
+    "ink_px": 270
+   }
+  },
+  {
+   "id": "DB41-014",
+   "reading": "51",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 25.0,
+   "poly": [
+    [
+     8592.0,
+     1363.0
+    ],
+    [
+     8617.0,
+     1363.0
+    ],
+    [
+     8617.0,
+     1387.0
+    ],
+    [
+     8592.0,
+     1387.0
+    ]
+   ],
+   "aabb": [
+    8592,
+    1363,
+    8617,
+    1387
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 157,
+   "annot_line": 27,
+   "in_scope": {
+    "text_px": 140,
+    "dont_care_px": 19,
+    "ink_px": 164
+   }
+  },
+  {
+   "id": "DB41-015",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [
+    "partial",
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 12.0,
+   "length": 15.0,
+   "poly": [
+    [
+     8587.0,
+     1396.0
+    ],
+    [
+     8602.0,
+     1396.0
+    ],
+    [
+     8602.0,
+     1408.0
+    ],
+    [
+     8587.0,
+     1408.0
+    ]
+   ],
+   "aabb": [
+    8587,
+    1396,
+    8602,
+    1408
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 55,
+   "annot_line": 28,
+   "in_scope": {
+    "text_px": 39,
+    "dont_care_px": 2,
+    "ink_px": 41
+   }
+  },
+  {
+   "id": "DB41-016",
+   "reading": "14",
+   "kind": "lot",
+   "flags": [
+    "partial",
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 24.0,
+   "poly": [
+    [
+     8582.0,
+     1410.0
+    ],
+    [
+     8606.0,
+     1410.0
+    ],
+    [
+     8606.0,
+     1434.0
+    ],
+    [
+     8582.0,
+     1434.0
+    ]
+   ],
+   "aabb": [
+    8582,
+    1410,
+    8606,
+    1434
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 129,
+   "annot_line": 29,
+   "in_scope": {
+    "text_px": 80,
+    "dont_care_px": 3,
+    "ink_px": 83
+   }
+  },
+  {
+   "id": "DB41-017",
+   "reading": "16",
+   "kind": "lot",
+   "flags": [
+    "partial",
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 19.0,
+   "length": 19.0,
+   "poly": [
+    [
+     8651.0,
+     1417.0
+    ],
+    [
+     8670.0,
+     1417.0
+    ],
+    [
+     8670.0,
+     1436.0
+    ],
+    [
+     8651.0,
+     1436.0
+    ]
+   ],
+   "aabb": [
+    8651,
+    1417,
+    8670,
+    1436
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 124,
+   "annot_line": 30,
+   "in_scope": {
+    "text_px": 63,
+    "dont_care_px": 0,
+    "ink_px": 63
+   }
+  },
+  {
+   "id": "DB41-018",
+   "reading": "17",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 15.4,
+   "length": 20.5,
+   "poly": [
+    [
+     8693.0,
+     1414.0
+    ],
+    [
+     8713.5,
+     1414.0
+    ],
+    [
+     8713.5,
+     1429.4
+    ],
+    [
+     8693.0,
+     1429.4
+    ]
+   ],
+   "aabb": [
+    8693,
+    1414,
+    8714,
+    1430
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 85,
+   "annot_line": 31,
+   "in_scope": {
+    "text_px": 81,
+    "dont_care_px": 2,
+    "ink_px": 83
+   }
+  },
+  {
+   "id": "DB41-019",
+   "reading": "15",
+   "kind": "lot",
+   "flags": [
+    "partial",
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 23.0,
+   "length": 27.0,
+   "poly": [
+    [
+     8619.0,
+     1410.0
+    ],
+    [
+     8646.0,
+     1410.0
+    ],
+    [
+     8646.0,
+     1433.0
+    ],
+    [
+     8619.0,
+     1433.0
+    ]
+   ],
+   "aabb": [
+    8619,
+    1410,
+    8646,
+    1433
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 114,
+   "annot_line": 32,
+   "in_scope": {
+    "text_px": 97,
+    "dont_care_px": 20,
+    "ink_px": 192
+   }
+  }
+ ]
+}

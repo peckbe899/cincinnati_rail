@@ -1,0 +1,191 @@
+{
+ "crop": "N20",
+ "plate": "12",
+ "win": [
+  1333,
+  6219,
+  1397,
+  6283
+ ],
+ "kind": "targeted",
+ "target": "negative",
+ "scope_pad": 0,
+ "scope": [
+  [
+   1333,
+   6219,
+   1397,
+   6283
+  ]
+ ],
+ "n_words": 3,
+ "n_targets": 0,
+ "mask": "N20_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 3599,
+  "ink_not_text": 316,
+  "text": 106,
+  "dont_care": 75
+ },
+ "counts_in_scope": {
+  "ink_not_text": 316,
+  "text": 106,
+  "dont_care": 75
+ },
+ "boxes": [
+  {
+   "op": "CARE",
+   "box": [
+    1333,
+    6262,
+    1362,
+    6283
+   ],
+   "note": "glyph at the window edge, joined to a line: cannot tell",
+   "line": 6
+  }
+ ],
+ "words": [
+  {
+   "id": "N20-001",
+   "reading": "-",
+   "kind": "negative",
+   "flags": [
+    "neg:dash"
+   ],
+   "angle": 0.0,
+   "height": 15.0,
+   "length": 3.0,
+   "poly": [
+    [
+     1364.0,
+     6244.0
+    ],
+    [
+     1367.0,
+     6244.0
+    ],
+    [
+     1367.0,
+     6259.0
+    ],
+    [
+     1364.0,
+     6259.0
+    ]
+   ],
+   "aabb": [
+    1364,
+    6244,
+    1367,
+    6259
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": false,
+   "box_word": true,
+   "text_px": 0,
+   "in_scope": true,
+   "ink_px": 42,
+   "care_px": 0,
+   "pieces": 1,
+   "piece_px": [
+    42
+   ],
+   "style": "",
+   "neg_type": "dash"
+  },
+  {
+   "id": "N20-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nontarget",
+    "style:quote"
+   ],
+   "angle": 0.0,
+   "height": 9.0,
+   "length": 9.0,
+   "poly": [
+    [
+     1350.0,
+     6224.0
+    ],
+    [
+     1359.0,
+     6224.0
+    ],
+    [
+     1359.0,
+     6233.0
+    ],
+    [
+     1350.0,
+     6233.0
+    ]
+   ],
+   "aabb": [
+    1350,
+    6224,
+    1359,
+    6233
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 4,
+   "target": false,
+   "box_word": true,
+   "text_px": 36,
+   "in_scope": true
+  },
+  {
+   "id": "N20-003",
+   "reading": "1",
+   "kind": "story",
+   "flags": [
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 11.0,
+   "poly": [
+    [
+     1370.0,
+     6233.0
+    ],
+    [
+     1381.0,
+     6233.0
+    ],
+    [
+     1381.0,
+     6259.0
+    ],
+    [
+     1370.0,
+     6259.0
+    ]
+   ],
+   "aabb": [
+    1370,
+    6233,
+    1381,
+    6259
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 5,
+   "target": false,
+   "box_word": true,
+   "text_px": 70,
+   "in_scope": true
+  }
+ ]
+}

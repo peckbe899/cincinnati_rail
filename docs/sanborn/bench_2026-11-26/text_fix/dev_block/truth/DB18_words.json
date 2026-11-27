@@ -1,0 +1,433 @@
+{
+ "crop": "DB18",
+ "plate": "30",
+ "win": [
+  2894,
+  3797,
+  3097,
+  3979
+ ],
+ "why": "block number 6½ on plate 30 (200 ft), drawn at random (candidates/draw.json)",
+ "n_words": 9,
+ "mask": "DB18_mask.png",
+ "mask_values": {
+  "0": "paper (in scope)",
+  "1": "ink, not text (in scope)",
+  "2": "text ink (in scope)",
+  "3": "don't care (glyph and line share ink; CARE boxes; everything outside the scope)"
+ },
+ "counts": {
+  "paper": 11999,
+  "ink_not_text": 751,
+  "text": 2191,
+  "dont_care": 22005
+ },
+ "scope_px": 15142,
+ "scope_counts": {
+  "paper": 11999,
+  "ink_not_text": 751,
+  "text": 2191,
+  "dont_care": 201
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DB18-001",
+   "reading": "6½",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 62.0,
+   "length": 83.0,
+   "poly": [
+    [
+     2954.0,
+     3857.0
+    ],
+    [
+     3037.0,
+     3857.0
+    ],
+    [
+     3037.0,
+     3919.0
+    ],
+    [
+     2954.0,
+     3919.0
+    ]
+   ],
+   "aabb": [
+    2954,
+    3857,
+    3037,
+    3919
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1834,
+   "annot_line": 4,
+   "in_scope": {
+    "text_px": 1827,
+    "dont_care_px": 159,
+    "ink_px": 2122
+   },
+   "target": true,
+   "ink_size_px": 1986
+  },
+  {
+   "id": "DB18-002",
+   "reading": "57",
+   "kind": "lot",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 27.0,
+   "poly": [
+    [
+     2955.0,
+     3806.0
+    ],
+    [
+     2982.0,
+     3806.0
+    ],
+    [
+     2982.0,
+     3833.0
+    ],
+    [
+     2955.0,
+     3833.0
+    ]
+   ],
+   "aabb": [
+    2955,
+    3806,
+    2982,
+    3833
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 228,
+   "annot_line": 5,
+   "in_scope": {
+    "text_px": 3,
+    "dont_care_px": 0,
+    "ink_px": 3
+   }
+  },
+  {
+   "id": "DB18-003",
+   "reading": "58",
+   "kind": "lot",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 26.0,
+   "poly": [
+    [
+     2990.0,
+     3806.0
+    ],
+    [
+     3016.0,
+     3806.0
+    ],
+    [
+     3016.0,
+     3832.0
+    ],
+    [
+     2990.0,
+     3832.0
+    ]
+   ],
+   "aabb": [
+    2990,
+    3806,
+    3016,
+    3832
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 271,
+   "annot_line": 6,
+   "in_scope": {
+    "text_px": 0,
+    "dont_care_px": 0,
+    "ink_px": 0
+   }
+  },
+  {
+   "id": "DB18-004",
+   "reading": "59",
+   "kind": "lot",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 34.0,
+   "poly": [
+    [
+     3025.0,
+     3806.0
+    ],
+    [
+     3059.0,
+     3806.0
+    ],
+    [
+     3059.0,
+     3833.0
+    ],
+    [
+     3025.0,
+     3833.0
+    ]
+   ],
+   "aabb": [
+    3025,
+    3806,
+    3059,
+    3833
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 311,
+   "annot_line": 7,
+   "in_scope": {
+    "text_px": 2,
+    "dont_care_px": 0,
+    "ink_px": 2
+   }
+  },
+  {
+   "id": "DB18-006",
+   "reading": "152.20'",
+   "kind": "lotdim",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": -81.6,
+   "height": 25.7,
+   "length": 68.5,
+   "poly": [
+    [
+     3043.2,
+     3917.7
+    ],
+    [
+     3053.2,
+     3849.9
+    ],
+    [
+     3078.6,
+     3853.6
+    ],
+    [
+     3068.7,
+     3921.4
+    ]
+   ],
+   "aabb": [
+    3043,
+    3849,
+    3079,
+    3922
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 313,
+   "annot_line": 9,
+   "in_scope": {
+    "text_px": 194,
+    "dont_care_px": 0,
+    "ink_px": 194
+   }
+  },
+  {
+   "id": "DB18-007",
+   "reading": "34",
+   "kind": "lot",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 37.0,
+   "poly": [
+    [
+     2901.0,
+     3930.0
+    ],
+    [
+     2938.0,
+     3930.0
+    ],
+    [
+     2938.0,
+     3961.0
+    ],
+    [
+     2901.0,
+     3961.0
+    ]
+   ],
+   "aabb": [
+    2901,
+    3930,
+    2938,
+    3961
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 205,
+   "annot_line": 10,
+   "in_scope": {
+    "text_px": 24,
+    "dont_care_px": 0,
+    "ink_px": 24
+   }
+  },
+  {
+   "id": "DB18-008",
+   "reading": "33",
+   "kind": "lot",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 23.0,
+   "poly": [
+    [
+     2955.0,
+     3938.0
+    ],
+    [
+     2978.0,
+     3938.0
+    ],
+    [
+     2978.0,
+     3962.0
+    ],
+    [
+     2955.0,
+     3962.0
+    ]
+   ],
+   "aabb": [
+    2955,
+    3938,
+    2978,
+    3962
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 169,
+   "annot_line": 11,
+   "in_scope": {
+    "text_px": 38,
+    "dont_care_px": 0,
+    "ink_px": 38
+   }
+  },
+  {
+   "id": "DB18-009",
+   "reading": "32",
+   "kind": "lot",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 24.0,
+   "poly": [
+    [
+     2991.0,
+     3937.0
+    ],
+    [
+     3015.0,
+     3937.0
+    ],
+    [
+     3015.0,
+     3961.0
+    ],
+    [
+     2991.0,
+     3961.0
+    ]
+   ],
+   "aabb": [
+    2991,
+    3937,
+    3015,
+    3961
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 176,
+   "annot_line": 12,
+   "in_scope": {
+    "text_px": 59,
+    "dont_care_px": 0,
+    "ink_px": 59
+   }
+  },
+  {
+   "id": "DB18-010",
+   "reading": "31",
+   "kind": "lot",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 20.0,
+   "poly": [
+    [
+     3027.0,
+     3936.0
+    ],
+    [
+     3047.0,
+     3936.0
+    ],
+    [
+     3047.0,
+     3960.0
+    ],
+    [
+     3027.0,
+     3960.0
+    ]
+   ],
+   "aabb": [
+    3027,
+    3936,
+    3047,
+    3960
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 127,
+   "annot_line": 13,
+   "in_scope": {
+    "text_px": 43,
+    "dont_care_px": 0,
+    "ink_px": 43
+   }
+  }
+ ]
+}

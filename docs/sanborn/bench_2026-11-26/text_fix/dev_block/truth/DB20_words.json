@@ -1,0 +1,169 @@
+{
+ "crop": "DB20",
+ "plate": "19",
+ "win": [
+  9422,
+  5220,
+  9617,
+  5386
+ ],
+ "why": "block number 28 on plate 19 (200 ft), drawn at random (candidates/draw.json)",
+ "n_words": 3,
+ "mask": "DB20_mask.png",
+ "mask_values": {
+  "0": "paper (in scope)",
+  "1": "ink, not text (in scope)",
+  "2": "text ink (in scope)",
+  "3": "don't care (glyph and line share ink; CARE boxes; everything outside the scope)"
+ },
+ "counts": {
+  "paper": 9637,
+  "ink_not_text": 327,
+  "text": 2167,
+  "dont_care": 20239
+ },
+ "scope_px": 12222,
+ "scope_counts": {
+  "paper": 9637,
+  "ink_not_text": 327,
+  "text": 2167,
+  "dont_care": 91
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DB20-001",
+   "reading": "28",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 46.0,
+   "length": 75.0,
+   "poly": [
+    [
+     9482.0,
+     5280.0
+    ],
+    [
+     9557.0,
+     5280.0
+    ],
+    [
+     9557.0,
+     5326.0
+    ],
+    [
+     9482.0,
+     5326.0
+    ]
+   ],
+   "aabb": [
+    9482,
+    5280,
+    9557,
+    5326
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1472,
+   "annot_line": 4,
+   "in_scope": {
+    "text_px": 1472,
+    "dont_care_px": 39,
+    "ink_px": 1576
+   },
+   "target": true,
+   "ink_size_px": 1511
+  },
+  {
+   "id": "DB20-002",
+   "reading": "P",
+   "kind": "owner",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 53.0,
+   "length": 22.0,
+   "poly": [
+    [
+     9456.0,
+     5287.0
+    ],
+    [
+     9478.0,
+     5287.0
+    ],
+    [
+     9478.0,
+     5340.0
+    ],
+    [
+     9456.0,
+     5340.0
+    ]
+   ],
+   "aabb": [
+    9456,
+    5287,
+    9478,
+    5340
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 444,
+   "annot_line": 5,
+   "in_scope": {
+    "text_px": 444,
+    "dont_care_px": 46,
+    "ink_px": 496
+   }
+  },
+  {
+   "id": "DB20-003",
+   "reading": "R",
+   "kind": "owner",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 46.0,
+   "length": 26.0,
+   "poly": [
+    [
+     9568.0,
+     5261.0
+    ],
+    [
+     9594.0,
+     5261.0
+    ],
+    [
+     9594.0,
+     5307.0
+    ],
+    [
+     9568.0,
+     5307.0
+    ]
+   ],
+   "aabb": [
+    9568,
+    5261,
+    9594,
+    5307
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 462,
+   "annot_line": 6,
+   "in_scope": {
+    "text_px": 251,
+    "dont_care_px": 0,
+    "ink_px": 251
+   }
+  }
+ ]
+}

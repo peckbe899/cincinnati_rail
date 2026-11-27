@@ -1,0 +1,9 @@
+# block 22 on plate 71 (200 ft); lot lines and the dashed boundary touch the 2s
+3906 3520 3975 3520 50 | 22 | block | target
+# check fixes: dashes of the dashed boundary inside the box were text; a round dot under the first 2 (period or speck)
+NOTTEXT 3950 3472 4000 3536 5 dashes of the dashed boundary line
+CARE 3921 3548 3932 3559 dot under the first 2: cannot tell
+
+# ===== sealed-check fixes (26 Nov 2026)
+# F04: a 7 px dash of the dashed band edge was text by block 22
+EXCL 3985 3505 3989 3510

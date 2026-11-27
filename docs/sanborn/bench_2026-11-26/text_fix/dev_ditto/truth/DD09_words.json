@@ -1,0 +1,222 @@
+{
+ "crop": "DD09",
+ "plate": "60B",
+ "win": [
+  1506,
+  1808,
+  1906,
+  2108
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   1522,
+   1971,
+   1579,
+   2030
+  ],
+  [
+   1521,
+   2049,
+   1581,
+   2110
+  ],
+  [
+   1864,
+   1970,
+   1922,
+   2030
+  ]
+ ],
+ "n_words": 3,
+ "n_targets": 3,
+ "mask": "DD09_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 105423,
+  "ink_not_text": 883,
+  "text": 97,
+  "dont_care": 13597
+ },
+ "counts_in_scope": {
+  "ink_not_text": 883,
+  "text": 97,
+  "dont_care": 36
+ },
+ "boxes": [
+  {
+   "op": "CARE",
+   "box": [
+    1516,
+    2090,
+    1537,
+    2108
+   ],
+   "note": "curve at the window edge",
+   "line": 6
+  }
+ ],
+ "words": [
+  {
+   "id": "DD09-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 9.0,
+   "length": 7.0,
+   "poly": [
+    [
+     1547.0,
+     1996.0
+    ],
+    [
+     1554.0,
+     1996.0
+    ],
+    [
+     1554.0,
+     2005.0
+    ],
+    [
+     1547.0,
+     2005.0
+    ]
+   ],
+   "aabb": [
+    1547,
+    1996,
+    1554,
+    2005
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": true,
+   "box_word": true,
+   "text_px": 20,
+   "in_scope": true,
+   "ink_px": 20,
+   "care_px": 0,
+   "pieces": 3,
+   "piece_px": [
+    12,
+    6,
+    2
+   ],
+   "style": "pair",
+   "neg_type": ""
+  },
+  {
+   "id": "DD09-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 11.0,
+   "length": 10.0,
+   "poly": [
+    [
+     1546.0,
+     2074.0
+    ],
+    [
+     1556.0,
+     2074.0
+    ],
+    [
+     1556.0,
+     2085.0
+    ],
+    [
+     1546.0,
+     2085.0
+    ]
+   ],
+   "aabb": [
+    1546,
+    2074,
+    1556,
+    2085
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 3,
+   "target": true,
+   "box_word": true,
+   "text_px": 43,
+   "in_scope": true,
+   "ink_px": 43,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    22,
+    21
+   ],
+   "style": "pair",
+   "neg_type": ""
+  },
+  {
+   "id": "DD09-003",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 8.0,
+   "poly": [
+    [
+     1889.0,
+     1995.0
+    ],
+    [
+     1897.0,
+     1995.0
+    ],
+    [
+     1897.0,
+     2005.0
+    ],
+    [
+     1889.0,
+     2005.0
+    ]
+   ],
+   "aabb": [
+    1889,
+    1995,
+    1897,
+    2005
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 4,
+   "target": true,
+   "box_word": true,
+   "text_px": 34,
+   "in_scope": true,
+   "ink_px": 34,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    17,
+    17
+   ],
+   "style": "pair",
+   "neg_type": ""
+  }
+ ]
+}

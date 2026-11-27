@@ -1,0 +1,1221 @@
+{
+ "crop": "DD31",
+ "plate": "26A",
+ "win": [
+  6435,
+  1507,
+  6835,
+  1807
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   6598,
+   1491,
+   6654,
+   1550
+  ],
+  [
+   6599,
+   1532,
+   6655,
+   1589
+  ],
+  [
+   6597,
+   1564,
+   6655,
+   1623
+  ],
+  [
+   6595,
+   1601,
+   6652,
+   1659
+  ],
+  [
+   6678,
+   1491,
+   6735,
+   1549
+  ],
+  [
+   6677,
+   1522,
+   6734,
+   1580
+  ],
+  [
+   6678,
+   1555,
+   6734,
+   1613
+  ],
+  [
+   6676,
+   1584,
+   6732,
+   1645
+  ]
+ ],
+ "n_words": 25,
+ "n_targets": 8,
+ "mask": "DD31_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 83534,
+  "ink_not_text": 2935,
+  "text": 1851,
+  "dont_care": 31680
+ },
+ "counts_in_scope": {
+  "ink_not_text": 2935,
+  "text": 1851,
+  "dont_care": 571
+ },
+ "boxes": [
+  {
+   "op": "CARE",
+   "box": [
+    6619,
+    1651,
+    6630,
+    1672
+   ],
+   "note": "scribble below the left column: rotated figures or marks, cannot tell",
+   "line": 16
+  }
+ ],
+ "words": [
+  {
+   "id": "DD31-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 9.0,
+   "length": 6.0,
+   "poly": [
+    [
+     6623.0,
+     1516.0
+    ],
+    [
+     6629.0,
+     1516.0
+    ],
+    [
+     6629.0,
+     1525.0
+    ],
+    [
+     6623.0,
+     1525.0
+    ]
+   ],
+   "aabb": [
+    6623,
+    1516,
+    6629,
+    1525
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": true,
+   "box_word": true,
+   "text_px": 22,
+   "in_scope": true,
+   "ink_px": 22,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    15,
+    7
+   ],
+   "style": "pair",
+   "neg_type": ""
+  },
+  {
+   "id": "DD31-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:other"
+   ],
+   "angle": 0.0,
+   "height": 7.0,
+   "length": 6.0,
+   "poly": [
+    [
+     6624.0,
+     1557.0
+    ],
+    [
+     6630.0,
+     1557.0
+    ],
+    [
+     6630.0,
+     1564.0
+    ],
+    [
+     6624.0,
+     1564.0
+    ]
+   ],
+   "aabb": [
+    6624,
+    1557,
+    6630,
+    1564
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 3,
+   "target": true,
+   "box_word": true,
+   "text_px": 23,
+   "in_scope": true,
+   "ink_px": 23,
+   "care_px": 0,
+   "pieces": 1,
+   "piece_px": [
+    23
+   ],
+   "style": "other",
+   "neg_type": ""
+  },
+  {
+   "id": "DD31-003",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 9.0,
+   "length": 8.0,
+   "poly": [
+    [
+     6622.0,
+     1589.0
+    ],
+    [
+     6630.0,
+     1589.0
+    ],
+    [
+     6630.0,
+     1598.0
+    ],
+    [
+     6622.0,
+     1598.0
+    ]
+   ],
+   "aabb": [
+    6622,
+    1589,
+    6630,
+    1598
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 4,
+   "target": true,
+   "box_word": true,
+   "text_px": 30,
+   "in_scope": true,
+   "ink_px": 30,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    20,
+    10
+   ],
+   "style": "pair",
+   "neg_type": ""
+  },
+  {
+   "id": "DD31-004",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:other",
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 7.0,
+   "poly": [
+    [
+     6620.0,
+     1626.0
+    ],
+    [
+     6627.0,
+     1626.0
+    ],
+    [
+     6627.0,
+     1634.0
+    ],
+    [
+     6620.0,
+     1634.0
+    ]
+   ],
+   "aabb": [
+    6620,
+    1626,
+    6627,
+    1634
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 5,
+   "target": true,
+   "box_word": true,
+   "text_px": 23,
+   "in_scope": true,
+   "ink_px": 23,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    15,
+    8
+   ],
+   "style": "other",
+   "neg_type": ""
+  },
+  {
+   "id": "DD31-005",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 7.0,
+   "poly": [
+    [
+     6703.0,
+     1516.0
+    ],
+    [
+     6710.0,
+     1516.0
+    ],
+    [
+     6710.0,
+     1524.0
+    ],
+    [
+     6703.0,
+     1524.0
+    ]
+   ],
+   "aabb": [
+    6703,
+    1516,
+    6710,
+    1524
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 6,
+   "target": true,
+   "box_word": true,
+   "text_px": 34,
+   "in_scope": true,
+   "ink_px": 34,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    19,
+    15
+   ],
+   "style": "pair",
+   "neg_type": ""
+  },
+  {
+   "id": "DD31-006",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 7.0,
+   "poly": [
+    [
+     6702.0,
+     1547.0
+    ],
+    [
+     6709.0,
+     1547.0
+    ],
+    [
+     6709.0,
+     1555.0
+    ],
+    [
+     6702.0,
+     1555.0
+    ]
+   ],
+   "aabb": [
+    6702,
+    1547,
+    6709,
+    1555
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 7,
+   "target": true,
+   "box_word": true,
+   "text_px": 26,
+   "in_scope": true,
+   "ink_px": 26,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    14,
+    12
+   ],
+   "style": "pair",
+   "neg_type": ""
+  },
+  {
+   "id": "DD31-007",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 6.0,
+   "poly": [
+    [
+     6703.0,
+     1580.0
+    ],
+    [
+     6709.0,
+     1580.0
+    ],
+    [
+     6709.0,
+     1588.0
+    ],
+    [
+     6703.0,
+     1588.0
+    ]
+   ],
+   "aabb": [
+    6703,
+    1580,
+    6709,
+    1588
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 8,
+   "target": true,
+   "box_word": true,
+   "text_px": 22,
+   "in_scope": true,
+   "ink_px": 22,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    12,
+    10
+   ],
+   "style": "pair",
+   "neg_type": ""
+  },
+  {
+   "id": "DD31-008",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 11.0,
+   "length": 6.0,
+   "poly": [
+    [
+     6701.0,
+     1609.0
+    ],
+    [
+     6707.0,
+     1609.0
+    ],
+    [
+     6707.0,
+     1620.0
+    ],
+    [
+     6701.0,
+     1620.0
+    ]
+   ],
+   "aabb": [
+    6701,
+    1609,
+    6707,
+    1620
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 9,
+   "target": true,
+   "box_word": true,
+   "text_px": 30,
+   "in_scope": true,
+   "ink_px": 30,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    15,
+    15
+   ],
+   "style": "pair",
+   "neg_type": ""
+  },
+  {
+   "id": "DD31-009",
+   "reading": "621",
+   "kind": "house",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 14.0,
+   "length": 4.0,
+   "poly": [
+    [
+     6643.0,
+     1507.0
+    ],
+    [
+     6647.0,
+     1507.0
+    ],
+    [
+     6647.0,
+     1521.0
+    ],
+    [
+     6643.0,
+     1521.0
+    ]
+   ],
+   "aabb": [
+    6643,
+    1507,
+    6647,
+    1521
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 10,
+   "target": false,
+   "box_word": true,
+   "text_px": 19,
+   "in_scope": true
+  },
+  {
+   "id": "DD31-010",
+   "reading": "2",
+   "kind": "story",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 14.0,
+   "length": 11.0,
+   "poly": [
+    [
+     6590.0,
+     1515.0
+    ],
+    [
+     6601.0,
+     1515.0
+    ],
+    [
+     6601.0,
+     1529.0
+    ],
+    [
+     6590.0,
+     1529.0
+    ]
+   ],
+   "aabb": [
+    6590,
+    1515,
+    6601,
+    1529
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 11,
+   "target": false,
+   "box_word": true,
+   "text_px": 31,
+   "in_scope": true
+  },
+  {
+   "id": "DD31-011",
+   "reading": "618-22-24-26",
+   "kind": "house",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 69.0,
+   "length": 20.0,
+   "poly": [
+    [
+     6675.0,
+     1526.0
+    ],
+    [
+     6695.0,
+     1526.0
+    ],
+    [
+     6695.0,
+     1595.0
+    ],
+    [
+     6675.0,
+     1595.0
+    ]
+   ],
+   "aabb": [
+    6675,
+    1526,
+    6695,
+    1595
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 12,
+   "target": false,
+   "box_word": true,
+   "text_px": 338,
+   "in_scope": true
+  },
+  {
+   "id": "DD31-012",
+   "reading": "625",
+   "kind": "house",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 7.0,
+   "length": 2.0,
+   "poly": [
+    [
+     6646.0,
+     1570.0
+    ],
+    [
+     6648.0,
+     1570.0
+    ],
+    [
+     6648.0,
+     1577.0
+    ],
+    [
+     6646.0,
+     1577.0
+    ]
+   ],
+   "aabb": [
+    6646,
+    1570,
+    6648,
+    1577
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 13,
+   "target": false,
+   "box_word": true,
+   "text_px": 12,
+   "in_scope": true
+  },
+  {
+   "id": "DD31-013",
+   "reading": "28",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 21.0,
+   "length": 17.0,
+   "poly": [
+    [
+     6716.0,
+     1570.0
+    ],
+    [
+     6733.0,
+     1570.0
+    ],
+    [
+     6733.0,
+     1591.0
+    ],
+    [
+     6716.0,
+     1591.0
+    ]
+   ],
+   "aabb": [
+    6716,
+    1570,
+    6733,
+    1591
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 14,
+   "target": false,
+   "box_word": true,
+   "text_px": 112,
+   "in_scope": true
+  },
+  {
+   "id": "DD31-014",
+   "reading": "614",
+   "kind": "house",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 7.0,
+   "poly": [
+    [
+     6678.0,
+     1605.0
+    ],
+    [
+     6685.0,
+     1605.0
+    ],
+    [
+     6685.0,
+     1613.0
+    ],
+    [
+     6678.0,
+     1613.0
+    ]
+   ],
+   "aabb": [
+    6678,
+    1605,
+    6685,
+    1613
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 15,
+   "target": false,
+   "box_word": true,
+   "text_px": 23,
+   "in_scope": true
+  },
+  {
+   "id": "DD31-015",
+   "reading": "621-623-625",
+   "kind": "house",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 154.0,
+   "length": 26.0,
+   "poly": [
+    [
+     6628.0,
+     1507.0
+    ],
+    [
+     6654.0,
+     1507.0
+    ],
+    [
+     6654.0,
+     1661.0
+    ],
+    [
+     6628.0,
+     1661.0
+    ]
+   ],
+   "aabb": [
+    6628,
+    1507,
+    6654,
+    1661
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 18,
+   "target": false,
+   "box_word": true,
+   "text_px": 339,
+   "in_scope": true
+  },
+  {
+   "id": "DD31-016",
+   "reading": "2692",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 54.0,
+   "poly": [
+    [
+     6553.0,
+     1508.0
+    ],
+    [
+     6607.0,
+     1508.0
+    ],
+    [
+     6607.0,
+     1537.0
+    ],
+    [
+     6553.0,
+     1537.0
+    ]
+   ],
+   "aabb": [
+    6553,
+    1508,
+    6607,
+    1537
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 19,
+   "target": false,
+   "box_word": true,
+   "text_px": 60,
+   "in_scope": true
+  },
+  {
+   "id": "DD31-017",
+   "reading": "2703",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 23.0,
+   "length": 49.0,
+   "poly": [
+    [
+     6558.0,
+     1544.0
+    ],
+    [
+     6607.0,
+     1544.0
+    ],
+    [
+     6607.0,
+     1567.0
+    ],
+    [
+     6558.0,
+     1567.0
+    ]
+   ],
+   "aabb": [
+    6558,
+    1544,
+    6607,
+    1567
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 20,
+   "target": false,
+   "box_word": true,
+   "text_px": 69,
+   "in_scope": true
+  },
+  {
+   "id": "DD31-018",
+   "reading": "271",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 33.0,
+   "length": 49.0,
+   "poly": [
+    [
+     6558.0,
+     1579.0
+    ],
+    [
+     6607.0,
+     1579.0
+    ],
+    [
+     6607.0,
+     1612.0
+    ],
+    [
+     6558.0,
+     1612.0
+    ]
+   ],
+   "aabb": [
+    6558,
+    1579,
+    6607,
+    1612
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 21,
+   "target": false,
+   "box_word": true,
+   "text_px": 81,
+   "in_scope": true
+  },
+  {
+   "id": "DD31-019",
+   "reading": "272",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 49.0,
+   "poly": [
+    [
+     6558.0,
+     1619.0
+    ],
+    [
+     6607.0,
+     1619.0
+    ],
+    [
+     6607.0,
+     1647.0
+    ],
+    [
+     6558.0,
+     1647.0
+    ]
+   ],
+   "aabb": [
+    6558,
+    1619,
+    6607,
+    1647
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 22,
+   "target": false,
+   "box_word": true,
+   "text_px": 118,
+   "in_scope": true
+  },
+  {
+   "id": "DD31-020",
+   "reading": "273",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 18.0,
+   "length": 49.0,
+   "poly": [
+    [
+     6558.0,
+     1649.0
+    ],
+    [
+     6607.0,
+     1649.0
+    ],
+    [
+     6607.0,
+     1667.0
+    ],
+    [
+     6558.0,
+     1667.0
+    ]
+   ],
+   "aabb": [
+    6558,
+    1649,
+    6607,
+    1667
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 23,
+   "target": false,
+   "box_word": true,
+   "text_px": 26,
+   "in_scope": true
+  },
+  {
+   "id": "DD31-021",
+   "reading": "76",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 25.0,
+   "poly": [
+    [
+     6711.0,
+     1507.0
+    ],
+    [
+     6736.0,
+     1507.0
+    ],
+    [
+     6736.0,
+     1534.0
+    ],
+    [
+     6711.0,
+     1534.0
+    ]
+   ],
+   "aabb": [
+    6711,
+    1507,
+    6736,
+    1534
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 24,
+   "target": false,
+   "box_word": true,
+   "text_px": 86,
+   "in_scope": true
+  },
+  {
+   "id": "DD31-022",
+   "reading": "27",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 25.0,
+   "poly": [
+    [
+     6711.0,
+     1537.0
+    ],
+    [
+     6736.0,
+     1537.0
+    ],
+    [
+     6736.0,
+     1564.0
+    ],
+    [
+     6711.0,
+     1564.0
+    ]
+   ],
+   "aabb": [
+    6711,
+    1537,
+    6736,
+    1564
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 25,
+   "target": false,
+   "box_word": true,
+   "text_px": 121,
+   "in_scope": true
+  },
+  {
+   "id": "DD31-023",
+   "reading": "29",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 30.0,
+   "length": 25.0,
+   "poly": [
+    [
+     6711.0,
+     1597.0
+    ],
+    [
+     6736.0,
+     1597.0
+    ],
+    [
+     6736.0,
+     1627.0
+    ],
+    [
+     6711.0,
+     1627.0
+    ]
+   ],
+   "aabb": [
+    6711,
+    1597,
+    6736,
+    1627
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 26,
+   "target": false,
+   "box_word": true,
+   "text_px": 41,
+   "in_scope": true
+  },
+  {
+   "id": "DD31-024",
+   "reading": "2(4)0",
+   "kind": "lot",
+   "flags": [
+    "partial",
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 19.0,
+   "length": 25.0,
+   "poly": [
+    [
+     6711.0,
+     1627.0
+    ],
+    [
+     6736.0,
+     1627.0
+    ],
+    [
+     6736.0,
+     1646.0
+    ],
+    [
+     6711.0,
+     1646.0
+    ]
+   ],
+   "aabb": [
+    6711,
+    1627,
+    6736,
+    1646
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 27,
+   "target": false,
+   "box_word": true,
+   "text_px": 3,
+   "in_scope": true
+  },
+  {
+   "id": "DD31-025",
+   "reading": "614-16",
+   "kind": "house",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 51.0,
+   "length": 22.0,
+   "poly": [
+    [
+     6676.0,
+     1595.0
+    ],
+    [
+     6698.0,
+     1595.0
+    ],
+    [
+     6698.0,
+     1646.0
+    ],
+    [
+     6676.0,
+     1646.0
+    ]
+   ],
+   "aabb": [
+    6676,
+    1595,
+    6698,
+    1646
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 28,
+   "target": false,
+   "box_word": true,
+   "text_px": 268,
+   "in_scope": true
+  }
+ ]
+}

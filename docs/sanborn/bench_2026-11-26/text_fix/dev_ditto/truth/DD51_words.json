@@ -1,0 +1,149 @@
+{
+ "crop": "DD51",
+ "plate": "93A",
+ "win": [
+  2256,
+  2572,
+  2656,
+  2872
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   2492,
+   2831,
+   2548,
+   2888
+  ]
+ ],
+ "n_words": 2,
+ "n_targets": 1,
+ "mask": "DD51_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 101596,
+  "ink_not_text": 355,
+  "text": 205,
+  "dont_care": 17844
+ },
+ "counts_in_scope": {
+  "ink_not_text": 355,
+  "text": 205,
+  "dont_care": 507
+ },
+ "boxes": [
+  {
+   "op": "CARE",
+   "box": [
+    2492,
+    2831,
+    2516,
+    2871
+   ],
+   "note": "dense worn lot figures fused with lot lines (15, 16): which ink is figure and which is line cannot be told",
+   "line": 4
+  }
+ ],
+ "words": [
+  {
+   "id": "DD51-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 7.0,
+   "length": 6.0,
+   "poly": [
+    [
+     2517.0,
+     2856.0
+    ],
+    [
+     2523.0,
+     2856.0
+    ],
+    [
+     2523.0,
+     2863.0
+    ],
+    [
+     2517.0,
+     2863.0
+    ]
+   ],
+   "aabb": [
+    2517,
+    2856,
+    2523,
+    2863
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": true,
+   "box_word": true,
+   "text_px": 19,
+   "in_scope": true,
+   "ink_px": 19,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    11,
+    8
+   ],
+   "style": "pair",
+   "neg_type": ""
+  },
+  {
+   "id": "DD51-002",
+   "reading": "?",
+   "kind": "street",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 70.0,
+   "length": 32.0,
+   "poly": [
+    [
+     2526.0,
+     2802.0
+    ],
+    [
+     2558.0,
+     2802.0
+    ],
+    [
+     2558.0,
+     2872.0
+    ],
+    [
+     2526.0,
+     2872.0
+    ]
+   ],
+   "aabb": [
+    2526,
+    2802,
+    2558,
+    2872
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 3,
+   "target": false,
+   "box_word": true,
+   "text_px": 186,
+   "in_scope": true
+  }
+ ]
+}

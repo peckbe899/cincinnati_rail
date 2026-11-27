@@ -1,0 +1,674 @@
+[
+ {
+  "file": "SA-B08",
+  "fix": "F01",
+  "old": null,
+  "new": "NOTTEXT 9395 2469 9485 2470 5",
+  "why": "lot line along the foot of block 19 was text inside the box (snapline)"
+ },
+ {
+  "file": "SA-B09",
+  "fix": "F02",
+  "old": null,
+  "new": "NOTTEXT 833 4060 833 4112 5",
+  "why": "lot line above the first 2 of block 22 was text inside the box (snapline)"
+ },
+ {
+  "file": "SA-B13",
+  "fix": "F08",
+  "old": "8445 4310 8463 4310 14 | 68' | lotdim",
+  "new": "8443 4310 8475 4307 16 | 68' | lotdim",
+  "why": "box missed the prime"
+ },
+ {
+  "file": "SA-B13",
+  "fix": "F09",
+  "old": "8506 4360 8521 4360 18 | 10 | lot",
+  "new": "8511 4355 8519 4384 21 | 10 | lot",
+  "why": "the lot number 10 is turned about 75 degrees; the box missed the 1"
+ },
+ {
+  "file": "SA-B13",
+  "fix": "F14",
+  "old": null,
+  "new": "8542 4253 8581 4243 15 | 25.30' | lotdim | partial unsure",
+  "why": "lot dimension cut by the scope edge was not typed"
+ },
+ {
+  "file": "SA-B13",
+  "fix": "F15",
+  "old": null,
+  "new": "8427 4287 8447 4284 18 | 2.50' | lotdim | partial unsure",
+  "why": "lot dimension cut by the scope edge was not typed"
+ },
+ {
+  "file": "SA-B25",
+  "fix": "F03",
+  "old": null,
+  "new": "NOTTEXT 9565 815 9565 905 5",
+  "why": "dashed edge of the alley band between the 1 and the 0 of block 10 was text (snapline)"
+ },
+ {
+  "file": "SA-B25",
+  "fix": "F17",
+  "old": null,
+  "new": "9631 911 9663 928 16 | H | owner | partial unsure",
+  "why": "turned owner letter cut by the scope edge was not typed"
+ },
+ {
+  "file": "SA-DW02",
+  "fix": "F11",
+  "old": null,
+  "new": "FORCE 5614 2318 5624 2333",
+  "why": "SA-D15: the diagonal of the story 2 was not text"
+ },
+ {
+  "file": "SA-DW03",
+  "fix": "F10",
+  "old": null,
+  "new": "FORCE 764 3537 779 3567",
+  "why": "SA-D21: the diagonal and bar of the 4 of lot 64 were not text"
+ },
+ {
+  "file": "SA-DW06",
+  "fix": "F13",
+  "old": null,
+  "new": "NOTTEXT 2669 4852 2670 4912 5",
+  "why": "SA-D29: the left wall of the pink building inside the box of the owner letter C was text (snapline)"
+ },
+ {
+  "file": "SA-DW11",
+  "fix": "F45",
+  "old": null,
+  "new": "EXCL 3460 3207 3474 3210",
+  "why": "SA-D41: a 38 px dash or wall piece inside the box of story '1' was text (dash_in_box #5: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F42",
+  "old": "EXCLCIRC 4415 3690 14 filled dot (hydrant or manhole) inside the 24\" SEWER label",
+  "new": "EXCLCIRC 4401 3672 14 filled dot (hydrant or manhole) above the 24\" SEWER label",
+  "why": "the circle lay 19 px below and 14 px right of the dot: most of the dot was text and the top of the label lost pixels"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F43",
+  "old": null,
+  "new": "NOTTEXT 5296 4157 5332 4157 5",
+  "why": "top wall of the small building inside the box of the story 2. (5304 4175) was text"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F44",
+  "old": null,
+  "new": "5229 3235 5238 3235 18 | LUDLOW | street | partial unsure nosnap",
+  "why": "the foot of a big street letter (LUDLOW, above the window) enters the window by 353 and was not text"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F46",
+  "old": null,
+  "new": "EXCLPIECE 4578 3225 4595 3231",
+  "why": "SA-F1: a 48 px dash or wall piece inside the box of lot '26' was text (dash_in_box #6: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F47",
+  "old": null,
+  "new": "EXCLPIECE 5475 3267 5494 3272",
+  "why": "SA-F1: a 44 px dash or wall piece inside the box of lotdim '25' was text (dash_in_box #7: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F48",
+  "old": null,
+  "new": "EXCLPIECE 5475 3329 5494 3334",
+  "why": "SA-F1: a 46 px dash or wall piece inside the box of lot '82' was text (dash_in_box #9: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F49",
+  "old": null,
+  "new": "EXCLPIECE 5621 3273 5637 3278",
+  "why": "SA-F1: a 35 px dash or wall piece inside the box of lot '79' was text (dash_in_box #10: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F50",
+  "old": null,
+  "new": "EXCLPIECE 5703 3344 5710 3367",
+  "why": "SA-F1: a 74 px dash or wall piece inside the box of house '3421-3419' was text (dash_in_box #11: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F51",
+  "old": null,
+  "new": "EXCLPIECE 4751 3613 4779 3620",
+  "why": "SA-F1: a 67 px dash or wall piece inside the box of sewer '12\"SEWER' was text (dash_in_box #13: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F52",
+  "old": null,
+  "new": "EXCLPIECE 4835 3621 4861 3628",
+  "why": "SA-F1: a 72 px dash or wall piece inside the box of sewer '12\"SEWER' was text (dash_in_box #14: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F53",
+  "old": null,
+  "new": "EXCLPIECE 4603 3714 4618 3719",
+  "why": "SA-F1: a 37 px dash or wall piece inside the box of lot '93' was text (dash_in_box #15: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F54",
+  "old": null,
+  "new": "EXCLPIECE 5251 3663 5276 3670",
+  "why": "SA-F1: a 62 px dash or wall piece inside the box of house '358' was text (dash_in_box #16: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F55",
+  "old": null,
+  "new": "EXCLPIECE 5330 3672 5350 3679",
+  "why": "SA-F1: a 58 px dash or wall piece inside the box of house '350' was text (dash_in_box #17: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F56",
+  "old": null,
+  "new": "EXCL 5432 3684 5448 3689",
+  "why": "SA-F1: a 46 px dash or wall piece inside the box of house '342' was text (dash_in_box #18: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F57",
+  "old": null,
+  "new": "EXCL 5461 3687 5487 3693",
+  "why": "SA-F1: a 71 px dash or wall piece inside the box of house '342' was text (dash_in_box #19: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F58",
+  "old": null,
+  "new": "EXCLPIECE 5505 3691 5533 3699",
+  "why": "SA-F1: a 84 px dash or wall piece inside the box of house '340' was text (dash_in_box #20: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F59",
+  "old": null,
+  "new": "EXCLPIECE 4390 3696 4396 3726",
+  "why": "SA-F1: a 86 px dash or wall piece inside the box of sewer '24\"SEWER' was text (dash_in_box #21: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F60",
+  "old": null,
+  "new": "EXCLPIECE 4598 3714 4618 3719",
+  "why": "SA-F1: a 49 px dash or wall piece inside the box of story '2.' was text (dash_in_box #22: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F61",
+  "old": null,
+  "new": "EXCLPIECE 4760 3715 4783 3721",
+  "why": "SA-F1: a 51 px dash or wall piece inside the box of story '2.' was text (dash_in_box #23: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F62",
+  "old": null,
+  "new": "EXCLPIECE 5125 3894 5130 3911",
+  "why": "SA-F1: a 32 px dash or wall piece inside the box of lotdim \"199.75'\" was text (dash_in_box #24: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F63",
+  "old": null,
+  "new": "EXCLPIECE 5193 3856 5199 3874",
+  "why": "SA-F1: a 56 px dash or wall piece inside the box of lotdim \"195.75'\" was text (dash_in_box #25: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F64",
+  "old": null,
+  "new": "EXCLPIECE 5193 3880 5199 3903",
+  "why": "SA-F1: a 70 px dash or wall piece inside the box of lotdim \"195.75'\" was text (dash_in_box #26: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F65",
+  "old": null,
+  "new": "EXCLPIECE 5269 3868 5274 3887",
+  "why": "SA-F1: a 29 px dash or wall piece inside the box of lotdim \"192.18'\" was text (dash_in_box #27: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F66",
+  "old": null,
+  "new": "EXCLPIECE 5270 3895 5275 3914",
+  "why": "SA-F1: a 33 px dash or wall piece inside the box of lotdim \"192.18'\" was text (dash_in_box #28: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F67",
+  "old": null,
+  "new": "EXCLPIECE 5468 3818 5473 3841",
+  "why": "SA-F1: a 59 px dash or wall piece inside the box of lotdim \"107'\" was text (dash_in_box #29: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F68",
+  "old": null,
+  "new": "EXCLPIECE 5514 3906 5533 3912",
+  "why": "SA-F1: a 43 px dash or wall piece inside the box of lot '109' was text (dash_in_box #30: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F69",
+  "old": null,
+  "new": "EXCLPIECE 4394 3975 4400 4010",
+  "why": "SA-F1: a 94 px dash or wall piece inside the box of house '3340' was text (dash_in_box #31: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F70",
+  "old": null,
+  "new": "EXCLPIECE 4778 4186 4807 4191",
+  "why": "SA-F1: a 58 px dash or wall piece inside the box of story '2.' was text (dash_in_box #32: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F71",
+  "old": null,
+  "new": "EXCLPIECE 4844 4186 4872 4191",
+  "why": "SA-F1: a 75 px dash or wall piece inside the box of story '2.' was text (dash_in_box #33: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F72",
+  "old": null,
+  "new": "EXCLPIECE 4897 4189 4912 4194",
+  "why": "SA-F1: a 32 px dash or wall piece inside the box of story '2.' was text (dash_in_box #34: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F73",
+  "old": null,
+  "new": "EXCLPIECE 4935 4189 4959 4195",
+  "why": "SA-F1: a 52 px dash or wall piece inside the box of story '2' was text (dash_in_box #35: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F74",
+  "old": null,
+  "new": "EXCLPIECE 5214 4056 5229 4061",
+  "why": "SA-F1: a 27 px dash or wall piece inside the box of lot '27' was text (dash_in_box #38: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F75",
+  "old": null,
+  "new": "EXCLPIECE 5059 4156 5093 4167",
+  "why": "SA-F1: a 88 px dash or wall piece inside the box of story '2.' was text (dash_in_box #39: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F76",
+  "old": null,
+  "new": "EXCLPIECE 5309 4156 5327 4161",
+  "why": "SA-F1: a 38 px dash or wall piece inside the box of story '2.' was text (dash_in_box #40: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F77",
+  "old": null,
+  "new": "EXCLPIECE 5450 4038 5481 4044",
+  "why": "SA-F1: a 74 px dash or wall piece inside the box of owner 'B.' was text (dash_in_box #41: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F78",
+  "old": null,
+  "new": "EXCLPIECE 5419 4038 5450 4044",
+  "why": "SA-F1: a 77 px dash or wall piece inside the box of story '2.' was text (dash_in_box #42: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F79",
+  "old": null,
+  "new": "EXCL 5372 3958 5374 3992",
+  "why": "SA-F1: a 61 px dash or wall piece inside the box of sewer '8\"SEWER' was text (dash_in_box #43: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F80",
+  "old": null,
+  "new": "EXCL 5371 3996 5374 4041",
+  "why": "SA-F1: a 105 px dash or wall piece inside the box of sewer '8\"SEWER' was text (dash_in_box #44: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F81",
+  "old": null,
+  "new": "EXCL 5372 3958 5377 3987",
+  "why": "SA-F1: a 95 px dash or wall piece inside the box of pipe '6\"W.P.' was text (dash_in_box #45: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SA-F1",
+  "fix": "F82",
+  "old": null,
+  "new": "EXCL 5375 4199 5376 4213",
+  "why": "SA-F1: a 14 px dash or wall piece inside the box of pipe '6\"W.P.' was text (dash_in_box #46: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SB-B02",
+  "fix": "F18",
+  "old": null,
+  "new": "1920 5874 1933 5918 23 | 120 | lot | partial",
+  "why": "turned lot number cut by the scope edge was not typed"
+ },
+ {
+  "file": "SB-B09",
+  "fix": "F19",
+  "old": null,
+  "new": "7655 3305 7692 3305 36 | 98 | lot | partial",
+  "why": "lot number cut by the scope edge was not typed"
+ },
+ {
+  "file": "SB-B09",
+  "fix": "F20",
+  "old": null,
+  "new": "7762 3316 7772 3316 22 | 1 | story | partial",
+  "why": "story height cut by the scope edge was not typed"
+ },
+ {
+  "file": "SB-B11",
+  "fix": "F04",
+  "old": null,
+  "new": "EXCL 3985 3505 3989 3510",
+  "why": "a 7 px dash of the dashed band edge was text by block 22"
+ },
+ {
+  "file": "SB-B15",
+  "fix": "F21",
+  "old": null,
+  "new": "2186 1702 2240 1722 18 | 37.19' | lotdim | partial unsure",
+  "why": "lot dimension cut by the scope edge was not typed (the 37 was not text)"
+ },
+ {
+  "file": "SB-B15",
+  "fix": "F22",
+  "old": null,
+  "new": "2200 1773 2222 1773 46 | E | owner | partial unsure",
+  "why": "owner letter cut by the scope edge was not typed"
+ },
+ {
+  "file": "SB-B15",
+  "fix": "F23",
+  "old": null,
+  "new": "2152 1786 2180 1786 24 | 66 | lot | partial",
+  "why": "lot number cut by the scope edge was not typed"
+ },
+ {
+  "file": "SB-B15",
+  "fix": "F83",
+  "old": null,
+  "new": "EXCL 2136 1751 2155 1755",
+  "why": "SB-B15: a 49 px dash or wall piece inside the box of block '5' was text (dash_in_box #48: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SB-B16",
+  "fix": "F24",
+  "old": null,
+  "new": "2693 5563 2732 5563 22 | 255 | lot | partial",
+  "why": "lot number cut by the scope edge was not typed"
+ },
+ {
+  "file": "SB-B16",
+  "fix": "F25",
+  "old": null,
+  "new": "2622 5564 2655 5564 20 | 281 | lot | partial",
+  "why": "lot number cut by the scope edge was not typed"
+ },
+ {
+  "file": "SB-B17",
+  "fix": "F05",
+  "old": "4611 5190 4632 5190 14 | 51 | lot",
+  "new": "4611 5180 4632 5180 18 | 51 | lot | unsure",
+  "why": "box lay 10 px below the glyphs of 51 (they were not text)"
+ },
+ {
+  "file": "SB-B17",
+  "fix": "F26",
+  "old": null,
+  "new": "4511 5235 4568 5233 15 | 161.62' | lotdim | partial",
+  "why": "lot dimension cut by the scope edge was not typed"
+ },
+ {
+  "file": "SB-B18",
+  "fix": "F07",
+  "old": "3133 5435 3169 5435 18 | 159 | house",
+  "new": "3181 5427 3216 5432 24 | 159 | house",
+  "why": "box lay 45 px left of the glyphs, over a lot line"
+ },
+ {
+  "file": "SB-B18",
+  "fix": "F27",
+  "old": null,
+  "new": "3198 5542 3223 5542 18 | 161 | lot | partial",
+  "why": "lot number cut by the scope edge was not typed"
+ },
+ {
+  "file": "SB-B18",
+  "fix": "F28",
+  "old": null,
+  "new": "3128 5545 3158 5545 20 | 187 | lot | partial",
+  "why": "lot number cut by the scope edge was not typed"
+ },
+ {
+  "file": "SB-B19",
+  "fix": "F29",
+  "old": null,
+  "new": "4394 892 4424 892 14 | 50' | lotdim | partial",
+  "why": "lot dimension cut by the scope edge was not typed"
+ },
+ {
+  "file": "SB-B19",
+  "fix": "F30",
+  "old": null,
+  "new": "4504 890 4531 890 15 | 163 | lot | partial",
+  "why": "lot number cut by the scope edge was not typed"
+ },
+ {
+  "file": "SB-B24",
+  "fix": "F34",
+  "old": null,
+  "new": "6064 3242 6090 3242 18 | 100 | lot | partial unsure",
+  "why": "lot number in the dense grid, cut by the scope edge, was not typed"
+ },
+ {
+  "file": "SB-B24",
+  "fix": "F35",
+  "old": null,
+  "new": "6062 3267 6088 3267 18 | 101 | lot | partial unsure",
+  "why": "lot number in the dense grid, cut by the scope edge, was not typed"
+ },
+ {
+  "file": "SB-B24",
+  "fix": "F36",
+  "old": null,
+  "new": "6064 3363 6090 3363 16 | 105 | lot | partial unsure",
+  "why": "lot number in the dense grid, cut by the scope edge, was not typed"
+ },
+ {
+  "file": "SB-B25",
+  "fix": "F06",
+  "old": "5440 3230 5465 3230 16 | 297 | lot",
+  "new": "5426 3226 5462 3226 16 | 297 | lot",
+  "why": "box missed the 2 of 297 (86 px not text)"
+ },
+ {
+  "file": "SB-B25",
+  "fix": "F37",
+  "old": null,
+  "new": "5517 3157 5545 3157 18 | 14? | lot | partial unsure",
+  "why": "right-hand column of the dense grid: the first figures (in scope) were not text"
+ },
+ {
+  "file": "SB-B25",
+  "fix": "F38",
+  "old": null,
+  "new": "5517 3182 5545 3182 16 | 44? | lot | partial unsure",
+  "why": "right-hand column of the dense grid: the first figures (in scope) were not text"
+ },
+ {
+  "file": "SB-B25",
+  "fix": "F39",
+  "old": null,
+  "new": "5517 3203 5545 3203 16 | 45? | lot | partial unsure",
+  "why": "right-hand column of the dense grid: the first figures (in scope) were not text"
+ },
+ {
+  "file": "SB-B25",
+  "fix": "F40",
+  "old": null,
+  "new": "5517 3224 5545 3224 16 | 46? | lot | partial unsure",
+  "why": "right-hand column of the dense grid: the first figures (in scope) were not text"
+ },
+ {
+  "file": "SB-B25",
+  "fix": "F41",
+  "old": null,
+  "new": "5517 3244 5545 3244 16 | 47? | lot | partial unsure",
+  "why": "right-hand column of the dense grid: the first figures (in scope) were not text"
+ },
+ {
+  "file": "SB-B25",
+  "fix": "F84",
+  "old": null,
+  "new": "EXCL 5483 3210 5499 3214",
+  "why": "SB-B25: a 40 px dash or wall piece inside the box of lot '287' was text (dash_in_box #50: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SB-D06",
+  "fix": "F32",
+  "old": null,
+  "new": "4149 2920 4169 2920 28 | 2 | story | partial",
+  "why": "story height cut by the scope edge was not typed"
+ },
+ {
+  "file": "SB-D07",
+  "fix": "F12",
+  "old": null,
+  "new": "FORCE 2298 1172 2308 1180",
+  "why": "the diagonal of the 2 of house 3552 was not text"
+ },
+ {
+  "file": "SB-D07",
+  "fix": "F33",
+  "old": null,
+  "new": "2246 1103 2260 1103 22 | 2 | story | partial",
+  "why": "story height cut by the scope edge was not typed"
+ },
+ {
+  "file": "SB-D14",
+  "fix": "F85",
+  "old": null,
+  "new": "EXCL 5252 4198 5271 4201",
+  "why": "SB-D14: a 36 px dash or wall piece inside the box of story '1.' was text (dash_in_box #52: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SB-D16",
+  "fix": "F31",
+  "old": null,
+  "new": "3285 4884 3306 4884 20 | 2. | story | partial",
+  "why": "story height cut by the scope edge was not typed"
+ },
+ {
+  "file": "SB-D16",
+  "fix": "F86",
+  "old": null,
+  "new": "EXCL 3320 4734 3338 4738",
+  "why": "SB-D16: a 52 px dash or wall piece inside the box of lot '141' was text (dash_in_box #53: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SB-F1",
+  "fix": "F87",
+  "old": null,
+  "new": "EXCLPIECE 3738 2816 3756 2821",
+  "why": "SB-F1: a 38 px dash or wall piece inside the box of story '2' was text (dash_in_box #54: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SB-F1",
+  "fix": "F88",
+  "old": null,
+  "new": "EXCL 3964 2816 3989 2820",
+  "why": "SB-F1: a 52 px dash or wall piece inside the box of story '2' was text (dash_in_box #55: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SB-F1",
+  "fix": "F89",
+  "old": null,
+  "new": "EXCL 4218 2950 4241 2953",
+  "why": "SB-F1: a 53 px dash or wall piece inside the box of owner 'B' was text (dash_in_box #56: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SB-F1",
+  "fix": "F90",
+  "old": null,
+  "new": "EXCLPIECE 3391 3081 3410 3087",
+  "why": "SB-F1: a 43 px dash or wall piece inside the box of lot '12' was text (dash_in_box #57: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SB-F1",
+  "fix": "F91",
+  "old": null,
+  "new": "EXCLPIECE 3740 3150 3747 3169",
+  "why": "SB-F1: a 64 px dash or wall piece inside the box of lotdim \"99.23'\" was text (dash_in_box #58: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SB-F1",
+  "fix": "F92",
+  "old": null,
+  "new": "EXCL 3468 3556 3501 3559",
+  "why": "SB-F1: a 81 px dash or wall piece inside the box of story '2' was text (dash_in_box #59: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SB-F1",
+  "fix": "F93",
+  "old": null,
+  "new": "EXCL 3538 3443 3543 3506",
+  "why": "SB-F1: a 189 px dash or wall piece inside the box of lotdim \"98.46'\" was text (dash_in_box #60: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SB-F1",
+  "fix": "F94",
+  "old": null,
+  "new": "EXCLPIECE 3890 3462 3910 3468",
+  "why": "SB-F1: a 36 px dash or wall piece inside the box of lot '114' was text (dash_in_box #62: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SB-F1",
+  "fix": "F95",
+  "old": null,
+  "new": "EXCLPIECE 3910 3462 3928 3468",
+  "why": "SB-F1: a 31 px dash or wall piece inside the box of lot '114' was text (dash_in_box #63: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SB-F1",
+  "fix": "F96",
+  "old": null,
+  "new": "EXCL 3858 3546 3879 3550",
+  "why": "SB-F1: a 55 px dash or wall piece inside the box of story '2' was text (dash_in_box #64: a dash of a dashed line, or the wall of a small building)"
+ },
+ {
+  "file": "SB-F1",
+  "fix": "F97",
+  "old": null,
+  "new": "EXCLPIECE 4335 3458 4373 3465",
+  "why": "SB-F1: a 103 px dash or wall piece inside the box of lot '117' was text (dash_in_box #67: a dash of a dashed line, or the wall of a small building)"
+ }
+]

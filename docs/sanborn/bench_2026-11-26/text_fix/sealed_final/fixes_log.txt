@@ -1,0 +1,329 @@
+Sealed truth: fixes made by the cross-check (26 Nov 2026), in the merged copy only (sealed_final/annot).
+Every fix was decided on 4-8x zooms of the scan beside the truth (sealed_check/pics). Pixel counts are MEASURED.
+own px: crop-window pixels whose class the op itself changed (before the shared-ink rule); '-' for a word line.
+
+F00 (format, all half-B targeted crops): the scope box now includes its last row and column, as in half A (half B left
+    them out). 14,833 px of 44 half-B crops moved from don't care (3) to labelled: 0 paper or 1/2 ink (sealed_check/build_v0.log,
+    compare.py tmp/repro vs v0_merged). This is a format unification, not a truth fix.
+
+F01 SA-B08: NOTTEXT 9395 2469 9485 2470 5
+    why: lot line along the foot of block 19 was text inside the box (snapline)
+    own px: SA-B08 202
+F02 SA-B09: NOTTEXT 833 4060 833 4112 5
+    why: lot line above the first 2 of block 22 was text inside the box (snapline)
+    own px: SA-B09 51
+F08 SA-B13: 8443 4310 8475 4307 16 | 68' | lotdim
+    replaces: 8445 4310 8463 4310 14 | 68' | lotdim
+    why: box missed the prime
+    own px: -
+F09 SA-B13: 8511 4355 8519 4384 21 | 10 | lot
+    replaces: 8506 4360 8521 4360 18 | 10 | lot
+    why: the lot number 10 is turned about 75 degrees; the box missed the 1
+    own px: -
+F14 SA-B13: 8542 4253 8581 4243 15 | 25.30' | lotdim | partial unsure
+    why: lot dimension cut by the scope edge was not typed
+    own px: -
+F15 SA-B13: 8427 4287 8447 4284 18 | 2.50' | lotdim | partial unsure
+    why: lot dimension cut by the scope edge was not typed
+    own px: -
+F03 SA-B25: NOTTEXT 9565 815 9565 905 5
+    why: dashed edge of the alley band between the 1 and the 0 of block 10 was text (snapline)
+    own px: SA-B25 195
+F17 SA-B25: 9631 911 9663 928 16 | H | owner | partial unsure
+    why: turned owner letter cut by the scope edge was not typed
+    own px: -
+F11 SA-DW02: FORCE 5614 2318 5624 2333
+    why: SA-D15: the diagonal of the story 2 was not text
+    own px: SA-D15 42
+F10 SA-DW03: FORCE 764 3537 779 3567
+    why: SA-D21: the diagonal and bar of the 4 of lot 64 were not text
+    own px: SA-D21 87
+F13 SA-DW06: NOTTEXT 2669 4852 2670 4912 5
+    why: SA-D29: the left wall of the pink building inside the box of the owner letter C was text (snapline)
+    own px: SA-D26 15, SA-D29 194
+F45 SA-DW11: EXCL 3460 3207 3474 3210
+    why: SA-D41: a 38 px dash or wall piece inside the box of story '1' was text (dash_in_box #5: a dash of a dashed line, or the wall of a small building)
+    own px: SA-D41 38
+F42 SA-F1: EXCLCIRC 4401 3672 14 filled dot (hydrant or manhole) above the 24" SEWER label
+    replaces: EXCLCIRC 4415 3690 14 filled dot (hydrant or manhole) inside the 24" SEWER label
+    why: the circle lay 19 px below and 14 px right of the dot: most of the dot was text and the top of the label lost pixels
+    own px: SA-F1 369
+F43 SA-F1: NOTTEXT 5296 4157 5332 4157 5
+    why: top wall of the small building inside the box of the story 2. (5304 4175) was text
+    own px: SA-F1 54
+F44 SA-F1: 5229 3235 5238 3235 18 | LUDLOW | street | partial unsure nosnap
+    why: the foot of a big street letter (LUDLOW, above the window) enters the window by 353 and was not text
+    own px: -
+F46 SA-F1: EXCLPIECE 4578 3225 4595 3231
+    why: SA-F1: a 48 px dash or wall piece inside the box of lot '26' was text (dash_in_box #6: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 48
+F47 SA-F1: EXCLPIECE 5475 3267 5494 3272
+    why: SA-F1: a 44 px dash or wall piece inside the box of lotdim '25' was text (dash_in_box #7: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 44
+F48 SA-F1: EXCLPIECE 5475 3329 5494 3334
+    why: SA-F1: a 46 px dash or wall piece inside the box of lot '82' was text (dash_in_box #9: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 46
+F49 SA-F1: EXCLPIECE 5621 3273 5637 3278
+    why: SA-F1: a 35 px dash or wall piece inside the box of lot '79' was text (dash_in_box #10: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 35
+F50 SA-F1: EXCLPIECE 5703 3344 5710 3367
+    why: SA-F1: a 74 px dash or wall piece inside the box of house '3421-3419' was text (dash_in_box #11: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 74
+F51 SA-F1: EXCLPIECE 4751 3613 4779 3620
+    why: SA-F1: a 67 px dash or wall piece inside the box of sewer '12"SEWER' was text (dash_in_box #13: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 67
+F52 SA-F1: EXCLPIECE 4835 3621 4861 3628
+    why: SA-F1: a 72 px dash or wall piece inside the box of sewer '12"SEWER' was text (dash_in_box #14: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 72
+F53 SA-F1: EXCLPIECE 4603 3714 4618 3719
+    why: SA-F1: a 37 px dash or wall piece inside the box of lot '93' was text (dash_in_box #15: a dash of a dashed line, or the wall of a small building)
+    own px: 0
+F54 SA-F1: EXCLPIECE 5251 3663 5276 3670
+    why: SA-F1: a 62 px dash or wall piece inside the box of house '358' was text (dash_in_box #16: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 68
+F55 SA-F1: EXCLPIECE 5330 3672 5350 3679
+    why: SA-F1: a 58 px dash or wall piece inside the box of house '350' was text (dash_in_box #17: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 58
+F56 SA-F1: EXCL 5432 3684 5448 3689
+    why: SA-F1: a 46 px dash or wall piece inside the box of house '342' was text (dash_in_box #18: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 46
+F57 SA-F1: EXCL 5461 3687 5487 3693
+    why: SA-F1: a 71 px dash or wall piece inside the box of house '342' was text (dash_in_box #19: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 71
+F58 SA-F1: EXCLPIECE 5505 3691 5533 3699
+    why: SA-F1: a 84 px dash or wall piece inside the box of house '340' was text (dash_in_box #20: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 84
+F59 SA-F1: EXCLPIECE 4390 3696 4396 3726
+    why: SA-F1: a 86 px dash or wall piece inside the box of sewer '24"SEWER' was text (dash_in_box #21: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 86
+F60 SA-F1: EXCLPIECE 4598 3714 4618 3719
+    why: SA-F1: a 49 px dash or wall piece inside the box of story '2.' was text (dash_in_box #22: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 49
+F61 SA-F1: EXCLPIECE 4760 3715 4783 3721
+    why: SA-F1: a 51 px dash or wall piece inside the box of story '2.' was text (dash_in_box #23: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 51
+F62 SA-F1: EXCLPIECE 5125 3894 5130 3911
+    why: SA-F1: a 32 px dash or wall piece inside the box of lotdim "199.75'" was text (dash_in_box #24: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 32
+F63 SA-F1: EXCLPIECE 5193 3856 5199 3874
+    why: SA-F1: a 56 px dash or wall piece inside the box of lotdim "195.75'" was text (dash_in_box #25: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 56
+F64 SA-F1: EXCLPIECE 5193 3880 5199 3903
+    why: SA-F1: a 70 px dash or wall piece inside the box of lotdim "195.75'" was text (dash_in_box #26: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 70
+F65 SA-F1: EXCLPIECE 5269 3868 5274 3887
+    why: SA-F1: a 29 px dash or wall piece inside the box of lotdim "192.18'" was text (dash_in_box #27: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 29
+F66 SA-F1: EXCLPIECE 5270 3895 5275 3914
+    why: SA-F1: a 33 px dash or wall piece inside the box of lotdim "192.18'" was text (dash_in_box #28: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 33
+F67 SA-F1: EXCLPIECE 5468 3818 5473 3841
+    why: SA-F1: a 59 px dash or wall piece inside the box of lotdim "107'" was text (dash_in_box #29: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 59
+F68 SA-F1: EXCLPIECE 5514 3906 5533 3912
+    why: SA-F1: a 43 px dash or wall piece inside the box of lot '109' was text (dash_in_box #30: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 43
+F69 SA-F1: EXCLPIECE 4394 3975 4400 4010
+    why: SA-F1: a 94 px dash or wall piece inside the box of house '3340' was text (dash_in_box #31: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 94
+F70 SA-F1: EXCLPIECE 4778 4186 4807 4191
+    why: SA-F1: a 58 px dash or wall piece inside the box of story '2.' was text (dash_in_box #32: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 58
+F71 SA-F1: EXCLPIECE 4844 4186 4872 4191
+    why: SA-F1: a 75 px dash or wall piece inside the box of story '2.' was text (dash_in_box #33: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 75
+F72 SA-F1: EXCLPIECE 4897 4189 4912 4194
+    why: SA-F1: a 32 px dash or wall piece inside the box of story '2.' was text (dash_in_box #34: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 32
+F73 SA-F1: EXCLPIECE 4935 4189 4959 4195
+    why: SA-F1: a 52 px dash or wall piece inside the box of story '2' was text (dash_in_box #35: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 52
+F74 SA-F1: EXCLPIECE 5214 4056 5229 4061
+    why: SA-F1: a 27 px dash or wall piece inside the box of lot '27' was text (dash_in_box #38: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 27
+F75 SA-F1: EXCLPIECE 5059 4156 5093 4167
+    why: SA-F1: a 88 px dash or wall piece inside the box of story '2.' was text (dash_in_box #39: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 91
+F76 SA-F1: EXCLPIECE 5309 4156 5327 4161
+    why: SA-F1: a 38 px dash or wall piece inside the box of story '2.' was text (dash_in_box #40: a dash of a dashed line, or the wall of a small building)
+    own px: 0
+F77 SA-F1: EXCLPIECE 5450 4038 5481 4044
+    why: SA-F1: a 74 px dash or wall piece inside the box of owner 'B.' was text (dash_in_box #41: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 75
+F78 SA-F1: EXCLPIECE 5419 4038 5450 4044
+    why: SA-F1: a 77 px dash or wall piece inside the box of story '2.' was text (dash_in_box #42: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 78
+F79 SA-F1: EXCL 5372 3958 5374 3992
+    why: SA-F1: a 61 px dash or wall piece inside the box of sewer '8"SEWER' was text (dash_in_box #43: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 61
+F80 SA-F1: EXCL 5371 3996 5374 4041
+    why: SA-F1: a 105 px dash or wall piece inside the box of sewer '8"SEWER' was text (dash_in_box #44: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 105
+F81 SA-F1: EXCL 5372 3958 5377 3987
+    why: SA-F1: a 95 px dash or wall piece inside the box of pipe '6"W.P.' was text (dash_in_box #45: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 44
+F82 SA-F1: EXCL 5375 4199 5376 4213
+    why: SA-F1: a 14 px dash or wall piece inside the box of pipe '6"W.P.' was text (dash_in_box #46: a dash of a dashed line, or the wall of a small building)
+    own px: SA-F1 14
+F18 SB-B02: 1920 5874 1933 5918 23 | 120 | lot | partial
+    why: turned lot number cut by the scope edge was not typed
+    own px: -
+F19 SB-B09: 7655 3305 7692 3305 36 | 98 | lot | partial
+    why: lot number cut by the scope edge was not typed
+    own px: -
+F20 SB-B09: 7762 3316 7772 3316 22 | 1 | story | partial
+    why: story height cut by the scope edge was not typed
+    own px: -
+F04 SB-B11: EXCL 3985 3505 3989 3510
+    why: a 7 px dash of the dashed band edge was text by block 22
+    own px: SB-B11 7
+F21 SB-B15: 2186 1702 2240 1722 18 | 37.19' | lotdim | partial unsure
+    why: lot dimension cut by the scope edge was not typed (the 37 was not text)
+    own px: -
+F22 SB-B15: 2200 1773 2222 1773 46 | E | owner | partial unsure
+    why: owner letter cut by the scope edge was not typed
+    own px: -
+F23 SB-B15: 2152 1786 2180 1786 24 | 66 | lot | partial
+    why: lot number cut by the scope edge was not typed
+    own px: -
+F83 SB-B15: EXCL 2136 1751 2155 1755
+    why: SB-B15: a 49 px dash or wall piece inside the box of block '5' was text (dash_in_box #48: a dash of a dashed line, or the wall of a small building)
+    own px: SB-B15 49
+F24 SB-B16: 2693 5563 2732 5563 22 | 255 | lot | partial
+    why: lot number cut by the scope edge was not typed
+    own px: -
+F25 SB-B16: 2622 5564 2655 5564 20 | 281 | lot | partial
+    why: lot number cut by the scope edge was not typed
+    own px: -
+F05 SB-B17: 4611 5180 4632 5180 18 | 51 | lot | unsure
+    replaces: 4611 5190 4632 5190 14 | 51 | lot
+    why: box lay 10 px below the glyphs of 51 (they were not text)
+    own px: -
+F26 SB-B17: 4511 5235 4568 5233 15 | 161.62' | lotdim | partial
+    why: lot dimension cut by the scope edge was not typed
+    own px: -
+F07 SB-B18: 3181 5427 3216 5432 24 | 159 | house
+    replaces: 3133 5435 3169 5435 18 | 159 | house
+    why: box lay 45 px left of the glyphs, over a lot line
+    own px: -
+F27 SB-B18: 3198 5542 3223 5542 18 | 161 | lot | partial
+    why: lot number cut by the scope edge was not typed
+    own px: -
+F28 SB-B18: 3128 5545 3158 5545 20 | 187 | lot | partial
+    why: lot number cut by the scope edge was not typed
+    own px: -
+F29 SB-B19: 4394 892 4424 892 14 | 50' | lotdim | partial
+    why: lot dimension cut by the scope edge was not typed
+    own px: -
+F30 SB-B19: 4504 890 4531 890 15 | 163 | lot | partial
+    why: lot number cut by the scope edge was not typed
+    own px: -
+F34 SB-B24: 6064 3242 6090 3242 18 | 100 | lot | partial unsure
+    why: lot number in the dense grid, cut by the scope edge, was not typed
+    own px: -
+F35 SB-B24: 6062 3267 6088 3267 18 | 101 | lot | partial unsure
+    why: lot number in the dense grid, cut by the scope edge, was not typed
+    own px: -
+F36 SB-B24: 6064 3363 6090 3363 16 | 105 | lot | partial unsure
+    why: lot number in the dense grid, cut by the scope edge, was not typed
+    own px: -
+F06 SB-B25: 5426 3226 5462 3226 16 | 297 | lot
+    replaces: 5440 3230 5465 3230 16 | 297 | lot
+    why: box missed the 2 of 297 (86 px not text)
+    own px: -
+F37 SB-B25: 5517 3157 5545 3157 18 | 14? | lot | partial unsure
+    why: right-hand column of the dense grid: the first figures (in scope) were not text
+    own px: -
+F38 SB-B25: 5517 3182 5545 3182 16 | 44? | lot | partial unsure
+    why: right-hand column of the dense grid: the first figures (in scope) were not text
+    own px: -
+F39 SB-B25: 5517 3203 5545 3203 16 | 45? | lot | partial unsure
+    why: right-hand column of the dense grid: the first figures (in scope) were not text
+    own px: -
+F40 SB-B25: 5517 3224 5545 3224 16 | 46? | lot | partial unsure
+    why: right-hand column of the dense grid: the first figures (in scope) were not text
+    own px: -
+F41 SB-B25: 5517 3244 5545 3244 16 | 47? | lot | partial unsure
+    why: right-hand column of the dense grid: the first figures (in scope) were not text
+    own px: -
+F84 SB-B25: EXCL 5483 3210 5499 3214
+    why: SB-B25: a 40 px dash or wall piece inside the box of lot '287' was text (dash_in_box #50: a dash of a dashed line, or the wall of a small building)
+    own px: SB-B25 44
+F32 SB-D06: 4149 2920 4169 2920 28 | 2 | story | partial
+    why: story height cut by the scope edge was not typed
+    own px: -
+F12 SB-D07: FORCE 2298 1172 2308 1180
+    why: the diagonal of the 2 of house 3552 was not text
+    own px: SB-D07 29
+F33 SB-D07: 2246 1103 2260 1103 22 | 2 | story | partial
+    why: story height cut by the scope edge was not typed
+    own px: -
+F85 SB-D14: EXCL 5252 4198 5271 4201
+    why: SB-D14: a 36 px dash or wall piece inside the box of story '1.' was text (dash_in_box #52: a dash of a dashed line, or the wall of a small building)
+    own px: SB-D14 36
+F31 SB-D16: 3285 4884 3306 4884 20 | 2. | story | partial
+    why: story height cut by the scope edge was not typed
+    own px: -
+F86 SB-D16: EXCL 3320 4734 3338 4738
+    why: SB-D16: a 52 px dash or wall piece inside the box of lot '141' was text (dash_in_box #53: a dash of a dashed line, or the wall of a small building)
+    own px: SB-D16 52
+F87 SB-F1: EXCLPIECE 3738 2816 3756 2821
+    why: SB-F1: a 38 px dash or wall piece inside the box of story '2' was text (dash_in_box #54: a dash of a dashed line, or the wall of a small building)
+    own px: SB-F1 38
+F88 SB-F1: EXCL 3964 2816 3989 2820
+    why: SB-F1: a 52 px dash or wall piece inside the box of story '2' was text (dash_in_box #55: a dash of a dashed line, or the wall of a small building)
+    own px: SB-F1 52
+F89 SB-F1: EXCL 4218 2950 4241 2953
+    why: SB-F1: a 53 px dash or wall piece inside the box of owner 'B' was text (dash_in_box #56: a dash of a dashed line, or the wall of a small building)
+    own px: SB-F1 53
+F90 SB-F1: EXCLPIECE 3391 3081 3410 3087
+    why: SB-F1: a 43 px dash or wall piece inside the box of lot '12' was text (dash_in_box #57: a dash of a dashed line, or the wall of a small building)
+    own px: SB-F1 43
+F91 SB-F1: EXCLPIECE 3740 3150 3747 3169
+    why: SB-F1: a 64 px dash or wall piece inside the box of lotdim "99.23'" was text (dash_in_box #58: a dash of a dashed line, or the wall of a small building)
+    own px: SB-F1 64
+F92 SB-F1: EXCL 3468 3556 3501 3559
+    why: SB-F1: a 81 px dash or wall piece inside the box of story '2' was text (dash_in_box #59: a dash of a dashed line, or the wall of a small building)
+    own px: SB-F1 81
+F93 SB-F1: EXCL 3538 3443 3543 3506
+    why: SB-F1: a 189 px dash or wall piece inside the box of lotdim "98.46'" was text (dash_in_box #60: a dash of a dashed line, or the wall of a small building)
+    own px: SB-F1 192
+F94 SB-F1: EXCLPIECE 3890 3462 3910 3468
+    why: SB-F1: a 36 px dash or wall piece inside the box of lot '114' was text (dash_in_box #62: a dash of a dashed line, or the wall of a small building)
+    own px: SB-F1 36
+F95 SB-F1: EXCLPIECE 3910 3462 3928 3468
+    why: SB-F1: a 31 px dash or wall piece inside the box of lot '114' was text (dash_in_box #63: a dash of a dashed line, or the wall of a small building)
+    own px: SB-F1 31
+F96 SB-F1: EXCL 3858 3546 3879 3550
+    why: SB-F1: a 55 px dash or wall piece inside the box of story '2' was text (dash_in_box #64: a dash of a dashed line, or the wall of a small building)
+    own px: SB-F1 56
+F97 SB-F1: EXCLPIECE 4335 3458 4373 3465
+    why: SB-F1: a 103 px dash or wall piece inside the box of lot '117' was text (dash_in_box #67: a dash of a dashed line, or the wall of a small building)
+    own px: SB-F1 103
+
+Per crop, pixels that differ from the merged truth before the fixes (sealed_check/v0_merged -> sealed_final):
+  SA-F1     2604 px   1->2 25  1->3 28  2->1 2149  2->3 231  3->1 151  3->2 20
+  SB-F1      745 px   2->1 711  2->3 34
+  SB-B25     664 px   1->2 472  1->3 89  2->1 32  2->3 27  3->1 14  3->2 30
+  SB-B24     538 px   1->2 404  1->3 111  3->2 23
+  SB-B15     466 px   1->2 366  1->3 15  2->1 19  2->3 51  3->2 15
+  SA-B25     215 px   1->2 3  2->1 174  2->3 38
+  SA-B08     214 px   2->1 103  2->3 54  3->1 57
+  SA-D29     200 px   2->1 157  2->3 36  3->1 7
+  SB-B18     187 px   1->2 187
+  SB-B17     154 px   1->2 118  3->2 36
+  SB-D16      83 px   1->2 31  2->1 44  2->3 8
+  SA-D21      82 px   1->2 57  1->3 18  3->2 7
+  SB-B16      65 px   1->2 65
+  SA-B09      55 px   2->1 23  2->3 25  3->1 7
+  SA-B13      50 px   1->2 50
+  SA-D41      38 px   2->1 34  2->3 4
+  SA-D15      36 px   1->2 32  1->3 3  3->2 1
+  SB-D14      36 px   2->1 3  2->3 33
+  SB-B02      34 px   1->2 34
+  SB-B19      34 px   1->2 31  1->3 3
+  SB-D07      21 px   1->2 11  1->3 9  3->2 1
+  SB-B09      18 px   1->2 18
+  SB-D06      16 px   1->2 12  1->3 4
+  SB-B11       7 px   2->1 7
+  ALL       6562 px   1->2 1916  1->3 280  2->1 3456  2->3 541  3->1 236  3->2 133

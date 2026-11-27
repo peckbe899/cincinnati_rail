@@ -1,0 +1,44 @@
+[f3] 1. Plate 44, map sort (Ben map + Ben rail) -> the same with the text mask first. px; rows = before, cols = after
+  unsorted speck        3535 ->      1186 (   -2349, -66.45%) | out: {'text': 3535} | in: {'text': 1077}
+  block line          687521 ->    731843 (  +44322,  +6.45%) | out: {'text': 4386} | in: {'text': 48807}
+  lot line           1121745 ->   1207718 (  +85973,  +7.66%) | out: {'text': 222830} | in: {'text': 307347, 'building outline': 1564}
+  building outline    825570 ->    910730 (  +85160, +10.32%) | out: {'text': 65271, 'lot line': 1564} | in: {'text': 152051}
+  railroad            255499 ->    253999 (   -1500,  -0.59%) | out: {'text': 1500} | in: {}
+  streetcar           159342 ->    157885 (   -1457,  -0.91%) | out: {'text': 1457} | in: {}
+  water pipe          465705 ->    560437 (  +94732, +20.34%) | out: {'text': 11789} | in: {'text': 106513}
+  sewer               100448 ->     98226 (   -2222,  -2.21%) | out: {'text': 5504} | in: {'text': 3300}
+  text               2980214 ->   2667181 ( -313033, -10.50%) | out: {'lot line': 307347, 'building outline': 152051, 'water pipe': 106513, 'block line': 48807, 'not sorted': 18356, 'sewer': 3300, 'unsorted speck': 1077} | in: {'lot line': 222830, 'building outline': 65271, 'water pipe': 11789, 'not sorted': 8146, 'sewer': 5504, 'block line': 4386, 'unsorted speck': 3535, 'railroad': 1500, 'streetcar': 1457}
+  not sorted           85074 ->     95448 (  +10374, +12.19%) | out: {'text': 8146} | in: {'text': 18356}
+  moved 964,620 of 6,684,653 px (14.43%)
+[f3] 2. Plate 44, sort without truth (grid 0 blocks; rail off) against the map sort (rail off): share of each map-sort bin put in the same bin
+  before all_ink_same_bin 0.9386 | block line 0.747 | lot line 0.9454 | building outline 0.9927 | water pipe 0.9314 | sewer 0.9443 | text 0.9857
+  after  all_ink_same_bin 0.9376 | block line 0.7326 | lot line 0.9415 | building outline 0.9933 | water pipe 0.9306 | sewer 0.9428 | text 1.0
+[f4] 1. Plate 44, map sort (Ben map + Ben rail) -> the same with the text mask first. px; rows = before, cols = after
+  unsorted speck        3615 ->      1230 (   -2385, -65.98%) | out: {'text': 3611} | in: {'text': 1116}
+  block line          687521 ->    731511 (  +43990,  +6.40%) | out: {'text': 4670} | in: {'text': 48762}
+  lot line           1121745 ->   1198532 (  +76787,  +6.85%) | out: {'text': 224876} | in: {'text': 300030, 'building outline': 1739}
+  building outline    825570 ->    909292 (  +83722, +10.14%) | out: {'text': 65932, 'lot line': 1739} | in: {'text': 151449}
+  railroad            255499 ->    253999 (   -1500,  -0.59%) | out: {'text': 1500} | in: {}
+  streetcar           159342 ->    157865 (   -1477,  -0.93%) | out: {'text': 1477} | in: {}
+  water pipe          465705 ->    558717 (  +93012, +19.97%) | out: {'text': 11796} | in: {'text': 104877}
+  sewer               100448 ->     98474 (   -1974,  -1.97%) | out: {'text': 5504} | in: {'text': 3471}
+  text               2980214 ->   2680042 ( -300172, -10.07%) | out: {'lot line': 300030, 'building outline': 151449, 'water pipe': 104877, 'block line': 48762, 'not sorted': 18267, 'sewer': 3471, 'unsorted speck': 1116} | in: {'lot line': 224876, 'building outline': 65932, 'water pipe': 11796, 'not sorted': 8434, 'sewer': 5504, 'block line': 4670, 'unsorted speck': 3611, 'railroad': 1500, 'streetcar': 1477}
+  not sorted           85074 ->     95071 (   +9997, +11.75%) | out: {'text': 8434} | in: {'text': 18267}
+  moved 958,784 of 6,684,733 px (14.34%)
+[f4] 2. Plate 44, sort without truth (grid 0 blocks; rail off) against the map sort (rail off): share of each map-sort bin put in the same bin
+  before all_ink_same_bin 0.9386 | block line 0.747 | lot line 0.9454 | building outline 0.9927 | water pipe 0.9314 | sewer 0.9443 | text 0.9857
+  after  all_ink_same_bin 0.9378 | block line 0.7327 | lot line 0.9417 | building outline 0.9933 | water pipe 0.9304 | sewer 0.9429 | text 1.0
+[f3 -> f4] Plate 44, the masked map sort with finder3 against the same with finder4: moved 13,423 px
+  lot line -> text                     9329 px
+  water pipe -> text                   1428 px
+  building outline -> text             1263 px
+  bin unsorted speck   f3        87 -> f4        51 (-36)
+  bin block line       f3    731843 -> f4    731511 (-332)
+  bin lot line         f3   1207718 -> f4   1198532 (-9186)
+  bin building outline f3    910730 -> f4    909292 (-1438)
+  bin railroad         f3    253999 -> f4    253999 (+0)
+  bin streetcar        f3    157885 -> f4    157865 (-20)
+  bin water pipe       f3    560437 -> f4    558717 (-1720)
+  bin sewer            f3     98226 -> f4     98474 (+248)
+  bin text             f3   2667181 -> f4   2680042 (+12861)
+  bin not sorted       f3     95448 -> f4     95071 (-377)

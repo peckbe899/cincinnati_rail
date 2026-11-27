@@ -1,0 +1,91 @@
+{
+ "note": "By-eye verdicts (Claude, 27 Nov 2026) on random changes of the FROZEN finder4 (out/finder4) against finder3, full resolution. Sheets pics/eye/block_N.png (24 block-step words, drawn 1:1, seed eye-block-N) and pics/eye/ditto_N.png (15 ditto-step marks, drawn 2x, seed eye-ditto-N). right = the new text is text (full stops, primes, inch marks and hyphens count as text); wrong = not text; unsure = cannot tell. The samples were drawn from the masks that were then frozen; nothing was changed after the look.",
+ "block": {
+  "5": {
+   "scale": 100,
+   "n": 24,
+   "right": 23,
+   "unsure": 0,
+   "wrong": 1,
+   "wrong_list": [
+    "#6 9579,293: 1 px on a filled dot symbol"
+   ]
+  },
+  "30": {
+   "scale": 200,
+   "n": 24,
+   "right": 22,
+   "unsure": 1,
+   "wrong": 1,
+   "wrong_list": [
+    "#11 4466,5016: round symbol crossed by a line"
+   ],
+   "unsure_list": [
+    "#23 3811,6065: bit under 1ST"
+   ]
+  },
+  "49": {
+   "scale": 400,
+   "n": 24,
+   "right": 20,
+   "unsure": 2,
+   "wrong": 2,
+   "wrong_list": [
+    "#1 5760,2540: round symbol",
+    "#3 10778,1632: ornament (compass or seal)"
+   ],
+   "unsure_list": [
+    "#19 4576,928 and #22 4582,963: bits under FORT at a line junction"
+   ]
+  }
+ },
+ "ditto": {
+  "5": {
+   "scale": 100,
+   "n": 15,
+   "right": 13,
+   "unsure": 0,
+   "wrong": 2,
+   "wrong_list": [
+    "#10 4792,5790: dash of a dashed line",
+    "#11 6589,4420: corner dash of a dashed outline"
+   ]
+  },
+  "30": {
+   "scale": 200,
+   "n": 15,
+   "right": 15,
+   "unsure": 0,
+   "wrong": 0
+  },
+  "49": {
+   "scale": 400,
+   "n": 15,
+   "right": 12,
+   "unsure": 3,
+   "wrong": 0,
+   "unsure_list": [
+    "#6 9022,2384 single blob",
+    "#12 8998,2105 single tick",
+    "#14 6131,346 dot under a dashed row"
+   ]
+  }
+ },
+ "rail": {
+  "note": "checks/rail_finder4 (copy of fix_ditto check_new_text.py): every new text blob in Ben rail bands, looked at",
+  "p44": [
+   "9634,3121 / 9624,3122 / 9498,3217: feet of the E of AVENUE at the streetcar track (1, 33, 50 px; 1, 7, 29 in band)"
+  ],
+  "p5": [
+   "4153,989: big A crossed by lines, its foot meets a track end (607 px, 91 in band; part of the foot may be track end)",
+   "2807,2345: S crossed by the streetcar track (194 px, 89 in band)",
+   "2944,2079 and 2966,2079: Q touching the track (2, 11 px)",
+   "2491,7002 and 2525,7002: H feet touching the track (7, 5 px)"
+  ],
+  "verdict": "no rail tick and no streetcar dash"
+ },
+ "near_ben_lines": {
+  "p44": "9 blobs listed; 2 wrong: arcs of a circle at the sheet corner 90,21 (446 px) and 55,38 (243 px); the rest are figure strokes (5, 6, 4, 29) at his lines",
+  "p5": "22 blobs listed; letters and figures crossed by his lines (A, Y, E, D, B, 2, O, R, G, 18, 25, 32, 3, 4); 7572,2573 and 8926,2586 include junction bits (unsure)"
+ }
+}

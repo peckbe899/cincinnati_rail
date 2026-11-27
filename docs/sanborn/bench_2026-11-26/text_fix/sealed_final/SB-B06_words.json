@@ -1,0 +1,97 @@
+{
+ "crop": "SB-B06",
+ "plate": "58",
+ "win": [
+  3143,
+  6238,
+  3443,
+  6498
+ ],
+ "scale_ft_per_inch": 100,
+ "half": "B",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   3231,
+   6314,
+   3347,
+   6422
+  ]
+ ],
+ "scope_px": 12753,
+ "why": "block 51 on plate 58, drawn with random.Random('58') from the plate list (annot/selection.json)",
+ "n_words": 1,
+ "mask": "SB-B06_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 10291,
+  "ink_not_text": 995,
+  "text": 1344,
+  "dont_care": 65370
+ },
+ "boxes": [
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    3260,
+    6300,
+    3260,
+    6440
+   ],
+   "width": 4,
+   "note": "lot line left of the 5",
+   "line": 4,
+   "effect_px": 147
+  }
+ ],
+ "words": [
+  {
+   "id": "SB-B06-001",
+   "reading": "51",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 58.0,
+   "length": 66.0,
+   "poly": [
+    [
+     3256.0,
+     6339.0
+    ],
+    [
+     3322.0,
+     6339.0
+    ],
+    [
+     3322.0,
+     6397.0
+    ],
+    [
+     3256.0,
+     6397.0
+    ]
+   ],
+   "aabb": [
+    3256,
+    6339,
+    3322,
+    6397
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1449,
+   "annot_line": 2,
+   "ink_px": 1687,
+   "text_px_final": 1344
+  }
+ ],
+ "dropped_outside_scope": []
+}

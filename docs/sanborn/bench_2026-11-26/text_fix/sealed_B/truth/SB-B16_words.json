@@ -1,0 +1,239 @@
+{
+ "crop": "SB-B16",
+ "plate": "84",
+ "win": [
+  2535,
+  5370,
+  2835,
+  5630
+ ],
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   2635,
+   5452,
+   2746,
+   5555
+  ]
+ ],
+ "why": "block 17 on plate 84, drawn with random.Random('84') from the plate list (annot/selection.json)",
+ "n_words": 5,
+ "mask": "SB-B16_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope)"
+ },
+ "counts": {
+  "paper": 9117,
+  "ink_not_text": 973,
+  "text": 1333,
+  "dont_care": 66577
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SB-B16-001",
+   "reading": "17",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 53.0,
+   "length": 61.0,
+   "poly": [
+    [
+     2660.0,
+     5477.0
+    ],
+    [
+     2721.0,
+     5477.0
+    ],
+    [
+     2721.0,
+     5530.0
+    ],
+    [
+     2660.0,
+     5530.0
+    ]
+   ],
+   "aabb": [
+    2660,
+    5477,
+    2721,
+    5530
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 900,
+   "annot_line": 2,
+   "ink_px": 1080,
+   "text_px_final": 899
+  },
+  {
+   "id": "SB-B16-002",
+   "reading": "282",
+   "kind": "house",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 20.0,
+   "length": 36.0,
+   "poly": [
+    [
+     2617.0,
+     5503.0
+    ],
+    [
+     2653.0,
+     5503.0
+    ],
+    [
+     2653.0,
+     5523.0
+    ],
+    [
+     2617.0,
+     5523.0
+    ]
+   ],
+   "aabb": [
+    2617,
+    5503,
+    2653,
+    5523
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 297,
+   "annot_line": 3,
+   "ink_px": 284,
+   "text_px_final": 148
+  },
+  {
+   "id": "SB-B16-003",
+   "reading": "283",
+   "kind": "house",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 38.0,
+   "poly": [
+    [
+     2623.0,
+     5432.0
+    ],
+    [
+     2661.0,
+     5432.0
+    ],
+    [
+     2661.0,
+     5456.0
+    ],
+    [
+     2623.0,
+     5456.0
+    ]
+   ],
+   "aabb": [
+    2623,
+    5432,
+    2661,
+    5456
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 317,
+   "annot_line": 4,
+   "ink_px": 317,
+   "text_px_final": 30
+  },
+  {
+   "id": "SB-B16-004",
+   "reading": "254",
+   "kind": "house",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 18.0,
+   "length": 42.0,
+   "poly": [
+    [
+     2698.0,
+     5512.0
+    ],
+    [
+     2740.0,
+     5512.0
+    ],
+    [
+     2740.0,
+     5530.0
+    ],
+    [
+     2698.0,
+     5530.0
+    ]
+   ],
+   "aabb": [
+    2698,
+    5512,
+    2740,
+    5530
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 330,
+   "annot_line": 5,
+   "ink_px": 319,
+   "text_px_final": 319
+  },
+  {
+   "id": "SB-B16-005",
+   "reading": "95",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 34.0,
+   "length": 45.0,
+   "poly": [
+    [
+     2734.0,
+     5485.0
+    ],
+    [
+     2779.0,
+     5485.0
+    ],
+    [
+     2779.0,
+     5519.0
+    ],
+    [
+     2734.0,
+     5519.0
+    ]
+   ],
+   "aabb": [
+    2734,
+    5485,
+    2779,
+    5519
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 487,
+   "annot_line": 6,
+   "ink_px": 576,
+   "text_px_final": 138
+  }
+ ]
+}

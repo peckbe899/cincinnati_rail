@@ -1,0 +1,79 @@
+{
+ "crop": "SB-B03",
+ "plate": "56",
+ "win": [
+  8880,
+  1394,
+  9180,
+  1654
+ ],
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   8979,
+   1474,
+   9082,
+   1574
+  ]
+ ],
+ "why": "block 12 on plate 56, drawn with random.Random('56') from the plate list (annot/selection.json)",
+ "n_words": 1,
+ "mask": "SB-B03_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope)"
+ },
+ "counts": {
+  "paper": 8890,
+  "ink_not_text": 500,
+  "text": 910,
+  "dont_care": 67700
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SB-B03-001",
+   "reading": "12",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 50.0,
+   "length": 53.0,
+   "poly": [
+    [
+     9004.0,
+     1499.0
+    ],
+    [
+     9057.0,
+     1499.0
+    ],
+    [
+     9057.0,
+     1549.0
+    ],
+    [
+     9004.0,
+     1549.0
+    ]
+   ],
+   "aabb": [
+    9004,
+    1499,
+    9057,
+    1549
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 910,
+   "annot_line": 2,
+   "ink_px": 910,
+   "text_px_final": 910
+  }
+ ]
+}

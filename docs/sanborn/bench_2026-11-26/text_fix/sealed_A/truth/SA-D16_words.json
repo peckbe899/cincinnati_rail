@@ -1,0 +1,207 @@
+{
+ "crop": "SA-D16",
+ "plate": "52",
+ "win": [
+  5597,
+  2349,
+  5721,
+  2470
+ ],
+ "why": "1 ditto mark(s) found in the seeded random built-up window [5295, 2216, 5795, 2716] of plate 52 (round 1)",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope_px": 3540,
+ "n_words": 3,
+ "mask": "SA-D16_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (glyph and line share ink; CARE boxes; outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 2812,
+  "ink_not_text": 509,
+  "text": 219,
+  "dont_care": 11464
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-D16-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap",
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 7.0,
+   "length": 9.0,
+   "poly": [
+    [
+     5654.0,
+     2405.5
+    ],
+    [
+     5663.0,
+     2405.5
+    ],
+    [
+     5663.0,
+     2412.5
+    ],
+    [
+     5654.0,
+     2412.5
+    ]
+   ],
+   "aabb": [
+    5654,
+    2405,
+    5663,
+    2413
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 35,
+   "annot_line": 6,
+   "target": true,
+   "ink_px": 35,
+   "scored_text_px": 35
+  },
+  {
+   "id": "SA-D16-006",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.8,
+   "length": 14.0,
+   "poly": [
+    [
+     5615.0,
+     2385.2
+    ],
+    [
+     5629.0,
+     2385.2
+    ],
+    [
+     5629.0,
+     2414.0
+    ],
+    [
+     5615.0,
+     2414.0
+    ]
+   ],
+   "aabb": [
+    5615,
+    2385,
+    5629,
+    2414
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 128,
+   "annot_line": 13,
+   "target": false,
+   "ink_px": 128,
+   "scored_text_px": 0
+  },
+  {
+   "id": "SA-D16-007",
+   "reading": "329-27",
+   "kind": "house",
+   "flags": [
+    "run"
+   ],
+   "angle": 86.7,
+   "height": 28.7,
+   "length": 76.6,
+   "poly": [
+    [
+     5699.4,
+     2375.4
+    ],
+    [
+     5703.8,
+     2451.9
+    ],
+    [
+     5675.1,
+     2453.5
+    ],
+    [
+     5670.7,
+     2377.1
+    ]
+   ],
+   "aabb": [
+    5670,
+    2375,
+    5704,
+    2454
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 375,
+   "annot_line": 14,
+   "target": false,
+   "ink_px": 567,
+   "scored_text_px": 184
+  }
+ ],
+ "dropped_outside_scope": [
+  {
+   "id": "SA-D16-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 5
+  },
+  {
+   "id": "SA-D16-003",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 7
+  },
+  {
+   "id": "SA-D16-004",
+   "reading": "2",
+   "kind": "story",
+   "annot_line": 11
+  },
+  {
+   "id": "SA-D16-005",
+   "reading": "331",
+   "kind": "house",
+   "annot_line": 12
+  },
+  {
+   "id": "SA-D16-008",
+   "reading": "2",
+   "kind": "story",
+   "annot_line": 15
+  },
+  {
+   "id": "SA-D16-009",
+   "reading": "325",
+   "kind": "house",
+   "annot_line": 16
+  },
+  {
+   "id": "SA-D16-010",
+   "reading": "U",
+   "kind": "owner",
+   "annot_line": 17
+  },
+  {
+   "id": "SA-D16-011",
+   "reading": "30",
+   "kind": "lot",
+   "annot_line": 18
+  }
+ ]
+}

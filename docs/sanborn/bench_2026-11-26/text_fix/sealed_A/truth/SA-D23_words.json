@@ -1,0 +1,156 @@
+{
+ "crop": "SA-D23",
+ "plate": "66",
+ "win": [
+  9191,
+  2798,
+  9314,
+  2918
+ ],
+ "why": "1 ditto mark(s) found in the seeded random built-up window [8944, 2682, 9444, 3182] of plate 66 (round 1)",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope_px": 3422,
+ "n_words": 3,
+ "mask": "SA-D23_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (glyph and line share ink; CARE boxes; outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 2813,
+  "ink_not_text": 210,
+  "text": 398,
+  "dont_care": 11339
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-D23-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap",
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 6.0,
+   "length": 8.0,
+   "poly": [
+    [
+     9248.0,
+     2854.5
+    ],
+    [
+     9256.0,
+     2854.5
+    ],
+    [
+     9256.0,
+     2860.5
+    ],
+    [
+     9248.0,
+     2860.5
+    ]
+   ],
+   "aabb": [
+    9248,
+    2854,
+    9256,
+    2861
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 18,
+   "annot_line": 4,
+   "target": true,
+   "ink_px": 29,
+   "scored_text_px": 18
+  },
+  {
+   "id": "SA-D23-002",
+   "reading": "857",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 23.0,
+   "length": 55.0,
+   "poly": [
+    [
+     9231.0,
+     2823.0
+    ],
+    [
+     9286.0,
+     2823.0
+    ],
+    [
+     9286.0,
+     2846.0
+    ],
+    [
+     9231.0,
+     2846.0
+    ]
+   ],
+   "aabb": [
+    9231,
+    2823,
+    9286,
+    2846
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 371,
+   "annot_line": 5,
+   "target": false,
+   "ink_px": 371,
+   "scored_text_px": 275
+  },
+  {
+   "id": "SA-D23-003",
+   "reading": "104",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 39.0,
+   "poly": [
+    [
+     9234.0,
+     2881.0
+    ],
+    [
+     9273.0,
+     2881.0
+    ],
+    [
+     9273.0,
+     2906.0
+    ],
+    [
+     9234.0,
+     2906.0
+    ]
+   ],
+   "aabb": [
+    9234,
+    2881,
+    9273,
+    2906
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 480,
+   "annot_line": 6,
+   "target": false,
+   "ink_px": 480,
+   "scored_text_px": 105
+  }
+ ],
+ "dropped_outside_scope": []
+}

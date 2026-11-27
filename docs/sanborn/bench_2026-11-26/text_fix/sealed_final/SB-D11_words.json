@@ -1,0 +1,163 @@
+{
+ "crop": "SB-D11",
+ "plate": "76",
+ "win": [
+  5354,
+  1193,
+  5934,
+  1673
+ ],
+ "scale_ft_per_inch": 200,
+ "half": "B",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   5857,
+   1392,
+   5917,
+   1454
+  ]
+ ],
+ "scope_px": 3843,
+ "why": "ditto window 76 window 4 drawn with random.Random('ditto-76') in built-up cells: every ditto mark inside",
+ "n_words": 3,
+ "mask": "SB-D11_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 3046,
+  "ink_not_text": 489,
+  "text": 278,
+  "dont_care": 274587
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SB-D11-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 12.0,
+   "length": 10.0,
+   "poly": [
+    [
+     5882.0,
+     1417.0
+    ],
+    [
+     5892.0,
+     1417.0
+    ],
+    [
+     5892.0,
+     1429.0
+    ],
+    [
+     5882.0,
+     1429.0
+    ]
+   ],
+   "aabb": [
+    5882,
+    1417,
+    5892,
+    1429
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 33,
+   "annot_line": 2,
+   "ink_px": 37,
+   "text_px_final": 33
+  },
+  {
+   "id": "SB-D11-002",
+   "reading": "14",
+   "kind": "house",
+   "flags": [],
+   "target": false,
+   "angle": -53.1,
+   "height": 23.0,
+   "length": 43.9,
+   "poly": [
+    [
+     5843.1,
+     1420.6
+    ],
+    [
+     5869.4,
+     1385.4
+    ],
+    [
+     5887.8,
+     1399.2
+    ],
+    [
+     5861.5,
+     1434.4
+    ]
+   ],
+   "aabb": [
+    5843,
+    1385,
+    5888,
+    1435
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 304,
+   "annot_line": 4,
+   "ink_px": 298,
+   "text_px_final": 245
+  },
+  {
+   "id": "SB-D11-003",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 25.2,
+   "length": 30.0,
+   "poly": [
+    [
+     5915.0,
+     1427.8
+    ],
+    [
+     5945.0,
+     1427.8
+    ],
+    [
+     5945.0,
+     1453.0
+    ],
+    [
+     5915.0,
+     1453.0
+    ]
+   ],
+   "aabb": [
+    5915,
+    1427,
+    5945,
+    1453
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 167,
+   "annot_line": 5,
+   "ink_px": 143,
+   "text_px_final": 0
+  }
+ ],
+ "dropped_outside_scope": []
+}

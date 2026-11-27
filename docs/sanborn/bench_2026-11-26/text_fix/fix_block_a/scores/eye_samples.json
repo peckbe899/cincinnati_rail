@@ -1,0 +1,9 @@
+{"note": "By-eye verdicts (Claude, 26 Nov 2026) on random samples of blockfix's changed words, sheets at 1:1 (pics/samples/*.png: scan | finder3 | blockfix, changed px outlined red). Final version (code md5 9bbc9715ef6140d33ecc7cd842cd21c0). Set 1 (13, 23, 95) was drawn first and the earlier look at it led to the curve rule; set 2 (43, 80, 93B) was drawn after the code was frozen and never seen before. right = the new text is text; wrong = mostly not text; unsure = mixed or unclear.",
+ "set1": {
+  "13": {"scale": 100, "seed": "blockfix-final-13", "n": 25, "right": 22, "unsure": 3, "wrong": 0, "unsure_ids": [10, 15, 79]},
+  "23": {"scale": 200, "seed": "blockfix-final-23", "n": 25, "right": 19, "unsure": 0, "wrong": 6, "wrong_ids": {"3": "junction blob by a figure", "7": "messy owner lettering and lines", "11": "big ?-shaped mark (kind unknown)", "12": "big ?-shaped mark (kind unknown)", "26": "ornate seal", "27": "heavy wall corner"}},
+  "95": {"scale": 400, "seed": "blockfix-final-95", "n": 25, "right": 19, "unsure": 3, "wrong": 3, "unsure_ids": [8, 24, 28], "wrong_ids": {"1": "ornament", "15": "heavy arc", "35": "wavy heavy line (finder3 already text)"}}},
+ "set2": {
+  "43": {"scale": 100, "seed": "blockfix-indep-43", "n": 25, "right": 25, "unsure": 0, "wrong": 0},
+  "80": {"scale": 200, "seed": "blockfix-indep-80", "n": 25, "right": 20, "unsure": 3, "wrong": 2, "unsure_ids": [17, 78, 91], "wrong_ids": {"14": "round symbol crossed by lines", "96": "filled square building"}},
+  "93B": {"scale": 400, "seed": "blockfix-indep-93B", "n": 5, "right": 5, "unsure": 0, "wrong": 0, "note": "only 5 words changed on the whole plate"}}}

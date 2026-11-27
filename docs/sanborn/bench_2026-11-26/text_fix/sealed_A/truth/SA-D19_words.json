@@ -1,0 +1,107 @@
+{
+ "crop": "SA-D19",
+ "plate": "52",
+ "win": [
+  5640,
+  2562,
+  5765,
+  2685
+ ],
+ "why": "1 ditto mark(s) found in the seeded random built-up window [5295, 2216, 5795, 2716] of plate 52 (round 1)",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope_px": 3721,
+ "n_words": 1,
+ "mask": "SA-D19_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (glyph and line share ink; CARE boxes; outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 3312,
+  "ink_not_text": 363,
+  "text": 45,
+  "dont_care": 11655
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-D19-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap",
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 9.0,
+   "length": 10.0,
+   "poly": [
+    [
+     5697.0,
+     2618.5
+    ],
+    [
+     5707.0,
+     2618.5
+    ],
+    [
+     5707.0,
+     2627.5
+    ],
+    [
+     5697.0,
+     2627.5
+    ]
+   ],
+   "aabb": [
+    5697,
+    2618,
+    5707,
+    2628
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 45,
+   "annot_line": 9,
+   "target": true,
+   "ink_px": 46,
+   "scored_text_px": 45
+  }
+ ],
+ "dropped_outside_scope": [
+  {
+   "id": "SA-D19-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 8
+  },
+  {
+   "id": "SA-D19-003",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 10
+  },
+  {
+   "id": "SA-D19-004",
+   "reading": "325",
+   "kind": "house",
+   "annot_line": 16
+  },
+  {
+   "id": "SA-D19-005",
+   "reading": "1",
+   "kind": "story",
+   "annot_line": 20
+  },
+  {
+   "id": "SA-D19-006",
+   "reading": "321",
+   "kind": "house",
+   "annot_line": 21
+  }
+ ]
+}

@@ -1,0 +1,95 @@
+{
+ "crop": "SA-D04",
+ "plate": "6",
+ "win": [
+  786,
+  4904,
+  912,
+  5028
+ ],
+ "why": "1 ditto mark(s) found in the seeded random built-up window [668, 4902, 1168, 5402] of plate 6 (round 1)",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope_px": 3844,
+ "n_words": 1,
+ "mask": "SA-D04_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (glyph and line share ink; CARE boxes; outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 3087,
+  "ink_not_text": 692,
+  "text": 42,
+  "dont_care": 11803
+ },
+ "boxes": [
+  {
+   "op": "CARE",
+   "box": [
+    905,
+    4960,
+    918,
+    4976
+   ],
+   "note": "stub under the rail line: maybe a hidden ditto mark",
+   "line": 21
+  }
+ ],
+ "words": [
+  {
+   "id": "SA-D04-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap",
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 11.0,
+   "poly": [
+    [
+     843.0,
+     4960.5
+    ],
+    [
+     854.0,
+     4960.5
+    ],
+    [
+     854.0,
+     4970.5
+    ],
+    [
+     843.0,
+     4970.5
+    ]
+   ],
+   "aabb": [
+    843,
+    4960,
+    854,
+    4971
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 49,
+   "annot_line": 7,
+   "target": true,
+   "ink_px": 58,
+   "scored_text_px": 42
+  }
+ ],
+ "dropped_outside_scope": [
+  {
+   "id": "SA-D04-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 5
+  }
+ ]
+}

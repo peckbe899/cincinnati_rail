@@ -1,0 +1,81 @@
+{
+ "crop": "DB01",
+ "plate": "3",
+ "win": [
+  3060,
+  3138,
+  3241,
+  3311
+ ],
+ "why": "block number 15 on plate 3 (100 ft), drawn at random (candidates/draw.json)",
+ "n_words": 1,
+ "mask": "DB01_mask.png",
+ "mask_values": {
+  "0": "paper (in scope)",
+  "1": "ink, not text (in scope)",
+  "2": "text ink (in scope)",
+  "3": "don't care (glyph and line share ink; CARE boxes; everything outside the scope)"
+ },
+ "counts": {
+  "paper": 9240,
+  "ink_not_text": 1191,
+  "text": 1199,
+  "dont_care": 19683
+ },
+ "scope_px": 11648,
+ "scope_counts": {
+  "paper": 9240,
+  "ink_not_text": 1191,
+  "text": 1199,
+  "dont_care": 18
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DB01-001",
+   "reading": "15",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 53.0,
+   "length": 61.0,
+   "poly": [
+    [
+     3120.0,
+     3198.0
+    ],
+    [
+     3181.0,
+     3198.0
+    ],
+    [
+     3181.0,
+     3251.0
+    ],
+    [
+     3120.0,
+     3251.0
+    ]
+   ],
+   "aabb": [
+    3120,
+    3198,
+    3181,
+    3251
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1199,
+   "annot_line": 3,
+   "in_scope": {
+    "text_px": 1199,
+    "dont_care_px": 9,
+    "ink_px": 1208
+   },
+   "target": true,
+   "ink_size_px": 1208
+  }
+ ]
+}

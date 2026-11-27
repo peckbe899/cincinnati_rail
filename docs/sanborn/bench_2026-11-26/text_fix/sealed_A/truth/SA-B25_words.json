@@ -1,0 +1,243 @@
+{
+ "crop": "SA-B25",
+ "plate": "46",
+ "win": [
+  9471,
+  755,
+  9691,
+  975
+ ],
+ "why": "block number 10 on plate 46 (400 ft), drawn at random (seed: plate name) from the plate list",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope_px": 13221,
+ "n_words": 5,
+ "mask": "SA-B25_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (glyph and line share ink; CARE boxes; outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 10851,
+  "ink_not_text": 536,
+  "text": 1700,
+  "dont_care": 35313
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-B25-001",
+   "reading": "10",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 66.0,
+   "length": 62.0,
+   "poly": [
+    [
+     9547.0,
+     826.0
+    ],
+    [
+     9609.0,
+     826.0
+    ],
+    [
+     9609.0,
+     892.0
+    ],
+    [
+     9547.0,
+     892.0
+    ]
+   ],
+   "aabb": [
+    9547,
+    826,
+    9609,
+    892
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1294,
+   "annot_line": 2,
+   "target": true,
+   "ink_px": 1591,
+   "scored_text_px": 1294
+  },
+  {
+   "id": "SA-B25-002",
+   "reading": "WERK",
+   "kind": "owner",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 62.0,
+   "poly": [
+    [
+     9483.0,
+     902.0
+    ],
+    [
+     9545.0,
+     902.0
+    ],
+    [
+     9545.0,
+     933.0
+    ],
+    [
+     9483.0,
+     933.0
+    ]
+   ],
+   "aabb": [
+    9483,
+    902,
+    9545,
+    933
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 616,
+   "annot_line": 3,
+   "target": false,
+   "ink_px": 629,
+   "scored_text_px": 124
+  },
+  {
+   "id": "SA-B25-003",
+   "reading": "REALTY CO.",
+   "kind": "owner",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 25.6,
+   "length": 100.0,
+   "poly": [
+    [
+     9470.0,
+     917.0
+    ],
+    [
+     9570.0,
+     917.0
+    ],
+    [
+     9570.0,
+     942.6
+    ],
+    [
+     9470.0,
+     942.6
+    ]
+   ],
+   "aabb": [
+    9470,
+    917,
+    9570,
+    943
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 738,
+   "annot_line": 4,
+   "target": false,
+   "ink_px": 738,
+   "scored_text_px": 5
+  },
+  {
+   "id": "SA-B25-004",
+   "reading": "166.86'",
+   "kind": "lotdim",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 16.0,
+   "length": 58.0,
+   "poly": [
+    [
+     9490.0,
+     814.0
+    ],
+    [
+     9548.0,
+     814.0
+    ],
+    [
+     9548.0,
+     830.0
+    ],
+    [
+     9490.0,
+     830.0
+    ]
+   ],
+   "aabb": [
+    9490,
+    814,
+    9548,
+    830
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 359,
+   "annot_line": 5,
+   "target": false,
+   "ink_px": 406,
+   "scored_text_px": 150
+  },
+  {
+   "id": "SA-B25-005",
+   "reading": "WOLFERT.",
+   "kind": "owner",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 81.0,
+   "poly": [
+    [
+     9513.0,
+     783.0
+    ],
+    [
+     9594.0,
+     783.0
+    ],
+    [
+     9594.0,
+     809.0
+    ],
+    [
+     9513.0,
+     809.0
+    ]
+   ],
+   "aabb": [
+    9513,
+    783,
+    9594,
+    809
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 581,
+   "annot_line": 7,
+   "target": false,
+   "ink_px": 732,
+   "scored_text_px": 132
+  }
+ ],
+ "dropped_outside_scope": []
+}

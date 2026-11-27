@@ -1,0 +1,191 @@
+{
+ "crop": "DD37",
+ "plate": "86",
+ "win": [
+  4537,
+  176,
+  4937,
+  476
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   4707,
+   396,
+   4768,
+   453
+  ],
+  [
+   4743,
+   398,
+   4796,
+   454
+  ]
+ ],
+ "n_words": 3,
+ "n_targets": 2,
+ "mask": "DD37_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 98478,
+  "ink_not_text": 654,
+  "text": 102,
+  "dont_care": 20766
+ },
+ "counts_in_scope": {
+  "ink_not_text": 654,
+  "text": 102,
+  "dont_care": 13
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DD37-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:quote"
+   ],
+   "angle": 0.0,
+   "height": 7.0,
+   "length": 11.0,
+   "poly": [
+    [
+     4732.0,
+     421.0
+    ],
+    [
+     4743.0,
+     421.0
+    ],
+    [
+     4743.0,
+     428.0
+    ],
+    [
+     4732.0,
+     428.0
+    ]
+   ],
+   "aabb": [
+    4732,
+    421,
+    4743,
+    428
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": true,
+   "box_word": true,
+   "text_px": 32,
+   "in_scope": true,
+   "ink_px": 32,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    19,
+    13
+   ],
+   "style": "quote",
+   "neg_type": ""
+  },
+  {
+   "id": "DD37-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:other"
+   ],
+   "angle": 0.0,
+   "height": 6.0,
+   "length": 3.0,
+   "poly": [
+    [
+     4768.0,
+     423.0
+    ],
+    [
+     4771.0,
+     423.0
+    ],
+    [
+     4771.0,
+     429.0
+    ],
+    [
+     4768.0,
+     429.0
+    ]
+   ],
+   "aabb": [
+    4768,
+    423,
+    4771,
+    429
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 3,
+   "target": true,
+   "box_word": true,
+   "text_px": 14,
+   "in_scope": true,
+   "ink_px": 14,
+   "care_px": 0,
+   "pieces": 1,
+   "piece_px": [
+    14
+   ],
+   "style": "other",
+   "neg_type": ""
+  },
+  {
+   "id": "DD37-003",
+   "reading": "27",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 23.0,
+   "length": 19.0,
+   "poly": [
+    [
+     4761.0,
+     392.0
+    ],
+    [
+     4780.0,
+     392.0
+    ],
+    [
+     4780.0,
+     415.0
+    ],
+    [
+     4761.0,
+     415.0
+    ]
+   ],
+   "aabb": [
+    4761,
+    392,
+    4780,
+    415
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 4,
+   "target": false,
+   "box_word": true,
+   "text_px": 56,
+   "in_scope": true
+  }
+ ]
+}

@@ -1,0 +1,252 @@
+{
+ "crop": "SA-D36",
+ "plate": "6",
+ "win": [
+  8117,
+  1781,
+  8355,
+  1906
+ ],
+ "scale_ft_per_inch": 100,
+ "half": "A",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   8149,
+   1814,
+   8208,
+   1874
+  ],
+  [
+   8202,
+   1814,
+   8259,
+   1874
+  ],
+  [
+   8264,
+   1812,
+   8322,
+   1871
+  ]
+ ],
+ "scope_px": 10311,
+ "why": "3 ditto mark(s) found in the seeded random built-up window [7822, 1464, 8322, 1964] of plate 6 (round 3)",
+ "n_words": 4,
+ "mask": "SA-D36_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 8980,
+  "ink_not_text": 1014,
+  "text": 313,
+  "dont_care": 19443
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-D36-003",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 9.0,
+   "length": 9.0,
+   "poly": [
+    [
+     8174.0,
+     1839.5
+    ],
+    [
+     8183.0,
+     1839.5
+    ],
+    [
+     8183.0,
+     1848.5
+    ],
+    [
+     8174.0,
+     1848.5
+    ]
+   ],
+   "aabb": [
+    8174,
+    1839,
+    8183,
+    1849
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 50,
+   "annot_line": 17,
+   "ink_px": 54,
+   "text_px_final": 50
+  },
+  {
+   "id": "SA-D36-004",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 9.0,
+   "length": 7.0,
+   "poly": [
+    [
+     8227.0,
+     1839.5
+    ],
+    [
+     8234.0,
+     1839.5
+    ],
+    [
+     8234.0,
+     1848.5
+    ],
+    [
+     8227.0,
+     1848.5
+    ]
+   ],
+   "aabb": [
+    8227,
+    1839,
+    8234,
+    1849
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 47,
+   "annot_line": 18,
+   "ink_px": 47,
+   "text_px_final": 47
+  },
+  {
+   "id": "SA-D36-005",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 8.0,
+   "poly": [
+    [
+     8289.0,
+     1837.5
+    ],
+    [
+     8297.0,
+     1837.5
+    ],
+    [
+     8297.0,
+     1845.5
+    ],
+    [
+     8289.0,
+     1845.5
+    ]
+   ],
+   "aabb": [
+    8289,
+    1837,
+    8297,
+    1846
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 41,
+   "annot_line": 19,
+   "ink_px": 41,
+   "text_px_final": 41
+  },
+  {
+   "id": "SA-D36-009",
+   "reading": "3",
+   "kind": "story",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 19.0,
+   "poly": [
+    [
+     8149.0,
+     1849.0
+    ],
+    [
+     8168.0,
+     1849.0
+    ],
+    [
+     8168.0,
+     1876.0
+    ],
+    [
+     8149.0,
+     1876.0
+    ]
+   ],
+   "aabb": [
+    8149,
+    1849,
+    8168,
+    1876
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 182,
+   "annot_line": 25,
+   "ink_px": 182,
+   "text_px_final": 175
+  }
+ ],
+ "dropped_outside_scope": [
+  {
+   "id": "SA-D36-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 15
+  },
+  {
+   "id": "SA-D36-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 16
+  },
+  {
+   "id": "SA-D36-006",
+   "reading": "1026-24-22-20-18",
+   "kind": "house",
+   "annot_line": 20
+  },
+  {
+   "id": "SA-D36-007",
+   "reading": "1016",
+   "kind": "house",
+   "annot_line": 21
+  },
+  {
+   "id": "SA-D36-008",
+   "reading": "12\"SEWER",
+   "kind": "sewer",
+   "annot_line": 22
+  }
+ ]
+}

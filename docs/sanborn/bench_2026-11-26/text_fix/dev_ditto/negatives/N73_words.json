@@ -1,0 +1,136 @@
+{
+ "crop": "N73",
+ "plate": "93A",
+ "win": [
+  2275,
+  2786,
+  2339,
+  2850
+ ],
+ "kind": "targeted",
+ "target": "negative",
+ "scope_pad": 0,
+ "scope": [
+  [
+   2275,
+   2786,
+   2339,
+   2850
+  ]
+ ],
+ "n_words": 2,
+ "n_targets": 0,
+ "mask": "N73_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 3618,
+  "ink_not_text": 381,
+  "text": 74,
+  "dont_care": 23
+ },
+ "counts_in_scope": {
+  "ink_not_text": 381,
+  "text": 74,
+  "dont_care": 23
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "N73-001",
+   "reading": "-",
+   "kind": "negative",
+   "flags": [
+    "neg:hook"
+   ],
+   "angle": 0.0,
+   "height": 19.0,
+   "length": 12.0,
+   "poly": [
+    [
+     2302.0,
+     2809.0
+    ],
+    [
+     2314.0,
+     2809.0
+    ],
+    [
+     2314.0,
+     2828.0
+    ],
+    [
+     2302.0,
+     2828.0
+    ]
+   ],
+   "aabb": [
+    2302,
+    2809,
+    2314,
+    2828
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": false,
+   "box_word": true,
+   "text_px": 0,
+   "in_scope": true,
+   "ink_px": 80,
+   "care_px": 0,
+   "pieces": 1,
+   "piece_px": [
+    80
+   ],
+   "style": "",
+   "neg_type": "hook"
+  },
+  {
+   "id": "N73-002",
+   "reading": "5",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 21.0,
+   "poly": [
+    [
+     2315.0,
+     2840.0
+    ],
+    [
+     2336.0,
+     2840.0
+    ],
+    [
+     2336.0,
+     2867.0
+    ],
+    [
+     2315.0,
+     2867.0
+    ]
+   ],
+   "aabb": [
+    2315,
+    2840,
+    2336,
+    2867
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 4,
+   "target": false,
+   "box_word": true,
+   "text_px": 74,
+   "in_scope": true
+  }
+ ]
+}

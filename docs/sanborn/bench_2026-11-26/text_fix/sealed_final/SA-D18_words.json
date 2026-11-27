@@ -1,0 +1,156 @@
+{
+ "crop": "SA-D18",
+ "plate": "52",
+ "win": [
+  5625,
+  2497,
+  5750,
+  2619
+ ],
+ "scale_ft_per_inch": 100,
+ "half": "A",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   5657,
+   2528,
+   5717,
+   2587
+  ]
+ ],
+ "scope_px": 3660,
+ "why": "1 ditto mark(s) found in the seeded random built-up window [5295, 2216, 5795, 2716] of plate 52 (round 1)",
+ "n_words": 2,
+ "mask": "SA-D18_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 3116,
+  "ink_not_text": 337,
+  "text": 198,
+  "dont_care": 11599
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-D18-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 10.0,
+   "poly": [
+    [
+     5682.0,
+     2553.5
+    ],
+    [
+     5692.0,
+     2553.5
+    ],
+    [
+     5692.0,
+     2561.5
+    ],
+    [
+     5682.0,
+     2561.5
+    ]
+   ],
+   "aabb": [
+    5682,
+    2553,
+    5692,
+    2562
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 38,
+   "annot_line": 8,
+   "ink_px": 38,
+   "text_px_final": 38
+  },
+  {
+   "id": "SA-D18-006",
+   "reading": "325",
+   "kind": "house",
+   "flags": [],
+   "target": false,
+   "angle": 90.0,
+   "height": 26.0,
+   "length": 42.0,
+   "poly": [
+    [
+     5727.0,
+     2528.0
+    ],
+    [
+     5727.0,
+     2570.0
+    ],
+    [
+     5701.0,
+     2570.0
+    ],
+    [
+     5701.0,
+     2528.0
+    ]
+   ],
+   "aabb": [
+    5701,
+    2528,
+    5727,
+    2570
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 309,
+   "annot_line": 16,
+   "ink_px": 357,
+   "text_px_final": 160
+  }
+ ],
+ "dropped_outside_scope": [
+  {
+   "id": "SA-D18-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 7
+  },
+  {
+   "id": "SA-D18-003",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 9
+  },
+  {
+   "id": "SA-D18-004",
+   "reading": "329-27",
+   "kind": "house",
+   "annot_line": 14
+  },
+  {
+   "id": "SA-D18-005",
+   "reading": "2",
+   "kind": "story",
+   "annot_line": 15
+  },
+  {
+   "id": "SA-D18-007",
+   "reading": "321",
+   "kind": "house",
+   "annot_line": 21
+  }
+ ]
+}

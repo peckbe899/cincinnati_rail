@@ -1,0 +1,79 @@
+{
+ "crop": "SB-B20",
+ "plate": "88",
+ "win": [
+  3905,
+  4500,
+  4205,
+  4760
+ ],
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   3985,
+   4580,
+   4126,
+   4679
+  ]
+ ],
+ "why": "block 27 on plate 88, drawn with random.Random('88') from the plate list (annot/selection.json)",
+ "n_words": 1,
+ "mask": "SB-B20_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope)"
+ },
+ "counts": {
+  "paper": 12503,
+  "ink_not_text": 131,
+  "text": 1325,
+  "dont_care": 64041
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SB-B20-001",
+   "reading": "27",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 49.0,
+   "length": 91.0,
+   "poly": [
+    [
+     4010.0,
+     4605.0
+    ],
+    [
+     4101.0,
+     4605.0
+    ],
+    [
+     4101.0,
+     4654.0
+    ],
+    [
+     4010.0,
+     4654.0
+    ]
+   ],
+   "aabb": [
+    4010,
+    4605,
+    4101,
+    4654
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 1325,
+   "annot_line": 2,
+   "ink_px": 1325,
+   "text_px_final": 1325
+  }
+ ]
+}

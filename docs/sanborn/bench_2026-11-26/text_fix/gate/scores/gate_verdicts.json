@@ -1,0 +1,149 @@
+{
+ "1_block": {
+  "target": "pixel recall >= 0.95 and words found >= 95%",
+  "pixel_recall": 0.9169,
+  "words": "49/52",
+  "word_share": 0.9423,
+  "ci95": {
+   "pixel_recall": [
+    0.8773,
+    0.9518
+   ],
+   "word_share": [
+    0.8654,
+    1.0
+   ]
+  },
+  "finder3": {
+   "pixel_recall": 0.7601,
+   "words_found": 39,
+   "word_share": 0.75
+  },
+  "verdict": "FAIL"
+ },
+ "2_ditto": {
+  "target": "pixel recall >= 0.90 and words found >= 90%",
+  "pixel_recall": 0.822,
+  "words": "127/151",
+  "word_share": 0.8411,
+  "ci95": {
+   "pixel_recall": [
+    0.7557,
+    0.8841
+   ],
+   "word_share": [
+    0.7815,
+    0.8942
+   ]
+  },
+  "finder3": {
+   "pixel_recall": 0.6253,
+   "words_found": 87,
+   "word_share": 0.5762
+  },
+  "verdict": "FAIL"
+ },
+ "3_full_no_harm": {
+  "F1": [
+   0.8901,
+   0.8908
+  ],
+  "nontext_points": [
+   4.408,
+   4.492
+  ],
+  "street_pixel_recall": [
+   0.9206,
+   0.9291
+  ],
+  "street_words": [
+   "9/9",
+   "9/9"
+  ],
+  "straight_called_text": [
+   474,
+   504,
+   60821
+  ],
+  "paired_diff_ci95": {
+   "F1": [
+    -0.0002,
+    0.0017
+   ],
+   "nontext": [
+    0.0001,
+    0.0019
+   ],
+   "street": [
+    0.0,
+    0.0201
+   ],
+   "straight": [
+    0.0,
+    85.0
+   ]
+  },
+  "subtests": {
+   "F1": "PASS",
+   "nontext": "PASS",
+   "street_pixels": "FAIL",
+   "street_words": "PASS",
+   "straight": "FAIL"
+  },
+  "verdict": "FAIL"
+ },
+ "4_lines_rail_in_sample": {
+  "line_ink_called_text_pct": {
+   "44": {
+    "px1": 0.128,
+    "px3": 0.244
+   },
+   "1A": {
+    "px1": 0.186,
+    "px3": 0.447
+   },
+   "5": {
+    "px1": 0.135,
+    "px3": 0.459
+   }
+  },
+  "rail": {
+   "note": "every new text blob in the rail bands was looked at by eye at 4x (pics/rail): none is a rail tick or a streetcar dash; 44: feet of the E of AVENUE on the streetcar line (3 blobs, 2 on one E); 5: a big crossed figure (4 or A) at 4153,989 and a big 5 at 2807,2345 whose strokes meet a streetcar track end (a few px may be track ink), the joins of a big Q and an H with a track line (4 blobs, 2-11 px)",
+   "blobs": {
+    "44": 3,
+    "5": 6
+   },
+   "ticks_or_dashes": 0
+  },
+  "verdict": "PASS"
+ },
+ "5_H1_H4": {
+  "F1": [
+   0.9269,
+   0.9302
+  ],
+  "by_crop": {
+   "H1": [
+    0.9191,
+    0.9208
+   ],
+   "H2": [
+    0.9268,
+    0.9317
+   ],
+   "H3": [
+    0.8676,
+    0.8676
+   ],
+   "H4": [
+    0.97,
+    0.9743
+   ]
+  },
+  "paired_diff_ci95": [
+   0.0022,
+   0.0045
+  ],
+  "verdict": "PASS"
+ }
+}

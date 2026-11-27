@@ -1,0 +1,289 @@
+{
+ "crop": "SB-D05",
+ "plate": "71",
+ "win": [
+  4995,
+  2473,
+  5575,
+  2953
+ ],
+ "scale_ft_per_inch": 200,
+ "half": "B",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   5424,
+   2578,
+   5482,
+   2641
+  ],
+  [
+   5425,
+   2654,
+   5482,
+   2714
+  ]
+ ],
+ "scope_px": 7314,
+ "why": "ditto window 71 window 3 drawn with random.Random('ditto-71') in built-up cells: every ditto mark inside",
+ "n_words": 6,
+ "mask": "SB-D05_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 5988,
+  "ink_not_text": 516,
+  "text": 809,
+  "dont_care": 271087
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SB-D05-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 12.7,
+   "length": 7.8,
+   "poly": [
+    [
+     5449.0,
+     2603.0
+    ],
+    [
+     5456.8,
+     2603.0
+    ],
+    [
+     5456.8,
+     2615.7
+    ],
+    [
+     5449.0,
+     2615.7
+    ]
+   ],
+   "aabb": [
+    5449,
+    2603,
+    5457,
+    2616
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 27,
+   "annot_line": 2,
+   "ink_px": 27,
+   "text_px_final": 27
+  },
+  {
+   "id": "SB-D05-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 7.0,
+   "poly": [
+    [
+     5450.0,
+     2679.0
+    ],
+    [
+     5457.0,
+     2679.0
+    ],
+    [
+     5457.0,
+     2689.0
+    ],
+    [
+     5450.0,
+     2689.0
+    ]
+   ],
+   "aabb": [
+    5450,
+    2679,
+    5457,
+    2689
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 29,
+   "annot_line": 3,
+   "ink_px": 29,
+   "text_px_final": 29
+  },
+  {
+   "id": "SB-D05-003",
+   "reading": "2526",
+   "kind": "house",
+   "flags": [],
+   "target": false,
+   "angle": -90.0,
+   "height": 32.0,
+   "length": 63.0,
+   "poly": [
+    [
+     5469.0,
+     2638.0
+    ],
+    [
+     5469.0,
+     2575.0
+    ],
+    [
+     5501.0,
+     2575.0
+    ],
+    [
+     5501.0,
+     2638.0
+    ]
+   ],
+   "aabb": [
+    5469,
+    2575,
+    5501,
+    2638
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 687,
+   "annot_line": 5,
+   "ink_px": 685,
+   "text_px_final": 261
+  },
+  {
+   "id": "SB-D05-004",
+   "reading": "2522",
+   "kind": "house",
+   "flags": [],
+   "target": false,
+   "angle": -90.0,
+   "height": 29.0,
+   "length": 93.0,
+   "poly": [
+    [
+     5472.0,
+     2751.0
+    ],
+    [
+     5472.0,
+     2658.0
+    ],
+    [
+     5501.0,
+     2658.0
+    ],
+    [
+     5501.0,
+     2751.0
+    ]
+   ],
+   "aabb": [
+    5472,
+    2658,
+    5501,
+    2751
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1041,
+   "annot_line": 6,
+   "ink_px": 1008,
+   "text_px_final": 174
+  },
+  {
+   "id": "SB-D05-005",
+   "reading": "70",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 45.0,
+   "length": 46.0,
+   "poly": [
+    [
+     5391.0,
+     2673.0
+    ],
+    [
+     5437.0,
+     2673.0
+    ],
+    [
+     5437.0,
+     2718.0
+    ],
+    [
+     5391.0,
+     2718.0
+    ]
+   ],
+   "aabb": [
+    5391,
+    2673,
+    5437,
+    2718
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 596,
+   "annot_line": 7,
+   "ink_px": 595,
+   "text_px_final": 122
+  },
+  {
+   "id": "SB-D05-006",
+   "reading": "45",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 37.0,
+   "length": 50.0,
+   "poly": [
+    [
+     5393.0,
+     2596.0
+    ],
+    [
+     5443.0,
+     2596.0
+    ],
+    [
+     5443.0,
+     2633.0
+    ],
+    [
+     5393.0,
+     2633.0
+    ]
+   ],
+   "aabb": [
+    5393,
+    2596,
+    5443,
+    2633
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 606,
+   "annot_line": 8,
+   "ink_px": 612,
+   "text_px_final": 196
+  }
+ ],
+ "dropped_outside_scope": []
+}

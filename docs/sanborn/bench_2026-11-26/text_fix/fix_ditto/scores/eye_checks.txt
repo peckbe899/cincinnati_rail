@@ -1,0 +1,49 @@
+Eye checks of dittofix changes on whole fresh plates (26 Nov 2026). Judged by eye by Claude on the change sheets
+(code/dittofix.py --pic: up to 48 changes drawn at random with seed 0; each tile is a 64 x 64 px crop at 3x, scan beside
+the codes after, the changed pixels red). "Right" = the changed ink is text (a ditto, or another mark that is text: a
+prime, an inch mark, a full stop, a hyphen, a figure piece). "Wrong" = not text. "Unsure" = cannot tell at this zoom.
+
+Fresh plates: never used to design or tune; not sealed; not dev plates. Drawn at random per scale with
+random.Random('dittofix-eye-check'), then '-2', '-3' (code in the report). Only three 400 ft plates were free (50, 93B, 95).
+
+ROUND 1 (version before the last two route changes; sheets kept in out/fresh_round1/)
+  11  (100 ft) 73 changes, 48 looked at: right 42, wrong 4, unsure 2
+      wrong: 8262,6595 dash of a dashed line (near a figure); 1310,6669 a line end / symbol (near a figure);
+             1444,2753 dashes of a dashed line (near a figure); 639,2283 dashes of a dashed line (pair in a row)
+      unsure: 6691,3845; 1943,3262
+  83A (200 ft) 128 changes, 48 looked at: right 42, wrong 3, unsure 3
+      wrong: 3280,1994 dash of a dashed line (single piece); 2615,3682 tick between double lines (single piece);
+             2660,4316 tick on a curved line (single piece)
+      unsure: 697,802; 2369,5720; 4006,2203
+  93B (400 ft) 17 changes, all looked at: right 11, wrong 4, unsure 2
+      wrong: 5683,2953 tick at a line joint; 2518,3319 piece of a curved dashed line; 384,417 bits on a yellow strip;
+             6732,928 pieces of a broken line
+  50  (400 ft) 19 changes, all looked at: right 9 (6 of them full stops or an inch mark, 2 dittos), wrong 6, unsure 4
+      wrong: 9194,4127 specks; 10987,186 specks; 4019,377 dot in hatching; 4597,280 dashes of a dashed line;
+             10090,3563 dot; 3274,1502 speck
+  -> Change made after round 1, checked on the dev truth only: the "pair near a figure" route is off at 100 and 400 ft
+     (it found no dev ditto that the other routes miss), and at 400 ft a single piece needs 2 pair partners in reach.
+
+ROUND 2 (sheets kept in out/fresh_round2/)
+  7   (100 ft) 80 changes, 48 looked at: right 45, wrong 3, unsure 0
+      wrong: 3843,2814; 5840,1305; 2914,3051 - all dashes of dashed lines next to rows of dittos (route: pair in a row)
+  72  (200 ft) 186 changes, 48 looked at: right 34, wrong 8, unsure 6
+      wrong (mostly single pieces): 3329,4959 dot; 1301,7167 speck; 1811,5118 dash; 9753,6694 dot by a symbol;
+             3608,6496 dash; 3053,532 dot in a texture; 3739,295 round dot; 2417,6525 speck
+      unsure: 1285,5245; 4330,2881; 1730,6689; 9798,1730; 9775,7185; 956,4953
+  95  (400 ft) 4 changes, all looked at: right 4 (2 full stops after F., 1 ditto, 1 prime)
+  93B (400 ft, final version; seen in round 1) 11 changes: right 10, wrong 1 (384,417)
+  50  (400 ft, final version; seen in round 1) 2 changes: right 1, unsure 1
+  -> Change made after round 2, checked on the dev truth only: at 200 ft a single piece needs 2 pair partners in reach
+     (2 dev dittos lost, both fold A).
+
+ROUND 3 (final version)
+  89  (200 ft) 332 changes, 48 looked at: right 43, wrong 3, unsure 2
+      wrong: 4460,4415 bits of a dashed line (near a figure); 3931,3264 bits between double lines (near a figure);
+             3595,5867 bits round a line symbol (near a figure)
+      unsure: 5216,3967; 1433,6337
+
+FINAL VERSION, the checks that count (one plate per scale, none of them looked at before the version was frozen):
+  100 ft plate 7:  45 right of 48 (94%), 3 wrong (dashes)
+  200 ft plate 89: 43 right of 48 (90%), 3 wrong, 2 unsure
+  400 ft plate 95: 4 right of 4 (only 4 changes on the plate)

@@ -1,0 +1,138 @@
+{
+ "crop": "SA-D38",
+ "plate": "6",
+ "win": [
+  7867,
+  1790,
+  8048,
+  1912
+ ],
+ "why": "2 ditto mark(s) found in the seeded random built-up window [7822, 1464, 8322, 1964] of plate 6 (round 3)",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope_px": 6785,
+ "n_words": 2,
+ "mask": "SA-D38_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (glyph and line share ink; CARE boxes; outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 6229,
+  "ink_not_text": 489,
+  "text": 67,
+  "dont_care": 15297
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-D38-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap",
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 7.0,
+   "length": 7.0,
+   "poly": [
+    [
+     7924.0,
+     1847.5
+    ],
+    [
+     7931.0,
+     1847.5
+    ],
+    [
+     7931.0,
+     1854.5
+    ],
+    [
+     7924.0,
+     1854.5
+    ]
+   ],
+   "aabb": [
+    7924,
+    1847,
+    7931,
+    1855
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 30,
+   "annot_line": 11,
+   "target": true,
+   "ink_px": 30,
+   "scored_text_px": 30
+  },
+  {
+   "id": "SA-D38-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap",
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 7.0,
+   "length": 6.0,
+   "poly": [
+    [
+     7984.0,
+     1846.5
+    ],
+    [
+     7990.0,
+     1846.5
+    ],
+    [
+     7990.0,
+     1853.5
+    ],
+    [
+     7984.0,
+     1853.5
+    ]
+   ],
+   "aabb": [
+    7984,
+    1846,
+    7990,
+    1854
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 37,
+   "annot_line": 13,
+   "target": true,
+   "ink_px": 37,
+   "scored_text_px": 37
+  }
+ ],
+ "dropped_outside_scope": [
+  {
+   "id": "SA-D38-003",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 15
+  },
+  {
+   "id": "SA-D38-004",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 16
+  },
+  {
+   "id": "SA-D38-005",
+   "reading": "1026-24-22-20-18",
+   "kind": "house",
+   "annot_line": 20
+  }
+ ]
+}

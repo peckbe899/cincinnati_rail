@@ -1,0 +1,88 @@
+{
+ "crop": "SA-B21",
+ "plate": "66",
+ "win": [
+  2570,
+  5146,
+  2790,
+  5366
+ ],
+ "why": "block number 77 on plate 66 (200 ft), drawn at random (seed: plate name) from the plate list",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope_px": 7728,
+ "n_words": 1,
+ "mask": "SA-B21_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (glyph and line share ink; CARE boxes; outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 6101,
+  "ink_not_text": 1110,
+  "text": 380,
+  "dont_care": 40809
+ },
+ "boxes": [
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    2676,
+    5232,
+    2677,
+    5276
+   ],
+   "width": 5,
+   "note": "dash of the dashed line between the two 7s (snapline)",
+   "line": 4
+  }
+ ],
+ "words": [
+  {
+   "id": "SA-B21-001",
+   "reading": "77",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 33.0,
+   "length": 41.0,
+   "poly": [
+    [
+     2659.0,
+     5241.0
+    ],
+    [
+     2700.0,
+     5241.0
+    ],
+    [
+     2700.0,
+     5274.0
+    ],
+    [
+     2659.0,
+     5274.0
+    ]
+   ],
+   "aabb": [
+    2659,
+    5241,
+    2700,
+    5274
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 493,
+   "annot_line": 2,
+   "target": true,
+   "ink_px": 547,
+   "scored_text_px": 380
+  }
+ ],
+ "dropped_outside_scope": []
+}

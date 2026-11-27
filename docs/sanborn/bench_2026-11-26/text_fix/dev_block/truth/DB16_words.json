@@ -1,0 +1,507 @@
+{
+ "crop": "DB16",
+ "plate": "30",
+ "win": [
+  4957,
+  6274,
+  5151,
+  6454
+ ],
+ "why": "block number 23 on plate 30 (200 ft), drawn at random (candidates/draw.json)",
+ "n_words": 10,
+ "mask": "DB16_mask.png",
+ "mask_values": {
+  "0": "paper (in scope)",
+  "1": "ink, not text (in scope)",
+  "2": "text ink (in scope)",
+  "3": "don't care (glyph and line share ink; CARE boxes; everything outside the scope)"
+ },
+ "counts": {
+  "paper": 9763,
+  "ink_not_text": 1746,
+  "text": 2142,
+  "dont_care": 21269
+ },
+ "scope_px": 13875,
+ "scope_counts": {
+  "paper": 9763,
+  "ink_not_text": 1746,
+  "text": 2142,
+  "dont_care": 224
+ },
+ "boxes": [
+  {
+   "op": "EXCL",
+   "box": [
+    4980,
+    6353,
+    5004,
+    6370
+   ],
+   "note": "hook mark across the block line between 128 and 127 (not text)",
+   "line": 14
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    5066,
+    6411,
+    5112,
+    6412
+   ],
+   "width": 5,
+   "note": "top line of the frame building round 2 151 was text",
+   "line": 15
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    5068,
+    6408,
+    5069,
+    6440
+   ],
+   "width": 5,
+   "note": "left wall of the frame building was text",
+   "line": 16
+  }
+ ],
+ "words": [
+  {
+   "id": "DB16-001",
+   "reading": "23",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 60.0,
+   "length": 74.0,
+   "poly": [
+    [
+     5017.0,
+     6334.0
+    ],
+    [
+     5091.0,
+     6334.0
+    ],
+    [
+     5091.0,
+     6394.0
+    ],
+    [
+     5017.0,
+     6394.0
+    ]
+   ],
+   "aabb": [
+    5017,
+    6334,
+    5091,
+    6394
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1516,
+   "annot_line": 4,
+   "in_scope": {
+    "text_px": 1461,
+    "dont_care_px": 189,
+    "ink_px": 2107
+   },
+   "target": true,
+   "ink_size_px": 1650
+  },
+  {
+   "id": "DB16-002",
+   "reading": "128",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 32.0,
+   "poly": [
+    [
+     4996.0,
+     6333.0
+    ],
+    [
+     5028.0,
+     6333.0
+    ],
+    [
+     5028.0,
+     6358.0
+    ],
+    [
+     4996.0,
+     6358.0
+    ]
+   ],
+   "aabb": [
+    4996,
+    6333,
+    5028,
+    6358
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 224,
+   "annot_line": 5,
+   "in_scope": {
+    "text_px": 201,
+    "dont_care_px": 4,
+    "ink_px": 226
+   }
+  },
+  {
+   "id": "DB16-003",
+   "reading": "127",
+   "kind": "lot",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 33.0,
+   "poly": [
+    [
+     4989.0,
+     6364.0
+    ],
+    [
+     5022.0,
+     6364.0
+    ],
+    [
+     5022.0,
+     6391.0
+    ],
+    [
+     4989.0,
+     6391.0
+    ]
+   ],
+   "aabb": [
+    4989,
+    6364,
+    5022,
+    6391
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 171,
+   "annot_line": 6,
+   "in_scope": {
+    "text_px": 151,
+    "dont_care_px": 0,
+    "ink_px": 166
+   }
+  },
+  {
+   "id": "DB16-004",
+   "reading": "149",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 19.0,
+   "length": 21.0,
+   "poly": [
+    [
+     5076.0,
+     6334.0
+    ],
+    [
+     5097.0,
+     6334.0
+    ],
+    [
+     5097.0,
+     6353.0
+    ],
+    [
+     5076.0,
+     6353.0
+    ]
+   ],
+   "aabb": [
+    5076,
+    6334,
+    5097,
+    6353
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 152,
+   "annot_line": 7,
+   "in_scope": {
+    "text_px": 151,
+    "dont_care_px": 0,
+    "ink_px": 151
+   }
+  },
+  {
+   "id": "DB16-005",
+   "reading": "159",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 30.0,
+   "poly": [
+    [
+     5077.0,
+     6366.0
+    ],
+    [
+     5107.0,
+     6366.0
+    ],
+    [
+     5107.0,
+     6391.0
+    ],
+    [
+     5077.0,
+     6391.0
+    ]
+   ],
+   "aabb": [
+    5077,
+    6366,
+    5107,
+    6391
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 192,
+   "annot_line": 8,
+   "in_scope": {
+    "text_px": 211,
+    "dont_care_px": 14,
+    "ink_px": 225
+   }
+  },
+  {
+   "id": "DB16-006",
+   "reading": "126",
+   "kind": "lot",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 32.0,
+   "poly": [
+    [
+     5006.0,
+     6409.0
+    ],
+    [
+     5038.0,
+     6409.0
+    ],
+    [
+     5038.0,
+     6431.0
+    ],
+    [
+     5006.0,
+     6431.0
+    ]
+   ],
+   "aabb": [
+    5006,
+    6409,
+    5038,
+    6431
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 209,
+   "annot_line": 9,
+   "in_scope": {
+    "text_px": 95,
+    "dont_care_px": 0,
+    "ink_px": 95
+   }
+  },
+  {
+   "id": "DB16-007",
+   "reading": "148",
+   "kind": "lot",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 28.0,
+   "poly": [
+    [
+     5069.0,
+     6301.0
+    ],
+    [
+     5097.0,
+     6301.0
+    ],
+    [
+     5097.0,
+     6323.0
+    ],
+    [
+     5069.0,
+     6323.0
+    ]
+   ],
+   "aabb": [
+    5069,
+    6301,
+    5097,
+    6323
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 164,
+   "annot_line": 10,
+   "in_scope": {
+    "text_px": 113,
+    "dont_care_px": 0,
+    "ink_px": 113
+   }
+  },
+  {
+   "id": "DB16-008",
+   "reading": "2",
+   "kind": "story",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 15.0,
+   "poly": [
+    [
+     5066.0,
+     6409.0
+    ],
+    [
+     5081.0,
+     6409.0
+    ],
+    [
+     5081.0,
+     6433.0
+    ],
+    [
+     5066.0,
+     6433.0
+    ]
+   ],
+   "aabb": [
+    5066,
+    6409,
+    5081,
+    6433
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 166,
+   "annot_line": 11,
+   "in_scope": {
+    "text_px": 6,
+    "dont_care_px": 26,
+    "ink_px": 70
+   }
+  },
+  {
+   "id": "DB16-009",
+   "reading": "151",
+   "kind": "lot",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 17.0,
+   "length": 31.0,
+   "poly": [
+    [
+     5084.0,
+     6419.0
+    ],
+    [
+     5115.0,
+     6419.0
+    ],
+    [
+     5115.0,
+     6436.0
+    ],
+    [
+     5084.0,
+     6436.0
+    ]
+   ],
+   "aabb": [
+    5084,
+    6419,
+    5115,
+    6436
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 195,
+   "annot_line": 12,
+   "in_scope": {
+    "text_px": 0,
+    "dont_care_px": 3,
+    "ink_px": 3
+   }
+  },
+  {
+   "id": "DB16-010",
+   "reading": "129",
+   "kind": "lot",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 19.0,
+   "length": 33.0,
+   "poly": [
+    [
+     4998.0,
+     6304.0
+    ],
+    [
+     5031.0,
+     6304.0
+    ],
+    [
+     5031.0,
+     6323.0
+    ],
+    [
+     4998.0,
+     6323.0
+    ]
+   ],
+   "aabb": [
+    4998,
+    6304,
+    5031,
+    6323
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 167,
+   "annot_line": 13,
+   "in_scope": {
+    "text_px": 116,
+    "dont_care_px": 0,
+    "ink_px": 116
+   }
+  }
+ ]
+}

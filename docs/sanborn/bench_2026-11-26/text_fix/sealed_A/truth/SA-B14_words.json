@@ -1,0 +1,195 @@
+{
+ "crop": "SA-B14",
+ "plate": "38",
+ "win": [
+  4655,
+  2547,
+  4875,
+  2767
+ ],
+ "why": "block number 7 on plate 38 (200 ft), drawn at random (seed: plate name) from the plate list",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope_px": 7896,
+ "n_words": 4,
+ "mask": "SA-B14_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (glyph and line share ink; CARE boxes; outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 6544,
+  "ink_not_text": 688,
+  "text": 554,
+  "dont_care": 40614
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-B14-001",
+   "reading": "7",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 43.0,
+   "length": 33.0,
+   "poly": [
+    [
+     4748.0,
+     2636.0
+    ],
+    [
+     4781.0,
+     2636.0
+    ],
+    [
+     4781.0,
+     2679.0
+    ],
+    [
+     4748.0,
+     2679.0
+    ]
+   ],
+   "aabb": [
+    4748,
+    2636,
+    4781,
+    2679
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 267,
+   "annot_line": 2,
+   "target": true,
+   "ink_px": 628,
+   "scored_text_px": 265
+  },
+  {
+   "id": "SA-B14-002",
+   "reading": "13",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 19.0,
+   "poly": [
+    [
+     4729.0,
+     2623.0
+    ],
+    [
+     4748.0,
+     2623.0
+    ],
+    [
+     4748.0,
+     2647.0
+    ],
+    [
+     4729.0,
+     2647.0
+    ]
+   ],
+   "aabb": [
+    4729,
+    2623,
+    4748,
+    2647
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 149,
+   "annot_line": 3,
+   "target": false,
+   "ink_px": 149,
+   "scored_text_px": 142
+  },
+  {
+   "id": "SA-B14-003",
+   "reading": "12",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 19.0,
+   "poly": [
+    [
+     4726.0,
+     2682.0
+    ],
+    [
+     4745.0,
+     2682.0
+    ],
+    [
+     4745.0,
+     2709.0
+    ],
+    [
+     4726.0,
+     2709.0
+    ]
+   ],
+   "aabb": [
+    4726,
+    2682,
+    4745,
+    2709
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 115,
+   "annot_line": 4,
+   "target": false,
+   "ink_px": 115,
+   "scored_text_px": 82
+  },
+  {
+   "id": "SA-B14-004",
+   "reading": "32",
+   "kind": "lot",
+   "flags": [],
+   "angle": -4.6,
+   "height": 27.3,
+   "length": 28.9,
+   "poly": [
+    [
+     4793.9,
+     2650.0
+    ],
+    [
+     4822.7,
+     2647.7
+    ],
+    [
+     4824.9,
+     2674.9
+    ],
+    [
+     4796.1,
+     2677.2
+    ]
+   ],
+   "aabb": [
+    4793,
+    2647,
+    4825,
+    2678
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 203,
+   "annot_line": 5,
+   "target": false,
+   "ink_px": 203,
+   "scored_text_px": 65
+  }
+ ],
+ "dropped_outside_scope": []
+}

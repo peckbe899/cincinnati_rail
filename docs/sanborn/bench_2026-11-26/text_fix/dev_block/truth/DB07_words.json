@@ -1,0 +1,94 @@
+{
+ "crop": "DB07",
+ "plate": "54A",
+ "win": [
+  2454,
+  3645,
+  2650,
+  3829
+ ],
+ "why": "block number 28 on plate 54A (100 ft), drawn at random (candidates/draw.json)",
+ "n_words": 1,
+ "mask": "DB07_mask.png",
+ "mask_values": {
+  "0": "paper (in scope)",
+  "1": "ink, not text (in scope)",
+  "2": "text ink (in scope)",
+  "3": "don't care (glyph and line share ink; CARE boxes; everything outside the scope)"
+ },
+ "counts": {
+  "paper": 11677,
+  "ink_not_text": 1375,
+  "text": 1236,
+  "dont_care": 21776
+ },
+ "scope_px": 14605,
+ "scope_counts": {
+  "paper": 11677,
+  "ink_not_text": 1375,
+  "text": 1236,
+  "dont_care": 317
+ },
+ "boxes": [
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    2516,
+    3737,
+    2516,
+    3795
+   ],
+   "width": 5,
+   "note": "the brick building's right wall below the 2 was text (it runs down the 2's left side)",
+   "line": 5
+  }
+ ],
+ "words": [
+  {
+   "id": "DB07-001",
+   "reading": "28",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 64.0,
+   "length": 76.0,
+   "poly": [
+    [
+     2514.0,
+     3705.0
+    ],
+    [
+     2590.0,
+     3705.0
+    ],
+    [
+     2590.0,
+     3769.0
+    ],
+    [
+     2514.0,
+     3769.0
+    ]
+   ],
+   "aabb": [
+    2514,
+    3705,
+    2590,
+    3769
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1393,
+   "annot_line": 4,
+   "in_scope": {
+    "text_px": 1236,
+    "dont_care_px": 316,
+    "ink_px": 2028
+   },
+   "target": true,
+   "ink_size_px": 1552
+  }
+ ]
+}

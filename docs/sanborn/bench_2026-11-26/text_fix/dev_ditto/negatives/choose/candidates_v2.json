@@ -1,0 +1,10649 @@
+{
+ "note": "Second round of NEGATIVE candidates (dev_ditto, 26 Nov 2026), after the v1 look (negatives/choose/verdicts_v1.txt:\n26 of 124 kept; the 'isolated' and 'lineend' samplers drew mostly text, and two rail draws were double lines).\n\n    cd data/sanborn; python -B bench_2026-11-26/text_fix/dev_ditto/scripts/neg_sample2.py\n\nStricter samplers, new seeds random.Random('neg2-' + SAMPLER + '-' + plate), same exclusions as neg_sample.py:\n  rail2     plate 44 railroad tracks: the nearest crossing where the ink across the track is ONE contiguous run of\n            11 px or more through the track line (a tick), not two parallel lines.\n  dash2     a separate straight bar (6-200 px, 6-40 px long, length/width 3 or more) with a partner of 0.6-1.6x its\n            length on BOTH sides along its own axis (to 12 deg), gaps 3-40 px: a dash inside a dashed line.\n  lineend2  a skeleton end point of a large ink piece whose branch runs 25 px from the end without a junction and\n            nearly straight (end to 25th pixel 22 px or more): the end of a straight line.\nWrites negatives/choose/candidates_v2.json (cids D001 ...).",
+ "draws": [
+  {
+   "sampler": "rail2",
+   "plate": "44",
+   "draw": 0,
+   "at": [
+    2332.3,
+    3526.6
+   ],
+   "centre": [
+    2398,
+    3498
+   ],
+   "verdict": "candidate",
+   "cid": "D001"
+  },
+  {
+   "sampler": "rail2",
+   "plate": "44",
+   "draw": 1,
+   "at": [
+    7378.9,
+    749.6
+   ],
+   "centre": [
+    7401,
+    739
+   ],
+   "verdict": "candidate",
+   "cid": "D002"
+  },
+  {
+   "sampler": "rail2",
+   "plate": "44",
+   "draw": 2,
+   "at": [
+    9459.8,
+    4223.4
+   ],
+   "centre": [
+    9455,
+    4225
+   ],
+   "verdict": "candidate",
+   "cid": "D003"
+  },
+  {
+   "sampler": "rail2",
+   "plate": "44",
+   "draw": 3,
+   "at": [
+    5822.2,
+    1519.4
+   ],
+   "centre": [
+    5809,
+    1526
+   ],
+   "verdict": "candidate",
+   "cid": "D004"
+  },
+  {
+   "sampler": "rail2",
+   "plate": "44",
+   "draw": 4,
+   "at": [
+    4562.2,
+    6889.6
+   ],
+   "centre": [
+    4506,
+    6962
+   ],
+   "verdict": "candidate",
+   "cid": "D005"
+  },
+  {
+   "sampler": "rail2",
+   "plate": "44",
+   "draw": 5,
+   "at": [
+    4476.5,
+    2321.4
+   ],
+   "centre": [
+    4483,
+    2318
+   ],
+   "verdict": "candidate",
+   "cid": "D006"
+  },
+  {
+   "sampler": "rail2",
+   "plate": "44",
+   "draw": 6,
+   "at": [
+    6846.7,
+    5181.7
+   ],
+   "centre": [
+    6849,
+    5181
+   ],
+   "verdict": "candidate",
+   "cid": "D007"
+  },
+  {
+   "sampler": "rail2",
+   "plate": "44",
+   "draw": 7,
+   "at": [
+    1918.6,
+    3626.8
+   ],
+   "centre": [
+    1917,
+    3628
+   ],
+   "verdict": "candidate",
+   "cid": "D008"
+  },
+  {
+   "sampler": "rail2",
+   "plate": "44",
+   "draw": 8,
+   "at": [
+    1358.2,
+    4049.5
+   ],
+   "centre": [
+    1408,
+    4024
+   ],
+   "verdict": "candidate",
+   "cid": "D009"
+  },
+  {
+   "sampler": "rail2",
+   "plate": "44",
+   "draw": 9,
+   "at": [
+    8975.9,
+    4397.7
+   ],
+   "centre": [
+    8962,
+    4402
+   ],
+   "verdict": "candidate",
+   "cid": "D010"
+  },
+  {
+   "sampler": "rail2",
+   "plate": "44",
+   "draw": 10,
+   "at": [
+    691.1,
+    4396.6
+   ],
+   "centre": [
+    704,
+    4389
+   ],
+   "verdict": "candidate",
+   "cid": "D011"
+  },
+  {
+   "sampler": "rail2",
+   "plate": "44",
+   "draw": 11,
+   "at": [
+    5918.8,
+    5561.8
+   ],
+   "centre": [
+    5933,
+    5554
+   ],
+   "verdict": "candidate",
+   "cid": "D012"
+  },
+  {
+   "sampler": "rail2",
+   "plate": "44",
+   "draw": 12,
+   "at": [
+    4146.9,
+    2416.5
+   ],
+   "centre": [
+    4172,
+    2403
+   ],
+   "verdict": "candidate",
+   "cid": "D013"
+  },
+  {
+   "sampler": "rail2",
+   "plate": "44",
+   "draw": 13,
+   "at": [
+    525.9,
+    4514.1
+   ],
+   "centre": [
+    517,
+    4519
+   ],
+   "verdict": "candidate",
+   "cid": "D014"
+  },
+  {
+   "sampler": "rail2",
+   "plate": "44",
+   "draw": 14,
+   "at": [
+    1285.4,
+    3959.8
+   ],
+   "centre": [
+    1290,
+    3958
+   ],
+   "verdict": "candidate",
+   "cid": "D015"
+  },
+  {
+   "sampler": "rail2",
+   "plate": "44",
+   "draw": 15,
+   "at": [
+    3283.5,
+    2891.0
+   ],
+   "centre": [
+    3257,
+    2905
+   ],
+   "verdict": "candidate",
+   "cid": "D016"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 1,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 2,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 3,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 4,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 5,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 6,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 7,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 8,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 9,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 10,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 11,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 12,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 13,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 14,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 15,
+   "centre": [
+    8904,
+    3738
+   ],
+   "verdict": "candidate",
+   "cid": "D017"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 16,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 17,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 18,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 19,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 20,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 21,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 22,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 23,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 24,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 25,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 26,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 27,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 28,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 29,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 30,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 31,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 32,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 33,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 34,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 35,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 36,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 37,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 38,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 39,
+   "centre": [
+    4694,
+    5960
+   ],
+   "verdict": "candidate",
+   "cid": "D018"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 40,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 41,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 42,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 43,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 44,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 45,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 46,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 47,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 48,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 49,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 50,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 51,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 52,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 53,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 54,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 55,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 56,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 57,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 58,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "30",
+   "draw": 59,
+   "centre": [
+    5167,
+    4202
+   ],
+   "verdict": "candidate",
+   "cid": "D019"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "30",
+   "draw": 1,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "30",
+   "draw": 2,
+   "centre": [
+    826,
+    1252
+   ],
+   "verdict": "candidate",
+   "cid": "D020"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "30",
+   "draw": 3,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "30",
+   "draw": 4,
+   "centre": [
+    3693,
+    1993
+   ],
+   "verdict": "candidate",
+   "cid": "D021"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 1,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 2,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 3,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 4,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 5,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 6,
+   "centre": [
+    2649,
+    4497
+   ],
+   "verdict": "candidate",
+   "cid": "D022"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 7,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 8,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 9,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 10,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 11,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 12,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 13,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 14,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 15,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 16,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 17,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 18,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 19,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 20,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 21,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 22,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 23,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 24,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 25,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 26,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 27,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 28,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 29,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 30,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 31,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 32,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 33,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 34,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 35,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 36,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 37,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 38,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 39,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 40,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 41,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 42,
+   "centre": [
+    2796,
+    3095
+   ],
+   "verdict": "candidate",
+   "cid": "D023"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 43,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 44,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 45,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 46,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 47,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 48,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 49,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 50,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 51,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 52,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 53,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 54,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 55,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 56,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 57,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 58,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 59,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 60,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 61,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 62,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "90",
+   "draw": 63,
+   "centre": [
+    2820,
+    6207
+   ],
+   "verdict": "candidate",
+   "cid": "D024"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "90",
+   "draw": 1,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "90",
+   "draw": 2,
+   "centre": [
+    4287,
+    3921
+   ],
+   "verdict": "candidate",
+   "cid": "D025"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "90",
+   "draw": 3,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "90",
+   "draw": 4,
+   "centre": [
+    5094,
+    5913
+   ],
+   "verdict": "candidate",
+   "cid": "D026"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 1,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 2,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 3,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 4,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 5,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 6,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 7,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 8,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 9,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 10,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 11,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 12,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 13,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 14,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 15,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 16,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 17,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 18,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 19,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 20,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 21,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 22,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 23,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 24,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 25,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 26,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 27,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 28,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 29,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 30,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 31,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 32,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 33,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 34,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 35,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 36,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 37,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 38,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 39,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 40,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 41,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 42,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 43,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 44,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 45,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 46,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 47,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 48,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 49,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 50,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 51,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 52,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 53,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 54,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 55,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 56,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 57,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 58,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 59,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 60,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 61,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 62,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 63,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 64,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 65,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 66,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 67,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 68,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 69,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 70,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 71,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 72,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 73,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 74,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 75,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 76,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 77,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 78,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 79,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 80,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 81,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 82,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 83,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 84,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 85,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 86,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 87,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 88,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 89,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 90,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 91,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 92,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 93,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 94,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 95,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 96,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 97,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 98,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 99,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 100,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 101,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 102,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 103,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 104,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 105,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 106,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 107,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 108,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 109,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 110,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 111,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 112,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 113,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 114,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 115,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 116,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 117,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 118,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 119,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 120,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 121,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 122,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 123,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 124,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 125,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 126,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 127,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 128,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 129,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 130,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 131,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 132,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 133,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 134,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 135,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 136,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 137,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 138,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 139,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 140,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 141,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 142,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 143,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 144,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 145,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 146,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 147,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 148,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 149,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 150,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 151,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 152,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 153,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 154,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 155,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 156,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 157,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 158,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 159,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 160,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 161,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 162,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 163,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 164,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 165,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 166,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 167,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 168,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 169,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 170,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 171,
+   "centre": [
+    2539,
+    1921
+   ],
+   "verdict": "candidate",
+   "cid": "D027"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 172,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 173,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 174,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 175,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 176,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 177,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 178,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 179,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 180,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 181,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 182,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 183,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 184,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 185,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 186,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 187,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 188,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 189,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 190,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 191,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 192,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 193,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 194,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 195,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 196,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 197,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 198,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 199,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 200,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 201,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 202,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 203,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 204,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 205,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 206,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 207,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 208,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 209,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 210,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 211,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 212,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 213,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 214,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 215,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 216,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 217,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 218,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 219,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 220,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 221,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 222,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 223,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 224,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 225,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 226,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 227,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 228,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 229,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 230,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 231,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 232,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 233,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 234,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 235,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 236,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 237,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 238,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 239,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 240,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 241,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 242,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 243,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 244,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 245,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 246,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 247,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 248,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 249,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 250,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 251,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 252,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 253,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 254,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 255,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 256,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 257,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 258,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 259,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 260,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 261,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 262,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 263,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 264,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 265,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 266,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 267,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 268,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 269,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 270,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 271,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 272,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 273,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 274,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 275,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 276,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 277,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 278,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 279,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 280,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 281,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 282,
+   "centre": [
+    3947,
+    880
+   ],
+   "verdict": "candidate",
+   "cid": "D028"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 283,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 284,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 285,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 286,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 287,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 288,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 289,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 290,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 291,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 292,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 293,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 294,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 295,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 296,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 297,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 298,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 299,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 300,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 301,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 302,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 303,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 304,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 305,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 306,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 307,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 308,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 309,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 310,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 311,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 312,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 313,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 314,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 315,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 316,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 317,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 318,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 319,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 320,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 321,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 322,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 323,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 324,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 325,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 326,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 327,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 328,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 329,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 330,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 331,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 332,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 333,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 334,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 335,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 336,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 337,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 338,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 339,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 340,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 341,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 342,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 343,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 344,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 345,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 346,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 347,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 348,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 349,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 350,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 351,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 352,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 353,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 354,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 355,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 356,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 357,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 358,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 359,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 360,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 361,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 362,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 363,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 364,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 365,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 366,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 367,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 368,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 369,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 370,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 371,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 372,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 373,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 374,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 375,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 376,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 377,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 378,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 379,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 380,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 381,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 382,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 383,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 384,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 385,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 386,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 387,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 388,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 389,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 390,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 391,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 392,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 393,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 394,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 395,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 396,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 397,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 398,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 399,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 400,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 401,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 402,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 403,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 404,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 405,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 406,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 407,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 408,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 409,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 410,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 411,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 412,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 413,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 414,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 415,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 416,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 417,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 418,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 419,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 420,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 421,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 422,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 423,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 424,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 425,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 426,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 427,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 428,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 429,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 430,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 431,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 432,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 433,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 434,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 435,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 436,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 437,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 438,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 439,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 440,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 441,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 442,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 443,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 444,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 445,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 446,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 447,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 448,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 449,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 450,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 451,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 452,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 453,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 454,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 455,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 456,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 457,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 458,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 459,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 460,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 461,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 462,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 463,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 464,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 465,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 466,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 467,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 468,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 469,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 470,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 471,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 472,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 473,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 474,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 475,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 476,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 477,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 478,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 479,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 480,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 481,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 482,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 483,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 484,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 485,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 486,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 487,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 488,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 489,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 490,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 491,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 492,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 493,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 494,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 495,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 496,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 497,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 498,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 499,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 500,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 501,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 502,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 503,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 504,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 505,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 506,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 507,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 508,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 509,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 510,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 511,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 512,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 513,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 514,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 515,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 516,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 517,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 518,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 519,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 520,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 521,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 522,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 523,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 524,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 525,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 526,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 527,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 528,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 529,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 530,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 531,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 532,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 533,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 534,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 535,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 536,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 537,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 538,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 539,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 540,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 541,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 542,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 543,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 544,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 545,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 546,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 547,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 548,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 549,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 550,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 551,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 552,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 553,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 554,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 555,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 556,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 557,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 558,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 559,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 560,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 561,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 562,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 563,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 564,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 565,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 566,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 567,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 568,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 569,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 570,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 571,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 572,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 573,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 574,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 575,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 576,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 577,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 578,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 579,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 580,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 581,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 582,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 583,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 584,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 585,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 586,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 587,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 588,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 589,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 590,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 591,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 592,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 593,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 594,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 595,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 596,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 597,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 598,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 599,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 600,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 601,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 602,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 603,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 604,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 605,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 606,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 607,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 608,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 609,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 610,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 611,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 612,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 613,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 614,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 615,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 616,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 617,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 618,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 619,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 620,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 621,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 622,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 623,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 624,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 625,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 626,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 627,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 628,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 629,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 630,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 631,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 632,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 633,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 634,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 635,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 636,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 637,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 638,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 639,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 640,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 641,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 642,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 643,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 644,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 645,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 646,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 647,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 648,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 649,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 650,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 651,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 652,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 653,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 654,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 655,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 656,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 657,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 658,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 659,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 660,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 661,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 662,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 663,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "60B",
+   "draw": 664,
+   "centre": [
+    3456,
+    1968
+   ],
+   "verdict": "candidate",
+   "cid": "D029"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "60B",
+   "draw": 1,
+   "centre": [
+    1745,
+    746
+   ],
+   "verdict": "candidate",
+   "cid": "D030"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "60B",
+   "draw": 2,
+   "centre": [
+    1649,
+    3852
+   ],
+   "verdict": "candidate",
+   "cid": "D031"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 1,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 2,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 3,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 4,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 5,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 6,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 7,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 8,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 9,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 10,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 11,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 12,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 13,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 14,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 15,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 16,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 17,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 18,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 19,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 20,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 21,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 22,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 23,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 24,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 25,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 26,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 27,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 28,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 29,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 30,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 31,
+   "centre": [
+    3980,
+    5246
+   ],
+   "verdict": "candidate",
+   "cid": "D032"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 32,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 33,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 34,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 35,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 36,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 37,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 38,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 39,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 40,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 41,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 42,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 43,
+   "centre": [
+    6037,
+    6365
+   ],
+   "verdict": "candidate",
+   "cid": "D033"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "19",
+   "draw": 44,
+   "centre": [
+    6026,
+    6194
+   ],
+   "verdict": "candidate",
+   "cid": "D034"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "19",
+   "draw": 1,
+   "centre": [
+    6519,
+    3812
+   ],
+   "verdict": "candidate",
+   "cid": "D035"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "19",
+   "draw": 2,
+   "centre": [
+    3747,
+    4873
+   ],
+   "verdict": "candidate",
+   "cid": "D036"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 1,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 2,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 3,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 4,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 5,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 6,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 7,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 8,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 9,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 10,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 11,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 12,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 13,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 14,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 15,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 16,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 17,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 18,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 19,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 20,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 21,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 22,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 23,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 24,
+   "centre": [
+    5004,
+    286
+   ],
+   "verdict": "candidate",
+   "cid": "D037"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 25,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 26,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 27,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 28,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 29,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 30,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 31,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 32,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 33,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 34,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 35,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 36,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 37,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 38,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 39,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 40,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 41,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 42,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 43,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 44,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 45,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 46,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 47,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 48,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 49,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 50,
+   "centre": [
+    1710,
+    5036
+   ],
+   "verdict": "candidate",
+   "cid": "D038"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 51,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 52,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 53,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 54,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 55,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 56,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 57,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 58,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 59,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 60,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 61,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 62,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 63,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 64,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 65,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 66,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 67,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 68,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 69,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 70,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 71,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 72,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 73,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 74,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 75,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 76,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 77,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 78,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 79,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 80,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 81,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 82,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 83,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 84,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 85,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 86,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 87,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 88,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 89,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 90,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 91,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 92,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 93,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 94,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 95,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 96,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 97,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 98,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 99,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 100,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 101,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 102,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 103,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 104,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 105,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 106,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 107,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 108,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 109,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 110,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 111,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 112,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 113,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 114,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 115,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 116,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 117,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 118,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 119,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 120,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 121,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 122,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 123,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 124,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 125,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 126,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 127,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 128,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 129,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 130,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 131,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 132,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 133,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 134,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 135,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 136,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 137,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 138,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 139,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 140,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 141,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 142,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 143,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 144,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 145,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 146,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 147,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 148,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 149,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 150,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 151,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 152,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 153,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 154,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 155,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 156,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 157,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 158,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 159,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 160,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 161,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 162,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 163,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 164,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 165,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 166,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 167,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "64A",
+   "draw": 168,
+   "centre": [
+    9644,
+    5447
+   ],
+   "verdict": "candidate",
+   "cid": "D039"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "64A",
+   "draw": 1,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "64A",
+   "draw": 2,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "64A",
+   "draw": 3,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "64A",
+   "draw": 4,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "64A",
+   "draw": 5,
+   "centre": [
+    4438,
+    5601
+   ],
+   "verdict": "candidate",
+   "cid": "D040"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "64A",
+   "draw": 6,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "64A",
+   "draw": 7,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "64A",
+   "draw": 8,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "64A",
+   "draw": 9,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "64A",
+   "draw": 10,
+   "centre": [
+    7758,
+    6699
+   ],
+   "verdict": "candidate",
+   "cid": "D041"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 1,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 2,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 3,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 4,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 5,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 6,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 7,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 8,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 9,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 10,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 11,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 12,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 13,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 14,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 15,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 16,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 17,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 18,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 19,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 20,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 21,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 22,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 23,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 24,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 25,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 26,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 27,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 28,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 29,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 30,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 31,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 32,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 33,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 34,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 35,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 36,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 37,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 38,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 39,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 40,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 41,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 42,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 43,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 44,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 45,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 46,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 47,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 48,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 49,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 50,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 51,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 52,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 53,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 54,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 55,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 56,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 57,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 58,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 59,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 60,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 61,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 62,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 63,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 64,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 65,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 66,
+   "centre": [
+    8201,
+    5172
+   ],
+   "verdict": "candidate",
+   "cid": "D042"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 67,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 68,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 69,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 70,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 71,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 72,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 73,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 74,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 75,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 76,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 77,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 78,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 79,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 80,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 81,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 82,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 83,
+   "centre": [
+    6947,
+    3320
+   ],
+   "verdict": "candidate",
+   "cid": "D043"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 84,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 85,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 86,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 87,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 88,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 89,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 90,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 91,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 92,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 93,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 94,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 95,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 96,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 97,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 98,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 99,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 100,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 101,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 102,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 103,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 104,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 105,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 106,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 107,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 108,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 109,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 110,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 111,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 112,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "86",
+   "draw": 113,
+   "centre": [
+    10426,
+    3272
+   ],
+   "verdict": "candidate",
+   "cid": "D044"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "86",
+   "draw": 1,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "86",
+   "draw": 2,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "86",
+   "draw": 3,
+   "centre": [
+    5476,
+    6341
+   ],
+   "verdict": "candidate",
+   "cid": "D045"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "86",
+   "draw": 4,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "86",
+   "draw": 5,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "86",
+   "draw": 6,
+   "centre": [
+    6796,
+    5093
+   ],
+   "verdict": "candidate",
+   "cid": "D046"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 1,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 2,
+   "centre": [
+    10447,
+    5419
+   ],
+   "verdict": "candidate",
+   "cid": "D047"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 3,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 4,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 5,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 6,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 7,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 8,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 9,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 10,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 11,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 12,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 13,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 14,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 15,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 16,
+   "centre": [
+    8455,
+    572
+   ],
+   "verdict": "candidate",
+   "cid": "D048"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 17,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 18,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 19,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "3",
+   "draw": 20,
+   "centre": [
+    9801,
+    5917
+   ],
+   "verdict": "candidate",
+   "cid": "D049"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "3",
+   "draw": 1,
+   "centre": [
+    10109,
+    675
+   ],
+   "verdict": "candidate",
+   "cid": "D050"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "3",
+   "draw": 2,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "3",
+   "draw": 3,
+   "centre": [
+    3351,
+    188
+   ],
+   "verdict": "candidate",
+   "cid": "D051"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 1,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 2,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 3,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 4,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 5,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 6,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 7,
+   "centre": [
+    7027,
+    3744
+   ],
+   "verdict": "candidate",
+   "cid": "D052"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 8,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 9,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 10,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 11,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 12,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 13,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 14,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 15,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 16,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 17,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 18,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 19,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 20,
+   "centre": [
+    482,
+    2921
+   ],
+   "verdict": "candidate",
+   "cid": "D053"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 21,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 22,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 23,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 24,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 25,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 26,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 27,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 28,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 29,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 30,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 31,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 32,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 33,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 34,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 35,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 36,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 37,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 38,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 39,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "12",
+   "draw": 40,
+   "centre": [
+    8678,
+    4237
+   ],
+   "verdict": "candidate",
+   "cid": "D054"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "12",
+   "draw": 1,
+   "centre": [
+    8057,
+    919
+   ],
+   "verdict": "candidate",
+   "cid": "D055"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "12",
+   "draw": 2,
+   "centre": [
+    7801,
+    896
+   ],
+   "verdict": "candidate",
+   "cid": "D056"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 1,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 2,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 3,
+   "centre": [
+    10497,
+    6274
+   ],
+   "verdict": "candidate",
+   "cid": "D057"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 4,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 5,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 6,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 7,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 8,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 9,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 10,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 11,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 12,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 13,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 14,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 15,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 16,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 17,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 18,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 19,
+   "centre": [
+    1561,
+    1904
+   ],
+   "verdict": "candidate",
+   "cid": "D058"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 20,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 21,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 22,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 23,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 24,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 25,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 26,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "57",
+   "draw": 27,
+   "centre": [
+    2607,
+    212
+   ],
+   "verdict": "candidate",
+   "cid": "D059"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "57",
+   "draw": 1,
+   "centre": [
+    2054,
+    202
+   ],
+   "verdict": "candidate",
+   "cid": "D060"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "57",
+   "draw": 2,
+   "centre": [
+    6559,
+    4107
+   ],
+   "verdict": "candidate",
+   "cid": "D061"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 1,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 2,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 3,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 4,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 5,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 6,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 7,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 8,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 9,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 10,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 11,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 12,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 13,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 14,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 15,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 16,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 17,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 18,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 19,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 20,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 21,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 22,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 23,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 24,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 25,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 26,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 27,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 28,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 29,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 30,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 31,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 32,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 33,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 34,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 35,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 36,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 37,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 38,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 39,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 40,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 41,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 42,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 43,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 44,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 45,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 46,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 47,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 48,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 49,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 50,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 51,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 52,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 53,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 54,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 55,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 56,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 57,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 58,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 59,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 60,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 61,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 62,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 63,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 64,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 65,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 66,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 67,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 68,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 69,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 70,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 71,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 72,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 73,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 74,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 75,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 76,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 77,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 78,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 79,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 80,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 81,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 82,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 83,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 84,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 85,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 86,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 87,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 88,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 89,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 90,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 91,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 92,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 93,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 94,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 95,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 96,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 97,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 98,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 99,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 100,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 101,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 102,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 103,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 104,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 105,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 106,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 107,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 108,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 109,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 110,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 111,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 112,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 113,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 114,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 115,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 116,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 117,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 118,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 119,
+   "centre": [
+    3823,
+    4790
+   ],
+   "verdict": "candidate",
+   "cid": "D062"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 120,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 121,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 122,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 123,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 124,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 125,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 126,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 127,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 128,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 129,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 130,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 131,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 132,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 133,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 134,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 135,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 136,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 137,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 138,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 139,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 140,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 141,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 142,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 143,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 144,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 145,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 146,
+   "verdict": "too near a ditto word or H1-H4"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 147,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 148,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 149,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 150,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 151,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 152,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 153,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 154,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 155,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 156,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 157,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 158,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 159,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 160,
+   "centre": [
+    9066,
+    6342
+   ],
+   "verdict": "candidate",
+   "cid": "D063"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 161,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 162,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 163,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 164,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 165,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 166,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 167,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 168,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 169,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 170,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 171,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 172,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 173,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 174,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 175,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 176,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 177,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 178,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 179,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 180,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 181,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 182,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 183,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 184,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 185,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 186,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 187,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 188,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 189,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 190,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 191,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 192,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 193,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 194,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 195,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 196,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 197,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 198,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 199,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "47",
+   "draw": 200,
+   "centre": [
+    2967,
+    3347
+   ],
+   "verdict": "candidate",
+   "cid": "D064"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "47",
+   "draw": 1,
+   "centre": [
+    5567,
+    5691
+   ],
+   "verdict": "candidate",
+   "cid": "D065"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "47",
+   "draw": 2,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "47",
+   "draw": 3,
+   "centre": [
+    6396,
+    2090
+   ],
+   "verdict": "candidate",
+   "cid": "D066"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 1,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 2,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 3,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 4,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 5,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 6,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 7,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 8,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 9,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 10,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 11,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 12,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 13,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 14,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 15,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 16,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 17,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 18,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 19,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 20,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 21,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 22,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 23,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 24,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 25,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 26,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 27,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 28,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 29,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 30,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 31,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 32,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 33,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 34,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 35,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 36,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 37,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 38,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 39,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 40,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 41,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 42,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 43,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 44,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 45,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 46,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 47,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 48,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 49,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 50,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 51,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 52,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 53,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 54,
+   "centre": [
+    10183,
+    1440
+   ],
+   "verdict": "candidate",
+   "cid": "D067"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 55,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 56,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 57,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 58,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 59,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 60,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 61,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 62,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 63,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 64,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 65,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 66,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 67,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 68,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 69,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 70,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 71,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 72,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 73,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 74,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 75,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 76,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 77,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 78,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 79,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 80,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 81,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 82,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 83,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 84,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 85,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 86,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 87,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 88,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 89,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 90,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 91,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 92,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 93,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 94,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 95,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 96,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 97,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 98,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 99,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 100,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 101,
+   "centre": [
+    6332,
+    2332
+   ],
+   "verdict": "candidate",
+   "cid": "D068"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 102,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 103,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 104,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 105,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 106,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 107,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 108,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 109,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 110,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 111,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 112,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 113,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 114,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 115,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 116,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 117,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 118,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 119,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 120,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 121,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 122,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 123,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 124,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 125,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 126,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 127,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 128,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 129,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 130,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 131,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 132,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 133,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 134,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 135,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 136,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 137,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 138,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 139,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 140,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 141,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 142,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 143,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 144,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 145,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 146,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 147,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 148,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 149,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 150,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 151,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 152,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 153,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 154,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "48",
+   "draw": 155,
+   "centre": [
+    2285,
+    3330
+   ],
+   "verdict": "candidate",
+   "cid": "D069"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "48",
+   "draw": 1,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "48",
+   "draw": 2,
+   "centre": [
+    1954,
+    1652
+   ],
+   "verdict": "candidate",
+   "cid": "D070"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "48",
+   "draw": 3,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "48",
+   "draw": 4,
+   "centre": [
+    3530,
+    7143
+   ],
+   "verdict": "candidate",
+   "cid": "D071"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 1,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 2,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 3,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 4,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 5,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 6,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 7,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 8,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 9,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 10,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 11,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 12,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 13,
+   "centre": [
+    1737,
+    808
+   ],
+   "verdict": "candidate",
+   "cid": "D072"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 14,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 15,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 16,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 17,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 18,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 19,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 20,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 21,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 22,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 23,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 24,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 25,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 26,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 27,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 28,
+   "centre": [
+    252,
+    1829
+   ],
+   "verdict": "candidate",
+   "cid": "D073"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 29,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 30,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 31,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 32,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 33,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 34,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 35,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 36,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 37,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 38,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 39,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 40,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 41,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 42,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 43,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 44,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 45,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 46,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 47,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 48,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 49,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 50,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 51,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 52,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 53,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 54,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 55,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 56,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 57,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 58,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 59,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 60,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 61,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 62,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 63,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 64,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 65,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 66,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 67,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 68,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 69,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 70,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 71,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 72,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 73,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 74,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 75,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 76,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 77,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 78,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 79,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 80,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 81,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 82,
+   "verdict": "not inside a dashed line"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 83,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 84,
+   "verdict": "not a straight bar"
+  },
+  {
+   "sampler": "dash2",
+   "plate": "93A",
+   "draw": 85,
+   "centre": [
+    887,
+    1136
+   ],
+   "verdict": "candidate",
+   "cid": "D074"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "93A",
+   "draw": 1,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "93A",
+   "draw": 2,
+   "verdict": "no straight line end in the window"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "93A",
+   "draw": 3,
+   "centre": [
+    287,
+    3193
+   ],
+   "verdict": "candidate",
+   "cid": "D075"
+  },
+  {
+   "sampler": "lineend2",
+   "plate": "93A",
+   "draw": 4,
+   "centre": [
+    2295,
+    1769
+   ],
+   "verdict": "candidate",
+   "cid": "D076"
+  }
+ ]
+}

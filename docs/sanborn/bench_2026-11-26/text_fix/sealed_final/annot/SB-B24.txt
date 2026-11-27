@@ -1,0 +1,41 @@
+# block 8 on plate 92 (400 ft): printed over a dense grid of small lot and house numbers, lot lines and arrows
+6105 3304 6146 3304 62 | 8 | block | target
+6090 3248 6123 3248 16 | 232 | lot | unsure
+6128 3248 6150 3248 16 | 173 | lot | unsure
+6165 3248 6195 3248 16 | 185 | lot | unsure
+6095 3270 6120 3270 15 | 231 | lot | unsure
+6130 3270 6150 3270 15 | 174 | lot | unsure
+6170 3271 6195 3271 16 | 136 | lot | unsure
+6088 3293 6112 3293 14 | 230 | lot | partial unsure
+6145 3292 6165 3292 15 | 175 | lot
+6168 3293 6195 3293 17 | 137 | lot
+6085 3317 6110 3317 14 | 229 | lot | partial unsure
+6145 3317 6165 3317 15 | 176 | lot
+6168 3318 6195 3318 17 | 138 | lot
+6101 3341 6122 3341 14 | 228 | lot | unsure
+6135 3341 6160 3341 13 | 177 | lot
+6170 3342 6195 3342 15 | 139 | lot
+6095 3367 6125 3367 15 | 225 | lot | unsure
+6135 3367 6158 3367 15 | 178 | lot
+6170 3367 6195 3367 15 | 140 | lot
+6070 3315 6095 3315 15 | 103 | lot | unsure
+6070 3292 6095 3292 15 | 102 | lot | unsure
+6068 3340 6098 3340 16 | 104 | lot | unsure
+# check fixes: the grid lines (broken by the dense figures) were text; arrows between the columns cannot be told from figures
+NOTTEXT 6125 3235 6125 3380 4 lot line down the middle of the 8
+NOTTEXT 6075 3265 6195 3254 4 row line
+NOTTEXT 6075 3282 6195 3280 4 row line through the top of the 8
+NOTTEXT 6075 3304 6195 3306 4 row line through the waist of the 8
+NOTTEXT 6075 3327 6195 3329 4 row line through the foot of the 8
+NOTTEXT 6075 3352 6195 3355 4 row line
+CARE 6148 3258 6168 3278 arrow between 174 and 136
+CARE 6150 3336 6170 3356 arrow between 177 and 139
+CARE 6150 3356 6168 3378 curved arrow between 178 and 140
+
+# ===== sealed-check fixes (26 Nov 2026)
+# F34: lot number in the dense grid, cut by the scope edge, was not typed
+6064 3242 6090 3242 18 | 100 | lot | partial unsure
+# F35: lot number in the dense grid, cut by the scope edge, was not typed
+6062 3267 6088 3267 18 | 101 | lot | partial unsure
+# F36: lot number in the dense grid, cut by the scope edge, was not typed
+6064 3363 6090 3363 16 | 105 | lot | partial unsure

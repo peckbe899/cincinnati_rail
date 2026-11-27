@@ -1,0 +1,168 @@
+{
+ "crop": "SA-B11",
+ "plate": "35",
+ "win": [
+  3152,
+  4944,
+  3372,
+  5164
+ ],
+ "why": "block number 13 on plate 35 (200 ft), drawn at random (seed: plate name) from the plate list",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope_px": 13440,
+ "n_words": 3,
+ "mask": "SA-B11_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (glyph and line share ink; CARE boxes; outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 10965,
+  "ink_not_text": 925,
+  "text": 1447,
+  "dont_care": 35063
+ },
+ "boxes": [
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    3248,
+    5014,
+    3248,
+    5029
+   ],
+   "width": 5,
+   "note": "dash of the dashed lot line above the 1 (inside the word box)",
+   "line": 6
+  }
+ ],
+ "words": [
+  {
+   "id": "SA-B11-001",
+   "reading": "13",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 69.0,
+   "length": 61.0,
+   "poly": [
+    [
+     3231.0,
+     5019.0
+    ],
+    [
+     3292.0,
+     5019.0
+    ],
+    [
+     3292.0,
+     5088.0
+    ],
+    [
+     3231.0,
+     5088.0
+    ]
+   ],
+   "aabb": [
+    3231,
+    5019,
+    3292,
+    5088
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1199,
+   "annot_line": 2,
+   "target": true,
+   "ink_px": 1593,
+   "scored_text_px": 1157
+  },
+  {
+   "id": "SA-B11-002",
+   "reading": "50'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": -3.0,
+   "height": 36.2,
+   "length": 46.7,
+   "poly": [
+    [
+     3243.3,
+     5077.4
+    ],
+    [
+     3289.9,
+     5074.9
+    ],
+    [
+     3291.8,
+     5111.0
+    ],
+    [
+     3245.2,
+     5113.5
+    ]
+   ],
+   "aabb": [
+    3243,
+    5074,
+    3292,
+    5114
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 451,
+   "annot_line": 3,
+   "target": false,
+   "ink_px": 475,
+   "scored_text_px": 440
+  },
+  {
+   "id": "SA-B11-003",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 10.0,
+   "poly": [
+    [
+     3305.0,
+     5028.0
+    ],
+    [
+     3315.0,
+     5028.0
+    ],
+    [
+     3315.0,
+     5036.0
+    ],
+    [
+     3305.0,
+     5036.0
+    ]
+   ],
+   "aabb": [
+    3305,
+    5028,
+    3315,
+    5036
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 9,
+   "annot_line": 4,
+   "target": false,
+   "ink_px": 9,
+   "scored_text_px": 9
+  }
+ ],
+ "dropped_outside_scope": []
+}

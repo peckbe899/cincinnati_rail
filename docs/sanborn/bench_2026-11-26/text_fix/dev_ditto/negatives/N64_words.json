@@ -1,0 +1,94 @@
+{
+ "crop": "N64",
+ "plate": "48",
+ "win": [
+  10151,
+  1408,
+  10215,
+  1472
+ ],
+ "kind": "targeted",
+ "target": "negative",
+ "scope_pad": 0,
+ "scope": [
+  [
+   10151,
+   1408,
+   10215,
+   1472
+  ]
+ ],
+ "n_words": 1,
+ "n_targets": 0,
+ "mask": "N64_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 3930,
+  "ink_not_text": 166,
+  "text": 0,
+  "dont_care": 0
+ },
+ "counts_in_scope": {
+  "ink_not_text": 166,
+  "text": 0,
+  "dont_care": 0
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "N64-001",
+   "reading": "-",
+   "kind": "negative",
+   "flags": [
+    "neg:dash"
+   ],
+   "angle": 0.0,
+   "height": 6.0,
+   "length": 34.0,
+   "poly": [
+    [
+     10167.0,
+     1438.0
+    ],
+    [
+     10201.0,
+     1438.0
+    ],
+    [
+     10201.0,
+     1444.0
+    ],
+    [
+     10167.0,
+     1444.0
+    ]
+   ],
+   "aabb": [
+    10167,
+    1438,
+    10201,
+    1444
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": false,
+   "box_word": true,
+   "text_px": 0,
+   "in_scope": true,
+   "ink_px": 154,
+   "care_px": 0,
+   "pieces": 1,
+   "piece_px": [
+    154
+   ],
+   "style": "",
+   "neg_type": "dash"
+  }
+ ]
+}

@@ -1,0 +1,83 @@
+{
+ "crop": "SA-D07",
+ "plate": "6",
+ "win": [
+  1090,
+  5076,
+  1213,
+  5198
+ ],
+ "why": "1 ditto mark(s) found in the seeded random built-up window [668, 4902, 1168, 5402] of plate 6 (round 1)",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope_px": 3540,
+ "n_words": 1,
+ "mask": "SA-D07_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (glyph and line share ink; CARE boxes; outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 2837,
+  "ink_not_text": 675,
+  "text": 20,
+  "dont_care": 11474
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-D07-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap",
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 8.0,
+   "poly": [
+    [
+     1147.0,
+     5132.5
+    ],
+    [
+     1155.0,
+     5132.5
+    ],
+    [
+     1155.0,
+     5140.5
+    ],
+    [
+     1147.0,
+     5140.5
+    ]
+   ],
+   "aabb": [
+    1147,
+    5132,
+    1155,
+    5141
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 20,
+   "annot_line": 18,
+   "target": true,
+   "ink_px": 60,
+   "scored_text_px": 20
+  }
+ ],
+ "dropped_outside_scope": [
+  {
+   "id": "SA-D07-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 16
+  }
+ ]
+}

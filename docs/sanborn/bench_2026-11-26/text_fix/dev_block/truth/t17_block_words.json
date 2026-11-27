@@ -1,0 +1,122 @@
+{
+ "note": "Block-number words of truth v2 (T1-T7, plates 44, 1A, 5), listed apart from the targeted DB crops (their masks are not copied). Score them with: python -B bench_2026-11-25/text_v1/code/score_text.py MASK --codes 2,3 --truth bench_2026-11-25/text_v1/truth --crops T1,T2,T3,T6,T7 and read by_kind['block']. These are whole-crop truths, not targeted: every ink pixel of the window is scored, so pooled P/R/F1 there are not comparable to the DB set.",
+ "truth_dir": "C:\\Users\\peckb\\Documents\\_Personal\\_Cincinnati Rail\\3D\\data\\sanborn\\bench_2026-11-25\\text_v1\\truth",
+ "words": [
+  {
+   "crop": "T1",
+   "plate": "44",
+   "id": "T1-045",
+   "reading": "4",
+   "flags": [
+    "unsure"
+   ],
+   "aabb": [
+    2458,
+    1562,
+    2505,
+    1610
+   ],
+   "height": 48.0,
+   "text_px": 810,
+   "annot_line": 55
+  },
+  {
+   "crop": "T1",
+   "plate": "44",
+   "id": "T1-165",
+   "reading": "14",
+   "flags": [],
+   "aabb": [
+    2510,
+    2294,
+    2576,
+    2366
+   ],
+   "height": 72.0,
+   "text_px": 1369,
+   "annot_line": 189
+  },
+  {
+   "crop": "T2",
+   "plate": "44",
+   "id": "T2-081",
+   "reading": "17",
+   "flags": [],
+   "aabb": [
+    3053,
+    2861,
+    3107,
+    2912
+   ],
+   "height": 51.0,
+   "text_px": 1093,
+   "annot_line": 97
+  },
+  {
+   "crop": "T2",
+   "plate": "44",
+   "id": "T2-135",
+   "reading": "18",
+   "flags": [],
+   "aabb": [
+    3655,
+    3220,
+    3714,
+    3276
+   ],
+   "height": 56.0,
+   "text_px": 1415,
+   "annot_line": 156
+  },
+  {
+   "crop": "T3",
+   "plate": "44",
+   "id": "T3-002",
+   "reading": "24",
+   "flags": [
+    "partial"
+   ],
+   "aabb": [
+    8961,
+    2525,
+    9045,
+    2591
+   ],
+   "height": 66.0,
+   "text_px": 1866,
+   "annot_line": 6
+  },
+  {
+   "crop": "T6",
+   "plate": "5",
+   "id": "T6-095",
+   "reading": "15",
+   "flags": [],
+   "aabb": [
+    4813,
+    2395,
+    4880,
+    2454
+   ],
+   "height": 59.0,
+   "text_px": 1738,
+   "annot_line": 109
+  },
+  {
+   "crop": "T7",
+   "plate": "5",
+   "id": "T7-163",
+   "reading": "28",
+   "flags": [],
+   "aabb": [
+    2385,
+    3872,
+    2495,
+    3954
+   ],
+   "height": 82.0,
+   "text_px": 2815,
+   "annot_line": 185
+  }
+ ]
+}

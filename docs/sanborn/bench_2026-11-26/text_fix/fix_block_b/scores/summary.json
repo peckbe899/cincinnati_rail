@@ -1,0 +1,3264 @@
+{
+ "about": "blockfix (fix_block_b) key numbers, 26 Nov 2026. All MEASURED. Baseline = finder3 masks (text_v1 and dev_block/finders).",
+ "dev_block_truth": {
+  "baseline_finder3": {
+   "100 ft": {
+    "px_recall": 0.7398,
+    "words": "11/15"
+   },
+   "200 ft": {
+    "px_recall": 0.8258,
+    "words": "20/22"
+   },
+   "400 ft": {
+    "px_recall": 0.7908,
+    "words": "7/8"
+   },
+   "all": {
+    "px_recall": 0.7922,
+    "words": "38/45"
+   },
+   "fold A": {
+    "px_recall": 0.7476,
+    "words": "20/25"
+   },
+   "fold B": {
+    "px_recall": 0.8466,
+    "words": "18/20"
+   },
+   "in_scope_pooled": {
+    "P": 0.9711,
+    "R": 0.7971,
+    "F1": 0.8755,
+    "nontext_called_text": 0.04927
+   }
+  },
+  "crossfold_blockfix": {
+   "100 ft": {
+    "px_recall": 0.8223,
+    "words": "13/15"
+   },
+   "200 ft": {
+    "px_recall": 0.8514,
+    "words": "20/22"
+   },
+   "400 ft": {
+    "px_recall": 0.9209,
+    "words": "8/8"
+   },
+   "all": {
+    "px_recall": 0.8503,
+    "words": "41/45"
+   },
+   "fold A": {
+    "px_recall": 0.797,
+    "words": "22/25"
+   },
+   "fold B": {
+    "px_recall": 0.9154,
+    "words": "19/20"
+   },
+   "in_scope_pooled": {
+    "P": 0.9703,
+    "R": 0.8424,
+    "F1": 0.9018,
+    "nontext_called_text": 0.05342
+   }
+  },
+  "final_model_blockfix": {
+   "100 ft": {
+    "px_recall": 0.8564,
+    "words": "14/15"
+   },
+   "200 ft": {
+    "px_recall": 0.8632,
+    "words": "20/22"
+   },
+   "400 ft": {
+    "px_recall": 0.9148,
+    "words": "8/8"
+   },
+   "all": {
+    "px_recall": 0.8674,
+    "words": "42/45"
+   },
+   "fold A": {
+    "px_recall": 0.8205,
+    "words": "22/25"
+   },
+   "fold B": {
+    "px_recall": 0.9247,
+    "words": "20/20"
+   },
+   "in_scope_pooled": {
+    "P": 0.971,
+    "R": 0.8557,
+    "F1": 0.9097,
+    "nontext_called_text": 0.0531
+   }
+  },
+  "note": "crossfold: fold A plates run with models fitted on fold B plates and settings chosen on fold B, and the other way round; final model: fitted on all 12 dev plates (their survey figures outside the truth windows)"
+ },
+ "per_fold_in_scope": {
+  "baseline_finder3": {
+   "A": {
+    "P": 0.9793,
+    "R": 0.7659,
+    "F1": 0.8596,
+    "nontext_called_text": 0.03266,
+    "block": {
+     "recall": 0.7476,
+     "words": "20/25"
+    },
+    "lot": {
+     "recall": 0.7858,
+     "words": "55/64"
+    },
+    "lotdim": {
+     "recall": 0.8601,
+     "words": "13/14"
+    },
+    "story": {
+     "recall": 0.6739,
+     "words": "5/6"
+    },
+    "owner": {
+     "recall": 1.0,
+     "words": "1/1"
+    },
+    "per_crop": {
+     "DB01": 0.7223,
+     "DB02": 1.0,
+     "DB03": 1.0,
+     "DB04": 0.7302,
+     "DB05": 0.2013,
+     "DB06": 1.0,
+     "DB07": 0.4854,
+     "DB08": 0.8892,
+     "DB09": 0.9943,
+     "DB10": 0.3246,
+     "DB16": 0.4244,
+     "DB17": 0.8907,
+     "DB18": 0.5484,
+     "DB19": 1.0,
+     "DB24": 1.0,
+     "DB25": 0.6825,
+     "DB26": 0.0716,
+     "DB27": 0.8178,
+     "DB32": 1.0,
+     "DB33": 0.74,
+     "DB34": 1.0,
+     "DB38": 0.9854,
+     "DB39": 0.991,
+     "DB40": 0.9615,
+     "DB41": 0.6357
+    }
+   },
+   "B": {
+    "P": 0.9614,
+    "R": 0.8382,
+    "F1": 0.8956,
+    "nontext_called_text": 0.07285,
+    "block": {
+     "recall": 0.8466,
+     "words": "18/20"
+    },
+    "lot": {
+     "recall": 0.85,
+     "words": "15/18"
+    },
+    "lotdim": {
+     "recall": 0.6466,
+     "words": "9/10"
+    },
+    "ditto": {
+     "recall": 0.5517,
+     "words": "1/2"
+    },
+    "story": {
+     "recall": 0.7549,
+     "words": "4/5"
+    },
+    "owner": {
+     "recall": 0.9348,
+     "words": "8/8"
+    },
+    "per_crop": {
+     "DB11": 0.9926,
+     "DB12": 0.5468,
+     "DB13": 0.4137,
+     "DB14": 0.6671,
+     "DB15": 1.0,
+     "DB20": 0.9959,
+     "DB21": 1.0,
+     "DB22": 1.0,
+     "DB23": 1.0,
+     "DB28": 0.8851,
+     "DB29": 0.9931,
+     "DB30": 1.0,
+     "DB31": 0.9755,
+     "DB35": 0.6267,
+     "DB36": 1.0,
+     "DB37": 0.7955,
+     "DB42": 0.6355,
+     "DB43": 0.8275,
+     "DB44": 1.0,
+     "DB45": 0.0
+    }
+   }
+  },
+  "crossfold_blockfix": {
+   "A": {
+    "P": 0.9762,
+    "R": 0.8031,
+    "F1": 0.8812,
+    "nontext_called_text": 0.03935,
+    "block": {
+     "recall": 0.797,
+     "words": "22/25"
+    },
+    "lot": {
+     "recall": 0.7863,
+     "words": "55/64"
+    },
+    "lotdim": {
+     "recall": 0.8601,
+     "words": "13/14"
+    },
+    "story": {
+     "recall": 0.6955,
+     "words": "5/6"
+    },
+    "owner": {
+     "recall": 1.0,
+     "words": "1/1"
+    },
+    "per_crop": {
+     "DB01": 0.7223,
+     "DB02": 1.0,
+     "DB03": 1.0,
+     "DB04": 0.8537,
+     "DB05": 0.7715,
+     "DB06": 1.0,
+     "DB07": 0.7306,
+     "DB08": 0.8937,
+     "DB09": 0.9943,
+     "DB10": 0.4542,
+     "DB16": 0.4244,
+     "DB17": 0.8907,
+     "DB18": 0.5484,
+     "DB19": 1.0,
+     "DB24": 1.0,
+     "DB25": 0.7127,
+     "DB26": 0.0716,
+     "DB27": 0.9182,
+     "DB32": 1.0,
+     "DB33": 0.9163,
+     "DB34": 1.0,
+     "DB38": 0.9854,
+     "DB39": 0.991,
+     "DB40": 0.9615,
+     "DB41": 0.751
+    }
+   },
+   "B": {
+    "P": 0.9635,
+    "R": 0.8942,
+    "F1": 0.9276,
+    "nontext_called_text": 0.07339,
+    "block": {
+     "recall": 0.9154,
+     "words": "19/20"
+    },
+    "lot": {
+     "recall": 0.85,
+     "words": "15/18"
+    },
+    "lotdim": {
+     "recall": 0.6466,
+     "words": "9/10"
+    },
+    "ditto": {
+     "recall": 0.5517,
+     "words": "1/2"
+    },
+    "story": {
+     "recall": 0.7549,
+     "words": "4/5"
+    },
+    "owner": {
+     "recall": 0.9348,
+     "words": "8/8"
+    },
+    "per_crop": {
+     "DB11": 0.9937,
+     "DB12": 0.7948,
+     "DB13": 0.4137,
+     "DB14": 0.8886,
+     "DB15": 1.0,
+     "DB20": 0.9959,
+     "DB21": 1.0,
+     "DB22": 1.0,
+     "DB23": 1.0,
+     "DB28": 0.8851,
+     "DB29": 0.9931,
+     "DB30": 1.0,
+     "DB31": 0.9755,
+     "DB35": 0.8642,
+     "DB36": 1.0,
+     "DB37": 0.7955,
+     "DB42": 0.9989,
+     "DB43": 0.8275,
+     "DB44": 1.0,
+     "DB45": 1.0
+    }
+   }
+  },
+  "final_model_blockfix": {
+   "A": {
+    "P": 0.977,
+    "R": 0.8208,
+    "F1": 0.8921,
+    "nontext_called_text": 0.03886,
+    "block": {
+     "recall": 0.8205,
+     "words": "22/25"
+    },
+    "lot": {
+     "recall": 0.7868,
+     "words": "55/64"
+    },
+    "lotdim": {
+     "recall": 0.8601,
+     "words": "13/14"
+    },
+    "story": {
+     "recall": 0.6868,
+     "words": "5/6"
+    },
+    "owner": {
+     "recall": 1.0,
+     "words": "1/1"
+    },
+    "per_crop": {
+     "DB01": 0.9817,
+     "DB02": 1.0,
+     "DB03": 1.0,
+     "DB04": 0.8537,
+     "DB05": 0.7883,
+     "DB06": 1.0,
+     "DB07": 0.7654,
+     "DB08": 0.8892,
+     "DB09": 0.9943,
+     "DB10": 0.4735,
+     "DB16": 0.4244,
+     "DB17": 0.8907,
+     "DB18": 0.5484,
+     "DB19": 1.0,
+     "DB24": 1.0,
+     "DB25": 0.7329,
+     "DB26": 0.3032,
+     "DB27": 0.9222,
+     "DB32": 1.0,
+     "DB33": 0.9163,
+     "DB34": 1.0,
+     "DB38": 0.9854,
+     "DB39": 0.991,
+     "DB40": 0.9615,
+     "DB41": 0.7174
+    }
+   },
+   "B": {
+    "P": 0.9638,
+    "R": 0.9018,
+    "F1": 0.9318,
+    "nontext_called_text": 0.07332,
+    "block": {
+     "recall": 0.9247,
+     "words": "20/20"
+    },
+    "lot": {
+     "recall": 0.852,
+     "words": "15/18"
+    },
+    "lotdim": {
+     "recall": 0.6466,
+     "words": "9/10"
+    },
+    "ditto": {
+     "recall": 0.5517,
+     "words": "1/2"
+    },
+    "story": {
+     "recall": 0.7549,
+     "words": "4/5"
+    },
+    "owner": {
+     "recall": 0.9348,
+     "words": "8/8"
+    },
+    "per_crop": {
+     "DB11": 0.9926,
+     "DB12": 0.5468,
+     "DB13": 0.6922,
+     "DB14": 0.8942,
+     "DB15": 1.0,
+     "DB20": 0.9959,
+     "DB21": 1.0,
+     "DB22": 1.0,
+     "DB23": 1.0,
+     "DB28": 0.893,
+     "DB29": 0.9931,
+     "DB30": 1.0,
+     "DB31": 0.9755,
+     "DB35": 0.8712,
+     "DB36": 1.0,
+     "DB37": 0.7955,
+     "DB42": 0.9989,
+     "DB43": 0.8313,
+     "DB44": 1.0,
+     "DB45": 1.0
+    }
+   }
+  }
+ },
+ "straight_runs_dev_windows": {
+  "baseline_finder3": {
+   "px": 8842,
+   "called": 44,
+   "by_scale": {
+    "100": {
+     "px": 4811,
+     "called": 44,
+     "share": 0.00915
+    },
+    "200": {
+     "px": 3464,
+     "called": 0,
+     "share": 0.0
+    },
+    "400": {
+     "px": 567,
+     "called": 0,
+     "share": 0.0
+    }
+   },
+   "share": 0.00498
+  },
+  "crossfold_blockfix": {
+   "px": 8842,
+   "called": 67,
+   "by_scale": {
+    "100": {
+     "px": 4811,
+     "called": 67,
+     "share": 0.01393
+    },
+    "200": {
+     "px": 3464,
+     "called": 0,
+     "share": 0.0
+    },
+    "400": {
+     "px": 567,
+     "called": 0,
+     "share": 0.0
+    }
+   },
+   "share": 0.00758
+  },
+  "final_model_blockfix": {
+   "px": 8842,
+   "called": 61,
+   "by_scale": {
+    "100": {
+     "px": 4811,
+     "called": 44,
+     "share": 0.00915
+    },
+    "200": {
+     "px": 3464,
+     "called": 17,
+     "share": 0.00491
+    },
+    "400": {
+     "px": 567,
+     "called": 0,
+     "share": 0.0
+    }
+   },
+   "share": 0.0069
+  }
+ },
+ "T1_T7": {
+  "baseline_finder3": {
+   "P": 0.9684,
+   "R": 0.9218,
+   "F1": 0.9445,
+   "nontext_called_text": 0.02257,
+   "block": {
+    "recall": 0.8433,
+    "words": "6/7"
+   },
+   "street": {
+    "recall": 0.9686,
+    "words": "22/22"
+   },
+   "ditto": {
+    "recall": 0.7773,
+    "words": "30/38"
+   },
+   "house": {
+    "recall": 0.8954,
+    "words": "96/98"
+   },
+   "lot": {
+    "recall": 0.9353,
+    "words": "249/257"
+   },
+   "story": {
+    "recall": 0.9535,
+    "words": "182/188"
+   },
+   "owner": {
+    "recall": 0.8598,
+    "words": "48/51"
+   },
+   "per_crop_F1": {
+    "T1": 0.9637,
+    "T2": 0.96,
+    "T3": 0.9761,
+    "T4": 0.908,
+    "T6": 0.9411,
+    "T7": 0.9343
+   }
+  },
+  "final_model_blockfix": {
+   "P": 0.9683,
+   "R": 0.9222,
+   "F1": 0.9447,
+   "nontext_called_text": 0.02259,
+   "block": {
+    "recall": 0.8638,
+    "words": "6/7"
+   },
+   "street": {
+    "recall": 0.9686,
+    "words": "22/22"
+   },
+   "ditto": {
+    "recall": 0.7773,
+    "words": "30/38"
+   },
+   "house": {
+    "recall": 0.8954,
+    "words": "96/98"
+   },
+   "lot": {
+    "recall": 0.9353,
+    "words": "249/257"
+   },
+   "story": {
+    "recall": 0.9535,
+    "words": "182/188"
+   },
+   "owner": {
+    "recall": 0.8607,
+    "words": "48/51"
+   },
+   "per_crop_F1": {
+    "T1": 0.9637,
+    "T2": 0.96,
+    "T3": 0.9761,
+    "T4": 0.908,
+    "T6": 0.9411,
+    "T7": 0.935
+   }
+  }
+ },
+ "dev_ditto": {
+  "baseline_finder3": {
+   "P": 0.785,
+   "R": 0.6324,
+   "F1": 0.7005,
+   "nontext_called_text": 0.06219,
+   "ditto": {
+    "recall": 0.4539,
+    "words": "60/180"
+   },
+   "crops": 45
+  },
+  "final_model_blockfix": {
+   "P": 0.785,
+   "R": 0.6324,
+   "F1": 0.7005,
+   "nontext_called_text": 0.06219,
+   "ditto": {
+    "recall": 0.4539,
+    "words": "60/180"
+   },
+   "crops": 45
+  }
+ },
+ "sweeps": {
+  "A": {
+   "chosen": {
+    "opts": {
+     "pnum": 0.6,
+     "core_pad": 1.0
+    },
+    "F1": 0.8907,
+    "block": {
+     "recall": 0.8184,
+     "words": "23/25"
+    },
+    "nontext": 0.04082
+   },
+   "scored_on": "B",
+   "results": [
+    {
+     "opts": {
+      "pnum": 0.3,
+      "core_pad": 0.0
+     },
+     "F1": 0.8906,
+     "block": {
+      "recall": 0.8183,
+      "words": "23/25"
+     },
+     "nontext": 0.04082
+    },
+    {
+     "opts": {
+      "pnum": 0.3,
+      "core_pad": 1.0
+     },
+     "F1": 0.8907,
+     "block": {
+      "recall": 0.8184,
+      "words": "23/25"
+     },
+     "nontext": 0.04082
+    },
+    {
+     "opts": {
+      "pnum": 0.4,
+      "core_pad": 0.0
+     },
+     "F1": 0.8906,
+     "block": {
+      "recall": 0.8183,
+      "words": "23/25"
+     },
+     "nontext": 0.04082
+    },
+    {
+     "opts": {
+      "pnum": 0.4,
+      "core_pad": 1.0
+     },
+     "F1": 0.8907,
+     "block": {
+      "recall": 0.8184,
+      "words": "23/25"
+     },
+     "nontext": 0.04082
+    },
+    {
+     "opts": {
+      "pnum": 0.5,
+      "core_pad": 0.0
+     },
+     "F1": 0.8906,
+     "block": {
+      "recall": 0.8183,
+      "words": "23/25"
+     },
+     "nontext": 0.04082
+    },
+    {
+     "opts": {
+      "pnum": 0.5,
+      "core_pad": 1.0
+     },
+     "F1": 0.8907,
+     "block": {
+      "recall": 0.8184,
+      "words": "23/25"
+     },
+     "nontext": 0.04082
+    },
+    {
+     "opts": {
+      "pnum": 0.6,
+      "core_pad": 0.0
+     },
+     "F1": 0.8906,
+     "block": {
+      "recall": 0.8183,
+      "words": "23/25"
+     },
+     "nontext": 0.04082
+    },
+    {
+     "opts": {
+      "pnum": 0.6,
+      "core_pad": 1.0
+     },
+     "F1": 0.8907,
+     "block": {
+      "recall": 0.8184,
+      "words": "23/25"
+     },
+     "nontext": 0.04082
+    }
+   ]
+  },
+  "B": {
+   "chosen": {
+    "opts": {
+     "pnum": 0.6,
+     "core_pad": 0.0
+    },
+    "F1": 0.929,
+    "block": {
+     "recall": 0.9189,
+     "words": "19/20"
+    },
+    "nontext": 0.07424
+   },
+   "scored_on": "A",
+   "results": [
+    {
+     "opts": {
+      "pnum": 0.3,
+      "core_pad": 0.0
+     },
+     "F1": 0.929,
+     "block": {
+      "recall": 0.9189,
+      "words": "19/20"
+     },
+     "nontext": 0.07424
+    },
+    {
+     "opts": {
+      "pnum": 0.3,
+      "core_pad": 1.0
+     },
+     "F1": 0.9286,
+     "block": {
+      "recall": 0.9178,
+      "words": "19/20"
+     },
+     "nontext": 0.07332
+    },
+    {
+     "opts": {
+      "pnum": 0.4,
+      "core_pad": 0.0
+     },
+     "F1": 0.929,
+     "block": {
+      "recall": 0.9189,
+      "words": "19/20"
+     },
+     "nontext": 0.07424
+    },
+    {
+     "opts": {
+      "pnum": 0.4,
+      "core_pad": 1.0
+     },
+     "F1": 0.9286,
+     "block": {
+      "recall": 0.9178,
+      "words": "19/20"
+     },
+     "nontext": 0.07332
+    },
+    {
+     "opts": {
+      "pnum": 0.5,
+      "core_pad": 0.0
+     },
+     "F1": 0.929,
+     "block": {
+      "recall": 0.9189,
+      "words": "19/20"
+     },
+     "nontext": 0.07424
+    },
+    {
+     "opts": {
+      "pnum": 0.5,
+      "core_pad": 1.0
+     },
+     "F1": 0.9286,
+     "block": {
+      "recall": 0.9178,
+      "words": "19/20"
+     },
+     "nontext": 0.07332
+    },
+    {
+     "opts": {
+      "pnum": 0.6,
+      "core_pad": 0.0
+     },
+     "F1": 0.929,
+     "block": {
+      "recall": 0.9189,
+      "words": "19/20"
+     },
+     "nontext": 0.07424
+    },
+    {
+     "opts": {
+      "pnum": 0.6,
+      "core_pad": 1.0
+     },
+     "F1": 0.9286,
+     "block": {
+      "recall": 0.9178,
+      "words": "19/20"
+     },
+     "nontext": 0.07332
+    }
+   ]
+  }
+ },
+ "line_core_variants_crossfold": {
+  "linecore_variant_v_core_pad_1_0_shared_r_2.json": {
+   "blockA": {
+    "P": 0.9742,
+    "R": 0.8133,
+    "F1": 0.8865,
+    "nontext_called_text": 0.04333,
+    "block": {
+     "recall": 0.8106,
+     "words": "23/25"
+    },
+    "lot": {
+     "recall": 0.7864,
+     "words": "55/64"
+    },
+    "lotdim": {
+     "recall": 0.8601,
+     "words": "13/14"
+    },
+    "story": {
+     "recall": 0.7019,
+     "words": "5/6"
+    },
+    "owner": {
+     "recall": 1.0,
+     "words": "1/1"
+    },
+    "per_crop": {
+     "DB01": 0.7223,
+     "DB02": 1.0,
+     "DB03": 1.0,
+     "DB04": 0.9101,
+     "DB05": 0.826,
+     "DB06": 1.0,
+     "DB07": 0.7994,
+     "DB08": 0.8952,
+     "DB09": 0.9943,
+     "DB10": 0.5421,
+     "DB16": 0.4244,
+     "DB17": 0.8907,
+     "DB18": 0.5484,
+     "DB19": 1.0,
+     "DB24": 1.0,
+     "DB25": 0.7298,
+     "DB26": 0.0716,
+     "DB27": 0.9275,
+     "DB32": 1.0,
+     "DB33": 0.9525,
+     "DB34": 1.0,
+     "DB38": 0.987,
+     "DB39": 0.991,
+     "DB40": 0.9615,
+     "DB41": 0.7622
+    }
+   },
+   "blockB": {
+    "P": 0.9636,
+    "R": 0.9009,
+    "F1": 0.9312,
+    "nontext_called_text": 0.07362,
+    "block": {
+     "recall": 0.9236,
+     "words": "19/20"
+    },
+    "lot": {
+     "recall": 0.85,
+     "words": "15/18"
+    },
+    "lotdim": {
+     "recall": 0.6466,
+     "words": "9/10"
+    },
+    "ditto": {
+     "recall": 0.5517,
+     "words": "1/2"
+    },
+    "story": {
+     "recall": 0.7549,
+     "words": "4/5"
+    },
+    "owner": {
+     "recall": 0.9348,
+     "words": "8/8"
+    },
+    "per_crop": {
+     "DB11": 0.9954,
+     "DB12": 0.8455,
+     "DB13": 0.4137,
+     "DB14": 0.9362,
+     "DB15": 1.0,
+     "DB20": 0.9959,
+     "DB21": 1.0,
+     "DB22": 1.0,
+     "DB23": 1.0,
+     "DB28": 0.8851,
+     "DB29": 0.9931,
+     "DB30": 1.0,
+     "DB31": 0.9862,
+     "DB35": 0.9095,
+     "DB36": 1.0,
+     "DB37": 0.7955,
+     "DB42": 0.9989,
+     "DB43": 0.8275,
+     "DB44": 1.0,
+     "DB45": 1.0
+    }
+   },
+   "straight_runs_dev": {
+    "px": 8842,
+    "called": 114,
+    "by_scale": {
+     "100": {
+      "px": 4811,
+      "called": 114,
+      "share": 0.0237
+     },
+     "200": {
+      "px": 3464,
+      "called": 0,
+      "share": 0.0
+     },
+     "400": {
+      "px": 567,
+      "called": 0,
+      "share": 0.0
+     }
+    },
+    "share": 0.01289
+   }
+  },
+  "linecore_variant_v_core_pad_1_0_shared_r_3.json": {
+   "blockA": {
+    "P": 0.9758,
+    "R": 0.8036,
+    "F1": 0.8814,
+    "nontext_called_text": 0.04006,
+    "block": {
+     "recall": 0.7977,
+     "words": "22/25"
+    },
+    "lot": {
+     "recall": 0.7862,
+     "words": "55/64"
+    },
+    "lotdim": {
+     "recall": 0.8601,
+     "words": "13/14"
+    },
+    "story": {
+     "recall": 0.6955,
+     "words": "5/6"
+    },
+    "owner": {
+     "recall": 1.0,
+     "words": "1/1"
+    },
+    "per_crop": {
+     "DB01": 0.7223,
+     "DB02": 1.0,
+     "DB03": 1.0,
+     "DB04": 0.8523,
+     "DB05": 0.7757,
+     "DB06": 1.0,
+     "DB07": 0.7314,
+     "DB08": 0.8922,
+     "DB09": 0.9943,
+     "DB10": 0.4598,
+     "DB16": 0.4244,
+     "DB17": 0.8907,
+     "DB18": 0.5484,
+     "DB19": 1.0,
+     "DB24": 1.0,
+     "DB25": 0.7151,
+     "DB26": 0.0716,
+     "DB27": 0.9199,
+     "DB32": 1.0,
+     "DB33": 0.9175,
+     "DB34": 1.0,
+     "DB38": 0.9854,
+     "DB39": 0.991,
+     "DB40": 0.9615,
+     "DB41": 0.751
+    }
+   },
+   "blockB": {
+    "P": 0.9635,
+    "R": 0.8936,
+    "F1": 0.9273,
+    "nontext_called_text": 0.07316,
+    "block": {
+     "recall": 0.9146,
+     "words": "19/20"
+    },
+    "lot": {
+     "recall": 0.85,
+     "words": "15/18"
+    },
+    "lotdim": {
+     "recall": 0.6466,
+     "words": "9/10"
+    },
+    "ditto": {
+     "recall": 0.5517,
+     "words": "1/2"
+    },
+    "story": {
+     "recall": 0.7549,
+     "words": "4/5"
+    },
+    "owner": {
+     "recall": 0.9348,
+     "words": "8/8"
+    },
+    "per_crop": {
+     "DB11": 0.9926,
+     "DB12": 0.7745,
+     "DB13": 0.4137,
+     "DB14": 0.8914,
+     "DB15": 1.0,
+     "DB20": 0.9959,
+     "DB21": 1.0,
+     "DB22": 1.0,
+     "DB23": 1.0,
+     "DB28": 0.8851,
+     "DB29": 0.9931,
+     "DB30": 1.0,
+     "DB31": 0.9755,
+     "DB35": 0.8635,
+     "DB36": 1.0,
+     "DB37": 0.7955,
+     "DB42": 0.9989,
+     "DB43": 0.8275,
+     "DB44": 1.0,
+     "DB45": 1.0
+    }
+   },
+   "straight_runs_dev": {
+    "px": 8842,
+    "called": 77,
+    "by_scale": {
+     "100": {
+      "px": 4811,
+      "called": 77,
+      "share": 0.016
+     },
+     "200": {
+      "px": 3464,
+      "called": 0,
+      "share": 0.0
+     },
+     "400": {
+      "px": 567,
+      "called": 0,
+      "share": 0.0
+     }
+    },
+    "share": 0.00871
+   }
+  },
+  "linecore_variant_v_core_pad_2_0_shared_r_2.json": {
+   "blockA": {
+    "P": 0.9762,
+    "R": 0.8031,
+    "F1": 0.8812,
+    "nontext_called_text": 0.03935,
+    "block": {
+     "recall": 0.797,
+     "words": "22/25"
+    },
+    "lot": {
+     "recall": 0.7863,
+     "words": "55/64"
+    },
+    "lotdim": {
+     "recall": 0.8601,
+     "words": "13/14"
+    },
+    "story": {
+     "recall": 0.6955,
+     "words": "5/6"
+    },
+    "owner": {
+     "recall": 1.0,
+     "words": "1/1"
+    },
+    "per_crop": {
+     "DB01": 0.7223,
+     "DB02": 1.0,
+     "DB03": 1.0,
+     "DB04": 0.8537,
+     "DB05": 0.7715,
+     "DB06": 1.0,
+     "DB07": 0.7306,
+     "DB08": 0.8937,
+     "DB09": 0.9943,
+     "DB10": 0.4542,
+     "DB16": 0.4244,
+     "DB17": 0.8907,
+     "DB18": 0.5484,
+     "DB19": 1.0,
+     "DB24": 1.0,
+     "DB25": 0.7127,
+     "DB26": 0.0716,
+     "DB27": 0.9182,
+     "DB32": 1.0,
+     "DB33": 0.9163,
+     "DB34": 1.0,
+     "DB38": 0.9854,
+     "DB39": 0.991,
+     "DB40": 0.9615,
+     "DB41": 0.751
+    }
+   },
+   "blockB": {
+    "P": 0.9635,
+    "R": 0.8942,
+    "F1": 0.9276,
+    "nontext_called_text": 0.07339,
+    "block": {
+     "recall": 0.9154,
+     "words": "19/20"
+    },
+    "lot": {
+     "recall": 0.85,
+     "words": "15/18"
+    },
+    "lotdim": {
+     "recall": 0.6466,
+     "words": "9/10"
+    },
+    "ditto": {
+     "recall": 0.5517,
+     "words": "1/2"
+    },
+    "story": {
+     "recall": 0.7549,
+     "words": "4/5"
+    },
+    "owner": {
+     "recall": 0.9348,
+     "words": "8/8"
+    },
+    "per_crop": {
+     "DB11": 0.9937,
+     "DB12": 0.7948,
+     "DB13": 0.4137,
+     "DB14": 0.8886,
+     "DB15": 1.0,
+     "DB20": 0.9959,
+     "DB21": 1.0,
+     "DB22": 1.0,
+     "DB23": 1.0,
+     "DB28": 0.8851,
+     "DB29": 0.9931,
+     "DB30": 1.0,
+     "DB31": 0.9755,
+     "DB35": 0.8642,
+     "DB36": 1.0,
+     "DB37": 0.7955,
+     "DB42": 0.9989,
+     "DB43": 0.8275,
+     "DB44": 1.0,
+     "DB45": 1.0
+    }
+   },
+   "straight_runs_dev": {
+    "px": 8842,
+    "called": 67,
+    "by_scale": {
+     "100": {
+      "px": 4811,
+      "called": 67,
+      "share": 0.01393
+     },
+     "200": {
+      "px": 3464,
+      "called": 0,
+      "share": 0.0
+     },
+     "400": {
+      "px": 567,
+      "called": 0,
+      "share": 0.0
+     }
+    },
+    "share": 0.00758
+   }
+  },
+  "linecore_variant_v_core_pad_2_0_shared_r_3.json": {
+   "blockA": {
+    "P": 0.9773,
+    "R": 0.7951,
+    "F1": 0.8768,
+    "nontext_called_text": 0.03723,
+    "block": {
+     "recall": 0.7864,
+     "words": "22/25"
+    },
+    "lot": {
+     "recall": 0.7862,
+     "words": "55/64"
+    },
+    "lotdim": {
+     "recall": 0.8601,
+     "words": "13/14"
+    },
+    "story": {
+     "recall": 0.689,
+     "words": "5/6"
+    },
+    "owner": {
+     "recall": 1.0,
+     "words": "1/1"
+    },
+    "per_crop": {
+     "DB01": 0.7223,
+     "DB02": 1.0,
+     "DB03": 1.0,
+     "DB04": 0.8134,
+     "DB05": 0.7212,
+     "DB06": 1.0,
+     "DB07": 0.678,
+     "DB08": 0.8922,
+     "DB09": 0.9943,
+     "DB10": 0.385,
+     "DB16": 0.4244,
+     "DB17": 0.8907,
+     "DB18": 0.5484,
+     "DB19": 1.0,
+     "DB24": 1.0,
+     "DB25": 0.6988,
+     "DB26": 0.0716,
+     "DB27": 0.9124,
+     "DB32": 1.0,
+     "DB33": 0.8875,
+     "DB34": 1.0,
+     "DB38": 0.9854,
+     "DB39": 0.991,
+     "DB40": 0.9615,
+     "DB41": 0.739
+    }
+   },
+   "blockB": {
+    "P": 0.9635,
+    "R": 0.8896,
+    "F1": 0.9251,
+    "nontext_called_text": 0.07301,
+    "block": {
+     "recall": 0.9097,
+     "words": "19/20"
+    },
+    "lot": {
+     "recall": 0.85,
+     "words": "15/18"
+    },
+    "lotdim": {
+     "recall": 0.6466,
+     "words": "9/10"
+    },
+    "ditto": {
+     "recall": 0.5517,
+     "words": "1/2"
+    },
+    "story": {
+     "recall": 0.7549,
+     "words": "4/5"
+    },
+    "owner": {
+     "recall": 0.9348,
+     "words": "8/8"
+    },
+    "per_crop": {
+     "DB11": 0.9926,
+     "DB12": 0.7351,
+     "DB13": 0.4137,
+     "DB14": 0.8535,
+     "DB15": 1.0,
+     "DB20": 0.9959,
+     "DB21": 1.0,
+     "DB22": 1.0,
+     "DB23": 1.0,
+     "DB28": 0.8851,
+     "DB29": 0.9931,
+     "DB30": 1.0,
+     "DB31": 0.9755,
+     "DB35": 0.8468,
+     "DB36": 1.0,
+     "DB37": 0.7955,
+     "DB42": 0.9989,
+     "DB43": 0.8275,
+     "DB44": 1.0,
+     "DB45": 1.0
+    }
+   },
+   "straight_runs_dev": {
+    "px": 8842,
+    "called": 50,
+    "by_scale": {
+     "100": {
+      "px": 4811,
+      "called": 50,
+      "share": 0.01039
+     },
+     "200": {
+      "px": 3464,
+      "called": 0,
+      "share": 0.0
+     },
+     "400": {
+      "px": 567,
+      "called": 0,
+      "share": 0.0
+     }
+    },
+    "share": 0.00565
+   }
+  }
+ },
+ "ben_lines_short": {
+  "final": {
+   "44": {
+    "px1": 0.00128,
+    "px3": 0.00238
+   },
+   "1A": {
+    "px1": 0.00168,
+    "px3": 0.00354
+   },
+   "5": {
+    "px1": 0.00125,
+    "px3": 0.0044
+   }
+  },
+  "finder3": {
+   "44": {
+    "px1": 0.00128,
+    "px3": 0.00238
+   },
+   "1A": {
+    "px1": 0.00168,
+    "px3": 0.00354
+   },
+   "5": {
+    "px1": 0.00118,
+    "px3": 0.00426
+   }
+  }
+ },
+ "rail_bands_new_text": {
+  "44": {
+   "new_text_px_in_bands": 0,
+   "text_px_lost_in_bands": 0,
+   "changed_px_in_bands": 0,
+   "new_blobs": []
+  },
+  "5": {
+   "new_text_px_in_bands": 0,
+   "text_px_lost_in_bands": 0,
+   "changed_px_in_bands": 0,
+   "new_blobs": []
+  }
+ },
+ "ben_lines_new_text_by_number": {
+  "5": {
+   "new_text_1px": 56,
+   "new_text_3px": 180,
+   "numbers": [
+    {
+     "reading": "43",
+     "box": [
+      4771,
+      5264,
+      4854,
+      5316
+     ],
+     "new_1px": 0,
+     "new_3px": 2,
+     "to_text": 131
+    },
+    {
+     "reading": "8",
+     "box": [
+      6035,
+      1457,
+      6072,
+      1512
+     ],
+     "new_1px": 0,
+     "new_3px": 1,
+     "to_text": 832
+    },
+    {
+     "reading": "37",
+     "box": [
+      6095,
+      4637,
+      6180,
+      4694
+     ],
+     "new_1px": 0,
+     "new_3px": 2,
+     "to_text": 991
+    },
+    {
+     "reading": "32",
+     "box": [
+      7553,
+      3897,
+      7626,
+      3943
+     ],
+     "new_1px": 16,
+     "new_3px": 83,
+     "to_text": 679
+    },
+    {
+     "reading": "17",
+     "box": [
+      7568,
+      2529,
+      7629,
+      2579
+     ],
+     "new_1px": 3,
+     "new_3px": 17,
+     "to_text": 271
+    },
+    {
+     "reading": "25",
+     "box": [
+      8581,
+      3546,
+      8663,
+      3597
+     ],
+     "new_1px": 0,
+     "new_3px": 15,
+     "to_text": 708
+    },
+    {
+     "reading": "18",
+     "box": [
+      8926,
+      2542,
+      8979,
+      2592
+     ],
+     "new_1px": 37,
+     "new_3px": 60,
+     "to_text": 211
+    }
+   ]
+  },
+  "44": {
+   "new_text_1px": 1,
+   "new_text_3px": 1,
+   "numbers": [
+    {
+     "reading": "29",
+     "box": [
+      1736,
+      4677,
+      1810,
+      4729
+     ],
+     "new_1px": 1,
+     "new_3px": 1,
+     "to_text": 110
+    }
+   ]
+  },
+  "1A": {
+   "new_text_1px": 0,
+   "new_text_3px": 0,
+   "numbers": []
+  }
+ },
+ "readings": {
+  "crossfold": {
+   "dev": {
+    "DB01": {
+     "plate": "3",
+     "truth": "15",
+     "read": null,
+     "right": false,
+     "unsure": false,
+     "flags": null,
+     "fold": "A"
+    },
+    "DB02": {
+     "plate": "3",
+     "truth": "19",
+     "read": "19",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB03": {
+     "plate": "3",
+     "truth": "9",
+     "read": "9",
+     "right": true,
+     "unsure": false,
+     "flags": [
+      "reading seen 2 times on the plate"
+     ],
+     "fold": "A"
+    },
+    "DB04": {
+     "plate": "3",
+     "truth": "8",
+     "read": "9",
+     "right": false,
+     "unsure": false,
+     "flags": [
+      "reading seen 2 times on the plate"
+     ],
+     "fold": "A"
+    },
+    "DB05": {
+     "plate": "3",
+     "truth": "2",
+     "read": "2",
+     "right": true,
+     "unsure": false,
+     "flags": [
+      "reading seen 2 times on the plate"
+     ],
+     "fold": "A"
+    },
+    "DB06": {
+     "plate": "54A",
+     "truth": "4",
+     "read": "4",
+     "right": true,
+     "unsure": true,
+     "flags": [
+      "unsure: number model 0.465 (listed, ink not changed)"
+     ],
+     "fold": "A"
+    },
+    "DB07": {
+     "plate": "54A",
+     "truth": "28",
+     "read": "28",
+     "right": true,
+     "unsure": false,
+     "flags": [
+      "reading seen 2 times on the plate"
+     ],
+     "fold": "A"
+    },
+    "DB08": {
+     "plate": "54A",
+     "truth": "5",
+     "read": "5",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB09": {
+     "plate": "54A",
+     "truth": "8",
+     "read": "8",
+     "right": true,
+     "unsure": false,
+     "flags": [
+      "reading seen 2 times on the plate"
+     ],
+     "fold": "A"
+    },
+    "DB10": {
+     "plate": "54A",
+     "truth": "30",
+     "read": "30",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB11": {
+     "plate": "12",
+     "truth": "38",
+     "read": "38",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB12": {
+     "plate": "12",
+     "truth": "9",
+     "read": "9",
+     "right": true,
+     "unsure": false,
+     "flags": [
+      "reading seen 2 times on the plate"
+     ],
+     "fold": "B"
+    },
+    "DB13": {
+     "plate": "12",
+     "truth": "47",
+     "read": null,
+     "right": false,
+     "unsure": false,
+     "flags": null,
+     "fold": "B"
+    },
+    "DB14": {
+     "plate": "12",
+     "truth": "55",
+     "read": "55",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB15": {
+     "plate": "12",
+     "truth": "20",
+     "read": "20",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB16": {
+     "plate": "30",
+     "truth": "23",
+     "read": null,
+     "right": false,
+     "unsure": false,
+     "flags": null,
+     "fold": "A"
+    },
+    "DB17": {
+     "plate": "30",
+     "truth": "15",
+     "read": null,
+     "right": false,
+     "unsure": false,
+     "flags": null,
+     "fold": "A"
+    },
+    "DB18": {
+     "plate": "30",
+     "truth": "6\u00bd",
+     "read": null,
+     "right": false,
+     "unsure": false,
+     "flags": null,
+     "fold": "A"
+    },
+    "DB19": {
+     "plate": "30",
+     "truth": "2",
+     "read": "2",
+     "right": true,
+     "unsure": false,
+     "flags": [
+      "reading seen 3 times on the plate"
+     ],
+     "fold": "A"
+    },
+    "DB20": {
+     "plate": "19",
+     "truth": "28",
+     "read": "28",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB21": {
+     "plate": "19",
+     "truth": "41",
+     "read": "41",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB22": {
+     "plate": "19",
+     "truth": "14",
+     "read": "14",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB23": {
+     "plate": "19",
+     "truth": "34",
+     "read": "34",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB24": {
+     "plate": "26A",
+     "truth": "39\u00bd",
+     "read": "39",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB25": {
+     "plate": "26A",
+     "truth": "18",
+     "read": "18",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB26": {
+     "plate": "26A",
+     "truth": "24",
+     "read": null,
+     "right": false,
+     "unsure": false,
+     "flags": null,
+     "fold": "A"
+    },
+    "DB27": {
+     "plate": "26A",
+     "truth": "46",
+     "read": "46",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB28": {
+     "plate": "64A",
+     "truth": "10",
+     "read": "10",
+     "right": true,
+     "unsure": true,
+     "flags": [
+      "unsure: number model 0.512 (listed, ink not changed)"
+     ],
+     "fold": "B"
+    },
+    "DB29": {
+     "plate": "64A",
+     "truth": "9",
+     "read": "9",
+     "right": true,
+     "unsure": false,
+     "flags": [
+      "reading seen 3 times on the plate"
+     ],
+     "fold": "B"
+    },
+    "DB30": {
+     "plate": "64A",
+     "truth": "21",
+     "read": "21",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB31": {
+     "plate": "64A",
+     "truth": "2",
+     "read": "2",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB32": {
+     "plate": "74",
+     "truth": "8",
+     "read": null,
+     "right": false,
+     "unsure": false,
+     "flags": null,
+     "fold": "A"
+    },
+    "DB33": {
+     "plate": "74",
+     "truth": "2",
+     "read": "2",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB34": {
+     "plate": "74",
+     "truth": "14",
+     "read": "14",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB35": {
+     "plate": "60B",
+     "truth": "85",
+     "read": "35",
+     "right": false,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB36": {
+     "plate": "60B",
+     "truth": "86",
+     "read": "86",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB37": {
+     "plate": "60B",
+     "truth": "79",
+     "read": "18",
+     "right": false,
+     "unsure": true,
+     "flags": [
+      "reading seen 2 times on the plate",
+      "unsure: number model 0.584 (listed, ink not changed)"
+     ],
+     "fold": "B"
+    },
+    "DB38": {
+     "plate": "49",
+     "truth": "2",
+     "read": "2",
+     "right": true,
+     "unsure": false,
+     "flags": [
+      "reading seen 2 times on the plate"
+     ],
+     "fold": "A"
+    },
+    "DB39": {
+     "plate": "49",
+     "truth": "5",
+     "read": "5",
+     "right": true,
+     "unsure": true,
+     "flags": [
+      "unsure: number model 0.547 (listed, ink not changed)"
+     ],
+     "fold": "A"
+    },
+    "DB40": {
+     "plate": "49",
+     "truth": "4\u00bd",
+     "read": null,
+     "right": false,
+     "unsure": false,
+     "flags": null,
+     "fold": "A"
+    },
+    "DB41": {
+     "plate": "49",
+     "truth": "15",
+     "read": "15",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB42": {
+     "plate": "93A",
+     "truth": "13",
+     "read": "13",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB43": {
+     "plate": "93A",
+     "truth": "8",
+     "read": null,
+     "right": false,
+     "unsure": false,
+     "flags": null,
+     "fold": "B"
+    },
+    "DB44": {
+     "plate": "48",
+     "truth": "5",
+     "read": "5",
+     "right": true,
+     "unsure": false,
+     "flags": [
+      "reading seen 2 times on the plate"
+     ],
+     "fold": "B"
+    },
+    "DB45": {
+     "plate": "48",
+     "truth": "1",
+     "read": "1",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    }
+   },
+   "t17": {
+    "T1-045": {
+     "plate": "44",
+     "truth": "4",
+     "read": null,
+     "right": false,
+     "unsure": false
+    },
+    "T1-165": {
+     "plate": "44",
+     "truth": "14",
+     "read": null,
+     "right": false,
+     "unsure": false
+    },
+    "T2-081": {
+     "plate": "44",
+     "truth": "17",
+     "read": "17",
+     "right": true,
+     "unsure": false
+    },
+    "T2-135": {
+     "plate": "44",
+     "truth": "18",
+     "read": "11",
+     "right": false,
+     "unsure": false
+    },
+    "T3-002": {
+     "plate": "44",
+     "truth": "24",
+     "read": "24",
+     "right": true,
+     "unsure": false
+    },
+    "T6-095": {
+     "plate": "5",
+     "truth": "15",
+     "read": "15",
+     "right": true,
+     "unsure": false
+    },
+    "T7-163": {
+     "plate": "5",
+     "truth": "28",
+     "read": "28",
+     "right": true,
+     "unsure": false
+    }
+   },
+   "dev A": {
+    "targets": 25,
+    "found": 18,
+    "read_right": 17,
+    "found_sure": 16,
+    "read_right_sure": 15
+   },
+   "dev B": {
+    "targets": 20,
+    "found": 18,
+    "read_right": 16,
+    "found_sure": 16,
+    "read_right_sure": 15
+   },
+   "dev all": {
+    "targets": 45,
+    "found": 36,
+    "read_right": 33,
+    "found_sure": 32,
+    "read_right_sure": 30
+   },
+   "T1-T7": {
+    "targets": 7,
+    "found": 5,
+    "read_right": 4,
+    "found_sure": 5,
+    "read_right_sure": 4
+   }
+  },
+  "final": {
+   "dev": {
+    "DB01": {
+     "plate": "3",
+     "truth": "15",
+     "read": "15",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB02": {
+     "plate": "3",
+     "truth": "19",
+     "read": "19",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB03": {
+     "plate": "3",
+     "truth": "9",
+     "read": "9",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB04": {
+     "plate": "3",
+     "truth": "8",
+     "read": "8",
+     "right": true,
+     "unsure": false,
+     "flags": [
+      "reading seen 2 times on the plate"
+     ],
+     "fold": "A"
+    },
+    "DB05": {
+     "plate": "3",
+     "truth": "2",
+     "read": "2",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB06": {
+     "plate": "54A",
+     "truth": "4",
+     "read": "4",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB07": {
+     "plate": "54A",
+     "truth": "28",
+     "read": "28",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB08": {
+     "plate": "54A",
+     "truth": "5",
+     "read": "5",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB09": {
+     "plate": "54A",
+     "truth": "8",
+     "read": "8",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB10": {
+     "plate": "54A",
+     "truth": "30",
+     "read": "30",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB11": {
+     "plate": "12",
+     "truth": "38",
+     "read": "38",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB12": {
+     "plate": "12",
+     "truth": "9",
+     "read": "9",
+     "right": true,
+     "unsure": true,
+     "flags": [
+      "unsure: number model 0.578 (listed, ink not changed)"
+     ],
+     "fold": "B"
+    },
+    "DB13": {
+     "plate": "12",
+     "truth": "47",
+     "read": "47",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB14": {
+     "plate": "12",
+     "truth": "55",
+     "read": "55",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB15": {
+     "plate": "12",
+     "truth": "20",
+     "read": "20",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB16": {
+     "plate": "30",
+     "truth": "23",
+     "read": null,
+     "right": false,
+     "unsure": false,
+     "flags": null,
+     "fold": "A"
+    },
+    "DB17": {
+     "plate": "30",
+     "truth": "15",
+     "read": null,
+     "right": false,
+     "unsure": false,
+     "flags": null,
+     "fold": "A"
+    },
+    "DB18": {
+     "plate": "30",
+     "truth": "6\u00bd",
+     "read": null,
+     "right": false,
+     "unsure": false,
+     "flags": null,
+     "fold": "A"
+    },
+    "DB19": {
+     "plate": "30",
+     "truth": "2",
+     "read": "2",
+     "right": true,
+     "unsure": false,
+     "flags": [
+      "reading seen 3 times on the plate"
+     ],
+     "fold": "A"
+    },
+    "DB20": {
+     "plate": "19",
+     "truth": "28",
+     "read": "28",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB21": {
+     "plate": "19",
+     "truth": "41",
+     "read": "41",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB22": {
+     "plate": "19",
+     "truth": "14",
+     "read": "14",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB23": {
+     "plate": "19",
+     "truth": "34",
+     "read": "34",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB24": {
+     "plate": "26A",
+     "truth": "39\u00bd",
+     "read": "39",
+     "right": true,
+     "unsure": false,
+     "flags": [
+      "reading seen 2 times on the plate"
+     ],
+     "fold": "A"
+    },
+    "DB25": {
+     "plate": "26A",
+     "truth": "18",
+     "read": "18",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB26": {
+     "plate": "26A",
+     "truth": "24",
+     "read": "23",
+     "right": false,
+     "unsure": false,
+     "flags": [
+      "reading seen 2 times on the plate"
+     ],
+     "fold": "A"
+    },
+    "DB27": {
+     "plate": "26A",
+     "truth": "46",
+     "read": "46",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB28": {
+     "plate": "64A",
+     "truth": "10",
+     "read": "10",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB29": {
+     "plate": "64A",
+     "truth": "9",
+     "read": "9",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB30": {
+     "plate": "64A",
+     "truth": "21",
+     "read": "21",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB31": {
+     "plate": "64A",
+     "truth": "2",
+     "read": "2",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB32": {
+     "plate": "74",
+     "truth": "8",
+     "read": null,
+     "right": false,
+     "unsure": false,
+     "flags": null,
+     "fold": "A"
+    },
+    "DB33": {
+     "plate": "74",
+     "truth": "2",
+     "read": "2",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB34": {
+     "plate": "74",
+     "truth": "14",
+     "read": "14",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB35": {
+     "plate": "60B",
+     "truth": "85",
+     "read": "85",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB36": {
+     "plate": "60B",
+     "truth": "86",
+     "read": "86",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB37": {
+     "plate": "60B",
+     "truth": "79",
+     "read": null,
+     "right": false,
+     "unsure": false,
+     "flags": null,
+     "fold": "B"
+    },
+    "DB38": {
+     "plate": "49",
+     "truth": "2",
+     "read": "2",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB39": {
+     "plate": "49",
+     "truth": "5",
+     "read": "5",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB40": {
+     "plate": "49",
+     "truth": "4\u00bd",
+     "read": "4",
+     "right": true,
+     "unsure": false,
+     "flags": [
+      "reading seen 2 times on the plate"
+     ],
+     "fold": "A"
+    },
+    "DB41": {
+     "plate": "49",
+     "truth": "15",
+     "read": "15",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "A"
+    },
+    "DB42": {
+     "plate": "93A",
+     "truth": "13",
+     "read": "13",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB43": {
+     "plate": "93A",
+     "truth": "8",
+     "read": "8",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    },
+    "DB44": {
+     "plate": "48",
+     "truth": "5",
+     "read": "5",
+     "right": true,
+     "unsure": false,
+     "flags": [
+      "reading seen 2 times on the plate"
+     ],
+     "fold": "B"
+    },
+    "DB45": {
+     "plate": "48",
+     "truth": "1",
+     "read": "1",
+     "right": true,
+     "unsure": false,
+     "flags": [],
+     "fold": "B"
+    }
+   },
+   "t17": {
+    "T1-045": {
+     "plate": "44",
+     "truth": "4",
+     "read": null,
+     "right": false,
+     "unsure": false
+    },
+    "T1-165": {
+     "plate": "44",
+     "truth": "14",
+     "read": null,
+     "right": false,
+     "unsure": false
+    },
+    "T2-081": {
+     "plate": "44",
+     "truth": "17",
+     "read": "17",
+     "right": true,
+     "unsure": false
+    },
+    "T2-135": {
+     "plate": "44",
+     "truth": "18",
+     "read": "11",
+     "right": false,
+     "unsure": false
+    },
+    "T3-002": {
+     "plate": "44",
+     "truth": "24",
+     "read": "24",
+     "right": true,
+     "unsure": false
+    },
+    "T6-095": {
+     "plate": "5",
+     "truth": "15",
+     "read": "15",
+     "right": true,
+     "unsure": false
+    },
+    "T7-163": {
+     "plate": "5",
+     "truth": "28",
+     "read": "28",
+     "right": true,
+     "unsure": false
+    }
+   },
+   "dev A": {
+    "targets": 25,
+    "found": 21,
+    "read_right": 20,
+    "found_sure": 21,
+    "read_right_sure": 20
+   },
+   "dev B": {
+    "targets": 20,
+    "found": 19,
+    "read_right": 19,
+    "found_sure": 18,
+    "read_right_sure": 18
+   },
+   "dev all": {
+    "targets": 45,
+    "found": 40,
+    "read_right": 39,
+    "found_sure": 39,
+    "read_right_sure": 38
+   },
+   "T1-T7": {
+    "targets": 7,
+    "found": 5,
+    "read_right": 4,
+    "found_sure": 5,
+    "read_right_sure": 4
+   }
+  },
+  "survey_lists_crossfold_all_listed": {
+   "cand": 405,
+   "found": 318,
+   "read_ok": 284,
+   "nums": 399,
+   "fp": 81
+  },
+  "survey_lists_crossfold_sure": {
+   "cand": 405,
+   "found": 307,
+   "read_ok": 278,
+   "nums": 366,
+   "fp": 59
+  }
+ },
+ "sample_check": {
+  "14": {
+   "plate": "14",
+   "changed_numbers": 25,
+   "sample": [
+    {
+     "n": 1,
+     "reading": "16",
+     "box": [
+      6699,
+      4344,
+      6778,
+      4407
+     ],
+     "to_text": 17,
+     "to_shared": 13
+    },
+    {
+     "n": 2,
+     "reading": "1",
+     "box": [
+      3581,
+      2730,
+      3594,
+      2776
+     ],
+     "to_text": 408,
+     "to_shared": 0
+    },
+    {
+     "n": 3,
+     "reading": "18",
+     "box": [
+      9536,
+      5259,
+      9603,
+      5317
+     ],
+     "to_text": 513,
+     "to_shared": 4
+    },
+    {
+     "n": 4,
+     "reading": "3",
+     "box": [
+      7570,
+      1370,
+      7606,
+      1420
+     ],
+     "to_text": 369,
+     "to_shared": 11
+    },
+    {
+     "n": 5,
+     "reading": "31",
+     "box": [
+      6011,
+      6254,
+      6080,
+      6306
+     ],
+     "to_text": 394,
+     "to_shared": 7
+    },
+    {
+     "n": 6,
+     "reading": "12",
+     "box": [
+      4510,
+      3762,
+      4574,
+      3814
+     ],
+     "to_text": 539,
+     "to_shared": 45
+    },
+    {
+     "n": 7,
+     "reading": "20",
+     "box": [
+      5783,
+      4191,
+      5881,
+      4242
+     ],
+     "to_text": 210,
+     "to_shared": 10
+    },
+    {
+     "n": 8,
+     "reading": "7",
+     "box": [
+      7886,
+      4706,
+      7926,
+      4756
+     ],
+     "to_text": 276,
+     "to_shared": 11
+    },
+    {
+     "n": 9,
+     "reading": "7",
+     "box": [
+      2563,
+      3004,
+      2618,
+      3072
+     ],
+     "to_text": 160,
+     "to_shared": 12
+    },
+    {
+     "n": 10,
+     "reading": "7",
+     "box": [
+      4419,
+      3169,
+      4459,
+      3219
+     ],
+     "to_text": 640,
+     "to_shared": 13
+    },
+    {
+     "n": 11,
+     "reading": "2",
+     "box": [
+      2568,
+      5100,
+      2606,
+      5150
+     ],
+     "to_text": 19,
+     "to_shared": 1
+    },
+    {
+     "n": 12,
+     "reading": "25",
+     "box": [
+      3799,
+      4850,
+      3900,
+      4903
+     ],
+     "to_text": 383,
+     "to_shared": 26
+    },
+    {
+     "n": 13,
+     "reading": "29",
+     "box": [
+      2968,
+      6061,
+      3061,
+      6118
+     ],
+     "to_text": 47,
+     "to_shared": 17
+    },
+    {
+     "n": 14,
+     "reading": "5",
+     "box": [
+      10302,
+      1366,
+      10345,
+      1421
+     ],
+     "to_text": 323,
+     "to_shared": 36
+    },
+    {
+     "n": 15,
+     "reading": "21",
+     "box": [
+      6404,
+      4792,
+      6473,
+      4845
+     ],
+     "to_text": 82,
+     "to_shared": 6
+    }
+   ],
+   "seed": 2611
+  },
+  "60A": {
+   "plate": "60A",
+   "changed_numbers": 33,
+   "sample": [
+    {
+     "n": 1,
+     "reading": "26",
+     "box": [
+      2707,
+      4924,
+      2780,
+      4972
+     ],
+     "to_text": 51,
+     "to_shared": 2
+    },
+    {
+     "n": 2,
+     "reading": "23",
+     "box": [
+      3101,
+      5359,
+      3167,
+      5406
+     ],
+     "to_text": 169,
+     "to_shared": 0
+    },
+    {
+     "n": 3,
+     "reading": "32",
+     "box": [
+      3857,
+      4542,
+      3923,
+      4591
+     ],
+     "to_text": 304,
+     "to_shared": 40
+    },
+    {
+     "n": 4,
+     "reading": "9",
+     "box": [
+      501,
+      1376,
+      540,
+      1432
+     ],
+     "to_text": 615,
+     "to_shared": 43
+    },
+    {
+     "n": 5,
+     "reading": "5",
+     "box": [
+      5656,
+      684,
+      5690,
+      727
+     ],
+     "to_text": 11,
+     "to_shared": 9
+    },
+    {
+     "n": 6,
+     "reading": "12",
+     "box": [
+      5627,
+      3381,
+      5676,
+      3421
+     ],
+     "to_text": 98,
+     "to_shared": 0
+    },
+    {
+     "n": 7,
+     "reading": "13",
+     "box": [
+      1409,
+      1941,
+      1459,
+      1990
+     ],
+     "to_text": 113,
+     "to_shared": 28
+    },
+    {
+     "n": 8,
+     "reading": "40",
+     "box": [
+      5572,
+      2539,
+      5652,
+      2585
+     ],
+     "to_text": 385,
+     "to_shared": 20
+    },
+    {
+     "n": 9,
+     "reading": "26",
+     "box": [
+      2506,
+      5750,
+      2579,
+      5799
+     ],
+     "to_text": 2,
+     "to_shared": 8
+    },
+    {
+     "n": 10,
+     "reading": "34",
+     "box": [
+      4124,
+      3473,
+      4188,
+      3516
+     ],
+     "to_text": 392,
+     "to_shared": 3
+    },
+    {
+     "n": 11,
+     "reading": "6",
+     "box": [
+      6264,
+      681,
+      6297,
+      727
+     ],
+     "to_text": 59,
+     "to_shared": 1
+    },
+    {
+     "n": 12,
+     "reading": "48",
+     "box": [
+      9564,
+      942,
+      9632,
+      991
+     ],
+     "to_text": 43,
+     "to_shared": 1
+    },
+    {
+     "n": 13,
+     "reading": "47",
+     "box": [
+      8501,
+      1470,
+      8582,
+      1520
+     ],
+     "to_text": 0,
+     "to_shared": 5
+    },
+    {
+     "n": 14,
+     "reading": "24",
+     "box": [
+      2286,
+      4924,
+      2365,
+      4972
+     ],
+     "to_text": 49,
+     "to_shared": 6
+    },
+    {
+     "n": 15,
+     "reading": "11",
+     "box": [
+      478,
+      2380,
+      518,
+      2428
+     ],
+     "to_text": 231,
+     "to_shared": 28
+    }
+   ],
+   "seed": 2611
+  },
+  "94": {
+   "plate": "94",
+   "changed_numbers": 14,
+   "sample": [
+    {
+     "n": 1,
+     "reading": "11",
+     "box": [
+      1583,
+      3715,
+      1619,
+      3764
+     ],
+     "to_text": 441,
+     "to_shared": 27
+    },
+    {
+     "n": 2,
+     "reading": "8",
+     "box": [
+      6664,
+      3293,
+      6693,
+      3336
+     ],
+     "to_text": 64,
+     "to_shared": 95
+    },
+    {
+     "n": 3,
+     "reading": "8",
+     "box": [
+      1043,
+      3139,
+      1077,
+      3190
+     ],
+     "to_text": 636,
+     "to_shared": 57
+    },
+    {
+     "n": 4,
+     "reading": "9",
+     "box": [
+      1540,
+      3188,
+      1576,
+      3238
+     ],
+     "to_text": 161,
+     "to_shared": 22
+    },
+    {
+     "n": 5,
+     "reading": "17",
+     "box": [
+      6150,
+      5117,
+      6189,
+      5153
+     ],
+     "to_text": 27,
+     "to_shared": 0
+    },
+    {
+     "n": 6,
+     "reading": "39",
+     "box": [
+      8725,
+      6189,
+      8798,
+      6239
+     ],
+     "to_text": 27,
+     "to_shared": 0
+    },
+    {
+     "n": 7,
+     "reading": "32",
+     "box": [
+      7953,
+      5897,
+      8018,
+      5940
+     ],
+     "to_text": 313,
+     "to_shared": 62
+    },
+    {
+     "n": 8,
+     "reading": "9",
+     "box": [
+      6910,
+      3296,
+      6940,
+      3337
+     ],
+     "to_text": 46,
+     "to_shared": 19
+    },
+    {
+     "n": 9,
+     "reading": "22",
+     "box": [
+      5426,
+      5889,
+      5486,
+      5929
+     ],
+     "to_text": 123,
+     "to_shared": 8
+    },
+    {
+     "n": 10,
+     "reading": "10",
+     "box": [
+      1031,
+      3701,
+      1084,
+      3747
+     ],
+     "to_text": 266,
+     "to_shared": 28
+    },
+    {
+     "n": 11,
+     "reading": "10",
+     "box": [
+      6666,
+      3528,
+      6710,
+      3569
+     ],
+     "to_text": 274,
+     "to_shared": 14
+    },
+    {
+     "n": 12,
+     "reading": "3",
+     "box": [
+      6827,
+      2382,
+      6855,
+      2422
+     ],
+     "to_text": 72,
+     "to_shared": 80
+    },
+    {
+     "n": 13,
+     "reading": "5",
+     "box": [
+      1953,
+      2007,
+      1990,
+      2053
+     ],
+     "to_text": 228,
+     "to_shared": 12
+    },
+    {
+     "n": 14,
+     "reading": "13",
+     "box": [
+      5494,
+      5361,
+      5536,
+      5398
+     ],
+     "to_text": 196,
+     "to_shared": 0
+    }
+   ],
+   "seed": 2611
+  }
+ },
+ "sample_check_by_eye": {
+  "changes_on_real_block_numbers": "44 of 44",
+  "readings_right": {
+   "14": "13 of 15 (17 read 7, 27 read 2)",
+   "60A": "12 of 15 (28 read 23, 42 read 12, 25 read 26)",
+   "94": "12 of 14 (33 read 39, 18 read 13)"
+  }
+ },
+ "plates_final": {
+  "12": {
+   "numbers_listed": 61,
+   "sure": 55,
+   "px_to_text": 9104,
+   "px_to_shared": 831,
+   "seconds": 34.9,
+   "flagged": 13
+  },
+  "14": {
+   "numbers_listed": 59,
+   "sure": 41,
+   "px_to_text": 9294,
+   "px_to_shared": 487,
+   "seconds": 37.5,
+   "flagged": 39
+  },
+  "19": {
+   "numbers_listed": 49,
+   "sure": 45,
+   "px_to_text": 5501,
+   "px_to_shared": 570,
+   "seconds": 38.2,
+   "flagged": 12
+  },
+  "1A": {
+   "numbers_listed": 14,
+   "sure": 10,
+   "px_to_text": 1983,
+   "px_to_shared": 355,
+   "seconds": 10.8,
+   "flagged": 3
+  },
+  "26A": {
+   "numbers_listed": 37,
+   "sure": 33,
+   "px_to_text": 4142,
+   "px_to_shared": 354,
+   "seconds": 29.5,
+   "flagged": 10
+  },
+  "30": {
+   "numbers_listed": 24,
+   "sure": 22,
+   "px_to_text": 3500,
+   "px_to_shared": 364,
+   "seconds": 36.0,
+   "flagged": 12
+  },
+  "3": {
+   "numbers_listed": 27,
+   "sure": 25,
+   "px_to_text": 2075,
+   "px_to_shared": 323,
+   "seconds": 50.6,
+   "flagged": 6
+  },
+  "44": {
+   "numbers_listed": 26,
+   "sure": 24,
+   "px_to_text": 1509,
+   "px_to_shared": 146,
+   "seconds": 38.6,
+   "flagged": 3
+  },
+  "47": {
+   "numbers_listed": 5,
+   "sure": 5,
+   "px_to_text": 819,
+   "px_to_shared": 65,
+   "seconds": 25.8,
+   "flagged": 0
+  },
+  "48": {
+   "numbers_listed": 12,
+   "sure": 10,
+   "px_to_text": 1070,
+   "px_to_shared": 10,
+   "seconds": 26.6,
+   "flagged": 4
+  },
+  "49": {
+   "numbers_listed": 46,
+   "sure": 45,
+   "px_to_text": 5790,
+   "px_to_shared": 309,
+   "seconds": 32.1,
+   "flagged": 2
+  },
+  "54A": {
+   "numbers_listed": 61,
+   "sure": 60,
+   "px_to_text": 9829,
+   "px_to_shared": 1495,
+   "seconds": 38.5,
+   "flagged": 10
+  },
+  "5": {
+   "numbers_listed": 68,
+   "sure": 58,
+   "px_to_text": 15547,
+   "px_to_shared": 1117,
+   "seconds": 60.6,
+   "flagged": 27
+  },
+  "60A": {
+   "numbers_listed": 46,
+   "sure": 42,
+   "px_to_text": 4705,
+   "px_to_shared": 492,
+   "seconds": 25.6,
+   "flagged": 19
+  },
+  "60B": {
+   "numbers_listed": 38,
+   "sure": 36,
+   "px_to_text": 6936,
+   "px_to_shared": 1169,
+   "seconds": 8.0,
+   "flagged": 1
+  },
+  "64A": {
+   "numbers_listed": 27,
+   "sure": 25,
+   "px_to_text": 2107,
+   "px_to_shared": 318,
+   "seconds": 26.9,
+   "flagged": 2
+  },
+  "74": {
+   "numbers_listed": 21,
+   "sure": 18,
+   "px_to_text": 2313,
+   "px_to_shared": 161,
+   "seconds": 28.3,
+   "flagged": 11
+  },
+  "90": {
+   "numbers_listed": 39,
+   "sure": 39,
+   "px_to_text": 2433,
+   "px_to_shared": 297,
+   "seconds": 27.9,
+   "flagged": 3
+  },
+  "93A": {
+   "numbers_listed": 6,
+   "sure": 6,
+   "px_to_text": 400,
+   "px_to_shared": 11,
+   "seconds": 5.9,
+   "flagged": 0
+  },
+  "94": {
+   "numbers_listed": 32,
+   "sure": 28,
+   "px_to_text": 2874,
+   "px_to_shared": 424,
+   "seconds": 28.2,
+   "flagged": 18
+  }
+ }
+}

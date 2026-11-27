@@ -1,0 +1,147 @@
+{
+ "crop": "SA-D17",
+ "plate": "52",
+ "win": [
+  5610,
+  2424,
+  5734,
+  2546
+ ],
+ "why": "1 ditto mark(s) found in the seeded random built-up window [5295, 2216, 5795, 2716] of plate 52 (round 1)",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope_px": 3600,
+ "n_words": 2,
+ "mask": "SA-D17_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (glyph and line share ink; CARE boxes; outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 2864,
+  "ink_not_text": 615,
+  "text": 111,
+  "dont_care": 11538
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-D17-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap",
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 9.0,
+   "poly": [
+    [
+     5667.0,
+     2480.5
+    ],
+    [
+     5676.0,
+     2480.5
+    ],
+    [
+     5676.0,
+     2488.5
+    ],
+    [
+     5667.0,
+     2488.5
+    ]
+   ],
+   "aabb": [
+    5667,
+    2480,
+    5676,
+    2489
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 42,
+   "annot_line": 7,
+   "target": true,
+   "ink_px": 42,
+   "scored_text_px": 42
+  },
+  {
+   "id": "SA-D17-006",
+   "reading": "2",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 20.0,
+   "length": 10.0,
+   "poly": [
+    [
+     5642.0,
+     2453.0
+    ],
+    [
+     5652.0,
+     2453.0
+    ],
+    [
+     5652.0,
+     2473.0
+    ],
+    [
+     5642.0,
+     2473.0
+    ]
+   ],
+   "aabb": [
+    5642,
+    2453,
+    5652,
+    2473
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 74,
+   "annot_line": 15,
+   "target": false,
+   "ink_px": 91,
+   "scored_text_px": 69
+  }
+ ],
+ "dropped_outside_scope": [
+  {
+   "id": "SA-D17-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 6
+  },
+  {
+   "id": "SA-D17-003",
+   "reading": "\"",
+   "kind": "ditto",
+   "annot_line": 8
+  },
+  {
+   "id": "SA-D17-004",
+   "reading": "2",
+   "kind": "story",
+   "annot_line": 13
+  },
+  {
+   "id": "SA-D17-005",
+   "reading": "329-27",
+   "kind": "house",
+   "annot_line": 14
+  },
+  {
+   "id": "SA-D17-007",
+   "reading": "325",
+   "kind": "house",
+   "annot_line": 16
+  }
+ ]
+}

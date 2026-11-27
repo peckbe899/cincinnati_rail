@@ -1,0 +1,11787 @@
+{
+ "mask": "unet_data/{plate}_bins.png",
+ "text": "codes 8",
+ "truth": "C:\\Users\\peckb\\Documents\\_Personal\\_Cincinnati Rail\\3D\\data\\sanborn\\bench_2026-11-26\\text_fix\\sealed_final",
+ "crops": {
+  "SA-B01": {
+   "plate": "6",
+   "win": [
+    4642,
+    5348,
+    4862,
+    5568
+   ],
+   "pix": {
+    "tp": 1467,
+    "fp": 242,
+    "fn": 2,
+    "precision": 0.8584,
+    "recall": 0.9986,
+    "f1": 0.9232
+   },
+   "truth_px": {
+    "0": 9937,
+    "1": 1067,
+    "2": 1469,
+    "3": 35927
+   },
+   "dont_care": {
+    "px": 35927,
+    "called_text": 1162
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 242,
+    "of": 1067,
+    "share": 0.2268,
+    "inside_wordbox_3px": 153,
+    "open": 89
+   },
+   "text_px_outside_every_box": 2,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1467,
+     "found_px": 1467,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 9937,
+     "1": 4,
+     "2": 2,
+     "3": 30825
+    },
+    "2": {
+     "0": 0,
+     "1": 150,
+     "2": 0,
+     "3": 1617
+    },
+    "3": {
+     "0": 0,
+     "1": 671,
+     "2": 0,
+     "3": 2323
+    },
+    "8": {
+     "0": 0,
+     "1": 242,
+     "2": 1467,
+     "3": 1162
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-B02": {
+   "plate": "6",
+   "win": [
+    4656,
+    2905,
+    4876,
+    3125
+   ],
+   "pix": {
+    "tp": 1274,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "truth_px": {
+    "0": 9148,
+    "1": 390,
+    "2": 1274,
+    "3": 37588
+   },
+   "dont_care": {
+    "px": 37588,
+    "called_text": 768
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 390,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1274,
+     "found_px": 1274,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 9148,
+     "1": 0,
+     "2": 0,
+     "3": 35295
+    },
+    "1": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 688
+    },
+    "6": {
+     "0": 0,
+     "1": 390,
+     "2": 0,
+     "3": 837
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 1274,
+     "3": 768
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-B03": {
+   "plate": "6",
+   "win": [
+    4405,
+    732,
+    4625,
+    952
+   ],
+   "pix": {
+    "tp": 1061,
+    "fp": 309,
+    "fn": 0,
+    "precision": 0.7745,
+    "recall": 1.0,
+    "f1": 0.8729
+   },
+   "truth_px": {
+    "0": 7950,
+    "1": 630,
+    "2": 1061,
+    "3": 38759
+   },
+   "dont_care": {
+    "px": 38759,
+    "called_text": 751
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 309,
+    "of": 630,
+    "share": 0.49048,
+    "inside_wordbox_3px": 296,
+    "open": 13
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1061,
+     "found_px": 1061,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 7950,
+     "1": 0,
+     "2": 0,
+     "3": 36231
+    },
+    "2": {
+     "0": 0,
+     "1": 159,
+     "2": 0,
+     "3": 371
+    },
+    "4": {
+     "0": 0,
+     "1": 162,
+     "2": 0,
+     "3": 1406
+    },
+    "8": {
+     "0": 0,
+     "1": 309,
+     "2": 1061,
+     "3": 751
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-B04": {
+   "plate": "9",
+   "win": [
+    7302,
+    4734,
+    7522,
+    4954
+   ],
+   "pix": {
+    "tp": 1885,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "truth_px": {
+    "0": 10589,
+    "1": 0,
+    "2": 1885,
+    "3": 35926
+   },
+   "dont_care": {
+    "px": 35926,
+    "called_text": 0
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 0,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1885,
+     "found_px": 1885,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 10589,
+     "1": 0,
+     "2": 0,
+     "3": 35905
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 21
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 1885,
+     "3": 0
+    }
+   },
+   "mask_file": "unet_data/9_bins.png"
+  },
+  "SA-B05": {
+   "plate": "9",
+   "win": [
+    1080,
+    4464,
+    1300,
+    4684
+   ],
+   "pix": {
+    "tp": 1314,
+    "fp": 0,
+    "fn": 6,
+    "precision": 1.0,
+    "recall": 0.9955,
+    "f1": 0.9977
+   },
+   "truth_px": {
+    "0": 11420,
+    "1": 0,
+    "2": 1320,
+    "3": 35660
+   },
+   "dont_care": {
+    "px": 35660,
+    "called_text": 162
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 0,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1320,
+     "found_px": 1314,
+     "words_found": 1,
+     "recall": 0.9955,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 11420,
+     "1": 0,
+     "2": 6,
+     "3": 35498
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 1314,
+     "3": 162
+    }
+   },
+   "mask_file": "unet_data/9_bins.png"
+  },
+  "SA-B06": {
+   "plate": "9",
+   "win": [
+    4744,
+    4898,
+    4964,
+    5118
+   ],
+   "pix": {
+    "tp": 1134,
+    "fp": 452,
+    "fn": 7,
+    "precision": 0.715,
+    "recall": 0.9939,
+    "f1": 0.8317
+   },
+   "truth_px": {
+    "0": 8064,
+    "1": 1365,
+    "2": 1141,
+    "3": 37830
+   },
+   "dont_care": {
+    "px": 37830,
+    "called_text": 812
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 452,
+    "of": 1365,
+    "share": 0.33114,
+    "inside_wordbox_3px": 438,
+    "open": 14
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1141,
+     "found_px": 1134,
+     "words_found": 1,
+     "recall": 0.9939,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 8064,
+     "1": 1,
+     "2": 1,
+     "3": 31369
+    },
+    "2": {
+     "0": 0,
+     "1": 352,
+     "2": 0,
+     "3": 1377
+    },
+    "4": {
+     "0": 0,
+     "1": 560,
+     "2": 6,
+     "3": 4272
+    },
+    "8": {
+     "0": 0,
+     "1": 452,
+     "2": 1134,
+     "3": 812
+    }
+   },
+   "mask_file": "unet_data/9_bins.png"
+  },
+  "SA-B07": {
+   "plate": "52",
+   "win": [
+    2615,
+    2211,
+    2835,
+    2431
+   ],
+   "pix": {
+    "tp": 98,
+    "fp": 0,
+    "fn": 918,
+    "precision": 1.0,
+    "recall": 0.0965,
+    "f1": 0.1759
+   },
+   "truth_px": {
+    "0": 8818,
+    "1": 244,
+    "2": 1016,
+    "3": 38322
+   },
+   "dont_care": {
+    "px": 38322,
+    "called_text": 623
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 244,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 924,
+     "found_px": 6,
+     "words_found": 0,
+     "recall": 0.0065,
+     "words_found_share": 0.0
+    },
+    "lot": {
+     "words": 1,
+     "text_px": 92,
+     "found_px": 92,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 8818,
+     "1": 0,
+     "2": 1,
+     "3": 35788
+    },
+    "1": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 1172
+    },
+    "2": {
+     "0": 0,
+     "1": 41,
+     "2": 23,
+     "3": 3
+    },
+    "3": {
+     "0": 0,
+     "1": 203,
+     "2": 894,
+     "3": 736
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 98,
+     "3": 623
+    }
+   },
+   "mask_file": "unet_data/52_bins.png"
+  },
+  "SA-B08": {
+   "plate": "52",
+   "win": [
+    9329,
+    2344,
+    9549,
+    2564
+   ],
+   "pix": {
+    "tp": 373,
+    "fp": 367,
+    "fn": 211,
+    "precision": 0.5041,
+    "recall": 0.6387,
+    "f1": 0.5634
+   },
+   "truth_px": {
+    "0": 8283,
+    "1": 933,
+    "2": 584,
+    "3": 38600
+   },
+   "dont_care": {
+    "px": 38600,
+    "called_text": 1521
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 367,
+    "of": 933,
+    "share": 0.39335,
+    "inside_wordbox_3px": 281,
+    "open": 86
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 584,
+     "found_px": 373,
+     "words_found": 1,
+     "recall": 0.6387,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 8283,
+     "1": 0,
+     "2": 1,
+     "3": 35329
+    },
+    "1": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 10
+    },
+    "2": {
+     "0": 0,
+     "1": 566,
+     "2": 210,
+     "3": 1740
+    },
+    "8": {
+     "0": 0,
+     "1": 367,
+     "2": 373,
+     "3": 1521
+    }
+   },
+   "mask_file": "unet_data/52_bins.png"
+  },
+  "SA-B09": {
+   "plate": "52",
+   "win": [
+    755,
+    4024,
+    975,
+    4244
+   ],
+   "pix": {
+    "tp": 905,
+    "fp": 188,
+    "fn": 682,
+    "precision": 0.828,
+    "recall": 0.5703,
+    "f1": 0.6754
+   },
+   "truth_px": {
+    "0": 18449,
+    "1": 923,
+    "2": 1587,
+    "3": 27441
+   },
+   "dont_care": {
+    "px": 27441,
+    "called_text": 201
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 188,
+    "of": 923,
+    "share": 0.20368,
+    "inside_wordbox_3px": 188,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1587,
+     "found_px": 905,
+     "words_found": 1,
+     "recall": 0.5703,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 18449,
+     "1": 4,
+     "2": 1,
+     "3": 26168
+    },
+    "2": {
+     "0": 0,
+     "1": 572,
+     "2": 664,
+     "3": 851
+    },
+    "3": {
+     "0": 0,
+     "1": 159,
+     "2": 17,
+     "3": 221
+    },
+    "8": {
+     "0": 0,
+     "1": 188,
+     "2": 905,
+     "3": 201
+    }
+   },
+   "mask_file": "unet_data/52_bins.png"
+  },
+  "SA-B10": {
+   "plate": "35",
+   "win": [
+    2306,
+    5289,
+    2526,
+    5509
+   ],
+   "pix": {
+    "tp": 1312,
+    "fp": 0,
+    "fn": 19,
+    "precision": 1.0,
+    "recall": 0.9857,
+    "f1": 0.9928
+   },
+   "truth_px": {
+    "0": 8616,
+    "1": 517,
+    "2": 1331,
+    "3": 37936
+   },
+   "dont_care": {
+    "px": 37936,
+    "called_text": 1613
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 517,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1054,
+     "found_px": 1054,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "lotdim": {
+     "words": 2,
+     "text_px": 320,
+     "found_px": 301,
+     "words_found": 2,
+     "recall": 0.9406,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 8616,
+     "1": 0,
+     "2": 0,
+     "3": 35512
+    },
+    "2": {
+     "0": 0,
+     "1": 449,
+     "2": 19,
+     "3": 747
+    },
+    "3": {
+     "0": 0,
+     "1": 68,
+     "2": 0,
+     "3": 64
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 1312,
+     "3": 1613
+    }
+   },
+   "mask_file": "unet_data/35_bins.png"
+  },
+  "SA-B11": {
+   "plate": "35",
+   "win": [
+    3152,
+    4944,
+    3372,
+    5164
+   ],
+   "pix": {
+    "tp": 1435,
+    "fp": 319,
+    "fn": 12,
+    "precision": 0.8181,
+    "recall": 0.9917,
+    "f1": 0.8966
+   },
+   "truth_px": {
+    "0": 10965,
+    "1": 925,
+    "2": 1447,
+    "3": 35063
+   },
+   "dont_care": {
+    "px": 35063,
+    "called_text": 603
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 319,
+    "of": 925,
+    "share": 0.34486,
+    "inside_wordbox_3px": 298,
+    "open": 21
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1157,
+     "found_px": 1154,
+     "words_found": 1,
+     "recall": 0.9974,
+     "words_found_share": 1.0
+    },
+    "ditto": {
+     "words": 1,
+     "text_px": 9,
+     "found_px": 0,
+     "words_found": 0,
+     "recall": 0.0,
+     "words_found_share": 0.0
+    },
+    "lotdim": {
+     "words": 1,
+     "text_px": 440,
+     "found_px": 440,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 10965,
+     "1": 1,
+     "2": 9,
+     "3": 33449
+    },
+    "1": {
+     "0": 0,
+     "1": 353,
+     "2": 0,
+     "3": 376
+    },
+    "2": {
+     "0": 0,
+     "1": 252,
+     "2": 3,
+     "3": 635
+    },
+    "8": {
+     "0": 0,
+     "1": 319,
+     "2": 1435,
+     "3": 603
+    }
+   },
+   "mask_file": "unet_data/35_bins.png"
+  },
+  "SA-B12": {
+   "plate": "35",
+   "win": [
+    250,
+    3815,
+    470,
+    4035
+   ],
+   "pix": {
+    "tp": 1140,
+    "fp": 685,
+    "fn": 82,
+    "precision": 0.6247,
+    "recall": 0.9329,
+    "f1": 0.7483
+   },
+   "truth_px": {
+    "0": 5541,
+    "1": 1414,
+    "2": 1222,
+    "3": 40223
+   },
+   "dont_care": {
+    "px": 40223,
+    "called_text": 5015
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 685,
+    "of": 1414,
+    "share": 0.48444,
+    "inside_wordbox_3px": 320,
+    "open": 365
+   },
+   "text_px_outside_every_box": 2,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 479,
+     "found_px": 472,
+     "words_found": 1,
+     "recall": 0.9854,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 5,
+     "text_px": 760,
+     "found_px": 687,
+     "words_found": 5,
+     "recall": 0.9039,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 1,
+     "text_px": 82,
+     "found_px": 82,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 5541,
+     "1": 0,
+     "2": 2,
+     "3": 28845
+    },
+    "2": {
+     "0": 0,
+     "1": 383,
+     "2": 0,
+     "3": 1938
+    },
+    "3": {
+     "0": 0,
+     "1": 346,
+     "2": 80,
+     "3": 4425
+    },
+    "8": {
+     "0": 0,
+     "1": 685,
+     "2": 1140,
+     "3": 5015
+    }
+   },
+   "mask_file": "unet_data/35_bins.png"
+  },
+  "SA-B13": {
+   "plate": "38",
+   "win": [
+    8387,
+    4198,
+    8607,
+    4418
+   ],
+   "pix": {
+    "tp": 1273,
+    "fp": 220,
+    "fn": 227,
+    "precision": 0.8526,
+    "recall": 0.8487,
+    "f1": 0.8507
+   },
+   "truth_px": {
+    "0": 9570,
+    "1": 748,
+    "2": 1500,
+    "3": 36582
+   },
+   "dont_care": {
+    "px": 36582,
+    "called_text": 3622
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 220,
+    "of": 748,
+    "share": 0.29412,
+    "inside_wordbox_3px": 213,
+    "open": 7
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 885,
+     "found_px": 795,
+     "words_found": 1,
+     "recall": 0.8983,
+     "words_found_share": 1.0
+    },
+    "ditto": {
+     "words": 1,
+     "text_px": 38,
+     "found_px": 38,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 1,
+     "text_px": 70,
+     "found_px": 68,
+     "words_found": 1,
+     "recall": 0.9714,
+     "words_found_share": 1.0
+    },
+    "lotdim": {
+     "words": 6,
+     "text_px": 595,
+     "found_px": 427,
+     "words_found": 5,
+     "recall": 0.7176,
+     "words_found_share": 0.8333
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 9570,
+     "1": 2,
+     "2": 10,
+     "3": 30610
+    },
+    "2": {
+     "0": 0,
+     "1": 374,
+     "2": 134,
+     "3": 1330
+    },
+    "3": {
+     "0": 0,
+     "1": 152,
+     "2": 83,
+     "3": 1020
+    },
+    "8": {
+     "0": 0,
+     "1": 220,
+     "2": 1273,
+     "3": 3622
+    }
+   },
+   "mask_file": "unet_data/38_bins.png"
+  },
+  "SA-B14": {
+   "plate": "38",
+   "win": [
+    4655,
+    2547,
+    4875,
+    2767
+   ],
+   "pix": {
+    "tp": 429,
+    "fp": 112,
+    "fn": 125,
+    "precision": 0.793,
+    "recall": 0.7744,
+    "f1": 0.7836
+   },
+   "truth_px": {
+    "0": 6544,
+    "1": 688,
+    "2": 554,
+    "3": 40614
+   },
+   "dont_care": {
+    "px": 40614,
+    "called_text": 2964
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 112,
+    "of": 688,
+    "share": 0.16279,
+    "inside_wordbox_3px": 109,
+    "open": 3
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 265,
+     "found_px": 208,
+     "words_found": 1,
+     "recall": 0.7849,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 3,
+     "text_px": 289,
+     "found_px": 221,
+     "words_found": 3,
+     "recall": 0.7647,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 6544,
+     "1": 1,
+     "2": 2,
+     "3": 34802
+    },
+    "1": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 1348
+    },
+    "2": {
+     "0": 0,
+     "1": 228,
+     "2": 117,
+     "3": 1348
+    },
+    "3": {
+     "0": 0,
+     "1": 347,
+     "2": 6,
+     "3": 152
+    },
+    "8": {
+     "0": 0,
+     "1": 112,
+     "2": 429,
+     "3": 2964
+    }
+   },
+   "mask_file": "unet_data/38_bins.png"
+  },
+  "SA-B15": {
+   "plate": "38",
+   "win": [
+    1380,
+    1518,
+    1600,
+    1738
+   ],
+   "pix": {
+    "tp": 329,
+    "fp": 183,
+    "fn": 0,
+    "precision": 0.6426,
+    "recall": 1.0,
+    "f1": 0.7824
+   },
+   "truth_px": {
+    "0": 5696,
+    "1": 183,
+    "2": 329,
+    "3": 42192
+   },
+   "dont_care": {
+    "px": 42192,
+    "called_text": 842
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 183,
+    "of": 183,
+    "share": 1.0,
+    "inside_wordbox_3px": 0,
+    "open": 183
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 329,
+     "found_px": 329,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 5696,
+     "1": 0,
+     "2": 0,
+     "3": 40558
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 792
+    },
+    "8": {
+     "0": 0,
+     "1": 183,
+     "2": 329,
+     "3": 842
+    }
+   },
+   "mask_file": "unet_data/38_bins.png"
+  },
+  "SA-B16": {
+   "plate": "41",
+   "win": [
+    3829,
+    3860,
+    4049,
+    4080
+   ],
+   "pix": {
+    "tp": 1057,
+    "fp": 0,
+    "fn": 1,
+    "precision": 1.0,
+    "recall": 0.9991,
+    "f1": 0.9995
+   },
+   "truth_px": {
+    "0": 8933,
+    "1": 0,
+    "2": 1058,
+    "3": 38409
+   },
+   "dont_care": {
+    "px": 38409,
+    "called_text": 183
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 0,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1058,
+     "found_px": 1057,
+     "words_found": 1,
+     "recall": 0.9991,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 8933,
+     "1": 0,
+     "2": 1,
+     "3": 38132
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 94
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 1057,
+     "3": 183
+    }
+   },
+   "mask_file": "unet_data/41_bins.png"
+  },
+  "SA-B17": {
+   "plate": "41",
+   "win": [
+    5324,
+    1324,
+    5544,
+    1544
+   ],
+   "pix": {
+    "tp": 473,
+    "fp": 22,
+    "fn": 0,
+    "precision": 0.9556,
+    "recall": 1.0,
+    "f1": 0.9773
+   },
+   "truth_px": {
+    "0": 7249,
+    "1": 546,
+    "2": 473,
+    "3": 40132
+   },
+   "dont_care": {
+    "px": 40132,
+    "called_text": 1698
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 22,
+    "of": 546,
+    "share": 0.04029,
+    "inside_wordbox_3px": 22,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 473,
+     "found_px": 473,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 7249,
+     "1": 0,
+     "2": 0,
+     "3": 36364
+    },
+    "2": {
+     "0": 0,
+     "1": 524,
+     "2": 0,
+     "3": 1365
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 705
+    },
+    "8": {
+     "0": 0,
+     "1": 22,
+     "2": 473,
+     "3": 1698
+    }
+   },
+   "mask_file": "unet_data/41_bins.png"
+  },
+  "SA-B18": {
+   "plate": "41",
+   "win": [
+    2865,
+    5434,
+    3085,
+    5654
+   ],
+   "pix": {
+    "tp": 1121,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "truth_px": {
+    "0": 8671,
+    "1": 0,
+    "2": 1121,
+    "3": 38608
+   },
+   "dont_care": {
+    "px": 38608,
+    "called_text": 1495
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 0,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1121,
+     "found_px": 1121,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 8671,
+     "1": 0,
+     "2": 0,
+     "3": 36633
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 370
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 110
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 1121,
+     "3": 1495
+    }
+   },
+   "mask_file": "unet_data/41_bins.png"
+  },
+  "SA-B19": {
+   "plate": "66",
+   "win": [
+    3215,
+    3951,
+    3435,
+    4171
+   ],
+   "pix": {
+    "tp": 681,
+    "fp": 154,
+    "fn": 82,
+    "precision": 0.8156,
+    "recall": 0.8925,
+    "f1": 0.8523
+   },
+   "truth_px": {
+    "0": 5913,
+    "1": 814,
+    "2": 763,
+    "3": 40910
+   },
+   "dont_care": {
+    "px": 40910,
+    "called_text": 3565
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 154,
+    "of": 814,
+    "share": 0.18919,
+    "inside_wordbox_3px": 154,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 404,
+     "found_px": 325,
+     "words_found": 1,
+     "recall": 0.8045,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 6,
+     "text_px": 359,
+     "found_px": 356,
+     "words_found": 6,
+     "recall": 0.9916,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 5913,
+     "1": 1,
+     "2": 3,
+     "3": 30866
+    },
+    "2": {
+     "0": 0,
+     "1": 659,
+     "2": 79,
+     "3": 2089
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 4390
+    },
+    "8": {
+     "0": 0,
+     "1": 154,
+     "2": 681,
+     "3": 3565
+    }
+   },
+   "mask_file": "unet_data/66_bins.png"
+  },
+  "SA-B20": {
+   "plate": "66",
+   "win": [
+    4360,
+    1987,
+    4580,
+    2207
+   ],
+   "pix": {
+    "tp": 270,
+    "fp": 257,
+    "fn": 246,
+    "precision": 0.5123,
+    "recall": 0.5233,
+    "f1": 0.5177
+   },
+   "truth_px": {
+    "0": 5330,
+    "1": 755,
+    "2": 516,
+    "3": 41799
+   },
+   "dont_care": {
+    "px": 41799,
+    "called_text": 1298
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 257,
+    "of": 755,
+    "share": 0.3404,
+    "inside_wordbox_3px": 201,
+    "open": 56
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 366,
+     "found_px": 154,
+     "words_found": 0,
+     "recall": 0.4208,
+     "words_found_share": 0.0
+    },
+    "lot": {
+     "words": 2,
+     "text_px": 150,
+     "found_px": 116,
+     "words_found": 1,
+     "recall": 0.7733,
+     "words_found_share": 0.5
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 5330,
+     "1": 1,
+     "2": 0,
+     "3": 35669
+    },
+    "2": {
+     "0": 0,
+     "1": 298,
+     "2": 246,
+     "3": 2140
+    },
+    "3": {
+     "0": 0,
+     "1": 199,
+     "2": 0,
+     "3": 2692
+    },
+    "8": {
+     "0": 0,
+     "1": 257,
+     "2": 270,
+     "3": 1298
+    }
+   },
+   "mask_file": "unet_data/66_bins.png"
+  },
+  "SA-B21": {
+   "plate": "66",
+   "win": [
+    2570,
+    5146,
+    2790,
+    5366
+   ],
+   "pix": {
+    "tp": 380,
+    "fp": 156,
+    "fn": 0,
+    "precision": 0.709,
+    "recall": 1.0,
+    "f1": 0.8297
+   },
+   "truth_px": {
+    "0": 6101,
+    "1": 1110,
+    "2": 380,
+    "3": 40809
+   },
+   "dont_care": {
+    "px": 40809,
+    "called_text": 3291
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 156,
+    "of": 1110,
+    "share": 0.14054,
+    "inside_wordbox_3px": 75,
+    "open": 81
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 380,
+     "found_px": 380,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 6101,
+     "1": 0,
+     "2": 0,
+     "3": 34164
+    },
+    "1": {
+     "0": 0,
+     "1": 758,
+     "2": 0,
+     "3": 1547
+    },
+    "2": {
+     "0": 0,
+     "1": 106,
+     "2": 0,
+     "3": 1613
+    },
+    "7": {
+     "0": 0,
+     "1": 90,
+     "2": 0,
+     "3": 194
+    },
+    "8": {
+     "0": 0,
+     "1": 156,
+     "2": 380,
+     "3": 3291
+    }
+   },
+   "mask_file": "unet_data/66_bins.png"
+  },
+  "SA-B22": {
+   "plate": "46",
+   "win": [
+    3369,
+    1605,
+    3589,
+    1825
+   ],
+   "pix": {
+    "tp": 66,
+    "fp": 105,
+    "fn": 330,
+    "precision": 0.386,
+    "recall": 0.1667,
+    "f1": 0.2328
+   },
+   "truth_px": {
+    "0": 12531,
+    "1": 469,
+    "2": 396,
+    "3": 35004
+   },
+   "dont_care": {
+    "px": 35004,
+    "called_text": 1242
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 105,
+    "of": 469,
+    "share": 0.22388,
+    "inside_wordbox_3px": 105,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 388,
+     "found_px": 58,
+     "words_found": 0,
+     "recall": 0.1495,
+     "words_found_share": 0.0
+    },
+    "lot": {
+     "words": 1,
+     "text_px": 8,
+     "found_px": 8,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 12531,
+     "1": 0,
+     "2": 0,
+     "3": 32653
+    },
+    "2": {
+     "0": 0,
+     "1": 364,
+     "2": 330,
+     "3": 1109
+    },
+    "8": {
+     "0": 0,
+     "1": 105,
+     "2": 66,
+     "3": 1242
+    }
+   },
+   "mask_file": "unet_data/46_bins.png"
+  },
+  "SA-B23": {
+   "plate": "46",
+   "win": [
+    5499,
+    1564,
+    5719,
+    1784
+   ],
+   "pix": {
+    "tp": 727,
+    "fp": 194,
+    "fn": 159,
+    "precision": 0.7894,
+    "recall": 0.8205,
+    "f1": 0.8046
+   },
+   "truth_px": {
+    "0": 7905,
+    "1": 313,
+    "2": 886,
+    "3": 39296
+   },
+   "dont_care": {
+    "px": 39296,
+    "called_text": 1209
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 194,
+    "of": 313,
+    "share": 0.61981,
+    "inside_wordbox_3px": 184,
+    "open": 10
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 665,
+     "found_px": 555,
+     "words_found": 1,
+     "recall": 0.8346,
+     "words_found_share": 1.0
+    },
+    "lotdim": {
+     "words": 1,
+     "text_px": 75,
+     "found_px": 27,
+     "words_found": 0,
+     "recall": 0.36,
+     "words_found_share": 0.0
+    },
+    "sewer": {
+     "words": 1,
+     "text_px": 184,
+     "found_px": 151,
+     "words_found": 1,
+     "recall": 0.8207,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 7905,
+     "1": 0,
+     "2": 3,
+     "3": 37361
+    },
+    "2": {
+     "0": 0,
+     "1": 119,
+     "2": 156,
+     "3": 726
+    },
+    "8": {
+     "0": 0,
+     "1": 194,
+     "2": 727,
+     "3": 1209
+    }
+   },
+   "mask_file": "unet_data/46_bins.png"
+  },
+  "SA-B24": {
+   "plate": "46",
+   "win": [
+    3778,
+    1766,
+    3998,
+    1986
+   ],
+   "pix": {
+    "tp": 200,
+    "fp": 226,
+    "fn": 173,
+    "precision": 0.4695,
+    "recall": 0.5362,
+    "f1": 0.5006
+   },
+   "truth_px": {
+    "0": 7949,
+    "1": 498,
+    "2": 373,
+    "3": 39580
+   },
+   "dont_care": {
+    "px": 39580,
+    "called_text": 1594
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 226,
+    "of": 498,
+    "share": 0.45382,
+    "inside_wordbox_3px": 226,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 373,
+     "found_px": 200,
+     "words_found": 1,
+     "recall": 0.5362,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 7949,
+     "1": 0,
+     "2": 3,
+     "3": 37116
+    },
+    "2": {
+     "0": 0,
+     "1": 272,
+     "2": 170,
+     "3": 870
+    },
+    "8": {
+     "0": 0,
+     "1": 226,
+     "2": 200,
+     "3": 1594
+    }
+   },
+   "mask_file": "unet_data/46_bins.png"
+  },
+  "SA-B25": {
+   "plate": "46",
+   "win": [
+    9471,
+    755,
+    9691,
+    975
+   ],
+   "pix": {
+    "tp": 1264,
+    "fp": 277,
+    "fn": 227,
+    "precision": 0.8202,
+    "recall": 0.8478,
+    "f1": 0.8338
+   },
+   "truth_px": {
+    "0": 10851,
+    "1": 707,
+    "2": 1491,
+    "3": 35351
+   },
+   "dont_care": {
+    "px": 35351,
+    "called_text": 4591
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 277,
+    "of": 707,
+    "share": 0.3918,
+    "inside_wordbox_3px": 254,
+    "open": 23
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1082,
+     "found_px": 944,
+     "words_found": 1,
+     "recall": 0.8725,
+     "words_found_share": 1.0
+    },
+    "lotdim": {
+     "words": 1,
+     "text_px": 150,
+     "found_px": 113,
+     "words_found": 1,
+     "recall": 0.7533,
+     "words_found_share": 1.0
+    },
+    "owner": {
+     "words": 4,
+     "text_px": 264,
+     "found_px": 212,
+     "words_found": 4,
+     "recall": 0.803,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 10851,
+     "1": 0,
+     "2": 0,
+     "3": 29053
+    },
+    "2": {
+     "0": 0,
+     "1": 430,
+     "2": 227,
+     "3": 1707
+    },
+    "8": {
+     "0": 0,
+     "1": 277,
+     "2": 1264,
+     "3": 4591
+    }
+   },
+   "mask_file": "unet_data/46_bins.png"
+  },
+  "SA-B26": {
+   "plate": "46",
+   "win": [
+    8184,
+    4410,
+    8404,
+    4630
+   ],
+   "pix": {
+    "tp": 372,
+    "fp": 0,
+    "fn": 327,
+    "precision": 1.0,
+    "recall": 0.5322,
+    "f1": 0.6947
+   },
+   "truth_px": {
+    "0": 7843,
+    "1": 332,
+    "2": 699,
+    "3": 39526
+   },
+   "dont_care": {
+    "px": 39526,
+    "called_text": 0
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 332,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 699,
+     "found_px": 372,
+     "words_found": 1,
+     "recall": 0.5322,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 7843,
+     "1": 0,
+     "2": 0,
+     "3": 39154
+    },
+    "2": {
+     "0": 0,
+     "1": 332,
+     "2": 327,
+     "3": 372
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 372,
+     "3": 0
+    }
+   },
+   "mask_file": "unet_data/46_bins.png"
+  },
+  "SA-D01": {
+   "plate": "6",
+   "win": [
+    1084,
+    4901,
+    1208,
+    5023
+   ],
+   "pix": {
+    "tp": 32,
+    "fp": 177,
+    "fn": 0,
+    "precision": 0.1531,
+    "recall": 1.0,
+    "f1": 0.2656
+   },
+   "truth_px": {
+    "0": 2931,
+    "1": 637,
+    "2": 32,
+    "3": 11528
+   },
+   "dont_care": {
+    "px": 11528,
+    "called_text": 552
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 177,
+    "of": 637,
+    "share": 0.27786,
+    "inside_wordbox_3px": 0,
+    "open": 177
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 32,
+     "found_px": 32,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2931,
+     "1": 4,
+     "2": 0,
+     "3": 9209
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 226
+    },
+    "4": {
+     "0": 0,
+     "1": 456,
+     "2": 0,
+     "3": 1541
+    },
+    "8": {
+     "0": 0,
+     "1": 177,
+     "2": 32,
+     "3": 552
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-D02": {
+   "plate": "6",
+   "win": [
+    1008,
+    4903,
+    1133,
+    5023
+   ],
+   "pix": {
+    "tp": 37,
+    "fp": 170,
+    "fn": 0,
+    "precision": 0.1787,
+    "recall": 1.0,
+    "f1": 0.3033
+   },
+   "truth_px": {
+    "0": 2814,
+    "1": 687,
+    "2": 37,
+    "3": 11462
+   },
+   "dont_care": {
+    "px": 11462,
+    "called_text": 435
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 170,
+    "of": 687,
+    "share": 0.24745,
+    "inside_wordbox_3px": 0,
+    "open": 170
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 37,
+     "found_px": 37,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2814,
+     "1": 7,
+     "2": 0,
+     "3": 9309
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 321
+    },
+    "4": {
+     "0": 0,
+     "1": 510,
+     "2": 0,
+     "3": 1397
+    },
+    "8": {
+     "0": 0,
+     "1": 170,
+     "2": 37,
+     "3": 435
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-D03": {
+   "plate": "6",
+   "win": [
+    703,
+    4904,
+    827,
+    5027
+   ],
+   "pix": {
+    "tp": 49,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "truth_px": {
+    "0": 3175,
+    "1": 436,
+    "2": 49,
+    "3": 11592
+   },
+   "dont_care": {
+    "px": 11592,
+    "called_text": 134
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 436,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 49,
+     "found_px": 49,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 3175,
+     "1": 0,
+     "2": 0,
+     "3": 9778
+    },
+    "1": {
+     "0": 0,
+     "1": 301,
+     "2": 0,
+     "3": 369
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 432
+    },
+    "4": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 595
+    },
+    "6": {
+     "0": 0,
+     "1": 135,
+     "2": 0,
+     "3": 284
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 49,
+     "3": 134
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-D04": {
+   "plate": "6",
+   "win": [
+    786,
+    4904,
+    912,
+    5028
+   ],
+   "pix": {
+    "tp": 24,
+    "fp": 68,
+    "fn": 18,
+    "precision": 0.2609,
+    "recall": 0.5714,
+    "f1": 0.3582
+   },
+   "truth_px": {
+    "0": 3087,
+    "1": 692,
+    "2": 42,
+    "3": 11803
+   },
+   "dont_care": {
+    "px": 11803,
+    "called_text": 418
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 68,
+    "of": 692,
+    "share": 0.09827,
+    "inside_wordbox_3px": 0,
+    "open": 68
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 42,
+     "found_px": 24,
+     "words_found": 1,
+     "recall": 0.5714,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 3087,
+     "1": 0,
+     "2": 0,
+     "3": 9500
+    },
+    "1": {
+     "0": 0,
+     "1": 113,
+     "2": 0,
+     "3": 171
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 223
+    },
+    "4": {
+     "0": 0,
+     "1": 511,
+     "2": 18,
+     "3": 1351
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 140
+    },
+    "8": {
+     "0": 0,
+     "1": 68,
+     "2": 24,
+     "3": 418
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-D05": {
+   "plate": "6",
+   "win": [
+    633,
+    4905,
+    757,
+    5028
+   ],
+   "pix": {
+    "tp": 33,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "truth_px": {
+    "0": 3143,
+    "1": 484,
+    "2": 33,
+    "3": 11592
+   },
+   "dont_care": {
+    "px": 11592,
+    "called_text": 156
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 484,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 33,
+     "found_px": 33,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 3143,
+     "1": 0,
+     "2": 0,
+     "3": 10196
+    },
+    "1": {
+     "0": 0,
+     "1": 315,
+     "2": 0,
+     "3": 380
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 555
+    },
+    "4": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 12
+    },
+    "6": {
+     "0": 0,
+     "1": 169,
+     "2": 0,
+     "3": 293
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 33,
+     "3": 156
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-D06": {
+   "plate": "6",
+   "win": [
+    930,
+    4906,
+    1053,
+    5028
+   ],
+   "pix": {
+    "tp": 42,
+    "fp": 275,
+    "fn": 0,
+    "precision": 0.1325,
+    "recall": 1.0,
+    "f1": 0.234
+   },
+   "truth_px": {
+    "0": 3089,
+    "1": 409,
+    "2": 42,
+    "3": 11466
+   },
+   "dont_care": {
+    "px": 11466,
+    "called_text": 642
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 275,
+    "of": 409,
+    "share": 0.67237,
+    "inside_wordbox_3px": 0,
+    "open": 275
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 42,
+     "found_px": 42,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 3089,
+     "1": 0,
+     "2": 0,
+     "3": 9388
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 184
+    },
+    "4": {
+     "0": 0,
+     "1": 134,
+     "2": 0,
+     "3": 1252
+    },
+    "8": {
+     "0": 0,
+     "1": 275,
+     "2": 42,
+     "3": 642
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-D07": {
+   "plate": "6",
+   "win": [
+    1090,
+    5076,
+    1213,
+    5198
+   ],
+   "pix": {
+    "tp": 0,
+    "fp": 183,
+    "fn": 20,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0
+   },
+   "truth_px": {
+    "0": 2837,
+    "1": 675,
+    "2": 20,
+    "3": 11474
+   },
+   "dont_care": {
+    "px": 11474,
+    "called_text": 1035
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 183,
+    "of": 675,
+    "share": 0.27111,
+    "inside_wordbox_3px": 0,
+    "open": 183
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 20,
+     "found_px": 0,
+     "words_found": 0,
+     "recall": 0.0,
+     "words_found_share": 0.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2837,
+     "1": 2,
+     "2": 2,
+     "3": 8767
+    },
+    "1": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 58
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 100
+    },
+    "4": {
+     "0": 0,
+     "1": 490,
+     "2": 18,
+     "3": 1514
+    },
+    "8": {
+     "0": 0,
+     "1": 183,
+     "2": 0,
+     "3": 1035
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-D08": {
+   "plate": "6",
+   "win": [
+    1017,
+    5078,
+    1139,
+    5198
+   ],
+   "pix": {
+    "tp": 22,
+    "fp": 135,
+    "fn": 14,
+    "precision": 0.1401,
+    "recall": 0.6111,
+    "f1": 0.228
+   },
+   "truth_px": {
+    "0": 2620,
+    "1": 708,
+    "2": 36,
+    "3": 11276
+   },
+   "dont_care": {
+    "px": 11276,
+    "called_text": 764
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 135,
+    "of": 708,
+    "share": 0.19068,
+    "inside_wordbox_3px": 0,
+    "open": 135
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 36,
+     "found_px": 22,
+     "words_found": 1,
+     "recall": 0.6111,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2620,
+     "1": 8,
+     "2": 0,
+     "3": 8704
+    },
+    "1": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 58
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 39
+    },
+    "4": {
+     "0": 0,
+     "1": 565,
+     "2": 14,
+     "3": 1461
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 250
+    },
+    "8": {
+     "0": 0,
+     "1": 135,
+     "2": 22,
+     "3": 764
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-D09": {
+   "plate": "6",
+   "win": [
+    860,
+    5079,
+    984,
+    5200
+   ],
+   "pix": {
+    "tp": 29,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "truth_px": {
+    "0": 3282,
+    "1": 229,
+    "2": 29,
+    "3": 11464
+   },
+   "dont_care": {
+    "px": 11464,
+    "called_text": 0
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 229,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 29,
+     "found_px": 29,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 3282,
+     "1": 0,
+     "2": 0,
+     "3": 10364
+    },
+    "1": {
+     "0": 0,
+     "1": 229,
+     "2": 0,
+     "3": 191
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 522
+    },
+    "4": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 57
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 330
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 29,
+     "3": 0
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-D10": {
+   "plate": "6",
+   "win": [
+    938,
+    5079,
+    1061,
+    5200
+   ],
+   "pix": {
+    "tp": 34,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "truth_px": {
+    "0": 3214,
+    "1": 233,
+    "2": 34,
+    "3": 11402
+   },
+   "dont_care": {
+    "px": 11402,
+    "called_text": 6
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 233,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 34,
+     "found_px": 34,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 3214,
+     "1": 0,
+     "2": 0,
+     "3": 9946
+    },
+    "1": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 77
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 321
+    },
+    "4": {
+     "0": 0,
+     "1": 67,
+     "2": 0,
+     "3": 759
+    },
+    "6": {
+     "0": 0,
+     "1": 166,
+     "2": 0,
+     "3": 293
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 34,
+     "3": 6
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-D11": {
+   "plate": "6",
+   "win": [
+    789,
+    5080,
+    912,
+    5202
+   ],
+   "pix": {
+    "tp": 38,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "truth_px": {
+    "0": 3262,
+    "1": 240,
+    "2": 38,
+    "3": 11466
+   },
+   "dont_care": {
+    "px": 11466,
+    "called_text": 0
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 240,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 38,
+     "found_px": 38,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 3262,
+     "1": 6,
+     "2": 0,
+     "3": 10364
+    },
+    "1": {
+     "0": 0,
+     "1": 234,
+     "2": 0,
+     "3": 330
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 564
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 208
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 38,
+     "3": 0
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-D12": {
+   "plate": "6",
+   "win": [
+    712,
+    5082,
+    836,
+    5203
+   ],
+   "pix": {
+    "tp": 38,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "truth_px": {
+    "0": 3234,
+    "1": 268,
+    "2": 38,
+    "3": 11464
+   },
+   "dont_care": {
+    "px": 11464,
+    "called_text": 0
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 268,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 38,
+     "found_px": 38,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 3234,
+     "1": 0,
+     "2": 0,
+     "3": 10498
+    },
+    "1": {
+     "0": 0,
+     "1": 268,
+     "2": 0,
+     "3": 205
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 312
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 449
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 38,
+     "3": 0
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-D13": {
+   "plate": "6",
+   "win": [
+    635,
+    5086,
+    761,
+    5206
+   ],
+   "pix": {
+    "tp": 40,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "truth_px": {
+    "0": 2959,
+    "1": 597,
+    "2": 40,
+    "3": 11524
+   },
+   "dont_care": {
+    "px": 11524,
+    "called_text": 0
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 597,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 40,
+     "found_px": 40,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2959,
+     "1": 0,
+     "2": 0,
+     "3": 10314
+    },
+    "1": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 135
+    },
+    "6": {
+     "0": 0,
+     "1": 597,
+     "2": 0,
+     "3": 1075
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 40,
+     "3": 0
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-D14": {
+   "plate": "52",
+   "win": [
+    5717,
+    2225,
+    5844,
+    2349
+   ],
+   "pix": {
+    "tp": 351,
+    "fp": 218,
+    "fn": 23,
+    "precision": 0.6169,
+    "recall": 0.9385,
+    "f1": 0.7444
+   },
+   "truth_px": {
+    "0": 3095,
+    "1": 409,
+    "2": 374,
+    "3": 11870
+   },
+   "dont_care": {
+    "px": 11870,
+    "called_text": 1020
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 218,
+    "of": 409,
+    "share": 0.53301,
+    "inside_wordbox_3px": 64,
+    "open": 154
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 54,
+     "found_px": 31,
+     "words_found": 1,
+     "recall": 0.5741,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 1,
+     "text_px": 94,
+     "found_px": 94,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "owner": {
+     "words": 1,
+     "text_px": 255,
+     "found_px": 255,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 1,
+     "text_px": 44,
+     "found_px": 44,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 3095,
+     "1": 0,
+     "2": 0,
+     "3": 9757
+    },
+    "1": {
+     "0": 0,
+     "1": 188,
+     "2": 0,
+     "3": 206
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 23,
+     "3": 40
+    },
+    "3": {
+     "0": 0,
+     "1": 3,
+     "2": 0,
+     "3": 668
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 179
+    },
+    "8": {
+     "0": 0,
+     "1": 218,
+     "2": 351,
+     "3": 1020
+    }
+   },
+   "mask_file": "unet_data/52_bins.png"
+  },
+  "SA-D15": {
+   "plate": "52",
+   "win": [
+    5583,
+    2276,
+    5707,
+    2398
+   ],
+   "pix": {
+    "tp": 252,
+    "fp": 0,
+    "fn": 25,
+    "precision": 1.0,
+    "recall": 0.9097,
+    "f1": 0.9527
+   },
+   "truth_px": {
+    "0": 3018,
+    "1": 301,
+    "2": 277,
+    "3": 11532
+   },
+   "dont_care": {
+    "px": 11532,
+    "called_text": 1427
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 301,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 43,
+     "found_px": 18,
+     "words_found": 0,
+     "recall": 0.4186,
+     "words_found_share": 0.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 148,
+     "found_px": 148,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 1,
+     "text_px": 86,
+     "found_px": 86,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 3018,
+     "1": 1,
+     "2": 0,
+     "3": 9073
+    },
+    "1": {
+     "0": 0,
+     "1": 299,
+     "2": 0,
+     "3": 362
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 25,
+     "3": 0
+    },
+    "3": {
+     "0": 0,
+     "1": 1,
+     "2": 0,
+     "3": 470
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 200
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 252,
+     "3": 1427
+    }
+   },
+   "mask_file": "unet_data/52_bins.png"
+  },
+  "SA-D16": {
+   "plate": "52",
+   "win": [
+    5597,
+    2349,
+    5721,
+    2470
+   ],
+   "pix": {
+    "tp": 197,
+    "fp": 0,
+    "fn": 22,
+    "precision": 1.0,
+    "recall": 0.8995,
+    "f1": 0.9471
+   },
+   "truth_px": {
+    "0": 2812,
+    "1": 509,
+    "2": 219,
+    "3": 11464
+   },
+   "dont_care": {
+    "px": 11464,
+    "called_text": 832
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 509,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 35,
+     "found_px": 13,
+     "words_found": 0,
+     "recall": 0.3714,
+     "words_found_share": 0.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 184,
+     "found_px": 184,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2812,
+     "1": 4,
+     "2": 0,
+     "3": 9501
+    },
+    "1": {
+     "0": 0,
+     "1": 296,
+     "2": 0,
+     "3": 349
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 22,
+     "3": 48
+    },
+    "3": {
+     "0": 0,
+     "1": 209,
+     "2": 0,
+     "3": 544
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 190
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 197,
+     "3": 832
+    }
+   },
+   "mask_file": "unet_data/52_bins.png"
+  },
+  "SA-D17": {
+   "plate": "52",
+   "win": [
+    5610,
+    2424,
+    5734,
+    2546
+   ],
+   "pix": {
+    "tp": 69,
+    "fp": 101,
+    "fn": 42,
+    "precision": 0.4059,
+    "recall": 0.6216,
+    "f1": 0.4911
+   },
+   "truth_px": {
+    "0": 2864,
+    "1": 615,
+    "2": 111,
+    "3": 11538
+   },
+   "dont_care": {
+    "px": 11538,
+    "called_text": 602
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 101,
+    "of": 615,
+    "share": 0.16423,
+    "inside_wordbox_3px": 0,
+    "open": 101
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 42,
+     "found_px": 0,
+     "words_found": 0,
+     "recall": 0.0,
+     "words_found_share": 0.0
+    },
+    "story": {
+     "words": 1,
+     "text_px": 69,
+     "found_px": 69,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2864,
+     "1": 0,
+     "2": 0,
+     "3": 9282
+    },
+    "1": {
+     "0": 0,
+     "1": 405,
+     "2": 0,
+     "3": 366
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 42,
+     "3": 32
+    },
+    "3": {
+     "0": 0,
+     "1": 109,
+     "2": 0,
+     "3": 1134
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 122
+    },
+    "8": {
+     "0": 0,
+     "1": 101,
+     "2": 69,
+     "3": 602
+    }
+   },
+   "mask_file": "unet_data/52_bins.png"
+  },
+  "SA-D18": {
+   "plate": "52",
+   "win": [
+    5625,
+    2497,
+    5750,
+    2619
+   ],
+   "pix": {
+    "tp": 160,
+    "fp": 10,
+    "fn": 38,
+    "precision": 0.9412,
+    "recall": 0.8081,
+    "f1": 0.8696
+   },
+   "truth_px": {
+    "0": 3116,
+    "1": 337,
+    "2": 198,
+    "3": 11599
+   },
+   "dont_care": {
+    "px": 11599,
+    "called_text": 337
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 10,
+    "of": 337,
+    "share": 0.02967,
+    "inside_wordbox_3px": 10,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 38,
+     "found_px": 0,
+     "words_found": 0,
+     "recall": 0.0,
+     "words_found_share": 0.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 160,
+     "found_px": 160,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 3116,
+     "1": 0,
+     "2": 0,
+     "3": 9571
+    },
+    "1": {
+     "0": 0,
+     "1": 266,
+     "2": 0,
+     "3": 429
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 38,
+     "3": 237
+    },
+    "3": {
+     "0": 0,
+     "1": 61,
+     "2": 0,
+     "3": 841
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 184
+    },
+    "8": {
+     "0": 0,
+     "1": 10,
+     "2": 160,
+     "3": 337
+    }
+   },
+   "mask_file": "unet_data/52_bins.png"
+  },
+  "SA-D19": {
+   "plate": "52",
+   "win": [
+    5640,
+    2562,
+    5765,
+    2685
+   ],
+   "pix": {
+    "tp": 0,
+    "fp": 0,
+    "fn": 45,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0
+   },
+   "truth_px": {
+    "0": 3312,
+    "1": 363,
+    "2": 45,
+    "3": 11655
+   },
+   "dont_care": {
+    "px": 11655,
+    "called_text": 520
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 363,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 45,
+     "found_px": 0,
+     "words_found": 0,
+     "recall": 0.0,
+     "words_found_share": 0.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 3312,
+     "1": 3,
+     "2": 0,
+     "3": 10083
+    },
+    "1": {
+     "0": 0,
+     "1": 293,
+     "2": 0,
+     "3": 337
+    },
+    "2": {
+     "0": 0,
+     "1": 67,
+     "2": 45,
+     "3": 119
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 332
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 264
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 520
+    }
+   },
+   "mask_file": "unet_data/52_bins.png"
+  },
+  "SA-D20": {
+   "plate": "52",
+   "win": [
+    5655,
+    2633,
+    5780,
+    2756
+   ],
+   "pix": {
+    "tp": 267,
+    "fp": 0,
+    "fn": 115,
+    "precision": 1.0,
+    "recall": 0.699,
+    "f1": 0.8228
+   },
+   "truth_px": {
+    "0": 2963,
+    "1": 375,
+    "2": 382,
+    "3": 11655
+   },
+   "dont_care": {
+    "px": 11655,
+    "called_text": 442
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 375,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 36,
+     "found_px": 0,
+     "words_found": 0,
+     "recall": 0.0,
+     "words_found_share": 0.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 269,
+     "found_px": 267,
+     "words_found": 1,
+     "recall": 0.9926,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 1,
+     "text_px": 77,
+     "found_px": 0,
+     "words_found": 0,
+     "recall": 0.0,
+     "words_found_share": 0.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2963,
+     "1": 0,
+     "2": 2,
+     "3": 10155
+    },
+    "1": {
+     "0": 0,
+     "1": 310,
+     "2": 0,
+     "3": 334
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 113,
+     "3": 176
+    },
+    "3": {
+     "0": 0,
+     "1": 65,
+     "2": 0,
+     "3": 255
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 293
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 267,
+     "3": 442
+    }
+   },
+   "mask_file": "unet_data/52_bins.png"
+  },
+  "SA-D21": {
+   "plate": "35",
+   "win": [
+    656,
+    3248,
+    815,
+    3666
+   ],
+   "pix": {
+    "tp": 3082,
+    "fp": 222,
+    "fn": 556,
+    "precision": 0.9328,
+    "recall": 0.8472,
+    "f1": 0.8879
+   },
+   "truth_px": {
+    "0": 15830,
+    "1": 1925,
+    "2": 3638,
+    "3": 45069
+   },
+   "dont_care": {
+    "px": 45069,
+    "called_text": 7672
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 222,
+    "of": 1925,
+    "share": 0.11532,
+    "inside_wordbox_3px": 60,
+    "open": 162
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 7,
+     "text_px": 293,
+     "found_px": 168,
+     "words_found": 5,
+     "recall": 0.5734,
+     "words_found_share": 0.7143
+    },
+    "house": {
+     "words": 2,
+     "text_px": 2533,
+     "found_px": 2094,
+     "words_found": 2,
+     "recall": 0.8267,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 7,
+     "text_px": 844,
+     "found_px": 844,
+     "words_found": 7,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "street": {
+     "words": 1,
+     "text_px": 440,
+     "found_px": 440,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 15830,
+     "1": 3,
+     "2": 8,
+     "3": 34794
+    },
+    "1": {
+     "0": 0,
+     "1": 1204,
+     "2": 423,
+     "3": 549
+    },
+    "2": {
+     "0": 0,
+     "1": 496,
+     "2": 125,
+     "3": 640
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 1219
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 195
+    },
+    "8": {
+     "0": 0,
+     "1": 222,
+     "2": 3082,
+     "3": 7672
+    }
+   },
+   "mask_file": "unet_data/35_bins.png"
+  },
+  "SA-D22": {
+   "plate": "38",
+   "win": [
+    3346,
+    3849,
+    3474,
+    4026
+   ],
+   "pix": {
+    "tp": 192,
+    "fp": 265,
+    "fn": 85,
+    "precision": 0.4201,
+    "recall": 0.6931,
+    "f1": 0.5232
+   },
+   "truth_px": {
+    "0": 6127,
+    "1": 637,
+    "2": 277,
+    "3": 15615
+   },
+   "dont_care": {
+    "px": 15615,
+    "called_text": 1852
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 265,
+    "of": 637,
+    "share": 0.41601,
+    "inside_wordbox_3px": 0,
+    "open": 265
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 2,
+     "text_px": 85,
+     "found_px": 0,
+     "words_found": 0,
+     "recall": 0.0,
+     "words_found_share": 0.0
+    },
+    "lot": {
+     "words": 2,
+     "text_px": 192,
+     "found_px": 192,
+     "words_found": 2,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 6127,
+     "1": 4,
+     "2": 0,
+     "3": 13033
+    },
+    "2": {
+     "0": 0,
+     "1": 368,
+     "2": 85,
+     "3": 395
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 335
+    },
+    "8": {
+     "0": 0,
+     "1": 265,
+     "2": 192,
+     "3": 1852
+    }
+   },
+   "mask_file": "unet_data/38_bins.png"
+  },
+  "SA-D23": {
+   "plate": "66",
+   "win": [
+    9191,
+    2798,
+    9314,
+    2918
+   ],
+   "pix": {
+    "tp": 367,
+    "fp": 0,
+    "fn": 31,
+    "precision": 1.0,
+    "recall": 0.9221,
+    "f1": 0.9595
+   },
+   "truth_px": {
+    "0": 2813,
+    "1": 210,
+    "2": 398,
+    "3": 11339
+   },
+   "dont_care": {
+    "px": 11339,
+    "called_text": 823
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 210,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 18,
+     "found_px": 18,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 275,
+     "found_px": 267,
+     "words_found": 1,
+     "recall": 0.9709,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 1,
+     "text_px": 105,
+     "found_px": 82,
+     "words_found": 1,
+     "recall": 0.781,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2813,
+     "1": 0,
+     "2": 8,
+     "3": 8967
+    },
+    "1": {
+     "0": 0,
+     "1": 210,
+     "2": 0,
+     "3": 266
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 23,
+     "3": 533
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 492
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 258
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 367,
+     "3": 823
+    }
+   },
+   "mask_file": "unet_data/66_bins.png"
+  },
+  "SA-D24": {
+   "plate": "46",
+   "win": [
+    2586,
+    4662,
+    2709,
+    4787
+   ],
+   "pix": {
+    "tp": 296,
+    "fp": 107,
+    "fn": 0,
+    "precision": 0.7345,
+    "recall": 1.0,
+    "f1": 0.8469
+   },
+   "truth_px": {
+    "0": 2894,
+    "1": 519,
+    "2": 296,
+    "3": 11666
+   },
+   "dont_care": {
+    "px": 11666,
+    "called_text": 664
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 107,
+    "of": 519,
+    "share": 0.20617,
+    "inside_wordbox_3px": 0,
+    "open": 107
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 55,
+     "found_px": 55,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 241,
+     "found_px": 241,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2894,
+     "1": 0,
+     "2": 0,
+     "3": 9621
+    },
+    "1": {
+     "0": 0,
+     "1": 235,
+     "2": 0,
+     "3": 249
+    },
+    "2": {
+     "0": 0,
+     "1": 55,
+     "2": 0,
+     "3": 113
+    },
+    "3": {
+     "0": 0,
+     "1": 122,
+     "2": 0,
+     "3": 509
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 510
+    },
+    "8": {
+     "0": 0,
+     "1": 107,
+     "2": 296,
+     "3": 664
+    }
+   },
+   "mask_file": "unet_data/46_bins.png"
+  },
+  "SA-D25": {
+   "plate": "46",
+   "win": [
+    2492,
+    4668,
+    2616,
+    4793
+   ],
+   "pix": {
+    "tp": 271,
+    "fp": 135,
+    "fn": 0,
+    "precision": 0.6675,
+    "recall": 1.0,
+    "f1": 0.8006
+   },
+   "truth_px": {
+    "0": 2967,
+    "1": 520,
+    "2": 271,
+    "3": 11742
+   },
+   "dont_care": {
+    "px": 11742,
+    "called_text": 806
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 135,
+    "of": 520,
+    "share": 0.25962,
+    "inside_wordbox_3px": 134,
+    "open": 1
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 42,
+     "found_px": 42,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 209,
+     "found_px": 209,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 1,
+     "text_px": 20,
+     "found_px": 20,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2967,
+     "1": 0,
+     "2": 0,
+     "3": 9289
+    },
+    "1": {
+     "0": 0,
+     "1": 350,
+     "2": 0,
+     "3": 378
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 269
+    },
+    "3": {
+     "0": 0,
+     "1": 35,
+     "2": 0,
+     "3": 485
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 515
+    },
+    "8": {
+     "0": 0,
+     "1": 135,
+     "2": 271,
+     "3": 806
+    }
+   },
+   "mask_file": "unet_data/46_bins.png"
+  },
+  "SA-D26": {
+   "plate": "46",
+   "win": [
+    2587,
+    4741,
+    2708,
+    4864
+   ],
+   "pix": {
+    "tp": 117,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "truth_px": {
+    "0": 3130,
+    "1": 230,
+    "2": 117,
+    "3": 11406
+   },
+   "dont_care": {
+    "px": 11406,
+    "called_text": 750
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 230,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 34,
+     "found_px": 34,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 1,
+     "text_px": 83,
+     "found_px": 83,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 3130,
+     "1": 0,
+     "2": 0,
+     "3": 9078
+    },
+    "1": {
+     "0": 0,
+     "1": 230,
+     "2": 0,
+     "3": 276
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 610
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 104
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 588
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 117,
+     "3": 750
+    }
+   },
+   "mask_file": "unet_data/46_bins.png"
+  },
+  "SA-D27": {
+   "plate": "46",
+   "win": [
+    2491,
+    4742,
+    2614,
+    4867
+   ],
+   "pix": {
+    "tp": 137,
+    "fp": 99,
+    "fn": 82,
+    "precision": 0.5805,
+    "recall": 0.6256,
+    "f1": 0.6022
+   },
+   "truth_px": {
+    "0": 2987,
+    "1": 435,
+    "2": 219,
+    "3": 11734
+   },
+   "dont_care": {
+    "px": 11734,
+    "called_text": 953
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 99,
+    "of": 435,
+    "share": 0.22759,
+    "inside_wordbox_3px": 68,
+    "open": 31
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 42,
+     "found_px": 0,
+     "words_found": 0,
+     "recall": 0.0,
+     "words_found_share": 0.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 136,
+     "found_px": 96,
+     "words_found": 1,
+     "recall": 0.7059,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 1,
+     "text_px": 41,
+     "found_px": 41,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2987,
+     "1": 4,
+     "2": 0,
+     "3": 9198
+    },
+    "1": {
+     "0": 0,
+     "1": 332,
+     "2": 40,
+     "3": 420
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 42,
+     "3": 185
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 428
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 550
+    },
+    "8": {
+     "0": 0,
+     "1": 99,
+     "2": 137,
+     "3": 953
+    }
+   },
+   "mask_file": "unet_data/46_bins.png"
+  },
+  "SA-D28": {
+   "plate": "46",
+   "win": [
+    2492,
+    4814,
+    2615,
+    4940
+   ],
+   "pix": {
+    "tp": 208,
+    "fp": 206,
+    "fn": 90,
+    "precision": 0.5024,
+    "recall": 0.698,
+    "f1": 0.5843
+   },
+   "truth_px": {
+    "0": 2848,
+    "1": 576,
+    "2": 298,
+    "3": 11776
+   },
+   "dont_care": {
+    "px": 11776,
+    "called_text": 885
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 206,
+    "of": 576,
+    "share": 0.35764,
+    "inside_wordbox_3px": 152,
+    "open": 54
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 49,
+     "found_px": 0,
+     "words_found": 0,
+     "recall": 0.0,
+     "words_found_share": 0.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 163,
+     "found_px": 122,
+     "words_found": 1,
+     "recall": 0.7485,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 1,
+     "text_px": 86,
+     "found_px": 86,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2848,
+     "1": 0,
+     "2": 1,
+     "3": 9401
+    },
+    "1": {
+     "0": 0,
+     "1": 370,
+     "2": 40,
+     "3": 386
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 49,
+     "3": 178
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 508
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 418
+    },
+    "8": {
+     "0": 0,
+     "1": 206,
+     "2": 208,
+     "3": 885
+    }
+   },
+   "mask_file": "unet_data/46_bins.png"
+  },
+  "SA-D29": {
+   "plate": "46",
+   "win": [
+    2583,
+    4815,
+    2706,
+    4939
+   ],
+   "pix": {
+    "tp": 364,
+    "fp": 180,
+    "fn": 96,
+    "precision": 0.6691,
+    "recall": 0.7913,
+    "f1": 0.7251
+   },
+   "truth_px": {
+    "0": 2738,
+    "1": 415,
+    "2": 460,
+    "3": 11639
+   },
+   "dont_care": {
+    "px": 11639,
+    "called_text": 1484
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 180,
+    "of": 415,
+    "share": 0.43373,
+    "inside_wordbox_3px": 175,
+    "open": 5
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 30,
+     "found_px": 30,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 200,
+     "found_px": 104,
+     "words_found": 1,
+     "recall": 0.52,
+     "words_found_share": 1.0
+    },
+    "owner": {
+     "words": 1,
+     "text_px": 260,
+     "found_px": 260,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2738,
+     "1": 0,
+     "2": 0,
+     "3": 8900
+    },
+    "1": {
+     "0": 0,
+     "1": 235,
+     "2": 33,
+     "3": 377
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 467
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 63,
+     "3": 411
+    },
+    "8": {
+     "0": 0,
+     "1": 180,
+     "2": 364,
+     "3": 1484
+    }
+   },
+   "mask_file": "unet_data/46_bins.png"
+  },
+  "SA-D30": {
+   "plate": "9",
+   "win": [
+    5484,
+    1681,
+    5612,
+    1803
+   ],
+   "pix": {
+    "tp": 551,
+    "fp": 0,
+    "fn": 36,
+    "precision": 1.0,
+    "recall": 0.9387,
+    "f1": 0.9684
+   },
+   "truth_px": {
+    "0": 2721,
+    "1": 497,
+    "2": 587,
+    "3": 11811
+   },
+   "dont_care": {
+    "px": 11811,
+    "called_text": 772
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 497,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 9,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 36,
+     "found_px": 0,
+     "words_found": 0,
+     "recall": 0.0,
+     "words_found_share": 0.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 440,
+     "found_px": 440,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 1,
+     "text_px": 102,
+     "found_px": 102,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2721,
+     "1": 5,
+     "2": 0,
+     "3": 9873
+    },
+    "3": {
+     "0": 0,
+     "1": 238,
+     "2": 0,
+     "3": 801
+    },
+    "6": {
+     "0": 0,
+     "1": 254,
+     "2": 36,
+     "3": 365
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 551,
+     "3": 772
+    }
+   },
+   "mask_file": "unet_data/9_bins.png"
+  },
+  "SA-D31": {
+   "plate": "9",
+   "win": [
+    5486,
+    2157,
+    5613,
+    2284
+   ],
+   "pix": {
+    "tp": 352,
+    "fp": 0,
+    "fn": 5,
+    "precision": 1.0,
+    "recall": 0.986,
+    "f1": 0.9929
+   },
+   "truth_px": {
+    "0": 3375,
+    "1": 363,
+    "2": 357,
+    "3": 12034
+   },
+   "dont_care": {
+    "px": 12034,
+    "called_text": 1677
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 363,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 72,
+     "found_px": 67,
+     "words_found": 1,
+     "recall": 0.9306,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 81,
+     "found_px": 81,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 1,
+     "text_px": 204,
+     "found_px": 204,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 3375,
+     "1": 0,
+     "2": 5,
+     "3": 8971
+    },
+    "1": {
+     "0": 0,
+     "1": 363,
+     "2": 0,
+     "3": 397
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 989
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 352,
+     "3": 1677
+    }
+   },
+   "mask_file": "unet_data/9_bins.png"
+  },
+  "SA-D32": {
+   "plate": "9",
+   "win": [
+    5560,
+    2157,
+    5688,
+    2283
+   ],
+   "pix": {
+    "tp": 345,
+    "fp": 0,
+    "fn": 39,
+    "precision": 1.0,
+    "recall": 0.8984,
+    "f1": 0.9465
+   },
+   "truth_px": {
+    "0": 3344,
+    "1": 368,
+    "2": 384,
+    "3": 12032
+   },
+   "dont_care": {
+    "px": 12032,
+    "called_text": 821
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 368,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 77,
+     "found_px": 38,
+     "words_found": 0,
+     "recall": 0.4935,
+     "words_found_share": 0.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 68,
+     "found_px": 68,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 1,
+     "text_px": 242,
+     "found_px": 239,
+     "words_found": 1,
+     "recall": 0.9876,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 3344,
+     "1": 1,
+     "2": 1,
+     "3": 9590
+    },
+    "1": {
+     "0": 0,
+     "1": 367,
+     "2": 0,
+     "3": 395
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 38,
+     "3": 89
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 1137
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 345,
+     "3": 821
+    }
+   },
+   "mask_file": "unet_data/9_bins.png"
+  },
+  "SA-D33": {
+   "plate": "38",
+   "win": [
+    8448,
+    4635,
+    8686,
+    4860
+   ],
+   "pix": {
+    "tp": 552,
+    "fp": 0,
+    "fn": 23,
+    "precision": 1.0,
+    "recall": 0.96,
+    "f1": 0.9796
+   },
+   "truth_px": {
+    "0": 9087,
+    "1": 852,
+    "2": 575,
+    "3": 43036
+   },
+   "dont_care": {
+    "px": 43036,
+    "called_text": 2005
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 852,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 3,
+     "text_px": 81,
+     "found_px": 81,
+     "words_found": 3,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 159,
+     "found_px": 149,
+     "words_found": 1,
+     "recall": 0.9371,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 3,
+     "text_px": 335,
+     "found_px": 322,
+     "words_found": 3,
+     "recall": 0.9612,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 9087,
+     "1": 0,
+     "2": 2,
+     "3": 37435
+    },
+    "1": {
+     "0": 0,
+     "1": 757,
+     "2": 8,
+     "3": 904
+    },
+    "2": {
+     "0": 0,
+     "1": 95,
+     "2": 13,
+     "3": 1222
+    },
+    "5": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 1156
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 230
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 84
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 552,
+     "3": 2005
+    }
+   },
+   "mask_file": "unet_data/38_bins.png"
+  },
+  "SA-D34": {
+   "plate": "6",
+   "win": [
+    8024,
+    1638,
+    8377,
+    1767
+   ],
+   "pix": {
+    "tp": 722,
+    "fp": 39,
+    "fn": 25,
+    "precision": 0.9488,
+    "recall": 0.9665,
+    "f1": 0.9576
+   },
+   "truth_px": {
+    "0": 13746,
+    "1": 2570,
+    "2": 747,
+    "3": 28474
+   },
+   "dont_care": {
+    "px": 28474,
+    "called_text": 3452
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 39,
+    "of": 2570,
+    "share": 0.01518,
+    "inside_wordbox_3px": 39,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 5,
+     "text_px": 176,
+     "found_px": 176,
+     "words_found": 5,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 2,
+     "text_px": 222,
+     "found_px": 222,
+     "words_found": 2,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "sewer": {
+     "words": 1,
+     "text_px": 182,
+     "found_px": 157,
+     "words_found": 1,
+     "recall": 0.8626,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 1,
+     "text_px": 167,
+     "found_px": 167,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 13746,
+     "1": 1,
+     "2": 0,
+     "3": 20819
+    },
+    "1": {
+     "0": 0,
+     "1": 1621,
+     "2": 25,
+     "3": 396
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 386
+    },
+    "3": {
+     "0": 0,
+     "1": 909,
+     "2": 0,
+     "3": 2779
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 642
+    },
+    "8": {
+     "0": 0,
+     "1": 39,
+     "2": 722,
+     "3": 3452
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-D35": {
+   "plate": "6",
+   "win": [
+    7959,
+    1648,
+    8080,
+    1770
+   ],
+   "pix": {
+    "tp": 275,
+    "fp": 0,
+    "fn": 2,
+    "precision": 1.0,
+    "recall": 0.9928,
+    "f1": 0.9964
+   },
+   "truth_px": {
+    "0": 2737,
+    "1": 406,
+    "2": 277,
+    "3": 11342
+   },
+   "dont_care": {
+    "px": 11342,
+    "called_text": 993
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 406,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 34,
+     "found_px": 34,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 98,
+     "found_px": 98,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 1,
+     "text_px": 145,
+     "found_px": 143,
+     "words_found": 1,
+     "recall": 0.9862,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2737,
+     "1": 0,
+     "2": 2,
+     "3": 8343
+    },
+    "1": {
+     "0": 0,
+     "1": 296,
+     "2": 0,
+     "3": 388
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 97
+    },
+    "3": {
+     "0": 0,
+     "1": 110,
+     "2": 0,
+     "3": 1433
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 88
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 275,
+     "3": 993
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-D36": {
+   "plate": "6",
+   "win": [
+    8117,
+    1781,
+    8355,
+    1906
+   ],
+   "pix": {
+    "tp": 313,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "truth_px": {
+    "0": 8980,
+    "1": 1014,
+    "2": 313,
+    "3": 19443
+   },
+   "dont_care": {
+    "px": 19443,
+    "called_text": 1177
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 1014,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 3,
+     "text_px": 138,
+     "found_px": 138,
+     "words_found": 3,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 1,
+     "text_px": 175,
+     "found_px": 175,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 8980,
+     "1": 0,
+     "2": 0,
+     "3": 16750
+    },
+    "1": {
+     "0": 0,
+     "1": 663,
+     "2": 0,
+     "3": 250
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 53
+    },
+    "3": {
+     "0": 0,
+     "1": 351,
+     "2": 0,
+     "3": 958
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 255
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 313,
+     "3": 1177
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-D37": {
+   "plate": "6",
+   "win": [
+    7994,
+    1786,
+    8171,
+    1911
+   ],
+   "pix": {
+    "tp": 74,
+    "fp": 0,
+    "fn": 29,
+    "precision": 1.0,
+    "recall": 0.7184,
+    "f1": 0.8362
+   },
+   "truth_px": {
+    "0": 6180,
+    "1": 620,
+    "2": 103,
+    "3": 15222
+   },
+   "dont_care": {
+    "px": 15222,
+    "called_text": 2246
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 620,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 2,
+     "text_px": 103,
+     "found_px": 74,
+     "words_found": 2,
+     "recall": 0.7184,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 6180,
+     "1": 0,
+     "2": 0,
+     "3": 11897
+    },
+    "1": {
+     "0": 0,
+     "1": 430,
+     "2": 29,
+     "3": 285
+    },
+    "3": {
+     "0": 0,
+     "1": 190,
+     "2": 0,
+     "3": 794
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 74,
+     "3": 2246
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-D38": {
+   "plate": "6",
+   "win": [
+    7867,
+    1790,
+    8048,
+    1912
+   ],
+   "pix": {
+    "tp": 67,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "truth_px": {
+    "0": 6229,
+    "1": 489,
+    "2": 67,
+    "3": 15297
+   },
+   "dont_care": {
+    "px": 15297,
+    "called_text": 1917
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 489,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 2,
+     "text_px": 67,
+     "found_px": 67,
+     "words_found": 2,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 6229,
+     "1": 4,
+     "2": 0,
+     "3": 12355
+    },
+    "1": {
+     "0": 0,
+     "1": 443,
+     "2": 0,
+     "3": 391
+    },
+    "3": {
+     "0": 0,
+     "1": 42,
+     "2": 0,
+     "3": 634
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 67,
+     "3": 1917
+    }
+   },
+   "mask_file": "unet_data/6_bins.png"
+  },
+  "SA-D39": {
+   "plate": "9",
+   "win": [
+    7485,
+    869,
+    7608,
+    993
+   ],
+   "pix": {
+    "tp": 375,
+    "fp": 0,
+    "fn": 160,
+    "precision": 1.0,
+    "recall": 0.7009,
+    "f1": 0.8242
+   },
+   "truth_px": {
+    "0": 2392,
+    "1": 662,
+    "2": 535,
+    "3": 11663
+   },
+   "dont_care": {
+    "px": 11663,
+    "called_text": 997
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 662,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 2,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 29,
+     "found_px": 29,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 210,
+     "found_px": 210,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 2,
+     "text_px": 294,
+     "found_px": 134,
+     "words_found": 1,
+     "recall": 0.4558,
+     "words_found_share": 0.5
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2392,
+     "1": 0,
+     "2": 0,
+     "3": 8530
+    },
+    "1": {
+     "0": 0,
+     "1": 333,
+     "2": 0,
+     "3": 373
+    },
+    "3": {
+     "0": 0,
+     "1": 329,
+     "2": 160,
+     "3": 1646
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 117
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 375,
+     "3": 997
+    }
+   },
+   "mask_file": "unet_data/9_bins.png"
+  },
+  "SA-D40": {
+   "plate": "9",
+   "win": [
+    7486,
+    1041,
+    7611,
+    1164
+   ],
+   "pix": {
+    "tp": 287,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "truth_px": {
+    "0": 2994,
+    "1": 440,
+    "2": 287,
+    "3": 11654
+   },
+   "dont_care": {
+    "px": 11654,
+    "called_text": 818
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 440,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 63,
+     "found_px": 63,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 141,
+     "found_px": 141,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 1,
+     "text_px": 83,
+     "found_px": 83,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2994,
+     "1": 0,
+     "2": 0,
+     "3": 9959
+    },
+    "1": {
+     "0": 0,
+     "1": 183,
+     "2": 0,
+     "3": 270
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 16
+    },
+    "3": {
+     "0": 0,
+     "1": 257,
+     "2": 0,
+     "3": 591
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 287,
+     "3": 818
+    }
+   },
+   "mask_file": "unet_data/9_bins.png"
+  },
+  "SA-D41": {
+   "plate": "35",
+   "win": [
+    3374,
+    3130,
+    3533,
+    3251
+   ],
+   "pix": {
+    "tp": 735,
+    "fp": 202,
+    "fn": 129,
+    "precision": 0.7844,
+    "recall": 0.8507,
+    "f1": 0.8162
+   },
+   "truth_px": {
+    "0": 4065,
+    "1": 598,
+    "2": 864,
+    "3": 13712
+   },
+   "dont_care": {
+    "px": 13712,
+    "called_text": 2257
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 202,
+    "of": 598,
+    "share": 0.33779,
+    "inside_wordbox_3px": 107,
+    "open": 95
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 2,
+     "text_px": 48,
+     "found_px": 48,
+     "words_found": 2,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 4,
+     "text_px": 692,
+     "found_px": 625,
+     "words_found": 3,
+     "recall": 0.9032,
+     "words_found_share": 0.75
+    },
+    "lot": {
+     "words": 1,
+     "text_px": 39,
+     "found_px": 21,
+     "words_found": 1,
+     "recall": 0.5385,
+     "words_found_share": 1.0
+    },
+    "lotdim": {
+     "words": 1,
+     "text_px": 76,
+     "found_px": 31,
+     "words_found": 0,
+     "recall": 0.4079,
+     "words_found_share": 0.0
+    },
+    "story": {
+     "words": 2,
+     "text_px": 135,
+     "found_px": 135,
+     "words_found": 2,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 4065,
+     "1": 1,
+     "2": 0,
+     "3": 10534
+    },
+    "1": {
+     "0": 0,
+     "1": 307,
+     "2": 27,
+     "3": 190
+    },
+    "2": {
+     "0": 0,
+     "1": 88,
+     "2": 63,
+     "3": 177
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 6
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 39,
+     "3": 548
+    },
+    "8": {
+     "0": 0,
+     "1": 202,
+     "2": 735,
+     "3": 2257
+    }
+   },
+   "mask_file": "unet_data/35_bins.png"
+  },
+  "SA-D42": {
+   "plate": "66",
+   "win": [
+    2910,
+    4942,
+    3035,
+    5359
+   ],
+   "pix": {
+    "tp": 1709,
+    "fp": 826,
+    "fn": 362,
+    "precision": 0.6742,
+    "recall": 0.8252,
+    "f1": 0.7421
+   },
+   "truth_px": {
+    "0": 13993,
+    "1": 3891,
+    "2": 2071,
+    "3": 32170
+   },
+   "dont_care": {
+    "px": 32170,
+    "called_text": 4255
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 826,
+    "of": 3891,
+    "share": 0.21228,
+    "inside_wordbox_3px": 392,
+    "open": 434
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 9,
+     "text_px": 266,
+     "found_px": 266,
+     "words_found": 9,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 1104,
+     "found_px": 1045,
+     "words_found": 1,
+     "recall": 0.9466,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 10,
+     "text_px": 642,
+     "found_px": 339,
+     "words_found": 6,
+     "recall": 0.528,
+     "words_found_share": 0.6
+    },
+    "lotdim": {
+     "words": 1,
+     "text_px": 62,
+     "found_px": 59,
+     "words_found": 1,
+     "recall": 0.9516,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 13993,
+     "1": 3,
+     "2": 38,
+     "3": 21781
+    },
+    "1": {
+     "0": 0,
+     "1": 2097,
+     "2": 24,
+     "3": 402
+    },
+    "2": {
+     "0": 0,
+     "1": 460,
+     "2": 134,
+     "3": 825
+    },
+    "3": {
+     "0": 0,
+     "1": 505,
+     "2": 166,
+     "3": 3375
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 952
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 580
+    },
+    "8": {
+     "0": 0,
+     "1": 826,
+     "2": 1709,
+     "3": 4255
+    }
+   },
+   "mask_file": "unet_data/66_bins.png"
+  },
+  "SA-F1": {
+   "plate": "38",
+   "win": [
+    4237,
+    3226,
+    5737,
+    4226
+   ],
+   "pix": {
+    "tp": 93799,
+    "fp": 38107,
+    "fn": 24399,
+    "precision": 0.7111,
+    "recall": 0.7936,
+    "f1": 0.7501
+   },
+   "truth_px": {
+    "0": 1232631,
+    "1": 137696,
+    "2": 118198,
+    "3": 11475
+   },
+   "dont_care": {
+    "px": 11475,
+    "called_text": 5712
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 38107,
+    "of": 137696,
+    "share": 0.27675,
+    "inside_wordbox_3px": 13469,
+    "open": 24638
+   },
+   "text_px_outside_every_box": 189,
+   "by_kind": {
+    "block": {
+     "words": 2,
+     "text_px": 2289,
+     "found_px": 2076,
+     "words_found": 2,
+     "recall": 0.9069,
+     "words_found_share": 1.0
+    },
+    "ditto": {
+     "words": 16,
+     "text_px": 473,
+     "found_px": 413,
+     "words_found": 14,
+     "recall": 0.8732,
+     "words_found_share": 0.875
+    },
+    "house": {
+     "words": 40,
+     "text_px": 13927,
+     "found_px": 10171,
+     "words_found": 28,
+     "recall": 0.7303,
+     "words_found_share": 0.7
+    },
+    "lot": {
+     "words": 133,
+     "text_px": 38221,
+     "found_px": 30793,
+     "words_found": 110,
+     "recall": 0.8057,
+     "words_found_share": 0.8271
+    },
+    "lotdim": {
+     "words": 152,
+     "text_px": 27078,
+     "found_px": 19844,
+     "words_found": 128,
+     "recall": 0.7328,
+     "words_found_share": 0.8421
+    },
+    "owner": {
+     "words": 40,
+     "text_px": 14003,
+     "found_px": 10244,
+     "words_found": 31,
+     "recall": 0.7316,
+     "words_found_share": 0.775
+    },
+    "pipe": {
+     "words": 6,
+     "text_px": 3021,
+     "found_px": 2336,
+     "words_found": 6,
+     "recall": 0.7733,
+     "words_found_share": 1.0
+    },
+    "sewer": {
+     "words": 8,
+     "text_px": 5482,
+     "found_px": 5237,
+     "words_found": 8,
+     "recall": 0.9553,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 61,
+     "text_px": 7588,
+     "found_px": 5632,
+     "words_found": 50,
+     "recall": 0.7422,
+     "words_found_share": 0.8197
+    },
+    "street": {
+     "words": 7,
+     "text_px": 16254,
+     "found_px": 15239,
+     "words_found": 7,
+     "recall": 0.9376,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 1232631,
+     "1": 261,
+     "2": 923,
+     "3": 23
+    },
+    "1": {
+     "0": 0,
+     "1": 27371,
+     "2": 2543,
+     "3": 1566
+    },
+    "2": {
+     "0": 0,
+     "1": 36966,
+     "2": 13562,
+     "3": 2229
+    },
+    "3": {
+     "0": 0,
+     "1": 17143,
+     "2": 3931,
+     "3": 1306
+    },
+    "5": {
+     "0": 0,
+     "1": 5169,
+     "2": 2,
+     "3": 9
+    },
+    "6": {
+     "0": 0,
+     "1": 10419,
+     "2": 3321,
+     "3": 550
+    },
+    "7": {
+     "0": 0,
+     "1": 2260,
+     "2": 117,
+     "3": 80
+    },
+    "8": {
+     "0": 0,
+     "1": 38107,
+     "2": 93799,
+     "3": 5712
+    }
+   },
+   "mask_file": "unet_data/38_bins.png"
+  },
+  "SB-B01": {
+   "plate": "56",
+   "win": [
+    497,
+    5399,
+    797,
+    5659
+   ],
+   "pix": {
+    "tp": 776,
+    "fp": 665,
+    "fn": 0,
+    "precision": 0.5385,
+    "recall": 1.0,
+    "f1": 0.7
+   },
+   "truth_px": {
+    "0": 8616,
+    "1": 959,
+    "2": 776,
+    "3": 67649
+   },
+   "dont_care": {
+    "px": 67649,
+    "called_text": 2680
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 665,
+    "of": 959,
+    "share": 0.69343,
+    "inside_wordbox_3px": 204,
+    "open": 461
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 776,
+     "found_px": 776,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 8616,
+     "1": 4,
+     "2": 0,
+     "3": 61021
+    },
+    "1": {
+     "0": 0,
+     "1": 234,
+     "2": 0,
+     "3": 536
+    },
+    "2": {
+     "0": 0,
+     "1": 24,
+     "2": 0,
+     "3": 1924
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 1209
+    },
+    "7": {
+     "0": 0,
+     "1": 32,
+     "2": 0,
+     "3": 279
+    },
+    "8": {
+     "0": 0,
+     "1": 665,
+     "2": 776,
+     "3": 2680
+    }
+   },
+   "mask_file": "unet_data/56_bins.png"
+  },
+  "SB-B02": {
+   "plate": "56",
+   "win": [
+    1835,
+    5834,
+    2135,
+    6094
+   ],
+   "pix": {
+    "tp": 585,
+    "fp": 420,
+    "fn": 282,
+    "precision": 0.5821,
+    "recall": 0.6747,
+    "f1": 0.625
+   },
+   "truth_px": {
+    "0": 11576,
+    "1": 481,
+    "2": 867,
+    "3": 65076
+   },
+   "dont_care": {
+    "px": 65076,
+    "called_text": 1557
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 420,
+    "of": 481,
+    "share": 0.87318,
+    "inside_wordbox_3px": 178,
+    "open": 242
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 723,
+     "found_px": 476,
+     "words_found": 1,
+     "recall": 0.6584,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 110,
+     "found_px": 103,
+     "words_found": 1,
+     "recall": 0.9364,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 1,
+     "text_px": 34,
+     "found_px": 6,
+     "words_found": 0,
+     "recall": 0.1765,
+     "words_found_share": 0.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 11576,
+     "1": 0,
+     "2": 7,
+     "3": 62841
+    },
+    "1": {
+     "0": 0,
+     "1": 7,
+     "2": 0,
+     "3": 297
+    },
+    "2": {
+     "0": 0,
+     "1": 54,
+     "2": 275,
+     "3": 381
+    },
+    "8": {
+     "0": 0,
+     "1": 420,
+     "2": 585,
+     "3": 1557
+    }
+   },
+   "mask_file": "unet_data/56_bins.png"
+  },
+  "SB-B03": {
+   "plate": "56",
+   "win": [
+    8880,
+    1394,
+    9180,
+    1654
+   ],
+   "pix": {
+    "tp": 632,
+    "fp": 0,
+    "fn": 278,
+    "precision": 1.0,
+    "recall": 0.6945,
+    "f1": 0.8197
+   },
+   "truth_px": {
+    "0": 9090,
+    "1": 504,
+    "2": 910,
+    "3": 67496
+   },
+   "dont_care": {
+    "px": 67496,
+    "called_text": 0
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 504,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 910,
+     "found_px": 632,
+     "words_found": 1,
+     "recall": 0.6945,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 9090,
+     "1": 0,
+     "2": 0,
+     "3": 65944
+    },
+    "2": {
+     "0": 0,
+     "1": 504,
+     "2": 278,
+     "3": 1552
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 632,
+     "3": 0
+    }
+   },
+   "mask_file": "unet_data/56_bins.png"
+  },
+  "SB-B04": {
+   "plate": "58",
+   "win": [
+    5522,
+    2200,
+    5822,
+    2460
+   ],
+   "pix": {
+    "tp": 1007,
+    "fp": 4,
+    "fn": 177,
+    "precision": 0.996,
+    "recall": 0.8505,
+    "f1": 0.9175
+   },
+   "truth_px": {
+    "0": 11582,
+    "1": 926,
+    "2": 1184,
+    "3": 64308
+   },
+   "dont_care": {
+    "px": 64308,
+    "called_text": 866
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 4,
+    "of": 926,
+    "share": 0.00432,
+    "inside_wordbox_3px": 0,
+    "open": 4
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1184,
+     "found_px": 1007,
+     "words_found": 1,
+     "recall": 0.8505,
+     "words_found_share": 1.0
+    },
+    "ditto": {
+     "words": 1,
+     "text_px": 34,
+     "found_px": 34,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 11582,
+     "1": 0,
+     "2": 1,
+     "3": 57211
+    },
+    "1": {
+     "0": 0,
+     "1": 639,
+     "2": 176,
+     "3": 1064
+    },
+    "2": {
+     "0": 0,
+     "1": 283,
+     "2": 0,
+     "3": 2672
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 2495
+    },
+    "8": {
+     "0": 0,
+     "1": 4,
+     "2": 1007,
+     "3": 866
+    }
+   },
+   "mask_file": "unet_data/58_bins.png"
+  },
+  "SB-B05": {
+   "plate": "58",
+   "win": [
+    853,
+    2998,
+    1153,
+    3258
+   ],
+   "pix": {
+    "tp": 2947,
+    "fp": 247,
+    "fn": 115,
+    "precision": 0.9227,
+    "recall": 0.9624,
+    "f1": 0.9421
+   },
+   "truth_px": {
+    "0": 13447,
+    "1": 526,
+    "2": 3062,
+    "3": 60965
+   },
+   "dont_care": {
+    "px": 60965,
+    "called_text": 2756
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 247,
+    "of": 526,
+    "share": 0.46958,
+    "inside_wordbox_3px": 223,
+    "open": 24
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 2282,
+     "found_px": 2239,
+     "words_found": 1,
+     "recall": 0.9812,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 1,
+     "text_px": 201,
+     "found_px": 201,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "lotdim": {
+     "words": 3,
+     "text_px": 866,
+     "found_px": 776,
+     "words_found": 3,
+     "recall": 0.8961,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 13447,
+     "1": 3,
+     "2": 5,
+     "3": 55983
+    },
+    "1": {
+     "0": 0,
+     "1": 86,
+     "2": 12,
+     "3": 622
+    },
+    "2": {
+     "0": 0,
+     "1": 190,
+     "2": 98,
+     "3": 1604
+    },
+    "8": {
+     "0": 0,
+     "1": 247,
+     "2": 2947,
+     "3": 2756
+    }
+   },
+   "mask_file": "unet_data/58_bins.png"
+  },
+  "SB-B06": {
+   "plate": "58",
+   "win": [
+    3143,
+    6238,
+    3443,
+    6498
+   ],
+   "pix": {
+    "tp": 1215,
+    "fp": 54,
+    "fn": 129,
+    "precision": 0.9574,
+    "recall": 0.904,
+    "f1": 0.93
+   },
+   "truth_px": {
+    "0": 10291,
+    "1": 995,
+    "2": 1344,
+    "3": 65370
+   },
+   "dont_care": {
+    "px": 65370,
+    "called_text": 1331
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 54,
+    "of": 995,
+    "share": 0.05427,
+    "inside_wordbox_3px": 0,
+    "open": 54
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1344,
+     "found_px": 1215,
+     "words_found": 1,
+     "recall": 0.904,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 10291,
+     "1": 1,
+     "2": 0,
+     "3": 59662
+    },
+    "1": {
+     "0": 0,
+     "1": 605,
+     "2": 129,
+     "3": 713
+    },
+    "2": {
+     "0": 0,
+     "1": 280,
+     "2": 0,
+     "3": 2192
+    },
+    "4": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 1294
+    },
+    "7": {
+     "0": 0,
+     "1": 55,
+     "2": 0,
+     "3": 178
+    },
+    "8": {
+     "0": 0,
+     "1": 54,
+     "2": 1215,
+     "3": 1331
+    }
+   },
+   "mask_file": "unet_data/58_bins.png"
+  },
+  "SB-B07": {
+   "plate": "63",
+   "win": [
+    8790,
+    2398,
+    9090,
+    2658
+   ],
+   "pix": {
+    "tp": 831,
+    "fp": 297,
+    "fn": 277,
+    "precision": 0.7367,
+    "recall": 0.75,
+    "f1": 0.7433
+   },
+   "truth_px": {
+    "0": 7383,
+    "1": 967,
+    "2": 1108,
+    "3": 68542
+   },
+   "dont_care": {
+    "px": 68542,
+    "called_text": 1749
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 297,
+    "of": 967,
+    "share": 0.30714,
+    "inside_wordbox_3px": 200,
+    "open": 97
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 936,
+     "found_px": 659,
+     "words_found": 1,
+     "recall": 0.7041,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 1,
+     "text_px": 172,
+     "found_px": 172,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 7383,
+     "1": 1,
+     "2": 0,
+     "3": 60574
+    },
+    "1": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 437
+    },
+    "2": {
+     "0": 0,
+     "1": 272,
+     "2": 277,
+     "3": 2172
+    },
+    "3": {
+     "0": 0,
+     "1": 397,
+     "2": 0,
+     "3": 3610
+    },
+    "8": {
+     "0": 0,
+     "1": 297,
+     "2": 831,
+     "3": 1749
+    }
+   },
+   "mask_file": "unet_data/63_bins.png"
+  },
+  "SB-B08": {
+   "plate": "63",
+   "win": [
+    2604,
+    4138,
+    2904,
+    4398
+   ],
+   "pix": {
+    "tp": 773,
+    "fp": 0,
+    "fn": 213,
+    "precision": 1.0,
+    "recall": 0.784,
+    "f1": 0.8789
+   },
+   "truth_px": {
+    "0": 9508,
+    "1": 0,
+    "2": 986,
+    "3": 67506
+   },
+   "dont_care": {
+    "px": 67506,
+    "called_text": 275
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 0,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 986,
+     "found_px": 773,
+     "words_found": 1,
+     "recall": 0.784,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 9508,
+     "1": 0,
+     "2": 1,
+     "3": 67134
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 212,
+     "3": 97
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 773,
+     "3": 275
+    }
+   },
+   "mask_file": "unet_data/63_bins.png"
+  },
+  "SB-B09": {
+   "plate": "63",
+   "win": [
+    7564,
+    3248,
+    7864,
+    3508
+   ],
+   "pix": {
+    "tp": 348,
+    "fp": 119,
+    "fn": 465,
+    "precision": 0.7452,
+    "recall": 0.428,
+    "f1": 0.5437
+   },
+   "truth_px": {
+    "0": 11098,
+    "1": 932,
+    "2": 813,
+    "3": 65157
+   },
+   "dont_care": {
+    "px": 65157,
+    "called_text": 2373
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 119,
+    "of": 932,
+    "share": 0.12768,
+    "inside_wordbox_3px": 29,
+    "open": 90
+   },
+   "text_px_outside_every_box": 1,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 794,
+     "found_px": 340,
+     "words_found": 0,
+     "recall": 0.4282,
+     "words_found_share": 0.0
+    },
+    "lot": {
+     "words": 1,
+     "text_px": 8,
+     "found_px": 8,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 1,
+     "text_px": 10,
+     "found_px": 0,
+     "words_found": 0,
+     "recall": 0.0,
+     "words_found_share": 0.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 11098,
+     "1": 7,
+     "2": 2,
+     "3": 58517
+    },
+    "1": {
+     "0": 0,
+     "1": 71,
+     "2": 0,
+     "3": 429
+    },
+    "2": {
+     "0": 0,
+     "1": 589,
+     "2": 463,
+     "3": 2927
+    },
+    "3": {
+     "0": 0,
+     "1": 146,
+     "2": 0,
+     "3": 911
+    },
+    "8": {
+     "0": 0,
+     "1": 119,
+     "2": 348,
+     "3": 2373
+    }
+   },
+   "mask_file": "unet_data/63_bins.png"
+  },
+  "SB-B10": {
+   "plate": "71",
+   "win": [
+    4750,
+    570,
+    5050,
+    830
+   ],
+   "pix": {
+    "tp": 1016,
+    "fp": 148,
+    "fn": 196,
+    "precision": 0.8729,
+    "recall": 0.8383,
+    "f1": 0.8552
+   },
+   "truth_px": {
+    "0": 8684,
+    "1": 519,
+    "2": 1212,
+    "3": 67585
+   },
+   "dont_care": {
+    "px": 67585,
+    "called_text": 7515
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 148,
+    "of": 519,
+    "share": 0.28516,
+    "inside_wordbox_3px": 148,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 821,
+     "found_px": 673,
+     "words_found": 1,
+     "recall": 0.8197,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 4,
+     "text_px": 708,
+     "found_px": 546,
+     "words_found": 3,
+     "recall": 0.7712,
+     "words_found_share": 0.75
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 8684,
+     "1": 0,
+     "2": 4,
+     "3": 55338
+    },
+    "2": {
+     "0": 0,
+     "1": 371,
+     "2": 192,
+     "3": 3938
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 794
+    },
+    "8": {
+     "0": 0,
+     "1": 148,
+     "2": 1016,
+     "3": 7515
+    }
+   },
+   "mask_file": "unet_data/71_bins.png"
+  },
+  "SB-B11": {
+   "plate": "71",
+   "win": [
+    3790,
+    3390,
+    4090,
+    3650
+   ],
+   "pix": {
+    "tp": 1266,
+    "fp": 234,
+    "fn": 70,
+    "precision": 0.844,
+    "recall": 0.9476,
+    "f1": 0.8928
+   },
+   "truth_px": {
+    "0": 12951,
+    "1": 1068,
+    "2": 1336,
+    "3": 62645
+   },
+   "dont_care": {
+    "px": 62645,
+    "called_text": 1815
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 234,
+    "of": 1068,
+    "share": 0.2191,
+    "inside_wordbox_3px": 196,
+    "open": 38
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1336,
+     "found_px": 1266,
+     "words_found": 1,
+     "recall": 0.9476,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 12951,
+     "1": 3,
+     "2": 5,
+     "3": 56941
+    },
+    "2": {
+     "0": 0,
+     "1": 685,
+     "2": 22,
+     "3": 3510
+    },
+    "3": {
+     "0": 0,
+     "1": 146,
+     "2": 43,
+     "3": 379
+    },
+    "8": {
+     "0": 0,
+     "1": 234,
+     "2": 1266,
+     "3": 1815
+    }
+   },
+   "mask_file": "unet_data/71_bins.png"
+  },
+  "SB-B12": {
+   "plate": "71",
+   "win": [
+    5166,
+    2519,
+    5466,
+    2779
+   ],
+   "pix": {
+    "tp": 884,
+    "fp": 436,
+    "fn": 384,
+    "precision": 0.6697,
+    "recall": 0.6972,
+    "f1": 0.6832
+   },
+   "truth_px": {
+    "0": 8448,
+    "1": 840,
+    "2": 1268,
+    "3": 67444
+   },
+   "dont_care": {
+    "px": 67444,
+    "called_text": 3808
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 436,
+    "of": 840,
+    "share": 0.51905,
+    "inside_wordbox_3px": 165,
+    "open": 271
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 850,
+     "found_px": 567,
+     "words_found": 1,
+     "recall": 0.6671,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 3,
+     "text_px": 418,
+     "found_px": 317,
+     "words_found": 3,
+     "recall": 0.7584,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 8448,
+     "1": 1,
+     "2": 8,
+     "3": 59011
+    },
+    "1": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 627
+    },
+    "2": {
+     "0": 0,
+     "1": 4,
+     "2": 101,
+     "3": 1537
+    },
+    "3": {
+     "0": 0,
+     "1": 399,
+     "2": 275,
+     "3": 2461
+    },
+    "8": {
+     "0": 0,
+     "1": 436,
+     "2": 884,
+     "3": 3808
+    }
+   },
+   "mask_file": "unet_data/71_bins.png"
+  },
+  "SB-B13": {
+   "plate": "76",
+   "win": [
+    2543,
+    4109,
+    2843,
+    4369
+   ],
+   "pix": {
+    "tp": 1693,
+    "fp": 315,
+    "fn": 174,
+    "precision": 0.8431,
+    "recall": 0.9068,
+    "f1": 0.8738
+   },
+   "truth_px": {
+    "0": 11946,
+    "1": 806,
+    "2": 1867,
+    "3": 63381
+   },
+   "dont_care": {
+    "px": 63381,
+    "called_text": 6524
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 315,
+    "of": 806,
+    "share": 0.39082,
+    "inside_wordbox_3px": 315,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1110,
+     "found_px": 979,
+     "words_found": 1,
+     "recall": 0.882,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 4,
+     "text_px": 995,
+     "found_px": 919,
+     "words_found": 4,
+     "recall": 0.9236,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 11946,
+     "1": 0,
+     "2": 1,
+     "3": 53542
+    },
+    "2": {
+     "0": 0,
+     "1": 491,
+     "2": 173,
+     "3": 3282
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 33
+    },
+    "8": {
+     "0": 0,
+     "1": 315,
+     "2": 1693,
+     "3": 6524
+    }
+   },
+   "mask_file": "unet_data/76_bins.png"
+  },
+  "SB-B14": {
+   "plate": "76",
+   "win": [
+    4161,
+    5237,
+    4461,
+    5497
+   ],
+   "pix": {
+    "tp": 2568,
+    "fp": 432,
+    "fn": 101,
+    "precision": 0.856,
+    "recall": 0.9622,
+    "f1": 0.906
+   },
+   "truth_px": {
+    "0": 13224,
+    "1": 1555,
+    "2": 2669,
+    "3": 60552
+   },
+   "dont_care": {
+    "px": 60552,
+    "called_text": 5363
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 432,
+    "of": 1555,
+    "share": 0.27781,
+    "inside_wordbox_3px": 380,
+    "open": 52
+   },
+   "text_px_outside_every_box": 5,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 2081,
+     "found_px": 2044,
+     "words_found": 1,
+     "recall": 0.9822,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 4,
+     "text_px": 1203,
+     "found_px": 1129,
+     "words_found": 4,
+     "recall": 0.9385,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 13224,
+     "1": 1,
+     "2": 0,
+     "3": 48679
+    },
+    "2": {
+     "0": 0,
+     "1": 1122,
+     "2": 101,
+     "3": 4178
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 2332
+    },
+    "8": {
+     "0": 0,
+     "1": 432,
+     "2": 2568,
+     "3": 5363
+    }
+   },
+   "mask_file": "unet_data/76_bins.png"
+  },
+  "SB-B15": {
+   "plate": "76",
+   "win": [
+    2007,
+    1594,
+    2307,
+    1854
+   ],
+   "pix": {
+    "tp": 1774,
+    "fp": 337,
+    "fn": 135,
+    "precision": 0.8404,
+    "recall": 0.9293,
+    "f1": 0.8826
+   },
+   "truth_px": {
+    "0": 8240,
+    "1": 1498,
+    "2": 1909,
+    "3": 66353
+   },
+   "dont_care": {
+    "px": 66353,
+    "called_text": 7074
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 337,
+    "of": 1498,
+    "share": 0.22497,
+    "inside_wordbox_3px": 297,
+    "open": 40
+   },
+   "text_px_outside_every_box": 7,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 829,
+     "found_px": 811,
+     "words_found": 1,
+     "recall": 0.9783,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 3,
+     "text_px": 152,
+     "found_px": 91,
+     "words_found": 2,
+     "recall": 0.5987,
+     "words_found_share": 0.6667
+    },
+    "lotdim": {
+     "words": 5,
+     "text_px": 822,
+     "found_px": 766,
+     "words_found": 5,
+     "recall": 0.9319,
+     "words_found_share": 1.0
+    },
+    "owner": {
+     "words": 1,
+     "text_px": 161,
+     "found_px": 161,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 1,
+     "text_px": 7,
+     "found_px": 7,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 8240,
+     "1": 0,
+     "2": 4,
+     "3": 54128
+    },
+    "2": {
+     "0": 0,
+     "1": 946,
+     "2": 131,
+     "3": 4158
+    },
+    "3": {
+     "0": 0,
+     "1": 215,
+     "2": 0,
+     "3": 993
+    },
+    "8": {
+     "0": 0,
+     "1": 337,
+     "2": 1774,
+     "3": 7074
+    }
+   },
+   "mask_file": "unet_data/76_bins.png"
+  },
+  "SB-B16": {
+   "plate": "84",
+   "win": [
+    2535,
+    5370,
+    2835,
+    5630
+   ],
+   "pix": {
+    "tp": 1143,
+    "fp": 0,
+    "fn": 270,
+    "precision": 1.0,
+    "recall": 0.8089,
+    "f1": 0.8944
+   },
+   "truth_px": {
+    "0": 9274,
+    "1": 951,
+    "2": 1413,
+    "3": 66362
+   },
+   "dont_care": {
+    "px": 66362,
+    "called_text": 10408
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 951,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 899,
+     "found_px": 632,
+     "words_found": 1,
+     "recall": 0.703,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 3,
+     "text_px": 497,
+     "found_px": 494,
+     "words_found": 3,
+     "recall": 0.994,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 3,
+     "text_px": 218,
+     "found_px": 218,
+     "words_found": 3,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 9274,
+     "1": 0,
+     "2": 3,
+     "3": 52335
+    },
+    "2": {
+     "0": 0,
+     "1": 951,
+     "2": 267,
+     "3": 3530
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 89
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 1143,
+     "3": 10408
+    }
+   },
+   "mask_file": "unet_data/84_bins.png"
+  },
+  "SB-B17": {
+   "plate": "84",
+   "win": [
+    4425,
+    5049,
+    4725,
+    5309
+   ],
+   "pix": {
+    "tp": 1061,
+    "fp": 452,
+    "fn": 260,
+    "precision": 0.7013,
+    "recall": 0.8032,
+    "f1": 0.7488
+   },
+   "truth_px": {
+    "0": 8808,
+    "1": 944,
+    "2": 1321,
+    "3": 66927
+   },
+   "dont_care": {
+    "px": 66927,
+    "called_text": 6957
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 452,
+    "of": 944,
+    "share": 0.47881,
+    "inside_wordbox_3px": 400,
+    "open": 52
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 878,
+     "found_px": 654,
+     "words_found": 1,
+     "recall": 0.7449,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 4,
+     "text_px": 557,
+     "found_px": 522,
+     "words_found": 4,
+     "recall": 0.9372,
+     "words_found_share": 1.0
+    },
+    "lotdim": {
+     "words": 1,
+     "text_px": 25,
+     "found_px": 24,
+     "words_found": 1,
+     "recall": 0.96,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 8808,
+     "1": 0,
+     "2": 0,
+     "3": 53847
+    },
+    "2": {
+     "0": 0,
+     "1": 337,
+     "2": 260,
+     "3": 4465
+    },
+    "3": {
+     "0": 0,
+     "1": 155,
+     "2": 0,
+     "3": 1658
+    },
+    "8": {
+     "0": 0,
+     "1": 452,
+     "2": 1061,
+     "3": 6957
+    }
+   },
+   "mask_file": "unet_data/84_bins.png"
+  },
+  "SB-B18": {
+   "plate": "84",
+   "win": [
+    3030,
+    5359,
+    3330,
+    5619
+   ],
+   "pix": {
+    "tp": 1156,
+    "fp": 181,
+    "fn": 440,
+    "precision": 0.8646,
+    "recall": 0.7243,
+    "f1": 0.7883
+   },
+   "truth_px": {
+    "0": 9043,
+    "1": 954,
+    "2": 1596,
+    "3": 66407
+   },
+   "dont_care": {
+    "px": 66407,
+    "called_text": 8598
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 181,
+    "of": 954,
+    "share": 0.18973,
+    "inside_wordbox_3px": 99,
+    "open": 82
+   },
+   "text_px_outside_every_box": 6,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1101,
+     "found_px": 771,
+     "words_found": 1,
+     "recall": 0.7003,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 3,
+     "text_px": 300,
+     "found_px": 266,
+     "words_found": 3,
+     "recall": 0.8867,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 3,
+     "text_px": 242,
+     "found_px": 132,
+     "words_found": 1,
+     "recall": 0.5455,
+     "words_found_share": 0.3333
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 9043,
+     "1": 0,
+     "2": 0,
+     "3": 52645
+    },
+    "2": {
+     "0": 0,
+     "1": 773,
+     "2": 440,
+     "3": 5164
+    },
+    "8": {
+     "0": 0,
+     "1": 181,
+     "2": 1156,
+     "3": 8598
+    }
+   },
+   "mask_file": "unet_data/84_bins.png"
+  },
+  "SB-B19": {
+   "plate": "88",
+   "win": [
+    4313,
+    804,
+    4613,
+    1064
+   ],
+   "pix": {
+    "tp": 829,
+    "fp": 120,
+    "fn": 137,
+    "precision": 0.8736,
+    "recall": 0.8582,
+    "f1": 0.8658
+   },
+   "truth_px": {
+    "0": 7347,
+    "1": 583,
+    "2": 966,
+    "3": 69104
+   },
+   "dont_care": {
+    "px": 69104,
+    "called_text": 4956
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 120,
+    "of": 583,
+    "share": 0.20583,
+    "inside_wordbox_3px": 114,
+    "open": 6
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 759,
+     "found_px": 699,
+     "words_found": 1,
+     "recall": 0.9209,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 3,
+     "text_px": 193,
+     "found_px": 116,
+     "words_found": 1,
+     "recall": 0.601,
+     "words_found_share": 0.3333
+    },
+    "lotdim": {
+     "words": 1,
+     "text_px": 14,
+     "found_px": 14,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 7347,
+     "1": 0,
+     "2": 1,
+     "3": 59547
+    },
+    "2": {
+     "0": 0,
+     "1": 463,
+     "2": 136,
+     "3": 3358
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 1243
+    },
+    "8": {
+     "0": 0,
+     "1": 120,
+     "2": 829,
+     "3": 4956
+    }
+   },
+   "mask_file": "unet_data/88_bins.png"
+  },
+  "SB-B20": {
+   "plate": "88",
+   "win": [
+    3905,
+    4500,
+    4205,
+    4760
+   ],
+   "pix": {
+    "tp": 1325,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "truth_px": {
+    "0": 12738,
+    "1": 137,
+    "2": 1325,
+    "3": 63800
+   },
+   "dont_care": {
+    "px": 63800,
+    "called_text": 0
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 137,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1325,
+     "found_px": 1325,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 12738,
+     "1": 0,
+     "2": 0,
+     "3": 63235
+    },
+    "2": {
+     "0": 0,
+     "1": 137,
+     "2": 0,
+     "3": 565
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 1325,
+     "3": 0
+    }
+   },
+   "mask_file": "unet_data/88_bins.png"
+  },
+  "SB-B21": {
+   "plate": "88",
+   "win": [
+    5564,
+    2550,
+    5864,
+    2810
+   ],
+   "pix": {
+    "tp": 1218,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "truth_px": {
+    "0": 9492,
+    "1": 0,
+    "2": 1218,
+    "3": 67290
+   },
+   "dont_care": {
+    "px": 67290,
+    "called_text": 282
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 0,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1218,
+     "found_px": 1218,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 9492,
+     "1": 0,
+     "2": 0,
+     "3": 66185
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 823
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 1218,
+     "3": 282
+    }
+   },
+   "mask_file": "unet_data/88_bins.png"
+  },
+  "SB-B22": {
+   "plate": "92",
+   "win": [
+    1169,
+    4677,
+    1469,
+    4937
+   ],
+   "pix": {
+    "tp": 1368,
+    "fp": 203,
+    "fn": 0,
+    "precision": 0.8708,
+    "recall": 1.0,
+    "f1": 0.9309
+   },
+   "truth_px": {
+    "0": 10127,
+    "1": 345,
+    "2": 1368,
+    "3": 66160
+   },
+   "dont_care": {
+    "px": 66160,
+    "called_text": 130
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 203,
+    "of": 345,
+    "share": 0.58841,
+    "inside_wordbox_3px": 200,
+    "open": 3
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1368,
+     "found_px": 1368,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 10127,
+     "1": 2,
+     "2": 0,
+     "3": 64983
+    },
+    "2": {
+     "0": 0,
+     "1": 140,
+     "2": 0,
+     "3": 1047
+    },
+    "8": {
+     "0": 0,
+     "1": 203,
+     "2": 1368,
+     "3": 130
+    }
+   },
+   "mask_file": "unet_data/92_bins.png"
+  },
+  "SB-B23": {
+   "plate": "92",
+   "win": [
+    3697,
+    4685,
+    3997,
+    4945
+   ],
+   "pix": {
+    "tp": 1581,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+   },
+   "truth_px": {
+    "0": 10629,
+    "1": 0,
+    "2": 1581,
+    "3": 65790
+   },
+   "dont_care": {
+    "px": 65790,
+    "called_text": 1089
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 0,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1581,
+     "found_px": 1581,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 10629,
+     "1": 0,
+     "2": 0,
+     "3": 61738
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 2963
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 1581,
+     "3": 1089
+    }
+   },
+   "mask_file": "unet_data/92_bins.png"
+  },
+  "SB-B24": {
+   "plate": "92",
+   "win": [
+    5980,
+    3178,
+    6280,
+    3438
+   ],
+   "pix": {
+    "tp": 3217,
+    "fp": 1089,
+    "fn": 506,
+    "precision": 0.7471,
+    "recall": 0.8641,
+    "f1": 0.8013
+   },
+   "truth_px": {
+    "0": 9602,
+    "1": 1493,
+    "2": 3723,
+    "3": 63182
+   },
+   "dont_care": {
+    "px": 63182,
+    "called_text": 13046
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 1089,
+    "of": 1493,
+    "share": 0.7294,
+    "inside_wordbox_3px": 1041,
+    "open": 48
+   },
+   "text_px_outside_every_box": 6,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 1524,
+     "found_px": 1360,
+     "words_found": 1,
+     "recall": 0.8924,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 24,
+     "text_px": 3439,
+     "found_px": 2947,
+     "words_found": 21,
+     "recall": 0.8569,
+     "words_found_share": 0.875
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 9602,
+     "1": 4,
+     "2": 7,
+     "3": 42933
+    },
+    "1": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 233
+    },
+    "2": {
+     "0": 0,
+     "1": 388,
+     "2": 340,
+     "3": 3153
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 1397
+    },
+    "6": {
+     "0": 0,
+     "1": 12,
+     "2": 144,
+     "3": 2337
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 15,
+     "3": 83
+    },
+    "8": {
+     "0": 0,
+     "1": 1089,
+     "2": 3217,
+     "3": 13046
+    }
+   },
+   "mask_file": "unet_data/92_bins.png"
+  },
+  "SB-B25": {
+   "plate": "92",
+   "win": [
+    5325,
+    3067,
+    5625,
+    3327
+   ],
+   "pix": {
+    "tp": 2287,
+    "fp": 827,
+    "fn": 513,
+    "precision": 0.7344,
+    "recall": 0.8168,
+    "f1": 0.7734
+   },
+   "truth_px": {
+    "0": 6976,
+    "1": 1604,
+    "2": 2800,
+    "3": 66620
+   },
+   "dont_care": {
+    "px": 66620,
+    "called_text": 15723
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 827,
+    "of": 1604,
+    "share": 0.51559,
+    "inside_wordbox_3px": 701,
+    "open": 126
+   },
+   "text_px_outside_every_box": 40,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 982,
+     "found_px": 976,
+     "words_found": 1,
+     "recall": 0.9939,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 15,
+     "text_px": 2635,
+     "found_px": 2058,
+     "words_found": 11,
+     "recall": 0.781,
+     "words_found_share": 0.7333
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 6976,
+     "1": 0,
+     "2": 1,
+     "3": 39574
+    },
+    "1": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 2204
+    },
+    "2": {
+     "0": 0,
+     "1": 209,
+     "2": 149,
+     "3": 3192
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 59
+    },
+    "6": {
+     "0": 0,
+     "1": 568,
+     "2": 363,
+     "3": 5757
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 111
+    },
+    "8": {
+     "0": 0,
+     "1": 827,
+     "2": 2287,
+     "3": 15723
+    }
+   },
+   "mask_file": "unet_data/92_bins.png"
+  },
+  "SB-B26": {
+   "plate": "92",
+   "win": [
+    4455,
+    3390,
+    4755,
+    3650
+   ],
+   "pix": {
+    "tp": 723,
+    "fp": 0,
+    "fn": 4,
+    "precision": 1.0,
+    "recall": 0.9945,
+    "f1": 0.9972
+   },
+   "truth_px": {
+    "0": 8876,
+    "1": 0,
+    "2": 727,
+    "3": 68397
+   },
+   "dont_care": {
+    "px": 68397,
+    "called_text": 479
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 0,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 727,
+     "found_px": 723,
+     "words_found": 1,
+     "recall": 0.9945,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 8876,
+     "1": 0,
+     "2": 4,
+     "3": 67918
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 723,
+     "3": 479
+    }
+   },
+   "mask_file": "unet_data/92_bins.png"
+  },
+  "SB-D01": {
+   "plate": "58",
+   "win": [
+    1344,
+    3127,
+    1924,
+    3607
+   ],
+   "pix": {
+    "tp": 958,
+    "fp": 290,
+    "fn": 96,
+    "precision": 0.7676,
+    "recall": 0.9089,
+    "f1": 0.8323
+   },
+   "truth_px": {
+    "0": 20325,
+    "1": 1871,
+    "2": 1054,
+    "3": 255150
+   },
+   "dont_care": {
+    "px": 255150,
+    "called_text": 12666
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 290,
+    "of": 1871,
+    "share": 0.155,
+    "inside_wordbox_3px": 16,
+    "open": 274
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 6,
+     "text_px": 250,
+     "found_px": 154,
+     "words_found": 5,
+     "recall": 0.616,
+     "words_found_share": 0.8333
+    },
+    "house": {
+     "words": 2,
+     "text_px": 751,
+     "found_px": 751,
+     "words_found": 2,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 1,
+     "text_px": 53,
+     "found_px": 53,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 20325,
+     "1": 2,
+     "2": 0,
+     "3": 225517
+    },
+    "1": {
+     "0": 0,
+     "1": 902,
+     "2": 30,
+     "3": 3983
+    },
+    "2": {
+     "0": 0,
+     "1": 128,
+     "2": 66,
+     "3": 5303
+    },
+    "3": {
+     "0": 0,
+     "1": 527,
+     "2": 0,
+     "3": 5067
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 1901
+    },
+    "7": {
+     "0": 0,
+     "1": 22,
+     "2": 0,
+     "3": 713
+    },
+    "8": {
+     "0": 0,
+     "1": 290,
+     "2": 958,
+     "3": 12666
+    }
+   },
+   "mask_file": "unet_data/58_bins.png"
+  },
+  "SB-D02": {
+   "plate": "58",
+   "win": [
+    1824,
+    511,
+    2404,
+    991
+   ],
+   "pix": {
+    "tp": 1168,
+    "fp": 3,
+    "fn": 280,
+    "precision": 0.9974,
+    "recall": 0.8066,
+    "f1": 0.8919
+   },
+   "truth_px": {
+    "0": 15462,
+    "1": 1232,
+    "2": 1448,
+    "3": 260258
+   },
+   "dont_care": {
+    "px": 260258,
+    "called_text": 14819
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 3,
+    "of": 1232,
+    "share": 0.00244,
+    "inside_wordbox_3px": 3,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 22,
+     "found_px": 22,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "ditto": {
+     "words": 5,
+     "text_px": 153,
+     "found_px": 133,
+     "words_found": 4,
+     "recall": 0.8693,
+     "words_found_share": 0.8
+    },
+    "house": {
+     "words": 3,
+     "text_px": 764,
+     "found_px": 764,
+     "words_found": 3,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 2,
+     "text_px": 305,
+     "found_px": 120,
+     "words_found": 1,
+     "recall": 0.3934,
+     "words_found_share": 0.5
+    },
+    "story": {
+     "words": 2,
+     "text_px": 319,
+     "found_px": 224,
+     "words_found": 1,
+     "recall": 0.7022,
+     "words_found_share": 0.5
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 15462,
+     "1": 0,
+     "2": 0,
+     "3": 225740
+    },
+    "1": {
+     "0": 0,
+     "1": 835,
+     "2": 9,
+     "3": 3187
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 3637
+    },
+    "3": {
+     "0": 0,
+     "1": 394,
+     "2": 271,
+     "3": 10494
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 1742
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 639
+    },
+    "8": {
+     "0": 0,
+     "1": 3,
+     "2": 1168,
+     "3": 14819
+    }
+   },
+   "mask_file": "unet_data/58_bins.png"
+  },
+  "SB-D03": {
+   "plate": "58",
+   "win": [
+    2543,
+    2215,
+    3123,
+    2695
+   ],
+   "pix": {
+    "tp": 530,
+    "fp": 398,
+    "fn": 115,
+    "precision": 0.5711,
+    "recall": 0.8217,
+    "f1": 0.6739
+   },
+   "truth_px": {
+    "0": 27874,
+    "1": 2115,
+    "2": 645,
+    "3": 247766
+   },
+   "dont_care": {
+    "px": 247766,
+    "called_text": 9117
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 398,
+    "of": 2115,
+    "share": 0.18818,
+    "inside_wordbox_3px": 20,
+    "open": 378
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 8,
+     "text_px": 309,
+     "found_px": 195,
+     "words_found": 5,
+     "recall": 0.6311,
+     "words_found_share": 0.625
+    },
+    "house": {
+     "words": 2,
+     "text_px": 328,
+     "found_px": 327,
+     "words_found": 2,
+     "recall": 0.997,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 1,
+     "text_px": 8,
+     "found_px": 8,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 27874,
+     "1": 5,
+     "2": 11,
+     "3": 218595
+    },
+    "1": {
+     "0": 0,
+     "1": 1235,
+     "2": 59,
+     "3": 3800
+    },
+    "2": {
+     "0": 0,
+     "1": 165,
+     "2": 45,
+     "3": 4209
+    },
+    "3": {
+     "0": 0,
+     "1": 312,
+     "2": 0,
+     "3": 6736
+    },
+    "4": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 4824
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 485
+    },
+    "8": {
+     "0": 0,
+     "1": 398,
+     "2": 530,
+     "3": 9117
+    }
+   },
+   "mask_file": "unet_data/58_bins.png"
+  },
+  "SB-D04": {
+   "plate": "56",
+   "win": [
+    8183,
+    1816,
+    8763,
+    2296
+   ],
+   "pix": {
+    "tp": 598,
+    "fp": 4,
+    "fn": 61,
+    "precision": 0.9934,
+    "recall": 0.9074,
+    "f1": 0.9485
+   },
+   "truth_px": {
+    "0": 6212,
+    "1": 582,
+    "2": 659,
+    "3": 270947
+   },
+   "dont_care": {
+    "px": 270947,
+    "called_text": 8710
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 4,
+    "of": 582,
+    "share": 0.00687,
+    "inside_wordbox_3px": 0,
+    "open": 4
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 2,
+     "text_px": 53,
+     "found_px": 28,
+     "words_found": 1,
+     "recall": 0.5283,
+     "words_found_share": 0.5
+    },
+    "house": {
+     "words": 2,
+     "text_px": 619,
+     "found_px": 583,
+     "words_found": 2,
+     "recall": 0.9418,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 6212,
+     "1": 0,
+     "2": 3,
+     "3": 239750
+    },
+    "1": {
+     "0": 0,
+     "1": 473,
+     "2": 36,
+     "3": 4264
+    },
+    "2": {
+     "0": 0,
+     "1": 105,
+     "2": 22,
+     "3": 2947
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 8563
+    },
+    "5": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 2585
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 2967
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 1161
+    },
+    "8": {
+     "0": 0,
+     "1": 4,
+     "2": 598,
+     "3": 8710
+    }
+   },
+   "mask_file": "unet_data/56_bins.png"
+  },
+  "SB-D05": {
+   "plate": "71",
+   "win": [
+    4995,
+    2473,
+    5575,
+    2953
+   ],
+   "pix": {
+    "tp": 550,
+    "fp": 0,
+    "fn": 259,
+    "precision": 1.0,
+    "recall": 0.6799,
+    "f1": 0.8094
+   },
+   "truth_px": {
+    "0": 5988,
+    "1": 516,
+    "2": 809,
+    "3": 271087
+   },
+   "dont_care": {
+    "px": 271087,
+    "called_text": 26603
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 516,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 2,
+     "text_px": 56,
+     "found_px": 56,
+     "words_found": 2,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 2,
+     "text_px": 435,
+     "found_px": 176,
+     "words_found": 1,
+     "recall": 0.4046,
+     "words_found_share": 0.5
+    },
+    "lot": {
+     "words": 2,
+     "text_px": 318,
+     "found_px": 318,
+     "words_found": 2,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 5988,
+     "1": 1,
+     "2": 0,
+     "3": 221089
+    },
+    "1": {
+     "0": 0,
+     "1": 515,
+     "2": 44,
+     "3": 8062
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 5620
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 5628
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 215,
+     "3": 4085
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 550,
+     "3": 26603
+    }
+   },
+   "mask_file": "unet_data/71_bins.png"
+  },
+  "SB-D06": {
+   "plate": "71",
+   "win": [
+    3749,
+    2433,
+    4329,
+    2913
+   ],
+   "pix": {
+    "tp": 1040,
+    "fp": 88,
+    "fn": 252,
+    "precision": 0.922,
+    "recall": 0.805,
+    "f1": 0.8595
+   },
+   "truth_px": {
+    "0": 19408,
+    "1": 1725,
+    "2": 1292,
+    "3": 255975
+   },
+   "dont_care": {
+    "px": 255975,
+    "called_text": 28011
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 88,
+    "of": 1725,
+    "share": 0.05101,
+    "inside_wordbox_3px": 46,
+    "open": 42
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 6,
+     "text_px": 241,
+     "found_px": 159,
+     "words_found": 4,
+     "recall": 0.6598,
+     "words_found_share": 0.6667
+    },
+    "house": {
+     "words": 4,
+     "text_px": 1039,
+     "found_px": 869,
+     "words_found": 4,
+     "recall": 0.8364,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 1,
+     "text_px": 12,
+     "found_px": 12,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 19408,
+     "1": 1,
+     "2": 2,
+     "3": 209218
+    },
+    "1": {
+     "0": 0,
+     "1": 1525,
+     "2": 105,
+     "3": 3239
+    },
+    "2": {
+     "0": 0,
+     "1": 111,
+     "2": 82,
+     "3": 9848
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 2933
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 63,
+     "3": 2144
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 582
+    },
+    "8": {
+     "0": 0,
+     "1": 88,
+     "2": 1040,
+     "3": 28011
+    }
+   },
+   "mask_file": "unet_data/71_bins.png"
+  },
+  "SB-D07": {
+   "plate": "71",
+   "win": [
+    1770,
+    1062,
+    2350,
+    1542
+   ],
+   "pix": {
+    "tp": 1985,
+    "fp": 22,
+    "fn": 62,
+    "precision": 0.989,
+    "recall": 0.9697,
+    "f1": 0.9793
+   },
+   "truth_px": {
+    "0": 25463,
+    "1": 2064,
+    "2": 2047,
+    "3": 248826
+   },
+   "dont_care": {
+    "px": 248826,
+    "called_text": 22613
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 22,
+    "of": 2064,
+    "share": 0.01066,
+    "inside_wordbox_3px": 0,
+    "open": 22
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 8,
+     "text_px": 302,
+     "found_px": 260,
+     "words_found": 6,
+     "recall": 0.8609,
+     "words_found_share": 0.75
+    },
+    "house": {
+     "words": 6,
+     "text_px": 1745,
+     "found_px": 1725,
+     "words_found": 6,
+     "recall": 0.9885,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 25463,
+     "1": 0,
+     "2": 1,
+     "3": 206339
+    },
+    "1": {
+     "0": 0,
+     "1": 1933,
+     "2": 19,
+     "3": 2929
+    },
+    "2": {
+     "0": 0,
+     "1": 109,
+     "2": 42,
+     "3": 9919
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 2852
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 2845
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 1329
+    },
+    "8": {
+     "0": 0,
+     "1": 22,
+     "2": 1985,
+     "3": 22613
+    }
+   },
+   "mask_file": "unet_data/71_bins.png"
+  },
+  "SB-D08": {
+   "plate": "71",
+   "win": [
+    3125,
+    2770,
+    3705,
+    3250
+   ],
+   "pix": {
+    "tp": 333,
+    "fp": 0,
+    "fn": 3,
+    "precision": 1.0,
+    "recall": 0.9911,
+    "f1": 0.9955
+   },
+   "truth_px": {
+    "0": 2987,
+    "1": 158,
+    "2": 336,
+    "3": 274919
+   },
+   "dont_care": {
+    "px": 274919,
+    "called_text": 28469
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 158,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 24,
+     "found_px": 24,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 312,
+     "found_px": 309,
+     "words_found": 1,
+     "recall": 0.9904,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2987,
+     "1": 0,
+     "2": 3,
+     "3": 226643
+    },
+    "1": {
+     "0": 0,
+     "1": 158,
+     "2": 0,
+     "3": 7321
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 6690
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 617
+    },
+    "5": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 2110
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 2657
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 412
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 333,
+     "3": 28469
+    }
+   },
+   "mask_file": "unet_data/71_bins.png"
+  },
+  "SB-D09": {
+   "plate": "76",
+   "win": [
+    3307,
+    624,
+    3887,
+    1104
+   ],
+   "pix": {
+    "tp": 654,
+    "fp": 498,
+    "fn": 5,
+    "precision": 0.5677,
+    "recall": 0.9924,
+    "f1": 0.7223
+   },
+   "truth_px": {
+    "0": 8830,
+    "1": 1141,
+    "2": 659,
+    "3": 267770
+   },
+   "dont_care": {
+    "px": 267770,
+    "called_text": 19134
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 498,
+    "of": 1141,
+    "share": 0.43646,
+    "inside_wordbox_3px": 242,
+    "open": 256
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 3,
+     "text_px": 86,
+     "found_px": 81,
+     "words_found": 3,
+     "recall": 0.9419,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 3,
+     "text_px": 504,
+     "found_px": 504,
+     "words_found": 3,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 3,
+     "text_px": 69,
+     "found_px": 69,
+     "words_found": 3,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 8830,
+     "1": 1,
+     "2": 5,
+     "3": 214888
+    },
+    "1": {
+     "0": 0,
+     "1": 540,
+     "2": 0,
+     "3": 3273
+    },
+    "2": {
+     "0": 0,
+     "1": 87,
+     "2": 0,
+     "3": 6476
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 9730
+    },
+    "4": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 6809
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 6182
+    },
+    "7": {
+     "0": 0,
+     "1": 15,
+     "2": 0,
+     "3": 1278
+    },
+    "8": {
+     "0": 0,
+     "1": 498,
+     "2": 654,
+     "3": 19134
+    }
+   },
+   "mask_file": "unet_data/76_bins.png"
+  },
+  "SB-D10": {
+   "plate": "76",
+   "win": [
+    1516,
+    4717,
+    2096,
+    5197
+   ],
+   "pix": {
+    "tp": 594,
+    "fp": 51,
+    "fn": 0,
+    "precision": 0.9209,
+    "recall": 1.0,
+    "f1": 0.9588
+   },
+   "truth_px": {
+    "0": 15800,
+    "1": 1880,
+    "2": 594,
+    "3": 260126
+   },
+   "dont_care": {
+    "px": 260126,
+    "called_text": 28438
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 51,
+    "of": 1880,
+    "share": 0.02713,
+    "inside_wordbox_3px": 1,
+    "open": 50
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 5,
+     "text_px": 173,
+     "found_px": 173,
+     "words_found": 5,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 5,
+     "text_px": 421,
+     "found_px": 421,
+     "words_found": 5,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 15800,
+     "1": 0,
+     "2": 0,
+     "3": 209244
+    },
+    "1": {
+     "0": 0,
+     "1": 1787,
+     "2": 0,
+     "3": 3965
+    },
+    "2": {
+     "0": 0,
+     "1": 2,
+     "2": 0,
+     "3": 12183
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 6058
+    },
+    "6": {
+     "0": 0,
+     "1": 40,
+     "2": 0,
+     "3": 207
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 31
+    },
+    "8": {
+     "0": 0,
+     "1": 51,
+     "2": 594,
+     "3": 28438
+    }
+   },
+   "mask_file": "unet_data/76_bins.png"
+  },
+  "SB-D11": {
+   "plate": "76",
+   "win": [
+    5354,
+    1193,
+    5934,
+    1673
+   ],
+   "pix": {
+    "tp": 278,
+    "fp": 27,
+    "fn": 0,
+    "precision": 0.9115,
+    "recall": 1.0,
+    "f1": 0.9537
+   },
+   "truth_px": {
+    "0": 3046,
+    "1": 489,
+    "2": 278,
+    "3": 274587
+   },
+   "dont_care": {
+    "px": 274587,
+    "called_text": 19618
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 27,
+    "of": 489,
+    "share": 0.05521,
+    "inside_wordbox_3px": 0,
+    "open": 27
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 33,
+     "found_px": 33,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 245,
+     "found_px": 245,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 3046,
+     "1": 0,
+     "2": 0,
+     "3": 233758
+    },
+    "1": {
+     "0": 0,
+     "1": 317,
+     "2": 0,
+     "3": 7158
+    },
+    "2": {
+     "0": 0,
+     "1": 65,
+     "2": 0,
+     "3": 3948
+    },
+    "3": {
+     "0": 0,
+     "1": 80,
+     "2": 0,
+     "3": 1523
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 6155
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 2427
+    },
+    "8": {
+     "0": 0,
+     "1": 27,
+     "2": 278,
+     "3": 19618
+    }
+   },
+   "mask_file": "unet_data/76_bins.png"
+  },
+  "SB-D12": {
+   "plate": "76",
+   "win": [
+    1288,
+    1290,
+    1868,
+    1770
+   ],
+   "pix": {
+    "tp": 729,
+    "fp": 0,
+    "fn": 22,
+    "precision": 1.0,
+    "recall": 0.9707,
+    "f1": 0.9851
+   },
+   "truth_px": {
+    "0": 12485,
+    "1": 1491,
+    "2": 751,
+    "3": 263673
+   },
+   "dont_care": {
+    "px": 263673,
+    "called_text": 24114
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 1491,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 4,
+     "text_px": 140,
+     "found_px": 140,
+     "words_found": 4,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 2,
+     "text_px": 611,
+     "found_px": 589,
+     "words_found": 2,
+     "recall": 0.964,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 12485,
+     "1": 0,
+     "2": 0,
+     "3": 222937
+    },
+    "1": {
+     "0": 0,
+     "1": 1491,
+     "2": 22,
+     "3": 1591
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 12055
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 954
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 1385
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 637
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 729,
+     "3": 24114
+    }
+   },
+   "mask_file": "unet_data/76_bins.png"
+  },
+  "SB-D13": {
+   "plate": "76",
+   "win": [
+    6796,
+    1512,
+    7376,
+    1992
+   ],
+   "pix": {
+    "tp": 1405,
+    "fp": 76,
+    "fn": 88,
+    "precision": 0.9487,
+    "recall": 0.9411,
+    "f1": 0.9449
+   },
+   "truth_px": {
+    "0": 20585,
+    "1": 2639,
+    "2": 1493,
+    "3": 253683
+   },
+   "dont_care": {
+    "px": 253683,
+    "called_text": 36724
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 76,
+    "of": 2639,
+    "share": 0.0288,
+    "inside_wordbox_3px": 67,
+    "open": 9
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 7,
+     "text_px": 179,
+     "found_px": 179,
+     "words_found": 7,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 9,
+     "text_px": 1035,
+     "found_px": 983,
+     "words_found": 9,
+     "recall": 0.9498,
+     "words_found_share": 1.0
+    },
+    "street": {
+     "words": 2,
+     "text_px": 499,
+     "found_px": 458,
+     "words_found": 2,
+     "recall": 0.9178,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 20585,
+     "1": 3,
+     "2": 4,
+     "3": 190259
+    },
+    "1": {
+     "0": 0,
+     "1": 2229,
+     "2": 64,
+     "3": 6960
+    },
+    "2": {
+     "0": 0,
+     "1": 169,
+     "2": 0,
+     "3": 7641
+    },
+    "3": {
+     "0": 0,
+     "1": 162,
+     "2": 5,
+     "3": 5727
+    },
+    "4": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 1377
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 4682
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 15,
+     "3": 313
+    },
+    "8": {
+     "0": 0,
+     "1": 76,
+     "2": 1405,
+     "3": 36724
+    }
+   },
+   "mask_file": "unet_data/76_bins.png"
+  },
+  "SB-D14": {
+   "plate": "84",
+   "win": [
+    5206,
+    3972,
+    5786,
+    4452
+   ],
+   "pix": {
+    "tp": 527,
+    "fp": 134,
+    "fn": 57,
+    "precision": 0.7973,
+    "recall": 0.9024,
+    "f1": 0.8466
+   },
+   "truth_px": {
+    "0": 5891,
+    "1": 756,
+    "2": 584,
+    "3": 271169
+   },
+   "dont_care": {
+    "px": 271169,
+    "called_text": 25626
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 134,
+    "of": 756,
+    "share": 0.17725,
+    "inside_wordbox_3px": 104,
+    "open": 30
+   },
+   "text_px_outside_every_box": 3,
+   "by_kind": {
+    "ditto": {
+     "words": 2,
+     "text_px": 73,
+     "found_px": 72,
+     "words_found": 2,
+     "recall": 0.9863,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 171,
+     "found_px": 171,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 1,
+     "text_px": 3,
+     "found_px": 0,
+     "words_found": 0,
+     "recall": 0.0,
+     "words_found_share": 0.0
+    },
+    "other": {
+     "words": 1,
+     "text_px": 266,
+     "found_px": 220,
+     "words_found": 1,
+     "recall": 0.8271,
+     "words_found_share": 1.0
+    },
+    "pipe": {
+     "words": 1,
+     "text_px": 61,
+     "found_px": 61,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 1,
+     "text_px": 60,
+     "found_px": 10,
+     "words_found": 0,
+     "recall": 0.1667,
+     "words_found_share": 0.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 5891,
+     "1": 0,
+     "2": 1,
+     "3": 217977
+    },
+    "1": {
+     "0": 0,
+     "1": 393,
+     "2": 4,
+     "3": 7967
+    },
+    "2": {
+     "0": 0,
+     "1": 0,
+     "2": 49,
+     "3": 9498
+    },
+    "3": {
+     "0": 0,
+     "1": 229,
+     "2": 3,
+     "3": 4913
+    },
+    "4": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 713
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 3832
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 643
+    },
+    "8": {
+     "0": 0,
+     "1": 134,
+     "2": 527,
+     "3": 25626
+    }
+   },
+   "mask_file": "unet_data/84_bins.png"
+  },
+  "SB-D15": {
+   "plate": "84",
+   "win": [
+    7309,
+    5148,
+    7889,
+    5628
+   ],
+   "pix": {
+    "tp": 390,
+    "fp": 75,
+    "fn": 0,
+    "precision": 0.8387,
+    "recall": 1.0,
+    "f1": 0.9123
+   },
+   "truth_px": {
+    "0": 2938,
+    "1": 411,
+    "2": 390,
+    "3": 274661
+   },
+   "dont_care": {
+    "px": 274661,
+    "called_text": 32726
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 75,
+    "of": 411,
+    "share": 0.18248,
+    "inside_wordbox_3px": 2,
+    "open": 73
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 1,
+     "text_px": 25,
+     "found_px": 25,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 1,
+     "text_px": 79,
+     "found_px": 79,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 1,
+     "text_px": 284,
+     "found_px": 284,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "street": {
+     "words": 1,
+     "text_px": 10,
+     "found_px": 10,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 2938,
+     "1": 0,
+     "2": 0,
+     "3": 218756
+    },
+    "1": {
+     "0": 0,
+     "1": 319,
+     "2": 0,
+     "3": 9047
+    },
+    "2": {
+     "0": 0,
+     "1": 17,
+     "2": 0,
+     "3": 5339
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 3078
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 4639
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 1076
+    },
+    "8": {
+     "0": 0,
+     "1": 75,
+     "2": 390,
+     "3": 32726
+    }
+   },
+   "mask_file": "unet_data/84_bins.png"
+  },
+  "SB-D16": {
+   "plate": "84",
+   "win": [
+    2870,
+    4652,
+    3450,
+    5132
+   ],
+   "pix": {
+    "tp": 5347,
+    "fp": 791,
+    "fn": 915,
+    "precision": 0.8711,
+    "recall": 0.8539,
+    "f1": 0.8624
+   },
+   "truth_px": {
+    "0": 47812,
+    "1": 6414,
+    "2": 6262,
+    "3": 217912
+   },
+   "dont_care": {
+    "px": 217912,
+    "called_text": 29336
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 791,
+    "of": 6414,
+    "share": 0.12332,
+    "inside_wordbox_3px": 146,
+    "open": 645
+   },
+   "text_px_outside_every_box": 1,
+   "by_kind": {
+    "ditto": {
+     "words": 18,
+     "text_px": 441,
+     "found_px": 399,
+     "words_found": 17,
+     "recall": 0.9048,
+     "words_found_share": 0.9444
+    },
+    "house": {
+     "words": 8,
+     "text_px": 2121,
+     "found_px": 2059,
+     "words_found": 8,
+     "recall": 0.9708,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 9,
+     "text_px": 2070,
+     "found_px": 1492,
+     "words_found": 8,
+     "recall": 0.7208,
+     "words_found_share": 0.8889
+    },
+    "lotdim": {
+     "words": 4,
+     "text_px": 703,
+     "found_px": 471,
+     "words_found": 3,
+     "recall": 0.67,
+     "words_found_share": 0.75
+    },
+    "pipe": {
+     "words": 1,
+     "text_px": 530,
+     "found_px": 530,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "sewer": {
+     "words": 1,
+     "text_px": 454,
+     "found_px": 454,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 1,
+     "text_px": 31,
+     "found_px": 31,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 47812,
+     "1": 8,
+     "2": 9,
+     "3": 167143
+    },
+    "1": {
+     "0": 0,
+     "1": 3183,
+     "2": 110,
+     "3": 5638
+    },
+    "2": {
+     "0": 0,
+     "1": 2326,
+     "2": 796,
+     "3": 9860
+    },
+    "3": {
+     "0": 0,
+     "1": 56,
+     "2": 0,
+     "3": 1976
+    },
+    "6": {
+     "0": 0,
+     "1": 50,
+     "2": 0,
+     "3": 2267
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 1692
+    },
+    "8": {
+     "0": 0,
+     "1": 791,
+     "2": 5347,
+     "3": 29336
+    }
+   },
+   "mask_file": "unet_data/84_bins.png"
+  },
+  "SB-D17": {
+   "plate": "88",
+   "win": [
+    6818,
+    2665,
+    7398,
+    3145
+   ],
+   "pix": {
+    "tp": 53,
+    "fp": 0,
+    "fn": 25,
+    "precision": 1.0,
+    "recall": 0.6795,
+    "f1": 0.8092
+   },
+   "truth_px": {
+    "0": 6887,
+    "1": 538,
+    "2": 78,
+    "3": 270897
+   },
+   "dont_care": {
+    "px": 270897,
+    "called_text": 9241
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 0,
+    "of": 538,
+    "share": 0.0,
+    "inside_wordbox_3px": 0,
+    "open": 0
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 2,
+     "text_px": 78,
+     "found_px": 53,
+     "words_found": 1,
+     "recall": 0.6795,
+     "words_found_share": 0.5
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 6887,
+     "1": 0,
+     "2": 0,
+     "3": 250672
+    },
+    "1": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 1988
+    },
+    "2": {
+     "0": 0,
+     "1": 538,
+     "2": 25,
+     "3": 7571
+    },
+    "3": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 1425
+    },
+    "8": {
+     "0": 0,
+     "1": 0,
+     "2": 53,
+     "3": 9241
+    }
+   },
+   "mask_file": "unet_data/88_bins.png"
+  },
+  "SB-D18": {
+   "plate": "88",
+   "win": [
+    3948,
+    1784,
+    4528,
+    2264
+   ],
+   "pix": {
+    "tp": 552,
+    "fp": 29,
+    "fn": 101,
+    "precision": 0.9501,
+    "recall": 0.8453,
+    "f1": 0.8947
+   },
+   "truth_px": {
+    "0": 5708,
+    "1": 1154,
+    "2": 653,
+    "3": 270885
+   },
+   "dont_care": {
+    "px": 270885,
+    "called_text": 16678
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 29,
+    "of": 1154,
+    "share": 0.02513,
+    "inside_wordbox_3px": 0,
+    "open": 29
+   },
+   "text_px_outside_every_box": 0,
+   "by_kind": {
+    "ditto": {
+     "words": 2,
+     "text_px": 91,
+     "found_px": 44,
+     "words_found": 1,
+     "recall": 0.4835,
+     "words_found_share": 0.5
+    },
+    "house": {
+     "words": 2,
+     "text_px": 332,
+     "found_px": 279,
+     "words_found": 1,
+     "recall": 0.8404,
+     "words_found_share": 0.5
+    },
+    "lot": {
+     "words": 1,
+     "text_px": 62,
+     "found_px": 61,
+     "words_found": 1,
+     "recall": 0.9839,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 2,
+     "text_px": 168,
+     "found_px": 168,
+     "words_found": 2,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 5708,
+     "1": 5,
+     "2": 2,
+     "3": 227410
+    },
+    "1": {
+     "0": 0,
+     "1": 641,
+     "2": 52,
+     "3": 4822
+    },
+    "2": {
+     "0": 0,
+     "1": 159,
+     "2": 47,
+     "3": 7483
+    },
+    "3": {
+     "0": 0,
+     "1": 320,
+     "2": 0,
+     "3": 6471
+    },
+    "5": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 206
+    },
+    "6": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 7164
+    },
+    "7": {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 651
+    },
+    "8": {
+     "0": 0,
+     "1": 29,
+     "2": 552,
+     "3": 16678
+    }
+   },
+   "mask_file": "unet_data/88_bins.png"
+  },
+  "SB-F1": {
+   "plate": "56",
+   "win": [
+    3236,
+    2670,
+    4736,
+    3670
+   ],
+   "pix": {
+    "tp": 37856,
+    "fp": 25553,
+    "fn": 7456,
+    "precision": 0.597,
+    "recall": 0.8355,
+    "f1": 0.6964
+   },
+   "truth_px": {
+    "0": 1366961,
+    "1": 85660,
+    "2": 45312,
+    "3": 2067
+   },
+   "dont_care": {
+    "px": 2067,
+    "called_text": 1334
+   },
+   "text_on_paper": 0,
+   "nontext_called_text": {
+    "px": 25553,
+    "of": 85660,
+    "share": 0.29831,
+    "inside_wordbox_3px": 3237,
+    "open": 22316
+   },
+   "text_px_outside_every_box": 13,
+   "by_kind": {
+    "block": {
+     "words": 1,
+     "text_px": 577,
+     "found_px": 577,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 25,
+     "text_px": 8482,
+     "found_px": 8279,
+     "words_found": 25,
+     "recall": 0.9761,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 53,
+     "text_px": 13734,
+     "found_px": 8417,
+     "words_found": 38,
+     "recall": 0.6129,
+     "words_found_share": 0.717
+    },
+    "lotdim": {
+     "words": 45,
+     "text_px": 7510,
+     "found_px": 6725,
+     "words_found": 43,
+     "recall": 0.8955,
+     "words_found_share": 0.9556
+    },
+    "owner": {
+     "words": 12,
+     "text_px": 3772,
+     "found_px": 3338,
+     "words_found": 11,
+     "recall": 0.8849,
+     "words_found_share": 0.9167
+    },
+    "pipe": {
+     "words": 6,
+     "text_px": 3626,
+     "found_px": 3364,
+     "words_found": 6,
+     "recall": 0.9277,
+     "words_found_share": 1.0
+    },
+    "sewer": {
+     "words": 4,
+     "text_px": 1735,
+     "found_px": 1678,
+     "words_found": 4,
+     "recall": 0.9671,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 22,
+     "text_px": 2650,
+     "found_px": 2212,
+     "words_found": 19,
+     "recall": 0.8347,
+     "words_found_share": 0.8636
+    },
+    "street": {
+     "words": 2,
+     "text_px": 3745,
+     "found_px": 3738,
+     "words_found": 2,
+     "recall": 0.9981,
+     "words_found_share": 1.0
+    }
+   },
+   "confusion": {
+    "0": {
+     "0": 1366961,
+     "1": 148,
+     "2": 370,
+     "3": 2
+    },
+    "1": {
+     "0": 0,
+     "1": 17287,
+     "2": 180,
+     "3": 73
+    },
+    "2": {
+     "0": 0,
+     "1": 19291,
+     "2": 5315,
+     "3": 305
+    },
+    "3": {
+     "0": 0,
+     "1": 5400,
+     "2": 949,
+     "3": 268
+    },
+    "6": {
+     "0": 0,
+     "1": 11037,
+     "2": 551,
+     "3": 68
+    },
+    "7": {
+     "0": 0,
+     "1": 6944,
+     "2": 91,
+     "3": 17
+    },
+    "8": {
+     "0": 0,
+     "1": 25553,
+     "2": 37856,
+     "3": 1334
+    }
+   },
+   "mask_file": "unet_data/56_bins.png"
+  }
+ },
+ "pools": {
+  "ALL": {
+   "crops": [
+    "SA-B01",
+    "SA-B02",
+    "SA-B03",
+    "SA-B04",
+    "SA-B05",
+    "SA-B06",
+    "SA-B07",
+    "SA-B08",
+    "SA-B09",
+    "SA-B10",
+    "SA-B11",
+    "SA-B12",
+    "SA-B13",
+    "SA-B14",
+    "SA-B15",
+    "SA-B16",
+    "SA-B17",
+    "SA-B18",
+    "SA-B19",
+    "SA-B20",
+    "SA-B21",
+    "SA-B22",
+    "SA-B23",
+    "SA-B24",
+    "SA-B25",
+    "SA-B26",
+    "SA-D01",
+    "SA-D02",
+    "SA-D03",
+    "SA-D04",
+    "SA-D05",
+    "SA-D06",
+    "SA-D07",
+    "SA-D08",
+    "SA-D09",
+    "SA-D10",
+    "SA-D11",
+    "SA-D12",
+    "SA-D13",
+    "SA-D14",
+    "SA-D15",
+    "SA-D16",
+    "SA-D17",
+    "SA-D18",
+    "SA-D19",
+    "SA-D20",
+    "SA-D21",
+    "SA-D22",
+    "SA-D23",
+    "SA-D24",
+    "SA-D25",
+    "SA-D26",
+    "SA-D27",
+    "SA-D28",
+    "SA-D29",
+    "SA-D30",
+    "SA-D31",
+    "SA-D32",
+    "SA-D33",
+    "SA-D34",
+    "SA-D35",
+    "SA-D36",
+    "SA-D37",
+    "SA-D38",
+    "SA-D39",
+    "SA-D40",
+    "SA-D41",
+    "SA-D42",
+    "SA-F1",
+    "SB-B01",
+    "SB-B02",
+    "SB-B03",
+    "SB-B04",
+    "SB-B05",
+    "SB-B06",
+    "SB-B07",
+    "SB-B08",
+    "SB-B09",
+    "SB-B10",
+    "SB-B11",
+    "SB-B12",
+    "SB-B13",
+    "SB-B14",
+    "SB-B15",
+    "SB-B16",
+    "SB-B17",
+    "SB-B18",
+    "SB-B19",
+    "SB-B20",
+    "SB-B21",
+    "SB-B22",
+    "SB-B23",
+    "SB-B24",
+    "SB-B25",
+    "SB-B26",
+    "SB-D01",
+    "SB-D02",
+    "SB-D03",
+    "SB-D04",
+    "SB-D05",
+    "SB-D06",
+    "SB-D07",
+    "SB-D08",
+    "SB-D09",
+    "SB-D10",
+    "SB-D11",
+    "SB-D12",
+    "SB-D13",
+    "SB-D14",
+    "SB-D15",
+    "SB-D16",
+    "SB-D17",
+    "SB-D18",
+    "SB-F1"
+   ],
+   "pix": {
+    "tp": 218714,
+    "fp": 80812,
+    "fn": 45270,
+    "precision": 0.7302,
+    "recall": 0.8285,
+    "f1": 0.7763
+   },
+   "nontext_called_text": {
+    "px": 80812,
+    "of": 313131,
+    "share": 0.25808,
+    "inside_wordbox_3px": 26961,
+    "open": 53851
+   },
+   "dont_care": {
+    "px": 8032690,
+    "called_text": 596466
+   },
+   "text_on_paper": 0,
+   "by_kind": {
+    "block": {
+     "words": 56,
+     "text_px": 54633,
+     "found_px": 47509,
+     "words_found": 52,
+     "recall": 0.8696,
+     "words_found_share": 0.9286
+    },
+    "ditto": {
+     "words": 170,
+     "text_px": 5862,
+     "found_px": 4601,
+     "words_found": 139,
+     "recall": 0.7849,
+     "words_found_share": 0.8176
+    },
+    "house": {
+     "words": 152,
+     "text_px": 42561,
+     "found_px": 37118,
+     "words_found": 137,
+     "recall": 0.8721,
+     "words_found_share": 0.9013
+    },
+    "lot": {
+     "words": 325,
+     "text_px": 70389,
+     "found_px": 54547,
+     "words_found": 265,
+     "recall": 0.7749,
+     "words_found_share": 0.8154
+    },
+    "lotdim": {
+     "words": 224,
+     "text_px": 38736,
+     "found_px": 30018,
+     "words_found": 194,
+     "recall": 0.7749,
+     "words_found_share": 0.8661
+    },
+    "other": {
+     "words": 1,
+     "text_px": 266,
+     "found_px": 220,
+     "words_found": 1,
+     "recall": 0.8271,
+     "words_found_share": 1.0
+    },
+    "owner": {
+     "words": 59,
+     "text_px": 18715,
+     "found_px": 14470,
+     "words_found": 49,
+     "recall": 0.7732,
+     "words_found_share": 0.8305
+    },
+    "pipe": {
+     "words": 14,
+     "text_px": 7238,
+     "found_px": 6291,
+     "words_found": 14,
+     "recall": 0.8692,
+     "words_found_share": 1.0
+    },
+    "sewer": {
+     "words": 15,
+     "text_px": 8037,
+     "found_px": 7677,
+     "words_found": 15,
+     "recall": 0.9552,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 112,
+     "text_px": 12872,
+     "found_px": 10081,
+     "words_found": 93,
+     "recall": 0.7832,
+     "words_found_share": 0.8304
+    },
+    "street": {
+     "words": 13,
+     "text_px": 20948,
+     "found_px": 19885,
+     "words_found": 13,
+     "recall": 0.9493,
+     "words_found_share": 1.0
+    }
+   }
+  },
+  "plate_6": {
+   "crops": [
+    "SA-B01",
+    "SA-B02",
+    "SA-B03",
+    "SA-D01",
+    "SA-D02",
+    "SA-D03",
+    "SA-D04",
+    "SA-D05",
+    "SA-D06",
+    "SA-D07",
+    "SA-D08",
+    "SA-D09",
+    "SA-D10",
+    "SA-D11",
+    "SA-D12",
+    "SA-D13",
+    "SA-D34",
+    "SA-D35",
+    "SA-D36",
+    "SA-D37",
+    "SA-D38"
+   ],
+   "pix": {
+    "tp": 5671,
+    "fp": 1598,
+    "fn": 110,
+    "precision": 0.7802,
+    "recall": 0.981,
+    "f1": 0.8691
+   },
+   "nontext_called_text": {
+    "px": 1598,
+    "of": 13481,
+    "share": 0.11854,
+    "inside_wordbox_3px": 488,
+    "open": 1110
+   },
+   "dont_care": {
+    "px": 351565,
+    "called_text": 16608
+   },
+   "text_on_paper": 0,
+   "by_kind": {
+    "block": {
+     "words": 3,
+     "text_px": 3802,
+     "found_px": 3802,
+     "words_found": 3,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "ditto": {
+     "words": 26,
+     "text_px": 988,
+     "found_px": 907,
+     "words_found": 25,
+     "recall": 0.918,
+     "words_found_share": 0.9615
+    },
+    "house": {
+     "words": 3,
+     "text_px": 320,
+     "found_px": 320,
+     "words_found": 3,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "sewer": {
+     "words": 1,
+     "text_px": 182,
+     "found_px": 157,
+     "words_found": 1,
+     "recall": 0.8626,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 3,
+     "text_px": 487,
+     "found_px": 485,
+     "words_found": 3,
+     "recall": 0.9959,
+     "words_found_share": 1.0
+    }
+   }
+  },
+  "plate_9": {
+   "crops": [
+    "SA-B04",
+    "SA-B05",
+    "SA-B06",
+    "SA-D30",
+    "SA-D31",
+    "SA-D32",
+    "SA-D39",
+    "SA-D40"
+   ],
+   "pix": {
+    "tp": 6243,
+    "fp": 452,
+    "fn": 253,
+    "precision": 0.9325,
+    "recall": 0.9611,
+    "f1": 0.9466
+   },
+   "nontext_called_text": {
+    "px": 452,
+    "of": 3695,
+    "share": 0.12233,
+    "inside_wordbox_3px": 438,
+    "open": 14
+   },
+   "dont_care": {
+    "px": 168610,
+    "called_text": 6059
+   },
+   "text_on_paper": 0,
+   "by_kind": {
+    "block": {
+     "words": 3,
+     "text_px": 4346,
+     "found_px": 4333,
+     "words_found": 3,
+     "recall": 0.997,
+     "words_found_share": 1.0
+    },
+    "ditto": {
+     "words": 5,
+     "text_px": 277,
+     "found_px": 197,
+     "words_found": 3,
+     "recall": 0.7112,
+     "words_found_share": 0.6
+    },
+    "house": {
+     "words": 5,
+     "text_px": 940,
+     "found_px": 940,
+     "words_found": 5,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 6,
+     "text_px": 925,
+     "found_px": 762,
+     "words_found": 5,
+     "recall": 0.8238,
+     "words_found_share": 0.8333
+    }
+   }
+  },
+  "plate_52": {
+   "crops": [
+    "SA-B07",
+    "SA-B08",
+    "SA-B09",
+    "SA-D14",
+    "SA-D15",
+    "SA-D16",
+    "SA-D17",
+    "SA-D18",
+    "SA-D19",
+    "SA-D20"
+   ],
+   "pix": {
+    "tp": 2672,
+    "fp": 884,
+    "fn": 2121,
+    "precision": 0.7514,
+    "recall": 0.5575,
+    "f1": 0.6401
+   },
+   "nontext_called_text": {
+    "px": 884,
+    "of": 5009,
+    "share": 0.17648,
+    "inside_wordbox_3px": 543,
+    "open": 341
+   },
+   "dont_care": {
+    "px": 185676,
+    "called_text": 7525
+   },
+   "text_on_paper": 0,
+   "by_kind": {
+    "block": {
+     "words": 3,
+     "text_px": 3095,
+     "found_px": 1284,
+     "words_found": 2,
+     "recall": 0.4149,
+     "words_found_share": 0.6667
+    },
+    "ditto": {
+     "words": 7,
+     "text_px": 293,
+     "found_px": 62,
+     "words_found": 1,
+     "recall": 0.2116,
+     "words_found_share": 0.1429
+    },
+    "house": {
+     "words": 4,
+     "text_px": 761,
+     "found_px": 759,
+     "words_found": 4,
+     "recall": 0.9974,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 2,
+     "text_px": 186,
+     "found_px": 186,
+     "words_found": 2,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "owner": {
+     "words": 1,
+     "text_px": 255,
+     "found_px": 255,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 4,
+     "text_px": 276,
+     "found_px": 199,
+     "words_found": 3,
+     "recall": 0.721,
+     "words_found_share": 0.75
+    }
+   }
+  },
+  "plate_35": {
+   "crops": [
+    "SA-B10",
+    "SA-B11",
+    "SA-B12",
+    "SA-D21",
+    "SA-D41"
+   ],
+   "pix": {
+    "tp": 7704,
+    "fp": 1428,
+    "fn": 798,
+    "precision": 0.8436,
+    "recall": 0.9061,
+    "f1": 0.8738
+   },
+   "nontext_called_text": {
+    "px": 1428,
+    "of": 5379,
+    "share": 0.26548,
+    "inside_wordbox_3px": 785,
+    "open": 643
+   },
+   "dont_care": {
+    "px": 172003,
+    "called_text": 17160
+   },
+   "text_on_paper": 0,
+   "by_kind": {
+    "block": {
+     "words": 3,
+     "text_px": 2690,
+     "found_px": 2680,
+     "words_found": 3,
+     "recall": 0.9963,
+     "words_found_share": 1.0
+    },
+    "ditto": {
+     "words": 10,
+     "text_px": 350,
+     "found_px": 216,
+     "words_found": 7,
+     "recall": 0.6171,
+     "words_found_share": 0.7
+    },
+    "house": {
+     "words": 6,
+     "text_px": 3225,
+     "found_px": 2719,
+     "words_found": 5,
+     "recall": 0.8431,
+     "words_found_share": 0.8333
+    },
+    "lot": {
+     "words": 13,
+     "text_px": 1643,
+     "found_px": 1552,
+     "words_found": 13,
+     "recall": 0.9446,
+     "words_found_share": 1.0
+    },
+    "lotdim": {
+     "words": 4,
+     "text_px": 836,
+     "found_px": 772,
+     "words_found": 3,
+     "recall": 0.9234,
+     "words_found_share": 0.75
+    },
+    "story": {
+     "words": 3,
+     "text_px": 217,
+     "found_px": 217,
+     "words_found": 3,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "street": {
+     "words": 1,
+     "text_px": 440,
+     "found_px": 440,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   }
+  },
+  "plate_38": {
+   "crops": [
+    "SA-B13",
+    "SA-B14",
+    "SA-B15",
+    "SA-D22",
+    "SA-D33",
+    "SA-F1"
+   ],
+   "pix": {
+    "tp": 96574,
+    "fp": 38887,
+    "fn": 24859,
+    "precision": 0.7129,
+    "recall": 0.7953,
+    "f1": 0.7519
+   },
+   "nontext_called_text": {
+    "px": 38887,
+    "of": 140804,
+    "share": 0.27618,
+    "inside_wordbox_3px": 13791,
+    "open": 25096
+   },
+   "dont_care": {
+    "px": 189514,
+    "called_text": 16997
+   },
+   "text_on_paper": 0,
+   "by_kind": {
+    "block": {
+     "words": 5,
+     "text_px": 3768,
+     "found_px": 3408,
+     "words_found": 5,
+     "recall": 0.9045,
+     "words_found_share": 1.0
+    },
+    "ditto": {
+     "words": 22,
+     "text_px": 677,
+     "found_px": 532,
+     "words_found": 18,
+     "recall": 0.7858,
+     "words_found_share": 0.8182
+    },
+    "house": {
+     "words": 41,
+     "text_px": 14086,
+     "found_px": 10320,
+     "words_found": 29,
+     "recall": 0.7326,
+     "words_found_share": 0.7073
+    },
+    "lot": {
+     "words": 142,
+     "text_px": 39107,
+     "found_px": 31596,
+     "words_found": 119,
+     "recall": 0.8079,
+     "words_found_share": 0.838
+    },
+    "lotdim": {
+     "words": 158,
+     "text_px": 27673,
+     "found_px": 20271,
+     "words_found": 133,
+     "recall": 0.7325,
+     "words_found_share": 0.8418
+    },
+    "owner": {
+     "words": 40,
+     "text_px": 14003,
+     "found_px": 10244,
+     "words_found": 31,
+     "recall": 0.7316,
+     "words_found_share": 0.775
+    },
+    "pipe": {
+     "words": 6,
+     "text_px": 3021,
+     "found_px": 2336,
+     "words_found": 6,
+     "recall": 0.7733,
+     "words_found_share": 1.0
+    },
+    "sewer": {
+     "words": 8,
+     "text_px": 5482,
+     "found_px": 5237,
+     "words_found": 8,
+     "recall": 0.9553,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 61,
+     "text_px": 7588,
+     "found_px": 5632,
+     "words_found": 50,
+     "recall": 0.7422,
+     "words_found_share": 0.8197
+    },
+    "street": {
+     "words": 7,
+     "text_px": 16254,
+     "found_px": 15239,
+     "words_found": 7,
+     "recall": 0.9376,
+     "words_found_share": 1.0
+    }
+   }
+  },
+  "plate_41": {
+   "crops": [
+    "SA-B16",
+    "SA-B17",
+    "SA-B18"
+   ],
+   "pix": {
+    "tp": 2651,
+    "fp": 22,
+    "fn": 1,
+    "precision": 0.9918,
+    "recall": 0.9996,
+    "f1": 0.9957
+   },
+   "nontext_called_text": {
+    "px": 22,
+    "of": 546,
+    "share": 0.04029,
+    "inside_wordbox_3px": 22,
+    "open": 0
+   },
+   "dont_care": {
+    "px": 117149,
+    "called_text": 3376
+   },
+   "text_on_paper": 0,
+   "by_kind": {
+    "block": {
+     "words": 3,
+     "text_px": 2652,
+     "found_px": 2651,
+     "words_found": 3,
+     "recall": 0.9996,
+     "words_found_share": 1.0
+    }
+   }
+  },
+  "plate_66": {
+   "crops": [
+    "SA-B19",
+    "SA-B20",
+    "SA-B21",
+    "SA-D23",
+    "SA-D42"
+   ],
+   "pix": {
+    "tp": 3407,
+    "fp": 1393,
+    "fn": 721,
+    "precision": 0.7098,
+    "recall": 0.8253,
+    "f1": 0.7632
+   },
+   "nontext_called_text": {
+    "px": 1393,
+    "of": 6780,
+    "share": 0.20546,
+    "inside_wordbox_3px": 822,
+    "open": 571
+   },
+   "dont_care": {
+    "px": 167027,
+    "called_text": 13232
+   },
+   "text_on_paper": 0,
+   "by_kind": {
+    "block": {
+     "words": 3,
+     "text_px": 1150,
+     "found_px": 859,
+     "words_found": 2,
+     "recall": 0.747,
+     "words_found_share": 0.6667
+    },
+    "ditto": {
+     "words": 10,
+     "text_px": 284,
+     "found_px": 284,
+     "words_found": 10,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 2,
+     "text_px": 1379,
+     "found_px": 1312,
+     "words_found": 2,
+     "recall": 0.9514,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 19,
+     "text_px": 1256,
+     "found_px": 893,
+     "words_found": 14,
+     "recall": 0.711,
+     "words_found_share": 0.7368
+    },
+    "lotdim": {
+     "words": 1,
+     "text_px": 62,
+     "found_px": 59,
+     "words_found": 1,
+     "recall": 0.9516,
+     "words_found_share": 1.0
+    }
+   }
+  },
+  "plate_46": {
+   "crops": [
+    "SA-B22",
+    "SA-B23",
+    "SA-B24",
+    "SA-B25",
+    "SA-B26",
+    "SA-D24",
+    "SA-D25",
+    "SA-D26",
+    "SA-D27",
+    "SA-D28",
+    "SA-D29"
+   ],
+   "pix": {
+    "tp": 4022,
+    "fp": 1529,
+    "fn": 1484,
+    "precision": 0.7246,
+    "recall": 0.7305,
+    "f1": 0.7275
+   },
+   "nontext_called_text": {
+    "px": 1529,
+    "of": 5014,
+    "share": 0.30495,
+    "inside_wordbox_3px": 1298,
+    "open": 231
+   },
+   "dont_care": {
+    "px": 258720,
+    "called_text": 14178
+   },
+   "text_on_paper": 0,
+   "by_kind": {
+    "block": {
+     "words": 5,
+     "text_px": 3207,
+     "found_px": 2129,
+     "words_found": 4,
+     "recall": 0.6639,
+     "words_found_share": 0.8
+    },
+    "ditto": {
+     "words": 6,
+     "text_px": 252,
+     "found_px": 161,
+     "words_found": 4,
+     "recall": 0.6389,
+     "words_found_share": 0.6667
+    },
+    "house": {
+     "words": 5,
+     "text_px": 949,
+     "found_px": 772,
+     "words_found": 5,
+     "recall": 0.8135,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 5,
+     "text_px": 238,
+     "found_px": 238,
+     "words_found": 5,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "lotdim": {
+     "words": 2,
+     "text_px": 225,
+     "found_px": 140,
+     "words_found": 1,
+     "recall": 0.6222,
+     "words_found_share": 0.5
+    },
+    "owner": {
+     "words": 5,
+     "text_px": 524,
+     "found_px": 472,
+     "words_found": 5,
+     "recall": 0.9008,
+     "words_found_share": 1.0
+    },
+    "sewer": {
+     "words": 1,
+     "text_px": 184,
+     "found_px": 151,
+     "words_found": 1,
+     "recall": 0.8207,
+     "words_found_share": 1.0
+    }
+   }
+  },
+  "plate_56": {
+   "crops": [
+    "SB-B01",
+    "SB-B02",
+    "SB-B03",
+    "SB-D04",
+    "SB-F1"
+   ],
+   "pix": {
+    "tp": 40447,
+    "fp": 26642,
+    "fn": 8077,
+    "precision": 0.6029,
+    "recall": 0.8335,
+    "f1": 0.6997
+   },
+   "nontext_called_text": {
+    "px": 26642,
+    "of": 88186,
+    "share": 0.30211,
+    "inside_wordbox_3px": 3619,
+    "open": 23023
+   },
+   "dont_care": {
+    "px": 473235,
+    "called_text": 14281
+   },
+   "text_on_paper": 0,
+   "by_kind": {
+    "block": {
+     "words": 4,
+     "text_px": 2986,
+     "found_px": 2461,
+     "words_found": 4,
+     "recall": 0.8242,
+     "words_found_share": 1.0
+    },
+    "ditto": {
+     "words": 2,
+     "text_px": 53,
+     "found_px": 28,
+     "words_found": 1,
+     "recall": 0.5283,
+     "words_found_share": 0.5
+    },
+    "house": {
+     "words": 28,
+     "text_px": 9211,
+     "found_px": 8965,
+     "words_found": 28,
+     "recall": 0.9733,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 54,
+     "text_px": 13768,
+     "found_px": 8423,
+     "words_found": 38,
+     "recall": 0.6118,
+     "words_found_share": 0.7037
+    },
+    "lotdim": {
+     "words": 45,
+     "text_px": 7510,
+     "found_px": 6725,
+     "words_found": 43,
+     "recall": 0.8955,
+     "words_found_share": 0.9556
+    },
+    "owner": {
+     "words": 12,
+     "text_px": 3772,
+     "found_px": 3338,
+     "words_found": 11,
+     "recall": 0.8849,
+     "words_found_share": 0.9167
+    },
+    "pipe": {
+     "words": 6,
+     "text_px": 3626,
+     "found_px": 3364,
+     "words_found": 6,
+     "recall": 0.9277,
+     "words_found_share": 1.0
+    },
+    "sewer": {
+     "words": 4,
+     "text_px": 1735,
+     "found_px": 1678,
+     "words_found": 4,
+     "recall": 0.9671,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 22,
+     "text_px": 2650,
+     "found_px": 2212,
+     "words_found": 19,
+     "recall": 0.8347,
+     "words_found_share": 0.8636
+    },
+    "street": {
+     "words": 2,
+     "text_px": 3745,
+     "found_px": 3738,
+     "words_found": 2,
+     "recall": 0.9981,
+     "words_found_share": 1.0
+    }
+   }
+  },
+  "plate_58": {
+   "crops": [
+    "SB-B04",
+    "SB-B05",
+    "SB-B06",
+    "SB-D01",
+    "SB-D02",
+    "SB-D03"
+   ],
+   "pix": {
+    "tp": 7825,
+    "fp": 996,
+    "fn": 912,
+    "precision": 0.8871,
+    "recall": 0.8956,
+    "f1": 0.8913
+   },
+   "nontext_called_text": {
+    "px": 996,
+    "of": 7665,
+    "share": 0.12994,
+    "inside_wordbox_3px": 262,
+    "open": 734
+   },
+   "dont_care": {
+    "px": 953817,
+    "called_text": 41555
+   },
+   "text_on_paper": 0,
+   "by_kind": {
+    "block": {
+     "words": 4,
+     "text_px": 4832,
+     "found_px": 4483,
+     "words_found": 4,
+     "recall": 0.9278,
+     "words_found_share": 1.0
+    },
+    "ditto": {
+     "words": 20,
+     "text_px": 746,
+     "found_px": 516,
+     "words_found": 15,
+     "recall": 0.6917,
+     "words_found_share": 0.75
+    },
+    "house": {
+     "words": 7,
+     "text_px": 1843,
+     "found_px": 1842,
+     "words_found": 7,
+     "recall": 0.9995,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 4,
+     "text_px": 514,
+     "found_px": 329,
+     "words_found": 3,
+     "recall": 0.6401,
+     "words_found_share": 0.75
+    },
+    "lotdim": {
+     "words": 3,
+     "text_px": 866,
+     "found_px": 776,
+     "words_found": 3,
+     "recall": 0.8961,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 3,
+     "text_px": 372,
+     "found_px": 277,
+     "words_found": 2,
+     "recall": 0.7446,
+     "words_found_share": 0.6667
+    }
+   }
+  },
+  "plate_63": {
+   "crops": [
+    "SB-B07",
+    "SB-B08",
+    "SB-B09"
+   ],
+   "pix": {
+    "tp": 1952,
+    "fp": 416,
+    "fn": 955,
+    "precision": 0.8243,
+    "recall": 0.6715,
+    "f1": 0.7401
+   },
+   "nontext_called_text": {
+    "px": 416,
+    "of": 1899,
+    "share": 0.21906,
+    "inside_wordbox_3px": 229,
+    "open": 187
+   },
+   "dont_care": {
+    "px": 201205,
+    "called_text": 4397
+   },
+   "text_on_paper": 0,
+   "by_kind": {
+    "block": {
+     "words": 3,
+     "text_px": 2716,
+     "found_px": 1772,
+     "words_found": 2,
+     "recall": 0.6524,
+     "words_found_share": 0.6667
+    },
+    "lot": {
+     "words": 2,
+     "text_px": 180,
+     "found_px": 180,
+     "words_found": 2,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 1,
+     "text_px": 10,
+     "found_px": 0,
+     "words_found": 0,
+     "recall": 0.0,
+     "words_found_share": 0.0
+    }
+   }
+  },
+  "plate_71": {
+   "crops": [
+    "SB-B10",
+    "SB-B11",
+    "SB-B12",
+    "SB-D05",
+    "SB-D06",
+    "SB-D07",
+    "SB-D08"
+   ],
+   "pix": {
+    "tp": 7074,
+    "fp": 928,
+    "fn": 1226,
+    "precision": 0.884,
+    "recall": 0.8523,
+    "f1": 0.8679
+   },
+   "nontext_called_text": {
+    "px": 928,
+    "of": 6890,
+    "share": 0.13469,
+    "inside_wordbox_3px": 555,
+    "open": 373
+   },
+   "dont_care": {
+    "px": 1248481,
+    "called_text": 118834
+   },
+   "text_on_paper": 0,
+   "by_kind": {
+    "block": {
+     "words": 3,
+     "text_px": 3007,
+     "found_px": 2506,
+     "words_found": 3,
+     "recall": 0.8334,
+     "words_found_share": 1.0
+    },
+    "ditto": {
+     "words": 17,
+     "text_px": 623,
+     "found_px": 499,
+     "words_found": 13,
+     "recall": 0.801,
+     "words_found_share": 0.7647
+    },
+    "house": {
+     "words": 13,
+     "text_px": 3531,
+     "found_px": 3079,
+     "words_found": 12,
+     "recall": 0.872,
+     "words_found_share": 0.9231
+    },
+    "lot": {
+     "words": 9,
+     "text_px": 1444,
+     "found_px": 1181,
+     "words_found": 8,
+     "recall": 0.8179,
+     "words_found_share": 0.8889
+    },
+    "story": {
+     "words": 1,
+     "text_px": 12,
+     "found_px": 12,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   }
+  },
+  "plate_76": {
+   "crops": [
+    "SB-B13",
+    "SB-B14",
+    "SB-B15",
+    "SB-D09",
+    "SB-D10",
+    "SB-D11",
+    "SB-D12",
+    "SB-D13"
+   ],
+   "pix": {
+    "tp": 9695,
+    "fp": 1736,
+    "fn": 525,
+    "precision": 0.8481,
+    "recall": 0.9486,
+    "f1": 0.8956
+   },
+   "nontext_called_text": {
+    "px": 1736,
+    "of": 11499,
+    "share": 0.15097,
+    "inside_wordbox_3px": 1302,
+    "open": 434
+   },
+   "dont_care": {
+    "px": 1510125,
+    "called_text": 146989
+   },
+   "text_on_paper": 0,
+   "by_kind": {
+    "block": {
+     "words": 3,
+     "text_px": 4020,
+     "found_px": 3834,
+     "words_found": 3,
+     "recall": 0.9537,
+     "words_found_share": 1.0
+    },
+    "ditto": {
+     "words": 20,
+     "text_px": 611,
+     "found_px": 606,
+     "words_found": 20,
+     "recall": 0.9918,
+     "words_found_share": 1.0
+    },
+    "house": {
+     "words": 20,
+     "text_px": 2816,
+     "found_px": 2742,
+     "words_found": 20,
+     "recall": 0.9737,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 11,
+     "text_px": 2350,
+     "found_px": 2139,
+     "words_found": 10,
+     "recall": 0.9102,
+     "words_found_share": 0.9091
+    },
+    "lotdim": {
+     "words": 5,
+     "text_px": 822,
+     "found_px": 766,
+     "words_found": 5,
+     "recall": 0.9319,
+     "words_found_share": 1.0
+    },
+    "owner": {
+     "words": 1,
+     "text_px": 161,
+     "found_px": 161,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 4,
+     "text_px": 76,
+     "found_px": 76,
+     "words_found": 4,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "street": {
+     "words": 2,
+     "text_px": 499,
+     "found_px": 458,
+     "words_found": 2,
+     "recall": 0.9178,
+     "words_found_share": 1.0
+    }
+   }
+  },
+  "plate_84": {
+   "crops": [
+    "SB-B16",
+    "SB-B17",
+    "SB-B18",
+    "SB-D14",
+    "SB-D15",
+    "SB-D16"
+   ],
+   "pix": {
+    "tp": 9624,
+    "fp": 1633,
+    "fn": 1942,
+    "precision": 0.8549,
+    "recall": 0.8321,
+    "f1": 0.8434
+   },
+   "nontext_called_text": {
+    "px": 1633,
+    "of": 10430,
+    "share": 0.15657,
+    "inside_wordbox_3px": 751,
+    "open": 882
+   },
+   "dont_care": {
+    "px": 963438,
+    "called_text": 113651
+   },
+   "text_on_paper": 0,
+   "by_kind": {
+    "block": {
+     "words": 3,
+     "text_px": 2878,
+     "found_px": 2057,
+     "words_found": 3,
+     "recall": 0.7147,
+     "words_found_share": 1.0
+    },
+    "ditto": {
+     "words": 21,
+     "text_px": 539,
+     "found_px": 496,
+     "words_found": 20,
+     "recall": 0.9202,
+     "words_found_share": 0.9524
+    },
+    "house": {
+     "words": 16,
+     "text_px": 3168,
+     "found_px": 3069,
+     "words_found": 16,
+     "recall": 0.9688,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 21,
+     "text_px": 3374,
+     "found_px": 2648,
+     "words_found": 17,
+     "recall": 0.7848,
+     "words_found_share": 0.8095
+    },
+    "lotdim": {
+     "words": 5,
+     "text_px": 728,
+     "found_px": 495,
+     "words_found": 4,
+     "recall": 0.6799,
+     "words_found_share": 0.8
+    },
+    "other": {
+     "words": 1,
+     "text_px": 266,
+     "found_px": 220,
+     "words_found": 1,
+     "recall": 0.8271,
+     "words_found_share": 1.0
+    },
+    "pipe": {
+     "words": 2,
+     "text_px": 591,
+     "found_px": 591,
+     "words_found": 2,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "sewer": {
+     "words": 1,
+     "text_px": 454,
+     "found_px": 454,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 2,
+     "text_px": 91,
+     "found_px": 41,
+     "words_found": 1,
+     "recall": 0.4505,
+     "words_found_share": 0.5
+    },
+    "street": {
+     "words": 1,
+     "text_px": 10,
+     "found_px": 10,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   }
+  },
+  "plate_88": {
+   "crops": [
+    "SB-B19",
+    "SB-B20",
+    "SB-B21",
+    "SB-D17",
+    "SB-D18"
+   ],
+   "pix": {
+    "tp": 3977,
+    "fp": 149,
+    "fn": 263,
+    "precision": 0.9639,
+    "recall": 0.938,
+    "f1": 0.9508
+   },
+   "nontext_called_text": {
+    "px": 149,
+    "of": 2412,
+    "share": 0.06177,
+    "inside_wordbox_3px": 114,
+    "open": 35
+   },
+   "dont_care": {
+    "px": 741976,
+    "called_text": 31157
+   },
+   "text_on_paper": 0,
+   "by_kind": {
+    "block": {
+     "words": 3,
+     "text_px": 3302,
+     "found_px": 3242,
+     "words_found": 3,
+     "recall": 0.9818,
+     "words_found_share": 1.0
+    },
+    "ditto": {
+     "words": 4,
+     "text_px": 169,
+     "found_px": 97,
+     "words_found": 2,
+     "recall": 0.574,
+     "words_found_share": 0.5
+    },
+    "house": {
+     "words": 2,
+     "text_px": 332,
+     "found_px": 279,
+     "words_found": 1,
+     "recall": 0.8404,
+     "words_found_share": 0.5
+    },
+    "lot": {
+     "words": 4,
+     "text_px": 255,
+     "found_px": 177,
+     "words_found": 2,
+     "recall": 0.6941,
+     "words_found_share": 0.5
+    },
+    "lotdim": {
+     "words": 1,
+     "text_px": 14,
+     "found_px": 14,
+     "words_found": 1,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    },
+    "story": {
+     "words": 2,
+     "text_px": 168,
+     "found_px": 168,
+     "words_found": 2,
+     "recall": 1.0,
+     "words_found_share": 1.0
+    }
+   }
+  },
+  "plate_92": {
+   "crops": [
+    "SB-B22",
+    "SB-B23",
+    "SB-B24",
+    "SB-B25",
+    "SB-B26"
+   ],
+   "pix": {
+    "tp": 9176,
+    "fp": 2119,
+    "fn": 1023,
+    "precision": 0.8124,
+    "recall": 0.8997,
+    "f1": 0.8538
+   },
+   "nontext_called_text": {
+    "px": 2119,
+    "of": 3442,
+    "share": 0.61563,
+    "inside_wordbox_3px": 1942,
+    "open": 177
+   },
+   "dont_care": {
+    "px": 330149,
+    "called_text": 30467
+   },
+   "text_on_paper": 0,
+   "by_kind": {
+    "block": {
+     "words": 5,
+     "text_px": 6182,
+     "found_px": 6008,
+     "words_found": 5,
+     "recall": 0.9719,
+     "words_found_share": 1.0
+    },
+    "lot": {
+     "words": 39,
+     "text_px": 6074,
+     "found_px": 5005,
+     "words_found": 32,
+     "recall": 0.824,
+     "words_found_share": 0.8205
+    }
+   }
+  }
+ }
+}

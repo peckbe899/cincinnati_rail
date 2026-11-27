@@ -1,0 +1,250 @@
+{
+ "crop": "DB10",
+ "plate": "54A",
+ "win": [
+  3492,
+  4358,
+  3714,
+  4531
+ ],
+ "why": "block number 30 on plate 54A (100 ft), drawn at random (candidates/draw.json)",
+ "n_words": 4,
+ "mask": "DB10_mask.png",
+ "mask_values": {
+  "0": "paper (in scope)",
+  "1": "ink, not text (in scope)",
+  "2": "text ink (in scope)",
+  "3": "don't care (glyph and line share ink; CARE boxes; everything outside the scope)"
+ },
+ "counts": {
+  "paper": 13231,
+  "ink_not_text": 730,
+  "text": 1823,
+  "dont_care": 22622
+ },
+ "scope_px": 15912,
+ "scope_counts": {
+  "paper": 13231,
+  "ink_not_text": 730,
+  "text": 1823,
+  "dont_care": 128
+ },
+ "boxes": [
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    3536,
+    4468,
+    3563,
+    4468
+   ],
+   "width": 5,
+   "note": "building line running into the foot of the 3 was text (inside the box of 30)",
+   "line": 8
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    3643,
+    4428,
+    3672,
+    4429
+   ],
+   "width": 5,
+   "note": "building line right of the 0 (top) was text",
+   "line": 9
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    3643,
+    4470,
+    3672,
+    4471
+   ],
+   "width": 6,
+   "note": "building line right of the 0 (foot) was text",
+   "line": 10
+  }
+ ],
+ "words": [
+  {
+   "id": "DB10-001",
+   "reading": "30",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 53.0,
+   "length": 102.0,
+   "poly": [
+    [
+     3552.0,
+     4418.0
+    ],
+    [
+     3654.0,
+     4418.0
+    ],
+    [
+     3654.0,
+     4471.0
+    ],
+    [
+     3552.0,
+     4471.0
+    ]
+   ],
+   "aabb": [
+    3552,
+    4418,
+    3654,
+    4471
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1715,
+   "annot_line": 4,
+   "in_scope": {
+    "text_px": 1605,
+    "dont_care_px": 126,
+    "ink_px": 1945
+   },
+   "target": true,
+   "ink_size_px": 1731
+  },
+  {
+   "id": "DB10-002",
+   "reading": "3",
+   "kind": "story",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 19.0,
+   "poly": [
+    [
+     3653.0,
+     4373.0
+    ],
+    [
+     3672.0,
+     4373.0
+    ],
+    [
+     3672.0,
+     4398.0
+    ],
+    [
+     3653.0,
+     4398.0
+    ]
+   ],
+   "aabb": [
+    3653,
+    4373,
+    3672,
+    4398
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 132,
+   "annot_line": 5,
+   "in_scope": {
+    "text_px": 35,
+    "dont_care_px": 0,
+    "ink_px": 35
+   }
+  },
+  {
+   "id": "DB10-003",
+   "reading": "3",
+   "kind": "story",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 20.0,
+   "poly": [
+    [
+     3521.0,
+     4475.0
+    ],
+    [
+     3541.0,
+     4475.0
+    ],
+    [
+     3541.0,
+     4504.0
+    ],
+    [
+     3521.0,
+     4504.0
+    ]
+   ],
+   "aabb": [
+    3521,
+    4475,
+    3541,
+    4504
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 145,
+   "annot_line": 6,
+   "in_scope": {
+    "text_px": 102,
+    "dont_care_px": 0,
+    "ink_px": 102
+   }
+  },
+  {
+   "id": "DB10-004",
+   "reading": "3",
+   "kind": "story",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 19.0,
+   "poly": [
+    [
+     3649.0,
+     4482.0
+    ],
+    [
+     3668.0,
+     4482.0
+    ],
+    [
+     3668.0,
+     4509.0
+    ],
+    [
+     3649.0,
+     4509.0
+    ]
+   ],
+   "aabb": [
+    3649,
+    4482,
+    3668,
+    4509
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 137,
+   "annot_line": 7,
+   "in_scope": {
+    "text_px": 81,
+    "dont_care_px": 0,
+    "ink_px": 81
+   }
+  }
+ ]
+}

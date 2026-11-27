@@ -1,0 +1,47 @@
+{
+ "looked_at": "every finder4 block miss and partial (15 words, pics/sealed/miss_block_*.png), every ditto miss (24, miss_ditto_*.png), the 20 biggest false-text spots (fp_top20_*.png), every new false-text group (23, pics/newfp), street words under 0.97 (pics/street), 9 new text blobs in Ben's rail bands (pics/rail)",
+ "block_missed": {
+  "SA-B08 19 plate 52 100ft": "thin figure on a lot-line crossing; 1 and the bowl of 9 cut into pieces, left line/other ink; no fix acted",
+  "SA-B20 19 plate 66 200ft": "the 1 stands against a vertical lot line, left as other ink (137 px code 5); the 9 is found; no fix acted",
+  "SB-B25 5 plate 92 400ft": "big 5 over a dense grid of lot numbers; top bar lies on a grid line (416 px line ink); truth README flags this crop"
+ },
+ "block_partial_cause": "figure strokes along or across a lot/block line stay line ink (code 1) or shared ink (4): SA-B12, SA-B13, SA-B14 (line along the 7's stem, flagged), SA-B09 (base bars of both 2s on a lot line), SB-B09 (2 crossed), SA-B19 (58 on a grid crossing, no fix acted), SA-B21 (left 7 crossed by a vertical line), SB-B10 (5's stem on a line), SB-B12 (1 on a line), SB-B13, SB-B15, SB-B24 (8 over the plate 92 grid)",
+ "ditto_missed_groups": {
+  "touch a line or are partly coded line ink (11)": [
+   "SA-D21-004",
+   "SA-D21-007",
+   "SA-D22-001",
+   "SB-D02-003",
+   "SB-D03-006",
+   "SA-D04-002",
+   "SA-D07-002",
+   "SA-D37-002",
+   "SB-D16-004",
+   "SB-D16-011",
+   "SA-D39-001"
+  ],
+  "free, one piece (pair printed as one blob), no row of like marks (10)": [
+   "SB-D02-002",
+   "SA-D08-002",
+   "SA-D11-002",
+   "SA-D34-004",
+   "SA-D36-004",
+   "SA-D37-003",
+   "SA-D38-002",
+   "SB-D06-003",
+   "SB-D07-001",
+   "SB-D13-007"
+  ],
+  "free, 2-3 pieces, alone with no row and no figure close (3)": [
+   "SA-D26-003",
+   "SB-D04-001",
+   "SB-D01-006"
+  ]
+ },
+ "ditto_rule_link_(e)": "dittofix needs a px of paper round a mark (line contact fails), takes no single pieces at 100 ft, and takes a single piece at 200 ft only in a row of dittos; lone marks in the middle of a building have no row",
+ "ditto_doubt_(e)": "SA-D07-002 and SA-D08-002 sit beside a rail line with ticks on plate 6; I am not sure they are dittos",
+ "fp_top20": "17 of 20 unchanged from finder3. Kinds: filled round dots (#1, #4), walls of small buildings beside figures (#2, #5, #6, #8, #10, #12, #16, #18), thick dark marks at the SB-F1 window edge (#3, unsure what they are), a circle symbol (#7), hooks/arrows (#19, #20), thin lines by a dot (#9, #11), an L line end (#13), underline under 500 (#17), the line through block 32 on plate 9 (#14, new by the block step), a wall beside a big letter (#15)",
+ "new_fp_sources": "693 px in 23 groups: block step lines through big figures (505 px in block scopes); SA-F1: block fix A took curved ornament strokes by a big dot (92 px, 25 on straight runs) and a corner by a big R (38 px, 5 on straight runs); the ditto step took a dash of a dashed line (19 px, 5099,3416), a small tick (27 px, 5006,3641) and a small pair (12 px, 4353,3894)",
+ "street_cause": "street boxes in SA-F1 also hold sewer/pipe labels and lot figures; their misses count as street. Letters only (pixels inside no other word box): finder3 0.932 -> finder4 0.946 on SA-F1, 0.994 both on SB-F1. Big letters crossed by lines lose a bar or a foot (E of WHITFIELD, A of AVE., D and R of ORMOND)",
+ "rail": "none of the 9 new blobs is a tick or dash; two on plate 5 (4153,989 and 2807,2345) join a streetcar track end, a few px may be track ink"
+}

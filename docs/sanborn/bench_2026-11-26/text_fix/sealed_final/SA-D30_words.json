@@ -1,0 +1,193 @@
+{
+ "crop": "SA-D30",
+ "plate": "9",
+ "win": [
+  5484,
+  1681,
+  5612,
+  1803
+ ],
+ "scale_ft_per_inch": 100,
+ "half": "A",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   5516,
+   1712,
+   5579,
+   1771
+  ]
+ ],
+ "scope_px": 3840,
+ "why": "1 ditto mark(s) found in the seeded random built-up window [5139, 1722, 5639, 2222] of plate 9 (round 2)",
+ "n_words": 3,
+ "mask": "SA-D30_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 2721,
+  "ink_not_text": 497,
+  "text": 587,
+  "dont_care": 11811
+ },
+ "boxes": [
+  {
+   "op": "CARE",
+   "box": [
+    5540,
+    1738,
+    5556,
+    1740
+   ],
+   "note": "ditto ticks at the contact with the line (2 px)",
+   "line": 14,
+   "effect_px": 5
+  },
+  {
+   "op": "FORCE",
+   "box": [
+    5540,
+    1740,
+    5556,
+    1746
+   ],
+   "note": "ditto ticks below the contact are text",
+   "line": 15,
+   "effect_px": 4
+  }
+ ],
+ "words": [
+  {
+   "id": "SA-D30-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 13.0,
+   "poly": [
+    [
+     5541.0,
+     1737.5
+    ],
+    [
+     5554.0,
+     1737.5
+    ],
+    [
+     5554.0,
+     1745.5
+    ],
+    [
+     5541.0,
+     1745.5
+    ]
+   ],
+   "aabb": [
+    5541,
+    1737,
+    5554,
+    1746
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 32,
+   "annot_line": 5,
+   "ink_px": 68,
+   "text_px_final": 36
+  },
+  {
+   "id": "SA-D30-002",
+   "reading": "93-91-89-87",
+   "kind": "house",
+   "flags": [
+    "run",
+    "partial"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 133.0,
+   "poly": [
+    [
+     5478.0,
+     1705.0
+    ],
+    [
+     5611.0,
+     1705.0
+    ],
+    [
+     5611.0,
+     1727.0
+    ],
+    [
+     5478.0,
+     1727.0
+    ]
+   ],
+   "aabb": [
+    5478,
+    1705,
+    5611,
+    1727
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 1128,
+   "annot_line": 9,
+   "ink_px": 1033,
+   "text_px_final": 440
+  },
+  {
+   "id": "SA-D30-003",
+   "reading": "3",
+   "kind": "story",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 20.0,
+   "poly": [
+    [
+     5513.0,
+     1757.0
+    ],
+    [
+     5533.0,
+     1757.0
+    ],
+    [
+     5533.0,
+     1784.0
+    ],
+    [
+     5513.0,
+     1784.0
+    ]
+   ],
+   "aabb": [
+    5513,
+    1757,
+    5533,
+    1784
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 179,
+   "annot_line": 10,
+   "ink_px": 179,
+   "text_px_final": 102
+  }
+ ],
+ "dropped_outside_scope": []
+}

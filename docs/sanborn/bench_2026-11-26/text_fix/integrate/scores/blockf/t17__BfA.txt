@@ -1,0 +1,11 @@
+C:\Users\peckb\AppData\Local\Programs\Python\Python312\python.exe -B bench_2026-11-25\text_v1\code\score_text.py bench_2026-11-26/text_fix/integrate/out/dev/BfA/{plate}_text.png --codes 2,3 --truth bench_2026-11-25\text_v1\truth --quiet --out bench_2026-11-26/text_fix/integrate/scores/blockf\t17__BfA.json --group foldA=T1,T2,T3 --group ft100=T1,T2,T3,T4,T6,T7 --group foldA_ft100=T1,T2,T3 --group foldB=T4,T6,T7 --group foldB_ft100=T4,T6,T7
+ALL                    P 0.9678  R 0.9249  F1 0.9459   non-text ink called text 0.0230   don't care skipped 26377
+plate_44               P 0.9766  R 0.9556  F1 0.9660   non-text ink called text 0.0181   don't care skipped 10797
+plate_1A               P 0.9539  R 0.8721  F1 0.9111   non-text ink called text 0.0351   don't care skipped 7006
+plate_5                P 0.9634  R 0.9138  F1 0.9379   non-text ink called text 0.0231   don't care skipped 8574
+foldA                  P 0.9766  R 0.9556  F1 0.9660   non-text ink called text 0.0181   don't care skipped 10797
+ft100                  P 0.9678  R 0.9249  F1 0.9459   non-text ink called text 0.0230   don't care skipped 26377
+foldA_ft100            P 0.9766  R 0.9556  F1 0.9660   non-text ink called text 0.0181   don't care skipped 10797
+foldB                  P 0.9601  R 0.8991  F1 0.9286   non-text ink called text 0.0267   don't care skipped 15580
+foldB_ft100            P 0.9601  R 0.8991  F1 0.9286   non-text ink called text 0.0267   don't care skipped 15580
+recall by kind (ALL):  adj 0.956 (1/1 words)  bldg 1.000 (5/5 words)  block 0.910 (6/7 words)  ditto 0.777 (30/38 words)  house 0.895 (96/98 words)  lot 0.936 (249/257 words)  lotdim 0.914 (269/283 words)  other 0.967 (3/3 words)  owner 0.879 (48/51 words)  pipe 0.871 (16/17 words)  rail 0.955 (25/26 words)  sewer 0.835 (12/14 words)  story 0.954 (182/188 words)  street 0.969 (22/22 words)

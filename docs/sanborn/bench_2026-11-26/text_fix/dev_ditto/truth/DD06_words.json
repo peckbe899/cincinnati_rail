@@ -1,0 +1,276 @@
+{
+ "crop": "DD06",
+ "plate": "90",
+ "win": [
+  8639,
+  4235,
+  9039,
+  4535
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   8959,
+   4385,
+   9013,
+   4445
+  ],
+  [
+   8960,
+   4431,
+   9015,
+   4488
+  ]
+ ],
+ "n_words": 5,
+ "n_targets": 2,
+ "mask": "DD06_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 100328,
+  "ink_not_text": 637,
+  "text": 251,
+  "dont_care": 18784
+ },
+ "counts_in_scope": {
+  "ink_not_text": 637,
+  "text": 251,
+  "dont_care": 0
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DD06-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 4.0,
+   "poly": [
+    [
+     8984.0,
+     4410.0
+    ],
+    [
+     8988.0,
+     4410.0
+    ],
+    [
+     8988.0,
+     4420.0
+    ],
+    [
+     8984.0,
+     4420.0
+    ]
+   ],
+   "aabb": [
+    8984,
+    4410,
+    8988,
+    4420
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": true,
+   "box_word": true,
+   "text_px": 19,
+   "in_scope": true,
+   "ink_px": 19,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    10,
+    9
+   ],
+   "style": "pair",
+   "neg_type": ""
+  },
+  {
+   "id": "DD06-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 7.0,
+   "length": 5.0,
+   "poly": [
+    [
+     8985.0,
+     4456.0
+    ],
+    [
+     8990.0,
+     4456.0
+    ],
+    [
+     8990.0,
+     4463.0
+    ],
+    [
+     8985.0,
+     4463.0
+    ]
+   ],
+   "aabb": [
+    8985,
+    4456,
+    8990,
+    4463
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 3,
+   "target": true,
+   "box_word": true,
+   "text_px": 23,
+   "in_scope": true,
+   "ink_px": 23,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    16,
+    7
+   ],
+   "style": "pair",
+   "neg_type": ""
+  },
+  {
+   "id": "DD06-003",
+   "reading": "120'",
+   "kind": "lotdim",
+   "flags": [],
+   "angle": 0.0,
+   "height": 37.0,
+   "length": 14.0,
+   "poly": [
+    [
+     8958.0,
+     4410.0
+    ],
+    [
+     8972.0,
+     4410.0
+    ],
+    [
+     8972.0,
+     4447.0
+    ],
+    [
+     8958.0,
+     4447.0
+    ]
+   ],
+   "aabb": [
+    8958,
+    4410,
+    8972,
+    4447
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 5,
+   "target": false,
+   "box_word": true,
+   "text_px": 163,
+   "in_scope": true
+  },
+  {
+   "id": "DD06-004",
+   "reading": "11",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 36.0,
+   "length": 25.0,
+   "poly": [
+    [
+     8938.0,
+     4460.0
+    ],
+    [
+     8963.0,
+     4460.0
+    ],
+    [
+     8963.0,
+     4496.0
+    ],
+    [
+     8938.0,
+     4496.0
+    ]
+   ],
+   "aabb": [
+    8938,
+    4460,
+    8963,
+    4496
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 6,
+   "target": false,
+   "box_word": true,
+   "text_px": 18,
+   "in_scope": true
+  },
+  {
+   "id": "DD06-005",
+   "reading": "3",
+   "kind": "lot",
+   "flags": [
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 23.0,
+   "length": 15.0,
+   "poly": [
+    [
+     9005.0,
+     4398.0
+    ],
+    [
+     9020.0,
+     4398.0
+    ],
+    [
+     9020.0,
+     4421.0
+    ],
+    [
+     9005.0,
+     4421.0
+    ]
+   ],
+   "aabb": [
+    9005,
+    4398,
+    9020,
+    4421
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 7,
+   "target": false,
+   "box_word": true,
+   "text_px": 28,
+   "in_scope": true
+  }
+ ]
+}

@@ -1,0 +1,807 @@
+{
+ "crop": "SA-D21",
+ "plate": "35",
+ "win": [
+  656,
+  3248,
+  815,
+  3666
+ ],
+ "scale_ft_per_inch": 200,
+ "half": "A",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   688,
+   3279,
+   747,
+   3342
+  ],
+  [
+   693,
+   3324,
+   751,
+   3385
+  ],
+  [
+   702,
+   3375,
+   760,
+   3436
+  ],
+  [
+   706,
+   3428,
+   764,
+   3489
+  ],
+  [
+   712,
+   3470,
+   770,
+   3531
+  ],
+  [
+   718,
+   3522,
+   777,
+   3585
+  ],
+  [
+   724,
+   3574,
+   782,
+   3634
+  ]
+ ],
+ "scope_px": 21583,
+ "why": "7 ditto mark(s) found in the seeded random built-up window [338, 3115, 838, 3615] of plate 35 (round 1)",
+ "n_words": 17,
+ "mask": "SA-D21_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 15830,
+  "ink_not_text": 1925,
+  "text": 3638,
+  "dont_care": 45069
+ },
+ "boxes": [
+  {
+   "op": "EXCL",
+   "box": [
+    686,
+    3387,
+    699,
+    3400
+   ],
+   "note": "specks on the canal band between the two house runs",
+   "line": 21,
+   "effect_px": 20
+  },
+  {
+   "op": "FORCE",
+   "box": [
+    764,
+    3537,
+    779,
+    3567
+   ],
+   "note": "",
+   "line": 25,
+   "effect_px": 87
+  }
+ ],
+ "words": [
+  {
+   "id": "SA-D21-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 12.0,
+   "length": 9.0,
+   "poly": [
+    [
+     713.0,
+     3304.5
+    ],
+    [
+     722.0,
+     3304.5
+    ],
+    [
+     722.0,
+     3316.5
+    ],
+    [
+     713.0,
+     3316.5
+    ]
+   ],
+   "aabb": [
+    713,
+    3304,
+    722,
+    3317
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 51,
+   "annot_line": 4,
+   "ink_px": 51,
+   "text_px_final": 51
+  },
+  {
+   "id": "SA-D21-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 8.0,
+   "poly": [
+    [
+     718.0,
+     3349.5
+    ],
+    [
+     726.0,
+     3349.5
+    ],
+    [
+     726.0,
+     3359.5
+    ],
+    [
+     718.0,
+     3359.5
+    ]
+   ],
+   "aabb": [
+    718,
+    3349,
+    726,
+    3360
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 41,
+   "annot_line": 5,
+   "ink_px": 41,
+   "text_px_final": 41
+  },
+  {
+   "id": "SA-D21-003",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 8.0,
+   "poly": [
+    [
+     727.0,
+     3400.5
+    ],
+    [
+     735.0,
+     3400.5
+    ],
+    [
+     735.0,
+     3410.5
+    ],
+    [
+     727.0,
+     3410.5
+    ]
+   ],
+   "aabb": [
+    727,
+    3400,
+    735,
+    3411
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 37,
+   "annot_line": 6,
+   "ink_px": 37,
+   "text_px_final": 37
+  },
+  {
+   "id": "SA-D21-004",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 8.0,
+   "poly": [
+    [
+     731.0,
+     3453.5
+    ],
+    [
+     739.0,
+     3453.5
+    ],
+    [
+     739.0,
+     3463.5
+    ],
+    [
+     731.0,
+     3463.5
+    ]
+   ],
+   "aabb": [
+    731,
+    3453,
+    739,
+    3464
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 46,
+   "annot_line": 7,
+   "ink_px": 46,
+   "text_px_final": 46
+  },
+  {
+   "id": "SA-D21-005",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 8.0,
+   "poly": [
+    [
+     737.0,
+     3495.5
+    ],
+    [
+     745.0,
+     3495.5
+    ],
+    [
+     745.0,
+     3505.5
+    ],
+    [
+     737.0,
+     3505.5
+    ]
+   ],
+   "aabb": [
+    737,
+    3495,
+    745,
+    3506
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 39,
+   "annot_line": 8,
+   "ink_px": 39,
+   "text_px_final": 39
+  },
+  {
+   "id": "SA-D21-006",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 12.0,
+   "length": 9.0,
+   "poly": [
+    [
+     743.0,
+     3547.5
+    ],
+    [
+     752.0,
+     3547.5
+    ],
+    [
+     752.0,
+     3559.5
+    ],
+    [
+     743.0,
+     3559.5
+    ]
+   ],
+   "aabb": [
+    743,
+    3547,
+    752,
+    3560
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 44,
+   "annot_line": 9,
+   "ink_px": 44,
+   "text_px_final": 44
+  },
+  {
+   "id": "SA-D21-007",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "nosnap"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 9.0,
+   "length": 8.0,
+   "poly": [
+    [
+     749.0,
+     3599.5
+    ],
+    [
+     757.0,
+     3599.5
+    ],
+    [
+     757.0,
+     3608.5
+    ],
+    [
+     749.0,
+     3608.5
+    ]
+   ],
+   "aabb": [
+    749,
+    3599,
+    757,
+    3609
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "text_px": 35,
+   "annot_line": 10,
+   "ink_px": 36,
+   "text_px_final": 35
+  },
+  {
+   "id": "SA-D21-008",
+   "reading": "2912-14-16-18",
+   "kind": "house",
+   "flags": [
+    "run",
+    "unsure",
+    "partial"
+   ],
+   "target": false,
+   "angle": -95.4,
+   "height": 33.3,
+   "length": 150.3,
+   "poly": [
+    [
+     690.8,
+     3401.3
+    ],
+    [
+     676.6,
+     3251.6
+    ],
+    [
+     709.8,
+     3248.4
+    ],
+    [
+     724.0,
+     3398.1
+    ]
+   ],
+   "aabb": [
+    676,
+    3248,
+    724,
+    3402
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1398,
+   "annot_line": 11,
+   "ink_px": 2028,
+   "text_px_final": 976
+  },
+  {
+   "id": "SA-D21-009",
+   "reading": "2900-02-04-06-08",
+   "kind": "house",
+   "flags": [
+    "run",
+    "unsure"
+   ],
+   "target": false,
+   "angle": -96.2,
+   "height": 28.4,
+   "length": 169.5,
+   "poly": [
+    [
+     712.6,
+     3592.9
+    ],
+    [
+     694.3,
+     3424.4
+    ],
+    [
+     722.6,
+     3421.3
+    ],
+    [
+     740.9,
+     3589.8
+    ]
+   ],
+   "aabb": [
+    694,
+    3421,
+    741,
+    3593
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1846,
+   "annot_line": 12,
+   "ink_px": 2245,
+   "text_px_final": 1557
+  },
+  {
+   "id": "SA-D21-010",
+   "reading": "AND",
+   "kind": "street",
+   "flags": [
+    "g:MIAMI_AND_ERIE_CANAL"
+   ],
+   "target": false,
+   "angle": -91.7,
+   "height": 51.9,
+   "length": 155.6,
+   "poly": [
+    [
+     670.5,
+     3619.4
+    ],
+    [
+     665.9,
+     3463.9
+    ],
+    [
+     717.8,
+     3462.4
+    ],
+    [
+     722.3,
+     3617.9
+    ]
+   ],
+   "aabb": [
+    665,
+    3462,
+    723,
+    3620
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 2889,
+   "annot_line": 13,
+   "ink_px": 2820,
+   "text_px_final": 440
+  },
+  {
+   "id": "SA-D21-011",
+   "reading": "69",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 33.0,
+   "poly": [
+    [
+     741.0,
+     3298.0
+    ],
+    [
+     774.0,
+     3298.0
+    ],
+    [
+     774.0,
+     3323.0
+    ],
+    [
+     741.0,
+     3323.0
+    ]
+   ],
+   "aabb": [
+    741,
+    3298,
+    774,
+    3323
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 281,
+   "annot_line": 14,
+   "ink_px": 344,
+   "text_px_final": 54
+  },
+  {
+   "id": "SA-D21-012",
+   "reading": "68",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 33.0,
+   "poly": [
+    [
+     742.0,
+     3341.0
+    ],
+    [
+     775.0,
+     3341.0
+    ],
+    [
+     775.0,
+     3366.0
+    ],
+    [
+     742.0,
+     3366.0
+    ]
+   ],
+   "aabb": [
+    742,
+    3341,
+    775,
+    3366
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 363,
+   "annot_line": 15,
+   "ink_px": 366,
+   "text_px_final": 81
+  },
+  {
+   "id": "SA-D21-013",
+   "reading": "67",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 35.0,
+   "poly": [
+    [
+     754.0,
+     3392.0
+    ],
+    [
+     789.0,
+     3392.0
+    ],
+    [
+     789.0,
+     3418.0
+    ],
+    [
+     754.0,
+     3418.0
+    ]
+   ],
+   "aabb": [
+    754,
+    3392,
+    789,
+    3418
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 299,
+   "annot_line": 16,
+   "ink_px": 299,
+   "text_px_final": 62
+  },
+  {
+   "id": "SA-D21-014",
+   "reading": "66",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 41.0,
+   "poly": [
+    [
+     739.0,
+     3440.0
+    ],
+    [
+     780.0,
+     3440.0
+    ],
+    [
+     780.0,
+     3466.0
+    ],
+    [
+     739.0,
+     3466.0
+    ]
+   ],
+   "aabb": [
+    739,
+    3440,
+    780,
+    3466
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 365,
+   "annot_line": 17,
+   "ink_px": 405,
+   "text_px_final": 209
+  },
+  {
+   "id": "SA-D21-015",
+   "reading": "65",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 29.0,
+   "length": 35.0,
+   "poly": [
+    [
+     753.0,
+     3488.0
+    ],
+    [
+     788.0,
+     3488.0
+    ],
+    [
+     788.0,
+     3517.0
+    ],
+    [
+     753.0,
+     3517.0
+    ]
+   ],
+   "aabb": [
+    753,
+    3488,
+    788,
+    3517
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 317,
+   "annot_line": 18,
+   "ink_px": 380,
+   "text_px_final": 173
+  },
+  {
+   "id": "SA-D21-016",
+   "reading": "64",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 29.0,
+   "poly": [
+    [
+     755.0,
+     3538.0
+    ],
+    [
+     784.0,
+     3538.0
+    ],
+    [
+     784.0,
+     3565.0
+    ],
+    [
+     755.0,
+     3565.0
+    ]
+   ],
+   "aabb": [
+    755,
+    3538,
+    784,
+    3565
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 151,
+   "annot_line": 19,
+   "ink_px": 315,
+   "text_px_final": 183
+  },
+  {
+   "id": "SA-D21-017",
+   "reading": "63",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 38.0,
+   "poly": [
+    [
+     773.0,
+     3586.0
+    ],
+    [
+     811.0,
+     3586.0
+    ],
+    [
+     811.0,
+     3613.0
+    ],
+    [
+     773.0,
+     3613.0
+    ]
+   ],
+   "aabb": [
+    773,
+    3586,
+    811,
+    3613
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 318,
+   "annot_line": 20,
+   "ink_px": 318,
+   "text_px_final": 82
+  }
+ ],
+ "dropped_outside_scope": []
+}

@@ -1,0 +1,121 @@
+{
+ "crop": "SB-B11",
+ "plate": "71",
+ "win": [
+  3790,
+  3390,
+  4090,
+  3650
+ ],
+ "scale_ft_per_inch": 200,
+ "half": "B",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   3880,
+   3464,
+   4012,
+   3581
+  ]
+ ],
+ "scope_px": 15694,
+ "why": "block 22 on plate 71, drawn with random.Random('71') from the plate list (annot/selection.json)",
+ "n_words": 1,
+ "mask": "SB-B11_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 12951,
+  "ink_not_text": 1068,
+  "text": 1336,
+  "dont_care": 62645
+ },
+ "boxes": [
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    3950,
+    3472,
+    4000,
+    3536
+   ],
+   "width": 5,
+   "note": "dashes of the dashed boundary line",
+   "line": 4,
+   "effect_px": 118
+  },
+  {
+   "op": "CARE",
+   "box": [
+    3921,
+    3548,
+    3932,
+    3559
+   ],
+   "note": "dot under the first 2: cannot tell",
+   "line": 5,
+   "effect_px": 18
+  },
+  {
+   "op": "EXCL",
+   "box": [
+    3985,
+    3505,
+    3989,
+    3510
+   ],
+   "note": "",
+   "line": 9,
+   "effect_px": 7
+  }
+ ],
+ "words": [
+  {
+   "id": "SB-B11-001",
+   "reading": "22",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 67.0,
+   "length": 82.0,
+   "poly": [
+    [
+     3905.0,
+     3489.0
+    ],
+    [
+     3987.0,
+     3489.0
+    ],
+    [
+     3987.0,
+     3556.0
+    ],
+    [
+     3905.0,
+     3556.0
+    ]
+   ],
+   "aabb": [
+    3905,
+    3489,
+    3987,
+    3556
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1566,
+   "annot_line": 2,
+   "ink_px": 2061,
+   "text_px_final": 1336
+  }
+ ],
+ "dropped_outside_scope": []
+}

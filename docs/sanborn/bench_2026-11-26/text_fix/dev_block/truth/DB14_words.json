@@ -1,0 +1,138 @@
+{
+ "crop": "DB14",
+ "plate": "12",
+ "win": [
+  9493,
+  4807,
+  9706,
+  4980
+ ],
+ "why": "block number 55 on plate 12 (100 ft), drawn at random (candidates/draw.json)",
+ "n_words": 2,
+ "mask": "DB14_mask.png",
+ "mask_values": {
+  "0": "paper (in scope)",
+  "1": "ink, not text (in scope)",
+  "2": "text ink (in scope)",
+  "3": "don't care (glyph and line share ink; CARE boxes; everything outside the scope)"
+ },
+ "counts": {
+  "paper": 11505,
+  "ink_not_text": 1635,
+  "text": 1478,
+  "dont_care": 22231
+ },
+ "scope_px": 14976,
+ "scope_counts": {
+  "paper": 11505,
+  "ink_not_text": 1635,
+  "text": 1478,
+  "dont_care": 358
+ },
+ "boxes": [
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    9629,
+    4884,
+    9668,
+    4873
+   ],
+   "width": 5,
+   "note": "building line running into the second 5 from the right was text",
+   "line": 6
+  }
+ ],
+ "words": [
+  {
+   "id": "DB14-001",
+   "reading": "55",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 53.0,
+   "length": 93.0,
+   "poly": [
+    [
+     9553.0,
+     4867.0
+    ],
+    [
+     9646.0,
+     4867.0
+    ],
+    [
+     9646.0,
+     4920.0
+    ],
+    [
+     9553.0,
+     4920.0
+    ]
+   ],
+   "aabb": [
+    9553,
+    4867,
+    9646,
+    4920
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1525,
+   "annot_line": 4,
+   "in_scope": {
+    "text_px": 1427,
+    "dont_care_px": 337,
+    "ink_px": 2533
+   },
+   "target": true,
+   "ink_size_px": 1764
+  },
+  {
+   "id": "DB14-002",
+   "reading": "43",
+   "kind": "lot",
+   "flags": [
+    "cut_by_scope"
+   ],
+   "angle": -5.9,
+   "height": 37.0,
+   "length": 35.9,
+   "poly": [
+    [
+     9607.8,
+     4813.1
+    ],
+    [
+     9643.5,
+     4809.4
+    ],
+    [
+     9647.3,
+     4846.2
+    ],
+    [
+     9611.6,
+     4849.9
+    ]
+   ],
+   "aabb": [
+    9607,
+    4809,
+    9648,
+    4850
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 317,
+   "annot_line": 5,
+   "in_scope": {
+    "text_px": 51,
+    "dont_care_px": 8,
+    "ink_px": 59
+   }
+  }
+ ]
+}

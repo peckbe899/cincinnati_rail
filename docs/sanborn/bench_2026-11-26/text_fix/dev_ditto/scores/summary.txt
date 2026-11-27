@@ -1,0 +1,48 @@
+Ditto recall (MEASURED). px = ditto text px found / all; words = words with half or more of their px found.
+
+group                                      words     px |          bin8          |        finder2         |        finder3        
+ALL                                          200   5641 | px 0.777 w 172 (0.860) | px 0.500 w  73 (0.365) | px 0.500 w  73 (0.365)
+100 ft                                        42   2155 | px 0.590 w  26 (0.619) | px 0.823 w  34 (0.810) | px 0.823 w  34 (0.810)
+200 ft                                        98   2433 | px 0.889 w  90 (0.918) | px 0.390 w  33 (0.337) | px 0.390 w  33 (0.337)
+400 ft                                        60   1053 | px 0.902 w  56 (0.933) | px 0.092 w   6 (0.100) | px 0.092 w   6 (0.100)
+style pair                                   143   3350 | px 0.854 w 128 (0.895) | px 0.416 w  45 (0.315) | px 0.416 w  45 (0.315)
+style quote                                   41   1957 | px 0.619 w  29 (0.707) | px 0.707 w  25 (0.610) | px 0.707 w  25 (0.610)
+style other                                   16    334 | px 0.940 w  15 (0.938) | px 0.117 w   3 (0.188) | px 0.117 w   3 (0.188)
+tiny tick pair (pair, 30 px or less)         111   2073 | px 0.922 w 105 (0.946) | px 0.260 w  24 (0.216) | px 0.260 w  24 (0.216)
+larger pair (over 30 px)                      32   1277 | px 0.742 w  23 (0.719) | px 0.670 w  21 (0.656) | px 0.670 w  21 (0.656)
+sure                                         185   5395 | px 0.776 w 158 (0.854) | px 0.515 w  70 (0.378) | px 0.515 w  70 (0.378)
+unsure                                        15    246 | px 0.809 w  14 (0.933) | px 0.171 w   3 (0.200) | px 0.171 w   3 (0.200)
+100 ft pair                                   17    693 | px 0.680 w  11 (0.647) | px 0.834 w  14 (0.824) | px 0.834 w  14 (0.824)
+100 ft quote                                  25   1462 | px 0.548 w  15 (0.600) | px 0.817 w  20 (0.800) | px 0.817 w  20 (0.800)
+200 ft pair                                   67   1612 | px 0.898 w  62 (0.925) | px 0.452 w  26 (0.388) | px 0.452 w  26 (0.388)
+200 ft quote                                  16    495 | px 0.828 w  14 (0.875) | px 0.382 w   5 (0.312) | px 0.382 w   5 (0.312)
+200 ft other                                  15    326 | px 0.939 w  14 (0.933) | px 0.095 w   2 (0.133) | px 0.095 w   2 (0.133)
+400 ft pair                                   59   1045 | px 0.901 w  55 (0.932) | px 0.085 w   5 (0.085) | px 0.085 w   5 (0.085)
+400 ft other                                   1      8 | px 1.000 w   1 (1.000) | px 1.000 w   1 (1.000) | px 1.000 w   1 (1.000)
+
+Negatives (MEASURED): share of the mark ink called text, and marks with half or more of their ink called text.
+ALL          marks  73 ink   7112 | bin8: px 0.031 marks  3 | finder2: px 0.051 marks  4 | finder3: px 0.051 marks  4
+rail_tick    marks  27 ink   3913 | bin8: px 0.000 marks  0 | finder2: px 0.003 marks  0 | finder3: px 0.003 marks  0
+dash         marks  37 ink   2397 | bin8: px 0.005 marks  1 | finder2: px 0.022 marks  1 | finder3: px 0.022 marks  1
+line_end     marks   2 ink    123 | bin8: px 0.000 marks  0 | finder2: px 0.000 marks  0 | finder3: px 0.000 marks  0
+hook         marks   7 ink    679 | bin8: px 0.305 marks  2 | finder2: px 0.439 marks  3 | finder3: px 0.439 marks  3
+
+Finder codes on ditto text px and on negative mark ink (MEASURED):
+finder2 ALL                  other ink 2694 (0.48)  text by context 2565 (0.45)  text sure 253 (0.04)  line 124 (0.02)  shared 5 (0.00)
+finder2 100 ft               text by context 1554 (0.72)  other ink 375 (0.17)  text sure 219 (0.10)  line 7 (0.00)
+finder2 200 ft               other ink 1451 (0.60)  text by context 914 (0.38)  text sure 34 (0.01)  line 29 (0.01)  shared 5 (0.00)
+finder2 400 ft               other ink 868 (0.82)  text by context 97 (0.09)  line 88 (0.08)
+finder2 style pair           other ink 1850 (0.55)  text by context 1361 (0.41)  line 101 (0.03)  text sure 34 (0.01)  shared 4 (0.00)
+finder2 style quote          text by context 1165 (0.60)  other ink 566 (0.29)  text sure 219 (0.11)  line 7 (0.00)
+finder2 style other          other ink 278 (0.83)  text by context 39 (0.12)  line 16 (0.05)  shared 1 (0.00)
+finder2 negatives            line 3770 (0.53)  other ink 2952 (0.42)  text sure 251 (0.04)  text by context 109 (0.02)  shared 30 (0.00)
+finder3 ALL                  other ink 2694 (0.48)  text by context 2565 (0.45)  text sure 253 (0.04)  line 124 (0.02)  shared 5 (0.00)
+finder3 100 ft               text by context 1554 (0.72)  other ink 375 (0.17)  text sure 219 (0.10)  line 7 (0.00)
+finder3 200 ft               other ink 1451 (0.60)  text by context 914 (0.38)  text sure 34 (0.01)  line 29 (0.01)  shared 5 (0.00)
+finder3 400 ft               other ink 868 (0.82)  text by context 97 (0.09)  line 88 (0.08)
+finder3 style pair           other ink 1850 (0.55)  text by context 1361 (0.41)  line 101 (0.03)  text sure 34 (0.01)  shared 4 (0.00)
+finder3 style quote          text by context 1165 (0.60)  other ink 566 (0.29)  text sure 219 (0.11)  line 7 (0.00)
+finder3 style other          other ink 278 (0.83)  text by context 39 (0.12)  line 16 (0.05)  shared 1 (0.00)
+finder3 negatives            line 3770 (0.53)  other ink 2952 (0.42)  text sure 251 (0.04)  text by context 109 (0.02)  shared 30 (0.00)
+
+cross-check against score_text.py (found px, text px, words found, words): {'bin8': {'score_text': [4385, 5641, 172, 200], 'here': [4385, 5641, 172, 200]}, 'finder2': {'score_text': [2818, 5641, 73, 200], 'here': [2818, 5641, 73, 200]}, 'finder3': {'score_text': [2818, 5641, 73, 200], 'here': [2818, 5641, 73, 200]}}

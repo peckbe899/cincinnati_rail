@@ -1,0 +1,97 @@
+{
+ "crop": "DD07",
+ "plate": "90",
+ "win": [
+  1406,
+  6056,
+  1806,
+  6356
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   1764,
+   6053,
+   1821,
+   6112
+  ]
+ ],
+ "n_words": 1,
+ "n_targets": 1,
+ "mask": "DD07_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 101087,
+  "ink_not_text": 87,
+  "text": 21,
+  "dont_care": 18805
+ },
+ "counts_in_scope": {
+  "ink_not_text": 87,
+  "text": 21,
+  "dont_care": 0
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DD07-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair",
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 9.0,
+   "length": 7.0,
+   "poly": [
+    [
+     1789.0,
+     6078.0
+    ],
+    [
+     1796.0,
+     6078.0
+    ],
+    [
+     1796.0,
+     6087.0
+    ],
+    [
+     1789.0,
+     6087.0
+    ]
+   ],
+   "aabb": [
+    1789,
+    6078,
+    1796,
+    6087
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": true,
+   "box_word": true,
+   "text_px": 21,
+   "in_scope": true,
+   "ink_px": 21,
+   "care_px": 0,
+   "pieces": 3,
+   "piece_px": [
+    14,
+    4,
+    3
+   ],
+   "style": "pair",
+   "neg_type": ""
+  }
+ ]
+}

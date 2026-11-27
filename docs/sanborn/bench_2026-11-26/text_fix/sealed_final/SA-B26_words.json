@@ -1,0 +1,83 @@
+{
+ "crop": "SA-B26",
+ "plate": "46",
+ "win": [
+  8184,
+  4410,
+  8404,
+  4630
+ ],
+ "scale_ft_per_inch": 400,
+ "half": "A",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   8251,
+   4469,
+   8337,
+   4570
+  ]
+ ],
+ "scope_px": 8874,
+ "why": "block number 11 on plate 46 (400 ft), drawn at random (seed: plate name) from the plate list",
+ "n_words": 1,
+ "mask": "SA-B26_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 7843,
+  "ink_not_text": 332,
+  "text": 699,
+  "dont_care": 39526
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-B26-001",
+   "reading": "11",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 51.0,
+   "length": 36.0,
+   "poly": [
+    [
+     8276.0,
+     4494.0
+    ],
+    [
+     8312.0,
+     4494.0
+    ],
+    [
+     8312.0,
+     4545.0
+    ],
+    [
+     8276.0,
+     4545.0
+    ]
+   ],
+   "aabb": [
+    8276,
+    4494,
+    8312,
+    4545
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 699,
+   "annot_line": 2,
+   "ink_px": 699,
+   "text_px_final": 699
+  }
+ ],
+ "dropped_outside_scope": []
+}

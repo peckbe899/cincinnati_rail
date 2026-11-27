@@ -1,0 +1,73 @@
+mask set f3
+== 1A_now (Ben's rail complete: False)
+  railroad  before       rule tracks   2 (   256 px) | false   2 (   256 px) | recall10 None precision10 0.0 | Ben 0 found/partial/missed [0, 0, 0] | ink: found None far 2177 px, bin 2177 px
+  railroad  after        rule tracks   0 (     0 px) | false   0 (     0 px) | recall10 None precision10 None | Ben 0 found/partial/missed [0, 0, 0] | ink: found None far 0 px, bin 0 px
+  railroad  after_nojoin rule tracks   0 (     0 px) | false   0 (     0 px) | recall10 None precision10 None | Ben 0 found/partial/missed [0, 0, 0] | ink: found None far 0 px, bin 0 px
+  railroad  afterstrict  rule tracks   0 (     0 px) | false   0 (     0 px) | recall10 None precision10 None | Ben 0 found/partial/missed [0, 0, 0] | ink: found None far 0 px, bin 0 px
+  streetcar before       rule tracks  13 (  7158 px) | false   0 (     0 px) | recall10 0.7696 precision10 0.9992 | Ben 13 found/partial/missed [7, 5, 1] | ink: found 0.8568 far 9 px, bin 62909 px
+  streetcar after        rule tracks  12 (  8448 px) | false   0 (     0 px) | recall10 0.8874 precision10 0.9837 | Ben 13 found/partial/missed [10, 3, 0] | ink: found 0.9244 far 1160 px, bin 70619 px
+  streetcar after_nojoin rule tracks  12 (  8448 px) | false   0 (     0 px) | recall10 0.8874 precision10 0.9837 | Ben 13 found/partial/missed [10, 3, 0] | ink: found 0.9244 far 1160 px, bin 70619 px
+  streetcar afterstrict  rule tracks  12 (  8448 px) | false   0 (     0 px) | recall10 0.8874 precision10 0.9837 | Ben 13 found/partial/missed [10, 3, 0] | ink: found 0.9244 far 1160 px, bin 70619 px
+== 44_map (Ben's rail complete: True)
+  railroad  before       rule tracks  19 ( 41528 px) | false   0 (     0 px) | recall10 0.9823 precision10 0.986 | Ben 19 found/partial/missed [17, 2, 0] | ink: found 0.9884 far 3576 px, bin 250446 px
+  railroad  after        rule tracks  17 ( 41364 px) | false   0 (     0 px) | recall10 0.9814 precision10 0.9896 | Ben 19 found/partial/missed [17, 2, 0] | ink: found 0.987 far 1417 px, bin 247269 px
+  railroad  after_nojoin rule tracks  19 ( 41228 px) | false   0 (     0 px) | recall10 0.981 precision10 0.9914 | Ben 19 found/partial/missed [17, 2, 0] | ink: found 0.987 far 1417 px, bin 247269 px
+  railroad  afterstrict  rule tracks  18 ( 40734 px) | false   0 (     0 px) | recall10 0.9688 precision10 0.9913 | Ben 19 found/partial/missed [16, 3, 0] | ink: found 0.974 far 1417 px, bin 244148 px
+  streetcar before       rule tracks  13 ( 12006 px) | false   0 (     0 px) | recall10 0.7972 precision10 1.0 | Ben 7 found/partial/missed [3, 4, 0] | ink: found 0.8518 far 1086 px, bin 104337 px
+  streetcar after        rule tracks  12 ( 13106 px) | false   0 (     0 px) | recall10 0.8647 precision10 0.9997 | Ben 7 found/partial/missed [5, 2, 0] | ink: found 0.9166 far 3625 px, bin 116004 px
+  streetcar after_nojoin rule tracks  12 ( 13106 px) | false   0 (     0 px) | recall10 0.8647 precision10 0.9997 | Ben 7 found/partial/missed [5, 2, 0] | ink: found 0.9166 far 3625 px, bin 116004 px
+  streetcar afterstrict  rule tracks  12 ( 13106 px) | false   0 (     0 px) | recall10 0.8647 precision10 0.9997 | Ben 7 found/partial/missed [5, 2, 0] | ink: found 0.9166 far 3625 px, bin 116004 px
+== 44_map_ben (Ben's rail complete: True)
+  railroad  before       rule tracks  24 ( 41788 px) | false   0 (     0 px) | recall10 0.9951 precision10 0.9984 | Ben 19 found/partial/missed [19, 0, 0] | ink: found 1.0 far 0 px, bin 255499 px
+  railroad  after        rule tracks  20 ( 41920 px) | false   0 (     0 px) | recall10 0.9961 precision10 0.9967 | Ben 19 found/partial/missed [19, 0, 0] | ink: found 0.9971 far 0 px, bin 253999 px
+  railroad  after_nojoin rule tracks  23 ( 41742 px) | false   0 (     0 px) | recall10 0.9951 precision10 0.9985 | Ben 19 found/partial/missed [19, 0, 0] | ink: found 0.9971 far 0 px, bin 253999 px
+  railroad  afterstrict  rule tracks  23 ( 41742 px) | false   0 (     0 px) | recall10 0.9951 precision10 0.9985 | Ben 19 found/partial/missed [19, 0, 0] | ink: found 0.9971 far 0 px, bin 253999 px
+  streetcar before       rule tracks   1 (  2466 px) | false   0 (     0 px) | recall10 0.1561 precision10 0.9749 | Ben 7 found/partial/missed [1, 0, 6] | ink: found 1.0 far 0 px, bin 159342 px
+  streetcar after        rule tracks   1 (  1600 px) | false   0 (     0 px) | recall10 0.1007 precision10 0.9612 | Ben 7 found/partial/missed [0, 1, 6] | ink: found 0.9935 far 0 px, bin 157885 px
+  streetcar after_nojoin rule tracks   1 (  1600 px) | false   0 (     0 px) | recall10 0.1007 precision10 0.9612 | Ben 7 found/partial/missed [0, 1, 6] | ink: found 0.9935 far 0 px, bin 157885 px
+  streetcar afterstrict  rule tracks   1 (  1600 px) | false   0 (     0 px) | recall10 0.1007 precision10 0.9612 | Ben 7 found/partial/missed [0, 1, 6] | ink: found 0.9935 far 0 px, bin 157885 px
+== 44_nets44 (Ben's rail complete: True)
+  railroad  before       rule tracks  19 ( 41522 px) | false   0 (     0 px) | recall10 0.9823 precision10 0.986 | Ben 19 found/partial/missed [17, 2, 0] | ink: found 0.9884 far 3576 px, bin 250420 px
+  railroad  after        rule tracks  17 ( 41364 px) | false   0 (     0 px) | recall10 0.9814 precision10 0.9896 | Ben 19 found/partial/missed [17, 2, 0] | ink: found 0.987 far 1417 px, bin 247244 px
+  railroad  after_nojoin rule tracks  19 ( 41228 px) | false   0 (     0 px) | recall10 0.981 precision10 0.9914 | Ben 19 found/partial/missed [17, 2, 0] | ink: found 0.987 far 1417 px, bin 247244 px
+  railroad  afterstrict  rule tracks  18 ( 40734 px) | false   0 (     0 px) | recall10 0.9688 precision10 0.9913 | Ben 19 found/partial/missed [16, 3, 0] | ink: found 0.974 far 1417 px, bin 244123 px
+  streetcar before       rule tracks  13 ( 12110 px) | false   0 (     0 px) | recall10 0.8045 precision10 1.0 | Ben 7 found/partial/missed [3, 4, 0] | ink: found 0.8586 far 1086 px, bin 105386 px
+  streetcar after        rule tracks  12 ( 13102 px) | false   0 (     0 px) | recall10 0.8651 precision10 0.9997 | Ben 7 found/partial/missed [5, 2, 0] | ink: found 0.9166 far 3625 px, bin 116172 px
+  streetcar after_nojoin rule tracks  12 ( 13102 px) | false   0 (     0 px) | recall10 0.8651 precision10 0.9997 | Ben 7 found/partial/missed [5, 2, 0] | ink: found 0.9166 far 3625 px, bin 116172 px
+  streetcar afterstrict  rule tracks  12 ( 13102 px) | false   0 (     0 px) | recall10 0.8651 precision10 0.9997 | Ben 7 found/partial/missed [5, 2, 0] | ink: found 0.9166 far 3625 px, bin 116172 px
+== 44_nomap (Ben's rail complete: True)
+  railroad  before       rule tracks  22 ( 42208 px) | false   3 (   686 px) | recall10 0.9823 precision10 0.97 | Ben 19 found/partial/missed [17, 2, 0] | ink: found 0.9884 far 7963 px, bin 254831 px
+  railroad  after        rule tracks  18 ( 41662 px) | false   1 (   298 px) | recall10 0.9814 precision10 0.9825 | Ben 19 found/partial/missed [17, 2, 0] | ink: found 0.987 far 2753 px, bin 248605 px
+  railroad  after_nojoin rule tracks  20 ( 41526 px) | false   1 (   298 px) | recall10 0.981 precision10 0.9843 | Ben 19 found/partial/missed [17, 2, 0] | ink: found 0.987 far 2753 px, bin 248605 px
+  railroad  afterstrict  rule tracks  19 ( 41032 px) | false   1 (   298 px) | recall10 0.9688 precision10 0.9841 | Ben 19 found/partial/missed [16, 3, 0] | ink: found 0.974 far 2753 px, bin 245484 px
+  streetcar before       rule tracks  13 ( 12112 px) | false   0 (     0 px) | recall10 0.8045 precision10 1.0 | Ben 7 found/partial/missed [3, 4, 0] | ink: found 0.8586 far 1086 px, bin 105430 px
+  streetcar after        rule tracks  12 ( 13102 px) | false   0 (     0 px) | recall10 0.8652 precision10 0.9997 | Ben 7 found/partial/missed [5, 2, 0] | ink: found 0.9166 far 3585 px, bin 116003 px
+  streetcar after_nojoin rule tracks  12 ( 13102 px) | false   0 (     0 px) | recall10 0.8652 precision10 0.9997 | Ben 7 found/partial/missed [5, 2, 0] | ink: found 0.9166 far 3585 px, bin 116003 px
+  streetcar afterstrict  rule tracks  12 ( 13102 px) | false   0 (     0 px) | recall10 0.8652 precision10 0.9997 | Ben 7 found/partial/missed [5, 2, 0] | ink: found 0.9166 far 3585 px, bin 116003 px
+== 5_nets21 (Ben's rail complete: True)
+  railroad  before       rule tracks  23 (  4894 px) | false  23 (  4894 px) | recall10 None precision10 0.0 | Ben 0 found/partial/missed [0, 0, 0] | ink: found None far 29381 px, bin 29381 px
+  railroad  after        rule tracks   2 (  1000 px) | false   2 (  1000 px) | recall10 None precision10 0.0 | Ben 0 found/partial/missed [0, 0, 0] | ink: found None far 4781 px, bin 4781 px
+  railroad  after_nojoin rule tracks   2 (  1000 px) | false   2 (  1000 px) | recall10 None precision10 0.0 | Ben 0 found/partial/missed [0, 0, 0] | ink: found None far 4781 px, bin 4781 px
+  railroad  afterstrict  rule tracks   2 (  1000 px) | false   2 (  1000 px) | recall10 None precision10 0.0 | Ben 0 found/partial/missed [0, 0, 0] | ink: found None far 4781 px, bin 4781 px
+  streetcar before       rule tracks  57 ( 54932 px) | false   0 (     0 px) | recall10 0.76 precision10 1.0 | Ben 61 found/partial/missed [30, 19, 12] | ink: found 0.8001 far 1448 px, bin 388639 px
+  streetcar after        rule tracks  60 ( 56758 px) | false   0 (     0 px) | recall10 0.7863 precision10 0.9999 | Ben 61 found/partial/missed [31, 22, 8] | ink: found 0.8186 far 2878 px, bin 402093 px
+  streetcar after_nojoin rule tracks  60 ( 56758 px) | false   0 (     0 px) | recall10 0.7863 precision10 0.9999 | Ben 61 found/partial/missed [31, 22, 8] | ink: found 0.8186 far 2878 px, bin 402093 px
+  streetcar afterstrict  rule tracks  60 ( 56758 px) | false   0 (     0 px) | recall10 0.7863 precision10 0.9999 | Ben 61 found/partial/missed [31, 22, 8] | ink: found 0.8186 far 2878 px, bin 402093 px
+== 5_none (Ben's rail complete: True)
+  railroad  before       rule tracks  54 ( 14920 px) | false  54 ( 14920 px) | recall10 None precision10 0.0 | Ben 0 found/partial/missed [0, 0, 0] | ink: found None far 81635 px, bin 81635 px
+  railroad  after        rule tracks   8 (  4432 px) | false   8 (  4432 px) | recall10 None precision10 0.0 | Ben 0 found/partial/missed [0, 0, 0] | ink: found None far 20535 px, bin 20535 px
+  railroad  after_nojoin rule tracks   8 (  4432 px) | false   8 (  4432 px) | recall10 None precision10 0.0 | Ben 0 found/partial/missed [0, 0, 0] | ink: found None far 20535 px, bin 20535 px
+  railroad  afterstrict  rule tracks   8 (  4432 px) | false   8 (  4432 px) | recall10 None precision10 0.0 | Ben 0 found/partial/missed [0, 0, 0] | ink: found None far 20535 px, bin 20535 px
+  streetcar before       rule tracks  53 ( 56908 px) | false   0 (     0 px) | recall10 0.7855 precision10 1.0 | Ben 61 found/partial/missed [31, 18, 12] | ink: found 0.8225 far 2205 px, bin 402412 px
+  streetcar after        rule tracks  56 ( 59174 px) | false   1 (   188 px) | recall10 0.8154 precision10 0.9967 | Ben 61 found/partial/missed [33, 20, 8] | ink: found 0.8428 far 3635 px, bin 416383 px
+  streetcar after_nojoin rule tracks  56 ( 59174 px) | false   1 (   188 px) | recall10 0.8154 precision10 0.9967 | Ben 61 found/partial/missed [33, 20, 8] | ink: found 0.8428 far 3635 px, bin 416383 px
+  streetcar afterstrict  rule tracks  56 ( 59174 px) | false   1 (   188 px) | recall10 0.8154 precision10 0.9967 | Ben 61 found/partial/missed [33, 20, 8] | ink: found 0.8428 far 3635 px, bin 416383 px
+== 5_now (Ben's rail complete: True)
+  railroad  before       rule tracks  23 (  4894 px) | false  23 (  4894 px) | recall10 None precision10 0.0 | Ben 0 found/partial/missed [0, 0, 0] | ink: found None far 29381 px, bin 29381 px
+  railroad  after        rule tracks   2 (  1000 px) | false   2 (  1000 px) | recall10 None precision10 0.0 | Ben 0 found/partial/missed [0, 0, 0] | ink: found None far 4781 px, bin 4781 px
+  railroad  after_nojoin rule tracks   2 (  1000 px) | false   2 (  1000 px) | recall10 None precision10 0.0 | Ben 0 found/partial/missed [0, 0, 0] | ink: found None far 4781 px, bin 4781 px
+  railroad  afterstrict  rule tracks   2 (  1000 px) | false   2 (  1000 px) | recall10 None precision10 0.0 | Ben 0 found/partial/missed [0, 0, 0] | ink: found None far 4781 px, bin 4781 px
+  streetcar before       rule tracks  54 ( 56198 px) | false   0 (     0 px) | recall10 0.7762 precision10 1.0 | Ben 61 found/partial/missed [31, 18, 12] | ink: found 0.8138 far 948 px, bin 396350 px
+  streetcar after        rule tracks  57 ( 58024 px) | false   0 (     0 px) | recall10 0.8025 precision10 0.9999 | Ben 61 found/partial/missed [32, 21, 8] | ink: found 0.8324 far 1998 px, bin 409424 px
+  streetcar after_nojoin rule tracks  57 ( 58024 px) | false   0 (     0 px) | recall10 0.8025 precision10 0.9999 | Ben 61 found/partial/missed [32, 21, 8] | ink: found 0.8324 far 1998 px, bin 409424 px
+  streetcar afterstrict  rule tracks  57 ( 58024 px) | false   0 (     0 px) | recall10 0.8025 precision10 0.9999 | Ben 61 found/partial/missed [32, 21, 8] | ink: found 0.8324 far 1998 px, bin 409424 px

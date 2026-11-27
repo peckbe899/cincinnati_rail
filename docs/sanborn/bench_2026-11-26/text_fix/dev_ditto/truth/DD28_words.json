@@ -1,0 +1,317 @@
+{
+ "crop": "DD28",
+ "plate": "26A",
+ "win": [
+  1608,
+  2591,
+  2008,
+  2891
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   1741,
+   2720,
+   1799,
+   2780
+  ],
+  [
+   1740,
+   2799,
+   1799,
+   2855
+  ]
+ ],
+ "n_words": 6,
+ "n_targets": 2,
+ "mask": "DD28_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 103418,
+  "ink_not_text": 52,
+  "text": 788,
+  "dont_care": 15742
+ },
+ "counts_in_scope": {
+  "ink_not_text": 52,
+  "text": 788,
+  "dont_care": 1
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DD28-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:quote",
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 8.0,
+   "poly": [
+    [
+     1766.0,
+     2745.0
+    ],
+    [
+     1774.0,
+     2745.0
+    ],
+    [
+     1774.0,
+     2755.0
+    ],
+    [
+     1766.0,
+     2755.0
+    ]
+   ],
+   "aabb": [
+    1766,
+    2745,
+    1774,
+    2755
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": true,
+   "box_word": true,
+   "text_px": 22,
+   "in_scope": true,
+   "ink_px": 22,
+   "care_px": 0,
+   "pieces": 4,
+   "piece_px": [
+    9,
+    8,
+    4,
+    1
+   ],
+   "style": "quote",
+   "neg_type": ""
+  },
+  {
+   "id": "DD28-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:other",
+    "unsure"
+   ],
+   "angle": 0.0,
+   "height": 6.0,
+   "length": 9.0,
+   "poly": [
+    [
+     1765.0,
+     2824.0
+    ],
+    [
+     1774.0,
+     2824.0
+    ],
+    [
+     1774.0,
+     2830.0
+    ],
+    [
+     1765.0,
+     2830.0
+    ]
+   ],
+   "aabb": [
+    1765,
+    2824,
+    1774,
+    2830
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 3,
+   "target": true,
+   "box_word": true,
+   "text_px": 19,
+   "in_scope": true,
+   "ink_px": 19,
+   "care_px": 0,
+   "pieces": 1,
+   "piece_px": [
+    19
+   ],
+   "style": "other",
+   "neg_type": ""
+  },
+  {
+   "id": "DD28-003",
+   "reading": "614",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 55.0,
+   "length": 29.0,
+   "poly": [
+    [
+     1735.0,
+     2728.0
+    ],
+    [
+     1764.0,
+     2728.0
+    ],
+    [
+     1764.0,
+     2783.0
+    ],
+    [
+     1735.0,
+     2783.0
+    ]
+   ],
+   "aabb": [
+    1735,
+    2728,
+    1764,
+    2783
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 4,
+   "target": false,
+   "box_word": true,
+   "text_px": 220,
+   "in_scope": true
+  },
+  {
+   "id": "DD28-004",
+   "reading": "54",
+   "kind": "lot",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 15.0,
+   "poly": [
+    [
+     1780.0,
+     2741.0
+    ],
+    [
+     1795.0,
+     2741.0
+    ],
+    [
+     1795.0,
+     2769.0
+    ],
+    [
+     1780.0,
+     2769.0
+    ]
+   ],
+   "aabb": [
+    1780,
+    2741,
+    1795,
+    2769
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 5,
+   "target": false,
+   "box_word": true,
+   "text_px": 126,
+   "in_scope": true
+  },
+  {
+   "id": "DD28-005",
+   "reading": "612",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 69.0,
+   "length": 45.0,
+   "poly": [
+    [
+     1734.0,
+     2799.0
+    ],
+    [
+     1779.0,
+     2799.0
+    ],
+    [
+     1779.0,
+     2868.0
+    ],
+    [
+     1734.0,
+     2868.0
+    ]
+   ],
+   "aabb": [
+    1734,
+    2799,
+    1779,
+    2868
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 6,
+   "target": false,
+   "box_word": true,
+   "text_px": 296,
+   "in_scope": true
+  },
+  {
+   "id": "DD28-006",
+   "reading": "53",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 26.0,
+   "poly": [
+    [
+     1781.0,
+     2813.0
+    ],
+    [
+     1807.0,
+     2813.0
+    ],
+    [
+     1807.0,
+     2839.0
+    ],
+    [
+     1781.0,
+     2839.0
+    ]
+   ],
+   "aabb": [
+    1781,
+    2813,
+    1807,
+    2839
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 7,
+   "target": false,
+   "box_word": true,
+   "text_px": 124,
+   "in_scope": true
+  }
+ ]
+}

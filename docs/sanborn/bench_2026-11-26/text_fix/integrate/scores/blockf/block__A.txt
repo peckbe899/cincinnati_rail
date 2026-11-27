@@ -1,0 +1,26 @@
+C:\Users\peckb\AppData\Local\Programs\Python\Python312\python.exe -B bench_2026-11-25\text_v1\code\score_text.py bench_2026-11-26/text_fix/integrate/out/dev/A/{plate}_text.png --codes 2,3 --truth bench_2026-11-26\text_fix\dev_block\truth --quiet --out bench_2026-11-26/text_fix/integrate/scores/blockf\block__A.json --group foldA=DB01,DB02,DB03,DB04,DB05,DB06,DB07,DB08,DB09,DB10,DB16,DB17,DB18,DB19,DB24,DB25,DB26,DB27,DB32,DB33,DB34,DB38,DB39,DB40,DB41 --group ft100=DB01,DB02,DB03,DB04,DB05,DB06,DB07,DB08,DB09,DB10,DB11,DB12,DB13,DB14,DB15 --group foldA_ft100=DB01,DB02,DB03,DB04,DB05,DB06,DB07,DB08,DB09,DB10 --group foldB=DB11,DB12,DB13,DB14,DB15,DB20,DB21,DB22,DB23,DB28,DB29,DB30,DB31,DB35,DB36,DB37,DB42,DB43,DB44,DB45 --group foldB_ft100=DB11,DB12,DB13,DB14,DB15 --group ft200=DB16,DB17,DB18,DB19,DB20,DB21,DB22,DB23,DB24,DB25,DB26,DB27,DB28,DB29,DB30,DB31,DB32,DB33,DB34,DB35,DB36,DB37 --group foldA_ft200=DB16,DB17,DB18,DB19,DB24,DB25,DB26,DB27,DB32,DB33,DB34 --group foldB_ft200=DB20,DB21,DB22,DB23,DB28,DB29,DB30,DB31,DB35,DB36,DB37 --group ft400=DB38,DB39,DB40,DB41,DB42,DB43,DB44,DB45 --group foldA_ft400=DB38,DB39,DB40,DB41 --group foldB_ft400=DB42,DB43,DB44,DB45
+ALL                    P 0.9703  R 0.8770  F1 0.9213   non-text ink called text 0.0557   don't care skipped 889058
+plate_3                P 0.9994  R 0.9257  F1 0.9612   non-text ink called text 0.0011   don't care skipped 91520
+plate_54A              P 0.9770  R 0.8427  F1 0.9049   non-text ink called text 0.0293   don't care skipped 99401
+plate_12               P 0.8866  R 0.8178  F1 0.8508   non-text ink called text 0.1292   don't care skipped 106896
+plate_30               P 0.9747  R 0.9118  F1 0.9422   non-text ink called text 0.0410   don't care skipped 81918
+plate_19               P 1.0000  R 0.9998  F1 0.9999   non-text ink called text 0.0000   don't care skipped 77992
+plate_26A              P 0.9648  R 0.7567  F1 0.8482   non-text ink called text 0.0596   don't care skipped 88812
+plate_64A              P 0.9837  R 0.8933  F1 0.9363   non-text ink called text 0.0262   don't care skipped 74529
+plate_74               P 0.9897  R 0.9983  F1 0.9940   non-text ink called text 0.0488   don't care skipped 57774
+plate_60B              P 0.9951  R 0.9379  F1 0.9657   non-text ink called text 0.0117   don't care skipped 62293
+plate_49               P 0.9768  R 0.8446  F1 0.9059   non-text ink called text 0.0425   don't care skipped 77926
+plate_93A              P 0.9741  R 0.9229  F1 0.9478   non-text ink called text 0.0760   don't care skipped 36325
+plate_48               P 1.0000  R 0.6777  F1 0.8079   non-text ink called text 0.0000   don't care skipped 33672
+foldA                  P 0.9788  R 0.8630  F1 0.9173   non-text ink called text 0.0376   don't care skipped 497351
+ft100                  P 0.9425  R 0.8544  F1 0.8963   non-text ink called text 0.0752   don't care skipped 297817
+foldA_ft100            P 0.9884  R 0.8835  F1 0.9330   non-text ink called text 0.0172   don't care skipped 190921
+foldB                  P 0.9596  R 0.8955  F1 0.9265   non-text ink called text 0.0815   don't care skipped 391707
+foldB_ft100            P 0.8866  R 0.8178  F1 0.8508   non-text ink called text 0.1292   don't care skipped 106896
+ft200                  P 0.9834  R 0.8977  F1 0.9386   non-text ink called text 0.0386   don't care skipped 443318
+foldA_ft200            P 0.9741  R 0.8569  F1 0.9118   non-text ink called text 0.0508   don't care skipped 228504
+foldB_ft200            P 0.9942  R 0.9500  F1 0.9716   non-text ink called text 0.0171   don't care skipped 214814
+ft400                  P 0.9786  R 0.8408  F1 0.9045   non-text ink called text 0.0494   don't care skipped 147923
+foldA_ft400            P 0.9768  R 0.8446  F1 0.9059   non-text ink called text 0.0425   don't care skipped 77926
+foldB_ft400            P 0.9815  R 0.8345  F1 0.9021   non-text ink called text 0.0760   don't care skipped 69997
+recall by kind (ALL):  block 0.891 (41/45 words)  ditto 0.552 (1/2 words)  lot 0.806 (70/82 words)  lotdim 0.788 (22/24 words)  other 0.809 (4/4 words)  owner 1.000 (9/9 words)  story 0.739 (9/11 words)

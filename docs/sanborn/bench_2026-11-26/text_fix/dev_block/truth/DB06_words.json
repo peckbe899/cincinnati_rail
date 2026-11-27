@@ -1,0 +1,127 @@
+{
+ "crop": "DB06",
+ "plate": "54A",
+ "win": [
+  7675,
+  266,
+  7841,
+  435
+ ],
+ "why": "block number 4 on plate 54A (100 ft), drawn at random (candidates/draw.json)",
+ "n_words": 2,
+ "mask": "DB06_mask.png",
+ "mask_values": {
+  "0": "paper (in scope)",
+  "1": "ink, not text (in scope)",
+  "2": "text ink (in scope)",
+  "3": "don't care (glyph and line share ink; CARE boxes; everything outside the scope)"
+ },
+ "counts": {
+  "paper": 8907,
+  "ink_not_text": 0,
+  "text": 790,
+  "dont_care": 18357
+ },
+ "scope_px": 9700,
+ "scope_counts": {
+  "paper": 8907,
+  "ink_not_text": 0,
+  "text": 790,
+  "dont_care": 3
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DB06-001",
+   "reading": "4",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 49.0,
+   "length": 46.0,
+   "poly": [
+    [
+     7735.0,
+     326.0
+    ],
+    [
+     7781.0,
+     326.0
+    ],
+    [
+     7781.0,
+     375.0
+    ],
+    [
+     7735.0,
+     375.0
+    ]
+   ],
+   "aabb": [
+    7735,
+    326,
+    7781,
+    375
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 771,
+   "annot_line": 3,
+   "in_scope": {
+    "text_px": 771,
+    "dont_care_px": 0,
+    "ink_px": 771
+   },
+   "target": true,
+   "ink_size_px": 771
+  },
+  {
+   "id": "DB06-002",
+   "reading": "OUTLOOK",
+   "kind": "owner",
+   "flags": [
+    "partial",
+    "nosnap",
+    "cut_by_scope"
+   ],
+   "angle": 22.2,
+   "height": 42.0,
+   "length": 166.4,
+   "poly": [
+    [
+     7684.0,
+     383.6
+    ],
+    [
+     7838.0,
+     446.6
+    ],
+    [
+     7822.0,
+     485.4
+    ],
+    [
+     7668.0,
+     422.4
+    ]
+   ],
+   "aabb": [
+    7668,
+    383,
+    7838,
+    486
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "text_px": 1462,
+   "annot_line": 4,
+   "in_scope": {
+    "text_px": 18,
+    "dont_care_px": 0,
+    "ink_px": 18
+   }
+  }
+ ]
+}

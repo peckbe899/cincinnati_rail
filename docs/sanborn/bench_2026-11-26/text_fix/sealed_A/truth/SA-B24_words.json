@@ -1,0 +1,75 @@
+{
+ "crop": "SA-B24",
+ "plate": "46",
+ "win": [
+  3778,
+  1766,
+  3998,
+  1986
+ ],
+ "why": "block number 4 on plate 46 (400 ft), drawn at random (seed: plate name) from the plate list",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope_px": 8910,
+ "n_words": 1,
+ "mask": "SA-B24_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (glyph and line share ink; CARE boxes; outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 7949,
+  "ink_not_text": 498,
+  "text": 373,
+  "dont_care": 39580
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-B24-001",
+   "reading": "4",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 48.0,
+   "length": 39.0,
+   "poly": [
+    [
+     3871.0,
+     1852.0
+    ],
+    [
+     3910.0,
+     1852.0
+    ],
+    [
+     3910.0,
+     1900.0
+    ],
+    [
+     3871.0,
+     1900.0
+    ]
+   ],
+   "aabb": [
+    3871,
+    1852,
+    3910,
+    1900
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 373,
+   "annot_line": 2,
+   "target": true,
+   "ink_px": 721,
+   "scored_text_px": 373
+  }
+ ],
+ "dropped_outside_scope": []
+}

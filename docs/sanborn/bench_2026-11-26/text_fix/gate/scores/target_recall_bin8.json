@@ -1,0 +1,73 @@
+{
+ "mask": "unet_data/{plate}_bins.png",
+ "targets": {
+  "block_100": {
+   "words": 18,
+   "text_px": 21178,
+   "found_px": 17536,
+   "words_found": 16,
+   "pixel_recall": 0.828,
+   "word_recall": 0.8889
+  },
+  "block_200": {
+   "words": 24,
+   "text_px": 21178,
+   "found_px": 19161,
+   "words_found": 23,
+   "pixel_recall": 0.9048,
+   "word_recall": 0.9583
+  },
+  "block_400": {
+   "words": 10,
+   "text_px": 9389,
+   "found_px": 8137,
+   "words_found": 9,
+   "pixel_recall": 0.8667,
+   "word_recall": 0.9
+  },
+  "ditto_100": {
+   "words": 59,
+   "text_px": 2323,
+   "found_px": 1676,
+   "words_found": 44,
+   "pixel_recall": 0.7215,
+   "word_recall": 0.7458
+  },
+  "ditto_200": {
+   "words": 92,
+   "text_px": 2985,
+   "found_px": 2440,
+   "words_found": 79,
+   "pixel_recall": 0.8174,
+   "word_recall": 0.8587
+  },
+  "block_all": {
+   "words": 52,
+   "text_px": 51745,
+   "found_px": 44834,
+   "words_found": 48,
+   "pixel_recall": 0.8664,
+   "word_recall": 0.9231
+  },
+  "ditto_all": {
+   "words": 151,
+   "text_px": 5308,
+   "found_px": 4116,
+   "words_found": 123,
+   "pixel_recall": 0.7754,
+   "word_recall": 0.8146
+  }
+ },
+ "nontext_in_scopes": {
+  "block": {
+   "nontext_px": 35158,
+   "called_text": 11048,
+   "share": 0.31424
+  },
+  "ditto": {
+   "nontext_px": 54617,
+   "called_text": 6104,
+   "share": 0.11176
+  }
+ }
+}

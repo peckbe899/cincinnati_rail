@@ -1,0 +1,32 @@
+#plate 49
+# DB41: block 15 on plate 49 (400 ft), in a dense block of narrow lots (the hardest kind): the 1 stands against a thin
+# vertical lot line, the 5's top bar lies along a horizontal lot line, a lot line runs under both figures; diagonal lot
+# lines meet left of the 1; small lot numbers 9, 10, 11, 12, 53, 54, 24, 2.4 and the dimension 50' crowd the scope.
+8627 1369 8683 1369 50 | 15 | block | target unsure
+8628 1335 8637 1335 12 | 9 | lot
+8665 1337 8679 1337 14 | 10 | lot
+8611 1375 8622 1375 16 | 11 | lot
+8678 1371 8690 1371 16 | 12 | lot
+8688 1340 8722 1340 20 | 53 | lot | unsure
+8690 1382 8724 1382 22 | 54 | lot | unsure
+8612 1402 8629 1402 12 | 2.4 | lotdim | unsure
+8632 1403 8645 1403 14 | 24 | lot | unsure
+8652 1404 8678 1404 13 | 50' | lotdim
+FORCE 8632 1346 8641 1392 the 1 of 15 (a bold bar beside the vertical lot line; the line rule took it)
+CARE 8641 1338 8645 1400 the thin vertical lot line touching the 1's right side (shared ink)
+CARE 8648 1346 8674 1353 the 5's top bar lies along the horizontal lot line (shared ink)
+EXCL 8611 1340 8626 1358 diagonal lot lines meeting left of the 9 (a '<' shape), not text
+NOTTEXT 8619 1355 8634 1376 4 diagonal lot line running down to the 1's left side, was text
+EXCL 8649 1318 8664 1346 diagonal lot lines meeting the vertical line above the 5 (a 'Y' shape), not text
+NOTTEXT 8644 1318 8643 1340 4 vertical lot line above the 1 was text
+CARE 8632 1340 8646 1347 junction of the 1's flag, the 9's tail and the lot lines: cannot tell
+# added after the blue-piece check: small lot numbers at the scope's edges were not boxed
+8654 1312 8668 1312 22 | R | other | unsure
+8670 1313 8716 1313 20 | 8.52 | lotdim | unsure
+8590 1339 8612 1339 22 | 60 | lot | partial
+8590 1374 8609 1374 22 | 51 | lot | partial
+8589 1402 8604 1402 12 | 50' | lotdim | partial
+8589 1421 8604 1421 15 | 14 | lot | partial
+8657 1423 8672 1423 15 | 16 | lot | partial
+8699 1423 8717 1423 18 | 17 | lot | partial
+8626 1423 8642 1423 15 | 15 | lot | partial

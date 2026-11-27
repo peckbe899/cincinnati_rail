@@ -1,0 +1,83 @@
+{
+ "crop": "SA-B18",
+ "plate": "41",
+ "win": [
+  2865,
+  5434,
+  3085,
+  5654
+ ],
+ "scale_ft_per_inch": 200,
+ "half": "A",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   2928,
+   5494,
+   3023,
+   5595
+  ]
+ ],
+ "scope_px": 9792,
+ "why": "block number 12 on plate 41 (200 ft), drawn at random (seed: plate name) from the plate list",
+ "n_words": 1,
+ "mask": "SA-B18_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 8671,
+  "ink_not_text": 0,
+  "text": 1121,
+  "dont_care": 38608
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-B18-001",
+   "reading": "12",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 51.0,
+   "length": 45.0,
+   "poly": [
+    [
+     2953.0,
+     5519.0
+    ],
+    [
+     2998.0,
+     5519.0
+    ],
+    [
+     2998.0,
+     5570.0
+    ],
+    [
+     2953.0,
+     5570.0
+    ]
+   ],
+   "aabb": [
+    2953,
+    5519,
+    2998,
+    5570
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 1121,
+   "annot_line": 2,
+   "ink_px": 1121,
+   "text_px_final": 1121
+  }
+ ],
+ "dropped_outside_scope": []
+}

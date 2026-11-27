@@ -1,0 +1,272 @@
+{
+ "crop": "DD21",
+ "plate": "2",
+ "win": [
+  7290,
+  1583,
+  7690,
+  1883
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   7438,
+   1601,
+   7500,
+   1658
+  ],
+  [
+   7497,
+   1602,
+   7560,
+   1660
+  ]
+ ],
+ "n_words": 5,
+ "n_targets": 2,
+ "mask": "DD21_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 97623,
+  "ink_not_text": 944,
+  "text": 432,
+  "dont_care": 21001
+ },
+ "counts_in_scope": {
+  "ink_not_text": 944,
+  "text": 432,
+  "dont_care": 0
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DD21-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:quote"
+   ],
+   "angle": 0.0,
+   "height": 7.0,
+   "length": 12.0,
+   "poly": [
+    [
+     7463.0,
+     1626.0
+    ],
+    [
+     7475.0,
+     1626.0
+    ],
+    [
+     7475.0,
+     1633.0
+    ],
+    [
+     7463.0,
+     1633.0
+    ]
+   ],
+   "aabb": [
+    7463,
+    1626,
+    7475,
+    1633
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": true,
+   "box_word": true,
+   "text_px": 39,
+   "in_scope": true,
+   "ink_px": 39,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    24,
+    15
+   ],
+   "style": "quote",
+   "neg_type": ""
+  },
+  {
+   "id": "DD21-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:quote"
+   ],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 13.0,
+   "poly": [
+    [
+     7522.0,
+     1627.0
+    ],
+    [
+     7535.0,
+     1627.0
+    ],
+    [
+     7535.0,
+     1635.0
+    ],
+    [
+     7522.0,
+     1635.0
+    ]
+   ],
+   "aabb": [
+    7522,
+    1627,
+    7535,
+    1635
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 3,
+   "target": true,
+   "box_word": true,
+   "text_px": 49,
+   "in_scope": true,
+   "ink_px": 49,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    26,
+    23
+   ],
+   "style": "quote",
+   "neg_type": ""
+  },
+  {
+   "id": "DD21-003",
+   "reading": "5",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 33.0,
+   "length": 37.0,
+   "poly": [
+    [
+     7440.0,
+     1594.0
+    ],
+    [
+     7477.0,
+     1594.0
+    ],
+    [
+     7477.0,
+     1627.0
+    ],
+    [
+     7440.0,
+     1627.0
+    ]
+   ],
+   "aabb": [
+    7440,
+    1594,
+    7477,
+    1627
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 5,
+   "target": false,
+   "box_word": true,
+   "text_px": 164,
+   "in_scope": true
+  },
+  {
+   "id": "DD21-004",
+   "reading": "5",
+   "kind": "story",
+   "flags": [],
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 40.0,
+   "poly": [
+    [
+     7509.0,
+     1594.0
+    ],
+    [
+     7549.0,
+     1594.0
+    ],
+    [
+     7549.0,
+     1625.0
+    ],
+    [
+     7509.0,
+     1625.0
+    ]
+   ],
+   "aabb": [
+    7509,
+    1594,
+    7549,
+    1625
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 6,
+   "target": false,
+   "box_word": true,
+   "text_px": 156,
+   "in_scope": true
+  },
+  {
+   "id": "DD21-005",
+   "reading": "24",
+   "kind": "house",
+   "flags": [],
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 43.0,
+   "poly": [
+    [
+     7504.0,
+     1655.0
+    ],
+    [
+     7547.0,
+     1655.0
+    ],
+    [
+     7547.0,
+     1686.0
+    ],
+    [
+     7504.0,
+     1686.0
+    ]
+   ],
+   "aabb": [
+    7504,
+    1655,
+    7547,
+    1686
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 7,
+   "target": false,
+   "box_word": true,
+   "text_px": 34,
+   "in_scope": true
+  }
+ ]
+}

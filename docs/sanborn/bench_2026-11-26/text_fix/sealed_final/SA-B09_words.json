@@ -1,0 +1,110 @@
+{
+ "crop": "SA-B09",
+ "plate": "52",
+ "win": [
+  755,
+  4024,
+  975,
+  4244
+ ],
+ "scale_ft_per_inch": 100,
+ "half": "A",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   790,
+   4063,
+   950,
+   4194
+  ]
+ ],
+ "scope_px": 21252,
+ "why": "block number 22 on plate 52 (100 ft), drawn at random (seed: plate name) from the plate list",
+ "n_words": 1,
+ "mask": "SA-B09_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 18449,
+  "ink_not_text": 923,
+  "text": 1587,
+  "dont_care": 27441
+ },
+ "boxes": [
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    836,
+    4144,
+    952,
+    4145
+   ],
+   "width": 5,
+   "note": "lot line through both 2s (snapline)",
+   "line": 4,
+   "effect_px": 246
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    833,
+    4060,
+    833,
+    4112
+   ],
+   "width": 5,
+   "note": "",
+   "line": 8,
+   "effect_px": 51
+  }
+ ],
+ "words": [
+  {
+   "id": "SA-B09-001",
+   "reading": "22",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 81.0,
+   "length": 110.0,
+   "poly": [
+    [
+     815.0,
+     4088.0
+    ],
+    [
+     925.0,
+     4088.0
+    ],
+    [
+     925.0,
+     4169.0
+    ],
+    [
+     815.0,
+     4169.0
+    ]
+   ],
+   "aabb": [
+    815,
+    4088,
+    925,
+    4169
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1907,
+   "annot_line": 2,
+   "ink_px": 2386,
+   "text_px_final": 1587
+  }
+ ],
+ "dropped_outside_scope": []
+}

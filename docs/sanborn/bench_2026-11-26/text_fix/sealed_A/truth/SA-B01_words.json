@@ -1,0 +1,100 @@
+{
+ "crop": "SA-B01",
+ "plate": "6",
+ "win": [
+  4642,
+  5348,
+  4862,
+  5568
+ ],
+ "why": "block number 25 on plate 6 (100 ft), drawn at random (seed: plate name) from the plate list",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope_px": 12508,
+ "n_words": 1,
+ "mask": "SA-B01_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (glyph and line share ink; CARE boxes; outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 9937,
+  "ink_not_text": 1067,
+  "text": 1469,
+  "dont_care": 35927
+ },
+ "boxes": [
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    4716,
+    5428,
+    4788,
+    5428
+   ],
+   "width": 5,
+   "note": "building outline along the top of 25 (inside the word box)",
+   "line": 4
+  },
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    4785,
+    5424,
+    4785,
+    5452
+   ],
+   "width": 5,
+   "note": "building outline stub right of the 5 (inside the word box)",
+   "line": 5
+  }
+ ],
+ "words": [
+  {
+   "id": "SA-B01-001",
+   "reading": "25",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 55.0,
+   "length": 67.0,
+   "poly": [
+    [
+     4720.0,
+     5427.0
+    ],
+    [
+     4787.0,
+     5427.0
+    ],
+    [
+     4787.0,
+     5482.0
+    ],
+    [
+     4720.0,
+     5482.0
+    ]
+   ],
+   "aabb": [
+    4720,
+    5427,
+    4787,
+    5482
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 1613,
+   "annot_line": 2,
+   "target": true,
+   "ink_px": 1920,
+   "scored_text_px": 1467
+  }
+ ],
+ "dropped_outside_scope": []
+}

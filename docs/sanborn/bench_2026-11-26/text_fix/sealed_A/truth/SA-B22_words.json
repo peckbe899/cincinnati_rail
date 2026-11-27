@@ -1,0 +1,128 @@
+{
+ "crop": "SA-B22",
+ "plate": "46",
+ "win": [
+  3369,
+  1605,
+  3589,
+  1825
+ ],
+ "why": "block number 2 on plate 46 (400 ft), drawn at random (seed: plate name) from the plate list",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope_px": 13559,
+ "n_words": 2,
+ "mask": "SA-B22_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (glyph and line share ink; CARE boxes; outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 12531,
+  "ink_not_text": 469,
+  "text": 396,
+  "dont_care": 35004
+ },
+ "boxes": [
+  {
+   "op": "NOTTEXT",
+   "seg": [
+    3486,
+    1660,
+    3487,
+    1785
+   ],
+   "width": 6,
+   "note": "lot line through the 2 (snapline)",
+   "line": 5
+  }
+ ],
+ "words": [
+  {
+   "id": "SA-B22-001",
+   "reading": "2",
+   "kind": "block",
+   "flags": [
+    "target"
+   ],
+   "angle": 0.0,
+   "height": 98.0,
+   "length": 40.0,
+   "poly": [
+    [
+     3461.0,
+     1666.0
+    ],
+    [
+     3501.0,
+     1666.0
+    ],
+    [
+     3501.0,
+     1764.0
+    ],
+    [
+     3461.0,
+     1764.0
+    ]
+   ],
+   "aabb": [
+    3461,
+    1666,
+    3501,
+    1764
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 876,
+   "annot_line": 2,
+   "target": true,
+   "ink_px": 876,
+   "scored_text_px": 388
+  },
+  {
+   "id": "SA-B22-002",
+   "reading": "2",
+   "kind": "lot",
+   "flags": [],
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 22.0,
+   "poly": [
+    [
+     3524.0,
+     1632.0
+    ],
+    [
+     3546.0,
+     1632.0
+    ],
+    [
+     3546.0,
+     1660.0
+    ],
+    [
+     3524.0,
+     1660.0
+    ]
+   ],
+   "aabb": [
+    3524,
+    1632,
+    3546,
+    1660
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 181,
+   "annot_line": 3,
+   "target": false,
+   "ink_px": 181,
+   "scored_text_px": 8
+  }
+ ],
+ "dropped_outside_scope": []
+}

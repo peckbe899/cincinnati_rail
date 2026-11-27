@@ -1,0 +1,179 @@
+{
+ "crop": "DD49",
+ "plate": "48",
+ "win": [
+  9389,
+  3923,
+  9789,
+  4223
+ ],
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   9673,
+   4179,
+   9726,
+   4237
+  ]
+ ],
+ "n_words": 3,
+ "n_targets": 1,
+ "mask": "DD49_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, and all ink outside the scope)"
+ },
+ "counts": {
+  "paper": 108387,
+  "ink_not_text": 649,
+  "text": 43,
+  "dont_care": 10921
+ },
+ "counts_in_scope": {
+  "ink_not_text": 649,
+  "text": 43,
+  "dont_care": 0
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "DD49-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "style:pair"
+   ],
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 3.0,
+   "poly": [
+    [
+     9698.0,
+     4204.0
+    ],
+    [
+     9701.0,
+     4204.0
+    ],
+    [
+     9701.0,
+     4212.0
+    ],
+    [
+     9698.0,
+     4212.0
+    ]
+   ],
+   "aabb": [
+    9698,
+    4204,
+    9701,
+    4212
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 2,
+   "target": true,
+   "box_word": true,
+   "text_px": 16,
+   "in_scope": true,
+   "ink_px": 16,
+   "care_px": 0,
+   "pieces": 2,
+   "piece_px": [
+    10,
+    6
+   ],
+   "style": "pair",
+   "neg_type": ""
+  },
+  {
+   "id": "DD49-002",
+   "reading": "25'",
+   "kind": "lotdim",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 15.0,
+   "length": 13.0,
+   "poly": [
+    [
+     9697.0,
+     4170.0
+    ],
+    [
+     9710.0,
+     4170.0
+    ],
+    [
+     9710.0,
+     4185.0
+    ],
+    [
+     9697.0,
+     4185.0
+    ]
+   ],
+   "aabb": [
+    9697,
+    4170,
+    9710,
+    4185
+   ],
+   "snapped": false,
+   "touches_line": true,
+   "annot_line": 3,
+   "target": false,
+   "box_word": true,
+   "text_px": 22,
+   "in_scope": true
+  },
+  {
+   "id": "DD49-003",
+   "reading": "26'",
+   "kind": "lotdim",
+   "flags": [
+    "partial"
+   ],
+   "angle": 0.0,
+   "height": 5.0,
+   "length": 3.0,
+   "poly": [
+    [
+     9683.0,
+     4176.0
+    ],
+    [
+     9686.0,
+     4176.0
+    ],
+    [
+     9686.0,
+     4181.0
+    ],
+    [
+     9683.0,
+     4181.0
+    ]
+   ],
+   "aabb": [
+    9683,
+    4176,
+    9686,
+    4181
+   ],
+   "snapped": false,
+   "touches_line": false,
+   "annot_line": 4,
+   "target": false,
+   "box_word": true,
+   "text_px": 5,
+   "in_scope": true
+  }
+ ]
+}

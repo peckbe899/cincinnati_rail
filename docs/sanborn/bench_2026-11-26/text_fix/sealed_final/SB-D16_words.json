@@ -1,0 +1,1882 @@
+{
+ "crop": "SB-D16",
+ "plate": "84",
+ "win": [
+  2870,
+  4652,
+  3450,
+  5132
+ ],
+ "scale_ft_per_inch": 200,
+ "half": "B",
+ "kind": "targeted",
+ "target": "ditto",
+ "scope_pad": 25,
+ "scope": [
+  [
+   2916,
+   4751,
+   2973,
+   4810
+  ],
+  [
+   2917,
+   4810,
+   2974,
+   4868
+  ],
+  [
+   2919,
+   4868,
+   2976,
+   4928
+  ],
+  [
+   2918,
+   4927,
+   2976,
+   4988
+  ],
+  [
+   2923,
+   4985,
+   2981,
+   5044
+  ],
+  [
+   2924,
+   5048,
+   2981,
+   5106
+  ],
+  [
+   2988,
+   4829,
+   3046,
+   4885
+  ],
+  [
+   3040,
+   4828,
+   3098,
+   4884
+  ],
+  [
+   3093,
+   4826,
+   3152,
+   4884
+  ],
+  [
+   3147,
+   4823,
+   3205,
+   4881
+  ],
+  [
+   3197,
+   4822,
+   3255,
+   4881
+  ],
+  [
+   3255,
+   4821,
+   3313,
+   4877
+  ],
+  [
+   3320,
+   4733,
+   3378,
+   4794
+  ],
+  [
+   3321,
+   4793,
+   3379,
+   4855
+  ],
+  [
+   3326,
+   4854,
+   3382,
+   4914
+  ],
+  [
+   3328,
+   4914,
+   3384,
+   4977
+  ],
+  [
+   3330,
+   4972,
+   3386,
+   5033
+  ],
+  [
+   3332,
+   5034,
+   3388,
+   5096
+  ]
+ ],
+ "scope_px": 60624,
+ "why": "ditto window 84 window 6 drawn with random.Random('ditto-84') in built-up cells: every ditto mark inside",
+ "n_words": 43,
+ "mask": "SB-D16_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 47812,
+  "ink_not_text": 6414,
+  "text": 6262,
+  "dont_care": 217912
+ },
+ "boxes": [
+  {
+   "op": "EXCL",
+   "box": [
+    3320,
+    4734,
+    3338,
+    4738
+   ],
+   "note": "",
+   "line": 50,
+   "effect_px": 52
+  }
+ ],
+ "words": [
+  {
+   "id": "SB-D16-001",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 9.0,
+   "length": 7.0,
+   "poly": [
+    [
+     2941.0,
+     4776.0
+    ],
+    [
+     2948.0,
+     4776.0
+    ],
+    [
+     2948.0,
+     4785.0
+    ],
+    [
+     2941.0,
+     4785.0
+    ]
+   ],
+   "aabb": [
+    2941,
+    4776,
+    2948,
+    4785
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 24,
+   "annot_line": 2,
+   "ink_px": 24,
+   "text_px_final": 24
+  },
+  {
+   "id": "SB-D16-002",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 7.7,
+   "length": 6.8,
+   "poly": [
+    [
+     2942.0,
+     4835.3
+    ],
+    [
+     2948.8,
+     4835.3
+    ],
+    [
+     2948.8,
+     4843.0
+    ],
+    [
+     2942.0,
+     4843.0
+    ]
+   ],
+   "aabb": [
+    2942,
+    4835,
+    2949,
+    4843
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 14,
+   "annot_line": 3,
+   "ink_px": 14,
+   "text_px_final": 14
+  },
+  {
+   "id": "SB-D16-003",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 7.0,
+   "poly": [
+    [
+     2944.0,
+     4893.0
+    ],
+    [
+     2951.0,
+     4893.0
+    ],
+    [
+     2951.0,
+     4903.0
+    ],
+    [
+     2944.0,
+     4903.0
+    ]
+   ],
+   "aabb": [
+    2944,
+    4893,
+    2951,
+    4903
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 29,
+   "annot_line": 4,
+   "ink_px": 29,
+   "text_px_final": 29
+  },
+  {
+   "id": "SB-D16-004",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 11.0,
+   "length": 7.5,
+   "poly": [
+    [
+     2943.5,
+     4952.0
+    ],
+    [
+     2951.0,
+     4952.0
+    ],
+    [
+     2951.0,
+     4963.0
+    ],
+    [
+     2943.5,
+     4963.0
+    ]
+   ],
+   "aabb": [
+    2943,
+    4952,
+    2951,
+    4963
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 21,
+   "annot_line": 5,
+   "ink_px": 43,
+   "text_px_final": 21
+  },
+  {
+   "id": "SB-D16-005",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 9.0,
+   "length": 8.0,
+   "poly": [
+    [
+     2948.0,
+     5010.0
+    ],
+    [
+     2956.0,
+     5010.0
+    ],
+    [
+     2956.0,
+     5019.0
+    ],
+    [
+     2948.0,
+     5019.0
+    ]
+   ],
+   "aabb": [
+    2948,
+    5010,
+    2956,
+    5019
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 27,
+   "annot_line": 6,
+   "ink_px": 27,
+   "text_px_final": 27
+  },
+  {
+   "id": "SB-D16-006",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 7.7,
+   "length": 7.0,
+   "poly": [
+    [
+     2949.0,
+     5073.3
+    ],
+    [
+     2956.0,
+     5073.3
+    ],
+    [
+     2956.0,
+     5081.0
+    ],
+    [
+     2949.0,
+     5081.0
+    ]
+   ],
+   "aabb": [
+    2949,
+    5073,
+    2956,
+    5081
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 12,
+   "annot_line": 7,
+   "ink_px": 12,
+   "text_px_final": 12
+  },
+  {
+   "id": "SB-D16-007",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 5.0,
+   "length": 8.0,
+   "poly": [
+    [
+     3013.0,
+     4854.5
+    ],
+    [
+     3021.0,
+     4854.5
+    ],
+    [
+     3021.0,
+     4859.5
+    ],
+    [
+     3013.0,
+     4859.5
+    ]
+   ],
+   "aabb": [
+    3013,
+    4854,
+    3021,
+    4860
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 15,
+   "annot_line": 8,
+   "ink_px": 15,
+   "text_px_final": 15
+  },
+  {
+   "id": "SB-D16-008",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 5.5,
+   "length": 8.0,
+   "poly": [
+    [
+     3065.0,
+     4853.5
+    ],
+    [
+     3073.0,
+     4853.5
+    ],
+    [
+     3073.0,
+     4859.0
+    ],
+    [
+     3065.0,
+     4859.0
+    ]
+   ],
+   "aabb": [
+    3065,
+    4853,
+    3073,
+    4859
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 16,
+   "annot_line": 9,
+   "ink_px": 16,
+   "text_px_final": 16
+  },
+  {
+   "id": "SB-D16-009",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 7.1,
+   "length": 9.0,
+   "poly": [
+    [
+     3118.0,
+     4851.0
+    ],
+    [
+     3127.0,
+     4851.0
+    ],
+    [
+     3127.0,
+     4858.1
+    ],
+    [
+     3118.0,
+     4858.1
+    ]
+   ],
+   "aabb": [
+    3118,
+    4851,
+    3127,
+    4859
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 21,
+   "annot_line": 10,
+   "ink_px": 21,
+   "text_px_final": 21
+  },
+  {
+   "id": "SB-D16-010",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 8.0,
+   "length": 8.0,
+   "poly": [
+    [
+     3172.0,
+     4848.0
+    ],
+    [
+     3180.0,
+     4848.0
+    ],
+    [
+     3180.0,
+     4856.0
+    ],
+    [
+     3172.0,
+     4856.0
+    ]
+   ],
+   "aabb": [
+    3172,
+    4848,
+    3180,
+    4856
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 38,
+   "annot_line": 11,
+   "ink_px": 38,
+   "text_px_final": 38
+  },
+  {
+   "id": "SB-D16-011",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [
+    "unsure"
+   ],
+   "target": true,
+   "angle": 0.0,
+   "height": 9.0,
+   "length": 8.0,
+   "poly": [
+    [
+     3222.0,
+     4847.0
+    ],
+    [
+     3230.0,
+     4847.0
+    ],
+    [
+     3230.0,
+     4856.0
+    ],
+    [
+     3222.0,
+     4856.0
+    ]
+   ],
+   "aabb": [
+    3222,
+    4847,
+    3230,
+    4856
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 34,
+   "annot_line": 12,
+   "ink_px": 36,
+   "text_px_final": 34
+  },
+  {
+   "id": "SB-D16-012",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 6.0,
+   "length": 8.0,
+   "poly": [
+    [
+     3280.0,
+     4846.0
+    ],
+    [
+     3288.0,
+     4846.0
+    ],
+    [
+     3288.0,
+     4852.0
+    ],
+    [
+     3280.0,
+     4852.0
+    ]
+   ],
+   "aabb": [
+    3280,
+    4846,
+    3288,
+    4852
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 16,
+   "annot_line": 13,
+   "ink_px": 16,
+   "text_px_final": 16
+  },
+  {
+   "id": "SB-D16-013",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 10.7,
+   "length": 8.0,
+   "poly": [
+    [
+     3345.0,
+     4758.0
+    ],
+    [
+     3353.0,
+     4758.0
+    ],
+    [
+     3353.0,
+     4768.7
+    ],
+    [
+     3345.0,
+     4768.7
+    ]
+   ],
+   "aabb": [
+    3345,
+    4758,
+    3353,
+    4769
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 35,
+   "annot_line": 14,
+   "ink_px": 38,
+   "text_px_final": 35
+  },
+  {
+   "id": "SB-D16-014",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 12.0,
+   "length": 8.0,
+   "poly": [
+    [
+     3346.0,
+     4818.0
+    ],
+    [
+     3354.0,
+     4818.0
+    ],
+    [
+     3354.0,
+     4830.0
+    ],
+    [
+     3346.0,
+     4830.0
+    ]
+   ],
+   "aabb": [
+    3346,
+    4818,
+    3354,
+    4830
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 34,
+   "annot_line": 15,
+   "ink_px": 34,
+   "text_px_final": 34
+  },
+  {
+   "id": "SB-D16-015",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 10.0,
+   "length": 6.0,
+   "poly": [
+    [
+     3351.0,
+     4879.0
+    ],
+    [
+     3357.0,
+     4879.0
+    ],
+    [
+     3357.0,
+     4889.0
+    ],
+    [
+     3351.0,
+     4889.0
+    ]
+   ],
+   "aabb": [
+    3351,
+    4879,
+    3357,
+    4889
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 24,
+   "annot_line": 16,
+   "ink_px": 24,
+   "text_px_final": 24
+  },
+  {
+   "id": "SB-D16-016",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 12.2,
+   "length": 6.0,
+   "poly": [
+    [
+     3353.0,
+     4939.0
+    ],
+    [
+     3359.0,
+     4939.0
+    ],
+    [
+     3359.0,
+     4951.2
+    ],
+    [
+     3353.0,
+     4951.2
+    ]
+   ],
+   "aabb": [
+    3353,
+    4939,
+    3359,
+    4952
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 28,
+   "annot_line": 17,
+   "ink_px": 28,
+   "text_px_final": 27
+  },
+  {
+   "id": "SB-D16-017",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 11.0,
+   "length": 6.0,
+   "poly": [
+    [
+     3355.0,
+     4997.0
+    ],
+    [
+     3361.0,
+     4997.0
+    ],
+    [
+     3361.0,
+     5008.0
+    ],
+    [
+     3355.0,
+     5008.0
+    ]
+   ],
+   "aabb": [
+    3355,
+    4997,
+    3361,
+    5008
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 24,
+   "annot_line": 18,
+   "ink_px": 24,
+   "text_px_final": 24
+  },
+  {
+   "id": "SB-D16-018",
+   "reading": "\"",
+   "kind": "ditto",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 12.0,
+   "length": 6.0,
+   "poly": [
+    [
+     3357.0,
+     5059.0
+    ],
+    [
+     3363.0,
+     5059.0
+    ],
+    [
+     3363.0,
+     5071.0
+    ],
+    [
+     3357.0,
+     5071.0
+    ]
+   ],
+   "aabb": [
+    3357,
+    5059,
+    3363,
+    5071
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 30,
+   "annot_line": 19,
+   "ink_px": 30,
+   "text_px_final": 30
+  },
+  {
+   "id": "SB-D16-019",
+   "reading": "6\"W.PIPE",
+   "kind": "pipe",
+   "flags": [],
+   "target": false,
+   "angle": -90.0,
+   "height": 19.0,
+   "length": 115.0,
+   "poly": [
+    [
+     2914.0,
+     4851.0
+    ],
+    [
+     2914.0,
+     4736.0
+    ],
+    [
+     2933.0,
+     4736.0
+    ],
+    [
+     2933.0,
+     4851.0
+    ]
+   ],
+   "aabb": [
+    2914,
+    4736,
+    2933,
+    4851
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 639,
+   "annot_line": 21,
+   "ink_px": 667,
+   "text_px_final": 530
+  },
+  {
+   "id": "SB-D16-020",
+   "reading": "4324",
+   "kind": "house",
+   "flags": [],
+   "target": false,
+   "angle": -90.0,
+   "height": 21.0,
+   "length": 66.0,
+   "poly": [
+    [
+     2918.0,
+     4931.0
+    ],
+    [
+     2918.0,
+     4865.0
+    ],
+    [
+     2939.0,
+     4865.0
+    ],
+    [
+     2939.0,
+     4931.0
+    ]
+   ],
+   "aabb": [
+    2918,
+    4865,
+    2939,
+    4931
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 494,
+   "annot_line": 22,
+   "ink_px": 507,
+   "text_px_final": 471
+  },
+  {
+   "id": "SB-D16-021",
+   "reading": "-20",
+   "kind": "house",
+   "flags": [],
+   "target": false,
+   "angle": -90.0,
+   "height": 24.0,
+   "length": 59.0,
+   "poly": [
+    [
+     2916.0,
+     4991.0
+    ],
+    [
+     2916.0,
+     4932.0
+    ],
+    [
+     2940.0,
+     4932.0
+    ],
+    [
+     2940.0,
+     4991.0
+    ]
+   ],
+   "aabb": [
+    2916,
+    4932,
+    2940,
+    4991
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 196,
+   "annot_line": 23,
+   "ink_px": 396,
+   "text_px_final": 195
+  },
+  {
+   "id": "SB-D16-022",
+   "reading": "-18",
+   "kind": "house",
+   "flags": [],
+   "target": false,
+   "angle": -90.0,
+   "height": 22.0,
+   "length": 52.0,
+   "poly": [
+    [
+     2920.0,
+     5034.0
+    ],
+    [
+     2920.0,
+     4982.0
+    ],
+    [
+     2942.0,
+     4982.0
+    ],
+    [
+     2942.0,
+     5034.0
+    ]
+   ],
+   "aabb": [
+    2920,
+    4982,
+    2942,
+    5034
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 232,
+   "annot_line": 24,
+   "ink_px": 270,
+   "text_px_final": 228
+  },
+  {
+   "id": "SB-D16-023",
+   "reading": "-16",
+   "kind": "house",
+   "flags": [],
+   "target": false,
+   "angle": -90.0,
+   "height": 18.0,
+   "length": 41.0,
+   "poly": [
+    [
+     2924.0,
+     5109.0
+    ],
+    [
+     2924.0,
+     5068.0
+    ],
+    [
+     2942.0,
+     5068.0
+    ],
+    [
+     2942.0,
+     5109.0
+    ]
+   ],
+   "aabb": [
+    2924,
+    5068,
+    2942,
+    5109
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 195,
+   "annot_line": 25,
+   "ink_px": 203,
+   "text_px_final": 189
+  },
+  {
+   "id": "SB-D16-024",
+   "reading": "111",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 27.0,
+   "length": 28.0,
+   "poly": [
+    [
+     2952.0,
+     4776.0
+    ],
+    [
+     2980.0,
+     4776.0
+    ],
+    [
+     2980.0,
+     4803.0
+    ],
+    [
+     2952.0,
+     4803.0
+    ]
+   ],
+   "aabb": [
+    2952,
+    4776,
+    2980,
+    4803
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 278,
+   "annot_line": 26,
+   "ink_px": 278,
+   "text_px_final": 251
+  },
+  {
+   "id": "SB-D16-025",
+   "reading": "112",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 25.0,
+   "length": 34.0,
+   "poly": [
+    [
+     2950.0,
+     4813.0
+    ],
+    [
+     2984.0,
+     4813.0
+    ],
+    [
+     2984.0,
+     4838.0
+    ],
+    [
+     2950.0,
+     4838.0
+    ]
+   ],
+   "aabb": [
+    2950,
+    4813,
+    2984,
+    4838
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 333,
+   "annot_line": 27,
+   "ink_px": 333,
+   "text_px_final": 246
+  },
+  {
+   "id": "SB-D16-026",
+   "reading": "35'",
+   "kind": "lotdim",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 19.0,
+   "length": 37.0,
+   "poly": [
+    [
+     2941.0,
+     4850.0
+    ],
+    [
+     2978.0,
+     4850.0
+    ],
+    [
+     2978.0,
+     4869.0
+    ],
+    [
+     2941.0,
+     4869.0
+    ]
+   ],
+   "aabb": [
+    2941,
+    4850,
+    2978,
+    4869
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 149,
+   "annot_line": 28,
+   "ink_px": 226,
+   "text_px_final": 140
+  },
+  {
+   "id": "SB-D16-027",
+   "reading": "199",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 34.0,
+   "poly": [
+    [
+     3111.0,
+     4828.0
+    ],
+    [
+     3145.0,
+     4828.0
+    ],
+    [
+     3145.0,
+     4856.0
+    ],
+    [
+     3111.0,
+     4856.0
+    ]
+   ],
+   "aabb": [
+    3111,
+    4828,
+    3145,
+    4856
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 388,
+   "annot_line": 29,
+   "ink_px": 386,
+   "text_px_final": 386
+  },
+  {
+   "id": "SB-D16-028",
+   "reading": "149",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 35.0,
+   "poly": [
+    [
+     3162.0,
+     4823.0
+    ],
+    [
+     3197.0,
+     4823.0
+    ],
+    [
+     3197.0,
+     4845.0
+    ],
+    [
+     3162.0,
+     4845.0
+    ]
+   ],
+   "aabb": [
+    3162,
+    4823,
+    3197,
+    4845
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 343,
+   "annot_line": 30,
+   "ink_px": 343,
+   "text_px_final": 343
+  },
+  {
+   "id": "SB-D16-029",
+   "reading": "140'",
+   "kind": "lotdim",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 17.0,
+   "length": 37.0,
+   "poly": [
+    [
+     3040.0,
+     4868.0
+    ],
+    [
+     3077.0,
+     4868.0
+    ],
+    [
+     3077.0,
+     4885.0
+    ],
+    [
+     3040.0,
+     4885.0
+    ]
+   ],
+   "aabb": [
+    3040,
+    4868,
+    3077,
+    4885
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 233,
+   "annot_line": 31,
+   "ink_px": 233,
+   "text_px_final": 233
+  },
+  {
+   "id": "SB-D16-030",
+   "reading": "140'",
+   "kind": "lotdim",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 16.0,
+   "length": 36.0,
+   "poly": [
+    [
+     3214.0,
+     4861.0
+    ],
+    [
+     3250.0,
+     4861.0
+    ],
+    [
+     3250.0,
+     4877.0
+    ],
+    [
+     3214.0,
+     4877.0
+    ]
+   ],
+   "aabb": [
+    3214,
+    4861,
+    3250,
+    4877
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 196,
+   "annot_line": 32,
+   "ink_px": 200,
+   "text_px_final": 196
+  },
+  {
+   "id": "SB-D16-031",
+   "reading": "144",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 28.0,
+   "length": 48.0,
+   "poly": [
+    [
+     3207.0,
+     4880.0
+    ],
+    [
+     3255.0,
+     4880.0
+    ],
+    [
+     3255.0,
+     4908.0
+    ],
+    [
+     3207.0,
+     4908.0
+    ]
+   ],
+   "aabb": [
+    3207,
+    4880,
+    3255,
+    4908
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 470,
+   "annot_line": 33,
+   "ink_px": 470,
+   "text_px_final": 3
+  },
+  {
+   "id": "SB-D16-032",
+   "reading": "198",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 22.0,
+   "length": 34.0,
+   "poly": [
+    [
+     3111.0,
+     4878.0
+    ],
+    [
+     3145.0,
+     4878.0
+    ],
+    [
+     3145.0,
+     4900.0
+    ],
+    [
+     3111.0,
+     4900.0
+    ]
+   ],
+   "aabb": [
+    3111,
+    4878,
+    3145,
+    4900
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 305,
+   "annot_line": 34,
+   "ink_px": 305,
+   "text_px_final": 77
+  },
+  {
+   "id": "SB-D16-033",
+   "reading": "150",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 39.0,
+   "poly": [
+    [
+     3159.0,
+     4877.0
+    ],
+    [
+     3198.0,
+     4877.0
+    ],
+    [
+     3198.0,
+     4901.0
+    ],
+    [
+     3159.0,
+     4901.0
+    ]
+   ],
+   "aabb": [
+    3159,
+    4877,
+    3198,
+    4901
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 331,
+   "annot_line": 35,
+   "ink_px": 331,
+   "text_px_final": 73
+  },
+  {
+   "id": "SB-D16-034",
+   "reading": "35",
+   "kind": "lotdim",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 13.0,
+   "length": 27.0,
+   "poly": [
+    [
+     3317.0,
+     4840.0
+    ],
+    [
+     3344.0,
+     4840.0
+    ],
+    [
+     3344.0,
+     4853.0
+    ],
+    [
+     3317.0,
+     4853.0
+    ]
+   ],
+   "aabb": [
+    3317,
+    4840,
+    3344,
+    4853
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 142,
+   "annot_line": 36,
+   "ink_px": 173,
+   "text_px_final": 134
+  },
+  {
+   "id": "SB-D16-035",
+   "reading": "141",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 31.0,
+   "length": 26.0,
+   "poly": [
+    [
+     3312.0,
+     4707.0
+    ],
+    [
+     3338.0,
+     4707.0
+    ],
+    [
+     3338.0,
+     4738.0
+    ],
+    [
+     3312.0,
+     4738.0
+    ]
+   ],
+   "aabb": [
+    3312,
+    4707,
+    3338,
+    4738
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 383,
+   "annot_line": 37,
+   "ink_px": 382,
+   "text_px_final": 0
+  },
+  {
+   "id": "SB-D16-036",
+   "reading": "142",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 36.0,
+   "length": 46.0,
+   "poly": [
+    [
+     3305.0,
+     4763.0
+    ],
+    [
+     3351.0,
+     4763.0
+    ],
+    [
+     3351.0,
+     4799.0
+    ],
+    [
+     3305.0,
+     4799.0
+    ]
+   ],
+   "aabb": [
+    3305,
+    4763,
+    3351,
+    4799
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 413,
+   "annot_line": 38,
+   "ink_px": 638,
+   "text_px_final": 327
+  },
+  {
+   "id": "SB-D16-037",
+   "reading": "143",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 32.0,
+   "length": 46.0,
+   "poly": [
+    [
+     3305.0,
+     4795.0
+    ],
+    [
+     3351.0,
+     4795.0
+    ],
+    [
+     3351.0,
+     4827.0
+    ],
+    [
+     3305.0,
+     4827.0
+    ]
+   ],
+   "aabb": [
+    3305,
+    4795,
+    3351,
+    4827
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 451,
+   "annot_line": 39,
+   "ink_px": 672,
+   "text_px_final": 364
+  },
+  {
+   "id": "SB-D16-038",
+   "reading": "12\"SEWER",
+   "kind": "sewer",
+   "flags": [],
+   "target": false,
+   "angle": -90.0,
+   "height": 26.0,
+   "length": 113.0,
+   "poly": [
+    [
+     3367.0,
+     4843.0
+    ],
+    [
+     3367.0,
+     4730.0
+    ],
+    [
+     3393.0,
+     4730.0
+    ],
+    [
+     3393.0,
+     4843.0
+    ]
+   ],
+   "aabb": [
+    3367,
+    4730,
+    3393,
+    4843
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 974,
+   "annot_line": 40,
+   "ink_px": 962,
+   "text_px_final": 454
+  },
+  {
+   "id": "SB-D16-039",
+   "reading": "4319",
+   "kind": "house",
+   "flags": [],
+   "target": false,
+   "angle": -90.0,
+   "height": 19.0,
+   "length": 73.0,
+   "poly": [
+    [
+     3366.0,
+     4931.5
+    ],
+    [
+     3366.0,
+     4858.5
+    ],
+    [
+     3385.0,
+     4858.5
+    ],
+    [
+     3385.0,
+     4931.5
+    ]
+   ],
+   "aabb": [
+    3366,
+    4858,
+    3385,
+    4932
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 492,
+   "annot_line": 41,
+   "ink_px": 483,
+   "text_px_final": 449
+  },
+  {
+   "id": "SB-D16-040",
+   "reading": "-17",
+   "kind": "house",
+   "flags": [],
+   "target": false,
+   "angle": -90.0,
+   "height": 21.0,
+   "length": 40.0,
+   "poly": [
+    [
+     3370.0,
+     4979.0
+    ],
+    [
+     3370.0,
+     4939.0
+    ],
+    [
+     3391.0,
+     4939.0
+    ],
+    [
+     3391.0,
+     4979.0
+    ]
+   ],
+   "aabb": [
+    3370,
+    4939,
+    3391,
+    4979
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 247,
+   "annot_line": 42,
+   "ink_px": 247,
+   "text_px_final": 214
+  },
+  {
+   "id": "SB-D16-041",
+   "reading": "-11",
+   "kind": "house",
+   "flags": [],
+   "target": false,
+   "angle": -90.0,
+   "height": 21.0,
+   "length": 30.0,
+   "poly": [
+    [
+     3373.0,
+     5033.0
+    ],
+    [
+     3373.0,
+     5003.0
+    ],
+    [
+     3394.0,
+     5003.0
+    ],
+    [
+     3394.0,
+     5033.0
+    ]
+   ],
+   "aabb": [
+    3373,
+    5003,
+    3394,
+    5033
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 189,
+   "annot_line": 43,
+   "ink_px": 189,
+   "text_px_final": 138
+  },
+  {
+   "id": "SB-D16-042",
+   "reading": "-09",
+   "kind": "house",
+   "flags": [],
+   "target": false,
+   "angle": -90.0,
+   "height": 21.0,
+   "length": 42.0,
+   "poly": [
+    [
+     3374.0,
+     5098.0
+    ],
+    [
+     3374.0,
+     5056.0
+    ],
+    [
+     3395.0,
+     5056.0
+    ],
+    [
+     3395.0,
+     5098.0
+    ]
+   ],
+   "aabb": [
+    3374,
+    5056,
+    3395,
+    5098
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 332,
+   "annot_line": 44,
+   "ink_px": 332,
+   "text_px_final": 237
+  },
+  {
+   "id": "SB-D16-043",
+   "reading": "2.",
+   "kind": "story",
+   "flags": [
+    "partial"
+   ],
+   "target": false,
+   "angle": 0.0,
+   "height": 19.0,
+   "length": 19.0,
+   "poly": [
+    [
+     3286.0,
+     4874.0
+    ],
+    [
+     3305.0,
+     4874.0
+    ],
+    [
+     3305.0,
+     4893.0
+    ],
+    [
+     3286.0,
+     4893.0
+    ]
+   ],
+   "aabb": [
+    3286,
+    4874,
+    3305,
+    4893
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 126,
+   "annot_line": 48,
+   "ink_px": 126,
+   "text_px_final": 31
+  }
+ ],
+ "dropped_outside_scope": []
+}

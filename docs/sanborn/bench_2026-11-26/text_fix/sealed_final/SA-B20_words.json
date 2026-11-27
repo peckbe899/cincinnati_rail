@@ -1,0 +1,163 @@
+{
+ "crop": "SA-B20",
+ "plate": "66",
+ "win": [
+  4360,
+  1987,
+  4580,
+  2207
+ ],
+ "scale_ft_per_inch": 200,
+ "half": "A",
+ "kind": "targeted",
+ "target": "block",
+ "scope_pad": 25,
+ "scope": [
+  [
+   4427,
+   2057,
+   4513,
+   2133
+  ]
+ ],
+ "scope_px": 6699,
+ "why": "block number 19 on plate 66 (200 ft), drawn at random (seed: plate name) from the plate list",
+ "n_words": 3,
+ "mask": "SA-B20_mask.png",
+ "mask_values": {
+  "0": "paper",
+  "1": "ink, not text",
+  "2": "text ink",
+  "3": "don't care (shared ink, CARE boxes, outside the scope of a targeted crop)"
+ },
+ "counts": {
+  "paper": 5330,
+  "ink_not_text": 755,
+  "text": 516,
+  "dont_care": 41799
+ },
+ "boxes": [],
+ "words": [
+  {
+   "id": "SA-B20-001",
+   "reading": "19",
+   "kind": "block",
+   "flags": [],
+   "target": true,
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 36.0,
+   "poly": [
+    [
+     4452.0,
+     2082.0
+    ],
+    [
+     4488.0,
+     2082.0
+    ],
+    [
+     4488.0,
+     2108.0
+    ],
+    [
+     4452.0,
+     2108.0
+    ]
+   ],
+   "aabb": [
+    4452,
+    2082,
+    4488,
+    2108
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 366,
+   "annot_line": 2,
+   "ink_px": 528,
+   "text_px_final": 366
+  },
+  {
+   "id": "SA-B20-002",
+   "reading": "41",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 24.0,
+   "length": 29.0,
+   "poly": [
+    [
+     4407.0,
+     2120.0
+    ],
+    [
+     4436.0,
+     2120.0
+    ],
+    [
+     4436.0,
+     2144.0
+    ],
+    [
+     4407.0,
+     2144.0
+    ]
+   ],
+   "aabb": [
+    4407,
+    2120,
+    4436,
+    2144
+   ],
+   "snapped": true,
+   "touches_line": true,
+   "text_px": 164,
+   "annot_line": 3,
+   "ink_px": 261,
+   "text_px_final": 38
+  },
+  {
+   "id": "SA-B20-003",
+   "reading": "34",
+   "kind": "lot",
+   "flags": [],
+   "target": false,
+   "angle": 0.0,
+   "height": 26.0,
+   "length": 34.0,
+   "poly": [
+    [
+     4488.0,
+     2116.0
+    ],
+    [
+     4522.0,
+     2116.0
+    ],
+    [
+     4522.0,
+     2142.0
+    ],
+    [
+     4488.0,
+     2142.0
+    ]
+   ],
+   "aabb": [
+    4488,
+    2116,
+    4522,
+    2142
+   ],
+   "snapped": true,
+   "touches_line": false,
+   "text_px": 279,
+   "annot_line": 4,
+   "ink_px": 279,
+   "text_px_final": 112
+  }
+ ],
+ "dropped_outside_scope": []
+}
